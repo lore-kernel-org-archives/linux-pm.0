@@ -1,7 +1,7 @@
 From: Hongbo Zhang <hongbo.zhang@linaro.org>
 Subject: Re: [PATCH V2 5/6] Thermal: Add ST-Ericsson DB8500 thermal dirver.
-Date: Thu, 25 Oct 2012 18:43:55 +0800
-Message-ID: <CAJLyvQw-fpo5mNi6yxS7a2BGjazwiJ=i7=XWxSLbn3a40ykV8A@mail.gmail.com>
+Date: Thu, 25 Oct 2012 18:45:35 +0800
+Message-ID: <CAJLyvQyHuqaX1RMXV=wFcV9j1pkNTrbv7v-SjSmbweVn+BWxiQ@mail.gmail.com>
 References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
 	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
 	<1351079900-32236-6-git-send-email-hongbo.zhang@linaro.com>
@@ -9,76 +9,52 @@ References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
 	<CAJLyvQxEAeP__drUAAz6D_UeeDRvdqKdmim3xAO7sXP8cCM8=g@mail.gmail.com>
 	<CAKohpomZZiXnnkUC=9ZQoux1BVh+uJZw_oM1Ahndua2PZaKiDw@mail.gmail.com>
 	<CAJLyvQw7=ucSTXH8YyPrm6LS8uDyxJkWGEVP2jQ3FL=cYN7frg@mail.gmail.com>
-	<CAKohpokVR3wmung6SY=e2G3mdHnvbZRGvB8JYNxz1vFXTAma7w@mail.gmail.com>
+	<CAJLyvQzpo19hhwG9a4GEv0HCdJtfSJz_ASRnE-WKbwbMa58Akw@mail.gmail.com>
+	<CAKohpo=grLyatiDEvSi_P+atRJ=JBVs_eWKbtumEkWenPr3EDg@mail.gmail.com>
+	<CAKohpo=nET=Y+wdpOuBeuXj9gbVUOvg9NChLpbDrBS3QgMrn_Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:36705 "EHLO
+Received: from mail-ie0-f174.google.com ([209.85.223.174]:65145 "EHLO
 	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316Ab2JYKn4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 06:43:56 -0400
-Received: by mail-ie0-f174.google.com with SMTP id k13so1958345iea.19
-        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 03:43:56 -0700 (PDT)
-In-Reply-To: <CAKohpokVR3wmung6SY=e2G3mdHnvbZRGvB8JYNxz1vFXTAma7w@mail.gmail.com>
+	with ESMTP id S1757545Ab2JYKpg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 06:45:36 -0400
+Received: by mail-ie0-f174.google.com with SMTP id k13so1959854iea.19
+        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 03:45:36 -0700 (PDT)
+In-Reply-To: <CAKohpo=nET=Y+wdpOuBeuXj9gbVUOvg9NChLpbDrBS3QgMrn_Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Amit Kucheria <amit.kucheria@linaro.org>, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-On 25 October 2012 17:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 25 October 2012 15:03, Hongbo Zhang <hongbo.zhang@linaro.org> wrote:
->> On 25 October 2012 16:41, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 25 October 2012 18:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25 October 2012 15:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 25 October 2012 15:26, Hongbo Zhang <hongbo.zhang@linaro.org> wrote:
 >
->> Just paste my current pieces of codes here:
->>
->> static struct db8500_thsens_platform_data*
->>                 db8500_thermal_parse_dt(struct platform_device *pdev)
->> {
+> This is what your prcmu driver's routines are doing:
 >
->>         if (!np) {
->>                 dev_err(&pdev->dev, "Missing device tree data\n");
->
->> }
->>
->> static int db8500_thermal_probe(struct platform_device *pdev)
->> {
->
->>         ptrips = db8500_thermal_parse_dt(pdev);
->>         if (!ptrips)
->>                 ptrips = dev_get_platdata(&pdev->dev);
->
-> So, the above code still has the flaw i pointed out. It will print
-> "Missing device tree data", while booting for non-DT case.
->
-> What i would suggest you is:
->
-> static int db8500_thermal_probe(struct platform_device *pdev)
+> int db8500_prcmu_config_hotmon(u8 low, u8 high)
 > {
->         struct device_node *np = pdev->dev.of_node;
+> ...
+>         wait_for_completion(&mb4_transfer.work);
+> ...
+>         return 0;
+> }
 >
->         if (np)
->                 ptrips = db8500_thermal_parse_dt(pdev);
->         else
->                 ptrips = dev_get_platdata(&pdev->dev);
+> This is why others in STE have used threaded_irqs... Because the
+> routine you guys call from interrupt handlers actually sleeps.
 >
->        if (!ptrips)
->               explode!!
+I should find this for you, but you find it for me :(
+Thanks a lot.
+> So, they can't be called from interrupt context.
 >
-This seems neat.
+> I wanted you to knew this :)
 >
->>>>>> +       ret = devm_request_threaded_irq(&pdev->dev, low_irq, NULL,
->
->> I just saw that all the PRCMU and ab8500 related irqs use request_threaded_irq
->> only difference is that I use devm_request_threaded_irq
->
-> See, i started this threaded_irq thread is to make sure you know
-> exactly what you
-> are doing. Others are doing it doesn't mean you should do it too.. :)
->
-> You must dig in a bit to see why is it required for your case? If
-> earlier code related
-> to PRCMU and db8500 is correct, then i am sure you need to sleep from your
-> handler.
+> Its okay now, you need to use threaded irq only and you can't use
+> normal request_irq(). Its not that you want to make things fast that's why
+> you used threaded irqs... If you try to sleep from interrupt context
+> (i.e. if you
+> have registered your handler with request_irq()), you will see a kernel crash.
 >
 > --
 > viresh
