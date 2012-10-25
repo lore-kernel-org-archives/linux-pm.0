@@ -1,51 +1,127 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
-Date: Thu, 25 Oct 2012 16:11:32 +0200
-Message-ID: <50894894.7050609@linaro.org>
-References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org>
-	<20121025134933.GA1962@tbergstrom-lnx.Nvidia.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list
+Date: Thu, 25 Oct 2012 21:14:31 +0200
+Message-ID: <50898F97.3000202@gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>, <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>, <1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <20121025134933.GA1962-Rysk9IDjsxmJz7etNGeUX8VPkgjIgRvpAL8bYrjMMd8@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "rjw-KKrjLPT3xs0@public.gmane.org" <rjw-KKrjLPT3xs0@public.gmane.org>, "linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:58958 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760119Ab2JYTM1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 15:12:27 -0400
+In-Reply-To: <1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-T24gMTAvMjUvMjAxMiAwMzo0OSBQTSwgUGV0ZXIgRGUgU2NocmlqdmVyIHdyb3RlOgo+IE9uIEZy
-aSwgT2N0IDE5LCAyMDEyIGF0IDEyOjEwOjQ1UE0gKzAyMDAsIERhbmllbCBMZXpjYW5vIHdyb3Rl
-Ogo+PiBUaGUgZGlzY3Vzc2lvbiBhYm91dCBoYXZpbmcgZGlmZmVyZW50IGNwdXMgb24gdGhlIHN5
-c3RlbSB3aXRoCj4+IGRpZmZlcmVudCBsYXRlbmNpZXMgYnJpbmcgdXMgdG8gYSBmaXJzdCBhdHRl
-bXAgYnkgYWRkaW5nIGEKPj4gcG9pbnRlciBpbiB0aGUgY3B1aWRsZV9kZXZpY2UgdG8gdGhlIHN0
-YXRlcyBhcnJheS4KPj4KPj4gQnV0IGFzIFJhZmFlbCBzdWdnZXN0ZWQsIGl0IHdvdWxkIG1ha2Ug
-bW9yZSBzZW5zZSB0byBjcmVhdGUgYQo+PiBkcml2ZXIgcGVyIGNwdSBbMV0uCj4+Cj4+IFRoaXMg
-cGF0Y2ggYWRkcyBzdXBwb3J0IGZvciBtdWx0aXBsZSBjcHVpZGxlIGRyaXZlcnMuCj4+Cj4+IEl0
-IGNyZWF0ZXMgYSBwZXIgY3B1IGNwdWlkbGUgZHJpdmVyIHBvaW50ZXIuCj4+Cj4+IEluIG9yZGVy
-IHRvIG5vdCBicmVhayB0aGUgZGlmZmVyZW50IGRyaXZlcnMsIHRoZSBmdW5jdGlvbiBjcHVpZGxl
-X3JlZ2lzdGVyX2RyaXZlcgo+PiBhc3NpZ24gZm9yIGVhY2ggY3B1LCB0aGUgZHJpdmVyLgo+Pgo+
-PiBUaGUgbXVsdGlwbGUgZHJpdmVyIHN1cHBvcnQgaXMgb3B0aW9uYWwgYW5kIGlmIGl0IGlzIG5v
-dCBzZXQsIHRoZSBjcHVpZGUgZHJpdmVyCj4+IGNvcmUgY29kZSByZW1haW5zIHRoZSBzYW1lIChl
-eGNlcHQgc29tZSBjb2RlIHJlb3JnYW5pc2F0aW9uKS4KPj4KPj4gSSBkaWQgdGhlIGZvbGxvd2lu
-ZyB0ZXN0cyBjb21waWxlZCwgYm9vdGVkLCB0ZXN0ZWQgd2l0aG91dC93aXRoIENPTkZJR19DUFVf
-SURMRSwKPj4gd2l0aC93aXRob3V0IENPTkZJR19DUFVfSURMRV9NVUxUSVBMRV9EUklWRVJTLgo+
-Pgo+PiBUZXN0ZWQgb24gQ29yZTIgRHVvIFQ5NTAwIHdpdGggYWNwaV9pZGxlIFthbmQgaW50ZWxf
-aWRsZV0KPj4gVGVzdGVkIG9uIEFSTSBEdWFsIENvcnRleC1BOSBVODUwMCAoYWthIFNub3diYWxs
-KQo+Pgo+PiBWMSB0ZXN0ZWQgb24gVGVncmEzIGFuZCBWZXhwcmVzcyBUQzIKPj4KPiAKPiBWMiB0
-ZXN0ZWQgb24gVGVncmEzLgoKQ29vbCB0aGFua3MgIQoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8u
-b3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpG
-b2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFj
-ZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRw
-Oi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgoKX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGluYXJvLWRldiBtYWlsaW5nIGxpc3QKbGlu
-YXJvLWRldkBsaXN0cy5saW5hcm8ub3JnCmh0dHA6Ly9saXN0cy5saW5hcm8ub3JnL21haWxtYW4v
-bGlzdGluZm8vbGluYXJvLWRldgo=
+Hi,
+Hongbo Zhang wrote:
+> Problem of using this list is that the cpufreq_get_max_state callback will be
+> called when register cooling device by thermal_cooling_device_register, but
+> this list isn't ready at this moment. What's more, there is no need to maintain
+> such a list, we can get cpufreq_cooling_device instance by the private
+> thermal_cooling_device.devdata.
+> 
+> Signed-off-by: hongbo.zhang <hongbo.zhang at linaro.com>
+> ---
+>  drivers/thermal/cpu_cooling.c | 81 +++++++++----------------------------------
+>  1 file changed, 16 insertions(+), 65 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 415b041..cc80d29 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
+>  };
+>  static LIST_HEAD(cooling_cpufreq_list);
+>  static DEFINE_IDR(cpufreq_idr);
+> +static DEFINE_MUTEX(cooling_cpufreq_lock);
+>  
+> -static struct mutex cooling_cpufreq_lock;
+> +static unsigned int cpufreq_dev_count;
+>  
+>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+>  #define NOTIFY_INVALID NULL
+> @@ -241,20 +242,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>  				 unsigned long *state)
+>  {
+>  	int ret = -EINVAL, i = 0;
+> -	struct cpufreq_cooling_device *cpufreq_device;
+> +	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>  	struct cpumask *maskPtr;
+>  	unsigned int cpu;
+>  	struct cpufreq_frequency_table *table;
+>  	unsigned long count = 0;
+>  
+> -	mutex_lock(&cooling_cpufreq_lock);
+> -	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+> -		if (cpufreq_device && cpufreq_device->cool_dev == cdev)
+> -			break;
+> -	}
+> -	if (cpufreq_device == NULL)
+> -		goto return_get_max_state;
+> -
+>  	maskPtr = &cpufreq_device->allowed_cpus;
+>  	cpu = cpumask_any(maskPtr);
+>  	table = cpufreq_frequency_get_table(cpu);
+> @@ -276,7 +269,6 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>  	}
+>  
+>  return_get_max_state:
+> -	mutex_unlock(&cooling_cpufreq_lock);
+>  	return ret;
+
+Since there is no mutex locking/unlocking anymore, I'd say the goto
+label should be removed.
+
+[...]
+>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>  {
+> -	struct cpufreq_cooling_device *cpufreq_dev = NULL;
+> -	unsigned int cpufreq_dev_count = 0;
+> +	struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
+>  
+> -	mutex_lock(&cooling_cpufreq_lock);
+> -	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
+> -		if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
+> -			break;
+> -		cpufreq_dev_count++;
+> -	}
+> -
+> -	if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
+> -		mutex_unlock(&cooling_cpufreq_lock);
+> -		return;
+> -	}
+> +	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+>  
+> -	list_del(&cpufreq_dev->node);
+> +	mutex_lock(&cooling_cpufreq_lock);
+> +	cpufreq_dev_count--;
+>  
+>  	/* Unregister the notifier for the last cpufreq cooling device */
+> -	if (cpufreq_dev_count == 1) {
+> +	if (cpufreq_dev_count == 0) {
+>  		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+>  					CPUFREQ_POLICY_NOTIFIER);
+>  	}
+>  	mutex_unlock(&cooling_cpufreq_lock);
+> -	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+
+Why did you move the call to thermal_cooling_device_unregister() from
+here? I don't see any reason for moving it.
+
+> +
+>  	release_idr(&cpufreq_idr, cpufreq_dev->id);
+> -	if (cpufreq_dev_count == 1)
+> -		mutex_destroy(&cooling_cpufreq_lock);
+>  	kfree(cpufreq_dev);
+>  }
+>  EXPORT_SYMBOL(cpufreq_cooling_unregister);
+> -- 
+> 1.7.11.3
+
+--
+Francesco
