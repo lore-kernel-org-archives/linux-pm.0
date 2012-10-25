@@ -1,57 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
-Date: Thu, 25 Oct 2012 22:29:43 +0200
-Message-ID: <4190590.cE8oL2xMlM@vostro.rjw.lan>
-References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org> <20121025134933.GA1962@tbergstrom-lnx.Nvidia.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [for-next PATCH 2/2] PM / devfreq: more documentation warning fixes next set
+Date: Thu, 25 Oct 2012 18:10:14 -0500
+Message-ID: <1351206614-23993-3-git-send-email-nm@ti.com>
+References: <1351206614-23993-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:37745 "EHLO ogre.sisk.pl"
+Received: from comal.ext.ti.com ([198.47.26.152]:55448 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935274Ab2JYUZr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Oct 2012 16:25:47 -0400
-In-Reply-To: <20121025134933.GA1962@tbergstrom-lnx.Nvidia.com>
+	id S1750888Ab2JYXKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Oct 2012 19:10:36 -0400
+In-Reply-To: <1351206614-23993-1-git-send-email-nm@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "patches@linaro.org" <patches@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: Nishanth Menon <nm@ti.com>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Thursday, October 25, 2012 04:49:33 PM Peter De Schrijver wrote:
-> On Fri, Oct 19, 2012 at 12:10:45PM +0200, Daniel Lezcano wrote:
-> > The discussion about having different cpus on the system with
-> > different latencies bring us to a first attemp by adding a
-> > pointer in the cpuidle_device to the states array.
-> > 
-> > But as Rafael suggested, it would make more sense to create a
-> > driver per cpu [1].
-> > 
-> > This patch adds support for multiple cpuidle drivers.
-> > 
-> > It creates a per cpu cpuidle driver pointer.
-> > 
-> > In order to not break the different drivers, the function cpuidle_register_driver
-> > assign for each cpu, the driver.
-> > 
-> > The multiple driver support is optional and if it is not set, the cpuide driver
-> > core code remains the same (except some code reorganisation).
-> > 
-> > I did the following tests compiled, booted, tested without/with CONFIG_CPU_IDLE,
-> > with/without CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
-> > 
-> > Tested on Core2 Duo T9500 with acpi_idle [and intel_idle]
-> > Tested on ARM Dual Cortex-A9 U8500 (aka Snowball)
-> > 
-> > V1 tested on Tegra3 and Vexpress TC2
-> > 
-> 
-> V2 tested on Tegra3.
+commit cfd5194aecd08cd8fbfbf1534a0209b95bc6fcdf
+(PM / devfreq: Core updates to support devices which can idle)
+in Rafael's pm-devfreq-next branch on
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
 
-Do I assume correctly that Tested-by applies?
+Patchworks: https://patchwork.kernel.org/patch/1545751/
 
-Rafael
+introduced a kernel documentation warning:
+Warning(drivers/devfreq/devfreq.c:289): bad line: 		release its resources.
 
+This is due to lack of '*' at documentation start messing
+up poor scripts/kernel-doc 's mind. I suggest squashing
+this to original commit given not-yet-upstream status :).
 
+Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+ drivers/devfreq/devfreq.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index cdc3e2d..2f6ad6b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -286,7 +286,7 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+ 
+ /**
+  * _remove_devfreq() - Remove devfreq from the devfreq list and
+-		release its resources.
++ *			release its resources.
+  * @devfreq:	the devfreq struct
+  * @skip:	skip calling device_unregister().
+  */
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
+
