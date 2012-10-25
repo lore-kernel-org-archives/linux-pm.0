@@ -1,127 +1,183 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list
-Date: Thu, 25 Oct 2012 21:14:31 +0200
-Message-ID: <50898F97.3000202@gmail.com>
-References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>, <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>, <1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUGFIX] PCI/PM: Fix proc config reg access for D3cold and bridge suspending
+Date: Thu, 25 Oct 2012 22:27:43 +0200
+Message-ID: <2615806.OTtS5H4PWK@vostro.rjw.lan>
+References: <1351128963-10347-1-git-send-email-ying.huang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:58958 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760119Ab2JYTM1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 15:12:27 -0400
-In-Reply-To: <1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1351128963-10347-1-git-send-email-ying.huang@intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "hongbo.zhang" <hongbo.zhang@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-Hi,
-Hongbo Zhang wrote:
-> Problem of using this list is that the cpufreq_get_max_state callback will be
-> called when register cooling device by thermal_cooling_device_register, but
-> this list isn't ready at this moment. What's more, there is no need to maintain
-> such a list, we can get cpufreq_cooling_device instance by the private
-> thermal_cooling_device.devdata.
+On Thursday, October 25, 2012 09:36:03 AM Huang Ying wrote:
+> In
 > 
-> Signed-off-by: hongbo.zhang <hongbo.zhang at linaro.com>
+>   https://bugzilla.kernel.org/show_bug.cgi?id=48981
+> 
+> Peter reported that /proc/bus/pci/??/??.? does not works for 3.6.
+> This is This is because the device configuration space registers will
+> be not accessible if the corresponding parent bridge is suspended or
+> the device is put into D3cold state.
+> 
+> This is the same as /sys/bus/pci/devices/0000:??:??.?/config access
+> issue.  So the function used to solve sysfs issue is used to solve
+> this issue.
+> 
+> Cc: stable@vger.kernel.org
+> Reported-by: Peter <lekensteyn@gmail.com>
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
 > ---
->  drivers/thermal/cpu_cooling.c | 81 +++++++++----------------------------------
->  1 file changed, 16 insertions(+), 65 deletions(-)
+>  drivers/pci/pci-sysfs.c |   34 ----------------------------------
+>  drivers/pci/pci.c       |   32 ++++++++++++++++++++++++++++++++
+>  drivers/pci/pci.h       |    2 ++
+>  drivers/pci/proc.c      |    8 ++++++++
+>  4 files changed, 42 insertions(+), 34 deletions(-)
 > 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 415b041..cc80d29 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
->  };
->  static LIST_HEAD(cooling_cpufreq_list);
->  static DEFINE_IDR(cpufreq_idr);
-> +static DEFINE_MUTEX(cooling_cpufreq_lock);
->  
-> -static struct mutex cooling_cpufreq_lock;
-> +static unsigned int cpufreq_dev_count;
->  
->  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
->  #define NOTIFY_INVALID NULL
-> @@ -241,20 +242,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->  				 unsigned long *state)
->  {
->  	int ret = -EINVAL, i = 0;
-> -	struct cpufreq_cooling_device *cpufreq_device;
-> +	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
->  	struct cpumask *maskPtr;
->  	unsigned int cpu;
->  	struct cpufreq_frequency_table *table;
->  	unsigned long count = 0;
->  
-> -	mutex_lock(&cooling_cpufreq_lock);
-> -	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
-> -		if (cpufreq_device && cpufreq_device->cool_dev == cdev)
-> -			break;
-> -	}
-> -	if (cpufreq_device == NULL)
-> -		goto return_get_max_state;
-> -
->  	maskPtr = &cpufreq_device->allowed_cpus;
->  	cpu = cpumask_any(maskPtr);
->  	table = cpufreq_frequency_get_table(cpu);
-> @@ -276,7 +269,6 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->  	}
->  
->  return_get_max_state:
-> -	mutex_unlock(&cooling_cpufreq_lock);
->  	return ret;
-
-Since there is no mutex locking/unlocking anymore, I'd say the goto
-label should be removed.
-
-[...]
->  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
->  {
-> -	struct cpufreq_cooling_device *cpufreq_dev = NULL;
-> -	unsigned int cpufreq_dev_count = 0;
-> +	struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
->  
-> -	mutex_lock(&cooling_cpufreq_lock);
-> -	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
-> -		if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
-> -			break;
-> -		cpufreq_dev_count++;
-> -	}
-> -
-> -	if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
-> -		mutex_unlock(&cooling_cpufreq_lock);
-> -		return;
-> -	}
-> +	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
->  
-> -	list_del(&cpufreq_dev->node);
-> +	mutex_lock(&cooling_cpufreq_lock);
-> +	cpufreq_dev_count--;
->  
->  	/* Unregister the notifier for the last cpufreq cooling device */
-> -	if (cpufreq_dev_count == 1) {
-> +	if (cpufreq_dev_count == 0) {
->  		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
->  					CPUFREQ_POLICY_NOTIFIER);
->  	}
->  	mutex_unlock(&cooling_cpufreq_lock);
-> -	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
-
-Why did you move the call to thermal_cooling_device_unregister() from
-here? I don't see any reason for moving it.
-
-> +
->  	release_idr(&cpufreq_idr, cpufreq_dev->id);
-> -	if (cpufreq_dev_count == 1)
-> -		mutex_destroy(&cooling_cpufreq_lock);
->  	kfree(cpufreq_dev);
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -458,40 +458,6 @@ boot_vga_show(struct device *dev, struct
 >  }
->  EXPORT_SYMBOL(cpufreq_cooling_unregister);
-> -- 
-> 1.7.11.3
-
---
-Francesco
+>  struct device_attribute vga_attr = __ATTR_RO(boot_vga);
+>  
+> -static void
+> -pci_config_pm_runtime_get(struct pci_dev *pdev)
+> -{
+> -	struct device *dev = &pdev->dev;
+> -	struct device *parent = dev->parent;
+> -
+> -	if (parent)
+> -		pm_runtime_get_sync(parent);
+> -	pm_runtime_get_noresume(dev);
+> -	/*
+> -	 * pdev->current_state is set to PCI_D3cold during suspending,
+> -	 * so wait until suspending completes
+> -	 */
+> -	pm_runtime_barrier(dev);
+> -	/*
+> -	 * Only need to resume devices in D3cold, because config
+> -	 * registers are still accessible for devices suspended but
+> -	 * not in D3cold.
+> -	 */
+> -	if (pdev->current_state == PCI_D3cold)
+> -		pm_runtime_resume(dev);
+> -}
+> -
+> -static void
+> -pci_config_pm_runtime_put(struct pci_dev *pdev)
+> -{
+> -	struct device *dev = &pdev->dev;
+> -	struct device *parent = dev->parent;
+> -
+> -	pm_runtime_put(dev);
+> -	if (parent)
+> -		pm_runtime_put_sync(parent);
+> -}
+> -
+>  static ssize_t
+>  pci_read_config(struct file *filp, struct kobject *kobj,
+>  		struct bin_attribute *bin_attr,
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1858,6 +1858,38 @@ bool pci_dev_run_wake(struct pci_dev *de
+>  }
+>  EXPORT_SYMBOL_GPL(pci_dev_run_wake);
+>  
+> +void pci_config_pm_runtime_get(struct pci_dev *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct device *parent = dev->parent;
+> +
+> +	if (parent)
+> +		pm_runtime_get_sync(parent);
+> +	pm_runtime_get_noresume(dev);
+> +	/*
+> +	 * pdev->current_state is set to PCI_D3cold during suspending,
+> +	 * so wait until suspending completes
+> +	 */
+> +	pm_runtime_barrier(dev);
+> +	/*
+> +	 * Only need to resume devices in D3cold, because config
+> +	 * registers are still accessible for devices suspended but
+> +	 * not in D3cold.
+> +	 */
+> +	if (pdev->current_state == PCI_D3cold)
+> +		pm_runtime_resume(dev);
+> +}
+> +
+> +void pci_config_pm_runtime_put(struct pci_dev *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +	struct device *parent = dev->parent;
+> +
+> +	pm_runtime_put(dev);
+> +	if (parent)
+> +		pm_runtime_put_sync(parent);
+> +}
+> +
+>  /**
+>   * pci_pm_init - Initialize PM functions of given PCI device
+>   * @dev: PCI device to handle.
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -72,6 +72,8 @@ extern void pci_disable_enabled_device(s
+>  extern int pci_finish_runtime_suspend(struct pci_dev *dev);
+>  extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
+>  extern void pci_wakeup_bus(struct pci_bus *bus);
+> +extern void pci_config_pm_runtime_get(struct pci_dev *dev);
+> +extern void pci_config_pm_runtime_put(struct pci_dev *dev);
+>  extern void pci_pm_init(struct pci_dev *dev);
+>  extern void platform_pci_wakeup_init(struct pci_dev *dev);
+>  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+> --- a/drivers/pci/proc.c
+> +++ b/drivers/pci/proc.c
+> @@ -76,6 +76,8 @@ proc_bus_pci_read(struct file *file, cha
+>  	if (!access_ok(VERIFY_WRITE, buf, cnt))
+>  		return -EINVAL;
+>  
+> +	pci_config_pm_runtime_get(dev);
+> +
+>  	if ((pos & 1) && cnt) {
+>  		unsigned char val;
+>  		pci_user_read_config_byte(dev, pos, &val);
+> @@ -121,6 +123,8 @@ proc_bus_pci_read(struct file *file, cha
+>  		cnt--;
+>  	}
+>  
+> +	pci_config_pm_runtime_put(dev);
+> +
+>  	*ppos = pos;
+>  	return nbytes;
+>  }
+> @@ -146,6 +150,8 @@ proc_bus_pci_write(struct file *file, co
+>  	if (!access_ok(VERIFY_READ, buf, cnt))
+>  		return -EINVAL;
+>  
+> +	pci_config_pm_runtime_get(dev);
+> +
+>  	if ((pos & 1) && cnt) {
+>  		unsigned char val;
+>  		__get_user(val, buf);
+> @@ -191,6 +197,8 @@ proc_bus_pci_write(struct file *file, co
+>  		cnt--;
+>  	}
+>  
+> +	pci_config_pm_runtime_put(dev);
+> +
+>  	*ppos = pos;
+>  	i_size_write(ino, dp->size);
+>  	return nbytes;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
