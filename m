@@ -1,14 +1,14 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [for-next PATCH 2/2] PM / devfreq: more documentation warning fixes next set
-Date: Thu, 25 Oct 2012 18:10:14 -0500
-Message-ID: <1351206614-23993-3-git-send-email-nm@ti.com>
+Subject: [for-next PATCH 1/2] PM / devfreq: more documentation warning fixes
+Date: Thu, 25 Oct 2012 18:10:13 -0500
+Message-ID: <1351206614-23993-2-git-send-email-nm@ti.com>
 References: <1351206614-23993-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:55448 "EHLO comal.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:43059 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888Ab2JYXKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1750894Ab2JYXKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Thu, 25 Oct 2012 19:10:36 -0400
 In-Reply-To: <1351206614-23993-1-git-send-email-nm@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,19 +16,19 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Nishanth Menon <nm@ti.com>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-commit cfd5194aecd08cd8fbfbf1534a0209b95bc6fcdf
-(PM / devfreq: Core updates to support devices which can idle)
+Commit 34b53237e9ceb141e13e846baed2a282461f4a01
+(PM / devfreq: Add suspend and resume apis)
 in Rafael's pm-devfreq-next branch on
 git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
 
-Patchworks: https://patchwork.kernel.org/patch/1545751/
+Patchworks: https://patchwork.kernel.org/patch/1545791/
 
-introduced a kernel documentation warning:
-Warning(drivers/devfreq/devfreq.c:289): bad line: 		release its resources.
+Warning(drivers/devfreq/devfreq.c:436): No description found for parameter 'devfreq'
+Warning(drivers/devfreq/devfreq.c:450): No description found for parameter 'devfreq'
 
-This is due to lack of '*' at documentation start messing
-up poor scripts/kernel-doc 's mind. I suggest squashing
-this to original commit given not-yet-upstream status :).
+Yet again, a missing ':' causes the kernel-doc to cry
+
+Since it is not merged to upstream, I suggest squashing it
 
 Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
 Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
@@ -37,22 +37,31 @@ Cc: Kyungmin Park <kyungmin.park@samsung.com>
 
 Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
- drivers/devfreq/devfreq.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/devfreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index cdc3e2d..2f6ad6b 100644
+index 32e9b48..cdc3e2d 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -286,7 +286,7 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+@@ -430,7 +430,7 @@ EXPORT_SYMBOL(devfreq_remove_device);
  
  /**
-  * _remove_devfreq() - Remove devfreq from the devfreq list and
--		release its resources.
-+ *			release its resources.
-  * @devfreq:	the devfreq struct
-  * @skip:	skip calling device_unregister().
+  * devfreq_suspend_device() - Suspend devfreq of a device.
+- * @devfreq	the devfreq instance to be suspended
++ * @devfreq:	the devfreq instance to be suspended
   */
+ int devfreq_suspend_device(struct devfreq *devfreq)
+ {
+@@ -444,7 +444,7 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+ 
+ /**
+  * devfreq_resume_device() - Resume devfreq of a device.
+- * @devfreq	the devfreq instance to be resumed
++ * @devfreq:	the devfreq instance to be resumed
+  */
+ int devfreq_resume_device(struct devfreq *devfreq)
+ {
 -- 
 1.7.9.5
 
