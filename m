@@ -1,72 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] cpufreq: Make sure target freq is within limits
-Date: Fri, 26 Oct 2012 13:23:28 +0200
-Message-ID: <2173527.XVCDQtU61N@vostro.rjw.lan>
-References: <f0099171c1c4f3048d0f29b7deb42144f26ac5d5.1351146515.git.viresh.kumar@linaro.org>
+From: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand governors
+Date: Fri, 26 Oct 2012 14:26:34 +0200
+Message-ID: <m2625x5shx.fsf@igel.home>
+References: <m21ugq1vfi.fsf@igel.home> <1448859.RJLWEdIAIe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:39125 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753575Ab2JZLTa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Oct 2012 07:19:30 -0400
-In-Reply-To: <f0099171c1c4f3048d0f29b7deb42144f26ac5d5.1351146515.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1448859.RJLWEdIAIe@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Wed, 24 Oct 2012 23:16:49 +0200")
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
 
-On Thursday, October 25, 2012 12:03:34 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> __cpufreq_driver_target() must not pass target frequency beyond the limits of
-> current policy.
-> 
-> Today most of cpufreq platform drivers are doing this check in their target
-> routines. Why not move it to __cpufreq_driver_target().
-> 
-> I wanted to get your opinion on this before making changes in all driver files.
-> That's why this is an RFC.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-I'd prefer to apply the patch below before changing the drviers.
+> http://git.kernel.org/?p=linux/kernel/git/rafael/linux-pm.git;a=shortlog;h=refs/heads/linux-next
 
-Thanks,
-Rafael
+91f347c looks good, unfortunately d7d6f64 undoes the change.
 
+Andreas.
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f552d5f..59264f1 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->  			    unsigned int relation)
->  {
->  	int retval = -EINVAL;
-> +	unsigned int old_target_freq = target_freq;
->  
->  	if (cpufreq_disabled())
->  		return -ENODEV;
->  
-> -	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
-> -		target_freq, relation);
-> +	/* Make sure that target_freq is within supported range */
-> +	if (target_freq > policy->max)
-> +		target_freq = policy->max;
-> +	if (target_freq < policy->min)
-> +		target_freq = policy->min;
-> +
-> +	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
-> +			policy->cpu, target_freq, relation, old_target_freq);
->  	if (cpu_online(policy->cpu) && cpufreq_driver->target)
->  		retval = cpufreq_driver->target(policy, target_freq, relation);
->  
-> 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
