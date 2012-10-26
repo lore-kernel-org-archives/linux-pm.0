@@ -1,65 +1,33 @@
-From: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
-Date: Fri, 26 Oct 2012 11:23:58 +0300
-Message-ID: <20121026082358.GD1962@tbergstrom-lnx.Nvidia.com>
-References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org>
-	<20121025134933.GA1962@tbergstrom-lnx.Nvidia.com>
-	<4190590.cE8oL2xMlM@vostro.rjw.lan>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
+Date: Fri, 26 Oct 2012 10:57:49 +0200
+Message-ID: <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+	<20121011134458.GB15428@gmail.com>
+	<CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
+	<20121011151947.GD15428@gmail.com>
+	<CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <4190590.cE8oL2xMlM-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: "linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 25, 2012 at 10:29:43PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, October 25, 2012 04:49:33 PM Peter De Schrijver wrote:
-> > On Fri, Oct 19, 2012 at 12:10:45PM +0200, Daniel Lezcano wrote:
-> > > The discussion about having different cpus on the system with
-> > > different latencies bring us to a first attemp by adding a
-> > > pointer in the cpuidle_device to the states array.
-> > > 
-> > > But as Rafael suggested, it would make more sense to create a
-> > > driver per cpu [1].
-> > > 
-> > > This patch adds support for multiple cpuidle drivers.
-> > > 
-> > > It creates a per cpu cpuidle driver pointer.
-> > > 
-> > > In order to not break the different drivers, the function cpuidle_register_driver
-> > > assign for each cpu, the driver.
-> > > 
-> > > The multiple driver support is optional and if it is not set, the cpuide driver
-> > > core code remains the same (except some code reorganisation).
-> > > 
-> > > I did the following tests compiled, booted, tested without/with CONFIG_CPU_IDLE,
-> > > with/without CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
-> > > 
-> > > Tested on Core2 Duo T9500 with acpi_idle [and intel_idle]
-> > > Tested on ARM Dual Cortex-A9 U8500 (aka Snowball)
-> > > 
-> > > V1 tested on Tegra3 and Vexpress TC2
-> > > 
-> > 
-> > V2 tested on Tegra3.
-> 
-> Do I assume correctly that Tested-by applies?
-> 
+On Fri, Oct 26, 2012 at 10:19 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-Yes.
+> Samuel, a kind reminder on this, trying to collect acks to be able to
+> advise Mike to take this series through his clk tree. There are two
+> mfd patches.
+> [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
+> [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
 
-Cheers,
+Two weeks of slack for review is good enough, involved
+subsystem maintainers have been Cc:ed.
 
-Peter.
+Mike T, can you just apply the patches please.
+
+Yours,
+Linus Walleij
