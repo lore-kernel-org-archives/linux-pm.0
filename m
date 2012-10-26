@@ -1,108 +1,63 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 8/8] cpufreq: db8500: Use armss clk to update frequency
-Date: Fri, 26 Oct 2012 10:10:40 +0200
-Message-ID: <CAPDyKFp8OVn1kXzQB_PVxb4PBYCdvE7QGzCiqN+Zmm9LsX3HDg@mail.gmail.com>
+Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
+Date: Fri, 26 Oct 2012 10:19:24 +0200
+Message-ID: <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
 References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
-	<1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
+	<20121011134458.GB15428@gmail.com>
+	<CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
+	<20121011151947.GD15428@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f44.google.com ([74.125.82.44]:34714 "EHLO
+	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757052Ab2JZITZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 04:19:25 -0400
+Received: by mail-wg0-f44.google.com with SMTP id dr13so1950885wgb.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 01:19:24 -0700 (PDT)
+In-Reply-To: <20121011151947.GD15428@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 10 October 2012 13:42, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
-> From: Ulf Hansson <ulf.hansson@linaro.org>
+On 11 October 2012 17:19, Lee Jones <lee.jones@linaro.org> wrote:
+> On Thu, 11 Oct 2012, Linus Walleij wrote:
 >
-> Using the armss clk to update the frequency makes the driver no more
-> directly dependant on the prmcu API.
+>> On Thu, Oct 11, 2012 at 3:44 PM, Lee Jones <lee.jones@linaro.org> wr=
+ote:
+>>
+>> >> Patches are based on Linus Torvalds tree with latest commit as of=
+ okt 10.
+>> >
+>> > Hmm... I get:
+>> >
+>> > Applying: clk: ux500: Support for prcmu_scalable_rate clock
+>> > error: drivers/clk/ux500/clk-prcmu.c: does not exist in index
+>> > error: drivers/clk/ux500/clk.h: does not exist in index
+>> > Patch failed at 0001 clk: ux500: Support for prcmu_scalable_rate c=
+lock
+>> >
+>> > So when did drivers/clk/ux500/* arrive?
+>>
+>> Exactly here, 10 days ago on Torvalds' master branch:
 >
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/cpufreq/db8500-cpufreq.c |   24 ++++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
->
-> diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
-> index dea9a49..4f154bc 100644
-> --- a/drivers/cpufreq/db8500-cpufreq.c
-> +++ b/drivers/cpufreq/db8500-cpufreq.c
-> @@ -14,10 +14,11 @@
->  #include <linux/delay.h>
->  #include <linux/slab.h>
->  #include <linux/platform_device.h>
-> -#include <linux/mfd/dbx500-prcmu.h>
-> +#include <linux/clk.h>
->  #include <mach/id.h>
->
->  static struct cpufreq_frequency_table *freq_table;
-> +static struct clk *armss_clk;
->
->  static struct freq_attr *db8500_cpufreq_attr[] = {
->         &cpufreq_freq_attr_scaling_available_freqs,
-> @@ -58,9 +59,9 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
->         for_each_cpu(freqs.cpu, policy->cpus)
->                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
->
-> -       /* request the PRCM unit for opp change */
-> -       if (prcmu_set_arm_opp(freq_table[idx].index)) {
-> -               pr_err("db8500-cpufreq:  Failed to set OPP level\n");
-> +       /* update armss clk frequency */
-> +       if (clk_set_rate(armss_clk, freq_table[idx].frequency * 1000)) {
-> +               pr_err("db8500-cpufreq: Failed to update armss clk\n");
->                 return -EINVAL;
->         }
->
-> @@ -74,16 +75,16 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
->  static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
->  {
->         int i = 0;
-> -       /* request the prcm to get the current ARM opp */
-> -       int opp = prcmu_get_arm_opp();
-> +       unsigned long freq = clk_get_rate(armss_clk) / 1000;
->
->         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
-> -               if (opp == freq_table[i].index)
-> +               if (freq <= freq_table[i].frequency)
->                         return freq_table[i].frequency;
->                 i++;
->         }
->
-> -       /* We could not find a corresponding opp frequency. */
-> +       /* We could not find a corresponding frequency. */
-> +       pr_err("db8500-cpufreq: Failed to find cpufreq speed\n");
->         return 0;
->  }
->
-> @@ -92,6 +93,12 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
->         int i = 0;
->         int res;
->
-> +       armss_clk = clk_get(NULL, "armss");
-> +       if (IS_ERR(armss_clk)) {
-> +               pr_err("db8500-cpufreq : Failed to get armss clk\n");
-> +               return PTR_ERR(armss_clk);
-> +       }
-> +
->         pr_info("db8500-cpufreq : Available frequencies:\n");
->         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
->                 pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
-> @@ -104,6 +111,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
->                 cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
->         else {
->                 pr_err("db8500-cpufreq : Failed to read policy table\n");
-> +               clk_put(armss_clk);
->                 return res;
->         }
+> Ah I see. Basing patches on commits half way through the merge
+> window. Good move! ;)
 >
 > --
-> 1.7.10
->
+> Lee Jones
+> Linaro ST-Ericsson Landing Team Lead
+> Linaro.org =E2=94=82 Open source software for ARM SoCs
+> Follow Linaro: Facebook | Twitter | Blog
 
-Just a kind reminder on this Rafael; trying to collect acks, do you
-think we can advise Mike to merge this though his clk tree?
+Samuel, a kind reminder on this, trying to collect acks to be able to
+advise Mike to take this series through his clk tree. There are two
+mfd patches.
+[PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
+[PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
+
 
 Kind regards
 Ulf Hansson
