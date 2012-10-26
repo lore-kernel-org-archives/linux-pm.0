@@ -1,122 +1,137 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [for-next PATCH V2] PM / devfreq: Add sysfs node to expose available frequencies
-Date: Thu, 25 Oct 2012 19:48:59 -0500
-Message-ID: <1351212539-25404-1-git-send-email-nm@ti.com>
-References: <[for-next PATCH] PM / devfreq: Add sysfs node to expose available frequencies>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list
+Date: Fri, 26 Oct 2012 10:59:06 +0800
+Message-ID: <CAJLyvQxSTB3ECO9oAUtSdAyGiaHkG-G-Ydz=J4XD0oF3PWi1rg@mail.gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
+	<50898F97.3000202@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <[for-next PATCH] PM / devfreq: Add sysfs node to expose available frequencies>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:65011 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755319Ab2JZC7H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 22:59:07 -0400
+Received: by mail-ia0-f174.google.com with SMTP id y32so1851524iag.19
+        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 19:59:07 -0700 (PDT)
+In-Reply-To: <50898F97.3000202@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Francesco Lavra <francescolavra.fl@gmail.com>
+Cc: "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-devfreq governors such as ondemand are controlled by a min and
-max frequency, while governors like userspace governor allow us
-to set a specific frequency.
-However, for the same specific device, depending on the SoC, the
-available frequencies can vary.
+On 26 October 2012 03:14, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
+> Hi,
+> Hongbo Zhang wrote:
+>> Problem of using this list is that the cpufreq_get_max_state callback will be
+>> called when register cooling device by thermal_cooling_device_register, but
+>> this list isn't ready at this moment. What's more, there is no need to maintain
+>> such a list, we can get cpufreq_cooling_device instance by the private
+>> thermal_cooling_device.devdata.
+>>
+>> Signed-off-by: hongbo.zhang <hongbo.zhang at linaro.com>
+>> ---
+>>  drivers/thermal/cpu_cooling.c | 81 +++++++++----------------------------------
+>>  1 file changed, 16 insertions(+), 65 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+>> index 415b041..cc80d29 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
+>>  };
+>>  static LIST_HEAD(cooling_cpufreq_list);
+>>  static DEFINE_IDR(cpufreq_idr);
+>> +static DEFINE_MUTEX(cooling_cpufreq_lock);
+>>
+>> -static struct mutex cooling_cpufreq_lock;
+>> +static unsigned int cpufreq_dev_count;
+>>
+>>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+>>  #define NOTIFY_INVALID NULL
+>> @@ -241,20 +242,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>>                                unsigned long *state)
+>>  {
+>>       int ret = -EINVAL, i = 0;
+>> -     struct cpufreq_cooling_device *cpufreq_device;
+>> +     struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>>       struct cpumask *maskPtr;
+>>       unsigned int cpu;
+>>       struct cpufreq_frequency_table *table;
+>>       unsigned long count = 0;
+>>
+>> -     mutex_lock(&cooling_cpufreq_lock);
+>> -     list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+>> -             if (cpufreq_device && cpufreq_device->cool_dev == cdev)
+>> -                     break;
+>> -     }
+>> -     if (cpufreq_device == NULL)
+>> -             goto return_get_max_state;
+>> -
+>>       maskPtr = &cpufreq_device->allowed_cpus;
+>>       cpu = cpumask_any(maskPtr);
+>>       table = cpufreq_frequency_get_table(cpu);
+>> @@ -276,7 +269,6 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>>       }
+>>
+>>  return_get_max_state:
+>> -     mutex_unlock(&cooling_cpufreq_lock);
+>>       return ret;
+>
+> Since there is no mutex locking/unlocking anymore, I'd say the goto
+> label should be removed.
+Good.
+>
+> [...]
+>>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>>  {
+>> -     struct cpufreq_cooling_device *cpufreq_dev = NULL;
+>> -     unsigned int cpufreq_dev_count = 0;
+>> +     struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
+>>
+>> -     mutex_lock(&cooling_cpufreq_lock);
+>> -     list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
+>> -             if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
+>> -                     break;
+>> -             cpufreq_dev_count++;
+>> -     }
+>> -
+>> -     if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
+>> -             mutex_unlock(&cooling_cpufreq_lock);
+>> -             return;
+>> -     }
+>> +     thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+>>
+>> -     list_del(&cpufreq_dev->node);
+>> +     mutex_lock(&cooling_cpufreq_lock);
+>> +     cpufreq_dev_count--;
+>>
+>>       /* Unregister the notifier for the last cpufreq cooling device */
+>> -     if (cpufreq_dev_count == 1) {
+>> +     if (cpufreq_dev_count == 0) {
+>>               cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+>>                                       CPUFREQ_POLICY_NOTIFIER);
+>>       }
+>>       mutex_unlock(&cooling_cpufreq_lock);
+>> -     thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+>
+> Why did you move the call to thermal_cooling_device_unregister() from
+> here? I don't see any reason for moving it.
+In common sense, usually unregister first and then count--;
+But here it should be opposite sequence of cpufreq_cooling_register,
+will update it.
 
-So expose the available frequencies as a snapshot over sysfs to
-allow informed decisions.
-
-This was inspired by cpufreq framework's equivalent for similar
-usage sysfs node: scaling_available_frequencies.
-
-Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@ti.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-Applies on top of Rafael's linux-next branch:
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-linux-next                b960e9a Merge branch 'pm-sleep-next' into linux-next
-
-Example output from Beagleboard XM (3730) using a dummy test driver
-http://pastebin.pandaboard.org/index.php/view/85100576 :
-
-/sys/devices/platform/iva.0/devfreq/iva.0 # cat available_frequencies 
-260000000 520000000 660000000
-/sys/devices/platform/iva.0/devfreq/iva.0 # cat available_frequencies|tr ' ' '-'
-260000000-520000000-660000000
-
-V2 :
-	- review comment update from v1
-	- protected the sysfs from buffer overflow - just in case..
-V1: https://patchwork.kernel.org/patch/1648001/
-
- Documentation/ABI/testing/sysfs-class-devfreq |    9 +++++++
- drivers/devfreq/devfreq.c                     |   32 +++++++++++++++++++++++++
- 2 files changed, 41 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
-index e6cf08e..e672ccb 100644
---- a/Documentation/ABI/testing/sysfs-class-devfreq
-+++ b/Documentation/ABI/testing/sysfs-class-devfreq
-@@ -51,3 +51,12 @@ Description:
- 		The /sys/class/devfreq/.../userspace/set_freq shows and
- 		sets the requested frequency for the devfreq object if
- 		userspace governor is in effect.
-+
-+What:		/sys/class/devfreq/.../available_frequencies
-+Date:		October 2012
-+Contact:	Nishanth Menon <nm@ti.com>
-+Description:
-+		The /sys/class/devfreq/.../available_frequencies shows
-+		the available frequencies of the corresponding devfreq object.
-+		This is a snapshot of available frequencies and not limited
-+		by the min/max frequency restrictions.
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index d02ee7e..104018e 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -571,9 +571,41 @@ static ssize_t show_max_freq(struct device *dev, struct device_attribute *attr,
- 	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
- }
- 
-+static ssize_t show_available_freqs(struct device *d,
-+				    struct device_attribute *attr,
-+				    char *buf)
-+{
-+	struct devfreq *df = to_devfreq(d);
-+	struct device *dev = df->dev.parent;
-+	struct opp *opp;
-+	ssize_t count = 0;
-+	unsigned long freq = 0;
-+
-+	rcu_read_lock();
-+	do {
-+		opp = opp_find_freq_ceil(dev, &freq);
-+		if (IS_ERR(opp))
-+			break;
-+
-+		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+				   "%lu ", freq);
-+		freq++;
-+	} while (1);
-+	rcu_read_unlock();
-+
-+	/* Truncate the trailing space */
-+	if (count)
-+		count--;
-+
-+	count += sprintf(&buf[count], "\n");
-+
-+	return count;
-+}
-+
- static struct device_attribute devfreq_attrs[] = {
- 	__ATTR(governor, S_IRUGO, show_governor, NULL),
- 	__ATTR(cur_freq, S_IRUGO, show_freq, NULL),
-+	__ATTR(available_frequencies, S_IRUGO, show_available_freqs, NULL),
- 	__ATTR(target_freq, S_IRUGO, show_target_freq, NULL),
- 	__ATTR(polling_interval, S_IRUGO | S_IWUSR, show_polling_interval,
- 	       store_polling_interval),
--- 
-1.7.9.5
+>
+>> +
+>>       release_idr(&cpufreq_idr, cpufreq_dev->id);
+>> -     if (cpufreq_dev_count == 1)
+>> -             mutex_destroy(&cooling_cpufreq_lock);
+>>       kfree(cpufreq_dev);
+>>  }
+>>  EXPORT_SYMBOL(cpufreq_cooling_unregister);
+>> --
+>> 1.7.11.3
+>
+> --
+> Francesco
