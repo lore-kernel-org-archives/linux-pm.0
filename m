@@ -1,31 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
-Date: Fri, 26 Oct 2012 23:10:37 +0200
-Message-ID: <1536416.9sZNU8fAek@vostro.rjw.lan>
-References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org> <20121026082358.GD1962@tbergstrom-lnx.Nvidia.com> <508AE341.6050102@linaro.org>
+Subject: [GIT PULL] Power management and ACPI fixes for 3.7-rc3
+Date: Fri, 26 Oct 2012 23:20:24 +0200
+Message-ID: <20490446.pylUFvD5EM@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:40157 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966502Ab2JZVGl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Oct 2012 17:06:41 -0400
-In-Reply-To: <508AE341.6050102@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, October 26, 2012 09:23:45 PM Daniel Lezcano wrote:
-> 
-> Rafael,
-> 
-> this patchset does not apply anymore on linux-pm-next.
-> 
-> Let me refresh it and resend a V3.
+Hi Linus,
 
-OK, thanks!
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-for-3.7-rc3
+
+to receive power management and ACPI fixes for v3.7-rc3 with top-most commit
+879dca019dc43a1622edca3e7dde644b14b5acc5
+
+  ACPI: missing break
+
+on top of commit 6f0c0580b70c89094b3422ba81118c7b959c7556
+
+  Linux 3.7-rc2
+
+Included are:
+
+* Fix for a recently introduced memory leak in acpi_bind_one() from Jesper Juhl.
+
+* PM domains fix for an error code path memory leak in pm_genpd_attach_cpuidle()
+  from Jonghwan Choi.
+
+* Fix for smp_processor_id() usage in preemptible code in powernow-k8 from
+  Andreas Herrmann (stable material).
+
+* Fix for a suspend-related memory leak in cpufreq stats from Xiaobing Tu.
+
+* Freezer fix for failure to clear PF_NOFREEZE along with PF_KTHREAD
+  in flush_old_exec() from Oleg Nesterov.
+
+* One-liner acpi_processor_notify() fix from Alan Cox.
+
+Thanks!
+
+
+ drivers/acpi/glue.c             | 1 +
+ drivers/acpi/processor_driver.c | 1 +
+ drivers/base/power/domain.c     | 5 ++++-
+ drivers/cpufreq/cpufreq_stats.c | 1 +
+ drivers/cpufreq/powernow-k8.c   | 9 +--------
+ fs/exec.c                       | 3 ++-
+ 6 files changed, 10 insertions(+), 10 deletions(-)
+
+---------------
+
+Alan Cox (1):
+      ACPI: missing break
+
+Andreas Herrmann (1):
+      cpufreq / powernow-k8: Remove usage of smp_processor_id() in preemptible code
+
+Jesper Juhl (1):
+      ACPI: Fix memory leak in acpi_bind_one()
+
+Oleg Nesterov (1):
+      freezer: exec should clear PF_NOFREEZE along with PF_KTHREAD
+
+Tu, Xiaobing (1):
+      Fix memory leak in cpufreq stats.
+
+jhbird.choi@samsung.com (1):
+      PM / Domains: Fix memory leak on error path in pm_genpd_attach_cpuidle
 
 
 -- 
