@@ -1,137 +1,33 @@
-From: Hongbo Zhang <hongbo.zhang@linaro.org>
-Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list
-Date: Fri, 26 Oct 2012 10:59:06 +0800
-Message-ID: <CAJLyvQxSTB3ECO9oAUtSdAyGiaHkG-G-Ydz=J4XD0oF3PWi1rg@mail.gmail.com>
-References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-5-git-send-email-hongbo.zhang@linaro.com>
-	<50898F97.3000202@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: governors: remove redundant code
+Date: Fri, 26 Oct 2012 08:58:47 +0530
+Message-ID: <CAKohpon_GLyFOfBBtBmjxJpx1pUze4gKd4Xh7rT=gs25U_sLjw@mail.gmail.com>
+References: <32e5bed743cc6cc4e614291a7080299f5f0d0933.1350677395.git.viresh.kumar@linaro.org>
+	<3245066.cWfgP9Ikey@vostro.rjw.lan>
+	<CAKohpo=Nv6DfXqyv=v-1Eo=pvx25qyrQ2qs+pGqJvbJu2bwWaw@mail.gmail.com>
+	<1707056.POnhGSP0pg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f174.google.com ([209.85.210.174]:65011 "EHLO
-	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755319Ab2JZC7H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Oct 2012 22:59:07 -0400
-Received: by mail-ia0-f174.google.com with SMTP id y32so1851524iag.19
-        for <linux-pm@vger.kernel.org>; Thu, 25 Oct 2012 19:59:07 -0700 (PDT)
-In-Reply-To: <50898F97.3000202@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1707056.POnhGSP0pg@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, arvind.chauhan@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-On 26 October 2012 03:14, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
-> Hi,
-> Hongbo Zhang wrote:
->> Problem of using this list is that the cpufreq_get_max_state callback will be
->> called when register cooling device by thermal_cooling_device_register, but
->> this list isn't ready at this moment. What's more, there is no need to maintain
->> such a list, we can get cpufreq_cooling_device instance by the private
->> thermal_cooling_device.devdata.
->>
->> Signed-off-by: hongbo.zhang <hongbo.zhang at linaro.com>
->> ---
->>  drivers/thermal/cpu_cooling.c | 81 +++++++++----------------------------------
->>  1 file changed, 16 insertions(+), 65 deletions(-)
->>
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> index 415b041..cc80d29 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
->>  };
->>  static LIST_HEAD(cooling_cpufreq_list);
->>  static DEFINE_IDR(cpufreq_idr);
->> +static DEFINE_MUTEX(cooling_cpufreq_lock);
->>
->> -static struct mutex cooling_cpufreq_lock;
->> +static unsigned int cpufreq_dev_count;
->>
->>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
->>  #define NOTIFY_INVALID NULL
->> @@ -241,20 +242,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->>                                unsigned long *state)
->>  {
->>       int ret = -EINVAL, i = 0;
->> -     struct cpufreq_cooling_device *cpufreq_device;
->> +     struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
->>       struct cpumask *maskPtr;
->>       unsigned int cpu;
->>       struct cpufreq_frequency_table *table;
->>       unsigned long count = 0;
->>
->> -     mutex_lock(&cooling_cpufreq_lock);
->> -     list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
->> -             if (cpufreq_device && cpufreq_device->cool_dev == cdev)
->> -                     break;
->> -     }
->> -     if (cpufreq_device == NULL)
->> -             goto return_get_max_state;
->> -
->>       maskPtr = &cpufreq_device->allowed_cpus;
->>       cpu = cpumask_any(maskPtr);
->>       table = cpufreq_frequency_get_table(cpu);
->> @@ -276,7 +269,6 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->>       }
->>
->>  return_get_max_state:
->> -     mutex_unlock(&cooling_cpufreq_lock);
->>       return ret;
->
-> Since there is no mutex locking/unlocking anymore, I'd say the goto
-> label should be removed.
-Good.
->
-> [...]
->>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
->>  {
->> -     struct cpufreq_cooling_device *cpufreq_dev = NULL;
->> -     unsigned int cpufreq_dev_count = 0;
->> +     struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
->>
->> -     mutex_lock(&cooling_cpufreq_lock);
->> -     list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
->> -             if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
->> -                     break;
->> -             cpufreq_dev_count++;
->> -     }
->> -
->> -     if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
->> -             mutex_unlock(&cooling_cpufreq_lock);
->> -             return;
->> -     }
->> +     thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
->>
->> -     list_del(&cpufreq_dev->node);
->> +     mutex_lock(&cooling_cpufreq_lock);
->> +     cpufreq_dev_count--;
->>
->>       /* Unregister the notifier for the last cpufreq cooling device */
->> -     if (cpufreq_dev_count == 1) {
->> +     if (cpufreq_dev_count == 0) {
->>               cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
->>                                       CPUFREQ_POLICY_NOTIFIER);
->>       }
->>       mutex_unlock(&cooling_cpufreq_lock);
->> -     thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
->
-> Why did you move the call to thermal_cooling_device_unregister() from
-> here? I don't see any reason for moving it.
-In common sense, usually unregister first and then count--;
-But here it should be opposite sequence of cpufreq_cooling_register,
-will update it.
+On 26 October 2012 05:43, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
->
->> +
->>       release_idr(&cpufreq_idr, cpufreq_dev->id);
->> -     if (cpufreq_dev_count == 1)
->> -             mutex_destroy(&cooling_cpufreq_lock);
->>       kfree(cpufreq_dev);
->>  }
->>  EXPORT_SYMBOL(cpufreq_cooling_unregister);
->> --
->> 1.7.11.3
->
-> --
-> Francesco
+> I have applied this patch only because of the fixes on top of it.  It broke
+> kernel compliation due to some missing EXPORT_SYMBOL_GPLs in cpufreq_governor.c,
+> so I woulnd't have applied it otherwise.
+
+Hi Rafael,
+
+So sorry for this. I am really feeling bad for that. I should have
+tried compiling
+them as modules too. I had that in mind while coding it, but forgot it later.
+
+Thanks for making changes on my behalf.
+
+--
+viresh
