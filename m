@@ -1,56 +1,62 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: [PATCH] cpuidle: add missing header include
-Date: Fri, 26 Oct 2012 13:30:07 +0900
-Message-ID: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:10145 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752707Ab2JZEaJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 00:30:09 -0400
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+From: Huang Ying <ying.huang@intel.com>
+Subject: PCI/PM: Add comments for PME poll support for PCIe
+Date: Fri, 26 Oct 2012 13:07:51 +0800
+Message-ID: <1351228071-15161-1-git-send-email-ying.huang@intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Jingoo Han' <jg1.han@samsung.com>
 
-This patch adds missing device.h header to fix build warnings as below:
+There are comments on why PME poll support is necessary for PCI
+devices, but not for PCIe devices.  That may lead to misunderstanding
+that PME poll is only necessary for PCI devices.  So add comments
+related to PCIe PME poll to make it more clear.
 
-drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared inside parameter list [enabled by default]
-drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this definition or declaration, which is probably not what you want
-[enabled by default]
-drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared inside parameter list [enabled by default]
-In file included from drivers/cpuidle/driver.c:15:0:
-drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared inside parameter list [enabled by default]
-drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this definition or declaration, which is probably not what you want
-[enabled by default]
-drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared inside parameter list [enabled by default]
+The content of comments comes from the changelog of commit:
 
-This build warning is introduced by commit efeca1b
-"cpuidle / sysfs: change function parameter".
+379021d5c0899fcf9410cae4ca7a59a5a94ca769
 
-Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 ---
- drivers/cpuidle/cpuidle.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/pci/pci.c |   28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index a5bbd1c..2120d9e 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -5,6 +5,8 @@
- #ifndef __DRIVER_CPUIDLE_H
- #define __DRIVER_CPUIDLE_H
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1578,15 +1578,25 @@ void pci_pme_active(struct pci_dev *dev,
  
-+#include <linux/device.h>
-+
- /* For internal use only */
- extern struct cpuidle_governor *cpuidle_curr_governor;
- extern struct list_head cpuidle_governors;
--- 
-1.7.1
-
-
+ 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pmcsr);
+ 
+-	/* PCI (as opposed to PCIe) PME requires that the device have
+-	   its PME# line hooked up correctly. Not all hardware vendors
+-	   do this, so the PME never gets delivered and the device
+-	   remains asleep. The easiest way around this is to
+-	   periodically walk the list of suspended devices and check
+-	   whether any have their PME flag set. The assumption is that
+-	   we'll wake up often enough anyway that this won't be a huge
+-	   hit, and the power savings from the devices will still be a
+-	   win. */
++	/*
++	 * PCI (as opposed to PCIe) PME requires that the device have
++	 * its PME# line hooked up correctly. Not all hardware vendors
++	 * do this, so the PME never gets delivered and the device
++	 * remains asleep. The easiest way around this is to
++	 * periodically walk the list of suspended devices and check
++	 * whether any have their PME flag set. The assumption is that
++	 * we'll wake up often enough anyway that this won't be a huge
++	 * hit, and the power savings from the devices will still be a
++	 * win.
++	 *
++	 * Although PCIe uses in-band PME message instead of PME# line
++	 * to report PME, PME does not work for some PCIe devices in
++	 * reality.  For example, there are devices that set their PME
++	 * status bits, but don't really bother to send a PME message;
++	 * there are PCI Express Root Ports that don't bother to
++	 * trigger interrupts when they receive PME messages from the
++	 * devices below.  So PME poll is used for PCIe devices too.
++	 */
+ 
+ 	if (dev->pme_poll) {
+ 		struct pci_pme_device *pme_dev;
