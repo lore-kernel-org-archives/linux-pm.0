@@ -1,53 +1,125 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH RESEND] cpufreq: Make sure target freq is within limits
-Date: Fri, 26 Oct 2012 18:05:21 +0530
-Message-ID: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: add missing header include
+Date: Fri, 26 Oct 2012 14:45:02 +0200
+Message-ID: <508A85CE.2010601@linaro.org>
+References: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com> <6329232.eg8Mc603Uh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:51794 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932591Ab2JZMpH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 08:45:07 -0400
+Received: by mail-bk0-f46.google.com with SMTP id jk13so1244803bkc.19
+        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 05:45:05 -0700 (PDT)
+In-Reply-To: <6329232.eg8Mc603Uh@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jingoo Han <jg1.han@samsung.com>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-__cpufreq_driver_target() must not pass target frequency beyond the limits of
-current policy.
+On 10/26/2012 01:14 PM, Rafael J. Wysocki wrote:
+> On Friday, October 26, 2012 01:30:07 PM Jingoo Han wrote:
+>> This patch adds missing device.h header to fix build warnings as bel=
+ow:
+>>
+>> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared i=
+nside parameter list [enabled by default]
+>> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this def=
+inition or declaration, which is probably not what you want
+>> [enabled by default]
+>> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared i=
+nside parameter list [enabled by default]
+>> In file included from drivers/cpuidle/driver.c:15:0:
+>> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared i=
+nside parameter list [enabled by default]
+>> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this def=
+inition or declaration, which is probably not what you want
+>> [enabled by default]
+>> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared i=
+nside parameter list [enabled by default]
+>>
+>> This build warning is introduced by commit efeca1b
+>> "cpuidle / sysfs: change function parameter".
+>>
+>> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>=20
+> I fixed up the original patch.
+>=20
+> Daniel, I must say I'm less and less impressed by the quality of code
+> I'm getting from you.  Please improve it.
 
-Today most of cpufreq platform drivers are doing this check in their target
-routines. Why not move it to __cpufreq_driver_target().
+Rafael,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+I am sorry there are some compilation problems with the code.
 
-Resend doesn't contain any change, but fixed commit log
+I am trying to improve and cleanup step by step the code. I would
+understand you remark if I send you untested patches but I always take
+care of making the patches git-bisect safe, compile and boot for every
+patch.
 
- drivers/cpufreq/cpufreq.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+I double checked the patch and I was able to compile without problem
+with my config file.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 28dc134..2f5ac2d 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	int retval = -EINVAL;
-+	unsigned int old_target_freq = target_freq;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
- 
--	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
--		target_freq, relation);
-+	/* Make sure that target_freq is within supported range */
-+	if (target_freq > policy->max)
-+		target_freq = policy->max;
-+	if (target_freq < policy->min)
-+		target_freq = policy->min;
-+
-+	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
-+			policy->cpu, target_freq, relation, old_target_freq);
- 
- 	if (target_freq == policy->cur)
- 		return 0;
--- 
-1.7.12.rc2.18.g61b472e
+Jingoo, would you mind to pastebin your config file please ?
+
+If I can compile without problem and Jingoo can't compile, that means
+there is something wrong with the headers and including device.h in the
+cpuidle.h does not solve the root problem. Furthermore, driver.c does
+not use the struct device.
+
+At the first glance, adding a forward declaration in cpuidle.h
+
+  struct device;
+
+and including device.h for sysfs.c should fix the problem.
+
+There are so many combinations for the configuration that it makes
+possible I miss one config option and when the code defines implicit
+rules difficult to track like the _COMPONENT macro in acpi, that makes
+it harder.
+
+=46or example, include/linux/pm_qos.h includes device.h, but it is not
+needed because a forward declaration should suffice and it is up to the
+=2Ec files to include device.h if they manipulate the struct device.
+If I fix that, it is possible, with my best effort, to miss a .c to add
+the device.h file if the option is not set for it.
+
+I promise to try improving the code but please accept some parts of the
+current code look like a jackstraws, don't blame me too much if
+sometimes I introduce some errors.
+
+Thanks
+  -- Daniel
+
+
+>> ---
+>>  drivers/cpuidle/cpuidle.h |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+>> index a5bbd1c..2120d9e 100644
+>> --- a/drivers/cpuidle/cpuidle.h
+>> +++ b/drivers/cpuidle/cpuidle.h
+>> @@ -5,6 +5,8 @@
+>>  #ifndef __DRIVER_CPUIDLE_H
+>>  #define __DRIVER_CPUIDLE_H
+>> =20
+>> +#include <linux/device.h>
+>> +
+>>  /* For internal use only */
+>>  extern struct cpuidle_governor *cpuidle_curr_governor;
+>>  extern struct list_head cpuidle_governors;
+>>
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
