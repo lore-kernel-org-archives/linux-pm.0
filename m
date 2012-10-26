@@ -1,27 +1,53 @@
-From: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH] cpufreq: fix jiffies/cputime mixup in conservative/ondemand governors
-Date: Fri, 26 Oct 2012 14:26:34 +0200
-Message-ID: <m2625x5shx.fsf@igel.home>
-References: <m21ugq1vfi.fsf@igel.home> <1448859.RJLWEdIAIe@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1448859.RJLWEdIAIe@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Wed, 24 Oct 2012 23:16:49 +0200")
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH RESEND] cpufreq: Make sure target freq is within limits
+Date: Fri, 26 Oct 2012 18:05:21 +0530
+Message-ID: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+__cpufreq_driver_target() must not pass target frequency beyond the limits of
+current policy.
 
-> http://git.kernel.org/?p=linux/kernel/git/rafael/linux-pm.git;a=shortlog;h=refs/heads/linux-next
+Today most of cpufreq platform drivers are doing this check in their target
+routines. Why not move it to __cpufreq_driver_target().
 
-91f347c looks good, unfortunately d7d6f64 undoes the change.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Hi Rafael,
 
-Andreas.
+Resend doesn't contain any change, but fixed commit log
 
+ drivers/cpufreq/cpufreq.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 28dc134..2f5ac2d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 			    unsigned int relation)
+ {
+ 	int retval = -EINVAL;
++	unsigned int old_target_freq = target_freq;
+ 
+ 	if (cpufreq_disabled())
+ 		return -ENODEV;
+ 
+-	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
+-		target_freq, relation);
++	/* Make sure that target_freq is within supported range */
++	if (target_freq > policy->max)
++		target_freq = policy->max;
++	if (target_freq < policy->min)
++		target_freq = policy->min;
++
++	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
++			policy->cpu, target_freq, relation, old_target_freq);
+ 
+ 	if (target_freq == policy->cur)
+ 		return 0;
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.7.12.rc2.18.g61b472e
