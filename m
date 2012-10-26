@@ -1,227 +1,108 @@
-From: "hongbo.zhang" <hongbo.zhang@linaro.org>
-Subject: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list.
-Date: Fri, 26 Oct 2012 15:09:05 +0800
-Message-ID: <1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
-References: <50898F97.3000202@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f46.google.com ([209.85.210.46]:41205 "EHLO
-	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756619Ab2JZHJY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 03:09:24 -0400
-Received: by mail-da0-f46.google.com with SMTP id n41so1171348dak.19
-        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 00:09:23 -0700 (PDT)
-In-Reply-To: <50898F97.3000202@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 8/8] cpufreq: db8500: Use armss clk to update frequency
+Date: Fri, 26 Oct 2012 10:10:40 +0200
+Message-ID: <CAPDyKFp8OVn1kXzQB_PVxb4PBYCdvE7QGzCiqN+Zmm9LsX3HDg@mail.gmail.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+	<1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1349869349-8070-9-git-send-email-ulf.hansson@stericsson.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+On 10 October 2012 13:42, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Using the armss clk to update the frequency makes the driver no more
+> directly dependant on the prmcu API.
+>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/cpufreq/db8500-cpufreq.c |   24 ++++++++++++++++--------
+>  1 file changed, 16 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+> index dea9a49..4f154bc 100644
+> --- a/drivers/cpufreq/db8500-cpufreq.c
+> +++ b/drivers/cpufreq/db8500-cpufreq.c
+> @@ -14,10 +14,11 @@
+>  #include <linux/delay.h>
+>  #include <linux/slab.h>
+>  #include <linux/platform_device.h>
+> -#include <linux/mfd/dbx500-prcmu.h>
+> +#include <linux/clk.h>
+>  #include <mach/id.h>
+>
+>  static struct cpufreq_frequency_table *freq_table;
+> +static struct clk *armss_clk;
+>
+>  static struct freq_attr *db8500_cpufreq_attr[] = {
+>         &cpufreq_freq_attr_scaling_available_freqs,
+> @@ -58,9 +59,9 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+>         for_each_cpu(freqs.cpu, policy->cpus)
+>                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>
+> -       /* request the PRCM unit for opp change */
+> -       if (prcmu_set_arm_opp(freq_table[idx].index)) {
+> -               pr_err("db8500-cpufreq:  Failed to set OPP level\n");
+> +       /* update armss clk frequency */
+> +       if (clk_set_rate(armss_clk, freq_table[idx].frequency * 1000)) {
+> +               pr_err("db8500-cpufreq: Failed to update armss clk\n");
+>                 return -EINVAL;
+>         }
+>
+> @@ -74,16 +75,16 @@ static int db8500_cpufreq_target(struct cpufreq_policy *policy,
+>  static unsigned int db8500_cpufreq_getspeed(unsigned int cpu)
+>  {
+>         int i = 0;
+> -       /* request the prcm to get the current ARM opp */
+> -       int opp = prcmu_get_arm_opp();
+> +       unsigned long freq = clk_get_rate(armss_clk) / 1000;
+>
+>         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+> -               if (opp == freq_table[i].index)
+> +               if (freq <= freq_table[i].frequency)
+>                         return freq_table[i].frequency;
+>                 i++;
+>         }
+>
+> -       /* We could not find a corresponding opp frequency. */
+> +       /* We could not find a corresponding frequency. */
+> +       pr_err("db8500-cpufreq: Failed to find cpufreq speed\n");
+>         return 0;
+>  }
+>
+> @@ -92,6 +93,12 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+>         int i = 0;
+>         int res;
+>
+> +       armss_clk = clk_get(NULL, "armss");
+> +       if (IS_ERR(armss_clk)) {
+> +               pr_err("db8500-cpufreq : Failed to get armss clk\n");
+> +               return PTR_ERR(armss_clk);
+> +       }
+> +
+>         pr_info("db8500-cpufreq : Available frequencies:\n");
+>         while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
+>                 pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
+> @@ -104,6 +111,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+>                 cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
+>         else {
+>                 pr_err("db8500-cpufreq : Failed to read policy table\n");
+> +               clk_put(armss_clk);
+>                 return res;
+>         }
+>
+> --
+> 1.7.10
+>
 
-Problem of using this list is that the cpufreq_get_max_state callback will be
-called when register cooling device by thermal_cooling_device_register, but
-this list isn't ready at this moment. What's more, there is no need to maintain
-such a list, we can get cpufreq_cooling_device instance by the private
-thermal_cooling_device.devdata.
+Just a kind reminder on this Rafael; trying to collect acks, do you
+think we can advise Mike to merge this though his clk tree?
 
-Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
----
- drivers/thermal/cpu_cooling.c | 91 +++++++++----------------------------------
- 1 file changed, 19 insertions(+), 72 deletions(-)
-
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 415b041..2ffd12c 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
- };
- static LIST_HEAD(cooling_cpufreq_list);
- static DEFINE_IDR(cpufreq_idr);
-+static DEFINE_MUTEX(cooling_cpufreq_lock);
- 
--static struct mutex cooling_cpufreq_lock;
-+static unsigned int cpufreq_dev_count;
- 
- /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
- #define NOTIFY_INVALID NULL
-@@ -240,28 +241,18 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
- {
--	int ret = -EINVAL, i = 0;
--	struct cpufreq_cooling_device *cpufreq_device;
--	struct cpumask *maskPtr;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-+	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
- 	unsigned int cpu;
- 	struct cpufreq_frequency_table *table;
- 	unsigned long count = 0;
-+	int i = 0;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev)
--			break;
--	}
--	if (cpufreq_device == NULL)
--		goto return_get_max_state;
--
--	maskPtr = &cpufreq_device->allowed_cpus;
- 	cpu = cpumask_any(maskPtr);
- 	table = cpufreq_frequency_get_table(cpu);
- 	if (!table) {
- 		*state = 0;
--		ret = 0;
--		goto return_get_max_state;
-+		return 0;
- 	}
- 
- 	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-@@ -272,12 +263,10 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 
- 	if (count > 0) {
- 		*state = --count;
--		ret = 0;
-+		return 0;
- 	}
- 
--return_get_max_state:
--	mutex_unlock(&cooling_cpufreq_lock);
--	return ret;
-+	return -EINVAL;
- }
- 
- /**
-@@ -288,20 +277,10 @@ return_get_max_state:
- static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
- {
--	int ret = -EINVAL;
--	struct cpufreq_cooling_device *cpufreq_device;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
--			*state = cpufreq_device->cpufreq_state;
--			ret = 0;
--			break;
--		}
--	}
--	mutex_unlock(&cooling_cpufreq_lock);
--
--	return ret;
-+	*state = cpufreq_device->cpufreq_state;
-+	return 0;
- }
- 
- /**
-@@ -312,22 +291,9 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long state)
- {
--	int ret = -EINVAL;
--	struct cpufreq_cooling_device *cpufreq_device;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
--			ret = 0;
--			break;
--		}
--	}
--	if (!ret)
--		ret = cpufreq_apply_cooling(cpufreq_device, state);
--
--	mutex_unlock(&cooling_cpufreq_lock);
--
--	return ret;
-+	return cpufreq_apply_cooling(cpufreq_device, state);
- }
- 
- /* Bind cpufreq callbacks to thermal cooling device ops */
-@@ -351,7 +317,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- {
- 	struct thermal_cooling_device *cool_dev;
- 	struct cpufreq_cooling_device *cpufreq_dev = NULL;
--	unsigned int cpufreq_dev_count = 0, min = 0, max = 0;
-+	unsigned int min = 0, max = 0;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	int ret = 0, i;
- 	struct cpufreq_policy policy;
-@@ -360,9 +326,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
- 		return ERR_PTR(-EPROBE_DEFER);
- 
--	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
--		cpufreq_dev_count++;
--
- 	/*Verify that all the clip cpus have same freq_min, freq_max limit*/
- 	for_each_cpu(i, clip_cpus) {
- 		/*continue if cpufreq policy not found and not return error*/
-@@ -384,9 +347,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 
- 	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
- 
--	if (cpufreq_dev_count == 0)
--		mutex_init(&cooling_cpufreq_lock);
--
- 	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
- 	if (ret) {
- 		kfree(cpufreq_dev);
-@@ -405,12 +365,12 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	cpufreq_dev->cool_dev = cool_dev;
- 	cpufreq_dev->cpufreq_state = 0;
- 	mutex_lock(&cooling_cpufreq_lock);
--	list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list);
- 
- 	/* Register the notifier for first cpufreq cooling device */
- 	if (cpufreq_dev_count == 0)
- 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
- 						CPUFREQ_POLICY_NOTIFIER);
-+	cpufreq_dev_count++;
- 
- 	mutex_unlock(&cooling_cpufreq_lock);
- 	return cool_dev;
-@@ -423,33 +383,20 @@ EXPORT_SYMBOL(cpufreq_cooling_register);
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
--	struct cpufreq_cooling_device *cpufreq_dev = NULL;
--	unsigned int cpufreq_dev_count = 0;
-+	struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
- 
- 	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
--		if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
--			break;
--		cpufreq_dev_count++;
--	}
--
--	if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
--		mutex_unlock(&cooling_cpufreq_lock);
--		return;
--	}
--
--	list_del(&cpufreq_dev->node);
-+	cpufreq_dev_count--;
- 
- 	/* Unregister the notifier for the last cpufreq cooling device */
--	if (cpufreq_dev_count == 1) {
-+	if (cpufreq_dev_count == 0) {
- 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
- 					CPUFREQ_POLICY_NOTIFIER);
- 	}
- 	mutex_unlock(&cooling_cpufreq_lock);
-+
- 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
- 	release_idr(&cpufreq_idr, cpufreq_dev->id);
--	if (cpufreq_dev_count == 1)
--		mutex_destroy(&cooling_cpufreq_lock);
- 	kfree(cpufreq_dev);
- }
- EXPORT_SYMBOL(cpufreq_cooling_unregister);
--- 
-1.7.11.3
-
+Kind regards
+Ulf Hansson
