@@ -1,68 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [for-next PATCH 2/2] PM / devfreq: more documentation warning fixes next set
-Date: Fri, 26 Oct 2012 02:05:18 +0200
-Message-ID: <3731897.oMofWLtvr4@vostro.rjw.lan>
-References: <1351206614-23993-1-git-send-email-nm@ti.com> <1351206614-23993-3-git-send-email-nm@ti.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [for-next PATCH] PM / devfreq: Add sysfs node to expose
+ available frequencies
+Date: Thu, 25 Oct 2012 19:03:21 -0500
+Message-ID: <20121026000321.GA4190@kahuna>
+References: <1351207963-30075-1-git-send-email-nm@ti.com>
+ <1639482.oGax1ZB8vZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:37974 "EHLO ogre.sisk.pl"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:52425 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888Ab2JZABV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Oct 2012 20:01:21 -0400
-In-Reply-To: <1351206614-23993-3-git-send-email-nm@ti.com>
+	id S1751575Ab2JZAD1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Oct 2012 20:03:27 -0400
+Content-Disposition: inline
+In-Reply-To: <1639482.oGax1ZB8vZ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org
 
-On Thursday, October 25, 2012 06:10:14 PM Nishanth Menon wrote:
-> commit cfd5194aecd08cd8fbfbf1534a0209b95bc6fcdf
-> (PM / devfreq: Core updates to support devices which can idle)
-> in Rafael's pm-devfreq-next branch on
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+On 01:56-20121026, Rafael J. Wysocki wrote:
+> On Thursday, October 25, 2012 06:32:43 PM Nishanth Menon wrote:
+[..]
+> > +static ssize_t show_available_freqs(struct device *d,
+> > +				    struct device_attribute *attr,
+> > +				    char *buf)
+> > +{
+> > +	struct devfreq *df = to_devfreq(d);
+> > +	struct device *dev = df->dev.parent;
+> > +	struct opp *opp;
+> > +	ssize_t count = 0;
+> > +	unsigned long freq = 0;
+> > +
+> > +	rcu_read_lock();
+> > +	do {
+> > +		opp = opp_find_freq_ceil(dev, &freq);
+> > +		if (IS_ERR(opp))
+> > +			break;
+> > +
+> > +		count += sprintf(&buf[count], "%lu ", freq);
+> > +		freq++;
+> > +	} while (1);
+> > +	rcu_read_unlock();
+> > +	count += sprintf(&buf[count], "\n");
 > 
-> Patchworks: https://patchwork.kernel.org/patch/1545751/
-> 
-> introduced a kernel documentation warning:
-> Warning(drivers/devfreq/devfreq.c:289): bad line: 		release its resources.
-> 
-> This is due to lack of '*' at documentation start messing
-> up poor scripts/kernel-doc 's mind. I suggest squashing
-> this to original commit given not-yet-upstream status :).
-> 
-> Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> 
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+> Care to avoid printing the tailing space?
+count -= count ? 1 : 0;
+count += sprintf(&buf[count], "\n");
+should take care of empty list and the trailing space. Sounds reasonable?
 
-I fixed up the original patch in a slightly different way.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/devfreq/devfreq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index cdc3e2d..2f6ad6b 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -286,7 +286,7 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
->  
->  /**
->   * _remove_devfreq() - Remove devfreq from the devfreq list and
-> -		release its resources.
-> + *			release its resources.
->   * @devfreq:	the devfreq struct
->   * @skip:	skip calling device_unregister().
->   */
-> 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Nishanth Menon
