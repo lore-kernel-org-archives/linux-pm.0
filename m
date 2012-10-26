@@ -1,52 +1,41 @@
-From: Mike Turquette <mturquette@ti.com>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Fri, 26 Oct 2012 11:03:49 -0700
-Message-ID: <20121026180349.3141.76336@nucleus>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
- <20121011134458.GB15428@gmail.com>
- <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
- <20121011151947.GD15428@gmail.com>
- <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
- <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 0/4][V2] cpuidle : multiple drivers support
+Date: Fri, 26 Oct 2012 21:23:45 +0200
+Message-ID: <508AE341.6050102@linaro.org>
+References: <1350641449-22863-1-git-send-email-daniel.lezcano@linaro.org> <20121025134933.GA1962@tbergstrom-lnx.Nvidia.com> <4190590.cE8oL2xMlM@vostro.rjw.lan> <20121026082358.GD1962@tbergstrom-lnx.Nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog114.obsmtp.com ([74.125.149.211]:43611 "EHLO
-	na3sys009aog114.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965600Ab2JZSDz convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Oct 2012 14:03:55 -0400
-Received: by mail-pa0-f70.google.com with SMTP id fb10so8838091pad.1
-        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 11:03:54 -0700 (PDT)
-In-Reply-To: <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:43784 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966098Ab2JZTXt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 15:23:49 -0400
+Received: by mail-wi0-f178.google.com with SMTP id hr7so724278wib.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 12:23:48 -0700 (PDT)
+In-Reply-To: <20121026082358.GD1962@tbergstrom-lnx.Nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Peter De Schrijver <pdeschrijver@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Quoting Linus Walleij (2012-10-26 01:57:49)
-> On Fri, Oct 26, 2012 at 10:19 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> 
-> > Samuel, a kind reminder on this, trying to collect acks to be able to
-> > advise Mike to take this series through his clk tree. There are two
-> > mfd patches.
-> > [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
-> > [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
-> 
-> Two weeks of slack for review is good enough, involved
-> subsystem maintainers have been Cc:ed.
-> 
-> Mike T, can you just apply the patches please.
-> 
 
-Would be better to get ACKs but enough time has passed.  I'll take these
-into clk-next (which will get built while I fly to Copenhagen for LCE).
+Rafael,
 
-Expect to see a new clk-next on Monday.
+this patchset does not apply anymore on linux-pm-next.
 
-Regards,
-Mike
+Let me refresh it and resend a V3.
 
-> Yours,
-> Linus Walleij
+Thanks
+-- Daniel
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+
