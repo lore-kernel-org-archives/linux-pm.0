@@ -1,67 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle: add missing header include
-Date: Fri, 26 Oct 2012 13:14:37 +0200
-Message-ID: <6329232.eg8Mc603Uh@vostro.rjw.lan>
-References: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com>
+Subject: Re: [PATCH] cpufreq: Avoid calling cpufreq driver's target() routine if target_freq == policy->cur
+Date: Fri, 26 Oct 2012 13:17:12 +0200
+Message-ID: <5056958.0bPciFrxt5@vostro.rjw.lan>
+References: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:39061 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:39080 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758395Ab2JZLKl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Oct 2012 07:10:41 -0400
-In-Reply-To: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com>
+	id S1754136Ab2JZLNP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Oct 2012 07:13:15 -0400
+In-Reply-To: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>
-Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com
 
-On Friday, October 26, 2012 01:30:07 PM Jingoo Han wrote:
-> This patch adds missing device.h header to fix build warnings as below:
+On Friday, October 26, 2012 03:06:26 PM Viresh Kumar wrote:
+> Avoid calling cpufreq driver's target() routine if new frequency is same as
+> policies current frequency.
 > 
-> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared inside parameter list [enabled by default]
-> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this definition or declaration, which is probably not what you want
-> [enabled by default]
-> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared inside parameter list [enabled by default]
-> In file included from drivers/cpuidle/driver.c:15:0:
-> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared inside parameter list [enabled by default]
-> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this definition or declaration, which is probably not what you want
-> [enabled by default]
-> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared inside parameter list [enabled by default]
-> 
-> This build warning is introduced by commit efeca1b
-> "cpuidle / sysfs: change function parameter".
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I fixed up the original patch.
+Looks reasonable.
 
-Daniel, I must say I'm less and less impressed by the quality of code
-I'm getting from you.  Please improve it.
+Any objection from anyone?
 
-Thanks,
 Rafael
 
 
 > ---
->  drivers/cpuidle/cpuidle.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-> index a5bbd1c..2120d9e 100644
-> --- a/drivers/cpuidle/cpuidle.h
-> +++ b/drivers/cpuidle/cpuidle.h
-> @@ -5,6 +5,8 @@
->  #ifndef __DRIVER_CPUIDLE_H
->  #define __DRIVER_CPUIDLE_H
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 261ef65..28dc134 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1476,6 +1476,10 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 >  
-> +#include <linux/device.h>
+>  	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
+>  		target_freq, relation);
 > +
->  /* For internal use only */
->  extern struct cpuidle_governor *cpuidle_curr_governor;
->  extern struct list_head cpuidle_governors;
+> +	if (target_freq == policy->cur)
+> +		return 0;
+> +
+>  	if (cpu_online(policy->cpu) && cpufreq_driver->target)
+>  		retval = cpufreq_driver->target(policy, target_freq, relation);
+>  
 > 
 -- 
 I speak only for myself.
