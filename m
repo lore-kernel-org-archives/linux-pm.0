@@ -1,33 +1,44 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Fri, 26 Oct 2012 10:57:49 +0200
-Message-ID: <CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
-	<20121011134458.GB15428@gmail.com>
-	<CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
-	<20121011151947.GD15428@gmail.com>
-	<CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Avoid calling cpufreq driver's target() routine if target_freq == policy->cur
+Date: Fri, 26 Oct 2012 15:06:26 +0530
+Message-ID: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:38603 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756081Ab2JZJgf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 05:36:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-dev@lists.linaro.org, patches@linaro.org, pdsw-power-team@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, Oct 26, 2012 at 10:19 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+Avoid calling cpufreq driver's target() routine if new frequency is same as
+policies current frequency.
 
-> Samuel, a kind reminder on this, trying to collect acks to be able to
-> advise Mike to take this series through his clk tree. There are two
-> mfd patches.
-> [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
-> [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Two weeks of slack for review is good enough, involved
-subsystem maintainers have been Cc:ed.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 261ef65..28dc134 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1476,6 +1476,10 @@ int __cpufreq_driver_target(struct cpufreq_policy *p=
+olicy,
+=20
+ =09pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
+ =09=09target_freq, relation);
++
++=09if (target_freq =3D=3D policy->cur)
++=09=09return 0;
++
+ =09if (cpu_online(policy->cpu) && cpufreq_driver->target)
+ =09=09retval =3D cpufreq_driver->target(policy, target_freq, relation);
+=20
+--=20
+1.7.12.rc2.18.g61b472e
 
-Mike T, can you just apply the patches please.
 
-Yours,
-Linus Walleij
