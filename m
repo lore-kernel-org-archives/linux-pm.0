@@ -1,86 +1,32 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH -next] PM / OPP: using kfree_rcu() to simplify the code
-Date: Fri, 26 Oct 2012 19:14:25 -0500
-Message-ID: <20121027001425.GA28617@kahuna>
-References: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list.
+Date: Sat, 27 Oct 2012 08:39:15 +0200
+Message-ID: <508B8193.5020502@gmail.com>
+References: <50898F97.3000202@gmail.com>, <1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:43245 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934312Ab2J0AOn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 20:14:43 -0400
-Content-Disposition: inline
-In-Reply-To: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
+Received: from mail-ea0-f174.google.com ([209.85.215.174]:61028 "EHLO
+	mail-ea0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971Ab2J0GhI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 27 Oct 2012 02:37:08 -0400
+In-Reply-To: <1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>
-Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, Patch Tracking <patches@linaro.org>
 
-On 22:57-20121026, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Fri, 26 Oct 2012 15:09:05 +0800, Hongbo Zhang wrote:
+> From: "hongbo.zhang" <hongbo.zhang at linaro.com>
 > 
-> The callback function of call_rcu() just calls a kfree(), so we
-> can use kfree_rcu() instead of call_rcu() + callback function.
+> Problem of using this list is that the cpufreq_get_max_state callback will be
+> called when register cooling device by thermal_cooling_device_register, but
+> this list isn't ready at this moment. What's more, there is no need to maintain
+> such a list, we can get cpufreq_cooling_device instance by the private
+> thermal_cooling_device.devdata.
 > 
-> dpatch engine is used to auto generate this patch.
-> (https://github.com/weiyj/dpatch)
-> 
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
->  drivers/base/power/opp.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index c8a908b..50b2831 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -461,17 +461,6 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->  }
->  
->  /**
-> - * opp_free_rcu() - helper to clear the struct opp when grace period has
-> - * elapsed without blocking the the caller of opp_set_availability
-> - */
-> -static void opp_free_rcu(struct rcu_head *head)
-> -{
-> -	struct opp *opp = container_of(head, struct opp, head);
-> -
-> -	kfree(opp);
-> -}
-> -
-> -/**
->   * opp_set_availability() - helper to set the availability of an opp
->   * @dev:		device for which we do this operation
->   * @freq:		OPP frequency to modify availability
-> @@ -542,7 +531,7 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
->  
->  	list_replace_rcu(&opp->node, &new_opp->node);
->  	mutex_unlock(&dev_opp_list_lock);
-> -	call_rcu(&opp->head, opp_free_rcu);
-> +	kfree_rcu(opp, head);
->  
->  	/* Notify the change of the OPP availability */
->  	if (availability_req)
-A good idea. thanks.
-I wonder if we might squash this with
-https://patchwork.kernel.org/patch/1504361/
-on a side note:
-struct opp {
-	struct list_head node;
+> Signed-off-by: hongbo.zhang <hongbo.zhang at linaro.com>
 
-	bool available;
-	unsigned long rate;
-	unsigned long u_volt;
-
-	struct device_opp *dev_opp;
-	struct rcu_head;
-};
-we could move rcu_head to the top of the struct .. just to avoid
-revisiting this at a later point in time *if* struct opp expands..
-
-If we are squashing it, we might consider fixing the kern-doc for
-"head"..
--- 
-Regards,
-Nishanth Menon
+FWIW,
+Reviewed-by: Francesco Lavra <francescolavra.fl@gmail.com>
