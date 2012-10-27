@@ -1,36 +1,86 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Sat, 27 Oct 2012 01:34:41 +0200
-Message-ID: <CACRpkdbyManMnk1wpzFWSr3SKEvGp1wNto+a7gxw4iJhZ1hi9Q@mail.gmail.com>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
-	<20121011134458.GB15428@gmail.com>
-	<CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
-	<20121011151947.GD15428@gmail.com>
-	<CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
-	<CACRpkdYdzvdJc=+gnRDEue1uZApGTc-P2pQfLAJXc_uBZLSPkQ@mail.gmail.com>
-	<20121026180349.3141.76336@nucleus>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH -next] PM / OPP: using kfree_rcu() to simplify the code
+Date: Fri, 26 Oct 2012 19:14:25 -0500
+Message-ID: <20121027001425.GA28617@kahuna>
+References: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f46.google.com ([74.125.83.46]:50953 "EHLO
-	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966820Ab2JZXem (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 19:34:42 -0400
-Received: by mail-ee0-f46.google.com with SMTP id b15so1286501eek.19
-        for <linux-pm@vger.kernel.org>; Fri, 26 Oct 2012 16:34:41 -0700 (PDT)
-In-Reply-To: <20121026180349.3141.76336@nucleus>
+Received: from devils.ext.ti.com ([198.47.26.153]:43245 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934312Ab2J0AOn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Oct 2012 20:14:43 -0400
+Content-Disposition: inline
+In-Reply-To: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Wei Yongjun <weiyj.lk@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>
+Cc: len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, gregkh@linuxfoundation.org, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On Fri, Oct 26, 2012 at 8:03 PM, Mike Turquette <mturquette@ti.com> wrote:
+On 22:57-20121026, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> 
+> The callback function of call_rcu() just calls a kfree(), so we
+> can use kfree_rcu() instead of call_rcu() + callback function.
+> 
+> dpatch engine is used to auto generate this patch.
+> (https://github.com/weiyj/dpatch)
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> ---
+>  drivers/base/power/opp.c | 13 +------------
+>  1 file changed, 1 insertion(+), 12 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index c8a908b..50b2831 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -461,17 +461,6 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+>  }
+>  
+>  /**
+> - * opp_free_rcu() - helper to clear the struct opp when grace period has
+> - * elapsed without blocking the the caller of opp_set_availability
+> - */
+> -static void opp_free_rcu(struct rcu_head *head)
+> -{
+> -	struct opp *opp = container_of(head, struct opp, head);
+> -
+> -	kfree(opp);
+> -}
+> -
+> -/**
+>   * opp_set_availability() - helper to set the availability of an opp
+>   * @dev:		device for which we do this operation
+>   * @freq:		OPP frequency to modify availability
+> @@ -542,7 +531,7 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
+>  
+>  	list_replace_rcu(&opp->node, &new_opp->node);
+>  	mutex_unlock(&dev_opp_list_lock);
+> -	call_rcu(&opp->head, opp_free_rcu);
+> +	kfree_rcu(opp, head);
+>  
+>  	/* Notify the change of the OPP availability */
+>  	if (availability_req)
+A good idea. thanks.
+I wonder if we might squash this with
+https://patchwork.kernel.org/patch/1504361/
+on a side note:
+struct opp {
+	struct list_head node;
 
-> Would be better to get ACKs but enough time has passed.  I'll take these
-> into clk-next (which will get built while I fly to Copenhagen for LCE).
+	bool available;
+	unsigned long rate;
+	unsigned long u_volt;
 
-OK FWIW: Acked-by: Linus Walleij <linus.walleij@linaro.org>
-for all.
+	struct device_opp *dev_opp;
+	struct rcu_head;
+};
+we could move rcu_head to the top of the struct .. just to avoid
+revisiting this at a later point in time *if* struct opp expands..
 
-Yours,
-Linus Walleij
+If we are squashing it, we might consider fixing the kern-doc for
+"head"..
+-- 
+Regards,
+Nishanth Menon
