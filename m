@@ -1,47 +1,119 @@
-From: marxdenl <marxdenl@gmail.com>
-Subject: Re: Question about hibernation on sparc64
-Date: Mon, 29 Oct 2012 17:44:23 +0800
-Message-ID: <1351503863.6005.15.camel@dlw-desktop>
-References: <80041334231315@web149.yandex.ru>
-	 <1351437674.2747.9.camel@dlw-desktop> <1862521351464447@web28d.yandex.ru>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: add missing header include
+Date: Mon, 29 Oct 2012 10:45:55 +0100
+Message-ID: <508E5053.5090005@linaro.org>
+References: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com> <508DA864.8020503@linaro.org> <002101cdb572$fcc4d670$f64e8350$%han@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <1862521351464447@web28d.yandex.ru>
-Sender: sparclinux-owner@vger.kernel.org
-To: Kirill Tkhai <tkhai@yandex.ru>
-Cc: davem@davemloft.net, sparclinux@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:54659 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419Ab2J2JqA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Oct 2012 05:46:00 -0400
+Received: by mail-lb0-f174.google.com with SMTP id n3so2900574lbo.19
+        for <linux-pm@vger.kernel.org>; Mon, 29 Oct 2012 02:45:58 -0700 (PDT)
+In-Reply-To: <002101cdb572$fcc4d670$f64e8350$%han@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 2012-10-29 at 02:47 +0400, Kirill Tkhai wrote:
-> 
-> 28.10.2012, 19:21, "marxdenl" <marxdenl@gmail.com>:
-> > On Thu, 2012-04-12 at 15:48 +0400, Kirill Tkhai wrote:
-> >
-> >>  Hello!
-> >>
-> >>  I bumped on the fact that there is no hibernation support
-> >>  on sparc64. It's possible that the process of its porting
-> >>  will become interesting for me in the future, but I'm not
-> >>  exactly sure at the moment.
-> >
-> > hi, I'm also intersting to do that. How is that going?
-> >
-> > Waiting for reply:)
-> 
-> Hi, I did nothing. You may dive into this if you want.
+On 10/29/2012 02:16 AM, Jingoo Han wrote:
+> On Monday, October 29, 2012 6:49 AM Marek Vasut wrote
+>>
+>> On 10/26/2012 06:30 AM, Jingoo Han wrote:
+>>> This patch adds missing device.h header to fix build warnings as be=
+low:
+>>>
+>>> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared =
+inside parameter list [enabled by
+>> default]
+>>> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this de=
+finition or declaration, which is
+>> probably not what you want
+>>> [enabled by default]
+>>> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared =
+inside parameter list [enabled by
+>> default]
+>>> In file included from drivers/cpuidle/driver.c:15:0:
+>>> drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared =
+inside parameter list [enabled by
+>> default]
+>>> drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this de=
+finition or declaration, which is
+>> probably not what you want
+>>> [enabled by default]
+>>> drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared =
+inside parameter list [enabled by
+>> default]
+>>>
+>>> This build warning is introduced by commit efeca1b
+>>> "cpuidle / sysfs: change function parameter".
+>>>
+>>> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+>>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> ---
+>>
+>> Jingoo, could you copy-pastebin your config file. I don't have this
+>> warning and I would like to understand why.
+>=20
+> Hi Daniel Lezcano,
+>=20
+> Could you build the code by using GCC 4.6.x?
+> In my opinion, it would be better.
+>=20
+> Also, my config option is as below:
+>     make exynos4_defconfig + CONFIG_CPU_IDLE
+>=20
 
-I enabled CONFIG_HIBERNATION, implemented 'swsusp_arch_suspend'
-which saves some general registers (%g,%i,%o,%l) and call 
-'swsusp_save', and 'swsusp_arch_resume' which load 'pblist' and
-restore those registers.
+Ok, I got it.
 
-Now my T2 can create hibernation images, but after restore the image, 
-it crashes. If there's something I missed?
+on x86, the header ioport.h is included indirectly by the headers
+including headers. In this file there is a forward declaration.
+=46or ARM, this is not the case.
 
-Thanks!
+This is why the warning does not appear on x86 but on ARM.
 
---
-Linwen Deng 
+Thanks
+  -- Daniel
+
+>> Thanks
+>>   -- Daniel
+>>
+>>>  drivers/cpuidle/cpuidle.h |    2 ++
+>>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+>>> index a5bbd1c..2120d9e 100644
+>>> --- a/drivers/cpuidle/cpuidle.h
+>>> +++ b/drivers/cpuidle/cpuidle.h
+>>> @@ -5,6 +5,8 @@
+>>>  #ifndef __DRIVER_CPUIDLE_H
+>>>  #define __DRIVER_CPUIDLE_H
+>>>
+>>> +#include <linux/device.h>
+>>> +
+>>>  /* For internal use only */
+>>>  extern struct cpuidle_governor *cpuidle_curr_governor;
+>>>  extern struct list_head cpuidle_governors;
+>>
+>>
+>> --
+>>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software =
+for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
