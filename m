@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 6/7] ACPI / PM: Move device PM functions related to sleep states
-Date: Mon, 29 Oct 2012 10:12:50 +0100
-Message-ID: <1456107.KxymqUQLId@vostro.rjw.lan>
+Subject: [PATCH 3/7] ACPI / PM: Move runtime remote wakeup setup routine to device_pm.c
+Date: Mon, 29 Oct 2012 10:10 +0100
+Message-ID: <3012440.C3kk0QhS7O@vostro.rjw.lan>
 References: <1766582.8gdQKXoi0K@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,177 +15,127 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Introduce helper function returning the target sleep state of the
-system and use it to move the remaining device power management
-functions from sleep.c to device_pm.c.
+The ACPI function for setting up devices to do runtime remote
+wakeup is now located in drivers/acpi/sleep.c, but
+drivers/acpi/device_pm.c is a more logical place for it, so move it
+there.
+
+No functional changes should result from this modification.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c |   54 ++++++++++++++++++++++++++++++++++++++++
- drivers/acpi/sleep.c     |   63 ++++-------------------------------------------
- include/acpi/acpi_bus.h  |    1 
- 3 files changed, 61 insertions(+), 57 deletions(-)
+ drivers/acpi/device_pm.c |   39 +++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/sleep.c     |   39 ---------------------------------------
+ 2 files changed, 39 insertions(+), 39 deletions(-)
 
-Index: linux/drivers/acpi/sleep.c
-===================================================================
---- linux.orig/drivers/acpi/sleep.c
-+++ linux/drivers/acpi/sleep.c
-@@ -80,6 +80,12 @@ static int acpi_sleep_prepare(u32 acpi_s
- 
- #ifdef CONFIG_ACPI_SLEEP
- static u32 acpi_target_sleep_state = ACPI_STATE_S0;
-+
-+u32 acpi_target_system_state(void)
-+{
-+	return acpi_target_sleep_state;
-+}
-+
- static bool pwr_btn_event_pending;
- 
- /*
-@@ -695,63 +701,6 @@ int acpi_suspend(u32 acpi_state)
- 	return -EINVAL;
- }
- 
--#ifdef CONFIG_PM
--/**
-- * acpi_pm_device_sleep_state - Get preferred power state of ACPI device.
-- * @dev: Device whose preferred target power state to return.
-- * @d_min_p: Location to store the upper limit of the allowed states range.
-- * @d_max_in: Deepest low-power state to take into consideration.
-- * Return value: Preferred power state of the device on success, -ENODEV
-- * (if there's no 'struct acpi_device' for @dev) or -EINVAL on failure
-- *
-- * The caller must ensure that @dev is valid before using this function.
-- */
--int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p, int d_max_in)
--{
--	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
--	struct acpi_device *adev;
--
--	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
--		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
--		return -ENODEV;
--	}
--
--	return acpi_device_power_state(dev, adev, acpi_target_sleep_state,
--				       d_max_in, d_min_p);
--}
--EXPORT_SYMBOL(acpi_pm_device_sleep_state);
--#endif /* CONFIG_PM */
--
--#ifdef CONFIG_PM_SLEEP
--/**
-- * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
-- * @dev: Device to enable/desible to wake up the system from sleep states.
-- * @enable: Whether to enable or disable @dev to wake up the system.
-- */
--int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
--{
--	acpi_handle handle;
--	struct acpi_device *adev;
--	int error;
--
--	if (!device_can_wakeup(dev))
--		return -EINVAL;
--
--	handle = DEVICE_ACPI_HANDLE(dev);
--	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
--		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
--		return -ENODEV;
--	}
--
--	error = __acpi_device_sleep_wake(adev, acpi_target_sleep_state, enable);
--	if (!error)
--		dev_info(dev, "System wakeup %s by ACPI\n",
--				enable ? "enabled" : "disabled");
--
--	return error;
--}
--#endif  /* CONFIG_PM_SLEEP */
--
- static void acpi_power_off_prepare(void)
- {
- 	/* Prepare to power off the system */
-Index: linux/include/acpi/acpi_bus.h
-===================================================================
---- linux.orig/include/acpi/acpi_bus.h
-+++ linux/include/acpi/acpi_bus.h
-@@ -416,6 +416,7 @@ int acpi_enable_wakeup_device_power(stru
- int acpi_disable_wakeup_device_power(struct acpi_device *dev);
- 
- #ifdef CONFIG_PM
-+u32 acpi_target_system_state(void);
- acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
- 				 acpi_notify_handler handler, void *context);
- acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
 Index: linux/drivers/acpi/device_pm.c
 ===================================================================
 --- linux.orig/drivers/acpi/device_pm.c
 +++ linux/drivers/acpi/device_pm.c
-@@ -198,6 +198,31 @@ int acpi_device_power_state(struct devic
+@@ -26,6 +26,7 @@
+ #include <linux/export.h>
+ #include <linux/mutex.h>
+ #include <linux/pm_qos.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <acpi/acpi.h>
+ #include <acpi/acpi_bus.h>
+@@ -196,3 +197,41 @@ int acpi_device_power_state(struct devic
+ 	return d_max;
  }
  EXPORT_SYMBOL_GPL(acpi_device_power_state);
- 
++
++#ifdef CONFIG_PM_RUNTIME
 +/**
-+ * acpi_pm_device_sleep_state - Get preferred power state of ACPI device.
-+ * @dev: Device whose preferred target power state to return.
-+ * @d_min_p: Location to store the upper limit of the allowed states range.
-+ * @d_max_in: Deepest low-power state to take into consideration.
-+ * Return value: Preferred power state of the device on success, -ENODEV
-+ * (if there's no 'struct acpi_device' for @dev) or -EINVAL on failure
++ * acpi_pm_device_run_wake - Enable/disable remote wakeup for given device.
++ * @phys_dev: Device to enable/disable the platform to wake up.
++ * @enable: Whether to enable or disable the wakeup functionality.
 + *
-+ * The caller must ensure that @dev is valid before using this function.
++ * Find the ACPI device object corresponding to @phys_dev and try to
++ * enable/disable the GPE associated with it, so that it can generate
++ * wakeup signals for the device in response to external (remote) events.
 + */
-+int acpi_pm_device_sleep_state(struct device *dev, int *d_min_p, int d_max_in)
++int acpi_pm_device_run_wake(struct device *phys_dev, bool enable)
 +{
-+	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
-+	struct acpi_device *adev;
-+
-+	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
-+		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	return acpi_device_power_state(dev, adev, acpi_target_system_state(),
-+				       d_max_in, d_min_p);
-+}
-+EXPORT_SYMBOL(acpi_pm_device_sleep_state);
-+
- #ifdef CONFIG_PM_RUNTIME
- /**
-  * __acpi_device_run_wake - Enable/disable runtime remote wakeup for device.
-@@ -274,4 +299,33 @@ int __acpi_device_sleep_wake(struct acpi
- 		acpi_enable_wakeup_device_power(adev, target_state) :
- 		acpi_disable_wakeup_device_power(adev);
- }
-+
-+/**
-+ * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
-+ * @dev: Device to enable/desible to wake up the system from sleep states.
-+ * @enable: Whether to enable or disable @dev to wake up the system.
-+ */
-+int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
-+{
++	struct acpi_device *dev;
 +	acpi_handle handle;
-+	struct acpi_device *adev;
-+	int error;
 +
-+	if (!device_can_wakeup(dev))
++	if (!device_run_wake(phys_dev))
 +		return -EINVAL;
 +
-+	handle = DEVICE_ACPI_HANDLE(dev);
-+	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &adev))) {
-+		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
++	handle = DEVICE_ACPI_HANDLE(phys_dev);
++	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
++		dev_dbg(phys_dev, "ACPI handle has no context in %s!\n",
++			__func__);
 +		return -ENODEV;
 +	}
 +
-+	error = __acpi_device_sleep_wake(adev, acpi_target_system_state(),
-+					 enable);
-+	if (!error)
-+		dev_info(dev, "System wakeup %s by ACPI\n",
-+				enable ? "enabled" : "disabled");
++	if (enable) {
++		acpi_enable_wakeup_device_power(dev, ACPI_STATE_S0);
++		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number);
++	} else {
++		acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number);
++		acpi_disable_wakeup_device_power(dev);
++	}
 +
-+	return error;
++	return 0;
 +}
- #endif /* CONFIG_PM_SLEEP */
++EXPORT_SYMBOL(acpi_pm_device_run_wake);
++#endif /* CONFIG_PM_RUNTIME */
+Index: linux/drivers/acpi/sleep.c
+===================================================================
+--- linux.orig/drivers/acpi/sleep.c
++++ linux/drivers/acpi/sleep.c
+@@ -18,7 +18,6 @@
+ #include <linux/reboot.h>
+ #include <linux/acpi.h>
+ #include <linux/module.h>
+-#include <linux/pm_runtime.h>
+ 
+ #include <asm/io.h>
+ 
+@@ -723,44 +722,6 @@ int acpi_pm_device_sleep_state(struct de
+ EXPORT_SYMBOL(acpi_pm_device_sleep_state);
+ #endif /* CONFIG_PM */
+ 
+-#ifdef CONFIG_PM_RUNTIME
+-/**
+- * acpi_pm_device_run_wake - Enable/disable remote wakeup for given device.
+- * @phys_dev: Device to enable/disable the platform to wake up.
+- * @enable: Whether to enable or disable the wakeup functionality.
+- *
+- * Find the ACPI device object corresponding to @phys_dev and try to
+- * enable/disable the GPE associated with it, so that it can generate
+- * wakeup signals for the device in response to external (remote) events.
+- */
+-int acpi_pm_device_run_wake(struct device *phys_dev, bool enable)
+-{
+-	struct acpi_device *dev;
+-	acpi_handle handle;
+-
+-	if (!device_run_wake(phys_dev))
+-		return -EINVAL;
+-
+-	handle = DEVICE_ACPI_HANDLE(phys_dev);
+-	if (!handle || ACPI_FAILURE(acpi_bus_get_device(handle, &dev))) {
+-		dev_dbg(phys_dev, "ACPI handle has no context in %s!\n",
+-			__func__);
+-		return -ENODEV;
+-	}
+-
+-	if (enable) {
+-		acpi_enable_wakeup_device_power(dev, ACPI_STATE_S0);
+-		acpi_enable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number);
+-	} else {
+-		acpi_disable_gpe(dev->wakeup.gpe_device, dev->wakeup.gpe_number);
+-		acpi_disable_wakeup_device_power(dev);
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(acpi_pm_device_run_wake);
+-#endif /* CONFIG_PM_RUNTIME */
+-
+ #ifdef CONFIG_PM_SLEEP
+ /**
+  * acpi_pm_device_sleep_wake - Enable or disable device to wake up the system.
