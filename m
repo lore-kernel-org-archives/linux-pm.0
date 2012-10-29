@@ -1,80 +1,157 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: [PATCH v3 6/6] USB: forbid memory allocation with I/O during bus reset
-Date: Mon, 29 Oct 2012 20:24:00 +0800
-Message-ID: <1351513440-9286-7-git-send-email-ming.lei@canonical.com>
-References: <1351513440-9286-1-git-send-email-ming.lei@canonical.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1351513440-9286-1-git-send-email-ming.lei@canonical.com>
-Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Ming Lei <ming.lei@canonical.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [linux-next PATCH] PM / devfreq: documentation cleanups for devfreq header
+Date: Mon, 29 Oct 2012 08:02:23 -0500
+Message-ID: <1351515743-23411-1-git-send-email-nm@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:59174 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754169Ab2J2NCm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Oct 2012 09:02:42 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Nishanth Menon <nm@ti.com>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, linux-kernel@vger.kernel.org
 
-If one storage interface or usb network interface(iSCSI case)
-exists in current configuration, memory allocation with
-GFP_KERNEL during usb_device_reset() might trigger I/O transfer
-on the storage interface itself and cause deadlock because
-the 'us->dev_mutex' is held in .pre_reset() and the storage
-interface can't do I/O transfer when the reset is triggered
-by other interface, or the error handling can't be completed
-if the reset is triggered by the storage itself(error handling path).
+struct parameters need to have ':' in documentation for
+scripts/kernel-doc to parse appropriately.
 
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Ming Lei <ming.lei@canonical.com>
+Fix the errors reported by:
+./scripts/kernel-doc include/linux/devfreq.h >/dev/null
+
+Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kevin Hilman <khilman@ti.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
-v3:
-	- check usbnet device or usb mass storage device by
-	'dev->power.memalloc_noio_resume' as suggested by Alan Stern
----
- drivers/usb/core/hub.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Applies on
+linux-next                e083feb Merge branch 'acpi-next' into linux-next
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 5b131b6..5aea807 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -5044,6 +5044,8 @@ int usb_reset_device(struct usb_device *udev)
- {
- 	int ret;
- 	int i;
-+	unsigned int uninitialized_var(noio_flag);
-+	bool noio_set = false;
- 	struct usb_host_config *config = udev->actconfig;
+ include/linux/devfreq.h |   54 +++++++++++++++++++++++------------------------
+ 1 file changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 7e2e2ea..1461fb2 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -25,12 +25,12 @@ struct devfreq;
+  * struct devfreq_dev_status - Data given from devfreq user device to
+  *			     governors. Represents the performance
+  *			     statistics.
+- * @total_time		The total time represented by this instance of
++ * @total_time:		The total time represented by this instance of
+  *			devfreq_dev_status
+- * @busy_time		The time that the device was working among the
++ * @busy_time:		The time that the device was working among the
+  *			total_time.
+- * @current_frequency	The operating frequency.
+- * @private_data	An entry not specified by the devfreq framework.
++ * @current_frequency:	The operating frequency.
++ * @private_data:	An entry not specified by the devfreq framework.
+  *			A device and a specific governor may have their
+  *			own protocol with private_data. However, because
+  *			this is governor-specific, a governor using this
+@@ -54,21 +54,21 @@ struct devfreq_dev_status {
  
- 	if (udev->state == USB_STATE_NOTATTACHED ||
-@@ -5053,6 +5055,17 @@ int usb_reset_device(struct usb_device *udev)
- 		return -EINVAL;
- 	}
+ /**
+  * struct devfreq_dev_profile - Devfreq's user device profile
+- * @initial_freq	The operating frequency when devfreq_add_device() is
++ * @initial_freq:	The operating frequency when devfreq_add_device() is
+  *			called.
+- * @polling_ms		The polling interval in ms. 0 disables polling.
+- * @target		The device should set its operating frequency at
++ * @polling_ms:		The polling interval in ms. 0 disables polling.
++ * @target:		The device should set its operating frequency at
+  *			freq or lowest-upper-than-freq value. If freq is
+  *			higher than any operable frequency, set maximum.
+  *			Before returning, target function should set
+  *			freq at the current frequency.
+  *			The "flags" parameter's possible values are
+  *			explained above with "DEVFREQ_FLAG_*" macros.
+- * @get_dev_status	The device should provide the current performance
++ * @get_dev_status:	The device should provide the current performance
+  *			status to devfreq, which is used by governors.
+- * @get_cur_freq	The device should provide the current frequency
++ * @get_cur_freq:	The device should provide the current frequency
+  *			at which it is operating.
+- * @exit		An optional callback that is called when devfreq
++ * @exit:		An optional callback that is called when devfreq
+  *			is removing the devfreq object due to error or
+  *			from devfreq_remove_device() call. If the user
+  *			has registered devfreq->nb at a notifier-head,
+@@ -87,14 +87,14 @@ struct devfreq_dev_profile {
  
-+	/*
-+	 * Don't allocate memory with GFP_KERNEL in current
-+	 * context to avoid possible deadlock if usb mass
-+	 * storage interface or usbnet interface(iSCSI case)
-+	 * is included in current configuration.
-+	 */
-+	if (pm_runtime_get_memalloc_noio(&udev->dev)) {
-+		memalloc_noio_save(noio_flag);
-+		noio_set = true;
-+	}
-+
- 	/* Prevent autosuspend during the reset */
- 	usb_autoresume_device(udev);
+ /**
+  * struct devfreq_governor - Devfreq policy governor
+- * @name		Governor's name
+- * @get_target_freq	Returns desired operating frequency for the device.
++ * @name:		Governor's name
++ * @get_target_freq:	Returns desired operating frequency for the device.
+  *			Basically, get_target_freq will run
+  *			devfreq_dev_profile.get_dev_status() to get the
+  *			status of the device (load = busy_time / total_time).
+  *			If no_central_polling is set, this callback is called
+  *			only with update_devfreq() notified by OPP.
+- * @event_handler       Callback for devfreq core framework to notify events
++ * @event_handler:      Callback for devfreq core framework to notify events
+  *                      to governors. Events include per device governor
+  *                      init and exit, opp changes out of devfreq, suspend
+  *                      and resume of per device devfreq during device idle.
+@@ -110,23 +110,23 @@ struct devfreq_governor {
  
-@@ -5097,6 +5110,8 @@ int usb_reset_device(struct usb_device *udev)
- 	}
- 
- 	usb_autosuspend_device(udev);
-+	if (noio_set)
-+		memalloc_noio_restore(noio_flag);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(usb_reset_device);
+ /**
+  * struct devfreq - Device devfreq structure
+- * @node	list node - contains the devices with devfreq that have been
++ * @node:	list node - contains the devices with devfreq that have been
+  *		registered.
+- * @lock	a mutex to protect accessing devfreq.
+- * @dev		device registered by devfreq class. dev.parent is the device
++ * @lock:	a mutex to protect accessing devfreq.
++ * @dev:	device registered by devfreq class. dev.parent is the device
+  *		using devfreq.
+- * @profile	device-specific devfreq profile
+- * @governor	method how to choose frequency based on the usage.
+- * @nb		notifier block used to notify devfreq object that it should
++ * @profile:	device-specific devfreq profile
++ * @governor:	method how to choose frequency based on the usage.
++ * @nb:		notifier block used to notify devfreq object that it should
+  *		reevaluate operable frequencies. Devfreq users may use
+  *		devfreq.nb to the corresponding register notifier call chain.
+- * @work	delayed work for load monitoring.
+- * @previous_freq	previously configured frequency value.
+- * @data	Private data of the governor. The devfreq framework does not
++ * @work:	delayed work for load monitoring.
++ * @previous_freq:	previously configured frequency value.
++ * @data:	Private data of the governor. The devfreq framework does not
+  *		touch this.
+- * @min_freq	Limit minimum frequency requested by user (0: none)
+- * @max_freq	Limit maximum frequency requested by user (0: none)
+- * @stop_polling	 devfreq polling status of a device.
++ * @min_freq:	Limit minimum frequency requested by user (0: none)
++ * @max_freq:	Limit maximum frequency requested by user (0: none)
++ * @stop_polling:	 devfreq polling status of a device.
+  *
+  * This structure stores the devfreq information for a give device.
+  *
+@@ -186,9 +186,9 @@ extern const struct devfreq_governor devfreq_simple_ondemand;
+ /**
+  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+  *	and devfreq_add_device
+- * @ upthreshold	If the load is over this value, the frequency jumps.
++ * @upthreshold:	If the load is over this value, the frequency jumps.
+  *			Specify 0 to use the default. Valid value = 0 to 100.
+- * @ downdifferential	If the load is under upthreshold - downdifferential,
++ * @downdifferential:	If the load is under upthreshold - downdifferential,
+  *			the governor may consider slowing the frequency down.
+  *			Specify 0 to use the default. Valid value = 0 to 100.
+  *			downdifferential < upthreshold must hold.
 -- 
 1.7.9.5
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
