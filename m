@@ -1,44 +1,45 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v8 10/11] scsi: sr: support (un)block events
-Date: Mon, 29 Oct 2012 18:22:01 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1210291818100.31151-100000@netrider.rowland.org>
-References: <1351534295.3051.9.camel@dabdike>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/4] cpufreq, powernow-k8: Change email address
+Date: Tue, 30 Oct 2012 00:33:15 +0100
+Message-ID: <2663527.sPyzc5AXi8@vostro.rjw.lan>
+References: <20121029174924.GA5024@tweety> <20121029175221.GD5024@tweety>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1351534295.3051.9.camel@dabdike>
-Sender: linux-acpi-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20121029175221.GD5024@tweety>
+Sender: cpufreq-owner@vger.kernel.org
+To: Andreas Herrmann <herrmann.der.user@googlemail.com>
+Cc: Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, Borislav Petkov <bp@alien8.de>, =?ISO-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 29 Oct 2012, James Bottomley wrote:
-
-> On Mon, 2012-10-29 at 17:01 +0800, Aaron Lu wrote:
-> > 2 interfaces are added to block/unblock events for the disk sr manages.
-> > This is used by SATA ZPODD, when ODD is runtime powered off, the events
-> > poll is no longer needed so better be blocked. And once powered on,
-> > events poll will be unblocked.
-> > 
-> > These 2 interfaces are needed here because SATA layer does not have
-> > access to the gendisk structure sr manages.
+On Monday, October 29, 2012 06:52:21 PM Andreas Herrmann wrote:
 > 
-> I'm afraid this is a nasty layering violation.  You can't have a low
-> level driver have knowledge of a call back in an upper layer one (in
-> this case sr_block_events).
+> Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
+
+Am I supposed to take this one?
+
+Rafael
+
+
+> ---
+>  drivers/cpufreq/powernow-k8.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> This is all done it looks like because of the problem of getting access
-> to the scsi_cd structure from libata, but it's not the right way to
-> solve it.
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> index c16a3a5..e3ebb4f 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -5,7 +5,7 @@
+>   *  http://www.gnu.org/licenses/gpl.html
+>   *
+>   *  Maintainer:
+> - *  Andreas Herrmann <andreas.herrmann3@amd.com>
+> + *  Andreas Herrmann <herrmann.der.user@googlemail.com>
+>   *
+>   *  Based on the powernow-k7.c module written by Dave Jones.
+>   *  (C) 2003 Dave Jones on behalf of SuSE Labs
 > 
-> I also don't really think you need to do any blocking or unblocking.  As
-> I said in the previous thread, just fake the events the standard tells
-> you to, so userspace can probe to its heart's content and you can keep
-> the device powered off.
-
-James, one of us has misunderstood the event-polling mechanism.  As far
-as I know, the polling calls that Aaron is concerned with are generated
-by the kernel, not by userspace.
-
-Alan Stern
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
