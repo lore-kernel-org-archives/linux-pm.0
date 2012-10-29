@@ -1,43 +1,35 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: Question about runtime pm status issue
-Date: Mon, 29 Oct 2012 22:52:15 +0800
-Message-ID: <508E981F.1030706@gmail.com>
-References: <508E889C.6070009@gmail.com> <CACVXFVMZi7_uSsL0_0Sc=Nmkc4OMwogtiRB3v=uJY2LF1UYS3A@mail.gmail.com> <508E95FA.5070906@gmail.com> <CACVXFVOV2JBvPj-AnOYo6HELCYDthOfM1Qb54=BezNAikfL9OA@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v8 05/11] libata-eh: allow defer in ata_exec_internal
+Date: Mon, 29 Oct 2012 08:20:51 -0700
+Message-ID: <20121029152051.GK5171@htj.dyndns.org>
+References: <1351501298-3716-1-git-send-email-aaron.lu@intel.com>
+ <1351501298-3716-6-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:65220 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071Ab2J2Owm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Oct 2012 10:52:42 -0400
-Received: by mail-pb0-f46.google.com with SMTP id rr4so4313081pbb.19
-        for <linux-pm@vger.kernel.org>; Mon, 29 Oct 2012 07:52:42 -0700 (PDT)
-In-Reply-To: <CACVXFVOV2JBvPj-AnOYo6HELCYDthOfM1Qb54=BezNAikfL9OA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1351501298-3716-6-git-send-email-aaron.lu@intel.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On 2012=E5=B9=B410=E6=9C=8829=E6=97=A5 22:50:37, Ming Lei wrote:
-> On Mon, Oct 29, 2012 at 10:43 PM, Lan Tianyu <lantianyu1986@gmail.com=
-> wrote:
->
->> I have umount the disk and there is no user of the device since its
->> usage_count
->> become zero.
->
-> Looks runtime PM of usb mass storage works well on my box with
-> 3.7.0-rc3-next-20121029, maybe you can enable trace event on
-> runtime PM to see what happened.
->
-Ok. Thanks.
->
-> Thanks
+On Mon, Oct 29, 2012 at 05:01:32PM +0800, Aaron Lu wrote:
+> ata_exec_internal will preempt the ata link's active_tag and ata port's
+> qc_active flags, this is OK for error recovery, but if normal code path
+> wants to use ata_exec_internal, there is a problem: we need to check if
+> it is OK to issue a new command with the help of port_ops->defer.
+> 
+> In ZPODD, I'll need to find out the loading mechanism of the ODD by
+> issuing a GET_CONFIGURATION command. And this command may very well
+> race with commands issued from SCSI layer. So instead of preempt the
+> current command, defer the new command if it's not OK to issue it, as
+> it is always wrong to issue a non-NCQ command when there is command(s)
+> in processing.
 
+Why not do the discovery from EH?
 
+Thanks.
 
---
-Best regards
-Tianyu Lan
+-- 
+tejun
