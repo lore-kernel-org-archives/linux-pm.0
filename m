@@ -1,72 +1,101 @@
-From: Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Sun, 28 Oct 2012 23:59:18 +0100
-Message-ID: <20121028225918.GC5411@sortiz-mobl>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
- <20121011134458.GB15428@gmail.com>
- <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
- <20121011151947.GD15428@gmail.com>
- <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: Re: [PATCH] cpuidle: add missing header include
+Date: Mon, 29 Oct 2012 10:16:13 +0900
+Message-ID: <002101cdb572$fcc4d670$f64e8350$%han@samsung.com>
+References: <001401cdb332$93ffe450$bbffacf0$%han@samsung.com>
+ <508DA864.8020503@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:22212 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751145Ab2J1W7X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 28 Oct 2012 18:59:23 -0400
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:17330 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757397Ab2J2BQP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Oct 2012 21:16:15 -0400
+In-reply-to: <508DA864.8020503@linaro.org>
+Content-language: ko
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Philippe Begnic <philippe.begnic@st.com>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: 'Daniel Lezcano' <daniel.lezcano@linaro.org>
+Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-Hi Ulf,
-
-On Fri, Oct 26, 2012 at 10:19:24AM +0200, Ulf Hansson wrote:
-> On 11 October 2012 17:19, Lee Jones <lee.jones@linaro.org> wrote:
-> > On Thu, 11 Oct 2012, Linus Walleij wrote:
-> >
-> >> On Thu, Oct 11, 2012 at 3:44 PM, Lee Jones <lee.jones@linaro.org> =
-wrote:
-> >>
-> >> >> Patches are based on Linus Torvalds tree with latest commit as =
-of okt 10.
-> >> >
-> >> > Hmm... I get:
-> >> >
-> >> > Applying: clk: ux500: Support for prcmu_scalable_rate clock
-> >> > error: drivers/clk/ux500/clk-prcmu.c: does not exist in index
-> >> > error: drivers/clk/ux500/clk.h: does not exist in index
-> >> > Patch failed at 0001 clk: ux500: Support for prcmu_scalable_rate=
- clock
-> >> >
-> >> > So when did drivers/clk/ux500/* arrive?
-> >>
-> >> Exactly here, 10 days ago on Torvalds' master branch:
-> >
-> > Ah I see. Basing patches on commits half way through the merge
-> > window. Good move! ;)
-> >
-> > --
-> > Lee Jones
-> > Linaro ST-Ericsson Landing Team Lead
-> > Linaro.org =E2=94=82 Open source software for ARM SoCs
-> > Follow Linaro: Facebook | Twitter | Blog
+On Monday, October 29, 2012 6:49 AM Marek Vasut wrote
 >=20
-> Samuel, a kind reminder on this, trying to collect acks to be able to
-> advise Mike to take this series through his clk tree. There are two
-> mfd patches.
-> [PATCH 2/8] mfd: db8500: Provide cpufreq table as platform data
-> [PATCH 5/8] mfd: db8500: Connect ARMSS clk to ARM OPP
-Sorry for the delay:
+> On 10/26/2012 06:30 AM, Jingoo Han wrote:
+> > This patch adds missing device.h header to fix build warnings as be=
+low:
+> >
+> > drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared =
+inside parameter list [enabled by
+> default]
+> > drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this de=
+finition or declaration, which is
+> probably not what you want
+> > [enabled by default]
+> > drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared =
+inside parameter list [enabled by
+> default]
+> > In file included from drivers/cpuidle/driver.c:15:0:
+> > drivers/cpuidle/cpuidle.h:26:41: warning: 'struct device' declared =
+inside parameter list [enabled by
+> default]
+> > drivers/cpuidle/cpuidle.h:26:41: warning: its scope is only this de=
+finition or declaration, which is
+> probably not what you want
+> > [enabled by default]
+> > drivers/cpuidle/cpuidle.h:27:45: warning: 'struct device' declared =
+inside parameter list [enabled by
+> default]
+> >
+> > This build warning is introduced by commit efeca1b
+> > "cpuidle / sysfs: change function parameter".
+> >
+> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
+>=20
+> Jingoo, could you copy-pastebin your config file. I don't have this
+> warning and I would like to understand why.
 
-Acked-by: Samuel Ortiz <sameo@linux.intel.com>
+Hi Daniel Lezcano,
 
-Cheers,
-Samuel.
+Could you build the code by using GCC 4.6.x?
+In my opinion, it would be better.
 
---=20
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Also, my config option is as below:
+    make exynos4_defconfig + CONFIG_CPU_IDLE
+
+Best regards,
+Jingoo Han
+
+
+>=20
+> Thanks
+>   -- Daniel
+>=20
+> >  drivers/cpuidle/cpuidle.h |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+> > index a5bbd1c..2120d9e 100644
+> > --- a/drivers/cpuidle/cpuidle.h
+> > +++ b/drivers/cpuidle/cpuidle.h
+> > @@ -5,6 +5,8 @@
+> >  #ifndef __DRIVER_CPUIDLE_H
+> >  #define __DRIVER_CPUIDLE_H
+> >
+> > +#include <linux/device.h>
+> > +
+> >  /* For internal use only */
+> >  extern struct cpuidle_governor *cpuidle_curr_governor;
+> >  extern struct list_head cpuidle_governors;
+>=20
+>=20
+> --
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>=20
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+
