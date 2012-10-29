@@ -1,46 +1,63 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 4/6] net/core: apply pm_runtime_set_memalloc_noio on
- network devices
-Date: Mon, 29 Oct 2012 11:44:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1210291142000.22882-100000@netrider.rowland.org>
-References: <1351513440-9286-5-git-send-email-ming.lei@canonical.com>
+From: Simon Farnsworth <simon.farnsworth@onelan.co.uk>
+Subject: Re: [PATCH] saa7134: Add pm_qos_request to fix video corruption
+Date: Mon, 29 Oct 2012 16:03:04 +0000
+Message-ID: <2614655.PC7gBWDYxH@f17simon>
+References: <1350906611-17498-1-git-send-email-simon.farnsworth@onelan.co.uk> <13391942.y8AEurCsVE@f17simon> <20121029134445.1f58657e@infradead.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1351513440-9286-5-git-send-email-ming.lei@canonical.com>
-Sender: owner-linux-mm@kvack.org
-To: Ming Lei <ming.lei@canonical.com>
-Cc: linux-kernel@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Eric Dumazet <eric.dumazet@gmail.com>, David Decotigny <david.decotigny@google.com>, Tom Herbert <therbert@google.com>, Ingo Molnar <mingo@elte.hu>
+Content-Type: multipart/signed; boundary="nextPart1879889.QENECiXHnW"; micalg="pgp-sha1"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-media-owner@vger.kernel.org>
+In-Reply-To: <20121029134445.1f58657e@infradead.org>
+Sender: linux-media-owner@vger.kernel.org
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Andy Walls <awalls@md.metrocast.net>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 29 Oct 2012, Ming Lei wrote:
 
-> Deadlock might be caused by allocating memory with GFP_KERNEL in
-> runtime_resume callback of network devices in iSCSI situation, so
-> mark network devices and its ancestor as 'memalloc_noio_resume'
-> with the introduced pm_runtime_set_memalloc_noio().
+--nextPart1879889.QENECiXHnW
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-> @@ -1411,6 +1414,8 @@ int netdev_register_kobject(struct net_device *net)
->  	*groups++ = &netstat_group;
->  #endif /* CONFIG_SYSFS */
->  
-> +	pm_runtime_set_memalloc_noio(dev, true);
-> +
->  	error = device_add(dev);
->  	if (error)
->  		return error;
+On Monday 29 October 2012 13:44:45 Mauro Carvalho Chehab wrote:
+> Thanks for digging into it and getting more data. Do you know if this change
+> it also needed with USB devices that do DMA (isoc and/or bulk)? Or the USB
+> core already handles that?
+> 
+I'm not a huge expert - the linux-pm list (cc'd) will have people around who
+know more.
 
-This is an example of what I described earlier.  The 
-pm_runtime_set_memalloc_noio() call should come after device_add(), not 
-before.
+If I've understood correctly, though, the USB core should take care of pm_qos
+requests if they're needed for the hardware; remember that if the HCD has
+enough buffering, there's no need for a pm_qos request. It's only needed for
+devices like the SAA7134 where the buffer is small (1K split into pieces)
+compared to the sample data rate (27 megabytes/second raw video).
 
-(Not to mention that this version of the code doesn't correctly handle
-the case where device_add() fails.)
+For the benefit of the linux-pm list; this all starts with me providing a
+patch to have the saa7134 driver request reduced cpu_dma_latency when
+streaming, as I've seen buffer exhaustion. We've got far enough to know that
+the value I chose was wrong for the saa7134, but Mauro also wants guidance on
+whether USB devices (not host controllers) also need to request reduced
+latency.
+-- 
+Simon Farnsworth
+Software Engineer
+ONELAN Ltd
+http://www.onelan.com
 
-Alan Stern
+--nextPart1879889.QENECiXHnW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.18 (GNU/Linux)
+
+iQEcBAABAgAGBQJQjqi7AAoJEIKsye9/dtRWaZgH/i/Tgt8cDMdxqgijvQClkqcE
+O5LBJhuPVg/cOA5JoqhwUNBHo2RdNzvHP4SsmpJd1eXZJzMONAJK9+gGKXqgflHc
+a+Ib3ow6CYZ83QwFhlOp1llcPtft65uEBNZ8BL6YU1wy96TFo/k+Ba/jGfnTygJO
+0bLiLblZKuaa3pMqdSEUD5i/0JRcHeY7LQK0tL+kGtOQnYRJrDuCNGKqfNeCQGDW
+HbovJ6zenh7z3ZZf2spKG5k2ZDGDdiIh6XRG094TyhfaSl6Y4e9POXwXXZ9g2i6e
+QeAokiIudhOpky5u0QN9+PuyMfA10rbtA3YTrCpSf4nQ8drcACv9kKLCEezXZKA=
+=UVli
+-----END PGP SIGNATURE-----
+
+--nextPart1879889.QENECiXHnW--
