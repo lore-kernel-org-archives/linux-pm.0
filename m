@@ -1,249 +1,149 @@
-From: Hongbo Zhang <hongbo.zhang@linaro.org>
-Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list.
-Date: Tue, 30 Oct 2012 09:53:02 +0100
-Message-ID: <CAJLyvQxF7d44F2hDyL_bk8CTyfs+6=K7eAuWA2d-=12Y45=tQg@mail.gmail.com>
-References: <50898F97.3000202@gmail.com>
-	<1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
-	<CAK44p21QhTT0xwUh4d8CzoN3R0Qoz4uXGSu4=a3s7cT49YicNQ@mail.gmail.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [RFD][PATCH 5/7] PM / QoS: Make it possible to expose PM QoS
+ device flags to user space
+Date: Tue, 30 Oct 2012 16:53:28 +0800
+Message-ID: <508F9588.5040105@intel.com>
+References: <201209282351.10663.rjw@sisk.pl> <201209282355.31823.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAK44p21QhTT0xwUh4d8CzoN3R0Qoz4uXGSu4=a3s7cT49YicNQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <201209282355.31823.rjw@sisk.pl>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Jean Pihet <j-pihet@ti.com>, linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mark gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30 October 2012 09:03, Amit Kachhap <amit.kachhap@linaro.org> wrote:
-> On 26 October 2012 12:39, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
->> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
->>
->> Problem of using this list is that the cpufreq_get_max_state callback will be
->> called when register cooling device by thermal_cooling_device_register, but
->> this list isn't ready at this moment. What's more, there is no need to maintain
->> such a list, we can get cpufreq_cooling_device instance by the private
->> thermal_cooling_device.devdata.
->
-> Hi,
->
-> Removing this list seems fine as most of frequency checks are moved
-> inside generic thermal layer.
-> Some minor review comments below,
->
-> Reviewed-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Thanks.
->>
->> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
->> ---
->>  drivers/thermal/cpu_cooling.c | 91 +++++++++----------------------------------
->>  1 file changed, 19 insertions(+), 72 deletions(-)
->>
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> index 415b041..2ffd12c 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
->>  };
->>  static LIST_HEAD(cooling_cpufreq_list);
->>  static DEFINE_IDR(cpufreq_idr);
->> +static DEFINE_MUTEX(cooling_cpufreq_lock);
->>
->> -static struct mutex cooling_cpufreq_lock;
->> +static unsigned int cpufreq_dev_count;
->>
->>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
->>  #define NOTIFY_INVALID NULL
->> @@ -240,28 +241,18 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
->>  static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->>                                  unsigned long *state)
->>  {
->> -       int ret = -EINVAL, i = 0;
->> -       struct cpufreq_cooling_device *cpufreq_device;
->> -       struct cpumask *maskPtr;
->> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-> check cdev is not null.
->> +       struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
->>         unsigned int cpu;
->>         struct cpufreq_frequency_table *table;
->>         unsigned long count = 0;
->> +       int i = 0;
->>
->> -       mutex_lock(&cooling_cpufreq_lock);
->> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
->> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev)
->> -                       break;
->> -       }
->> -       if (cpufreq_device == NULL)
->> -               goto return_get_max_state;
->> -
->> -       maskPtr = &cpufreq_device->allowed_cpus;
->>         cpu = cpumask_any(maskPtr);
->>         table = cpufreq_frequency_get_table(cpu);
->>         if (!table) {
->>                 *state = 0;
->> -               ret = 0;
->> -               goto return_get_max_state;
->> +               return 0;
->>         }
->>
->>         for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
->> @@ -272,12 +263,10 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->>
->>         if (count > 0) {
->>                 *state = --count;
->> -               ret = 0;
->> +               return 0;
->>         }
->>
->> -return_get_max_state:
->> -       mutex_unlock(&cooling_cpufreq_lock);
->> -       return ret;
->> +       return -EINVAL;
->>  }
->>
->>  /**
->> @@ -288,20 +277,10 @@ return_get_max_state:
->>  static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
->>                                  unsigned long *state)
->>  {
->> -       int ret = -EINVAL;
->> -       struct cpufreq_cooling_device *cpufreq_device;
->> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
->>
->> -       mutex_lock(&cooling_cpufreq_lock);
->> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
->> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
->> -                       *state = cpufreq_device->cpufreq_state;
->> -                       ret = 0;
->> -                       break;
->> -               }
->> -       }
->> -       mutex_unlock(&cooling_cpufreq_lock);
->> -
->> -       return ret;
->> +       *state = cpufreq_device->cpufreq_state;
->> +       return 0;
->>  }
->>
->>  /**
->> @@ -312,22 +291,9 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
->>  static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
->>                                  unsigned long state)
->>  {
->> -       int ret = -EINVAL;
->> -       struct cpufreq_cooling_device *cpufreq_device;
->> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-> check cdev is not null
-Such values are used in all the three static cpufreq_***_state
-callback functions, when these functions are called, cdev->devdata
-should have been set in the registration function, and cannot be null,
-no body can call these function before registration, so I think there
-is no need to add such a check here.
+On 09/29/2012 05:55 AM, Rafael J. Wysocki wrote:
+> Define two device PM QoS flags, PM_QOS_FLAG_NO_POWER_OFF
+> and PM_QOS_FLAG_REMOTE_WAKEUP, and introduce routines
+> dev_pm_qos_expose_flags() and dev_pm_qos_hide_flags() allowing the
+> caller to expose those two flags to user space or to hide them
+> from it, respectively.
+> 
+> After the flags have been exposed, user space will see two
+> additional sysfs attributes, pm_qos_no_power_off and
+> pm_qos_remote_wakeup, under the device's /sys/devices/.../power/
+> directory.  Then, writing 1 to one of them will update the
+> PM QoS flags request owned by user space so that the corresponding
+> flag is requested to be set.  In turn, writing 0 to one of them
+> will cause the corresponding flag in the user space's request to
+> be cleared (however, the owners of the other PM QoS flags requests
+> for the same device may still request the flag to be set and it
+> may be effectively set even if user space doesn't request that).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  Documentation/ABI/testing/sysfs-devices-power |   31 ++++
+>  drivers/base/power/power.h                    |    6 
+>  drivers/base/power/qos.c                      |  169 ++++++++++++++++++++------
+>  drivers/base/power/sysfs.c                    |   95 +++++++++++++-
+>  include/linux/pm.h                            |    1 
+>  include/linux/pm_qos.h                        |   26 ++++
+>  6 files changed, 280 insertions(+), 48 deletions(-)
+> 
+> Index: linux/drivers/base/power/qos.c
+> ===================================================================
+> --- linux.orig/drivers/base/power/qos.c
+> +++ linux/drivers/base/power/qos.c
+> @@ -40,6 +40,7 @@
+>  #include <linux/device.h>
+>  #include <linux/mutex.h>
+>  #include <linux/export.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include "power.h"
+>  
+> @@ -322,6 +323,38 @@ int dev_pm_qos_add_request(struct device
+>  EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
+>  
+>  /**
+> + * __dev_pm_qos_update_request - Modify an existing device PM QoS request.
+> + * @req : PM QoS request to modify.
+> + * @new_value: New value to request.
+> + */
+> +int __dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value)
+> +{
+> +	s32 curr_value;
+> +	int ret = 0;
+> +
+> +	if (!req->dev->power.qos) {
+> +		ret = -ENODEV;
+> +		goto out;
+> +	}
+> +
+> +	switch(req->type) {
+> +	case DEV_PM_QOS_LATENCY:
+> +		curr_value = req->data.pnode.prio;
+> +		break;
+> +	case DEV_PM_QOS_FLAGS:
+> +		curr_value = req->data.flr.flags;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (curr_value != new_value)
+> +		ret = apply_constraint(req, PM_QOS_UPDATE_REQ, new_value);
+> +
+> +	return ret;
+> +}
+> +
+> +/**
+>   * dev_pm_qos_update_request - modifies an existing qos request
+>   * @req : handle to list element holding a dev_pm_qos request to use
+>   * @new_value: defines the qos request
+> @@ -336,11 +369,9 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_request
+>   * -EINVAL in case of wrong parameters, -ENODEV if the device has been
+>   * removed from the system
+>   */
+> -int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
+> -			      s32 new_value)
+> +int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value)
+>  {
+> -	s32 curr_value;
+> -	int ret = 0;
+> +	int ret;
+>  
+>  	if (!req) /*guard against callers passing in null */
+>  		return -EINVAL;
+> @@ -350,29 +381,9 @@ int dev_pm_qos_update_request(struct dev
+>  		return -EINVAL;
+>  
+>  	mutex_lock(&dev_pm_qos_mtx);
+> -
+> -	if (!req->dev->power.qos) {
+> -		ret = -ENODEV;
+> -		goto out;
+> -	}
+> -
+> -	switch(req->type) {
+> -	case DEV_PM_QOS_LATENCY:
+> -		curr_value = req->data.pnode.prio;
+> -		break;
+> -	case DEV_PM_QOS_FLAGS:
+> -		curr_value = req->data.flr.flags;
+> -		break;
+> -	default:
+> -		ret = -EINVAL;
+> -		goto out;
+> -	}
+> -
+> -	if (curr_value != new_value)
+> -		ret = apply_constraint(req, PM_QOS_UPDATE_REQ, new_value);
+> -
+> - out:
+> +	__dev_pm_qos_update_request(req, new_value);
 
->>
->> -       mutex_lock(&cooling_cpufreq_lock);
->> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
->> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
->> -                       ret = 0;
->> -                       break;
->> -               }
->> -       }
->> -       if (!ret)
->> -               ret = cpufreq_apply_cooling(cpufreq_device, state);
->> -
->> -       mutex_unlock(&cooling_cpufreq_lock);
->> -
->> -       return ret;
->> +       return cpufreq_apply_cooling(cpufreq_device, state);
->>  }
->>
->>  /* Bind cpufreq callbacks to thermal cooling device ops */
->> @@ -351,7 +317,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
->>  {
->>         struct thermal_cooling_device *cool_dev;
->>         struct cpufreq_cooling_device *cpufreq_dev = NULL;
->> -       unsigned int cpufreq_dev_count = 0, min = 0, max = 0;
->> +       unsigned int min = 0, max = 0;
->>         char dev_name[THERMAL_NAME_LENGTH];
->>         int ret = 0, i;
->>         struct cpufreq_policy policy;
->> @@ -360,9 +326,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
->>         if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
->>                 return ERR_PTR(-EPROBE_DEFER);
->>
->> -       list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
->> -               cpufreq_dev_count++;
->> -
->>         /*Verify that all the clip cpus have same freq_min, freq_max limit*/
->>         for_each_cpu(i, clip_cpus) {
->>                 /*continue if cpufreq policy not found and not return error*/
->> @@ -384,9 +347,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
->>
->>         cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
->>
->> -       if (cpufreq_dev_count == 0)
->> -               mutex_init(&cooling_cpufreq_lock);
->> -
->>         ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
->>         if (ret) {
->>                 kfree(cpufreq_dev);
->> @@ -405,12 +365,12 @@ struct thermal_cooling_device *cpufreq_cooling_register(
->>         cpufreq_dev->cool_dev = cool_dev;
->>         cpufreq_dev->cpufreq_state = 0;
->>         mutex_lock(&cooling_cpufreq_lock);
->> -       list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list);
->>
->>         /* Register the notifier for first cpufreq cooling device */
->>         if (cpufreq_dev_count == 0)
->>                 cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
->>                                                 CPUFREQ_POLICY_NOTIFIER);
->> +       cpufreq_dev_count++;
->>
->>         mutex_unlock(&cooling_cpufreq_lock);
->>         return cool_dev;
->> @@ -423,33 +383,20 @@ EXPORT_SYMBOL(cpufreq_cooling_register);
->>   */
->>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
->>  {
->> -       struct cpufreq_cooling_device *cpufreq_dev = NULL;
->> -       unsigned int cpufreq_dev_count = 0;
->> +       struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
->>
->>         mutex_lock(&cooling_cpufreq_lock);
->> -       list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
->> -               if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
->> -                       break;
->> -               cpufreq_dev_count++;
->> -       }
->> -
->> -       if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
->> -               mutex_unlock(&cooling_cpufreq_lock);
->> -               return;
->> -       }
->> -
->> -       list_del(&cpufreq_dev->node);
->> +       cpufreq_dev_count--;
->>
->>         /* Unregister the notifier for the last cpufreq cooling device */
->> -       if (cpufreq_dev_count == 1) {
->> +       if (cpufreq_dev_count == 0) {
->>                 cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
->>                                         CPUFREQ_POLICY_NOTIFIER);
->>         }
->>         mutex_unlock(&cooling_cpufreq_lock);
->> +
->>         thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
->>         release_idr(&cpufreq_idr, cpufreq_dev->id);
->> -       if (cpufreq_dev_count == 1)
->> -               mutex_destroy(&cooling_cpufreq_lock);
->>         kfree(cpufreq_dev);
->>  }
->>  EXPORT_SYMBOL(cpufreq_cooling_unregister);
->> --
->> 1.7.11.3
->>
->>
->> _______________________________________________
->> linaro-dev mailing list
->> linaro-dev@lists.linaro.org
->> http://lists.linaro.org/mailman/listinfo/linaro-dev
+You forgot to assign the return value here.
+
+Thanks,
+Aaron
+
+>  	mutex_unlock(&dev_pm_qos_mtx);
+> +
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
+> @@ -533,10 +544,19 @@ int dev_pm_qos_add_ancestor_request(stru
+>  EXPORT_SYMBOL_GPL(dev_pm_qos_add_ancestor_request);
