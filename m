@@ -1,75 +1,57 @@
-From: Hongbo Zhang <hongbo.zhang@linaro.org>
-Subject: Re: [PATCH V2 2/6] Thermal: make sure cpufreq cooling register after
- cpufreq driver
-Date: Tue, 30 Oct 2012 09:59:23 +0100
-Message-ID: <CAJLyvQxm-NbuWnF7f+4fFSk+hwPuVOHpCfuAUgmQq-ZAJvo9tQ@mail.gmail.com>
-References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351079900-32236-3-git-send-email-hongbo.zhang@linaro.com>
-	<CAK44p22G4ri9KBYiLMCK9SThgFxofz66LVgUY28SepaC+YBDdw@mail.gmail.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Linux 3.7-rc3
+Date: Tue, 30 Oct 2012 10:50:50 +0100 (CET)
+Message-ID: <alpine.LRH.2.00.1210301048390.10392@twin.jikos.cz>
+References: <CA+55aFwwTc4QXKqiECgE9NOE2zjC6GsGHHydGP9YDbgQSbw9Aw@mail.gmail.com> <26004880.qboZkUVCy9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:44790 "EHLO
-	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752051Ab2J3I7X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 04:59:23 -0400
-Received: by mail-ie0-f174.google.com with SMTP id k13so29589iea.19
-        for <linux-pm@vger.kernel.org>; Tue, 30 Oct 2012 01:59:23 -0700 (PDT)
-In-Reply-To: <CAK44p22G4ri9KBYiLMCK9SThgFxofz66LVgUY28SepaC+YBDdw@mail.gmail.com>
+Received: from cantor2.suse.de ([195.135.220.15]:45348 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755430Ab2J3JvB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Oct 2012 05:51:01 -0400
+In-Reply-To: <26004880.qboZkUVCy9@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kachhap <amit.kachhap@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 29 October 2012 12:42, Amit Kachhap <amit.kachhap@linaro.org> wrote:
-> On 24 October 2012 17:28, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
->> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
->>
->> The cpufreq works as a cooling device, so the cooling layer should check if the
->> cpufreq driver is initialized or not.
->>
->> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
->> ---
->>  drivers/thermal/cpu_cooling.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> index b6b4c2a..7519a0b 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -354,6 +354,10 @@ struct thermal_cooling_device *cpufreq_cooling_register(
->>         int ret = 0, i;
->>         struct cpufreq_policy policy;
->>
->> +       /* make sure cpufreq driver has been initialized */
->> +       if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
->> +               return ERR_PTR(-EPROBE_DEFER);
->> +
-> Hi Hongbo,
->
-> I am not against this change but this might cause unnecessary delay in
-> probe thread. I also thought about it but have not put this
-> restriction. Actually you can put a check in platform_bind for this
-> condition and defer the binding till the time actual throttling
-> starts. So basically only after throttling cpufreq_table is needed.
-> (See my implementation exynos_thermal.c).
-In fact, this piece of checking code was in my
-db8500_cpufreq_cooling_probe() before, I will move it back there
-again, and the ST-E's policy is separating cooling devs and thermal
-zone, so cannot be in binding function on my platform, only in probe
-function instead.
->
-> Thanks,
-> Amit Daniel
->>         list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
->>                 cpufreq_dev_count++;
->>
->> --
->> 1.7.11.3
->>
->>
->> _______________________________________________
->> linaro-dev mailing list
->> linaro-dev@lists.linaro.org
->> http://lists.linaro.org/mailman/listinfo/linaro-dev
+On Tue, 30 Oct 2012, Rafael J. Wysocki wrote:
+
+> > Nothing particularly stands out here. Lots of small fixes, exemplified
+> > by the series of memory leak fixes in usb serial drivers. Just a lot
+> > of random stuff..
+> > 
+> > Most of it is drivers (all over: drm, wireless, staging, usb, sound),
+> > but there's a few filesystem updates (nfs, btrfs, ext4), arch updates
+> > (arm, x86 and m68k) and just random stuff. Shortlog appended.
+> 
+> Unfortunately, s2disk is broken with this one and previous -rc.  In the
+> majority of cases it just hangs the machine during hibernation, although
+> sometimes it returns to user space reporting freezing problems, suspicions
+> RCU usage and similar stuff, pretty much without any useful debug information.
+> 
+> I'm quite confident that v3.6 was OK (and -stable based on that too), so
+> it most likely is a recent regression.  The in-kernel hibernation
+> (ie. "echo disk > /sys/power/state") works no problem.  So does suspend to
+> RAM on my test boxes.
+> 
+> So far I have been able to reproduce this 100% of the time on two machines
+> with Intel CPUs and graphics driven by i915.  I _suspect_ that this may be
+> related to VT switching, because s2disk does some ugly things in that area
+> which are not done by the in-kernel code.  Dunno.
+> 
+> Anyway, it looks like nothing short of bisection is going to help debug this,
+> but I'm afraid I won't have the time to bisect within the next two weeks, so if
+> anyone can reproduce this issue and will be able to bisect it, please help
+> (openSUSE/Tumbleweed users anyone?).
+
+Just a data point here -- this is probably not generally true.
+
+I am using s2disk very often on my x200s, and I haven't hit this problem 
+so far (currently running 2ab3f29, i.e. slightly before rc3).
+
+-- 
+Jiri Kosina
+SUSE Labs
+
