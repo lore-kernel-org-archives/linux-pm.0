@@ -1,39 +1,56 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
-Date: Tue, 30 Oct 2012 17:30:13 +0100
-Message-ID: <2504263.kbM6W9JoH9@linux-lqwf.site>
-References: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com> <Pine.LNX.4.44L0.1210301112270.1363-100000@iolanthe.rowland.org> <CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Subject: [PATCH V3 0/5] Fix thermal bugs and Upstream ST-Ericsson thermal driver
+Date: Tue, 30 Oct 2012 17:48:56 +0100
+Message-ID: <1351615741-24134-1-git-send-email-hongbo.zhang@linaro.com>
+References: <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:34719 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758531Ab2J3QYb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 12:24:31 -0400
-In-Reply-To: <CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:55749 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964817Ab2J3Qtt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 12:49:49 -0400
+Received: by mail-bk0-f46.google.com with SMTP id jk13so281013bkc.19
+        for <linux-pm@vger.kernel.org>; Tue, 30 Oct 2012 09:49:48 -0700 (PDT)
+In-Reply-To: <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ming Lei <ming.lei@canonical.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+To: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, amit.kachhap@linaro.org
+Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-On Wednesday 31 October 2012 00:00:56 Ming Lei wrote:
-> On Tue, Oct 30, 2012 at 11:38 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> >
-> > Okay, I see your point.  But acquiring the lock here doesn't solve the
-> > problem.  Suppose a thread is about to reset a USB mass-storage device.
-> > It acquires the lock and sees that the noio flag is clear.  But before
-> > it can issue the reset, another thread sets the noio flag.
-> 
-> If the USB mass-storage device is being reseted, the flag should be set
-> already generally.  If the flag is still unset, that means the disk/network
-> device isn't added into system(or removed just now), so memory allocation
-> with block I/O should be allowed during the reset. Looks it isn't one problem,
-> isn't it?
+From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-I am afraid it is, because a disk may just have been probed as the deviceis being reset.
+V2->V3 Changes:
 
-	Regards
-		Oliver
+1. Moved the previous "[PATCH V2 2/6] Thermal: make sure cpufreq cooling
+register after cpufreq driver" from generic cpu cooling layer to ST-Ericsson
+driver, thus only 5 patches in total in V3 patch set.
+
+2. Update ST-Ericsson thermal driver due to review comments from Viresh Kumar
+and Francesco Lavra.
+
+hongbo.zhang (5):
+  Thermal: add indent for code alignment.
+  Thermal: fix bug of counting cpu frequencies.
+  Thermal: Remove the cooling_cpufreq_list.
+  Thermal: Add ST-Ericsson DB8500 thermal driver.
+  Thermal: Add ST-Ericsson DB8500 thermal properties and platform data.
+
+ .../devicetree/bindings/thermal/db8500-thermal.txt |  40 ++
+ arch/arm/boot/dts/dbx5x0.dtsi                      |  14 +
+ arch/arm/boot/dts/snowball.dts                     |  31 ++
+ arch/arm/configs/u8500_defconfig                   |   4 +
+ arch/arm/mach-ux500/board-mop500.c                 |  64 +++
+ drivers/thermal/Kconfig                            |  20 +
+ drivers/thermal/Makefile                           |   2 +
+ drivers/thermal/cpu_cooling.c                      | 103 +---
+ drivers/thermal/db8500_cpufreq_cooling.c           | 108 +++++
+ drivers/thermal/db8500_thermal.c                   | 531 +++++++++++++++++++++
+ include/linux/platform_data/db8500_thermal.h       |  38 ++
+ 11 files changed, 878 insertions(+), 77 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/db8500-thermal.txt
+ create mode 100644 drivers/thermal/db8500_cpufreq_cooling.c
+ create mode 100644 drivers/thermal/db8500_thermal.c
+ create mode 100644 include/linux/platform_data/db8500_thermal.h
+
+-- 
+1.7.11.3
 
