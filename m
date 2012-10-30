@@ -1,55 +1,34 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 5/6] power: export opp cpufreq functions
-Date: Tue, 30 Oct 2012 16:04:15 -0500
-Message-ID: <1351631056-25938-6-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 3/4] cpufreq, powernow-k8: Change email address
+Date: Wed, 31 Oct 2012 00:42:01 +0100
+Message-ID: <2384721.S5BJ6UP5pX@vostro.rjw.lan>
+References: <20121029174924.GA5024@tweety> <2663527.sPyzc5AXi8@vostro.rjw.lan> <20121029233100.GE8393@liondog.tnic>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20121029233100.GE8393@liondog.tnic>
+Sender: cpufreq-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>, Jean Delvare <khali@linux-fr.org>, Guenter Roeck <linux@roeck-us.net>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, lm-sensors@lm-sensors.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net, Stephane Eranian <eranian@google.com>, Robert Richter <rric@kernel.org>, =?ISO-8859-1?Q?J=F6rg_R=F6del?= <joro@8bytes.org>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: linux-pm@vger.kernel.org
+On Tuesday, October 30, 2012 12:31:00 AM Borislav Petkov wrote:
+> On Tue, Oct 30, 2012 at 12:33:15AM +0100, Rafael J. Wysocki wrote:
+> > On Monday, October 29, 2012 06:52:21 PM Andreas Herrmann wrote:
+> > > 
+> > > Signed-off-by: Andreas Herrmann <herrmann.der.user@googlemail.com>
+> > 
+> > Am I supposed to take this one?
+> 
+> Yes please.
 
----
- drivers/base/power/opp.c | 4 ++++
- 1 file changed, 4 insertions(+)
+OK, I'm going to push it for v3.7.
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index d946864..37dc5f4 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -23,6 +23,7 @@
- #include <linux/rcupdate.h>
- #include <linux/opp.h>
- #include <linux/of.h>
-+#include <linux/module.h>
- 
- /*
-  * Internal data structure organization with the OPP layer library is as
-@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(opp_init_cpufreq_table);
- 
- /**
-  * opp_free_cpufreq_table() - free the cpufreq table
-@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
- 	kfree(*table);
- 	*table = NULL;
- }
-+EXPORT_SYMBOL(opp_free_cpufreq_table);
- #endif		/* CONFIG_CPU_FREQ */
- 
- /**
-@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(of_init_opp_table);
- #endif
+Thanks,
+Rafael
+
+
 -- 
-1.7.11.7
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
