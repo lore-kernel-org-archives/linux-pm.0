@@ -1,149 +1,75 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [RFD][PATCH 5/7] PM / QoS: Make it possible to expose PM QoS
- device flags to user space
-Date: Tue, 30 Oct 2012 16:53:28 +0800
-Message-ID: <508F9588.5040105@intel.com>
-References: <201209282351.10663.rjw@sisk.pl> <201209282355.31823.rjw@sisk.pl>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH V2 2/6] Thermal: make sure cpufreq cooling register after
+ cpufreq driver
+Date: Tue, 30 Oct 2012 09:59:23 +0100
+Message-ID: <CAJLyvQxm-NbuWnF7f+4fFSk+hwPuVOHpCfuAUgmQq-ZAJvo9tQ@mail.gmail.com>
+References: <1350387889-15324-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351079900-32236-3-git-send-email-hongbo.zhang@linaro.com>
+	<CAK44p22G4ri9KBYiLMCK9SThgFxofz66LVgUY28SepaC+YBDdw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <201209282355.31823.rjw@sisk.pl>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Jean Pihet <j-pihet@ti.com>, linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mark gross <markgross@thegnar.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f174.google.com ([209.85.223.174]:44790 "EHLO
+	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051Ab2J3I7X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 04:59:23 -0400
+Received: by mail-ie0-f174.google.com with SMTP id k13so29589iea.19
+        for <linux-pm@vger.kernel.org>; Tue, 30 Oct 2012 01:59:23 -0700 (PDT)
+In-Reply-To: <CAK44p22G4ri9KBYiLMCK9SThgFxofz66LVgUY28SepaC+YBDdw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Kachhap <amit.kachhap@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-On 09/29/2012 05:55 AM, Rafael J. Wysocki wrote:
-> Define two device PM QoS flags, PM_QOS_FLAG_NO_POWER_OFF
-> and PM_QOS_FLAG_REMOTE_WAKEUP, and introduce routines
-> dev_pm_qos_expose_flags() and dev_pm_qos_hide_flags() allowing the
-> caller to expose those two flags to user space or to hide them
-> from it, respectively.
-> 
-> After the flags have been exposed, user space will see two
-> additional sysfs attributes, pm_qos_no_power_off and
-> pm_qos_remote_wakeup, under the device's /sys/devices/.../power/
-> directory.  Then, writing 1 to one of them will update the
-> PM QoS flags request owned by user space so that the corresponding
-> flag is requested to be set.  In turn, writing 0 to one of them
-> will cause the corresponding flag in the user space's request to
-> be cleared (however, the owners of the other PM QoS flags requests
-> for the same device may still request the flag to be set and it
-> may be effectively set even if user space doesn't request that).
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  Documentation/ABI/testing/sysfs-devices-power |   31 ++++
->  drivers/base/power/power.h                    |    6 
->  drivers/base/power/qos.c                      |  169 ++++++++++++++++++++------
->  drivers/base/power/sysfs.c                    |   95 +++++++++++++-
->  include/linux/pm.h                            |    1 
->  include/linux/pm_qos.h                        |   26 ++++
->  6 files changed, 280 insertions(+), 48 deletions(-)
-> 
-> Index: linux/drivers/base/power/qos.c
-> ===================================================================
-> --- linux.orig/drivers/base/power/qos.c
-> +++ linux/drivers/base/power/qos.c
-> @@ -40,6 +40,7 @@
->  #include <linux/device.h>
->  #include <linux/mutex.h>
->  #include <linux/export.h>
-> +#include <linux/pm_runtime.h>
->  
->  #include "power.h"
->  
-> @@ -322,6 +323,38 @@ int dev_pm_qos_add_request(struct device
->  EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
->  
->  /**
-> + * __dev_pm_qos_update_request - Modify an existing device PM QoS request.
-> + * @req : PM QoS request to modify.
-> + * @new_value: New value to request.
-> + */
-> +int __dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value)
-> +{
-> +	s32 curr_value;
-> +	int ret = 0;
-> +
-> +	if (!req->dev->power.qos) {
-> +		ret = -ENODEV;
-> +		goto out;
-> +	}
-> +
-> +	switch(req->type) {
-> +	case DEV_PM_QOS_LATENCY:
-> +		curr_value = req->data.pnode.prio;
-> +		break;
-> +	case DEV_PM_QOS_FLAGS:
-> +		curr_value = req->data.flr.flags;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (curr_value != new_value)
-> +		ret = apply_constraint(req, PM_QOS_UPDATE_REQ, new_value);
-> +
-> +	return ret;
-> +}
-> +
-> +/**
->   * dev_pm_qos_update_request - modifies an existing qos request
->   * @req : handle to list element holding a dev_pm_qos request to use
->   * @new_value: defines the qos request
-> @@ -336,11 +369,9 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_request
->   * -EINVAL in case of wrong parameters, -ENODEV if the device has been
->   * removed from the system
->   */
-> -int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
-> -			      s32 new_value)
-> +int dev_pm_qos_update_request(struct dev_pm_qos_request *req, s32 new_value)
->  {
-> -	s32 curr_value;
-> -	int ret = 0;
-> +	int ret;
->  
->  	if (!req) /*guard against callers passing in null */
->  		return -EINVAL;
-> @@ -350,29 +381,9 @@ int dev_pm_qos_update_request(struct dev
->  		return -EINVAL;
->  
->  	mutex_lock(&dev_pm_qos_mtx);
-> -
-> -	if (!req->dev->power.qos) {
-> -		ret = -ENODEV;
-> -		goto out;
-> -	}
-> -
-> -	switch(req->type) {
-> -	case DEV_PM_QOS_LATENCY:
-> -		curr_value = req->data.pnode.prio;
-> -		break;
-> -	case DEV_PM_QOS_FLAGS:
-> -		curr_value = req->data.flr.flags;
-> -		break;
-> -	default:
-> -		ret = -EINVAL;
-> -		goto out;
-> -	}
-> -
-> -	if (curr_value != new_value)
-> -		ret = apply_constraint(req, PM_QOS_UPDATE_REQ, new_value);
-> -
-> - out:
-> +	__dev_pm_qos_update_request(req, new_value);
-
-You forgot to assign the return value here.
-
-Thanks,
-Aaron
-
->  	mutex_unlock(&dev_pm_qos_mtx);
-> +
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
-> @@ -533,10 +544,19 @@ int dev_pm_qos_add_ancestor_request(stru
->  EXPORT_SYMBOL_GPL(dev_pm_qos_add_ancestor_request);
+On 29 October 2012 12:42, Amit Kachhap <amit.kachhap@linaro.org> wrote:
+> On 24 October 2012 17:28, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
+>> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+>>
+>> The cpufreq works as a cooling device, so the cooling layer should check if the
+>> cpufreq driver is initialized or not.
+>>
+>> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+>> ---
+>>  drivers/thermal/cpu_cooling.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+>> index b6b4c2a..7519a0b 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -354,6 +354,10 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>>         int ret = 0, i;
+>>         struct cpufreq_policy policy;
+>>
+>> +       /* make sure cpufreq driver has been initialized */
+>> +       if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
+>> +               return ERR_PTR(-EPROBE_DEFER);
+>> +
+> Hi Hongbo,
+>
+> I am not against this change but this might cause unnecessary delay in
+> probe thread. I also thought about it but have not put this
+> restriction. Actually you can put a check in platform_bind for this
+> condition and defer the binding till the time actual throttling
+> starts. So basically only after throttling cpufreq_table is needed.
+> (See my implementation exynos_thermal.c).
+In fact, this piece of checking code was in my
+db8500_cpufreq_cooling_probe() before, I will move it back there
+again, and the ST-E's policy is separating cooling devs and thermal
+zone, so cannot be in binding function on my platform, only in probe
+function instead.
+>
+> Thanks,
+> Amit Daniel
+>>         list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
+>>                 cpufreq_dev_count++;
+>>
+>> --
+>> 1.7.11.3
+>>
+>>
+>> _______________________________________________
+>> linaro-dev mailing list
+>> linaro-dev@lists.linaro.org
+>> http://lists.linaro.org/mailman/listinfo/linaro-dev
