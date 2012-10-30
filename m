@@ -1,51 +1,55 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
-Date: Tue, 30 Oct 2012 12:54:33 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1210301251050.1363-100000@iolanthe.rowland.org>
-References: <CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Ming Lei <ming.lei@canonical.com>
-Cc: linux-kernel@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 5/6] power: export opp cpufreq functions
+Date: Tue, 30 Oct 2012 16:04:15 -0500
+Message-ID: <1351631056-25938-6-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 31 Oct 2012, Ming Lei wrote:
+Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-pm@vger.kernel.org
 
-> On Tue, Oct 30, 2012 at 11:38 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> 
-> >
-> > Okay, I see your point.  But acquiring the lock here doesn't solve the
-> > problem.  Suppose a thread is about to reset a USB mass-storage device.
-> > It acquires the lock and sees that the noio flag is clear.  But before
-> > it can issue the reset, another thread sets the noio flag.
-> 
-> If the USB mass-storage device is being reseted, the flag should be set
-> already generally.  If the flag is still unset, that means the disk/network
-> device isn't added into system(or removed just now), so memory allocation
-> with block I/O should be allowed during the reset. Looks it isn't one problem,
-> isn't it?
+---
+ drivers/base/power/opp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-As Oliver said, it can be a problem.
-
-> > Lastly, pm_runtime_get_memalloc_noio always returns false when
-> > CONFIG_PM_RUNTIME is disabled.  But we still need to prevent I/O during
-> > usb_reset_device even when there's no runtime PM.  Maybe the simplest
-> > answer is always to set noio during resets.  That would also help with
-> > the race described above.
-> 
-> I have thought about this. IMO, pm_runtime_get_memalloc_noio should
-> return true always if CONFIG_PM_RUNTIME is unset.
-
-That's okay as long as the only user of pm_runtime_get_memalloc_noio
-(apart from the runtime PM core) is usbcore.
-
-Alan Stern
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d946864..37dc5f4 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -23,6 +23,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/opp.h>
+ #include <linux/of.h>
++#include <linux/module.h>
+ 
+ /*
+  * Internal data structure organization with the OPP layer library is as
+@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(opp_init_cpufreq_table);
+ 
+ /**
+  * opp_free_cpufreq_table() - free the cpufreq table
+@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
+ 	kfree(*table);
+ 	*table = NULL;
+ }
++EXPORT_SYMBOL(opp_free_cpufreq_table);
+ #endif		/* CONFIG_CPU_FREQ */
+ 
+ /**
+@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(of_init_opp_table);
+ #endif
+-- 
+1.7.11.7
