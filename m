@@ -1,21 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: "Rafael J. Wysocki via RT" <rt@kernel.org>
 Subject: Re: [k.org requests #104] Please add 2 categories
-Date: Tue, 30 Oct 2012 16:32:27 +0100
-Message-ID: <1451306.UP2oztoM1Z@vostro.rjw.lan>
-References: <RT-Ticket-104@kernel.org> <508F40D5.2010109@kernel.org> <rt-3.8.13-793-1351610640-515.104-6-0@kernel.org>
+Date: Tue, 30 Oct 2012 15:28:31 +0000
+Message-ID: <rt-3.8.13-17378-1351610911-531.104-6-0@kernel.org>
+References: <RT-Ticket-104@kernel.org> <508F40D5.2010109@kernel.org> <rt-3.8.13-793-1351610640-515.104-6-0@kernel.org> <1451306.UP2oztoM1Z@vostro.rjw.lan>
+Reply-To: rt@kernel.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:45988 "EHLO ogre.sisk.pl"
+Received: from mail.kernel.org ([198.145.19.201]:52207 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440Ab2J3P2Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 11:28:24 -0400
-In-Reply-To: <rt-3.8.13-793-1351610640-515.104-6-0@kernel.org>
+	id S1757499Ab2J3P2l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Oct 2012 11:28:41 -0400
+In-Reply-To: <1451306.UP2oztoM1Z@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rt@kernel.org
-Cc: lenb@kernel.org, linux-pm@vger.kernel.org
+To: lenb@kernel.org
+Cc: linux-pm@vger.kernel.org
 
 On Tuesday, October 30, 2012 03:24:00 PM Konstantin Ryabitsev via RT wrote:
 > On Tue Oct 30 15:10:36 2012, lenb@kernel.org wrote:
@@ -49,3 +50,4 @@ Rafael
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
+
