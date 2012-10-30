@@ -1,70 +1,69 @@
-From: "Arend van Spriel" <arend@broadcom.com>
-Subject: Re: Linux 3.7-rc3
-Date: Tue, 30 Oct 2012 11:10:34 +0100
-Message-ID: <508FA79A.3030309@broadcom.com>
-References: <CA+55aFwwTc4QXKqiECgE9NOE2zjC6GsGHHydGP9YDbgQSbw9Aw@mail.gmail.com>
- <26004880.qboZkUVCy9@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v4 0/5] Migrate SCSI drivers to use dev_pm_ops
+Date: Tue, 30 Oct 2012 18:17:57 +0800
+Message-ID: <20121030101756.GA30125@aaronlu.sh.intel.com>
+References: <1350293219-8154-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mms2.broadcom.com ([216.31.210.18]:2891 "EHLO mms2.broadcom.com"
+Received: from mga09.intel.com ([134.134.136.24]:41297 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754913Ab2J3KKt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 06:10:49 -0400
-In-Reply-To: <26004880.qboZkUVCy9@vostro.rjw.lan>
+	id S1753667Ab2J3KSD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Oct 2012 06:18:03 -0400
+Content-Disposition: inline
+In-Reply-To: <1350293219-8154-1-git-send-email-aaron.lu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hante Meuleman <meuleman@broadcom.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
 
-On 10/30/2012 01:10 AM, Rafael J. Wysocki wrote:
-> On Sunday, October 28, 2012 12:59:49 PM Linus Torvalds wrote:
->> It's been a week, time for -rc3!
->>
->> Nothing particularly stands out here. Lots of small fixes, exemplified
->> by the series of memory leak fixes in usb serial drivers. Just a lot
->> of random stuff..
->>
->> Most of it is drivers (all over: drm, wireless, staging, usb, sound),
->> but there's a few filesystem updates (nfs, btrfs, ext4), arch updates
->> (arm, x86 and m68k) and just random stuff. Shortlog appended.
->
-> Unfortunately, s2disk is broken with this one and previous -rc.  In the
-> majority of cases it just hangs the machine during hibernation, although
-> sometimes it returns to user space reporting freezing problems, suspicions
-> RCU usage and similar stuff, pretty much without any useful debug information.
->
-> I'm quite confident that v3.6 was OK (and -stable based on that too), so
-> it most likely is a recent regression.  The in-kernel hibernation
-> (ie. "echo disk > /sys/power/state") works no problem.  So does suspend to
-> RAM on my test boxes.
+Hi James,
 
-Since v3.7-rc1 I am seeing suspend to RAM fail as well. It was obscured 
-by a nouveau recursive locking issue on my machine. I reverted the 3.7 
-DRM merged completely. From there "echo mem > /sys/power/state" works, 
-but choosing suspend like most mere mortals do results in suspend, but 
-attempt to resume brings me straight to the BIOS starting anew.
+Sorry to bother you, will this patchset enter 3.8?
 
-> So far I have been able to reproduce this 100% of the time on two machines
-> with Intel CPUs and graphics driven by i915.  I _suspect_ that this may be
-> related to VT switching, because s2disk does some ugly things in that area
-> which are not done by the in-kernel code.  Dunno.
->
-> Anyway, it looks like nothing short of bisection is going to help debug this,
-> but I'm afraid I won't have the time to bisect within the next two weeks, so if
-> anyone can reproduce this issue and will be able to bisect it, please help
-> (openSUSE/Tumbleweed users anyone?).
->
-> Thanks,
-> Rafael
->
->
+Thanks,
+Aaron
 
-Not sure if it has the same root cause. Since DRM revert did not work 
-for me I put my money on ACPI (not a lot of money though ;-) ).
-
-Gr. AvS
-
+On Mon, Oct 15, 2012 at 05:26:54PM +0800, Aaron Lu wrote:
+> v4:
+> Only Patch 4 is modified:
+> Fixed a line over 80 characters warning by checkpatch.pl;
+> Update the changelog so that it is no more a try :-)
+> 
+> v3:
+> Only patch 4 is modified:
+> Remove the special case for system freeze in scsi_bus_suspend_common
+> as pointed out by Alan Stern;
+> Updated some comments;
+> Removed the use of typedef (*pm_callback_t)(struct device *).
+> 
+> v2:
+> Change the runtime suspend behaviour of sd driver by putting the device
+> into stopped power state.
+> Revert 2 patches which are no longer needed as pointed out by Alan Stern.
+> Find out device callbacks in bus callbacks as suggested by Alan Stern.
+> 
+> Due to these changes, patch number grows from 2 -> 5.
+> 
+> v1:
+> The 2 patches will migrate SCSI drivers to use the pm callbacks defined
+> in dev_pm_ops as pm_message is deprecated and should not be used by driver.
+> Bus level callback is changed to use callbacks defined in dev_pm_ops when
+> needed and sd's pm callback is updated to use what are defined in dev_pm_ops.
+> 
+> 
+> Aaron Lu (5):
+>   sd: put to stopped power state when runtime suspend
+>   Revert "[SCSI] scsi_pm: set device runtime state before parent
+>     suspended"
+>   Revert "[SCSI] runtime resume parent for child's system-resume"
+>   pm: use callbacks from dev_pm_ops for scsi devices
+>   sd: update sd to use the new pm callbacks
+> 
+>  drivers/scsi/scsi_pm.c | 98 +++++++++++++++++++++++++++-----------------------
+>  drivers/scsi/sd.c      | 18 +++++++---
+>  2 files changed, 67 insertions(+), 49 deletions(-)
+> 
+> -- 
+> 1.7.12.21.g871e293
+> 
