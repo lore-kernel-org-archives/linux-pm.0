@@ -1,126 +1,246 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 5/7] ACPI / PM: Provide device PM functions operating on
- struct acpi_device
-Date: Tue, 30 Oct 2012 15:28:45 +0800
-Message-ID: <20121030072844.GA6154@aaronlu.sh.intel.com>
-References: <1766582.8gdQKXoi0K@vostro.rjw.lan>
- <3903921.4RDYB7KMxW@vostro.rjw.lan>
+From: Amit Kachhap <amit.kachhap@linaro.org>
+Subject: Re: [PATCH V2 4/6] Thermal: Remove the cooling_cpufreq_list.
+Date: Tue, 30 Oct 2012 13:33:16 +0530
+Message-ID: <CAK44p21QhTT0xwUh4d8CzoN3R0Qoz4uXGSu4=a3s7cT49YicNQ@mail.gmail.com>
+References: <50898F97.3000202@gmail.com>
+	<1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3903921.4RDYB7KMxW@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Lv Zheng <lv.zheng@intel.com>, Adrian Hunter <adrian.hunter@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:62195 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755870Ab2J3IDR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 04:03:17 -0400
+Received: by mail-ob0-f174.google.com with SMTP id uo13so5438025obb.19
+        for <linux-pm@vger.kernel.org>; Tue, 30 Oct 2012 01:03:17 -0700 (PDT)
+In-Reply-To: <1351235345-13050-1-git-send-email-hongbo.zhang@linaro.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-On Mon, Oct 29, 2012 at 10:11:20AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If the caller of acpi_bus_set_power() already has a pointer to the
-> struct acpi_device object corresponding to the device in question, it
-> doesn't make sense for it to go through acpi_bus_get_device(), which
-> may be costly, because it involves acquiring the global ACPI
-> namespace mutex.
-> 
-> For this reason, export the function operating on struct acpi_device
-> objects used internally by acpi_bus_set_power(), so that it may be
-> called instead of acpi_bus_set_power() in the above case, and change
-> its name to acpi_device_set_power().
-> 
-> Additionally, introduce two inline wrappers for checking ACPI PM
-> capabilities of devices represented by struct acpi_device objects.
+On 26 October 2012 12:39, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
+> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+>
+> Problem of using this list is that the cpufreq_get_max_state callback will be
+> called when register cooling device by thermal_cooling_device_register, but
+> this list isn't ready at this moment. What's more, there is no need to maintain
+> such a list, we can get cpufreq_cooling_device instance by the private
+> thermal_cooling_device.devdata.
 
-What about adding yet another wrapper to check power off capability of
-the device? If device has _PS3 or _PRx, it means the device can be
-powered off from ACPI's perspective. This is useful for ZPODD when
-deciding if platform has the required ability to support it.
+Hi,
 
-Thanks,
-Aaron
+Removing this list seems fine as most of frequency checks are moved
+inside generic thermal layer.
+Some minor review comments below,
 
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reviewed-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+>
+> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
 > ---
->  drivers/acpi/bus.c      |   15 ++++++++++++---
->  include/acpi/acpi_bus.h |   11 +++++++++++
->  2 files changed, 23 insertions(+), 3 deletions(-)
-> 
-> Index: linux/drivers/acpi/bus.c
-> ===================================================================
-> --- linux.orig/drivers/acpi/bus.c
-> +++ linux/drivers/acpi/bus.c
-> @@ -257,7 +257,15 @@ static int __acpi_bus_get_power(struct a
->  }
->  
->  
-> -static int __acpi_bus_set_power(struct acpi_device *device, int state)
-> +/**
-> + * acpi_device_set_power - Set power state of an ACPI device.
-> + * @device: Device to set the power state of.
-> + * @state: New power state to set.
-> + *
-> + * Callers must ensure that the device is power manageable before using this
-> + * function.
-> + */
-> +int acpi_device_set_power(struct acpi_device *device, int state)
+>  drivers/thermal/cpu_cooling.c | 91 +++++++++----------------------------------
+>  1 file changed, 19 insertions(+), 72 deletions(-)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 415b041..2ffd12c 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
+>  };
+>  static LIST_HEAD(cooling_cpufreq_list);
+>  static DEFINE_IDR(cpufreq_idr);
+> +static DEFINE_MUTEX(cooling_cpufreq_lock);
+>
+> -static struct mutex cooling_cpufreq_lock;
+> +static unsigned int cpufreq_dev_count;
+>
+>  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+>  #define NOTIFY_INVALID NULL
+> @@ -240,28 +241,18 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+>  static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>                                  unsigned long *state)
 >  {
->  	int result = 0;
->  	acpi_status status = AE_OK;
-> @@ -341,6 +349,7 @@ static int __acpi_bus_set_power(struct a
->  
->  	return result;
+> -       int ret = -EINVAL, i = 0;
+> -       struct cpufreq_cooling_device *cpufreq_device;
+> -       struct cpumask *maskPtr;
+> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+check cdev is not null.
+> +       struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
+>         unsigned int cpu;
+>         struct cpufreq_frequency_table *table;
+>         unsigned long count = 0;
+> +       int i = 0;
+>
+> -       mutex_lock(&cooling_cpufreq_lock);
+> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev)
+> -                       break;
+> -       }
+> -       if (cpufreq_device == NULL)
+> -               goto return_get_max_state;
+> -
+> -       maskPtr = &cpufreq_device->allowed_cpus;
+>         cpu = cpumask_any(maskPtr);
+>         table = cpufreq_frequency_get_table(cpu);
+>         if (!table) {
+>                 *state = 0;
+> -               ret = 0;
+> -               goto return_get_max_state;
+> +               return 0;
+>         }
+>
+>         for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
+> @@ -272,12 +263,10 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>
+>         if (count > 0) {
+>                 *state = --count;
+> -               ret = 0;
+> +               return 0;
+>         }
+>
+> -return_get_max_state:
+> -       mutex_unlock(&cooling_cpufreq_lock);
+> -       return ret;
+> +       return -EINVAL;
 >  }
-> +EXPORT_SYMBOL(acpi_device_set_power);
->  
->  
->  int acpi_bus_set_power(acpi_handle handle, int state)
-> @@ -359,7 +368,7 @@ int acpi_bus_set_power(acpi_handle handl
->  		return -ENODEV;
->  	}
->  
-> -	return __acpi_bus_set_power(device, state);
-> +	return acpi_device_set_power(device, state);
+>
+>  /**
+> @@ -288,20 +277,10 @@ return_get_max_state:
+>  static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
+>                                  unsigned long *state)
+>  {
+> -       int ret = -EINVAL;
+> -       struct cpufreq_cooling_device *cpufreq_device;
+> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>
+> -       mutex_lock(&cooling_cpufreq_lock);
+> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
+> -                       *state = cpufreq_device->cpufreq_state;
+> -                       ret = 0;
+> -                       break;
+> -               }
+> -       }
+> -       mutex_unlock(&cooling_cpufreq_lock);
+> -
+> -       return ret;
+> +       *state = cpufreq_device->cpufreq_state;
+> +       return 0;
 >  }
->  EXPORT_SYMBOL(acpi_bus_set_power);
->  
-> @@ -402,7 +411,7 @@ int acpi_bus_update_power(acpi_handle ha
->  	if (result)
->  		return result;
->  
-> -	result = __acpi_bus_set_power(device, state);
-> +	result = acpi_device_set_power(device, state);
->  	if (!result && state_p)
->  		*state_p = state;
->  
-> Index: linux/include/acpi/acpi_bus.h
-> ===================================================================
-> --- linux.orig/include/acpi/acpi_bus.h
-> +++ linux/include/acpi/acpi_bus.h
-> @@ -338,6 +338,7 @@ acpi_status acpi_bus_get_status_handle(a
->  				       unsigned long long *sta);
->  int acpi_bus_get_status(struct acpi_device *device);
->  int acpi_bus_set_power(acpi_handle handle, int state);
-> +int acpi_device_set_power(struct acpi_device *device, int state);
->  int acpi_bus_update_power(acpi_handle handle, int *state_p);
->  bool acpi_bus_power_manageable(acpi_handle handle);
->  bool acpi_bus_can_wakeup(acpi_handle handle);
-> @@ -482,6 +483,16 @@ static inline int acpi_pm_device_sleep_w
+>
+>  /**
+> @@ -312,22 +291,9 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
+>  static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+>                                  unsigned long state)
+>  {
+> -       int ret = -EINVAL;
+> -       struct cpufreq_cooling_device *cpufreq_device;
+> +       struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+check cdev is not null
+>
+> -       mutex_lock(&cooling_cpufreq_lock);
+> -       list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
+> -               if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
+> -                       ret = 0;
+> -                       break;
+> -               }
+> -       }
+> -       if (!ret)
+> -               ret = cpufreq_apply_cooling(cpufreq_device, state);
+> -
+> -       mutex_unlock(&cooling_cpufreq_lock);
+> -
+> -       return ret;
+> +       return cpufreq_apply_cooling(cpufreq_device, state);
 >  }
->  #endif
->  
-> +static inline bool acpi_device_power_manageable(struct acpi_device *adev)
-> +{
-> +	return adev->flags.power_manageable;
-> +}
+>
+>  /* Bind cpufreq callbacks to thermal cooling device ops */
+> @@ -351,7 +317,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>  {
+>         struct thermal_cooling_device *cool_dev;
+>         struct cpufreq_cooling_device *cpufreq_dev = NULL;
+> -       unsigned int cpufreq_dev_count = 0, min = 0, max = 0;
+> +       unsigned int min = 0, max = 0;
+>         char dev_name[THERMAL_NAME_LENGTH];
+>         int ret = 0, i;
+>         struct cpufreq_policy policy;
+> @@ -360,9 +326,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>         if (!cpufreq_frequency_get_table(cpumask_any(clip_cpus)))
+>                 return ERR_PTR(-EPROBE_DEFER);
+>
+> -       list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
+> -               cpufreq_dev_count++;
+> -
+>         /*Verify that all the clip cpus have same freq_min, freq_max limit*/
+>         for_each_cpu(i, clip_cpus) {
+>                 /*continue if cpufreq policy not found and not return error*/
+> @@ -384,9 +347,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>
+>         cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
+>
+> -       if (cpufreq_dev_count == 0)
+> -               mutex_init(&cooling_cpufreq_lock);
+> -
+>         ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
+>         if (ret) {
+>                 kfree(cpufreq_dev);
+> @@ -405,12 +365,12 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>         cpufreq_dev->cool_dev = cool_dev;
+>         cpufreq_dev->cpufreq_state = 0;
+>         mutex_lock(&cooling_cpufreq_lock);
+> -       list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list);
+>
+>         /* Register the notifier for first cpufreq cooling device */
+>         if (cpufreq_dev_count == 0)
+>                 cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+>                                                 CPUFREQ_POLICY_NOTIFIER);
+> +       cpufreq_dev_count++;
+>
+>         mutex_unlock(&cooling_cpufreq_lock);
+>         return cool_dev;
+> @@ -423,33 +383,20 @@ EXPORT_SYMBOL(cpufreq_cooling_register);
+>   */
+>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+>  {
+> -       struct cpufreq_cooling_device *cpufreq_dev = NULL;
+> -       unsigned int cpufreq_dev_count = 0;
+> +       struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
+>
+>         mutex_lock(&cooling_cpufreq_lock);
+> -       list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
+> -               if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
+> -                       break;
+> -               cpufreq_dev_count++;
+> -       }
+> -
+> -       if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
+> -               mutex_unlock(&cooling_cpufreq_lock);
+> -               return;
+> -       }
+> -
+> -       list_del(&cpufreq_dev->node);
+> +       cpufreq_dev_count--;
+>
+>         /* Unregister the notifier for the last cpufreq cooling device */
+> -       if (cpufreq_dev_count == 1) {
+> +       if (cpufreq_dev_count == 0) {
+>                 cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+>                                         CPUFREQ_POLICY_NOTIFIER);
+>         }
+>         mutex_unlock(&cooling_cpufreq_lock);
 > +
-> +static inline bool acpi_device_can_wakeup(struct acpi_device *adev)
-> +{
-> +	return adev->wakeup.flags.valid;
-> +}
-> +
->  #else	/* CONFIG_ACPI */
->  
->  static inline int register_acpi_bus_type(void *bus) { return 0; }
-> 
+>         thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+>         release_idr(&cpufreq_idr, cpufreq_dev->id);
+> -       if (cpufreq_dev_count == 1)
+> -               mutex_destroy(&cooling_cpufreq_lock);
+>         kfree(cpufreq_dev);
+>  }
+>  EXPORT_SYMBOL(cpufreq_cooling_unregister);
+> --
+> 1.7.11.3
+>
+>
+> _______________________________________________
+> linaro-dev mailing list
+> linaro-dev@lists.linaro.org
+> http://lists.linaro.org/mailman/listinfo/linaro-dev
