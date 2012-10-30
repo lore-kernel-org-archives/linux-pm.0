@@ -1,69 +1,79 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v4 0/5] Migrate SCSI drivers to use dev_pm_ops
-Date: Tue, 30 Oct 2012 18:17:57 +0800
-Message-ID: <20121030101756.GA30125@aaronlu.sh.intel.com>
-References: <1350293219-8154-1-git-send-email-aaron.lu@intel.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
+Date: Tue, 30 Oct 2012 11:57:35 +0100
+Message-ID: <2149424.HsnQpSLjK5@linux-lqwf.site>
+References: <1351513440-9286-3-git-send-email-ming.lei@canonical.com> <Pine.LNX.4.44L0.1210291125590.22882-100000@netrider.rowland.org> <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:41297 "EHLO mga09.intel.com"
+Received: from cantor2.suse.de ([195.135.220.15]:47860 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667Ab2J3KSD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 06:18:03 -0400
-Content-Disposition: inline
-In-Reply-To: <1350293219-8154-1-git-send-email-aaron.lu@intel.com>
+	id S1758201Ab2J3Kvr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Oct 2012 06:51:47 -0400
+In-Reply-To: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
+To: Ming Lei <ming.lei@canonical.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 
-Hi James,
+On Tuesday 30 October 2012 11:21:33 Ming Lei wrote:
+> On Mon, Oct 29, 2012 at 11:41 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Mon, 29 Oct 2012, Ming Lei wrote:
+> >
+> >> The patch introduces the flag of memalloc_noio_resume in
+> >> 'struct dev_pm_info' to help PM core to teach mm not allocating
+> >> memory with GFP_KERNEL flag for avoiding probable deadlock
+> >> problem.
+> >>
+> >> As explained in the comment, any GFP_KERNEL allocation inside
+> >> runtime_resume on any one of device in the path from one block
+> >> or network device to the root device in the device tree may cause
+> >> deadlock, the introduced pm_runtime_set_memalloc_noio() sets or
+> >> clears the flag on device of the path recursively.
+> >>
+> >> This patch also introduces pm_runtime_get_memalloc_noio() because
+> >> the flag may be accessed in block device's error handling path
+> >> (for example, usb device reset)
+> >
+> >> +/*
+> >> + * pm_runtime_get_memalloc_noio - Get a device's memalloc_noio flag.
+> >> + * @dev: Device to handle.
+> >> + *
+> >> + * Return the device's memalloc_noio flag.
+> >> + *
+> >> + * The device power lock is held because bitfield is not SMP-safe.
+> >> + */
+> >> +bool pm_runtime_get_memalloc_noio(struct device *dev)
+> >> +{
+> >> +     bool ret;
+> >> +     spin_lock_irq(&dev->power.lock);
+> >> +     ret = dev->power.memalloc_noio_resume;
+> >> +     spin_unlock_irq(&dev->power.lock);
+> >> +     return ret;
+> >> +}
+> >
+> > You don't need to acquire and release a spinlock just to read the
+> > value.  Reading bitfields _is_ SMP-safe; writing them is not.
+> 
+> Thanks for your review.
+> 
+> As you pointed out before, the flag need to be checked before
+> resetting usb devices, so the lock should be held to make another
+> context(CPU) see the updated value suppose one context(CPU)
+> call pm_runtime_set_memalloc_noio() to change the flag at the
+> same time.
+> 
+> The lock needn't to be held when the function is called inside
+> pm_runtime_set_memalloc_noio(),  so the bitfield flag should
+> be checked directly without holding power lock in dev_memalloc_noio().
 
-Sorry to bother you, will this patchset enter 3.8?
+Hi,
 
-Thanks,
-Aaron
+how is this to work with power management domains?
+And I may be dense, but disks are added in slave_configure().
+This seems to be a race to me.
 
-On Mon, Oct 15, 2012 at 05:26:54PM +0800, Aaron Lu wrote:
-> v4:
-> Only Patch 4 is modified:
-> Fixed a line over 80 characters warning by checkpatch.pl;
-> Update the changelog so that it is no more a try :-)
-> 
-> v3:
-> Only patch 4 is modified:
-> Remove the special case for system freeze in scsi_bus_suspend_common
-> as pointed out by Alan Stern;
-> Updated some comments;
-> Removed the use of typedef (*pm_callback_t)(struct device *).
-> 
-> v2:
-> Change the runtime suspend behaviour of sd driver by putting the device
-> into stopped power state.
-> Revert 2 patches which are no longer needed as pointed out by Alan Stern.
-> Find out device callbacks in bus callbacks as suggested by Alan Stern.
-> 
-> Due to these changes, patch number grows from 2 -> 5.
-> 
-> v1:
-> The 2 patches will migrate SCSI drivers to use the pm callbacks defined
-> in dev_pm_ops as pm_message is deprecated and should not be used by driver.
-> Bus level callback is changed to use callbacks defined in dev_pm_ops when
-> needed and sd's pm callback is updated to use what are defined in dev_pm_ops.
-> 
-> 
-> Aaron Lu (5):
->   sd: put to stopped power state when runtime suspend
->   Revert "[SCSI] scsi_pm: set device runtime state before parent
->     suspended"
->   Revert "[SCSI] runtime resume parent for child's system-resume"
->   pm: use callbacks from dev_pm_ops for scsi devices
->   sd: update sd to use the new pm callbacks
-> 
->  drivers/scsi/scsi_pm.c | 98 +++++++++++++++++++++++++++-----------------------
->  drivers/scsi/sd.c      | 18 +++++++---
->  2 files changed, 67 insertions(+), 49 deletions(-)
-> 
-> -- 
-> 1.7.12.21.g871e293
-> 
+	Regards
+		Oliver
+
