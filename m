@@ -1,143 +1,84 @@
 From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v8 10/11] scsi: sr: support (un)block events
-Date: Tue, 30 Oct 2012 13:02:35 +0800
-Message-ID: <508F5F6B.2040706@intel.com>
-References: <1351501298-3716-1-git-send-email-aaron.lu@intel.com>  <1351501298-3716-11-git-send-email-aaron.lu@intel.com> <1351534295.3051.9.camel@dabdike>
+Subject: Re: [PATCH v8 09/11] block: add a new interface to block events
+Date: Tue, 30 Oct 2012 15:04:17 +0800
+Message-ID: <508F7BF1.1040009@intel.com>
+References: <1351501298-3716-1-git-send-email-aaron.lu@intel.com> <1351501298-3716-10-git-send-email-aaron.lu@intel.com> <20121029153536.GL5171@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <1351534295.3051.9.camel@dabdike>
+In-Reply-To: <20121029153536.GL5171@htj.dyndns.org>
 Sender: linux-ide-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/30/2012 02:11 AM, James Bottomley wrote:
-> On Mon, 2012-10-29 at 17:01 +0800, Aaron Lu wrote:
->> 2 interfaces are added to block/unblock events for the disk sr manages.
->> This is used by SATA ZPODD, when ODD is runtime powered off, the events
->> poll is no longer needed so better be blocked. And once powered on,
->> events poll will be unblocked.
->>
->> These 2 interfaces are needed here because SATA layer does not have
->> access to the gendisk structure sr manages.
+On 10/29/2012 11:35 PM, Tejun Heo wrote:
+> Hello,
 > 
-> I'm afraid this is a nasty layering violation.  You can't have a low
-> level driver have knowledge of a call back in an upper layer one (in
-> this case sr_block_events).
-
-I agree. But since ZPODD is now implemented in ATA layer now, this seems
-the only way to do it.
-
+> On Mon, Oct 29, 2012 at 05:01:36PM +0800, Aaron Lu wrote:
+>> ODD_suspend                        disk_events_workfn
+>>   ata_port_suspend                   check_events
+>>     disk_block_events                  resume ODD
+>>       cancel_delayed_work_sync           resume parent
+>>       (waiting for disk_events_workfn)   (waiting for suspend callback)
 > 
-> This is all done it looks like because of the problem of getting access
-> to the scsi_cd structure from libata, but it's not the right way to
-> solve it.
+> I don't understand why solving it needs to be this elaborate.
+							:-)
 
-Indeed, and any suggestion on a right way?
+> check_event() can retry.  Just add a per-sr mutex which is try-locked
+> by sr_block_check_events() and grab it when entering zero power.
 
-> 
-> I also don't really think you need to do any blocking or unblocking.  As
-> I said in the previous thread, just fake the events the standard tells
-> you to, so userspace can probe to its heart's content and you can keep
-> the device powered off.
+Good suggestion. I didn't think about solving it this way.
 
-No problem for the device, the problem is for its ancestor devices in my
-current implementation. If the event is not blocked, the ODD will be
-runtime resumed every 2 seconds. And along the way, all its ancestor
-devices will have to be runtime resumed every 2 seconds, even I did some
-trick to avoid power on the ODD itself. This is not a good thing from
-power management perspective.
+Many people suggest me that ZPODD is pure SATA/ACPI stuff, and should
+not pollute sr driver, so I was trying hard not to touch sr while
+preparing these patches, unless there is no other choice(like the
+blocking event interface).
 
-And there are two reasons I want to align runtime PM with ZPODD:
+So I'm not sure if your suggestion is the way to go.
 
-1 Simpler code.
-And if I do not align ZPODD with runtime PM, I will need to maintain the
-ODD's software status myself, and deal with some race conditions like
-when I was to power off the ODD, a new command may arrive; or when the
-ODD is powering on, all arriving commands need to be failed for the
-moment untill the ODD is fully recovered from EH, etc. And all these
-things can be avoided if I rely on runtime PM framework.
-
-2 Integrate with the whole system
-With runtime PM, when ODD is suspended, its ancestor devices will have a
-chance to enter low power state.
-
-Basically, I think power off is a special suspend state, it should
-happen after the device enters runtime suspended state, and this is the
-idea I used to implement ZPODD.
-
-Thanks,
-Aaron
+James, what do you think? Is it OK if I add a mutex into the scsi_cd
+structure to do this? Of course I'll define this only under
+CONFIG_SATA_ZPODD.
 
 > 
-> James
-> 
-> 
->> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->> ---
->>  drivers/scsi/Makefile   |  1 +
->>  drivers/scsi/sr_zpodd.c | 21 +++++++++++++++++++++
->>  drivers/scsi/sr_zpodd.h |  9 +++++++++
->>  3 files changed, 31 insertions(+)
->>  create mode 100644 drivers/scsi/sr_zpodd.c
->>  create mode 100644 drivers/scsi/sr_zpodd.h
->>
->> diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
->> index 888f73a..474efe2 100644
->> --- a/drivers/scsi/Makefile
->> +++ b/drivers/scsi/Makefile
->> @@ -177,6 +177,7 @@ sd_mod-objs	:= sd.o
->>  sd_mod-$(CONFIG_BLK_DEV_INTEGRITY) += sd_dif.o
->>  
->>  sr_mod-objs	:= sr.o sr_ioctl.o sr_vendor.o
->> +sr_mod-$(CONFIG_SATA_ZPODD) += sr_zpodd.o
->>  ncr53c8xx-flags-$(CONFIG_SCSI_ZALON) \
->>  		:= -DCONFIG_NCR53C8XX_PREFETCH -DSCSI_NCR_BIG_ENDIAN \
->>  			-DCONFIG_SCSI_NCR53C8XX_NO_WORD_TRANSFERS
->> diff --git a/drivers/scsi/sr_zpodd.c b/drivers/scsi/sr_zpodd.c
->> new file mode 100644
->> index 0000000..0686e8c
->> --- /dev/null
->> +++ b/drivers/scsi/sr_zpodd.c
->> @@ -0,0 +1,21 @@
->> +#include <linux/module.h>
->> +#include <linux/genhd.h>
->> +#include <linux/cdrom.h>
->> +#include "sr.h"
->> +
->> +bool sr_block_events(struct device *dev)
+>> +/*
+>> + * Under some circumstances, there is a race between the calling thread
+>> + * of disk_block_events and the events checking function. To avoid such a race,
+>> + * this function will check if the delayed work is pending. If not, it means
+>> + * the work is either not queued or is already running, false is returned.
+>> + * And if yes, try to cancel the delayed work. If succedded, disk_block_events
+>> + * will be called and there is no worry that cancel_delayed_work_sync will
+>> + * deadlock the events checking function. And if failed, false is returned.
+>> + */
+>> +bool disk_try_block_events(struct gendisk *disk)
 >> +{
->> +	struct scsi_cd *cd = dev_get_drvdata(dev);
->> +	if (cd)
->> +		return disk_try_block_events(cd->disk);
+>> +	struct disk_events *ev = disk->ev;
+>> +
+>> +	if (!ev)
+>> +		return false;
+>> +
+>> +	if (delayed_work_pending(&ev->dwork)) {
+> 
+> And please don't use delayed_work_pending() like this.  It doesn't add
+> anything.  cancel_delayed_work() already needs to perform all the
+> necessary tests.
+
+OK, thanks for the suggestion.
+
+-Aaron
+
+> 
+>> +		if (cancel_delayed_work(&disk->ev->dwork)) {
+>> +			disk_block_events(disk);
+>> +			return true;
+>> +		}
+>> +	}
+>> +
 >> +	return false;
 >> +}
->> +EXPORT_SYMBOL(sr_block_events);
->> +
->> +void sr_unblock_events(struct device *dev)
->> +{
->> +	struct scsi_cd *cd = dev_get_drvdata(dev);
->> +	if (cd)
->> +		disk_unblock_events(cd->disk);
->> +}
->> +EXPORT_SYMBOL(sr_unblock_events);
->> diff --git a/drivers/scsi/sr_zpodd.h b/drivers/scsi/sr_zpodd.h
->> new file mode 100644
->> index 0000000..49c6a55
->> --- /dev/null
->> +++ b/drivers/scsi/sr_zpodd.h
->> @@ -0,0 +1,9 @@
->> +#ifndef __SR_ZPODD_H__
->> +#define __SR_ZPODD_H__
->> +
->> +#include <linux/device.h>
->> +
->> +extern bool sr_block_events(struct device *dev);
->> +extern void sr_unblock_events(struct device *dev);
->> +
->> +#endif
 > 
+> Thanks.
 > 
 
