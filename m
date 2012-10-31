@@ -1,67 +1,151 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [for-next PATCH V2] PM / devfreq: Add sysfs node to expose available frequencies
-Date: Wed, 31 Oct 2012 10:15:51 +0100
-Message-ID: <1711506.ZFBefezGp9@vostro.rjw.lan>
-References: <3578820.552041351649466344.JavaMail.weblogic@epv6ml03>
+Subject: [PATCH 2/5] ACPI: Provide generic functions for matching ACPI device nodes
+Date: Wed, 31 Oct 2012 10:33:38 +0100
+Message-ID: <7917960.sQJPenFZz7@vostro.rjw.lan>
+References: <1421417.rIOjExM5Pt@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:48105 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933199Ab2JaJLr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 05:11:47 -0400
-In-Reply-To: <3578820.552041351649466344.JavaMail.weblogic@epv6ml03>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1421417.rIOjExM5Pt@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Lv Zheng <lv.zheng@intel.com>, Huang Ying <ying.huang@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, x86 list <x86@kernel.org>, Tony Luck <tony.luck@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, October 31, 2012 02:11:06 AM MyungJoo Ham wrote:
-> > On Friday, October 26, 2012 06:16:36 AM MyungJoo Ham wrote:
-> > > > devfreq governors such as ondemand are controlled by a min and
-> > > > max frequency, while governors like userspace governor allow us
-> > > > to set a specific frequency.
-> > > > However, for the same specific device, depending on the SoC, the
-> > > > available frequencies can vary.
-> > > > 
-> > > > So expose the available frequencies as a snapshot over sysfs to
-> > > > allow informed decisions.
-> > > > 
-> > > > This was inspired by cpufreq framework's equivalent for similar
-> > > > usage sysfs node: scaling_available_frequencies.
-> > > > 
-> > > > Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-> > > > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> > > > Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> > > > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > > > Cc: Kevin Hilman <khilman@ti.com>
-> > > > Cc: linux-pm@vger.kernel.org
-> > > > Cc: linux-kernel@vger.kernel.org
-> > > > 
-> > > > Signed-off-by: Nishanth Menon <nm@ti.com>
-> > > 
-> > > Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> > 
-> > Are you going to handle this patch?
-> 
-> Yes, I've just setup the git repository this week
-> and I'm willing to handle this one.
-> 
-> It is applied at
-> http://git.kernel.org/?p=linux/kernel/git/mzx/devfreq.git;a=shortlog;h=refs/heads/for-rafael
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-OK
+Introduce function acpi_match_device() allowing callers to match
+struct device objects with populated acpi_handle fields against
+arrays of ACPI device IDs.  Also introduce function
+acpi_driver_match_device() using acpi_match_device() internally and
+allowing callers to match a struct device object against an array of
+ACPI device IDs provided by a device driver.
 
-Please let me know when you want me to pull from your tree.
+Additionally, introduce macro ACPI_PTR() that may be used by device
+drivers to escape pointers to data structures whose definitions
+depend on CONFIG_ACPI.
 
-Please also note that the release of v3.7-rc6 is the deadline for non-bugfix
-changes targeted at v3.8. :-)
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/scan.c  |   40 +++++++++++++++++++++++++++++++++++-----
+ include/linux/acpi.h |   28 ++++++++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 5 deletions(-)
 
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux/drivers/acpi/scan.c
+===================================================================
+--- linux.orig/drivers/acpi/scan.c
++++ linux/drivers/acpi/scan.c
+@@ -372,8 +372,8 @@ static void acpi_device_remove_files(str
+ 			ACPI Bus operations
+    -------------------------------------------------------------------------- */
+ 
+-int acpi_match_device_ids(struct acpi_device *device,
+-			  const struct acpi_device_id *ids)
++static const struct acpi_device_id *__acpi_match_device(
++	struct acpi_device *device, const struct acpi_device_id *ids)
+ {
+ 	const struct acpi_device_id *id;
+ 	struct acpi_hardware_id *hwid;
+@@ -383,14 +383,44 @@ int acpi_match_device_ids(struct acpi_de
+ 	 * driver for it.
+ 	 */
+ 	if (!device->status.present)
+-		return -ENODEV;
++		return NULL;
+ 
+ 	for (id = ids; id->id[0]; id++)
+ 		list_for_each_entry(hwid, &device->pnp.ids, list)
+ 			if (!strcmp((char *) id->id, hwid->id))
+-				return 0;
++				return id;
++
++	return NULL;
++}
++
++/**
++ * acpi_match_device - Match a struct device against a given list of ACPI IDs
++ * @ids: Array of struct acpi_device_id object to match against.
++ * @dev: The device structure to match.
++ *
++ * Check if @dev has a valid ACPI handle and if there is a struct acpi_device
++ * object for that handle and use that object to match against a given list of
++ * device IDs.
++ *
++ * Return a pointer to the first matching ID on success or %NULL on failure.
++ */
++const struct acpi_device_id *acpi_match_device(const struct acpi_device_id *ids,
++					       const struct device *dev)
++{
++	struct acpi_device *adev;
+ 
+-	return -ENOENT;
++	if (!ids || !dev->acpi_handle
++	    || ACPI_FAILURE(acpi_bus_get_device(dev->acpi_handle, &adev)))
++		return NULL;
++
++	return __acpi_match_device(adev, ids);
++}
++EXPORT_SYMBOL_GPL(acpi_match_device);
++
++int acpi_match_device_ids(struct acpi_device *device,
++			  const struct acpi_device_id *ids)
++{
++	return __acpi_match_device(device, ids) ? 0 : -ENOENT;
+ }
+ EXPORT_SYMBOL(acpi_match_device_ids);
+ 
+Index: linux/include/linux/acpi.h
+===================================================================
+--- linux.orig/include/linux/acpi.h
++++ linux/include/linux/acpi.h
+@@ -26,6 +26,7 @@
+ #define _LINUX_ACPI_H
+ 
+ #include <linux/ioport.h>	/* for struct resource */
++#include <linux/device.h>
+ 
+ #ifdef	CONFIG_ACPI
+ 
+@@ -368,6 +369,17 @@ extern int acpi_nvs_register(__u64 start
+ extern int acpi_nvs_for_each_region(int (*func)(__u64, __u64, void *),
+ 				    void *data);
+ 
++const struct acpi_device_id *acpi_match_device(const struct acpi_device_id *ids,
++					       const struct device *dev);
++
++static inline bool acpi_driver_match_device(struct device *dev,
++					    const struct device_driver *drv)
++{
++	return !!acpi_match_device(drv->acpi_match_table, dev);
++}
++
++#define ACPI_PTR(_ptr)	(_ptr)
++
+ #else	/* !CONFIG_ACPI */
+ 
+ #define acpi_disabled 1
+@@ -422,6 +434,22 @@ static inline int acpi_nvs_for_each_regi
+ 	return 0;
+ }
+ 
++struct acpi_device_id;
++
++static inline const struct acpi_device_id *acpi_match_device(
++	const struct acpi_device_id *ids, const struct device *dev)
++{
++	return NULL;
++}
++
++static inline bool acpi_driver_match_device(struct device *dev,
++					    const struct device_driver *drv)
++{
++	return false;
++}
++
++#define ACPI_PTR(_ptr)	(NULL)
++
+ #endif	/* !CONFIG_ACPI */
+ 
+ #ifdef CONFIG_ACPI
