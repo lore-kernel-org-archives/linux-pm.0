@@ -1,46 +1,225 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
-Date: Wed, 31 Oct 2012 11:05:33 +0800
-Message-ID: <CACVXFVNxucCVLS-=EQkmVop3LQMkeXW7RbZq4yfkiq_MUGndvg@mail.gmail.com>
-References: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com>
-	<Pine.LNX.4.44L0.1210301112270.1363-100000@iolanthe.rowland.org>
-	<CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
-	<2504263.kbM6W9JoH9@linux-lqwf.site>
-	<CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH v2] Thermal: exynos: Add sysfs node supporting exynos's
+ emulation mode.
+Date: Wed, 31 Oct 2012 13:19:07 +0900
+Message-ID: <1351657147-26092-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:47156 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755Ab2JaETS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Oct 2012 00:19:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-On Wed, Oct 31, 2012 at 10:08 AM, Ming Lei <ming.lei@canonical.com> wrote:
->> I am afraid it is, because a disk may just have been probed as the deviceis being reset.
->
-> Yes, it is probable, and sounds like similar with 'root_wait' problem, see
-> prepare_namespace(): init/do_mounts.c, so looks no good solution
-> for the problem, and maybe we have to set the flag always before resetting
-> usb device.
+This patch supports exynos's emulation mode with newly created sysfs node.
+Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal
+management unit. Thermal emulation mode supports software debug for TMU's
+operation. User can set temperature manually with software code and TMU
+will read current temperature from user value not from sensor's value.
+This patch includes also documentary placed under Documentation/thermal/.
 
-The below idea may help the problem which 'memalloc_noio' flag isn't set during
-usb_reset_device().
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+---
+v2
+ exynos_thermal.c
+ - Fix build error occured by wrong emulation control register name.
+ - Remove exynos5410 dependent codes.
+ exynos_theraml_emulation
+ - Align indentation.
 
-- for usb mass storage device, call pm_runtime_set_memalloc_noio(true)
-  inside usb_stor_probe2() and uas_probe(), and call
-  pm_runtime_set_memalloc_noio(false) inside uas_disconnect()
-  and usb_stor_disconnect().
+ Documentation/thermal/exynos_thermal_emulation |   49 +++++++++++++
+ drivers/thermal/Kconfig                        |    9 +++
+ drivers/thermal/exynos_thermal.c               |   88 ++++++++++++++++++++++++
+ 3 files changed, 146 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/thermal/exynos_thermal_emulation
 
-- for usb network device, register_netdev() is always called inside usb
-  interface's probe(),  looks no such problem.
+diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
+new file mode 100644
+index 0000000..062d867
+--- /dev/null
++++ b/Documentation/thermal/exynos_thermal_emulation
+@@ -0,0 +1,49 @@
++EXYNOS EMULATION MODE
++========================
++
++Copyright (C) 2012 Samsung Electronics
++
++Writen by Jonghwa Lee <jonghwa3.lee@samsung.com>
++
++Description
++-----------
++
++Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal management unit.
++Thermal emulation mode supports software debug for TMU's operation. User can set temperature
++manually with software code and TMU will read current temperature from user value not from
++sensor's value.
++
++Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
++When it's enabled, sysfs node will be created under
++/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
++
++The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
++temperature you want to update to sysfs node, it automatically enable emulation mode and
++current temperature will be changed into it.
++(Exynos also supports user changable delay time which would be used to delay of
++ changing temperature. However, this node only uses same delay of real sensing time, 938us.)
++
++Disabling emulation mode only requires writing value 0 to sysfs node.
++
++
++TEMP	120 |
++	    |
++	100 |
++	    |
++	 80 |
++	    |		     	 	 +-----------
++	 60 |      		     	 |	    |
++	    |	           +-------------|          |
++	 40 |              |         	 |          |
++   	    |		   |	     	 |          |
++	 20 |		   |	     	 |          +----------
++	    |	 	   |	     	 |          |          |
++  	  0 |______________|_____________|__________|__________|_________
++		   A	    	 A	    A	   	       A     TIME
++		   |<----->|	 |<----->|  |<----->|	       |
++		   | 938us |  	 |	 |  |       |          |
++emulation    :  0  50	   |  	 70      |  20      |          0
++current temp :   sensor   50		 70         20	      sensor
++
++
++
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e1cb6bd..c02a66c 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -55,3 +55,12 @@ config EXYNOS_THERMAL
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Managment
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
++
++config EXYNOS_THERMAL_EMUL
++	bool "EXYNOS TMU emulation mode support"
++	depends on !CPU_EXYNOS4210 && EXYNOS_THERMAL
++	help
++	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
++	  Enable this option will be make sysfs node in exynos thermal platform
++	  device directory to support emulation mode. With emulation mode sysfs
++	  node, you can manually input temperature to TMU for simulation purpose.
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index fd03e85..9e3c150 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -99,6 +99,15 @@
+ #define IDLE_INTERVAL 10000
+ #define MCELSIUS	1000
+ 
++#ifdef CONFIG_EXYNOS_THERMAL_EMUL
++#define EXYNOS_EMUL_TIME	0x57F0
++#define EXYNOS_EMUL_TIME_SHIFT	16
++#define EXYNOS_EMUL_DATA_SHIFT	8
++#define EXYNOS_EMUL_DATA_MASK	0xFF
++#define EXYNOS_EMUL_DISABLE	0x0
++#define EXYNOS_EMUL_ENABLE	0x1
++#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
++
+ /* CPU Zone information */
+ #define PANIC_ZONE      4
+ #define WARN_ZONE       3
+@@ -832,6 +841,82 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
+ 	return (struct exynos_tmu_platform_data *)
+ 			platform_get_device_id(pdev)->driver_data;
+ }
++
++#ifdef CONFIG_EXYNOS_THERMAL_EMUL
++static ssize_t exynos_tmu_emulation_show(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
++{
++	struct platform_device *pdev = container_of(dev,
++					struct platform_device, dev);
++	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
++	unsigned int reg;
++	u8 temp_code;
++	int temp, enable;
++
++	mutex_lock(&data->lock);
++	clk_enable(data->clk);
++	reg = readl(data->base + EXYNOS_EMUL_CON);
++	clk_disable(data->clk);
++	mutex_unlock(&data->lock);
++
++	enable = reg & EXYNOS_EMUL_ENABLE;
++
++	if (enable) {
++		reg >>= EXYNOS_EMUL_DATA_SHIFT;
++		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
++		temp = code_to_temp(data, temp_code);
++	} else {
++		temp = 0;
++	}
++
++	return sprintf(buf, "%d\n", temp);
++}
++
++static ssize_t exynos_tmu_emulation_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	struct platform_device *pdev = container_of(dev,
++					struct platform_device, dev);
++	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
++	unsigned int reg;
++	u8 temp_code;
++	int temp, enable, i;
++
++	if (!sscanf(buf, "%d\n", &temp))
++		return -EINVAL;
++
++	if (temp < 0)
++		return -EINVAL;
++
++	mutex_lock(&data->lock);
++	clk_enable(data->clk);
++
++	reg = readl(data->base + EXYNOS_EMUL_CON);
++	enable = reg & EXYNOS_EMUL_ENABLE;
++	if (!enable && !temp)
++		goto out;
++
++	temp_code = (reg >> EXYNOS_EMUL_DATA_SHIFT) & EXYNOS_EMUL_DATA_MASK;
++	temp_code = temp == 0 ? temp_code : temp_to_code(data, temp);
++
++	reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
++		(temp_code << EXYNOS_EMUL_DATA_SHIFT) |
++		 (temp > 0 ? EXYNOS_EMUL_ENABLE : EXYNOS_EMUL_DISABLE);
++
++	writel(reg, data->base + EXYNOS_EMUL_CON);
++out:
++	clk_disable(data->clk);
++	mutex_unlock(&data->lock);
++
++	return count;
++}
++
++static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
++					exynos_tmu_emulation_store);
++#endif
++
+ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+ {
+ 	struct exynos_tmu_data *data;
+@@ -930,6 +1015,9 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to register thermal interface\n");
+ 		goto err_clk;
+ 	}
++#ifdef CONFIG_EXYNOS_THERMAL_EMUL
++	device_create_file(&pdev->dev, &dev_attr_emulation);
++#endif
+ 	return 0;
+ err_clk:
+ 	platform_set_drvdata(pdev, NULL);
+-- 
+1.7.4.1
 
-Thanks,
---
-Ming Lei
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
