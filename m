@@ -1,68 +1,48 @@
-From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: Avoid calling cpufreq driver's target() routine
-	if target_freq == policy->cur
-Date: Wed, 31 Oct 2012 01:44:50 +0100
-Message-ID: <11869950.r5dVYWTkdx@vostro.rjw.lan>
-References: <1d7b6e421a335255da956804b43ce3517538409c.1351244153.git.viresh.kumar@linaro.org>
-	<5056958.0bPciFrxt5@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [for-next PATCH V2] PM / devfreq: Add sysfs node to expose available frequencies
+Date: Wed, 31 Oct 2012 01:45:40 +0100
+Message-ID: <2118787.BMsTdGrSod@vostro.rjw.lan>
+References: <16123783.160701351232196244.JavaMail.weblogic@epv6ml08>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <5056958.0bPciFrxt5-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <16123783.160701351232196244.JavaMail.weblogic@epv6ml08>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 26, 2012 01:17:12 PM Rafael J. Wysocki wrote:
-> On Friday, October 26, 2012 03:06:26 PM Viresh Kumar wrote:
-> > Avoid calling cpufreq driver's target() routine if new frequency is same as
-> > policies current frequency.
+On Friday, October 26, 2012 06:16:36 AM MyungJoo Ham wrote:
+> > devfreq governors such as ondemand are controlled by a min and
+> > max frequency, while governors like userspace governor allow us
+> > to set a specific frequency.
+> > However, for the same specific device, depending on the SoC, the
+> > available frequencies can vary.
 > > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > So expose the available frequencies as a snapshot over sysfs to
+> > allow informed decisions.
+> > 
+> > This was inspired by cpufreq framework's equivalent for similar
+> > usage sysfs node: scaling_available_frequencies.
+> > 
+> > Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> > Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > Cc: Kevin Hilman <khilman@ti.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > 
+> > Signed-off-by: Nishanth Menon <nm@ti.com>
 > 
-> Looks reasonable.
-> 
-> Any objection from anyone?
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-OK, no objections.
+Are you going to handle this patch?
 
-Applied to the linux-next branch of linux-pm.git as v3.8 material.
-
-Thanks,
 Rafael
 
 
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 261ef65..28dc134 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1476,6 +1476,10 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
-> >  
-> >  	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
-> >  		target_freq, relation);
-> > +
-> > +	if (target_freq == policy->cur)
-> > +		return 0;
-> > +
-> >  	if (cpu_online(policy->cpu) && cpufreq_driver->target)
-> >  		retval = cpufreq_driver->target(policy, target_freq, relation);
-> >  
-> > 
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
