@@ -1,78 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle - sysfs : move declaration in the sysfs file
-Date: Wed, 31 Oct 2012 01:46:09 +0100
-Message-ID: <2583088.uKNgEVIRXU@vostro.rjw.lan>
-References: <1351165577-32020-1-git-send-email-daniel.lezcano@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 5/6] power: export opp cpufreq functions
+Date: Tue, 30 Oct 2012 20:17:21 -0500
+Message-ID: <20121031011721.GA30039@kahuna>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1351631056-25938-6-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:47322 "EHLO ogre.sisk.pl"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:52881 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932320Ab2JaAmH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 20:42:07 -0400
-In-Reply-To: <1351165577-32020-1-git-send-email-daniel.lezcano@linaro.org>
+	id S932341Ab2JaBRX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 30 Oct 2012 21:17:23 -0400
+Content-Disposition: inline
+In-Reply-To: <1351631056-25938-6-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-dev@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, October 25, 2012 01:46:17 PM Daniel Lezcano wrote:
-> The structure cpuidle_state_kobj is not used anywhere except
-> in the sysfs.c file. The definition of this structure is not
-> needed in the cpuidle header file. This patch moves it to the
-> sysfs.c file in order to encapsulate the code a bit more.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 16:04-20121030, Mark Langsdorf wrote:
+$subject
+PM / OPP:
+Also adding info that this allows cpufreq drivers to be used as module
+might be helpful.
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> Cc: linux-pm@vger.kernel.org
+Side note:
+Applies on v3.7-rc3
+on rafael's linux-next branch:
+linux-next      2b7f449 Merge branch 'pm-opp-next' into linux-next
+on git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+needs a rebase as it probably conflicts with
+https://patchwork.kernel.org/patch/1582091/
 
-Applied to the linux-next branch of linux-pm.git as v3.8 material.
-
-Thanks,
-Rafael
-
-
-> ---
->  drivers/cpuidle/sysfs.c |    7 +++++++
->  include/linux/cpuidle.h |    7 -------
->  2 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index ed87399..f15c1e5 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -297,6 +297,13 @@ static struct attribute *cpuidle_state_default_attrs[] = {
->  	NULL
->  };
->  
-> +struct cpuidle_state_kobj {
-> +	struct cpuidle_state *state;
-> +	struct cpuidle_state_usage *state_usage;
-> +	struct completion kobj_unregister;
-> +	struct kobject kobj;
-> +};
-> +
->  #define kobj_to_state_obj(k) container_of(k, struct cpuidle_state_kobj, kobj)
->  #define kobj_to_state(k) (kobj_to_state_obj(k)->state)
->  #define kobj_to_state_usage(k) (kobj_to_state_obj(k)->state_usage)
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 279b1ea..7daf0e3 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -82,13 +82,6 @@ cpuidle_set_statedata(struct cpuidle_state_usage *st_usage, void *data)
->  	st_usage->driver_data = data;
->  }
->  
-> -struct cpuidle_state_kobj {
-> -	struct cpuidle_state *state;
-> -	struct cpuidle_state_usage *state_usage;
-> -	struct completion kobj_unregister;
-> -	struct kobject kobj;
-> -};
-> -
->  struct cpuidle_device {
->  	unsigned int		registered:1;
->  	unsigned int		enabled:1;
+Otherwise, approach:
+Acked-by: Nishanth Menon <nm@ti.com>
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Nishanth Menon
