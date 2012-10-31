@@ -1,53 +1,54 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [for-next PATCH V2] PM / devfreq: Add sysfs node to expose
- available frequencies
-Date: Wed, 31 Oct 2012 02:11:07 +0000 (GMT)
-Message-ID: <3578820.552041351649466344.JavaMail.weblogic@epv6ml03>
-Reply-To: myungjoo.ham@samsung.com
+From: viresh kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 5/5] Thermal: Add ST-Ericsson DB8500 thermal properties
+ and platform data.
+Date: Wed, 31 Oct 2012 07:48:15 +0530
+Message-ID: <CAOh2x==HB5Jn0iy3dbaL=G0jD5UcP=TwQcxhzQXz9-kbQBdA8A@mail.gmail.com>
+References: <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351615741-24134-1-git-send-email-hongbo.zhang@linaro.com>
+	<1351615741-24134-6-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:14776 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932069Ab2JaCLK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 22:11:10 -0400
-Received: from epcpsbge2.samsung.com (epcpsbge2 [203.254.230.12])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0MCQ00L5HJDJYWB0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 31 Oct 2012 11:11:08 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-vb0-f46.google.com ([209.85.212.46]:47484 "EHLO
+	mail-vb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932069Ab2JaCSQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 22:18:16 -0400
+In-Reply-To: <1351615741-24134-6-git-send-email-hongbo.zhang@linaro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, amit.kachhap@linaro.org, patches@linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-PiBPbiBGcmlkYXksIE9jdG9iZXIgMjYsIDIwMTIgMDY6MTY6MzYgQU0gTXl1bmdKb28gSGFtIHdy
-b3RlOg0KPiA+ID4gZGV2ZnJlcSBnb3Zlcm5vcnMgc3VjaCBhcyBvbmRlbWFuZCBhcmUgY29udHJv
-bGxlZCBieSBhIG1pbiBhbmQNCj4gPiA+IG1heCBmcmVxdWVuY3ksIHdoaWxlIGdvdmVybm9ycyBs
-aWtlIHVzZXJzcGFjZSBnb3Zlcm5vciBhbGxvdyB1cw0KPiA+ID4gdG8gc2V0IGEgc3BlY2lmaWMg
-ZnJlcXVlbmN5Lg0KPiA+ID4gSG93ZXZlciwgZm9yIHRoZSBzYW1lIHNwZWNpZmljIGRldmljZSwg
-ZGVwZW5kaW5nIG9uIHRoZSBTb0MsIHRoZQ0KPiA+ID4gYXZhaWxhYmxlIGZyZXF1ZW5jaWVzIGNh
-biB2YXJ5Lg0KPiA+ID4gDQo+ID4gPiBTbyBleHBvc2UgdGhlIGF2YWlsYWJsZSBmcmVxdWVuY2ll
-cyBhcyBhIHNuYXBzaG90IG92ZXIgc3lzZnMgdG8NCj4gPiA+IGFsbG93IGluZm9ybWVkIGRlY2lz
-aW9ucy4NCj4gPiA+IA0KPiA+ID4gVGhpcyB3YXMgaW5zcGlyZWQgYnkgY3B1ZnJlcSBmcmFtZXdv
-cmsncyBlcXVpdmFsZW50IGZvciBzaW1pbGFyDQo+ID4gPiB1c2FnZSBzeXNmcyBub2RlOiBzY2Fs
-aW5nX2F2YWlsYWJsZV9mcmVxdWVuY2llcy4NCj4gPiA+IA0KPiA+ID4gQ2M6IFJhamFnb3BhbCBW
-ZW5rYXQgPHJhamFnb3BhbC52ZW5rYXRAbGluYXJvLm9yZz4NCj4gPiA+IENjOiBNeXVuZ0pvbyBI
-YW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gPiA+IENjOiBLeXVuZ21pbiBQYXJrIDxr
-eXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiA+ID4gQ2M6ICJSYWZhZWwgSi4gV3lzb2NraSIg
-PHJqd0BzaXNrLnBsPg0KPiA+ID4gQ2M6IEtldmluIEhpbG1hbiA8a2hpbG1hbkB0aS5jb20+DQo+
-ID4gPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+ID4gPiBDYzogbGludXgta2VybmVs
-QHZnZXIua2VybmVsLm9yZw0KPiA+ID4gDQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBOaXNoYW50aCBN
-ZW5vbiA8bm1AdGkuY29tPg0KPiA+IA0KPiA+IEFja2VkLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5n
-am9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gDQo+IEFyZSB5b3UgZ29pbmcgdG8gaGFuZGxlIHRoaXMg
-cGF0Y2g/DQoNClllcywgSSd2ZSBqdXN0IHNldHVwIHRoZSBnaXQgcmVwb3NpdG9yeSB0aGlzIHdl
-ZWsNCmFuZCBJJ20gd2lsbGluZyB0byBoYW5kbGUgdGhpcyBvbmUuDQoNCkl0IGlzIGFwcGxpZWQg
-YXQNCmh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVx
-LmdpdDthPXNob3J0bG9nO2g9cmVmcy9oZWFkcy9mb3ItcmFmYWVsDQoNClRoYW5rcywNCg0KTXl1
-bmdKb28NCg0KPiANCj4gUmFmYWVsDQo+IA0KPiANCj4gLS0gDQo+IEkgc3BlYWsgb25seSBmb3Ig
-bXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
-eSBDZW50ZXIuDQo+IA0KPiANCj4gDQo+ICAgICAgICANCj4gICANCj4gICAgICAgICAgDQo+IA0K
+On Tue, Oct 30, 2012 at 10:19 PM, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
+> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 
+Just a minor comment below.
 
+> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
+> also adds the platform data to support the old fashion.
+>
+> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+> ---
+>  arch/arm/boot/dts/dbx5x0.dtsi      | 14 +++++++++
+>  arch/arm/boot/dts/snowball.dts     | 31 ++++++++++++++++++
+>  arch/arm/configs/u8500_defconfig   |  4 +++
+>  arch/arm/mach-ux500/board-mop500.c | 64 ++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 113 insertions(+)
+
+> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
+> index cc5e7a8..34918c4 100644
+> --- a/arch/arm/configs/u8500_defconfig
+> +++ b/arch/arm/configs/u8500_defconfig
+> @@ -118,3 +118,7 @@ CONFIG_DEBUG_KERNEL=y
+>  CONFIG_DEBUG_INFO=y
+>  # CONFIG_FTRACE is not set
+>  CONFIG_DEBUG_USER=y
+> +CONFIG_THERMAL=y
+> +CONFIG_CPU_THERMAL=y
+> +CONFIG_DB8500_THERMAL=y
+> +CONFIG_DB8500_CPUFREQ_COOLING=y
+
+Have you entered these manually?? Or used make savedefconfig?
