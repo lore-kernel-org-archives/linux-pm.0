@@ -1,35 +1,53 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
-Date: Wed, 31 Oct 2012 10:08:40 +0800
-Message-ID: <CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com>
-References: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com>
-	<Pine.LNX.4.44L0.1210301112270.1363-100000@iolanthe.rowland.org>
-	<CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
-	<2504263.kbM6W9JoH9@linux-lqwf.site>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [for-next PATCH V2] PM / devfreq: Add sysfs node to expose
+ available frequencies
+Date: Wed, 31 Oct 2012 02:11:07 +0000 (GMT)
+Message-ID: <3578820.552041351649466344.JavaMail.weblogic@epv6ml03>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2504263.kbM6W9JoH9@linux-lqwf.site>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:14776 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932069Ab2JaCLK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 22:11:10 -0400
+Received: from epcpsbge2.samsung.com (epcpsbge2 [203.254.230.12])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MCQ00L5HJDJYWB0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 31 Oct 2012 11:11:08 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nishanth Menon <nm@ti.com>, linux-pm <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Oct 31, 2012 at 12:30 AM, Oliver Neukum <oneukum@suse.de> wrote:
->> If the USB mass-storage device is being reseted, the flag should be set
->> already generally.  If the flag is still unset, that means the disk/network
->> device isn't added into system(or removed just now), so memory allocation
->> with block I/O should be allowed during the reset. Looks it isn't one problem,
->> isn't it?
->
-> I am afraid it is, because a disk may just have been probed as the deviceis being reset.
+PiBPbiBGcmlkYXksIE9jdG9iZXIgMjYsIDIwMTIgMDY6MTY6MzYgQU0gTXl1bmdKb28gSGFtIHdy
+b3RlOg0KPiA+ID4gZGV2ZnJlcSBnb3Zlcm5vcnMgc3VjaCBhcyBvbmRlbWFuZCBhcmUgY29udHJv
+bGxlZCBieSBhIG1pbiBhbmQNCj4gPiA+IG1heCBmcmVxdWVuY3ksIHdoaWxlIGdvdmVybm9ycyBs
+aWtlIHVzZXJzcGFjZSBnb3Zlcm5vciBhbGxvdyB1cw0KPiA+ID4gdG8gc2V0IGEgc3BlY2lmaWMg
+ZnJlcXVlbmN5Lg0KPiA+ID4gSG93ZXZlciwgZm9yIHRoZSBzYW1lIHNwZWNpZmljIGRldmljZSwg
+ZGVwZW5kaW5nIG9uIHRoZSBTb0MsIHRoZQ0KPiA+ID4gYXZhaWxhYmxlIGZyZXF1ZW5jaWVzIGNh
+biB2YXJ5Lg0KPiA+ID4gDQo+ID4gPiBTbyBleHBvc2UgdGhlIGF2YWlsYWJsZSBmcmVxdWVuY2ll
+cyBhcyBhIHNuYXBzaG90IG92ZXIgc3lzZnMgdG8NCj4gPiA+IGFsbG93IGluZm9ybWVkIGRlY2lz
+aW9ucy4NCj4gPiA+IA0KPiA+ID4gVGhpcyB3YXMgaW5zcGlyZWQgYnkgY3B1ZnJlcSBmcmFtZXdv
+cmsncyBlcXVpdmFsZW50IGZvciBzaW1pbGFyDQo+ID4gPiB1c2FnZSBzeXNmcyBub2RlOiBzY2Fs
+aW5nX2F2YWlsYWJsZV9mcmVxdWVuY2llcy4NCj4gPiA+IA0KPiA+ID4gQ2M6IFJhamFnb3BhbCBW
+ZW5rYXQgPHJhamFnb3BhbC52ZW5rYXRAbGluYXJvLm9yZz4NCj4gPiA+IENjOiBNeXVuZ0pvbyBI
+YW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gPiA+IENjOiBLeXVuZ21pbiBQYXJrIDxr
+eXVuZ21pbi5wYXJrQHNhbXN1bmcuY29tPg0KPiA+ID4gQ2M6ICJSYWZhZWwgSi4gV3lzb2NraSIg
+PHJqd0BzaXNrLnBsPg0KPiA+ID4gQ2M6IEtldmluIEhpbG1hbiA8a2hpbG1hbkB0aS5jb20+DQo+
+ID4gPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+ID4gPiBDYzogbGludXgta2VybmVs
+QHZnZXIua2VybmVsLm9yZw0KPiA+ID4gDQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBOaXNoYW50aCBN
+ZW5vbiA8bm1AdGkuY29tPg0KPiA+IA0KPiA+IEFja2VkLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5n
+am9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gDQo+IEFyZSB5b3UgZ29pbmcgdG8gaGFuZGxlIHRoaXMg
+cGF0Y2g/DQoNClllcywgSSd2ZSBqdXN0IHNldHVwIHRoZSBnaXQgcmVwb3NpdG9yeSB0aGlzIHdl
+ZWsNCmFuZCBJJ20gd2lsbGluZyB0byBoYW5kbGUgdGhpcyBvbmUuDQoNCkl0IGlzIGFwcGxpZWQg
+YXQNCmh0dHA6Ly9naXQua2VybmVsLm9yZy8/cD1saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVx
+LmdpdDthPXNob3J0bG9nO2g9cmVmcy9oZWFkcy9mb3ItcmFmYWVsDQoNClRoYW5rcywNCg0KTXl1
+bmdKb28NCg0KPiANCj4gUmFmYWVsDQo+IA0KPiANCj4gLS0gDQo+IEkgc3BlYWsgb25seSBmb3Ig
+bXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9n
+eSBDZW50ZXIuDQo+IA0KPiANCj4gDQo+ICAgICAgICANCj4gICANCj4gICAgICAgICAgDQo+IA0K
 
-Yes, it is probable, and sounds like similar with 'root_wait' problem, see
-prepare_namespace(): init/do_mounts.c, so looks no good solution
-for the problem, and maybe we have to set the flag always before resetting
-usb device.
 
-
-Thanks,
---
-Ming Lei
