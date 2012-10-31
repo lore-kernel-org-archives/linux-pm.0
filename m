@@ -1,32 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -next] PM / OPP: using kfree_rcu() to simplify the code
-Date: Wed, 31 Oct 2012 01:43:47 +0100
-Message-ID: <9532043.CirjgQiJQ8@vostro.rjw.lan>
-References: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH RESEND] cpufreq: Make sure target freq is within limits
+Date: Wed, 31 Oct 2012 01:44:18 +0100
+Message-ID: <5507910.WhiOUESWao@vostro.rjw.lan>
+References: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:47269 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932758Ab2JaAjo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 30 Oct 2012 20:39:44 -0400
-In-Reply-To: <CAPgLHd_HvceXF4pNhnrKH3px8h59S7zTwToAjAZzjCBm3AEmRw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <f79c0841be1ae16e1f2bd9084ed9a158eb171eb0.1351254846.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pdsw-power-team-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On Friday, October 26, 2012 10:57:41 PM Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Friday, October 26, 2012 06:05:21 PM Viresh Kumar wrote:
+> __cpufreq_driver_target() must not pass target frequency beyond the limits of
+> current policy.
 > 
-> The callback function of call_rcu() just calls a kfree(), so we
-> can use kfree_rcu() instead of call_rcu() + callback function.
+> Today most of cpufreq platform drivers are doing this check in their target
+> routines. Why not move it to __cpufreq_driver_target().
 > 
-> dpatch engine is used to auto generate this patch.
-> (https://github.com/weiyj/dpatch)
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+> Hi Rafael,
 > 
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> Resend doesn't contain any change, but fixed commit log
 
 Applied to the linux-next branch of linux-pm.git as v3.8 material.
 
@@ -34,46 +40,35 @@ Thanks,
 Rafael
 
 
-> ---
->  drivers/base/power/opp.c | 13 +------------
->  1 file changed, 1 insertion(+), 12 deletions(-)
+>  drivers/cpufreq/cpufreq.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index c8a908b..50b2831 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -461,17 +461,6 @@ int opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
->  }
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 28dc134..2f5ac2d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1470,12 +1470,19 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  			    unsigned int relation)
+>  {
+>  	int retval = -EINVAL;
+> +	unsigned int old_target_freq = target_freq;
 >  
->  /**
-> - * opp_free_rcu() - helper to clear the struct opp when grace period has
-> - * elapsed without blocking the the caller of opp_set_availability
-> - */
-> -static void opp_free_rcu(struct rcu_head *head)
-> -{
-> -	struct opp *opp = container_of(head, struct opp, head);
-> -
-> -	kfree(opp);
-> -}
-> -
-> -/**
->   * opp_set_availability() - helper to set the availability of an opp
->   * @dev:		device for which we do this operation
->   * @freq:		OPP frequency to modify availability
-> @@ -542,7 +531,7 @@ static int opp_set_availability(struct device *dev, unsigned long freq,
+>  	if (cpufreq_disabled())
+>  		return -ENODEV;
 >  
->  	list_replace_rcu(&opp->node, &new_opp->node);
->  	mutex_unlock(&dev_opp_list_lock);
-> -	call_rcu(&opp->head, opp_free_rcu);
-> +	kfree_rcu(opp, head);
+> -	pr_debug("target for CPU %u: %u kHz, relation %u\n", policy->cpu,
+> -		target_freq, relation);
+> +	/* Make sure that target_freq is within supported range */
+> +	if (target_freq > policy->max)
+> +		target_freq = policy->max;
+> +	if (target_freq < policy->min)
+> +		target_freq = policy->min;
+> +
+> +	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
+> +			policy->cpu, target_freq, relation, old_target_freq);
 >  
->  	/* Notify the change of the OPP availability */
->  	if (availability_req)
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  	if (target_freq == policy->cur)
+>  		return 0;
 > 
 -- 
 I speak only for myself.
