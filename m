@@ -1,127 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 4/5] Thermal: Add ST-Ericsson DB8500 thermal driver.
-Date: Wed, 31 Oct 2012 08:03:54 +0530
-Message-ID: <CAKohpondoFppsj38pWAzA4O=bcU81qzCP6vLBSYZ1f=oopykGA@mail.gmail.com>
-References: <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351615741-24134-1-git-send-email-hongbo.zhang@linaro.com>
-	<1351615741-24134-5-git-send-email-hongbo.zhang@linaro.com>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
+Date: Wed, 31 Oct 2012 11:05:33 +0800
+Message-ID: <CACVXFVNxucCVLS-=EQkmVop3LQMkeXW7RbZq4yfkiq_MUGndvg@mail.gmail.com>
+References: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com>
+	<Pine.LNX.4.44L0.1210301112270.1363-100000@iolanthe.rowland.org>
+	<CACVXFVO5-UPNrWsySzDE5AfOv1TMqbyitQX9ViidSJPM36fqAQ@mail.gmail.com>
+	<2504263.kbM6W9JoH9@linux-lqwf.site>
+	<CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:33216 "EHLO
-	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755343Ab2JaCdz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Oct 2012 22:33:55 -0400
-Received: by mail-ie0-f174.google.com with SMTP id k13so1442734iea.19
-        for <linux-pm@vger.kernel.org>; Tue, 30 Oct 2012 19:33:55 -0700 (PDT)
-In-Reply-To: <1351615741-24134-5-git-send-email-hongbo.zhang@linaro.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: "hongbo.zhang" <hongbo.zhang@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, amit.kachhap@linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-Sorry for late comments :(
-
-On 30 October 2012 22:19, hongbo.zhang <hongbo.zhang@linaro.org> wrote:
-> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+On Wed, Oct 31, 2012 at 10:08 AM, Ming Lei <ming.lei@canonical.com> wrote:
+>> I am afraid it is, because a disk may just have been probed as the deviceis being reset.
 >
-> This diver is based on the thermal management framework in thermal_sys.c. A
+> Yes, it is probable, and sounds like similar with 'root_wait' problem, see
+> prepare_namespace(): init/do_mounts.c, so looks no good solution
+> for the problem, and maybe we have to set the flag always before resetting
+> usb device.
 
-s/diver/driver
+The below idea may help the problem which 'memalloc_noio' flag isn't set during
+usb_reset_device().
 
-> thermal zone device is created with the trip points to which cooling devices
-> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
-> clipped down to cool the CPU, and other cooling devices can be added and bound
-> to the trip points dynamically.  The platform specific PRCMU interrupts are
-> used to active thermal update when trip points are reached.
->
-> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
-> ---
->  .../devicetree/bindings/thermal/db8500-thermal.txt |  40 ++
->  drivers/thermal/Kconfig                            |  20 +
->  drivers/thermal/Makefile                           |   2 +
->  drivers/thermal/db8500_cpufreq_cooling.c           | 108 +++++
->  drivers/thermal/db8500_thermal.c                   | 531 +++++++++++++++++++++
->  include/linux/platform_data/db8500_thermal.h       |  38 ++
->  6 files changed, 739 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/db8500-thermal.txt
->  create mode 100644 drivers/thermal/db8500_cpufreq_cooling.c
->  create mode 100644 drivers/thermal/db8500_thermal.c
->  create mode 100644 include/linux/platform_data/db8500_thermal.h
->
-> diff --git a/Documentation/devicetree/bindings/thermal/db8500-thermal.txt b/Documentation/devicetree/bindings/thermal/db8500-thermal.txt
-> new file mode 100644
-> index 0000000..cab6916
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/db8500-thermal.txt
-> @@ -0,0 +1,40 @@
-> +* ST-Ericsson DB8500 Thermal
-> +
-> +** Thermal node properties:
-> +
-> +- compatible : "stericsson,db8500-thermal";
-> +- reg : address range of the thermal sensor registers;
-> +- interrupts : interrupts generated from PRCMU;
-> +- interrupt-names : "IRQ_HOTMON_LOW" and "IRQ_HOTMON_HIGH";
+- for usb mass storage device, call pm_runtime_set_memalloc_noio(true)
+  inside usb_stor_probe2() and uas_probe(), and call
+  pm_runtime_set_memalloc_noio(false) inside uas_disconnect()
+  and usb_stor_disconnect().
 
-Just mention here that below properties are optional or required.
+- for usb network device, register_netdev() is always called inside usb
+  interface's probe(),  looks no such problem.
 
-> +- num-trips : number of total trip points;
-> +- tripN-temp : temperature of trip point N, should be in ascending order;
-> +- tripN-type : type of trip point N, should be one of "active" "passive" "hot" "critical";
-> +- tripN-cdev-num : number of the cooling devices which can be bound to trip point N;
-> +- tripN-cdev-nameM : name of the No. M cooling device of trip point N;
+Thanks,
+--
+Ming Lei
 
-> diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-
-> +static int db8500_thermal_match_cdev(struct thermal_cooling_device *cdev,
-> +               struct db8500_trip_point *trip_points)
-> +{
-> +       int i;
-> +       char *cdev_name;
-> +
-> +       if (!strlen(cdev->type))
-> +               return -EINVAL;
-> +
-> +       for (i = 0; i < COOLING_DEV_MAX; i++) {
-> +               cdev_name = trip_points->cdev_name[i];
-> +               if (!strcmp(cdev_name, cdev->type))
-
-You can actually remove cdev_name variable. and use
-if (!strcmp(trip_points->cdev_name[i], cdev->type))
-
-> +                       return 0;
-> +       }
-> +
-> +       return -ENODEV;
-> +}
-
-> +#ifdef CONFIG_OF
-> +static struct db8500_thsens_platform_data*
-> +               db8500_thermal_parse_dt(struct platform_device *pdev)
-> +{
-
-> +               for (j = 0; j < tmp_data; j++) {
-> +                       sprintf(prop_name, "trip%d-cdev-name%d", i, j);
-> +                       if (of_property_read_string(np, prop_name, &tmp_str))
-> +                               goto err_parse_dt;
-> +
-> +                       if (strlen(tmp_str) > THERMAL_NAME_LENGTH)
-> +                               goto err_parse_dt;
-> +
-> +                       strcpy(ptrips->trip_points[i].cdev_name[j], tmp_str);
-
-want to check if it is copied or not??
-
-> +               }
-> +       }
-> +       return ptrips;
-> +
-> +err_parse_dt:
-> +       dev_err(&pdev->dev, "Parsing device tree data error.\n");
-> +       return NULL;
-> +}
-
-After these please add my:
-
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
