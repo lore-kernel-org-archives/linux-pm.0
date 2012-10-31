@@ -1,66 +1,58 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Subject: drivers/acpi/acpica/utmisc.c:677:4: error: 'ACPI_DB_WARN'
- undeclared
-Date: Thu, 01 Nov 2012 05:19:24 +0800
-Message-ID: <509195dc./8wulm7laAKtu6uG%fengguang.wu@intel.com>
+Subject: drivers/acpi/acpica/psloop.c:846:2: error: implicit declaration
+ of function 'ACPI_PREEMPTION_POINT'
+Date: Thu, 01 Nov 2012 05:32:36 +0800
+Message-ID: <509198f4.zAOUQ30lSEWprZmg%fengguang.wu@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="=_509195dc.rdJJChHSOW4GsA2+BN9giLm43IYkt4mbDB5cP77g0Si9na1G"
+ boundary="=_509198f4.H2lLLg7XS62wUNxwI1Y7fAJm1HNZM7jMoYRcmPhS7AZMj2MK"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:23569 "EHLO mga01.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:50613 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933351Ab2JaVTI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 17:19:08 -0400
+	id S935871Ab2JaVcR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Oct 2012 17:32:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bob Moore <robert.moore@intel.com>
-Cc: linux-pm@vger.kernel.org, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Lv Zheng <lv.zheng@intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
 This is a multi-part message in MIME format.
 
---=_509195dc.rdJJChHSOW4GsA2+BN9giLm43IYkt4mbDB5cP77g0Si9na1G
+--=_509198f4.H2lLLg7XS62wUNxwI1Y7fAJm1HNZM7jMoYRcmPhS7AZMj2MK
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
 head:   0fd638ee89ae403aa07a7a86cde114676ca38e2e
-commit: 491454669d6c56a051a3e7ae5647f39438ba0a46 Cleanup of invalid ACPI name handling and repair
-date:   69 minutes ago
+commit: 7c529ed5a5ba02acaa7eb65814521b5c76338094 ACPICA: Fix unmerged acmacros.h divergences.
+date:   82 minutes ago
 config: i386-randconfig-m112 (attached as .config)
 
 All error/warnings:
 
-drivers/acpi/acpica/utmisc.c: In function 'acpi_ut_repair_name':
-drivers/acpi/acpica/utmisc.c:677:4: error: 'ACPI_DB_WARN' undeclared (first use in this function)
-drivers/acpi/acpica/utmisc.c:677:4: note: each undeclared identifier is reported only once for each function it appears in
-drivers/acpi/acpica/utmisc.c:677:4: warning: passing argument 2 of 'acpi_debug_print' makes integer from pointer without a cast [enabled by default]
-In file included from include/acpi/acpi.h:64:0,
-                 from drivers/acpi/acpica/utmisc.c:46:
-include/acpi/acpixf.h:556:1: note: expected 'u32' but argument is of type 'char *'
-drivers/acpi/acpica/utmisc.c:677:4: error: too few arguments to function 'acpi_debug_print'
-In file included from include/acpi/acpi.h:64:0,
-                 from drivers/acpi/acpica/utmisc.c:46:
-include/acpi/acpixf.h:556:1: note: declared here
+drivers/acpi/acpica/psloop.c: In function 'acpi_ps_complete_op':
+drivers/acpi/acpica/psloop.c:846:2: error: implicit declaration of function 'ACPI_PREEMPTION_POINT' [-Werror=implicit-function-declaration]
+cc1: some warnings being treated as errors
 
-vim +677 drivers/acpi/acpica/utmisc.c
+vim +846 drivers/acpi/acpica/psloop.c
 
-49145466 Bob Moore 2012-10-31  671  
-49145466 Bob Moore 2012-10-31  672  		if (!acpi_gbl_enable_interpreter_slack) {
-49145466 Bob Moore 2012-10-31  673  			ACPI_WARNING((AE_INFO,
-49145466 Bob Moore 2012-10-31  674  				      "Found bad character(s) in name, repaired: [%4.4s]\n",
-49145466 Bob Moore 2012-10-31  675  				      name));
-49145466 Bob Moore 2012-10-31  676  		} else {
-49145466 Bob Moore 2012-10-31 @677  			ACPI_DEBUG_PRINT((ACPI_DB_WARN,
-49145466 Bob Moore 2012-10-31  678  					  "Found bad character(s) in name, repaired: [%4.4s]\n",
-49145466 Bob Moore 2012-10-31  679  					  name));
-49145466 Bob Moore 2012-10-31  680  		}
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  840  				  &walk_state->arg_count);
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  841  		ACPI_DEBUG_PRINT((ACPI_DB_PARSE, "Popped scope, Op=%p\n", *op));
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  842  	} else {
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  843  		*op = NULL;
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  844  	}
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  845  
+8bd108d1 drivers/acpi/parser/psloop.c Alexey Starikovskiy 2008-09-25 @846  	ACPI_PREEMPTION_POINT();
+8bd108d1 drivers/acpi/parser/psloop.c Alexey Starikovskiy 2008-09-25  847  
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  848  	return_ACPI_STATUS(AE_OK);
+4d0b4af9 drivers/acpi/parser/psloop.c Mikhail Kouzmich    2007-02-02  849  }
 
 ---
 0-DAY kernel build testing backend         Open Source Technology Center
 Fengguang Wu, Yuanhan Liu                              Intel Corporation
 
---=_509195dc.rdJJChHSOW4GsA2+BN9giLm43IYkt4mbDB5cP77g0Si9na1G
+--=_509198f4.H2lLLg7XS62wUNxwI1Y7fAJm1HNZM7jMoYRcmPhS7AZMj2MK
 Content-Type: text/plain;
  charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -2800,4 +2792,4 @@ CONFIG_DDR=y
 CONFIG_MPILIB=y
 CONFIG_SIGNATURE=y
 
---=_509195dc.rdJJChHSOW4GsA2+BN9giLm43IYkt4mbDB5cP77g0Si9na1G--
+--=_509198f4.H2lLLg7XS62wUNxwI1Y7fAJm1HNZM7jMoYRcmPhS7AZMj2MK--
