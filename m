@@ -1,62 +1,40 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: drivers/acpi/acpica/nsxfname.c:500 acpi_get_object_info() info:
- redundant null check on sub calling kfree()
-Date: Thu, 01 Nov 2012 07:11:46 +0800
-Message-ID: <5091b032.8k8xSdvoYwGs0lBq%fengguang.wu@intel.com>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
+Date: Thu, 1 Nov 2012 07:18:11 +0800
+Message-ID: <CACVXFVM=JTxBc7dUNgAYg3oEveASZMJEvSuTjR+_u0E1ZCUHkA@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1210311117310.1954-100000@iolanthe.rowland.org>
+	<Pine.LNX.4.44L0.1210311139300.1954-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:21611 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755548Ab2JaXMT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 19:12:19 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:55456 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563Ab2JaXSN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Oct 2012 19:18:13 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1210311139300.1954-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bob Moore <robert.moore@intel.com>
-Cc: linux-pm@vger.kernel.org, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 
-tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-head:   741933bb4230bfc0ef9eba19384fe58e528b39a9
-commit: 00741297a43870e21dcae6429b5240a3cc7a5312 ACPICA: AcpiGetObjectInfo: Add support for ACPI 5 _SUB method
-date:   74 minutes ago
+On Wed, Oct 31, 2012 at 11:41 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+>
+> Sorry, I misread your message.  You are setting the device's flag, not
+> the thread's flag.
+
+Never mind.
+
+>
+> This still doesn't help in this case where CONFIG_PM_RUNTIME is
+> disabled.  I think it will be simpler to set the noio flag during every
+> device reset.
+
+Yes, it's better to set the flag during every device reset now.
+
+Also pppoe or network interface over serial port is a bit difficult to
+deal with, as Oliver pointed out.
 
 
-smatch warnings:
-
-  drivers/acpi/acpica/nsxfname.c:494 acpi_get_object_info() info: redundant null check on hid calling kfree()
-  drivers/acpi/acpica/nsxfname.c:497 acpi_get_object_info() info: redundant null check on uid calling kfree()
-+ drivers/acpi/acpica/nsxfname.c:500 acpi_get_object_info() info: redundant null check on sub calling kfree()
-  drivers/acpi/acpica/nsxfname.c:503 acpi_get_object_info() info: redundant null check on cid_list calling kfree()
-
-vim +500 drivers/acpi/acpica/nsxfname.c
-
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  484  	info->type = type;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  485  	info->name = name;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  486  	info->param_count = param_count;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  487  	info->valid = valid;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  488  
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  489  	*return_buffer = info;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  490  	status = AE_OK;
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  491  
-4be44fcd drivers/acpi/namespace/nsxfname.c Len Brown      2005-08-05  492        cleanup:
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  493  	if (hid) {
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  494  		ACPI_FREE(hid);
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  495  	}
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  496  	if (uid) {
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  497  		ACPI_FREE(uid);
-15b8dd53 drivers/acpi/acpica/nsxfname.c    Bob Moore      2009-06-29  498  	}
-00741297 drivers/acpi/acpica/nsxfname.c    Bob Moore      2012-10-31  499  	if (sub) {
-00741297 drivers/acpi/acpica/nsxfname.c    Bob Moore      2012-10-31 @500  		ACPI_FREE(sub);
-00741297 drivers/acpi/acpica/nsxfname.c    Bob Moore      2012-10-31  501  	}
-^1da177e drivers/acpi/namespace/nsxfname.c Linus Torvalds 2005-04-16  502  	if (cid_list) {
-8313524a drivers/acpi/namespace/nsxfname.c Bob Moore      2006-10-03  503  		ACPI_FREE(cid_list);
-^1da177e drivers/acpi/namespace/nsxfname.c Linus Torvalds 2005-04-16  504  	}
-^1da177e drivers/acpi/namespace/nsxfname.c Linus Torvalds 2005-04-16  505  	return (status);
-^1da177e drivers/acpi/namespace/nsxfname.c Linus Torvalds 2005-04-16  506  }
-^1da177e drivers/acpi/namespace/nsxfname.c Linus Torvalds 2005-04-16  507  
-8313524a drivers/acpi/namespace/nsxfname.c Bob Moore      2006-10-03  508  ACPI_EXPORT_SYMBOL(acpi_get_object_info)
-
----
-0-DAY kernel build testing backend         Open Source Technology Center
-Fengguang Wu, Yuanhan Liu                              Intel Corporation
+Thanks,
+--
+Ming Lei
