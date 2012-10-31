@@ -1,44 +1,66 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [PATCH v3 2/6] PM / Runtime: introduce pm_runtime_set[get]_memalloc_noio()
-Date: Wed, 31 Oct 2012 09:37:16 +0100
-Message-ID: <1478330.G3nm4yCX9h@linux-lqwf.site>
-References: <CACVXFVOPDu6wVgPmvtTkokn7VV41x3XVvL4g_E0pz0mikUbvUg@mail.gmail.com> <CACVXFVMRJPfPSC_4ZamqfYUSYNsMEVYXMFmcs26T=4MdB_Kntw@mail.gmail.com> <CACVXFVNxucCVLS-=EQkmVop3LQMkeXW7RbZq4yfkiq_MUGndvg@mail.gmail.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH v2] Thermal: exynos: Add sysfs node supporting exynos's
+ emulation mode.
+Date: Wed, 31 Oct 2012 08:49:36 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB591FDF82@BGSMSX101.gar.corp.intel.com>
+References: <1351657147-26092-1-git-send-email-jonghwa3.lee@samsung.com>
+ <4D68720C2E767A4AA6A8796D42C8EB591FDE36@BGSMSX101.gar.corp.intel.com>
+ <5090D6F7.5040401@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:33818 "EHLO mx2.suse.de"
+Received: from mga02.intel.com ([134.134.136.20]:62940 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935097Ab2JaIhW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 04:37:22 -0400
-In-Reply-To: <CACVXFVNxucCVLS-=EQkmVop3LQMkeXW7RbZq4yfkiq_MUGndvg@mail.gmail.com>
+	id S935123Ab2JaItm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 31 Oct 2012 04:49:42 -0400
+In-Reply-To: <5090D6F7.5040401@samsung.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ming Lei <ming.lei@canonical.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>
 
-On Wednesday 31 October 2012 11:05:33 Ming Lei wrote:
-> On Wed, Oct 31, 2012 at 10:08 AM, Ming Lei <ming.lei@canonical.com> wrote:
-> >> I am afraid it is, because a disk may just have been probed as the deviceis being reset.
-> >
-> > Yes, it is probable, and sounds like similar with 'root_wait' problem, see
-> > prepare_namespace(): init/do_mounts.c, so looks no good solution
-> > for the problem, and maybe we have to set the flag always before resetting
-> > usb device.
-> 
-> The below idea may help the problem which 'memalloc_noio' flag isn't set during
-> usb_reset_device().
-> 
-> - for usb mass storage device, call pm_runtime_set_memalloc_noio(true)
->   inside usb_stor_probe2() and uas_probe(), and call
->   pm_runtime_set_memalloc_noio(false) inside uas_disconnect()
->   and usb_stor_disconnect().
-> 
-> - for usb network device, register_netdev() is always called inside usb
->   interface's probe(),  looks no such problem.
-
-This still leaves networking done over PPP in the cold.
-
-	Regards
-		Oliver
-
+SGksDQoNCltBIGJpZyBjdXQuXQ0KPiA+PiArDQo+ID4+ICsJbXV0ZXhfbG9jaygmZGF0YS0+bG9j
+ayk7DQo+ID4+ICsJY2xrX2VuYWJsZShkYXRhLT5jbGspOw0KPiA+PiArDQo+ID4+ICsJcmVnID0g
+cmVhZGwoZGF0YS0+YmFzZSArIEVYWU5PU19FTVVMX0NPTik7DQo+ID4+ICsJZW5hYmxlID0gcmVn
+ICYgRVhZTk9TX0VNVUxfRU5BQkxFOw0KPiA+PiArCWlmICghZW5hYmxlICYmICF0ZW1wKQ0KPiA+
+PiArCQlnb3RvIG91dDsNCj4gPiBJIHRoaW5rIHlvdSB3aGF0IHlvdSBhcmUgdHJ5aW5nIHRvIGRv
+IGhlcmUgaXMgdGhpczoNCj4gPiBJZiB0aGUgZW11bGF0aW9uIGlzIGFscmVhZHkgZGlzYWJsZWQs
+IGFuZCAndGhpcycgd3JpdGUgdHJpZXMgdG8NCj4gPiBkaXNhYmxlIGl0IGFnYWluLCB5b3UganVt
+cCB0byAnb3V0JyBhcyBhbiBvcHRpbWl6YXRpb24uDQo+ID4gUGxlYXNlIGNvcnJlY3QgbWUgaWYg
+SSBhbSB3cm9uZy4NCj4gWWVzLCB5b3UncmUgcmlnaHQuIElmIHdlIHRyeSB0byBkaXNhYmxlIHRo
+ZSBlbXVsYXRpb24gbW9kZSBkZXNwaXRlIGl0IGFscmVhZHkgaXMNCj4gZGlzYWJsZWQsDQo+IHRo
+ZW4gZW11bGF0aW9uIG1vZGUgd2lsbCBiZSBmYWlsZWQgYW5kIHdlIGNhbid0IHVzZSBpdC4gQmVj
+YXVzZSBlbXVsYXRpb24NCj4gbW9kZSBoYXMgc29tZQ0KPiBzdHJhbmdlIGNoYXJhY3RlcmlzdGlj
+Lg0KPiBMZXQgbWUgZXhwbGFpbiBtb3JlIGRldGFpbC4gRW11bGF0aW9uIG1vZGUgcmVxdWlyZXMg
+c3luY2hyb25vdXMgb2YgYW55DQo+IHZhbHVlIGNoYW5naW5nIGFuZA0KPiBlbmFibGluZy4gSXQg
+bWVhbnMgeW91IGNhbid0IGNoYW5nZSBhbnkgdmFsdWUgKG5leHQgdGFyZ2V0IHRlbXBlcmF0dXJl
+LA0KPiBzZW5zaW5nIHRpbWUgZGVsYXkpDQo+IHdpdGhvdXQgZW5hYmxpbmcuIEluIHRoaXMgY29k
+ZSwgZGlzYWJsaW5nIG92ZXJsYXBwaW5nIG1ha2VzIHByb2JsZW0gYXQgaW5pdGlhbA0KPiBzdGF0
+ZS4gQXQgdGhlIGluaXRpYWwsDQo+IHRoZXJlIGlzIG5vIG5leHQgdGFyZ2V0IHRlbXBlcmF0dXJl
+IGFuZCBvbmx5IHZhbHVlIDEgZm9yIGRlbGF5IHRpbWUuIEJ1dCBpZg0KPiB5b3UgdHJ5IHRvIHdy
+aXRlIDAgYWdhaW4NCj4gdG8gc3lzZnMgbm9kZSwgdGVtcCwgdGhlbiBpdCB3cml0ZSBkZWxheSB0
+aW1lIHdpdGggOTM4dXMgYW5kIG5leHQNCj4gdGVtcGVyYXR1cmUgd2l0aCBtaW5pbXVtDQo+IHRl
+bXBlcmF0dXJlIGF1dG9tYXRpY2FsbHkuIFZhbHVlIGlzIGNoYW5nZWQgYnV0IGVuYWJsZSBiaXQg
+aXMgc3RpbGwgZGlzYWJsZWQuDQo+IFRoaXMgaXMgd2hhdCB0aGUNCj4gcHJvYmxlbSBpcyBoYXBw
+ZW5lZC4NCg0KVGhhbmtzIGZvciB0aGUgZGV0YWlsZWQgRXhwbGFuYXRpb24uDQoNCj4gPj4gIAl9
+DQo+ID4+ICsjaWZkZWYgQ09ORklHX0VYWU5PU19USEVSTUFMX0VNVUwNCj4gPj4gKwlkZXZpY2Vf
+Y3JlYXRlX2ZpbGUoJnBkZXYtPmRldiwgJmRldl9hdHRyX2VtdWxhdGlvbik7DQo+ID4gRG9uJ3Qg
+d2Ugd2FudCB0byBjYXB0dXJlIHRoZSByZXR1cm4gdmFsdWUgaGVyZSA/DQo+ID4gQWxzbywgaWYg
+d2UgY29uZGl0aW9uYWxseSBjcmVhdGUgdGhpcywgd2Ugc2hvdWxkIHJlbW92ZSB0aGlzIGNvbmRp
+dGlvbmFsbHkNCj4gYWxzby4NCj4gPiBJIGRpZCBub3Qgc2VlIGEgY29ycmVzcG9uZGluZyBkZXZp
+Y2VfcmVtb3ZlX2ZpbGUgZm9yIHRoaXMgYXR0ci4NCj4gU29ycnksIEl0J3MgbXkgbWlzdGFrZS4g
+SSdsbCBmaXggaXQuDQo+ID4+ICsjZW5kaWYNCj4gPiBDYW4gd2UgY2x1YiBhbGwgdGhlIGNvZGUg
+aW5zaWRlIENPTkZJR18qX0VNVUwgYXQgb25lIHBsYWNlID8NCj4gPiBUaGlzIHdpbGwgbWFrZSBp
+dCBuZWF0LCBhbmQgbm90IHNwcmVhZCB0aGUgI2lmZGVmcyBhbGwgb3ZlciB0aGUgZHJpdmVyLg0K
+PiBJJ2QgbGlrZSB0byBkbyBlaXRoZXIuIEJ1dCBJIGp1c3QgY291bGRuJ3QgZmluZCBhIHdheS4N
+Cj4gQ291bGQgeW91IGdpdmUgbWUgYW55IGlkZWEgaG93IHRvIGRvIGl0ID8NCg0KSSB3YXMgdGhp
+bmtpbmcgc29tZXRoaW5nIGxpa2UgYmVsb3c6DQoNCmluc2lkZSAjaWZkZWYgQ09ORklHXypfRU1V
+TA0KCWludCByZWdpc3Rlcl9lbXVsYXRpb25fbW9kZSguLi4pIHsgZGV2aWNlX2NyZWF0ZV9maWxl
+KC4uLikgfTsNCglpbnQgdW5yZWdpc3Rlcl9lbXVsYXRpb25fbW9kZSguLi4pIHsgZGV2aWNlX3Jl
+bW92ZV9maWxlKC4uLikgfTsNCiNlbHNlDQoJc3RhdGljIGlubGluZSBpbnQgcmVnaXN0ZXIuLigu
+Li4pIHsgcmV0dXJuIDA7IH0NCglzdGF0aWMgaW5saW5lIGludCB1bnJlZ2lzdGVyLi4oLi4uKSB7
+IHJldHVybiAwOyB9DQojZW5kaWYNCg0KVGhlbiB0aGUgcmVzdCBvZiB0aGUgZHJpdmVyIGNhbiBq
+dXN0IHVzZSByZWdpc3Rlci91bnJlZ2lzdGVyLA0Kd2l0aG91dCB3b3JyeWluZyBhYm91dCAjaWZk
+ZWYuDQoNClRoYW5rcywNCkR1cmdhDQo=
