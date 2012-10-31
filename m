@@ -1,243 +1,132 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH v3] Thermal: exynos: Add sysfs node supporting exynos's
- emulation mode.
-Date: Wed, 31 Oct 2012 18:53:57 +0900
-Message-ID: <1351677237-18240-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Daniel Mack <zonque@gmail.com>
+Subject: Re: pm: add suspend_mem and suspend_standby support
+Date: Wed, 31 Oct 2012 11:27:13 +0100
+Message-ID: <5090FD01.1080709@gmail.com>
+References: <20121006161429.GD12462@game.jcrosoft.org> <20121009145854.GB14079@kroah.com> <20121009151704.GP12801@game.jcrosoft.org> <3430030.rKEkeKmzui@vostro.rjw.lan> <5075210B.3020309@ti.com> <50753DD9.1080105@gmail.com> <79CD15C6BA57404B839C016229A409A83EB3AF86@DBDE01.ent.ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:52083 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687Ab2JaJyI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Oct 2012 05:54:08 -0400
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:33262 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932340Ab2JaK1X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 31 Oct 2012 06:27:23 -0400
+Received: by mail-bk0-f46.google.com with SMTP id jk13so555829bkc.19
+        for <linux-pm@vger.kernel.org>; Wed, 31 Oct 2012 03:27:21 -0700 (PDT)
+In-Reply-To: <79CD15C6BA57404B839C016229A409A83EB3AF86@DBDE01.ent.ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>
+To: "Hiremath, Vaibhav" <hvaibhav@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Nori, Sekhar" <nsekhar@ti.com>
 
-This patch supports exynos's emulation mode with newly created sysfs node.
-Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal
-management unit. Thermal emulation mode supports software debug for TMU's
-operation. User can set temperature manually with software code and TMU
-will read current temperature from user value not from sensor's value.
-This patch includes also documentary placed under Documentation/thermal/.
+On 10.10.2012 11:29, Hiremath, Vaibhav wrote:
+> On Wed, Oct 10, 2012 at 14:50:25, Daniel Mack wrote:
+>> On 10.10.2012 09:17, Vaibhav Hiremath wrote:
+>>> On 10/10/2012 3:42 AM, Rafael J. Wysocki wrote:
+>>>> On Tuesday 09 of October 2012 17:17:04 Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>>>> On 07:58 Tue 09 Oct     , Greg Kroah-Hartman wrote:
+>>>>>> On Tue, Oct 09, 2012 at 01:46:33PM +0200, Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>>>>>> On 22:02 Sun 07 Oct     , Rafael J. Wysocki wrote:
+>>>>>>>> On Sunday 07 of October 2012 15:12:01 Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>>>>>>>> On 00:18 Sun 07 Oct     , Rafael J. Wysocki wrote:
+>>>>>>>>>> On Saturday 06 of October 2012 18:14:29 Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>>>>>>>>>> Hi,
+>>>>>>>>>>>
+>>>>>>>>>>> The following changes since commit 5f3d2f2e1a63679cf1c4a4210f2f1cc2f335bef6:
+>>>>>>>>>>>
+>>>>>>>>>>>   Merge branch 'next' of git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc (2012-10-06 03:16:12 +0900)
+>>>>>>>>>>>
+>>>>>>>>>>> are available in the git repository at:
+>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>>   git://git.jcrosoft.org/linux-2.6.git tags/pm_suspend_standby_mem
+>>>>>>>>>>>
+>>>>>>>>>>> for you to fetch changes up to b73c8f97aa8e720bd3b921159687d00626c99d63:
+>>>>>>>>>>>
+>>>>>>>>>>>   arm: at91: drop at91_suspend_entering_slow_clock (2012-10-06 18:06:25 +0800)
+>>>>>>>>>>>
+>>>>>>>>>>> ----------------------------------------------------------------
+>>>>>>>>>>> pm: add suspend_mem and suspend_standby support
+>>>>>>>>>>>
+>>>>>>>>>>> Today when we go to suspend we can not knwon at drivers level if we go in
+>>>>>>>>>>> STANDBY or MEM. Fix this by introducing two new callback suspend_mem and
+>>>>>>>>>>> suspend_standby.
+>>>>>>>>>>
+>>>>>>>>>> No way. Device drivers shouldn't be concerned about that.
+>>>>>>>>> I do need it on at91 as we swith to slow_clock in MEM suspend and some ip
+>>>>>>>>> need special handling when switching to slow_clock
+>>>>>>>>
+>>>>>>>> Well, my answer to that is: please fix your platform code instead of
+>>>>>>>> hacking the PM core to work around its problems.
+>>>>>>> how can I fix drivers pm issue when I no way to known at driver level the
+>>>>>>> real suspend, the PM core is supposed to proivde the right information to the
+>>>>>>> drivers so the driver can put it's in the right pm mode. If the pm core can not
+>>>>>>> provide such inforation the PM core is broken as we will have to do dirty
+>>>>>>> hack.
+>>>>>>
+>>>>>> Why do you need to know the difference in your driver?  We used to
+>>>>>> provide this information a long time ago, but it turned out to not be
+>>>>>> needed at all and just caused problems.
+>>>>> because on at91 I need to handle the mem standby at drviers level.
+>>>>
+>>>> This is not an answer.  You're basically saying "it has to be done this way,
+>>>> because it has to be done this way".
+>>>>
+>>>>> We do it today already by a hack in different drivers at91_udc (usb device),
+>>>>> atmel_serail and at91_ohci. Those 3 IP have specifci handling when switching
+>>>>> to mem pm. On at91 when switch to mem we shutdown everything and run form a slow
+>>>>> clock - this is done at soc level - but those IP have issue and need specific
+>>>>> care before doing so. Ohterwise when the SoC will wakeup but those IP will not
+>>>>>
+>>>>> in this patch series I send the update of those 3 drivers too
+>>>>> and kill the hack
+>>>>
+>>>> Well, let's start over.  What's the difference between "suspend to RAM" (mem)
+>>>> and "standby" on your platform?
+>>>>
+>>>>>>> Any generic framework is supposed to evolve for real user need here I've one
+>>>>>>> so I udpate the core to mach a need
+>>>>
+>>>> Yes, if there are more users needing a change.  If there's only one, I think not
+>>>> really.
+>>>>
+>>>
+>>> We came across such a need while supporting various low-power modes in
+>>> AM335x SoC. I also wanted to put similar proposal, its good that Jean
+>>> submitted patches and we are having this discussion early.
+>>>
+>>> Let me try to describe the need and issue here,
+>>>
+>>> In case of AM33xx device, we have different low-power modes supported
+>>> by HW, for this discussion I will just talk about DeepSleep-0 and
+>>> StandBy mode supported by HW (few other modes also described in spec)-
+>>>
+>>> Below is the Spec definition of these two low-power modes,
+>>
+>> Thanks for this summary, which raises a question for me that might be
+>> slightly unreleated to the general discussion, but still:
+>>
+>> I was just looking at the code that ships with the BSP kernel, and the
+>> approach there is to load a binary firmare blob to the M3 UMEM and then
+>> communicates with mailbox commands in order to put the system to suspend.
+>>
+> 
+> Ohh, Great, then you are aware of AM33xx power management support.
+> As you are aware, M3 here works as a soft-PRCM block, so certain things has 
+> to be done on M3 while entering into low-power state.
+> 
+>> Is this how it should be done in mainline as well or are there any plans
+>> to implement that behaviour natively?
+>>
+> 
+> Yes, we will follow similar approach for Mainline, its under development and 
+> soon you will see patches getting submitted to the list for review. The 
+> first step is to get deepsleep-0 support in Mainline and then other will 
+> follow.
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
----
-v2
- exynos_thermal.c
- - Fix build error occured by wrong emulation control register name.
- - Remove exynos5410 dependent codes.
- exynos_thermal_emulation
- - Align indentation.
+May I ask whether there is anything yet I can test?
 
-v3
- - Remove unnecessay variables.
- - Do some code clean in exynos_tmu_emulation_store().
- - Make wrapping function of sysfs node creation function to use
-   #ifdefs in minimum.
 
- Documentation/thermal/exynos_thermal_emulation |   49 +++++++++++++
- drivers/thermal/Kconfig                        |    9 +++
- drivers/thermal/exynos_thermal.c               |   93 ++++++++++++++++++++++++
- 3 files changed, 151 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/thermal/exynos_thermal_emulation
-
-diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
-new file mode 100644
-index 0000000..062d867
---- /dev/null
-+++ b/Documentation/thermal/exynos_thermal_emulation
-@@ -0,0 +1,49 @@
-+EXYNOS EMULATION MODE
-+========================
-+
-+Copyright (C) 2012 Samsung Electronics
-+
-+Writen by Jonghwa Lee <jonghwa3.lee@samsung.com>
-+
-+Description
-+-----------
-+
-+Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal management unit.
-+Thermal emulation mode supports software debug for TMU's operation. User can set temperature
-+manually with software code and TMU will read current temperature from user value not from
-+sensor's value.
-+
-+Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
-+When it's enabled, sysfs node will be created under
-+/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
-+
-+The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
-+temperature you want to update to sysfs node, it automatically enable emulation mode and
-+current temperature will be changed into it.
-+(Exynos also supports user changable delay time which would be used to delay of
-+ changing temperature. However, this node only uses same delay of real sensing time, 938us.)
-+
-+Disabling emulation mode only requires writing value 0 to sysfs node.
-+
-+
-+TEMP	120 |
-+	    |
-+	100 |
-+	    |
-+	 80 |
-+	    |		     	 	 +-----------
-+	 60 |      		     	 |	    |
-+	    |	           +-------------|          |
-+	 40 |              |         	 |          |
-+   	    |		   |	     	 |          |
-+	 20 |		   |	     	 |          +----------
-+	    |	 	   |	     	 |          |          |
-+  	  0 |______________|_____________|__________|__________|_________
-+		   A	    	 A	    A	   	       A     TIME
-+		   |<----->|	 |<----->|  |<----->|	       |
-+		   | 938us |  	 |	 |  |       |          |
-+emulation    :  0 50	   |  	 70      |  20      |          0
-+current temp :   sensor   50		 70         20	      sensor
-+
-+
-+
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index e1cb6bd..c02a66c 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -55,3 +55,12 @@ config EXYNOS_THERMAL
- 	help
- 	  If you say yes here you get support for TMU (Thermal Managment
- 	  Unit) on SAMSUNG EXYNOS series of SoC.
-+
-+config EXYNOS_THERMAL_EMUL
-+	bool "EXYNOS TMU emulation mode support"
-+	depends on !CPU_EXYNOS4210 && EXYNOS_THERMAL
-+	help
-+	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
-+	  Enable this option will be make sysfs node in exynos thermal platform
-+	  device directory to support emulation mode. With emulation mode sysfs
-+	  node, you can manually input temperature to TMU for simulation purpose.
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index fd03e85..4bdd1eb 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -99,6 +99,14 @@
- #define IDLE_INTERVAL 10000
- #define MCELSIUS	1000
- 
-+#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+#define EXYNOS_EMUL_TIME	0x57F0
-+#define EXYNOS_EMUL_TIME_SHIFT	16
-+#define EXYNOS_EMUL_DATA_SHIFT	8
-+#define EXYNOS_EMUL_DATA_MASK	0xFF
-+#define EXYNOS_EMUL_ENABLE	0x1
-+#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
-+
- /* CPU Zone information */
- #define PANIC_ZONE      4
- #define WARN_ZONE       3
-@@ -832,6 +840,84 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
- 	return (struct exynos_tmu_platform_data *)
- 			platform_get_device_id(pdev)->driver_data;
- }
-+
-+#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+static ssize_t exynos_tmu_emulation_show(struct device *dev,
-+					 struct device_attribute *attr,
-+					 char *buf)
-+{
-+	struct platform_device *pdev = container_of(dev,
-+					struct platform_device, dev);
-+	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	unsigned int reg;
-+	u8 temp_code;
-+	int temp = 0;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+
-+	if (reg & EXYNOS_EMUL_ENABLE) {
-+		reg >>= EXYNOS_EMUL_DATA_SHIFT;
-+		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
-+		temp = code_to_temp(data, temp_code);
-+	} else {
-+		temp = 0;
-+	}
-+
-+	return sprintf(buf, "%d\n", temp);
-+}
-+
-+static ssize_t exynos_tmu_emulation_store(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t count)
-+{
-+	struct platform_device *pdev = container_of(dev,
-+					struct platform_device, dev);
-+	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	unsigned int reg;
-+	int temp = 0;
-+
-+	if (!sscanf(buf, "%d\n", &temp) || temp < 0)
-+		return -EINVAL;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+
-+	if (temp)
-+		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
-+			(temp_to_code(data, temp) << EXYNOS_EMUL_DATA_SHIFT) |
-+			EXYNOS_EMUL_ENABLE;
-+	else
-+		reg &= ~EXYNOS_EMUL_ENABLE;
-+
-+	writel(reg, data->base + EXYNOS_EMUL_CON);
-+
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
-+					exynos_tmu_emulation_store);
-+static int create_emulation_sysfs(struct device *dev)
-+{
-+	return device_create_file(dev, &dev_attr_emulation);
-+}
-+static void remove_emulation_sysfs(struct device *dev)
-+{
-+	device_remove_file(dev, &dev_attr_emulation);
-+}
-+#else
-+static inline int create_emulation_sysfs(struct device *dev) {return 0;}
-+static inline void remove_emulation_sysfs(struct device *dev){}
-+#endif
-+
- static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data;
-@@ -930,6 +1016,11 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- 		dev_err(&pdev->dev, "Failed to register thermal interface\n");
- 		goto err_clk;
- 	}
-+
-+	ret = create_emulation_sysfs(&pdev->dev);
-+	if (ret)
-+		dev_err(&pdev->dev, "Faield to create emulation mode sysfs node\n");
-+
- 	return 0;
- err_clk:
- 	platform_set_drvdata(pdev, NULL);
-@@ -941,6 +1032,8 @@ static int __devexit exynos_tmu_remove(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 
-+	remove_emulation_sysfs(&pdev->dev);
-+
- 	exynos_tmu_control(pdev, false);
- 
- 	exynos_unregister_thermal();
--- 
-1.7.4.1
+Thanks,
+Daniel
 
