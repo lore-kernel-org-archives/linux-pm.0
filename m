@@ -1,39 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] driver core / ACPI: Move ACPI support to core device and driver types
-Date: Wed, 31 Oct 2012 22:46:47 +0100
-Message-ID: <1762089.v1Tzu6o6cI@vostro.rjw.lan>
-References: <1421417.rIOjExM5Pt@vostro.rjw.lan> <4946697.LIFggnbCY6@vostro.rjw.lan> <3908561D78D1C84285E8C5FCA982C28F19D5B9DE@ORSMSX108.amr.corp.intel.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v8 09/11] block: add a new interface to block events
+Date: Wed, 31 Oct 2012 14:51:21 -0700
+Message-ID: <20121031215121.GC2945@htj.dyndns.org>
+References: <1351501298-3716-1-git-send-email-aaron.lu@intel.com>
+ <1351501298-3716-10-git-send-email-aaron.lu@intel.com>
+ <20121029153536.GL5171@htj.dyndns.org>
+ <508F7BF1.1040009@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:49673 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754482Ab2JaVm5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 17:42:57 -0400
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F19D5B9DE@ORSMSX108.amr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <508F7BF1.1040009@intel.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, "Huang, Ying" <ying.huang@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, x86 list <x86@kernel.org>
 
-On Wednesday, October 31, 2012 09:36:36 PM Luck, Tony wrote:
-> > The BIOSes of currently available ia64 systems don't contain ACPI nodes whose
-> > IDs will match the IDs of the new devices (ie. the ones that are going to be
-> > added to acpi_platform_device_ids[]), so for ia64 it should be sufficient to
-> > test that code as is (ie. without any new devices in the system).
-> 
-> Ok - built cleanly on ia64.  Boots too. Just one new console message:
-> 
-> ACPI: bus type platform registered
-> 
-> that seems pretty harmless.
-> 
-> Acked-by: Tony Luck <tony.luck@intel.com>
+Hello,
 
-Thanks a lot!
+On Tue, Oct 30, 2012 at 03:04:17PM +0800, Aaron Lu wrote:
+> > check_event() can retry.  Just add a per-sr mutex which is try-locked
+> > by sr_block_check_events() and grab it when entering zero power.
+> 
+> Good suggestion. I didn't think about solving it this way.
+> 
+> Many people suggest me that ZPODD is pure SATA/ACPI stuff, and should
+> not pollute sr driver, so I was trying hard not to touch sr while
+> preparing these patches, unless there is no other choice(like the
+> blocking event interface).
+> 
+> So I'm not sure if your suggestion is the way to go.
+> 
+> James, what do you think? Is it OK if I add a mutex into the scsi_cd
+> structure to do this? Of course I'll define this only under
+> CONFIG_SATA_ZPODD.
 
+I don't think what James' and my suggestions are that different.  Just
+silence check_event() while zpodd is kicked in somehow.  There's no
+reason to synchronize across multiple subsystems.
+
+Thanks.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+tejun
