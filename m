@@ -1,66 +1,55 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH v2] Thermal: exynos: Add sysfs node supporting exynos's
- emulation mode.
-Date: Wed, 31 Oct 2012 08:49:36 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB591FDF82@BGSMSX101.gar.corp.intel.com>
-References: <1351657147-26092-1-git-send-email-jonghwa3.lee@samsung.com>
- <4D68720C2E767A4AA6A8796D42C8EB591FDE36@BGSMSX101.gar.corp.intel.com>
- <5090D6F7.5040401@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-next PATCH] PM / devfreq: documentation cleanups for devfreq header
+Date: Wed, 31 Oct 2012 10:13:48 +0100
+Message-ID: <2871085.TQE48VIldN@vostro.rjw.lan>
+References: <29176137.554861351650430580.JavaMail.weblogic@epv6ml03>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:62940 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935123Ab2JaItm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 31 Oct 2012 04:49:42 -0400
-In-Reply-To: <5090D6F7.5040401@samsung.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <29176137.554861351650430580.JavaMail.weblogic@epv6ml03>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Nishanth Menon <nm@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rajagopal Venkat <rajagopal.venkat@linaro.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, Kevin Hilman <khilman@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?B?7J207KKF7ZmU?= <jonghwa3.lee@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "jonghwa3.lee@samsung.com" <jonghwa3.lee@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>
 
-SGksDQoNCltBIGJpZyBjdXQuXQ0KPiA+PiArDQo+ID4+ICsJbXV0ZXhfbG9jaygmZGF0YS0+bG9j
-ayk7DQo+ID4+ICsJY2xrX2VuYWJsZShkYXRhLT5jbGspOw0KPiA+PiArDQo+ID4+ICsJcmVnID0g
-cmVhZGwoZGF0YS0+YmFzZSArIEVYWU5PU19FTVVMX0NPTik7DQo+ID4+ICsJZW5hYmxlID0gcmVn
-ICYgRVhZTk9TX0VNVUxfRU5BQkxFOw0KPiA+PiArCWlmICghZW5hYmxlICYmICF0ZW1wKQ0KPiA+
-PiArCQlnb3RvIG91dDsNCj4gPiBJIHRoaW5rIHlvdSB3aGF0IHlvdSBhcmUgdHJ5aW5nIHRvIGRv
-IGhlcmUgaXMgdGhpczoNCj4gPiBJZiB0aGUgZW11bGF0aW9uIGlzIGFscmVhZHkgZGlzYWJsZWQs
-IGFuZCAndGhpcycgd3JpdGUgdHJpZXMgdG8NCj4gPiBkaXNhYmxlIGl0IGFnYWluLCB5b3UganVt
-cCB0byAnb3V0JyBhcyBhbiBvcHRpbWl6YXRpb24uDQo+ID4gUGxlYXNlIGNvcnJlY3QgbWUgaWYg
-SSBhbSB3cm9uZy4NCj4gWWVzLCB5b3UncmUgcmlnaHQuIElmIHdlIHRyeSB0byBkaXNhYmxlIHRo
-ZSBlbXVsYXRpb24gbW9kZSBkZXNwaXRlIGl0IGFscmVhZHkgaXMNCj4gZGlzYWJsZWQsDQo+IHRo
-ZW4gZW11bGF0aW9uIG1vZGUgd2lsbCBiZSBmYWlsZWQgYW5kIHdlIGNhbid0IHVzZSBpdC4gQmVj
-YXVzZSBlbXVsYXRpb24NCj4gbW9kZSBoYXMgc29tZQ0KPiBzdHJhbmdlIGNoYXJhY3RlcmlzdGlj
-Lg0KPiBMZXQgbWUgZXhwbGFpbiBtb3JlIGRldGFpbC4gRW11bGF0aW9uIG1vZGUgcmVxdWlyZXMg
-c3luY2hyb25vdXMgb2YgYW55DQo+IHZhbHVlIGNoYW5naW5nIGFuZA0KPiBlbmFibGluZy4gSXQg
-bWVhbnMgeW91IGNhbid0IGNoYW5nZSBhbnkgdmFsdWUgKG5leHQgdGFyZ2V0IHRlbXBlcmF0dXJl
-LA0KPiBzZW5zaW5nIHRpbWUgZGVsYXkpDQo+IHdpdGhvdXQgZW5hYmxpbmcuIEluIHRoaXMgY29k
-ZSwgZGlzYWJsaW5nIG92ZXJsYXBwaW5nIG1ha2VzIHByb2JsZW0gYXQgaW5pdGlhbA0KPiBzdGF0
-ZS4gQXQgdGhlIGluaXRpYWwsDQo+IHRoZXJlIGlzIG5vIG5leHQgdGFyZ2V0IHRlbXBlcmF0dXJl
-IGFuZCBvbmx5IHZhbHVlIDEgZm9yIGRlbGF5IHRpbWUuIEJ1dCBpZg0KPiB5b3UgdHJ5IHRvIHdy
-aXRlIDAgYWdhaW4NCj4gdG8gc3lzZnMgbm9kZSwgdGVtcCwgdGhlbiBpdCB3cml0ZSBkZWxheSB0
-aW1lIHdpdGggOTM4dXMgYW5kIG5leHQNCj4gdGVtcGVyYXR1cmUgd2l0aCBtaW5pbXVtDQo+IHRl
-bXBlcmF0dXJlIGF1dG9tYXRpY2FsbHkuIFZhbHVlIGlzIGNoYW5nZWQgYnV0IGVuYWJsZSBiaXQg
-aXMgc3RpbGwgZGlzYWJsZWQuDQo+IFRoaXMgaXMgd2hhdCB0aGUNCj4gcHJvYmxlbSBpcyBoYXBw
-ZW5lZC4NCg0KVGhhbmtzIGZvciB0aGUgZGV0YWlsZWQgRXhwbGFuYXRpb24uDQoNCj4gPj4gIAl9
-DQo+ID4+ICsjaWZkZWYgQ09ORklHX0VYWU5PU19USEVSTUFMX0VNVUwNCj4gPj4gKwlkZXZpY2Vf
-Y3JlYXRlX2ZpbGUoJnBkZXYtPmRldiwgJmRldl9hdHRyX2VtdWxhdGlvbik7DQo+ID4gRG9uJ3Qg
-d2Ugd2FudCB0byBjYXB0dXJlIHRoZSByZXR1cm4gdmFsdWUgaGVyZSA/DQo+ID4gQWxzbywgaWYg
-d2UgY29uZGl0aW9uYWxseSBjcmVhdGUgdGhpcywgd2Ugc2hvdWxkIHJlbW92ZSB0aGlzIGNvbmRp
-dGlvbmFsbHkNCj4gYWxzby4NCj4gPiBJIGRpZCBub3Qgc2VlIGEgY29ycmVzcG9uZGluZyBkZXZp
-Y2VfcmVtb3ZlX2ZpbGUgZm9yIHRoaXMgYXR0ci4NCj4gU29ycnksIEl0J3MgbXkgbWlzdGFrZS4g
-SSdsbCBmaXggaXQuDQo+ID4+ICsjZW5kaWYNCj4gPiBDYW4gd2UgY2x1YiBhbGwgdGhlIGNvZGUg
-aW5zaWRlIENPTkZJR18qX0VNVUwgYXQgb25lIHBsYWNlID8NCj4gPiBUaGlzIHdpbGwgbWFrZSBp
-dCBuZWF0LCBhbmQgbm90IHNwcmVhZCB0aGUgI2lmZGVmcyBhbGwgb3ZlciB0aGUgZHJpdmVyLg0K
-PiBJJ2QgbGlrZSB0byBkbyBlaXRoZXIuIEJ1dCBJIGp1c3QgY291bGRuJ3QgZmluZCBhIHdheS4N
-Cj4gQ291bGQgeW91IGdpdmUgbWUgYW55IGlkZWEgaG93IHRvIGRvIGl0ID8NCg0KSSB3YXMgdGhp
-bmtpbmcgc29tZXRoaW5nIGxpa2UgYmVsb3c6DQoNCmluc2lkZSAjaWZkZWYgQ09ORklHXypfRU1V
-TA0KCWludCByZWdpc3Rlcl9lbXVsYXRpb25fbW9kZSguLi4pIHsgZGV2aWNlX2NyZWF0ZV9maWxl
-KC4uLikgfTsNCglpbnQgdW5yZWdpc3Rlcl9lbXVsYXRpb25fbW9kZSguLi4pIHsgZGV2aWNlX3Jl
-bW92ZV9maWxlKC4uLikgfTsNCiNlbHNlDQoJc3RhdGljIGlubGluZSBpbnQgcmVnaXN0ZXIuLigu
-Li4pIHsgcmV0dXJuIDA7IH0NCglzdGF0aWMgaW5saW5lIGludCB1bnJlZ2lzdGVyLi4oLi4uKSB7
-IHJldHVybiAwOyB9DQojZW5kaWYNCg0KVGhlbiB0aGUgcmVzdCBvZiB0aGUgZHJpdmVyIGNhbiBq
-dXN0IHVzZSByZWdpc3Rlci91bnJlZ2lzdGVyLA0Kd2l0aG91dCB3b3JyeWluZyBhYm91dCAjaWZk
-ZWYuDQoNClRoYW5rcywNCkR1cmdhDQo=
+On Wednesday, October 31, 2012 02:27:10 AM =ED=95=A8=EB=AA=85=EC=A3=BC =
+wrote:
+> > On Tuesday, October 30, 2012 08:09:09 AM MyungJoo Ham wrote:
+> []
+> > >=20
+> > > Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> > >=20
+> > > Applying to git://git.kernel.org/pub/scm/linux/kernel/git/mzx/dev=
+freq.git for-rafael, which is based on rafael's linux-pm.git / linux-ne=
+xt.
+> > >=20
+> > > http://git.kernel.org/?p=3Dlinux/kernel/git/mzx/devfreq.git;a=3Ds=
+hortlog;h=3Drefs/heads/for-rafael
+> > >=20
+> > > I'll apply your "Add sysfs node ..." patch after refactoring with=
+ Jonghwa's (devfreq trans_stat) as the two patches use the same data (l=
+ist of available freqs).
+> >=20
+> > May I assume that you'll handle all of the subsequent devfreq patch=
+es too?
+> >=20
+> > Rafael
+>=20
+> Yes, you may. I'll apply the patches (currently at http://git.kernel.=
+org/?p=3Dlinux/kernel/git/mzx/devfreq.git;a=3Dshortlog;h=3Drefs/heads/f=
+or-rafael ) and send pull requests to you or Linus.
+>=20
+> Anyway, do you want me to keep sending pull requests to you as you've=
+ told
+> last time?
+
+Yes, please.
+
+Thanks,
+Rafael
+
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
