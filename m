@@ -1,106 +1,56 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH V3 4/5] Thermal: Add ST-Ericsson DB8500 thermal driver.
-Date: Thu, 01 Nov 2012 15:48:41 +0100
-Message-ID: <50928BC9.30305@gmail.com>
-References: <1351079900-32236-1-git-send-email-hongbo.zhang@linaro.com> <1351615741-24134-1-git-send-email-hongbo.zhang@linaro.com> <1351615741-24134-5-git-send-email-hongbo.zhang@linaro.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v8 05/11] libata-eh: allow defer in ata_exec_internal
+Date: Thu, 1 Nov 2012 09:03:00 -0700
+Message-ID: <20121101160300.GB9169@htj.dyndns.org>
+References: <1351501298-3716-1-git-send-email-aaron.lu@intel.com>
+ <1351501298-3716-6-git-send-email-aaron.lu@intel.com>
+ <20121029152051.GK5171@htj.dyndns.org>
+ <508F42C0.8070807@intel.com>
+ <20121030030144.GG4066@htj.dyndns.org>
+ <508F44E1.3000801@intel.com>
+ <20121031215213.GD2945@htj.dyndns.org>
+ <5091DFDE.1060904@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:46243 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199Ab2KAOq2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Nov 2012 10:46:28 -0400
-In-Reply-To: <1351615741-24134-5-git-send-email-hongbo.zhang@linaro.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5091DFDE.1060904@intel.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "hongbo.zhang" <hongbo.zhang@linaro.org>
-Cc: linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, amit.kachhap@linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, linaro-kernel@lists.linaro.org, "hongbo.zhang" <hongbo.zhang@linaro.com>, patches@linaro.org
 
-Hi,
+Hello, Aaron.
 
-On 10/30/2012 05:49 PM, hongbo.zhang wrote:
-> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+On Thu, Nov 01, 2012 at 10:35:10AM +0800, Aaron Lu wrote:
+> > You can always add some fields. :)
 > 
-> This diver is based on the thermal management framework in thermal_sys.c. A
-> thermal zone device is created with the trip points to which cooling devices
-> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
-> clipped down to cool the CPU, and other cooling devices can be added and bound
-> to the trip points dynamically.  The platform specific PRCMU interrupts are
-> used to active thermal update when trip points are reached.
+> OK. My concern is that, such information is only useful to ZPODD
+> capable device+platforms, so checking this loading mechanism thing for
+> all ATAPI devices during probe time doesn't seem a good idea.
+
+Hmmm.. but it's not like querying acpi is high cost or anything.
+Maybe I'm missing something but if it can be simpler that way, please
+do so by all means.  I don't care whether you add some extra fields or
+some processing overhead during probing.  It doesn't really matter.
+
+> > Hmm... I see.  Which ACPI binding is it?  The ATA ACPI binding happens
+> > during probing.  It's a different one, I presume?
 > 
-> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+> Since commit 6b66d95895c149cbc04d4fac5a2f5477c543a8ae:
+> libata: bind the Linux device tree to the ACPI device tree
+> ACPI binding happens when SCSI devices are added to the device tree. The
+> ata port/device software structure does not have a acpi_handle field
+> anymore.
 
-[...]
-> +static struct db8500_thsens_platform_data*
-> +		db8500_thermal_parse_dt(struct platform_device *pdev)
-> +{
-> +	struct db8500_thsens_platform_data *ptrips;
-> +	struct device_node *np = pdev->dev.of_node;
-> +	char prop_name[32];
-> +	const char *tmp_str;
-> +	u32 tmp_data;
-> +	int i, j;
-> +
-> +	ptrips = devm_kzalloc(&pdev->dev, sizeof(*ptrips), GFP_KERNEL);
-> +	if (!ptrips)
-> +		return NULL;
-> +
-> +	if (of_property_read_u32(np, "num-trips", &tmp_data))
-> +		goto err_parse_dt;
-> +
-> +	if (tmp_data > THERMAL_MAX_TRIPS)
-> +		goto err_parse_dt;
-> +
-> +	ptrips->num_trips = tmp_data;
-> +
-> +	for (i = 0; i < ptrips->num_trips; i++) {
-> +		sprintf(prop_name, "trip%d-temp", i);
-> +		if (of_property_read_u32(np, prop_name, &tmp_data))
-> +			goto err_parse_dt;
-> +
-> +		ptrips->trip_points[i].temp = tmp_data;
-> +
-> +		sprintf(prop_name, "trip%d-type", i);
-> +		if (of_property_read_string(np, prop_name, &tmp_str))
-> +			goto err_parse_dt;
-> +
-> +		if (!strcmp(tmp_str, "active"))
-> +			ptrips->trip_points[i].type = THERMAL_TRIP_ACTIVE;
-> +		else if (!strcmp(tmp_str, "passive"))
-> +			ptrips->trip_points[i].type = THERMAL_TRIP_PASSIVE;
-> +		else if (!strcmp(tmp_str, "hot"))
-> +			ptrips->trip_points[i].type = THERMAL_TRIP_HOT;
-> +		else if (!strcmp(tmp_str, "critical"))
-> +			ptrips->trip_points[i].type = THERMAL_TRIP_CRITICAL;
-> +		else
-> +			goto err_parse_dt;
-> +
-> +		sprintf(prop_name, "trip%d-cdev-num", i);
-> +		if (of_property_read_u32(np, prop_name, &tmp_data))
-> +			goto err_parse_dt;
-> +
-> +		if (tmp_data > COOLING_DEV_MAX)
-> +			goto err_parse_dt;
-> +
-> +		for (j = 0; j < tmp_data; j++) {
-> +			sprintf(prop_name, "trip%d-cdev-name%d", i, j);
-> +			if (of_property_read_string(np, prop_name, &tmp_str))
-> +				goto err_parse_dt;
-> +
-> +			if (strlen(tmp_str) > THERMAL_NAME_LENGTH)
-> +				goto err_parse_dt;
-> +
-> +			strcpy(ptrips->trip_points[i].cdev_name[j], tmp_str);
+Please bear with me.  I haven't paid much attention to zpodd, so it
+probably is my ignorance but at least the ATA <-> ACPI association
+happens during probing by calling ata_acpi_on_devcfg() from
+ata_dev_configure(), and it pretty much has to happen then because
+_SDD/_GTF should be executed after hardreset which happens during
+probing.  So, yeah, I'm confused.
 
-If strlen(tmp_str) equals THERMAL_NAME_LENGTH, strcpy() will go past the
-size of the destination array.
+Thanks.
 
-After the above is fixed, you can add my:
-Reviewed-by: Francesco Lavra <francescolavra.fl@gmail.com>
-
-If you re-send a new version of the patch series, I suggest you do so in
-a new thread.
-
-Thanks,
-Francesco
+-- 
+tejun
