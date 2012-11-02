@@ -1,108 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / Qos: Ensure device not in PRM_SUSPENDED when pm qos flags request functions are invoked in the pm core.
-Date: Fri, 02 Nov 2012 12:17:36 +0100
-Message-ID: <1888394.d23n1PsP9K@vostro.rjw.lan>
-References: <1351843430-8023-1-git-send-email-tianyu.lan@intel.com>
+Subject: Re: [PATCH 5/7] ACPI / PM: Provide device PM functions operating on struct acpi_device
+Date: Fri, 02 Nov 2012 12:19:42 +0100
+Message-ID: <3727309.uat568eqeC@vostro.rjw.lan>
+References: <1766582.8gdQKXoi0K@vostro.rjw.lan> <2204038.IsGMuMD7u4@vostro.rjw.lan> <50935756.4090405@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1351843430-8023-1-git-send-email-tianyu.lan@intel.com>
+In-Reply-To: <50935756.4090405@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Lv Zheng <lv.zheng@intel.com>, Adrian Hunter <adrian.hunter@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 02, 2012 04:03:50 PM Lan Tianyu wrote:
-> Since dev_pm_qos_add_request(), dev_pm_qos_update_request() and
-> dev_pm_qos_remove_request() for pm qos flags should not be invoked
-> when device in RPM_SUSPENDED. Add pm_runtime_get_sync() and pm_runtime_put()
-> around these functions in the pm core to ensure device not in RPM_SUSPENDED.
+On Friday, November 02, 2012 01:17:10 PM Aaron Lu wrote:
+> On 10/30/2012 11:20 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, October 30, 2012 03:28:45 PM Aaron Lu wrote:
+> >> On Mon, Oct 29, 2012 at 10:11:20AM +0100, Rafael J. Wysocki wrote:
+> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>
+> >>> If the caller of acpi_bus_set_power() already has a pointer to the
+> >>> struct acpi_device object corresponding to the device in question, it
+> >>> doesn't make sense for it to go through acpi_bus_get_device(), which
+> >>> may be costly, because it involves acquiring the global ACPI
+> >>> namespace mutex.
+> >>>
+> >>> For this reason, export the function operating on struct acpi_device
+> >>> objects used internally by acpi_bus_set_power(), so that it may be
+> >>> called instead of acpi_bus_set_power() in the above case, and change
+> >>> its name to acpi_device_set_power().
+> >>>
+> >>> Additionally, introduce two inline wrappers for checking ACPI PM
+> >>> capabilities of devices represented by struct acpi_device objects.
+> >>
+> >> What about adding yet another wrapper to check power off capability of
+> >> the device? If device has _PS3 or _PRx, it means the device can be
+> >> powered off from ACPI's perspective. This is useful for ZPODD when
+> >> deciding if platform has the required ability to support it.
+> > 
+> > Sure, no problem with that.  Perhaps you can cut a patch for that
+> > on top of this series?
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> ---
->  drivers/base/power/qos.c   |   10 ++++++++--
->  drivers/base/power/sysfs.c |    4 ++++
->  2 files changed, 12 insertions(+), 2 deletions(-)
+> Do you think it is reasonable to add a new field to acpi_state.flags to
+> represent if we, as OSPM, have a way to put the device into a ACPI
+> device state? This field can be set once in acpi_bus_get_power_flags and
+> used afterwards.
 > 
-> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-> index 31d3f48..b50ba72 100644
-> --- a/drivers/base/power/qos.c
-> +++ b/drivers/base/power/qos.c
-> @@ -624,15 +624,19 @@ int dev_pm_qos_expose_flags(struct device *dev, s32 val)
->  	if (!req)
->  		return -ENOMEM;
->  
-> +	pm_runtime_get_sync(dev);
->  	ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
-> +	pm_runtime_put(dev);
+> The valid field of acpi_state.flags is what we have today, and it means
+> whether this ACPI device state is valid for the device, but not that if
+> OSPM can actually put the device into that power state.
 
-I would drop this one ...
-
->  	if (ret < 0)
->  		return ret;
->  
->  	dev->power.qos->flags_req = req;
->  	ret = pm_qos_sysfs_add_flags(dev);
-> -	if (ret)
-> +	if (ret) {
-> +		pm_runtime_get_sync(dev);
->  		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
-> -
-> +		pm_runtime_put(dev);
-
-... and move this one before the return statement (plus a label for
-goto from the ret < 0 check after adding the request).
-
-> +	}
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
-> @@ -645,7 +649,9 @@ void dev_pm_qos_hide_flags(struct device *dev)
->  {
->  	if (dev->power.qos && dev->power.qos->flags_req) {
->  		pm_qos_sysfs_remove_flags(dev);
-> +		pm_runtime_get_sync(dev);
->  		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
-> +		pm_runtime_put(dev);
-
-I'm not sure if these two are necessary.  If we remove a request,
-then what happens worst case is that some flags will be cleared
-effectively which means fewer restrictions on the next sleep state.
-Then, it shouldn't hurt that the current sleep state is more
-restricted.
-
-Hmm.  Perhaps a comment would suffice?
-
->  	}
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_qos_hide_flags);
-> diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-> index 50d16e3..240bfaa 100644
-> --- a/drivers/base/power/sysfs.c
-> +++ b/drivers/base/power/sysfs.c
-> @@ -264,7 +264,9 @@ static ssize_t pm_qos_no_power_off_store(struct device *dev,
->  	if (ret != 0 && ret != 1)
->  		return -EINVAL;
->  
-> +	pm_runtime_get_sync(dev);
->  	ret = dev_pm_qos_update_flags(dev, PM_QOS_FLAG_NO_POWER_OFF, ret);
-> +	pm_runtime_put(dev);
->  	return ret < 0 ? ret : n;
->  }
-
-Well, you haven't noticed that dev_pm_qos_update_flags() already does
-pm_runtime_get_sync()/pm_runtime_put(). :-)
-
-> @@ -291,7 +293,9 @@ static ssize_t pm_qos_remote_wakeup_store(struct device *dev,
->  	if (ret != 0 && ret != 1)
->  		return -EINVAL;
->  
-> +	pm_runtime_get_sync(dev);
->  	ret = dev_pm_qos_update_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP, ret);
-> +	pm_runtime_put(dev);
->  	return ret < 0 ? ret : n;
->  }
+Yes, I think that adding such a new flag would make sense.
 
 Thanks,
 Rafael
