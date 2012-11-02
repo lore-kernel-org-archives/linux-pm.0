@@ -1,56 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 5/7] ACPI / PM: Provide device PM functions operating on struct acpi_device
-Date: Fri, 02 Nov 2012 12:19:42 +0100
-Message-ID: <3727309.uat568eqeC@vostro.rjw.lan>
-References: <1766582.8gdQKXoi0K@vostro.rjw.lan> <2204038.IsGMuMD7u4@vostro.rjw.lan> <50935756.4090405@intel.com>
+Subject: Re: [PATCH V3 0/4] cpuidle : multiple drivers support
+Date: Fri, 02 Nov 2012 13:44:47 +0100
+Message-ID: <2013215.jnvfikKFWW@vostro.rjw.lan>
+References: <1351701888-19963-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <50935756.4090405@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Lv Zheng <lv.zheng@intel.com>, Adrian Hunter <adrian.hunter@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:52115 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751223Ab2KBMkl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Nov 2012 08:40:41 -0400
+In-Reply-To: <1351701888-19963-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, lorenzo.pieralisi@arm.com, linaro-dev@lists.linaro.org
 
-On Friday, November 02, 2012 01:17:10 PM Aaron Lu wrote:
-> On 10/30/2012 11:20 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, October 30, 2012 03:28:45 PM Aaron Lu wrote:
-> >> On Mon, Oct 29, 2012 at 10:11:20AM +0100, Rafael J. Wysocki wrote:
-> >>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>>
-> >>> If the caller of acpi_bus_set_power() already has a pointer to the
-> >>> struct acpi_device object corresponding to the device in question, it
-> >>> doesn't make sense for it to go through acpi_bus_get_device(), which
-> >>> may be costly, because it involves acquiring the global ACPI
-> >>> namespace mutex.
-> >>>
-> >>> For this reason, export the function operating on struct acpi_device
-> >>> objects used internally by acpi_bus_set_power(), so that it may be
-> >>> called instead of acpi_bus_set_power() in the above case, and change
-> >>> its name to acpi_device_set_power().
-> >>>
-> >>> Additionally, introduce two inline wrappers for checking ACPI PM
-> >>> capabilities of devices represented by struct acpi_device objects.
-> >>
-> >> What about adding yet another wrapper to check power off capability of
-> >> the device? If device has _PS3 or _PRx, it means the device can be
-> >> powered off from ACPI's perspective. This is useful for ZPODD when
-> >> deciding if platform has the required ability to support it.
-> > 
-> > Sure, no problem with that.  Perhaps you can cut a patch for that
-> > on top of this series?
+On Wednesday, October 31, 2012 05:44:44 PM Daniel Lezcano wrote:
+> The discussion about having different cpus on the system with
+> different latencies bring us to a first attemp by adding a
+> pointer in the cpuidle_device to the states array.
 > 
-> Do you think it is reasonable to add a new field to acpi_state.flags to
-> represent if we, as OSPM, have a way to put the device into a ACPI
-> device state? This field can be set once in acpi_bus_get_power_flags and
-> used afterwards.
+> But as Rafael suggested, it would make more sense to create a
+> driver per cpu [1].
 > 
-> The valid field of acpi_state.flags is what we have today, and it means
-> whether this ACPI device state is valid for the device, but not that if
-> OSPM can actually put the device into that power state.
+> This patch adds support for multiple cpuidle drivers.
+> 
+> It creates a per cpu cpuidle driver pointer.
+> 
+> In order to not break the different drivers, the function cpuidle_register_driver
+> assign for each cpu, the driver.
+> 
+> The multiple driver support is optional and if it is not set, the cpuide driver
+> core code remains the same (except some code reorganisation).
+> 
+> I did the following tests compiled, booted, tested without/with CONFIG_CPU_IDLE,
+> with/without CONFIG_CPU_IDLE_MULTIPLE_DRIVERS.
+> 
+> Tested on Core2 Duo T9500 with acpi_idle [and intel_idle]
+> Tested on ARM Dual Cortex-A9 U8500 (aka Snowball)
+> 
+> V1 tested on Tegra3 and Vexpress TC2
+> 
+> [1] http://www.spinics.net/lists/linux-acpi/msg37921.html
+> 
+> Changelog:
+> 
+> V2:
+>  * fixed sysfs output : /sys/devices/system/cpu/cpu[0-9]/driver/name
+>  * fixed ifdefs in driver.c
+>  * fixed register_driver function loop when unregistering
+>  * removed WARN under spinlock
+>  * fixed changelog for patch [2/4]
+>  * changed cpuidle_get_cpu_driver function parameter
+>  * removed cpuidle_for_each_driver function
+>  * replaced smp_processor_id() by get_cpu/put_cpu
+> 
+> V3:
+>  * refreshed patchset
+> 
+> Daniel Lezcano (4):
+>   cpuidle: move driver's refcount to cpuidle
+>   cpuidle: move driver checking within the lock section
+>   cpuidle: prepare the driver core to be multi drivers aware
+>   cpuidle: support multiple drivers
+> 
+>  drivers/cpuidle/Kconfig   |    9 ++
+>  drivers/cpuidle/cpuidle.c |   36 +++++---
+>  drivers/cpuidle/cpuidle.h |    4 +-
+>  drivers/cpuidle/driver.c  |  209 ++++++++++++++++++++++++++++++++++++++------
+>  drivers/cpuidle/sysfs.c   |  174 ++++++++++++++++++++++++++++++++++++--
+>  include/linux/cpuidle.h   |    8 ++-
+>  6 files changed, 388 insertions(+), 52 deletions(-)
 
-Yes, I think that adding such a new flag would make sense.
+All patches in the series applied to the linux-next branch of the linux-pm.git
+tree as v3.8 material.
 
 Thanks,
 Rafael
