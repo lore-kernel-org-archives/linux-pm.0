@@ -1,13 +1,13 @@
 From: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Subject: [PATCH] Devfreq: Add debugfs node for representing frequency
  transition information
-Date: Fri, 02 Nov 2012 17:56:27 +0900
-Message-ID: <1351846587-16376-1-git-send-email-jonghwa3.lee@samsung.com>
+Date: Fri, 02 Nov 2012 18:47:40 +0900
+Message-ID: <1351849660-17179-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:50577 "EHLO
+Received: from mailout1.samsung.com ([203.254.224.24]:58101 "EHLO
 	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758001Ab2KBI4e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 04:56:34 -0400
+	with ESMTP id S1753889Ab2KBJrr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 05:47:47 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
@@ -36,9 +36,9 @@ This patch also includes documentation.
 Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 ---
  Documentation/devfreq/transition_status_table |  265 +++++++++++++++++++++++++
- drivers/devfreq/devfreq.c                     |  123 ++++++++++++
+ drivers/devfreq/devfreq.c                     |  121 +++++++++++
  include/linux/devfreq.h                       |   23 +++
- 3 files changed, 411 insertions(+), 0 deletions(-)
+ 3 files changed, 409 insertions(+), 0 deletions(-)
  create mode 100644 Documentation/devfreq/transition_status_table
 
 diff --git a/Documentation/devfreq/transition_status_table b/Documentation/devfreq/transition_status_table
@@ -313,7 +313,7 @@ index 0000000..8b92391
 +	return 0;
 +}
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index b146d76..6012b09 100644
+index c071ea0..1ad733b 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
 @@ -27,6 +27,8 @@
@@ -322,10 +322,10 @@ index b146d76..6012b09 100644
  
 +#include <linux/debugfs.h>
 +
- struct class *devfreq_class;
+ static struct class *devfreq_class;
  
  /*
-@@ -46,6 +48,8 @@ static struct devfreq *wait_remove_device;
+@@ -40,6 +42,8 @@ static struct workqueue_struct *devfreq_wq;
  static LIST_HEAD(devfreq_list);
  static DEFINE_MUTEX(devfreq_list_lock);
  
@@ -334,9 +334,9 @@ index b146d76..6012b09 100644
  /**
   * find_device_devfreq() - find devfreq struct using device pointer
   * @dev:	device pointer used to lookup device devfreq.
-@@ -72,6 +76,40 @@ static struct devfreq *find_device_devfreq(struct device *dev)
- 	return ERR_PTR(-ENODEV);
- }
+@@ -68,6 +72,40 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+ 
+ /* Load monitoring helper functions for governors use */
  
 +int devfreq_get_freq_level(struct devfreq *devfreq, unsigned long freq)
 +{
@@ -375,7 +375,7 @@ index b146d76..6012b09 100644
  /**
   * update_devfreq() - Reevaluate the device and configure frequency.
   * @devfreq:	the devfreq instance.
-@@ -116,6 +154,11 @@ int update_devfreq(struct devfreq *devfreq)
+@@ -112,6 +150,11 @@ int update_devfreq(struct devfreq *devfreq)
  	if (err)
  		return err;
  
@@ -387,17 +387,17 @@ index b146d76..6012b09 100644
  	devfreq->previous_freq = freq;
  	return err;
  }
-@@ -179,6 +222,8 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
+@@ -302,6 +345,8 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
  
- 	devfreq->being_removed = true;
+ 	devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_STOP, NULL);
  
 +	debugfs_remove_recursive(devfreq->debugfs);
 +
  	if (devfreq->profile->exit)
  		devfreq->profile->exit(devfreq->dev.parent);
  
-@@ -336,6 +381,59 @@ static void devfreq_monitor(struct work_struct *work)
- 	}
+@@ -329,6 +374,59 @@ static void devfreq_dev_release(struct device *dev)
+ 	_remove_devfreq(devfreq, true);
  }
  
 +static ssize_t show_trans_table(struct file *file, char __user *user_buf,
@@ -456,8 +456,8 @@ index b146d76..6012b09 100644
  /**
   * devfreq_add_device() - Add devfreq feature to the device
   * @dev:	the device to add devfreq feature.
-@@ -390,6 +488,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 			      = msecs_to_jiffies(devfreq->profile->polling_ms);
+@@ -378,6 +476,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->data = data;
  	devfreq->nb.notifier_call = devfreq_notifier_call;
  
 +	devfreq->trans_table =	devm_kzalloc(dev, sizeof(unsigned int) *
@@ -472,11 +472,10 @@ index b146d76..6012b09 100644
  	dev_set_name(&devfreq->dev, dev_name(dev));
  	err = device_register(&devfreq->dev);
  	if (err) {
-@@ -417,6 +524,16 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 				   devfreq->next_polling);
- 	}
+@@ -392,6 +499,15 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	list_add(&devfreq->node, &devfreq_list);
  	mutex_unlock(&devfreq_list_lock);
-+
+ 
 +	mutex_lock(&devfreq->lock);
 +	if (!IS_ERR(devfreq_debugfs)) {
 +		devfreq->debugfs = debugfs_create_dir(dev_name(dev),
@@ -486,14 +485,13 @@ index b146d76..6012b09 100644
 +	}
 +	mutex_unlock(&devfreq->lock);
 +
- out:
- 	return devfreq;
- 
-@@ -623,12 +740,18 @@ static int __init devfreq_init(void)
- 		return PTR_ERR(devfreq_class);
+ 	err = devfreq->governor->event_handler(devfreq,
+ 				DEVFREQ_GOV_START, NULL);
+ 	if (err) {
+@@ -629,12 +745,17 @@ static int __init devfreq_init(void)
  	}
  	devfreq_class->dev_attrs = devfreq_attrs;
-+
+ 
 +	devfreq_debugfs = debugfs_create_dir("devfreq", NULL);
 +	if (IS_ERR(devfreq_debugfs))
 +		pr_err("%s: couldn't create debugfs\n", __FILE__);
@@ -506,24 +504,24 @@ index b146d76..6012b09 100644
  {
 +	debugfs_remove(devfreq_debugfs);
  	class_destroy(devfreq_class);
+ 	destroy_workqueue(devfreq_wq);
  }
- module_exit(devfreq_exit);
 diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 281c72a..d9cce45 100644
+index 1461fb2..093660e 100644
 --- a/include/linux/devfreq.h
 +++ b/include/linux/devfreq.h
 @@ -57,6 +57,10 @@ struct devfreq_dev_status {
-  * @initial_freq	The operating frequency when devfreq_add_device() is
+  * @initial_freq:	The operating frequency when devfreq_add_device() is
   *			called.
-  * @polling_ms		The polling interval in ms. 0 disables polling.
+  * @polling_ms:		The polling interval in ms. 0 disables polling.
 + *
 + * @freq_list		List for all availble frequencies in this DEVFREQ.
 + * @freq_levs		Total number of frequncy levels.
 + *
-  * @target		The device should set its operating frequency at
+  * @target:		The device should set its operating frequency at
   *			freq or lowest-upper-than-freq value. If freq is
   *			higher than any operable frequency, set maximum.
-@@ -71,11 +75,16 @@ struct devfreq_dev_status {
+@@ -73,11 +77,16 @@ struct devfreq_dev_status {
   *			from devfreq_remove_device() call. If the user
   *			has registered devfreq->nb at a notifier-head,
   *			this is the time to unregister it.
@@ -540,9 +538,9 @@ index 281c72a..d9cce45 100644
  	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
  	int (*get_dev_status)(struct device *dev,
  			      struct devfreq_dev_status *stat);
-@@ -137,6 +146,12 @@ struct devfreq_governor {
-  * @min_freq	Limit minimum frequency requested by user (0: none)
-  * @max_freq	Limit maximum frequency requested by user (0: none)
+@@ -128,6 +137,12 @@ struct devfreq_governor {
+  * @max_freq:	Limit maximum frequency requested by user (0: none)
+  * @stop_polling:	 devfreq polling status of a device.
   *
 + * @total_trans			Total trasition number.
 + * @trans_table			Transition count of each frequency level.
@@ -553,10 +551,10 @@ index 281c72a..d9cce45 100644
   * This structure stores the devfreq information for a give device.
   *
   * Note that when a governor accesses entries in struct devfreq in its
-@@ -164,6 +179,14 @@ struct devfreq {
- 
+@@ -153,6 +168,14 @@ struct devfreq {
  	unsigned long min_freq;
  	unsigned long max_freq;
+ 	bool stop_polling;
 +
 +	/* information for device freqeuncy transition */
 +	unsigned int total_trans;
