@@ -1,116 +1,199 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / Qos: Ensure device not in PRM_SUSPENDED when pm qos flags request functions are invoked in the pm core.
-Date: Fri, 02 Nov 2012 21:11 +0100
-Message-ID: <3462113.4oKq44aJDs@vostro.rjw.lan>
-References: <1351843430-8023-1-git-send-email-tianyu.lan@intel.com> <1888394.d23n1PsP9K@vostro.rjw.lan> <5093F1F3.5020004@intel.com>
+Subject: Re: [BUGFIX] PCI/PM: Fix proc config reg access for D3cold and bridge suspending
+Date: Fri, 02 Nov 2012 21:25:42 +0100
+Message-ID: <1888439.VY5iAKy5E9@vostro.rjw.lan>
+References: <1351128963-10347-1-git-send-email-ying.huang@intel.com> <CAErSpo6Q9DGwBJNCY5g3gGVPMCngv6pfLXB6TfiFu3gyLiNp7Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:52959 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:52991 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791Ab2KBUGx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 2 Nov 2012 16:06:53 -0400
-In-Reply-To: <5093F1F3.5020004@intel.com>
+	id S1750791Ab2KBUVg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Nov 2012 16:21:36 -0400
+In-Reply-To: <CAErSpo6Q9DGwBJNCY5g3gGVPMCngv6pfLXB6TfiFu3gyLiNp7Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, stable@vger.kernel.org
 
-On Saturday, November 03, 2012 12:16:51 AM Lan Tianyu wrote:
-> On 2012/11/2 19:17, Rafael J. Wysocki wrote:
-> > On Friday, November 02, 2012 04:03:50 PM Lan Tianyu wrote:
-> >> Since dev_pm_qos_add_request(), dev_pm_qos_update_request() and
-> >> dev_pm_qos_remove_request() for pm qos flags should not be invoked
-> >> when device in RPM_SUSPENDED. Add pm_runtime_get_sync() and pm_runtime_put()
-> >> around these functions in the pm core to ensure device not in RPM_SUSPENDED.
-> >>
-> >> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-> >> ---
-> >>   drivers/base/power/qos.c   |   10 ++++++++--
-> >>   drivers/base/power/sysfs.c |    4 ++++
-> >>   2 files changed, 12 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-> >> index 31d3f48..b50ba72 100644
-> >> --- a/drivers/base/power/qos.c
-> >> +++ b/drivers/base/power/qos.c
-> >> @@ -624,15 +624,19 @@ int dev_pm_qos_expose_flags(struct device *dev, s32 val)
-> >>   	if (!req)
-> >>   		return -ENOMEM;
-> >>
-> >> +	pm_runtime_get_sync(dev);
-> >>   	ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
-> >> +	pm_runtime_put(dev);
+On Friday, November 02, 2012 10:38:43 AM Bjorn Helgaas wrote:
+> On Wed, Oct 24, 2012 at 7:36 PM, Huang Ying <ying.huang@intel.com> wrote:
+> > In
 > >
-> > I would drop this one ...
+> >   https://bugzilla.kernel.org/show_bug.cgi?id=48981
 > >
-> >>   	if (ret < 0)
-> >>   		return ret;
-> >>
-> >>   	dev->power.qos->flags_req = req;
-> >>   	ret = pm_qos_sysfs_add_flags(dev);
-> >> -	if (ret)
-> >> +	if (ret) {
-> >> +		pm_runtime_get_sync(dev);
-> >>   		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
-> >> -
-> >> +		pm_runtime_put(dev);
+> > Peter reported that /proc/bus/pci/??/??.? does not works for 3.6.
+> > This is This is because the device configuration space registers will
+> > be not accessible if the corresponding parent bridge is suspended or
+> > the device is put into D3cold state.
 > >
-> > ... and move this one before the return statement (plus a label for
-> > goto from the ret < 0 check after adding the request).
+> > This is the same as /sys/bus/pci/devices/0000:??:??.?/config access
+> > issue.  So the function used to solve sysfs issue is used to solve
+> > this issue.
 > >
-> What you mean likes following?
+> > Cc: stable@vger.kernel.org
+> > Reported-by: Peter <lekensteyn@gmail.com>
 > 
-> +       pm_runtime_get_sync(dev);
->          ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
->          if (ret < 0)
-> -               return ret;
-> +               goto fail;
+> Is this bug the same as the one originally reported by Forrest Loomis
+> (original reporter of bug 48981)?  And
+> https://bugzilla.kernel.org/show_bug.cgi?id=49031, reported by Micael
+> Dias (Rafael marked 49031 as a duplicate of 48981)?
 > 
->          dev->power.qos->flags_req = req;
->          ret = pm_qos_sysfs_add_flags(dev);
->          if (ret)
->                  __dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
-> 
-> +fail:
-> +       pm_runtime_put(dev);
->          return ret;
->   }
-> 
+> If so, I'll mention Forrest and Micael and bug 49031 here as well.
 
-Yes, it does.
-
-> >> +	}
-> >>   	return ret;
-> >>   }
-> >>   EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
-> >> @@ -645,7 +649,9 @@ void dev_pm_qos_hide_flags(struct device *dev)
-> >>   {
-> >>   	if (dev->power.qos && dev->power.qos->flags_req) {
-> >>   		pm_qos_sysfs_remove_flags(dev);
-> >> +		pm_runtime_get_sync(dev);
-> >>   		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
-> >> +		pm_runtime_put(dev);
-> >
-> > I'm not sure if these two are necessary.  If we remove a request,
-> > then what happens worst case is that some flags will be cleared
-> > effectively which means fewer restrictions on the next sleep state.
-> > Then, it shouldn't hurt that the current sleep state is more
-> > restricted.
-> 
-> But this mean the device can be put into lower power state(power off).
-> So why not do that? that can save more power, right?
-
-Correct.  On the other hand, though, if the device already is in the
-deepest low-power state available, we will resume it unnecessarily this
-way.  Which may not be a big deal, however, and since we do that in other
-cases, we may as well do it here.
+No, it's not.  That one turned out to be a duplicate of bko#48981.
 
 Thanks,
 Rafael
 
 
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > ---
+> >  drivers/pci/pci-sysfs.c |   34 ----------------------------------
+> >  drivers/pci/pci.c       |   32 ++++++++++++++++++++++++++++++++
+> >  drivers/pci/pci.h       |    2 ++
+> >  drivers/pci/proc.c      |    8 ++++++++
+> >  4 files changed, 42 insertions(+), 34 deletions(-)
+> >
+> > --- a/drivers/pci/pci-sysfs.c
+> > +++ b/drivers/pci/pci-sysfs.c
+> > @@ -458,40 +458,6 @@ boot_vga_show(struct device *dev, struct
+> >  }
+> >  struct device_attribute vga_attr = __ATTR_RO(boot_vga);
+> >
+> > -static void
+> > -pci_config_pm_runtime_get(struct pci_dev *pdev)
+> > -{
+> > -       struct device *dev = &pdev->dev;
+> > -       struct device *parent = dev->parent;
+> > -
+> > -       if (parent)
+> > -               pm_runtime_get_sync(parent);
+> > -       pm_runtime_get_noresume(dev);
+> > -       /*
+> > -        * pdev->current_state is set to PCI_D3cold during suspending,
+> > -        * so wait until suspending completes
+> > -        */
+> > -       pm_runtime_barrier(dev);
+> > -       /*
+> > -        * Only need to resume devices in D3cold, because config
+> > -        * registers are still accessible for devices suspended but
+> > -        * not in D3cold.
+> > -        */
+> > -       if (pdev->current_state == PCI_D3cold)
+> > -               pm_runtime_resume(dev);
+> > -}
+> > -
+> > -static void
+> > -pci_config_pm_runtime_put(struct pci_dev *pdev)
+> > -{
+> > -       struct device *dev = &pdev->dev;
+> > -       struct device *parent = dev->parent;
+> > -
+> > -       pm_runtime_put(dev);
+> > -       if (parent)
+> > -               pm_runtime_put_sync(parent);
+> > -}
+> > -
+> >  static ssize_t
+> >  pci_read_config(struct file *filp, struct kobject *kobj,
+> >                 struct bin_attribute *bin_attr,
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -1858,6 +1858,38 @@ bool pci_dev_run_wake(struct pci_dev *de
+> >  }
+> >  EXPORT_SYMBOL_GPL(pci_dev_run_wake);
+> >
+> > +void pci_config_pm_runtime_get(struct pci_dev *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct device *parent = dev->parent;
+> > +
+> > +       if (parent)
+> > +               pm_runtime_get_sync(parent);
+> > +       pm_runtime_get_noresume(dev);
+> > +       /*
+> > +        * pdev->current_state is set to PCI_D3cold during suspending,
+> > +        * so wait until suspending completes
+> > +        */
+> > +       pm_runtime_barrier(dev);
+> > +       /*
+> > +        * Only need to resume devices in D3cold, because config
+> > +        * registers are still accessible for devices suspended but
+> > +        * not in D3cold.
+> > +        */
+> > +       if (pdev->current_state == PCI_D3cold)
+> > +               pm_runtime_resume(dev);
+> > +}
+> > +
+> > +void pci_config_pm_runtime_put(struct pci_dev *pdev)
+> > +{
+> > +       struct device *dev = &pdev->dev;
+> > +       struct device *parent = dev->parent;
+> > +
+> > +       pm_runtime_put(dev);
+> > +       if (parent)
+> > +               pm_runtime_put_sync(parent);
+> > +}
+> > +
+> >  /**
+> >   * pci_pm_init - Initialize PM functions of given PCI device
+> >   * @dev: PCI device to handle.
+> > --- a/drivers/pci/pci.h
+> > +++ b/drivers/pci/pci.h
+> > @@ -72,6 +72,8 @@ extern void pci_disable_enabled_device(s
+> >  extern int pci_finish_runtime_suspend(struct pci_dev *dev);
+> >  extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
+> >  extern void pci_wakeup_bus(struct pci_bus *bus);
+> > +extern void pci_config_pm_runtime_get(struct pci_dev *dev);
+> > +extern void pci_config_pm_runtime_put(struct pci_dev *dev);
+> >  extern void pci_pm_init(struct pci_dev *dev);
+> >  extern void platform_pci_wakeup_init(struct pci_dev *dev);
+> >  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+> > --- a/drivers/pci/proc.c
+> > +++ b/drivers/pci/proc.c
+> > @@ -76,6 +76,8 @@ proc_bus_pci_read(struct file *file, cha
+> >         if (!access_ok(VERIFY_WRITE, buf, cnt))
+> >                 return -EINVAL;
+> >
+> > +       pci_config_pm_runtime_get(dev);
+> > +
+> >         if ((pos & 1) && cnt) {
+> >                 unsigned char val;
+> >                 pci_user_read_config_byte(dev, pos, &val);
+> > @@ -121,6 +123,8 @@ proc_bus_pci_read(struct file *file, cha
+> >                 cnt--;
+> >         }
+> >
+> > +       pci_config_pm_runtime_put(dev);
+> > +
+> >         *ppos = pos;
+> >         return nbytes;
+> >  }
+> > @@ -146,6 +150,8 @@ proc_bus_pci_write(struct file *file, co
+> >         if (!access_ok(VERIFY_READ, buf, cnt))
+> >                 return -EINVAL;
+> >
+> > +       pci_config_pm_runtime_get(dev);
+> > +
+> >         if ((pos & 1) && cnt) {
+> >                 unsigned char val;
+> >                 __get_user(val, buf);
+> > @@ -191,6 +197,8 @@ proc_bus_pci_write(struct file *file, co
+> >                 cnt--;
+> >         }
+> >
+> > +       pci_config_pm_runtime_put(dev);
+> > +
+> >         *ppos = pos;
+> >         i_size_write(ino, dp->size);
+> >         return nbytes;
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
