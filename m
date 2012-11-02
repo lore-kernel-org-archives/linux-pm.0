@@ -1,52 +1,51 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 3.7-rc3
-Date: Fri, 2 Nov 2012 16:10:34 -0700
-Message-ID: <CA+55aFx+w2hFifGTr_u76D9d_sDKxKJBDd2L4p0GVk-RXCczMA@mail.gmail.com>
-References: <CA+55aFwwTc4QXKqiECgE9NOE2zjC6GsGHHydGP9YDbgQSbw9Aw@mail.gmail.com>
- <2471412.ilAVQkroSv@vostro.rjw.lan> <CA+55aFzfbvb4HsY0viCXC0FnVt7fcyhzyZgR4R6tu5uYC8qzPA@mail.gmail.com>
- <2859519.IO8aRDjQvR@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC] Suspend/resume without VT switches
+Date: Sat, 03 Nov 2012 00:38:54 +0100
+Message-ID: <2324361.keTRK1rkYL@vostro.rjw.lan>
+References: <1351892621-4840-1-git-send-email-jbarnes@virtuousgeek.org> <7608326.fQBj17U8Wv@vostro.rjw.lan> <20121102162937.1ec88cf1@jbarnes-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:35083 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928Ab2KBXK4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 19:10:56 -0400
-In-Reply-To: <2859519.IO8aRDjQvR@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121102162937.1ec88cf1@jbarnes-desktop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, David Airlie <airlied@linux.ie>, Michal Hocko <mhocko@suse.cz>, Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-On Fri, Nov 2, 2012 at 3:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->
-> Well, not everything is rosy in the suspend land, though.  This is a
-> failure to freeze khubd during the second in a row attempt to suspend to
-> RAM (your current tree):
+On Friday, November 02, 2012 04:29:37 PM Jesse Barnes wrote:
+> On Fri, 02 Nov 2012 22:51:07 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > On Friday, November 02, 2012 02:43:39 PM Jesse Barnes wrote:
+> > > I've lightly tested this with X and it definitely makes my
+> > > suspend/resume sequence a bit prettier.  It should speed things up
+> > > trivally as well, but most of those gains come from other changes to the
+> > > i915 driver (posted earlier to intel-gfx).
+> > > 
+> > > Any thoughts?
+> > 
+> > I like the idea.
+> > 
+> > > I suspect we'll have to be more defensive about the
+> > > resume configuration in case the BIOS did something weird, but overall I
+> > > think we should be able to do this one way or another.
+> > 
+> > Perhaps patch [1/2] should be [2/2] and vice versa? :-)
+> 
+> But then it wouldn't compile?  I added the variable first, defaulting
+> to the current behavior, then made i915 support it and set the variable
+> to false there...  At least, that's what I intended to do.
 
-Ugh. So khubd is blocked in usb_start_wait_urb(), and apparently the
-timeout for that block is longer than the freezing timeout.
+OK
 
-There's a comment about why khubd needs to be freezable, but I wonder
-if that whole thing isn't doing something wrong. Causing the suspend
-to fail is definitely always the wrong thing.
+So what happens if there are multiple graphics adapters in the system?
+Including such that aren't handled by i915?  pm_vt_switch is global, so isn't
+there any problem with that?
 
-Greg?
+Rafael
 
-> [  125.780766] [ INFO: suspicious RCU usage. ]
-> [  125.780804] 3.7.0-rc3+ #988 Not tainted
-> [  125.780838] -------------------------------
-> [  125.780875] /home/rafael/src/linux/kernel/sched/core.c:4497 suspicious rcu_dereference_check() usage!
 
-Heh. The RCU usage is from the debug printout from sched_show_task(),
-so it's "related", but it's a totally independent issue.
-
-It's apparently because we've not done a "rcu_read_lock()" around that
-sequence, but I seriously doubt we care. But it's technically a real
-bug - even if the fix might be to just not print out the parent pid
-(or to just ignore the bug and turn the rcu dereference into an
-ACCESS_ONCE() or something.
-
-Ingo, Peter, any comments about that sched/core.c:4497 RCU usage?
-
-                Linus
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
