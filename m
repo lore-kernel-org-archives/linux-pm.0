@@ -1,189 +1,171 @@
 From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [BUGFIX] PCI/PM: Fix proc config reg access for D3cold and bridge suspending
-Date: Fri, 2 Nov 2012 10:38:43 -0600
-Message-ID: <CAErSpo6Q9DGwBJNCY5g3gGVPMCngv6pfLXB6TfiFu3gyLiNp7Q@mail.gmail.com>
-References: <1351128963-10347-1-git-send-email-ying.huang@intel.com>
+Subject: Re: [BUGFIX 1/2] PCI/PM: Fix deadlock when unbind device if its
+ parent in D3cold
+Date: Fri, 2 Nov 2012 10:50:50 -0600
+Message-ID: <CAErSpo7hiFQOC+OPZretkyp5EcL84zEWCAiQgEE5Ewq--gUziQ@mail.gmail.com>
+References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:50745 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760136Ab2KBQjG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 12:39:06 -0400
-Received: by mail-wg0-f44.google.com with SMTP id dr13so2524233wgb.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Nov 2012 09:39:04 -0700 (PDT)
-In-Reply-To: <1351128963-10347-1-git-send-email-ying.huang@intel.com>
+Received: from mail-we0-f174.google.com ([74.125.82.174]:40704 "EHLO
+	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756115Ab2KBQvM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 12:51:12 -0400
+Received: by mail-we0-f174.google.com with SMTP id t9so1696318wey.19
+        for <linux-pm@vger.kernel.org>; Fri, 02 Nov 2012 09:51:10 -0700 (PDT)
+In-Reply-To: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, stable@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Yanmin <yanmin.zhang@intel.com>
 
-On Wed, Oct 24, 2012 at 7:36 PM, Huang Ying <ying.huang@intel.com> wrote:
-> In
+On Wed, Oct 24, 2012 at 12:54 AM, Huang Ying <ying.huang@intel.com> wrote:
+> If a PCI device and its parents are put into D3cold, unbinding the
+> device will trigger deadlock as follow:
 >
->   https://bugzilla.kernel.org/show_bug.cgi?id=48981
+> - driver_unbind
+>   - device_release_driver
+>     - device_lock(dev)                          <--- previous lock here
+>     - __device_release_driver
+>       - pm_runtime_get_sync
+>         ...
+>           - rpm_resume(dev)
+>             - rpm_resume(dev->parent)
+>               ...
+>                 - pci_pm_runtime_resume
+>                   ...
+>                   - pci_set_power_state
+>                     - __pci_start_power_transition
+>                       - pci_wakeup_bus(dev->parent->subordinate)
+>                         - pci_walk_bus
+>                           - device_lock(dev)    <--- dead lock here
 >
-> Peter reported that /proc/bus/pci/??/??.? does not works for 3.6.
-> This is This is because the device configuration space registers will
-> be not accessible if the corresponding parent bridge is suspended or
-> the device is put into D3cold state.
 >
-> This is the same as /sys/bus/pci/devices/0000:??:??.?/config access
-> issue.  So the function used to solve sysfs issue is used to solve
-> this issue.
+> If we do not do device_lock in pci_walk_bus, we can avoid dead lock.
+> Device_lock in pci_walk_bus is introduced in commit:
+> d71374dafbba7ec3f67371d3b7e9f6310a588808, corresponding email thread
+> is: https://lkml.org/lkml/2006/5/26/38.  The patch author Zhang Yanmin
+> said device_lock is added to pci_walk_bus because:
 >
-> Cc: stable@vger.kernel.org
-> Reported-by: Peter <lekensteyn@gmail.com>
+>   Some error handling functions call pci_walk_bus. For example, PCIe
+>   aer. Here we lock the device, so the driver wouldn't detach from the
+>   device, as the cb might call driver's callback function.
+>
+> So I fixed the dead lock as follow:
+>
+> - remove device_lock from pci_walk_bus
+> - add device_lock into callback if callback will call driver's callback
+>
+> I checked pci_walk_bus users one by one, and found only PCIe aer needs
+> device lock.
 
-Is this bug the same as the one originally reported by Forrest Loomis
-(original reporter of bug 48981)?  And
-https://bugzilla.kernel.org/show_bug.cgi?id=49031, reported by Micael
-Dias (Rafael marked 49031 as a duplicate of 48981)?
-
-If so, I'll mention Forrest and Micael and bug 49031 here as well.
+Is there a problem report or bugzilla for this issue?
 
 > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Cc: Zhang Yanmin <yanmin.zhang@intel.com>
+
+Should this go to stable as well?  The D3cold support appeared in
+v3.6, so my guess is that this fix could go to v3.6.x.
+
 > ---
->  drivers/pci/pci-sysfs.c |   34 ----------------------------------
->  drivers/pci/pci.c       |   32 ++++++++++++++++++++++++++++++++
->  drivers/pci/pci.h       |    2 ++
->  drivers/pci/proc.c      |    8 ++++++++
->  4 files changed, 42 insertions(+), 34 deletions(-)
+>  drivers/pci/bus.c                  |    3 ---
+>  drivers/pci/pcie/aer/aerdrv_core.c |   20 ++++++++++++++++----
+>  2 files changed, 16 insertions(+), 7 deletions(-)
 >
-> --- a/drivers/pci/pci-sysfs.c
-> +++ b/drivers/pci/pci-sysfs.c
-> @@ -458,40 +458,6 @@ boot_vga_show(struct device *dev, struct
->  }
->  struct device_attribute vga_attr = __ATTR_RO(boot_vga);
+> --- a/drivers/pci/bus.c
+> +++ b/drivers/pci/bus.c
+> @@ -320,10 +320,7 @@ void pci_walk_bus(struct pci_bus *top, i
+>                 } else
+>                         next = dev->bus_list.next;
 >
-> -static void
-> -pci_config_pm_runtime_get(struct pci_dev *pdev)
-> -{
-> -       struct device *dev = &pdev->dev;
-> -       struct device *parent = dev->parent;
-> -
-> -       if (parent)
-> -               pm_runtime_get_sync(parent);
-> -       pm_runtime_get_noresume(dev);
-> -       /*
-> -        * pdev->current_state is set to PCI_D3cold during suspending,
-> -        * so wait until suspending completes
-> -        */
-> -       pm_runtime_barrier(dev);
-> -       /*
-> -        * Only need to resume devices in D3cold, because config
-> -        * registers are still accessible for devices suspended but
-> -        * not in D3cold.
-> -        */
-> -       if (pdev->current_state == PCI_D3cold)
-> -               pm_runtime_resume(dev);
-> -}
-> -
-> -static void
-> -pci_config_pm_runtime_put(struct pci_dev *pdev)
-> -{
-> -       struct device *dev = &pdev->dev;
-> -       struct device *parent = dev->parent;
-> -
-> -       pm_runtime_put(dev);
-> -       if (parent)
-> -               pm_runtime_put_sync(parent);
-> -}
-> -
->  static ssize_t
->  pci_read_config(struct file *filp, struct kobject *kobj,
->                 struct bin_attribute *bin_attr,
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1858,6 +1858,38 @@ bool pci_dev_run_wake(struct pci_dev *de
->  }
->  EXPORT_SYMBOL_GPL(pci_dev_run_wake);
+> -               /* Run device routines with the device locked */
+> -               device_lock(&dev->dev);
+>                 retval = cb(dev, userdata);
+> -               device_unlock(&dev->dev);
+>                 if (retval)
+>                         break;
+>         }
+> --- a/drivers/pci/pcie/aer/aerdrv_core.c
+> +++ b/drivers/pci/pcie/aer/aerdrv_core.c
+> @@ -213,6 +213,7 @@ static int report_error_detected(struct
+>         struct aer_broadcast_data *result_data;
+>         result_data = (struct aer_broadcast_data *) data;
 >
-> +void pci_config_pm_runtime_get(struct pci_dev *pdev)
-> +{
-> +       struct device *dev = &pdev->dev;
-> +       struct device *parent = dev->parent;
-> +
-> +       if (parent)
-> +               pm_runtime_get_sync(parent);
-> +       pm_runtime_get_noresume(dev);
-> +       /*
-> +        * pdev->current_state is set to PCI_D3cold during suspending,
-> +        * so wait until suspending completes
-> +        */
-> +       pm_runtime_barrier(dev);
-> +       /*
-> +        * Only need to resume devices in D3cold, because config
-> +        * registers are still accessible for devices suspended but
-> +        * not in D3cold.
-> +        */
-> +       if (pdev->current_state == PCI_D3cold)
-> +               pm_runtime_resume(dev);
-> +}
-> +
-> +void pci_config_pm_runtime_put(struct pci_dev *pdev)
-> +{
-> +       struct device *dev = &pdev->dev;
-> +       struct device *parent = dev->parent;
-> +
-> +       pm_runtime_put(dev);
-> +       if (parent)
-> +               pm_runtime_put_sync(parent);
-> +}
-> +
->  /**
->   * pci_pm_init - Initialize PM functions of given PCI device
->   * @dev: PCI device to handle.
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -72,6 +72,8 @@ extern void pci_disable_enabled_device(s
->  extern int pci_finish_runtime_suspend(struct pci_dev *dev);
->  extern int __pci_pme_wakeup(struct pci_dev *dev, void *ign);
->  extern void pci_wakeup_bus(struct pci_bus *bus);
-> +extern void pci_config_pm_runtime_get(struct pci_dev *dev);
-> +extern void pci_config_pm_runtime_put(struct pci_dev *dev);
->  extern void pci_pm_init(struct pci_dev *dev);
->  extern void platform_pci_wakeup_init(struct pci_dev *dev);
->  extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
-> --- a/drivers/pci/proc.c
-> +++ b/drivers/pci/proc.c
-> @@ -76,6 +76,8 @@ proc_bus_pci_read(struct file *file, cha
->         if (!access_ok(VERIFY_WRITE, buf, cnt))
->                 return -EINVAL;
+> +       device_lock(&dev->dev);
+>         dev->error_state = result_data->state;
 >
-> +       pci_config_pm_runtime_get(dev);
-> +
->         if ((pos & 1) && cnt) {
->                 unsigned char val;
->                 pci_user_read_config_byte(dev, pos, &val);
-> @@ -121,6 +123,8 @@ proc_bus_pci_read(struct file *file, cha
->                 cnt--;
+>         if (!dev->driver ||
+> @@ -231,12 +232,14 @@ static int report_error_detected(struct
+>                                    dev->driver ?
+>                                    "no AER-aware driver" : "no driver");
+>                 }
+> -               return 0;
+> +               goto out;
 >         }
 >
-> +       pci_config_pm_runtime_put(dev);
-> +
->         *ppos = pos;
->         return nbytes;
+>         err_handler = dev->driver->err_handler;
+>         vote = err_handler->error_detected(dev, result_data->state);
+>         result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +       device_unlock(&dev->dev);
+>         return 0;
 >  }
-> @@ -146,6 +150,8 @@ proc_bus_pci_write(struct file *file, co
->         if (!access_ok(VERIFY_READ, buf, cnt))
->                 return -EINVAL;
 >
-> +       pci_config_pm_runtime_get(dev);
-> +
->         if ((pos & 1) && cnt) {
->                 unsigned char val;
->                 __get_user(val, buf);
-> @@ -191,6 +197,8 @@ proc_bus_pci_write(struct file *file, co
->                 cnt--;
->         }
+> @@ -247,14 +250,17 @@ static int report_mmio_enabled(struct pc
+>         struct aer_broadcast_data *result_data;
+>         result_data = (struct aer_broadcast_data *) data;
 >
-> +       pci_config_pm_runtime_put(dev);
-> +
->         *ppos = pos;
->         i_size_write(ino, dp->size);
->         return nbytes;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +       device_lock(&dev->dev);
+>         if (!dev->driver ||
+>                 !dev->driver->err_handler ||
+>                 !dev->driver->err_handler->mmio_enabled)
+> -               return 0;
+> +               goto out;
+>
+>         err_handler = dev->driver->err_handler;
+>         vote = err_handler->mmio_enabled(dev);
+>         result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +       device_unlock(&dev->dev);
+>         return 0;
+>  }
+>
+> @@ -265,14 +271,17 @@ static int report_slot_reset(struct pci_
+>         struct aer_broadcast_data *result_data;
+>         result_data = (struct aer_broadcast_data *) data;
+>
+> +       device_lock(&dev->dev);
+>         if (!dev->driver ||
+>                 !dev->driver->err_handler ||
+>                 !dev->driver->err_handler->slot_reset)
+> -               return 0;
+> +               goto out;
+>
+>         err_handler = dev->driver->err_handler;
+>         vote = err_handler->slot_reset(dev);
+>         result_data->result = merge_result(result_data->result, vote);
+> +out:
+> +       device_unlock(&dev->dev);
+>         return 0;
+>  }
+>
+> @@ -280,15 +289,18 @@ static int report_resume(struct pci_dev
+>  {
+>         const struct pci_error_handlers *err_handler;
+>
+> +       device_lock(&dev->dev);
+>         dev->error_state = pci_channel_io_normal;
+>
+>         if (!dev->driver ||
+>                 !dev->driver->err_handler ||
+>                 !dev->driver->err_handler->resume)
+> -               return 0;
+> +               goto out;
+>
+>         err_handler = dev->driver->err_handler;
+>         err_handler->resume(dev);
+> +out:
+> +       device_unlock(&dev->dev);
+>         return 0;
+>  }
+>
