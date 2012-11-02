@@ -1,63 +1,116 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 5/6 v2] power: export opp cpufreq functions
-Date: Fri,  2 Nov 2012 13:51:48 -0500
-Message-ID: <1351882309-733-6-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: cpufreq@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Qos: Ensure device not in PRM_SUSPENDED when pm qos flags request functions are invoked in the pm core.
+Date: Fri, 02 Nov 2012 21:11 +0100
+Message-ID: <3462113.4oKq44aJDs@vostro.rjw.lan>
+References: <1351843430-8023-1-git-send-email-tianyu.lan@intel.com> <1888394.d23n1PsP9K@vostro.rjw.lan> <5093F1F3.5020004@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:52959 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791Ab2KBUGx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Nov 2012 16:06:53 -0400
+In-Reply-To: <5093F1F3.5020004@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-These functions are needed to make the cpufreq-core0 and highbank-cpufreq
-drivers loadable as modules.
+On Saturday, November 03, 2012 12:16:51 AM Lan Tianyu wrote:
+> On 2012/11/2 19:17, Rafael J. Wysocki wrote:
+> > On Friday, November 02, 2012 04:03:50 PM Lan Tianyu wrote:
+> >> Since dev_pm_qos_add_request(), dev_pm_qos_update_request() and
+> >> dev_pm_qos_remove_request() for pm qos flags should not be invoked
+> >> when device in RPM_SUSPENDED. Add pm_runtime_get_sync() and pm_runtime_put()
+> >> around these functions in the pm core to ensure device not in RPM_SUSPENDED.
+> >>
+> >> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> >> ---
+> >>   drivers/base/power/qos.c   |   10 ++++++++--
+> >>   drivers/base/power/sysfs.c |    4 ++++
+> >>   2 files changed, 12 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+> >> index 31d3f48..b50ba72 100644
+> >> --- a/drivers/base/power/qos.c
+> >> +++ b/drivers/base/power/qos.c
+> >> @@ -624,15 +624,19 @@ int dev_pm_qos_expose_flags(struct device *dev, s32 val)
+> >>   	if (!req)
+> >>   		return -ENOMEM;
+> >>
+> >> +	pm_runtime_get_sync(dev);
+> >>   	ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
+> >> +	pm_runtime_put(dev);
+> >
+> > I would drop this one ...
+> >
+> >>   	if (ret < 0)
+> >>   		return ret;
+> >>
+> >>   	dev->power.qos->flags_req = req;
+> >>   	ret = pm_qos_sysfs_add_flags(dev);
+> >> -	if (ret)
+> >> +	if (ret) {
+> >> +		pm_runtime_get_sync(dev);
+> >>   		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
+> >> -
+> >> +		pm_runtime_put(dev);
+> >
+> > ... and move this one before the return statement (plus a label for
+> > goto from the ret < 0 check after adding the request).
+> >
+> What you mean likes following?
+> 
+> +       pm_runtime_get_sync(dev);
+>          ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
+>          if (ret < 0)
+> -               return ret;
+> +               goto fail;
+> 
+>          dev->power.qos->flags_req = req;
+>          ret = pm_qos_sysfs_add_flags(dev);
+>          if (ret)
+>                  __dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
+> 
+> +fail:
+> +       pm_runtime_put(dev);
+>          return ret;
+>   }
+> 
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Acked-by: Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org
+Yes, it does.
 
-Changes from v1:
-	Added Nishanth Menon's ack.
-	Clarified the purpose of the change in the commit message.
----
- drivers/base/power/opp.c | 4 ++++
- 1 file changed, 4 insertions(+)
+> >> +	}
+> >>   	return ret;
+> >>   }
+> >>   EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
+> >> @@ -645,7 +649,9 @@ void dev_pm_qos_hide_flags(struct device *dev)
+> >>   {
+> >>   	if (dev->power.qos && dev->power.qos->flags_req) {
+> >>   		pm_qos_sysfs_remove_flags(dev);
+> >> +		pm_runtime_get_sync(dev);
+> >>   		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
+> >> +		pm_runtime_put(dev);
+> >
+> > I'm not sure if these two are necessary.  If we remove a request,
+> > then what happens worst case is that some flags will be cleared
+> > effectively which means fewer restrictions on the next sleep state.
+> > Then, it shouldn't hurt that the current sleep state is more
+> > restricted.
+> 
+> But this mean the device can be put into lower power state(power off).
+> So why not do that? that can save more power, right?
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index d946864..37dc5f4 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -23,6 +23,7 @@
- #include <linux/rcupdate.h>
- #include <linux/opp.h>
- #include <linux/of.h>
-+#include <linux/module.h>
- 
- /*
-  * Internal data structure organization with the OPP layer library is as
-@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(opp_init_cpufreq_table);
- 
- /**
-  * opp_free_cpufreq_table() - free the cpufreq table
-@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
- 	kfree(*table);
- 	*table = NULL;
- }
-+EXPORT_SYMBOL(opp_free_cpufreq_table);
- #endif		/* CONFIG_CPU_FREQ */
- 
- /**
-@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(of_init_opp_table);
- #endif
+Correct.  On the other hand, though, if the device already is in the
+deepest low-power state available, we will resume it unnecessarily this
+way.  Which may not be a big deal, however, and since we do that in other
+cases, we may as well do it here.
+
+Thanks,
+Rafael
+
+
 -- 
-1.7.11.7
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
