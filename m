@@ -1,56 +1,63 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [BUGFIX 2/2] PCI/PM: Resume device before shutdown
-Date: Fri, 2 Nov 2012 10:52:45 -0600
-Message-ID: <CAErSpo5bKDrfOC86Cxv+0yFiyj1bMgWF=6XuY+DWFjaMBTQC0A@mail.gmail.com>
-References: <1351061654-8339-1-git-send-email-ying.huang@intel.com> <1351061654-8339-2-git-send-email-ying.huang@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1351061654-8339-2-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 5/6 v2] power: export opp cpufreq functions
+Date: Fri,  2 Nov 2012 13:51:48 -0500
+Message-ID: <1351882309-733-6-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1351882309-733-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: cpufreq@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 24, 2012 at 12:54 AM, Huang Ying <ying.huang@intel.com> wrote:
-> Some actions during shutdown need device to be in D0 state, such as
-> MSI shutdown etc, so resume device before shutdown.
+These functions are needed to make the cpufreq-core0 and highbank-cpufreq
+drivers loadable as modules.
 
-Is there a problem report or bugzilla for this issue?  What are the
-symptoms by which a user could figure out that he needs this fix?
+Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Acked-by: Nishanth Menon <nm@ti.com>
+Cc: linux-pm@vger.kernel.org
 
-Should this be put in the stable tree as well?  If so, for v3.6 only?
+Changes from v1:
+	Added Nishanth Menon's ack.
+	Clarified the purpose of the change in the commit message.
+---
+ drivers/base/power/opp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> ---
->  drivers/pci/pci-driver.c |   12 ++----------
->  1 file changed, 2 insertions(+), 10 deletions(-)
->
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -398,6 +398,8 @@ static void pci_device_shutdown(struct d
->         struct pci_dev *pci_dev = to_pci_dev(dev);
->         struct pci_driver *drv = pci_dev->driver;
->
-> +       pm_runtime_resume(dev);
-> +
->         if (drv && drv->shutdown)
->                 drv->shutdown(pci_dev);
->         pci_msi_shutdown(pci_dev);
-> @@ -408,16 +410,6 @@ static void pci_device_shutdown(struct d
->          * continue to do DMA
->          */
->         pci_disable_device(pci_dev);
-> -
-> -       /*
-> -        * Devices may be enabled to wake up by runtime PM, but they need not
-> -        * be supposed to wake up the system from its "power off" state (e.g.
-> -        * ACPI S5).  Therefore disable wakeup for all devices that aren't
-> -        * supposed to wake up the system at this point.  The state argument
-> -        * will be ignored by pci_enable_wake().
-> -        */
-> -       if (!device_may_wakeup(dev))
-> -               pci_enable_wake(pci_dev, PCI_UNKNOWN, false);
->  }
->
->  #ifdef CONFIG_PM
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d946864..37dc5f4 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -23,6 +23,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/opp.h>
+ #include <linux/of.h>
++#include <linux/module.h>
+ 
+ /*
+  * Internal data structure organization with the OPP layer library is as
+@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(opp_init_cpufreq_table);
+ 
+ /**
+  * opp_free_cpufreq_table() - free the cpufreq table
+@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
+ 	kfree(*table);
+ 	*table = NULL;
+ }
++EXPORT_SYMBOL(opp_free_cpufreq_table);
+ #endif		/* CONFIG_CPU_FREQ */
+ 
+ /**
+@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(of_init_opp_table);
+ #endif
+-- 
+1.7.11.7
