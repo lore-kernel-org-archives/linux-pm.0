@@ -1,49 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC] Suspend/resume without VT switches
-Date: Sat, 03 Nov 2012 00:38:54 +0100
-Message-ID: <2324361.keTRK1rkYL@vostro.rjw.lan>
-References: <1351892621-4840-1-git-send-email-jbarnes@virtuousgeek.org> <7608326.fQBj17U8Wv@vostro.rjw.lan> <20121102162937.1ec88cf1@jbarnes-desktop>
+Subject: [GIT PULL] Power management update for v3.7-rc4
+Date: Sat, 03 Nov 2012 00:55:05 +0100
+Message-ID: <2019209.N9gW4uov1x@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121102162937.1ec88cf1@jbarnes-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:53336 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761886Ab2KBXu7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Nov 2012 19:50:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Andreas Herrmann <herrmann.der.user@googlemail.com>
 
-On Friday, November 02, 2012 04:29:37 PM Jesse Barnes wrote:
-> On Fri, 02 Nov 2012 22:51:07 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Friday, November 02, 2012 02:43:39 PM Jesse Barnes wrote:
-> > > I've lightly tested this with X and it definitely makes my
-> > > suspend/resume sequence a bit prettier.  It should speed things up
-> > > trivally as well, but most of those gains come from other changes to the
-> > > i915 driver (posted earlier to intel-gfx).
-> > > 
-> > > Any thoughts?
-> > 
-> > I like the idea.
-> > 
-> > > I suspect we'll have to be more defensive about the
-> > > resume configuration in case the BIOS did something weird, but overall I
-> > > think we should be able to do this one way or another.
-> > 
-> > Perhaps patch [1/2] should be [2/2] and vice versa? :-)
-> 
-> But then it wouldn't compile?  I added the variable first, defaulting
-> to the current behavior, then made i915 support it and set the variable
-> to false there...  At least, that's what I intended to do.
+Hi Linus,
 
-OK
+Please pull from the git repository at
 
-So what happens if there are multiple graphics adapters in the system?
-Including such that aren't handled by i915?  pm_vt_switch is global, so isn't
-there any problem with that?
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-for-3.7-rc4
 
-Rafael
+to receive one power management update for v3.7-rc4 as commit
+29c4bcddaa62e2b9fd2ba85668f6718b0b43f0e3
+
+  cpufreq / powernow-k8: Change maintainer's email address
+
+on top of commit 8f0d8163b50e01f398b14bcd4dc039ac5ab18d64
+
+  Linux 3.7-rc3
+
+It changes the email address of Andreas Herrmann in the
+drivers/cpufreq/powernow-k8.c file that he is the maintainer of.
+
+Thanks!
+
+
+ drivers/cpufreq/powernow-k8.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+---------------
+
+Andreas Herrmann (1):
+      cpufreq / powernow-k8: Change maintainer's email address
 
 
 -- 
