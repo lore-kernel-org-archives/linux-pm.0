@@ -1,152 +1,88 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 5/7] ACPI / PM: Provide device PM functions operating
- on struct acpi_device
-Date: Fri, 02 Nov 2012 13:17:10 +0800
-Message-ID: <50935756.4090405@intel.com>
-References: <1766582.8gdQKXoi0K@vostro.rjw.lan> <3903921.4RDYB7KMxW@vostro.rjw.lan> <20121030072844.GA6154@aaronlu.sh.intel.com> <2204038.IsGMuMD7u4@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH] PM / Qos: Ensure device not in PRM_SUSPENDED when pm qos flags request functions are invoked in the pm core.
+Date: Fri,  2 Nov 2012 16:03:50 +0800
+Message-ID: <1351843430-8023-1-git-send-email-tianyu.lan@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:3816 "EHLO mga14.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:13497 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311Ab2KBFRY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 2 Nov 2012 01:17:24 -0400
-In-Reply-To: <2204038.IsGMuMD7u4@vostro.rjw.lan>
+	id S1750977Ab2KBIHo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Nov 2012 04:07:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Huang Ying <ying.huang@intel.com>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Lv Zheng <lv.zheng@intel.com>, Adrian Hunter <adrian.hunter@intel.com>
+To: rjw@sisk.pl
+Cc: Lan Tianyu <tianyu.lan@intel.com>, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 10/30/2012 11:20 PM, Rafael J. Wysocki wrote:
-> On Tuesday, October 30, 2012 03:28:45 PM Aaron Lu wrote:
->> On Mon, Oct 29, 2012 at 10:11:20AM +0100, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> If the caller of acpi_bus_set_power() already has a pointer to the
->>> struct acpi_device object corresponding to the device in question, it
->>> doesn't make sense for it to go through acpi_bus_get_device(), which
->>> may be costly, because it involves acquiring the global ACPI
->>> namespace mutex.
->>>
->>> For this reason, export the function operating on struct acpi_device
->>> objects used internally by acpi_bus_set_power(), so that it may be
->>> called instead of acpi_bus_set_power() in the above case, and change
->>> its name to acpi_device_set_power().
->>>
->>> Additionally, introduce two inline wrappers for checking ACPI PM
->>> capabilities of devices represented by struct acpi_device objects.
->>
->> What about adding yet another wrapper to check power off capability of
->> the device? If device has _PS3 or _PRx, it means the device can be
->> powered off from ACPI's perspective. This is useful for ZPODD when
->> deciding if platform has the required ability to support it.
-> 
-> Sure, no problem with that.  Perhaps you can cut a patch for that
-> on top of this series?
+Since dev_pm_qos_add_request(), dev_pm_qos_update_request() and
+dev_pm_qos_remove_request() for pm qos flags should not be invoked
+when device in RPM_SUSPENDED. Add pm_runtime_get_sync() and pm_runtime_put()
+around these functions in the pm core to ensure device not in RPM_SUSPENDED.
 
-Do you think it is reasonable to add a new field to acpi_state.flags to
-represent if we, as OSPM, have a way to put the device into a ACPI
-device state? This field can be set once in acpi_bus_get_power_flags and
-used afterwards.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/base/power/qos.c   |   10 ++++++++--
+ drivers/base/power/sysfs.c |    4 ++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
-The valid field of acpi_state.flags is what we have today, and it means
-whether this ACPI device state is valid for the device, but not that if
-OSPM can actually put the device into that power state.
-
-Thanks,
-Aaron
-
-> 
-> Rafael
-> 
-> 
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> ---
->>>  drivers/acpi/bus.c      |   15 ++++++++++++---
->>>  include/acpi/acpi_bus.h |   11 +++++++++++
->>>  2 files changed, 23 insertions(+), 3 deletions(-)
->>>
->>> Index: linux/drivers/acpi/bus.c
->>> ===================================================================
->>> --- linux.orig/drivers/acpi/bus.c
->>> +++ linux/drivers/acpi/bus.c
->>> @@ -257,7 +257,15 @@ static int __acpi_bus_get_power(struct a
->>>  }
->>>  
->>>  
->>> -static int __acpi_bus_set_power(struct acpi_device *device, int state)
->>> +/**
->>> + * acpi_device_set_power - Set power state of an ACPI device.
->>> + * @device: Device to set the power state of.
->>> + * @state: New power state to set.
->>> + *
->>> + * Callers must ensure that the device is power manageable before using this
->>> + * function.
->>> + */
->>> +int acpi_device_set_power(struct acpi_device *device, int state)
->>>  {
->>>  	int result = 0;
->>>  	acpi_status status = AE_OK;
->>> @@ -341,6 +349,7 @@ static int __acpi_bus_set_power(struct a
->>>  
->>>  	return result;
->>>  }
->>> +EXPORT_SYMBOL(acpi_device_set_power);
->>>  
->>>  
->>>  int acpi_bus_set_power(acpi_handle handle, int state)
->>> @@ -359,7 +368,7 @@ int acpi_bus_set_power(acpi_handle handl
->>>  		return -ENODEV;
->>>  	}
->>>  
->>> -	return __acpi_bus_set_power(device, state);
->>> +	return acpi_device_set_power(device, state);
->>>  }
->>>  EXPORT_SYMBOL(acpi_bus_set_power);
->>>  
->>> @@ -402,7 +411,7 @@ int acpi_bus_update_power(acpi_handle ha
->>>  	if (result)
->>>  		return result;
->>>  
->>> -	result = __acpi_bus_set_power(device, state);
->>> +	result = acpi_device_set_power(device, state);
->>>  	if (!result && state_p)
->>>  		*state_p = state;
->>>  
->>> Index: linux/include/acpi/acpi_bus.h
->>> ===================================================================
->>> --- linux.orig/include/acpi/acpi_bus.h
->>> +++ linux/include/acpi/acpi_bus.h
->>> @@ -338,6 +338,7 @@ acpi_status acpi_bus_get_status_handle(a
->>>  				       unsigned long long *sta);
->>>  int acpi_bus_get_status(struct acpi_device *device);
->>>  int acpi_bus_set_power(acpi_handle handle, int state);
->>> +int acpi_device_set_power(struct acpi_device *device, int state);
->>>  int acpi_bus_update_power(acpi_handle handle, int *state_p);
->>>  bool acpi_bus_power_manageable(acpi_handle handle);
->>>  bool acpi_bus_can_wakeup(acpi_handle handle);
->>> @@ -482,6 +483,16 @@ static inline int acpi_pm_device_sleep_w
->>>  }
->>>  #endif
->>>  
->>> +static inline bool acpi_device_power_manageable(struct acpi_device *adev)
->>> +{
->>> +	return adev->flags.power_manageable;
->>> +}
->>> +
->>> +static inline bool acpi_device_can_wakeup(struct acpi_device *adev)
->>> +{
->>> +	return adev->wakeup.flags.valid;
->>> +}
->>> +
->>>  #else	/* CONFIG_ACPI */
->>>  
->>>  static inline int register_acpi_bus_type(void *bus) { return 0; }
->>>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 31d3f48..b50ba72 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -624,15 +624,19 @@ int dev_pm_qos_expose_flags(struct device *dev, s32 val)
+ 	if (!req)
+ 		return -ENOMEM;
+ 
++	pm_runtime_get_sync(dev);
+ 	ret = dev_pm_qos_add_request(dev, req, DEV_PM_QOS_FLAGS, val);
++	pm_runtime_put(dev);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	dev->power.qos->flags_req = req;
+ 	ret = pm_qos_sysfs_add_flags(dev);
+-	if (ret)
++	if (ret) {
++		pm_runtime_get_sync(dev);
+ 		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
+-
++		pm_runtime_put(dev);
++	}
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
+@@ -645,7 +649,9 @@ void dev_pm_qos_hide_flags(struct device *dev)
+ {
+ 	if (dev->power.qos && dev->power.qos->flags_req) {
+ 		pm_qos_sysfs_remove_flags(dev);
++		pm_runtime_get_sync(dev);
+ 		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
++		pm_runtime_put(dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_hide_flags);
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 50d16e3..240bfaa 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -264,7 +264,9 @@ static ssize_t pm_qos_no_power_off_store(struct device *dev,
+ 	if (ret != 0 && ret != 1)
+ 		return -EINVAL;
+ 
++	pm_runtime_get_sync(dev);
+ 	ret = dev_pm_qos_update_flags(dev, PM_QOS_FLAG_NO_POWER_OFF, ret);
++	pm_runtime_put(dev);
+ 	return ret < 0 ? ret : n;
+ }
+ 
+@@ -291,7 +293,9 @@ static ssize_t pm_qos_remote_wakeup_store(struct device *dev,
+ 	if (ret != 0 && ret != 1)
+ 		return -EINVAL;
+ 
++	pm_runtime_get_sync(dev);
+ 	ret = dev_pm_qos_update_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP, ret);
++	pm_runtime_put(dev);
+ 	return ret < 0 ? ret : n;
+ }
+ 
+-- 
+1.7.9.5
 
