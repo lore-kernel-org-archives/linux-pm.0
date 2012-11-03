@@ -1,58 +1,66 @@
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [RFC] Suspend/resume without VT switches
-Date: Fri, 02 Nov 2012 17:22:09 -0700
-Message-ID: <509463B1.8070108@virtuousgeek.org>
-References: <1351892621-4840-1-git-send-email-jbarnes@virtuousgeek.org> <7608326.fQBj17U8Wv@vostro.rjw.lan> <20121102162937.1ec88cf1@jbarnes-desktop> <2324361.keTRK1rkYL@vostro.rjw.lan>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX 2/2] PCI/PM: Resume device before shutdown
+Date: Sat, 03 Nov 2012 13:05:12 +0800
+Message-ID: <1351919112.13106.1.camel@yhuang-mobile.sh.intel.com>
+References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+	 <1351061654-8339-2-git-send-email-ying.huang@intel.com>
+	 <CAErSpo5bKDrfOC86Cxv+0yFiyj1bMgWF=6XuY+DWFjaMBTQC0A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from oproxy11-pub.bluehost.com ([173.254.64.10]:45938 "HELO
-	oproxy11-pub.bluehost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752964Ab2KCAWR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Nov 2012 20:22:17 -0400
-In-Reply-To: <2324361.keTRK1rkYL@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo5bKDrfOC86Cxv+0yFiyj1bMgWF=6XuY+DWFjaMBTQC0A@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 11/2/2012 4:38 PM, Rafael J. Wysocki wrote:
-> On Friday, November 02, 2012 04:29:37 PM Jesse Barnes wrote:
->> On Fri, 02 Nov 2012 22:51:07 +0100
->> "Rafael J. Wysocki"<rjw@sisk.pl>  wrote:
->>
->>> On Friday, November 02, 2012 02:43:39 PM Jesse Barnes wrote:
->>>> I've lightly tested this with X and it definitely makes my
->>>> suspend/resume sequence a bit prettier.  It should speed things up
->>>> trivally as well, but most of those gains come from other changes to the
->>>> i915 driver (posted earlier to intel-gfx).
->>>>
->>>> Any thoughts?
->>>
->>> I like the idea.
->>>
->>>> I suspect we'll have to be more defensive about the
->>>> resume configuration in case the BIOS did something weird, but overall I
->>>> think we should be able to do this one way or another.
->>>
->>> Perhaps patch [1/2] should be [2/2] and vice versa? :-)
->>
->> But then it wouldn't compile?  I added the variable first, defaulting
->> to the current behavior, then made i915 support it and set the variable
->> to false there...  At least, that's what I intended to do.
->
-> OK
->
-> So what happens if there are multiple graphics adapters in the system?
-> Including such that aren't handled by i915?  pm_vt_switch is global, so isn't
-> there any problem with that?
+On Fri, 2012-11-02 at 10:52 -0600, Bjorn Helgaas wrote:
+> On Wed, Oct 24, 2012 at 12:54 AM, Huang Ying <ying.huang@intel.com> wrote:
+> > Some actions during shutdown need device to be in D0 state, such as
+> > MSI shutdown etc, so resume device before shutdown.
+> 
+> Is there a problem report or bugzilla for this issue?  What are the
+> symptoms by which a user could figure out that he needs this fix?
 
-Yeah I guess it depends on configuration.  Maybe only the driver that's 
-currently driving the VT should be able to set this, then clear it if 
-it's no longer in charge?  Not sure how to do that yet (ugg means I get 
-to dig into the console layer again...)
+No bugzilla for this issue.  This issue will cause the corresponding
+device lost in kexeced kernel.
 
-Thanks,
-Jesse
+Best Regards,
+Huang Ying
 
+> Should this be put in the stable tree as well?  If so, for v3.6 only?
+> 
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > ---
+> >  drivers/pci/pci-driver.c |   12 ++----------
+> >  1 file changed, 2 insertions(+), 10 deletions(-)
+> >
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -398,6 +398,8 @@ static void pci_device_shutdown(struct d
+> >         struct pci_dev *pci_dev = to_pci_dev(dev);
+> >         struct pci_driver *drv = pci_dev->driver;
+> >
+> > +       pm_runtime_resume(dev);
+> > +
+> >         if (drv && drv->shutdown)
+> >                 drv->shutdown(pci_dev);
+> >         pci_msi_shutdown(pci_dev);
+> > @@ -408,16 +410,6 @@ static void pci_device_shutdown(struct d
+> >          * continue to do DMA
+> >          */
+> >         pci_disable_device(pci_dev);
+> > -
+> > -       /*
+> > -        * Devices may be enabled to wake up by runtime PM, but they need not
+> > -        * be supposed to wake up the system from its "power off" state (e.g.
+> > -        * ACPI S5).  Therefore disable wakeup for all devices that aren't
+> > -        * supposed to wake up the system at this point.  The state argument
+> > -        * will be ignored by pci_enable_wake().
+> > -        */
+> > -       if (!device_may_wakeup(dev))
+> > -               pci_enable_wake(pci_dev, PCI_UNKNOWN, false);
+> >  }
+> >
+> >  #ifdef CONFIG_PM
