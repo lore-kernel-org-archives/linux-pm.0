@@ -1,179 +1,76 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [BUGFIX 1/2] PCI/PM: Fix deadlock when unbind device if its
- parent in D3cold
-Date: Sat, 03 Nov 2012 13:06:05 +0800
-Message-ID: <1351919165.13106.2.camel@yhuang-mobile.sh.intel.com>
-References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
-	 <CAErSpo7hiFQOC+OPZretkyp5EcL84zEWCAiQgEE5Ewq--gUziQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:7772 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752165Ab2KCFH7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 3 Nov 2012 01:07:59 -0400
-In-Reply-To: <CAErSpo7hiFQOC+OPZretkyp5EcL84zEWCAiQgEE5Ewq--gUziQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ming Lei <ming.lei@canonical.com>
+Subject: [PATCH v4 0/6] solve deadlock caused by memory allocation with I/O
+Date: Sat,  3 Nov 2012 16:35:08 +0800
+Message-ID: <1351931714-11689-1-git-send-email-ming.lei@canonical.com>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: linux-kernel@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Zhang Yanmin <yanmin.zhang@intel.com>
 
-On Fri, 2012-11-02 at 10:50 -0600, Bjorn Helgaas wrote:
-> On Wed, Oct 24, 2012 at 12:54 AM, Huang Ying <ying.huang@intel.com> wrote:
-> > If a PCI device and its parents are put into D3cold, unbinding the
-> > device will trigger deadlock as follow:
-> >
-> > - driver_unbind
-> >   - device_release_driver
-> >     - device_lock(dev)                          <--- previous lock here
-> >     - __device_release_driver
-> >       - pm_runtime_get_sync
-> >         ...
-> >           - rpm_resume(dev)
-> >             - rpm_resume(dev->parent)
-> >               ...
-> >                 - pci_pm_runtime_resume
-> >                   ...
-> >                   - pci_set_power_state
-> >                     - __pci_start_power_transition
-> >                       - pci_wakeup_bus(dev->parent->subordinate)
-> >                         - pci_walk_bus
-> >                           - device_lock(dev)    <--- dead lock here
-> >
-> >
-> > If we do not do device_lock in pci_walk_bus, we can avoid dead lock.
-> > Device_lock in pci_walk_bus is introduced in commit:
-> > d71374dafbba7ec3f67371d3b7e9f6310a588808, corresponding email thread
-> > is: https://lkml.org/lkml/2006/5/26/38.  The patch author Zhang Yanmin
-> > said device_lock is added to pci_walk_bus because:
-> >
-> >   Some error handling functions call pci_walk_bus. For example, PCIe
-> >   aer. Here we lock the device, so the driver wouldn't detach from the
-> >   device, as the cb might call driver's callback function.
-> >
-> > So I fixed the dead lock as follow:
-> >
-> > - remove device_lock from pci_walk_bus
-> > - add device_lock into callback if callback will call driver's callback
-> >
-> > I checked pci_walk_bus users one by one, and found only PCIe aer needs
-> > device lock.
-> 
-> Is there a problem report or bugzilla for this issue?
+This patchset try to solve one deadlock problem which might be caused
+by memory allocation with block I/O during runtime PM and block device
+error handling path. Traditionly, the problem is addressed by passing
+GFP_NOIO statically to mm, but that is not a effective solution, see
+detailed description in patch 1's commit log.
 
-No.  I found this issue when I developed kexec fixing.
+This patch set introduces one process flag and trys to fix the deadlock
+problem on block device/network device during runtime PM or usb bus reset.
 
-Best Regards,
-Huang Ying
+The 1st one is the change on include/sched.h and mm.
 
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > Cc: Zhang Yanmin <yanmin.zhang@intel.com>
-> 
-> Should this go to stable as well?  The D3cold support appeared in
-> v3.6, so my guess is that this fix could go to v3.6.x.
-> 
-> > ---
-> >  drivers/pci/bus.c                  |    3 ---
-> >  drivers/pci/pcie/aer/aerdrv_core.c |   20 ++++++++++++++++----
-> >  2 files changed, 16 insertions(+), 7 deletions(-)
-> >
-> > --- a/drivers/pci/bus.c
-> > +++ b/drivers/pci/bus.c
-> > @@ -320,10 +320,7 @@ void pci_walk_bus(struct pci_bus *top, i
-> >                 } else
-> >                         next = dev->bus_list.next;
-> >
-> > -               /* Run device routines with the device locked */
-> > -               device_lock(&dev->dev);
-> >                 retval = cb(dev, userdata);
-> > -               device_unlock(&dev->dev);
-> >                 if (retval)
-> >                         break;
-> >         }
-> > --- a/drivers/pci/pcie/aer/aerdrv_core.c
-> > +++ b/drivers/pci/pcie/aer/aerdrv_core.c
-> > @@ -213,6 +213,7 @@ static int report_error_detected(struct
-> >         struct aer_broadcast_data *result_data;
-> >         result_data = (struct aer_broadcast_data *) data;
-> >
-> > +       device_lock(&dev->dev);
-> >         dev->error_state = result_data->state;
-> >
-> >         if (!dev->driver ||
-> > @@ -231,12 +232,14 @@ static int report_error_detected(struct
-> >                                    dev->driver ?
-> >                                    "no AER-aware driver" : "no driver");
-> >                 }
-> > -               return 0;
-> > +               goto out;
-> >         }
-> >
-> >         err_handler = dev->driver->err_handler;
-> >         vote = err_handler->error_detected(dev, result_data->state);
-> >         result_data->result = merge_result(result_data->result, vote);
-> > +out:
-> > +       device_unlock(&dev->dev);
-> >         return 0;
-> >  }
-> >
-> > @@ -247,14 +250,17 @@ static int report_mmio_enabled(struct pc
-> >         struct aer_broadcast_data *result_data;
-> >         result_data = (struct aer_broadcast_data *) data;
-> >
-> > +       device_lock(&dev->dev);
-> >         if (!dev->driver ||
-> >                 !dev->driver->err_handler ||
-> >                 !dev->driver->err_handler->mmio_enabled)
-> > -               return 0;
-> > +               goto out;
-> >
-> >         err_handler = dev->driver->err_handler;
-> >         vote = err_handler->mmio_enabled(dev);
-> >         result_data->result = merge_result(result_data->result, vote);
-> > +out:
-> > +       device_unlock(&dev->dev);
-> >         return 0;
-> >  }
-> >
-> > @@ -265,14 +271,17 @@ static int report_slot_reset(struct pci_
-> >         struct aer_broadcast_data *result_data;
-> >         result_data = (struct aer_broadcast_data *) data;
-> >
-> > +       device_lock(&dev->dev);
-> >         if (!dev->driver ||
-> >                 !dev->driver->err_handler ||
-> >                 !dev->driver->err_handler->slot_reset)
-> > -               return 0;
-> > +               goto out;
-> >
-> >         err_handler = dev->driver->err_handler;
-> >         vote = err_handler->slot_reset(dev);
-> >         result_data->result = merge_result(result_data->result, vote);
-> > +out:
-> > +       device_unlock(&dev->dev);
-> >         return 0;
-> >  }
-> >
-> > @@ -280,15 +289,18 @@ static int report_resume(struct pci_dev
-> >  {
-> >         const struct pci_error_handlers *err_handler;
-> >
-> > +       device_lock(&dev->dev);
-> >         dev->error_state = pci_channel_io_normal;
-> >
-> >         if (!dev->driver ||
-> >                 !dev->driver->err_handler ||
-> >                 !dev->driver->err_handler->resume)
-> > -               return 0;
-> > +               goto out;
-> >
-> >         err_handler = dev->driver->err_handler;
-> >         err_handler->resume(dev);
-> > +out:
-> > +       device_unlock(&dev->dev);
-> >         return 0;
-> >  }
-> >
+The 2nd patch introduces the flag of memalloc_noio on 'dev_pm_info',
+and pm_runtime_set_memalloc_noio(), so that PM Core can teach mm to not
+allocate mm with GFP_IOFS during the runtime_resume callback only on
+device with the flag set.
+
+The following 2 patches apply the introduced pm_runtime_set_memalloc_noio()
+to mark all devices as memalloc_noio_resume in the path from the block or
+network device to the root device in device tree.
+
+The last 2 patches are applied again PM and USB subsystem to demonstrate
+how to use the introduced mechanism to fix the deadlock problem.
+
+Change logs:
+V4:
+	- patches from the 2nd to the 6th changed	
+	- call pm_runtime_set_memalloc_noio() after device_add() as pointed
+	by Alan
+	- set PF_MEMALLOC_NOIO during runtime_suspend()
+
+V3:
+        - patch 2/6 and 5/6 changed, see their commit log
+        - remove RFC from title since several guys have expressed that
+        it is a reasonable solution
+V2:
+        - remove changes on 'may_writepage' and 'may_swap'(1/6)
+        - unset GFP_IOFS in try_to_free_pages() path(1/6)
+        - introduce pm_runtime_set_memalloc_noio()
+        - only apply the meachnism on block/network device and its ancestors
+        for runtime resume context
+V1:
+        - take Minchan's change to avoid the check in alloc_page hot path
+        - change the helpers' style into save/restore as suggested by Alan
+        - memory allocation with no io in usb bus reset path for all devices
+        as suggested by Greg and Oliver
+
+ block/genhd.c                |    9 +++++
+ drivers/base/power/runtime.c |   89 +++++++++++++++++++++++++++++++++++++++++-
+ drivers/usb/core/hub.c       |   13 ++++++
+ include/linux/pm.h           |    1 +
+ include/linux/pm_runtime.h   |    3 ++
+ include/linux/sched.h        |   10 +++++
+ mm/page_alloc.c              |   10 ++++-
+ mm/vmscan.c                  |   12 ++++++
+ net/core/net-sysfs.c         |    5 +++
 
 
+Thanks,
+--
+Ming Lei
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
