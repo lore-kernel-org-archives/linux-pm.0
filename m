@@ -1,43 +1,72 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Linux 3.7-rc3
-Date: Sat, 3 Nov 2012 12:35:43 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1211031225100.17692-100000@netrider.rowland.org>
-References: <CA+55aFx+w2hFifGTr_u76D9d_sDKxKJBDd2L4p0GVk-RXCczMA@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [BUGFIX 2/2] PCI/PM: Resume device before shutdown
+Date: Sat, 3 Nov 2012 11:21:42 -0600
+Message-ID: <CAErSpo7=6kCG=P-u_MOACD+HVV8cj1JLO-beZYr6tn9bOzfrBg@mail.gmail.com>
+References: <1351061654-8339-1-git-send-email-ying.huang@intel.com>
+ <1351061654-8339-2-git-send-email-ying.huang@intel.com> <CAErSpo5bKDrfOC86Cxv+0yFiyj1bMgWF=6XuY+DWFjaMBTQC0A@mail.gmail.com>
+ <1351919112.13106.1.camel@yhuang-mobile.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFx+w2hFifGTr_u76D9d_sDKxKJBDd2L4p0GVk-RXCczMA@mail.gmail.com>
+In-Reply-To: <1351919112.13106.1.camel@yhuang-mobile.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2 Nov 2012, Linus Torvalds wrote:
+On Fri, Nov 2, 2012 at 11:05 PM, Huang Ying <ying.huang@intel.com> wrote:
+> On Fri, 2012-11-02 at 10:52 -0600, Bjorn Helgaas wrote:
+>> On Wed, Oct 24, 2012 at 12:54 AM, Huang Ying <ying.huang@intel.com> wrote:
+>> > Some actions during shutdown need device to be in D0 state, such as
+>> > MSI shutdown etc, so resume device before shutdown.
+>>
+>> Is there a problem report or bugzilla for this issue?  What are the
+>> symptoms by which a user could figure out that he needs this fix?
+>
+> No bugzilla for this issue.  This issue will cause the corresponding
+> device lost in kexeced kernel.
 
-> On Fri, Nov 2, 2012 at 3:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > Well, not everything is rosy in the suspend land, though.  This is a
-> > failure to freeze khubd during the second in a row attempt to suspend to
-> > RAM (your current tree):
-> 
-> Ugh. So khubd is blocked in usb_start_wait_urb(), and apparently the
-> timeout for that block is longer than the freezing timeout.
-> 
-> There's a comment about why khubd needs to be freezable, but I wonder
-> if that whole thing isn't doing something wrong. Causing the suspend
-> to fail is definitely always the wrong thing.
+So would the following be accurate changelog text?
 
-khubs has been a potential problem for suspend since the beginning.
+    Without this patch, a device may not work correctly after a kexec
+    because the new kernel expects devices to be in D0.
 
-The USB spec mandates timeouts of 5 seconds.  In addition, khubd does
-lots of retries when errors occur (probably way too many) and checks
-for freezability only when its to-do list is empty.
+>> Should this be put in the stable tree as well?  If so, for v3.6 only?
 
-Under normal circumstances this isn't a problem.  Issues arise when a 
-non-cooperative device is plugged in shortly before a suspend starts.
+What about the stable tree?
 
-I suppose we could scatter a whole bunch of checks at spots throughout 
-the device-initialization code.  This seems awkward but I can't think 
-of anything better.  Does anyone have other suggestions?
-
-Alan Stern
+>> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+>> > ---
+>> >  drivers/pci/pci-driver.c |   12 ++----------
+>> >  1 file changed, 2 insertions(+), 10 deletions(-)
+>> >
+>> > --- a/drivers/pci/pci-driver.c
+>> > +++ b/drivers/pci/pci-driver.c
+>> > @@ -398,6 +398,8 @@ static void pci_device_shutdown(struct d
+>> >         struct pci_dev *pci_dev = to_pci_dev(dev);
+>> >         struct pci_driver *drv = pci_dev->driver;
+>> >
+>> > +       pm_runtime_resume(dev);
+>> > +
+>> >         if (drv && drv->shutdown)
+>> >                 drv->shutdown(pci_dev);
+>> >         pci_msi_shutdown(pci_dev);
+>> > @@ -408,16 +410,6 @@ static void pci_device_shutdown(struct d
+>> >          * continue to do DMA
+>> >          */
+>> >         pci_disable_device(pci_dev);
+>> > -
+>> > -       /*
+>> > -        * Devices may be enabled to wake up by runtime PM, but they need not
+>> > -        * be supposed to wake up the system from its "power off" state (e.g.
+>> > -        * ACPI S5).  Therefore disable wakeup for all devices that aren't
+>> > -        * supposed to wake up the system at this point.  The state argument
+>> > -        * will be ignored by pci_enable_wake().
+>> > -        */
+>> > -       if (!device_may_wakeup(dev))
+>> > -               pci_enable_wake(pci_dev, PCI_UNKNOWN, false);
+>> >  }
+>> >
+>> >  #ifdef CONFIG_PM
+>
+>
