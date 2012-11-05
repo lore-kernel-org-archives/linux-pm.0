@@ -1,51 +1,65 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Sun, 4 Nov 2012 20:56:55 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211042049440.6022-100000@netrider.rowland.org>
-References: <1352078237-20622-1-git-send-email-ying.huang@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
+Date: Mon, 5 Nov 2012 13:33:50 +0100
+Message-ID: <CAPDyKFq50Hnk7TP8pXv_WKRq8p-mP7Lfdc31m-jmU=xLt1Q8UQ@mail.gmail.com>
+References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
+ <20121011134458.GB15428@gmail.com>
+ <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
+ <20121011151947.GD15428@gmail.com>
+ <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
+ <20121028225918.GC5411@sortiz-mobl>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:56749 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751035Ab2KEB44 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Nov 2012 20:56:56 -0500
-In-Reply-To: <1352078237-20622-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20121028225918.GC5411@sortiz-mobl>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>
+Cc: Philippe Begnic <philippe.begnic@st.com>, Vincent Guittot <vincent.guittot@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonas Aberg <jonas.aberg@stericsson.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, 5 Nov 2012, Huang Ying wrote:
-
-> In current runtime PM implementation, the active child count of the
-> parent device may be decreased if the runtime PM of the child device
-> is disabled and forbidden.  For example, to unbind a PCI driver with a
-> PCI device, the following code path is possible:
-> 
->   pci_device_remove
->     pm_runtime_set_suspended
->       __pm_runtime_set_status
->         atomic_add_unless(&parent->power.child_count, -1, 0)
-> 
-> That is, the parent device may be suspended, even if the runtime PM of
-> child device is forbidden to be suspended.  This violate the rule that
-> parent is allowed to be suspended only after all its children are
-> suspended, and may cause issue.
-
-This doesn't sound like a correct description of the situation.  The 
-rule is not violated.  After pm_runtime_set_suspended runs, the child 
-_is_ suspended.  Thus there's no reason not to allow the parent to be 
-suspended.
-
-The problem -- if there really is one -- is that a driver can put a 
-device into the suspended state by calling pm_runtime_disable followed 
-by pm_runtime_set_suspended, even if the usage count is > 0.
-
-I'm not so sure this should count as a problem.  Generally devices 
-aren't disabled for runtime PM unless something is wrong.  Under those 
-circumstances, the meaning of pm_runtime_forbid isn't very well 
-defined.
-
-Alan Stern
-
+T24gMjggT2N0b2JlciAyMDEyIDIzOjU5LCBTYW11ZWwgT3J0aXogPHNhbWVvQGxpbnV4LmludGVs
+LmNvbT4gd3JvdGU6Cj4gSGkgVWxmLAo+Cj4gT24gRnJpLCBPY3QgMjYsIDIwMTIgYXQgMTA6MTk6
+MjRBTSArMDIwMCwgVWxmIEhhbnNzb24gd3JvdGU6Cj4+IE9uIDExIE9jdG9iZXIgMjAxMiAxNzox
+OSwgTGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz4gd3JvdGU6Cj4+ID4gT24gVGh1LCAx
+MSBPY3QgMjAxMiwgTGludXMgV2FsbGVpaiB3cm90ZToKPj4gPgo+PiA+PiBPbiBUaHUsIE9jdCAx
+MSwgMjAxMiBhdCAzOjQ0IFBNLCBMZWUgSm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPiB3cm90
+ZToKPj4gPj4KPj4gPj4gPj4gUGF0Y2hlcyBhcmUgYmFzZWQgb24gTGludXMgVG9ydmFsZHMgdHJl
+ZSB3aXRoIGxhdGVzdCBjb21taXQgYXMgb2Ygb2t0IDEwLgo+PiA+PiA+Cj4+ID4+ID4gSG1tLi4u
+IEkgZ2V0Ogo+PiA+PiA+Cj4+ID4+ID4gQXBwbHlpbmc6IGNsazogdXg1MDA6IFN1cHBvcnQgZm9y
+IHByY211X3NjYWxhYmxlX3JhdGUgY2xvY2sKPj4gPj4gPiBlcnJvcjogZHJpdmVycy9jbGsvdXg1
+MDAvY2xrLXByY211LmM6IGRvZXMgbm90IGV4aXN0IGluIGluZGV4Cj4+ID4+ID4gZXJyb3I6IGRy
+aXZlcnMvY2xrL3V4NTAwL2Nsay5oOiBkb2VzIG5vdCBleGlzdCBpbiBpbmRleAo+PiA+PiA+IFBh
+dGNoIGZhaWxlZCBhdCAwMDAxIGNsazogdXg1MDA6IFN1cHBvcnQgZm9yIHByY211X3NjYWxhYmxl
+X3JhdGUgY2xvY2sKPj4gPj4gPgo+PiA+PiA+IFNvIHdoZW4gZGlkIGRyaXZlcnMvY2xrL3V4NTAw
+LyogYXJyaXZlPwo+PiA+Pgo+PiA+PiBFeGFjdGx5IGhlcmUsIDEwIGRheXMgYWdvIG9uIFRvcnZh
+bGRzJyBtYXN0ZXIgYnJhbmNoOgo+PiA+Cj4+ID4gQWggSSBzZWUuIEJhc2luZyBwYXRjaGVzIG9u
+IGNvbW1pdHMgaGFsZiB3YXkgdGhyb3VnaCB0aGUgbWVyZ2UKPj4gPiB3aW5kb3cuIEdvb2QgbW92
+ZSEgOykKPj4gPgo+PiA+IC0tCj4+ID4gTGVlIEpvbmVzCj4+ID4gTGluYXJvIFNULUVyaWNzc29u
+IExhbmRpbmcgVGVhbSBMZWFkCj4+ID4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdh
+cmUgZm9yIEFSTSBTb0NzCj4+ID4gRm9sbG93IExpbmFybzogRmFjZWJvb2sgfCBUd2l0dGVyIHwg
+QmxvZwo+Pgo+PiBTYW11ZWwsIGEga2luZCByZW1pbmRlciBvbiB0aGlzLCB0cnlpbmcgdG8gY29s
+bGVjdCBhY2tzIHRvIGJlIGFibGUgdG8KPj4gYWR2aXNlIE1pa2UgdG8gdGFrZSB0aGlzIHNlcmll
+cyB0aHJvdWdoIGhpcyBjbGsgdHJlZS4gVGhlcmUgYXJlIHR3bwo+PiBtZmQgcGF0Y2hlcy4KPj4g
+W1BBVENIIDIvOF0gbWZkOiBkYjg1MDA6IFByb3ZpZGUgY3B1ZnJlcSB0YWJsZSBhcyBwbGF0Zm9y
+bSBkYXRhCj4+IFtQQVRDSCA1LzhdIG1mZDogZGI4NTAwOiBDb25uZWN0IEFSTVNTIGNsayB0byBB
+Uk0gT1BQCj4gU29ycnkgZm9yIHRoZSBkZWxheToKPgo+IEFja2VkLWJ5OiBTYW11ZWwgT3J0aXog
+PHNhbWVvQGxpbnV4LmludGVsLmNvbT4KPgo+IENoZWVycywKPiBTYW11ZWwuCj4KPiAtLQo+IElu
+dGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudHJlCj4gaHR0cDovL29zcy5pbnRlbC5jb20v
+Cj4gLS0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
+dWJzY3JpYmUgbGludXgtcG0iIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9t
+b0B2Z2VyLmtlcm5lbC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5r
+ZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwKCkEga2luZCBwaW5nIGZvciB0aGlzIHRoaXMg
+c2VyaWVzIGZvciB5b3UgTWlrZS4gSSBiZWxpZXZlIGFsbCBwYXRjaGVzCmhhcyByZWNlaXZlZCBh
+Y2tzIG5vdyBhcyB3ZWxsLgoKS2luZCByZWdhcmRzClVsZiBIYW5zc29uCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
+bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
