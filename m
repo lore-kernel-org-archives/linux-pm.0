@@ -1,65 +1,52 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/8] clk: ux500: Fixup smp_twd clk for clk notifiers
-Date: Mon, 5 Nov 2012 13:33:50 +0100
-Message-ID: <CAPDyKFq50Hnk7TP8pXv_WKRq8p-mP7Lfdc31m-jmU=xLt1Q8UQ@mail.gmail.com>
-References: <1349869349-8070-1-git-send-email-ulf.hansson@stericsson.com>
- <20121011134458.GB15428@gmail.com>
- <CACRpkdYEukMzMX1Q8nb5zKPMZEZfttzWVC24aOkv2g8SCQtTnQ@mail.gmail.com>
- <20121011151947.GD15428@gmail.com>
- <CAPDyKFof65xAVyOo3FrdS2uYQwB1Wq3553PKj04FR6JXaJsH6Q@mail.gmail.com>
- <20121028225918.GC5411@sortiz-mobl>
+From: Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
+Subject: Re: [PATCH 1/9] cgroup: add cgroup_subsys->post_create()
+Date: Mon, 5 Nov 2012 14:42:19 +0100
+Message-ID: <5097C23B.3040808@parallels.com>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org>
+	<1351931915-1701-2-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20121028225918.GC5411@sortiz-mobl>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>
-Cc: Philippe Begnic <philippe.begnic@st.com>, Vincent Guittot <vincent.guittot@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Jonas Aberg <jonas.aberg@stericsson.com>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ulf Hansson <ulf.hansson@stericsson.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <1351931915-1701-2-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
+List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: rjw-KKrjLPT3xs0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMjggT2N0b2JlciAyMDEyIDIzOjU5LCBTYW11ZWwgT3J0aXogPHNhbWVvQGxpbnV4LmludGVs
-LmNvbT4gd3JvdGU6Cj4gSGkgVWxmLAo+Cj4gT24gRnJpLCBPY3QgMjYsIDIwMTIgYXQgMTA6MTk6
-MjRBTSArMDIwMCwgVWxmIEhhbnNzb24gd3JvdGU6Cj4+IE9uIDExIE9jdG9iZXIgMjAxMiAxNzox
-OSwgTGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz4gd3JvdGU6Cj4+ID4gT24gVGh1LCAx
-MSBPY3QgMjAxMiwgTGludXMgV2FsbGVpaiB3cm90ZToKPj4gPgo+PiA+PiBPbiBUaHUsIE9jdCAx
-MSwgMjAxMiBhdCAzOjQ0IFBNLCBMZWUgSm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPiB3cm90
-ZToKPj4gPj4KPj4gPj4gPj4gUGF0Y2hlcyBhcmUgYmFzZWQgb24gTGludXMgVG9ydmFsZHMgdHJl
-ZSB3aXRoIGxhdGVzdCBjb21taXQgYXMgb2Ygb2t0IDEwLgo+PiA+PiA+Cj4+ID4+ID4gSG1tLi4u
-IEkgZ2V0Ogo+PiA+PiA+Cj4+ID4+ID4gQXBwbHlpbmc6IGNsazogdXg1MDA6IFN1cHBvcnQgZm9y
-IHByY211X3NjYWxhYmxlX3JhdGUgY2xvY2sKPj4gPj4gPiBlcnJvcjogZHJpdmVycy9jbGsvdXg1
-MDAvY2xrLXByY211LmM6IGRvZXMgbm90IGV4aXN0IGluIGluZGV4Cj4+ID4+ID4gZXJyb3I6IGRy
-aXZlcnMvY2xrL3V4NTAwL2Nsay5oOiBkb2VzIG5vdCBleGlzdCBpbiBpbmRleAo+PiA+PiA+IFBh
-dGNoIGZhaWxlZCBhdCAwMDAxIGNsazogdXg1MDA6IFN1cHBvcnQgZm9yIHByY211X3NjYWxhYmxl
-X3JhdGUgY2xvY2sKPj4gPj4gPgo+PiA+PiA+IFNvIHdoZW4gZGlkIGRyaXZlcnMvY2xrL3V4NTAw
-LyogYXJyaXZlPwo+PiA+Pgo+PiA+PiBFeGFjdGx5IGhlcmUsIDEwIGRheXMgYWdvIG9uIFRvcnZh
-bGRzJyBtYXN0ZXIgYnJhbmNoOgo+PiA+Cj4+ID4gQWggSSBzZWUuIEJhc2luZyBwYXRjaGVzIG9u
-IGNvbW1pdHMgaGFsZiB3YXkgdGhyb3VnaCB0aGUgbWVyZ2UKPj4gPiB3aW5kb3cuIEdvb2QgbW92
-ZSEgOykKPj4gPgo+PiA+IC0tCj4+ID4gTGVlIEpvbmVzCj4+ID4gTGluYXJvIFNULUVyaWNzc29u
-IExhbmRpbmcgVGVhbSBMZWFkCj4+ID4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdh
-cmUgZm9yIEFSTSBTb0NzCj4+ID4gRm9sbG93IExpbmFybzogRmFjZWJvb2sgfCBUd2l0dGVyIHwg
-QmxvZwo+Pgo+PiBTYW11ZWwsIGEga2luZCByZW1pbmRlciBvbiB0aGlzLCB0cnlpbmcgdG8gY29s
-bGVjdCBhY2tzIHRvIGJlIGFibGUgdG8KPj4gYWR2aXNlIE1pa2UgdG8gdGFrZSB0aGlzIHNlcmll
-cyB0aHJvdWdoIGhpcyBjbGsgdHJlZS4gVGhlcmUgYXJlIHR3bwo+PiBtZmQgcGF0Y2hlcy4KPj4g
-W1BBVENIIDIvOF0gbWZkOiBkYjg1MDA6IFByb3ZpZGUgY3B1ZnJlcSB0YWJsZSBhcyBwbGF0Zm9y
-bSBkYXRhCj4+IFtQQVRDSCA1LzhdIG1mZDogZGI4NTAwOiBDb25uZWN0IEFSTVNTIGNsayB0byBB
-Uk0gT1BQCj4gU29ycnkgZm9yIHRoZSBkZWxheToKPgo+IEFja2VkLWJ5OiBTYW11ZWwgT3J0aXog
-PHNhbWVvQGxpbnV4LmludGVsLmNvbT4KPgo+IENoZWVycywKPiBTYW11ZWwuCj4KPiAtLQo+IElu
-dGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudHJlCj4gaHR0cDovL29zcy5pbnRlbC5jb20v
-Cj4gLS0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5z
-dWJzY3JpYmUgbGludXgtcG0iIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9t
-b0B2Z2VyLmtlcm5lbC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5r
-ZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwKCkEga2luZCBwaW5nIGZvciB0aGlzIHRoaXMg
-c2VyaWVzIGZvciB5b3UgTWlrZS4gSSBiZWxpZXZlIGFsbCBwYXRjaGVzCmhhcyByZWNlaXZlZCBh
-Y2tzIG5vdyBhcyB3ZWxsLgoKS2luZCByZWdhcmRzClVsZiBIYW5zc29uCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 11/03/2012 09:38 AM, Tejun Heo wrote:
+> Currently, there's no way for a controller to find out whether a new
+> cgroup finished all ->create() allocatinos successfully and is
+> considered "live" by cgroup.
+> 
+> This becomes a problem later when we add generic descendants walking
+> to cgroup which can be used by controllers as controllers don't have a
+> synchronization point where it can synchronize against new cgroups
+> appearing in such walks.
+> 
+> This patch adds ->post_create().  It's called after all ->create()
+> succeeded and the cgroup is linked into the generic cgroup hierarchy.
+> This plays the counterpart of ->pre_destroy().
+> 
+> Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
+
+Tejun, If we do it this way, we end up with two callbacks that are
+called after create: post_clone and post_create. I myself prefer the
+approach I took, that convert post_clone into post_create, and would
+prefer if you would pick that up.
+
+For me, post_clone is totally a glitch that should not exist. Merging
+this with post_create gives the following semantics:
+
+* A while after cgroup creation, you will get a callback. In that
+callback, you do whatever initialization you may need that you could not
+in create. Why is reacting to a flag being set any different?
