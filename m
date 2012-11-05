@@ -1,52 +1,66 @@
-From: Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
-Subject: Re: [PATCH 1/9] cgroup: add cgroup_subsys->post_create()
-Date: Mon, 5 Nov 2012 14:42:19 +0100
-Message-ID: <5097C23B.3040808@parallels.com>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
-	<1351931915-1701-2-git-send-email-tj@kernel.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH 0/6] ARM: OMAP3+: move smartreflex-class3.c to drivers/power/avs
+Date: Mon, 5 Nov 2012 09:02:08 -0600
+Message-ID: <1352127734-30103-2-git-send-email-nm@ti.com>
+References: <1352127734-30103-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1351931915-1701-2-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
-List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: rjw-KKrjLPT3xs0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:33921 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932251Ab2KEPCj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 Nov 2012 10:02:39 -0500
+In-Reply-To: <1352127734-30103-1-git-send-email-nm@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-omap <linux-omap@vger.kernel.org>
+Cc: Rafael <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Anton Vorontsov <cbouatmailru@gmail.com>, linux-pm <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>
 
-On 11/03/2012 09:38 AM, Tejun Heo wrote:
-> Currently, there's no way for a controller to find out whether a new
-> cgroup finished all ->create() allocatinos successfully and is
-> considered "live" by cgroup.
-> 
-> This becomes a problem later when we add generic descendants walking
-> to cgroup which can be used by controllers as controllers don't have a
-> synchronization point where it can synchronize against new cgroups
-> appearing in such walks.
-> 
-> This patch adds ->post_create().  It's called after all ->create()
-> succeeded and the cgroup is linked into the generic cgroup hierarchy.
-> This plays the counterpart of ->pre_destroy().
-> 
-> Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
+smartreflex.c now resides in drivers/power/avs directory,
+but class driver is in mach-omap2. High time we move it
+to drivers/power/avs.
 
-Tejun, If we do it this way, we end up with two callbacks that are
-called after create: post_clone and post_create. I myself prefer the
-approach I took, that convert post_clone into post_create, and would
-prefer if you would pick that up.
+This series *does not* try to fix VP/VC to be voltage
+regulator OR introduce a new OMAP voltage regulator series.
+Instead, it purely tries to do the minimal changes needed
+to move code to drivers/power/avs as a start.
 
-For me, post_clone is totally a glitch that should not exist. Merging
-this with post_create gives the following semantics:
+Baseline: k.org v3.7-rc4
+Testing: Platform: beagle XM C1 (3730)
+while [ 1 ]
+do
+echo -n "0" >/sys/kernel/debug/smartreflex/smartreflex_core/autocomp
+date
+echo -n "1" >/sys/kernel/debug/smartreflex/smartreflex_core/autocomp
+done
+Screen capture after the series(RFC): on inductor L5 (VDD2 - core):
+https://plus.google.com/photos/112464029509057661457/albums/5715034179943520193/5802619719180530114
 
-* A while after cgroup creation, you will get a callback. In that
-callback, you do whatever initialization you may need that you could not
-in create. Why is reacting to a flag being set any different?
+RFC: http://marc.info/?t=135102876700003&r=1&w=2
+
+Nishanth Menon (6):
+  PM / AVS / OMAP: move Kconfig definition of smartreflex to avs
+    directory
+  ARM: OMAP: voltage: remove duplicate header definitions
+  ARM: OMAP: voltage: move voltdm_reset to platform_data header
+  ARM: OMAP: SmartReflex: provide SoC integration API for VP
+  ARM: OMAP: SmartReflex: use pr_warn instead of pr_warning
+  PM / AVS / OMAP: move Smartreflex-class3 driver to power/avs
+
+ arch/arm/mach-omap2/Makefile                       |    1 -
+ arch/arm/mach-omap2/sr_device.c                    |    5 ++++
+ arch/arm/mach-omap2/voltage.h                      |    4 ---
+ arch/arm/plat-omap/Kconfig                         |   31 --------------------
+ drivers/power/avs/Kconfig                          |   31 ++++++++++++++++++++
+ drivers/power/avs/Makefile                         |    1 +
+ .../power/avs}/smartreflex-class3.c                |   20 +++++++++----
+ drivers/power/avs/smartreflex.c                    |    2 ++
+ include/linux/platform_data/voltage-omap.h         |    1 +
+ include/linux/power/smartreflex.h                  |   18 ++++++++++++
+ 10 files changed, 73 insertions(+), 41 deletions(-)
+ rename {arch/arm/mach-omap2 => drivers/power/avs}/smartreflex-class3.c (75%)
+Regards,
+Nishanth Menon
+-- 
+1.7.9.5
+
