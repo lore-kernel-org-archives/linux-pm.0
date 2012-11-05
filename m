@@ -1,49 +1,42 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Mon,  5 Nov 2012 09:17:17 +0800
-Message-ID: <1352078237-20622-1-git-send-email-ying.huang@intel.com>
+From: Li Haifeng <omycle@gmail.com>
+Subject: [PATCH] Fixup compile error of try_to_freeze_nowarn
+Date: Mon, 5 Nov 2012 09:42:48 +0800
+Message-ID: <CAFNq8R651qOYWbmEsbHsG=oJScgTZRCN9naSQ1YVp5AdAmJBXw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:3440 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751147Ab2KEBRZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 4 Nov 2012 20:17:25 -0500
+Received: from mail-wg0-f42.google.com ([74.125.82.42]:58929 "EHLO
+	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751035Ab2KEBmu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Nov 2012 20:42:50 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Huang Ying <ying.huang@intel.com>
+To: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In current runtime PM implementation, the active child count of the
-parent device may be decreased if the runtime PM of the child device
-is disabled and forbidden.  For example, to unbind a PCI driver with a
-PCI device, the following code path is possible:
+Subject: [PATCH] Fixup compile error of try_to_freeze_nowarn
 
-  pci_device_remove
-    pm_runtime_set_suspended
-      __pm_runtime_set_status
-        atomic_add_unless(&parent->power.child_count, -1, 0)
+If FREEZER is not defined, the error as following will be throw
+when compiled.
+arch/arm/kernel/signal.c:645: error: implicit declaration of function
+'try_to_freeze_nowarn'
 
-That is, the parent device may be suspended, even if the runtime PM of
-child device is forbidden to be suspended.  This violate the rule that
-parent is allowed to be suspended only after all its children are
-suspended, and may cause issue.
-
-This issue is fixed via checking the usage count of the child device
-because if the runtime PM of the child device is forbidden, the
-usage_count of the child device will be non-zero.
-
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+Signed-off-by: Haifeng Li <omycle@gmail.com>
 ---
- drivers/base/power/runtime.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/freezer.h |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -916,7 +916,7 @@ int __pm_runtime_set_status(struct devic
- 
- 	if (status == RPM_SUSPENDED) {
- 		/* It always is possible to set the status to 'suspended'. */
--		if (parent) {
-+		if (parent && atomic_read(&dev->power.usage_count) == 0) {
- 			atomic_add_unless(&parent->power.child_count, -1, 0);
- 			notify_parent = !parent->power.ignore_children;
- 		}
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index a628084..3c0c1fb 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -188,6 +188,7 @@ static inline int freeze_kernel_threads(void) {
+return -ENOSYS; }
+ static inline void thaw_processes(void) {}
+ static inline void thaw_kernel_threads(void) {}
+
++static inline bool try_to_freeze_nowarn(void) { return false; }
+ static inline bool try_to_freeze(void) { return false; }
+
+ static inline void freezer_do_not_count(void) {}
+--
+1.7.9.5
