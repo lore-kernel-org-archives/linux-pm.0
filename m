@@ -1,124 +1,24 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH 8/8] mm: Print memory region statistics to understand the
- buddy allocator behavior
-Date: Wed, 07 Nov 2012 01:24:32 +0530
-Message-ID: <20121106195428.6941.92699.stgit@srivatsabhat.in.ibm.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: akpm@linux-foundation.org, mgorman@suse.de, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, dave@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl
-Cc: gargankita@gmail.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 0/6 v3] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Tue,  6 Nov 2012 14:18:02 -0600
+Message-ID: <1352233089-22586-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:58339 "EHLO
+	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752584Ab2KFUSQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Nov 2012 15:18:16 -0500
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, mark.langsdorf@calxeda.com
 
-In order to observe the behavior of the region-aware buddy allocator, modify
-vmstat.c to also print memory region related statistics. In particular, enable
-memory region-related info in /proc/zoneinfo and /proc/buddyinfo, since they
-would help us to atleast (roughly) see how the new buddy allocator is
-performing.
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The driver is based on the 
+cpufreq-cpu0 driver. Because of the unique way that 
+highbank uses the EnergyCore Management Engine to manage
+voltages, it was not possible to use the cpufreq-cpu0 driver.
 
-For now, the region statistics correspond to the zone memory regions and not
-the (absolute) node memory regions, and some of the statistics (especially the
-no. of present pages) might not be very accurate. But since we account for
-and print the free page statistics for every zone memory region accurately, we
-should be able to observe the new page allocator behavior to a reasonable
-degree of accuracy.
+--Mark Langsdorf
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
 
- mm/vmstat.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 53 insertions(+), 4 deletions(-)
-
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 8183331..cbcd373 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -812,11 +812,31 @@ const char * const vmstat_text[] = {
- static void frag_show_print(struct seq_file *m, pg_data_t *pgdat,
- 						struct zone *zone)
- {
--	int order;
-+	int i, order, t;
-+	struct free_area *area;
- 
--	seq_printf(m, "Node %d, zone %8s ", pgdat->node_id, zone->name);
--	for (order = 0; order < MAX_ORDER; ++order)
--		seq_printf(m, "%6lu ", zone->free_area[order].nr_free);
-+	seq_printf(m, "Node %d, zone %8s \n", pgdat->node_id, zone->name);
-+
-+	for (i = 0; i < zone->nr_zone_regions; i++) {
-+
-+		seq_printf(m, "\t\t Region %d ", i);
-+
-+		for (order = 0; order < MAX_ORDER; ++order) {
-+			unsigned long nr_free = 0;
-+
-+			area = &zone->free_area[order];
-+
-+			for (t = 0; t < MIGRATE_TYPES; t++) {
-+				if (t == MIGRATE_ISOLATE ||
-+					t == MIGRATE_RESERVE)
-+					continue;
-+				nr_free +=
-+					area->free_list[t].mr_list[i].nr_free;
-+			}
-+			seq_printf(m, "%6lu ", nr_free);
-+		}
-+		seq_putc(m, '\n');
-+	}
- 	seq_putc(m, '\n');
- }
- 
-@@ -984,6 +1004,8 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
- 							struct zone *zone)
- {
- 	int i;
-+	unsigned long zone_nr_free = 0;
-+
- 	seq_printf(m, "Node %d, zone %8s", pgdat->node_id, zone->name);
- 	seq_printf(m,
- 		   "\n  pages free     %lu"
-@@ -1001,6 +1023,33 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
- 		   zone->spanned_pages,
- 		   zone->present_pages);
- 
-+	for (i = 0; i < zone->nr_zone_regions; i++) {
-+		int order, t;
-+		unsigned long nr_free = 0;
-+		struct free_area *area = zone->free_area;
-+
-+		for_each_migratetype_order(order, t) {
-+			if (t == MIGRATE_ISOLATE || t == MIGRATE_RESERVE)
-+				continue;
-+			nr_free +=
-+				area[order].free_list[t].mr_list[i].nr_free
-+				* (1UL << order);
-+		}
-+		seq_printf(m, "\n\nZone mem region %d", i);
-+		seq_printf(m,
-+			   "\n  pages spanned	%lu"
-+			   "\n        present	%lu"
-+			   "\n        free	%lu",
-+			   zone->zone_mem_region[i].spanned_pages,
-+			   zone->zone_mem_region[i].present_pages,
-+			   nr_free);
-+	}
-+
-+	for (i = 0; i < MAX_ORDER; i++)
-+		zone_nr_free += zone->free_area[i].nr_free * (1UL << i);
-+
-+	seq_printf(m, "\nZone pages nr_free  %lu\n", zone_nr_free);
-+
- 	for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
- 		seq_printf(m, "\n    %-12s %lu", vmstat_text[i],
- 				zone_page_state(zone, i));
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
