@@ -1,72 +1,80 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH RESEND] ACPI/PCI: Make PCI devices notified when its power
- resource turned on
-Date: Mon, 5 Nov 2012 17:02:52 -0700
-Message-ID: <CAErSpo5zZdxeUFtsKjfb+FcLvAWD-MBorSwTppge9HQ5GCL7_g@mail.gmail.com>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH RESEND] ACPI/PCI: Make PCI devices notified when its
+ power resource turned on
+Date: Tue, 06 Nov 2012 08:33:11 +0800
+Message-ID: <1352161991.31033.122.camel@yhuang-dev>
 References: <1348667971-30876-1-git-send-email-ying.huang@intel.com>
+	 <CAErSpo5zZdxeUFtsKjfb+FcLvAWD-MBorSwTppge9HQ5GCL7_g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1348667971-30876-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo5zZdxeUFtsKjfb+FcLvAWD-MBorSwTppge9HQ5GCL7_g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 26, 2012 at 7:59 AM, Huang Ying <ying.huang@intel.com> wrote:
-> Sorry for bothering.  It appears that this patch should go through ACPI
-> tree because code changed are under drivers/acpi.
->
-> A set of power resources may be shared by multiple devices.  When all
-> devices share one set of power resources is put into D3_COLD state,
-> the power resources will be turned off.  When one of the device is
-> waked, the power resource will be turned on and all devices share it
-> will be powered on to D0uninitialized state.  These devices should be
-> resumed, so that they can get opportunity to go to low power state
-> later.
->
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
+On Mon, 2012-11-05 at 17:02 -0700, Bjorn Helgaas wrote:
+> On Wed, Sep 26, 2012 at 7:59 AM, Huang Ying <ying.huang@intel.com> wrote:
+> > Sorry for bothering.  It appears that this patch should go through ACPI
+> > tree because code changed are under drivers/acpi.
+> >
+> > A set of power resources may be shared by multiple devices.  When all
+> > devices share one set of power resources is put into D3_COLD state,
+> > the power resources will be turned off.  When one of the device is
+> > waked, the power resource will be turned on and all devices share it
+> > will be powered on to D0uninitialized state.  These devices should be
+> > resumed, so that they can get opportunity to go to low power state
+> > later.
+> >
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Bjorn Helgaas <bhelgaas@google.com>
+> 
+> I had applied this to my for-linus branch, headed for v3.7, but had to
+> drop it because it introduced these warnings:
+> 
+> drivers/acpi/pci_bind.c: In function 'acpi_pci_unbind':
+> drivers/acpi/pci_bind.c:48:2: warning: passing argument 1 of
+> 'acpi_power_resource_unregister_device' from incompatible pointer type
+> [enabled by default]
+> include/acpi/acpi_bus.h:346:6: note: expected 'struct device *' but
+> argument is of type 'struct pci_dev *'
+> drivers/acpi/pci_bind.c: In function 'acpi_pci_bind':
+> drivers/acpi/pci_bind.c:75:2: warning: passing argument 1 of
+> 'acpi_power_resource_register_device' from incompatible pointer type
+> [enabled by default]
+> include/acpi/acpi_bus.h:345:5: note: expected 'struct device *' but
+> argument is of type 'struct pci_dev *'
+> 
+> Apparently this wasn't tested :-(
 
-I had applied this to my for-linus branch, headed for v3.7, but had to
-drop it because it introduced these warnings:
+It's my fault.  I apologize for that.  It appear that I turn a RFC to
+PATCH without testing.  Will be more careful for next time.
 
-drivers/acpi/pci_bind.c: In function 'acpi_pci_unbind':
-drivers/acpi/pci_bind.c:48:2: warning: passing argument 1 of
-'acpi_power_resource_unregister_device' from incompatible pointer type
-[enabled by default]
-include/acpi/acpi_bus.h:346:6: note: expected 'struct device *' but
-argument is of type 'struct pci_dev *'
-drivers/acpi/pci_bind.c: In function 'acpi_pci_bind':
-drivers/acpi/pci_bind.c:75:2: warning: passing argument 1 of
-'acpi_power_resource_register_device' from incompatible pointer type
-[enabled by default]
-include/acpi/acpi_bus.h:345:5: note: expected 'struct device *' but
-argument is of type 'struct pci_dev *'
+Best Regards,
+Huang Ying
 
-Apparently this wasn't tested :-(
-
-
-> ---
->  drivers/acpi/pci_bind.c |    2 ++
->  1 file changed, 2 insertions(+)
->
-> --- a/drivers/acpi/pci_bind.c
-> +++ b/drivers/acpi/pci_bind.c
-> @@ -45,6 +45,7 @@ static int acpi_pci_unbind(struct acpi_d
->
->         device_set_run_wake(&dev->dev, false);
->         pci_acpi_remove_pm_notifier(device);
-> +       acpi_power_resource_unregister_device(dev, device->handle);
->
->         if (!dev->subordinate)
->                 goto out;
-> @@ -71,6 +72,7 @@ static int acpi_pci_bind(struct acpi_dev
->                 return 0;
->
->         pci_acpi_add_pm_notifier(device, dev);
-> +       acpi_power_resource_register_device(dev, device->handle);
->         if (device->wakeup.flags.run_wake)
->                 device_set_run_wake(&dev->dev, true);
->
+> > ---
+> >  drivers/acpi/pci_bind.c |    2 ++
+> >  1 file changed, 2 insertions(+)
+> >
+> > --- a/drivers/acpi/pci_bind.c
+> > +++ b/drivers/acpi/pci_bind.c
+> > @@ -45,6 +45,7 @@ static int acpi_pci_unbind(struct acpi_d
+> >
+> >         device_set_run_wake(&dev->dev, false);
+> >         pci_acpi_remove_pm_notifier(device);
+> > +       acpi_power_resource_unregister_device(dev, device->handle);
+> >
+> >         if (!dev->subordinate)
+> >                 goto out;
+> > @@ -71,6 +72,7 @@ static int acpi_pci_bind(struct acpi_dev
+> >                 return 0;
+> >
+> >         pci_acpi_add_pm_notifier(device, dev);
+> > +       acpi_power_resource_register_device(dev, device->handle);
+> >         if (device->wakeup.flags.run_wake)
+> >                 device_set_run_wake(&dev->dev, true);
+> >
