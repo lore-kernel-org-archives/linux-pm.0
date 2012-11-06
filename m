@@ -1,80 +1,69 @@
 From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [PATCH RESEND] ACPI/PCI: Make PCI devices notified when its
- power resource turned on
-Date: Tue, 06 Nov 2012 08:33:11 +0800
-Message-ID: <1352161991.31033.122.camel@yhuang-dev>
-References: <1348667971-30876-1-git-send-email-ying.huang@intel.com>
-	 <CAErSpo5zZdxeUFtsKjfb+FcLvAWD-MBorSwTppge9HQ5GCL7_g@mail.gmail.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Tue, 06 Nov 2012 08:43:45 +0800
+Message-ID: <1352162625.31033.127.camel@yhuang-dev>
+References: <Pine.LNX.4.44L0.1211042049440.6022-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo5zZdxeUFtsKjfb+FcLvAWD-MBorSwTppge9HQ5GCL7_g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:16587 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932165Ab2KFAoG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 Nov 2012 19:44:06 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211042049440.6022-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, 2012-11-05 at 17:02 -0700, Bjorn Helgaas wrote:
-> On Wed, Sep 26, 2012 at 7:59 AM, Huang Ying <ying.huang@intel.com> wrote:
-> > Sorry for bothering.  It appears that this patch should go through ACPI
-> > tree because code changed are under drivers/acpi.
-> >
-> > A set of power resources may be shared by multiple devices.  When all
-> > devices share one set of power resources is put into D3_COLD state,
-> > the power resources will be turned off.  When one of the device is
-> > waked, the power resource will be turned on and all devices share it
-> > will be powered on to D0uninitialized state.  These devices should be
-> > resumed, so that they can get opportunity to go to low power state
-> > later.
-> >
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> > Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Bjorn Helgaas <bhelgaas@google.com>
+On Sun, 2012-11-04 at 20:56 -0500, Alan Stern wrote:
+> On Mon, 5 Nov 2012, Huang Ying wrote:
 > 
-> I had applied this to my for-linus branch, headed for v3.7, but had to
-> drop it because it introduced these warnings:
+> > In current runtime PM implementation, the active child count of the
+> > parent device may be decreased if the runtime PM of the child device
+> > is disabled and forbidden.  For example, to unbind a PCI driver with a
+> > PCI device, the following code path is possible:
+> > 
+> >   pci_device_remove
+> >     pm_runtime_set_suspended
+> >       __pm_runtime_set_status
+> >         atomic_add_unless(&parent->power.child_count, -1, 0)
+> > 
+> > That is, the parent device may be suspended, even if the runtime PM of
+> > child device is forbidden to be suspended.  This violate the rule that
+> > parent is allowed to be suspended only after all its children are
+> > suspended, and may cause issue.
 > 
-> drivers/acpi/pci_bind.c: In function 'acpi_pci_unbind':
-> drivers/acpi/pci_bind.c:48:2: warning: passing argument 1 of
-> 'acpi_power_resource_unregister_device' from incompatible pointer type
-> [enabled by default]
-> include/acpi/acpi_bus.h:346:6: note: expected 'struct device *' but
-> argument is of type 'struct pci_dev *'
-> drivers/acpi/pci_bind.c: In function 'acpi_pci_bind':
-> drivers/acpi/pci_bind.c:75:2: warning: passing argument 1 of
-> 'acpi_power_resource_register_device' from incompatible pointer type
-> [enabled by default]
-> include/acpi/acpi_bus.h:345:5: note: expected 'struct device *' but
-> argument is of type 'struct pci_dev *'
+> This doesn't sound like a correct description of the situation.  The 
+> rule is not violated.  After pm_runtime_set_suspended runs, the child 
+> _is_ suspended.  Thus there's no reason not to allow the parent to be 
+> suspended.
 > 
-> Apparently this wasn't tested :-(
+> The problem -- if there really is one -- is that a driver can put a 
+> device into the suspended state by calling pm_runtime_disable followed 
+> by pm_runtime_set_suspended, even if the usage count is > 0.
+> 
+> I'm not so sure this should count as a problem.  Generally devices 
+> aren't disabled for runtime PM unless something is wrong.
 
-It's my fault.  I apologize for that.  It appear that I turn a RFC to
-PATCH without testing.  Will be more careful for next time.
+Devices will be disabled if the PCI driver is unbound from the PCI
+device.
+
+So I think the rule could be: even if the device is suspended, the
+device can be put into suspended state only if its usage count == 0.  In
+this way, we can solve the issue for PCI driver unbound and that looks
+more reasonable.
 
 Best Regards,
 Huang Ying
 
-> > ---
-> >  drivers/acpi/pci_bind.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > --- a/drivers/acpi/pci_bind.c
-> > +++ b/drivers/acpi/pci_bind.c
-> > @@ -45,6 +45,7 @@ static int acpi_pci_unbind(struct acpi_d
-> >
-> >         device_set_run_wake(&dev->dev, false);
-> >         pci_acpi_remove_pm_notifier(device);
-> > +       acpi_power_resource_unregister_device(dev, device->handle);
-> >
-> >         if (!dev->subordinate)
-> >                 goto out;
-> > @@ -71,6 +72,7 @@ static int acpi_pci_bind(struct acpi_dev
-> >                 return 0;
-> >
-> >         pci_acpi_add_pm_notifier(device, dev);
-> > +       acpi_power_resource_register_device(dev, device->handle);
-> >         if (device->wakeup.flags.run_wake)
-> >                 device_set_run_wake(&dev->dev, true);
-> >
+>   Under those 
+> circumstances, the meaning of pm_runtime_forbid isn't very well 
+> defined.
+> 
+> Alan Stern
+> 
+
+
