@@ -1,7 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH 3/8] mm: Introduce and initialize zone memory regions
-Date: Wed, 07 Nov 2012 01:23:02 +0530
-Message-ID: <20121106195256.6941.69079.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH 4/8] mm: Add helpers to retrieve node region and zone
+ region for a given page
+Date: Wed, 07 Nov 2012 01:23:19 +0530
+Message-ID: <20121106195310.6941.91123.stgit@srivatsabhat.in.ibm.com>
 References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -13,14 +14,19 @@ To: akpm@linux-foundation.org, mgorman@suse.de, mjg59@srcf.ucam.org, paulmck@lin
 Cc: gargankita@gmail.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Memory region boundaries don't necessarily fit on zone boundaries. So we need
-to maintain a zone-level mapping of the absolute memory region boundaries.
+Given a page, we would like to have an efficient mechanism to find out
+the node memory region and the zone memory region to which it belongs.
 
-"Node Memory Regions" will be used to capture the absolute region boundaries.
-Add "Zone Memory Regions" to track the subsets of the absolute memory regions
-that fall within the zone boundaries.
+Since the node is assumed to be divided into equal-sized node memory
+regions, the node memory region index can be obtained by simply right-shifting
+the page's pfn by 'mem_region_shift'.
 
-Eg:
+But finding the corresponding zone memory region's index in the zone is
+not that straight-forward. To have a O(1) algorithm to find it out, define a
+zone_region_idx[] array to store the zone memory region indices for every
+node memory region.
+
+To illustrate, consider the following example:
 
 	|<---------------------Node---------------------->|
 	 _________________________________________________
@@ -34,106 +40,98 @@ Eg:
 
 In the above figure,
 
-ZONE_DMA has only 1 zone memory region (say, Zone mem reg 0) which is a subset
-of Node mem reg 0.
+Node mem region 0:
+------------------
+This region corresponds to the first zone mem region in ZONE_DMA and also
+the first zone mem region in ZONE_NORMAL. Hence its index array would look
+like this:
+    node_regions[0].zone_region_idx[ZONE_DMA]     == 0
+    node_regions[0].zone_region_idx[ZONE_NORMAL]  == 0
 
-ZONE_NORMAL has 2 zone memory regions (say, Zone mem reg 0 and Zone mem reg 1)
-which are subsets of Node mem reg 0 and Node mem reg 1 respectively.
+
+Node mem region 1:
+------------------
+This region corresponds to the second zone mem region in ZONE_NORMAL. Hence
+its index array would look like this:
+    node_regions[1].zone_region_idx[ZONE_NORMAL]  == 1
+
+
+Using this index array, we can quickly obtain the zone memory region to
+which a given page belongs.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- include/linux/mmzone.h |    9 +++++++++
- mm/page_alloc.c        |   42 +++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 50 insertions(+), 1 deletion(-)
+ include/linux/mm.h     |   23 +++++++++++++++++++++++
+ include/linux/mmzone.h |    7 +++++++
+ mm/page_alloc.c        |    2 ++
+ 3 files changed, 32 insertions(+)
 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 19c4fb0..a817b16 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -702,6 +702,29 @@ static inline struct zone *page_zone(const struct page *page)
+ 	return &NODE_DATA(page_to_nid(page))->node_zones[page_zonenum(page)];
+ }
+ 
++static inline int page_node_region_id(const struct page *page)
++{
++	return page_to_pfn(page) >> MEM_REGION_SHIFT;
++}
++
++/**
++ * Return the index of the region to which the page belongs, within its zone.
++ *
++ * Given a page, find the absolute (node) region as well as the zone to which
++ * it belongs. Then find the region within the zone that corresponds to that
++ * absolute (node) region, and return its index.
++ */
++static inline int page_zone_region_id(const struct page *page)
++{
++	pg_data_t *pgdat = NODE_DATA(page_to_nid(page));
++	enum zone_type z_num = page_zonenum(page);
++	unsigned long node_region_idx;
++
++	node_region_idx = page_node_region_id(page);
++
++	return pgdat->node_regions[node_region_idx].zone_region_idx[z_num];
++}
++
+ #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+ static inline void set_page_section(struct page *page, unsigned long section)
+ {
 diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index bb7c3ef..9f923aa 100644
+index 9f923aa..3982354 100644
 --- a/include/linux/mmzone.h
 +++ b/include/linux/mmzone.h
-@@ -339,6 +339,12 @@ struct node_mem_region {
+@@ -336,6 +336,13 @@ struct node_mem_region {
+ 	unsigned long spanned_pages;
+ 	int idx;
+ 	int node;
++
++	/*
++	 * A physical (node) region could be split across multiple zones.
++	 * Store the indices of the corresponding regions of each such
++	 * zone for this physical (node) region.
++	 */
++	int zone_region_idx[MAX_NR_ZONES];
  	struct pglist_data *pgdat;
  };
  
-+struct zone_mem_region {
-+	unsigned long start_pfn;
-+	unsigned long spanned_pages;
-+	unsigned long present_pages;
-+};
-+
- struct zone {
- 	/* Fields commonly accessed by the page allocator */
- 
-@@ -403,6 +409,9 @@ struct zone {
- #endif
- 	struct free_area	free_area[MAX_ORDER];
- 
-+	struct zone_mem_region	zone_mem_region[MAX_NR_REGIONS];
-+	int 			nr_zone_regions;
-+
- #ifndef CONFIG_SPARSEMEM
- 	/*
- 	 * Flags for a pageblock_nr_pages block. See pageblock-flags.h.
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 709e3c1..c00f72d 100644
+index c00f72d..7fd89cd 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -4594,6 +4594,46 @@ void init_node_memory_regions(struct pglist_data *pgdat)
- 	}
- }
+@@ -4621,6 +4621,8 @@ void init_zone_memory_regions(struct pglist_data *pgdat)
+ 						         end_pfn);
+ 			z->zone_mem_region[idx].present_pages =
+ 						end_pfn - start_pfn - absent;
++
++			region->zone_region_idx[zone_idx(z)] = idx;
+ 			idx++;
+ 		}
  
-+void init_zone_memory_regions(struct pglist_data *pgdat)
-+{
-+	unsigned long start_pfn, end_pfn, absent;
-+	int i, j, idx, nid = pgdat->node_id;
-+	struct node_mem_region *region;
-+	struct zone *z;
-+
-+	for (i = 0; i < pgdat->nr_zones; i++) {
-+		z = &pgdat->node_zones[i];
-+		idx = 0;
-+
-+		for (j = 0; j < pgdat->nr_node_regions; j++) {
-+			region = &pgdat->node_regions[j];
-+			start_pfn = max(z->zone_start_pfn, region->start_pfn);
-+			end_pfn = min(z->zone_start_pfn + z->spanned_pages,
-+				      region->start_pfn + region->spanned_pages);
-+
-+			if (start_pfn >= end_pfn)
-+				continue;
-+
-+			z->zone_mem_region[idx].start_pfn = start_pfn;
-+			z->zone_mem_region[idx].spanned_pages = end_pfn - start_pfn;
-+
-+			absent = __absent_pages_in_range(nid, start_pfn,
-+						         end_pfn);
-+			z->zone_mem_region[idx].present_pages =
-+						end_pfn - start_pfn - absent;
-+			idx++;
-+		}
-+
-+		z->nr_zone_regions = idx;
-+	}
-+}
-+
-+void init_memory_regions(struct pglist_data *pgdat)
-+{
-+	init_node_memory_regions(pgdat);
-+	init_zone_memory_regions(pgdat);
-+}
-+
- void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
- 		unsigned long node_start_pfn, unsigned long *zholes_size)
- {
-@@ -4615,7 +4655,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
- #endif
- 
- 	free_area_init_core(pgdat, zones_size, zholes_size);
--	init_node_memory_regions(pgdat);
-+	init_memory_regions(pgdat);
- }
- 
- #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
