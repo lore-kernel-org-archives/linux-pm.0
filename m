@@ -1,48 +1,84 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4 3/6] block/genhd.c: apply
- pm_runtime_set_memalloc_noio on block devices
-Date: Tue, 6 Nov 2012 15:24:27 -0800
-Message-ID: <20121106152427.dfde4c52.akpm@linux-foundation.org>
-References: <1351931714-11689-1-git-send-email-ming.lei@canonical.com>
-	<1351931714-11689-4-git-send-email-ming.lei@canonical.com>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Wed, 07 Nov 2012 08:26:46 +0800
+Message-ID: <1352248006.31033.192.camel@yhuang-dev>
+References: <Pine.LNX.4.44L0.1211061010390.1430-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1351931714-11689-4-git-send-email-ming.lei@canonical.com>
-Sender: owner-linux-mm@kvack.org
-To: Ming Lei <ming.lei@canonical.com>
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:50730 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619Ab2KGA0s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 6 Nov 2012 19:26:48 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211061010390.1430-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat,  3 Nov 2012 16:35:11 +0800
-Ming Lei <ming.lei@canonical.com> wrote:
-
-> This patch applyes the introduced pm_runtime_set_memalloc_noio on
-> block device so that PM core will teach mm to not allocate memory with
-> GFP_IOFS when calling the runtime_resume and runtime_suspend callback
-> for block devices and its ancestors.
+On Tue, 2012-11-06 at 10:17 -0500, Alan Stern wrote:
+> On Tue, 6 Nov 2012, Huang Ying wrote:
 > 
-> ...
->
-> @@ -532,6 +533,13 @@ static void register_disk(struct gendisk *disk)
->  			return;
->  		}
->  	}
-> +
-> +	/* avoid probable deadlock caused by allocating memory with
+> > On Sun, 2012-11-04 at 20:56 -0500, Alan Stern wrote:
+> > > On Mon, 5 Nov 2012, Huang Ying wrote:
+> > > 
+> > > > In current runtime PM implementation, the active child count of the
+> > > > parent device may be decreased if the runtime PM of the child device
+> > > > is disabled and forbidden.  For example, to unbind a PCI driver with a
+> > > > PCI device, the following code path is possible:
+> > > > 
+> > > >   pci_device_remove
+> > > >     pm_runtime_set_suspended
+> > > >       __pm_runtime_set_status
+> > > >         atomic_add_unless(&parent->power.child_count, -1, 0)
+> > > > 
+> > > > That is, the parent device may be suspended, even if the runtime PM of
+> > > > child device is forbidden to be suspended.  This violate the rule that
+> > > > parent is allowed to be suspended only after all its children are
+> > > > suspended, and may cause issue.
+> > > 
+> > > This doesn't sound like a correct description of the situation.  The 
+> > > rule is not violated.  After pm_runtime_set_suspended runs, the child 
+> > > _is_ suspended.  Thus there's no reason not to allow the parent to be 
+> > > suspended.
+> > > 
+> > > The problem -- if there really is one -- is that a driver can put a 
+> > > device into the suspended state by calling pm_runtime_disable followed 
+> > > by pm_runtime_set_suspended, even if the usage count is > 0.
+> > > 
+> > > I'm not so sure this should count as a problem.  Generally devices 
+> > > aren't disabled for runtime PM unless something is wrong.
+> > 
+> > Devices will be disabled if the PCI driver is unbound from the PCI
+> > device.
+> 
+> Yes.  But without a PCI driver, nothing will call 
+> pm_runtime_set_suspended.
 
-Again, please fix the comment style.  Take a look at the rest of this file!
+pm_runtime_set_suspended will be called in pci_device_remove or error
+path of local_pci_probe.
 
-> +	 * GFP_KERNEL in runtime_resume callback of its all ancestor
-> +	 * deivces
+>   And even if something does call 
+> pm_runtime_set_suspended, it's still not a problem -- the device can't 
+> be used without a driver.
 
-typo
+The VGA device can be used without a driver.
 
-> +	 */
+Best Regards,
+Huang Ying
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+> > So I think the rule could be: even if the device is suspended, the
+> > device can be put into suspended state only if its usage count == 0.  In
+> > this way, we can solve the issue for PCI driver unbound and that looks
+> > more reasonable.
+> 
+> You still have not shown that there really is a problem.  Do you have 
+> any particular use case in mind?
+> 
+> Alan Stern
+> 
+
+
