@@ -1,97 +1,58 @@
-From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: [PATCH 1/9 v2] cgroup: add cgroup_subsys->post_create()
-Date: Wed, 7 Nov 2012 09:15:08 -0800
-Message-ID: <20121107171508.GF2660@mtj.dyndns.org>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
-	<1351931915-1701-2-git-send-email-tj@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Wed, 7 Nov 2012 12:17:02 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211071214190.1175-100000@iolanthe.rowland.org>
+References: <2385996.Tx2Do9TUNJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1351931915-1701-2-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
-List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:59572 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752507Ab2KGRRD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Nov 2012 12:17:03 -0500
+In-Reply-To: <2385996.Tx2Do9TUNJ@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Currently, there's no way for a controller to find out whether a new
-cgroup finished all ->create() allocatinos successfully and is
-considered "live" by cgroup.
+On Wed, 7 Nov 2012, Rafael J. Wysocki wrote:
 
-This becomes a problem later when we add generic descendants walking
-to cgroup which can be used by controllers as controllers don't have a
-synchronization point where it can synchronize against new cgroups
-appearing in such walks.
+> > The PCI subsystem assumes that 
+> > driverless devices are not in use, so they are disabled for runtime PM 
+> > and marked as suspended.  This is not appropriate for VGA devices, 
+> > which can indeed be used without a driver.
+> > 
+> > I'm not sure what the best solution is.  Maybe we should Ying's 
+> > proposal a step farther:
+> > 
+> > 	Make pm_runtime_set_suspended() fail if runtime PM is 
+> > 	forbidden.
+> >
+> > 	Make pm_runtime_forbid() call pm_runtime_set_active()
+> > 	(and do a runtime resume of the parent) if disable_depth > 0.
+> 
+> I'd prefer this one.
 
-This patch adds ->post_create().  It's called after all ->create()
-succeeded and the cgroup is linked into the generic cgroup hierarchy.
-This plays the counterpart of ->pre_destroy().
+That wasn't meant to be a choice.  The first item is close to what the 
+original patch did; I was suggesting that we should adopt all three 
+items.
 
-When used in combination with the to-be-added generic descendant
-iterators, ->post_create() can be used to implement reliable state
-inheritance.  It will be explained with the descendant iterators.
+If you adopt the second item but not the first then things won't work 
+when a driver is removed after power/control is set to "on".
 
-v2: Added a paragraph about its future use w/ descendant iterators per
-    Michal.
+>  The callers of pm_runtime_forbid() may actually
+> reasonably expect something like this to happen.
+> 
+> > 	Make the PCI runtime-idle routine call 
+> > 	pm_runtime_set_suspended() if disable_depth > 0.  Or maybe
+> > 	do this for all devices, in the runtime PM core.
+> 
+> That would mean calling it on every call to pm_runtime_put() and friends
+> which seems to be a bit wasteful.
 
-Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Acked-by: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
-Cc: Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
----
-If you can explain it better, please be my guest.
+Not on every call; only when disable_depth > 0.  We don't expect to see 
+idle calls very often under those circumstances.
 
-Thanks.
+Alan Stern
 
- include/linux/cgroup.h |    1 +
- kernel/cgroup.c        |   12 ++++++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
-
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -438,6 +438,7 @@ int cgroup_taskset_size(struct cgroup_ta
- 
- struct cgroup_subsys {
- 	struct cgroup_subsys_state *(*create)(struct cgroup *cgrp);
-+	void (*post_create)(struct cgroup *cgrp);
- 	void (*pre_destroy)(struct cgroup *cgrp);
- 	void (*destroy)(struct cgroup *cgrp);
- 	int (*can_attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -4060,10 +4060,15 @@ static long cgroup_create(struct cgroup
- 	if (err < 0)
- 		goto err_remove;
- 
--	/* each css holds a ref to the cgroup's dentry */
--	for_each_subsys(root, ss)
-+	for_each_subsys(root, ss) {
-+		/* each css holds a ref to the cgroup's dentry */
- 		dget(dentry);
- 
-+		/* creation succeeded, notify subsystems */
-+		if (ss->post_create)
-+			ss->post_create(cgrp);
-+	}
-+
- 	/* The cgroup directory was pre-locked for us */
- 	BUG_ON(!mutex_is_locked(&cgrp->dentry->d_inode->i_mutex));
- 
-@@ -4281,6 +4286,9 @@ static void __init cgroup_init_subsys(st
- 
- 	ss->active = 1;
- 
-+	if (ss->post_create)
-+		ss->post_create(&ss->root->top_cgroup);
-+
- 	/* this function shouldn't be used with modular subsystems, since they
- 	 * need to register a subsys_id, among other things */
- 	BUG_ON(ss->module);
