@@ -1,84 +1,47 @@
 From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
- forbidden
-Date: Wed, 07 Nov 2012 08:26:46 +0800
-Message-ID: <1352248006.31033.192.camel@yhuang-dev>
-References: <Pine.LNX.4.44L0.1211061010390.1430-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:50730 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619Ab2KGA0s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 Nov 2012 19:26:48 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211061010390.1430-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH -v2] ACPI/PCI: Make PCI devices notified when its power resource turned on
+Date: Wed,  7 Nov 2012 08:57:59 +0800
+Message-ID: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Huang Ying <ying.huang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 2012-11-06 at 10:17 -0500, Alan Stern wrote:
-> On Tue, 6 Nov 2012, Huang Ying wrote:
-> 
-> > On Sun, 2012-11-04 at 20:56 -0500, Alan Stern wrote:
-> > > On Mon, 5 Nov 2012, Huang Ying wrote:
-> > > 
-> > > > In current runtime PM implementation, the active child count of the
-> > > > parent device may be decreased if the runtime PM of the child device
-> > > > is disabled and forbidden.  For example, to unbind a PCI driver with a
-> > > > PCI device, the following code path is possible:
-> > > > 
-> > > >   pci_device_remove
-> > > >     pm_runtime_set_suspended
-> > > >       __pm_runtime_set_status
-> > > >         atomic_add_unless(&parent->power.child_count, -1, 0)
-> > > > 
-> > > > That is, the parent device may be suspended, even if the runtime PM of
-> > > > child device is forbidden to be suspended.  This violate the rule that
-> > > > parent is allowed to be suspended only after all its children are
-> > > > suspended, and may cause issue.
-> > > 
-> > > This doesn't sound like a correct description of the situation.  The 
-> > > rule is not violated.  After pm_runtime_set_suspended runs, the child 
-> > > _is_ suspended.  Thus there's no reason not to allow the parent to be 
-> > > suspended.
-> > > 
-> > > The problem -- if there really is one -- is that a driver can put a 
-> > > device into the suspended state by calling pm_runtime_disable followed 
-> > > by pm_runtime_set_suspended, even if the usage count is > 0.
-> > > 
-> > > I'm not so sure this should count as a problem.  Generally devices 
-> > > aren't disabled for runtime PM unless something is wrong.
-> > 
-> > Devices will be disabled if the PCI driver is unbound from the PCI
-> > device.
-> 
-> Yes.  But without a PCI driver, nothing will call 
-> pm_runtime_set_suspended.
+A set of power resources may be shared by multiple devices.  When all
+devices share one set of power resources is put into D3_COLD state,
+the power resources will be turned off.  When one of the device is
+waked, the power resource will be turned on and all devices share it
+will be powered on to D0uninitialized state.  These devices should be
+resumed, so that they can get opportunity to go to low power state
+later.
 
-pm_runtime_set_suspended will be called in pci_device_remove or error
-path of local_pci_probe.
+v2:
 
->   And even if something does call 
-> pm_runtime_set_suspended, it's still not a problem -- the device can't 
-> be used without a driver.
+- Fix build error
 
-The VGA device can be used without a driver.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+---
+ drivers/acpi/pci_bind.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Best Regards,
-Huang Ying
-
-
-> > So I think the rule could be: even if the device is suspended, the
-> > device can be put into suspended state only if its usage count == 0.  In
-> > this way, we can solve the issue for PCI driver unbound and that looks
-> > more reasonable.
-> 
-> You still have not shown that there really is a problem.  Do you have 
-> any particular use case in mind?
-> 
-> Alan Stern
-> 
-
-
+--- a/drivers/acpi/pci_bind.c
++++ b/drivers/acpi/pci_bind.c
+@@ -45,6 +45,7 @@ static int acpi_pci_unbind(struct acpi_d
+ 
+ 	device_set_run_wake(&dev->dev, false);
+ 	pci_acpi_remove_pm_notifier(device);
++	acpi_power_resource_unregister_device(&dev->dev, device->handle);
+ 
+ 	if (!dev->subordinate)
+ 		goto out;
+@@ -71,6 +72,7 @@ static int acpi_pci_bind(struct acpi_dev
+ 		return 0;
+ 
+ 	pci_acpi_add_pm_notifier(device, dev);
++	acpi_power_resource_register_device(&dev->dev, device->handle);
+ 	if (device->wakeup.flags.run_wake)
+ 		device_set_run_wake(&dev->dev, true);
+ 
