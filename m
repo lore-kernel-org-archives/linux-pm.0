@@ -1,78 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Wed, 07 Nov 2012 17:09:16 +0100
-Message-ID: <2385996.Tx2Do9TUNJ@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1211071032070.1859-100000@iolanthe.rowland.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 9/9] cgroup_freezer: implement proper hierarchy support
+Date: Wed, 7 Nov 2012 08:31:44 -0800
+Message-ID: <20121107163144.GB2660@mtj.dyndns.org>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org>
+ <1351931915-1701-10-git-send-email-tj@kernel.org>
+ <20121107110024.GA4143@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:60662 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565Ab2KGQFF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Nov 2012 11:05:05 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211071032070.1859-100000@iolanthe.rowland.org>
+Received: from mail-da0-f46.google.com ([209.85.210.46]:47698 "EHLO
+	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732Ab2KGQbt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Nov 2012 11:31:49 -0500
+Content-Disposition: inline
+In-Reply-To: <20121107110024.GA4143@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: lizefan@huawei.com, rjw@sisk.pl, containers@lists.linux-foundation.org, cgroups@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, fweisbec@gmail.com
 
-On Wednesday, November 07, 2012 10:49:04 AM Alan Stern wrote:
-> On Wed, 7 Nov 2012, Huang Ying wrote:
+Hello, Michal.
+
+On Wed, Nov 07, 2012 at 12:00:57PM +0100, Michal Hocko wrote:
+> > +	 * Update all its descendants in pre-order traversal.  Each
+> > +	 * descendant will try to inherit its parent's FREEZING state as
+> > +	 * CGROUP_FREEZING_PARENT.
+> > +	 */
+> > +	rcu_read_lock();
+> > +	cgroup_for_each_descendant_pre(pos, freezer->css.cgroup) {
+> > +		struct freezer *pos_f = cgroup_freezer(pos);
+> > +		struct freezer *parent = parent_freezer(freezer);
 > 
-> > > > Devices will be disabled if the PCI driver is unbound from the PCI
-> > > > device.
-> > > 
-> > > Yes.  But without a PCI driver, nothing will call 
-> > > pm_runtime_set_suspended.
-> > 
-> > pm_runtime_set_suspended will be called in pci_device_remove or error
-> > path of local_pci_probe.
-> 
-> Yes, okay.  But that's what we want.  Unused, driverless PCI devices
-> shouldn't force their parents to remain at full power.
-> 
-> > >   And even if something does call 
-> > > pm_runtime_set_suspended, it's still not a problem -- the device can't 
-> > > be used without a driver.
-> > 
-> > The VGA device can be used without a driver.
-> 
-> Ah, right, that's your _real_ problem.  You should have mentioned this 
-> in the original Changelog for the patch.
-> 
-> Rafael, this does need to be fixed.
+> This doesn't seem right. Why are we interested in freezer->parent here
+> at all? We should either care about freezer->state & CGROUP_FREEZING or
+> parent = parent_freezer(pos_f), right?
 
-Yup.
+Yeap, that should have been parent_freezer(pos_f).  Argh...
 
-> The PCI subsystem assumes that 
-> driverless devices are not in use, so they are disabled for runtime PM 
-> and marked as suspended.  This is not appropriate for VGA devices, 
-> which can indeed be used without a driver.
-> 
-> I'm not sure what the best solution is.  Maybe we should Ying's 
-> proposal a step farther:
-> 
-> 	Make pm_runtime_set_suspended() fail if runtime PM is 
-> 	forbidden.
->
-> 	Make pm_runtime_forbid() call pm_runtime_set_active()
-> 	(and do a runtime resume of the parent) if disable_depth > 0.
-
-I'd prefer this one.  The callers of pm_runtime_forbid() may actually
-reasonably expect something like this to happen.
-
-> 	Make the PCI runtime-idle routine call 
-> 	pm_runtime_set_suspended() if disable_depth > 0.  Or maybe
-> 	do this for all devices, in the runtime PM core.
-
-That would mean calling it on every call to pm_runtime_put() and friends
-which seems to be a bit wasteful.
-
-Thanks,
-Rafael
-
+Thanks.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+tejun
