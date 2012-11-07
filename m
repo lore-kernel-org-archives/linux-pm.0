@@ -1,56 +1,56 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 6/8] mm: Demarcate and maintain pageblocks in region-order
- in the zones' freelists
-Date: Thu, 08 Nov 2012 01:45:32 +0530
-Message-ID: <509AC164.1050403@linux.vnet.ibm.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121106195342.6941.94892.stgit@srivatsabhat.in.ibm.com> <509985DE.8000508@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Wed, 07 Nov 2012 21:21:25 +0100
+Message-ID: <4585176.YTc0KTJLfO@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1211071214190.1175-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:42249 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752130Ab2KGUQq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Nov 2012 15:16:46 -0500
-Received: from /spool/local
-	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 8 Nov 2012 06:15:47 +1000
-In-Reply-To: <509985DE.8000508@linux.vnet.ibm.com>
+Received: from ogre.sisk.pl ([193.178.161.156]:32876 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752577Ab2KGURP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Nov 2012 15:17:15 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211071214190.1175-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 11/07/2012 03:19 AM, Dave Hansen wrote:
-> On 11/06/2012 11:53 AM, Srivatsa S. Bhat wrote:
->> This is the main change - we keep the pageblocks in region-sorted order,
->> where pageblocks belonging to region-0 come first, followed by those belonging
->> to region-1 and so on. But the pageblocks within a given region need *not* be
->> sorted, since we need them to be only region-sorted and not fully
->> address-sorted.
->>
->> This sorting is performed when adding pages back to the freelists, thus
->> avoiding any region-related overhead in the critical page allocation
->> paths.
+On Wednesday, November 07, 2012 12:17:02 PM Alan Stern wrote:
+> On Wed, 7 Nov 2012, Rafael J. Wysocki wrote:
 > 
-> It's probably _better_ to do it at free time than alloc, but it's still
-> pretty bad to be doing a linear walk over a potentially 256-entry array
-> holding the zone lock.  The overhead is going to show up somewhere.  How
-> does this do with a kernel compile?  Looks like exit() when a process
-> has a bunch of memory might get painful.
+> > > The PCI subsystem assumes that 
+> > > driverless devices are not in use, so they are disabled for runtime PM 
+> > > and marked as suspended.  This is not appropriate for VGA devices, 
+> > > which can indeed be used without a driver.
+> > > 
+> > > I'm not sure what the best solution is.  Maybe we should Ying's 
+> > > proposal a step farther:
+> > > 
+> > > 	Make pm_runtime_set_suspended() fail if runtime PM is 
+> > > 	forbidden.
+> > >
+> > > 	Make pm_runtime_forbid() call pm_runtime_set_active()
+> > > 	(and do a runtime resume of the parent) if disable_depth > 0.
+> > 
+> > I'd prefer this one.
 > 
+> That wasn't meant to be a choice.  The first item is close to what the 
+> original patch did; I was suggesting that we should adopt all three 
+> items.
 
-As I mentioned in the cover-letter, kernbench numbers haven't shown any
-observable performance degradation. On the contrary, (as unbelievable as it
-may sound), they actually indicate a slight performance *improvement* with my
-patchset! I'm trying to figure out what could be the reason behind that.
+OK, I need to think about this a bit more, then.
 
-Going forward, we could try to optimize the sorting logic in the free()
-part, but in any case, IMHO that's the right place to push the overhead to,
-since the performance of free() is not expected to be _that_ critical (unlike
-alloc()) for overall system performance.
+The problem seems to be that our initial assumption, ie. that driverless
+devices won't be in use, is not satisfied in the relevant case.  It may
+not be satisfied in more cases like this, I suppose, but so far we  don't
+really know.
 
-Regards,
-Srivatsa S. Bhat
+Thanks,
+Rafael
 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
