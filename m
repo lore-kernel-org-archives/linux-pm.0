@@ -1,46 +1,63 @@
-From: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
-Subject: Re: [PATCH 3/9] cgroup: implement generic child / descendant walk
- macros
-Date: Wed, 7 Nov 2012 16:38:35 +0100
-Message-ID: <20121107153835.GC4131@dhcp22.suse.cz>
-References: <1351931915-1701-4-git-send-email-tj@kernel.org>
- <20121106203154.GV30069@mtj.dyndns.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Wed, 7 Nov 2012 10:49:04 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211071032070.1859-100000@iolanthe.rowland.org>
+References: <1352248006.31033.192.camel@yhuang-dev>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20121106203154.GV30069-9pTldWuhBndy/B6EtB590w@public.gmane.org>
-Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:39926 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750922Ab2KGPtF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Nov 2012 10:49:05 -0500
+In-Reply-To: <1352248006.31033.192.camel@yhuang-dev>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue 06-11-12 12:31:54, Tejun Heo wrote:
-> On Sat, Nov 03, 2012 at 01:38:29AM -0700, Tejun Heo wrote:
-> > Currently, cgroup doesn't provide any generic helper for walking a
-> > given cgroup's children or descendants.  This patch adds the following
-> > three macros.
+On Wed, 7 Nov 2012, Huang Ying wrote:
+
+> > > Devices will be disabled if the PCI driver is unbound from the PCI
+> > > device.
 > > 
-> > * cgroup_for_each_child() - walk immediate children of a cgroup.
-> > 
-> > * cgroup_for_each_descendant_pre() - visit all descendants of a cgroup
-> >   in pre-order tree traversal.
-> > 
-> > * cgroup_for_each_descendant_post() - visit all descendants of a
-> >   cgroup in post-order tree traversal.
-> > 
-> > All three only require the user to hold RCU read lock during
-> > traversal.  Verifying that each iterated cgroup is online is the
-> > responsibility of the user.  When used with proper synchronization,
-> > cgroup_for_each_descendant_pre() can be used to propagate config
-> > updates to descendants in reliable way.  See comments for details.
+> > Yes.  But without a PCI driver, nothing will call 
+> > pm_runtime_set_suspended.
 > 
-> Michal, Li, how does this look to you?  Would this be okay for memcg
-> too?
+> pm_runtime_set_suspended will be called in pci_device_remove or error
+> path of local_pci_probe.
 
-Yes, definitely. We are currently iterating by css->id which is, ehm,
-impractical. Having a deterministic tree walk is definitely a plus.
+Yes, okay.  But that's what we want.  Unused, driverless PCI devices
+shouldn't force their parents to remain at full power.
 
--- 
-Michal Hocko
-SUSE Labs
+> >   And even if something does call 
+> > pm_runtime_set_suspended, it's still not a problem -- the device can't 
+> > be used without a driver.
+> 
+> The VGA device can be used without a driver.
+
+Ah, right, that's your _real_ problem.  You should have mentioned this 
+in the original Changelog for the patch.
+
+Rafael, this does need to be fixed.  The PCI subsystem assumes that 
+driverless devices are not in use, so they are disabled for runtime PM 
+and marked as suspended.  This is not appropriate for VGA devices, 
+which can indeed be used without a driver.
+
+I'm not sure what the best solution is.  Maybe we should Ying's 
+proposal a step farther:
+
+	Make pm_runtime_set_suspended() fail if runtime PM is 
+	forbidden.
+
+	Make pm_runtime_forbid() call pm_runtime_set_active()
+	(and do a runtime resume of the parent) if disable_depth > 0.
+
+	Make the PCI runtime-idle routine call 
+	pm_runtime_set_suspended() if disable_depth > 0.  Or maybe
+	do this for all devices, in the runtime PM core.
+
+What do you think?
+
+Alan Stern
+
