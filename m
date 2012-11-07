@@ -1,47 +1,50 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: [PATCH -v2] ACPI/PCI: Make PCI devices notified when its power resource turned on
-Date: Wed,  7 Nov 2012 08:57:59 +0800
-Message-ID: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Huang Ying <ying.huang@intel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 3/6] ARM: OMAP: voltage: move voltdm_reset to
+ platform_data header
+Date: Tue, 6 Nov 2012 17:18:08 -0800
+Message-ID: <20121107011808.GZ6801@atomide.com>
+References: <1352127734-30103-1-git-send-email-nm@ti.com>
+ <1352127734-30103-5-git-send-email-nm@ti.com>
+ <20121106184935.GL6801@atomide.com>
+ <20121106214819.GA16246@kahuna>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20121106214819.GA16246@kahuna>
+Sender: linux-omap-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap <linux-omap@vger.kernel.org>, Rafael <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Anton Vorontsov <cbouatmailru@gmail.com>, linux-pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-A set of power resources may be shared by multiple devices.  When all
-devices share one set of power resources is put into D3_COLD state,
-the power resources will be turned off.  When one of the device is
-waked, the power resource will be turned on and all devices share it
-will be powered on to D0uninitialized state.  These devices should be
-resumed, so that they can get opportunity to go to low power state
-later.
+* Nishanth Menon <nm@ti.com> [121106 13:50]:
+> On 10:49-20121106, Tony Lindgren wrote:
+> > 
+> > Looks like there are other things there too that's not platform data:
+> > 
+> > struct voltagedomain *voltdm_lookup(const char *name);
+> > int voltdm_scale(struct voltagedomain *voltdm, unsigned long target_volt);
+> > unsigned long voltdm_get_voltage(struct voltagedomain *voltdm);
+> > struct omap_volt_data *omap_voltage_get_voltdata(struct voltagedomain *voltdm,
+> > 		unsigned long volt);
+> > 
+> > Can you please add a patch fixing that ASAP?
+> 
+> Agreed include/linux/platform_data/voltage-omap.h has more functions as well.
+> Considering it did:
+> rename arch/arm/plat-omap/include/plat/voltage.h =>
+> include/linux/platform_data/voltage-omap.h
+> 
+> Where do we move these functions to?
+> 
+> drivers/power/avs/smartreflex.c needs:
+> omap_voltage_get_voltdata
+> and
+> drivers/power/avs/smartreflex-class3.c
+> will need voltdm_reset and voltdm_get_voltage
 
-v2:
+How about something local drivers/power/avs/smartreflex.h?
 
-- Fix build error
+Regards,
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
----
- drivers/acpi/pci_bind.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- a/drivers/acpi/pci_bind.c
-+++ b/drivers/acpi/pci_bind.c
-@@ -45,6 +45,7 @@ static int acpi_pci_unbind(struct acpi_d
- 
- 	device_set_run_wake(&dev->dev, false);
- 	pci_acpi_remove_pm_notifier(device);
-+	acpi_power_resource_unregister_device(&dev->dev, device->handle);
- 
- 	if (!dev->subordinate)
- 		goto out;
-@@ -71,6 +72,7 @@ static int acpi_pci_bind(struct acpi_dev
- 		return 0;
- 
- 	pci_acpi_add_pm_notifier(device, dev);
-+	acpi_power_resource_register_device(&dev->dev, device->handle);
- 	if (device->wakeup.flags.run_wake)
- 		device_set_run_wake(&dev->dev, true);
- 
+Tony
