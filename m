@@ -1,93 +1,66 @@
 From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 1/6 v4] arm: use devicetree to get smp_twd clock
-Date: Wed,  7 Nov 2012 12:32:41 -0600
-Message-ID: <1352313166-28980-2-git-send-email-mark.langsdorf@calxeda.com>
+Subject: [PATCH 5/6 v4] power: export opp cpufreq functions
+Date: Wed,  7 Nov 2012 12:32:45 -0600
+Message-ID: <1352313166-28980-6-git-send-email-mark.langsdorf@calxeda.com>
 References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
  <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, Rob Herring <rob.herring@calxeda.com>
+Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rob Herring <rob.herring@calxeda.com>
+These functions are needed to make the cpufreq-core0 and highbank-cpufreq
+drivers loadable as modules.
 
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
 Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Acked-by: Nishanth Menon <nm@ti.com>
 ---
 Changes from v3
-	No longer setting *clk to NULL in twd_get_clock()
+	includes linux/export.h instead of module.h
 Changes from v2
-	Turned the check for the node pointer into an if-then-else statement.
-	Removed the second, redundant clk_get_rate
+	None.
 Changes from v1
-        None.
+        Added Nishanth Menon's ack.
+        Clarified the purpose of the change in the commit message.
 
- arch/arm/kernel/smp_twd.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/base/power/opp.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-index b22d700..af46b80 100644
---- a/arch/arm/kernel/smp_twd.c
-+++ b/arch/arm/kernel/smp_twd.c
-@@ -237,12 +237,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
- 	return IRQ_NONE;
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d946864..4062ec3 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -23,6 +23,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/opp.h>
+ #include <linux/of.h>
++#include <linux/export.h>
+ 
+ /*
+  * Internal data structure organization with the OPP layer library is as
+@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
+ 
+ 	return 0;
  }
++EXPORT_SYMBOL(opp_init_cpufreq_table);
  
--static struct clk *twd_get_clock(void)
-+static struct clk *twd_get_clock(struct device_node *np)
- {
- 	struct clk *clk;
- 	int err;
- 
--	clk = clk_get_sys("smp_twd", NULL);
-+	if (np)
-+		clk = of_clk_get(np, 0);
-+	else
-+		clk = clk_get_sys("smp_twd", NULL);
- 	if (IS_ERR(clk)) {
- 		pr_err("smp_twd: clock not found: %d\n", (int)PTR_ERR(clk));
- 		return clk;
-@@ -263,6 +266,7 @@ static struct clk *twd_get_clock(void)
- 		return ERR_PTR(err);
- 	}
- 
-+	twd_timer_rate = clk_get_rate(clk);
- 	return clk;
+ /**
+  * opp_free_cpufreq_table() - free the cpufreq table
+@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
+ 	kfree(*table);
+ 	*table = NULL;
  }
++EXPORT_SYMBOL(opp_free_cpufreq_table);
+ #endif		/* CONFIG_CPU_FREQ */
  
-@@ -273,12 +277,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
- {
- 	struct clock_event_device **this_cpu_clk;
+ /**
+@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
  
--	if (!twd_clk)
--		twd_clk = twd_get_clock();
--
--	if (!IS_ERR_OR_NULL(twd_clk))
--		twd_timer_rate = clk_get_rate(twd_clk);
--	else
-+	if (IS_ERR_OR_NULL(twd_clk))
- 		twd_calibrate_rate();
- 
- 	__raw_writel(0, twd_base + TWD_TIMER_CONTROL);
-@@ -349,6 +348,8 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
- 	if (!twd_base)
- 		return -ENOMEM;
- 
-+	twd_clk = twd_get_clock(NULL);
-+
- 	return twd_local_timer_common_register();
+ 	return 0;
  }
- 
-@@ -383,6 +384,8 @@ void __init twd_local_timer_of_register(void)
- 		goto out;
- 	}
- 
-+	twd_clk = twd_get_clock(np);
-+
- 	err = twd_local_timer_common_register();
- 
- out:
++EXPORT_SYMBOL(of_init_opp_table);
+ #endif
 -- 
 1.7.11.7
