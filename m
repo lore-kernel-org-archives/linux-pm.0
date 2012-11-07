@@ -1,60 +1,31 @@
-From: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
-Subject: Re: [PATCH 3/9] cgroup: implement generic child / descendant walk
- macros
-Date: Wed, 7 Nov 2012 18:49:58 +0100
-Message-ID: <20121107174958.GB24475@dhcp22.suse.cz>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
- <1351931915-1701-4-git-send-email-tj@kernel.org>
- <20121107165457.GD4131@dhcp22.suse.cz>
- <20121107170118.GD2660@mtj.dyndns.org>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 0/6 v3] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Wed, 07 Nov 2012 12:11:00 -0600
+Message-ID: <509AA434.80702@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1352233089-22586-1-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20121107170118.GD2660-9pTldWuhBndy/B6EtB590w@public.gmane.org>
-Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:35438 "EHLO
+	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751732Ab2KGSK4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Nov 2012 13:10:56 -0500
+In-Reply-To: <1352233089-22586-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Wed 07-11-12 09:01:18, Tejun Heo wrote:
-> Hello, Michal.
-> 
-> On Wed, Nov 07, 2012 at 05:54:57PM +0100, Michal Hocko wrote:
-> > > +struct cgroup *cgroup_next_descendant_pre(struct cgroup *pos,
-> > > +					  struct cgroup *cgroup)
-> > > +{
-> > > +	struct cgroup *next;
-> > > +
-> > > +	WARN_ON_ONCE(!rcu_read_lock_held());
-> > > +
-> > > +	/* if first iteration, pretend we just visited @cgroup */
-> > > +	if (!pos) {
-> > > +		if (list_empty(&cgroup->children))
-> > > +			return NULL;
-> > > +		pos = cgroup;
-> > > +	}
-> > 
-> > Is there any specific reason why the root of the tree is excluded?
-> > This is bit impractical because you have to special case the root
-> > in the code.
-> 
-> Yeah, thought about including it but decided against it for two
-> reasons.
-> 
-> * To be consistent with cgroup_for_each_children() - it's a bit weird
->   for descendants to include self when children don't.
-> 
-> * Iteration root is likely to require different treatment anyway.
->   e.g. for cgroup_freezer, the root is updated to the specified config
->   while all the descendants inherit config from its immediate parent.
->   They are different.
+On 11/06/2012 02:18 PM, Mark Langsdorf wrote:
+> This patch series adds cpufreq support for the Calxeda
+> ECX-1000 (highbank) SoCs. The driver is based on the 
+> cpufreq-cpu0 driver. Because of the unique way that 
+> highbank uses the EnergyCore Management Engine to manage
+> voltages, it was not possible to use the cpufreq-cpu0 driver.
 
-OK if there is a code which handles root differently then let's not
-overcomplicate this. The naming should be clear that root needs a
-special treatment.
+I accidentally sent out old versions of the patches. Please ignore the
+v3 series and look at the v4 instead.
 
-I will continue with the review tomorrow.
--- 
-Michal Hocko
-SUSE Labs
+--Mark Langsdorf
+
