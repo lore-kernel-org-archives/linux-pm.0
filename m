@@ -1,109 +1,68 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/9 v3] cgroup: add cgroup_subsys->post_create()
-Date: Thu, 8 Nov 2012 11:07:15 -0800
-Message-ID: <20121108190715.GD9672@htj.dyndns.org>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
- <1351931915-1701-2-git-send-email-tj@kernel.org>
+From: David Rientjes <rientjes@google.com>
+Subject: [patch] acpi, pm: fix build breakage
+Date: Thu, 8 Nov 2012 11:20:01 -0800 (PST)
+Message-ID: <alpine.DEB.2.00.1211081119350.8749@chino.kir.corp.google.com>
+References: <1766582.8gdQKXoi0K@vostro.rjw.lan> <1456107.KxymqUQLId@vostro.rjw.lan> <alpine.DEB.2.00.1211061150190.6467@chino.kir.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:37830 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222Ab2KHTHU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Nov 2012 14:07:20 -0500
-Content-Disposition: inline
-In-Reply-To: <1351931915-1701-2-git-send-email-tj@kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:36893 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756572Ab2KHTUG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Nov 2012 14:20:06 -0500
+Received: by mail-pa0-f46.google.com with SMTP id hz1so2205914pad.19
+        for <linux-pm@vger.kernel.org>; Thu, 08 Nov 2012 11:20:05 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.00.1211061150190.6467@chino.kir.corp.google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lizefan@huawei.com, mhocko@suse.cz, rjw@sisk.pl
-Cc: containers@lists.linux-foundation.org, cgroups@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, fweisbec@gmail.com, Glauber Costa <glommer@parallels.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Aaron Lu <aaron.lu@intel.com>, Huang Ying <ying.huang@intel.com>, Len Brown <lenb@kernel.org>, Lv Zheng <lv.zheng@intel.com>, Adrian Hunter <adrian.hunter@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Subject: cgroup: add cgroup_subsys->post_create()
+Commit b87b49cd0efd ("ACPI / PM: Move device PM functions related to sleep 
+states") declared acpi_target_system_state() for CONFIG_PM_SLEEP whereas 
+it is only defined for CONFIG_ACPI_SLEEP, resulting in the following link 
+error:
 
-Currently, there's no way for a controller to find out whether a new
-cgroup finished all ->create() allocatinos successfully and is
-considered "live" by cgroup.
+drivers/built-in.o: In function `acpi_pm_device_sleep_wake':
+drivers/acpi/device_pm.c:342: undefined reference to `acpi_target_system_state'
+drivers/built-in.o: In function `acpi_dev_suspend_late':
+drivers/acpi/device_pm.c:501: undefined reference to `acpi_target_system_state'
+drivers/built-in.o: In function `acpi_pm_device_sleep_state':
+drivers/acpi/device_pm.c:221: undefined reference to `acpi_target_system_state'
 
-This becomes a problem later when we add generic descendants walking
-to cgroup which can be used by controllers as controllers don't have a
-synchronization point where it can synchronize against new cgroups
-appearing in such walks.
+Define it only for CONFIG_ACPI_SLEEP and fallback to a dummy definition 
+for other configs.
 
-This patch adds ->post_create().  It's called after all ->create()
-succeeded and the cgroup is linked into the generic cgroup hierarchy.
-This plays the counterpart of ->pre_destroy().
-
-When used in combination with the to-be-added generic descendant
-iterators, ->post_create() can be used to implement reliable state
-inheritance.  It will be explained with the descendant iterators.
-
-v2: Added a paragraph about its future use w/ descendant iterators per
-    Michal.
-
-v3: Forgot to add ->post_create() invocation to cgroup_load_subsys().
-    Fixed.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Michal Hocko <mhocko@suse.cz>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Glauber Costa <glommer@parallels.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
-Oops, forgot updating cgroup_load_subsys().  Hate that it's a
-different path from cgroup_init_subsys(). :(
+ include/acpi/acpi_bus.h |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-Thanks.
-
- include/linux/cgroup.h |    1 +
- kernel/cgroup.c        |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -438,6 +438,7 @@ int cgroup_taskset_size(struct cgroup_ta
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -469,11 +469,9 @@ static inline int acpi_pm_device_run_wake(struct device *dev, bool enable)
+ #endif
  
- struct cgroup_subsys {
- 	struct cgroup_subsys_state *(*create)(struct cgroup *cgrp);
-+	void (*post_create)(struct cgroup *cgrp);
- 	void (*pre_destroy)(struct cgroup *cgrp);
- 	void (*destroy)(struct cgroup *cgrp);
- 	int (*can_attach)(struct cgroup *cgrp, struct cgroup_taskset *tset);
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -4059,10 +4059,15 @@ static long cgroup_create(struct cgroup
- 	if (err < 0)
- 		goto err_remove;
+ #ifdef CONFIG_PM_SLEEP
+-u32 acpi_target_system_state(void);
+ int __acpi_device_sleep_wake(struct acpi_device *, u32, bool);
+ int acpi_pm_device_sleep_wake(struct device *, bool);
+ #else
+-static inline u32 acpi_target_system_state(void) { return ACPI_STATE_S0; }
+ static inline int __acpi_device_sleep_wake(struct acpi_device *adev,
+ 					   u32 target_state, bool enable)
+ {
+@@ -485,6 +483,12 @@ static inline int acpi_pm_device_sleep_wake(struct device *dev, bool enable)
+ }
+ #endif
  
--	/* each css holds a ref to the cgroup's dentry */
--	for_each_subsys(root, ss)
-+	for_each_subsys(root, ss) {
-+		/* each css holds a ref to the cgroup's dentry */
- 		dget(dentry);
- 
-+		/* creation succeeded, notify subsystems */
-+		if (ss->post_create)
-+			ss->post_create(cgrp);
-+	}
++#ifdef CONFIG_ACPI_SLEEP
++u32 acpi_target_system_state(void);
++#else
++static inline u32 acpi_target_system_state(void) { return ACPI_STATE_S0; }
++#endif
 +
- 	/* The cgroup directory was pre-locked for us */
- 	BUG_ON(!mutex_is_locked(&cgrp->dentry->d_inode->i_mutex));
- 
-@@ -4280,6 +4285,9 @@ static void __init cgroup_init_subsys(st
- 
- 	ss->active = 1;
- 
-+	if (ss->post_create)
-+		ss->post_create(&ss->root->top_cgroup);
-+
- 	/* this function shouldn't be used with modular subsystems, since they
- 	 * need to register a subsys_id, among other things */
- 	BUG_ON(ss->module);
-@@ -4389,6 +4397,9 @@ int __init_or_module cgroup_load_subsys(
- 
- 	ss->active = 1;
- 
-+	if (ss->post_create)
-+		ss->post_create(&ss->root->top_cgroup);
-+
- 	/* success! */
- 	mutex_unlock(&cgroup_mutex);
- 	return 0;
+ static inline bool acpi_device_power_manageable(struct acpi_device *adev)
+ {
+ 	return adev->flags.power_manageable;
