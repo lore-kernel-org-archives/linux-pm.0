@@ -1,77 +1,172 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Thu, 08 Nov 2012 10:56:11 +0100
-Message-ID: <1434035.IipKXWk2Vr@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1211071653140.1188-100000@iolanthe.rowland.org> <5312356.pH16Qh7ECV@vostro.rjw.lan> <1352340276.7176.37.camel@yhuang-dev>
+From: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
+Subject: Re: [PATCH 4/9] cgroup_freezer: trivial cleanups
+Date: Thu, 8 Nov 2012 10:53:53 +0100
+Message-ID: <20121108095353.GB31821@dhcp22.suse.cz>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org>
+	<1351931915-1701-5-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:33792 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573Ab2KHJv7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Nov 2012 04:51:59 -0500
-In-Reply-To: <1352340276.7176.37.camel@yhuang-dev>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1351931915-1701-5-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
+List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, November 08, 2012 10:04:36 AM Huang Ying wrote:
-> On Thu, 2012-11-08 at 02:35 +0100, Rafael J. Wysocki wrote:
-> > On Thursday, November 08, 2012 09:15:08 AM Huang Ying wrote:
-> > > On Thu, 2012-11-08 at 00:09 +0100, Rafael J. Wysocki wrote:
-
-[...]
-
-> > > I think the patch can fix the issue in a better way.
-> > 
-> > I'm not sure what you mean.
+On Sat 03-11-12 01:38:30, Tejun Heo wrote:
+> * Clean-up indentation and line-breaks.  Drop the invalid comment
+>   about freezer->lock.
 > 
-> I mean your patch can fix the driver-less VGA issue.  And it is better
-> than my original patch.  The following discussion is not about this
-> specific issue.  Just about PM core logic.
-
-OK
-
-> > > Do we still need to clarify state about disabled and forbidden?  When a
-> > > device is forbidden and the usage_count > 0,
-> > 
-> > "Forbidden" always means usage_count > 0.
+> * Make all internal functions take @freezer instead of both @cgroup
+>   and @freezer.
 > 
-> Yes.
+> Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+Looks reasonable
+Reviewed-by: Michal Hocko <mhocko-AlSwsSmVLrQ@public.gmane.org>
+
+> ---
+>  kernel/cgroup_freezer.c | 41 +++++++++++++++++++----------------------
+>  1 file changed, 19 insertions(+), 22 deletions(-)
 > 
-> > > is it a good idea to allow to set device state to SUSPENDED if the device
-> > > is disabled?
-> > 
-> > No, it is not.  The status should always be ACTIVE as long as usage_count > 0.
-> > However, in some cases we actually would like to change the status to
-> > SUSPENDED when usage_count becomes equal to 0, because that means we can
-> > suspend (I mean really suspend) the parents of the devices in question
-> > (and we want to notify the parents in those cases).
+> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+> index bedefd9..975b3d8 100644
+> --- a/kernel/cgroup_freezer.c
+> +++ b/kernel/cgroup_freezer.c
+> @@ -29,17 +29,15 @@ enum freezer_state {
+>  };
+>  
+>  struct freezer {
+> -	struct cgroup_subsys_state css;
+> -	enum freezer_state state;
+> -	spinlock_t lock; /* protects _writes_ to state */
+> +	struct cgroup_subsys_state	css;
+> +	enum freezer_state		state;
+> +	spinlock_t			lock;
+>  };
+>  
+> -static inline struct freezer *cgroup_freezer(
+> -		struct cgroup *cgroup)
+> +static inline struct freezer *cgroup_freezer(struct cgroup *cgroup)
+>  {
+> -	return container_of(
+> -		cgroup_subsys_state(cgroup, freezer_subsys_id),
+> -		struct freezer, css);
+> +	return container_of(cgroup_subsys_state(cgroup, freezer_subsys_id),
+> +			    struct freezer, css);
+>  }
+>  
+>  static inline struct freezer *task_freezer(struct task_struct *task)
+> @@ -180,8 +178,9 @@ out:
+>   * migrated into or out of @cgroup, so we can't verify task states against
+>   * @freezer state here.  See freezer_attach() for details.
+>   */
+> -static void update_if_frozen(struct cgroup *cgroup, struct freezer *freezer)
+> +static void update_if_frozen(struct freezer *freezer)
+>  {
+> +	struct cgroup *cgroup = freezer->css.cgroup;
+>  	struct cgroup_iter it;
+>  	struct task_struct *task;
+>  
+> @@ -211,12 +210,11 @@ notyet:
+>  static int freezer_read(struct cgroup *cgroup, struct cftype *cft,
+>  			struct seq_file *m)
+>  {
+> -	struct freezer *freezer;
+> +	struct freezer *freezer = cgroup_freezer(cgroup);
+>  	enum freezer_state state;
+>  
+> -	freezer = cgroup_freezer(cgroup);
+>  	spin_lock_irq(&freezer->lock);
+> -	update_if_frozen(cgroup, freezer);
+> +	update_if_frozen(freezer);
+>  	state = freezer->state;
+>  	spin_unlock_irq(&freezer->lock);
+>  
+> @@ -225,8 +223,9 @@ static int freezer_read(struct cgroup *cgroup, struct cftype *cft,
+>  	return 0;
+>  }
+>  
+> -static void freeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+> +static void freeze_cgroup(struct freezer *freezer)
+>  {
+> +	struct cgroup *cgroup = freezer->css.cgroup;
+>  	struct cgroup_iter it;
+>  	struct task_struct *task;
+>  
+> @@ -236,8 +235,9 @@ static void freeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+>  	cgroup_iter_end(cgroup, &it);
+>  }
+>  
+> -static void unfreeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+> +static void unfreeze_cgroup(struct freezer *freezer)
+>  {
+> +	struct cgroup *cgroup = freezer->css.cgroup;
+>  	struct cgroup_iter it;
+>  	struct task_struct *task;
+>  
+> @@ -247,11 +247,9 @@ static void unfreeze_cgroup(struct cgroup *cgroup, struct freezer *freezer)
+>  	cgroup_iter_end(cgroup, &it);
+>  }
+>  
+> -static void freezer_change_state(struct cgroup *cgroup,
+> +static void freezer_change_state(struct freezer *freezer,
+>  				 enum freezer_state goal_state)
+>  {
+> -	struct freezer *freezer = cgroup_freezer(cgroup);
+> -
+>  	/* also synchronizes against task migration, see freezer_attach() */
+>  	spin_lock_irq(&freezer->lock);
+>  
+> @@ -260,13 +258,13 @@ static void freezer_change_state(struct cgroup *cgroup,
+>  		if (freezer->state != CGROUP_THAWED)
+>  			atomic_dec(&system_freezing_cnt);
+>  		freezer->state = CGROUP_THAWED;
+> -		unfreeze_cgroup(cgroup, freezer);
+> +		unfreeze_cgroup(freezer);
+>  		break;
+>  	case CGROUP_FROZEN:
+>  		if (freezer->state == CGROUP_THAWED)
+>  			atomic_inc(&system_freezing_cnt);
+>  		freezer->state = CGROUP_FREEZING;
+> -		freeze_cgroup(cgroup, freezer);
+> +		freeze_cgroup(freezer);
+>  		break;
+>  	default:
+>  		BUG();
+> @@ -275,8 +273,7 @@ static void freezer_change_state(struct cgroup *cgroup,
+>  	spin_unlock_irq(&freezer->lock);
+>  }
+>  
+> -static int freezer_write(struct cgroup *cgroup,
+> -			 struct cftype *cft,
+> +static int freezer_write(struct cgroup *cgroup, struct cftype *cft,
+>  			 const char *buffer)
+>  {
+>  	enum freezer_state goal_state;
+> @@ -288,7 +285,7 @@ static int freezer_write(struct cgroup *cgroup,
+>  	else
+>  		return -EINVAL;
+>  
+> -	freezer_change_state(cgroup, goal_state);
+> +	freezer_change_state(cgroup_freezer(cgroup), goal_state);
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.7.11.7
 > 
-> So do you think Alan Stern's suggestion about forbidden and disabled is
-> the right way to go?
-
-I'm not really sure about that.
-
-My original idea was that the runtime PM status and usage counter would
-only matter when runtime PM of a device was enabled.  That leads to
-problems, though, when we enable runtime PM of a device whose usage
-counter is greater from zero and status is SUSPENDED.  Also when the
-device's status is ACTIVE, but its parent's child count is 0.
-
-It's not very easy to fix this at the core level, though, because we
-depend on the current behavior in some places.  I'm thinking that
-perhaps pm_runtime_enable() should just WARN() if things are obviously
-inconsistent (although there still may be problems, for example, if the
-parent's child count is 2 when we enable runtime PM for its child, but that
-child is the only one it actually has).
-
-Thanks,
-Rafael
-
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Michal Hocko
+SUSE Labs
