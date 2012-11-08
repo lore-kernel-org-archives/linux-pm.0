@@ -1,100 +1,63 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Thu, 8 Nov 2012 12:07:54 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211081125470.1280-100000@iolanthe.rowland.org>
-References: <1434035.IipKXWk2Vr@vostro.rjw.lan>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 3/9] cgroup: implement generic child / descendant walk
+ macros
+Date: Thu, 8 Nov 2012 09:15:32 -0800
+Message-ID: <20121108171532.GI12973@htj.dyndns.org>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org>
+ <1351931915-1701-4-git-send-email-tj@kernel.org>
+ <20121108095013.GA31821@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1434035.IipKXWk2Vr@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:37769 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779Ab2KHRPh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Nov 2012 12:15:37 -0500
+Content-Disposition: inline
+In-Reply-To: <20121108095013.GA31821@dhcp22.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: lizefan@huawei.com, rjw@sisk.pl, containers@lists.linux-foundation.org, cgroups@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, fweisbec@gmail.com
 
-On Thu, 8 Nov 2012, Rafael J. Wysocki wrote:
+Hey, Michal.
 
-> > > > is it a good idea to allow to set device state to SUSPENDED if the device
-> > > > is disabled?
-> > > 
-> > > No, it is not.  The status should always be ACTIVE as long as usage_count > 0.
-
-That isn't strictly true, because pm_runtime_get_noresume violates this
-rule.  What the PM core actually does is prevent a transition from the
-ACTIVE state to the SUSPENDING/SUSPENDED state if usage_count > 0,
-_provided_ runtime PM is enabled.  There's no such restriction when it
-is disabled.
-
-BTW, do we need to think about what happens in the case where the
-device _does_ have a driver and for some reason the driver has disabled
-the device for runtime PM?  I would just as soon ignore the issue.
-
-> > > However, in some cases we actually would like to change the status to
-> > > SUSPENDED when usage_count becomes equal to 0, because that means we can
-> > > suspend (I mean really suspend) the parents of the devices in question
-> > > (and we want to notify the parents in those cases).
+On Thu, Nov 08, 2012 at 10:50:13AM +0100, Michal Hocko wrote:
+> On Sat 03-11-12 01:38:29, Tejun Heo wrote:
+> > Currently, cgroup doesn't provide any generic helper for walking a
+> > given cgroup's children or descendants.  This patch adds the following
+> > three macros.
 > > 
-> > So do you think Alan Stern's suggestion about forbidden and disabled is
-> > the right way to go?
+> > * cgroup_for_each_child() - walk immediate children of a cgroup.
+> > 
+> > * cgroup_for_each_descendant_pre() - visit all descendants of a cgroup
+> >   in pre-order tree traversal.
+> > 
+> > * cgroup_for_each_descendant_post() - visit all descendants of a
+> >   cgroup in post-order tree traversal.
+> > 
+> > All three only require the user to hold RCU read lock during
+> > traversal.  Verifying that each iterated cgroup is online is the
+> > responsibility of the user.  When used with proper synchronization,
+> > cgroup_for_each_descendant_pre() can be used to propagate config
+> > updates to descendants in reliable way.  See comments for details.
+> > 
+> > Signed-off-by: Tejun Heo <tj@kernel.org>
 > 
-> I'm not really sure about that.
+> I will convert mem_cgroup_iter to use this rather than css_get_next
+> after this gets into the next tree so that it can fly via Andrew.
 > 
-> My original idea was that the runtime PM status and usage counter would
-> only matter when runtime PM of a device was enabled.  That leads to
-> problems, though, when we enable runtime PM of a device whose usage
-> counter is greater from zero and status is SUSPENDED.
+> Reviewed-by: Michal Hocko <mhocko@suse.cz>
+> 
+> Just a minor knit. You are talking about a config propagation while I
+> would consider state propagation more clear and less confusing. Config
+> is usually stable enough so that post_create is not necessary for
+> syncing (e.g. memcg.swappiness). It is a state which must be consistent
+> throughout the hierarchy which matters here.
 
-That doesn't seem to be a problem.  It can arise without disabling
-runtime PM at all -- just call pm_runtime_get_noresume.
+Did s/config/state/g
 
->  Also when the
-> device's status is ACTIVE, but its parent's child count is 0.
+Thanks.
 
-__pm_runtime_set_status prevents this situation from arising.  When the 
-device's status is set to ACTIVE, the parent's child count is 
-incremented.  So this isn't a problem either.
-
-> It's not very easy to fix this at the core level, though, because we
-> depend on the current behavior in some places.  I'm thinking that
-> perhaps pm_runtime_enable() should just WARN() if things are obviously
-> inconsistent (although there still may be problems, for example, if the
-> parent's child count is 2 when we enable runtime PM for its child, but that
-> child is the only one it actually has).
-
-I think we should continue the original strategy of ignoring the status
-and usage counter when runtime PM is disabled.  This is definitely the
-easiest and most straightforward approach.  Fixing the problem at hand
-(VGA controllers) by changing the PCI subsystem seems like the simplest
-solution.
-
-Your revised patch does do the job, except for a few problems.  
-Namely, while local_pci_probe() and pci_device_remove() are running,
-the device _does_ have a driver.  This means that local_pci_probe()
-should not call pm_runtime_get_sync(), for example.  Doing so would
-invoke the driver's runtime_resume routine before calling the driver's
-probe routine!
-
-The USB subsystem solves this problem by carefully keeping track of the 
-state of the device-driver binding:
-
-	Originally the device is UNBOUND.
-
-	At the start of the subsystem's probe routine, the state
-	changes to BINDING.
-
-	If the probe succeeds then it changes to BOUND; otherwise
-	it goes back to UNBOUND.
-
-	At the start of the subsystem's remove routine, the state
-	changes to UNBINDING.  At the end it goes to UNBOUND.
-
-When the state is anything other than BOUND, the subsystem's runtime PM 
-routines act as though there is no driver.  This works because the 
-subsystem makes sure that the device is ACTIVE with a nonzero usage 
-count before calling the driver's probe or remove routine, so no 
-runtime PM callbacks can occur at these awkward times.
-
-If PCI adopted this strategy then your new patch would work okay.  I 
-think -- I haven't checked it thoroughly.
-
-Alan Stern
+-- 
+tejun
