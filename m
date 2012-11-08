@@ -1,78 +1,100 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 9/9 v2] cgroup_freezer: implement proper hierarchy support
-Date: Thu, 8 Nov 2012 16:57:48 +0100
-Message-ID: <20121108155748.GO31821@dhcp22.suse.cz>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
- <1351931915-1701-10-git-send-email-tj@kernel.org>
- <20121107163919.GC2660@mtj.dyndns.org>
- <20121108140852.GI31821@dhcp22.suse.cz>
- <20121108141848.GA12973@htj.dyndns.org>
- <20121108152039.GL31821@dhcp22.suse.cz>
- <20121108152923.GG12973@htj.dyndns.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Thu, 8 Nov 2012 12:07:54 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211081125470.1280-100000@iolanthe.rowland.org>
+References: <1434035.IipKXWk2Vr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:33867 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464Ab2KHP5x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Nov 2012 10:57:53 -0500
-Content-Disposition: inline
-In-Reply-To: <20121108152923.GG12973@htj.dyndns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1434035.IipKXWk2Vr@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: lizefan@huawei.com, rjw@sisk.pl, containers@lists.linux-foundation.org, cgroups@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, fweisbec@gmail.com
 
-On Thu 08-11-12 07:29:23, Tejun Heo wrote:
-> Hey, Michal.
-> 
-> On Thu, Nov 08, 2012 at 04:20:39PM +0100, Michal Hocko wrote:
-> > > So, in the above example in CPU2, (B->state & FREEZING) test and
-> > > freezer_apply_state(C, false) can't be interleaved with the same
-> > > inheritance operation from CPU1.  They either happen before or after.
+On Thu, 8 Nov 2012, Rafael J. Wysocki wrote:
+
+> > > > is it a good idea to allow to set device state to SUSPENDED if the device
+> > > > is disabled?
+> > > 
+> > > No, it is not.  The status should always be ACTIVE as long as usage_count > 0.
+
+That isn't strictly true, because pm_runtime_get_noresume violates this
+rule.  What the PM core actually does is prevent a transition from the
+ACTIVE state to the SUSPENDING/SUSPENDED state if usage_count > 0,
+_provided_ runtime PM is enabled.  There's no such restriction when it
+is disabled.
+
+BTW, do we need to think about what happens in the case where the
+device _does_ have a driver and for some reason the driver has disabled
+the device for runtime PM?  I would just as soon ignore the issue.
+
+> > > However, in some cases we actually would like to change the status to
+> > > SUSPENDED when usage_count becomes equal to 0, because that means we can
+> > > suspend (I mean really suspend) the parents of the devices in question
+> > > (and we want to notify the parents in those cases).
 > > 
-> > I am not sure I understand what you mean by inheritance operation but
+> > So do you think Alan Stern's suggestion about forbidden and disabled is
+> > the right way to go?
 > 
-> The operation of looking at one's parent and inherting the state.
-> Here, checking parent->state and calling apply_state accordingly.
+> I'm not really sure about that.
 > 
-> > you are right that the race is not possible because spin_lock makes
-> > sure that Foo->state is done after the lock(Foo->child) and spin_unlock
-> > then serves as a leave barrier so the other CPUs will see the correctly
-> > updated value. The rest is handled by the fixed ordered tree walk. So
-> > there is really no interleaving going on here.
-> 
-> I'm worried that this is a bit too subtle.
+> My original idea was that the runtime PM status and usage counter would
+> only matter when runtime PM of a device was enabled.  That leads to
+> problems, though, when we enable runtime PM of a device whose usage
+> counter is greater from zero and status is SUSPENDED.
 
-Dunno, it looks obvious now, I just missed the entry&leave implicit
-barriers by spinlocks and again sorry about the confusion.
+That doesn't seem to be a problem.  It can arise without disabling
+runtime PM at all -- just call pm_runtime_get_noresume.
 
-> This will work fine with a single hierarchy mutex protecting hierarchy
-> updates and state propagations through it and that should work for
-> most controllers too.
+>  Also when the
+> device's status is ACTIVE, but its parent's child count is 0.
 
-But single mutex is just ugly.
+__pm_runtime_set_status prevents this situation from arising.  When the 
+device's status is set to ACTIVE, the parent's child count is 
+incremented.  So this isn't a problem either.
 
-> I want to have at least one example of finer grained locking for
-> future reference and cgroup_freezer happened to be the one I started
-> working on.
+> It's not very easy to fix this at the core level, though, because we
+> depend on the current behavior in some places.  I'm thinking that
+> perhaps pm_runtime_enable() should just WARN() if things are obviously
+> inconsistent (although there still may be problems, for example, if the
+> parent's child count is 2 when we enable runtime PM for its child, but that
+> child is the only one it actually has).
 
-I think this is a good example because it shows how to share the state
-without too many implementation details.
+I think we should continue the original strategy of ignoring the status
+and usage counter when runtime PM is disabled.  This is definitely the
+easiest and most straightforward approach.  Fixing the problem at hand
+(VGA controllers) by changing the PCI subsystem seems like the simplest
+solution.
 
-> So, it is more complicated (not necessarily in written code but the
-> sync rules) than necessary.  I'm still not sure whether to keep it or
-> not.
+Your revised patch does do the job, except for a few problems.  
+Namely, while local_pci_probe() and pci_device_remove() are running,
+the device _does_ have a driver.  This means that local_pci_probe()
+should not call pm_runtime_get_sync(), for example.  Doing so would
+invoke the driver's runtime_resume routine before calling the driver's
+probe routine!
 
-I think the locking is fine and I would keep it this way rather than a
-big lock.
+The USB subsystem solves this problem by carefully keeping track of the 
+state of the device-driver binding:
 
-> I'll add more documentation about synchronization in
-> cgroup_for_each_descendant_pre() either way.
+	Originally the device is UNBOUND.
 
-more doc cannot hurt ;)
+	At the start of the subsystem's probe routine, the state
+	changes to BINDING.
 
-Thanks
--- 
-Michal Hocko
-SUSE Labs
+	If the probe succeeds then it changes to BOUND; otherwise
+	it goes back to UNBOUND.
+
+	At the start of the subsystem's remove routine, the state
+	changes to UNBINDING.  At the end it goes to UNBOUND.
+
+When the state is anything other than BOUND, the subsystem's runtime PM 
+routines act as though there is no driver.  This works because the 
+subsystem makes sure that the device is ACTIVE with a nonzero usage 
+count before calling the driver's probe or remove routine, so no 
+runtime PM callbacks can occur at these awkward times.
+
+If PCI adopted this strategy then your new patch would work okay.  I 
+think -- I haven't checked it thoroughly.
+
+Alan Stern
