@@ -1,55 +1,67 @@
-From: Kamezawa Hiroyuki <kamezawa.hiroyu-+CUm20s59erQFUHtdCDX3A@public.gmane.org>
-Subject: Re: [PATCH 8/9] cgroup_freezer: add ->post_create() and ->pre_destroy()
- and track online state
-Date: Thu, 08 Nov 2012 13:48:25 +0900
-Message-ID: <509B3999.6060505@jp.fujitsu.com>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org> <1351931915-1701-9-git-send-email-tj@kernel.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 3/6] ARM: OMAP: voltage: move voltdm_reset to
+ platform_data header
+Date: Wed, 7 Nov 2012 22:52:49 -0600
+Message-ID: <20121108045249.GB15742@kahuna>
+References: <1352127734-30103-1-git-send-email-nm@ti.com>
+ <1352127734-30103-5-git-send-email-nm@ti.com>
+ <20121106184935.GL6801@atomide.com>
+ <20121106214819.GA16246@kahuna>
+ <20121107011808.GZ6801@atomide.com>
+ <20121107012838.GA13630@kahuna>
+ <20121107014608.GB6801@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
-Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1351931915-1701-9-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20121107014608.GB6801@atomide.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-omap <linux-omap@vger.kernel.org>, Rafael <rjw@sisk.pl>, Kevin Hilman <khilman@ti.com>, Anton Vorontsov <cbouatmailru@gmail.com>, linux-pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-(2012/11/03 17:38), Tejun Heo wrote:
-> A cgroup is online and visible to iteration between ->post_create()
-> and ->pre_destroy().  This patch introduces CGROUP_FREEZER_ONLINE and
-> toggles it from the newly added freezer_post_create() and
-> freezer_pre_destroy() while holding freezer->lock such that a
-> cgroup_freezer can be reilably distinguished to be online.  This will
-> be used by full hierarchy support.
+On 17:46-20121106, Tony Lindgren wrote:
+> * Nishanth Menon <nm@ti.com> [121106 17:30]:
+> > On 17:18-20121106, Tony Lindgren wrote:
+> > > * Nishanth Menon <nm@ti.com> [121106 13:50]:
+> > > > On 10:49-20121106, Tony Lindgren wrote:
+> > > > > 
+> > > > > Looks like there are other things there too that's not platform data:
+> > > > > 
+> > > > > struct voltagedomain *voltdm_lookup(const char *name);
+> > > > > int voltdm_scale(struct voltagedomain *voltdm, unsigned long target_volt);
+> > > > > unsigned long voltdm_get_voltage(struct voltagedomain *voltdm);
+> > > > > struct omap_volt_data *omap_voltage_get_voltdata(struct voltagedomain *voltdm,
+> > > > > 		unsigned long volt);
+> > > > > 
+> > > > > Can you please add a patch fixing that ASAP?
+> > > > 
+> > > > Agreed include/linux/platform_data/voltage-omap.h has more functions as well.
+> > > > Considering it did:
+> > > > rename arch/arm/plat-omap/include/plat/voltage.h =>
+> > > > include/linux/platform_data/voltage-omap.h
+> > > > 
+> > > > Where do we move these functions to?
+> > > > 
+> > > > drivers/power/avs/smartreflex.c needs:
+> > > > omap_voltage_get_voltdata
+> > > > and
+> > > > drivers/power/avs/smartreflex-class3.c
+> > > > will need voltdm_reset and voltdm_get_voltage
+> > > 
+> > > How about something local drivers/power/avs/smartreflex.h?
+> > These APIs are exposed by voltage layer, not smartreflex :(
+> > stuff like voltdm_scale will have to be used by regulator logic
+> > eventually, so moving to AVS driver header is probably not right.
 > 
-> ONLINE test is added to freezer_apply_state() but it currently doesn't
-> make any difference as freezer_write() can only be called for an
-> online cgroup.
+> Well ideally you'd have some generic API doing it rather than
+> these omap specifc exported functions.
 > 
-> Adjusting system_freezing_cnt on destruction is moved from
-> freezer_destroy() to the new freezer_pre_destroy() for consistency.
-> 
-> This patch doesn't introduce any noticeable behavior change.
-> 
-> Signed-off-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
->   kernel/cgroup_freezer.c | 42 ++++++++++++++++++++++++++++++++++++++++--
->   1 file changed, 40 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-> index b8ad93c..4f12d31 100644
-> --- a/kernel/cgroup_freezer.c
-> +++ b/kernel/cgroup_freezer.c
-> @@ -23,6 +23,7 @@
->   #include <linux/seq_file.h>
->   
->   enum freezer_state_flags {
-> +	CGROUP_FREEZER_ONLINE	= (1 << 0), /* freezer is fully online */
+> Meanwhile, I guess you need to find some suitable location
+> for the header file that works for Rafael.
+I wonder if including mach/voltage.h is acceptable here? if Kevin could
+suggest an option as well, it will be great.
 
-Could you explain what 'online' means here again, rather than changelog ?
-BTW, 'online' is a shared concept, between post_create() and pre_destroy(), among
-developpers ? Is it new ?
-
-Anyway, the patch itself is simple.
-
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu-+CUm20s59erQFUHtdCDX3A@public.gmane.org>
+-- 
+Regards,
+Nishanth Menon
