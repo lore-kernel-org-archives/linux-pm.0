@@ -1,158 +1,48 @@
-From: Daniel Wagner <wagi-kQCPcA+X3s7YtjvyW6yDsg@public.gmane.org>
-Subject: Re: [PATCH 1/9 v3] cgroup: add cgroup_subsys->post_create()
-Date: Fri, 09 Nov 2012 12:09:38 +0100
-Message-ID: <509CE472.9040504@monom.org>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org> <1351931915-1701-2-git-send-email-tj@kernel.org> <20121108190715.GD9672@htj.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20121108190715.GD9672-Gd/HAXX7CRxy/B6EtB590w@public.gmane.org>
-Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
+From: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Subject: [PATCH V5 0/2] Upstream ST-Ericsson thermal driver
+Date: Fri,  9 Nov 2012 19:29:06 +0800
+Message-ID: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:45662 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118Ab2KIL3o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Nov 2012 06:29:44 -0500
+Received: by mail-bk0-f46.google.com with SMTP id jk13so1586831bkc.19
+        for <linux-pm@vger.kernel.org>; Fri, 09 Nov 2012 03:29:43 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-acpi@vger.kernel.org, rui.zhang@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-Hi Tejun,
+From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-On 08.11.2012 20:07, Tejun Heo wrote:> Subject: cgroup: add 
-cgroup_subsys->post_create()
- >
- > Currently, there's no way for a controller to find out whether a new
- > cgroup finished all ->create() allocatinos successfully and is
- > considered "live" by cgroup.
+V4->V5 Changes:
 
-I'd like add hierarchy support to net_prio and the first thing to
-do is to get rid of get_prioidx(). It looks like it would be nice to be 
-able to use use_id and post_create() for this but as I read the code 
-this might not work because the netdev might access resources allocated 
-between create() and post_create(). So my question is would it make 
-sense to move
+In patch "Thermal: Add ST-Ericsson DB8500 thermal driver":
+ - use flush_work instead of flush_work_sync since the later is deprecated now.
+ - parameter trip_points of db8500_thermal_match_cdev is renamed to trip_point;
+ - re-order oprerations in function db8500_thermal_update_config;
 
-cgroup_create():
+hongbo.zhang (2):
+  Thermal: Add ST-Ericsson DB8500 thermal driver.
+  Thermal: Add ST-Ericsson DB8500 thermal properties and platform data.
 
-		if (ss->use_id) {
-			err = alloc_css_id(ss, parent, cgrp);
-			if (err)
-				goto err_destroy;
-		}
+ .../devicetree/bindings/thermal/db8500-thermal.txt |  44 ++
+ arch/arm/boot/dts/dbx5x0.dtsi                      |  14 +
+ arch/arm/boot/dts/snowball.dts                     |  31 ++
+ arch/arm/configs/u8500_defconfig                   |   2 +
+ arch/arm/mach-ux500/board-mop500.c                 |  64 +++
+ drivers/thermal/Kconfig                            |  20 +
+ drivers/thermal/Makefile                           |   2 +
+ drivers/thermal/db8500_cpufreq_cooling.c           | 108 +++++
+ drivers/thermal/db8500_thermal.c                   | 531 +++++++++++++++++++++
+ include/linux/platform_data/db8500_thermal.h       |  38 ++
+ 10 files changed, 854 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/db8500-thermal.txt
+ create mode 100644 drivers/thermal/db8500_cpufreq_cooling.c
+ create mode 100644 drivers/thermal/db8500_thermal.c
+ create mode 100644 include/linux/platform_data/db8500_thermal.h
 
-part before create() or add some protection between create() and 
-post_create() callback in net_prio. I have a patch but I see
-I could drop it completely if post_create() is there.
-
-cheers,
-daniel
-
-
- From 84fbbdf0dc5d3460389e39a00a3ee553ee55b563 Mon Sep 17 00:00:00 2001
-From: Daniel Wagner <daniel.wagner-98C5kh4wR6ohFhg+JK9F0w@public.gmane.org>
-Date: Thu, 8 Nov 2012 17:17:21 +0100
-Subject: [PATCH] cgroups: net_prio: Use IDR library to assign netprio index
-
-get_prioidx() allocated a new id whenever it was called. put_prioidx()
-gave an id back. get_pioidx() could can reallocate the id later on.
-So that is exactly what IDR offers and so let's use it.
-
-Signed-off-by: Daniel Wagner <daniel.wagner-98C5kh4wR6ohFhg+JK9F0w@public.gmane.org>
----
-  net/core/netprio_cgroup.c | 51 
-+++++++++--------------------------------------
-  1 file changed, 9 insertions(+), 42 deletions(-)
-
-diff --git a/net/core/netprio_cgroup.c b/net/core/netprio_cgroup.c
-index 847c02b..3c1b612 100644
---- a/net/core/netprio_cgroup.c
-+++ b/net/core/netprio_cgroup.c
-@@ -27,10 +27,7 @@
-
-  #include <linux/fdtable.h>
-
--#define PRIOIDX_SZ 128
--
--static unsigned long prioidx_map[PRIOIDX_SZ];
--static DEFINE_SPINLOCK(prioidx_map_lock);
-+static DEFINE_IDA(netprio_ida);
-  static atomic_t max_prioidx = ATOMIC_INIT(0);
-
-  static inline struct cgroup_netprio_state *cgrp_netprio_state(struct 
-cgroup *cgrp)
-@@ -39,34 +36,6 @@ static inline struct cgroup_netprio_state 
-*cgrp_netprio_state(struct cgroup *cgr
-  			    struct cgroup_netprio_state, css);
-  }
-
--static int get_prioidx(u32 *prio)
--{
--	unsigned long flags;
--	u32 prioidx;
--
--	spin_lock_irqsave(&prioidx_map_lock, flags);
--	prioidx = find_first_zero_bit(prioidx_map, sizeof(unsigned long) * 
-PRIOIDX_SZ);
--	if (prioidx == sizeof(unsigned long) * PRIOIDX_SZ) {
--		spin_unlock_irqrestore(&prioidx_map_lock, flags);
--		return -ENOSPC;
--	}
--	set_bit(prioidx, prioidx_map);
--	if (atomic_read(&max_prioidx) < prioidx)
--		atomic_set(&max_prioidx, prioidx);
--	spin_unlock_irqrestore(&prioidx_map_lock, flags);
--	*prio = prioidx;
--	return 0;
--}
--
--static void put_prioidx(u32 idx)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&prioidx_map_lock, flags);
--	clear_bit(idx, prioidx_map);
--	spin_unlock_irqrestore(&prioidx_map_lock, flags);
--}
--
-  static int extend_netdev_table(struct net_device *dev, u32 new_len)
-  {
-  	size_t new_size = sizeof(struct netprio_map) +
-@@ -120,9 +89,9 @@ static struct cgroup_subsys_state *cgrp_create(struct 
-cgroup *cgrp)
-  	if (cgrp->parent && cgrp_netprio_state(cgrp->parent)->prioidx)
-  		goto out;
-
--	ret = get_prioidx(&cs->prioidx);
--	if (ret < 0) {
--		pr_warn("No space in priority index array\n");
-+	cs->prioidx = ida_simple_get(&netprio_ida, 0, 0, GFP_KERNEL);
-+	if (cs->prioidx < 0) {
-+		ret = cs->prioidx;
-  		goto out;
-  	}
-
-@@ -146,7 +115,7 @@ static void cgrp_destroy(struct cgroup *cgrp)
-  			map->priomap[cs->prioidx] = 0;
-  	}
-  	rtnl_unlock();
--	put_prioidx(cs->prioidx);
-+	ida_simple_remove(&netprio_ida, cs->prioidx);
-  	kfree(cs);
-  }
-
-@@ -284,12 +253,10 @@ struct cgroup_subsys net_prio_subsys = {
-  	.module		= THIS_MODULE,
-
-  	/*
--	 * net_prio has artificial limit on the number of cgroups and
--	 * disallows nesting making it impossible to co-mount it with other
--	 * hierarchical subsystems.  Remove the artificially low PRIOIDX_SZ
--	 * limit and properly nest configuration such that children follow
--	 * their parents' configurations by default and are allowed to
--	 * override and remove the following.
-+	 * net_prio has artificial limit on properly nest
-+	 * configuration such that children follow their parents'
-+	 * configurations by default and are allowed to override and
-+	 * remove the following.
-  	 */
-  	.broken_hierarchy = true,
-  };
 -- 
-1.7.11.7
+1.7.11.3
+
