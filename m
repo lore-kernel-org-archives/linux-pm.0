@@ -1,89 +1,58 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [RFC PATCH 0/8][Sorted-buddy] mm: Linux VM Infrastructure to
  support Memory Power Management
-Date: Fri, 09 Nov 2012 20:53:59 +0530
-Message-ID: <509D200F.2000908@linux.vnet.ibm.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121108180257.GC8218@suse.de> <20121109051247.GA499@dirshya.in.ibm.com> <20121109090052.GF8218@suse.de> <509D185D.8070307@linux.vnet.ibm.com>
+Date: Fri, 09 Nov 2012 07:34:03 -0800
+Message-ID: <509D226B.30904@linux.intel.com>
+References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121108180257.GC8218@suse.de> <20121109051247.GA499@dirshya.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <509D185D.8070307@linux.vnet.ibm.com>
+In-Reply-To: <20121109051247.GA499@dirshya.in.ibm.com>
 Sender: owner-linux-mm@kvack.org
-To: Mel Gorman <mgorman@suse.de>
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, akpm@linux-foundation.org, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, dave@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: svaidy@linux.vnet.ibm.com
+Cc: Mel Gorman <mgorman@suse.de>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, akpm@linux-foundation.org, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, dave@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/09/2012 08:21 PM, Srivatsa S. Bhat wrote:
-> On 11/09/2012 02:30 PM, Mel Gorman wrote:
->> On Fri, Nov 09, 2012 at 10:44:16AM +0530, Vaidyanathan Srinivasan wrote:
->>> * Mel Gorman <mgorman@suse.de> [2012-11-08 18:02:57]:
-[...]
->>>>> Short description of the "Sorted-buddy" design:
->>>>> -----------------------------------------------
->>>>>
->>>>> In this design, the memory region boundaries are captured in a parallel
->>>>> data-structure instead of fitting regions between nodes and zones in the
->>>>> hierarchy. Further, the buddy allocator is altered, such that we maintain the
->>>>> zones' freelists in region-sorted-order and thus do page allocation in the
->>>>> order of increasing memory regions.
->>>>
->>>> Implying that this sorting has to happen in the either the alloc or free
->>>> fast path.
->>>
->>> Yes, in the free path. This optimization can be actually be delayed in
->>> the free fast path and completely avoided if our memory is full and we
->>> are doing direct reclaim during allocations.
->>>
->>
->> Hurting the free fast path is a bad idea as there are workloads that depend
->> on it (buffer allocation and free) even though many workloads do *not*
->> notice it because the bulk of the cost is incurred at exit time. As
->> memory low power usage has many caveats (may be impossible if a page
->> table is allocated in the region for example) but CPU usage has less
->> restrictions it is more important that the CPU usage be kept low.
->>
->> That means, little or no modification to the fastpath. Sorting or linear
->> searches should be minimised or avoided.
->>
+On 11/8/2012 9:14 PM, Vaidyanathan Srinivasan wrote:
+> * Mel Gorman <mgorman@suse.de> [2012-11-08 18:02:57]:
 > 
-> Right. For example, in the previous "hierarchy" design[1], there was no overhead
-> in any of the fast paths. Because it split up the zones themselves, so that
-> they fit on memory region boundaries. But that design had other problems, like
-> zone fragmentation (too many zones).. which kind of out-weighed the benefit
-> obtained from zero overhead in the fast-paths. So one of the suggested
-> alternatives during that review[2], was to explore modifying the buddy allocator
-> to be aware of memory region boundaries, which this "sorted-buddy" design
-> implements.
+>> On Wed, Nov 07, 2012 at 01:22:13AM +0530, Srivatsa S. Bhat wrote:
+>>> ------------------------------------------------------------
 > 
-> [1]. http://lwn.net/Articles/445045/
->      http://thread.gmane.org/gmane.linux.kernel.mm/63840
->      http://thread.gmane.org/gmane.linux.kernel.mm/89202
+> Hi Mel,
 > 
-> [2]. http://article.gmane.org/gmane.linux.power-management.general/24862
->      http://article.gmane.org/gmane.linux.power-management.general/25061
->      http://article.gmane.org/gmane.linux.kernel.mm/64689 
+> Thanks for detailed review and comments.  The goal of this patch
+> series is to brainstorm on ideas that enable Linux VM to record and
+> exploit memory region boundaries.
 > 
-> In this patchset, I have tried to minimize the overhead on the fastpaths.
-> For example, I have used a special 'next_region' data-structure to keep the
-> alloc path fast. Also, in the free path, we don't need to keep the free
-> lists fully address sorted; having them region-sorted is sufficient. Of course
-> we could explore more ways of avoiding overhead in the fast paths, or even a
-> different design that promises to be much better overall. I'm all ears for
-> any suggestions :-)
+> The first approach that we had last year (hierarchy) has more runtime
+> overhead.  This approach of sorted-buddy was one of the alternative
+> discussed earlier and we are trying to find out if simple requirements
+> of biasing memory allocations can be achieved with this approach.
 > 
+> Smart reclaim based on this approach is a key piece we still need to
+> design.  Ideas from compaction will certainly help.
 
-FWIW, kernbench is actually (and surprisingly) showing a slight performance
-*improvement* with this patchset, over vanilla 3.7-rc3, as I mentioned in
-my other email to Dave.
+reclaim may be needed for the embedded use case
+but at least we are also looking at memory power savings that come for content-preserving power states.
+For that, Linux should *statistically* not be actively using (e.g. read or write from it) a percentage of memory...
+and statistically clustering is quite sufficient for that.
 
-https://lkml.org/lkml/2012/11/7/428
+(for example, if you don't use a DIMM for a certain amount of time,
+the link and other pieces can go to a lower power state,
+even on todays server systems.
+In a many-dimm system..  if each app is, on a per app basis,
+preferring one dimm for its allocations, the process scheduler will
+help us naturally keeping the other dimms "dark")
 
-I don't think I can dismiss it as an experimental error, because I am seeing
-those results consistently.. I'm trying to find out what's behind that.
+If you have to actually free the memory, it is a much much harder problem,
+increasingly so if the region you MUST free is quite large.
 
-Regards,
-Srivatsa S. Bhat
+if one solution can solve both cases, great, but lets not make both not happen
+because one of the cases is hard...
+(and please lets not use moving or freeing of pages as a solution for at least the
+content preserving case)
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
