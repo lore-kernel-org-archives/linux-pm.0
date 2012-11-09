@@ -1,178 +1,140 @@
-From: Ankita Garg <gargankita@gmail.com>
-Subject: Re: [RFC PATCH 6/8] mm: Demarcate and maintain pageblocks in
- region-order in the zones' freelists
-Date: Fri, 9 Nov 2012 00:22:52 -0600
-Message-ID: <CAKD8UxccEqUJVFcod7KCJeyk+-g_Vdb_vg=YuWxs4dLEU=8CrA@mail.gmail.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com>
- <20121106195342.6941.94892.stgit@srivatsabhat.in.ibm.com> <509985DE.8000508@linux.vnet.ibm.com>
- <509AC164.1050403@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/alternative; boundary=f46d04428af2782d7904ce09fce9
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <509AC164.1050403@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org, mgorman@suse.de, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH v9 00/10] ZPODD Patches
+Date: Fri,  9 Nov 2012 14:51:52 +0800
+Message-ID: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:35627 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535Ab2KIGwM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 Nov 2012 01:52:12 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>
+Cc: Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lu@intel.com>
 
---f46d04428af2782d7904ce09fce9
-Content-Type: text/plain; charset=ISO-8859-1
+v9:
+Build ZPODD as part of libata instead of another standalone module
+as it is tightly related to other libata files.
+Identify and init ZPODD during probe time instead of after SCSI
+device is created as suggested by Tejun Heo.
+Make use of pm qos flag to give ACPI hint when choosing ACPI state.
+Expose qos flag to give user control of whether power off is allowed.
 
-Hi Srivatsa,
+This patchset used Rafael's pm-qos work:
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-qos
 
-I understand that you are maintaining the page blocks in region sorted
-order. So that way, when the memory requests come in, you can hand out
-memory from the regions in that order. However, do you take this scenario
-into account - in some bucket of the buddy allocator, there might not be
-any pages belonging to, lets say, region 0, while the next higher bucket
-has them. So, instead of handing out memory from whichever region thats
-present there, to probably go to the next bucket and split that region 0
-pageblock there and allocate from it ? (Here, region 0 is just an example).
-Been a while since I looked at kernel code, so I might be missing something!
+v8:
+This version is a redesign, it doesn't have much to do with previous
+versions. The ZPODD implementation is done almost entirely in ATA layer
+now, except 2 helper functions from SCSI sr driver to block disk events.
 
-Regards,
-Ankita
+The basic idea is that, when ata port is runtime suspended, it will
+check if the ODD is ready to be powered off. And if yes, events is
+blocked and power omitted; if not, ODD's power supply remains unchanged
+by keeping ACPI state at D0.
 
+Some background knowledge about ZPODD is added below v1 history log.
 
+v7:
+Re work of runtime pm of sr driver, based on ideas of Alan Stern and
+Oliver Neukum.
 
-On Wed, Nov 7, 2012 at 2:15 PM, Srivatsa S. Bhat <
-srivatsa.bhat@linux.vnet.ibm.com> wrote:
+Jeff, due to the ready_to_power_off flag added, there is a small
+change in [PATCH v7 6/6] libata: acpi: respect may_power_off flag,
+please check if I can still get your ack, thanks.
 
-> On 11/07/2012 03:19 AM, Dave Hansen wrote:
-> > On 11/06/2012 11:53 AM, Srivatsa S. Bhat wrote:
-> >> This is the main change - we keep the pageblocks in region-sorted order,
-> >> where pageblocks belonging to region-0 come first, followed by those
-> belonging
-> >> to region-1 and so on. But the pageblocks within a given region need
-> *not* be
-> >> sorted, since we need them to be only region-sorted and not fully
-> >> address-sorted.
-> >>
-> >> This sorting is performed when adding pages back to the freelists, thus
-> >> avoiding any region-related overhead in the critical page allocation
-> >> paths.
-> >
-> > It's probably _better_ to do it at free time than alloc, but it's still
-> > pretty bad to be doing a linear walk over a potentially 256-entry array
-> > holding the zone lock.  The overhead is going to show up somewhere.  How
-> > does this do with a kernel compile?  Looks like exit() when a process
-> > has a bunch of memory might get painful.
-> >
->
-> As I mentioned in the cover-letter, kernbench numbers haven't shown any
-> observable performance degradation. On the contrary, (as unbelievable as it
-> may sound), they actually indicate a slight performance *improvement* with
-> my
-> patchset! I'm trying to figure out what could be the reason behind that.
->
-> Going forward, we could try to optimize the sorting logic in the free()
-> part, but in any case, IMHO that's the right place to push the overhead to,
-> since the performance of free() is not expected to be _that_ critical
-> (unlike
-> alloc()) for overall system performance.
->
-> Regards,
-> Srivatsa S. Bhat
->
->
+v6:
+When user changes may_power_off flag through sysfs entry and if device
+is already runtime suspended, resume resume it so that it can respect
+this flag next time it is runtime suspended as suggested by Alan Stern.
+Call scsi_autopm_get/put_device once in sr_check_events as suggested by
+Alan Stern.
 
+v5:
+Add may_power_off flag to scsi device.
+Alan Stern suggested that I should not mess runtime suspend with
+runtime power off, but the current zpodd implementation made it not
+easy to seperate. So I re-wrote the zpodd implementation, the end
+result is, normal ODD can also enter runtime suspended state, but
+their power won't be removed.
+
+v4:
+Rebase on top of Linus' tree, due to this, the problem of a missing
+flag in v3 is gone;
+Add a new function scsi_autopm_put_device_autosuspend to first mark
+last busy for the device and then put autosuspend it as suggested by
+Oliver Neukum.
+Typo fix as pointed by Sergei Shtylyov.
+Check can_power_off flag before any runtime pm operations in sr.
+
+v3:
+Rebase on top of scsi-misc tree;
+Add the sr related patches previously in Jeff's libata tree;
+Re-organize the sr patches.
+A problem for now: for patch
+scsi: sr: support zero power ODD(ZPODD)
+I can't set a flag in libata-acpi.c since a related function is
+missing in scsi-misc tree. Will fix this when 3.6-rc1 released.
+
+v2:
+Bug fix for v1;
+Use scsi_autopm_* in sr driver instead of pm_runtime_*;
+
+v1:
+Here are some patches to make ZPODD easier to use for end users and
+a fix for using ZPODD with system suspend.
+
+Some background knowledge about ZPODD:
+ODD means Optical Disc Drive.
+ZPODD means Zero Power ODD, it is a mechanism to place the ODD into
+zero power state when the system is running at S0 system state without
+user's awareness.
+It achieved this by ACPI and SATA device attention pin. For power off,
+normal ACPI control method is used to place the device into D3 cold
+ACPI device state, aka. device power supply omitted. For power on, when
+user press the eject button of a drawer type ODD or when user inserts
+an ODD into a slot type ODD, the device attention pin will trigger. In
+the current x86 implementation, this pin will connect to a GPE, and the
+GPE will trigger an ACPI interrupt. With our pre-registered ACPI
+notification code, the device can be runtime resumed, and we place the
+device back to full power state by setting its ACPI state to D0. The
+whole process is transparent to the end user.
+
+Aaron Lu (10):
+  scsi: sr: support runtime pm
+  ata: zpodd: Add CONFIG_SATA_ZPODD
+  ata: zpodd: identify and init ZPODD devices
+  libata: acpi: move acpi notification code to zpodd
+  libata: separate ATAPI code
+  ata: zpodd: check zero power ready status
+  block: add a new interface to block events
+  scsi: sr: support (un)block events
+  ata: zpodd: handle power transition of ODD
+  ata: expose pm qos flags to user space for ata device
+
+ block/genhd.c              |  26 ++++
+ drivers/ata/Kconfig        |  12 ++
+ drivers/ata/Makefile       |   3 +-
+ drivers/ata/libata-acpi.c  | 123 ++++++-----------
+ drivers/ata/libata-atapi.c |  88 ++++++++++++
+ drivers/ata/libata-core.c  |   4 +-
+ drivers/ata/libata-eh.c    |  87 +-----------
+ drivers/ata/libata-scsi.c  |   4 +
+ drivers/ata/libata-zpodd.c | 333 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/ata/libata.h       |  33 +++++
+ drivers/scsi/Makefile      |   1 +
+ drivers/scsi/sr.c          |  30 +++-
+ drivers/scsi/sr_zpodd.c    |  21 +++
+ drivers/scsi/sr_zpodd.h    |   9 ++
+ include/linux/genhd.h      |   1 +
+ include/linux/libata.h     |   2 +
+ include/uapi/linux/cdrom.h |  34 +++++
+ 17 files changed, 638 insertions(+), 173 deletions(-)
+ create mode 100644 drivers/ata/libata-atapi.c
+ create mode 100644 drivers/ata/libata-zpodd.c
+ create mode 100644 drivers/scsi/sr_zpodd.c
+ create mode 100644 drivers/scsi/sr_zpodd.h
 
 -- 
-Regards,
-Ankita
-Graduate Student
-Department of Computer Science
-University of Texas at Austin
+1.7.12.4
 
---f46d04428af2782d7904ce09fce9
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<span style=3D"font-family:arial,sans-serif;font-size:12.499999046325684px"=
->Hi Srivatsa,</span><div style=3D"font-family:arial,sans-serif;font-size:12=
-.499999046325684px"><br></div><div style=3D"font-family:arial,sans-serif;fo=
-nt-size:12.499999046325684px">
-
-I understand that you are maintaining the page blocks in region sorted orde=
-r. So that way, when the memory requests come in, you can hand out memory f=
-rom the regions in that order. However, do you take this scenario into acco=
-unt - in some bucket of the buddy allocator, there might not be any pages b=
-elonging to, lets say, region 0, while the next higher bucket has them. So,=
- instead of handing out memory from whichever region thats present there, t=
-o probably go to the next bucket and split that region 0 pageblock there an=
-d allocate from it ? (Here, region 0 is just an example). Been a while sinc=
-e I looked at kernel code, so I might be missing something!</div>
-
-<div style=3D"font-family:arial,sans-serif;font-size:12.499999046325684px">=
-<br></div><div style=3D"font-family:arial,sans-serif;font-size:12.499999046=
-325684px">Regards,</div><div style=3D"font-family:arial,sans-serif;font-siz=
-e:12.499999046325684px">
-
-Ankita</div><div style=3D"font-family:arial,sans-serif;font-size:12.4999990=
-46325684px"><br></div><div class=3D"gmail_extra"><br><br><div class=3D"gmai=
-l_quote">On Wed, Nov 7, 2012 at 2:15 PM, Srivatsa S. Bhat <span dir=3D"ltr"=
->&lt;<a href=3D"mailto:srivatsa.bhat@linux.vnet.ibm.com" target=3D"_blank">=
-srivatsa.bhat@linux.vnet.ibm.com</a>&gt;</span> wrote:<br>
-
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=3D"h5">On 1=
-1/07/2012 03:19 AM, Dave Hansen wrote:<br>
-&gt; On 11/06/2012 11:53 AM, Srivatsa S. Bhat wrote:<br>
-&gt;&gt; This is the main change - we keep the pageblocks in region-sorted =
-order,<br>
-&gt;&gt; where pageblocks belonging to region-0 come first, followed by tho=
-se belonging<br>
-&gt;&gt; to region-1 and so on. But the pageblocks within a given region ne=
-ed *not* be<br>
-&gt;&gt; sorted, since we need them to be only region-sorted and not fully<=
-br>
-&gt;&gt; address-sorted.<br>
-&gt;&gt;<br>
-&gt;&gt; This sorting is performed when adding pages back to the freelists,=
- thus<br>
-&gt;&gt; avoiding any region-related overhead in the critical page allocati=
-on<br>
-&gt;&gt; paths.<br>
-&gt;<br>
-&gt; It&#39;s probably _better_ to do it at free time than alloc, but it&#3=
-9;s still<br>
-&gt; pretty bad to be doing a linear walk over a potentially 256-entry arra=
-y<br>
-&gt; holding the zone lock. =A0The overhead is going to show up somewhere. =
-=A0How<br>
-&gt; does this do with a kernel compile? =A0Looks like exit() when a proces=
-s<br>
-&gt; has a bunch of memory might get painful.<br>
-&gt;<br>
-<br>
-</div></div>As I mentioned in the cover-letter, kernbench numbers haven&#39=
-;t shown any<br>
-observable performance degradation. On the contrary, (as unbelievable as it=
-<br>
-may sound), they actually indicate a slight performance *improvement* with =
-my<br>
-patchset! I&#39;m trying to figure out what could be the reason behind that=
-.<br>
-<br>
-Going forward, we could try to optimize the sorting logic in the free()<br>
-part, but in any case, IMHO that&#39;s the right place to push the overhead=
- to,<br>
-since the performance of free() is not expected to be _that_ critical (unli=
-ke<br>
-alloc()) for overall system performance.<br>
-<br>
-Regards,<br>
-Srivatsa S. Bhat<br>
-<br>
-</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br>Regards,<br>=
-Ankita<div>Graduate Student</div><div>Department of Computer Science</div><=
-div>University of Texas at Austin<br><br></div><br>
-</div>
-
---f46d04428af2782d7904ce09fce9--
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
