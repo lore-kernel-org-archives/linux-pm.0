@@ -1,95 +1,41 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/8][Sorted-buddy] mm: Linux VM Infrastructure to
- support Memory Power Management
-Date: Fri, 09 Nov 2012 22:22:42 +0530
-Message-ID: <509D34DA.5090303@linux.vnet.ibm.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121108180257.GC8218@suse.de> <20121109051247.GA499@dirshya.in.ibm.com> <20121109090052.GF8218@suse.de> <509D185D.8070307@linux.vnet.ibm.com> <509D200F.2000908@linux.vnet.ibm.com> <509D2B9B.4090305@linux.vnet.ibm.com> <509D3088.2060507@linux.vnet.ibm.com> <509D32C2.2090104@linux.vnet.ibm.com>
+From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCHSET cgroup/for-3.8] cgroup_freezer: implement proper
+	hierarchy support
+Date: Fri, 9 Nov 2012 09:15:12 -0800
+Message-ID: <20121109171512.GA2711@htj.dyndns.org>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <509D32C2.2090104@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Mel Gorman <mgorman@suse.de>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, akpm@linux-foundation.org, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, amit.kachhap@linaro.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1351931915-1701-1-git-send-email-tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
+List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org
+Cc: cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/09/2012 10:13 PM, Srivatsa S. Bhat wrote:
-> On 11/09/2012 10:04 PM, Srivatsa S. Bhat wrote:
->> On 11/09/2012 09:43 PM, Dave Hansen wrote:
->>> On 11/09/2012 07:23 AM, Srivatsa S. Bhat wrote:
->>>> FWIW, kernbench is actually (and surprisingly) showing a slight performance
->>>> *improvement* with this patchset, over vanilla 3.7-rc3, as I mentioned in
->>>> my other email to Dave.
->>>>
->>>> https://lkml.org/lkml/2012/11/7/428
->>>>
->>>> I don't think I can dismiss it as an experimental error, because I am seeing
->>>> those results consistently.. I'm trying to find out what's behind that.
->>>
->>> The only numbers in that link are in the date. :)  Let's see the
->>> numbers, please.
->>>
->>
->> Sure :) The reason I didn't post the numbers very eagerly was that I didn't
->> want it to look ridiculous if it later turned out to be really an error in the
->> experiment ;) But since I have seen it happening consistently I think I can
->> post the numbers here with some non-zero confidence.
->>
->>> If you really have performance improvement to the memory allocator (or
->>> something else) here, then surely it can be pared out of your patches
->>> and merged quickly by itself.  Those kinds of optimizations are hard to
->>> come by!
->>>
->>
->> :-)
->>
->> Anyway, here it goes:
->>
->> Test setup:
->> ----------
->> x86 2-socket quad-core machine. (CONFIG_NUMA=n because I figured that my
->> patchset might not handle NUMA properly). Mem region size = 512 MB.
->>
+On Sat, Nov 03, 2012 at 01:38:26AM -0700, Tejun Heo wrote:
+> Hello,
 > 
-> For CONFIG_NUMA=y on the same machine, the difference between the 2 kernels
-> was much lesser, but nevertheless, this patchset performed better. I wouldn't
-> vouch that my patchset handles NUMA correctly, but here are the numbers from
-> that run anyway (at least to show that I really found the results to be
-> repeatable):
-> 
-> Kernbench log for Vanilla 3.7-rc3
-> =================================
-> Kernel: 3.7.0-rc3-vanilla-numa-default
-> Average Optimal load -j 32 Run (std deviation):
-> Elapsed Time 589.058 (0.596171)
-> User Time 7461.26 (1.69702)
-> System Time 1072.03 (1.54704)
-> Percent CPU 1448.2 (1.30384)
-> Context Switches 2.14322e+06 (4042.97)
-> Sleeps 1847230 (2614.96)
-> 
-> Kernbench log for Vanilla 3.7-rc3
-> =================================
+> This patchset implement proper hierarchy support for cgroup_freezer as
+> discussed in "[RFC] cgroup TODOs"[1].
 
-Oops, that title must have been "for sorted-buddy patchset" of course..
+Applied to cgroup/for-3.8.  Rafael, I applied the cgroup_freezer
+changes there too as there already are and will be more dependencies
+between cgroup_freezer and cgroup changes, and the cgroup_freezer
+changes don't really affect the rest of the freezer.  If you'd like
+them to be routed differently, please let me know.
 
-> Kernel: 3.7.0-rc3-sorted-buddy-numa-default
-> Average Optimal load -j 32 Run (std deviation):
-> Elapsed Time 577.182 (0.713772)
-> User Time 7315.43 (3.87226)
-> System Time 1043 (1.12855)
-> Percent CPU 1447.6 (2.19089)
-> Context Switches 2117022 (3810.15)
-> Sleeps 1.82966e+06 (4149.82)
-> 
-> 
+Thanks.
 
-Regards,
-Srivatsa S. Bhat
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-- 
+tejun
