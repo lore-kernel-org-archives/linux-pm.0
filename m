@@ -1,66 +1,72 @@
-From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/9 v3] cgroup: add cgroup_subsys->post_create()
-Date: Fri, 9 Nov 2012 09:22:11 -0800
-Message-ID: <20121109172211.GB2711@htj.dyndns.org>
-References: <1351931915-1701-1-git-send-email-tj@kernel.org>
- <1351931915-1701-2-git-send-email-tj@kernel.org>
- <20121108190715.GD9672@htj.dyndns.org>
- <509CE472.9040504@monom.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [GIT PULL] PCI updates for v3.7
+Date: Fri, 9 Nov 2012 10:47:20 -0700
+Message-ID: <CAErSpo4Wjh1t68W5z9a0iC0hJcEeGhJ7CKrEL42iZQJksboaOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <509CE472.9040504-kQCPcA+X3s7YtjvyW6yDsg@public.gmane.org>
-Sender: cgroups-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Wagner <wagi-kQCPcA+X3s7YtjvyW6yDsg@public.gmane.org>
-Cc: lizefan-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, mhocko-AlSwsSmVLrQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fweisbec-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Glauber Costa <glommer-bzQdu9zFT3WakBO8gow8eQ@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f174.google.com ([74.125.82.174]:51299 "EHLO
+	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754544Ab2KIRrm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Nov 2012 12:47:42 -0500
+Received: by mail-we0-f174.google.com with SMTP id t9so1852699wey.19
+        for <linux-pm@vger.kernel.org>; Fri, 09 Nov 2012 09:47:41 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>, Taku Izumi <izumi.taku@jp.fujitsu.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hey, Daniel.
+Hi Linus,
 
-On Fri, Nov 09, 2012 at 12:09:38PM +0100, Daniel Wagner wrote:
-> On 08.11.2012 20:07, Tejun Heo wrote:> Subject: cgroup: add
-> cgroup_subsys->post_create()
-> >
-> > Currently, there's no way for a controller to find out whether a new
-> > cgroup finished all ->create() allocatinos successfully and is
-> > considered "live" by cgroup.
-> 
-> I'd like add hierarchy support to net_prio and the first thing to
-> do is to get rid of get_prioidx(). It looks like it would be nice to
+Here are some fixes for v3.7.  Three are related to D3cold support,
+and the last portdrv one is a fix for the PCIe capability accessor
+rework we merged for v3.7-rc1.
 
-Ooh, I'm already working on it.  I *think* I should be able to post
-the patches later today or early next week.
+Bjorn
 
-> be able to use use_id and post_create() for this but as I read the
-> code this might not work because the netdev might access resources
-> allocated between create() and post_create(). So my question is
-> would it make sense to move
-> 
-> cgroup_create():
-> 
-> 		if (ss->use_id) {
-> 			err = alloc_css_id(ss, parent, cgrp);
-> 			if (err)
-> 				goto err_destroy;
-> 		}
-> 
-> part before create() or add some protection between create() and
-> post_create() callback in net_prio. I have a patch but I see
-> I could drop it completely if post_create() is there.
 
-Glauber had about similar question about css_id and I need to think
-more about it but currently I think I want to phase out css IDs.  It's
-an id of the wrong thing (CSSes don't need IDs, cgroups do) and
-unnecessarily duplicates its own hierarchy when the hierarchy of
-cgroups already exists.  Once memcontrol moves away from walking using
-css_ids, I *think* I'll try to kill it.
+The following changes since commit 8f0d8163b50e01f398b14bcd4dc039ac5ab18d64:
 
-I'll add cgroup ID (no hierarchy funnies, just a single ida allocated
-number) so that it can be used for cgroup indexing.  Glauber, that
-should solve your problem too, right?
+  Linux 3.7-rc3 (2012-10-28 12:24:48 -0700)
 
-Thanks.
+are available in the git repository at:
 
--- 
-tejun
+  git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git
+tags/3.7-pci-fixes
+
+for you to fetch changes up to ff8e59bc4ec3f31789a47dce9b6fe44bd7bc5fcc:
+
+  PCI/portdrv: Don't create hotplug slots unless port supports hotplug
+(2012-11-05 16:59:59 -0700)
+
+----------------------------------------------------------------
+PCI updates for v3.7:
+
+  Power management
+      PCI/PM: Fix proc config reg access for D3cold and bridge suspending
+      PCI/PM: Resume device before shutdown
+      PCI/PM: Fix deadlock when unbinding device if parent in D3cold
+  Hotplug
+      PCI/portdrv: Don't create hotplug slots unless port supports hotplug
+
+----------------------------------------------------------------
+Bjorn Helgaas (1):
+      Merge branch 'pci/huang-d3cold-fixes' into for-linus
+
+Huang Ying (3):
+      PCI/PM: Fix deadlock when unbinding device if parent in D3cold
+      PCI/PM: Resume device before shutdown
+      PCI/PM: Fix proc config reg access for D3cold and bridge suspending
+
+Taku Izumi (1):
+      PCI/portdrv: Don't create hotplug slots unless port supports hotplug
+
+ drivers/pci/bus.c                  |  3 ---
+ drivers/pci/pci-driver.c           | 12 ++----------
+ drivers/pci/pci-sysfs.c            | 34 ----------------------------------
+ drivers/pci/pci.c                  | 32 ++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h                  |  2 ++
+ drivers/pci/pcie/aer/aerdrv_core.c | 20 ++++++++++++++++----
+ drivers/pci/pcie/portdrv_core.c    |  3 ++-
+ drivers/pci/proc.c                 |  8 ++++++++
+ 8 files changed, 62 insertions(+), 52 deletions(-)
