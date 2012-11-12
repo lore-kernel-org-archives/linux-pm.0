@@ -1,69 +1,220 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 2/6 v4] clk, highbank: Prevent glitches in non-bypass
- reset mode
-Date: Mon, 12 Nov 2012 15:35:30 -0600
-Message-ID: <50A16BA2.2050304@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-3-git-send-email-mark.langsdorf@calxeda.com> <20121112212412.20034.37835@nucleus>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC] cpuidle - remove the power_specified field in the driver
+Date: Mon, 12 Nov 2012 23:08:19 +0100
+Message-ID: <50A17353.8010604@linaro.org>
+References: <50831CA3.2020602@linaro.org> <1352752016-3136-1-git-send-email-daniel.lezcano@linaro.org> <CAODwPW-yjzrAFRA4Bv-MZETFEfq+cpaLvHaYX5K5HBtQtJKZQA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121112212412.20034.37835@nucleus>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <rob.herring@calxeda.com>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f174.google.com ([74.125.82.174]:39282 "EHLO
+	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752780Ab2KLWIZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 17:08:25 -0500
+Received: by mail-we0-f174.google.com with SMTP id t9so3023907wey.19
+        for <linux-pm@vger.kernel.org>; Mon, 12 Nov 2012 14:08:24 -0800 (PST)
+In-Reply-To: <CAODwPW-yjzrAFRA4Bv-MZETFEfq+cpaLvHaYX5K5HBtQtJKZQA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Julius Werner <jwerner@chromium.org>
+Cc: linux-pm@vger.kernel.org, khilman@ti.com, len.brown@intel.com, Trinabh Gupta <g.trinabh@gmail.com>, deepthi@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org, Sameer Nanda <snanda@chromium.org>, Lists Linaro-dev <linaro-dev@lists.linaro.org>
 
-On 11/12/2012 03:24 PM, Mike Turquette wrote:
-> Quoting Mark Langsdorf (2012-11-07 10:32:42)
->> The highbank clock will glitch with the current code if the
->> clock rate is reset without relocking the PLL. Program the PLL
->> correctly to preven glitches.
+On 11/12/2012 10:09 PM, Julius Werner wrote:
+> Thanks for moving this along, Daniel. I think this is the right
+> approach... the cpuidle driver shouldn't be more complex than
+> necessary.
+>=20
+> Note that you are starting your loop too high in cpuidle_play_dead...
+> states[state_count] is not an actual state anymore, it should start a=
+t
+> state_count - 1.=20
+
+Yep. Thanks for catching this.
+
+> Also, I think you can go ahead and do the same
+> last-to-first loop transformation with immediate return in the menu
+> governor, for an extra tiny bit of performance.
+
+Yes, that makes sense.
+
+Thanks for the review.
+
+  -- Daniel
+
+> On Mon, Nov 12, 2012 at 12:26 PM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>> This patch follows the discussion about reinitializing the power usa=
+ge
+>> when a C-state is added/removed.
 >>
->> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
->> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
->> Cc: mturquette@linaro.org
-> 
-> Hi Mark,
-> 
-> Looks fine to me.
-> 
-> I seem to be missing the rest of this series in my mail.  Did you want
-> me to take only this patch (2/6) into clk-next or were you only looking
-> for my ACK?
-
-The entire series enables highbank cpufreq. Would you normally take this
-patch through cpufreq-next with an ACK or directly through clk-next?
-
---Mark Langsdorf
-Calxeda, Inc.
-
+>>  https://lkml.org/lkml/2012/10/16/518
+>>
+>> We realized the power usage field is never filled and when it is
+>> filled for tegra, the power_specified flag is not set making all the=
+se
+>> values to be resetted when the driver is initialized with the set_po=
+wer_state
+>> function.
+>>
+>> Julius and I feel this is over-engineered and the power_specified
+>> flag could be simply removed and continue assuming the states are
+>> backward sorted.
+>>
+>> The menu governor select function is simplified as the power is orde=
+red.
+>> Actually the condition is always true with the current code.
+>>
+>> The cpuidle_play_dead function is also simplified by doing a reverse=
+ lookup
+>> on the array.
+>>
+>> The set_power_states function is removed as it does no make sense an=
+ymore.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >> ---
->> Changes from v3
->>         Changelog text and patch name now correspond to the actual patch
->>         was clk, highbank: remove non-bypass reset mode
->> Changes from v2
->>         None
->> Changes from v1:
->>         Removed erroneous reformating.
+>>  drivers/cpuidle/cpuidle.c        |   17 ++++-------------
+>>  drivers/cpuidle/driver.c         |   25 -------------------------
+>>  drivers/cpuidle/governors/menu.c |    8 ++------
+>>  include/linux/cpuidle.h          |    2 +-
+>>  4 files changed, 7 insertions(+), 45 deletions(-)
 >>
->>  drivers/clk/clk-highbank.c | 2 ++
->>  1 file changed, 2 insertions(+)
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index 711dd83..f983262 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
+>>  {
+>>         struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devic=
+es);
+>>         struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
+>> -       int i, dead_state =3D -1;
+>> -       int power_usage =3D -1;
+>> +       int i;
 >>
->> diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
->> index 52fecad..3a0b723 100644
->> --- a/drivers/clk/clk-highbank.c
->> +++ b/drivers/clk/clk-highbank.c
->> @@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
->>                 reg |= HB_PLL_EXT_ENA;
->>                 reg &= ~HB_PLL_EXT_BYPASS;
->>         } else {
->> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
->>                 reg &= ~HB_PLL_DIVQ_MASK;
->>                 reg |= divq << HB_PLL_DIVQ_SHIFT;
->> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>>         if (!drv)
+>>                 return -ENODEV;
+>>
+>>         /* Find lowest-power state that supports long-term idle */
+>> -       for (i =3D CPUIDLE_DRIVER_STATE_START; i < drv->state_count;=
+ i++) {
+>> -               struct cpuidle_state *s =3D &drv->states[i];
+>> -
+>> -               if (s->power_usage < power_usage && s->enter_dead) {
+>> -                       power_usage =3D s->power_usage;
+>> -                       dead_state =3D i;
+>> -               }
+>> -       }
+>> -
+>> -       if (dead_state !=3D -1)
+>> -               return drv->states[dead_state].enter_dead(dev, dead_=
+state);
+>> +       for (i =3D drv->state_count; i >=3D CPUIDLE_DRIVER_STATE_STA=
+RT; i--)
+>> +               if (drv->states[i].play_dead)
+>> +                       return drv->states[i].enter_dead(dev, i);
+>>
+>>         return -ENODEV;
+>>  }
+>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>> index 3af841f..bb045f1 100644
+>> --- a/drivers/cpuidle/driver.c
+>> +++ b/drivers/cpuidle/driver.c
+>> @@ -19,34 +19,9 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
+>>  static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, in=
+t cpu);
+>>  static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
+>>
+>> -static void set_power_states(struct cpuidle_driver *drv)
+>> -{
+>> -       int i;
+>> -
+>> -       /*
+>> -        * cpuidle driver should set the drv->power_specified bit
+>> -        * before registering if the driver provides
+>> -        * power_usage numbers.
+>> -        *
+>> -        * If power_specified is not set,
+>> -        * we fill in power_usage with decreasing values as the
+>> -        * cpuidle code has an implicit assumption that state Cn
+>> -        * uses less power than C(n-1).
+>> -        *
+>> -        * With CONFIG_ARCH_HAS_CPU_RELAX, C0 is already assigned
+>> -        * an power value of -1.  So we use -2, -3, etc, for other
+>> -        * c-states.
+>> -        */
+>> -       for (i =3D CPUIDLE_DRIVER_STATE_START; i < drv->state_count;=
+ i++)
+>> -               drv->states[i].power_usage =3D -1 - i;
+>> -}
+>> -
+>>  static void __cpuidle_driver_init(struct cpuidle_driver *drv)
+>>  {
+>>         drv->refcnt =3D 0;
+>> -
+>> -       if (!drv->power_specified)
+>> -               set_power_states(drv);
+>>  }
+>>
+>>  static int __cpuidle_register_driver(struct cpuidle_driver *drv, in=
+t cpu)
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
+rnors/menu.c
+>> index 2efee27..14eb11f 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -312,7 +312,6 @@ static int menu_select(struct cpuidle_driver *dr=
+v, struct cpuidle_device *dev)
+>>  {
+>>         struct menu_device *data =3D &__get_cpu_var(menu_devices);
+>>         int latency_req =3D pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>> -       int power_usage =3D -1;
+>>         int i;
+>>         int multiplier;
+>>         struct timespec t;
+>> @@ -383,11 +382,8 @@ static int menu_select(struct cpuidle_driver *d=
+rv, struct cpuidle_device *dev)
+>>                 if (s->exit_latency * multiplier > data->predicted_u=
+s)
+>>                         continue;
+>>
+>> -               if (s->power_usage < power_usage) {
+>> -                       power_usage =3D s->power_usage;
+>> -                       data->last_state_idx =3D i;
+>> -                       data->exit_us =3D s->exit_latency;
+>> -               }
+>> +               data->last_state_idx =3D i;
+>> +               data->exit_us =3D s->exit_latency;
 >>         }
->>         writel(reg, hbclk->reg);
->>  
->> -- 
->> 1.7.11.7
+>>
+>>         /* not deepest C-state chosen for low predicted residency */
+>> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+>> index 3711b34..24cd103 100644
+>> --- a/include/linux/cpuidle.h
+>> +++ b/include/linux/cpuidle.h
+>> @@ -126,9 +126,9 @@ struct cpuidle_driver {
+>>         struct module           *owner;
+>>         int                     refcnt;
+>>
+>> -       unsigned int            power_specified:1;
+>>         /* set to 1 to use the core cpuidle time keeping (for all st=
+ates). */
+>>         unsigned int            en_core_tk_irqen:1;
+>> +       /* states array must be ordered in decreasing power consumpt=
+ion */
+>>         struct cpuidle_state    states[CPUIDLE_STATE_MAX];
+>>         int                     state_count;
+>>         int                     safe_state_index;
+>> --
+>> 1.7.5.4
+>>
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
