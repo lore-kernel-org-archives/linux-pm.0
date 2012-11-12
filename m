@@ -1,71 +1,222 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
- forbidden
-Date: Mon, 12 Nov 2012 13:55:44 +0800
-Message-ID: <1352699744.7176.169.camel@yhuang-dev>
-References: <Pine.LNX.4.44L0.1211112131500.16611-100000@netrider.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V5 2/2] Thermal: Add ST-Ericsson DB8500 thermal
+ properties and platform data.
+Date: Mon, 12 Nov 2012 14:07:05 +0800
+Message-ID: <1352700425.1834.11.camel@rzhang1-mobl4>
+References: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
+	 <1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:48164 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751685Ab2KLFzr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Nov 2012 00:55:47 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211112131500.16611-100000@netrider.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sun, 2012-11-11 at 21:36 -0500, Alan Stern wrote:
-> On Mon, 12 Nov 2012, Huang Ying wrote:
+On Fri, 2012-11-09 at 19:29 +0800, hongbo.zhang wrote:
+> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 > 
-> > > The first question: How should the PCI subsystem prevent the parents of 
-> > > driverless VGA devices from being runtime suspended while userspace is 
-> > > accessing them?
-> > 
-> > I think Rafael's patch is good for that.
+> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
+> also adds the platform data to support the old fashion.
 > 
-> But his patch isn't needed if we make these other changes.
+> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Yes.
+hmmm,
 
-> > > The second question: Should the PM core allow devices that are disabled
-> > > for runtime PM to be in the SUSPENDED state when
-> > > dev->power.runtime_auto is clear?
-> > 
-> > I think that should not be allowed.
+who should take this patch?
+I'd like to see ACK from the maintainer of these code before applying
+them to thermal tree.
+
+thanks,
+rui
+> ---
+>  arch/arm/boot/dts/dbx5x0.dtsi      | 14 +++++++++
+>  arch/arm/boot/dts/snowball.dts     | 31 ++++++++++++++++++
+>  arch/arm/configs/u8500_defconfig   |  2 ++
+>  arch/arm/mach-ux500/board-mop500.c | 64 ++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 111 insertions(+)
 > 
-> Disallowing it is okay with me too.  But it will require several 
-> changes to the code, more than what your patch did.
-
-Yes.  I think so too.
-
-> > > Assuming we don't want to allow this, there's a third question: Should
-> > > pm_runtime_allow call pm_runtime_set_suspended if the device is
-> > > disabled?
-> > 
-> > Is it absolute necessary to call pm_runtime_set_suspended?  If the
-> > device is disabled, the transition to SUSPENDED state will not be
-> > triggered even if the device is ACTIVE.
-> 
-> It's not absolutely necessary to do this, but we ought to because it 
-> will allow the device's parent to be suspended.  If we leave the device 
-> in the ACTIVE state then the parent can't be suspended, even when the 
-> device is disabled.
-
-I think this is the hard part of the issue.  Now "disabled" and
-SUSPENDED state is managed by hand.  IMHO, if we changed
-pm_runtime_allow() as you said, we need to change the rule too.  Maybe
-something as follow:
-
-- remove pm_runtime_set_suspended/pm_runtime_set_active
-- in pm_runtime_disable/pm_runtime_allow, put device into SUSPENDED
-state if runtime PM is not forbidden.
-- in pm_runtime_forbid/pm_runtime_enable, put device into ACTIVE state.
-
-Best Regards,
-Huang Ying
-
-
+> diff --git a/arch/arm/boot/dts/dbx5x0.dtsi b/arch/arm/boot/dts/dbx5x0.dtsi
+> index 4b0e0ca..731086b 100644
+> --- a/arch/arm/boot/dts/dbx5x0.dtsi
+> +++ b/arch/arm/boot/dts/dbx5x0.dtsi
+> @@ -203,6 +203,14 @@
+>  				reg = <0x80157450 0xC>;
+>  			};
+>  
+> +			thermal@801573c0 {
+> +				compatible = "stericsson,db8500-thermal";
+> +				reg = <0x801573c0 0x40>;
+> +				interrupts = <21 0x4>, <22 0x4>;
+> +				interrupt-names = "IRQ_HOTMON_LOW", "IRQ_HOTMON_HIGH";
+> +				status = "disabled";
+> +			 };
+> +
+>  			db8500-prcmu-regulators {
+>  				compatible = "stericsson,db8500-prcmu-regulator";
+>  
+> @@ -660,5 +668,11 @@
+>  			ranges = <0 0x50000000 0x4000000>;
+>  			status = "disabled";
+>  		};
+> +
+> +		cpufreq-cooling {
+> +			compatible = "stericsson,db8500-cpufreq-cooling";
+> +			status = "disabled";
+> +		 };
+> +
+>  	};
+>  };
+> diff --git a/arch/arm/boot/dts/snowball.dts b/arch/arm/boot/dts/snowball.dts
+> index 702c0ba..c6f85f0 100644
+> --- a/arch/arm/boot/dts/snowball.dts
+> +++ b/arch/arm/boot/dts/snowball.dts
+> @@ -99,6 +99,33 @@
+>  			status = "okay";
+>  		};
+>  
+> +		prcmu@80157000 {
+> +			thermal@801573c0 {
+> +				num-trips = <4>;
+> +
+> +				trip0-temp = <70000>;
+> +				trip0-type = "active";
+> +				trip0-cdev-num = <1>;
+> +				trip0-cdev-name0 = "thermal-cpufreq-0";
+> +
+> +				trip1-temp = <75000>;
+> +				trip1-type = "active";
+> +				trip1-cdev-num = <1>;
+> +				trip1-cdev-name0 = "thermal-cpufreq-0";
+> +
+> +				trip2-temp = <80000>;
+> +				trip2-type = "active";
+> +				trip2-cdev-num = <1>;
+> +				trip2-cdev-name0 = "thermal-cpufreq-0";
+> +
+> +				trip3-temp = <85000>;
+> +				trip3-type = "critical";
+> +				trip3-cdev-num = <0>;
+> +
+> +				status = "okay";
+> +			 };
+> +		};
+> +
+>  		external-bus@50000000 {
+>  			status = "okay";
+>  
+> @@ -183,5 +210,9 @@
+>  				reg = <0x33>;
+>  			};
+>  		};
+> +
+> +		cpufreq-cooling {
+> +			status = "okay";
+> +		};
+>  	};
+>  };
+> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
+> index da68454..250625d 100644
+> --- a/arch/arm/configs/u8500_defconfig
+> +++ b/arch/arm/configs/u8500_defconfig
+> @@ -69,6 +69,8 @@ CONFIG_GPIO_TC3589X=y
+>  CONFIG_POWER_SUPPLY=y
+>  CONFIG_AB8500_BM=y
+>  CONFIG_AB8500_BATTERY_THERM_ON_BATCTRL=y
+> +CONFIG_THERMAL=y
+> +CONFIG_CPU_THERMAL=y
+>  CONFIG_MFD_STMPE=y
+>  CONFIG_MFD_TC3589X=y
+>  CONFIG_AB5500_CORE=y
+> diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
+> index 416d436..b03216b 100644
+> --- a/arch/arm/mach-ux500/board-mop500.c
+> +++ b/arch/arm/mach-ux500/board-mop500.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/io.h>
+>  #include <linux/i2c.h>
+>  #include <linux/platform_data/i2c-nomadik.h>
+> +#include <linux/platform_data/db8500_thermal.h>
+>  #include <linux/gpio.h>
+>  #include <linux/amba/bus.h>
+>  #include <linux/amba/pl022.h>
+> @@ -229,6 +230,67 @@ static struct ab8500_platform_data ab8500_platdata = {
+>  };
+>  
+>  /*
+> + * Thermal Sensor
+> + */
+> +
+> +static struct resource db8500_thsens_resources[] = {
+> +	{
+> +		.name = "IRQ_HOTMON_LOW",
+> +		.start  = IRQ_PRCMU_HOTMON_LOW,
+> +		.end    = IRQ_PRCMU_HOTMON_LOW,
+> +		.flags  = IORESOURCE_IRQ,
+> +	},
+> +	{
+> +		.name = "IRQ_HOTMON_HIGH",
+> +		.start  = IRQ_PRCMU_HOTMON_HIGH,
+> +		.end    = IRQ_PRCMU_HOTMON_HIGH,
+> +		.flags  = IORESOURCE_IRQ,
+> +	},
+> +};
+> +
+> +static struct db8500_thsens_platform_data db8500_thsens_data = {
+> +	.trip_points[0] = {
+> +		.temp = 70000,
+> +		.type = THERMAL_TRIP_ACTIVE,
+> +		.cdev_name = {
+> +			[0] = "thermal-cpufreq-0",
+> +		},
+> +	},
+> +	.trip_points[1] = {
+> +		.temp = 75000,
+> +		.type = THERMAL_TRIP_ACTIVE,
+> +		.cdev_name = {
+> +			[0] = "thermal-cpufreq-0",
+> +		},
+> +	},
+> +	.trip_points[2] = {
+> +		.temp = 80000,
+> +		.type = THERMAL_TRIP_ACTIVE,
+> +		.cdev_name = {
+> +			[0] = "thermal-cpufreq-0",
+> +		},
+> +	},
+> +	.trip_points[3] = {
+> +		.temp = 85000,
+> +		.type = THERMAL_TRIP_CRITICAL,
+> +	},
+> +	.num_trips = 4,
+> +};
+> +
+> +static struct platform_device u8500_thsens_device = {
+> +	.name           = "db8500-thermal",
+> +	.resource       = db8500_thsens_resources,
+> +	.num_resources  = ARRAY_SIZE(db8500_thsens_resources),
+> +	.dev	= {
+> +		.platform_data	= &db8500_thsens_data,
+> +	},
+> +};
+> +
+> +static struct platform_device u8500_cpufreq_cooling_device = {
+> +	.name           = "db8500-cpufreq-cooling",
+> +};
+> +
+> +/*
+>   * TPS61052
+>   */
+>  
+> @@ -583,6 +645,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
+>  	&snowball_key_dev,
+>  	&snowball_sbnet_dev,
+>  	&snowball_gpio_en_3v3_regulator_dev,
+> +	&u8500_thsens_device,
+> +	&u8500_cpufreq_cooling_device,
+>  };
+>  
+>  static void __init mop500_init_machine(void)
