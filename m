@@ -1,222 +1,83 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V5 2/2] Thermal: Add ST-Ericsson DB8500 thermal
- properties and platform data.
-Date: Mon, 12 Nov 2012 14:07:05 +0800
-Message-ID: <1352700425.1834.11.camel@rzhang1-mobl4>
-References: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
-	 <1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
+From: Daniel Wagner <wagi@monom.org>
+Subject: Re: [PATCH 1/9 v3] cgroup: add cgroup_subsys->post_create()
+Date: Mon, 12 Nov 2012 14:04:56 +0100
+Message-ID: <50A0F3F8.6040000@monom.org>
+References: <1351931915-1701-1-git-send-email-tj@kernel.org> <1351931915-1701-2-git-send-email-tj@kernel.org> <20121108190715.GD9672@htj.dyndns.org> <509CE472.9040504@monom.org> <20121109172211.GB2711@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "hongbo.zhang" <hongbo.zhang@linaro.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hotel311.server4you.de ([85.25.146.15]:42458 "EHLO
+	hotel311.server4you.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004Ab2KLNE6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 08:04:58 -0500
+In-Reply-To: <20121109172211.GB2711@htj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: lizefan@huawei.com, mhocko@suse.cz, rjw@sisk.pl, containers@lists.linux-foundation.org, cgroups@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, fweisbec@gmail.com, Glauber Costa <glommer@parallels.com>
 
-On Fri, 2012-11-09 at 19:29 +0800, hongbo.zhang wrote:
-> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
-> 
-> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
-> also adds the platform data to support the old fashion.
-> 
-> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Tejun,
 
-hmmm,
+On 09.11.2012 18:22, Tejun Heo wrote:
+> Hey, Daniel.
+>
+> On Fri, Nov 09, 2012 at 12:09:38PM +0100, Daniel Wagner wrote:
+>> On 08.11.2012 20:07, Tejun Heo wrote:> Subject: cgroup: add
+>> cgroup_subsys->post_create()
+>>>
+>>> Currently, there's no way for a controller to find out whether a new
+>>> cgroup finished all ->create() allocatinos successfully and is
+>>> considered "live" by cgroup.
+>>
+>> I'd like add hierarchy support to net_prio and the first thing to
+>> do is to get rid of get_prioidx(). It looks like it would be nice to
+>
+> Ooh, I'm already working on it.  I *think* I should be able to post
+> the patches later today or early next week.
 
-who should take this patch?
-I'd like to see ACK from the maintainer of these code before applying
-them to thermal tree.
+No problem. I didn't spend too much time in writing the patch. Getting
+rid of get_prioidx() was simple. I just wanted to help out, but then
+I might to slow to keep up with you :)
 
-thanks,
-rui
-> ---
->  arch/arm/boot/dts/dbx5x0.dtsi      | 14 +++++++++
->  arch/arm/boot/dts/snowball.dts     | 31 ++++++++++++++++++
->  arch/arm/configs/u8500_defconfig   |  2 ++
->  arch/arm/mach-ux500/board-mop500.c | 64 ++++++++++++++++++++++++++++++++++++++
->  4 files changed, 111 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/dbx5x0.dtsi b/arch/arm/boot/dts/dbx5x0.dtsi
-> index 4b0e0ca..731086b 100644
-> --- a/arch/arm/boot/dts/dbx5x0.dtsi
-> +++ b/arch/arm/boot/dts/dbx5x0.dtsi
-> @@ -203,6 +203,14 @@
->  				reg = <0x80157450 0xC>;
->  			};
->  
-> +			thermal@801573c0 {
-> +				compatible = "stericsson,db8500-thermal";
-> +				reg = <0x801573c0 0x40>;
-> +				interrupts = <21 0x4>, <22 0x4>;
-> +				interrupt-names = "IRQ_HOTMON_LOW", "IRQ_HOTMON_HIGH";
-> +				status = "disabled";
-> +			 };
-> +
->  			db8500-prcmu-regulators {
->  				compatible = "stericsson,db8500-prcmu-regulator";
->  
-> @@ -660,5 +668,11 @@
->  			ranges = <0 0x50000000 0x4000000>;
->  			status = "disabled";
->  		};
-> +
-> +		cpufreq-cooling {
-> +			compatible = "stericsson,db8500-cpufreq-cooling";
-> +			status = "disabled";
-> +		 };
-> +
->  	};
->  };
-> diff --git a/arch/arm/boot/dts/snowball.dts b/arch/arm/boot/dts/snowball.dts
-> index 702c0ba..c6f85f0 100644
-> --- a/arch/arm/boot/dts/snowball.dts
-> +++ b/arch/arm/boot/dts/snowball.dts
-> @@ -99,6 +99,33 @@
->  			status = "okay";
->  		};
->  
-> +		prcmu@80157000 {
-> +			thermal@801573c0 {
-> +				num-trips = <4>;
-> +
-> +				trip0-temp = <70000>;
-> +				trip0-type = "active";
-> +				trip0-cdev-num = <1>;
-> +				trip0-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +				trip1-temp = <75000>;
-> +				trip1-type = "active";
-> +				trip1-cdev-num = <1>;
-> +				trip1-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +				trip2-temp = <80000>;
-> +				trip2-type = "active";
-> +				trip2-cdev-num = <1>;
-> +				trip2-cdev-name0 = "thermal-cpufreq-0";
-> +
-> +				trip3-temp = <85000>;
-> +				trip3-type = "critical";
-> +				trip3-cdev-num = <0>;
-> +
-> +				status = "okay";
-> +			 };
-> +		};
-> +
->  		external-bus@50000000 {
->  			status = "okay";
->  
-> @@ -183,5 +210,9 @@
->  				reg = <0x33>;
->  			};
->  		};
-> +
-> +		cpufreq-cooling {
-> +			status = "okay";
-> +		};
->  	};
->  };
-> diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
-> index da68454..250625d 100644
-> --- a/arch/arm/configs/u8500_defconfig
-> +++ b/arch/arm/configs/u8500_defconfig
-> @@ -69,6 +69,8 @@ CONFIG_GPIO_TC3589X=y
->  CONFIG_POWER_SUPPLY=y
->  CONFIG_AB8500_BM=y
->  CONFIG_AB8500_BATTERY_THERM_ON_BATCTRL=y
-> +CONFIG_THERMAL=y
-> +CONFIG_CPU_THERMAL=y
->  CONFIG_MFD_STMPE=y
->  CONFIG_MFD_TC3589X=y
->  CONFIG_AB5500_CORE=y
-> diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
-> index 416d436..b03216b 100644
-> --- a/arch/arm/mach-ux500/board-mop500.c
-> +++ b/arch/arm/mach-ux500/board-mop500.c
-> @@ -16,6 +16,7 @@
->  #include <linux/io.h>
->  #include <linux/i2c.h>
->  #include <linux/platform_data/i2c-nomadik.h>
-> +#include <linux/platform_data/db8500_thermal.h>
->  #include <linux/gpio.h>
->  #include <linux/amba/bus.h>
->  #include <linux/amba/pl022.h>
-> @@ -229,6 +230,67 @@ static struct ab8500_platform_data ab8500_platdata = {
->  };
->  
->  /*
-> + * Thermal Sensor
-> + */
-> +
-> +static struct resource db8500_thsens_resources[] = {
-> +	{
-> +		.name = "IRQ_HOTMON_LOW",
-> +		.start  = IRQ_PRCMU_HOTMON_LOW,
-> +		.end    = IRQ_PRCMU_HOTMON_LOW,
-> +		.flags  = IORESOURCE_IRQ,
-> +	},
-> +	{
-> +		.name = "IRQ_HOTMON_HIGH",
-> +		.start  = IRQ_PRCMU_HOTMON_HIGH,
-> +		.end    = IRQ_PRCMU_HOTMON_HIGH,
-> +		.flags  = IORESOURCE_IRQ,
-> +	},
-> +};
-> +
-> +static struct db8500_thsens_platform_data db8500_thsens_data = {
-> +	.trip_points[0] = {
-> +		.temp = 70000,
-> +		.type = THERMAL_TRIP_ACTIVE,
-> +		.cdev_name = {
-> +			[0] = "thermal-cpufreq-0",
-> +		},
-> +	},
-> +	.trip_points[1] = {
-> +		.temp = 75000,
-> +		.type = THERMAL_TRIP_ACTIVE,
-> +		.cdev_name = {
-> +			[0] = "thermal-cpufreq-0",
-> +		},
-> +	},
-> +	.trip_points[2] = {
-> +		.temp = 80000,
-> +		.type = THERMAL_TRIP_ACTIVE,
-> +		.cdev_name = {
-> +			[0] = "thermal-cpufreq-0",
-> +		},
-> +	},
-> +	.trip_points[3] = {
-> +		.temp = 85000,
-> +		.type = THERMAL_TRIP_CRITICAL,
-> +	},
-> +	.num_trips = 4,
-> +};
-> +
-> +static struct platform_device u8500_thsens_device = {
-> +	.name           = "db8500-thermal",
-> +	.resource       = db8500_thsens_resources,
-> +	.num_resources  = ARRAY_SIZE(db8500_thsens_resources),
-> +	.dev	= {
-> +		.platform_data	= &db8500_thsens_data,
-> +	},
-> +};
-> +
-> +static struct platform_device u8500_cpufreq_cooling_device = {
-> +	.name           = "db8500-cpufreq-cooling",
-> +};
-> +
-> +/*
->   * TPS61052
->   */
->  
-> @@ -583,6 +645,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
->  	&snowball_key_dev,
->  	&snowball_sbnet_dev,
->  	&snowball_gpio_en_3v3_regulator_dev,
-> +	&u8500_thsens_device,
-> +	&u8500_cpufreq_cooling_device,
->  };
->  
->  static void __init mop500_init_machine(void)
+Though I have a question on the patch you are writing. When you disable
+broken_hierarchy for the networking controllers, are you also 
+considering to disable them on the root cgroup? Currently both
+net_prio and net_cls will do work on the root cgroup. I think for
+harmonizing the behavior or all controllers this should also be
+disabled.
+
+>> be able to use use_id and post_create() for this but as I read the
+>> code this might not work because the netdev might access resources
+>> allocated between create() and post_create(). So my question is
+>> would it make sense to move
+>>
+>> cgroup_create():
+>>
+>> 		if (ss->use_id) {
+>> 			err = alloc_css_id(ss, parent, cgrp);
+>> 			if (err)
+>> 				goto err_destroy;
+>> 		}
+>>
+>> part before create() or add some protection between create() and
+>> post_create() callback in net_prio. I have a patch but I see
+>> I could drop it completely if post_create() is there.
+>
+> Glauber had about similar question about css_id and I need to think
+> more about it but currently I think I want to phase out css IDs.  It's
+> an id of the wrong thing (CSSes don't need IDs, cgroups do) and
+> unnecessarily duplicates its own hierarchy when the hierarchy of
+> cgroups already exists.  Once memcontrol moves away from walking using
+> css_ids, I *think* I'll try to kill it.
+>
+> I'll add cgroup ID (no hierarchy funnies, just a single ida allocated
+> number) so that it can be used for cgroup indexing.  Glauber, that
+> should solve your problem too, right?
+
+net_prio doesn't have any particular requirements on the indexing, 
+unless there is one. So a global ida would work for net_prio.
+
+cheers,
+daniel
+
