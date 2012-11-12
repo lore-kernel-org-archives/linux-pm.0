@@ -1,40 +1,46 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH V5 2/2] Thermal: Add ST-Ericsson DB8500 thermal properties
- and platform data.
-Date: Mon, 12 Nov 2012 21:46:03 +0100
-Message-ID: <CACRpkdb-C-z1bWA2+xbuGt8TKSWRaD2xYUKS4M=KNMO0mOKF2g@mail.gmail.com>
-References: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
-	<1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
-	<1352700425.1834.11.camel@rzhang1-mobl4>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [RFD][PATCH 7/7] PM / ACPI: Take device PM QoS flags into account
+Date: Mon, 12 Nov 2012 14:07:03 -0700
+Message-ID: <CAErSpo7kVb1kLbJ0Y4mYLbzEeZM8dSa-YaZE9B2mN5r74ft-Rg@mail.gmail.com>
+References: <201209282351.10663.rjw@sisk.pl> <201209282356.52558.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1352700425.1834.11.camel@rzhang1-mobl4>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "hongbo.zhang" <hongbo.zhang@linaro.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:65317 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752086Ab2KLVHY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 16:07:24 -0500
+Received: by mail-wi0-f178.google.com with SMTP id hr7so2849765wib.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Nov 2012 13:07:23 -0800 (PST)
+In-Reply-To: <201209282356.52558.rjw@sisk.pl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Aaron Lu <aaron.lu@intel.com>, Jean Pihet <j-pihet@ti.com>, linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mark gross <markgross@thegnar.org>
 
-On Mon, Nov 12, 2012 at 7:07 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Fri, 2012-11-09 at 19:29 +0800, hongbo.zhang wrote:
->> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
->>
->> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
->> also adds the platform data to support the old fashion.
->>
->> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
->> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Fri, Sep 28, 2012 at 3:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Make ACPI power management routines and PCI power management
+> routines depending on ACPI take device PM QoS flags into account
+> when deciding what power state to put the device into.
 >
-> hmmm,
+> In particular, after this change acpi_pm_device_sleep_state() will
+> not return ACPI_STATE_D3_COLD as the deepest available low-power
+> state if PM_QOS_FLAG_NO_POWER_OFF is requested for the device and it
+> will not require remote wakeup to work for the device in the returned
+> low-power state if there is at least one PM QoS flags request for the
+> device, but PM_QOS_FLAG_REMOTE_WAKEUP is not requested for it.
 >
-> who should take this patch?
-> I'd like to see ACK from the maintainer of these code before applying
-> them to thermal tree.
+> Accordingly, acpi_pci_set_power_state() will refuse to put the
+> device into D3cold if PM_QOS_FLAG_NO_POWER_OFF is requested for it.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  drivers/acpi/sleep.c   |   16 ++++++++++++----
+>  drivers/pci/pci-acpi.c |    8 +++++++-
 
-I guess it needs to go through Thermal.
+This touches a file in drivers/pci, but I expect it depends on all the
+previous patches in the series, so if you haven't merged it already,
+Rafael, it seems like it makes sense for you to merge this instead of
+me.
 
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
-Let's hope it's not creating too much conflict...
-
-Yours,
-Linus Walleij
+Bjorn
