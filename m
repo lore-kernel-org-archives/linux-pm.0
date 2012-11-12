@@ -1,36 +1,80 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting
- stats
-Date: Mon, 12 Nov 2012 10:35:49 -0600
-Message-ID: <50A12565.4070701@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-4-git-send-email-mark.langsdorf@calxeda.com> <20121111163821.GA21635@x1.osrc.amd.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v9 03/10] ata: zpodd: identify and init ZPODD devices
+Date: Mon, 12 Nov 2012 10:53:01 -0800
+Message-ID: <20121112185301.GB5560@mtj.dyndns.org>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+ <1352443922-13734-4-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20121111163821.GA21635@x1.osrc.amd.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f46.google.com ([209.85.210.46]:63737 "EHLO
+	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555Ab2KLSxI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 13:53:08 -0500
+Content-Disposition: inline
+In-Reply-To: <1352443922-13734-4-git-send-email-aaron.lu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 11/11/2012 10:38 AM, Borislav Petkov wrote:
-> On Wed, Nov 07, 2012 at 12:32:43PM -0600, Mark Langsdorf wrote:
->> When collecting stats, if a frequency doesn't match the table, go through
->> the table again with both the search frequency and table values shifted
->> left by 10 bits.
-> 
-> Why would that second pass succeed?
+Hello,
 
-It's effectively a divide by 1024 and minimizes any jitter in the
-measured frequency value.
+On Fri, Nov 09, 2012 at 02:51:55PM +0800, Aaron Lu wrote:
+>  void ata_acpi_unbind(struct ata_device *dev)
+>  {
+> +	if (zpodd_dev_enabled(dev))
+> +		zpodd_deinit(dev);
 
-> And why is this in generic code (I'm assuming this is a Calxeda-specific
-> case)?
+Maybe zpodd_exit() instead?
 
-The function is buried pretty deep in the cpufreq_stat code. It didn't
-seem appropriate to make it a function pointer as part of struct
-cpufreq_driver.
+> +void zpodd_init(struct ata_device *dev)
+> +{
+> +	int ret;
+> +	struct zpodd *zpodd;
+> +
+> +	if (dev->private_data)
+> +		return;
+> +
+> +	if (!device_can_poweroff(dev))
+> +		return;
+> +
+> +	if ((ret = check_loading_mechanism(dev)) == -ENODEV)
+> +		return;
+> +
+> +	zpodd = kzalloc(sizeof(struct zpodd), GFP_KERNEL);
+> +	if (!zpodd)
+> +		return;
+> +
+> +	if (ret)
+> +		zpodd->drawer = true;
+> +	else
+> +		zpodd->slot = true;
+> +
+> +	zpodd->dev = dev;
+> +	dev->private_data = zpodd;
 
---Mark Langsdorf
-Calxeda, Inc.
+I don't think you're supposed to use dev->private_data from libata
+core layer.  Just add a new field.  Nobody cares about adding 8 more
+bytes to struct ata_device and spending 8 more bytes is way better
+than muddying the ownership of ->private_data.
+
+> +/* libata-zpodd.c */
+> +#ifdef CONFIG_SATA_ZPODD
+> +void zpodd_init(struct ata_device *dev);
+> +void zpodd_deinit(struct ata_device *dev);
+> +static inline bool zpodd_dev_enabled(struct ata_device *dev)
+> +{
+> +	if (dev->flags & ATA_DFLAG_DA && dev->private_data)
+> +		return true;
+> +	else
+> +		return false;
+> +}
+
+And this gets completely wrong.  What if the device supports DA and
+low level driver makes use of ->private_data?
+
+Thanks.
+
+-- 
+tejun
