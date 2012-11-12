@@ -1,220 +1,49 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC] cpuidle - remove the power_specified field in the driver
-Date: Mon, 12 Nov 2012 23:08:19 +0100
-Message-ID: <50A17353.8010604@linaro.org>
-References: <50831CA3.2020602@linaro.org> <1352752016-3136-1-git-send-email-daniel.lezcano@linaro.org> <CAODwPW-yjzrAFRA4Bv-MZETFEfq+cpaLvHaYX5K5HBtQtJKZQA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFD][PATCH 7/7] PM / ACPI: Take device PM QoS flags into account
+Date: Tue, 13 Nov 2012 00:42:17 +0100
+Message-ID: <1700137.RQD4zuhDgN@vostro.rjw.lan>
+References: <201209282351.10663.rjw@sisk.pl> <201209282356.52558.rjw@sisk.pl> <CAErSpo7kVb1kLbJ0Y4mYLbzEeZM8dSa-YaZE9B2mN5r74ft-Rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:39282 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752780Ab2KLWIZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 17:08:25 -0500
-Received: by mail-we0-f174.google.com with SMTP id t9so3023907wey.19
-        for <linux-pm@vger.kernel.org>; Mon, 12 Nov 2012 14:08:24 -0800 (PST)
-In-Reply-To: <CAODwPW-yjzrAFRA4Bv-MZETFEfq+cpaLvHaYX5K5HBtQtJKZQA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo7kVb1kLbJ0Y4mYLbzEeZM8dSa-YaZE9B2mN5r74ft-Rg@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Aaron Lu <aaron.lu@intel.com>, Jean Pihet <j-pihet@ti.com>, linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mark gross <markgross@thegnar.org>
 List-Id: linux-pm@vger.kernel.org
-To: Julius Werner <jwerner@chromium.org>
-Cc: linux-pm@vger.kernel.org, khilman@ti.com, len.brown@intel.com, Trinabh Gupta <g.trinabh@gmail.com>, deepthi@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, rjw@sisk.pl, akpm@linux-foundation.org, Sameer Nanda <snanda@chromium.org>, Lists Linaro-dev <linaro-dev@lists.linaro.org>
 
-On 11/12/2012 10:09 PM, Julius Werner wrote:
-> Thanks for moving this along, Daniel. I think this is the right
-> approach... the cpuidle driver shouldn't be more complex than
-> necessary.
->=20
-> Note that you are starting your loop too high in cpuidle_play_dead...
-> states[state_count] is not an actual state anymore, it should start a=
-t
-> state_count - 1.=20
+On Monday, November 12, 2012 02:07:03 PM Bjorn Helgaas wrote:
+> On Fri, Sep 28, 2012 at 3:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > Make ACPI power management routines and PCI power management
+> > routines depending on ACPI take device PM QoS flags into account
+> > when deciding what power state to put the device into.
+> >
+> > In particular, after this change acpi_pm_device_sleep_state() will
+> > not return ACPI_STATE_D3_COLD as the deepest available low-power
+> > state if PM_QOS_FLAG_NO_POWER_OFF is requested for the device and it
+> > will not require remote wakeup to work for the device in the returned
+> > low-power state if there is at least one PM QoS flags request for the
+> > device, but PM_QOS_FLAG_REMOTE_WAKEUP is not requested for it.
+> >
+> > Accordingly, acpi_pci_set_power_state() will refuse to put the
+> > device into D3cold if PM_QOS_FLAG_NO_POWER_OFF is requested for it.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/acpi/sleep.c   |   16 ++++++++++++----
+> >  drivers/pci/pci-acpi.c |    8 +++++++-
+> 
+> This touches a file in drivers/pci, but I expect it depends on all the
+> previous patches in the series, so if you haven't merged it already,
+> Rafael, it seems like it makes sense for you to merge this instead of
+> me.
 
-Yep. Thanks for catching this.
+I will, thanks a lot!
 
-> Also, I think you can go ahead and do the same
-> last-to-first loop transformation with immediate return in the menu
-> governor, for an extra tiny bit of performance.
-
-Yes, that makes sense.
-
-Thanks for the review.
-
-  -- Daniel
-
-> On Mon, Nov 12, 2012 at 12:26 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> This patch follows the discussion about reinitializing the power usa=
-ge
->> when a C-state is added/removed.
->>
->>  https://lkml.org/lkml/2012/10/16/518
->>
->> We realized the power usage field is never filled and when it is
->> filled for tegra, the power_specified flag is not set making all the=
-se
->> values to be resetted when the driver is initialized with the set_po=
-wer_state
->> function.
->>
->> Julius and I feel this is over-engineered and the power_specified
->> flag could be simply removed and continue assuming the states are
->> backward sorted.
->>
->> The menu governor select function is simplified as the power is orde=
-red.
->> Actually the condition is always true with the current code.
->>
->> The cpuidle_play_dead function is also simplified by doing a reverse=
- lookup
->> on the array.
->>
->> The set_power_states function is removed as it does no make sense an=
-ymore.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>  drivers/cpuidle/cpuidle.c        |   17 ++++-------------
->>  drivers/cpuidle/driver.c         |   25 -------------------------
->>  drivers/cpuidle/governors/menu.c |    8 ++------
->>  include/linux/cpuidle.h          |    2 +-
->>  4 files changed, 7 insertions(+), 45 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index 711dd83..f983262 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
->>  {
->>         struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devic=
-es);
->>         struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
->> -       int i, dead_state =3D -1;
->> -       int power_usage =3D -1;
->> +       int i;
->>
->>         if (!drv)
->>                 return -ENODEV;
->>
->>         /* Find lowest-power state that supports long-term idle */
->> -       for (i =3D CPUIDLE_DRIVER_STATE_START; i < drv->state_count;=
- i++) {
->> -               struct cpuidle_state *s =3D &drv->states[i];
->> -
->> -               if (s->power_usage < power_usage && s->enter_dead) {
->> -                       power_usage =3D s->power_usage;
->> -                       dead_state =3D i;
->> -               }
->> -       }
->> -
->> -       if (dead_state !=3D -1)
->> -               return drv->states[dead_state].enter_dead(dev, dead_=
-state);
->> +       for (i =3D drv->state_count; i >=3D CPUIDLE_DRIVER_STATE_STA=
-RT; i--)
->> +               if (drv->states[i].play_dead)
->> +                       return drv->states[i].enter_dead(dev, i);
->>
->>         return -ENODEV;
->>  }
->> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
->> index 3af841f..bb045f1 100644
->> --- a/drivers/cpuidle/driver.c
->> +++ b/drivers/cpuidle/driver.c
->> @@ -19,34 +19,9 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
->>  static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, in=
-t cpu);
->>  static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
->>
->> -static void set_power_states(struct cpuidle_driver *drv)
->> -{
->> -       int i;
->> -
->> -       /*
->> -        * cpuidle driver should set the drv->power_specified bit
->> -        * before registering if the driver provides
->> -        * power_usage numbers.
->> -        *
->> -        * If power_specified is not set,
->> -        * we fill in power_usage with decreasing values as the
->> -        * cpuidle code has an implicit assumption that state Cn
->> -        * uses less power than C(n-1).
->> -        *
->> -        * With CONFIG_ARCH_HAS_CPU_RELAX, C0 is already assigned
->> -        * an power value of -1.  So we use -2, -3, etc, for other
->> -        * c-states.
->> -        */
->> -       for (i =3D CPUIDLE_DRIVER_STATE_START; i < drv->state_count;=
- i++)
->> -               drv->states[i].power_usage =3D -1 - i;
->> -}
->> -
->>  static void __cpuidle_driver_init(struct cpuidle_driver *drv)
->>  {
->>         drv->refcnt =3D 0;
->> -
->> -       if (!drv->power_specified)
->> -               set_power_states(drv);
->>  }
->>
->>  static int __cpuidle_register_driver(struct cpuidle_driver *drv, in=
-t cpu)
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
-rnors/menu.c
->> index 2efee27..14eb11f 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -312,7 +312,6 @@ static int menu_select(struct cpuidle_driver *dr=
-v, struct cpuidle_device *dev)
->>  {
->>         struct menu_device *data =3D &__get_cpu_var(menu_devices);
->>         int latency_req =3D pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
->> -       int power_usage =3D -1;
->>         int i;
->>         int multiplier;
->>         struct timespec t;
->> @@ -383,11 +382,8 @@ static int menu_select(struct cpuidle_driver *d=
-rv, struct cpuidle_device *dev)
->>                 if (s->exit_latency * multiplier > data->predicted_u=
-s)
->>                         continue;
->>
->> -               if (s->power_usage < power_usage) {
->> -                       power_usage =3D s->power_usage;
->> -                       data->last_state_idx =3D i;
->> -                       data->exit_us =3D s->exit_latency;
->> -               }
->> +               data->last_state_idx =3D i;
->> +               data->exit_us =3D s->exit_latency;
->>         }
->>
->>         /* not deepest C-state chosen for low predicted residency */
->> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
->> index 3711b34..24cd103 100644
->> --- a/include/linux/cpuidle.h
->> +++ b/include/linux/cpuidle.h
->> @@ -126,9 +126,9 @@ struct cpuidle_driver {
->>         struct module           *owner;
->>         int                     refcnt;
->>
->> -       unsigned int            power_specified:1;
->>         /* set to 1 to use the core cpuidle time keeping (for all st=
-ates). */
->>         unsigned int            en_core_tk_irqen:1;
->> +       /* states array must be ordered in decreasing power consumpt=
-ion */
->>         struct cpuidle_state    states[CPUIDLE_STATE_MAX];
->>         int                     state_count;
->>         int                     safe_state_index;
->> --
->> 1.7.5.4
->>
+Rafael
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
