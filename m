@@ -1,59 +1,76 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 0/8][Sorted-buddy] mm: Linux VM Infrastructure to
- support Memory Power Management
-Date: Mon, 12 Nov 2012 21:44:26 +0530
-Message-ID: <50A12062.4070205@linux.vnet.ibm.com>
-References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121108180257.GC8218@suse.de> <loom.20121109T172910-394@post.gmane.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Mon, 12 Nov 2012 11:32:26 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
+References: <1352699744.7176.169.camel@yhuang-dev>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:33745 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753672Ab2KLQPx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 11:15:53 -0500
-Received: from /spool/local
-	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 13 Nov 2012 02:11:59 +1000
-In-Reply-To: <loom.20121109T172910-394@post.gmane.org>
+Received: from netrider.rowland.org ([192.131.102.5]:48672 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751613Ab2KLQc1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Nov 2012 11:32:27 -0500
+In-Reply-To: <1352699744.7176.169.camel@yhuang-dev>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: SrinivasPandruvada <srinivas.pandruvada@linux.intel.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, mjg59@srcf.ucam.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, Arjan van de Ven <arjan@linux.intel.com>, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, Ankita Garg <gargankita@gmail.com>, amit.kachhap@linaro.org, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, thomas.abraham@linaro.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, linux-mm@kvack.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, andi@firstfloor.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Srinivas,
+On Mon, 12 Nov 2012, Huang Ying wrote:
 
-It looks like your email did not get delivered to the mailing
-lists (and the people in the CC list) properly. So quoting your
-entire mail as-it-is here. And thanks a lot for taking a look
-at this patchset!
-
-Regards,
-Srivatsa S. Bhat
-
-On 11/09/2012 10:18 PM, SrinivasPandruvada wrote:
-> I did like this implementation and think it is valuable.
-> I am experimenting with one of our HW. This type of partition does help in
-> saving power. We believe we can save up-to 1W power per DIM with the help
-> of some HW/BIOS changes. We are only talking about content preserving memory,
-> so we don't have to be 100% correct.
-> In my experiments, I tried two methods:
-> - Similar to approach suggested by Mel Gorman. I have a special sticky
-> migrate type like CMA.
-> - Buddy buckets: Buddies are organized into memory region aware buckets.
-> During allocation it prefers higher order buckets. I made sure that there is
-> no affect of my change if there are no power saving memory DIMs. The advantage
-> of this bucket is that I can keep the memory in close proximity for a related
-> task groups by direct hashing to a bucket. The free list if organized as two
-> dimensional array with bucket and migrate type for each order.
+> > > Is it absolute necessary to call pm_runtime_set_suspended?  If the
+> > > device is disabled, the transition to SUSPENDED state will not be
+> > > triggered even if the device is ACTIVE.
+> > 
+> > It's not absolutely necessary to do this, but we ought to because it 
+> > will allow the device's parent to be suspended.  If we leave the device 
+> > in the ACTIVE state then the parent can't be suspended, even when the 
+> > device is disabled.
 > 
-> In both methods, currently reclaim is targetted to be done by a sysfs interface
-> similar to memory compaction for a node allowing user space to initiate reclaim. 
+> I think this is the hard part of the issue.  Now "disabled" and
+> SUSPENDED state is managed by hand.  IMHO, if we changed
+> pm_runtime_allow() as you said, we need to change the rule too.  Maybe
+> something as follow:
 > 
-> Thanks,
-> Srinivas Pandruvada
-> Open Source Technology Center,
-> Intel Corp.
-> 
+> - remove pm_runtime_set_suspended/pm_runtime_set_active
+
+We can't remove them entirely.  They are needed for situations where 
+the device's physical state is different from what the PM core thinks; 
+they tell the PM core what the actual state is.
+
+> - in pm_runtime_disable/pm_runtime_allow, put device into SUSPENDED
+> state if runtime PM is not forbidden.
+
+That doesn't make sense.  Runtime PM is never forbidden after 
+pm_runtime_allow is called; that's its purpose.
+
+> - in pm_runtime_forbid/pm_runtime_enable, put device into ACTIVE state.
+
+Why should pm_runtime_enable put the device into the ACTIVE state?
+
+No, I think a better approach is simply to say that the device will
+never be allowed to be in the SUSPENDED state if runtime PM is
+forbidden.  We already enforce this when the device is enabled for 
+runtime PM, so we would have to start enforcing it when the device is 
+disabled.
+
+This means:
+
+	pm_runtime_set_suspended should fail if dev->power.runtime_auto
+	is clear.
+
+	pm_runtime_forbid should call pm_runtime_set_active if
+	dev->power.disable_depth > 0.  (This would run into a problem
+	if the parent is suspended and disabled.  Maybe 
+	pm_runtime_forbid should fail when this happens.)
+
+Finally, we probably should make a third change even though it isn't
+strictly necessary:
+
+	pm_runtime_allow should call pm_runtime_set_suspended if
+	dev->power.disable_depth > 0.
+
+Rafael, what do you think?
+
+Alan Stern
 
