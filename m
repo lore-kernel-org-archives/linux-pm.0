@@ -1,102 +1,204 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 0/14] x86: Arbitrary CPU hot(un)plug support
-Date: Tue, 13 Nov 2012 11:32:37 -0800
-Message-ID: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:3412 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932423Ab2KNCdk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 21:33:40 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v10 14/14] x86, topology: Debug CPU00 hotplug
+Date: Tue, 13 Nov 2012 11:32:51 -0800
+Message-ID: <1352835171-3958-15-git-send-email-fenghua.yu@intel.com>
+References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Asit K Mallick <asit.k.mallick@intel.com>, Tony Luck <tony.luck@intel.com>, Arjan Dan De Ven <arjan@linux.intel.com>, Suresh B Siddha <suresh.b.siddha@intel.com>, Len Brown <len.brown@intel.com>, "Srivatssa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Chen Gong <gong.chen@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, x86 <x86@kernel.org>
 Cc: Fenghua Yu <fenghua.yu@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-CPU0 or BSP (Bootstrap Processor) has been the last processor that can not be
-hot removed on x86. This patchset implements CPU0 or BSP online and offline
-and removes this obstacle to CPU hotplug.
+CONFIG_DEBUG_HOTPLUG_CPU0 is for debugging the CPU0 hotplug feature. The switch
+offlines CPU0 as soon as possible and boots userspace up with CPU0 offlined.
+User can online CPU0 back after boot time. The default value of the switch is
+off.
 
-RAS needs the feature. If socket0 needs to be hotplugged for any reason (any
-thread on socket0 is bad, shared cache issue, uncore issue, etc), CPU0 is
-required to be offline or hot replaced to keep the system run. For example,
-starting with Core Duo, if you have a system that is reporting cache problems
-via the "yellow" status in the MCi_STATUS msr, then there is benefit in simply
-soft off-lining the cores that share that cache - assuming that leaves you at
-least one online core. A single socket system with L3 cache troubles is not
-helped - but problems in L1/L2 cache, or on multi-socket systems can be avoided.
-They are already being avoided for the cases where CPU0 is not involved.
-This patchset can help L1/L2 cache problem in CPU0 or L3 cache problem on the
-socket with CPU0 in a multi-socket system.
+To debug CPU0 hotplug, you need to enable CPU0 offline/online feature by either
+turning on CONFIG_BOOTPARAM_HOTPLUG_CPU0 during compilation or giving
+cpu0_hotplug kernel parameter at boot.
 
-v10: Use first online CPU to handle retriggered irq in ioapic. Correct
-cpu0_logical_apicid for x2apic. Add wakeup_cpu_via_init_nmi() to make code more
-readable. Add ENDPROC(start_cpu0). Add comment for pm_notifier priority in
-cpu_hotplug_pm_callback.
+It's safe and early place to take down CPU0 after all hotplug notifiers
+are installed and SMP is booted.
 
-v9: Add Intel vendor check to support the feature on Intel platforms only.
+Please note that some applications or drivers, e.g. some versions of udevd,
+during boot time may put CPU0 online again in this CPU0 hotplug debug mode.
 
-v8: Add smp_store_boot_cpu_info() and change smp_store_cpu_info() back to avoid
-a compilation error. Fix a few messy subject issues.
+In this debug mode, setup_local_APIC() may report a warning on max_loops<=0
+when CPU0 is onlined back after boot time. This is because pending interrupt in
+IRR can not move to ISR. The warning is not CPU0 specfic and it can happen on
+other CPUs as well. It is harmless except the first CPU0 online takes a bit
+longer time. And so this debug mode is useful to expose this issue. I'll send
+a seperate patch to fix this generic warning issue.
 
-v7: Change smp_store_cpu_info() to allow store cpuinfo for CPU0 when online.
-Change PIC irq detection in native_cpu_disable().
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+---
+ arch/x86/Kconfig           |   15 +++++++++++++
+ arch/x86/include/asm/cpu.h |    3 ++
+ arch/x86/kernel/topology.c |   51 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/power/cpu.c       |   38 ++++++++++++++++++++++++++++++++
+ 4 files changed, 107 insertions(+), 0 deletions(-)
 
-v6: If CPU0 is offlined during boot time in CPU0 hotplug debug mode, put CPU0
-online again before resuming from hibernation and disable x2apic and xapic.Don't
-set __CPUINIT for start_cpu0() in head_32.S. Clean up CPU0 wake up nmi handler
-after callin and callout sync. In a period (3 seconds), check if CPU0 wake up
-NMI is handled after offlined CPU0 exits from mwait.
-
-v5: Add CONFIG_BOOTPARAM_HOTPLUG_CPU0 and CONFIG_DEBUG_HOTPLUG_CPU0. Simplify
-duplicate xstate_size init check. Wakeup CPU0 via nmi instead INITs. Add
-mcheck_cpu_init when CPU0 online. Change variable bsp_hotpluggable to
-cpu0_hotpluggable with __initdata qualifier.
-
-v4: Add __read_mostly for internal bsp_hotpluggable variable. Add my email
-address in cpu-hotplug.txt document. A wording change in comment.
-
-v3: Register a pm notifier to check if CPU0 is online before hibernate/suspend.
-Small wording changes in document and print info.
-
-v2: Add locking changes between cpu hotplug and hibernate/suspend. Change PIC
-irq bound to CPU0 detection.
-
-Fenghua Yu (14):
-  doc: Add x86 CPU0 online/offline feature
-  x86, Kconfig: Add config switch for CPU0 hotplug
-  x86, topology: Don't offline CPU0 if any PIC irq can not be migrated
-    out of it
-  x86, hotplug: Support functions for CPU0 online/offline
-  x86, hotplug, suspend: Online CPU0 for suspend or hibernate
-  kernel/cpu.c: Add comment for priority in cpu_hotplug_pm_callback
-  x86-64, hotplug: Add start_cpu0() entry point to head_64.S
-  x86-32, hotplug: Add start_cpu0() entry point to head_32.S
-  x86, hotplug: Wake up CPU0 via NMI instead of INIT, SIPI, SIPI
-  x86, hotplug: During CPU0 online, enable x2apic, set_numa_node.
-  x86, hotplug: The first online processor saves the MTRR state
-  x86, hotplug: Handle retrigger irq by the first available CPU
-  x86/i387.c: Initialize thread xstate only on CPU0 only once
-  x86, topology: Debug CPU00 hotplug
-
- Documentation/cpu-hotplug.txt       |   24 ++++++
- Documentation/kernel-parameters.txt |   14 +++
- arch/x86/Kconfig                    |   44 ++++++++++
- arch/x86/include/asm/cpu.h          |    4 +
- arch/x86/include/asm/smp.h          |    1 +
- arch/x86/kernel/apic/io_apic.c      |    4 +-
- arch/x86/kernel/cpu/common.c        |    5 +-
- arch/x86/kernel/cpu/mtrr/main.c     |    9 ++-
- arch/x86/kernel/head_32.S           |   13 +++
- arch/x86/kernel/head_64.S           |   16 ++++
- arch/x86/kernel/i387.c              |    6 +-
- arch/x86/kernel/smpboot.c           |  151 ++++++++++++++++++++++++++++------
- arch/x86/kernel/topology.c          |  101 ++++++++++++++++++++++--
- arch/x86/power/cpu.c                |   82 +++++++++++++++++++
- kernel/cpu.c                        |    5 +
- 15 files changed, 438 insertions(+), 41 deletions(-)
-
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 933ff87..ea5852f 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1759,6 +1759,21 @@ config BOOTPARAM_HOTPLUG_CPU0
+ 	  You still can enable the CPU0 hotplug feature at boot by kernel
+ 	  parameter cpu0_hotplug.
+ 
++config DEBUG_HOTPLUG_CPU0
++	def_bool n
++	prompt "Debug CPU0 hotplug"
++	depends on HOTPLUG_CPU && EXPERIMENTAL
++	---help---
++	  Enabling this option offlines CPU0 (if CPU0 can be offlined) as
++	  soon as possible and boots up userspace with CPU0 offlined. User
++	  can online CPU0 back after boot time.
++
++	  To debug CPU0 hotplug, you need to enable CPU0 offline/online
++	  feature by either turning on CONFIG_BOOTPARAM_HOTPLUG_CPU0 during
++	  compilation or giving cpu0_hotplug kernel parameter at boot.
++
++	  If unsure, say N.
++
+ config COMPAT_VDSO
+ 	def_bool y
+ 	prompt "Compat VDSO support"
+diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
+index a119572..5f9a124 100644
+--- a/arch/x86/include/asm/cpu.h
++++ b/arch/x86/include/asm/cpu.h
+@@ -29,6 +29,9 @@ struct x86_cpu {
+ extern int arch_register_cpu(int num);
+ extern void arch_unregister_cpu(int);
+ extern void __cpuinit start_cpu0(void);
++#ifdef CONFIG_DEBUG_HOTPLUG_CPU0
++extern int _debug_hotplug_cpu(int cpu, int action);
++#endif
+ #endif
+ 
+ DECLARE_PER_CPU(int, cpu_state);
+diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
+index 0e7b4a7..6e60b5f 100644
+--- a/arch/x86/kernel/topology.c
++++ b/arch/x86/kernel/topology.c
+@@ -50,6 +50,57 @@ static int __init enable_cpu0_hotplug(char *str)
+ __setup("cpu0_hotplug", enable_cpu0_hotplug);
+ #endif
+ 
++#ifdef CONFIG_DEBUG_HOTPLUG_CPU0
++/*
++ * This function offlines a CPU as early as possible and allows userspace to
++ * boot up without the CPU. The CPU can be onlined back by user after boot.
++ *
++ * This is only called for debugging CPU offline/online feature.
++ */
++int __ref _debug_hotplug_cpu(int cpu, int action)
++{
++	struct device *dev = get_cpu_device(cpu);
++	int ret;
++
++	if (!cpu_is_hotpluggable(cpu))
++		return -EINVAL;
++
++	cpu_hotplug_driver_lock();
++
++	switch (action) {
++	case 0:
++		ret = cpu_down(cpu);
++		if (!ret) {
++			pr_info("CPU %u is now offline\n", cpu);
++			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
++		} else
++			pr_debug("Can't offline CPU%d.\n", cpu);
++		break;
++	case 1:
++		ret = cpu_up(cpu);
++		if (!ret)
++			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
++		else
++			pr_debug("Can't online CPU%d.\n", cpu);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	cpu_hotplug_driver_unlock();
++
++	return ret;
++}
++
++static int __init debug_hotplug_cpu(void)
++{
++	_debug_hotplug_cpu(0, 0);
++	return 0;
++}
++
++late_initcall_sync(debug_hotplug_cpu);
++#endif /* CONFIG_DEBUG_HOTPLUG_CPU0 */
++
+ int __ref arch_register_cpu(int num)
+ {
+ 	struct cpuinfo_x86 *c = &cpu_data(num);
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index adde775..120cee1 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -21,6 +21,7 @@
+ #include <asm/suspend.h>
+ #include <asm/debugreg.h>
+ #include <asm/fpu-internal.h> /* pcntxt_mask */
++#include <asm/cpu.h>
+ 
+ #ifdef CONFIG_X86_32
+ static struct saved_context saved_context;
+@@ -263,6 +264,43 @@ static int bsp_pm_callback(struct notifier_block *nb, unsigned long action,
+ 	case PM_HIBERNATION_PREPARE:
+ 		ret = bsp_check();
+ 		break;
++#ifdef CONFIG_DEBUG_HOTPLUG_CPU0
++	case PM_RESTORE_PREPARE:
++		/*
++		 * When system resumes from hibernation, online CPU0 because
++		 * 1. it's required for resume and
++		 * 2. the CPU was online before hibernation
++		 */
++		if (!cpu_online(0))
++			_debug_hotplug_cpu(0, 1);
++		break;
++	case PM_POST_RESTORE:
++		/*
++		 * When a resume really happens, this code won't be called.
++		 *
++		 * This code is called only when user space hibernation software
++		 * prepares for snapshot device during boot time. So we just
++		 * call _debug_hotplug_cpu() to restore to CPU0's state prior to
++		 * preparing the snapshot device.
++		 *
++		 * This works for normal boot case in our CPU0 hotplug debug
++		 * mode, i.e. CPU0 is offline and user mode hibernation
++		 * software initializes during boot time.
++		 *
++		 * If CPU0 is online and user application accesses snapshot
++		 * device after boot time, this will offline CPU0 and user may
++		 * see different CPU0 state before and after accessing
++		 * the snapshot device. But hopefully this is not a case when
++		 * user debugging CPU0 hotplug. Even if users hit this case,
++		 * they can easily online CPU0 back.
++		 *
++		 * To simplify this debug code, we only consider normal boot
++		 * case. Otherwise we need to remember CPU0's state and restore
++		 * to that state and resolve racy conditions etc.
++		 */
++		_debug_hotplug_cpu(0, 0);
++		break;
++#endif
+ 	default:
+ 		break;
+ 	}
 -- 
 1.7.2
-
