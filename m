@@ -1,86 +1,180 @@
 From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH v3 4/4] ARM: dts: exynos4: Set up power domains
-Date: Tue, 13 Nov 2012 14:08:27 +0100
-Message-ID: <1352812107-8777-5-git-send-email-t.figa@samsung.com>
+Subject: [PATCH v3 3/4] ARM: EXYNOS: pm_domain: Bind devices to power domains
+ using DT
+Date: Tue, 13 Nov 2012 14:08:26 +0100
+Message-ID: <1352812107-8777-4-git-send-email-t.figa@samsung.com>
 References: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:30137 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778Ab2KMNJp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Nov 2012 08:09:45 -0500
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-samsung-soc@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kyungmin.park@samsung.com, kgene.kim@samsung.com, thomas.abraham@linaro.org, rjw@sisk.pl, m.szyprowski@samsung.com, t.figa@samsung.com, tomasz.figa@gmail.com
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds device tree nodes for power domains available
-on Exynos 4 SoCs.
+This patch adds a way to specify bindings between devices and power
+domains using device tree.
+
+A device can be bound to particular power domain by adding a
+power-domain property containing a phandle to the domain. The device
+will be bound to the domain before binding a driver to it and unbound
+after unbinding a driver from it.
 
 Signed-off-by: Tomasz Figa <t.figa@samsung.com>
 Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 ---
- arch/arm/boot/dts/exynos4.dtsi    | 30 ++++++++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4210.dtsi |  5 +++++
- 2 files changed, 35 insertions(+)
+ .../bindings/arm/exynos/power_domain.txt           | 13 +++-
+ arch/arm/mach-exynos/pm_domains.c                  | 82 ++++++++++++++++++++++
+ 2 files changed, 94 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/exynos4.dtsi b/arch/arm/boot/dts/exynos4.dtsi
-index a26c3dd..0c14f50 100644
---- a/arch/arm/boot/dts/exynos4.dtsi
-+++ b/arch/arm/boot/dts/exynos4.dtsi
-@@ -30,6 +30,36 @@
- 		spi2 = &spi_2;
- 	};
+diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+index 843b546..5216b41 100644
+--- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
++++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+@@ -4,14 +4,25 @@ Exynos processors include support for multiple power domains which are used
+ to gate power to one or more peripherals on the processor.
  
-+	pd_mfc: mfc-power-domain@10023C40 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023C40 0x20>;
-+	};
-+
-+	pd_g3d: g3d-power-domain@10023C60 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023C60 0x20>;
-+	};
-+
-+	pd_lcd0: lcd0-power-domain@10023C80 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023C80 0x20>;
-+	};
-+
-+	pd_tv: tv-power-domain@10023C20 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023C20 0x20>;
-+	};
-+
-+	pd_cam: cam-power-domain@10023C00 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023C00 0x20>;
-+	};
-+
-+	pd_gps: gps-power-domain@10023CE0 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023CE0 0x20>;
-+	};
-+
- 	gic:interrupt-controller@10490000 {
- 		compatible = "arm,cortex-a9-gic";
- 		#interrupt-cells = <3>;
-diff --git a/arch/arm/boot/dts/exynos4210.dtsi b/arch/arm/boot/dts/exynos4210.dtsi
-index 939f639..e31bfc4 100644
---- a/arch/arm/boot/dts/exynos4210.dtsi
-+++ b/arch/arm/boot/dts/exynos4210.dtsi
-@@ -31,6 +31,11 @@
- 		pinctrl2 = &pinctrl_2;
- 	};
+ Required Properties:
+-- compatiable: should be one of the following.
++- compatible: should be one of the following.
+     * samsung,exynos4210-pd - for exynos4210 type power domain.
+ - reg: physical base address of the controller and length of memory mapped
+     region.
  
-+	pd_lcd1: lcd1-power-domain@10023CA0 {
-+		compatible = "samsung,exynos4210-pd";
-+		reg = <0x10023CA0 0x20>;
-+	};
++Node of a device using power domains must have a samsung,power-domain property
++defined with a phandle to respective power domain.
 +
- 	gic:interrupt-controller@10490000 {
- 		cpu-offset = <0x8000>;
+ Example:
+ 
+ 	lcd0: power-domain-lcd0 {
+ 		compatible = "samsung,exynos4210-pd";
+ 		reg = <0x10023C00 0x10>;
  	};
++
++Example of the node using power domain:
++
++	node {
++		/* ... */
++		samsung,power-domain = <&lcd0>;
++		/* ... */
++	};
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+index 5b7ce7e..4063016 100644
+--- a/arch/arm/mach-exynos/pm_domains.c
++++ b/arch/arm/mach-exynos/pm_domains.c
+@@ -19,6 +19,8 @@
+ #include <linux/pm_domain.h>
+ #include <linux/delay.h>
+ #include <linux/of_address.h>
++#include <linux/of_platform.h>
++#include <linux/sched.h>
+ 
+ #include <mach/regs-pmu.h>
+ #include <plat/devs.h>
+@@ -83,14 +85,89 @@ static struct exynos_pm_domain PD = {			\
+ }
+ 
+ #ifdef CONFIG_OF
++static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
++							struct device *dev)
++{
++	int ret;
++
++	dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
++
++	while(1) {
++		ret = pm_genpd_add_device(&pd->pd, dev);
++		if (ret != -EAGAIN)
++			break;
++		cond_resched();
++	}
++
++	pm_genpd_dev_need_restore(dev, true);
++}
++
++static void exynos_remove_device_from_domain(struct device *dev)
++{
++	struct generic_pm_domain *genpd = dev_to_genpd(dev);
++	int ret;
++
++	dev_dbg(dev, "removing from power domain %s\n", genpd->name);
++
++	while(1) {
++		ret = pm_genpd_remove_device(genpd, dev);
++		if (ret != -EAGAIN)
++			break;
++		cond_resched();
++	}
++}
++
++static void exynos_read_domain_from_dt(struct device *dev)
++{
++	struct platform_device *pd_pdev;
++	struct exynos_pm_domain *pd;
++	struct device_node *node;
++
++	node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
++	if (!node)
++		return;
++	pd_pdev = of_find_device_by_node(node);
++	if (!pd_pdev)
++		return;
++	pd = platform_get_drvdata(pd_pdev);
++	exynos_add_device_to_domain(pd, dev);
++}
++
++static int exynos_pm_notifier_call(struct notifier_block *nb,
++				    unsigned long event, void *data)
++{
++	struct device *dev = data;
++
++	switch (event) {
++	case BUS_NOTIFY_BIND_DRIVER:
++		if (dev->of_node)
++			exynos_read_domain_from_dt(dev);
++
++		break;
++
++	case BUS_NOTIFY_UNBOUND_DRIVER:
++		exynos_remove_device_from_domain(dev);
++
++		break;
++	}
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block platform_nb = {
++	.notifier_call = exynos_pm_notifier_call,
++};
++
+ static __init int exynos_pm_dt_parse_domains(void)
+ {
++	struct platform_device *pdev;
+ 	struct device_node *np;
+ 
+ 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
+ 		struct exynos_pm_domain *pd;
+ 		int on;
+ 
++		pdev = of_find_device_by_node(np);
++
+ 		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+ 		if (!pd) {
+ 			pr_err("%s: failed to allocate memory for domain\n",
+@@ -105,10 +182,15 @@ static __init int exynos_pm_dt_parse_domains(void)
+ 		pd->pd.power_on = exynos_pd_power_on;
+ 		pd->pd.of_node = np;
+ 
++		platform_set_drvdata(pdev, pd);
++
+ 		on = __raw_readl(pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN;
+ 
+ 		pm_genpd_init(&pd->pd, NULL, !on);
+ 	}
++
++	bus_register_notifier(&platform_bus_type, &platform_nb);
++
+ 	return 0;
+ }
+ #else
 -- 
 1.8.0
-
