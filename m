@@ -1,14 +1,12 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 05/14] x86, hotplug, suspend: Online CPU0 for suspend or hibernate
-Date: Tue, 13 Nov 2012 11:32:42 -0800
-Message-ID: <1352835171-3958-6-git-send-email-fenghua.yu@intel.com>
-References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+Subject: [PATCH v10 0/14] x86: Arbitrary CPU hot(un)plug support
+Date: Tue, 13 Nov 2012 11:32:37 -0800
+Message-ID: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:37267 "EHLO mga14.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:3412 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932502Ab2KNCdn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 21:33:43 -0500
-In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+	id S932423Ab2KNCdk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 21:33:40 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Asit K Mallick <asit.k.mallick@intel.com>, Tony Luck <tony.luck@intel.com>, Arjan Dan De Ven <arjan@linux.intel.com>, Suresh B Siddha <suresh.b.siddha@intel.com>, Len Brown <len.brown@intel.com>, "Srivatssa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Chen Gong <gong.chen@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, x86 <x86@kernel.org>
@@ -16,67 +14,89 @@ Cc: Fenghua Yu <fenghua.yu@intel.com>
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-Because x86 BIOS requires CPU0 to resume from sleep, suspend or hibernate can't
-be executed if CPU0 is detected offline. To make suspend or hibernate and
-further resume succeed, CPU0 must be online.
+CPU0 or BSP (Bootstrap Processor) has been the last processor that can not be
+hot removed on x86. This patchset implements CPU0 or BSP online and offline
+and removes this obstacle to CPU hotplug.
 
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
----
- arch/x86/power/cpu.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 44 insertions(+), 0 deletions(-)
+RAS needs the feature. If socket0 needs to be hotplugged for any reason (any
+thread on socket0 is bad, shared cache issue, uncore issue, etc), CPU0 is
+required to be offline or hot replaced to keep the system run. For example,
+starting with Core Duo, if you have a system that is reporting cache problems
+via the "yellow" status in the MCi_STATUS msr, then there is benefit in simply
+soft off-lining the cores that share that cache - assuming that leaves you at
+least one online core. A single socket system with L3 cache troubles is not
+helped - but problems in L1/L2 cache, or on multi-socket systems can be avoided.
+They are already being avoided for the cases where CPU0 is not involved.
+This patchset can help L1/L2 cache problem in CPU0 or L3 cache problem on the
+socket with CPU0 in a multi-socket system.
 
-diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-index 218cdb1..adde775 100644
---- a/arch/x86/power/cpu.c
-+++ b/arch/x86/power/cpu.c
-@@ -237,3 +237,47 @@ void restore_processor_state(void)
- #ifdef CONFIG_X86_32
- EXPORT_SYMBOL(restore_processor_state);
- #endif
-+
-+/*
-+ * When bsp_check() is called in hibernate and suspend, cpu hotplug
-+ * is disabled already. So it's unnessary to handle race condition between
-+ * cpumask query and cpu hotplug.
-+ */
-+static int bsp_check(void)
-+{
-+	if (cpumask_first(cpu_online_mask) != 0) {
-+		pr_warn("CPU0 is offline.\n");
-+		return -ENODEV;
-+	}
-+
-+	return 0;
-+}
-+
-+static int bsp_pm_callback(struct notifier_block *nb, unsigned long action,
-+			   void *ptr)
-+{
-+	int ret = 0;
-+
-+	switch (action) {
-+	case PM_SUSPEND_PREPARE:
-+	case PM_HIBERNATION_PREPARE:
-+		ret = bsp_check();
-+		break;
-+	default:
-+		break;
-+	}
-+	return notifier_from_errno(ret);
-+}
-+
-+static int __init bsp_pm_check_init(void)
-+{
-+	/*
-+	 * Set this bsp_pm_callback as lower priority than
-+	 * cpu_hotplug_pm_callback. So cpu_hotplug_pm_callback will be called
-+	 * earlier to disable cpu hotplug before bsp online check.
-+	 */
-+	pm_notifier(bsp_pm_callback, -INT_MAX);
-+	return 0;
-+}
-+
-+core_initcall(bsp_pm_check_init);
+v10: Use first online CPU to handle retriggered irq in ioapic. Correct
+cpu0_logical_apicid for x2apic. Add wakeup_cpu_via_init_nmi() to make code more
+readable. Add ENDPROC(start_cpu0). Add comment for pm_notifier priority in
+cpu_hotplug_pm_callback.
+
+v9: Add Intel vendor check to support the feature on Intel platforms only.
+
+v8: Add smp_store_boot_cpu_info() and change smp_store_cpu_info() back to avoid
+a compilation error. Fix a few messy subject issues.
+
+v7: Change smp_store_cpu_info() to allow store cpuinfo for CPU0 when online.
+Change PIC irq detection in native_cpu_disable().
+
+v6: If CPU0 is offlined during boot time in CPU0 hotplug debug mode, put CPU0
+online again before resuming from hibernation and disable x2apic and xapic.Don't
+set __CPUINIT for start_cpu0() in head_32.S. Clean up CPU0 wake up nmi handler
+after callin and callout sync. In a period (3 seconds), check if CPU0 wake up
+NMI is handled after offlined CPU0 exits from mwait.
+
+v5: Add CONFIG_BOOTPARAM_HOTPLUG_CPU0 and CONFIG_DEBUG_HOTPLUG_CPU0. Simplify
+duplicate xstate_size init check. Wakeup CPU0 via nmi instead INITs. Add
+mcheck_cpu_init when CPU0 online. Change variable bsp_hotpluggable to
+cpu0_hotpluggable with __initdata qualifier.
+
+v4: Add __read_mostly for internal bsp_hotpluggable variable. Add my email
+address in cpu-hotplug.txt document. A wording change in comment.
+
+v3: Register a pm notifier to check if CPU0 is online before hibernate/suspend.
+Small wording changes in document and print info.
+
+v2: Add locking changes between cpu hotplug and hibernate/suspend. Change PIC
+irq bound to CPU0 detection.
+
+Fenghua Yu (14):
+  doc: Add x86 CPU0 online/offline feature
+  x86, Kconfig: Add config switch for CPU0 hotplug
+  x86, topology: Don't offline CPU0 if any PIC irq can not be migrated
+    out of it
+  x86, hotplug: Support functions for CPU0 online/offline
+  x86, hotplug, suspend: Online CPU0 for suspend or hibernate
+  kernel/cpu.c: Add comment for priority in cpu_hotplug_pm_callback
+  x86-64, hotplug: Add start_cpu0() entry point to head_64.S
+  x86-32, hotplug: Add start_cpu0() entry point to head_32.S
+  x86, hotplug: Wake up CPU0 via NMI instead of INIT, SIPI, SIPI
+  x86, hotplug: During CPU0 online, enable x2apic, set_numa_node.
+  x86, hotplug: The first online processor saves the MTRR state
+  x86, hotplug: Handle retrigger irq by the first available CPU
+  x86/i387.c: Initialize thread xstate only on CPU0 only once
+  x86, topology: Debug CPU00 hotplug
+
+ Documentation/cpu-hotplug.txt       |   24 ++++++
+ Documentation/kernel-parameters.txt |   14 +++
+ arch/x86/Kconfig                    |   44 ++++++++++
+ arch/x86/include/asm/cpu.h          |    4 +
+ arch/x86/include/asm/smp.h          |    1 +
+ arch/x86/kernel/apic/io_apic.c      |    4 +-
+ arch/x86/kernel/cpu/common.c        |    5 +-
+ arch/x86/kernel/cpu/mtrr/main.c     |    9 ++-
+ arch/x86/kernel/head_32.S           |   13 +++
+ arch/x86/kernel/head_64.S           |   16 ++++
+ arch/x86/kernel/i387.c              |    6 +-
+ arch/x86/kernel/smpboot.c           |  151 ++++++++++++++++++++++++++++------
+ arch/x86/kernel/topology.c          |  101 ++++++++++++++++++++++--
+ arch/x86/power/cpu.c                |   82 +++++++++++++++++++
+ kernel/cpu.c                        |    5 +
+ 15 files changed, 438 insertions(+), 41 deletions(-)
+
 -- 
 1.7.2
 
