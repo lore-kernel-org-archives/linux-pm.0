@@ -1,28 +1,70 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 2/3] x86/nmi: export local_touch_nmi() symbol for modules
-Date: Mon, 12 Nov 2012 14:03:50 -0800
-Message-ID: <1352757831-5202-3-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Mon, 12 Nov 2012 22:33:36 -0800
+Message-ID: <1352788416.24230.6.camel@joe-AO722>
 References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+	 <1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from perches-mx.perches.com ([206.117.179.246]:47382 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750779Ab2KMGdf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 01:33:35 -0500
+In-Reply-To: <1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- arch/x86/kernel/nmi.c |    1 +
- 1 file changed, 1 insertion(+)
+On Mon, 2012-11-12 at 14:03 -0800, Jacob Pan wrote:
+> Intel PowerClamp driver performs synchronized idle injection across
+> all online CPUs. The goal is to maintain a given package level C-state
+> ratio.
 
-diff --git a/arch/x86/kernel/nmi.c b/arch/x86/kernel/nmi.c
-index f84f5c5..6030805 100644
---- a/arch/x86/kernel/nmi.c
-+++ b/arch/x86/kernel/nmi.c
-@@ -509,3 +509,4 @@ void local_touch_nmi(void)
- {
- 	__this_cpu_write(last_nmi_rip, 0);
- }
-+EXPORT_SYMBOL_GPL(local_touch_nmi);
--- 
-1.7.9.5
+style trivia:
+
+[]
+
+> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+[]
+> +
+> +/* #define DEBUG */
+> +
+
+Adding this #define before any #include
+
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+
+[]
+
+> +static int window_size_set(const char *arg, const struct kernel_param *kp)
+> +{
+[]
+> +	if (new_window_size >= 10 || new_window_size < 2) {
+> +		pr_err("PowerClamp: invalid window size %lu, between 2-10\n",
+> +			new_window_size);
+
+Means there's no need for "PowerClamp: " prefixes with pr_fmt
+
+		pr_err("invalid window size %lu...
+
+and all the other pr_<level> uses get prefixed too.
+
+> +static u64 pkg_state_counter(void)
+> +{
+> +	u64 val;
+> +	u64 count = 0;
+> +
+> +	static int skip_c2;
+> +	static int skip_c3;
+> +	static int skip_c6;
+> +	static int skip_c7;
+
+bool?
+
+
