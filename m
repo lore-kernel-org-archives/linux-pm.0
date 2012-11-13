@@ -1,180 +1,72 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH v3 3/4] ARM: EXYNOS: pm_domain: Bind devices to power domains
- using DT
-Date: Tue, 13 Nov 2012 14:08:26 +0100
-Message-ID: <1352812107-8777-4-git-send-email-t.figa@samsung.com>
-References: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kyungmin.park@samsung.com, kgene.kim@samsung.com, thomas.abraham@linaro.org, rjw@sisk.pl, m.szyprowski@samsung.com, t.figa@samsung.com, tomasz.figa@gmail.com
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Tue, 13 Nov 2012 21:20:28 +0800
+Message-ID: <20121113132027.GB11672@aaronlu.sh.intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+ <1352443922-13734-7-git-send-email-aaron.lu@intel.com>
+ <20121112191303.GE5560@mtj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20121112191303.GE5560@mtj.dyndns.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds a way to specify bindings between devices and power
-domains using device tree.
+On Mon, Nov 12, 2012 at 11:13:03AM -0800, Tejun Heo wrote:
+> Hello,
+> 
+> On Fri, Nov 09, 2012 at 02:51:58PM +0800, Aaron Lu wrote:
+> > +/*
+> > + * Check ODD's zero power ready status.
+> > + *
+> > + * This function is called during ATA port's suspend path,
+> > + * when the port is not frozen yet, so that we can still make
+> > + * some IO to the ODD to decide if it is zero power ready.
+> > + *
+> > + * The ODD is regarded as zero power ready when it is in zero
+> > + * power ready state for some time(defined by POWEROFF_DELAY).
+> > + */
+> > +void zpodd_check_zpready(struct ata_device *dev)
+> > +{
+> > +	bool zp_ready;
+> > +	unsigned long expires;
+> > +	struct zpodd *zpodd = dev->private_data;
+> > +
+> > +	if (!zpodd->status_ready) {
+> > +		zpodd->last_ready = 0;
+> > +		return;
+> > +	}
+> > +
+> > +	if (!zpodd->last_ready) {
+> > +		zp_ready = zpready(dev);
+> > +		if (zp_ready)
+> > +			zpodd->last_ready = jiffies;
+> > +		return;
+> > +	}
+> > +
+> > +	expires = zpodd->last_ready + msecs_to_jiffies(POWEROFF_DELAY);
+> > +	if (time_before(jiffies, expires))
+> > +		return;
+> > +
+> > +	zpodd->zp_ready = zpready(dev);
+> > +	if (!zpodd->zp_ready)
+> > +		zpodd->last_ready = 0;
+> > +}
+> 
+> Hmmm... so, the "full" check only happens when autopm kicks in, right?
 
-A device can be bound to particular power domain by adding a
-power-domain property containing a phandle to the domain. The device
-will be bound to the domain before binding a driver to it and unbound
-after unbinding a driver from it.
+Yes, and unless the ODD is powered off, autopm can kick in every 2
+seconds(together with the events poll).
 
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
- .../bindings/arm/exynos/power_domain.txt           | 13 +++-
- arch/arm/mach-exynos/pm_domains.c                  | 82 ++++++++++++++++++++++
- 2 files changed, 94 insertions(+), 1 deletion(-)
+> Is it really worth avoiding an extra TUR on autopm events?  That's not
+> really a hot path.  It seems a bit over-engineered to me.
 
-diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-index 843b546..5216b41 100644
---- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-+++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
-@@ -4,14 +4,25 @@ Exynos processors include support for multiple power domains which are used
- to gate power to one or more peripherals on the processor.
- 
- Required Properties:
--- compatiable: should be one of the following.
-+- compatible: should be one of the following.
-     * samsung,exynos4210-pd - for exynos4210 type power domain.
- - reg: physical base address of the controller and length of memory mapped
-     region.
- 
-+Node of a device using power domains must have a samsung,power-domain property
-+defined with a phandle to respective power domain.
-+
- Example:
- 
- 	lcd0: power-domain-lcd0 {
- 		compatible = "samsung,exynos4210-pd";
- 		reg = <0x10023C00 0x10>;
- 	};
-+
-+Example of the node using power domain:
-+
-+	node {
-+		/* ... */
-+		samsung,power-domain = <&lcd0>;
-+		/* ... */
-+	};
-diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
-index 5b7ce7e..4063016 100644
---- a/arch/arm/mach-exynos/pm_domains.c
-+++ b/arch/arm/mach-exynos/pm_domains.c
-@@ -19,6 +19,8 @@
- #include <linux/pm_domain.h>
- #include <linux/delay.h>
- #include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/sched.h>
- 
- #include <mach/regs-pmu.h>
- #include <plat/devs.h>
-@@ -83,14 +85,89 @@ static struct exynos_pm_domain PD = {			\
- }
- 
- #ifdef CONFIG_OF
-+static void exynos_add_device_to_domain(struct exynos_pm_domain *pd,
-+							struct device *dev)
-+{
-+	int ret;
-+
-+	dev_dbg(dev, "adding to power domain %s\n", pd->pd.name);
-+
-+	while(1) {
-+		ret = pm_genpd_add_device(&pd->pd, dev);
-+		if (ret != -EAGAIN)
-+			break;
-+		cond_resched();
-+	}
-+
-+	pm_genpd_dev_need_restore(dev, true);
-+}
-+
-+static void exynos_remove_device_from_domain(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd = dev_to_genpd(dev);
-+	int ret;
-+
-+	dev_dbg(dev, "removing from power domain %s\n", genpd->name);
-+
-+	while(1) {
-+		ret = pm_genpd_remove_device(genpd, dev);
-+		if (ret != -EAGAIN)
-+			break;
-+		cond_resched();
-+	}
-+}
-+
-+static void exynos_read_domain_from_dt(struct device *dev)
-+{
-+	struct platform_device *pd_pdev;
-+	struct exynos_pm_domain *pd;
-+	struct device_node *node;
-+
-+	node = of_parse_phandle(dev->of_node, "samsung,power-domain", 0);
-+	if (!node)
-+		return;
-+	pd_pdev = of_find_device_by_node(node);
-+	if (!pd_pdev)
-+		return;
-+	pd = platform_get_drvdata(pd_pdev);
-+	exynos_add_device_to_domain(pd, dev);
-+}
-+
-+static int exynos_pm_notifier_call(struct notifier_block *nb,
-+				    unsigned long event, void *data)
-+{
-+	struct device *dev = data;
-+
-+	switch (event) {
-+	case BUS_NOTIFY_BIND_DRIVER:
-+		if (dev->of_node)
-+			exynos_read_domain_from_dt(dev);
-+
-+		break;
-+
-+	case BUS_NOTIFY_UNBOUND_DRIVER:
-+		exynos_remove_device_from_domain(dev);
-+
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block platform_nb = {
-+	.notifier_call = exynos_pm_notifier_call,
-+};
-+
- static __init int exynos_pm_dt_parse_domains(void)
- {
-+	struct platform_device *pdev;
- 	struct device_node *np;
- 
- 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
- 		struct exynos_pm_domain *pd;
- 		int on;
- 
-+		pdev = of_find_device_by_node(np);
-+
- 		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
- 		if (!pd) {
- 			pr_err("%s: failed to allocate memory for domain\n",
-@@ -105,10 +182,15 @@ static __init int exynos_pm_dt_parse_domains(void)
- 		pd->pd.power_on = exynos_pd_power_on;
- 		pd->pd.of_node = np;
- 
-+		platform_set_drvdata(pdev, pd);
-+
- 		on = __raw_readl(pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN;
- 
- 		pm_genpd_init(&pd->pd, NULL, !on);
- 	}
-+
-+	bus_register_notifier(&platform_bus_type, &platform_nb);
-+
- 	return 0;
- }
- #else
--- 
-1.8.0
+I'm not sure...But if issuing TUR every 2 seconds under some condition
+is acceptable, I'll be happily removing the snoop thing and use TUR only.
+
+Thanks,
+Aaron
+
