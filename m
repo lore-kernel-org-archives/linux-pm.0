@@ -1,45 +1,38 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT] power tools patches for Linux 3.7-rc5
-Date: Tue, 13 Nov 2012 12:43:11 -0500
-Message-ID: <50A286AF.2000505@kernel.org>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH -v2] ACPI/PCI: Make PCI devices notified when its power
+ resource turned on
+Date: Tue, 13 Nov 2012 11:58:44 -0700
+Message-ID: <CAErSpo6LqWfXd3NY2pDsE0RmWNKApyF+Lbv8_Bvq3ULMuy7Bvw@mail.gmail.com>
+References: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f53.google.com ([209.85.216.53]:49026 "EHLO
-	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754519Ab2KMRnR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Nov 2012 12:43:17 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Huang Ying <ying.huang@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Linus,
+On Tue, Nov 6, 2012 at 5:57 PM, Huang Ying <ying.huang@intel.com> wrote:
+> A set of power resources may be shared by multiple devices.  When all
+> devices share one set of power resources is put into D3_COLD state,
+> the power resources will be turned off.  When one of the device is
+> waked, the power resource will be turned on and all devices share it
+> will be powered on to D0uninitialized state.  These devices should be
+> resumed, so that they can get opportunity to go to low power state
+> later.
+>
+> v2:
+>
+> - Fix build error
+>
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> ---
+>  drivers/acpi/pci_bind.c |    2 ++
+>  1 file changed, 2 insertions(+)
 
-Please pull this pair of power tools patches --
-a 3.7 regression fix plus a bug fix.
+I applied this to my pci/misc branch as v3.8 material.  Thanks!
 
-thanks!
-Len Brown, Intel Open Source Technology Center
-
-The following changes since commit bc909421a9c7083fcde795846d22b36a51a7be54:
-
-  Merge tag 'gpio-fixes-v3.7-rc4' of git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-gpio (2012-10-30 15:56:22 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git release
-
-for you to fetch changes up to d91bb17c2a874493603c4d99db305d8caf2d180c:
-
-  tools/power turbostat: graceful fail on garbage input (2012-11-01 00:22:00 -0400)
-
-----------------------------------------------------------------
-Len Brown (2):
-      tools/power turbostat: Repair Segmentation fault when using -i option
-      tools/power turbostat: graceful fail on garbage input
-
- tools/power/x86/turbostat/turbostat.c | 28 +++++++++++++++++++---------
- 1 file changed, 19 insertions(+), 9 deletions(-)
+Bjorn
