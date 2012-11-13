@@ -1,7 +1,7 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 08/14] x86-32, hotplug: Add start_cpu0() entry point to head_32.S
-Date: Tue, 13 Nov 2012 11:32:45 -0800
-Message-ID: <1352835171-3958-9-git-send-email-fenghua.yu@intel.com>
+Subject: [PATCH v10 13/14] x86/i387.c: Initialize thread xstate only on CPU0 only once
+Date: Tue, 13 Nov 2012 11:32:50 -0800
+Message-ID: <1352835171-3958-14-git-send-email-fenghua.yu@intel.com>
 References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
@@ -12,37 +12,30 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-start_cpu0() is defined in head_32.S for 32-bit. The function sets up stack and
-jumps to start_secondary() for CPU0 wake up.
+init_thread_xstate() is only called once to avoid overriding xstate_size during
+boot time or during CPU hotplug.
 
 Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 ---
- arch/x86/kernel/head_32.S |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ arch/x86/kernel/i387.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 957a47a..a013e73 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -266,6 +266,19 @@ num_subarch_entries = (. - subarch_entries) / 4
- 	jmp default_entry
- #endif /* CONFIG_PARAVIRT */
+diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
+index 675a050..245a71d 100644
+--- a/arch/x86/kernel/i387.c
++++ b/arch/x86/kernel/i387.c
+@@ -175,7 +175,11 @@ void __cpuinit fpu_init(void)
+ 		cr0 |= X86_CR0_EM;
+ 	write_cr0(cr0);
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+/*
-+ * Boot CPU0 entry point. It's called from play_dead(). Everything has been set
-+ * up already except stack. We just set up stack here. Then call
-+ * start_secondary().
-+ */
-+ENTRY(start_cpu0)
-+	movl stack_start, %ecx
-+	movl %ecx, %esp
-+	jmp  *(initial_code)
-+ENDPROC(start_cpu0)
-+#endif
-+
- /*
-  * Non-boot CPU entry point; entered from trampoline.S
-  * We can't lgdt here, because lgdt itself uses a data segment, but
+-	if (!smp_processor_id())
++	/*
++	 * init_thread_xstate is only called once to avoid overriding
++	 * xstate_size during boot time or during CPU hotplug.
++	 */
++	if (xstate_size == 0)
+ 		init_thread_xstate();
+ 
+ 	mxcsr_feature_mask_init();
 -- 
 1.7.2
