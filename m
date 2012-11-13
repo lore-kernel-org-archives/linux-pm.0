@@ -1,7 +1,7 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 13/14] x86/i387.c: Initialize thread xstate only on CPU0 only once
-Date: Tue, 13 Nov 2012 11:32:50 -0800
-Message-ID: <1352835171-3958-14-git-send-email-fenghua.yu@intel.com>
+Subject: [PATCH v10 12/14] x86, hotplug: Handle retrigger irq by the first available CPU
+Date: Tue, 13 Nov 2012 11:32:49 -0800
+Message-ID: <1352835171-3958-13-git-send-email-fenghua.yu@intel.com>
 References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
@@ -12,30 +12,31 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-init_thread_xstate() is only called once to avoid overriding xstate_size during
-boot time or during CPU hotplug.
+The first cpu in irq cfg->domain is likely to be CPU 0 and may not be available
+when CPU 0 is offline. Instead of using CPU 0 to handle retriggered irq, we use
+first available CPU which is online and in this irq's domain.
 
 Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 ---
- arch/x86/kernel/i387.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-index 675a050..245a71d 100644
---- a/arch/x86/kernel/i387.c
-+++ b/arch/x86/kernel/i387.c
-@@ -175,7 +175,11 @@ void __cpuinit fpu_init(void)
- 		cr0 |= X86_CR0_EM;
- 	write_cr0(cr0);
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index b134f0b..c94bac8 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2199,9 +2199,11 @@ static int ioapic_retrigger_irq(struct irq_data *data)
+ {
+ 	struct irq_cfg *cfg = data->chip_data;
+ 	unsigned long flags;
++	int cpu;
  
--	if (!smp_processor_id())
-+	/*
-+	 * init_thread_xstate is only called once to avoid overriding
-+	 * xstate_size during boot time or during CPU hotplug.
-+	 */
-+	if (xstate_size == 0)
- 		init_thread_xstate();
+ 	raw_spin_lock_irqsave(&vector_lock, flags);
+-	apic->send_IPI_mask(cpumask_of(cpumask_first(cfg->domain)), cfg->vector);
++	cpu = cpumask_first_and(cfg->domain, cpu_online_mask);
++	apic->send_IPI_mask(cpumask_of(cpu), cfg->vector);
+ 	raw_spin_unlock_irqrestore(&vector_lock, flags);
  
- 	mxcsr_feature_mask_init();
+ 	return 1;
 -- 
 1.7.2
