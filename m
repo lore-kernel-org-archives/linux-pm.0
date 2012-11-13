@@ -1,38 +1,42 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH -v2] ACPI/PCI: Make PCI devices notified when its power
- resource turned on
-Date: Tue, 13 Nov 2012 11:58:44 -0700
-Message-ID: <CAErSpo6LqWfXd3NY2pDsE0RmWNKApyF+Lbv8_Bvq3ULMuy7Bvw@mail.gmail.com>
-References: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: RE: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting
+ stats
+Date: Tue, 13 Nov 2012 14:13:38 -0500
+Message-ID: <21672683C5A3814BB4DB938EBE482DE426EA988080@IAD2MBX09.mex02.mlsrvr.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-4-git-send-email-mark.langsdorf@calxeda.com>
+ <20121111163821.GA21635@x1.osrc.amd.com> <50A12565.4070701@calxeda.com>
+ <20121113162449.GE9327@x1.osrc.amd.com>,<50A2766D.6040008@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352249879-11406-1-git-send-email-ying.huang@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <50A2766D.6040008@calxeda.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>, Borislav Petkov <bp@alien8.de>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 6, 2012 at 5:57 PM, Huang Ying <ying.huang@intel.com> wrote:
-> A set of power resources may be shared by multiple devices.  When all
-> devices share one set of power resources is put into D3_COLD state,
-> the power resources will be turned off.  When one of the device is
-> waked, the power resource will be turned on and all devices share it
-> will be powered on to D0uninitialized state.  These devices should be
-> resumed, so that they can get opportunity to go to low power state
-> later.
->
-> v2:
->
-> - Fix build error
->
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  drivers/acpi/pci_bind.c |    2 ++
->  1 file changed, 2 insertions(+)
+From: linux-pm-owner@vger.kernel.org [linux-pm-owner@vger.kernel.org] On Behalf Of Mark Langsdorf [mark.langsdorf@calxeda.com]
 
-I applied this to my pci/misc branch as v3.8 material.  Thanks!
+> On 11/13/2012 10:24 AM, Borislav Petkov wrote:
+>> On Mon, Nov 12, 2012 at 10:35:49AM -0600, Mark Langsdorf wrote:
+>>> The function is buried pretty deep in the cpufreq_stat code. It didn't
+>>> seem appropriate to make it a function pointer as part of struct
+>>> cpufreq_driver.
+>>
+>> Better yet, add a flag or a bitfield called "minimize_jitter" or similar
+>> and set it only on your hardware...
+>
+> Doing it in two passes has a similar effect: systems that have exact
+> frequencies will get caught in the first pass when the values match. But
+> adding a flag makes sense.
 
-Bjorn
+I went back and looked at implementing this suggestion.
+
+Although cpufreq_driver has a flag field, no part of cpufreq_driver is directly passed to the cpufreq_stat code. Only cpufreq_policy is. It's cleaner to do passes of the while loop than to copy the cpufreq_driver.flag field into cpufreq_policy and then store it again in cpufreq_stats.
+
+--Mark Langsdorf
+Calxeda, Inc.
