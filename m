@@ -1,115 +1,82 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Wed, 14 Nov 2012 10:18:23 +0800
-Message-ID: <50A2FF6F.3080603@intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <1352443922-13734-7-git-send-email-aaron.lu@intel.com> <20121112191303.GE5560@mtj.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20121112191303.GE5560@mtj.dyndns.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+From: "Fenghua Yu" <fenghua.yu@intel.com>
+Subject: [PATCH v10 05/14] x86, hotplug, suspend: Online CPU0 for suspend or hibernate
+Date: Tue, 13 Nov 2012 11:32:42 -0800
+Message-ID: <1352835171-3958-6-git-send-email-fenghua.yu@intel.com>
+References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:37267 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932502Ab2KNCdn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 21:33:43 -0500
+In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Asit K Mallick <asit.k.mallick@intel.com>, Tony Luck <tony.luck@intel.com>, Arjan Dan De Ven <arjan@linux.intel.com>, Suresh B Siddha <suresh.b.siddha@intel.com>, Len Brown <len.brown@intel.com>, "Srivatssa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Chen Gong <gong.chen@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, x86 <x86@kernel.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
 
-On 11/13/2012 03:13 AM, Tejun Heo wrote:
-> Hello,
-> 
-> On Fri, Nov 09, 2012 at 02:51:58PM +0800, Aaron Lu wrote:
->> +#define POWEROFF_DELAY  (30 * 1000)     /* 30 seconds for power off delay */
->> +
->>  struct zpodd {
->>  	bool slot:1;
->>  	bool drawer:1;
->>  	bool from_notify:1;	/* resumed as a result of acpi notification */
->> +	bool status_ready:1;	/* ready status derived from media event poll,
->> +				   it is not accurate, but serves as a hint */
->> +	bool zp_ready:1;	/* zero power ready state */
->> +
->> +	unsigned long last_ready; /* last zero power ready timestamp */
->>  
->>  	struct ata_device *dev;
->>  };
-> 
-> How are accesses to the bit fields synchronized?
+From: Fenghua Yu <fenghua.yu@intel.com>
 
-They are synchronized by PM core.
-PM core ensures that no two suspend or resume callback run concurrently.
-And when ODD is executing a command, it is in active state, no PM
-callback will run.
+Because x86 BIOS requires CPU0 to resume from sleep, suspend or hibernate can't
+be executed if CPU0 is detected offline. To make suspend or hibernate and
+further resume succeed, CPU0 must be online.
 
-> 
->> +/*
->> + * Snoop the result of GET_STATUS_NOTIFICATION_EVENT, the media
->> + * status byte has information on media present/door closed.
->> + *
->> + * This information serves only as a hint, as it is not accurate.
->> + * The sense code method will be used when deciding if the ODD is
->> + * really zero power ready.
->> + */
-> 
-> It would be great if you can make the above a proper dockbook function
-> comment.  Also, as the snooping for hint thing isn't too obvious it
-> would be great if the comment contains more info which is explained in
-> the commit message.
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+---
+ arch/x86/power/cpu.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 44 insertions(+), 0 deletions(-)
 
-OK.
-
-> 
->> +/*
->> + * Check ODD's zero power ready status.
->> + *
->> + * This function is called during ATA port's suspend path,
->> + * when the port is not frozen yet, so that we can still make
->> + * some IO to the ODD to decide if it is zero power ready.
->> + *
->> + * The ODD is regarded as zero power ready when it is in zero
->> + * power ready state for some time(defined by POWEROFF_DELAY).
->> + */
->> +void zpodd_check_zpready(struct ata_device *dev)
->> +{
->> +	bool zp_ready;
->> +	unsigned long expires;
->> +	struct zpodd *zpodd = dev->private_data;
->> +
->> +	if (!zpodd->status_ready) {
->> +		zpodd->last_ready = 0;
->> +		return;
->> +	}
->> +
->> +	if (!zpodd->last_ready) {
->> +		zp_ready = zpready(dev);
->> +		if (zp_ready)
->> +			zpodd->last_ready = jiffies;
->> +		return;
->> +	}
->> +
->> +	expires = zpodd->last_ready + msecs_to_jiffies(POWEROFF_DELAY);
->> +	if (time_before(jiffies, expires))
->> +		return;
->> +
->> +	zpodd->zp_ready = zpready(dev);
->> +	if (!zpodd->zp_ready)
->> +		zpodd->last_ready = 0;
->> +}
-> 
-> Hmmm... so, the "full" check only happens when autopm kicks in, right?
-> Is it really worth avoiding an extra TUR on autopm events?  That's not
-> really a hot path.  It seems a bit over-engineered to me.
-
-A little more information about this:
-When there is disc inside and no program mounted the drive, the ODD will
-be runtime suspended/resumed every 2 seconds along with the event poll.
-
-I'm not sure if the above situation can happen often. Normal desktop
-environment should automatically mount the ODD once they got uevent, and
-for console users, they will probably manually mount the drive after
-they have inserted a disc. The way I did it this way is to deal with the
-worst possible case. But if this is deemed as not necessary, I think I
-can remove the snoop hint thing and use TUR directly.
-
-
-Thanks,
-Aaron
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 218cdb1..adde775 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -237,3 +237,47 @@ void restore_processor_state(void)
+ #ifdef CONFIG_X86_32
+ EXPORT_SYMBOL(restore_processor_state);
+ #endif
++
++/*
++ * When bsp_check() is called in hibernate and suspend, cpu hotplug
++ * is disabled already. So it's unnessary to handle race condition between
++ * cpumask query and cpu hotplug.
++ */
++static int bsp_check(void)
++{
++	if (cpumask_first(cpu_online_mask) != 0) {
++		pr_warn("CPU0 is offline.\n");
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
++static int bsp_pm_callback(struct notifier_block *nb, unsigned long action,
++			   void *ptr)
++{
++	int ret = 0;
++
++	switch (action) {
++	case PM_SUSPEND_PREPARE:
++	case PM_HIBERNATION_PREPARE:
++		ret = bsp_check();
++		break;
++	default:
++		break;
++	}
++	return notifier_from_errno(ret);
++}
++
++static int __init bsp_pm_check_init(void)
++{
++	/*
++	 * Set this bsp_pm_callback as lower priority than
++	 * cpu_hotplug_pm_callback. So cpu_hotplug_pm_callback will be called
++	 * earlier to disable cpu hotplug before bsp online check.
++	 */
++	pm_notifier(bsp_pm_callback, -INT_MAX);
++	return 0;
++}
++
++core_initcall(bsp_pm_check_init);
+-- 
+1.7.2
 
