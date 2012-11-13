@@ -1,7 +1,7 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 12/14] x86, hotplug: Handle retrigger irq by the first available CPU
-Date: Tue, 13 Nov 2012 11:32:49 -0800
-Message-ID: <1352835171-3958-13-git-send-email-fenghua.yu@intel.com>
+Subject: [PATCH v10 10/14] x86, hotplug: During CPU0 online, enable x2apic, set_numa_node.
+Date: Tue, 13 Nov 2012 11:32:47 -0800
+Message-ID: <1352835171-3958-11-git-send-email-fenghua.yu@intel.com>
 References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
@@ -12,31 +12,37 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-The first cpu in irq cfg->domain is likely to be CPU 0 and may not be available
-when CPU 0 is offline. Instead of using CPU 0 to handle retriggered irq, we use
-first available CPU which is online and in this irq's domain.
+Previously these functions were not run on the BSP (CPU 0, the boot processor)
+since the boot processor init would only be executed before this functionality
+was initialized.
 
 Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 ---
- arch/x86/kernel/apic/io_apic.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ arch/x86/kernel/cpu/common.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index b134f0b..c94bac8 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2199,9 +2199,11 @@ static int ioapic_retrigger_irq(struct irq_data *data)
- {
- 	struct irq_cfg *cfg = data->chip_data;
- 	unsigned long flags;
-+	int cpu;
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 7505f7b..ca165ac 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1237,7 +1237,7 @@ void __cpuinit cpu_init(void)
+ 	oist = &per_cpu(orig_ist, cpu);
  
- 	raw_spin_lock_irqsave(&vector_lock, flags);
--	apic->send_IPI_mask(cpumask_of(cpumask_first(cfg->domain)), cfg->vector);
-+	cpu = cpumask_first_and(cfg->domain, cpu_online_mask);
-+	apic->send_IPI_mask(cpumask_of(cpu), cfg->vector);
- 	raw_spin_unlock_irqrestore(&vector_lock, flags);
+ #ifdef CONFIG_NUMA
+-	if (cpu != 0 && this_cpu_read(numa_node) == 0 &&
++	if (this_cpu_read(numa_node) == 0 &&
+ 	    early_cpu_to_node(cpu) != NUMA_NO_NODE)
+ 		set_numa_node(early_cpu_to_node(cpu));
+ #endif
+@@ -1269,8 +1269,7 @@ void __cpuinit cpu_init(void)
+ 	barrier();
  
- 	return 1;
+ 	x86_configure_nx();
+-	if (cpu != 0)
+-		enable_x2apic();
++	enable_x2apic();
+ 
+ 	/*
+ 	 * set up and load the per-CPU TSS
 -- 
 1.7.2
