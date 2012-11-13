@@ -1,7 +1,7 @@
 From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 07/14] x86-64, hotplug: Add start_cpu0() entry point to head_64.S
-Date: Tue, 13 Nov 2012 11:32:44 -0800
-Message-ID: <1352835171-3958-8-git-send-email-fenghua.yu@intel.com>
+Subject: [PATCH v10 06/14] kernel/cpu.c: Add comment for priority in cpu_hotplug_pm_callback
+Date: Tue, 13 Nov 2012 11:32:43 -0800
+Message-ID: <1352835171-3958-7-git-send-email-fenghua.yu@intel.com>
 References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
@@ -12,40 +12,39 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Fenghua Yu <fenghua.yu@intel.com>
 
-start_cpu0() is defined in head_64.S for 64-bit. The function sets up stack and
-jumps to start_secondary() for CPU0 wake up.
+cpu_hotplug_pm_callback should have higher priority than
+bsp_pm_callback which depends on cpu_hotplug_pm_callback to disable cpu hotplug
+to avoid race during bsp online checking.
+
+This is to hightlight the priorities between the two callbacks in case people
+may overlook the order.
+
+Ideally the priorities should be defined in macro/enum instead of fixed values.
+To do that, a seperate patchset may be pushed which will touch serveral other
+generic files and is out of scope of this patchset.
 
 Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/x86/kernel/head_64.S |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+ kernel/cpu.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index 94bf9cc..980053c 100644
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -252,6 +252,22 @@ ENTRY(secondary_startup_64)
- 	pushq	%rax		# target address in negative space
- 	lretq
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 42bd331..a2491a2 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -601,6 +601,11 @@ cpu_hotplug_pm_callback(struct notifier_block *nb,
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+/*
-+ * Boot CPU0 entry point. It's called from play_dead(). Everything has been set
-+ * up already except stack. We just set up stack here. Then call
-+ * start_secondary().
-+ */
-+ENTRY(start_cpu0)
-+	movq stack_start(%rip),%rsp
-+	movq	initial_code(%rip),%rax
-+	pushq	$0		# fake return address to stop unwinder
-+	pushq	$__KERNEL_CS	# set correct cs
-+	pushq	%rax		# target address in negative space
-+	lretq
-+ENDPROC(start_cpu0)
-+#endif
-+
- 	/* SMP bootup changes these two */
- 	__REFDATA
- 	.align	8
+ static int __init cpu_hotplug_pm_sync_init(void)
+ {
++	/*
++	 * cpu_hotplug_pm_callback has higher priority than x86
++	 * bsp_pm_callback which depends on cpu_hotplug_pm_callback
++	 * to disable cpu hotplug to avoid cpu hotplug race.
++	 */
+ 	pm_notifier(cpu_hotplug_pm_callback, 0);
+ 	return 0;
+ }
 -- 
 1.7.2
