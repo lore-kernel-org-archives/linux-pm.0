@@ -1,38 +1,79 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 05/10] libata: separate ATAPI code
-Date: Tue, 13 Nov 2012 20:49:24 +0800
-Message-ID: <20121113124923.GA11672@aaronlu.sh.intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
- <1352443922-13734-6-git-send-email-aaron.lu@intel.com>
- <20121112185710.GD5560@mtj.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20121112185710.GD5560@mtj.dyndns.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: [PATCH v3 1/4] ARM: EXYNOS: pm_domain: Detect domain state on
+ registration from DT
+Date: Tue, 13 Nov 2012 13:51:52 +0100
+Message-ID: <1352811115-1198-2-git-send-email-t.figa@samsung.com>
+References: <1352811115-1198-1-git-send-email-t.figa@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:18376 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753481Ab2KMMwp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Nov 2012 07:52:45 -0500
+In-reply-to: <1352811115-1198-1-git-send-email-t.figa@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kyungmin.park@samsung.com, kgene.kim@samsung.com, thomas.abraham@linaro.org, rjw@sisk.pl, m.szyprowski@samsung.com, t.figa@samsung.com, tomasz.figa@gmail.com
 
-On Mon, Nov 12, 2012 at 10:57:10AM -0800, Tejun Heo wrote:
-> On Fri, Nov 09, 2012 at 02:51:57PM +0800, Aaron Lu wrote:
-> > The atapi_eh_tur and atapi_eh_request_sense can be reused by ZPODD
-> > code, so separate them out to a file named libata-atapi.c, and the
-> > Makefile is modified accordingly. No functional changes should result
-> > from this commit.
-> 
-> Why is this change necessary?  This doesn't seem to help anything to
-> me.
+Initial state of power domains might vary on different boards and with
+different bootloaders.
 
-Function zpready introduced in patch 6 used these 2 functions to see if
-an ODD is in a zero power ready state.
+This patch adds detection of initial state of power domains when being
+registered from DT.
 
-Thanks,
-Aaron
+Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
+ Documentation/devicetree/bindings/arm/exynos/power_domain.txt | 4 ----
+ arch/arm/mach-exynos/pm_domains.c                             | 8 +++++---
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
-> 
-> Thanks.
-> 
-> -- 
-> tejun
+diff --git a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+index 6528e21..843b546 100644
+--- a/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
++++ b/Documentation/devicetree/bindings/arm/exynos/power_domain.txt
+@@ -9,10 +9,6 @@ Required Properties:
+ - reg: physical base address of the controller and length of memory mapped
+     region.
+ 
+-Optional Properties:
+-- samsung,exynos4210-pd-off: Specifies that the power domain is in turned-off
+-    state during boot and remains to be turned-off until explicitly turned-on.
+-
+ Example:
+ 
+ 	lcd0: power-domain-lcd0 {
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+index c0bc83a..d1abc1a 100644
+--- a/arch/arm/mach-exynos/pm_domains.c
++++ b/arch/arm/mach-exynos/pm_domains.c
+@@ -89,6 +89,7 @@ static __init int exynos_pm_dt_parse_domains(void)
+ 
+ 	for_each_compatible_node(np, NULL, "samsung,exynos4210-pd") {
+ 		struct exynos_pm_domain *pd;
++		int on;
+ 
+ 		pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+ 		if (!pd) {
+@@ -97,14 +98,15 @@ static __init int exynos_pm_dt_parse_domains(void)
+ 			return -ENOMEM;
+ 		}
+ 
+-		if (of_get_property(np, "samsung,exynos4210-pd-off", NULL))
+-			pd->is_off = true;
+ 		pd->name = np->name;
+ 		pd->base = of_iomap(np, 0);
+ 		pd->pd.power_off = exynos_pd_power_off;
+ 		pd->pd.power_on = exynos_pd_power_on;
+ 		pd->pd.of_node = np;
+-		pm_genpd_init(&pd->pd, NULL, false);
++
++		on = __raw_readl(pd->base + 0x4) & S5P_INT_LOCAL_PWR_EN;
++
++		pm_genpd_init(&pd->pd, NULL, !on);
+ 	}
+ 	return 0;
+ }
+-- 
+1.8.0
+
