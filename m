@@ -1,53 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Wed, 14 Nov 2012 00:02 +0100
-Message-ID: <21157900.tI2QCFTxxq@vostro.rjw.lan>
-References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com> <20121113222350.GH2489@linux.vnet.ibm.com> <50A2CD77.7000403@linux.intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Wed, 14 Nov 2012 00:43:32 +0100
+Message-ID: <2088233.vqA5Fcid1o@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:41991 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754287Ab2KMW5k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 17:57:40 -0500
-In-Reply-To: <50A2CD77.7000403@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: paulmck@linux.vnet.ibm.com, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
 
-On Tuesday, November 13, 2012 02:45:11 PM Arjan van de Ven wrote:
-> On 11/13/2012 2:23 PM, Paul E. McKenney wrote:
-> > On Tue, Nov 13, 2012 at 01:39:22PM -0800, Jacob Pan wrote:
-> >> On Tue, 13 Nov 2012 13:16:02 -0800
-> >> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >>
-> >>>> Please refer to Documentation/thermal/intel_powerclamp.txt for more
-> >>>> details.  
-> >>>
-> >>> If I read this correctly, this forces a group of CPUs into idle for
-> >>> about 600 milliseconds at a time.  This would indeed delay grace
-> >>> periods, which could easily result in user complaints.  Also, given
-> >>> the default RCU_BOOST_DELAY of 500 milliseconds in kernels enabling
-> >>> RCU_BOOST, you would see needless RCU priority boosting.
-> >>>
-> >> the default idle injection duration is 6ms. we adjust the sleep
-> >> interval to ensure idle ratio. So the idle duration stays the same once
-> >> set. So would it be safe to delay grace period for this small amount in
-> >> exchange for less over head in each injection period?
-> > 
-> > Ah, 6ms of delay is much better than 600ms.  Should be OK (famous last
-> > words!).
+On Monday, November 12, 2012 11:32:26 AM Alan Stern wrote:
+> On Mon, 12 Nov 2012, Huang Ying wrote:
 > 
-> well... power clamping is not "free".
-> You're going to lose performance as a trade off for dropping instantaneous power consumption....
+> > > > Is it absolute necessary to call pm_runtime_set_suspended?  If the
+> > > > device is disabled, the transition to SUSPENDED state will not be
+> > > > triggered even if the device is ACTIVE.
+> > > 
+> > > It's not absolutely necessary to do this, but we ought to because it 
+> > > will allow the device's parent to be suspended.  If we leave the device 
+> > > in the ACTIVE state then the parent can't be suspended, even when the 
+> > > device is disabled.
+> > 
+> > I think this is the hard part of the issue.  Now "disabled" and
+> > SUSPENDED state is managed by hand.  IMHO, if we changed
+> > pm_runtime_allow() as you said, we need to change the rule too.  Maybe
+> > something as follow:
+> > 
+> > - remove pm_runtime_set_suspended/pm_runtime_set_active
+> 
+> We can't remove them entirely.  They are needed for situations where 
+> the device's physical state is different from what the PM core thinks; 
+> they tell the PM core what the actual state is.
+> 
+> > - in pm_runtime_disable/pm_runtime_allow, put device into SUSPENDED
+> > state if runtime PM is not forbidden.
+> 
+> That doesn't make sense.  Runtime PM is never forbidden after 
+> pm_runtime_allow is called; that's its purpose.
+> 
+> > - in pm_runtime_forbid/pm_runtime_enable, put device into ACTIVE state.
+> 
+> Why should pm_runtime_enable put the device into the ACTIVE state?
+> 
+> No, I think a better approach is simply to say that the device will
+> never be allowed to be in the SUSPENDED state if runtime PM is
+> forbidden.  We already enforce this when the device is enabled for 
+> runtime PM, so we would have to start enforcing it when the device is 
+> disabled.
 
-Yes.  It is good to realize that when the clamping triggers, we already
-have some more to worry about than losing some performance. :-)
+Sorry for the delay, I needed to take care of some ACPI changes urgently.
 
-The problem here is to find a way to lose as little performance as we possibly
-can and prevent the system from overheating at the same time.
+(Without reading the rest of the thread yet) I think that would be
+a reasonable approach.
+
+> This means:
+> 
+> 	pm_runtime_set_suspended should fail if dev->power.runtime_auto
+> 	is clear.
+> 
+> 	pm_runtime_forbid should call pm_runtime_set_active if
+> 	dev->power.disable_depth > 0.  (This would run into a problem
+> 	if the parent is suspended and disabled.  Maybe 
+> 	pm_runtime_forbid should fail when this happens.)
+> 
+> Finally, we probably should make a third change even though it isn't
+> strictly necessary:
+> 
+> 	pm_runtime_allow should call pm_runtime_set_suspended if
+> 	dev->power.disable_depth > 0.
+> 
+> Rafael, what do you think?
+
+As I said, sounds reasonable.
 
 Thanks,
 Rafael
