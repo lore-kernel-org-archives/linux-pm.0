@@ -1,49 +1,112 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFD][PATCH 7/7] PM / ACPI: Take device PM QoS flags into account
-Date: Tue, 13 Nov 2012 00:42:17 +0100
-Message-ID: <1700137.RQD4zuhDgN@vostro.rjw.lan>
-References: <201209282351.10663.rjw@sisk.pl> <201209282356.52558.rjw@sisk.pl> <CAErSpo7kVb1kLbJ0Y4mYLbzEeZM8dSa-YaZE9B2mN5r74ft-Rg@mail.gmail.com>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Tue, 13 Nov 2012 09:19:56 +0800
+Message-ID: <1352769596.7176.194.camel@yhuang-dev>
+References: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo7kVb1kLbJ0Y4mYLbzEeZM8dSa-YaZE9B2mN5r74ft-Rg@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Mailing List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Aaron Lu <aaron.lu@intel.com>, Jean Pihet <j-pihet@ti.com>, linux-pci@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, mark gross <markgross@thegnar.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:32871 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752655Ab2KMBT7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Nov 2012 20:19:59 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, November 12, 2012 02:07:03 PM Bjorn Helgaas wrote:
-> On Fri, Sep 28, 2012 at 3:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Make ACPI power management routines and PCI power management
-> > routines depending on ACPI take device PM QoS flags into account
-> > when deciding what power state to put the device into.
-> >
-> > In particular, after this change acpi_pm_device_sleep_state() will
-> > not return ACPI_STATE_D3_COLD as the deepest available low-power
-> > state if PM_QOS_FLAG_NO_POWER_OFF is requested for the device and it
-> > will not require remote wakeup to work for the device in the returned
-> > low-power state if there is at least one PM QoS flags request for the
-> > device, but PM_QOS_FLAG_REMOTE_WAKEUP is not requested for it.
-> >
-> > Accordingly, acpi_pci_set_power_state() will refuse to put the
-> > device into D3cold if PM_QOS_FLAG_NO_POWER_OFF is requested for it.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  drivers/acpi/sleep.c   |   16 ++++++++++++----
-> >  drivers/pci/pci-acpi.c |    8 +++++++-
+On Mon, 2012-11-12 at 11:32 -0500, Alan Stern wrote:
+> On Mon, 12 Nov 2012, Huang Ying wrote:
 > 
-> This touches a file in drivers/pci, but I expect it depends on all the
-> previous patches in the series, so if you haven't merged it already,
-> Rafael, it seems like it makes sense for you to merge this instead of
-> me.
+> > > > Is it absolute necessary to call pm_runtime_set_suspended?  If the
+> > > > device is disabled, the transition to SUSPENDED state will not be
+> > > > triggered even if the device is ACTIVE.
+> > > 
+> > > It's not absolutely necessary to do this, but we ought to because it 
+> > > will allow the device's parent to be suspended.  If we leave the device 
+> > > in the ACTIVE state then the parent can't be suspended, even when the 
+> > > device is disabled.
+> > 
+> > I think this is the hard part of the issue.  Now "disabled" and
+> > SUSPENDED state is managed by hand.  IMHO, if we changed
+> > pm_runtime_allow() as you said, we need to change the rule too.  Maybe
+> > something as follow:
+> > 
+> > - remove pm_runtime_set_suspended/pm_runtime_set_active
+> 
+> We can't remove them entirely.  They are needed for situations where 
+> the device's physical state is different from what the PM core thinks; 
+> they tell the PM core what the actual state is.
+> 
+> > - in pm_runtime_disable/pm_runtime_allow, put device into SUSPENDED
+> > state if runtime PM is not forbidden.
+> 
+> That doesn't make sense.  Runtime PM is never forbidden after 
+> pm_runtime_allow is called; that's its purpose.
 
-I will, thanks a lot!
+Sorry, my original idea is:
 
-Rafael
+	pm_runtime_disable will put device into SUSPENDED state if
+	dev->power.runtime_auto is clear.  pm_runtime_allow will put
+	device into SUSPENDED state if dev->power.disable_depth > 0.
+
+So in general, my original idea is to manage device runtime power state
+automatically instead of manually, especially when device is in disabled
+state.
+
+	disabled + forbidden	-> ACTIVE
+	disabled + !forbidden	-> SUSPENDED
+	enabled + forbidden	-> ACTIVE
+	enabled + !forbidden	-> auto
+
+Why we can not do that?
+
+> > - in pm_runtime_forbid/pm_runtime_enable, put device into ACTIVE state.
+> 
+> Why should pm_runtime_enable put the device into the ACTIVE state?
+> 
+> No, I think a better approach is simply to say that the device will
+> never be allowed to be in the SUSPENDED state if runtime PM is
+> forbidden.  We already enforce this when the device is enabled for 
+> runtime PM, so we would have to start enforcing it when the device is 
+> disabled.
+> 
+> This means:
+> 
+> 	pm_runtime_set_suspended should fail if dev->power.runtime_auto
+> 	is clear.
+
+I think we can WARN_ON() here.  Because the caller should responsible
+for state consistence if they decide to manage runtime power state
+manually.
+
+> 	pm_runtime_forbid should call pm_runtime_set_active if
+> 	dev->power.disable_depth > 0.  (This would run into a problem
+> 	if the parent is suspended and disabled.  Maybe 
+> 	pm_runtime_forbid should fail when this happens.)
+
+pm_runtime_forbid() may be called via echo "on" > .../power/control.  I
+think it is hard to refuse the request from user space to forbid runtime
+PM.  Device can always work with full power.
+
+> Finally, we probably should make a third change even though it isn't
+> strictly necessary:
+> 
+> 	pm_runtime_allow should call pm_runtime_set_suspended if
+> 	dev->power.disable_depth > 0.
+
+I think this is something similar to manage device power state
+automatically if disabled.
+
+Best Regards,
+Huang Ying
+
+> Rafael, what do you think?
+> 
+> Alan Stern
+> 
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
