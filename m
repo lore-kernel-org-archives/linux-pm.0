@@ -1,86 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Wed, 14 Nov 2012 00:43:32 +0100
-Message-ID: <2088233.vqA5Fcid1o@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
+Subject: Re: [RFC PATCH v2 1/6] usb: Register usb port's acpi power resources
+Date: Wed, 14 Nov 2012 00:56:06 +0100
+Message-ID: <46669688.k9rXBaWOjk@vostro.rjw.lan>
+References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <50A229E9.4060404@mvista.com> <50A23EBF.1070304@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1211121110520.26926-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:42095 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752146Ab2KMXvq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Nov 2012 18:51:46 -0500
+In-Reply-To: <50A23EBF.1070304@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <lantianyu1986@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@mvista.com>, Lan Tianyu <tianyu.lan@intel.com>, gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, November 12, 2012 11:32:26 AM Alan Stern wrote:
-> On Mon, 12 Nov 2012, Huang Ying wrote:
-> 
-> > > > Is it absolute necessary to call pm_runtime_set_suspended?  If the
-> > > > device is disabled, the transition to SUSPENDED state will not be
-> > > > triggered even if the device is ACTIVE.
-> > > 
-> > > It's not absolutely necessary to do this, but we ought to because it 
-> > > will allow the device's parent to be suspended.  If we leave the device 
-> > > in the ACTIVE state then the parent can't be suspended, even when the 
-> > > device is disabled.
-> > 
-> > I think this is the hard part of the issue.  Now "disabled" and
-> > SUSPENDED state is managed by hand.  IMHO, if we changed
-> > pm_runtime_allow() as you said, we need to change the rule too.  Maybe
-> > something as follow:
-> > 
-> > - remove pm_runtime_set_suspended/pm_runtime_set_active
-> 
-> We can't remove them entirely.  They are needed for situations where 
-> the device's physical state is different from what the PM core thinks; 
-> they tell the PM core what the actual state is.
-> 
-> > - in pm_runtime_disable/pm_runtime_allow, put device into SUSPENDED
-> > state if runtime PM is not forbidden.
-> 
-> That doesn't make sense.  Runtime PM is never forbidden after 
-> pm_runtime_allow is called; that's its purpose.
-> 
-> > - in pm_runtime_forbid/pm_runtime_enable, put device into ACTIVE state.
-> 
-> Why should pm_runtime_enable put the device into the ACTIVE state?
-> 
-> No, I think a better approach is simply to say that the device will
-> never be allowed to be in the SUSPENDED state if runtime PM is
-> forbidden.  We already enforce this when the device is enabled for 
-> runtime PM, so we would have to start enforcing it when the device is 
-> disabled.
+On Tuesday, November 13, 2012 08:36:15 PM Lan Tianyu wrote:
+> =E4=BA=8E 2012/11/13 19:07, Sergei Shtylyov =E5=86=99=E9=81=93:
+> > Hello.
+> >
+> > On 13-11-2012 12:00, Lan Tianyu wrote:
+> >
+> >> This patch is to register usb port's acpi power resources. Create
+> >> link between usb port device and its acpi power resource.
+> >
+> >> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> > [...]
+> >
+> >> diff --git a/drivers/usb/core/usb-acpi.c b/drivers/usb/core/usb-ac=
+pi.c
+> >> index cef4252..c58ebc0 100644
+> >> --- a/drivers/usb/core/usb-acpi.c
+> >> +++ b/drivers/usb/core/usb-acpi.c
+> >> @@ -216,6 +216,28 @@ static struct acpi_bus_type usb_acpi_bus =3D =
+{
+> >>       .find_device =3D usb_acpi_find_device,
+> >>   };
+> >>
+> >> +int usb_acpi_register_power_resources(struct device *dev)
+> >> +{
+> >> +    acpi_handle port_handle =3D DEVICE_ACPI_HANDLE(dev);
+> >> +
+> >> +    if (!port_handle)
+> >> +        return -ENODEV;
+> >> +
+> >> +    if (acpi_power_resource_register_device(dev, port_handle) < 0=
+)
+> >> +        return -ENODEV;
+> >> +    return 0;
+> >> +}
+> >> +
+> >> +void usb_acpi_unregister_power_resources(struct device *dev)
+> >> +{
+> >> +    acpi_handle port_handle =3D DEVICE_ACPI_HANDLE(dev);
+> >> +
+> >> +    if (!port_handle)
+> >> +        return;
+> >> +
+> >> +    acpi_power_resource_register_device(dev, port_handle);
+> >
+> >     I thinbk you have been askied already, but shouldn't it be
+> > acpi_power_resource_unregister_device()?
+> >
+> Oh. Sorry. Too focus on the other modification. Thanks for your remin=
+der.
 
-Sorry for the delay, I needed to take care of some ACPI changes urgently.
+Besides, it would be a bit more natural to do
 
-(Without reading the rest of the thread yet) I think that would be
-a reasonable approach.
+if (port_handle)
+	acpi_power_resource_unregister_device(dev, port_handle);
 
-> This means:
-> 
-> 	pm_runtime_set_suspended should fail if dev->power.runtime_auto
-> 	is clear.
-> 
-> 	pm_runtime_forbid should call pm_runtime_set_active if
-> 	dev->power.disable_depth > 0.  (This would run into a problem
-> 	if the parent is suspended and disabled.  Maybe 
-> 	pm_runtime_forbid should fail when this happens.)
-> 
-> Finally, we probably should make a third change even though it isn't
-> strictly necessary:
-> 
-> 	pm_runtime_allow should call pm_runtime_set_suspended if
-> 	dev->power.disable_depth > 0.
-> 
-> Rafael, what do you think?
-
-As I said, sounds reasonable.
+instead of doing that return when port_handle is NULL.
 
 Thanks,
 Rafael
 
 
--- 
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
