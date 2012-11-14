@@ -1,96 +1,109 @@
-From: Lan Tianyu <lantianyu1986-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC PATCH v2 3/6] usb: add runtime pm support for usb port device
-Date: Wed, 14 Nov 2012 20:45:57 +0800
-Message-ID: <50A39285.80305@gmail.com>
-References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <5876155.rAsY9PFrXq@vostro.rjw.lan> <50A33B7D.2000100@intel.com> <2700525.6XmcYg8quR@vostro.rjw.lan>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Wed, 14 Nov 2012 21:35:14 +0800
+Message-ID: <1352900114.5254.3.camel@yhuang-mobile.sh.intel.com>
+References: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org>
+	 <1352855308.7176.232.camel@yhuang-dev> <2028148.7b9pFIymgn@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <2700525.6XmcYg8quR-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Cc: Lan Tianyu <tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sarah.a.sharp-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, oneukum-l3A5Bk7waGM@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:16674 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422805Ab2KNNhY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Nov 2012 08:37:24 -0500
+In-Reply-To: <2028148.7b9pFIymgn@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-=E4=BA=8E 2012/11/14 17:49, Rafael J. Wysocki =E5=86=99=E9=81=93:
-> On Wednesday, November 14, 2012 02:34:37 PM Lan Tianyu wrote:
->> On 2012=E5=B9=B411=E6=9C=8814=E6=97=A5 08:08, Rafael J. Wysocki wrot=
-e:
->>> On Tuesday, November 13, 2012 04:00:02 PM Lan Tianyu wrote:
->>>> This patch is to add runtime pm callback for usb port device.
->>>> Set/clear PORT_POWER feature in the resume/suspend callbak.
->>>> Add portnum for struct usb_port to record port number.
->>>>
->>>> Signed-off-by: Lan Tianyu <tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->>>
->>> This one looks reasonable to me.  From the PM side
->>>
->>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->> Hi Rafael and Alan:
->> 	This patch has a collaboration problem with pm qos. Since pm core w=
-ould
->> pm_runtime_get_sync/put(port_dev) if pm qos flags was changed and po=
-rt's
->> suspend call_back() clear PORT_POWER feature without any check. This
->> will cause PORT_POWER feather being cleared every time after pm qos
->> flags being changed.
->>
->> 	I have an idea that add check in the port's runtime idle callback.
->> Check NO_POWER_OFF flag firstly. If set return. Second, for port wit=
-hout
->> device, suspend port directly and for port with device, increase chi=
-ld
->> device's runtime usage without resume and do barrier to ensure all
->> suspend process finish, at last check the child runtime status. If i=
-t
->> was suspended, suspend port and if do nothing.
->>
->> static int usb_port_runtime_idle(struct device *dev)
->> {
->> 	struct usb_port *port_dev =3D to_usb_port(dev);
->> 	int retval =3D 0;
->>
->> 	if (dev_pm_qos_flags(&port_dev->dev, PM_QOS_FLAG_NO_POWER_OFF)
->> 			=3D=3D PM_QOS_FLAGS_ALL)
->> 		return 0;
->>
->> 	if (!port_dev->child) {
->> 		retval =3D pm_runtime_suspend(&port_dev->dev);
->> 		if (!retval)
->> 			port_dev->power_on =3Dfalse;
->> 	}
->> 	else {
->
-> This usually is written as "} else {" in the kernel code.
->
->> 		pm_runtime_get_noresume(&port_dev->child->dev);
->> 		pm_runtime_barrier(&port_dev->child->dev);
->> 		if (port_dev->child->dev.power.runtime_status
->> 				=3D=3D RPM_SUSPENDED) {
->> 			retval =3D pm_runtime_suspend(&port_dev->dev);
->> 			if (!retval)
->> 				port_dev->power_on =3Dfalse;
->> 		}=09
->> 		pm_runtime_put_noidle(&port_dev->child->dev);
->> 	}
->
-> Hmm.  If child->dev is not suspended, then our usage_count should be
-> at least 1, so pm_runtime_suspend(&port_dev->dev) shouldn't actually
-> suspend us.  Isn't that the case?
-No, because the child device is not under port device and so even if
-child->dev is not suspended, port device's usage still can be 0 and
-power off the port.
->
-> Rafael
->
->
+On Wed, 2012-11-14 at 10:52 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, November 14, 2012 09:08:28 AM Huang Ying wrote:
+> > On Tue, 2012-11-13 at 11:10 -0500, Alan Stern wrote:
+> > > On Tue, 13 Nov 2012, Huang Ying wrote:
+> > > 
+> > > > > This is not quite right.  Consider a device that is in runtime suspend 
+> > > > > when a system sleep starts.  When the system sleep ends, the device 
+> > > > > will be resumed but the PM core will still think its state is 
+> > > > > SUSPENDED.  The subsystem has to tell the PM core that the device is 
+> > > > > now ACTIVE.  Currently, subsystems do this by calling 
+> > > > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable.  Under 
+> > > > > your scheme this wouldn't work; the pm_runtime_set_active call would 
+> > > > > fail because the device was !forbidden.
+> > > > 
+> > > > Thanks for your information.  For this specific situation, is it
+> > > > possible to call pm_runtime_resume() or pm_request_resume() for the
+> > > > device?
+> > > 
+> > > No, because the device already is at full power.  The subsystem just
+> > > needs to tell the PM core that it is.
+> > > 
+> > > > > > PM.  Device can always work with full power.
+> > > > > 
+> > > > > It can't if the parent is in SUSPEND.  If necessary, the user can write 
+> > > > > "on" to the parent's power/control attribute first.
+> > > > 
+> > > > Is it possible to call pm_runtime_set_active() for the parent if the
+> > > > parent is disabled and SUSPENDED.
+> > > 
+> > > Doing that is possible, but it might not work.  The parent might
+> > > actually be at low power; calling pm_runtime_set_active wouldn't change
+> > > the physical power level.  Basically, it's not safe to assume anything
+> > > about devices that are disabled for runtime PM.
+> > > 
+> > > > It appears that there is race condition between this and the
+> > > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable sequence
+> > > > you mentioned ealier.
+> > > > 
+> > > > thread 1			thread 2
+> > > > pm_runtime_disable
+> > > > pm_runtime_set_active
+> > > > 				pm_runtime_allow
+> > > > 				  pm_runtime_set_suspended
+> > > > pm_runtime_enable
+> > > 
+> > > This can't happen in the situation I described earlier because during
+> > > system sleep transitions, no other user threads are allowed to run.  
+> > > All of them except the one actually carrying out the transition are
+> > > frozen.
+> > 
+> > Thanks for your kind explanation.
+> > 
+> > After talking with you, my feeling is that the disabled state is obscure
+> > and error-prone.  So I suggest not to use it if possible.  Maybe we can
+> > 
+> >  - make changes suggested by Alan to make disabled state better.
+> 
+> What changes specifically do you mean to be precise?
 
---=20
-Best regards
-Tianyu Lan
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I mean the following changes from Alan's email.
+
+        pm_runtime_set_suspended should fail if dev->power.runtime_auto
+        is clear.
+
+        pm_runtime_forbid should call pm_runtime_set_active if
+        dev->power.disable_depth > 0.  (This would run into a problem
+        if the parent is suspended and disabled.  Maybe 
+        pm_runtime_forbid should fail when this happens.)
+
+For the second one, is it possible that the device is really in low
+power state when pm_runtime_forbid is called?  That situation is hard to
+deal with too.
+
+> >  - use Rafael's solution to solve this specific issue, and avoid the
+> > usage of disabled state here.
+> 
+> Well, I think that the PCI subsystem should just enable runtime PM for
+> all devices upfront and keep it enabled going forward.
+> 
+> My patch is incomplete, however, because it doesn't deal with probe/remove
+> correctly at this point (which Alan pointed out earlier in the thread).
+
+Yes.
+
+Best Regards,
+Huang Ying
+
+
