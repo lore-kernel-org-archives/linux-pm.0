@@ -1,353 +1,114 @@
-From: Rob Herring <rob.herring@calxeda.com>
-Subject: Re: [PATCH 4/6 v4] arm highbank: add support for pl320 IPC
-Date: Wed, 14 Nov 2012 08:03:07 -0600
-Message-ID: <50A3A49B.1020502@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com> <1352313166-28980-5-git-send-email-mark.langsdorf@calxeda.com>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [RFC PATCH v2 3/6] usb: add runtime pm support for usb port device
+Date: Wed, 14 Nov 2012 22:14:57 +0800
+Message-ID: <50A3A761.8000302@gmail.com>
+References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <5876155.rAsY9PFrXq@vostro.rjw.lan> <50A33B7D.2000100@intel.com> <2700525.6XmcYg8quR@vostro.rjw.lan> <50A39285.80305@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352313166-28980-5-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:44746 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753552Ab2KNOPL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Nov 2012 09:15:11 -0500
+In-Reply-To: <50A39285.80305@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lan Tianyu <tianyu.lan@intel.com>, gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 11/07/2012 12:32 PM, Mark Langsdorf wrote:
-> From: Rob Herring <rob.herring@calxeda.com>
-> 
-> The pl320 IPC allows for interprocessor communication between the highbank A9
-> and the EnergyCore Management Engine. The pl320 implements a straightforward
-> mailbox protocol.
-> 
-> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-> ---
-> Changes from v3, v2
-> 	None
-> Changes from v1
->         Removed erroneous changes for cpufreq Kconfig
-> 
->  arch/arm/include/asm/pl320-ipc.h                |  20 ++
+=E4=BA=8E 2012/11/14 20:45, Lan Tianyu =E5=86=99=E9=81=93:
+> =E4=BA=8E 2012/11/14 17:49, Rafael J. Wysocki =E5=86=99=E9=81=93:
+>> On Wednesday, November 14, 2012 02:34:37 PM Lan Tianyu wrote:
+>>> On 2012=E5=B9=B411=E6=9C=8814=E6=97=A5 08:08, Rafael J. Wysocki wro=
+te:
+>>>> On Tuesday, November 13, 2012 04:00:02 PM Lan Tianyu wrote:
+>>>>> This patch is to add runtime pm callback for usb port device.
+>>>>> Set/clear PORT_POWER feature in the resume/suspend callbak.
+>>>>> Add portnum for struct usb_port to record port number.
+>>>>>
+>>>>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>>>>
+>>>> This one looks reasonable to me.  From the PM side
+>>>>
+>>>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> Hi Rafael and Alan:
+>>>     This patch has a collaboration problem with pm qos. Since pm co=
+re would
+>>> pm_runtime_get_sync/put(port_dev) if pm qos flags was changed and p=
+ort's
+>>> suspend call_back() clear PORT_POWER feature without any check. Thi=
+s
+>>> will cause PORT_POWER feather being cleared every time after pm qos
+>>> flags being changed.
+>>>
+>>>     I have an idea that add check in the port's runtime idle callba=
+ck.
+>>> Check NO_POWER_OFF flag firstly. If set return. Second, for port wi=
+thout
+>>> device, suspend port directly and for port with device, increase ch=
+ild
+>>> device's runtime usage without resume and do barrier to ensure all
+>>> suspend process finish, at last check the child runtime status. If =
+it
+>>> was suspended, suspend port and if do nothing.
+>>>
+>>> static int usb_port_runtime_idle(struct device *dev)
+>>> {
+>>>     struct usb_port *port_dev =3D to_usb_port(dev);
+>>>     int retval =3D 0;
+>>>
+>>>     if (dev_pm_qos_flags(&port_dev->dev, PM_QOS_FLAG_NO_POWER_OFF)
+>>>             =3D=3D PM_QOS_FLAGS_ALL)
+>>>         return 0;
+>>>
+>>>     if (!port_dev->child) {
+>>>         retval =3D pm_runtime_suspend(&port_dev->dev);
+>>>         if (!retval)
+>>>             port_dev->power_on =3Dfalse;
+>>>     }
+>>>     else {
+>>
+>> This usually is written as "} else {" in the kernel code.
+>>
+>>>         pm_runtime_get_noresume(&port_dev->child->dev);
+>>>         pm_runtime_barrier(&port_dev->child->dev);
+>>>         if (port_dev->child->dev.power.runtime_status
+>>>                 =3D=3D RPM_SUSPENDED) {
+>>>             retval =3D pm_runtime_suspend(&port_dev->dev);
+>>>             if (!retval)
+>>>                 port_dev->power_on =3Dfalse;
+>>>         }
+>>>         pm_runtime_put_noidle(&port_dev->child->dev);
+>>>     }
+>>
+>> Hmm.  If child->dev is not suspended, then our usage_count should be
+>> at least 1, so pm_runtime_suspend(&port_dev->dev) shouldn't actually
+>> suspend us.  Isn't that the case?
+> No, because the child device is not under port device and so even if
+> child->dev is not suspended, port device's usage still can be 0 and
+> power off the port.
 
-asm/hardware/ is probably more appropriate.
+Maybe I should add pm_runtime_get_noresume(&port_dev->dev) before enabl=
+e
+port's runtime pm. Just like following. Then it will work like you said=
+=2E
 
->  arch/arm/mach-highbank/Makefile                 |   2 +
->  arch/arm/mach-highbank/include/mach/pl320-ipc.h |  20 ++
+@@ -72,6 +109,8 @@ int usb_hub_create_port_device(struct device *intfde=
+v,
+  	if (retval)
+  		goto error_register;
 
-Need to delete this file.
++	pm_runtime_set_active(&port_dev->dev);
++	pm_runtime_get_noresume(&port_dev->dev); /* new add */
++	pm_runtime_enable(&port_dev->dev);
+>>
+>> Rafael
+>>
+>>
+>
 
->  arch/arm/mach-highbank/pl320-ipc.c              | 232 ++++++++++++++++++++++++
->  4 files changed, 274 insertions(+)
->  create mode 100644 arch/arm/include/asm/pl320-ipc.h
->  create mode 100644 arch/arm/mach-highbank/include/mach/pl320-ipc.h
->  create mode 100644 arch/arm/mach-highbank/pl320-ipc.c
-> 
-> diff --git a/arch/arm/include/asm/pl320-ipc.h b/arch/arm/include/asm/pl320-ipc.h
-> new file mode 100644
-> index 0000000..a0e58ee
-> --- /dev/null
-> +++ b/arch/arm/include/asm/pl320-ipc.h
-> @@ -0,0 +1,20 @@
-> +/*
-> + * Copyright 2010 Calxeda, Inc.
-
-Update copyright.
-
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +int ipc_call_fast(u32 *data);
-
-We should get rid of fast and slow channels and just have a single tx
-channel as it is all the same and we don't use the fast channel.
-
-> +int ipc_call_slow(u32 *data);
-> +
-> +extern int pl320_ipc_register_notifier(struct notifier_block *nb);
-> +extern int pl320_ipc_unregister_notifier(struct notifier_block *nb);
-> diff --git a/arch/arm/mach-highbank/Makefile b/arch/arm/mach-highbank/Makefile
-> index 3ec8bdd..b894708 100644
-> --- a/arch/arm/mach-highbank/Makefile
-> +++ b/arch/arm/mach-highbank/Makefile
-> @@ -7,3 +7,5 @@ obj-$(CONFIG_DEBUG_HIGHBANK_UART)	+= lluart.o
->  obj-$(CONFIG_SMP)			+= platsmp.o
->  obj-$(CONFIG_HOTPLUG_CPU)		+= hotplug.o
->  obj-$(CONFIG_PM_SLEEP)			+= pm.o
-> +
-> +obj-y					+= pl320-ipc.o
-> diff --git a/arch/arm/mach-highbank/include/mach/pl320-ipc.h b/arch/arm/mach-highbank/include/mach/pl320-ipc.h
-> new file mode 100644
-> index 0000000..a0e58ee
-> --- /dev/null
-> +++ b/arch/arm/mach-highbank/include/mach/pl320-ipc.h
-> @@ -0,0 +1,20 @@
-> +/*
-> + * Copyright 2010 Calxeda, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +int ipc_call_fast(u32 *data);
-> +int ipc_call_slow(u32 *data);
-> +
-> +extern int pl320_ipc_register_notifier(struct notifier_block *nb);
-> +extern int pl320_ipc_unregister_notifier(struct notifier_block *nb);
-> diff --git a/arch/arm/mach-highbank/pl320-ipc.c b/arch/arm/mach-highbank/pl320-ipc.c
-> new file mode 100644
-> index 0000000..0eb92e4
-> --- /dev/null
-> +++ b/arch/arm/mach-highbank/pl320-ipc.c
-> @@ -0,0 +1,232 @@
-> +/*
-> + * Copyright 2012 Calxeda, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +#include <linux/types.h>
-> +#include <linux/err.h>
-> +#include <linux/delay.h>
-> +#include <linux/export.h>
-> +#include <linux/io.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/completion.h>
-> +#include <linux/mutex.h>
-> +#include <linux/notifier.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/device.h>
-> +#include <linux/amba/bus.h>
-> +
-> +#include <asm/pl320-ipc.h>
-> +
-> +#define IPCMxSOURCE(m)		((m) * 0x40)
-> +#define IPCMxDSET(m)		(((m) * 0x40) + 0x004)
-> +#define IPCMxDCLEAR(m)		(((m) * 0x40) + 0x008)
-> +#define IPCMxDSTATUS(m)		(((m) * 0x40) + 0x00C)
-> +#define IPCMxMODE(m)		(((m) * 0x40) + 0x010)
-> +#define IPCMxMSET(m)		(((m) * 0x40) + 0x014)
-> +#define IPCMxMCLEAR(m)		(((m) * 0x40) + 0x018)
-> +#define IPCMxMSTATUS(m)		(((m) * 0x40) + 0x01C)
-> +#define IPCMxSEND(m)		(((m) * 0x40) + 0x020)
-> +#define IPCMxDR(m, dr)		(((m) * 0x40) + ((dr) * 4) + 0x024)
-> +
-> +#define IPCMMIS(irq)		(((irq) * 8) + 0x800)
-> +#define IPCMRIS(irq)		(((irq) * 8) + 0x804)
-> +
-> +#define MBOX_MASK(n)		(1 << (n))
-> +#define IPC_FAST_MBOX		0
-> +#define IPC_SLOW_MBOX		1
-> +#define IPC_RX_MBOX		2
-> +
-> +#define CHAN_MASK(n)		(1 << (n))
-> +#define A9_SOURCE		1
-> +#define M3_SOURCE		0
-> +
-> +static void __iomem *ipc_base;
-> +static int ipc_irq;
-> +static DEFINE_SPINLOCK(ipc_m0_lock);
-> +static DEFINE_MUTEX(ipc_m1_lock);
-> +static DECLARE_COMPLETION(ipc_completion);
-> +static ATOMIC_NOTIFIER_HEAD(ipc_notifier);
-> +
-> +static inline void set_destination(int source, int mbox)
-> +{
-> +	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxDSET(mbox));
-> +	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxMSET(mbox));
-> +}
-> +
-> +static inline void clear_destination(int source, int mbox)
-> +{
-> +	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxDCLEAR(mbox));
-> +	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxMCLEAR(mbox));
-> +}
-> +
-> +static void __ipc_send(int mbox, u32 *data)
-> +{
-> +	int i;
-> +	for (i = 0; i < 7; i++)
-> +		__raw_writel(data[i], ipc_base + IPCMxDR(mbox, i));
-> +	__raw_writel(0x1, ipc_base + IPCMxSEND(mbox));
-> +}
-> +
-> +static u32 __ipc_rcv(int mbox, u32 *data)
-> +{
-> +	int i;
-> +	for (i = 0; i < 7; i++)
-> +		data[i] = __raw_readl(ipc_base + IPCMxDR(mbox, i));
-> +	return data[1];
-> +}
-> +
-> +/* non-blocking implementation from the A9 side, interrupt safe in theory */
-> +int ipc_call_fast(u32 *data)
-> +{
-> +	int timeout, ret;
-> +
-> +	spin_lock(&ipc_m0_lock);
-> +
-> +	__ipc_send(IPC_FAST_MBOX, data);
-> +
-> +	for (timeout = 500; timeout > 0; timeout--) {
-> +		if (__raw_readl(ipc_base + IPCMxSEND(IPC_FAST_MBOX)) == 0x2)
-> +			break;
-> +		udelay(100);
-> +	}
-> +	if (timeout == 0) {
-> +		ret = -ETIMEDOUT;
-> +		goto out;
-> +	}
-> +
-> +	ret = __ipc_rcv(IPC_FAST_MBOX, data);
-> +out:
-> +	__raw_writel(0, ipc_base + IPCMxSEND(IPC_FAST_MBOX));
-> +	spin_unlock(&ipc_m0_lock);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(ipc_call_fast);
-> +
-> +/* blocking implmentation from the A9 side, not usuable in interrupts! */
-> +int ipc_call_slow(u32 *data)
-> +{
-> +	int ret;
-> +
-> +	mutex_lock(&ipc_m1_lock);
-> +
-> +	init_completion(&ipc_completion);
-> +	__ipc_send(IPC_SLOW_MBOX, data);
-> +	ret = wait_for_completion_timeout(&ipc_completion,
-> +					  msecs_to_jiffies(1000));
-> +	if (ret == 0) {
-> +		ret = -ETIMEDOUT;
-> +		goto out;
-> +	}
-> +
-> +	ret = __ipc_rcv(IPC_SLOW_MBOX, data);
-> +out:
-> +	mutex_unlock(&ipc_m1_lock);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL(ipc_call_slow);
-> +
-> +irqreturn_t ipc_handler(int irq, void *dev)
-> +{
-> +	u32 irq_stat;
-> +	u32 data[7];
-> +
-> +	irq_stat = __raw_readl(ipc_base + IPCMMIS(1));
-> +	if (irq_stat & MBOX_MASK(IPC_SLOW_MBOX)) {
-> +		__raw_writel(0, ipc_base + IPCMxSEND(IPC_SLOW_MBOX));
-> +		complete(&ipc_completion);
-> +	}
-> +	if (irq_stat & MBOX_MASK(IPC_RX_MBOX)) {
-> +		__ipc_rcv(IPC_RX_MBOX, data);
-> +		atomic_notifier_call_chain(&ipc_notifier, data[0], data + 1);
-> +		__raw_writel(2, ipc_base + IPCMxSEND(IPC_RX_MBOX));
-> +	}
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +int pl320_ipc_register_notifier(struct notifier_block *nb)
-> +{
-> +	return atomic_notifier_chain_register(&ipc_notifier, nb);
-> +}
-> +
-> +int pl320_ipc_unregister_notifier(struct notifier_block *nb)
-> +{
-> +	return atomic_notifier_chain_unregister(&ipc_notifier, nb);
-> +}
-> +
-> +static int __devinit pl320_probe(struct amba_device *adev,
-> +				const struct amba_id *id)
-> +{
-> +	int ret;
-> +
-> +	ipc_base = ioremap(adev->res.start, resource_size(&adev->res));
-> +	if (ipc_base == NULL)
-> +		return -ENOMEM;
-> +
-> +	__raw_writel(0, ipc_base + IPCMxSEND(IPC_FAST_MBOX));
-> +	__raw_writel(0, ipc_base + IPCMxSEND(IPC_SLOW_MBOX));
-> +
-> +	ipc_irq = adev->irq[0];
-> +	ret = request_irq(ipc_irq, ipc_handler, 0, dev_name(&adev->dev), NULL);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	/* Init fast mailbox */
-> +	__raw_writel(CHAN_MASK(A9_SOURCE),
-> +			ipc_base + IPCMxSOURCE(IPC_FAST_MBOX));
-> +	set_destination(M3_SOURCE, IPC_FAST_MBOX);
-> +
-> +	/* Init slow mailbox */
-> +	__raw_writel(CHAN_MASK(A9_SOURCE),
-> +			ipc_base + IPCMxSOURCE(IPC_SLOW_MBOX));
-> +	__raw_writel(CHAN_MASK(M3_SOURCE),
-> +			ipc_base + IPCMxDSET(IPC_SLOW_MBOX));
-> +	__raw_writel(CHAN_MASK(M3_SOURCE) | CHAN_MASK(A9_SOURCE),
-> +		     ipc_base + IPCMxMSET(IPC_SLOW_MBOX));
-> +
-> +	/* Init receive mailbox */
-> +	__raw_writel(CHAN_MASK(M3_SOURCE),
-> +			ipc_base + IPCMxSOURCE(IPC_RX_MBOX));
-> +	__raw_writel(CHAN_MASK(A9_SOURCE),
-> +			ipc_base + IPCMxDSET(IPC_RX_MBOX));
-> +	__raw_writel(CHAN_MASK(M3_SOURCE) | CHAN_MASK(A9_SOURCE),
-> +		     ipc_base + IPCMxMSET(IPC_RX_MBOX));
-> +
-> +	return 0;
-> +err:
-> +	iounmap(ipc_base);
-> +	return ret;
-> +}
-> +
-> +static struct amba_id pl320_ids[] = {
-> +	{
-> +		.id	= 0x00041320,
-> +		.mask	= 0x000fffff,
-> +	},
-> +	{ 0, 0 },
-> +};
-> +
-> +static struct amba_driver pl320_driver = {
-> +	.drv = {
-> +		.name	= "pl320",
-> +	},
-> +	.id_table	= pl320_ids,
-> +	.probe		= pl320_probe,
-> +};
-> +
-> +static int __init ipc_init(void)
-> +{
-> +	return amba_driver_register(&pl320_driver);
-> +}
-> +module_init(ipc_init);
-> 
+--=20
+Best regards
+Tianyu Lan
