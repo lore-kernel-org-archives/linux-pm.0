@@ -1,47 +1,92 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Wed, 14 Nov 2012 11:06:16 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211141100030.1620-100000@iolanthe.rowland.org>
-References: <1352900114.5254.3.camel@yhuang-mobile.sh.intel.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [linux-pm] [PATCH 1/1] thermal: cpu cooling: allow module builds
+Date: Wed, 14 Nov 2012 16:21:06 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB592120B6@BGSMSX101.gar.corp.intel.com>
+References: <1352906610-549-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:35764 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1161058Ab2KNQGR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Nov 2012 11:06:17 -0500
-In-Reply-To: <1352900114.5254.3.camel@yhuang-mobile.sh.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1352906610-549-1-git-send-email-eduardo.valentin@ti.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>
+Cc: "eballetbo@gmail.com" <eballetbo@gmail.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 14 Nov 2012, Huang Ying wrote:
 
-> > What changes specifically do you mean to be precise?
+> -----Original Message-----
+> From: linux-pm-bounces@lists.linux-foundation.org [mailto:linux-pm-
+> bounces@lists.linux-foundation.org] On Behalf Of Eduardo Valentin
+> Sent: Wednesday, November 14, 2012 8:54 PM
+> To: amit.kachhap@linaro.org
+> Cc: eballetbo@gmail.com; linux-acpi@vger.kernel.org; linux-pm@lists.linux-
+> foundation.org
+> Subject: [linux-pm] [PATCH 1/1] thermal: cpu cooling: allow module builds
 > 
-> I mean the following changes from Alan's email.
+> As thermal drivers can be built as modules and also
+> the thermal framework itself, building cpu cooling
+> only as built-in can cause linking errors. For instance:
+> * Generic Thermal sysfs driver
+> *
+> Generic Thermal sysfs driver (THERMAL) [M/n/y/?] m
+>   generic cpu cooling support (CPU_THERMAL) [N/y/?] (NEW) y
 > 
->         pm_runtime_set_suspended should fail if dev->power.runtime_auto
->         is clear.
+> with the following drive:
+> CONFIG_OMAP_BANDGAP=m
+
+Nice catch Eduardo :-)
+
+Reviewed-by: Durgadoss R <durgadoss.r@intel.com>
+
+Also, Ccing Rui to this e-mail and adding linux-pm.
+
+Thanks,
+Durga
 > 
->         pm_runtime_forbid should call pm_runtime_set_active if
->         dev->power.disable_depth > 0.  (This would run into a problem
->         if the parent is suspended and disabled.  Maybe 
->         pm_runtime_forbid should fail when this happens.)
+> generates:
+> ERROR: "cpufreq_cooling_unregister" [drivers/staging/omap-thermal/omap-
+> thermal.ko] undefined!
+> ERROR: "cpufreq_cooling_register" [drivers/staging/omap-thermal/omap-
+> thermal.ko] undefined!
 > 
-> For the second one, is it possible that the device is really in low
-> power state when pm_runtime_forbid is called?  That situation is hard to
-> deal with too.
-
-Yes, it is possible.  I don't see what we can do about it.  By
-disabling the device, the driver has said that it doesn't want to 
-handle any runtime PM callbacks.  Without the driver's help, there 
-isn't any good way to bring the device back to full power.
-
-On the other hand, the PM core doesn't know the device's actual power 
-state.  All it knows is the value of dev->power.runtime_status.  So it 
-doesn't have any way to detect when this problem occurs.
-
-Alan Stern
+> This patch changes cpu cooling driver to allow it
+> to be built as module.
+> 
+> Reported-by: Enric Balletbo i Serra <eballetbo@gmail.com>
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> ---
+>  drivers/thermal/Kconfig     |    2 +-
+>  include/linux/cpu_cooling.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index e1cb6bd..3b03c8b 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -20,7 +20,7 @@ config THERMAL_HWMON
+>  	default y
+> 
+>  config CPU_THERMAL
+> -	bool "generic cpu cooling support"
+> +	tristate "generic cpu cooling support"
+>  	depends on THERMAL && CPU_FREQ
+>  	select CPU_FREQ_TABLE
+>  	help
+> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+> index b30cc79c..40b4ef5 100644
+> --- a/include/linux/cpu_cooling.h
+> +++ b/include/linux/cpu_cooling.h
+> @@ -29,7 +29,7 @@
+>  #define CPUFREQ_COOLING_START		0
+>  #define CPUFREQ_COOLING_STOP		1
+> 
+> -#ifdef CONFIG_CPU_THERMAL
+> +#if defined(CONFIG_CPU_THERMAL) ||
+> defined(CONFIG_CPU_THERMAL_MODULE)
+>  /**
+>   * cpufreq_cooling_register - function to create cpufreq cooling device.
+>   * @clip_cpus: cpumask of cpus where the frequency constraints will happen
+> --
+> 1.7.7.1.488.ge8e1c
 
