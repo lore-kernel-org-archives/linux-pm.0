@@ -1,165 +1,109 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH v2 3/6] usb: add runtime pm support for usb port device
-Date: Wed, 14 Nov 2012 01:08:08 +0100
-Message-ID: <5876155.rAsY9PFrXq@vostro.rjw.lan>
-References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <1352793605-4168-4-git-send-email-tianyu.lan@intel.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Tue, 13 Nov 2012 16:03:00 -0800
+Message-ID: <20121114000259.GK2489@linux.vnet.ibm.com>
+References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
+ <20121113211602.GA30150@linux.vnet.ibm.com>
+ <20121113133922.47144a50@chromoly>
+ <20121113222350.GH2489@linux.vnet.ibm.com>
+ <50A2CD77.7000403@linux.intel.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:42135 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756040Ab2KNADt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 19:03:49 -0500
-In-Reply-To: <1352793605-4168-4-git-send-email-tianyu.lan@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <50A2CD77.7000403@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tuesday, November 13, 2012 04:00:02 PM Lan Tianyu wrote:
-> This patch is to add runtime pm callback for usb port device.
-> Set/clear PORT_POWER feature in the resume/suspend callbak.
-> Add portnum for struct usb_port to record port number.
+On Tue, Nov 13, 2012 at 02:45:11PM -0800, Arjan van de Ven wrote:
+> On 11/13/2012 2:23 PM, Paul E. McKenney wrote:
+> > On Tue, Nov 13, 2012 at 01:39:22PM -0800, Jacob Pan wrote:
+> >> On Tue, 13 Nov 2012 13:16:02 -0800
+> >> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >>
+> >>>> Please refer to Documentation/thermal/intel_powerclamp.txt for more
+> >>>> details.  
+> >>>
+> >>> If I read this correctly, this forces a group of CPUs into idle for
+> >>> about 600 milliseconds at a time.  This would indeed delay grace
+> >>> periods, which could easily result in user complaints.  Also, given
+> >>> the default RCU_BOOST_DELAY of 500 milliseconds in kernels enabling
+> >>> RCU_BOOST, you would see needless RCU priority boosting.
+> >>>
+> >> the default idle injection duration is 6ms. we adjust the sleep
+> >> interval to ensure idle ratio. So the idle duration stays the same once
+> >> set. So would it be safe to delay grace period for this small amount in
+> >> exchange for less over head in each injection period?
+> > 
+> > Ah, 6ms of delay is much better than 600ms.  Should be OK (famous last
+> > words!).
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+> well... power clamping is not "free".
+> You're going to lose performance as a trade off for dropping instantaneous power consumption....
+> in the measurements we've done comparing various methods.. this one is doing remarkably well.
 
-This one looks reasonable to me.  From the PM side
+No argument here.  My concern is not performance in this situation, but
+rather in-kernel confusion, particularly any such confusion involving RCU.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+And understood, you can get similar effects from virtualization.
+For all I know, the virtualization guys might leverage your experience
+with power clamping to push for gang scheduling once more.  ;-)
 
-> ---
->  drivers/usb/core/hub.c  |   14 ++++++++++++++
->  drivers/usb/core/port.c |   39 +++++++++++++++++++++++++++++++++++++++
->  drivers/usb/core/usb.h  |    2 ++
->  include/linux/usb.h     |    2 ++
->  4 files changed, 57 insertions(+)
+> > For most kernel configuration options, it does use softirq.  And yes,
+> > the kthread you are using would yield to softirqs -- but only as long
+> > as softirq processing hasn't moved over to ksoftirqd.  Longer term,
+> > RCU will be moving from softirq to kthreads, though, and these might be
+> > prempted by your powerclamp kthread, depending on priorities.  It looks
+> > like you use RT prio 50, which would usually preempt the RCU kthreads
+> > (unless someone changed the priorities).
 > 
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index 60746aa..2cb414e 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -765,6 +765,20 @@ static void hub_tt_work(struct work_struct *work)
->  	spin_unlock_irqrestore (&hub->tt.lock, flags);
->  }
->  
-> +int usb_hub_set_port_power(struct usb_device *hdev, int port1,
-> +		bool set)
-> +{
-> +	int ret;
-> +
-> +	if (set)
-> +		ret = set_port_feature(hdev, port1,
-> +				USB_PORT_FEAT_POWER);
-> +	else
-> +		ret = clear_port_feature(hdev, port1,
-> +				USB_PORT_FEAT_POWER);
-> +	return ret;
-> +}
-> +
->  /**
->   * usb_hub_clear_tt_buffer - clear control/bulk TT state in high speed hub
->   * @urb: an URB associated with the failed or incomplete split transaction
-> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> index 6523a03..1cda766 100644
-> --- a/drivers/usb/core/port.c
-> +++ b/drivers/usb/core/port.c
-> @@ -53,9 +53,45 @@ static void usb_port_device_release(struct device *dev)
->  	kfree(port_dev);
->  }
->  
-> +static int usb_port_runtime_resume(struct device *dev)
-> +{
-> +	struct usb_port *port_dev = to_usb_port(dev);
-> +	struct usb_device *hdev =
-> +		to_usb_device(dev->parent->parent);
-> +
-> +	return usb_hub_set_port_power(hdev, port_dev->portnum,
-> +			true);
-> +}
-> +
-> +static int usb_port_runtime_suspend(struct device *dev)
-> +{
-> +	struct usb_port *port_dev = to_usb_port(dev);
-> +	struct usb_device *hdev =
-> +		to_usb_device(dev->parent->parent);
-> +
-> +	return usb_hub_set_port_power(hdev, port_dev->portnum,
-> +			false);
-> +}
-> +
-> +static int usb_port_runtime_idle(struct device *dev)
-> +{
-> +	struct usb_port *port_dev = to_usb_port(dev);
-> +
-> +	return pm_runtime_suspend(&port_dev->dev);
-> +}
-> +
-> +static const struct dev_pm_ops usb_port_pm_ops = {
-> +#ifdef CONFIG_USB_SUSPEND
-> +.runtime_suspend =	usb_port_runtime_suspend,
-> +.runtime_resume =	usb_port_runtime_resume,
-> +.runtime_idle =		usb_port_runtime_idle,
-> +#endif
-> +};
-> +
->  struct device_type usb_port_device_type = {
->  	.name =		"usb_port",
->  	.release =	usb_port_device_release,
-> +	.pm = &usb_port_pm_ops,
->  };
->  
->  int usb_hub_create_port_device(struct device *intfdev,
-> @@ -63,6 +99,7 @@ int usb_hub_create_port_device(struct device *intfdev,
->  {
->  	int retval;
->  
-> +	port_dev->portnum = port1;
->  	port_dev->dev.parent = intfdev;
->  	port_dev->dev.groups = port_dev_group;
->  	port_dev->dev.type = &usb_port_device_type;
-> @@ -72,6 +109,8 @@ int usb_hub_create_port_device(struct device *intfdev,
->  	if (retval)
->  		goto error_register;
->  
-> +	pm_runtime_set_active(&port_dev->dev);
-> +	pm_runtime_enable(&port_dev->dev);
->  	usb_acpi_register_power_resources(&port_dev->dev);
->  
->  	return 0;
-> diff --git a/drivers/usb/core/usb.h b/drivers/usb/core/usb.h
-> index de7434b..47d77d4 100644
-> --- a/drivers/usb/core/usb.h
-> +++ b/drivers/usb/core/usb.h
-> @@ -62,6 +62,8 @@ extern void usb_major_cleanup(void);
->  
->  extern int usb_hub_create_port_device(struct device *intfdev,
->  		int port1, struct usb_port *port_dev);
-> +extern int usb_hub_set_port_power(struct usb_device *hdev,
-> +		int port1, bool set);
->  
->  #ifdef	CONFIG_PM
->  
-> diff --git a/include/linux/usb.h b/include/linux/usb.h
-> index c1f1346..71510bf 100644
-> --- a/include/linux/usb.h
-> +++ b/include/linux/usb.h
-> @@ -578,12 +578,14 @@ struct usb_device {
->   * @dev: generic device interface
->   * @port_owner: port's owner
->   * @connect_type: port's connect type
-> + * @portnum: port index num based one
->   */
->  struct usb_port {
->  	struct usb_device *child;
->  	struct device dev;
->  	struct dev_state *port_owner;
->  	enum usb_port_connect_type connect_type;
-> +	u8 portnum;
->  };
->  #define to_usb_port(_dev) \
->  	container_of(_dev, struct usb_port, dev)
+> we tried to pick a "middle of the road" value, so that usages that really really
+> want to run, still get to run, but things that are more loose about it, get put on hold.
+
+Makes sense.
+
+> >>> It looks like you could end up with part of the system powerclamped
+> >>> in some situations, and with all of it powerclamped in other
+> >>> situations. Is that the case, or am I confused?
+> >>>
+> >> could you explain the part that is partially powerclamped?
+> > 
+> > Suppose that a given system has two sockets.  Are the two sockets
+> > powerclamped independently, or at the same time?  My guess was the
+> > former, but looking at the code again, it looks like the latter.
+> > So it is a good thing I asked, I guess.  ;-)
 > 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> they are clamped together, and they have to.
+> you don't get (on the systems where this driver works) any "package" C state unless
+> all packages are idle completely.
+> And it's these package C states where the real deep power savings happen, that's
+> why they are such a juicy target for power clamping ;-)
+
+OK, so the point of clamping all sockets simultaneously is to be able
+to power down the electronics surrounding the sockets as well as the
+sockets themselves?  If all you cared about was the individual sockets,
+I don't see why you couldn't power the sockets down individually rather
+than in sync with each other.
+
+Just to make sure I am really understanding what is happening, let's
+suppose we have a HZ=1000 system that has a few tasks that occasionally
+run at prio 99.  These tasks would run during the clamp interval,
+but would (for example) see the jiffies counter remaining at the
+value at the beginning of the clamp interval until the end of that
+interval, when the jiffies counter would suddenly jump by roughly
+six counts, right?
+
+If so, this could cause some (minor) RCU issues, such as RCU
+deciding to force quiescent states right at the end of a clamping
+interval, even though none of the RCU readers would have had a
+chance to do anything in the meantime.  Shouldn't result in a
+bug though, just wasted motion.
+
+I think I know, but I feel the need to ask anyway.  Why not tell
+RCU about the clamping?
+
+							Thanx, Paul
