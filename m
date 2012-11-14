@@ -1,43 +1,90 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Tue, 13 Nov 2012 17:24:49 -0800
-Message-ID: <20121113172449.0f7b1754@chromoly>
-References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
-	<20121113211602.GA30150@linux.vnet.ibm.com>
-	<20121113133922.47144a50@chromoly>
-	<20121113222350.GH2489@linux.vnet.ibm.com>
-	<50A2CD77.7000403@linux.intel.com>
-	<20121114000259.GK2489@linux.vnet.ibm.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 03/10] ata: zpodd: identify and init ZPODD devices
+Date: Wed, 14 Nov 2012 09:32:27 +0800
+Message-ID: <50A2F4AB.6060903@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <1352443922-13734-4-git-send-email-aaron.lu@intel.com> <20121112185301.GB5560@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:12231 "EHLO mga03.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:33529 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932345Ab2KNBYv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 20:24:51 -0500
-In-Reply-To: <20121114000259.GK2489@linux.vnet.ibm.com>
+	id S1756052Ab2KNBcl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 20:32:41 -0500
+In-Reply-To: <20121112185301.GB5560@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Tue, 13 Nov 2012 16:03:00 -0800
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On 11/13/2012 02:53 AM, Tejun Heo wrote:
+> Hello,
+> 
+> On Fri, Nov 09, 2012 at 02:51:55PM +0800, Aaron Lu wrote:
+>>  void ata_acpi_unbind(struct ata_device *dev)
+>>  {
+>> +	if (zpodd_dev_enabled(dev))
+>> +		zpodd_deinit(dev);
+> 
+> Maybe zpodd_exit() instead?
 
-> Just to make sure I am really understanding what is happening, let's
-> suppose we have a HZ=1000 system that has a few tasks that
-> occasionally run at prio 99.  These tasks would run during the clamp
-> interval, but would (for example) see the jiffies counter remaining
-> at the value at the beginning of the clamp interval until the end of
-> that interval, when the jiffies counter would suddenly jump by roughly
-> six counts, right?
+OK.
 
-Yes, if there is no interrupts disturb the clamping duration.
-We do not mask interrupts which will update jiffies.
+> 
+>> +void zpodd_init(struct ata_device *dev)
+>> +{
+>> +	int ret;
+>> +	struct zpodd *zpodd;
+>> +
+>> +	if (dev->private_data)
+>> +		return;
+>> +
+>> +	if (!device_can_poweroff(dev))
+>> +		return;
+>> +
+>> +	if ((ret = check_loading_mechanism(dev)) == -ENODEV)
+>> +		return;
+>> +
+>> +	zpodd = kzalloc(sizeof(struct zpodd), GFP_KERNEL);
+>> +	if (!zpodd)
+>> +		return;
+>> +
+>> +	if (ret)
+>> +		zpodd->drawer = true;
+>> +	else
+>> +		zpodd->slot = true;
+>> +
+>> +	zpodd->dev = dev;
+>> +	dev->private_data = zpodd;
+> 
+> I don't think you're supposed to use dev->private_data from libata
+> core layer.  Just add a new field.  Nobody cares about adding 8 more
+> bytes to struct ata_device and spending 8 more bytes is way better
+> than muddying the ownership of ->private_data.
 
--- 
+OK.
+And just out of curiosity, who's supposed to use device's private_data?
+I didn't find any user for ata_device's private_data in libata.
+
+> 
+>> +/* libata-zpodd.c */
+>> +#ifdef CONFIG_SATA_ZPODD
+>> +void zpodd_init(struct ata_device *dev);
+>> +void zpodd_deinit(struct ata_device *dev);
+>> +static inline bool zpodd_dev_enabled(struct ata_device *dev)
+>> +{
+>> +	if (dev->flags & ATA_DFLAG_DA && dev->private_data)
+>> +		return true;
+>> +	else
+>> +		return false;
+>> +}
+> 
+> And this gets completely wrong.  What if the device supports DA and
+> low level driver makes use of ->private_data?
+
+I didn't find any user of ata_device's private_data, so I used it for
+ZPODD. But if this is dangerous, I'll use a new field.
+
 Thanks,
+Aaron
 
-Jacob
