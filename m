@@ -1,22 +1,18 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
+From: Lan Tianyu <lantianyu1986-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [RFC PATCH v2 3/6] usb: add runtime pm support for usb port device
-Date: Wed, 14 Nov 2012 22:14:57 +0800
-Message-ID: <50A3A761.8000302@gmail.com>
+Date: Wed, 14 Nov 2012 23:13:17 +0800
+Message-ID: <50A3B50D.3000408@gmail.com>
 References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <5876155.rAsY9PFrXq@vostro.rjw.lan> <50A33B7D.2000100@intel.com> <2700525.6XmcYg8quR@vostro.rjw.lan> <50A39285.80305@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:44746 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753552Ab2KNOPL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Nov 2012 09:15:11 -0500
-In-Reply-To: <50A39285.80305@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <50A39285.80305-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Cc: Lan Tianyu <tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sarah.a.sharp-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, oneukum-l3A5Bk7waGM@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lan Tianyu <tianyu.lan@intel.com>, gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
 =E4=BA=8E 2012/11/14 20:45, Lan Tianyu =E5=86=99=E9=81=93:
 > =E4=BA=8E 2012/11/14 17:49, Rafael J. Wysocki =E5=86=99=E9=81=93:
@@ -28,11 +24,11 @@ te:
 >>>>> Set/clear PORT_POWER feature in the resume/suspend callbak.
 >>>>> Add portnum for struct usb_port to record port number.
 >>>>>
->>>>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>>>>> Signed-off-by: Lan Tianyu <tianyu.lan-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 >>>>
 >>>> This one looks reasonable to me.  From the PM side
 >>>>
->>>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 >>> Hi Rafael and Alan:
 >>>     This patch has a collaboration problem with pm qos. Since pm co=
 re would
@@ -89,21 +85,20 @@ it
 > No, because the child device is not under port device and so even if
 > child->dev is not suspended, port device's usage still can be 0 and
 > power off the port.
-
-Maybe I should add pm_runtime_get_noresume(&port_dev->dev) before enabl=
-e
-port's runtime pm. Just like following. Then it will work like you said=
-=2E
-
-@@ -72,6 +109,8 @@ int usb_hub_create_port_device(struct device *intfde=
-v,
-  	if (retval)
-  		goto error_register;
-
-+	pm_runtime_set_active(&port_dev->dev);
-+	pm_runtime_get_noresume(&port_dev->dev); /* new add */
-+	pm_runtime_enable(&port_dev->dev);
 >>
+Please ignore this reply. I may not understand your reply correctly.
+You are right if the child->dev is not suspended, the usage count shoul=
+d be at
+last 1. But how about if the child->dev is suspended.
+
+Assume that usb device was suspended and power off, so port's usage cou=
+nt must be 0
+since it has been suspended. If pm qos NO_POWER_OFF was set at this tim=
+e, pm core
+would get port resume and suspend it again. the usage change 0 - 1 - 0.=
+ So port is
+power off with NO_POWER_OFF flag setting, Does this make sense?
+
 >> Rafael
 >>
 >>
@@ -112,3 +107,7 @@ v,
 --=20
 Best regards
 Tianyu Lan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
