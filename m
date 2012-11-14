@@ -1,86 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Wed, 14 Nov 2012 10:52:56 +0100
-Message-ID: <2028148.7b9pFIymgn@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org> <1352855308.7176.232.camel@yhuang-dev>
+Date: Wed, 14 Nov 2012 11:05:56 +0100
+Message-ID: <1456950.61QZjXbNpt@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1211081125470.1280-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352855308.7176.232.camel@yhuang-dev>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:43253 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752187Ab2KNKBe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Nov 2012 05:01:34 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211081125470.1280-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, November 14, 2012 09:08:28 AM Huang Ying wrote:
-> On Tue, 2012-11-13 at 11:10 -0500, Alan Stern wrote:
-> > On Tue, 13 Nov 2012, Huang Ying wrote:
-> > 
-> > > > This is not quite right.  Consider a device that is in runtime suspend 
-> > > > when a system sleep starts.  When the system sleep ends, the device 
-> > > > will be resumed but the PM core will still think its state is 
-> > > > SUSPENDED.  The subsystem has to tell the PM core that the device is 
-> > > > now ACTIVE.  Currently, subsystems do this by calling 
-> > > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable.  Under 
-> > > > your scheme this wouldn't work; the pm_runtime_set_active call would 
-> > > > fail because the device was !forbidden.
-> > > 
-> > > Thanks for your information.  For this specific situation, is it
-> > > possible to call pm_runtime_resume() or pm_request_resume() for the
-> > > device?
-> > 
-> > No, because the device already is at full power.  The subsystem just
-> > needs to tell the PM core that it is.
-> > 
-> > > > > PM.  Device can always work with full power.
-> > > > 
-> > > > It can't if the parent is in SUSPEND.  If necessary, the user can write 
-> > > > "on" to the parent's power/control attribute first.
-> > > 
-> > > Is it possible to call pm_runtime_set_active() for the parent if the
-> > > parent is disabled and SUSPENDED.
-> > 
-> > Doing that is possible, but it might not work.  The parent might
-> > actually be at low power; calling pm_runtime_set_active wouldn't change
-> > the physical power level.  Basically, it's not safe to assume anything
-> > about devices that are disabled for runtime PM.
-> > 
-> > > It appears that there is race condition between this and the
-> > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable sequence
-> > > you mentioned ealier.
-> > > 
-> > > thread 1			thread 2
-> > > pm_runtime_disable
-> > > pm_runtime_set_active
-> > > 				pm_runtime_allow
-> > > 				  pm_runtime_set_suspended
-> > > pm_runtime_enable
-> > 
-> > This can't happen in the situation I described earlier because during
-> > system sleep transitions, no other user threads are allowed to run.  
-> > All of them except the one actually carrying out the transition are
-> > frozen.
+On Thursday, November 08, 2012 12:07:54 PM Alan Stern wrote:
+> On Thu, 8 Nov 2012, Rafael J. Wysocki wrote:
+
+[...]
+
+I'd like to revisit this for a while if you don't mind.
+
+> Your revised patch does do the job, except for a few problems.  
+> Namely, while local_pci_probe() and pci_device_remove() are running,
+> the device _does_ have a driver.
+
+Right.
+
+> This means that local_pci_probe() should not call pm_runtime_get_sync(),
+> for example.  Doing so would invoke the driver's runtime_resume routine
+> before calling the driver's probe routine!
 > 
-> Thanks for your kind explanation.
+> The USB subsystem solves this problem by carefully keeping track of the 
+> state of the device-driver binding:
 > 
-> After talking with you, my feeling is that the disabled state is obscure
-> and error-prone.  So I suggest not to use it if possible.  Maybe we can
+> 	Originally the device is UNBOUND.
 > 
->  - make changes suggested by Alan to make disabled state better.
+> 	At the start of the subsystem's probe routine, the state
+> 	changes to BINDING.
+> 
+> 	If the probe succeeds then it changes to BOUND; otherwise
+> 	it goes back to UNBOUND.
+> 
+> 	At the start of the subsystem's remove routine, the state
+> 	changes to UNBINDING.  At the end it goes to UNBOUND.
+> 
+> When the state is anything other than BOUND, the subsystem's runtime PM 
+> routines act as though there is no driver.
 
-What changes specifically do you mean to be precise?
+Well, that wouldn't help PCI, because some drivers want to use the
+pm_runtime_* stuff in their .probe() routines and actually expect it to
+work. :-)
 
->  - use Rafael's solution to solve this specific issue, and avoid the
-> usage of disabled state here.
+Perhaps we can introduce something like
 
-Well, I think that the PCI subsystem should just enable runtime PM for
-all devices upfront and keep it enabled going forward.
+pm_runtime_get[_put]_skip_callbacks()
 
-My patch is incomplete, however, because it doesn't deal with probe/remove
-correctly at this point (which Alan pointed out earlier in the thread).
+that would treat the device as though it had the power.no_callbacks flag
+set and use that around the driver's .probe() in the PCI core?
 
-Thanks,
 Rafael
 
 
