@@ -1,81 +1,39 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
- forbidden
-Date: Wed, 14 Nov 2012 09:08:28 +0800
-Message-ID: <1352855308.7176.232.camel@yhuang-dev>
-References: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Tue, 13 Nov 2012 17:14:50 -0800
+Message-ID: <20121113171450.3657290c@chromoly>
+References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
+	<20121113211602.GA30150@linux.vnet.ibm.com>
+	<20121113133922.47144a50@chromoly>
+	<20121113222350.GH2489@linux.vnet.ibm.com>
+	<50A2CD77.7000403@linux.intel.com>
+	<20121114000259.GK2489@linux.vnet.ibm.com>
+	<50A2E116.8000400@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:63665 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932120Ab2KNBIa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 20:08:30 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <50A2E116.8000400@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: paulmck@linux.vnet.ibm.com, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 2012-11-13 at 11:10 -0500, Alan Stern wrote:
-> On Tue, 13 Nov 2012, Huang Ying wrote:
+On Tue, 13 Nov 2012 16:08:54 -0800
+Arjan van de Ven <arjan@linux.intel.com> wrote:
+
+> > I think I know, but I feel the need to ask anyway.  Why not tell
+> > RCU about the clamping?  
 > 
-> > > This is not quite right.  Consider a device that is in runtime suspend 
-> > > when a system sleep starts.  When the system sleep ends, the device 
-> > > will be resumed but the PM core will still think its state is 
-> > > SUSPENDED.  The subsystem has to tell the PM core that the device is 
-> > > now ACTIVE.  Currently, subsystems do this by calling 
-> > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable.  Under 
-> > > your scheme this wouldn't work; the pm_runtime_set_active call would 
-> > > fail because the device was !forbidden.
-> > 
-> > Thanks for your information.  For this specific situation, is it
-> > possible to call pm_runtime_resume() or pm_request_resume() for the
-> > device?
-> 
-> No, because the device already is at full power.  The subsystem just
-> needs to tell the PM core that it is.
-> 
-> > > > PM.  Device can always work with full power.
-> > > 
-> > > It can't if the parent is in SUSPEND.  If necessary, the user can write 
-> > > "on" to the parent's power/control attribute first.
-> > 
-> > Is it possible to call pm_runtime_set_active() for the parent if the
-> > parent is disabled and SUSPENDED.
-> 
-> Doing that is possible, but it might not work.  The parent might
-> actually be at low power; calling pm_runtime_set_active wouldn't change
-> the physical power level.  Basically, it's not safe to assume anything
-> about devices that are disabled for runtime PM.
-> 
-> > It appears that there is race condition between this and the
-> > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable sequence
-> > you mentioned ealier.
-> > 
-> > thread 1			thread 2
-> > pm_runtime_disable
-> > pm_runtime_set_active
-> > 				pm_runtime_allow
-> > 				  pm_runtime_set_suspended
-> > pm_runtime_enable
-> 
-> This can't happen in the situation I described earlier because during
-> system sleep transitions, no other user threads are allowed to run.  
-> All of them except the one actually carrying out the transition are
-> frozen.
+> I don't mind telling RCU, but what cannot happen is a bunch of CPU
+> time suddenly getting used (since that is the opposite of what is
+> needed at the specific point in time of going idle)
+Another reason is my observation that there are some assumptions/checks
+to make sure only idle thread can tell rcu it is idle. Is it ok to
+extend that to other kthreads?
 
-Thanks for your kind explanation.
+-- 
+Thanks,
 
-After talking with you, my feeling is that the disabled state is obscure
-and error-prone.  So I suggest not to use it if possible.  Maybe we can
-
- - make changes suggested by Alan to make disabled state better.
- - use Rafael's solution to solve this specific issue, and avoid the
-usage of disabled state here.
-
-Best Regards,
-Huang Ying
-
-
+Jacob
