@@ -1,152 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH v2 6/6] usb: add usb port's pm qos flags request to change NO_POWER_OFF flag
-Date: Wed, 14 Nov 2012 01:23:06 +0100
-Message-ID: <2308745.YokGqOdQnN@vostro.rjw.lan>
-References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <1352793605-4168-7-git-send-email-tianyu.lan@intel.com>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Wed, 14 Nov 2012 09:08:28 +0800
+Message-ID: <1352855308.7176.232.camel@yhuang-dev>
+References: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:42192 "EHLO ogre.sisk.pl"
+Received: from mga03.intel.com ([143.182.124.21]:63665 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755999Ab2KNASp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 19:18:45 -0500
-In-Reply-To: <1352793605-4168-7-git-send-email-tianyu.lan@intel.com>
+	id S932120Ab2KNBIa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 20:08:30 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211131102330.1292-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tuesday, November 13, 2012 04:00:05 PM Lan Tianyu wrote:
-> Some usb devices can't be resumed correctly after power off. This
-> patch is to add pm qos flags request to change NO_POWER_OFF and
-> provide usb_device_allow_power_off() for device drivers to allow or
-> prohibit usb core to power off the device.
+On Tue, 2012-11-13 at 11:10 -0500, Alan Stern wrote:
+> On Tue, 13 Nov 2012, Huang Ying wrote:
 > 
-> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
-
-This looks reasonable to me.  From the PM perspective:
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-> ---
->  drivers/usb/core/hub.c  |   36 ++++++++++++++++++++++++++++++++++++
->  drivers/usb/core/port.c |   12 ++++++++++++
->  include/linux/usb.h     |    3 +++
->  3 files changed, 51 insertions(+)
+> > > This is not quite right.  Consider a device that is in runtime suspend 
+> > > when a system sleep starts.  When the system sleep ends, the device 
+> > > will be resumed but the PM core will still think its state is 
+> > > SUSPENDED.  The subsystem has to tell the PM core that the device is 
+> > > now ACTIVE.  Currently, subsystems do this by calling 
+> > > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable.  Under 
+> > > your scheme this wouldn't work; the pm_runtime_set_active call would 
+> > > fail because the device was !forbidden.
+> > 
+> > Thanks for your information.  For this specific situation, is it
+> > possible to call pm_runtime_resume() or pm_request_resume() for the
+> > device?
 > 
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index 267e9d7..7aaac720 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -189,6 +189,42 @@ static struct usb_hub *hdev_to_hub(struct usb_device *hdev)
->  	return usb_get_intfdata(hdev->actconfig->interface[0]);
->  }
->  
-> +/**
-> + * usb_device_allow_power_off - Allow or prohibit power off device.
-> + * @udev: target usb device
-> + * @set: choice of allow or prohibit
-> + *
-> + * Clearing or setting usb port's pm qos flag PM_QOS_FLAG_NO_POWER_OFF
-> + * to allow or prohibit target usb device to be power off.
-> + */
-> +int usb_device_allow_power_off(struct usb_device *udev, bool set)
-> +{
-> +	struct usb_port *port_dev;
-> +	struct dev_pm_qos_request *pm_qos;
-> +	s32 value;
-> +	int ret;
-> +
-> +	if (!udev->parent)
-> +		return -EINVAL;
-> +
-> +	port_dev =
-> +		hdev_to_hub(udev->parent)->ports[udev->portnum - 1];
-> +	pm_qos = &port_dev->pm_qos;
-> +	value = pm_qos->data.flr.flags;
-> +
-> +	if (set)
-> +		value &= ~PM_QOS_FLAG_NO_POWER_OFF;
-> +	else
-> +		value |= PM_QOS_FLAG_NO_POWER_OFF;
-> +
-> +	pm_runtime_get_sync(&port_dev->dev);
-> +	ret = dev_pm_qos_update_request(pm_qos, value);
-> +	pm_runtime_put(&port_dev->dev);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(usb_device_allow_power_off);
-> +
->  static int usb_device_supports_lpm(struct usb_device *udev)
->  {
->  	/* USB 2.1 (and greater) devices indicate LPM support through
-> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> index 5a7a833..077a494 100644
-> --- a/drivers/usb/core/port.c
-> +++ b/drivers/usb/core/port.c
-> @@ -49,6 +49,11 @@ static const struct attribute_group *port_dev_group[] = {
->  static void usb_port_device_release(struct device *dev)
->  {
->  	struct usb_port *port_dev = to_usb_port(dev);
-> +
-> +	pm_runtime_get_sync(dev);
-> +	dev_pm_qos_remove_request(&port_dev->pm_qos);
-> +	pm_runtime_put(dev);
-> +
->  	dev_pm_qos_hide_flags(dev);
->  	usb_acpi_unregister_power_resources(dev);
->  	kfree(port_dev);
-> @@ -116,12 +121,19 @@ int usb_hub_create_port_device(struct device *intfdev,
->  	if (retval)
->  		goto error_expose_pm_qos;
->  
-> +	retval = dev_pm_qos_add_request(&port_dev->dev, &port_dev->pm_qos,
-> +			DEV_PM_QOS_FLAGS, 0);
-> +	if (retval)
-> +		goto error_add_qos_request;
-> +
->  	pm_runtime_set_active(&port_dev->dev);
->  	pm_runtime_enable(&port_dev->dev);
->  	usb_acpi_register_power_resources(&port_dev->dev);
->  
->  	return 0;
->  
-> +error_add_qos_request:
-> +	pm_runtime_put(&port_dev->dev);
->  error_expose_pm_qos:
->  	device_del(&port_dev->dev);
->  error_register:
-> diff --git a/include/linux/usb.h b/include/linux/usb.h
-> index 8002640..aa201bd 100644
-> --- a/include/linux/usb.h
-> +++ b/include/linux/usb.h
-> @@ -21,6 +21,7 @@
->  #include <linux/sched.h>	/* for current && schedule_timeout */
->  #include <linux/mutex.h>	/* for struct mutex */
->  #include <linux/pm_runtime.h>	/* for runtime PM */
-> +#include <linux/pm_qos.h>	/* for PM Qos */
->  
->  struct usb_device;
->  struct usb_driver;
-> @@ -577,6 +578,7 @@ struct usb_device {
->   * @child: usb device attatched to the port
->   * @dev: generic device interface
->   * @port_owner: port's owner
-> + * @pm_qos: port's pm qos flags request
->   * @connect_type: port's connect type
->   * @portnum: port index num based one
->   * @power_on: port's power state
-> @@ -585,6 +587,7 @@ struct usb_port {
->  	struct usb_device *child;
->  	struct device dev;
->  	struct dev_state *port_owner;
-> +	struct dev_pm_qos_request pm_qos;
->  	enum usb_port_connect_type connect_type;
->  	u8 portnum;
->  	bool power_on;
+> No, because the device already is at full power.  The subsystem just
+> needs to tell the PM core that it is.
 > 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> > > > PM.  Device can always work with full power.
+> > > 
+> > > It can't if the parent is in SUSPEND.  If necessary, the user can write 
+> > > "on" to the parent's power/control attribute first.
+> > 
+> > Is it possible to call pm_runtime_set_active() for the parent if the
+> > parent is disabled and SUSPENDED.
+> 
+> Doing that is possible, but it might not work.  The parent might
+> actually be at low power; calling pm_runtime_set_active wouldn't change
+> the physical power level.  Basically, it's not safe to assume anything
+> about devices that are disabled for runtime PM.
+> 
+> > It appears that there is race condition between this and the
+> > pm_runtime_disable, pm_runtime_set_active, pm_runtime_enable sequence
+> > you mentioned ealier.
+> > 
+> > thread 1			thread 2
+> > pm_runtime_disable
+> > pm_runtime_set_active
+> > 				pm_runtime_allow
+> > 				  pm_runtime_set_suspended
+> > pm_runtime_enable
+> 
+> This can't happen in the situation I described earlier because during
+> system sleep transitions, no other user threads are allowed to run.  
+> All of them except the one actually carrying out the transition are
+> frozen.
+
+Thanks for your kind explanation.
+
+After talking with you, my feeling is that the disabled state is obscure
+and error-prone.  So I suggest not to use it if possible.  Maybe we can
+
+ - make changes suggested by Alan to make disabled state better.
+ - use Rafael's solution to solve this specific issue, and avoid the
+usage of disabled state here.
+
+Best Regards,
+Huang Ying
+
+
