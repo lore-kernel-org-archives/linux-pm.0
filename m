@@ -1,64 +1,42 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+From: Arjan van de Ven <arjan@linux.intel.com>
 Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Tue, 13 Nov 2012 16:03:39 -0800
-Message-ID: <20121114000339.GL2489@linux.vnet.ibm.com>
-References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <20121113222350.GH2489@linux.vnet.ibm.com>
- <50A2CD77.7000403@linux.intel.com>
- <21157900.tI2QCFTxxq@vostro.rjw.lan>
-Reply-To: paulmck@linux.vnet.ibm.com
+Date: Tue, 13 Nov 2012 16:08:54 -0800
+Message-ID: <50A2E116.8000400@linux.intel.com>
+References: <1352757831-5202-1-git-send-email-jacob.jun.pan@linux.intel.com> <1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com> <20121113211602.GA30150@linux.vnet.ibm.com> <20121113133922.47144a50@chromoly> <20121113222350.GH2489@linux.vnet.ibm.com> <50A2CD77.7000403@linux.intel.com> <20121114000259.GK2489@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:44151 "EHLO e3.ny.us.ibm.com"
+Received: from mga11.intel.com ([192.55.52.93]:49865 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756051Ab2KNAHk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Nov 2012 19:07:40 -0500
-Received: from /spool/local
-	by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Tue, 13 Nov 2012 19:07:39 -0500
-Content-Disposition: inline
-In-Reply-To: <21157900.tI2QCFTxxq@vostro.rjw.lan>
+	id S1756039Ab2KNAJH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 19:09:07 -0500
+In-Reply-To: <20121114000259.GK2489@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
+To: paulmck@linux.vnet.ibm.com
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
 
-On Wed, Nov 14, 2012 at 12:02:00AM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, November 13, 2012 02:45:11 PM Arjan van de Ven wrote:
-> > On 11/13/2012 2:23 PM, Paul E. McKenney wrote:
-> > > On Tue, Nov 13, 2012 at 01:39:22PM -0800, Jacob Pan wrote:
-> > >> On Tue, 13 Nov 2012 13:16:02 -0800
-> > >> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > >>
-> > >>>> Please refer to Documentation/thermal/intel_powerclamp.txt for more
-> > >>>> details.  
-> > >>>
-> > >>> If I read this correctly, this forces a group of CPUs into idle for
-> > >>> about 600 milliseconds at a time.  This would indeed delay grace
-> > >>> periods, which could easily result in user complaints.  Also, given
-> > >>> the default RCU_BOOST_DELAY of 500 milliseconds in kernels enabling
-> > >>> RCU_BOOST, you would see needless RCU priority boosting.
-> > >>>
-> > >> the default idle injection duration is 6ms. we adjust the sleep
-> > >> interval to ensure idle ratio. So the idle duration stays the same once
-> > >> set. So would it be safe to delay grace period for this small amount in
-> > >> exchange for less over head in each injection period?
-> > > 
-> > > Ah, 6ms of delay is much better than 600ms.  Should be OK (famous last
-> > > words!).
-> > 
-> > well... power clamping is not "free".
-> > You're going to lose performance as a trade off for dropping instantaneous power consumption....
+
 > 
-> Yes.  It is good to realize that when the clamping triggers, we already
-> have some more to worry about than losing some performance. :-)
-> 
-> The problem here is to find a way to lose as little performance as we possibly
-> can and prevent the system from overheating at the same time.
+> OK, so the point of clamping all sockets simultaneously is to be able
+> to power down the electronics surrounding the sockets as well as the
+> sockets themselves?  
 
-Understood.  My concern is in-kernel confusion rather than performance.
+yup; memory can go to self refresh etc etc
 
-							Thanx, Paul
+>If all you cared about was the individual sockets,
+> I don't see why you couldn't power the sockets down individually rather
+> than in sync with each other.
+
+the hardware that this driver supports does not support powering down sockets individually.
+
+(since the memory controllers are part of the "socket"... it would increase latency
+etc etc, and likely wreak havoc with the cache coherency protocols)
+
+> I think I know, but I feel the need to ask anyway.  Why not tell
+> RCU about the clamping?
+
+I don't mind telling RCU, but what cannot happen is a bunch of CPU time suddenly getting used
+(since that is the opposite of what is needed at the specific point in time of going idle)
 
