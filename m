@@ -1,101 +1,89 @@
-From: "Fenghua Yu" <fenghua.yu@intel.com>
-Subject: [PATCH v10 03/14] x86, topology: Don't offline CPU0 if any PIC irq can not be migrated out of it
-Date: Tue, 13 Nov 2012 11:32:40 -0800
-Message-ID: <1352835171-3958-4-git-send-email-fenghua.yu@intel.com>
-References: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1352835171-3958-1-git-send-email-fenghua.yu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>, H Peter Anvin <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Asit K Mallick <asit.k.mallick@intel.com>, Tony Luck <tony.luck@intel.com>, Arjan Dan De Ven <arjan@linux.intel.com>, Suresh B Siddha <suresh.b.siddha@intel.com>, Len Brown <len.brown@intel.com>, "Srivatssa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Randy Dunlap <rdunlap@xenotime.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Chen Gong <gong.chen@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>, x86 <x86@kernel.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [RFC PATCH v2 1/6] usb: Register usb port's acpi power resources
+Date: Wed, 14 Nov 2012 10:46:29 +0800
+Message-ID: <50A30605.6050703@intel.com>
+References: <1352793605-4168-1-git-send-email-tianyu.lan@intel.com> <50A229E9.4060404@mvista.com> <50A23EBF.1070304@gmail.com> <46669688.k9rXBaWOjk@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:36319 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932489Ab2KNCuq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Nov 2012 21:50:46 -0500
+In-Reply-To: <46669688.k9rXBaWOjk@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Lan Tianyu <lantianyu1986@gmail.com>, Sergei Shtylyov <sshtylyov@mvista.com>, gregkh@linuxfoundation.org, sarah.a.sharp@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.de, linux-usb@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-From: Fenghua Yu <fenghua.yu@intel.com>
+On 2012=E5=B9=B411=E6=9C=8814=E6=97=A5 07:56, Rafael J. Wysocki wrote:
+> On Tuesday, November 13, 2012 08:36:15 PM Lan Tianyu wrote:
+>> =E4=BA=8E 2012/11/13 19:07, Sergei Shtylyov =E5=86=99=E9=81=93:
+>>> Hello.
+>>>
+>>> On 13-11-2012 12:00, Lan Tianyu wrote:
+>>>
+>>>> This patch is to register usb port's acpi power resources. Create
+>>>> link between usb port device and its acpi power resource.
+>>>
+>>>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>>> [...]
+>>>
+>>>> diff --git a/drivers/usb/core/usb-acpi.c b/drivers/usb/core/usb-ac=
+pi.c
+>>>> index cef4252..c58ebc0 100644
+>>>> --- a/drivers/usb/core/usb-acpi.c
+>>>> +++ b/drivers/usb/core/usb-acpi.c
+>>>> @@ -216,6 +216,28 @@ static struct acpi_bus_type usb_acpi_bus =3D =
+{
+>>>>       .find_device =3D usb_acpi_find_device,
+>>>>   };
+>>>>
+>>>> +int usb_acpi_register_power_resources(struct device *dev)
+>>>> +{
+>>>> +    acpi_handle port_handle =3D DEVICE_ACPI_HANDLE(dev);
+>>>> +
+>>>> +    if (!port_handle)
+>>>> +        return -ENODEV;
+>>>> +
+>>>> +    if (acpi_power_resource_register_device(dev, port_handle) < 0=
+)
+>>>> +        return -ENODEV;
+>>>> +    return 0;
+>>>> +}
+>>>> +
+>>>> +void usb_acpi_unregister_power_resources(struct device *dev)
+>>>> +{
+>>>> +    acpi_handle port_handle =3D DEVICE_ACPI_HANDLE(dev);
+>>>> +
+>>>> +    if (!port_handle)
+>>>> +        return;
+>>>> +
+>>>> +    acpi_power_resource_register_device(dev, port_handle);
+>>>
+>>>     I thinbk you have been askied already, but shouldn't it be
+>>> acpi_power_resource_unregister_device()?
+>>>
+>> Oh. Sorry. Too focus on the other modification. Thanks for your remi=
+nder.
+>=20
+> Besides, it would be a bit more natural to do
+>=20
+> if (port_handle)
+> 	acpi_power_resource_unregister_device(dev, port_handle);
+>=20
+> instead of doing that return when port_handle is NULL.
+>=20
+Hi Rafael:
+	Great thanks for your review. :)
+	I get it and will update it at next version.
+> Thanks,
+> Rafael
+>=20
+>=20
 
-If CONFIG_BOOTPARAM_HOTPLUG_CPU is turned on, CPU0 hotplug feature is enabled
-by default.
 
-If CONFIG_BOOTPARAM_HOTPLUG_CPU is not turned on, CPU0 hotplug feature is not
-enabled by default. The kernel parameter cpu0_hotplug can enable CPU0 hotplug
-feature at boot.
-
-Currently the feature is supported on Intel platforms only.
-
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
----
- arch/x86/kernel/topology.c |   50 +++++++++++++++++++++++++++++++++++++------
- 1 files changed, 43 insertions(+), 7 deletions(-)
-
-diff --git a/arch/x86/kernel/topology.c b/arch/x86/kernel/topology.c
-index 76ee977..0e7b4a7 100644
---- a/arch/x86/kernel/topology.c
-+++ b/arch/x86/kernel/topology.c
-@@ -30,23 +30,59 @@
- #include <linux/mmzone.h>
- #include <linux/init.h>
- #include <linux/smp.h>
-+#include <linux/irq.h>
- #include <asm/cpu.h>
- 
- static DEFINE_PER_CPU(struct x86_cpu, cpu_devices);
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+
-+#ifdef CONFIG_BOOTPARAM_HOTPLUG_CPU0
-+static int cpu0_hotpluggable = 1;
-+#else
-+static int cpu0_hotpluggable;
-+static int __init enable_cpu0_hotplug(char *str)
-+{
-+	cpu0_hotpluggable = 1;
-+	return 1;
-+}
-+
-+__setup("cpu0_hotplug", enable_cpu0_hotplug);
-+#endif
-+
- int __ref arch_register_cpu(int num)
- {
-+	struct cpuinfo_x86 *c = &cpu_data(num);
-+
-+	/*
-+	 * Currently CPU0 is only hotpluggable on Intel platforms. Other
-+	 * vendors can add hotplug support later.
-+	 */
-+	if (c->x86_vendor != X86_VENDOR_INTEL)
-+		cpu0_hotpluggable = 0;
-+
- 	/*
--	 * CPU0 cannot be offlined due to several
--	 * restrictions and assumptions in kernel. This basically
--	 * doesn't add a control file, one cannot attempt to offline
--	 * BSP.
-+	 * Two known BSP/CPU0 dependencies: Resume from suspend/hibernate
-+	 * depends on BSP. PIC interrupts depend on BSP.
- 	 *
--	 * Also certain PCI quirks require not to enable hotplug control
--	 * for all CPU's.
-+	 * If the BSP depencies are under control, one can tell kernel to
-+	 * enable BSP hotplug. This basically adds a control file and
-+	 * one can attempt to offline BSP.
- 	 */
--	if (num)
-+	if (num == 0 && cpu0_hotpluggable) {
-+		unsigned int irq;
-+		/*
-+		 * We won't take down the boot processor on i386 if some
-+		 * interrupts only are able to be serviced by the BSP in PIC.
-+		 */
-+		for_each_active_irq(irq) {
-+			if (!IO_APIC_IRQ(irq) && irq_has_action(irq)) {
-+				cpu0_hotpluggable = 0;
-+				break;
-+			}
-+		}
-+	}
-+	if (num || cpu0_hotpluggable)
- 		per_cpu(cpu_devices, num).cpu.hotpluggable = 1;
- 
- 	return register_cpu(&per_cpu(cpu_devices, num).cpu, num);
--- 
-1.7.2
+--=20
+Best regards
+Tianyu Lan
