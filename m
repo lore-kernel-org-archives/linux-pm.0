@@ -1,60 +1,174 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [PATCH-Resend] thermal: Exynos: Add missing dependency
-Date: Thu, 15 Nov 2012 12:31:36 +0530
-Message-ID: <CAK44p21smO8rrKoJF=47ywRCeagDudvFzZ7DhJ7TZCT7Mqv7kA@mail.gmail.com>
-References: <1352961579-13807-1-git-send-email-sachin.kamat@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 1/2] Thermal: drivers/thermal/Kconfig refactor
+Date: Thu, 15 Nov 2012 15:01:57 +0800
+Message-ID: <1352962917.2080.9.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:46008 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932145Ab2KOHBh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Nov 2012 02:01:37 -0500
-Received: by mail-ob0-f174.google.com with SMTP id wc20so1364451obb.19
-        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 23:01:36 -0800 (PST)
-In-Reply-To: <1352961579-13807-1-git-send-email-sachin.kamat@linaro.org>
+Received: from mga01.intel.com ([192.55.52.88]:24106 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932145Ab2KOHCA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Nov 2012 02:02:00 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, patches@linaro.org, akpm@linux-foundation.org, linux-samsung-soc@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, Amit Kachhap <amit.kachhap@linaro.org>, "Zhang, Rui" <rui.zhang@intel.com>, patches@linaro.org
 
-On 15 November 2012 12:09, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> CPU_FREQ_TABLE depends on CPU_FREQ. Selecting CPU_FREQ_TABLE without checking
-> for dependencies gives the following compilation warnings:
-> warning: (ARCH_TEGRA_2x_SOC && ARCH_TEGRA_3x_SOC && UX500_SOC_DB8500 &&
-> CPU_THERMAL && EXYNOS_THERMAL) selects CPU_FREQ_TABLE which has unmet
-> direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ)
->
-> Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
->  drivers/thermal/Kconfig |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 266c15e..6124c4b 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -50,8 +50,7 @@ config RCAR_THERMAL
->
->  config EXYNOS_THERMAL
->         tristate "Temperature sensor on Samsung EXYNOS"
-> -       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
-> -       select CPU_FREQ_TABLE
-Hi Sachin/Rui,
+drivers/thermal/Kconfig refactor.
 
-"select CPU_FREQ_TABLE" should be there even if CONFIG_CPU_FREQ is
-enabled. Only some governors enable it. See drivers/cpufreq/Kconfig
-Also "depends THERMAL" should be there otherwise menuconfig
-parent/child relationship is broken.
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/Kconfig |  103 +++++++++++++++++++++++------------------------
+ 1 file changed, 51 insertions(+), 52 deletions(-)
 
-Thanks,
-Amit Daniel
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 266c15e..937a23d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -13,15 +13,62 @@ menuconfig THERMAL
+ 	  All platforms with ACPI thermal support can use this driver.
+ 	  If you want this support, you should say Y or M here.
+ 
++if THERMAL
++
+ config THERMAL_HWMON
+ 	bool
+-	depends on THERMAL
+ 	depends on HWMON=y || HWMON=THERMAL
+ 	default y
+ 
++choice
++	prompt "Default Thermal governor"
++	default THERMAL_DEFAULT_GOV_STEP_WISE
++	help
++	  This option sets which thermal governor shall be loaded at
++	  startup. If in doubt, select 'step_wise'.
++
++config THERMAL_DEFAULT_GOV_STEP_WISE
++	bool "step_wise"
++	select STEP_WISE
++	help
++	  Use the step_wise governor as default. This throttles the
++	  devices one step at a time.
++
++config THERMAL_DEFAULT_GOV_FAIR_SHARE
++	bool "fair_share"
++	select FAIR_SHARE
++	help
++	  Use the fair_share governor as default. This throttles the
++	  devices based on their 'contribution' to a zone. The
++	  contribution should be provided through platform data.
++
++config THERMAL_DEFAULT_GOV_USER_SPACE
++	bool "user_space"
++	select USER_SPACE
++	help
++	  Select this if you want to let the user space manage the
++	  lpatform thermals.
++
++endchoice
++
++config FAIR_SHARE
++	bool "Fair-share thermal governor"
++	help
++	  Enable this to manage platform thermals using fair-share governor.
++
++config STEP_WISE
++	bool "Step_wise thermal governor"
++	help
++	  Enable this to manage platform thermals using a simple linear
++
++config USER_SPACE
++	bool "User_space thermal governor"
++	help
++	  Enable this to let the user space manage the platform thermals.
++
+ config CPU_THERMAL
+ 	bool "generic cpu cooling support"
+-	depends on THERMAL && CPU_FREQ
++	depends on CPU_FREQ
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+@@ -33,7 +80,6 @@ config CPU_THERMAL
+ 
+ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+-	depends on THERMAL
+ 	depends on PLAT_SPEAR
+ 	depends on OF
+ 	help
+@@ -42,7 +88,6 @@ config SPEAR_THERMAL
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+-	depends on THERMAL
+ 	depends on ARCH_SHMOBILE
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+@@ -50,57 +95,11 @@ config RCAR_THERMAL
+ 
+ config EXYNOS_THERMAL
+ 	tristate "Temperature sensor on Samsung EXYNOS"
+-	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
++	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Managment
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
+ 
+-config FAIR_SHARE
+-	bool "Fair-share thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to manage platform thermals using fair-share governor.
+-
+-config STEP_WISE
+-	bool "Step_wise thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to manage platform thermals using a simple linear
+-
+-config USER_SPACE
+-	bool "User_space thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to let the user space manage the platform thermals.
+-
+-choice
+-	prompt "Default Thermal governor"
+-	depends on THERMAL
+-	default THERMAL_DEFAULT_GOV_STEP_WISE
+-	help
+-	  This option sets which thermal governor shall be loaded at
+-	  startup. If in doubt, select 'step_wise'.
+-
+-config THERMAL_DEFAULT_GOV_STEP_WISE
+-	bool "step_wise"
+-	select STEP_WISE
+-	help
+-	  Use the step_wise governor as default. This throttles the
+-	  devices one step at a time.
+-
+-config THERMAL_DEFAULT_GOV_FAIR_SHARE
+-	bool "fair_share"
+-	select FAIR_SHARE
+-	help
+-	  Use the fair_share governor as default. This throttles the
+-	  devices based on their 'contribution' to a zone. The
+-	  contribution should be provided through platform data.
+ 
+-config THERMAL_DEFAULT_GOV_USER_SPACE
+-	bool "user_space"
+-	select USER_SPACE
+-	help
+-	  Select this if you want to let the user space manage the
+-	  platform thermals.
+-endchoice
++endif
+-- 
+1.7.9.5
 
-> +       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && CPU_THERMAL
->         help
->           If you say yes here you get support for TMU (Thermal Managment
->           Unit) on SAMSUNG EXYNOS series of SoC.
-> --
-> 1.7.4.1
->
+
+
