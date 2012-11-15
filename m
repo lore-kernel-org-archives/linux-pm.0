@@ -1,93 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
-Date: Thu, 15 Nov 2012 00:10:09 +0100
-Message-ID: <37583314.JAxoSZqTsM@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1211141608200.1620-100000@iolanthe.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/1] thermal: Exynos: Add missing dependency
+Date: Thu, 15 Nov 2012 08:11:24 +0800
+Message-ID: <1352938284.2143.5.camel@rzhang1-mobl4>
+References: <1352875704-2178-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:44534 "EHLO ogre.sisk.pl"
+Received: from mga09.intel.com ([134.134.136.24]:58199 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932216Ab2KNXFs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Nov 2012 18:05:48 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211141608200.1620-100000@iolanthe.rowland.org>
+	id S1423527Ab2KOAL2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Nov 2012 19:11:28 -0500
+In-Reply-To: <1352875704-2178-1-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: linux-pm@vger.kernel.org, durgadoss.r@intel.com, patches@linaro.org, akpm@linux-foundation.org, Amit Daniel Kachhap <amit.kachhap@linaro.org>
 
-On Wednesday, November 14, 2012 04:45:01 PM Alan Stern wrote:
-> On Wed, 14 Nov 2012, Rafael J. Wysocki wrote:
+Hi, Sachin,
+
+thanks for catching the problem.
+
+On Wed, 2012-11-14 at 12:18 +0530, Sachin Kamat wrote:
+> CPU_FREQ_TABLE depends on CPU_FREQ. Selecting CPU_FREQ_TABLE without checking
+> for dependencies gives the following compilation warnings:
+> warning: (ARCH_TEGRA_2x_SOC && ARCH_TEGRA_3x_SOC && UX500_SOC_DB8500 &&
+> CPU_THERMAL && EXYNOS_THERMAL) selects CPU_FREQ_TABLE which has unmet
+> direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ)
 > 
-> > > This has the side effect that when a driver unbinds, it can't leave the 
-> > > device in a special low-power state.  The device will always end up in 
-> > > the generic low-power state supported by the PCI core.
-> > 
-> > Well, I'm not sure I'd like that.
-> > 
-> > Let's just go back even one step more and think what we'd like to have in
-> > general terms and then how to implement it. :-)
-> > 
-> > Suppose that pci_pm_init() calls pm_runtime_enable() for all devices (in
-> > addition to what it does currently).  The runtime PM status of each device is
-> > RPM_SUSPENDED at this point.  Then:
+Amit,
+
+how is exynos driver supposed to work?
+do you want the exynos driver still be loaded without CPU_THERMAL?
+If yes, EXYNOS_THERMAL should not select CPU_FREQ_TABLE.
+If no, EXYNOS_THERMAL should depends on CPU_THERMAL instead of THERMAL.
+and CPU_THERMAL will select CPU_FREQ_TABLE instead.
+
+IMO, either of the above solution will be more proper to fix this
+warning.
+
+thanks,
+rui
+
+> Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> ---
+> Build tested using exynos4_defconfig on linux-next tree of 20121114.
+> ---
+>  drivers/thermal/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Wait a moment.  When the device is detected and initialized, it is in
-> D0, right?  Currently we don't care much because the device starts out
-> disabled for runtime PM.  But now you are going to enable it.  While
-> the device is enabled, its runtime status should match the physical
-> power level.
-
-OK
-
-> This means the initialization routine would have to call
-> pm_runtime_set_active() before pm_runtime_enable().  If you then wanted
-> to change the status to RPM_SUSPENDED, you would actually have to put
-> the device into D3 by calling pm_runtime_suspend() (or maybe
-> pm_runtime_schedule_suspend() to give drivers some time to get loaded 
-> and bind).
-
-No, I don't want that.  It may be RPM_ACTIVE all the time as long as the
-device doesn't have a driver.  Which probably would even make things
-simpler. :-)
-
-> > (1) We want to keep the current semantics during probe, i.e. the device should
-> >     (a) be RPM_ACTIVE and (b) have usage_count == (user space usage_count + 1)
-> >     right before ddi->drv->probe() is executed.
-> 
-> In theory the usage_count could be higher and then adjusted back after
-> the probe is finished, if that would make anything easier.
-
-No, it wouldn't, because of (5).  Suppose that the driver wants to suspend
-the device directly from .probe() and the user space doesn't mind.  We can't
-prevent that from being doable.
-
-> > (2) We don't want the driver's PM callbacks to be run before ddi->drv->probe().
-> >     There's a question if we want the bus type's PM callbacks to be run at
-> >     that point, but they are not run currently and IMO we shouldn't change
-> >     that.
-> 
-> The device is supposed to be in D0 when it is probed.  Since we are
-> assuming that initialization is now going to leave it in D3, there's no
-> choice -- you _have_ to invoke pci_pm_runtime_resume(), which would
-> invoke the driver's callback, which we don't want.
-
-Let's say the device will stay in D0 after the initialization and then
-we'll require that it be in D0 if .probe() fails or after .remove().
-
-The only thing we'll need to do before .probe() in that case is to
-bump up the usage counter and then to bump it down if .probe() fails
-(and after .remove()).
-
-The only problem we have in that case are buggy drivers that leave
-devices in, say, D3cold after a failing .probe().  That doesn't
-seem to be avoidable, though.
-
-Thanks,
-Rafael
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 266c15e..197b7db 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -50,7 +50,7 @@ config RCAR_THERMAL
+>  
+>  config EXYNOS_THERMAL
+>  	tristate "Temperature sensor on Samsung EXYNOS"
+> -	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
+> +	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL && CPU_FREQ
+>  	select CPU_FREQ_TABLE
+>  	help
+>  	  If you say yes here you get support for TMU (Thermal Managment
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
