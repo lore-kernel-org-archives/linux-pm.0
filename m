@@ -1,51 +1,104 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] Thermal: Add Linux/Thermal subsystem info in MAINTAINER file
-Date: Thu, 15 Nov 2012 08:58:27 +0800
-Message-ID: <1352941107.2143.12.camel@rzhang1-mobl4>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
+ forbidden
+Date: Thu, 15 Nov 2012 09:03:44 +0800
+Message-ID: <1352941424.7176.261.camel@yhuang-dev>
+References: <Pine.LNX.4.44L0.1211141608200.1620-100000@iolanthe.rowland.org>
+	 <37583314.JAxoSZqTsM@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>, durga <durgadoss.r@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, Amit Kachhap <amit.kachhap@linaro.org>, jhbird.choi@samsung.com, kuninori.morimoto.gx@renesas.com, eduardo.valentin@ti.com, "hongbo.zhang" <hongbo.zhang@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:7857 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932984Ab2KOBDq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Nov 2012 20:03:46 -0500
+In-Reply-To: <37583314.JAxoSZqTsM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Add Linux/Thermal subsystem info in MAINTAINER file.
+On Thu, 2012-11-15 at 00:10 +0100, Rafael J. Wysocki wrote:
+> On Wednesday, November 14, 2012 04:45:01 PM Alan Stern wrote:
+> > On Wed, 14 Nov 2012, Rafael J. Wysocki wrote:
+> > 
+> > > > This has the side effect that when a driver unbinds, it can't leave the 
+> > > > device in a special low-power state.  The device will always end up in 
+> > > > the generic low-power state supported by the PCI core.
+> > > 
+> > > Well, I'm not sure I'd like that.
+> > > 
+> > > Let's just go back even one step more and think what we'd like to have in
+> > > general terms and then how to implement it. :-)
+> > > 
+> > > Suppose that pci_pm_init() calls pm_runtime_enable() for all devices (in
+> > > addition to what it does currently).  The runtime PM status of each device is
+> > > RPM_SUSPENDED at this point.  Then:
+> > 
+> > Wait a moment.  When the device is detected and initialized, it is in
+> > D0, right?  Currently we don't care much because the device starts out
+> > disabled for runtime PM.  But now you are going to enable it.  While
+> > the device is enabled, its runtime status should match the physical
+> > power level.
+> 
+> OK
 
-All the changes made to the generic thermal layer, or
-platform thermal drivers that make use of the thermal layer,
-should be sent to linux-pm@vger.kernel.org for discussion.
+If my memory were correct, RPM_SUSPENDED just means device stop working,
+but need not be put into low-power state.  So for RPM_ACTIVE, PCI
+devices should be in D0, but for RPM_SUSPENDED, PCI devices can in any
+power state.
 
-And as the maintainer, I will only apply the patches that have been
-sent to linux-pm@vger.kernel.org.
+Best Regards,
+Huang Ying
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- MAINTAINERS |    8 ++++++++
- 1 file changed, 8 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 59203e7..2d8512b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7210,6 +7210,14 @@ L:	linux-xtensa@linux-xtensa.org
- S:	Maintained
- F:	arch/xtensa/
- 
-+THERMAL
-+M:      Zhang Rui <rui.zhang@intel.com>
-+L:      linux-pm@vger.kernel.org
-+T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
-+S:      Supported
-+F:      drivers/thermal/
-+F:      include/linux/thermal.h
-+
- THINKPAD ACPI EXTRAS DRIVER
- M:	Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>
- L:	ibm-acpi-devel@lists.sourceforge.net
--- 
-1.7.9.5
-
+> > This means the initialization routine would have to call
+> > pm_runtime_set_active() before pm_runtime_enable().  If you then wanted
+> > to change the status to RPM_SUSPENDED, you would actually have to put
+> > the device into D3 by calling pm_runtime_suspend() (or maybe
+> > pm_runtime_schedule_suspend() to give drivers some time to get loaded 
+> > and bind).
+> 
+> No, I don't want that.  It may be RPM_ACTIVE all the time as long as the
+> device doesn't have a driver.  Which probably would even make things
+> simpler. :-)
+> 
+> > > (1) We want to keep the current semantics during probe, i.e. the device should
+> > >     (a) be RPM_ACTIVE and (b) have usage_count == (user space usage_count + 1)
+> > >     right before ddi->drv->probe() is executed.
+> > 
+> > In theory the usage_count could be higher and then adjusted back after
+> > the probe is finished, if that would make anything easier.
+> 
+> No, it wouldn't, because of (5).  Suppose that the driver wants to suspend
+> the device directly from .probe() and the user space doesn't mind.  We can't
+> prevent that from being doable.
+> 
+> > > (2) We don't want the driver's PM callbacks to be run before ddi->drv->probe().
+> > >     There's a question if we want the bus type's PM callbacks to be run at
+> > >     that point, but they are not run currently and IMO we shouldn't change
+> > >     that.
+> > 
+> > The device is supposed to be in D0 when it is probed.  Since we are
+> > assuming that initialization is now going to leave it in D3, there's no
+> > choice -- you _have_ to invoke pci_pm_runtime_resume(), which would
+> > invoke the driver's callback, which we don't want.
+> 
+> Let's say the device will stay in D0 after the initialization and then
+> we'll require that it be in D0 if .probe() fails or after .remove().
+> 
+> The only thing we'll need to do before .probe() in that case is to
+> bump up the usage counter and then to bump it down if .probe() fails
+> (and after .remove()).
+> 
+> The only problem we have in that case are buggy drivers that leave
+> devices in, say, D3cold after a failing .probe().  That doesn't
+> seem to be avoidable, though.
+> 
+> Thanks,
+> Rafael
+> 
+> 
 
 
