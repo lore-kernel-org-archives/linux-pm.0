@@ -1,151 +1,42 @@
 From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/1] thermal: Exynos: Add missing dependency
-Date: Thu, 15 Nov 2012 12:16:31 +0530
-Message-ID: <CAK9yfHz2UoTN4PHuqd3yFxKY7F=DGmL450WAK_dKyiyh9uKObw@mail.gmail.com>
-References: <1352875704-2178-1-git-send-email-sachin.kamat@linaro.org>
-	<1352938284.2143.5.camel@rzhang1-mobl4>
-	<CAK44p22wzbTE-u5QcasJhzYa9Ht7e9sNrJ63V2QX2+ZEp=vhSg@mail.gmail.com>
-	<CAK9yfHyU_rPhR=j4QoPM4sPVAEX7kQ6Vhv1OaakfensXKvqNXg@mail.gmail.com>
-	<744357E9AAD1214791ACBA4B0B9092632572FD@SHSMSX101.ccr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH 1/1] thermal: cpu_cooling: Make 'notify_device' static
+Date: Thu, 15 Nov 2012 12:19:44 +0530
+Message-ID: <1352962184-20970-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f46.google.com ([209.85.216.46]:41796 "EHLO
-	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490Ab2KOGqc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Nov 2012 01:46:32 -0500
-Received: by mail-qa0-f46.google.com with SMTP id c11so2428370qad.19
-        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 22:46:31 -0800 (PST)
-In-Reply-To: <744357E9AAD1214791ACBA4B0B9092632572FD@SHSMSX101.ccr.corp.intel.com>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:33638 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932204Ab2KOGzk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Nov 2012 01:55:40 -0500
+Received: by mail-pb0-f46.google.com with SMTP id wy7so947636pbc.19
+        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 22:55:40 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Amit Kachhap <amit.kachhap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "R, Durgadoss" <durgadoss.r@intel.com>, "patches@linaro.org" <patches@linaro.org>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, hongbo.zhang@linaro.com, sachin.kamat@linaro.org, patches@linaro.org
 
-On 15 November 2012 12:15, Zhang, Rui <rui.zhang@intel.com> wrote:
->
->
->> -----Original Message-----
->> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
->> owner@vger.kernel.org] On Behalf Of Sachin Kamat
->> Sent: Thursday, November 15, 2012 2:39 PM
->> To: Amit Kachhap
->> Cc: linux-pm@vger.kernel.org; R, Durgadoss; patches@linaro.org;
->> akpm@linux-foundation.org
->> Subject: Re: [PATCH 1/1] thermal: Exynos: Add missing dependency
->>
->> On 15 November 2012 11:54, Amit Kachhap <amit.kachhap@linaro.org> wrote:
->> > On 15 November 2012 05:41, Zhang Rui <rui.zhang@intel.com> wrote:
->> >> Hi, Sachin,
->> >>
->> >> thanks for catching the problem.
->> >>
->> >> On Wed, 2012-11-14 at 12:18 +0530, Sachin Kamat wrote:
->> >>> CPU_FREQ_TABLE depends on CPU_FREQ. Selecting CPU_FREQ_TABLE
->> without
->> >>> checking for dependencies gives the following compilation warnings:
->> >>> warning: (ARCH_TEGRA_2x_SOC && ARCH_TEGRA_3x_SOC &&
->> UX500_SOC_DB8500
->> >>> && CPU_THERMAL && EXYNOS_THERMAL) selects CPU_FREQ_TABLE which has
->> >>> unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ)
->> >>>
->> >> Amit,
->> >>
->> >> how is exynos driver supposed to work?
->> >> do you want the exynos driver still be loaded without CPU_THERMAL?
->> >> If yes, EXYNOS_THERMAL should not select CPU_FREQ_TABLE.
->> >> If no, EXYNOS_THERMAL should depends on CPU_THERMAL instead of
->> THERMAL.
->> >> and CPU_THERMAL will select CPU_FREQ_TABLE instead.
->> >>
->> >> IMO, either of the above solution will be more proper to fix this
->> >> warning.
->> >
->> > Yes Rui, Currently exynos driver has dependency on CPU_THERMAL. There
->> > is some code-refactoring work needed to remove this dependency.
->> > As of now to fix the warning following changes may be sufficient.
->> > --- a/drivers/thermal/Kconfig
->> > +++ b/drivers/thermal/Kconfig
->> > @@ -50,7 +50,8 @@ config RCAR_THERMAL
->> >
->> >  config EXYNOS_THERMAL
->> >         tristate "Temperature sensor on Samsung EXYNOS"
->> > -       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
->> > +       depends on THERMAL
->>
->> This is not needed as CPU_THERMAL depends on THERMAL.
->>
-> Agreed.
->> > +       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && CPU_THERMAL
->>
->>
->> >         select CPU_FREQ_TABLE
->> This can also be removed as CPU_THERMAL selects it.
->>
-> Agreed.
->
->> I will resend my patch with the above changes.
->
-> No, you don't need to.
-> I'm refactoring drivers/thermal/Kconfig, and I'll send a patch based on this idea.
-> Will send out the patch soon.
+Silences the following sparse warning:
 
-Oops.. sorry just sent it out..
+drivers/thermal/cpu_cooling.c:67:31: warning:
+symbol 'notify_device' was not declared. Should it be static?
 
->
-> Thanks,
-> rui
->
->> >         help
->> >           If you say yes here you get support for TMU (Thermal
->> > Managment
->> >
->> > Thanks,
->> > Amit Daniel
->> >
->> >>
->> >> thanks,
->> >> rui
->> >>
->> >>> Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
->> >>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> >>> ---
->> >>> Build tested using exynos4_defconfig on linux-next tree of 20121114.
->> >>> ---
->> >>>  drivers/thermal/Kconfig |    2 +-
->> >>>  1 files changed, 1 insertions(+), 1 deletions(-)
->> >>>
->> >>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index
->> >>> 266c15e..197b7db 100644
->> >>> --- a/drivers/thermal/Kconfig
->> >>> +++ b/drivers/thermal/Kconfig
->> >>> @@ -50,7 +50,7 @@ config RCAR_THERMAL
->> >>>
->> >>>  config EXYNOS_THERMAL
->> >>>       tristate "Temperature sensor on Samsung EXYNOS"
->> >>> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
->> >>> +     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL &&
->> >>> + CPU_FREQ
->> >>>       select CPU_FREQ_TABLE
->> >>>       help
->> >>>         If you say yes here you get support for TMU (Thermal
->> >>> Managment
->> >>
->> >>
->>
->>
->>
->> --
->> With warm regards,
->> Sachin
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org More majordomo info
->> at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+---
+ drivers/thermal/cpu_cooling.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-
-
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 392d57d..6f94c2c 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -64,7 +64,7 @@ static unsigned int cpufreq_dev_count;
+ 
+ /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+ #define NOTIFY_INVALID NULL
+-struct cpufreq_cooling_device *notify_device;
++static struct cpufreq_cooling_device *notify_device;
+ 
+ /**
+  * get_idr - function to get a unique id.
 -- 
-With warm regards,
-Sachin
+1.7.4.1
+
