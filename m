@@ -1,70 +1,84 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Wed, 14 Nov 2012 19:22:14 -0800
-Message-ID: <20121115032214.GM2548@linux.vnet.ibm.com>
-References: <1352757831-5202-4-git-send-email-jacob.jun.pan@linux.intel.com>
- <20121113211602.GA30150@linux.vnet.ibm.com>
- <20121113133922.47144a50@chromoly>
- <20121113222350.GH2489@linux.vnet.ibm.com>
- <50A2CD77.7000403@linux.intel.com>
- <20121114000259.GK2489@linux.vnet.ibm.com>
- <50A2E116.8000400@linux.intel.com>
- <20121113171450.3657290c@chromoly>
- <20121114013459.GS2489@linux.vnet.ibm.com>
- <50A308FA.40001@linux.intel.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/1] thermal: Exynos: Add missing dependency
+Date: Thu, 15 Nov 2012 08:52:42 +0530
+Message-ID: <CAK9yfHzCmWwaQa79JFoa2Y1Q6-tjdFS+M8vScXwwCTnfgP9nUA@mail.gmail.com>
+References: <1352875704-2178-1-git-send-email-sachin.kamat@linaro.org>
+	<1352938284.2143.5.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e34.co.us.ibm.com ([32.97.110.152]:32953 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423500Ab2KODWV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Nov 2012 22:22:21 -0500
-Received: from /spool/local
-	by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-	Wed, 14 Nov 2012 20:22:21 -0700
-Content-Disposition: inline
-In-Reply-To: <50A308FA.40001@linux.intel.com>
+Received: from mail-vb0-f46.google.com ([209.85.212.46]:40412 "EHLO
+	mail-vb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992461Ab2KODWn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Nov 2012 22:22:43 -0500
+Received: by mail-vb0-f46.google.com with SMTP id ff1so1258074vbb.19
+        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 19:22:42 -0800 (PST)
+In-Reply-To: <1352938284.2143.5.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, durgadoss.r@intel.com, patches@linaro.org, akpm@linux-foundation.org, Amit Daniel Kachhap <amit.kachhap@linaro.org>
 
-On Tue, Nov 13, 2012 at 06:59:06PM -0800, Arjan van de Ven wrote:
-> On 11/13/2012 5:34 PM, Paul E. McKenney wrote:
-> > On Tue, Nov 13, 2012 at 05:14:50PM -0800, Jacob Pan wrote:
-> >> On Tue, 13 Nov 2012 16:08:54 -0800
-> >> Arjan van de Ven <arjan@linux.intel.com> wrote:
-> >>
-> >>>> I think I know, but I feel the need to ask anyway.  Why not tell
-> >>>> RCU about the clamping?  
-> >>>
-> >>> I don't mind telling RCU, but what cannot happen is a bunch of CPU
-> >>> time suddenly getting used (since that is the opposite of what is
-> >>> needed at the specific point in time of going idle)
-> > 
-> > Another round of RCU_FAST_NO_HZ rework, you are asking for?  ;-)
-> 
-> well
-> we can tell you we're about to mwait
-> and we can tell you when we're done being idle.
-> you could just do the actual work at that point, we don't care anymore ;-)
-> just at the start of the mandated idle period we can't afford to have more
-> jitter than we already have (which is more than I'd like, but it's manageable.
-> More jitter means more performance hit, since during the time of the jitter, some cpus
-> are forced idle, e.g. costing performance, without the actual big-step power savings
-> kicking in yet....)
+Hi Zhang,
 
-Fair enough -- but probably best to see what problems arise rather than
-trying to guess too far ahead.  Who knows?  It might "just work".
+Thanks for your review comments.
 
-> > If you are only having the system take 6-millisecond "vacations", probably
-> 
-> it's not all that different from running a while (1) loop for 6 msec inside
-> a kernel thread.... other than the power level of course...
+On 15 November 2012 05:41, Zhang Rui <rui.zhang@intel.com> wrote:
+> Hi, Sachin,
+>
+> thanks for catching the problem.
+>
+> On Wed, 2012-11-14 at 12:18 +0530, Sachin Kamat wrote:
+>> CPU_FREQ_TABLE depends on CPU_FREQ. Selecting CPU_FREQ_TABLE without checking
+>> for dependencies gives the following compilation warnings:
+>> warning: (ARCH_TEGRA_2x_SOC && ARCH_TEGRA_3x_SOC && UX500_SOC_DB8500 &&
+>> CPU_THERMAL && EXYNOS_THERMAL) selects CPU_FREQ_TABLE which has unmet
+>> direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ)
+>>
+> Amit,
+>
+> how is exynos driver supposed to work?
+> do you want the exynos driver still be loaded without CPU_THERMAL?
+> If yes, EXYNOS_THERMAL should not select CPU_FREQ_TABLE.
+> If no, EXYNOS_THERMAL should depends on CPU_THERMAL instead of THERMAL.
+> and CPU_THERMAL will select CPU_FREQ_TABLE instead.
+>
+> IMO, either of the above solution will be more proper to fix this
+> warning.
 
-Well, a while (1) on all CPUs simultaneously, anyway.
+I will discuss with Amit and send an updated patch to fix this.
 
-							Thanx, Paul
 
+>
+> thanks,
+> rui
+>
+>> Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>> ---
+>> Build tested using exynos4_defconfig on linux-next tree of 20121114.
+>> ---
+>>  drivers/thermal/Kconfig |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 266c15e..197b7db 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -50,7 +50,7 @@ config RCAR_THERMAL
+>>
+>>  config EXYNOS_THERMAL
+>>       tristate "Temperature sensor on Samsung EXYNOS"
+>> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
+>> +     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL && CPU_FREQ
+>>       select CPU_FREQ_TABLE
+>>       help
+>>         If you say yes here you get support for TMU (Thermal Managment
+>
+>
+
+
+
+-- 
+With warm regards,
+Sachin
