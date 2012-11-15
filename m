@@ -1,90 +1,53 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [PATCH 1/1] thermal: Exynos: Add missing dependency
-Date: Thu, 15 Nov 2012 11:54:21 +0530
-Message-ID: <CAK44p22wzbTE-u5QcasJhzYa9Ht7e9sNrJ63V2QX2+ZEp=vhSg@mail.gmail.com>
-References: <1352875704-2178-1-git-send-email-sachin.kamat@linaro.org>
-	<1352938284.2143.5.camel@rzhang1-mobl4>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH V5 2/2] Thermal: Add ST-Ericsson DB8500 thermal properties
+ and platform data.
+Date: Thu, 15 Nov 2012 14:37:36 +0800
+Message-ID: <CAJLyvQwhtL3cpb_7Xa25hmQ-Yg4inEF1umaC8rr04A-3x79LAw@mail.gmail.com>
+References: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
+	<1352460548-3494-3-git-send-email-hongbo.zhang@linaro.com>
+	<1352700425.1834.11.camel@rzhang1-mobl4>
+	<CACRpkdb-C-z1bWA2+xbuGt8TKSWRaD2xYUKS4M=KNMO0mOKF2g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:55948 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751345Ab2KOGYW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Nov 2012 01:24:22 -0500
-Received: by mail-oa0-f46.google.com with SMTP id h16so1342113oag.19
-        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 22:24:22 -0800 (PST)
-In-Reply-To: <1352938284.2143.5.camel@rzhang1-mobl4>
+Received: from mail-ie0-f174.google.com ([209.85.223.174]:34005 "EHLO
+	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180Ab2KOGhh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Nov 2012 01:37:37 -0500
+Received: by mail-ie0-f174.google.com with SMTP id k13so1838319iea.19
+        for <linux-pm@vger.kernel.org>; Wed, 14 Nov 2012 22:37:36 -0800 (PST)
+In-Reply-To: <CACRpkdb-C-z1bWA2+xbuGt8TKSWRaD2xYUKS4M=KNMO0mOKF2g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>
-Cc: durgadoss.r@intel.com, patches@linaro.org, akpm@linux-foundation.org
+To: Linus Walleij <linus.walleij@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-On 15 November 2012 05:41, Zhang Rui <rui.zhang@intel.com> wrote:
-> Hi, Sachin,
->
-> thanks for catching the problem.
->
-> On Wed, 2012-11-14 at 12:18 +0530, Sachin Kamat wrote:
->> CPU_FREQ_TABLE depends on CPU_FREQ. Selecting CPU_FREQ_TABLE without checking
->> for dependencies gives the following compilation warnings:
->> warning: (ARCH_TEGRA_2x_SOC && ARCH_TEGRA_3x_SOC && UX500_SOC_DB8500 &&
->> CPU_THERMAL && EXYNOS_THERMAL) selects CPU_FREQ_TABLE which has unmet
->> direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ)
+On 13 November 2012 04:46, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Mon, Nov 12, 2012 at 7:07 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+>> On Fri, 2012-11-09 at 19:29 +0800, hongbo.zhang wrote:
+>>> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+>>>
+>>> This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
+>>> also adds the platform data to support the old fashion.
+>>>
+>>> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+>>> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 >>
-> Amit,
->
-> how is exynos driver supposed to work?
-> do you want the exynos driver still be loaded without CPU_THERMAL?
-> If yes, EXYNOS_THERMAL should not select CPU_FREQ_TABLE.
-> If no, EXYNOS_THERMAL should depends on CPU_THERMAL instead of THERMAL.
-> and CPU_THERMAL will select CPU_FREQ_TABLE instead.
->
-> IMO, either of the above solution will be more proper to fix this
-> warning.
-
-Yes Rui, Currently exynos driver has dependency on CPU_THERMAL. There
-is some code-refactoring work needed to remove this dependency.
-As of now to fix the warning following changes may be sufficient.
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -50,7 +50,8 @@ config RCAR_THERMAL
-
- config EXYNOS_THERMAL
-        tristate "Temperature sensor on Samsung EXYNOS"
--       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
-+       depends on THERMAL
-+       depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && CPU_THERMAL
-        select CPU_FREQ_TABLE
-        help
-          If you say yes here you get support for TMU (Thermal Managment
-
-Thanks,
-Amit Daniel
-
->
-> thanks,
-> rui
->
->> Cc: Amit Daniel Kachhap <amit.kachhap@linaro.org>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> ---
->> Build tested using exynos4_defconfig on linux-next tree of 20121114.
->> ---
->>  drivers/thermal/Kconfig |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
+>> hmmm,
 >>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 266c15e..197b7db 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -50,7 +50,7 @@ config RCAR_THERMAL
->>
->>  config EXYNOS_THERMAL
->>       tristate "Temperature sensor on Samsung EXYNOS"
->> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
->> +     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL && CPU_FREQ
->>       select CPU_FREQ_TABLE
->>       help
->>         If you say yes here you get support for TMU (Thermal Managment
+>> who should take this patch?
+>> I'd like to see ACK from the maintainer of these code before applying
+>> them to thermal tree.
 >
+> I guess it needs to go through Thermal.
 >
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+Thank you Linus Walleij.
+
+Hi Rui, I got it.
+
+> Let's hope it's not creating too much conflict...
+>
+> Yours,
+> Linus Walleij
