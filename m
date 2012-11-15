@@ -1,50 +1,51 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/1] thermal: cpu_cooling: Make 'notify_device' static
-Date: Thu, 15 Nov 2012 15:43:59 +0800
-Message-ID: <1352965439.2080.13.camel@rzhang1-mobl4>
-References: <1352962184-20970-1-git-send-email-sachin.kamat@linaro.org>
+Subject: Re: [PATCH V5 1/2] Thermal: Add ST-Ericsson DB8500 thermal driver.
+Date: Thu, 15 Nov 2012 16:13:38 +0800
+Message-ID: <1352967218.2080.15.camel@rzhang1-mobl4>
+References: <1352460548-3494-1-git-send-email-hongbo.zhang@linaro.com>
+	 <1352460548-3494-2-git-send-email-hongbo.zhang@linaro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:2498 "EHLO mga11.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:50253 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423305Ab2KOHoB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Nov 2012 02:44:01 -0500
-In-Reply-To: <1352962184-20970-1-git-send-email-sachin.kamat@linaro.org>
+	id S2992492Ab2KOINn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Nov 2012 03:13:43 -0500
+In-Reply-To: <1352460548-3494-2-git-send-email-hongbo.zhang@linaro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, hongbo.zhang@linaro.com, patches@linaro.org
+To: "hongbo.zhang" <hongbo.zhang@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, amit.kachhap@linaro.org, patches@linaro.org, linaro-dev@lists.linaro.org, linaro-kernel@lists.linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
 
-On Thu, 2012-11-15 at 12:19 +0530, Sachin Kamat wrote:
-> Silences the following sparse warning:
+On Fri, 2012-11-09 at 19:29 +0800, hongbo.zhang wrote:
+> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
 > 
-> drivers/thermal/cpu_cooling.c:67:31: warning:
-> symbol 'notify_device' was not declared. Should it be static?
+> This driver is based on the thermal management framework in thermal_sys.c. A
+> thermal zone device is created with the trip points to which cooling devices
+> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
+> clipped down to cool the CPU, and other cooling devices can be added and bound
+> to the trip points dynamically.  The platform specific PRCMU interrupts are
+> used to active thermal update when trip points are reached.
 > 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Francesco Lavra <francescolavra.fl@gmail.com>
 
-applied to therml-next.
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index e1cb6bd..54c8fd0 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -31,6 +31,26 @@ config CPU_THERMAL
+>  	  and not the ACPI interface.
+>  	  If you want this support, you should say Y here.
+>  
+> +config DB8500_THERMAL
+> +	bool "DB8500 thermal management"
+
+why is this bool?
 
 thanks,
 rui
-> ---
->  drivers/thermal/cpu_cooling.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 392d57d..6f94c2c 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -64,7 +64,7 @@ static unsigned int cpufreq_dev_count;
->  
->  /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
->  #define NOTIFY_INVALID NULL
-> -struct cpufreq_cooling_device *notify_device;
-> +static struct cpufreq_cooling_device *notify_device;
->  
->  /**
->   * get_idr - function to get a unique id.
 
 
