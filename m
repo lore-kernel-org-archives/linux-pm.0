@@ -1,13 +1,14 @@
 From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v8 0/3] Runtime Interpreted Power Sequences
-Date: Fri, 16 Nov 2012 10:08:16 -0700
-Message-ID: <50A67300.2000001@wwwdotorg.org>
+Subject: Re: [PATCH v8 3/3] Take maintainership of power sequences
+Date: Fri, 16 Nov 2012 10:09:19 -0700
+Message-ID: <50A6733F.7020101@wwwdotorg.org>
 References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
+ <1353047903-14363-4-git-send-email-acourbot@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <1353047903-14363-1-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1353047903-14363-4-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
  <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
@@ -23,15 +24,16 @@ Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fb
 List-Id: linux-pm@vger.kernel.org
 
 On 11/15/2012 11:38 PM, Alexandre Courbot wrote:
-> Hopefully the final series before the feature gets merged. Anton Vorontsov
-> kindly accepted to take it into his tree, so this series is mostly a call for
-> acks, tests and reviews notices before the merge window for 3.8 opens. If you
-> are interested in seeing this feature, please add your name.
-> 
-> This series also adds an entry for the subsystem into MAINTAINERS, setting me as
-> the person in charge.
+> Add entry for power sequences into MAINTAINERS with all the needed
+> contact and SCM info.
 
-The series,
-Tested-by: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Acked-by: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-On Ventana.
+> diff --git a/MAINTAINERS b/MAINTAINERS
+
+> +POWER SEQUENCES
+> +M:	Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> +S:	Maintained
+
+Given you're presumably working on this on NVIDIA's time, perhaps make
+that "Supported" not "Maintained"?
