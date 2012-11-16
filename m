@@ -1,200 +1,114 @@
-From: Mark Rutland <mark.rutland@arm.com>
+From: Anton Vorontsov <cbouatmailru@gmail.com>
 Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Date: Fri, 16 Nov 2012 10:35:11 +0000
-Message-ID: <20121116103511.GB16084@e106331-lin.cambridge.arm.com>
+Date: Fri, 16 Nov 2012 04:25:41 -0800
+Message-ID: <20121116122540.GA2198@lizard>
 References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
  <1353047903-14363-2-git-send-email-acourbot@nvidia.com>
+ <20121116072642.GA22291@lizard>
+ <50A60AF6.9080509@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:45674 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169Ab2KPKfP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Nov 2012 05:35:15 -0500
-In-Reply-To: <1353047903-14363-2-git-send-email-acourbot@nvidia.com>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:33690 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817Ab2KPM2u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Nov 2012 07:28:50 -0500
 Content-Disposition: inline
+In-Reply-To: <50A60AF6.9080509@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Alexandre Courbot <gnurou@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Leela Krishna Amudala <l.krishna@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: Alex Courbot <acourbot@nvidia.com>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
 
-On Fri, Nov 16, 2012 at 06:38:21AM +0000, Alexandre Courbot wrote:
-> Some device drivers (e.g. panel or backlights) need to follow precise
-> sequences for powering on and off, involving GPIOs, regulators, PWMs
-> with a precise powering order and delays to respect between steps.
-> These sequences are device-specific, and do not belong to a particular
-> driver - therefore they have been performed by board-specific hook
-> functions to far.
+On Fri, Nov 16, 2012 at 06:44:22PM +0900, Alex Courbot wrote:
+> On 11/16/2012 04:26 PM, Anton Vorontsov wrote:
+> >>+#include "power_seq_delay.c"
+> >>+#include "power_seq_regulator.c"
+> >>+#include "power_seq_pwm.c"
+> >>+#include "power_seq_gpio.c"
+> >
+> >This is odd, although I remember you already explained why you have to
+> >include the .c files, instead of linking them separately. But I forgot the
+> >reason. :) I think this deserves a comment in the code.
 > 
-> With the advent of the device tree and of ARM kernels that are not
-> board-tied, we cannot rely on these board-specific hooks anymore but
-> need a way to implement these sequences in a portable manner. This patch
-> introduces a simple interpreter that can execute such power sequences
-> encoded either as platform data or within the device tree.
-
-Given there are several ARM platforms that may have an interest in this, please
-consider posting this to the ARM mailing list:
-linux-arm-kernel@lists.infradead.org.
-
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> Reviewed-by: Stephen Warren <swarren@wwwdotorg.org>
-> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  .../devicetree/bindings/power/power_seq.txt        | 121 +++++++
->  Documentation/power/power_seq.txt                  | 253 ++++++++++++++
->  drivers/power/Kconfig                              |   1 +
->  drivers/power/Makefile                             |   1 +
->  drivers/power/power_seq/Kconfig                    |   2 +
->  drivers/power/power_seq/Makefile                   |   1 +
->  drivers/power/power_seq/power_seq.c                | 376 +++++++++++++++++++++
->  drivers/power/power_seq/power_seq_delay.c          |  65 ++++
->  drivers/power/power_seq/power_seq_gpio.c           |  94 ++++++
->  drivers/power/power_seq/power_seq_pwm.c            |  82 +++++
->  drivers/power/power_seq/power_seq_regulator.c      |  83 +++++
->  include/linux/power_seq.h                          | 203 +++++++++++
->  12 files changed, 1282 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/power_seq.txt
->  create mode 100644 Documentation/power/power_seq.txt
->  create mode 100644 drivers/power/power_seq/Kconfig
->  create mode 100644 drivers/power/power_seq/Makefile
->  create mode 100644 drivers/power/power_seq/power_seq.c
->  create mode 100644 drivers/power/power_seq/power_seq_delay.c
->  create mode 100644 drivers/power/power_seq/power_seq_gpio.c
->  create mode 100644 drivers/power/power_seq/power_seq_pwm.c
->  create mode 100644 drivers/power/power_seq/power_seq_regulator.c
->  create mode 100644 include/linux/power_seq.h
+> This is because of the table right after these includes:
 > 
-> diff --git a/Documentation/devicetree/bindings/power/power_seq.txt b/Documentation/devicetree/bindings/power/power_seq.txt
-> new file mode 100644
-> index 0000000..7880a6c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/power_seq.txt
-> @@ -0,0 +1,121 @@
-> +Runtime Interpreted Power Sequences
-> +===================================
-> +
-> +Power sequences are sequential descriptions of actions to be performed on
-> +power-related resources. Having these descriptions in a well-defined data format
-> +allows us to take much of the board- or device- specific power control code out
-> +of the kernel and place it into the device tree instead, making kernels less
-> +board-dependant.
-> +
-> +A device typically makes use of multiple power sequences, for different purposes
-> +such as powering on and off. All the power sequences of a given device are
-> +grouped into a set. In the device tree, this set is a sub-node of the device
-> +node named "power-sequences".
-> +
-> +Power Sequences Structure
-> +-------------------------
-> +Every device that makes use of power sequences must have a "power-sequences"
-> +node into which individual power sequences are declared as sub-nodes. The name
-> +of the node becomes the name of the sequence within the power sequences
-> +framework.
-> +
-> +Similarly, each power sequence declares its steps as sub-nodes of itself. Steps
-> +must be named sequentially, with the first step named step0, the second step1,
-> +etc. Failure to follow this rule will result in a parsing error.
+> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
+> 	[POWER_SEQ_DELAY] = POWER_SEQ_DELAY_TYPE,
+> 	[POWER_SEQ_REGULATOR] = POWER_SEQ_REGULATOR_TYPE,
+> 	[POWER_SEQ_PWM] = POWER_SEQ_PWM_TYPE,
+> 	[POWER_SEQ_GPIO] = POWER_SEQ_GPIO_TYPE,
+> };
+> 
+> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
+> simplest way to initialize this table, and the code inside these C
+> files is short and simple enough that I thought I would be forgiven.
+> :)
 
-Could we not encode the step number in the unit-address? i.e. step@N rather than
-stepN.
+I think in the header file you could just write
 
-If we ever add additional (non step) data to sequences it might make it easier
-to filter, as we only reserve one name rather than a class of names.
+extern ..... power_seq_delay_type;
+#ifndef ...
+#define power_seq_delay_type NULL
+#endif
 
-> +
-> +Power Sequences Steps
-> +---------------------
-> +Steps of a sequence describe an action to be performed on a resource. They
-> +always include a "type" property which indicates what kind of resource this
-> +step works on. Depending on the resource type, additional properties are defined
-> +to control the action to be performed.
-> +
-> +"delay" type required properties:
-> +  - delay: delay to wait (in microseconds)
-> +
-> +"regulator" type required properties:
-> +  - id: name of the regulator to use.
-> +  - enable / disable: one of these two empty properties must be present to
-> +                      enable or disable the resource
-> +
-> +"pwm" type required properties:
-> +  - id: name of the PWM to use.
-> +  - enable / disable: one of these two empty properties must be present to
-> +                      enable or disable the resource
-> +
-> +"gpio" type required properties:
-> +  - gpio: phandle of the GPIO to use.
-> +  - value: value this GPIO should take. Must be 0 or 1.
+And then, in the .c file:
 
-Is there any reason for id to be a name rather than a phandle? It seems
-inconsistent with the gpio case.
+static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
+	[POWER_SEQ_DELAY] = power_seq_delay_type,
+	...
+};
 
-I also see from the example below that the gpio property is not just a phandle,
-as it has the gpio-specifier appended. Is there a better way of describing this
-format in the documentation?
+And then you can stop including the .c files directly, and link them
+instead.
 
-> +Example
-> +-------
-> +Here are example sequences declared within a backlight device that use all the
-> +supported resources types:
-> +
-> +       backlight {
-> +               compatible = "pwm-backlight";
-> +               ...
-> +
-> +               /* resources used by the power sequences */
-> +               pwms = <&pwm 2 5000000>;
-> +               pwm-names = "backlight";
-> +               power-supply = <&backlight_reg>;
-> +
-> +               power-sequences {
-> +                       power-on {
-> +                               step0 {
-> +                                       type = "regulator";
-> +                                       id = "power";
-> +                                       enable;
-> +                               };
-> +                               step1 {
-> +                                       type = "delay";
-> +                                       delay = <10000>;
-> +                               };
-> +                               step2 {
-> +                                       type = "pwm";
-> +                                       id = "backlight";
-> +                                       enable;
-> +                               };
-> +                               step3 {
-> +                                       type = "gpio";
-> +                                       gpio = <&gpio 28 0>;
-> +                                       value = <1>;
-> +                               };
-> +                       };
-> +
-> +                       power-off {
-> +                               step0 {
-> +                                       type = "gpio";
-> +                                       gpio = <&gpio 28 0>;
-> +                                       value = <0>;
-> +                               };
-> +                               step1 {
-> +                                       type = "pwm";
-> +                                       id = "backlight";
-> +                                       disable;
-> +                               };
-> +                               step2 {
-> +                                       type = "delay";
-> +                                       delay = <10000>;
-> +                               };
-> +                               step3 {
-> +                                       type = "regulator";
-> +                                       id = "power";
-> +                                       disable;
-> +                               };
-> +                       };
-> +               };
-> +       };
- 
+> At first everything was in power_seq.c and it was fine, then I
+> thought it would be better to move resource support code into their
+> own filesm and now everybody is asking. :P
+> 
+> But yeah, maybe it would be even better to not stop halfway and use
+> dynamic linking.
+> 
+> Comment added for the time being. ;)
+> 
+> >>+static int of_power_seq_parse_step(struct device *dev,
+> >>+				   struct device_node *node,
+> >>+				   struct power_seq *seq,
+> >>+				   unsigned int step_nbr,
+> >>+				   struct list_head *resources)
+> >>+{
+> >>+	struct power_seq_step *step = &seq->steps[step_nbr];
+> >>+	struct power_seq_resource res, *res2;
+> >>+	const char *type;
+> >>+	int i, err;
+> >
+> >nit: one variable declaration per line.
+> 
+> Fair enough - but is that a convention? checkpatch.pl was happy with these.
+
+It's not a rule, although there is a small passage about it in CodingStyle
+file when it describes commenting style. Though, some folks choose to
+ignore this suggestion quite frequently, especially if variables have no
+comments.
+
+Often, the multiple declarations per line are used to hide ugly functions
+w/ tons of variables, or just to confuse the reader for the fun of it.
+
+There are exceptions, of course. E.g.
+
+	int i, j, k; /* Our iterators. */
+
+Is perfectly fine.
+
+But
+	int i, err;
+
+At least to me seems weird, this stuff is logically disjunct.
+
+Only human can truly differentiate when the stuff "looks better" together
+or apart, so that's why checkpatch doesn't complain. Personally, I use
+this rule of thumb: when in doubt, use just one declaration per line, it
+is always OK. :)
+
 Thanks,
-Mark
-
+Anton.
