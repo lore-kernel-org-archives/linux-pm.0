@@ -1,70 +1,61 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Date: Fri, 16 Nov 2012 18:44:22 +0900
-Message-ID: <50A60AF6.9080509@nvidia.com>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com> <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116072642.GA22291@lizard>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and forbidden
+Date: Fri, 16 Nov 2012 11:10:59 +0100
+Message-ID: <4327787.yACWT6Q3EK@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1211141608200.1620-100000@iolanthe.rowland.org> <1965322.pSDJypqR3K@vostro.rjw.lan> <1353029225.7176.314.camel@yhuang-dev>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate04.nvidia.com ([216.228.121.35]:15112 "EHLO
-	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799Ab2KPJob (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Nov 2012 04:44:31 -0500
-In-Reply-To: <20121116072642.GA22291@lizard>
+Received: from ogre.sisk.pl ([193.178.161.156]:48300 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751029Ab2KPKGh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Nov 2012 05:06:37 -0500
+In-Reply-To: <1353029225.7176.314.camel@yhuang-dev>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 11/16/2012 04:26 PM, Anton Vorontsov wrote:
->> +#include "power_seq_delay.c"
->> +#include "power_seq_regulator.c"
->> +#include "power_seq_pwm.c"
->> +#include "power_seq_gpio.c"
->
-> This is odd, although I remember you already explained why you have to
-> include the .c files, instead of linking them separately. But I forgot the
-> reason. :) I think this deserves a comment in the code.
+On Friday, November 16, 2012 09:27:05 AM Huang Ying wrote:
+> On Fri, 2012-11-16 at 02:29 +0100, Rafael J. Wysocki wrote:
+> > On Friday, November 16, 2012 08:54:56 AM Huang Ying wrote:
+> > > On Fri, 2012-11-16 at 01:55 +0100, Rafael J. Wysocki wrote:
+> > > > On Friday, November 16, 2012 01:44:00 AM Rafael J. Wysocki wrote:
+> > > > > On Friday, November 16, 2012 08:36:14 AM Huang Ying wrote:
+> > > > > > On Thu, 2012-11-15 at 10:51 +0100, Rafael J. Wysocki wrote:
+> > > > 
+> > > > [...]
+> > > > 
+> > > > > > 
+> > > > > > For this situation, if user "echo auto > .../power/control" for the
+> > > > > > device, the runtime PM callbacks of device will be called.  I think that
+> > > > > > is not intended.  So I think it is better to use some kind of flag or
+> > > > > > state for that.
+> > > > > 
+> > > > > I'm not sure what situation exactly you have in mind.  Care to give an
+> > > > > exact scenario?
+> > > > 
+> > > > Ah, I see.  When we've just called drv->remove(), there is a window in
+> > > > which user space may cause the driver's runtime PM callbacks to be
+> > > > executed by changing its attribute to "auto".
+> > > > 
+> > > > So perhaps we should check pci_dev->driver rather than pci_dev->dev.driver
+> > > > in the runtime PM callbacks?  With a few more changes that should allow us
+> > > > to close that race.
+> > > 
+> > > Yes.  And I think, with pci_dev->driver (after some changes suggested by
+> > > Alan), we need not to use pm_runtime_get/put_skip_callbacks().
+> > 
+> > Good.  Can you please prepare a patch, then? :-)
+> 
+> Sure.
 
-This is because of the table right after these includes:
+Cool, thanks!
 
-static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
-	[POWER_SEQ_DELAY] = POWER_SEQ_DELAY_TYPE,
-	[POWER_SEQ_REGULATOR] = POWER_SEQ_REGULATOR_TYPE,
-	[POWER_SEQ_PWM] = POWER_SEQ_PWM_TYPE,
-	[POWER_SEQ_GPIO] = POWER_SEQ_GPIO_TYPE,
-};
-
-The POWER_SEQ_*_TYPE macros are defined in the C files. It's the 
-simplest way to initialize this table, and the code inside these C files 
-is short and simple enough that I thought I would be forgiven. :)
-
-At first everything was in power_seq.c and it was fine, then I thought 
-it would be better to move resource support code into their own filesm 
-and now everybody is asking. :P
-
-But yeah, maybe it would be even better to not stop halfway and use 
-dynamic linking.
-
-Comment added for the time being. ;)
-
->> +static int of_power_seq_parse_step(struct device *dev,
->> +				   struct device_node *node,
->> +				   struct power_seq *seq,
->> +				   unsigned int step_nbr,
->> +				   struct list_head *resources)
->> +{
->> +	struct power_seq_step *step = &seq->steps[step_nbr];
->> +	struct power_seq_resource res, *res2;
->> +	const char *type;
->> +	int i, err;
->
-> nit: one variable declaration per line.
-
-Fair enough - but is that a convention? checkpatch.pl was happy with these.
-
-Thanks,
-Alex.
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
