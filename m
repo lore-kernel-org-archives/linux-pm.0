@@ -1,144 +1,60 @@
-From: Huang Ying <ying.huang@intel.com>
-Subject: Re: [BUGFIX] PM: Fix active child counting when disabled and
- forbidden
-Date: Fri, 16 Nov 2012 11:11:00 +0800
-Message-ID: <1353035460.7176.321.camel@yhuang-dev>
-References: <Pine.LNX.4.44L0.1211141608200.1620-100000@iolanthe.rowland.org>
-	 <37583314.JAxoSZqTsM@vostro.rjw.lan> <1352941424.7176.261.camel@yhuang-dev>
-	 <50117675.OVEdDFPCp3@vostro.rjw.lan>
+From: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v8 0/3] Runtime Interpreted Power Sequences
+Date: Fri, 16 Nov 2012 15:38:20 +0900
+Message-ID: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <50117675.OVEdDFPCp3@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2012-11-15 at 10:51 +0100, Rafael J. Wysocki wrote:
-> On Thursday, November 15, 2012 09:03:44 AM Huang Ying wrote:
-> > On Thu, 2012-11-15 at 00:10 +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday, November 14, 2012 04:45:01 PM Alan Stern wrote:
-> > > > On Wed, 14 Nov 2012, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > > This has the side effect that when a driver unbinds, it can't leave the 
-> > > > > > device in a special low-power state.  The device will always end up in 
-> > > > > > the generic low-power state supported by the PCI core.
-> > > > > 
-> > > > > Well, I'm not sure I'd like that.
-> > > > > 
-> > > > > Let's just go back even one step more and think what we'd like to have in
-> > > > > general terms and then how to implement it. :-)
-> > > > > 
-> > > > > Suppose that pci_pm_init() calls pm_runtime_enable() for all devices (in
-> > > > > addition to what it does currently).  The runtime PM status of each device is
-> > > > > RPM_SUSPENDED at this point.  Then:
-> > > > 
-> > > > Wait a moment.  When the device is detected and initialized, it is in
-> > > > D0, right?  Currently we don't care much because the device starts out
-> > > > disabled for runtime PM.  But now you are going to enable it.  While
-> > > > the device is enabled, its runtime status should match the physical
-> > > > power level.
-> > > 
-> > > OK
-> > 
-> > If my memory were correct, RPM_SUSPENDED just means device stop working,
-> > but need not be put into low-power state.  So for RPM_ACTIVE, PCI
-> > devices should be in D0, but for RPM_SUSPENDED, PCI devices can in any
-> > power state.
-> 
-> Yes, that's correct and I was wrong when I thought we could require the
-> status to be RPM_ACTIVE all the time when there's no driver, because that
-> would prevent parents from being suspended.  And we want them to be able to
-> suspend for driverless children, _unless_ user space has its attribute set
-> to "on" (i.e. the default).
-> 
-> So it looks like what we want to do is:
-> 
-> (1) Enable runtime PM in pci_pm_init() and set the status to RPM_ACTIVE right
->     before, so that it is in agreement with the pm_runtime_forbid() we do in
->     there.
-> 
-> (2) If user space switches its attribute to "off" later, but before any
->     drivers are probed, we want the status to switch to RPM_SUSPENDED
->     _without_ actually changing the devices power state.  For that,
->     I think, we can make the PCI bus type's runtime PM callback ignore
->     devices without drivers (i.e. return 0 for them).
-> 
-> (3) When local_pci_probe() starts, after we've resumed the parent,
->     the device will be in D0 (it may be D0-uninitialized, though).
+Hopefully the final series before the feature gets merged. Anton Vorontsov
+kindly accepted to take it into his tree, so this series is mostly a call for
+acks, tests and reviews notices before the merge window for 3.8 opens. If you
+are interested in seeing this feature, please add your name.
 
-But the pci_dev->current_state may be PCI_UNKNOWN, although the real
-state should be D0, because of commit:
-2449e06a5696b7af1c8a369b04c97f3b139cf3bb.
+This series also adds an entry for the subsystem into MAINTAINERS, setting me as
+the person in charge.
 
-Best Regards,
-Huang Ying
+Changes from v7:
+- fix bug reported by Tony Prisk
+- add MAINTAINERS entry
 
->     If the user space's attribute is "on" at this point, the parent's
->     resume doesn't change anything.  If it is "auto", the parent's
->     resume may actually transition the device, although its status
->     will still be RPM_SUSPENDED.  For consistency _and_ compatibility
->     with the current code, the driver's .probe() routine needs to see
->     the device RPM_ACTIVE and usage_count incremented, but we don't
->     want to run its PM callbacks _before_ .probe() runs.  For that
->     to work, I think, we can do something like pm_runtime_get_skip_callbacks(),
->     treating the device as though it had the power.no_callbacks flag set,
->     right before calling ddi->drv->probe().
-> 
->     If the device has been RPM_ACTIVE at that point (i.e. user space has
->     had its attribute set to "on") it will just bump up usage_count (which
->     is what we want).  If the device has been RPM_SUSPENDED, it will
->     bump up usage_count _and_ change the status to RPM_ACTIVE without
->     executing any callbacks (the device is in D0 anyway, right?), which
->     is what we want too.
-> 
-> (4) If ddi->drv->probe() succeeds, we don't want to change anything, so
->     as not to confuse the driver, which is now in control of the device.
-> 
-> (5) If ddi->drv->probe() fails, we need to restore the situation from
->     before calling local_pci_probe(), but we want the pm_runtime_put(parent)
->     at the end of it to actually suspend the parent if user space has
->     its attribute (for the child!) set to "auto".
-> 
->     Assume that the driver is not buggy and the failing ddi->drv->probe()
->     leaves the device in the same configuration as it's received it in.
->     Then, the device is RPM_ACTIVE and in D0 (which may be uninitialized).
->     For the parent's suspend to work, we need to transition it to
->     RPM_SUSPENDED, but again we don't want the driver's PM callbacks to
->     run at this point.  Moreover, we don't want the PCI bus type's
->     callbacks to run at this point, because dev->driver is still set.
->     So again, doing something like pm_runtime_put_skip_callbacks(),
->     treating the device as though it had power.no_callbacks set, seems
->     to be appropriate.
->    
->     Namely, if the user space's attribute is "on", it will just drop
->     usage_count by 1, which is what we want in that case.  If the user
->     space's attribute is "auto", on the other hand, it will drop
->     usage_count by 1 and change the status to RPM_SUSPENDED without
->     running callbacks, which again is what we want.
->     
-> (6) In drv->remove() the driver is supposed to bump up usage_count by 1,
->     so as to restore the situation from before its .probe() routine
->     was called.  It also should leave the device as RPM_ACTIVE, because
->     that's what it's got in .probe().  Then, after drv->remove exits,
->     (and also if drv was NULL to start with), we want to drop usage_count
->     by 1.  Moreover, if the user space's attribute is "on", we don't
->     want anything more to happen, _but_ if that's "auto", we want to
->     suspend the parent.
-> 
->     Note that dev->driver is still not NULL at this point (although
->     pci_dev->driver is!) so again we can't run the PCI bus type's callbacks.
->     It looks like, then, what we want to do here is
->     pm_runtime_put_skip_callbacks() again, because if the user space's
->     attribute is "on", it will just drop usage_count by 1, which is what
->     we want, and if that's "auto", it will additionally change the status
->     to RPM_SUSPENDED (without executing callbacks, which we want) _and_
->     it will queue up the parent's suspend (which, again, is what we want).
-> 
-> Did I miss anything?
-> 
-> Rafael
-> 
-> 
+Alexandre Courbot (3):
+  Runtime Interpreted Power Sequences
+  pwm_backlight: use power sequences
+  Take maintainership of power sequences
+
+ .../devicetree/bindings/power/power_seq.txt        | 121 +++++++
+ .../bindings/video/backlight/pwm-backlight.txt     |  63 +++-
+ Documentation/power/power_seq.txt                  | 253 ++++++++++++++
+ MAINTAINERS                                        |  10 +
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/power_seq/Kconfig                    |   2 +
+ drivers/power/power_seq/Makefile                   |   1 +
+ drivers/power/power_seq/power_seq.c                | 376 +++++++++++++++++++++
+ drivers/power/power_seq/power_seq_delay.c          |  65 ++++
+ drivers/power/power_seq/power_seq_gpio.c           |  94 ++++++
+ drivers/power/power_seq/power_seq_pwm.c            |  82 +++++
+ drivers/power/power_seq/power_seq_regulator.c      |  83 +++++
+ drivers/video/backlight/Kconfig                    |   1 +
+ drivers/video/backlight/pwm_bl.c                   | 160 +++++++--
+ include/linux/power_seq.h                          | 203 +++++++++++
+ include/linux/pwm_backlight.h                      |  18 +-
+ 17 files changed, 1494 insertions(+), 40 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/power_seq.txt
+ create mode 100644 Documentation/power/power_seq.txt
+ create mode 100644 drivers/power/power_seq/Kconfig
+ create mode 100644 drivers/power/power_seq/Makefile
+ create mode 100644 drivers/power/power_seq/power_seq.c
+ create mode 100644 drivers/power/power_seq/power_seq_delay.c
+ create mode 100644 drivers/power/power_seq/power_seq_gpio.c
+ create mode 100644 drivers/power/power_seq/power_seq_pwm.c
+ create mode 100644 drivers/power/power_seq/power_seq_regulator.c
+ create mode 100644 include/linux/power_seq.h
+
+-- 
+1.8.0
