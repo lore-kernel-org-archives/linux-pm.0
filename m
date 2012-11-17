@@ -1,81 +1,341 @@
-From: Alexandre Courbot <acourbot@nvidia.com>
-Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Date: Sat, 17 Nov 2012 19:12:45 +0900
-Message-ID: <CAAVeFuJ28=YFOx1Uvq+B33JQW2UxDYx2J8igUnVCbTEO0V-KKg@mail.gmail.com>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116072642.GA22291@lizard>
- <50A60AF6.9080509@nvidia.com> <20121116122540.GA2198@lizard>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121116122540.GA2198@lizard>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Durgadoss R <durgadoss.r@intel.com>
+Subject: [RFC PATCH 1/7] Thermal: Create sensor level APIs
+Date: Sat, 17 Nov 2012 16:15:52 +0530
+Message-ID: <1353149158-19102-2-git-send-email-durgadoss.r@intel.com>
+References: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:25300 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753774Ab2KQKtX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 17 Nov 2012 05:49:23 -0500
+In-Reply-To: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc: wni@nvidia.com, eduardo.valentin@ti.com, amit.kachhap@linaro.org, hongbo.zhang@linaro.org, sachin.kamat@linaro.org, Durgadoss R <durgadoss.r@intel.com>
 
-On Fri, Nov 16, 2012 at 9:25 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
->> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
->> simplest way to initialize this table, and the code inside these C
->> files is short and simple enough that I thought I would be forgiven.
->> :)
->
-> I think in the header file you could just write
->
-> extern ..... power_seq_delay_type;
-> #ifndef ...
-> #define power_seq_delay_type NULL
-> #endif
->
-> And then, in the .c file:
->
-> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
->         [POWER_SEQ_DELAY] = power_seq_delay_type,
->         ...
-> };
->
-> And then you can stop including the .c files directly, and link them
-> instead.
+This patch creates sensor level APIs, in the
+generic thermal framework. With this, thermal
+sensor drivers can register/unregister themselves
+with the thermal framework, and thus can participate
+in platform thermal management.
 
-I have done something similar, but that avoids exporting resource ops
-into the header file. I am still not satisfied with it though - I'd
-rather have one init function per resource file that changes the
-pointer of the ops table from NULL to its own set of functions. That
-way the core could live without knowing anything about the different
-resources, and that would be nicer. Unfortunately modules only support
-one init function, so this is not doable here.
+Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+---
+ drivers/thermal/thermal_sys.c |  212 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |   27 ++++++
+ 2 files changed, 239 insertions(+)
 
->> >nit: one variable declaration per line.
->>
->> Fair enough - but is that a convention? checkpatch.pl was happy with these.
->
-> It's not a rule, although there is a small passage about it in CodingStyle
-> file when it describes commenting style. Though, some folks choose to
-> ignore this suggestion quite frequently, especially if variables have no
-> comments.
->
-> Often, the multiple declarations per line are used to hide ugly functions
-> w/ tons of variables, or just to confuse the reader for the fun of it.
->
-> There are exceptions, of course. E.g.
->
->         int i, j, k; /* Our iterators. */
->
-> Is perfectly fine.
->
-> But
->         int i, err;
->
-> At least to me seems weird, this stuff is logically disjunct.
->
-> Only human can truly differentiate when the stuff "looks better" together
-> or apart, so that's why checkpatch doesn't complain. Personally, I use
-> this rule of thumb: when in doubt, use just one declaration per line, it
-> is always OK. :)
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 8f0f37b..e726c8b 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -45,13 +45,16 @@ MODULE_LICENSE("GPL");
+ 
+ static DEFINE_IDR(thermal_tz_idr);
+ static DEFINE_IDR(thermal_cdev_idr);
++static DEFINE_IDR(thermal_sensor_idr);
+ static DEFINE_MUTEX(thermal_idr_lock);
+ 
+ static LIST_HEAD(thermal_tz_list);
++static LIST_HEAD(thermal_sensor_list);
+ static LIST_HEAD(thermal_cdev_list);
+ static LIST_HEAD(thermal_governor_list);
+ 
+ static DEFINE_MUTEX(thermal_list_lock);
++static DEFINE_MUTEX(ts_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
+ 
+ static struct thermal_governor *__find_governor(const char *name)
+@@ -421,6 +424,66 @@ static void thermal_zone_device_check(struct work_struct *work)
+ #define to_thermal_zone(_dev) \
+ 	container_of(_dev, struct thermal_zone_device, device)
+ 
++#define to_thermal_sensor(_dev) \
++	container_of(_dev, struct thermal_sensor, device)
++
++static ssize_t
++sensor_name_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct thermal_sensor *ts = to_thermal_sensor(dev);
++
++	return sprintf(buf, "%s\n", ts->name);
++}
++
++static ssize_t
++sensor_temp_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int ret;
++	long val;
++	struct thermal_sensor *ts = to_thermal_sensor(dev);
++
++	ret = ts->ops->get_temp(ts, &val);
++
++	return ret ? ret : sprintf(buf, "%ld\n", val);
++}
++
++static ssize_t
++threshold_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	int indx, ret;
++	long val;
++	struct thermal_sensor *ts = to_thermal_sensor(dev);
++
++	if (!sscanf(attr->attr.name, "threshold%d", &indx))
++		return -EINVAL;
++
++	ret = ts->ops->get_threshold(ts, indx, &val);
++
++	return ret ? ret : sprintf(buf, "%ld\n", val);
++}
++
++static ssize_t
++threshold_store(struct device *dev, struct device_attribute *attr,
++				   const char *buf, size_t count)
++{
++	int indx, ret;
++	long val;
++	struct thermal_sensor *ts = to_thermal_sensor(dev);
++
++	if (!ts->ops->set_threshold)
++		return -EPERM;
++
++	if (!sscanf(attr->attr.name, "threshold%d", &indx))
++		return -EINVAL;
++
++	if (kstrtol(buf, 10, &val))
++		return -EINVAL;
++
++	ret = ts->ops->set_threshold(ts, indx, val);
++
++	return ret ? ret : count;
++}
++
+ static ssize_t
+ type_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+@@ -705,6 +768,10 @@ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+ 
++/* Thermal sensor attributes */
++static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
++static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
++
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
+@@ -1491,6 +1558,151 @@ static void remove_trip_attrs(struct thermal_zone_device *tz)
+ }
+ 
+ /**
++ * thermal_sensor_register - register a new thermal sensor
++ * @name:	name of the thermal sensor
++ * @ops:	standard thermal sensor callbacks
++ * @devdata:	private device data
++ */
++struct thermal_sensor *thermal_sensor_register(const char *name,
++			struct thermal_sensor_ops *ops, void *devdata)
++{
++	struct thermal_sensor *ts;
++	int ret;
++
++	if (!name || (name && strlen(name) >= THERMAL_NAME_LENGTH))
++		return ERR_PTR(-EINVAL);
++
++	if (!ops || !ops->get_temp)
++		return ERR_PTR(-EINVAL);
++
++	ts = kzalloc(sizeof(*ts), GFP_KERNEL);
++	if (!ts)
++		return ERR_PTR(-ENOMEM);
++
++	idr_init(&ts->idr);
++	ret = get_idr(&thermal_sensor_idr, &thermal_idr_lock, &ts->id);
++	if (ret)
++		goto exit_free;
++
++	strcpy(ts->name, name);
++	ts->ops = ops;
++	ts->devdata = devdata;
++	ts->device.class = &thermal_class;
++
++	dev_set_name(&ts->device, "sensor%d", ts->id);
++	ret = device_register(&ts->device);
++	if (ret)
++		goto exit_idr;
++
++	ret = device_create_file(&ts->device, &dev_attr_sensor_name);
++	if (ret)
++		goto exit_unregister;
++
++	ret = device_create_file(&ts->device, &dev_attr_temp_input);
++	if (ret)
++		goto exit_name;
++
++	/* Add this sensor to the global list of sensors */
++	mutex_lock(&ts_list_lock);
++	list_add_tail(&ts->node, &thermal_sensor_list);
++	mutex_unlock(&ts_list_lock);
++
++	return ts;
++
++exit_name:
++	device_remove_file(&ts->device, &dev_attr_sensor_name);
++exit_unregister:
++	device_unregister(&ts->device);
++exit_idr:
++	release_idr(&thermal_sensor_idr, &thermal_idr_lock, ts->id);
++exit_free:
++	kfree(ts);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL(thermal_sensor_register);
++
++void thermal_sensor_unregister(struct thermal_sensor *ts)
++{
++	int i;
++	struct thermal_sensor *pos, *next;
++	bool found = false;
++
++	if (!ts)
++		return;
++
++	mutex_lock(&ts_list_lock);
++	list_for_each_entry_safe(pos, next, &thermal_sensor_list, node) {
++		if (pos == ts) {
++			list_del(&ts->node);
++			found = true;
++			break;
++		}
++	}
++	mutex_unlock(&ts_list_lock);
++
++	if (!found)
++		return;
++
++	for (i = 0; i < ts->thresholds; i++)
++		device_remove_file(&ts->device, &ts->thresh_attrs[i].attr);
++
++	device_remove_file(&ts->device, &dev_attr_sensor_name);
++	device_remove_file(&ts->device, &dev_attr_temp_input);
++
++	release_idr(&thermal_sensor_idr, &thermal_idr_lock, ts->id);
++	idr_destroy(&ts->idr);
++
++	device_unregister(&ts->device);
++
++	kfree(ts);
++	return;
++}
++EXPORT_SYMBOL(thermal_sensor_unregister);
++
++int enable_sensor_thresholds(struct thermal_sensor *ts, int count)
++{
++	int i, ret;
++	int size = sizeof(struct thermal_attr) * count;
++
++	if (count == 0)
++		return 0; /* Not an error */
++
++	if (unlikely(!ts) || !ts->ops->get_threshold)
++		return -EINVAL;
++
++	ts->thresh_attrs = kzalloc(size, GFP_KERNEL);
++	if (!ts->thresh_attrs)
++		return -ENOMEM;
++
++	ts->thresholds = count;
++
++	/* Create threshold attributes */
++	for (i = 0; i < count; i++) {
++		snprintf(ts->thresh_attrs[i].name, THERMAL_NAME_LENGTH,
++						 "threshold%d", i);
++
++		sysfs_attr_init(&ts->thresh_attrs[i].attr.attr);
++		ts->thresh_attrs[i].attr.attr.name =
++						ts->thresh_attrs[i].name;
++		ts->thresh_attrs[i].attr.attr.mode = S_IRUGO | S_IWUSR;
++		ts->thresh_attrs[i].attr.show = threshold_show;
++		ts->thresh_attrs[i].attr.store = threshold_store;
++
++		ret = device_create_file(&ts->device,
++					&ts->thresh_attrs[i].attr);
++		if (ret)
++			goto exit_fail;
++	}
++	return 0;
++
++exit_fail:
++	while (--i >= 0)
++		device_remove_file(&ts->device, &ts->thresh_attrs[i].attr);
++	return ret;
++}
++EXPORT_SYMBOL(enable_sensor_thresholds);
++
++/**
+  * thermal_zone_device_register - register a new thermal zone device
+  * @type:	the thermal zone device type
+  * @trips:	the number of trip points the thermal zone support
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 807f214..e2f85ec 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -49,6 +49,7 @@
+ /* Default Thermal Governor: Does Linear Throttling */
+ #define DEFAULT_THERMAL_GOVERNOR	"step_wise"
+ 
++struct thermal_sensor;
+ struct thermal_zone_device;
+ struct thermal_cooling_device;
+ 
+@@ -127,6 +128,13 @@ struct thermal_cooling_device_ops {
+ 	int (*set_cur_state) (struct thermal_cooling_device *, unsigned long);
+ };
+ 
++struct thermal_sensor_ops {
++	int (*get_temp) (struct thermal_sensor *, long *);
++	int (*get_trend) (struct thermal_sensor *, int, enum thermal_trend *);
++	int (*set_threshold) (struct thermal_sensor *, int, long);
++	int (*get_threshold) (struct thermal_sensor *, int, long *);
++};
++
+ struct thermal_cooling_device {
+ 	int id;
+ 	char type[THERMAL_NAME_LENGTH];
+@@ -144,6 +152,20 @@ struct thermal_attr {
+ 	char name[THERMAL_NAME_LENGTH];
+ };
+ 
++struct thermal_sensor {
++	char name[THERMAL_NAME_LENGTH];
++	int id;
++	int temp;
++	int prev_temp;
++	int thresholds;
++	void *devdata;
++	struct idr idr;
++	struct device device;
++	struct list_head node;
++	struct thermal_sensor_ops *ops;
++	struct thermal_attr *thresh_attrs;
++};
++
+ struct thermal_zone_device {
+ 	int id;
+ 	char type[THERMAL_NAME_LENGTH];
+@@ -237,6 +259,11 @@ void notify_thermal_framework(struct thermal_zone_device *, int);
+ int thermal_register_governor(struct thermal_governor *);
+ void thermal_unregister_governor(struct thermal_governor *);
+ 
++struct thermal_sensor *thermal_sensor_register(const char *,
++				struct thermal_sensor_ops *, void *);
++void thermal_sensor_unregister(struct thermal_sensor *);
++int enable_sensor_thresholds(struct thermal_sensor *, int);
++
+ #ifdef CONFIG_NET
+ extern int thermal_generate_netlink_event(u32 orig, enum events event);
+ #else
+-- 
+1.7.9.5
 
-That totally makes sense - thanks for the precision.
-
-Prepping another patchset with audience extended to linux-arm-kernel
-as Mark suggested.
-
-Alex.
