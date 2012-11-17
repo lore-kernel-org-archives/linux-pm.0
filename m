@@ -1,215 +1,47 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Sat, 17 Nov 2012 03:38:50 -0800
-Message-ID: <20121117113849.GA5228@lizard>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting
+ stats
+Date: Sat, 17 Nov 2012 15:50:48 +0100
+Message-ID: <20121117145048.GI16441@x1.osrc.amd.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1352313166-28980-4-git-send-email-mark.langsdorf@calxeda.com>
+ <20121111163821.GA21635@x1.osrc.amd.com>
+ <50A12565.4070701@calxeda.com>
+ <20121113162449.GE9327@x1.osrc.amd.com>
+ <50A2766D.6040008@calxeda.com>
+ <21672683C5A3814BB4DB938EBE482DE426EA988080@IAD2MBX09.mex02.mlsrvr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f46.google.com ([209.85.210.46]:58470 "EHLO
-	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751408Ab2KQLmA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Nov 2012 06:42:00 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <21672683C5A3814BB4DB938EBE482DE426EA988080@IAD2MBX09.mex02.mlsrvr.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>
 
-On Sat, Nov 17, 2012 at 07:55:45PM +0900, Alexandre Courbot wrote:
-> Some device drivers (e.g. panel or backlights) need to follow precise
-> sequences for powering on and off, involving GPIOs, regulators, PWMs
-> and other power-related resources, with a defined powering order and
-> delays to respect between steps. These sequences are device-specific,
-> and do not belong to a particular driver - therefore they have been
-> performed by board-specific hook functions so far.
-> 
-> With the advent of the device tree and of ARM kernels that are not
-> board-tied, we cannot rely on these board-specific hooks anymore but
-> need a way to implement these sequences in a portable manner. This patch
-> introduces a simple interpreter that can execute such power sequences
-> encoded either as platform data or within the device tree. It also
-> introduces first support for regulator, GPIO and PWM resources.
-> 
-> Signed-off-by: Alexandre Courbot <acourbot@nvidia.com>
-> Reviewed-by: Stephen Warren <swarren@wwwdotorg.org>
-> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> Tested-by: Thierry Reding <thierry.reding@avionic-design.de>
-> Tested-by: Stephen Warren <swarren@nvidia.com>
-> Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
-> ---
+On Tue, Nov 13, 2012 at 02:13:38PM -0500, Mark Langsdorf wrote:
+> Although cpufreq_driver has a flag field, no part of cpufreq_driver
+> is directly passed to the cpufreq_stat code. Only cpufreq_policy
+> is. It's cleaner to do passes of the while loop than to copy the
+> cpufreq_driver.flag field into cpufreq_policy and then store it again
+> in cpufreq_stats.
 
-This looks almost perfect!
+That maybe so but this newly added loop which is only Calxeda-relevant
+is called in cpufreq_stat_notifier_trans, which is the frequency change
+notifier call, AFAICT.
 
-Just a few final notes, again mostly about the build system bits.
+So each cpufreq driver will be paying that small and needless penalty
+now for nothing and on each frequency change. Which adds to the
+kernel-wide bloat and we absolutely don't want that.
 
-[...]
-> diff --git a/drivers/power/power_seq/Kconfig b/drivers/power/power_seq/Kconfig
-> new file mode 100644
-> index 0000000..0ece819
-> --- /dev/null
-> +++ b/drivers/power/power_seq/Kconfig
-> @@ -0,0 +1,2 @@
-> +config POWER_SEQ
-> +	tristate
+So you probably need to find a slick way of detecting calxeda hw
+somewhere along the init path of cpufreq_stats_init and set a
+hw-specific flag instead of adding that cost to each driver.
 
-This really needs a proper Kconfig description and a help text, shortly
-describing the purpose of the subsystem.
+Thanks.
 
-> diff --git a/drivers/power/power_seq/Makefile b/drivers/power/power_seq/Makefile
-> new file mode 100644
-> index 0000000..964b91e
-> --- /dev/null
-> +++ b/drivers/power/power_seq/Makefile
-> @@ -0,0 +1,2 @@
-> +obj-$(CONFIG_POWER_SEQ)		+= power_seq.o
-> +power_seq-y			:= core.o delay.o regulator.o gpio.o pwm.o
-> diff --git a/drivers/power/power_seq/core.c b/drivers/power/power_seq/core.c
-> new file mode 100644
-> index 0000000..d51b9b8
-> --- /dev/null
-> +++ b/drivers/power/power_seq/core.c
-> @@ -0,0 +1,362 @@
-> +/*
-> + * core.c - power sequence interpreter for platform devices and device tree
-
-We usually don't write file names in the comments.
-
-> + *
-> + * Author: Alexandre Courbot <acourbot@nvidia.com>
-> + *
-[...]
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(power_seq_run);
-> +
-> +/* defined in power_seq_*.c files */
-
-Why not place the decls into the _priv.h file?.. I understand that this
-might be a temporary stuff until we have something better for ops
-registration, but still, I believe it belongs to the header file.
-
-> +extern const struct power_seq_res_ops power_seq_delay_ops;
-> +extern const struct power_seq_res_ops power_seq_gpio_ops;
-> +extern const struct power_seq_res_ops power_seq_regulator_ops;
-> +extern const struct power_seq_res_ops power_seq_pwm_ops;
-> +
-> +static const struct power_seq_res_ops *power_seq_ops[POWER_SEQ_NUM_TYPES] = {
-> +	[POWER_SEQ_DELAY] = &power_seq_delay_ops,
-> +	[POWER_SEQ_REGULATOR] = &power_seq_regulator_ops,
-> +	[POWER_SEQ_PWM] = &power_seq_gpio_ops,
-> +	[POWER_SEQ_GPIO] = &power_seq_pwm_ops,
-> +};
-> +
-> +MODULE_AUTHOR("Alexandre Courbot <acourbot@nvidia.com>");
-> +MODULE_DESCRIPTION("Runtime Interpreted Power Sequences");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/power/power_seq/delay.c b/drivers/power/power_seq/delay.c
-> new file mode 100644
-> index 0000000..de6810b
-> --- /dev/null
-> +++ b/drivers/power/power_seq/delay.c
-> @@ -0,0 +1,66 @@
-> +/*
-> + * Copyright (c) 2012 NVIDIA Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + */
-> +
-> +#include "power_seq_priv.h"
-> +#include <linux/delay.h>
-
-Things should not depend on _priv.h's includes. I.e. I see this file uses
-of_ routines, so it should include <linux/of.h>. <linux/delay.h> for
-udelay_range(), etc.
-
-Also, usually we place "private" headers at the very end, not at the
-beginning.
-
-> +
-> +#ifdef CONFIG_OF
-> +static int of_power_seq_parse_delay(struct device_node *node,
-> +				    struct power_seq *seq,
-> +				    unsigned int step_nbr,
-> +				    struct power_seq_resource *res)
-> +{
-> +	struct power_seq_step *step = &seq->steps[step_nbr];
-> +	int err;
-> +
-> +	err = of_property_read_u32(node, "delay",
-> +				   &step->delay.delay);
-> +	if (err < 0)
-> +		power_seq_err(seq, step_nbr, "error reading delay property\n");
-> +
-> +	return err;
-> +}
-> +#else
-> +#define of_power_seq_parse_delay NULL
-> +#endif
-
-[...]
-> +#define power_seq_err(seq, step_nbr, format, ...)			\
-> +	dev_err(seq->set->dev, "%s[%d]: " format, seq->id, step_nbr,	\
-> +	##__VA_ARGS__);
-> +
-> +#ifdef CONFIG_OF
-> +int of_power_seq_parse_enable_properties(struct device_node *node,
-> +					 struct power_seq *seq,
-> +					 unsigned int step_nbr, bool *enable);
-
-Um, I believe you don't need CONFIG_OF here. (If it's about 'struct
-device_node', then as I see it in of.h, the header always declares it,
-even for the !OF case.)
-
-> +#endif
-> +
-> +/**
-[...]
-> +++ b/drivers/power/power_seq/regulator.c
-> @@ -0,0 +1,87 @@
-> +/*
-> + * Copyright (c) 2012 NVIDIA Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; version 2 of the License.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + */
-> +
-> +#include "power_seq_priv.h"
-> +
-> +#ifdef CONFIG_REGULATOR
-
-Would be really great if you could get rid of the #ifdefs in the .c files.
-
-To do so, in the makefile you could write something like this:
-
-power_seq-$(CONFIG_REGULATOR) += regulator.o
-
-And in the header file (as explained above), you'd have
-
-#ifdef CONFIG_REGULATOR
-#define ...REGULATOR_OPS &power_seq_regulator_ops
-#else
-#define ...REGULATOR_OPS NULL
-#endif
-
-Or something along these lines...
-
-Thanks,
-Anton.
+-- 
+Regards/Gruss,
+Boris.
