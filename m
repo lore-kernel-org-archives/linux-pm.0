@@ -1,114 +1,47 @@
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
-Date: Fri, 16 Nov 2012 04:25:41 -0800
-Message-ID: <20121116122540.GA2198@lizard>
-References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-2-git-send-email-acourbot@nvidia.com>
- <20121116072642.GA22291@lizard>
- <50A60AF6.9080509@nvidia.com>
+From: "Instant Booster" <admin@advertise-bz.cn>
+Subject: Instantly boost your website's traffic
+Date: Fri, 16 Nov 2012 16:31:30 -0800
+Message-ID: <677AACD4.29AC6293@advertise-bz.cn>
+Reply-To: "Instant Booster" <admin@advertise-bz.cn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33690 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750817Ab2KPM2u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Nov 2012 07:28:50 -0500
-Content-Disposition: inline
-In-Reply-To: <50A60AF6.9080509@nvidia.com>
+Received: from [117.41.185.72] ([117.41.185.72]:49762 "HELO advertise-bz.cn"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751243Ab2KPOcO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Nov 2012 09:32:14 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Courbot <acourbot@nvidia.com>
-Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+To: linux-pm@vger.kernel.org
 
-On Fri, Nov 16, 2012 at 06:44:22PM +0900, Alex Courbot wrote:
-> On 11/16/2012 04:26 PM, Anton Vorontsov wrote:
-> >>+#include "power_seq_delay.c"
-> >>+#include "power_seq_regulator.c"
-> >>+#include "power_seq_pwm.c"
-> >>+#include "power_seq_gpio.c"
-> >
-> >This is odd, although I remember you already explained why you have to
-> >include the .c files, instead of linking them separately. But I forgot the
-> >reason. :) I think this deserves a comment in the code.
-> 
-> This is because of the table right after these includes:
-> 
-> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
-> 	[POWER_SEQ_DELAY] = POWER_SEQ_DELAY_TYPE,
-> 	[POWER_SEQ_REGULATOR] = POWER_SEQ_REGULATOR_TYPE,
-> 	[POWER_SEQ_PWM] = POWER_SEQ_PWM_TYPE,
-> 	[POWER_SEQ_GPIO] = POWER_SEQ_GPIO_TYPE,
-> };
-> 
-> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
-> simplest way to initialize this table, and the code inside these C
-> files is short and simple enough that I thought I would be forgiven.
-> :)
+What if you could drive 1000s of 
+customers to your website from the 
+major search-engines that are exclusively 
+looking for your product/offer for free ?
 
-I think in the header file you could just write
+What about an instant number one 
+ranking for your keywords, for free ?!
 
-extern ..... power_seq_delay_type;
-#ifndef ...
-#define power_seq_delay_type NULL
-#endif
+We have developed a program that 
+will automatically do this for you.
 
-And then, in the .c file:
 
-static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
-	[POWER_SEQ_DELAY] = power_seq_delay_type,
-	...
-};
+Visit our website:
+http://www.advertise-bz.cn/affiliates/instantbooster/
 
-And then you can stop including the .c files directly, and link them
-instead.
 
-> At first everything was in power_seq.c and it was fine, then I
-> thought it would be better to move resource support code into their
-> own filesm and now everybody is asking. :P
-> 
-> But yeah, maybe it would be even better to not stop halfway and use
-> dynamic linking.
-> 
-> Comment added for the time being. ;)
-> 
-> >>+static int of_power_seq_parse_step(struct device *dev,
-> >>+				   struct device_node *node,
-> >>+				   struct power_seq *seq,
-> >>+				   unsigned int step_nbr,
-> >>+				   struct list_head *resources)
-> >>+{
-> >>+	struct power_seq_step *step = &seq->steps[step_nbr];
-> >>+	struct power_seq_resource res, *res2;
-> >>+	const char *type;
-> >>+	int i, err;
-> >
-> >nit: one variable declaration per line.
-> 
-> Fair enough - but is that a convention? checkpatch.pl was happy with these.
 
-It's not a rule, although there is a small passage about it in CodingStyle
-file when it describes commenting style. Though, some folks choose to
-ignore this suggestion quite frequently, especially if variables have no
-comments.
 
-Often, the multiple declarations per line are used to hide ugly functions
-w/ tons of variables, or just to confuse the reader for the fun of it.
 
-There are exceptions, of course. E.g.
 
-	int i, j, k; /* Our iterators. */
 
-Is perfectly fine.
 
-But
-	int i, err;
 
-At least to me seems weird, this stuff is logically disjunct.
 
-Only human can truly differentiate when the stuff "looks better" together
-or apart, so that's why checkpatch doesn't complain. Personally, I use
-this rule of thumb: when in doubt, use just one declaration per line, it
-is always OK. :)
 
-Thanks,
-Anton.
+Unsubscribe:
+http://www.advertise-bz.cn/unsubscribe/
+
+
