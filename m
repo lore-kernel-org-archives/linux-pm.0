@@ -1,30 +1,81 @@
-From: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v8 3/3] Take maintainership of power sequences
-Date: Sat, 17 Nov 2012 15:41:43 +0900
-Message-ID: <CAAVeFu+YOV-hcx4wAvgVVe0tOGL20pdDe86Qbn7TaC8NB9DG4Q@mail.gmail.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Subject: Re: [PATCH v8 1/3] Runtime Interpreted Power Sequences
+Date: Sat, 17 Nov 2012 19:12:45 +0900
+Message-ID: <CAAVeFuJ28=YFOx1Uvq+B33JQW2UxDYx2J8igUnVCbTEO0V-KKg@mail.gmail.com>
 References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
- <1353047903-14363-4-git-send-email-acourbot@nvidia.com> <50A6733F.7020101@wwwdotorg.org>
+ <1353047903-14363-2-git-send-email-acourbot@nvidia.com> <20121116072642.GA22291@lizard>
+ <50A60AF6.9080509@nvidia.com> <20121116122540.GA2198@lizard>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <50A6733F.7020101-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Cc: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Leela Krishna Amudala <l.krishna-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121116122540.GA2198@lizard>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 17, 2012 at 2:09 AM, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org> wrote:
-> Acked-by: Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-
-Thanks!
-
->> +POWER SEQUENCES
->> +M:   Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->> +S:   Maintained
+On Fri, Nov 16, 2012 at 9:25 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+>> The POWER_SEQ_*_TYPE macros are defined in the C files. It's the
+>> simplest way to initialize this table, and the code inside these C
+>> files is short and simple enough that I thought I would be forgiven.
+>> :)
 >
-> Given you're presumably working on this on NVIDIA's time, perhaps make
-> that "Supported" not "Maintained"?
+> I think in the header file you could just write
+>
+> extern ..... power_seq_delay_type;
+> #ifndef ...
+> #define power_seq_delay_type NULL
+> #endif
+>
+> And then, in the .c file:
+>
+> static const struct power_seq_res_ops power_seq_ops[POWER_SEQ_NUM_TYPES] = {
+>         [POWER_SEQ_DELAY] = power_seq_delay_type,
+>         ...
+> };
+>
+> And then you can stop including the .c files directly, and link them
+> instead.
 
-Absolutely.
+I have done something similar, but that avoids exporting resource ops
+into the header file. I am still not satisfied with it though - I'd
+rather have one init function per resource file that changes the
+pointer of the ops table from NULL to its own set of functions. That
+way the core could live without knowing anything about the different
+resources, and that would be nicer. Unfortunately modules only support
+one init function, so this is not doable here.
+
+>> >nit: one variable declaration per line.
+>>
+>> Fair enough - but is that a convention? checkpatch.pl was happy with these.
+>
+> It's not a rule, although there is a small passage about it in CodingStyle
+> file when it describes commenting style. Though, some folks choose to
+> ignore this suggestion quite frequently, especially if variables have no
+> comments.
+>
+> Often, the multiple declarations per line are used to hide ugly functions
+> w/ tons of variables, or just to confuse the reader for the fun of it.
+>
+> There are exceptions, of course. E.g.
+>
+>         int i, j, k; /* Our iterators. */
+>
+> Is perfectly fine.
+>
+> But
+>         int i, err;
+>
+> At least to me seems weird, this stuff is logically disjunct.
+>
+> Only human can truly differentiate when the stuff "looks better" together
+> or apart, so that's why checkpatch doesn't complain. Personally, I use
+> this rule of thumb: when in doubt, use just one declaration per line, it
+> is always OK. :)
+
+That totally makes sense - thanks for the precision.
+
+Prepping another patchset with audience extended to linux-arm-kernel
+as Mark suggested.
 
 Alex.
