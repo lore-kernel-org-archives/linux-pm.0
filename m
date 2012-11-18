@@ -1,79 +1,53 @@
-From: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V6 1/2] Thermal: Add ST-Ericsson DB8500 thermal driver.
-Date: Sun, 18 Nov 2012 15:29:51 +0100
-Message-ID: <50A8F0DF.8040509@gmail.com>
-References: <1352977003-25095-1-git-send-email-hongbo.zhang@linaro.com>
-	<1352977003-25095-2-git-send-email-hongbo.zhang@linaro.com>
-	<1352983878.2080.25.camel@rzhang1-mobl4>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v9 03/10] ata: zpodd: identify and init ZPODD devices
+Date: Sun, 18 Nov 2012 06:38:00 -0800
+Message-ID: <20121118143800.GI7306@mtj.dyndns.org>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+ <1352443922-13734-4-git-send-email-aaron.lu@intel.com>
+ <20121112185301.GB5560@mtj.dyndns.org>
+ <50A2F4AB.6060903@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <1352983878.2080.25.camel@rzhang1-mobl4>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, STEricsson_nomadik_linux-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org, kernel-vMlcbD5RyM6HZuj8yyL1ah2eb7JE58TQ@public.gmane.org, "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:53882 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752010Ab2KROiG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Nov 2012 09:38:06 -0500
+Content-Disposition: inline
+In-Reply-To: <50A2F4AB.6060903@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 11/15/2012 01:51 PM, Zhang Rui wrote:
-> On Thu, 2012-11-15 at 18:56 +0800, hongbo.zhang wrote:
->> From: "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
->>
->> This driver is based on the thermal management framework in thermal_sys.c. A
->> thermal zone device is created with the trip points to which cooling devices
->> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
->> clipped down to cool the CPU, and other cooling devices can be added and bound
->> to the trip points dynamically.  The platform specific PRCMU interrupts are
->> used to active thermal update when trip points are reached.
->>
->> Signed-off-by: hongbo.zhang <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
->> Reviewed-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Reviewed-by: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Hello, Aaron.
+
+On Wed, Nov 14, 2012 at 09:32:27AM +0800, Aaron Lu wrote:
+> > I don't think you're supposed to use dev->private_data from libata
+> > core layer.  Just add a new field.  Nobody cares about adding 8 more
+> > bytes to struct ata_device and spending 8 more bytes is way better
+> > than muddying the ownership of ->private_data.
 > 
-> Patch is refreshed and applied to thermal next.
-> refreshed patch attached.
-[...]
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 99b6587..d96da07 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -101,5 +101,25 @@ config EXYNOS_THERMAL
->  	  If you say yes here you get support for TMU (Thermal Managment
->  	  Unit) on SAMSUNG EXYNOS series of SoC.
->  
-> +config DB8500_THERMAL
-> +	bool "DB8500 thermal management"
-> +	depends on ARCH_U8500
+> OK.
+> And just out of curiosity, who's supposed to use device's private_data?
+> I didn't find any user for ata_device's private_data in libata.
 
-Shouldn't it depend on THERMAL as well, as in Hongbo's original patch?
+All the ->private_data fields are to be used by low level drivers
+(ahci, ata_piix, pata_via...).  Given the twisted nature of ATA
+devices, it's a bit surprising that no driver yet found a need for
+ata_dev->private_data.  For most SATA controllers, port to device is
+one to one so maybe ap->private_data is enough.
 
-> +	default y
-> +	help
-> +	  Adds DB8500 thermal management implementation according to the thermal
-> +	  management framework. A thermal zone with several trip points will be
-> +	  created. Cooling devices can be bound to the trip points to cool this
-> +	  thermal zone if trip points reached.
-> +
-> +config DB8500_CPUFREQ_COOLING
-> +	tristate "DB8500 cpufreq cooling"
-> +	depends on ARCH_U8500
-> +	depends on CPU_THERMAL
-> +	default y
-> +	help
-> +	  Adds DB8500 cpufreq cooling devices, and these cooling devices can be
-> +	  bound to thermal zone trip points. When a trip point reached, the
-> +	  bound cpufreq cooling device turns active to set CPU frequency low to
-> +	  cool down the CPU.
->  
->  endif
+> > And this gets completely wrong.  What if the device supports DA and
+> > low level driver makes use of ->private_data?
+> 
+> I didn't find any user of ata_device's private_data, so I used it for
+> ZPODD. But if this is dangerous, I'll use a new field.
 
---
-Francesco
+As there currently is no other user, it won't break anything but yeah
+please add a properly typed and named field.
+
+Thanks.
+
+-- 
+tejun
