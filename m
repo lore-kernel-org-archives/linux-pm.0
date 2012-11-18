@@ -1,100 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC] cpuidle - remove the power_specified field in the driver
-Date: Sun, 18 Nov 2012 10:17:47 +0100
-Message-ID: <50A8A7BB.2070809@linaro.org>
-References: <50831CA3.2020602@linaro.org> <1352752016-3136-1-git-send-email-daniel.lezcano@linaro.org> <50A89F08.7020307@gmail.com>
+From: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V6 1/2] Thermal: Add ST-Ericsson DB8500 thermal driver.
+Date: Sun, 18 Nov 2012 15:29:51 +0100
+Message-ID: <50A8F0DF.8040509@gmail.com>
+References: <1352977003-25095-1-git-send-email-hongbo.zhang@linaro.com>
+	<1352977003-25095-2-git-send-email-hongbo.zhang@linaro.com>
+	<1352983878.2080.25.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <50A89F08.7020307@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: linux-pm@vger.kernel.org, khilman@ti.com, deepthi@linux.vnet.ibm.com, g.trinabh@gmail.com, linaro-dev@lists.linaro.org, len.brown@intel.com, linux-kernel@vger.kernel.org, rjw@sisk.pl, jwerner@chromium.org, akpm@linux-foundation.org, snanda@chromium.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <1352983878.2080.25.camel@rzhang1-mobl4>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, STEricsson_nomadik_linux-nkJGhpqTU55BDgjK7y7TUQ@public.gmane.org, kernel-vMlcbD5RyM6HZuj8yyL1ah2eb7JE58TQ@public.gmane.org, "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 11/18/2012 09:40 AM, Francesco Lavra wrote:
-> Hi,
->=20
-> On 11/12/2012 09:26 PM, Daniel Lezcano wrote:
->> This patch follows the discussion about reinitializing the power usa=
-ge
->> when a C-state is added/removed.
+On 11/15/2012 01:51 PM, Zhang Rui wrote:
+> On Thu, 2012-11-15 at 18:56 +0800, hongbo.zhang wrote:
+>> From: "hongbo.zhang" <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
 >>
->>  https://lkml.org/lkml/2012/10/16/518
+>> This driver is based on the thermal management framework in thermal_sys.c. A
+>> thermal zone device is created with the trip points to which cooling devices
+>> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
+>> clipped down to cool the CPU, and other cooling devices can be added and bound
+>> to the trip points dynamically.  The platform specific PRCMU interrupts are
+>> used to active thermal update when trip points are reached.
 >>
->> We realized the power usage field is never filled and when it is
->> filled for tegra, the power_specified flag is not set making all the=
-se
->> values to be resetted when the driver is initialized with the set_po=
-wer_state
->> function.
->>
->> Julius and I feel this is over-engineered and the power_specified
->> flag could be simply removed and continue assuming the states are
->> backward sorted.
->>
->> The menu governor select function is simplified as the power is orde=
-red.
->> Actually the condition is always true with the current code.
->>
->> The cpuidle_play_dead function is also simplified by doing a reverse=
- lookup
->> on the array.
->>
->> The set_power_states function is removed as it does no make sense an=
-ymore.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>  drivers/cpuidle/cpuidle.c        |   17 ++++-------------
->>  drivers/cpuidle/driver.c         |   25 -------------------------
->>  drivers/cpuidle/governors/menu.c |    8 ++------
->>  include/linux/cpuidle.h          |    2 +-
->>  4 files changed, 7 insertions(+), 45 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index 711dd83..f983262 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
->>  {
->>  	struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devices);
->>  	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
->> -	int i, dead_state =3D -1;
->> -	int power_usage =3D -1;
->> +	int i;
->> =20
->>  	if (!drv)
->>  		return -ENODEV;
->> =20
->>  	/* Find lowest-power state that supports long-term idle */
->> -	for (i =3D CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) =
-{
->> -		struct cpuidle_state *s =3D &drv->states[i];
->> -
->> -		if (s->power_usage < power_usage && s->enter_dead) {
->> -			power_usage =3D s->power_usage;
->> -			dead_state =3D i;
->> -		}
->> -	}
->> -
->> -	if (dead_state !=3D -1)
->> -		return drv->states[dead_state].enter_dead(dev, dead_state);
->> +	for (i =3D drv->state_count; i >=3D CPUIDLE_DRIVER_STATE_START; i-=
--)
->> +		if (drv->states[i].play_dead)
->=20
-> I guess you meant drv->states[i].enter_dead
+>> Signed-off-by: hongbo.zhang <hongbo.zhang-68IGFXMjmZ7QT0dZR+AlfA@public.gmane.org>
+>> Reviewed-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Reviewed-by: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> 
+> Patch is refreshed and applied to thermal next.
+> refreshed patch attached.
+[...]
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 99b6587..d96da07 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -101,5 +101,25 @@ config EXYNOS_THERMAL
+>  	  If you say yes here you get support for TMU (Thermal Managment
+>  	  Unit) on SAMSUNG EXYNOS series of SoC.
+>  
+> +config DB8500_THERMAL
+> +	bool "DB8500 thermal management"
+> +	depends on ARCH_U8500
 
-Yep :)
+Shouldn't it depend on THERMAL as well, as in Hongbo's original patch?
 
+> +	default y
+> +	help
+> +	  Adds DB8500 thermal management implementation according to the thermal
+> +	  management framework. A thermal zone with several trip points will be
+> +	  created. Cooling devices can be bound to the trip points to cool this
+> +	  thermal zone if trip points reached.
+> +
+> +config DB8500_CPUFREQ_COOLING
+> +	tristate "DB8500 cpufreq cooling"
+> +	depends on ARCH_U8500
+> +	depends on CPU_THERMAL
+> +	default y
+> +	help
+> +	  Adds DB8500 cpufreq cooling devices, and these cooling devices can be
+> +	  bound to thermal zone trip points. When a trip point reached, the
+> +	  bound cpufreq cooling device turns active to set CPU frequency low to
+> +	  cool down the CPU.
+>  
+>  endif
 
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--
+Francesco
