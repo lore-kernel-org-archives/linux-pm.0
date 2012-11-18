@@ -1,47 +1,88 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting
- stats
-Date: Sat, 17 Nov 2012 15:50:48 +0100
-Message-ID: <20121117145048.GI16441@x1.osrc.amd.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1352313166-28980-1-git-send-email-mark.langsdorf@calxeda.com>
- <1352313166-28980-4-git-send-email-mark.langsdorf@calxeda.com>
- <20121111163821.GA21635@x1.osrc.amd.com>
- <50A12565.4070701@calxeda.com>
- <20121113162449.GE9327@x1.osrc.amd.com>
- <50A2766D.6040008@calxeda.com>
- <21672683C5A3814BB4DB938EBE482DE426EA988080@IAD2MBX09.mex02.mlsrvr.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [RFC] cpuidle - remove the power_specified field in the driver
+Date: Sun, 18 Nov 2012 09:40:40 +0100
+Message-ID: <50A89F08.7020307@gmail.com>
+References: <50831CA3.2020602@linaro.org> <1352752016-3136-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <21672683C5A3814BB4DB938EBE482DE426EA988080@IAD2MBX09.mex02.mlsrvr.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f46.google.com ([74.125.83.46]:63077 "EHLO
+	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321Ab2KRIlx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Nov 2012 03:41:53 -0500
+In-Reply-To: <1352752016-3136-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, khilman@ti.com, deepthi@linux.vnet.ibm.com, g.trinabh@gmail.com, linaro-dev@lists.linaro.org, len.brown@intel.com, linux-kernel@vger.kernel.org, rjw@sisk.pl, jwerner@chromium.org, akpm@linux-foundation.org, snanda@chromium.org
 
-On Tue, Nov 13, 2012 at 02:13:38PM -0500, Mark Langsdorf wrote:
-> Although cpufreq_driver has a flag field, no part of cpufreq_driver
-> is directly passed to the cpufreq_stat code. Only cpufreq_policy
-> is. It's cleaner to do passes of the while loop than to copy the
-> cpufreq_driver.flag field into cpufreq_policy and then store it again
-> in cpufreq_stats.
+Hi,
 
-That maybe so but this newly added loop which is only Calxeda-relevant
-is called in cpufreq_stat_notifier_trans, which is the frequency change
-notifier call, AFAICT.
+On 11/12/2012 09:26 PM, Daniel Lezcano wrote:
+> This patch follows the discussion about reinitializing the power usage
+> when a C-state is added/removed.
+> 
+>  https://lkml.org/lkml/2012/10/16/518
+> 
+> We realized the power usage field is never filled and when it is
+> filled for tegra, the power_specified flag is not set making all these
+> values to be resetted when the driver is initialized with the set_power_state
+> function.
+> 
+> Julius and I feel this is over-engineered and the power_specified
+> flag could be simply removed and continue assuming the states are
+> backward sorted.
+> 
+> The menu governor select function is simplified as the power is ordered.
+> Actually the condition is always true with the current code.
+> 
+> The cpuidle_play_dead function is also simplified by doing a reverse lookup
+> on the array.
+> 
+> The set_power_states function is removed as it does no make sense anymore.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle.c        |   17 ++++-------------
+>  drivers/cpuidle/driver.c         |   25 -------------------------
+>  drivers/cpuidle/governors/menu.c |    8 ++------
+>  include/linux/cpuidle.h          |    2 +-
+>  4 files changed, 7 insertions(+), 45 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 711dd83..f983262 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
+>  {
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+> -	int i, dead_state = -1;
+> -	int power_usage = -1;
+> +	int i;
+>  
+>  	if (!drv)
+>  		return -ENODEV;
+>  
+>  	/* Find lowest-power state that supports long-term idle */
+> -	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> -		struct cpuidle_state *s = &drv->states[i];
+> -
+> -		if (s->power_usage < power_usage && s->enter_dead) {
+> -			power_usage = s->power_usage;
+> -			dead_state = i;
+> -		}
+> -	}
+> -
+> -	if (dead_state != -1)
+> -		return drv->states[dead_state].enter_dead(dev, dead_state);
+> +	for (i = drv->state_count; i >= CPUIDLE_DRIVER_STATE_START; i--)
+> +		if (drv->states[i].play_dead)
 
-So each cpufreq driver will be paying that small and needless penalty
-now for nothing and on each frequency change. Which adds to the
-kernel-wide bloat and we absolutely don't want that.
+I guess you meant drv->states[i].enter_dead
 
-So you probably need to find a slick way of detecting calxeda hw
-somewhere along the init path of cpufreq_stats_init and set a
-hw-specific flag instead of adding that cost to each driver.
+> +			return drv->states[i].enter_dead(dev, i);
 
-Thanks.
-
--- 
-Regards/Gruss,
-Boris.
+--
+Francesco
