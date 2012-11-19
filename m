@@ -1,78 +1,52 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 2/2] Thermal: Introduce THERMAL_TREND_RAISE/DROP_FULL
- support for step_wise governor
-Date: Mon, 19 Nov 2012 16:21:33 +0800
-Message-ID: <1353313293.6468.4.camel@rzhang1-mobl4>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 1/2] Thermal: Introduce THERMAL_TREND_RAISE_FULL and and
+ THERMAL_TREND_DROP_FULL
+Date: Mon, 19 Nov 2012 11:19:52 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB592241FD@BGSMSX101.gar.corp.intel.com>
+References: <1353313272.6468.3.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:24722 "EHLO mga11.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:49475 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753146Ab2KSIVh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Nov 2012 03:21:37 -0500
+	id S1751799Ab2KSLVm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 19 Nov 2012 06:21:42 -0500
+In-Reply-To: <1353313272.6468.3.camel@rzhang1-mobl4>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, Amit Kachhap <amit.kachhap@linaro.org>, durga <durgadoss.r@intel.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Amit Kachhap <amit.kachhap@linaro.org>
 
->From fcc7e0a36388f468c25526290e2fb2beebaae99c Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Mon, 19 Nov 2012 16:10:20 +0800
-Subject: [PATCH 2/2] Introduce THERMAL_TREND_RAISE/DROP_FULL support for
- step_wise governor
-
-step_wise governor should set the device cooling state to
-upper/lower limit directly when THERMAL_TREND_RAISE/DROP_FULL.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/step_wise.c |   19 +++++++++++++++++--
- 1 file changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 1242cff..6273f7d 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -35,6 +35,10 @@
-  *       state for this trip point
-  *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
-  *       state for this trip point
-+ *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
-+ *       for this trip point
-+ *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
-+ *       for this trip point
-  */
- static unsigned long get_target_state(struct thermal_instance *instance,
- 					enum thermal_trend trend)
-@@ -44,12 +48,23 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 
- 	cdev->ops->get_cur_state(cdev, &cur_state);
- 
--	if (trend == THERMAL_TREND_RAISING) {
-+	switch (trend) {
-+	case THERMAL_TREND_RAISING:
- 		cur_state = cur_state < instance->upper ?
- 			    (cur_state + 1) : instance->upper;
--	} else if (trend == THERMAL_TREND_DROPPING) {
-+		break;
-+	case THERMAL_TREND_DROPPING:
- 		cur_state = cur_state > instance->lower ?
- 			    (cur_state - 1) : instance->lower;
-+		break;
-+	case THERMAL_TREND_RAISE_FULL:
-+		cur_state = instance->upper;
-+		break;
-+	case THERMAL_TREND_DROP_FULL:
-+		cur_state = instance->lower;
-+		break;
-+	default:
-+		break;
- 	}
- 
- 	return cur_state;
--- 
-1.7.9.5
-
-
-
+SGkgUnVpL0FtaXQsDQoNClRoaXMgcGF0Y2ggbG9va3MgZmluZSBhbmQgZ2l2ZXMgd2hhdCB3ZSBu
+ZWVkIGluIGEgc2ltcGxlIHdheSA6LSkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+PiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6IE1vbmRheSwgTm92ZW1iZXIgMTksIDIwMTIgMTo1
+MSBQTQ0KPiBUbzogTGludXggUE0gbGlzdA0KPiBDYzogWmhhbmcsIFJ1aTsgQW1pdCBLYWNoaGFw
+OyBSLCBEdXJnYWRvc3MNCj4gU3ViamVjdDogW1BBVENIIDEvMl0gVGhlcm1hbDogSW50cm9kdWNl
+IFRIRVJNQUxfVFJFTkRfUkFJU0VfRlVMTCBhbmQNCj4gYW5kIFRIRVJNQUxfVFJFTkRfRFJPUF9G
+VUxMDQo+IA0KPiBGcm9tIGNkMDVhYmM0OTI5YzIxMjc1ZTM2NzRmYjMwM2NhNjAwN2Y4NDE1YTAg
+TW9uIFNlcCAxNyAwMDowMDowMCAyMDAxDQo+IEZyb206IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGlu
+dGVsLmNvbT4NCj4gRGF0ZTogTW9uLCAxOSBOb3YgMjAxMiAxNTozMzo1MSArMDgwMA0KPiBTdWJq
+ZWN0OiBbUEFUQ0ggMS8yXSBJbnRyb2R1Y2UgVEhFUk1BTF9UUkVORF9SQUlTRV9GVUxMIGFuZA0K
+PiAgVEhFUk1BTF9UUkVORF9EUk9QX0ZVTEwNCj4gDQo+IFRoZXNlIHR3byBuZXcgdGhlcm1hbF90
+cmVuZCB0eXBlcyBhcmUgdXNlZCB0byB0ZWxsIHRoZSBnb3Zlcm5vcg0KPiB0aGF0IHRoZSB0ZW1l
+cHJhdHVyZSBpcyByYWlzaW5nL2Ryb3BwaW5nIHF1aWNrbHkuDQoNCnR5cG8gJ3RlbXBlcmF0dXJl
+Jy4gDQoNCj4gDQo+IFRoZXJtYWwgY29vbGluZyBnb3Zlcm5vcnMgc2hvdWxkIGhhbmRsZSB0aGlz
+IHNpdHVhdGlvbiBhbmQgbWFrZQ0KPiBwcm9wZXIgZGVjaXNpb25zLCBlLmcuIHNldCBjb29saW5n
+IHN0YXRlIHRvIHVwcGVyL2xvd2VyIGxpbWl0IGRpcmVjdGx5DQo+IGluc3RlYWQgb2Ygb25lIHN0
+ZXAgZWFjaCB0aW1lIGZvciBzdGVwX3dpc2UgZ292ZXJub3IuDQo+IA0KDQpSZXZpZXdlZC1ieTog
+RHVyZ2Fkb3NzIFIgPGR1cmdhZG9zcy5yQGludGVsLmNvbT4NCg0KVGhhbmtzLA0KRHVyZ2ENCg0K
+PiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQo+IC0tLQ0K
+PiAgaW5jbHVkZS9saW51eC90aGVybWFsLmggfCAgICAyICsrDQo+ICAxIGZpbGUgY2hhbmdlZCwg
+MiBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC90aGVybWFs
+LmggYi9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaA0KPiBpbmRleCA4MDdmMjE0Li5kY2FhNDAwIDEw
+MDY0NA0KPiAtLS0gYS9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaA0KPiArKysgYi9pbmNsdWRlL2xp
+bnV4L3RoZXJtYWwuaA0KPiBAQCAtNjgsNiArNjgsOCBAQCBlbnVtIHRoZXJtYWxfdHJlbmQgew0K
+PiAgCVRIRVJNQUxfVFJFTkRfU1RBQkxFLCAvKiB0ZW1wZXJhdHVyZSBpcyBzdGFibGUgKi8NCj4g
+IAlUSEVSTUFMX1RSRU5EX1JBSVNJTkcsIC8qIHRlbXBlcmF0dXJlIGlzIHJhaXNpbmcgKi8NCj4g
+IAlUSEVSTUFMX1RSRU5EX0RST1BQSU5HLCAvKiB0ZW1wZXJhdHVyZSBpcyBkcm9wcGluZyAqLw0K
+PiArCVRIRVJNQUxfVFJFTkRfUkFJU0VfRlVMTCwgLyogYXBwbHkgaGlnaGVzdCBjb29saW5nIGFj
+dGlvbiAqLw0KPiArCVRIRVJNQUxfVFJFTkRfRFJPUF9GVUxMLCAvKiBhcHBseSBsb3dlc3QgY29v
+bGluZyBhY3Rpb24gKi8NCj4gIH07DQo+IA0KPiAgLyogRXZlbnRzIHN1cHBvcnRlZCBieSBUaGVy
+bWFsIE5ldGxpbmsgKi8NCj4gLS0NCj4gMS43LjkuNQ0KPiANCj4gDQoNCg==
