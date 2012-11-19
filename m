@@ -1,64 +1,43 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 2/2] Thermal: Introduce THERMAL_TREND_RAISE/DROP_FULL
- support for step_wise governor
-Date: Mon, 19 Nov 2012 11:21:53 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59224208@BGSMSX101.gar.corp.intel.com>
-References: <1353313293.6468.4.camel@rzhang1-mobl4>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v9 07/10] block: add a new interface to block events
+Date: Mon, 19 Nov 2012 06:50:09 -0800
+Message-ID: <20121119145009.GA15971@htj.dyndns.org>
+References: <20121118233531.GC25790@mtj.dyndns.org>
+ <Pine.LNX.4.44L0.1211182058450.10879-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:45368 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750695Ab2KSLWE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Nov 2012 06:22:04 -0500
-In-Reply-To: <1353313293.6468.4.camel@rzhang1-mobl4>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1211182058450.10879-100000@netrider.rowland.org>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Amit Kachhap <amit.kachhap@linaro.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWmhhbmcsIFJ1aQ0KPiBT
-ZW50OiBNb25kYXksIE5vdmVtYmVyIDE5LCAyMDEyIDE6NTIgUE0NCj4gVG86IExpbnV4IFBNIGxp
-c3QNCj4gQ2M6IFpoYW5nLCBSdWk7IEFtaXQgS2FjaGhhcDsgUiwgRHVyZ2Fkb3NzDQo+IFN1Ympl
-Y3Q6IFtQQVRDSCAyLzJdIFRoZXJtYWw6IEludHJvZHVjZQ0KPiBUSEVSTUFMX1RSRU5EX1JBSVNF
-L0RST1BfRlVMTCBzdXBwb3J0IGZvciBzdGVwX3dpc2UgZ292ZXJub3INCj4gDQo+IEZyb20gZmNj
-N2UwYTM2Mzg4ZjQ2OGMyNTUyNjI5MGUyZmIyYmVlYmFhZTk5YyBNb24gU2VwIDE3IDAwOjAwOjAw
-DQo+IDIwMDENCj4gRnJvbTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiBEYXRl
-OiBNb24sIDE5IE5vdiAyMDEyIDE2OjEwOjIwICswODAwDQo+IFN1YmplY3Q6IFtQQVRDSCAyLzJd
-IEludHJvZHVjZSBUSEVSTUFMX1RSRU5EX1JBSVNFL0RST1BfRlVMTA0KPiBzdXBwb3J0IGZvcg0K
-PiAgc3RlcF93aXNlIGdvdmVybm9yDQo+IA0KPiBzdGVwX3dpc2UgZ292ZXJub3Igc2hvdWxkIHNl
-dCB0aGUgZGV2aWNlIGNvb2xpbmcgc3RhdGUgdG8NCj4gdXBwZXIvbG93ZXIgbGltaXQgZGlyZWN0
-bHkgd2hlbiBUSEVSTUFMX1RSRU5EX1JBSVNFL0RST1BfRlVMTC4NCj4gDQoNClBhdGNoIGxvb2tz
-IGdvb2QuLg0KUmV2aWV3ZWQtYnk6IER1cmdhZG9zcyBSIDxkdXJnYWRvc3MuckBpbnRlbC5jb20+
-DQoNClRoYW5rcywNCkR1cmdhDQoNCj4gU2lnbmVkLW9mZi1ieTogWmhhbmcgUnVpIDxydWkuemhh
-bmdAaW50ZWwuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvdGhlcm1hbC9zdGVwX3dpc2UuYyB8ICAg
-MTkgKysrKysrKysrKysrKysrKystLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDE3IGluc2VydGlvbnMo
-KyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3N0
-ZXBfd2lzZS5jIGIvZHJpdmVycy90aGVybWFsL3N0ZXBfd2lzZS5jDQo+IGluZGV4IDEyNDJjZmYu
-LjYyNzNmN2QgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9zdGVwX3dpc2UuYw0KPiAr
-KysgYi9kcml2ZXJzL3RoZXJtYWwvc3RlcF93aXNlLmMNCj4gQEAgLTM1LDYgKzM1LDEwIEBADQo+
-ICAgKiAgICAgICBzdGF0ZSBmb3IgdGhpcyB0cmlwIHBvaW50DQo+ICAgKiAgICBiLiBpZiB0aGUg
-dHJlbmQgaXMgVEhFUk1BTF9UUkVORF9EUk9QUElORywgdXNlIGxvd2VyIGNvb2xpbmcNCj4gICAq
-ICAgICAgIHN0YXRlIGZvciB0aGlzIHRyaXAgcG9pbnQNCj4gKyAqICAgIGMuIGlmIHRoZSB0cmVu
-ZCBpcyBUSEVSTUFMX1RSRU5EX1JBSVNFX0ZVTEwsIHVzZSB1cHBlciBsaW1pdA0KPiArICogICAg
-ICAgZm9yIHRoaXMgdHJpcCBwb2ludA0KPiArICogICAgZC4gaWYgdGhlIHRyZW5kIGlzIFRIRVJN
-QUxfVFJFTkRfRFJPUF9GVUxMLCB1c2UgbG93ZXIgbGltaXQNCj4gKyAqICAgICAgIGZvciB0aGlz
-IHRyaXAgcG9pbnQNCj4gICAqLw0KPiAgc3RhdGljIHVuc2lnbmVkIGxvbmcgZ2V0X3RhcmdldF9z
-dGF0ZShzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFuY2UsDQo+ICAJCQkJCWVudW0gdGhl
-cm1hbF90cmVuZCB0cmVuZCkNCj4gQEAgLTQ0LDEyICs0OCwyMyBAQCBzdGF0aWMgdW5zaWduZWQg
-bG9uZyBnZXRfdGFyZ2V0X3N0YXRlKHN0cnVjdA0KPiB0aGVybWFsX2luc3RhbmNlICppbnN0YW5j
-ZSwNCj4gDQo+ICAJY2Rldi0+b3BzLT5nZXRfY3VyX3N0YXRlKGNkZXYsICZjdXJfc3RhdGUpOw0K
-PiANCj4gLQlpZiAodHJlbmQgPT0gVEhFUk1BTF9UUkVORF9SQUlTSU5HKSB7DQo+ICsJc3dpdGNo
-ICh0cmVuZCkgew0KPiArCWNhc2UgVEhFUk1BTF9UUkVORF9SQUlTSU5HOg0KPiAgCQljdXJfc3Rh
-dGUgPSBjdXJfc3RhdGUgPCBpbnN0YW5jZS0+dXBwZXIgPw0KPiAgCQkJICAgIChjdXJfc3RhdGUg
-KyAxKSA6IGluc3RhbmNlLT51cHBlcjsNCj4gLQl9IGVsc2UgaWYgKHRyZW5kID09IFRIRVJNQUxf
-VFJFTkRfRFJPUFBJTkcpIHsNCj4gKwkJYnJlYWs7DQo+ICsJY2FzZSBUSEVSTUFMX1RSRU5EX0RS
-T1BQSU5HOg0KPiAgCQljdXJfc3RhdGUgPSBjdXJfc3RhdGUgPiBpbnN0YW5jZS0+bG93ZXIgPw0K
-PiAgCQkJICAgIChjdXJfc3RhdGUgLSAxKSA6IGluc3RhbmNlLT5sb3dlcjsNCj4gKwkJYnJlYWs7
-DQo+ICsJY2FzZSBUSEVSTUFMX1RSRU5EX1JBSVNFX0ZVTEw6DQo+ICsJCWN1cl9zdGF0ZSA9IGlu
-c3RhbmNlLT51cHBlcjsNCj4gKwkJYnJlYWs7DQo+ICsJY2FzZSBUSEVSTUFMX1RSRU5EX0RST1Bf
-RlVMTDoNCj4gKwkJY3VyX3N0YXRlID0gaW5zdGFuY2UtPmxvd2VyOw0KPiArCQlicmVhazsNCj4g
-KwlkZWZhdWx0Og0KPiArCQlicmVhazsNCj4gIAl9DQo+IA0KPiAgCXJldHVybiBjdXJfc3RhdGU7
-DQo+IC0tDQo+IDEuNy45LjUNCj4gDQo+IA0KDQo=
+On Sun, Nov 18, 2012 at 09:07:22PM -0500, Alan Stern wrote:
+> Hey...
+
+Hey, again. :P
+
+> > So, at least for SATA, I think what autopm can do is...
+> > 
+> > * Trigger zpodd if possible.
+> > 
+> > * Trigger suspend iff polling isn't happening on the device.
+> 
+> That sums it up nicely.  Of course, the PM core is unaware of details
+> such as media polling.  What we can do is have the SATA runtime-idle
+> method return -EBUSY if the device isn't a ZPODD and if polling is
+> enabled.  Unfortunately I don't think there's any way currently to
+> trigger autopm when the user turns off polling.  Maybe something could
+> be added to the appropriate sysfs handler.
+
+Given that genhd event polling and PM are likely to interact with each
+other, I think it would be a good idea to implement a proper way for
+the two to communicate.  Dunno what it should be tho.  The tricky part
+would be mapping the block device to the underlying hardware one.
+
+Thanks.
+
+-- 
+tejun
