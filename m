@@ -1,77 +1,54 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 07/10] block: add a new interface to block events
-Date: Mon, 19 Nov 2012 11:21:53 +0800
-Message-ID: <50A9A5D1.5060900@intel.com>
-References: <Pine.LNX.4.44L0.1211182058450.10879-100000@netrider.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 1/2] Thermal: Introduce THERMAL_TREND_RAISE_FULL and and
+ THERMAL_TREND_DROP_FULL
+Date: Mon, 19 Nov 2012 16:21:12 +0800
+Message-ID: <1353313272.6468.3.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:46917 "EHLO mga03.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:28718 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751859Ab2KSDVm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 18 Nov 2012 22:21:42 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1211182058450.10879-100000@netrider.rowland.org>
+	id S1752829Ab2KSIVY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 19 Nov 2012 03:21:24 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, Amit Kachhap <amit.kachhap@linaro.org>, durga <durgadoss.r@intel.com>
 
-On 11/19/2012 10:07 AM, Alan Stern wrote:
-> On Sun, 18 Nov 2012, Tejun Heo wrote:
-> 
->> Hey, Alan.
-> 
-> Hey...
-> 
->> It's controlled by /sys/class/scsi_host/hostX/link_power_management.
->> Once enabled, the power saving is completedly handled by hardware.  If
->> link stays idle longer than certain duration, the hardware initiates
->> low power state and leaves it when something needs to happen.
->>
->>>> So, this whole autopm thing doesn't sound like a good idea to me.
->>>
->>> No doubt it's better suited to some devices than to others.
->>
->> Yeah, SATA seems to need a different approach than USB.
-> 
-> Based on your description, I agree.
-> 
->>> That may be true for SATA.  For USB optical drives, it does make sense
->>> to power-down the host controller when the drive isn't in use.  USB
->>> suspend/resume takes on the order of 50-100 ms or so.
->>
->> I see.  For SATA too, the controller / link bring up doesn't take too
->> long.  The crappy part is what the attached, especially ATAPI, devices
->> would do after such events as those events will be visible to them
->> basically as random link resets.
->>
->> So, at least for SATA, I think what autopm can do is...
->>
->> * Trigger zpodd if possible.
->>
->> * Trigger suspend iff polling isn't happening on the device.
-> 
-> That sums it up nicely.  Of course, the PM core is unaware of details
-> such as media polling.  What we can do is have the SATA runtime-idle
-> method return -EBUSY if the device isn't a ZPODD and if polling is
-> enabled.  Unfortunately I don't think there's any way currently to
-> trigger autopm when the user turns off polling.  Maybe something could
-> be added to the appropriate sysfs handler.
+>From cd05abc4929c21275e3674fb303ca6007f8415a0 Mon Sep 17 00:00:00 2001
+From: Zhang Rui <rui.zhang@intel.com>
+Date: Mon, 19 Nov 2012 15:33:51 +0800
+Subject: [PATCH 1/2] Introduce THERMAL_TREND_RAISE_FULL and
+ THERMAL_TREND_DROP_FULL
 
-OK, thanks for your(both of you) suggestions.
+These two new thermal_trend types are used to tell the governor
+that the temeprature is raising/dropping quickly.
 
-But probably for ZPODD devices first, as it has a clear use case and
-should already have productions. For async notification capable ODDs,
-I'll leave it for someone else or maybe at a later time if I can get
-such a device to test on.
+Thermal cooling governors should handle this situation and make
+proper decisions, e.g. set cooling state to upper/lower limit directly
+instead of one step each time for step_wise governor.
 
-To conclude, the ata port's runtime idle callback will return 0 when:
-1 It attached a ZPODD capable ODD;
-2 Or it attached a hard disk.
-For all other cases, it will return -EBUSY.
-Does this look correct?
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ include/linux/thermal.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks,
-Aaron
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 807f214..dcaa400 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -68,6 +68,8 @@ enum thermal_trend {
+ 	THERMAL_TREND_STABLE, /* temperature is stable */
+ 	THERMAL_TREND_RAISING, /* temperature is raising */
+ 	THERMAL_TREND_DROPPING, /* temperature is dropping */
++	THERMAL_TREND_RAISE_FULL, /* apply highest cooling action */
++	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
+ };
+ 
+ /* Events supported by Thermal Netlink */
+-- 
+1.7.9.5
+
+
 
