@@ -1,49 +1,57 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] PCI/PM: Keep runtime PM enabled for unbound PCI devices
-Date: Mon, 19 Nov 2012 11:31:01 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211191129060.1598-100000@iolanthe.rowland.org>
-References: <1353294849-22588-1-git-send-email-ying.huang@intel.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1353294849-22588-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Bill Pemberton <wfp5p@virginia.edu>
+Subject: [PATCH 396/493] cpufreq: remove use of __devexit
+Date: Mon, 19 Nov 2012 13:25:45 -0500
+Message-ID: <1353349642-3677-396-git-send-email-wfp5p@virginia.edu>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from viridian.itc.Virginia.EDU ([128.143.12.139]:41486 "EHLO
+	viridian.itc.virginia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754250Ab2KSSew (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Nov 2012 13:34:52 -0500
+In-Reply-To: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: gregkh@linuxfoundation.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, 19 Nov 2012, Huang Ying wrote:
+CONFIG_HOTPLUG is going away as an option so __devexit is no
+longer needed.
 
-> For unbound PCI devices, what we need is:
-> 
->  - Always in D0 state, because some devices does not work again after
->    being put into D3 by the PCI bus.
-> 
->  - In SUSPENDED state if allowed, so that the parent devices can still
->    be put into low power state.
-> 
-> To satisfy these requirement, the runtime PM for the unbound PCI
-> devices are disabled and set to SUSPENDED state.  One issue of this
-> solution is that the PCI devices will be put into SUSPENDED state even
-> if the SUSPENDED state is forbidden via the sysfs interface
-> (.../power/control) of the device.  This is not an issue for most
-> devices, because most PCI devices are not used at all if unbounded.
-> But there are exceptions.  For example, unbound VGA card can be used
-> for display, but suspend its parents make it stop working.
-> 
-> To fix the issue, we keep the runtime PM enabled when the PCI devices
-> are unbound.  But the runtime PM callbacks will do nothing if the PCI
-> devices are unbound.  This way, we can put the PCI devices into
-> SUSPENDED state without put the PCI devices into D3 state.
-> 
-> Known issue: after some changing, pci_dev->driver is used to indicate
-> whether the PCI devices are bound and whether the runtime PM callbacks
-> should do nothing.  Maybe it is better to use a dedicated flag such as
-> .skip_rtpm_callbacks.  That may improve code readability.
+Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl> 
+Cc: cpufreq@vger.kernel.org 
+Cc: linux-pm@vger.kernel.org 
+---
+ drivers/cpufreq/longhaul.c    | 2 +-
+ drivers/cpufreq/powernow-k8.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I think it's okay like this, especially if you add a comment in 
-pci_runtime_suspend, pci_runtime_resume, and pci_runtime_idle 
-explaining that when pci_dev->driver isn't set, the device should 
-always remain in D0 regardless of the runtime status.
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index 8d7ebb2..f1fa500 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -930,7 +930,7 @@ static int __cpuinit longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
+-static int __devexit longhaul_cpu_exit(struct cpufreq_policy *policy)
++static int longhaul_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	cpufreq_frequency_table_put_attr(policy->cpu);
+ 	return 0;
+diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+index 1fd0c8a..056faf6 100644
+--- a/drivers/cpufreq/powernow-k8.c
++++ b/drivers/cpufreq/powernow-k8.c
+@@ -1186,7 +1186,7 @@ err_out:
+ 	return -ENODEV;
+ }
+ 
+-static int __devexit powernowk8_cpu_exit(struct cpufreq_policy *pol)
++static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
+ {
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 
+-- 
+1.8.0
 
-Alan Stern
