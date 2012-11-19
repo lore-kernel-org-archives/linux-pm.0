@@ -1,78 +1,57 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V6 1/2] Thermal: Add ST-Ericsson DB8500 thermal driver.
-Date: Mon, 19 Nov 2012 08:42:45 +0800
-Message-ID: <1353285765.2204.2.camel@rzhang1-mobl4>
-References: <1352977003-25095-1-git-send-email-hongbo.zhang@linaro.com>
-	 <1352977003-25095-2-git-send-email-hongbo.zhang@linaro.com>
-	 <1352983878.2080.25.camel@rzhang1-mobl4> <50A8F0DF.8040509@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v9 07/10] block: add a new interface to block events
+Date: Sun, 18 Nov 2012 21:07:22 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211182058450.10879-100000@netrider.rowland.org>
+References: <20121118233531.GC25790@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <50A8F0DF.8040509@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: "hongbo.zhang" <hongbo.zhang@linaro.org>, linaro-kernel@lists.linaro.org, linaro-dev@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@linaro.org, STEricsson_nomadik_linux@list.st.com, kernel@igloocommunity.org, "hongbo.zhang" <hongbo.zhang@linaro.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20121118233531.GC25790@mtj.dyndns.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2012-11-18 at 15:29 +0100, Francesco Lavra wrote:
-> On 11/15/2012 01:51 PM, Zhang Rui wrote:
-> > On Thu, 2012-11-15 at 18:56 +0800, hongbo.zhang wrote:
-> >> From: "hongbo.zhang" <hongbo.zhang@linaro.com>
-> >>
-> >> This driver is based on the thermal management framework in thermal_sys.c. A
-> >> thermal zone device is created with the trip points to which cooling devices
-> >> can be bound, the current cooling device is cpufreq, e.g. CPU frequency is
-> >> clipped down to cool the CPU, and other cooling devices can be added and bound
-> >> to the trip points dynamically.  The platform specific PRCMU interrupts are
-> >> used to active thermal update when trip points are reached.
-> >>
-> >> Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
-> >> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Reviewed-by: Francesco Lavra <francescolavra.fl@gmail.com>
-> > 
-> > Patch is refreshed and applied to thermal next.
-> > refreshed patch attached.
-> [...]
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 99b6587..d96da07 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -101,5 +101,25 @@ config EXYNOS_THERMAL
-> >  	  If you say yes here you get support for TMU (Thermal Managment
-> >  	  Unit) on SAMSUNG EXYNOS series of SoC.
-> >  
-> > +config DB8500_THERMAL
-> > +	bool "DB8500 thermal management"
-> > +	depends on ARCH_U8500
-> 
-> Shouldn't it depend on THERMAL as well, as in Hongbo's original patch?
-> 
-all of these options are available only if CONFIG_THERMAL is set.
-please refer to commit 72e198978223f2020f7f59a6e2520f2b7d005e72 in the
-thermal next tree.
+On Sun, 18 Nov 2012, Tejun Heo wrote:
 
-thanks,
-rui
-> > +	default y
-> > +	help
-> > +	  Adds DB8500 thermal management implementation according to the thermal
-> > +	  management framework. A thermal zone with several trip points will be
-> > +	  created. Cooling devices can be bound to the trip points to cool this
-> > +	  thermal zone if trip points reached.
-> > +
-> > +config DB8500_CPUFREQ_COOLING
-> > +	tristate "DB8500 cpufreq cooling"
-> > +	depends on ARCH_U8500
-> > +	depends on CPU_THERMAL
-> > +	default y
-> > +	help
-> > +	  Adds DB8500 cpufreq cooling devices, and these cooling devices can be
-> > +	  bound to thermal zone trip points. When a trip point reached, the
-> > +	  bound cpufreq cooling device turns active to set CPU frequency low to
-> > +	  cool down the CPU.
-> >  
-> >  endif
+> Hey, Alan.
+
+Hey...
+
+> It's controlled by /sys/class/scsi_host/hostX/link_power_management.
+> Once enabled, the power saving is completedly handled by hardware.  If
+> link stays idle longer than certain duration, the hardware initiates
+> low power state and leaves it when something needs to happen.
 > 
-> --
-> Francesco
+> > > So, this whole autopm thing doesn't sound like a good idea to me.
+> > 
+> > No doubt it's better suited to some devices than to others.
+> 
+> Yeah, SATA seems to need a different approach than USB.
+
+Based on your description, I agree.
+
+> > That may be true for SATA.  For USB optical drives, it does make sense
+> > to power-down the host controller when the drive isn't in use.  USB
+> > suspend/resume takes on the order of 50-100 ms or so.
+> 
+> I see.  For SATA too, the controller / link bring up doesn't take too
+> long.  The crappy part is what the attached, especially ATAPI, devices
+> would do after such events as those events will be visible to them
+> basically as random link resets.
+> 
+> So, at least for SATA, I think what autopm can do is...
+> 
+> * Trigger zpodd if possible.
+> 
+> * Trigger suspend iff polling isn't happening on the device.
+
+That sums it up nicely.  Of course, the PM core is unaware of details
+such as media polling.  What we can do is have the SATA runtime-idle
+method return -EBUSY if the device isn't a ZPODD and if polling is
+enabled.  Unfortunately I don't think there's any way currently to
+trigger autopm when the user turns off polling.  Maybe something could
+be added to the appropriate sysfs handler.
+
+Alan Stern
+
