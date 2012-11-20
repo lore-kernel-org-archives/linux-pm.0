@@ -1,280 +1,108 @@
-From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: [PATCH v3] cpufreq: ondemand: handle SW coordinated CPUs
-Date: Tue, 20 Nov 2012 13:06:16 +0100
-Message-ID: <1353413176-21723-2-git-send-email-fabio.baltieri@linaro.org>
-References: <1353413176-21723-1-git-send-email-fabio.baltieri@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1353413176-21723-1-git-send-email-fabio.baltieri@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
+From: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Tue, 20 Nov 2012 16:48:18 +0200
+Message-ID: <50AB9832.90709@ti.com>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enigF62DFAACA269378853BB95CC"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1353149747-31871-2-git-send-email-acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rickard Andersson <rickard.andersson@stericsson.com>
+--------------enigF62DFAACA269378853BB95CC
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This patch fixes a bug that occurred when we had load on a secondary CPU
-and the primary CPU was sleeping. Only one sampling timer was spawned
-and it was spawned as a deferred timer on the primary CPU, so when a
-secondary CPU had a change in load this was not detected by the ondemand
-governor.
+Hi,
 
-This patch make sure that deferred timers are run on all CPUs in the
-case of software controlled CPUs that run on the same frequency.
+On 2012-11-17 12:55, Alexandre Courbot wrote:
 
-Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
-Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
----
- drivers/cpufreq/cpufreq_ondemand.c | 141 ++++++++++++++++++++++++++++++++-----
- 1 file changed, 122 insertions(+), 19 deletions(-)
+A few questions after looking at the documentation:
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 396322f..430f614 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -93,6 +93,7 @@ struct cpu_dbs_info_s {
- 	 * when user is changing the governor or limits.
- 	 */
- 	struct mutex timer_mutex;
-+	ktime_t time_stamp;
- };
- static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
- 
-@@ -285,7 +286,7 @@ static void update_sampling_rate(unsigned int new_rate)
- 		policy = cpufreq_cpu_get(cpu);
- 		if (!policy)
- 			continue;
--		dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
-+		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- 		cpufreq_cpu_put(policy);
- 
- 		mutex_lock(&dbs_info->timer_mutex);
-@@ -305,7 +306,7 @@ static void update_sampling_rate(unsigned int new_rate)
- 			cancel_delayed_work_sync(&dbs_info->work);
- 			mutex_lock(&dbs_info->timer_mutex);
- 
--			schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work,
-+			schedule_delayed_work_on(cpu, &dbs_info->work,
- 						 usecs_to_jiffies(new_rate));
- 
- 		}
-@@ -449,6 +450,16 @@ static struct attribute_group dbs_attr_group = {
- 
- /************************** sysfs end ************************/
- 
-+static bool dbs_sw_coordinated_cpus(struct cpu_dbs_info_s *dbs_info)
-+{
-+	struct cpufreq_policy *policy = dbs_info->cur_policy;
-+
-+	if (cpumask_weight(policy->cpus) > 1)
-+		return true;
-+	else
-+		return false;
-+}
-+
- static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
- {
- 	if (dbs_tuners_ins.powersave_bias)
-@@ -598,20 +609,41 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
- 
- static void do_dbs_timer(struct work_struct *work)
- {
-+	struct delayed_work *dw = to_delayed_work(work);
- 	struct cpu_dbs_info_s *dbs_info =
- 		container_of(work, struct cpu_dbs_info_s, work.work);
--	unsigned int cpu = dbs_info->cpu;
--	int sample_type = dbs_info->sample_type;
--
-+	int sample_type;
- 	int delay;
-+	bool sample = true;
-+
-+	if (dbs_sw_coordinated_cpus(dbs_info)) {
-+		ktime_t time_now;
-+		s64 delta_us;
-+
-+		/* use leader CPU's dbs_info */
-+		dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info->cpu);
-+		mutex_lock(&dbs_info->timer_mutex);
- 
--	mutex_lock(&dbs_info->timer_mutex);
-+		time_now = ktime_get();
-+		delta_us = ktime_us_delta(time_now, dbs_info->time_stamp);
-+
-+		/* Do nothing if we recently have sampled */
-+		if (delta_us < (s64)(dbs_tuners_ins.sampling_rate / 2))
-+			sample = false;
-+		else
-+			dbs_info->time_stamp = time_now;
-+	} else {
-+		mutex_lock(&dbs_info->timer_mutex);
-+	}
-+
-+	sample_type = dbs_info->sample_type;
- 
- 	/* Common NORMAL_SAMPLE setup */
- 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
- 	if (!dbs_tuners_ins.powersave_bias ||
- 	    sample_type == DBS_NORMAL_SAMPLE) {
--		dbs_check_cpu(dbs_info);
-+		if (sample)
-+			dbs_check_cpu(dbs_info);
- 		if (dbs_info->freq_lo) {
- 			/* Setup timer for SUB_SAMPLE */
- 			dbs_info->sample_type = DBS_SUB_SAMPLE;
-@@ -627,32 +659,41 @@ static void do_dbs_timer(struct work_struct *work)
- 				delay -= jiffies % delay;
- 		}
- 	} else {
--		__cpufreq_driver_target(dbs_info->cur_policy,
--			dbs_info->freq_lo, CPUFREQ_RELATION_H);
-+		if (sample)
-+			__cpufreq_driver_target(dbs_info->cur_policy,
-+						dbs_info->freq_lo,
-+						CPUFREQ_RELATION_H);
- 		delay = dbs_info->freq_lo_jiffies;
- 	}
--	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
-+	schedule_delayed_work_on(smp_processor_id(), dw, delay);
- 	mutex_unlock(&dbs_info->timer_mutex);
- }
- 
--static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
-+static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info, int cpu)
- {
- 	/* We want all CPUs to do sampling nearly on same jiffy */
- 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
-+	struct cpu_dbs_info_s *dbs_info_local = &per_cpu(od_cpu_dbs_info, cpu);
- 
- 	if (num_online_cpus() > 1)
- 		delay -= jiffies % delay;
- 
-+	cancel_delayed_work_sync(&dbs_info_local->work);
- 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
--	INIT_DEFERRABLE_WORK(&dbs_info->work, do_dbs_timer);
--	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
-+	schedule_delayed_work_on(cpu, &dbs_info_local->work, delay);
- }
- 
--static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
-+static inline void dbs_timer_exit(int cpu)
- {
-+	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- 	cancel_delayed_work_sync(&dbs_info->work);
- }
- 
-+static void dbs_timer_exit_per_cpu(struct work_struct *dummy)
-+{
-+	dbs_timer_exit(smp_processor_id());
-+}
-+
- /*
-  * Not all CPUs want IO time to be accounted as busy; this dependson how
-  * efficient idling at a higher frequency/voltage is.
-@@ -676,6 +717,43 @@ static int should_io_be_busy(void)
- 	return 0;
- }
- 
-+static int __cpuinit cpu_callback(struct notifier_block *nfb,
-+				  unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+	struct device *cpu_dev;
-+	struct cpu_dbs_info_s *dbs_info;
-+
-+	dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-+
-+	/* use leader CPU's dbs_info */
-+	if (dbs_sw_coordinated_cpus(dbs_info))
-+		dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info->cpu);
-+
-+	cpu_dev = get_cpu_device(cpu);
-+	if (cpu_dev) {
-+		switch (action) {
-+		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
-+			dbs_timer_init(dbs_info, cpu);
-+			break;
-+		case CPU_DOWN_PREPARE:
-+		case CPU_DOWN_PREPARE_FROZEN:
-+			dbs_timer_exit(cpu);
-+			break;
-+		case CPU_DOWN_FAILED:
-+		case CPU_DOWN_FAILED_FROZEN:
-+			dbs_timer_init(dbs_info, cpu);
-+			break;
-+		}
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block __refdata ondemand_cpu_notifier = {
-+	.notifier_call = cpu_callback,
-+};
-+
- static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 				   unsigned int event)
- {
-@@ -704,9 +782,13 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 			if (dbs_tuners_ins.ignore_nice)
- 				j_dbs_info->prev_cpu_nice =
- 						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-+
-+			mutex_init(&j_dbs_info->timer_mutex);
-+			INIT_DEFERRABLE_WORK(&j_dbs_info->work, do_dbs_timer);
-+
-+			j_dbs_info->rate_mult = 1;
- 		}
- 		this_dbs_info->cpu = cpu;
--		this_dbs_info->rate_mult = 1;
- 		ondemand_powersave_bias_init_cpu(cpu);
- 		/*
- 		 * Start the timerschedule work, when this governor
-@@ -736,21 +818,42 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		}
- 		mutex_unlock(&dbs_mutex);
- 
--		mutex_init(&this_dbs_info->timer_mutex);
--		dbs_timer_init(this_dbs_info);
-+		/* If SW coordinated CPUs then register notifier */
-+		if (dbs_sw_coordinated_cpus(this_dbs_info)) {
-+			register_hotcpu_notifier(&ondemand_cpu_notifier);
-+
-+			/* Initiate timer time stamp */
-+			this_dbs_info->time_stamp = ktime_get();
-+
-+			for_each_cpu(j, policy->cpus) {
-+				struct cpu_dbs_info_s *j_dbs_info;
-+
-+				j_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-+				dbs_timer_init(j_dbs_info, j);
-+			}
-+		} else {
-+			dbs_timer_init(this_dbs_info, cpu);
-+		}
- 		break;
- 
- 	case CPUFREQ_GOV_STOP:
--		dbs_timer_exit(this_dbs_info);
-+		dbs_timer_exit(cpu);
- 
- 		mutex_lock(&dbs_mutex);
- 		mutex_destroy(&this_dbs_info->timer_mutex);
- 		dbs_enable--;
- 		mutex_unlock(&dbs_mutex);
--		if (!dbs_enable)
-+		if (!dbs_enable) {
- 			sysfs_remove_group(cpufreq_global_kobject,
- 					   &dbs_attr_group);
- 
-+			if (dbs_sw_coordinated_cpus(this_dbs_info)) {
-+				/* Make sure all pending timers/works are
-+				 * stopped. */
-+				schedule_on_each_cpu(dbs_timer_exit_per_cpu);
-+				unregister_hotcpu_notifier(&ondemand_cpu_notifier);
-+			}
-+		}
- 		break;
- 
- 	case CPUFREQ_GOV_LIMITS:
--- 
-1.7.12.1
+> +Example
+> +-------
+> +Here are example sequences declared within a backlight device that use=
+ all the
+> +supported resources types:
+> +
+> +	backlight {
+> +		compatible =3D "pwm-backlight";
+> +		...
+> +
+> +		/* resources used by the power sequences */
+> +		pwms =3D <&pwm 2 5000000>;
+> +		pwm-names =3D "backlight";
+> +		power-supply =3D <&backlight_reg>;
+> +
+> +		power-sequences {
+> +			power-on {
+> +				step0 {
+> +					type =3D "regulator";
+> +					id =3D "power";
+> +					enable;
+> +				};
+> +				step1 {
+> +					type =3D "delay";
+> +					delay =3D <10000>;
+> +				};
+> +				step2 {
+> +					type =3D "pwm";
+> +					id =3D "backlight";
+> +					enable;
+> +				};
+> +				step3 {
+> +					type =3D "gpio";
+> +					gpio =3D <&gpio 28 0>;
+> +					value =3D <1>;
+> +				};
+> +			};
+
+I guess there's a reason, but the above looks a bit inconsistent. For
+gpio you define the gpio resource inside the step. For power and pwm the
+resource is defined before the steps. Why wouldn't "pwm =3D <&pwm 2
+5000000>;" work in step2?
+
+> +When a power sequence is run, its steps is executed one after the othe=
+r until
+> +one step fails or the end of the sequence is reached.
+
+The document doesn't give any hint of what the driver should do if
+running the power sequence fails. Run the "opposite" power sequence?
+Will that work for all resources? I'm mainly thinking of a case where
+each enable of the resource should be matched by a disable, i.e. you
+can't call disable if no enable was called.
+
+ Tomi
+
+
+
+--------------enigF62DFAACA269378853BB95CC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQq5gyAAoJEPo9qoy8lh71Q4wP/ishGG4j6CsP9aN9+MiI8HCA
+N1SS7vzaR8ozlor2yF2GuRmtQKHOavOV2k/GRoVB2ewdsJSpcuijyHELfXC+M4re
+vxdkhawlkWKn+xC8pNBMoWrhUZFKeo9/Xk7dTpxXaweKTvGzmIPHSiAZn62jvV7C
+ZEIafQqkOAtEVKI7GrDAXqSObNyUgA2ASP9VLAu6nRq3PpoYRqQtrRP1lGP9naCp
+xkYUYDoXzAAyjIw0nnyMDLtgex0KEpA10vTMknMbFOhB34cSATI13saZdhtEnLOl
+G9qo3m7eYAYfg5cngFINB80pJ5pv7frZwwsJZ2miUDOykw/PJpSk2RpQA1CxjqBC
+4yJkPPY7gbQQXh5G64BxoIuNEI4zVlJVfAzyTuurqJ0gRhmwdSz8AbRObAeT2Mbw
+YiDmk6xV8v+LP6nJzSAeOtV0+CJwz3BaCJMqfANkNsUoK/J5Ikr5I00KhPB4lCdM
+pPYVOHEh7fi9KcZnnJBH5vjEFZnP9x5ukLZbc/vdfukvQSg/yvL6NwZPoE5ZY56i
+Ojgy71IZ8K0HmJekmr0Ejlp7PLXl0XP2qZfDSX7FHey+ogCh7FKRcmEIgaun5ffw
+Ddm3t1QWZq1j/8Ht8Uy08BOOyrp48L7sHjrAUx38H9m7eTQKznJD0gPwqcfBwZju
+n4XHo9Z32v3RbP8Ht1EF
+=4xsL
+-----END PGP SIGNATURE-----
+
+--------------enigF62DFAACA269378853BB95CC--
