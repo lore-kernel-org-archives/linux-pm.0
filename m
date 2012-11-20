@@ -1,52 +1,70 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Tue, 20 Nov 2012 16:59:57 +0800
-Message-ID: <50AB468D.1060902@intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <1352443922-13734-7-git-send-email-aaron.lu@intel.com> <20121112191303.GE5560@mtj.dyndns.org> <50A2FF6F.3080603@intel.com> <20121118150004.GJ7306@mtj.dyndns.org> <50A9A2F4.3020006@intel.com> <20121119145605.GC15971@htj.dyndns.org> <50AB1C78.9060905@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-Reply-To: <50AB1C78.9060905@intel.com>
-Sender: linux-scsi-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH v3] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Tue, 20 Nov 2012 13:06:15 +0100
+Message-ID: <1353413176-21723-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:40829 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130Ab2KTMGw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Nov 2012 07:06:52 -0500
+Received: by mail-wi0-f178.google.com with SMTP id hm6so859682wib.1
+        for <linux-pm@vger.kernel.org>; Tue, 20 Nov 2012 04:06:51 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 
-On 11/20/2012 02:00 PM, Aaron Lu wrote:
-> On 11/19/2012 10:56 PM, Tejun Heo wrote:
->> I really think we need a way for (auto)pm and event polling to talk to
->> each other so that autopm can tell event poll to sod off while pm is
->> in effect.  Trying to solve this from inside libata doesn't seem
->> right.  The problem, again, seems to be figuring out which hardware
->> device maps to which block device.  Hmmm... Any good ideas?
-> 
-> A possible way of doing this is using pm qos.
-> 
-> We currently have 2 pm qos flags, NO_POWER_OFF and REMOTE_WAKEUP, and we
-> can add another one: NO_POLL, use it like the following:
-> 1 Set the NO_POLL pm qos flag when the underlying driver thinks it is no
->   longer necessary. In the ZPODD's case, it should be set when the
->   device is to be powered off;
-> 2 Clear it when poll is necessary again. In the ZPODD's case, when power
->   is re-gained, this flag will be cleared.
+Hi all,
 
+this patch fixes an issue with the ondemand governor, which currently
+does not handle properly software coordinated CPUs - i.e. CPUs groups
+with a common clock and a single governor, as in the u8500:
 
-> 3 In the disk_events_workfn, check if this flag is set, if so, simply
->   return.
+root@genericarmv7a:~# cpufreq-info -d
+DB8500
+root@genericarmv7a:~# cpufreq-info -a
+0 1
 
-It should be, skip calling disk->fops->check_events, but still queue the
-work for next time's poll.
+In this case, with a non-patched kernel, if a process is loading only
+the secondary CPU while the first one is idle, the ondemand governor may
+take a long time before firing up the load sampling routine
+(dbs_check_cpu()), leaving both cores running at minimum frequency even
+if one of them is fully loaded.
 
--Aaron
+The problem can be reproduced with standard utils, as in:
 
-> 
-> The disk->driverfs_dev can be used to host the pm qos flag, ATA layer
-> can access it through ata_device->sdev->sdev_gendev.
-> 
-> Is this OK?
-> 
-> Thanks,
-> Aaron
-> 
+root@genericarmv7a:~# cpufreq-info --cpu 1 -f
+200000
+root@genericarmv7a:~# taskset 2 yes > /dev/null &
+root@genericarmv7a:~# sleep 3
+root@genericarmv7a:~# cpufreq-info --cpu 1 -f
+200000
+
+while there is no other process loading the other core - here I'm using
+a minimal oe-core image.
+
+To fix the problem, this patch modifies the governor to use an
+individual deferrable work for each CPU, instead that just one for the
+main one.
+
+This patch has been tested on an U8500 system (dual cortex-A9) and on a
+standard x86_64 dual-core laptop.
+
+The patch is based on the original one by Rickard Andersson, developed
+for ST-Ericsson and posted some months ago on the list, hence I'm
+tagging as "v3" to avoid confusion.
+
+Regards,
+Fabio
+
+---
+
+Rickard Andersson (1):
+  cpufreq: ondemand: handle SW coordinated CPUs
+
+ drivers/cpufreq/cpufreq_ondemand.c | 141 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 122 insertions(+), 19 deletions(-)
+
+-- 
+1.7.12.1
 
