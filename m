@@ -1,109 +1,89 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 1/2] thermal: exynos: Fix wrong bit to control tmu
- core
-Date: Tue, 20 Nov 2012 13:53:12 +0800
-Message-ID: <1353390792.3833.1.camel@rzhang1-mobl4>
-References: <007301cdc6ba$067107e0$135317a0$%choi@samsung.com>
-	 <CAH9JG2UYsQ6VFMO4COyEr9fBzCL03+37bXTN=AgjKbD7NjR1MA@mail.gmail.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Tue, 20 Nov 2012 14:00:24 +0800
+Message-ID: <50AB1C78.9060905@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <1352443922-13734-7-git-send-email-aaron.lu@intel.com> <20121112191303.GE5560@mtj.dyndns.org> <50A2FF6F.3080603@intel.com> <20121118150004.GJ7306@mtj.dyndns.org> <50A9A2F4.3020006@intel.com> <20121119145605.GC15971@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:29596 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750823Ab2KTFxV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Nov 2012 00:53:21 -0500
-In-Reply-To: <CAH9JG2UYsQ6VFMO4COyEr9fBzCL03+37bXTN=AgjKbD7NjR1MA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20121119145605.GC15971@htj.dyndns.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: Jonghwan Choi <jhbird.choi@samsung.com>, "jonghwa3.lee" <jonghwa3.lee@samsung.com>, open list <linux-kernel@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, dg77.kim@samsung.com
 
-On Tue, 2012-11-20 at 10:39 +0900, Kyungmin Park wrote:
-> On 11/20/12, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
-> > [0]bit is used to enable/disable tmu core. [1] bit is a reserved bit.
-> >
-> > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
-> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
+On 11/19/2012 10:56 PM, Tejun Heo wrote:
+> Hey, Aaron.
+> 
+> On Mon, Nov 19, 2012 at 11:09:40AM +0800, Aaron Lu wrote:
+>>> What I'm confused about is what autopm does for devices w/o zpodd.
+>>> What happens then?  Is it gonna leave power on for the device and,
+>>> say, go on to suspend the controller?  But, how would that work for,
+>>> say, future devices with async notification for media events?
+>>
+>> Maybe we shouldn't allow autopm for such devices?
+> 
+> Yeah, maybe.  It would be nice to be able to automatically power off
+> disks and ports which aren't being used tho.
 
-Amit and Donggeun Kim,
+Yes, we can do this.
+I'm just saying, if an ODD is using async notification, we probably
+shouldn't enable autopm for it at the moment.
 
-any comments on this patch?
+> 
+>>> That said, I can't say the snooping is pretty.  It's a rather nasty
+>>> thing to do.  So, libata now wants information from the event polling
+>>> in block layer, but reaching for block_device from ata_devices is
+>>> nasty too.  Hmmm... but aren't you already doing that to block polling
+>>> on a powered down device?
+>>
+>> I was feeling brain damaged by this for some time :-)
+>>
+>> Basically, only ATA layer is aware of the power off thing, and sr knows
+>> nothing about this(or it is not supposed to know this, at least, this is
+>> what SCSI people think) and once powered off, I do not want the poll to
+>> disturb the device, so I need to block the poll. I can't come up with
+>> another way to achieve this except this nasty way.
+>>
+>> James suggests me to keep the poll, but emulate the command. The problem
+>> with this is, the autopm for resume will kick in on each poll, so I'll
+>> need to decide if power up the ODD for this time's resume is needed in
+>> port's runtime resume callback. This made things complex and it also put
+>> too much logic in the resume callback, which is not desired. And even if
+>> I keep the ODD in powered off state by emulating this poll command, its
+>> ancestor devices will still be resumed, and I may need to do some trick
+>> in their resume callback to avoid needless power/state transitions. This
+>> doesn't feel like an elegant way to solve this either.
+>>
+>> So yes, I'm still using this _nasty_ way to make the ODD stay in powered
+>> off state as long as possible. But if there is other elegant ways to
+>> solve this, I would appreciate it and happily using it. Personally, I
+>> hope we can make sr aware of ZPODD, that would make the pain gone.
+> 
+> I really think we need a way for (auto)pm and event polling to talk to
+> each other so that autopm can tell event poll to sod off while pm is
+> in effect.  Trying to solve this from inside libata doesn't seem
+> right.  The problem, again, seems to be figuring out which hardware
+> device maps to which block device.  Hmmm... Any good ideas?
 
-thanks,
-rui
+A possible way of doing this is using pm qos.
 
-> > ---
-> >  drivers/thermal/exynos_thermal.c |   16 ++++++++++++----
-> >  1 files changed, 12 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/thermal/exynos_thermal.c
-> > b/drivers/thermal/exynos_thermal.c
-> > index 6dd29e4..129e827 100644
-> > --- a/drivers/thermal/exynos_thermal.c
-> > +++ b/drivers/thermal/exynos_thermal.c
-> > @@ -52,9 +52,12 @@
-> >
-> >  #define EXYNOS_TMU_TRIM_TEMP_MASK      0xff
-> >  #define EXYNOS_TMU_GAIN_SHIFT          8
-> > +#define EXYNOS_TMU_GAIN_MASK           (0xF << EXYNOS_TMU_GAIN_SHIFT)
-> >  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT   24
-> > -#define EXYNOS_TMU_CORE_ON             3
-> > -#define EXYNOS_TMU_CORE_OFF            2
-> > +#define EXYNOS_TMU_REF_VOLTAGE_MASK    (0x1F <<
-> > EXYNOS_TMU_REF_VOLTAGE_SHIFT)
-> > +#define EXYNOS_TMU_CORE_ON             BIT(0)
-> > +#define EXYNOS_TMU_CORE_ON_SHIFT       0
-> > +#define EXYNOS_TMU_CORE_ON_MASK                (0x1 <<
-> > EXYNOS_TMU_CORE_ON_SHIFT)
-> >  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET     50
-> >
-> >  /* Exynos4210 specific registers */
-> > @@ -85,7 +88,9 @@
-> >  #define EXYNOS_TMU_CLEAR_FALL_INT      (0x111 << 16)
-> >  #define EXYNOS_MUX_ADDR_VALUE          6
-> >  #define EXYNOS_MUX_ADDR_SHIFT          20
-> > +#define EXYNOS_MUX_ADDR_MASK           (0x7 << EXYNOS_MUX_ADDR_SHIFT)
-> >  #define EXYNOS_TMU_TRIP_MODE_SHIFT     13
-> > +#define EXYNOS_TMU_TRIP_MODE_MASK      (0x7 << EXYNOS_TMU_TRIP_MODE_SHIFT)
-> >
-> >  #define EFUSE_MIN_VALUE 40
-> >  #define EFUSE_MAX_VALUE 100
-> > @@ -650,10 +655,14 @@ static void exynos_tmu_control(struct platform_device
-> > *pdev, bool on)
-> >         mutex_lock(&data->lock);
-> >         clk_enable(data->clk);
-> >
-> > -       con = pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
-> > +       con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
-> > +       con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK | EXYNOS_TMU_GAIN_MASK |
-> > +               EXYNOS_TMU_CORE_ON_MASK);
-> > +       con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
-> >                 pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
-> >
-> >         if (data->soc == SOC_ARCH_EXYNOS) {
-> > +               con &= ~(EXYNOS_TMU_TRIP_MODE_MASK | EXYNOS_MUX_ADDR_MASK);
-> >                 con |= pdata->noise_cancel_mode <<
-> > EXYNOS_TMU_TRIP_MODE_SHIFT;
-> >                 con |= (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
-> >         }
-> > @@ -665,7 +674,6 @@ static void exynos_tmu_control(struct platform_device
-> > *pdev, bool on)
-> >                         pdata->trigger_level1_en << 4 |
-> >                         pdata->trigger_level0_en;
-> >         } else {
-> > -               con |= EXYNOS_TMU_CORE_OFF;
-> >                 interrupt_en = 0; /* Disable all interrupts */
-> >         }
-> >         writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
-> > --
-> > 1.7.4.1
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
+We currently have 2 pm qos flags, NO_POWER_OFF and REMOTE_WAKEUP, and we
+can add another one: NO_POLL, use it like the following:
+1 Set the NO_POLL pm qos flag when the underlying driver thinks it is no
+  longer necessary. In the ZPODD's case, it should be set when the
+  device is to be powered off;
+2 Clear it when poll is necessary again. In the ZPODD's case, when power
+  is re-gained, this flag will be cleared.
+3 In the disk_events_workfn, check if this flag is set, if so, simply
+  return.
 
+The disk->driverfs_dev can be used to host the pm qos flag, ATA layer
+can access it through ata_device->sdev->sdev_gendev.
+
+Is this OK?
+
+Thanks,
+Aaron
 
