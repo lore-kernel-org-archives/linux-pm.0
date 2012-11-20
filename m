@@ -1,197 +1,197 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI/PM: Keep runtime PM enabled for unbound PCI devices
-Date: Tue, 20 Nov 2012 22:38:45 +0100
-Message-ID: <2062450.IkHTC109n4@vostro.rjw.lan>
-References: <1353398902-21253-1-git-send-email-ying.huang@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1353398902-21253-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Tue, 20 Nov 2012 21:54:29 +0000
+Message-ID: <20121120215429.B621F3E1821@localhost>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f44.google.com ([74.125.82.44]:44371 "EHLO
+	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752511Ab2KTVyl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Nov 2012 16:54:41 -0500
+Received: by mail-wg0-f44.google.com with SMTP id dr13so3829409wgb.1
+        for <linux-pm@vger.kernel.org>; Tue, 20 Nov 2012 13:54:39 -0800 (PST)
+In-Reply-To: <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>, Alexandre Courbot <acourbot@nvidia.com>
 
-On Tuesday, November 20, 2012 04:08:22 PM Huang Ying wrote:
-> For unbound PCI devices, what we need is:
-> 
->  - Always in D0 state, because some devices does not work again after
->    being put into D3 by the PCI bus.
-> 
->  - In SUSPENDED state if allowed, so that the parent devices can still
->    be put into low power state.
-> 
-> To satisfy these requirement, the runtime PM for the unbound PCI
-> devices are disabled and set to SUSPENDED state.  One issue of this
-> solution is that the PCI devices will be put into SUSPENDED state even
-> if the SUSPENDED state is forbidden via the sysfs interface
-> (.../power/control) of the device.  This is not an issue for most
-> devices, because most PCI devices are not used at all if unbounded.
-> But there are exceptions.  For example, unbound VGA card can be used
-> for display, but suspend its parents make it stop working.
-> 
-> To fix the issue, we keep the runtime PM enabled when the PCI devices
-> are unbound.  But the runtime PM callbacks will do nothing if the PCI
-> devices are unbound.  This way, we can put the PCI devices into
-> SUSPENDED state without put the PCI devices into D3 state.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> CC: stable@vger.kernel.org          # v3.6+
+On Sat, 17 Nov 2012 19:55:45 +0900, Alexandre Courbot <acourbot@nvidia.com> wrote:
+> Some device drivers (e.g. panel or backlights) need to follow precise
+> sequences for powering on and off, involving GPIOs, regulators, PWMs
+> and other power-related resources, with a defined powering order and
+> delays to respect between steps. These sequences are device-specific,
+> and do not belong to a particular driver - therefore they have been
+> performed by board-specific hook functions so far.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I must be honest, this series really makes me nervous...
 
-> ---
->  drivers/pci/pci-driver.c |   69 +++++++++++++++++++++++++++--------------------
->  drivers/pci/pci.c        |    2 +
->  2 files changed, 43 insertions(+), 28 deletions(-)
-> 
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1900,6 +1900,8 @@ void pci_pm_init(struct pci_dev *dev)
->  	u16 pmc;
->  
->  	pm_runtime_forbid(&dev->dev);
-> +	pm_runtime_set_active(&dev->dev);
-> +	pm_runtime_enable(&dev->dev);
->  	device_enable_async_suspend(&dev->dev);
->  	dev->wakeup_prepared = false;
->  
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -256,31 +256,26 @@ struct drv_dev_and_id {
->  static long local_pci_probe(void *_ddi)
->  {
->  	struct drv_dev_and_id *ddi = _ddi;
-> -	struct device *dev = &ddi->dev->dev;
-> -	struct device *parent = dev->parent;
-> +	struct pci_dev *pci_dev = ddi->dev;
-> +	struct pci_driver *pci_drv = ddi->drv;
-> +	struct device *dev = &pci_dev->dev;
->  	int rc;
->  
-> -	/* The parent bridge must be in active state when probing */
-> -	if (parent)
-> -		pm_runtime_get_sync(parent);
-> -	/* Unbound PCI devices are always set to disabled and suspended.
-> -	 * During probe, the device is set to enabled and active and the
-> -	 * usage count is incremented.  If the driver supports runtime PM,
-> -	 * it should call pm_runtime_put_noidle() in its probe routine and
-> -	 * pm_runtime_get_noresume() in its remove routine.
-> -	 */
-> -	pm_runtime_get_noresume(dev);
-> -	pm_runtime_set_active(dev);
-> -	pm_runtime_enable(dev);
-> -
-> -	rc = ddi->drv->probe(ddi->dev, ddi->id);
-> +	/*
-> +	 * Unbound PCI devices are always put in D0, regardless of
-> +	 * runtime PM status.  During probe, the device is set to
-> +	 * active and the usage count is incremented.  If the driver
-> +	 * supports runtime PM, it should call pm_runtime_put_noidle()
-> +	 * in its probe routine and pm_runtime_get_noresume() in its
-> +	 * remove routine.
-> +	 */
-> +	pm_runtime_get_sync(dev);
-> +	pci_dev->driver = pci_drv;
-> +	rc = pci_drv->probe(pci_dev, ddi->id);
->  	if (rc) {
-> -		pm_runtime_disable(dev);
-> -		pm_runtime_set_suspended(dev);
-> -		pm_runtime_put_noidle(dev);
-> +		pci_dev->driver = NULL;
-> +		pm_runtime_put_sync(dev);
->  	}
-> -	if (parent)
-> -		pm_runtime_put(parent);
->  	return rc;
->  }
->  
-> @@ -330,10 +325,8 @@ __pci_device_probe(struct pci_driver *dr
->  		id = pci_match_device(drv, pci_dev);
->  		if (id)
->  			error = pci_call_probe(drv, pci_dev, id);
-> -		if (error >= 0) {
-> -			pci_dev->driver = drv;
-> +		if (error >= 0)
->  			error = 0;
-> -		}
->  	}
->  	return error;
->  }
-> @@ -369,9 +362,7 @@ static int pci_device_remove(struct devi
->  	}
->  
->  	/* Undo the runtime PM settings in local_pci_probe() */
-> -	pm_runtime_disable(dev);
-> -	pm_runtime_set_suspended(dev);
-> -	pm_runtime_put_noidle(dev);
-> +	pm_runtime_put_sync(dev);
->  
->  	/*
->  	 * If the device is still on, set the power state as "unknown",
-> @@ -994,6 +985,13 @@ static int pci_pm_runtime_suspend(struct
->  	pci_power_t prev = pci_dev->current_state;
->  	int error;
->  
-> +	/*
-> +	 * If pci_dev->driver is not set (unbound), the device should
-> +	 * always remain in D0 regardless of the runtime PM status
-> +	 */
-> +	if (!pci_dev->driver)
-> +		return 0;
+> With the advent of the device tree and of ARM kernels that are not
+> board-tied, we cannot rely on these board-specific hooks anymore but
+
+This isn't strictly true. It is still perfectly fine to have board
+specific code when necessary. However, there is strong encouragement to
+enable that code in device drivers as much as possible and new board
+files need to have very strong justification.
+
+> need a way to implement these sequences in a portable manner. This patch
+> introduces a simple interpreter that can execute such power sequences
+> encoded either as platform data or within the device tree. It also
+> introduces first support for regulator, GPIO and PWM resources.
+
+This is where I start getting nervous. Up to now I've strongly resisted
+adding any kind of interpreted code to the device tree. The model is to
+identify hardware, but require the driver to know how to control it. (as
+compared to ACPI which is entirely designed around executable
+bytecode).
+
+While the power sequences described here certainly cannot be confused
+with a Turing complete bytecode, it is a step in that direction. Plus,
+there will always be that new use case that needs just a "little new
+feature" to make this work for that too. Without thinking about how to
+handle that ahead of time is just asking for something to turn into a
+maintenance nightmare. It's just as important to specify what the limits
+of this approach are and when to punt to real driver code to handle a
+device.
+
+> +Power Sequences Steps
+> +---------------------
+> +Steps of a sequence describe an action to be performed on a resource. They
+> +always include a "type" property which indicates what kind of resource this
+> +step works on. Depending on the resource type, additional properties are defined
+> +to control the action to be performed.
 > +
->  	if (!pm || !pm->runtime_suspend)
->  		return -ENOSYS;
->  
-> @@ -1029,6 +1027,13 @@ static int pci_pm_runtime_resume(struct
->  	struct pci_dev *pci_dev = to_pci_dev(dev);
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
-> +	/*
-> +	 * If pci_dev->driver is not set (unbound), the device should
-> +	 * always remain in D0 regardless of the runtime PM status
-> +	 */
-> +	if (!pci_dev->driver)
-> +		return 0;
+> +"delay" type required properties:
+> +  - delay: delay to wait (in microseconds)
 > +
->  	if (!pm || !pm->runtime_resume)
->  		return -ENOSYS;
->  
-> @@ -1046,8 +1051,16 @@ static int pci_pm_runtime_resume(struct
->  
->  static int pci_pm_runtime_idle(struct device *dev)
->  {
-> +	struct pci_dev *pci_dev = to_pci_dev(dev);
->  	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
-> +	/*
-> +	 * If pci_dev->driver is not set (unbound), the device should
-> +	 * always remain in D0 regardless of the runtime PM status
-> +	 */
-> +	if (!pci_dev->driver)
-> +		goto out;
+> +"regulator" type required properties:
+> +  - id: name of the regulator to use.
+> +  - enable / disable: one of these two empty properties must be present to
+> +                      enable or disable the resource
 > +
->  	if (!pm)
->  		return -ENOSYS;
->  
-> @@ -1057,8 +1070,8 @@ static int pci_pm_runtime_idle(struct de
->  			return ret;
->  	}
->  
-> +out:
->  	pm_runtime_suspend(dev);
-> -
->  	return 0;
->  }
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> +"pwm" type required properties:
+> +  - id: name of the PWM to use.
+> +  - enable / disable: one of these two empty properties must be present to
+> +                      enable or disable the resource
+> +
+> +"gpio" type required properties:
+> +  - gpio: phandle of the GPIO to use.
+> +  - value: value this GPIO should take. Must be 0 or 1.
+> +
+> +Example
+> +-------
+> +Here are example sequences declared within a backlight device that use all the
+> +supported resources types:
+> +
+> +	backlight {
+> +		compatible = "pwm-backlight";
+> +		...
+> +
+> +		/* resources used by the power sequences */
+> +		pwms = <&pwm 2 5000000>;
+> +		pwm-names = "backlight";
+> +		power-supply = <&backlight_reg>;
+> +
+> +		power-sequences {
+> +			power-on {
+> +				step0 {
+> +					type = "regulator";
+> +					id = "power";
+> +					enable;
+> +				};
+> +				step1 {
+> +					type = "delay";
+> +					delay = <10000>;
+> +				};
+> +				step2 {
+> +					type = "pwm";
+> +					id = "backlight";
+> +					enable;
+> +				};
+> +				step3 {
+> +					type = "gpio";
+> +					gpio = <&gpio 28 0>;
+> +					value = <1>;
+> +				};
+> +			};
+> +
+> +			power-off {
+> +				step0 {
+> +					type = "gpio";
+> +					gpio = <&gpio 28 0>;
+> +					value = <0>;
+> +				};
+> +				step1 {
+> +					type = "pwm";
+> +					id = "backlight";
+> +					disable;
+> +				};
+> +				step2 {
+> +					type = "delay";
+> +					delay = <10000>;
+> +				};
+> +				step3 {
+> +					type = "regulator";
+> +					id = "power";
+> +					disable;
+> +				};
+> +			};
+> +		};
+> +	};
+
+I think this will get very verbose in a hurry. Already this simple
+example is 45 lines long. Using the device tree structure to encode the
+language doesn't look like a very good fit. Not to mention that the
+order of operations is entirely based on the node name. Want to insert
+an operation between step0 and step1? Need to rename step1, step2, and
+step3 to do so.
+
+This implementation also isn't very consistent. The gpio is referenced
+with a phandle in step3/step0, but the regulator and pwm are referenced
+by id.
+
+As an alternative, what about something like the following?
+
+	backlight {
+		compatible = "pwm-backlight";
+		...
+
+		/* resources used by the power sequences */
+		pwms = <&pwm 2 5000000>;
+		pwm-names = "backlight";
+		regulators = <&backlight_reg>;
+		gpios = <&gpio 28 0>;
+
+		power-on-sequence = "r0e;d10000m;p0e;g0s";
+		power-off-sequence = "g0c;p0d;d10000m;r0d";
+	};
+
+I'm thinking about the scripts as trivial-to-parse ascii strings that
+have a very simple set of commands. The commands use resources already
+defined in the node. ie. 'g0' refers to the first entry in the gpios
+property. 'r0' for the regulator, 'p0' for the pwms, 'd' means delay. By
+no means take this as the format to use, it is just an example off the
+top of my head, but it is already way easier to work with than putting
+each command into a node.
+
+The trick is still to define a syntax that doesn't fall apart when it
+needs to be extended. I would also like to get opinions on whether or
+not conditionals or loops should be supported (ie. loop waiting for a
+status to change). If they should then we need to be a lot more careful
+about the design (and due to my aforementioned nervousness, somebody may
+need to get me therapy).
+
+(Mitch, I'll let you make the argument for using Forth here. To be
+honest, I'm not keen on defining any kind of new language, however
+simple, but neither am I keen to pull in Forth).
+
+> +Platform Data Format
+> +--------------------
+> +All relevant data structures for declaring power sequences are located in
+> +include/linux/power_seq.h.
+
+Hmm... If sequences are switched to a string instead, then platform_data
+should also use it. The power sequence data structures can be created at
+runtime by parsing the string.
+
+g.
