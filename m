@@ -1,66 +1,109 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH v3 0/4] ARM: EXYNOS: Power domain DT support extension
-Date: Tue, 20 Nov 2012 13:53:20 +0900
-Message-ID: <0b6e01cdc6da$f6b723e0$e4256ba0$%kim@samsung.com>
-References: <1352811115-1198-1-git-send-email-t.figa@samsung.com>
- <1552856.8ocEO5iISn@amdc1227>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 1/2] thermal: exynos: Fix wrong bit to control tmu
+ core
+Date: Tue, 20 Nov 2012 13:53:12 +0800
+Message-ID: <1353390792.3833.1.camel@rzhang1-mobl4>
+References: <007301cdc6ba$067107e0$135317a0$%choi@samsung.com>
+	 <CAH9JG2UYsQ6VFMO4COyEr9fBzCL03+37bXTN=AgjKbD7NjR1MA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:49030 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770Ab2KTExX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Nov 2012 23:53:23 -0500
-In-reply-to: <1552856.8ocEO5iISn@amdc1227>
-Content-language: ko
+Received: from mga09.intel.com ([134.134.136.24]:29596 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750823Ab2KTFxV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 20 Nov 2012 00:53:21 -0500
+In-Reply-To: <CAH9JG2UYsQ6VFMO4COyEr9fBzCL03+37bXTN=AgjKbD7NjR1MA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Tomasz Figa' <t.figa@samsung.com>, linux-samsung-soc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kyungmin.park@samsung.com, thomas.abraham@linaro.org, rjw@sisk.pl, m.szyprowski@samsung.com, tomasz.figa@gmail.com
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>, "jonghwa3.lee" <jonghwa3.lee@samsung.com>, open list <linux-kernel@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, dg77.kim@samsung.com
 
-Tomasz Figa wrote:
-> 
-> Hi,
-> 
-> On Tuesday 13 of November 2012 13:51:51 Tomasz Figa wrote:
-> > This patch series fixes two issues with existing DT support for Exynos
-> > power domains and extends it with the ability of binding devices to
-> > domains, basically making it possible to use power domains with DT.
+On Tue, 2012-11-20 at 10:39 +0900, Kyungmin Park wrote:
+> On 11/20/12, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
+> > [0]bit is used to enable/disable tmu core. [1] bit is a reserved bit.
 > >
-> > Based on for-next branch of Kgene's tree.
-> >
-> > Changes since v2:
-> >  - Rebased to for-next of Kgene's tree.
-> > Changes since v1:
-> >  - Added "samsung," prefix to "power-domain" property.
-> >  - Added power domain nodes to Exynos4 device tree sources.
-> >
-> > Tomasz Figa (4):
-> >   ARM: EXYNOS: pm_domain: Detect domain state on registration from DT
-> >   ARM: EXYNOS: pm_domain: Fix power domain name initialization
-> >   ARM: EXYNOS: pm_domain: Bind devices to power domains using DT
-> >   ARM: dts: exynos4: Set up power domains
-> >
-> >  .../bindings/arm/exynos/power_domain.txt           | 15 +++-
-> >  arch/arm/boot/dts/exynos4.dtsi                     | 30 +++++++
-> >  arch/arm/boot/dts/exynos4210.dtsi                  |  5 ++
-> >  arch/arm/mach-exynos/pm_domains.c                  | 93
-> > +++++++++++++++++++++- 4 files changed, 135 insertions(+), 8
-> > deletions(-)
-> 
-> Sorry, please disregard this series, as I have sent wrong version by
-> mistake.
-> 
-> I will send correct one later.
-> 
-OK.
+> > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
+> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
 
-Thanks.
+Amit and Donggeun Kim,
 
-Best regards,
-Kgene.
---
-Kukjin Kim <kgene.kim@samsung.com>, Senior Engineer,
-SW Solution Development Team, Samsung Electronics Co., Ltd.
+any comments on this patch?
+
+thanks,
+rui
+
+> > ---
+> >  drivers/thermal/exynos_thermal.c |   16 ++++++++++++----
+> >  1 files changed, 12 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/thermal/exynos_thermal.c
+> > b/drivers/thermal/exynos_thermal.c
+> > index 6dd29e4..129e827 100644
+> > --- a/drivers/thermal/exynos_thermal.c
+> > +++ b/drivers/thermal/exynos_thermal.c
+> > @@ -52,9 +52,12 @@
+> >
+> >  #define EXYNOS_TMU_TRIM_TEMP_MASK      0xff
+> >  #define EXYNOS_TMU_GAIN_SHIFT          8
+> > +#define EXYNOS_TMU_GAIN_MASK           (0xF << EXYNOS_TMU_GAIN_SHIFT)
+> >  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT   24
+> > -#define EXYNOS_TMU_CORE_ON             3
+> > -#define EXYNOS_TMU_CORE_OFF            2
+> > +#define EXYNOS_TMU_REF_VOLTAGE_MASK    (0x1F <<
+> > EXYNOS_TMU_REF_VOLTAGE_SHIFT)
+> > +#define EXYNOS_TMU_CORE_ON             BIT(0)
+> > +#define EXYNOS_TMU_CORE_ON_SHIFT       0
+> > +#define EXYNOS_TMU_CORE_ON_MASK                (0x1 <<
+> > EXYNOS_TMU_CORE_ON_SHIFT)
+> >  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET     50
+> >
+> >  /* Exynos4210 specific registers */
+> > @@ -85,7 +88,9 @@
+> >  #define EXYNOS_TMU_CLEAR_FALL_INT      (0x111 << 16)
+> >  #define EXYNOS_MUX_ADDR_VALUE          6
+> >  #define EXYNOS_MUX_ADDR_SHIFT          20
+> > +#define EXYNOS_MUX_ADDR_MASK           (0x7 << EXYNOS_MUX_ADDR_SHIFT)
+> >  #define EXYNOS_TMU_TRIP_MODE_SHIFT     13
+> > +#define EXYNOS_TMU_TRIP_MODE_MASK      (0x7 << EXYNOS_TMU_TRIP_MODE_SHIFT)
+> >
+> >  #define EFUSE_MIN_VALUE 40
+> >  #define EFUSE_MAX_VALUE 100
+> > @@ -650,10 +655,14 @@ static void exynos_tmu_control(struct platform_device
+> > *pdev, bool on)
+> >         mutex_lock(&data->lock);
+> >         clk_enable(data->clk);
+> >
+> > -       con = pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
+> > +       con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
+> > +       con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK | EXYNOS_TMU_GAIN_MASK |
+> > +               EXYNOS_TMU_CORE_ON_MASK);
+> > +       con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
+> >                 pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
+> >
+> >         if (data->soc == SOC_ARCH_EXYNOS) {
+> > +               con &= ~(EXYNOS_TMU_TRIP_MODE_MASK | EXYNOS_MUX_ADDR_MASK);
+> >                 con |= pdata->noise_cancel_mode <<
+> > EXYNOS_TMU_TRIP_MODE_SHIFT;
+> >                 con |= (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
+> >         }
+> > @@ -665,7 +674,6 @@ static void exynos_tmu_control(struct platform_device
+> > *pdev, bool on)
+> >                         pdata->trigger_level1_en << 4 |
+> >                         pdata->trigger_level0_en;
+> >         } else {
+> > -               con |= EXYNOS_TMU_CORE_OFF;
+> >                 interrupt_en = 0; /* Disable all interrupts */
+> >         }
+> >         writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
+> > --
+> > 1.7.4.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+
 
