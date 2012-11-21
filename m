@@ -1,67 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
-Date: Wed, 21 Nov 2012 01:48:55 +0100
-Message-ID: <6585454.CUq5czq4Ep@vostro.rjw.lan>
-References: <1353397850-21949-1-git-send-email-myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 396/493] cpufreq: remove use of __devexit
+Date: Wed, 21 Nov 2012 01:50:30 +0100
+Message-ID: <1594563.dNM4NPViat@vostro.rjw.lan>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu> <1353349642-3677-396-git-send-email-wfp5p@virginia.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:56798 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344Ab2KUAo2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Nov 2012 19:44:28 -0500
-In-Reply-To: <1353397850-21949-1-git-send-email-myungjoo.ham@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1353349642-3677-396-git-send-email-wfp5p@virginia.edu>
+Sender: cpufreq-owner@vger.kernel.org
+To: Bill Pemberton <wfp5p@virginia.edu>
+Cc: gregkh@linuxfoundation.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-pm@vger.kernel.org, myungjoo.ham@gmail.com, nm@ti.com, rajagopal.venkat@linaro.org, kyungmin.park@samsung.com, sh007.yi@samsung.com, jonghwa3.lee@samsung.com, sachin.kamat@linaro.org
 
-On Tuesday, November 20, 2012 04:50:50 PM MyungJoo Ham wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> The following changes since commit 77b67063bb6bce6d475e910d3b886a606d0d91f7:
-> 
->   Linux 3.7-rc5 (2012-11-11 13:44:33 +0100)
-> 
-> are available in the git repository at:
->   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121120
-> , which is based on Rafael's linux-pm.git pm-devfreq.
-> 
-> Jonghwa Lee (1):
->       PM / devfreq: Add sysfs node for representing frequency transition information.
-> 
-> Nishanth Menon (12):
->       PM / devfreq: kernel-doc typo corrections
->       PM / devfreq: fix sscanf handling for writable sysfs entries
->       PM / devfreq: make devfreq_class static
->       PM / devfreq: documentation cleanups for devfreq header
->       PM / devfreq: Add sysfs node to expose available frequencies
->       PM / devfreq: export update_devfreq
->       PM / devfreq: provide hooks for governors to be registered
->       PM / devfreq: register governors with devfreq framework
->       PM / devfreq: map devfreq drivers to governor using name
->       PM / devfreq: governors: add GPL module license and allow module build
->       PM / devfreq: allow sysfs governor node to switch governor
->       PM / devfreq: Add sysfs node to expose available governors
-> 
-> Rajagopal Venkat (3):
->       PM / devfreq: Core updates to support devices which can idle
->       PM / devfreq: Add suspend and resume apis
->       PM / devfreq: Add current freq callback in device profile
-> 
-> Sachin Kamat (1):
->       PM / devfreq: Use devm_* functions in exynos4_bus.c
-> 
-> Sangho Yi (1):
->       PM / devfreq: exynos4_bus.c: Fixed an alignment of the func call args.
+On Monday, November 19, 2012 01:25:45 PM Bill Pemberton wrote:
+> CONFIG_HOTPLUG is going away as an option so __devexit is no
+> longer needed.
 
-Pulled, thanks a lot MyungJoo!
+Applied to the linux-next branch of the linux-pm.git tree as v3.8 material.
 
+Thanks,
 Rafael
 
 
+> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl> 
+> Cc: cpufreq@vger.kernel.org 
+> Cc: linux-pm@vger.kernel.org 
+> ---
+>  drivers/cpufreq/longhaul.c    | 2 +-
+>  drivers/cpufreq/powernow-k8.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+> index 8d7ebb2..f1fa500 100644
+> --- a/drivers/cpufreq/longhaul.c
+> +++ b/drivers/cpufreq/longhaul.c
+> @@ -930,7 +930,7 @@ static int __cpuinit longhaul_cpu_init(struct cpufreq_policy *policy)
+>  	return 0;
+>  }
+>  
+> -static int __devexit longhaul_cpu_exit(struct cpufreq_policy *policy)
+> +static int longhaul_cpu_exit(struct cpufreq_policy *policy)
+>  {
+>  	cpufreq_frequency_table_put_attr(policy->cpu);
+>  	return 0;
+> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
+> index 1fd0c8a..056faf6 100644
+> --- a/drivers/cpufreq/powernow-k8.c
+> +++ b/drivers/cpufreq/powernow-k8.c
+> @@ -1186,7 +1186,7 @@ err_out:
+>  	return -ENODEV;
+>  }
+>  
+> -static int __devexit powernowk8_cpu_exit(struct cpufreq_policy *pol)
+> +static int powernowk8_cpu_exit(struct cpufreq_policy *pol)
+>  {
+>  	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+>  
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
