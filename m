@@ -1,283 +1,89 @@
-From: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [RFC PATCH] PM / devfreq: Add runtime-pm support
-Date: Wed, 21 Nov 2012 14:31:14 +0530
-Message-ID: <1353488474-24420-1-git-send-email-rajagopal.venkat@linaro.org>
+From: Amit Kachhap <amit.kachhap@linaro.org>
+Subject: Re: [PATCH 2/2] Thermal: Introduce THERMAL_TREND_RAISE/DROP_FULL
+ support for step_wise governor
+Date: Wed, 21 Nov 2012 15:07:43 +0530
+Message-ID: <CAK44p22XdWZogaN6es+e8Qp-=0MD2=EEWpWQpUktOSyPO3d9Aw@mail.gmail.com>
+References: <1353313293.6468.4.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:43343 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143Ab2KUJho (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Nov 2012 04:37:44 -0500
+Received: by mail-ob0-f174.google.com with SMTP id wc20so6829035obb.19
+        for <linux-pm@vger.kernel.org>; Wed, 21 Nov 2012 01:37:43 -0800 (PST)
+In-Reply-To: <1353313293.6468.4.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, durga <durgadoss.r@intel.com>
 
-Instead of devfreq device driver explicitly calling devfreq suspend
-and resume apis perhaps from runtime-pm suspend and resume callbacks,
-let devfreq core handle it automatically.
+On 19 November 2012 13:51, Zhang Rui <rui.zhang@intel.com> wrote:
+> From fcc7e0a36388f468c25526290e2fb2beebaae99c Mon Sep 17 00:00:00 2001
+> From: Zhang Rui <rui.zhang@intel.com>
+> Date: Mon, 19 Nov 2012 16:10:20 +0800
+> Subject: [PATCH 2/2] Introduce THERMAL_TREND_RAISE/DROP_FULL support for
+>  step_wise governor
+>
+> step_wise governor should set the device cooling state to
+> upper/lower limit directly when THERMAL_TREND_RAISE/DROP_FULL.
+>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/step_wise.c |   19 +++++++++++++++++--
+>  1 file changed, 17 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 1242cff..6273f7d 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -35,6 +35,10 @@
+>   *       state for this trip point
+>   *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
+>   *       state for this trip point
+> + *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
+> + *       for this trip point
+> + *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
+> + *       for this trip point
+>   */
+>  static unsigned long get_target_state(struct thermal_instance *instance,
+>                                         enum thermal_trend trend)
+> @@ -44,12 +48,23 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>
+>         cdev->ops->get_cur_state(cdev, &cur_state);
+>
+> -       if (trend == THERMAL_TREND_RAISING) {
+> +       switch (trend) {
+> +       case THERMAL_TREND_RAISING:
+>                 cur_state = cur_state < instance->upper ?
+>                             (cur_state + 1) : instance->upper;
+> -       } else if (trend == THERMAL_TREND_DROPPING) {
+> +               break;
+> +       case THERMAL_TREND_DROPPING:
+>                 cur_state = cur_state > instance->lower ?
+>                             (cur_state - 1) : instance->lower;
+> +               break;
+> +       case THERMAL_TREND_RAISE_FULL:
+> +               cur_state = instance->upper;
+> +               break;
+> +       case THERMAL_TREND_DROP_FULL:
+> +               cur_state = instance->lower;
+> +               break;
+> +       default:
+> +               break;
+>         }
+>Hi Rui,
 
-Attach devfreq core to runtime-pm framework so that, devfreq device
-driver pm_runtime_suspend() will automatically suspend the devfreq
-and pm_runtime_resume() will resume the devfreq.
+Sorry for late review. This part looks good. But can this
+get_target_state be also called in update_instance_for_dethrottle as
+done by my patch for quick cooling.
 
-Signed-off-by: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/devfreq/devfreq.c | 145 ++++++++++++++++++++++++++++++++--------------
- include/linux/devfreq.h   |  12 ----
- 2 files changed, 102 insertions(+), 55 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 45e053e..190e414 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -25,10 +25,9 @@
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-+#include <linux/pm_runtime.h>
- #include "governor.h"
- 
--static struct class *devfreq_class;
--
- /*
-  * devfreq core provides delayed work based load monitoring helper
-  * functions. Governors can use these or can implement their own
-@@ -414,6 +413,93 @@ static void devfreq_dev_release(struct device *dev)
- }
- 
- /**
-+ * devfreq_suspend_device() - Suspend devfreq of a device.
-+ * @devfreq: the devfreq instance to be suspended
-+ */
-+static int devfreq_suspend_device(struct devfreq *devfreq)
-+{
-+	if (!devfreq)
-+		return -EINVAL;
-+
-+	if (!devfreq->governor)
-+		return 0;
-+
-+	return devfreq->governor->event_handler(devfreq,
-+				DEVFREQ_GOV_SUSPEND, NULL);
-+}
-+
-+/**
-+ * devfreq_resume_device() - Resume devfreq of a device.
-+ * @devfreq: the devfreq instance to be resumed
-+ */
-+static int devfreq_resume_device(struct devfreq *devfreq)
-+{
-+	if (!devfreq)
-+		return -EINVAL;
-+
-+	if (!devfreq->governor)
-+		return 0;
-+
-+	return devfreq->governor->event_handler(devfreq,
-+				DEVFREQ_GOV_RESUME, NULL);
-+}
-+
-+static int devfreq_runtime_suspend(struct device *dev)
-+{
-+	int ret;
-+	struct devfreq *devfreq;
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	ret = devfreq_suspend_device(devfreq);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = pm_generic_runtime_suspend(dev);
-+out:
-+	return ret;
-+}
-+
-+static int devfreq_runtime_resume(struct device *dev)
-+{
-+	int ret;
-+	struct devfreq *devfreq;
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	ret = devfreq_resume_device(devfreq);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = pm_generic_runtime_resume(dev);
-+out:
-+	return ret;
-+}
-+
-+static int devfreq_runtime_idle(struct device *dev)
-+{
-+	return pm_generic_runtime_idle(dev);
-+}
-+
-+static const struct dev_pm_ops devfreq_pm_ops = {
-+	SET_RUNTIME_PM_OPS(
-+		devfreq_runtime_suspend,
-+		devfreq_runtime_resume,
-+		devfreq_runtime_idle
-+	)
-+};
-+
-+static struct class devfreq_class = {
-+	.name = "devfreq",
-+	.owner = THIS_MODULE,
-+	.pm = &devfreq_pm_ops,
-+};
-+
-+/**
-  * devfreq_add_device() - Add devfreq feature to the device
-  * @dev:	the device to add devfreq feature.
-  * @profile:	device-specific profile to run devfreq.
-@@ -454,8 +540,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	mutex_init(&devfreq->lock);
- 	mutex_lock(&devfreq->lock);
-+	dev->class = &devfreq_class;
- 	devfreq->dev.parent = dev;
--	devfreq->dev.class = devfreq_class;
-+	devfreq->dev.class = &devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
- 	devfreq->profile = profile;
- 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
-@@ -498,6 +585,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_init;
- 	}
- 
-+	pm_runtime_get_noresume(dev);
-+	pm_runtime_set_active(dev);
-+
- 	return devfreq;
- 
- err_init:
-@@ -526,40 +616,6 @@ int devfreq_remove_device(struct devfreq *devfreq)
- EXPORT_SYMBOL(devfreq_remove_device);
- 
- /**
-- * devfreq_suspend_device() - Suspend devfreq of a device.
-- * @devfreq: the devfreq instance to be suspended
-- */
--int devfreq_suspend_device(struct devfreq *devfreq)
--{
--	if (!devfreq)
--		return -EINVAL;
--
--	if (!devfreq->governor)
--		return 0;
--
--	return devfreq->governor->event_handler(devfreq,
--				DEVFREQ_GOV_SUSPEND, NULL);
--}
--EXPORT_SYMBOL(devfreq_suspend_device);
--
--/**
-- * devfreq_resume_device() - Resume devfreq of a device.
-- * @devfreq: the devfreq instance to be resumed
-- */
--int devfreq_resume_device(struct devfreq *devfreq)
--{
--	if (!devfreq)
--		return -EINVAL;
--
--	if (!devfreq->governor)
--		return 0;
--
--	return devfreq->governor->event_handler(devfreq,
--				DEVFREQ_GOV_RESUME, NULL);
--}
--EXPORT_SYMBOL(devfreq_resume_device);
--
--/**
-  * devfreq_add_governor() - Add devfreq governor
-  * @governor:	the devfreq governor to be added
-  */
-@@ -730,6 +786,7 @@ out:
- 		ret = count;
- 	return ret;
- }
-+
- static ssize_t show_available_governors(struct device *d,
- 				    struct device_attribute *attr,
- 				    char *buf)
-@@ -952,19 +1009,21 @@ static struct device_attribute devfreq_attrs[] = {
- 
- static int __init devfreq_init(void)
- {
--	devfreq_class = class_create(THIS_MODULE, "devfreq");
--	if (IS_ERR(devfreq_class)) {
-+	int err;
-+
-+	err = class_register(&devfreq_class);
-+	if (err < 0) {
- 		pr_err("%s: couldn't create class\n", __FILE__);
--		return PTR_ERR(devfreq_class);
-+		return err;
- 	}
- 
- 	devfreq_wq = create_freezable_workqueue("devfreq_wq");
- 	if (IS_ERR(devfreq_wq)) {
--		class_destroy(devfreq_class);
-+		class_unregister(&devfreq_class);
- 		pr_err("%s: couldn't create workqueue\n", __FILE__);
- 		return PTR_ERR(devfreq_wq);
- 	}
--	devfreq_class->dev_attrs = devfreq_attrs;
-+	devfreq_class.dev_attrs = devfreq_attrs;
- 
- 	return 0;
- }
-@@ -972,7 +1031,7 @@ subsys_initcall(devfreq_init);
- 
- static void __exit devfreq_exit(void)
- {
--	class_destroy(devfreq_class);
-+	class_unregister(&devfreq_class);
- 	destroy_workqueue(devfreq_wq);
- }
- module_exit(devfreq_exit);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 235248c..4fd920f 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -181,8 +181,6 @@ extern struct devfreq *devfreq_add_device(struct device *dev,
- 				  const char *governor_name,
- 				  void *data);
- extern int devfreq_remove_device(struct devfreq *devfreq);
--extern int devfreq_suspend_device(struct devfreq *devfreq);
--extern int devfreq_resume_device(struct devfreq *devfreq);
- 
- /* Helper functions for devfreq user device driver with OPP. */
- extern struct opp *devfreq_recommended_opp(struct device *dev,
-@@ -226,16 +224,6 @@ static int devfreq_remove_device(struct devfreq *devfreq)
- 	return 0;
- }
- 
--static int devfreq_suspend_device(struct devfreq *devfreq)
--{
--	return 0;
--}
--
--static int devfreq_resume_device(struct devfreq *devfreq)
--{
--	return 0;
--}
--
- static struct opp *devfreq_recommended_opp(struct device *dev,
- 					   unsigned long *freq, u32 flags)
- {
--- 
-1.7.11.3
+Thanks,
+Amit Daniel
+>         return cur_state;
+> --
+> 1.7.9.5
+>
+>
+>
