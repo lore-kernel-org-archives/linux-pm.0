@@ -1,165 +1,273 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Wed, 21 Nov 2012 13:23:06 +0900
-Message-ID: <13540495.epaCf4JVn9@percival>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com> <20121120215429.B621F3E1821@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121120215429.B621F3E1821@localhost>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH v5] Thermal: exynos: Add sysfs node supporting exynos's
+ emulation mode.
+Date: Wed, 21 Nov 2012 13:31:01 +0900
+Message-ID: <1353472261-17430-1-git-send-email-jonghwa3.lee@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:52986 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098Ab2KUEbH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Nov 2012 23:31:07 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-Hi Grant,
+This patch supports exynos's emulation mode with newly created sysfs node.
+Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal
+management unit. Thermal emulation mode supports software debug for TMU's
+operation. User can set temperature manually with software code and TMU
+will read current temperature from user value not from sensor's value.
+This patch includes also documentary placed under Documentation/thermal/.
 
-On Wednesday 21 November 2012 05:54:29 Grant Likely wrote:
-> > With the advent of the device tree and of ARM kernels that are not
-> > board-tied, we cannot rely on these board-specific hooks anymore but
-> 
-> This isn't strictly true. It is still perfectly fine to have board
-> specific code when necessary. However, there is strong encouragement to
-> enable that code in device drivers as much as possible and new board
-> files need to have very strong justification.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+---
+v5
+ - Rebase the patch at -next branch of zhang rui's git.
+ - Fix EXYNOS_EMULATION_MODE Kconfig option as Amit's comment.
+ - Show emulation temperature in millicelsius.
+   Storing emulation temperature supports both celsius and mcelsius for input.
 
-But doesn't introducing board-specific code into the kernel just defeats the 
-purpose of the DT? If we extend this logic, we are heading straight back to 
-board-definition files. To a lesser extent than before I agree, but the problem 
-is fundamentally the same.
+v4
+ - Fix Typo.
+ - Remove unnecessary codes.
+ - Add comments about feature of exynos emulation operation to the document.
 
-> > need a way to implement these sequences in a portable manner. This patch
-> > introduces a simple interpreter that can execute such power sequences
-> > encoded either as platform data or within the device tree. It also
-> > introduces first support for regulator, GPIO and PWM resources.
-> 
-> This is where I start getting nervous. Up to now I've strongly resisted
-> adding any kind of interpreted code to the device tree. The model is to
-> identify hardware, but require the driver to know how to control it. (as
-> compared to ACPI which is entirely designed around executable
-> bytecode).
-> 
-> While the power sequences described here certainly cannot be confused
-> with a Turing complete bytecode, it is a step in that direction.
+v3
+ - Remove unnecessay variables.
+ - Do some code clean in exynos_tmu_emulation_store().
+ - Make wrapping function of sysfs node creation function to use
+   #ifdefs in minimum.
 
-Technically speaking power sequences are a step towards an interpreter, but it 
-is a very small one and it should not go much further than the current state. 
-I understand the concern of having "code" into the DT but I really think it 
-should be viewed from a different angle.
+v2
+ exynos_thermal.c
+ - Fix build error occured by wrong emulation control register name.
+ - Remove exynos5410 dependent codes.
+ exynos_thermal_emulation
+ - Align indentation.
+ Documentation/thermal/exynos_thermal_emulation |   56 +++++++++++++
+ drivers/thermal/Kconfig                        |    9 ++
+ drivers/thermal/exynos_thermal.c               |  103 ++++++++++++++++++++++++
+ 3 files changed, 168 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/thermal/exynos_thermal_emulation
 
-Powering sequences are special in that they can be affected by the board design 
-or the devices variations. For instance hundreds of different panels with 
-backlights are currently compatible with the pwm-backlight driver. The only 
-thing that differenciates them is how the backlight is powered on and off. If 
-you are to build a kernel that is supposed to support all these panels, you 
-would need to embed all the powering sequences in the kernel even though only 
-one of them will be used by one specific board. Power sequences in the DT help 
-preventing that.
+diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
+new file mode 100644
+index 0000000..bc9b057
+--- /dev/null
++++ b/Documentation/thermal/exynos_thermal_emulation
+@@ -0,0 +1,56 @@
++EXYNOS EMULATION MODE
++========================
++
++Copyright (C) 2012 Samsung Electronics
++
++Written by Jonghwa Lee <jonghwa3.lee@samsung.com>
++
++Description
++-----------
++
++Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal management unit.
++Thermal emulation mode supports software debug for TMU's operation. User can set temperature
++manually with software code and TMU will read current temperature from user value not from
++sensor's value.
++
++Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
++When it's enabled, sysfs node will be created under
++/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
++
++The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
++temperature you want to update to sysfs node, it automatically enable emulation mode and
++current temperature will be changed into it.
++(Exynos also supports user changable delay time which would be used to delay of
++ changing temperature. However, this node only uses same delay of real sensing time, 938us.)
++
++Exynos emulation mode requires synchronous of value changing and enabling. It means when you
++want to update the any value of delay or next temperature, then you have to enable emulation 
++mode at the same time. (Or you have to keep the mode enabling.) If you don't, it fails to
++change the value to updated one and just use last succeessful value repeatedly. That's why
++this node gives users the right to change termerpature only. Just one interface makes it more
++simply to use.
++
++Disabling emulation mode only requires writing value 0 to sysfs node.
++
++
++TEMP	120 |
++	    |
++	100 |
++	    |
++	 80 |
++	    |		     	 	 +-----------
++	 60 |      		     	 |	    |
++	    |	           +-------------|          |
++	 40 |              |         	 |          |
++   	    |		   |	     	 |          |
++	 20 |		   |	     	 |          +----------
++	    |	 	   |	     	 |          |          |
++  	  0 |______________|_____________|__________|__________|_________
++		   A	    	 A	    A	   	       A     TIME
++		   |<----->|	 |<----->|  |<----->|	       |
++		   | 938us |  	 |	 |  |       |          |
++emulation    :  0  50	   |  	 70      |  20      |          0
++current temp :   sensor   50		 70         20	      sensor
++
++
++
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index d96da07..61ab206 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -101,6 +101,15 @@ config EXYNOS_THERMAL
+ 	  If you say yes here you get support for TMU (Thermal Managment
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
+ 
++config EXYNOS_THERMAL_EMUL
++	bool "EXYNOS TMU emulation mode support"
++	depends on EXYNOS_THERMAL
++	help
++	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
++	  Enable this option will be make sysfs node in exynos thermal platform
++	  device directory to support emulation mode. With emulation mode sysfs
++	  node, you can manually input temperature to TMU for simulation purpose.
++
+ config DB8500_THERMAL
+ 	bool "DB8500 thermal management"
+ 	depends on ARCH_U8500
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index 7772d16..75615f2 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -99,6 +99,14 @@
+ #define IDLE_INTERVAL 10000
+ #define MCELSIUS	1000
+ 
++#ifdef CONFIG_EXYNOS_THERMAL_EMUL
++#define EXYNOS_EMUL_TIME	0x57F0
++#define EXYNOS_EMUL_TIME_SHIFT	16
++#define EXYNOS_EMUL_DATA_SHIFT	8
++#define EXYNOS_EMUL_DATA_MASK	0xFF
++#define EXYNOS_EMUL_ENABLE	0x1
++#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
++
+ /* CPU Zone information */
+ #define PANIC_ZONE      4
+ #define WARN_ZONE       3
+@@ -832,6 +840,94 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
+ 	return (struct exynos_tmu_platform_data *)
+ 			platform_get_device_id(pdev)->driver_data;
+ }
++
++#ifdef CONFIG_EXYNOS_THERMAL_EMUL
++static ssize_t exynos_tmu_emulation_show(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
++{
++	struct platform_device *pdev = container_of(dev,
++					struct platform_device, dev);
++	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
++	unsigned int reg;
++	u8 temp_code;
++	int temp = 0;
++
++	if (data->soc == SOC_ARCH_EXYNOS4210)
++		goto out;
++
++	mutex_lock(&data->lock);
++	clk_enable(data->clk);
++	reg = readl(data->base + EXYNOS_EMUL_CON);
++	clk_disable(data->clk);
++	mutex_unlock(&data->lock);
++
++	if (reg & EXYNOS_EMUL_ENABLE) {
++		reg >>= EXYNOS_EMUL_DATA_SHIFT;
++		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
++		temp = code_to_temp(data, temp_code);
++	}
++out:
++	return sprintf(buf, "%d\n", temp * MCELSIUS);
++}
++
++static ssize_t exynos_tmu_emulation_store(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	struct platform_device *pdev = container_of(dev,
++					struct platform_device, dev);
++	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
++	unsigned int reg;
++	int temp;
++
++	if (data->soc == SOC_ARCH_EXYNOS4210)
++		goto out;
++
++	if (!sscanf(buf, "%d\n", &temp) || temp < 0)
++		return -EINVAL;
++
++	mutex_lock(&data->lock);
++	clk_enable(data->clk);
++
++	reg = readl(data->base + EXYNOS_EMUL_CON);
++
++	if (temp) {
++		/* Both CELSIUS and MCELSIUS type are available for input */
++		if (temp > MCELSIUS)
++			temp /= MCELSIUS;
++
++		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
++			(temp_to_code(data, (temp / MCELSIUS))
++			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
++	} else {
++		reg &= ~EXYNOS_EMUL_ENABLE;
++	}
++
++	writel(reg, data->base + EXYNOS_EMUL_CON);
++
++	clk_disable(data->clk);
++	mutex_unlock(&data->lock);
++
++out:
++	return count;
++}
++
++static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
++					exynos_tmu_emulation_store);
++static int create_emulation_sysfs(struct device *dev)
++{
++	return device_create_file(dev, &dev_attr_emulation);
++}
++static void remove_emulation_sysfs(struct device *dev)
++{
++	device_remove_file(dev, &dev_attr_emulation);
++}
++#else
++static inline int create_emulation_sysfs(struct device *dev) {return 0;}
++static inline void remove_emulation_sysfs(struct device *dev){}
++#endif
++
+ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+ {
+ 	struct exynos_tmu_data *data;
+@@ -930,6 +1026,11 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to register thermal interface\n");
+ 		goto err_clk;
+ 	}
++
++	ret = create_emulation_sysfs(&pdev->dev);
++	if (ret)
++		dev_err(&pdev->dev, "Failed to create emulation mode sysfs node\n");
++
+ 	return 0;
+ err_clk:
+ 	platform_set_drvdata(pdev, NULL);
+@@ -941,6 +1042,8 @@ static int __devexit exynos_tmu_remove(struct platform_device *pdev)
+ {
+ 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+ 
++	remove_emulation_sysfs(&pdev->dev);
++
+ 	exynos_tmu_control(pdev, false);
+ 
+ 	exynos_unregister_thermal();
+-- 
+1.7.4.1
 
-With that stated, it is clear that we should not need to define more than the 
-short, simple sequences of actions that cannot be elegantly handled by the 
-driver. Anything beyond that should be handled by the driver itself. In 
-particular, here are a few things I do *not* want to see included in power 
-seqs:
-
-- conditionals/jumps (or it's not a sequence anymore).
-- direct access to hardware. Resources must at least be abstracted in some 
-way. You shall not e.g. access the address space directly.
-- support for non-power related resources - that is out of the special case of 
-powering sequences and should be done by the driver
-
-That should keep the "grammar" simple, and the sequences short enough to that 
-we can consider then as data belonging to the device, and not as code that is 
-interpreted.
-
-> I think this will get very verbose in a hurry. Already this simple
-> example is 45 lines long. Using the device tree structure to encode the
-> language doesn't look like a very good fit. Not to mention that the
-> order of operations is entirely based on the node name. Want to insert
-> an operation between step0 and step1? Need to rename step1, step2, and
-> step3 to do so.
-
-I don't like that steps numbering thing neither, but it seems to be the best 
-way to do it so far.
-
-As for the DT structure not being adapted for this - I would agree if we 
-wanted to implement a complete interpreter, but that's precisely not the case. 
-More about this later.
-
-> This implementation also isn't very consistent. The gpio is referenced
-> with a phandle in step3/step0, but the regulator and pwm are referenced
-> by id.
-
-Tomi made the same remark - the reason for using the phandle in GPIO is 
-because GPIO framework does not support referencing GPIOs by name yet. I 
-wanted to DT bindings to reflect the underlying framework as much as possible 
-until we have a function like gpio_get(device, id).
-
-However I agree that this makes things inconsistent at the moment and would 
-require a bindings change. And in the case of the DT this is actually easy to 
-implement (I did it in some previous versions). I'll make sure to do it.
-
-> As an alternative, what about something like the following?
-> 
-> 	backlight {
-> 		compatible = "pwm-backlight";
-> 		...
-> 
-> 		/* resources used by the power sequences */
-> 		pwms = <&pwm 2 5000000>;
-> 		pwm-names = "backlight";
-> 		regulators = <&backlight_reg>;
-> 		gpios = <&gpio 28 0>;
-> 
-> 		power-on-sequence = "r0e;d10000m;p0e;g0s";
-> 		power-off-sequence = "g0c;p0d;d10000m;r0d";
-> 	};
-
-Well, *now* it really looks like bytecode. :)
-
-> I'm thinking about the scripts as trivial-to-parse ascii strings that
-> have a very simple set of commands. The commands use resources already
-> defined in the node. ie. 'g0' refers to the first entry in the gpios
-> property. 'r0' for the regulator, 'p0' for the pwms, 'd' means delay. By
-> no means take this as the format to use, it is just an example off the
-> top of my head, but it is already way easier to work with than putting
-> each command into a node.
-
-I'd argue that this opens the door wide open towards having a complete 
-interpreter in the device tree. At least DT nodes restrict what we can do 
-conveniently.
-
-> The trick is still to define a syntax that doesn't fall apart when it
-> needs to be extended. I would also like to get opinions on whether or
-> not conditionals or loops should be supported (ie. loop waiting for a
-> status to change). If they should then we need to be a lot more careful
-> about the design (and due to my aforementioned nervousness, somebody may
-> need to get me therapy).
-
-That's IMHO the main argument in favor of using DT nodes here (the syntax 
-extension, not your therapy). They can be extended simply by adding properties 
-to them, and I was relying on this to make power seqs extensible while keeping 
-things consistent (and backward-compatible). For instance, when we want to 
-support voltage setting in regulators we can just add a "voltage" property for 
-that.
-
-So to sum up the pros of the current node-base representation:
-- give a "data like" representation of powering sequences (what they should 
-be, actually)
-- puts sanity barriers for not turning power seqs into a real code interpreter
-- easily extensible
-
-There are probably a few cons, the numbering of steps being one, but at least 
-we don't need to design a new DSL and care too much about extensibility which 
-is, in the nodes case, built-in and free.
-
-I also like to make it clear that I don't want to see this going out of 
-control and that any extension proposal would have to be thoroughly justified 
-and reviewed - and better not contradict any of the 3 points listed above.
-
-If that makes you feel better, maybe we can try and fix what is wrong with the 
-current bindings instead of introducing a new language that will be, by 
-nature, more complex to handle and difficult to extend without breaking things?
-
-Alex.
