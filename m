@@ -1,112 +1,49 @@
-From: Amit Kachhap <amit.kachhap@linaro.org>
-Subject: Re: [PATCH v3 1/2] thermal: exynos: Fix wrong bit to control tmu core
-Date: Wed, 21 Nov 2012 15:16:17 +0530
-Message-ID: <CAK44p20ko1cqiVkYc4-4W9RN01kwfffnDf9-fNdPZt+oOF9igQ@mail.gmail.com>
-References: <007301cdc6ba$067107e0$135317a0$%choi@samsung.com>
-	<CAH9JG2UYsQ6VFMO4COyEr9fBzCL03+37bXTN=AgjKbD7NjR1MA@mail.gmail.com>
-	<1353390792.3833.1.camel@rzhang1-mobl4>
+From: Alex Courbot <acourbot@nvidia.com>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Wed, 21 Nov 2012 19:00:32 +0900
+Message-ID: <4275468.QAmZy3xUK6@percival>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1699753.ZQsWMHINxd@percival> <50AC956D.7020303@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1353390792.3833.1.camel@rzhang1-mobl4>
+In-Reply-To: <50AC956D.7020303@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Kyungmin Park <kmpark@infradead.org>, Jonghwan Choi <jhbird.choi@samsung.com>, "jonghwa3.lee" <jonghwa3.lee@samsung.com>, open list <linux-kernel@vger.kernel.org>, Sachin Kamat <sachin.kamat@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, dg77.kim@samsung.com
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 November 2012 11:23, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Tue, 2012-11-20 at 10:39 +0900, Kyungmin Park wrote:
->> On 11/20/12, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
->> > [0]bit is used to enable/disable tmu core. [1] bit is a reserved bit.
->> >
->> > Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
->> Acked-by: Kyungmin Park <kyungmin.park@samsung.com>
->
-> Amit and Donggeun Kim,
->
-> any comments on this patch?
->
-> thanks,
-> rui
-Hi Riu,
+On Wednesday 21 November 2012 16:48:45 Tomi Valkeinen wrote:
+> If the power-off sequence disables a regulator that was supposed to be
+> enabled by the power-on sequence (but wasn't enabled because of an
+> error), the regulator_disable is still called when the driver runs the
+> power-off sequence, isn't it? Regulator enables and disables are ref
+> counted, and the enables should match the disables.
 
-This patch is according to the suggestion I made earlier and looks fine.
-Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+And there collapses my theory.
 
-Thanks,
-Amit Daniel
->
->> > ---
->> >  drivers/thermal/exynos_thermal.c |   16 ++++++++++++----
->> >  1 files changed, 12 insertions(+), 4 deletions(-)
->> >
->> > diff --git a/drivers/thermal/exynos_thermal.c
->> > b/drivers/thermal/exynos_thermal.c
->> > index 6dd29e4..129e827 100644
->> > --- a/drivers/thermal/exynos_thermal.c
->> > +++ b/drivers/thermal/exynos_thermal.c
->> > @@ -52,9 +52,12 @@
->> >
->> >  #define EXYNOS_TMU_TRIM_TEMP_MASK      0xff
->> >  #define EXYNOS_TMU_GAIN_SHIFT          8
->> > +#define EXYNOS_TMU_GAIN_MASK           (0xF << EXYNOS_TMU_GAIN_SHIFT)
->> >  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT   24
->> > -#define EXYNOS_TMU_CORE_ON             3
->> > -#define EXYNOS_TMU_CORE_OFF            2
->> > +#define EXYNOS_TMU_REF_VOLTAGE_MASK    (0x1F <<
->> > EXYNOS_TMU_REF_VOLTAGE_SHIFT)
->> > +#define EXYNOS_TMU_CORE_ON             BIT(0)
->> > +#define EXYNOS_TMU_CORE_ON_SHIFT       0
->> > +#define EXYNOS_TMU_CORE_ON_MASK                (0x1 <<
->> > EXYNOS_TMU_CORE_ON_SHIFT)
->> >  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET     50
->> >
->> >  /* Exynos4210 specific registers */
->> > @@ -85,7 +88,9 @@
->> >  #define EXYNOS_TMU_CLEAR_FALL_INT      (0x111 << 16)
->> >  #define EXYNOS_MUX_ADDR_VALUE          6
->> >  #define EXYNOS_MUX_ADDR_SHIFT          20
->> > +#define EXYNOS_MUX_ADDR_MASK           (0x7 << EXYNOS_MUX_ADDR_SHIFT)
->> >  #define EXYNOS_TMU_TRIP_MODE_SHIFT     13
->> > +#define EXYNOS_TMU_TRIP_MODE_MASK      (0x7 << EXYNOS_TMU_TRIP_MODE_SHIFT)
->> >
->> >  #define EFUSE_MIN_VALUE 40
->> >  #define EFUSE_MAX_VALUE 100
->> > @@ -650,10 +655,14 @@ static void exynos_tmu_control(struct platform_device
->> > *pdev, bool on)
->> >         mutex_lock(&data->lock);
->> >         clk_enable(data->clk);
->> >
->> > -       con = pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
->> > +       con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
->> > +       con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK | EXYNOS_TMU_GAIN_MASK |
->> > +               EXYNOS_TMU_CORE_ON_MASK);
->> > +       con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
->> >                 pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
->> >
->> >         if (data->soc == SOC_ARCH_EXYNOS) {
->> > +               con &= ~(EXYNOS_TMU_TRIP_MODE_MASK | EXYNOS_MUX_ADDR_MASK);
->> >                 con |= pdata->noise_cancel_mode <<
->> > EXYNOS_TMU_TRIP_MODE_SHIFT;
->> >                 con |= (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
->> >         }
->> > @@ -665,7 +674,6 @@ static void exynos_tmu_control(struct platform_device
->> > *pdev, bool on)
->> >                         pdata->trigger_level1_en << 4 |
->> >                         pdata->trigger_level0_en;
->> >         } else {
->> > -               con |= EXYNOS_TMU_CORE_OFF;
->> >                 interrupt_en = 0; /* Disable all interrupts */
->> >         }
->> >         writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
->> > --
->> > 1.7.4.1
->> >
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> > Please read the FAQ at  http://www.tux.org/lkml/
->> >
->
->
+> > Failures might be better handled if sequences have some "recovery policy"
+> > about what to do when they fail, as mentioned in the link above. As you
+> > pointed out, the driver might not always know enough about the resources
+> > involved to do the right thing.
+> 
+> Yes, I think such recovery policy would be needed.
+
+Indeed, from your last paragraph this makes even more sense now.
+
+Oh, and I noticed I forgot to reply to this:
+
+> This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
+> device, no matter where and how many times it's used?
+
+That's true - however when dereferencing the phandle, the underlying framework 
+will try to acquire the PWM, which will result in failure if the same resource 
+is referenced several times.
+
+One could compare the phandles to avoid this, but in your example you must 
+know that for PWMs the "xyz" part is not relevant for comparison.
+
+This makes referencing of resources by name much easier to implement and more 
+elegant with respect to frameworks leveraging.
+
+Alex.
