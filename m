@@ -1,73 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH RESEND v4 0/5] Migrate SCSI drivers to use dev_pm_ops
-Date: Wed, 21 Nov 2012 01:53:06 +0100
-Message-ID: <3643841.7EMCNpFCqq@vostro.rjw.lan>
-References: <1352446075-1814-1-git-send-email-aaron.lu@intel.com>
+Subject: Re: PM QOS flags
+Date: Wed, 21 Nov 2012 01:55:20 +0100
+Message-ID: <2876701.4CzVHrvfSF@vostro.rjw.lan>
+References: <1905473.JbZu5BcXPL@linux-lqwf.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:56835 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:56845 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159Ab2KUAsk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 20 Nov 2012 19:48:40 -0500
-In-Reply-To: <1352446075-1814-1-git-send-email-aaron.lu@intel.com>
+	id S1751754Ab2KUAuw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 20 Nov 2012 19:50:52 -0500
+In-Reply-To: <1905473.JbZu5BcXPL@linux-lqwf.site>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-pm@vger.kernel.org
 
-Hi James,
+Hi,
 
-On Friday, November 09, 2012 03:27:50 PM Aaron Lu wrote:
-> This patchset has been quiet for a while, so resend them.
+On Wednesday, November 14, 2012 09:22:13 AM Oliver Neukum wrote:
+> Hi,
 > 
-> v4:
-> Only Patch 4 is modified:
-> Fixed a line over 80 characters warning by checkpatch.pl;
-> Update the changelog so that it is no more a try :-)
+> it seems to me that we are missing some flags. I would propose
 > 
-> v3:
-> Only patch 4 is modified:
-> Remove the special case for system freeze in scsi_bus_suspend_common
-> as pointed out by Alan Stern;
-> Updated some comments;
-> Removed the use of typedef (*pm_callback_t)(struct device *).
+> PM_QOS_FLAG_NO_EXTERNAL_EFFECT
+> 	in some cases going to powersave has externally visible effects
+> 	modems hang up, LEDs on keyboards extinguish, screens blank
 > 
-> v2:
-> Change the runtime suspend behaviour of sd driver by putting the device
-> into stopped power state.
-> Revert 2 patches which are no longer needed as pointed out by Alan Stern.
-> Find out device callbacks in bus callbacks as suggested by Alan Stern.
+> PM_QOS_FLAG_NO_HOTPLUG_DETECT
+> 	hotplug is not detected while in powersave
 > 
-> Due to these changes, patch number grows from 2 -> 5.
-> 
-> v1:
-> The 2 patches will migrate SCSI drivers to use the pm callbacks defined
-> in dev_pm_ops as pm_message is deprecated and should not be used by driver.
-> Bus level callback is changed to use callbacks defined in dev_pm_ops when
-> needed and sd's pm callback is updated to use what are defined in dev_pm_ops.
-> 
-> 
-> Aaron Lu (5):
->   sd: put to stopped power state when runtime suspend
->   Revert "[SCSI] scsi_pm: set device runtime state before parent
->     suspended"
->   Revert "[SCSI] runtime resume parent for child's system-resume"
->   pm: use callbacks from dev_pm_ops for scsi devices
->   sd: update sd to use the new pm callbacks
-> 
->  drivers/scsi/scsi_pm.c | 98 +++++++++++++++++++++++++++-----------------------
->  drivers/scsi/sd.c      | 18 +++++++---
->  2 files changed, 67 insertions(+), 49 deletions(-)
+> PM_QOS_FLAG_NO_MEDIUM_CHANGE
+> 	the device does not detect medium change events in powersave
+> 	USB storage devices are prime candidates for this
 
-Do you have any plans with respect to this patchset?
+I'm fine with these, but please add them along with the users, so that
+it is clear how you're planning to utilize them.
 
-It has been acked by Alan and me, do you have any objections against it?
-
+Thanks,
 Rafael
 
-
+ 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
