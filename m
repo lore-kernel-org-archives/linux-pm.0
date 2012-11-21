@@ -1,273 +1,118 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH v5] Thermal: exynos: Add sysfs node supporting exynos's
- emulation mode.
-Date: Wed, 21 Nov 2012 13:31:01 +0900
-Message-ID: <1353472261-17430-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:52986 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098Ab2KUEbH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Nov 2012 23:31:07 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Wed, 21 Nov 2012 10:13:47 +0200
+Message-ID: <50AC8D3B.6040300@ti.com>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com> <50AB9832.90709@ti.com> <4316169.5QXVzv7peZ@percival>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig403A57F02E04A77E078F8D06"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <4316169.5QXVzv7peZ@percival>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-This patch supports exynos's emulation mode with newly created sysfs node.
-Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal
-management unit. Thermal emulation mode supports software debug for TMU's
-operation. User can set temperature manually with software code and TMU
-will read current temperature from user value not from sensor's value.
-This patch includes also documentary placed under Documentation/thermal/.
+--------------enig403A57F02E04A77E078F8D06
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
----
-v5
- - Rebase the patch at -next branch of zhang rui's git.
- - Fix EXYNOS_EMULATION_MODE Kconfig option as Amit's comment.
- - Show emulation temperature in millicelsius.
-   Storing emulation temperature supports both celsius and mcelsius for input.
+On 2012-11-21 03:56, Alex Courbot wrote:
+> Hi Tomi,
+>=20
+> On Tuesday 20 November 2012 22:48:18 Tomi Valkeinen wrote:
+>> I guess there's a reason, but the above looks a bit inconsistent. For
+>> gpio you define the gpio resource inside the step. For power and pwm t=
+he
+>> resource is defined before the steps. Why wouldn't "pwm =3D <&pwm 2
+>> 5000000>;" work in step2?
+>=20
+> That's mostly a framework issue. Most frameworks do not export a functi=
+on that=20
+> allow to dereference a phandle - they expect resources to be declared r=
+ight=20
+> under the device node and accessed by name through foo_get(device, name=
+). So=20
+> using phandles in power sequences would require to export these additio=
+nal=20
 
-v4
- - Fix Typo.
- - Remove unnecessary codes.
- - Add comments about feature of exynos emulation operation to the document.
+Right, I expected something like that.
 
-v3
- - Remove unnecessay variables.
- - Do some code clean in exynos_tmu_emulation_store().
- - Make wrapping function of sysfs node creation function to use
-   #ifdefs in minimum.
+> functions and also opens the door to some inconsistencies - for instanc=
+e, your=20
+> PWM phandle could be referenced a second time in the sequence with a di=
+fferent=20
+> period - how do you know that these are actually referring the same PWM=
+=20
+> device?
 
-v2
- exynos_thermal.c
- - Fix build error occured by wrong emulation control register name.
- - Remove exynos5410 dependent codes.
- exynos_thermal_emulation
- - Align indentation.
- Documentation/thermal/exynos_thermal_emulation |   56 +++++++++++++
- drivers/thermal/Kconfig                        |    9 ++
- drivers/thermal/exynos_thermal.c               |  103 ++++++++++++++++++++++++
- 3 files changed, 168 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/thermal/exynos_thermal_emulation
+This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
+device, no matter where and how many times it's used?
 
-diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
-new file mode 100644
-index 0000000..bc9b057
---- /dev/null
-+++ b/Documentation/thermal/exynos_thermal_emulation
-@@ -0,0 +1,56 @@
-+EXYNOS EMULATION MODE
-+========================
-+
-+Copyright (C) 2012 Samsung Electronics
-+
-+Written by Jonghwa Lee <jonghwa3.lee@samsung.com>
-+
-+Description
-+-----------
-+
-+Exynos 4x12 (4212, 4412) and 5 series provide emulation mode for thermal management unit.
-+Thermal emulation mode supports software debug for TMU's operation. User can set temperature
-+manually with software code and TMU will read current temperature from user value not from
-+sensor's value.
-+
-+Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
-+When it's enabled, sysfs node will be created under
-+/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
-+
-+The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
-+temperature you want to update to sysfs node, it automatically enable emulation mode and
-+current temperature will be changed into it.
-+(Exynos also supports user changable delay time which would be used to delay of
-+ changing temperature. However, this node only uses same delay of real sensing time, 938us.)
-+
-+Exynos emulation mode requires synchronous of value changing and enabling. It means when you
-+want to update the any value of delay or next temperature, then you have to enable emulation 
-+mode at the same time. (Or you have to keep the mode enabling.) If you don't, it fails to
-+change the value to updated one and just use last succeessful value repeatedly. That's why
-+this node gives users the right to change termerpature only. Just one interface makes it more
-+simply to use.
-+
-+Disabling emulation mode only requires writing value 0 to sysfs node.
-+
-+
-+TEMP	120 |
-+	    |
-+	100 |
-+	    |
-+	 80 |
-+	    |		     	 	 +-----------
-+	 60 |      		     	 |	    |
-+	    |	           +-------------|          |
-+	 40 |              |         	 |          |
-+   	    |		   |	     	 |          |
-+	 20 |		   |	     	 |          +----------
-+	    |	 	   |	     	 |          |          |
-+  	  0 |______________|_____________|__________|__________|_________
-+		   A	    	 A	    A	   	       A     TIME
-+		   |<----->|	 |<----->|  |<----->|	       |
-+		   | 938us |  	 |	 |  |       |          |
-+emulation    :  0  50	   |  	 70      |  20      |          0
-+current temp :   sensor   50		 70         20	      sensor
-+
-+
-+
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index d96da07..61ab206 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -101,6 +101,15 @@ config EXYNOS_THERMAL
- 	  If you say yes here you get support for TMU (Thermal Managment
- 	  Unit) on SAMSUNG EXYNOS series of SoC.
- 
-+config EXYNOS_THERMAL_EMUL
-+	bool "EXYNOS TMU emulation mode support"
-+	depends on EXYNOS_THERMAL
-+	help
-+	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
-+	  Enable this option will be make sysfs node in exynos thermal platform
-+	  device directory to support emulation mode. With emulation mode sysfs
-+	  node, you can manually input temperature to TMU for simulation purpose.
-+
- config DB8500_THERMAL
- 	bool "DB8500 thermal management"
- 	depends on ARCH_U8500
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 7772d16..75615f2 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -99,6 +99,14 @@
- #define IDLE_INTERVAL 10000
- #define MCELSIUS	1000
- 
-+#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+#define EXYNOS_EMUL_TIME	0x57F0
-+#define EXYNOS_EMUL_TIME_SHIFT	16
-+#define EXYNOS_EMUL_DATA_SHIFT	8
-+#define EXYNOS_EMUL_DATA_MASK	0xFF
-+#define EXYNOS_EMUL_ENABLE	0x1
-+#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
-+
- /* CPU Zone information */
- #define PANIC_ZONE      4
- #define WARN_ZONE       3
-@@ -832,6 +840,94 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
- 	return (struct exynos_tmu_platform_data *)
- 			platform_get_device_id(pdev)->driver_data;
- }
-+
-+#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+static ssize_t exynos_tmu_emulation_show(struct device *dev,
-+					 struct device_attribute *attr,
-+					 char *buf)
-+{
-+	struct platform_device *pdev = container_of(dev,
-+					struct platform_device, dev);
-+	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	unsigned int reg;
-+	u8 temp_code;
-+	int temp = 0;
-+
-+	if (data->soc == SOC_ARCH_EXYNOS4210)
-+		goto out;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+
-+	if (reg & EXYNOS_EMUL_ENABLE) {
-+		reg >>= EXYNOS_EMUL_DATA_SHIFT;
-+		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
-+		temp = code_to_temp(data, temp_code);
-+	}
-+out:
-+	return sprintf(buf, "%d\n", temp * MCELSIUS);
-+}
-+
-+static ssize_t exynos_tmu_emulation_store(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf, size_t count)
-+{
-+	struct platform_device *pdev = container_of(dev,
-+					struct platform_device, dev);
-+	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-+	unsigned int reg;
-+	int temp;
-+
-+	if (data->soc == SOC_ARCH_EXYNOS4210)
-+		goto out;
-+
-+	if (!sscanf(buf, "%d\n", &temp) || temp < 0)
-+		return -EINVAL;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+
-+	if (temp) {
-+		/* Both CELSIUS and MCELSIUS type are available for input */
-+		if (temp > MCELSIUS)
-+			temp /= MCELSIUS;
-+
-+		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
-+			(temp_to_code(data, (temp / MCELSIUS))
-+			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
-+	} else {
-+		reg &= ~EXYNOS_EMUL_ENABLE;
-+	}
-+
-+	writel(reg, data->base + EXYNOS_EMUL_CON);
-+
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+
-+out:
-+	return count;
-+}
-+
-+static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
-+					exynos_tmu_emulation_store);
-+static int create_emulation_sysfs(struct device *dev)
-+{
-+	return device_create_file(dev, &dev_attr_emulation);
-+}
-+static void remove_emulation_sysfs(struct device *dev)
-+{
-+	device_remove_file(dev, &dev_attr_emulation);
-+}
-+#else
-+static inline int create_emulation_sysfs(struct device *dev) {return 0;}
-+static inline void remove_emulation_sysfs(struct device *dev){}
-+#endif
-+
- static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data;
-@@ -930,6 +1026,11 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- 		dev_err(&pdev->dev, "Failed to register thermal interface\n");
- 		goto err_clk;
- 	}
-+
-+	ret = create_emulation_sysfs(&pdev->dev);
-+	if (ret)
-+		dev_err(&pdev->dev, "Failed to create emulation mode sysfs node\n");
-+
- 	return 0;
- err_clk:
- 	platform_set_drvdata(pdev, NULL);
-@@ -941,6 +1042,8 @@ static int __devexit exynos_tmu_remove(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 
-+	remove_emulation_sysfs(&pdev->dev);
-+
- 	exynos_tmu_control(pdev, false);
- 
- 	exynos_unregister_thermal();
--- 
-1.7.4.1
+>>> +When a power sequence is run, its steps is executed one after the ot=
+her
+>>> until +one step fails or the end of the sequence is reached.
+>>
+>> The document doesn't give any hint of what the driver should do if
+>> running the power sequence fails. Run the "opposite" power sequence?
+>> Will that work for all resources? I'm mainly thinking of a case where
+>> each enable of the resource should be matched by a disable, i.e. you
+>> can't call disable if no enable was called.
+>=20
+> We discussed that issue already (around v5 I think) and the conclusion =
+was=20
+> that it should be up to the driver. When we simply enable/disable resou=
+rces it=20
+> is easy to revert, but in the future non-boolean properties will likely=
+ be=20
+> introduced, and these cannot easily be reverted. Moreover some drivers =
+might=20
+> have more complex recovery needs. This deserves more discussion I think=
+, as=20
+> I'd like to have some "generic" recovery mechanism that covers most of =
+the=20
+> cases.
 
+Ok. I'll need to dig up the conversation. Did you consider any examples
+of how some driver could handle the error cases?
+
+What I'm worried about is that, as far as I understand, the power
+sequence is kinda like black box to the driver. The driver just does
+"power-up", without knowing what really goes on in there.
+
+And if it doesn't know what goes on in there, nor what's in "power-down"
+sequence, how can it do anything when an error happens? The only option
+I see is that the driver doesn't do anything, which will leave some
+resources enabled, or it can run the power-down sequence, which may or
+may not work.
+
+ Tomi
+
+
+
+--------------enig403A57F02E04A77E078F8D06
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
+
+iQIcBAEBAgAGBQJQrI0/AAoJEPo9qoy8lh712M0P+gIChgVfl7Gu5kAIKRNg10G8
+rxxs1RmpSJFHATQJpteeLCpuQV+8HgyE0mAznCOxXymB+kM7qQ5E1VBY+COk2r2k
+IoBc3kPYjeGzQHNwOYiS8+CTu7zveQN+7cCs4UOtCWHPX2MmkPHcv5B0uWX2Cx9j
+BQdRDQb61xo3BhpG3M4krqW0wvemfYvlZYe3UL7DEFgHojvv3UBulOQlI7v7UeVd
+SJ3UjET7CL3yRVPoKE+LAGLbDWN153hIKSBdsMGplL7iWseFlFSOncDcEyvgeJ/y
+JljHXcjDDNEGrAXtrVZ+Mgmk68zm7uj/UzFdawShmsplL7jok9rvh/9zfKxjBW++
+Xb7Yso89fytQM03ys8yJpFZS3zSTsGOXM0YD8QFldYnC09V4cuSM6G2uCKBd26Qa
+EBPtKd4wgJOGHBkXAmI/4pj0cW/XJXvybLhlBKuBC7QElau86mT2ie7abfzFl6eY
+jvfiIKg312QvnG/44TNUMDUQBcSnhoyodQMk/54D2xkZiKrgDNYsMHkohVGWQP7D
+Y2W8WLrAqeSWdcG3dKp2nKua0c9O2UBn7QNqNtFivMafelAn74Q/PQDcLv5uMFz7
+t95g7zl7isRneYCB5bVwXrHpr24lJ5PAirPrrDNxwP9/U1KOth0nK2oeCuKIn8XS
+b99Gejfh3zdY0QTTEX5u
+=g1w0
+-----END PGP SIGNATURE-----
+
+--------------enig403A57F02E04A77E078F8D06--
