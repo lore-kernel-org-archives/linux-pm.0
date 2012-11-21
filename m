@@ -1,205 +1,170 @@
-From: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Wed, 21 Nov 2012 12:40:18 +0100
-Message-ID: <20121121114018.GA31576@avionic-0098.adnet.avionic-design.de>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
- <20121120215429.B621F3E1821@localhost>
- <13540495.epaCf4JVn9@percival>
- <50ACB59B.4090404@iki.fi>
+Date: Wed, 21 Nov 2012 14:04:17 +0200
+Message-ID: <50ACC341.3090204@ti.com>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com> <20121120215429.B621F3E1821@localhost> <13540495.epaCf4JVn9@percival> <50ACB59B.4090404@iki.fi> <20121121114018.GA31576@avionic-0098.adnet.avionic-design.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <50ACB59B.4090404-X3B1VOXEql0@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomi Valkeinen <tomba-X3B1VOXEql0@public.gmane.org>
-Cc: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+	protocol="application/pgp-signature";
+	boundary="------------enigBA0C6782130B92F7F6253164"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:39051 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754587Ab2KUMFD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Nov 2012 07:05:03 -0500
+In-Reply-To: <20121121114018.GA31576@avionic-0098.adnet.avionic-design.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: Tomi Valkeinen <tomba@iki.fi>, Alex Courbot <acourbot@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--------------enigBA0C6782130B92F7F6253164
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Nov 21, 2012 at 01:06:03PM +0200, Tomi Valkeinen wrote:
-> On 2012-11-21 06:23, Alex Courbot wrote:
-> > Hi Grant,
-> >=20
-> > On Wednesday 21 November 2012 05:54:29 Grant Likely wrote:
-> >>> With the advent of the device tree and of ARM kernels that are not
-> >>> board-tied, we cannot rely on these board-specific hooks anymore but
-> >>
-> >> This isn't strictly true. It is still perfectly fine to have board
-> >> specific code when necessary. However, there is strong encouragement to
-> >> enable that code in device drivers as much as possible and new board
-> >> files need to have very strong justification.
-> >=20
-> > But doesn't introducing board-specific code into the kernel just defeat=
-s the=20
-> > purpose of the DT? If we extend this logic, we are heading straight bac=
-k to=20
-> > board-definition files. To a lesser extent than before I agree, but the=
- problem=20
-> > is fundamentally the same.
->=20
-> I don't think so. I'll reiterate my opinion on this subject, as a
-> summary and for those who haven't read the discussions of the earlier
-> versions of the series. And perhaps I'll even manage to say something
-> new =3D).
->=20
->=20
-> First about the board specific code. I think we may need some board
-> specific code, even if this series was merged. Let's call them board
-> drivers. These board drivers would only exist for boards with some weird
-> setups that cannot be expressed or managed with DT and normal drivers.
->=20
-> I think these cases would be quite rare, as I can't even come up with a
-> very good example. I guess most likely these cases would involve some
-> small trivial chips for muxing or such, for which it doesn't really make
-> sense to have a real driver.
->=20
-> Say, perhaps a board with two LCDs connected to one video output, and
-> only one LCD can be enabled at a time, and you need to set some mux chip
-> to route the signals to the correct LCD. In this case I'd see we should
-> have hotplug support in the display framework, and the board driver
-> would act on user input (sysfs file, perhaps), plugging in/out the LCD
-> device depending on the user input.
->=20
->=20
-> As for expressing device internal details in the DT data, as done in
-> this series, I don't like it very much. I think the DT data or the board
-> file should just describe which device is the one in question, and how
-> it's connected to other components on the board. The driver for the
-> device should handle everything else.
->=20
-> As Alex pointed out, there may be lots of devices that work the same way
-> when enabled, but require slightly different power-on/off sequences. We
-> could have these sequences in the driver itself, either as plain code,
-> or in a table of some sort, possibly using the power sequence framework
-> presented in this series. The correct code or sequence would be ran
-> depending on the particular model of the device.
->=20
-> I think this approach is correct in the sense that this is what drivers
-> are supposed to do: handle all the device internal matters. But this
-> raises the problem of bloating the kernel with possibly lots of
-> different power sequences, of which only a few would be used by a board,
-> and all the rest would just be waste of memory.
->=20
-> Regarding this problem I have the following questions, to which I don't
-> have clear answers:
->=20
-> - How much of this device specific data is too much? If a driver
-> supports 10 different models, and the sequences for each model take 100
-> bytes, this 1000 bytes doesn't sound too much. But where's the limit?
-> And even if one driver only has 1kB of this data, what if we have lots
-> of similar drivers?
->=20
-> - How many bytes does a power sequence presented in this series take, if
-> the sequence contains, say, 5 steps, with gpio, delay, pwm, delay and
-> regulator?
->=20
-> - How likely is it that we'll get lots of different models? A hundred
-> different models for a backlight PWM with different power-on/off
-> sequences already sounds a really big number. If we're only going to
-> have each driver supporting, say, no more than 10 models, perhaps the
-> problem is not even an issue in practice.
->=20
-> - Are there ways to limit this bloat in the driver? One obvious way
-> would be to discard the unused sequences after driver probe, but that
-> only works for platform devices. Although, I guess these sequences would
-> mostly be used by platform drivers? If so, then the problem could be
-> solved by discarding the data after probe. Another would be to load the
-> sequences from a file as firmware, but that feels quite an awful
-> solution. Anybody have other ideas?
->=20
-> One clear positive side with in-driver approach is that it's totally
-> inside the kernel, and can be easily reworked in the future, or even
-> changed to a DT-based approach as presented in this series if that seems
-> like a better solution. The DT based approach, on the other hand, will
-> be more or less written to stone after it's merged.
->=20
->=20
-> So, I like the framework of expressing the sequences presented in this
-> series (except there's a problem with error cases, as I pointed out in
-> another post), as it can be used inside the drivers. But I'm not so
-> enthusiastic about presenting the sequences in DT.
->=20
-> My suggestion would be to go forward with an in-driver solution, and
-> look at the DT based solution later if we are seeing an increasing bloat
-> in the drivers.
+On 2012-11-21 13:40, Thierry Reding wrote:
+> On Wed, Nov 21, 2012 at 01:06:03PM +0200, Tomi Valkeinen wrote:
 
-Assuming we go with your approach, what's the plan? We're actually
-facing this problem right now for Tegra. Basically we have a DRM driver
-that can drive the panel, but we're still missing a way to hook up the
-backlight and panel enabling code. So we effectively can't support any
-of the LVDS devices out there without this series.
+(sorry for bouncing back and forth with my private and my @ti addresses.
+I can't find an option in thunderbird to only use one sender address,
+and I always forget to change it when responding...)
 
-As I understand it, what you propose is similar to what ASoC does. For a
-specific board, you'd have to write a driver, presumably for the new
-panel/display framework, that provides code to power the panel on and
-off. That means we'll have to have a driver for each panel out there
-basically, or we'd need to write generic drivers that can be configured
-to some degree (via platform data or DT). This is similar to how ASoC
-works, where we have a driver that provides support for a specific codec
-connected to the Tegra SoC. For the display framework things could be
-done in a similar way I suppose, so that Tegra could have one display
-driver to handle all aspects of powering on and off the various panels
-for the various boards out there.
+>> My suggestion would be to go forward with an in-driver solution, and
+>> look at the DT based solution later if we are seeing an increasing blo=
+at
+>> in the drivers.
+>=20
+> Assuming we go with your approach, what's the plan? We're actually
+> facing this problem right now for Tegra. Basically we have a DRM driver=
 
-Obviously, a lot of the code will be similar for other SoCs, but maybe
-that's just the way things are if we choose that approach. There's also
-the potential for factoring out large chunks of common code later on
-once we start to see common patterns.
+> that can drive the panel, but we're still missing a way to hook up the
+> backlight and panel enabling code. So we effectively can't support any
+> of the LVDS devices out there without this series.
 
-One thing that's not very clear is how the backlight subsystem should be
-wired up with the display framework. I have a patch on top of the Tegra
-DRM driver which adds some ad-hoc display support using this power
-sequences series and the pwm-backlight.
+Could you describe the hardware setup you have related to the LCD and
+backlight? Is it a public board with public schematics?
 
-=46rom reading the proposal for the panel/display framework, it sounds
-like a lot more is planned than just enabling or disabling panels, but
-it also seems like a lot of code needs to be written to support things
-like DSI, DBI or other control busses.
+I've understood that you don't have anything special in your board, just
+an LCD and a backlight, and the power sequences are related to powering
+up the LCD and the backlight, without anything board specific. If so,
+there's no need for board specific code, but just improving the panel
+and backlight drivers to support the models you use.
 
-At least for Tegra, and I think the same holds for a wide variety of
-other SoCs, dumb panels would be enough for a start. In the interest of
-getting a working solution for those setups, maybe we can start small
-and add just enough framework to register dumb panel drivers to along
-with code to wire up a backlight to light up the display. Then we could
-possibly still make it to have a proper solution to support the various
-LVDS panels for Tegra with 3.9.
+> As I understand it, what you propose is similar to what ASoC does. For =
+a
+> specific board, you'd have to write a driver, presumably for the new
+> panel/display framework, that provides code to power the panel on and
+> off. That means we'll have to have a driver for each panel out there
+> basically, or we'd need to write generic drivers that can be configured=
 
-I'm adding Laurent on Cc since he's probably busy working on a new
-proposal for the panel/display framework. Maybe he can share his thought
-on this.
+> to some degree (via platform data or DT). This is similar to how ASoC
+> works, where we have a driver that provides support for a specific code=
+c
+> connected to the Tegra SoC. For the display framework things could be
+> done in a similar way I suppose, so that Tegra could have one display
+> driver to handle all aspects of powering on and off the various panels
+> for the various boards out there.
 
-All of the above said, I'm willing to help out with the coding if that's
-what is required to reach a solution that everybody can be happy with.
+I think we should only need the board drivers for very special cases. If
+there's just a panel and a backlight, without any special dynamic muxing
+or other trickery needed, I don't see a need for a board driver. I
+presume this is the case for most of the boards.
 
-Thierry
+> Obviously, a lot of the code will be similar for other SoCs, but maybe
+> that's just the way things are if we choose that approach. There's also=
 
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature
+> the potential for factoring out large chunks of common code later on
+> once we start to see common patterns.
+>=20
+> One thing that's not very clear is how the backlight subsystem should b=
+e
+> wired up with the display framework. I have a patch on top of the Tegra=
+
+> DRM driver which adds some ad-hoc display support using this power
+> sequences series and the pwm-backlight.
+
+I think that's a separate issue: how to associate the lcd device and
+backlight device together. I don't have a clear answer to this.
+
+There are many ways the backlight may be handled. In some cases the
+panel and the backlight are truly independent, and you can use the other
+without using the other (not very practical, though =3D).
+
+But then with some LCDs the backlight may be controlled by sending
+commands to the panel, and in this case the two may be quite linked.
+Changing the backlight requires the panel driver to be up and running,
+and sometimes the sending the backlight commands may need to be (say,
+DSI display, with backlight commands going over the DSI bus).
+
+So my feeling is that the panel driver should know about the related
+backlight device. In the first case the panel driver would just call
+enable/disable in the backlight device when the panel is turned on.
+
+In the second case of the DSI panel... I'm not sure. I've implemented it
+so that the panel driver creates the backlight device, and implements
+the backlight callbacks. It then sends the DSI commands from those
+callbacks.
+
+> From reading the proposal for the panel/display framework, it sounds
+> like a lot more is planned than just enabling or disabling panels, but
+> it also seems like a lot of code needs to be written to support things
+> like DSI, DBI or other control busses.
+>=20
+> At least for Tegra, and I think the same holds for a wide variety of
+> other SoCs, dumb panels would be enough for a start. In the interest of=
+
+> getting a working solution for those setups, maybe we can start small
+> and add just enough framework to register dumb panel drivers to along
+> with code to wire up a backlight to light up the display. Then we could=
+
+> possibly still make it to have a proper solution to support the various=
+
+> LVDS panels for Tegra with 3.9.
+
+Yes, we (Laurent and me) both agree that we should start simple.
+
+However, the common panel framework is not strictly needed for this. I'm
+not sure of the current architecture for Tegra, but for OMAP we already
+have panel drivers (omap specific ones, though). The panel drivers may
+support multiple models, (for example,
+drivers/video/omap2/displays/panel-generic-dpi.c).
+
+I don't see any problem with adding small Tegra specific panel drivers
+for the time being, with the intention of converting to common panel
+framework when that's available.
+
+Of course, the DT side is an issue. If you now create DT bindings for a
+temporary model, and need to change it again later, you'll have some
+headaches trying managing that without breaking the old bindings... This
+is why I haven't pushed DT bindings for OMAP, as I know I have to change
+them in the near future.
+
+ Tomi
+
+
+
+--------------enigBA0C6782130B92F7F6253164
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Version: GnuPG v1.4.11 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
 
-iQIcBAEBAgAGBQJQrL2iAAoJEN0jrNd/PrOhgnwP+gLTl+P2KDOOR0ReanApXMIo
-wb+D1JnN2VFu0/ejP3kvOV6jvwhU8iQ90Zozia61tcsUluZvNWj4jy1qL0ewSm4y
-8K/nZDx3CR45UHcRELT4YWbxeCtGXMZ03o6c0oV9bqM+TtAMV3CwEelOOQ29JNvQ
-Mi6lF3ZeKXNiBDCLgY4LbhmTZKc52s36sfWT3V42TRvO5Ft97uYCNeCeTC++kmmi
-f+dGb2prZN2BEL5jmNsGCpkE1uftQr+t9MYcK4kDmt2TkUpeFxpCExhhgDyIPJ9w
-uAZD8dc9u+50gjk2GgWi+6DZRXzdONletF+8xz6epnc070C7eZ41bZ4J3f3Ublpx
-DpLBdpF04l0OtdFxpQIhfeXLAVbIDYRZ0PLWpZuJx+1IjZpJH1GWZJo2IVm39USP
-BcCBlmTBgavqQ4gS1+vpNeMowb7o51JbwcqnpcXfWdAkttxpPcv+bwKtb2+KdZcO
-9D2yhd477LAk5wnzt7+f96tyY/8kpEUeBV5nxPbYKXyVfL1WRjNtr653YykEzbjf
-FquaG/TW7SlJwBYBIKTxfnCHKc+vR0OipFDa2TDUsgYiaYoPypP2QVBAkKVD5Jd7
-0sO2oI5WSVhFQj5UXxtptmtZIKDqKmFrbweQoJUb2F4kUwnVQ/6qUtFtasws2Zqe
-fQrTJdvrhFNtkjhTC+C6
-=iR/N
+iQIcBAEBAgAGBQJQrMNBAAoJEPo9qoy8lh71mM8P/1Phj5ZXucIt6yiaqeYVJk1S
+A6hELegvncLVOlCpiW5/DneMv2yY5Up6ovyfrXE7OvxLLVnTLKR32cGlv9fZI5lm
+1USyQ4NwctedIEAaUV/Ri4fMYsk1OmRPiQUEfxxy0iK0awtIhVSKzJocsPKEUmU/
+mi8zikJhdnL2rvPpuD4k78F3dIV4klbv2Y43/11YOVxSCX7x+LVWzi0tWF4KtOhV
+zc/gT3J2HMcXwuYJZGf5/vFnSz8EUtCCc+nlCCF/XPe9CHFR7dQ10CWCScxz0XTm
++/tGikGIxWytdUuk/UByWzhaknpzPWGOm//LUVg82Szb0zpEK332qGNAFRT0PBA1
+1YoGs0jo0uYK83O0hdED/efa5HPn8SDetWraRaLcI8aKVGRoK+zja+UJt9KfLwqD
+69F5ROIZXB+6+a3RtVCEc/YR3qf5YtUMolvTTo4xSdeYqTR6JYhZQvuVUQu+FxEN
+N0s5+cEY7KYyjQNWk84pZz9btnIUor+JP0hNqgvuUSxI7OM2ng4uRIJ+tgxpn3TY
+5FfjKVlLjhrueXEEqNKpngtGxwMsL+2IyCRNxOgYXhV7BNd7n4vIx123SMq4wG0i
+EXU418kpczXF0w/DXHgWsFyyGLaOuDLKcqU+e675n3IwhF0WwDrLMoYmnhLx7yIM
+MXW8qiC7d4qjGI7/aB1O
+=8x2N
 -----END PGP SIGNATURE-----
 
---LZvS9be/3tNcYl/X--
+--------------enigBA0C6782130B92F7F6253164--
