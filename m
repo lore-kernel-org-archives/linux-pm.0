@@ -1,42 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request-2 bugfixes
-Date: Wed, 21 Nov 2012 21:45:35 +0100
-Message-ID: <56413964.NukgdroaIo@vostro.rjw.lan>
-References: <1353494743-4581-1-git-send-email-myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] cpufreq: exynos: Broadcast frequency change notifications for all cores
+Date: Wed, 21 Nov 2012 21:47:42 +0100
+Message-ID: <4440154.l7bQzsqNex@vostro.rjw.lan>
+References: <1887364.fvxYYNb7Mm@amdc1227> <1758658.Qt0SyRnJmS@amdc1227>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:58821 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:58833 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964796Ab2KUUlJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 21 Nov 2012 15:41:09 -0500
-In-Reply-To: <1353494743-4581-1-git-send-email-myungjoo.ham@samsung.com>
+	id S964773Ab2KUUnO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 21 Nov 2012 15:43:14 -0500
+In-Reply-To: <1758658.Qt0SyRnJmS@amdc1227>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-pm@vger.kernel.org, sachin.kamat@linaro.org, myungjoo.ham@gmail.com, "Serge E. Hallyn" <serge@hallyn.com>
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wednesday, November 21, 2012 07:45:43 PM MyungJoo Ham wrote:
+On Wednesday, November 21, 2012 02:52:26 PM Tomasz Figa wrote:
+> On Tuesday 13 of November 2012 10:26:12 Tomasz Figa wrote:
+> > On Exynos SoCs all cores share the same frequency setting, so changing
+> > frequency of one core will affect rest of cores.
+> > 
+> > This patch modifies the exynos-cpufreq driver to inform cpufreq core
+> > about this behavior and broadcast frequency change notifications for all
+> > cores.
+> > 
+> > Signed-off-by: Tomasz Figa <t.figa@samsung.com>
+> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > ---
+> >  drivers/cpufreq/exynos-cpufreq.c | 7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
+> > b/drivers/cpufreq/exynos-cpufreq.c index af2d81e..c0d54a8 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -100,7 +100,8 @@ static int exynos_target(struct cpufreq_policy
+> > *policy, }
+> >  	arm_volt = volt_table[index];
+> > 
+> > -	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> > +	for_each_cpu(freqs.cpu, policy->cpus)
+> > +		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> > 
+> >  	/* When the new frequency is higher than current frequency */
+> >  	if ((freqs.new > freqs.old) && !safe_arm_volt) {
+> > @@ -115,7 +116,8 @@ static int exynos_target(struct cpufreq_policy
+> > *policy, if (freqs.new != freqs.old)
+> >  		exynos_info->set_freq(old_index, index);
+> > 
+> > -	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+> > +	for_each_cpu(freqs.cpu, policy->cpus)
+> > +		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+> > 
+> >  	/* When the new frequency is lower than current frequency */
+> >  	if ((freqs.new < freqs.old) ||
+> > @@ -235,6 +237,7 @@ static int exynos_cpufreq_cpu_init(struct
+> > cpufreq_policy *policy) cpumask_copy(policy->related_cpus,
+> > cpu_possible_mask);
+> >  		cpumask_copy(policy->cpus, cpu_online_mask);
+> >  	} else {
+> > +		policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+> >  		cpumask_setall(policy->cpus);
+> >  	}
 > 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> The following changes since commit aa0745b51987fbaf628ee0943907db177335522d:
-> 
->   Merge branch 'pm-devfreq-next' into linux-next (2012-11-21 01:27:47 +0100)
-> , which is HEAD of Rafael's linux-pm.git linux-next branch.
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121121
-> 
-> MyungJoo Ham (2):
->       PM / devfreq: remove compiler error when a governor is module
->       PM / devfreq: missing rcu_read_lock() added for find_device_opp()
+> Ping.
 
-This one has a comment from Serge that looks like a valid point.  Care to address it
-and resend or drop the commit in question?
+Am I supposed to handle this?
 
 Rafael
 
