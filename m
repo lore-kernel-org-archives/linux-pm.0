@@ -1,52 +1,69 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: Re: [PATCH v3 RESEND 0/4] ARM: EXYNOS: Power domain DT support
- extension
-Date: Wed, 21 Nov 2012 11:38:07 +0100
-Message-ID: <3937720.DSR9HIu3D4@amdc1227>
-References: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1352812107-8777-1-git-send-email-t.figa@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kyungmin.park@samsung.com, kgene.kim@samsung.com, thomas.abraham@linaro.org, rjw@sisk.pl, m.szyprowski@samsung.com, tomasz.figa@gmail.com
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request-2 bugfixes
+Date: Wed, 21 Nov 2012 19:45:43 +0900
+Message-ID: <1353494743-4581-1-git-send-email-myungjoo.ham@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:9751 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173Ab2KUKpp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Nov 2012 05:45:45 -0500
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MDU004SF386K0Z0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 21 Nov 2012 19:45:45 +0900 (KST)
+Received: from localhost.localdomain ([10.90.51.65])
+ by mmp1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTPA id <0MDU00IZL3851M60@mmp1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 21 Nov 2012 19:45:44 +0900 (KST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, sachin.kamat@linaro.org, myungjoo.ham@gmail.com
 
-Hi Kgene,
 
-On Tuesday 13 of November 2012 14:08:23 Tomasz Figa wrote:
-> This patch series fixes two issues with existing DT support for Exynos
-> power domains and extends it with the ability of binding devices to
-> domains, basically making it possible to use power domains with DT.
-> 
-> Based on for-next branch of Kgene's tree.
-> 
-> Changes since v2:
->  - Rebased to for-next of Kgene's tree.
-> Changes since v1:
->  - Added "samsung," prefix to "power-domain" property.
->  - Added power domain nodes to Exynos4 device tree sources.
-> 
-> Tomasz Figa (4):
->   ARM: EXYNOS: pm_domain: Detect domain state on registration from DT
->   ARM: EXYNOS: pm_domain: Fix power domain name initialization
->   ARM: EXYNOS: pm_domain: Bind devices to power domains using DT
->   ARM: dts: exynos4: Set up power domains
-> 
->  .../bindings/arm/exynos/power_domain.txt           | 15 +++-
->  arch/arm/boot/dts/exynos4.dtsi                     | 30 +++++++
->  arch/arm/boot/dts/exynos4210.dtsi                  |  5 ++
->  arch/arm/mach-exynos/pm_domains.c                  | 93
-> +++++++++++++++++++++- 4 files changed, 135 insertions(+), 8
-> deletions(-)
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Since this version is just a rebase to your for-next and there are no 
-remaining comments, could you still take it for 3.8?
+The following changes since commit aa0745b51987fbaf628ee0943907db177335522d:
 
-Best regards,
--- 
-Tomasz Figa
-Samsung Poland R&D Center
-SW Solution Development, Linux Platform
+  Merge branch 'pm-devfreq-next' into linux-next (2012-11-21 01:27:47 +0100)
+, which is HEAD of Rafael's linux-pm.git linux-next branch.
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121121
+
+MyungJoo Ham (2):
+      PM / devfreq: remove compiler error when a governor is module
+      PM / devfreq: missing rcu_read_lock() added for find_device_opp()
+
+Sachin Kamat (2):
+      PM / devfreq: Fix incorrect argument in error message
+      PM / devfreq: Fix return value in devfreq_remove_governor()
+
+ drivers/devfreq/devfreq.c |   30 ++++++++++++++++++++++--------
+ include/linux/devfreq.h   |    2 +-
+ 2 files changed, 23 insertions(+), 9 deletions(-)
+
+
+- ---
+The four patches are trivial bugfixes following up the previous pull-request.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQrK/+AAoJEBOhurvWBoCKFL4P/2OVlI+s3IxG+XmhJbBY6h9N
+PLvxP3pTT9o3IvITZ66ASX/ZwYL5HxX0Nq0gT1Z7kNxJ9O0m3o/3+JPPFS8b60GX
+LGU/FE5SNgNAG9PsS9cq3CTd9EUUb1YVb6uj0pWNjgCvvGrwZ+UmQKJc/FSdzdiD
+weFd6szc4M2chWl7M/EolsWzoZ3r79gOJPal0yw/9G1RbTCUSRnC1dxb1kAEcvmv
+bqf4EBk6IToc1REdtQ8bn6ihHBkqHKFM1MygWF+L/Dwowwme9OwraHrg3SehwU4Q
+lYlVPkbc1JcsxKhpdEs95Mtz0CFHdhskxo+SM1DpBZ2HpzDzti8gqV8MVyNzpQfw
+WqKjFixIaMcAZ9YsKOgmQbBiGtwprTBn8a4OZZC25LNfEmkFHScEoHUYEsp9aakj
+xfTgoKZ5qAxBvo/Xyl+aT3VUnyHvPk/TXai7AySBf0wTpk6YDYL2NpRY4dHCf7lL
+MUxXQgXBJzIauFZyGZVGTfHBBsLFCkOcWdkymjMZ0usGTKUNT8cYHkbMf1VsLz9w
+HGdhpuejhfoInuVQDesXkgmT7NcdBI0mkmIKRbPvAl7nVgRMbJMn13qKvDGzgvWd
+VM2ZxZki/PNYf80+8m+oDnHvTvRJ8msy7lti8n6+OGFjlAueweU0B1TsS7Gp3Ths
+cexSPLga49rnmf6UyXZ5
+=wfji
+-----END PGP SIGNATURE-----
