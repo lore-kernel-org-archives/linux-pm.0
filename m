@@ -1,118 +1,49 @@
-From: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Wed, 21 Nov 2012 10:13:47 +0200
-Message-ID: <50AC8D3B.6040300@ti.com>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <1353149747-31871-2-git-send-email-acourbot@nvidia.com> <50AB9832.90709@ti.com> <4316169.5QXVzv7peZ@percival>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="------------enig403A57F02E04A77E078F8D06"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <4316169.5QXVzv7peZ@percival>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: remove compiler error when a governor is module
+Date: Wed, 21 Nov 2012 17:25:51 +0900
+Message-ID: <1353486351-7216-1-git-send-email-myungjoo.ham@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:44525 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634Ab2KUIZz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Nov 2012 03:25:55 -0500
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0MDT008VFWQW5ZW0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 21 Nov 2012 17:25:53 +0900 (KST)
+Received: from localhost.localdomain ([10.90.51.65])
+ by mmp2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTPA id <0MDT009QNWR3LE40@mmp2.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 21 Nov 2012 17:25:53 +0900 (KST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@sisk.pl, nm@ti.com, myungjoo.ham@gmail.com
 
---------------enig403A57F02E04A77E078F8D06
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+With the intruction of patch, eff607fdb1f787da1fedf46ab6e64adc2afd1c5a,
+it became possible to include a governor as a module.
+Thus the #ifdef statement for a governor should become #if IS_ENABLED.
 
-On 2012-11-21 03:56, Alex Courbot wrote:
-> Hi Tomi,
->=20
-> On Tuesday 20 November 2012 22:48:18 Tomi Valkeinen wrote:
->> I guess there's a reason, but the above looks a bit inconsistent. For
->> gpio you define the gpio resource inside the step. For power and pwm t=
-he
->> resource is defined before the steps. Why wouldn't "pwm =3D <&pwm 2
->> 5000000>;" work in step2?
->=20
-> That's mostly a framework issue. Most frameworks do not export a functi=
-on that=20
-> allow to dereference a phandle - they expect resources to be declared r=
-ight=20
-> under the device node and accessed by name through foo_get(device, name=
-). So=20
-> using phandles in power sequences would require to export these additio=
-nal=20
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ include/linux/devfreq.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Right, I expected something like that.
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 235248c..e83ef39 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -192,7 +192,7 @@ extern int devfreq_register_opp_notifier(struct device *dev,
+ extern int devfreq_unregister_opp_notifier(struct device *dev,
+ 					   struct devfreq *devfreq);
+ 
+-#ifdef CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND
++#if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
+ /**
+  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+  *	and devfreq_add_device
+-- 
+1.7.5.4
 
-> functions and also opens the door to some inconsistencies - for instanc=
-e, your=20
-> PWM phandle could be referenced a second time in the sequence with a di=
-fferent=20
-> period - how do you know that these are actually referring the same PWM=
-=20
-> device?
-
-This I didn't understand. Doesn't "<&pwm 2 xyz>" point to a single
-device, no matter where and how many times it's used?
-
->>> +When a power sequence is run, its steps is executed one after the ot=
-her
->>> until +one step fails or the end of the sequence is reached.
->>
->> The document doesn't give any hint of what the driver should do if
->> running the power sequence fails. Run the "opposite" power sequence?
->> Will that work for all resources? I'm mainly thinking of a case where
->> each enable of the resource should be matched by a disable, i.e. you
->> can't call disable if no enable was called.
->=20
-> We discussed that issue already (around v5 I think) and the conclusion =
-was=20
-> that it should be up to the driver. When we simply enable/disable resou=
-rces it=20
-> is easy to revert, but in the future non-boolean properties will likely=
- be=20
-> introduced, and these cannot easily be reverted. Moreover some drivers =
-might=20
-> have more complex recovery needs. This deserves more discussion I think=
-, as=20
-> I'd like to have some "generic" recovery mechanism that covers most of =
-the=20
-> cases.
-
-Ok. I'll need to dig up the conversation. Did you consider any examples
-of how some driver could handle the error cases?
-
-What I'm worried about is that, as far as I understand, the power
-sequence is kinda like black box to the driver. The driver just does
-"power-up", without knowing what really goes on in there.
-
-And if it doesn't know what goes on in there, nor what's in "power-down"
-sequence, how can it do anything when an error happens? The only option
-I see is that the driver doesn't do anything, which will leave some
-resources enabled, or it can run the power-down sequence, which may or
-may not work.
-
- Tomi
-
-
-
---------------enig403A57F02E04A77E078F8D06
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://www.enigmail.net/
-
-iQIcBAEBAgAGBQJQrI0/AAoJEPo9qoy8lh712M0P+gIChgVfl7Gu5kAIKRNg10G8
-rxxs1RmpSJFHATQJpteeLCpuQV+8HgyE0mAznCOxXymB+kM7qQ5E1VBY+COk2r2k
-IoBc3kPYjeGzQHNwOYiS8+CTu7zveQN+7cCs4UOtCWHPX2MmkPHcv5B0uWX2Cx9j
-BQdRDQb61xo3BhpG3M4krqW0wvemfYvlZYe3UL7DEFgHojvv3UBulOQlI7v7UeVd
-SJ3UjET7CL3yRVPoKE+LAGLbDWN153hIKSBdsMGplL7iWseFlFSOncDcEyvgeJ/y
-JljHXcjDDNEGrAXtrVZ+Mgmk68zm7uj/UzFdawShmsplL7jok9rvh/9zfKxjBW++
-Xb7Yso89fytQM03ys8yJpFZS3zSTsGOXM0YD8QFldYnC09V4cuSM6G2uCKBd26Qa
-EBPtKd4wgJOGHBkXAmI/4pj0cW/XJXvybLhlBKuBC7QElau86mT2ie7abfzFl6eY
-jvfiIKg312QvnG/44TNUMDUQBcSnhoyodQMk/54D2xkZiKrgDNYsMHkohVGWQP7D
-Y2W8WLrAqeSWdcG3dKp2nKua0c9O2UBn7QNqNtFivMafelAn74Q/PQDcLv5uMFz7
-t95g7zl7isRneYCB5bVwXrHpr24lJ5PAirPrrDNxwP9/U1KOth0nK2oeCuKIn8XS
-b99Gejfh3zdY0QTTEX5u
-=g1w0
------END PGP SIGNATURE-----
-
---------------enig403A57F02E04A77E078F8D06--
