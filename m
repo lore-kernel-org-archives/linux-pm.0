@@ -1,64 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 052/493] cpufreq: remove use of __devexit_p
-Date: Wed, 21 Nov 2012 01:50:53 +0100
-Message-ID: <41029175.4HqNPcvdqv@vostro.rjw.lan>
-References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu> <1353349642-3677-52-git-send-email-wfp5p@virginia.edu>
+Subject: Re: [PATCH RESEND v4 0/5] Migrate SCSI drivers to use dev_pm_ops
+Date: Wed, 21 Nov 2012 01:53:06 +0100
+Message-ID: <3643841.7EMCNpFCqq@vostro.rjw.lan>
+References: <1352446075-1814-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1353349642-3677-52-git-send-email-wfp5p@virginia.edu>
-Sender: cpufreq-owner@vger.kernel.org
-To: Bill Pemberton <wfp5p@virginia.edu>
-Cc: gregkh@linuxfoundation.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ogre.sisk.pl ([193.178.161.156]:56835 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159Ab2KUAsk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 20 Nov 2012 19:48:40 -0500
+In-Reply-To: <1352446075-1814-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>
 
-On Monday, November 19, 2012 01:20:01 PM Bill Pemberton wrote:
-> CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
-> needed.
+Hi James,
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.8 material.
+On Friday, November 09, 2012 03:27:50 PM Aaron Lu wrote:
+> This patchset has been quiet for a while, so resend them.
+> 
+> v4:
+> Only Patch 4 is modified:
+> Fixed a line over 80 characters warning by checkpatch.pl;
+> Update the changelog so that it is no more a try :-)
+> 
+> v3:
+> Only patch 4 is modified:
+> Remove the special case for system freeze in scsi_bus_suspend_common
+> as pointed out by Alan Stern;
+> Updated some comments;
+> Removed the use of typedef (*pm_callback_t)(struct device *).
+> 
+> v2:
+> Change the runtime suspend behaviour of sd driver by putting the device
+> into stopped power state.
+> Revert 2 patches which are no longer needed as pointed out by Alan Stern.
+> Find out device callbacks in bus callbacks as suggested by Alan Stern.
+> 
+> Due to these changes, patch number grows from 2 -> 5.
+> 
+> v1:
+> The 2 patches will migrate SCSI drivers to use the pm callbacks defined
+> in dev_pm_ops as pm_message is deprecated and should not be used by driver.
+> Bus level callback is changed to use callbacks defined in dev_pm_ops when
+> needed and sd's pm callback is updated to use what are defined in dev_pm_ops.
+> 
+> 
+> Aaron Lu (5):
+>   sd: put to stopped power state when runtime suspend
+>   Revert "[SCSI] scsi_pm: set device runtime state before parent
+>     suspended"
+>   Revert "[SCSI] runtime resume parent for child's system-resume"
+>   pm: use callbacks from dev_pm_ops for scsi devices
+>   sd: update sd to use the new pm callbacks
+> 
+>  drivers/scsi/scsi_pm.c | 98 +++++++++++++++++++++++++++-----------------------
+>  drivers/scsi/sd.c      | 18 +++++++---
+>  2 files changed, 67 insertions(+), 49 deletions(-)
 
-Thanks,
+Do you have any plans with respect to this patchset?
+
+It has been acked by Alan and me, do you have any objections against it?
+
 Rafael
 
 
-> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl> 
-> Cc: cpufreq@vger.kernel.org 
-> Cc: linux-pm@vger.kernel.org 
-> ---
->  drivers/cpufreq/longhaul.c    | 2 +-
->  drivers/cpufreq/powernow-k8.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index 53ddbc7..8d7ebb2 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -946,7 +946,7 @@ static struct cpufreq_driver longhaul_driver = {
->  	.target	= longhaul_target,
->  	.get	= longhaul_get,
->  	.init	= longhaul_cpu_init,
-> -	.exit	= __devexit_p(longhaul_cpu_exit),
-> +	.exit	= longhaul_cpu_exit,
->  	.name	= "longhaul",
->  	.owner	= THIS_MODULE,
->  	.attr	= longhaul_attr,
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index e3ebb4f..1fd0c8a 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -1242,7 +1242,7 @@ static struct cpufreq_driver cpufreq_amd64_driver = {
->  	.target		= powernowk8_target,
->  	.bios_limit	= acpi_processor_get_bios_limit,
->  	.init		= powernowk8_cpu_init,
-> -	.exit		= __devexit_p(powernowk8_cpu_exit),
-> +	.exit		= powernowk8_cpu_exit,
->  	.get		= powernowk8_get,
->  	.name		= "powernow-k8",
->  	.owner		= THIS_MODULE,
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
