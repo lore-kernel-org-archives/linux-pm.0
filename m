@@ -1,49 +1,47 @@
-From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Alexandre Courbot <gnurou@gmail.com>
 Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Thu, 22 Nov 2012 09:57:22 +0100
-Message-ID: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
+Date: Thu, 22 Nov 2012 18:55:16 +0900
+Message-ID: <CAAVeFuLL28y89VGU4EfPdW-fKDZCFnyQ37UdhGpeZE3cn0Cbzg@mail.gmail.com>
 References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
  <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
  <20121120215429.B621F3E1821@localhost>
  <20121121013133.GE4673@opensource.wolfsonmicro.com>
+ <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <20121121013133.GE4673-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
-Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ola LILJA2 <ola.o.lilja-0IS4wlFg1OjSUeElwK9/Pw@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Ola LILJA2 <ola.o.lilja@stericsson.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mark Brown <broonie@opensource.wolfsonmicro.com>, Stephen Warren <swarren@nvidia.com>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@secretlab.ca>, Anton Vorontsov <cbouatmailru@gmail.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 21, 2012 at 2:31 AM, Mark Brown
-<broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org> wrote:
+On Thu, Nov 22, 2012 at 5:57 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
+> I have the same (limited by experience) opinion. Working sort of
+> near som audio drivers I have understood that power sequencing
+> is a big issue not only for things like this backlight example, but
+> even more so in the area of audio to avoid clicks and pops.
+>
+> Is it correct to assume that this library will be useful also for ALSA
+> SoC type of devices?
 
-> As I said in my earlier reviews I think this is a useful thing to have
-> as a utility library for drivers independantly of the DT bindings, it
-> would allow drivers to become more data driven.  Perhaps we can rework
-> the series so that the DT bindings are added as a final patch?  All the
-> rest of the code seems OK.
+There should be nothing against that - provided ALSA's needs remain
+similar to the current set of actions (regulators, gpios, ...) it
+should be perfectly usable. Can you think of any usage that involves
+more than dumb regulator/gpio manipulation?
 
-I have the same (limited by experience) opinion. Working sort of
-near som audio drivers I have understood that power sequencing
-is a big issue not only for things like this backlight example, but
-even more so in the area of audio to avoid clicks and pops.
+If power seqs are to be used this way (as opposed to through the DT),
+it will become urgent to implement that gpio handlers library we were
+talking about in another thread, as we don't want to have GPIO numbers
+hard-coded into the sequences.
 
-Is it correct to assume that this library will be useful also for ALSA
-SoC type of devices?
-
-Then whether to couple that to DT or ACPI or SFI or whatever
-is a different discussion altogether.
-
-Yours,
-Linus Walleij
+Alex.
