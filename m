@@ -1,86 +1,95 @@
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: [PATCH linux-next] cpuidle: fix a suspicious RCU usage in menu
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH linux-next] cpuidle: fix a suspicious RCU usage in menu
  governor
-Date: Thu, 22 Nov 2012 09:45:52 +0800
-Message-ID: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
+Date: Fri, 23 Nov 2012 00:12:38 +0100
+Message-ID: <50AEB166.7010300@intel.com>
+References: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-Sender: linux-next-owner@vger.kernel.org
-To: linux-next list <linux-next@vger.kernel.org>, linux-pm@vger.kernel.org
-Cc: riel@redhat.com, youquan.song@intel.com, rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"; format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:10046 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751120Ab2KVXMn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Nov 2012 18:12:43 -0500
+In-Reply-To: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Cc: linux-next list <linux-next@vger.kernel.org>, linux-pm@vger.kernel.org, riel@redhat.com, youquan.song@intel.com, paulmck@linux.vnet.ibm.com
 
-Adding linux-pm list, and ACKs.
+T24gMTEvMjIvMjAxMiAyOjQ1IEFNLCBMaSBaaG9uZyB3cm90ZToKPiBBZGRpbmcgbGludXgtcG0g
+bGlzdCwgYW5kIEFDS3MuCj4KPiBJIHNhdyB0aGlzIHN1c3BpY2lvdXMgUkNVIHVzYWdlIG9uIHRo
+ZSBuZXh0IHRyZWUgb2YgMTEvMTUKPgo+IFsgICA2Ny4xMjM0MDRdID09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT0KPiBbICAgNjcuMTIzNDEzXSBbIElORk86IHN1c3BpY2lvdXMgUkNVIHVz
+YWdlLiBdCj4gWyAgIDY3LjEyMzQyM10gMy43LjAtcmM1LW5leHQtMjAxMjExMTUtZGlydHkgIzEg
+Tm90IHRhaW50ZWQKPiBbICAgNjcuMTIzNDM0XSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tCj4gWyAgIDY3LjEyMzQ0NF0gaW5jbHVkZS90cmFjZS9ldmVudHMvdGltZXIuaDoxODYgc3Vz
+cGljaW91cyByY3VfZGVyZWZlcmVuY2VfY2hlY2soKSB1c2FnZSEKPiBbICAgNjcuMTIzNDU4XQo+
+IFsgICA2Ny4xMjM0NThdIG90aGVyIGluZm8gdGhhdCBtaWdodCBoZWxwIHVzIGRlYnVnIHRoaXM6
+Cj4gWyAgIDY3LjEyMzQ1OF0KPiBbICAgNjcuMTIzNDc0XQo+IFsgICA2Ny4xMjM0NzRdIFJDVSB1
+c2VkIGlsbGVnYWxseSBmcm9tIGlkbGUgQ1BVIQo+IFsgICA2Ny4xMjM0NzRdIHJjdV9zY2hlZHVs
+ZXJfYWN0aXZlID0gMSwgZGVidWdfbG9ja3MgPSAwCj4gWyAgIDY3LjEyMzQ5M10gUkNVIHVzZWQg
+aWxsZWdhbGx5IGZyb20gZXh0ZW5kZWQgcXVpZXNjZW50IHN0YXRlIQo+IFsgICA2Ny4xMjM1MDdd
+IDEgbG9jayBoZWxkIGJ5IHN3YXBwZXIvMS8wOgo+IFsgICA2Ny4xMjM1MTZdICAjMDogICgmY3B1
+X2Jhc2UtPmxvY2spey0uLS4uLn0sIGF0OiBbPGMwMDAwMDAwMDAwOTc5YjA+XSAuX19ocnRpbWVy
+X3N0YXJ0X3JhbmdlX25zKzB4MjhjLzB4NTI0Cj4gWyAgIDY3LjEyMzU1NV0KPiBbICAgNjcuMTIz
+NTU1XSBzdGFjayBiYWNrdHJhY2U6Cj4gWyAgIDY3LjEyMzU2Nl0gQ2FsbCBUcmFjZToKPiBbICAg
+NjcuMTIzNTc2XSBbYzAwMDAwMDFlMmNjYjkyMF0gW2MwMDAwMDAwMDAwMTI3NWNdIC5zaG93X3N0
+YWNrKzB4NzgvMHgxODQgKHVucmVsaWFibGUpCj4gWyAgIDY3LjEyMzU5OV0gW2MwMDAwMDAxZTJj
+Y2I5ZDBdIFtjMDAwMDAwMDAwMGMxNWEwXSAubG9ja2RlcF9yY3Vfc3VzcGljaW91cysweDEyMC8w
+eDE0OAo+IFsgICA2Ny4xMjM2MTldIFtjMDAwMDAwMWUyY2NiYTcwXSBbYzAwMDAwMDAwMDA5NjAx
+Y10gLmVucXVldWVfaHJ0aW1lcisweDFjMC8weDFjOAo+IFsgICA2Ny4xMjM2MzldIFtjMDAwMDAw
+MWUyY2NiYjAwXSBbYzAwMDAwMDAwMDA5N2FhMF0gLl9faHJ0aW1lcl9zdGFydF9yYW5nZV9ucysw
+eDM3Yy8weDUyNAo+IFsgICA2Ny4xMjM2NjBdIFtjMDAwMDAwMWUyY2NiYzIwXSBbYzAwMDAwMDAw
+MDVjOTY5OF0gLm1lbnVfc2VsZWN0KzB4NTA4LzB4NWJjCj4gWyAgIDY3LjEyMzY3OF0gW2MwMDAw
+MDAxZTJjY2JkMjBdIFtjMDAwMDAwMDAwNWM3NDBjXSAuY3B1aWRsZV9pZGxlX2NhbGwrMHhhOC8w
+eDZlNAo+IFsgICA2Ny4xMjM2OTldIFtjMDAwMDAwMWUyY2NiZGQwXSBbYzAwMDAwMDAwMDA0NTlh
+MF0gLnBTZXJpZXNfaWRsZSsweDEwLzB4MzQKPiBbICAgNjcuMTIzNzE3XSBbYzAwMDAwMDFlMmNj
+YmU0MF0gW2MwMDAwMDAwMDAwMTRkYzhdIC5jcHVfaWRsZSsweDEzMC8weDI4MAo+IFsgICA2Ny4x
+MjM3MzhdIFtjMDAwMDAwMWUyY2NiZWUwXSBbYzAwMDAwMDAwMDZmZmE4Y10gLnN0YXJ0X3NlY29u
+ZGFyeSsweDM3OC8weDM4NAo+IFsgICA2Ny4xMjM3NThdIFtjMDAwMDAwMWUyY2NiZjkwXSBbYzAw
+MDAwMDAwMDAwOTM2Y10gLnN0YXJ0X3NlY29uZGFyeV9wcm9sb2crMHgxMC8weDE0Cj4KPiBocnRp
+bWVyX3N0YXJ0IHdhcyBhZGRlZCBpbiAxOThmZDYzOCBhbmQgYWU1MTUxOTcuIFRoZSBwYXRjaCBi
+ZWxvdyB0cmllcwo+IHRvIHVzZSBSQ1VfTk9OSURMRSBhcm91bmQgaXQgdG8gYXZvaWQgdGhlIGFi
+b3ZlIHJlcG9ydC4KCkFwcGxpZWQgdG8gdGhlIGxpbnV4LW5leHQgYnJhbmNoIG9mIHRoZSBsaW51
+eC1wbS5naXQgdHJlZSBhcyB2My44IG1hdGVyaWFsLgoKVGhhbmtzLApSYWZhZWwKCgo+IFNpZ25l
+ZC1vZmYtYnk6IExpIFpob25nIDx6aG9uZ0BsaW51eC52bmV0LmlibS5jb20+Cj4gQWNrZWQtYnk6
+IFBhdWwgRS4gTWNLZW5uZXkgPHBhdWxtY2tAbGludXgudm5ldC5pYm0uY29tPgo+IFJldmlld2Vk
+LWJ5OiBSaWsgdmFuIFJpZWwgPHJpZWxAcmVkaGF0LmNvbT4KPiAtLS0KPiAgIGRyaXZlcnMvY3B1
+aWRsZS9nb3Zlcm5vcnMvbWVudS5jIHwgICAxMCArKysrKystLS0tCj4gICAxIGZpbGVzIGNoYW5n
+ZWQsIDYgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2NwdWlkbGUvZ292ZXJub3JzL21lbnUuYyBiL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMv
+bWVudS5jCj4gaW5kZXggMmVmZWUyNy4uYmQ0MGI5NCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2Nw
+dWlkbGUvZ292ZXJub3JzL21lbnUuYwo+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMv
+bWVudS5jCj4gQEAgLTQwNyw4ICs0MDcsOSBAQCBzdGF0aWMgaW50IG1lbnVfc2VsZWN0KHN0cnVj
+dCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldikKPiAgIAkJ
+cGVyZmVjdF91cyA9IHBlcmZlY3RfY3N0YXRlX21zICogMTAwMDsKPiAgIAo+ICAgCQlpZiAocmVw
+ZWF0ICYmICg0ICogdGltZXJfdXMgPCBkYXRhLT5leHBlY3RlZF91cykpIHsKPiAtCQkJaHJ0aW1l
+cl9zdGFydChocnRtciwgbnNfdG9fa3RpbWUoMTAwMCAqIHRpbWVyX3VzKSwKPiAtCQkJCUhSVElN
+RVJfTU9ERV9SRUxfUElOTkVEKTsKPiArCQkJUkNVX05PTklETEUoaHJ0aW1lcl9zdGFydChocnRt
+ciwKPiArCQkJCW5zX3RvX2t0aW1lKDEwMDAgKiB0aW1lcl91cyksCj4gKwkJCQlIUlRJTUVSX01P
+REVfUkVMX1BJTk5FRCkpOwo+ICAgCQkJLyogSW4gcmVwZWF0IGNhc2UsIG1lbnUgaHJ0aW1lciBp
+cyBzdGFydGVkICovCj4gICAJCQlwZXJfY3B1KGhydGltZXJfc3RhdHVzLCBjcHUpID0gTUVOVV9I
+UlRJTUVSX1JFUEVBVDsKPiAgIAkJfSBlbHNlIGlmIChwZXJmZWN0X3VzIDwgZGF0YS0+ZXhwZWN0
+ZWRfdXMpIHsKPiBAQCAtNDE4LDggKzQxOSw5IEBAIHN0YXRpYyBpbnQgbWVudV9zZWxlY3Qoc3Ry
+dWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsIHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2KQo+ICAg
+CQkJICogSW4gdGhhdCBjYXNlLCBpdCBtYWtlcyBzZW5zZSB0byByZS1lbnRlcgo+ICAgCQkJICog
+aW50byBhIGRlZXBlciBDLXN0YXRlIGFmdGVyIHNvbWUgdGltZS4KPiAgIAkJCSAqLwo+IC0JCQlo
+cnRpbWVyX3N0YXJ0KGhydG1yLCBuc190b19rdGltZSgxMDAwICogdGltZXJfdXMpLAo+IC0JCQkJ
+SFJUSU1FUl9NT0RFX1JFTF9QSU5ORUQpOwo+ICsJCQlSQ1VfTk9OSURMRShocnRpbWVyX3N0YXJ0
+KGhydG1yLAo+ICsJCQkJbnNfdG9fa3RpbWUoMTAwMCAqIHRpbWVyX3VzKSwKPiArCQkJCUhSVElN
+RVJfTU9ERV9SRUxfUElOTkVEKSk7Cj4gICAJCQkvKiBJbiBnZW5lcmFsIGNhc2UsIG1lbnUgaHJ0
+aW1lciBpcyBzdGFydGVkICovCj4gICAJCQlwZXJfY3B1KGhydGltZXJfc3RhdHVzLCBjcHUpID0g
+TUVOVV9IUlRJTUVSX0dFTkVSQUw7Cj4gICAJCX0KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpJbnRlbCBUZWNobm9s
+b2d5IFBvbGFuZCBzcC4geiBvLm8uCnogc2llZHppYmEgdyBHZGFuc2t1CnVsLiBTbG93YWNraWVn
+byAxNzMKODAtMjk4IEdkYW5zawoKU2FkIFJlam9ub3d5IEdkYW5zayBQb2xub2MgdyBHZGFuc2t1
+LCAKVklJIFd5ZHppYWwgR29zcG9kYXJjenkgS3Jham93ZWdvIFJlamVzdHJ1IFNhZG93ZWdvLCAK
+bnVtZXIgS1JTIDEwMTg4MgoKTklQIDk1Ny0wNy01Mi0zMTYKS2FwaXRhbCB6YWtsYWRvd3kgMjAw
+LjAwMCB6bAoKVGhpcyBlLW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFpbiBjb25m
+aWRlbnRpYWwgbWF0ZXJpYWwgZm9yCnRoZSBzb2xlIHVzZSBvZiB0aGUgaW50ZW5kZWQgcmVjaXBp
+ZW50KHMpLiBBbnkgcmV2aWV3IG9yIGRpc3RyaWJ1dGlvbgpieSBvdGhlcnMgaXMgc3RyaWN0bHkg
+cHJvaGliaXRlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkCnJlY2lwaWVudCwgcGxlYXNl
+IGNvbnRhY3QgdGhlIHNlbmRlciBhbmQgZGVsZXRlIGFsbCBjb3BpZXMuCg==
 
-I saw this suspicious RCU usage on the next tree of 11/15
-
-[   67.123404] ===============================
-[   67.123413] [ INFO: suspicious RCU usage. ]
-[   67.123423] 3.7.0-rc5-next-20121115-dirty #1 Not tainted
-[   67.123434] -------------------------------
-[   67.123444] include/trace/events/timer.h:186 suspicious rcu_dereference_check() usage!
-[   67.123458] 
-[   67.123458] other info that might help us debug this:
-[   67.123458] 
-[   67.123474] 
-[   67.123474] RCU used illegally from idle CPU!
-[   67.123474] rcu_scheduler_active = 1, debug_locks = 0
-[   67.123493] RCU used illegally from extended quiescent state!
-[   67.123507] 1 lock held by swapper/1/0:
-[   67.123516]  #0:  (&cpu_base->lock){-.-...}, at: [<c0000000000979b0>] .__hrtimer_start_range_ns+0x28c/0x524
-[   67.123555] 
-[   67.123555] stack backtrace:
-[   67.123566] Call Trace:
-[   67.123576] [c0000001e2ccb920] [c00000000001275c] .show_stack+0x78/0x184 (unreliable)
-[   67.123599] [c0000001e2ccb9d0] [c0000000000c15a0] .lockdep_rcu_suspicious+0x120/0x148
-[   67.123619] [c0000001e2ccba70] [c00000000009601c] .enqueue_hrtimer+0x1c0/0x1c8
-[   67.123639] [c0000001e2ccbb00] [c000000000097aa0] .__hrtimer_start_range_ns+0x37c/0x524
-[   67.123660] [c0000001e2ccbc20] [c0000000005c9698] .menu_select+0x508/0x5bc
-[   67.123678] [c0000001e2ccbd20] [c0000000005c740c] .cpuidle_idle_call+0xa8/0x6e4
-[   67.123699] [c0000001e2ccbdd0] [c0000000000459a0] .pSeries_idle+0x10/0x34
-[   67.123717] [c0000001e2ccbe40] [c000000000014dc8] .cpu_idle+0x130/0x280
-[   67.123738] [c0000001e2ccbee0] [c0000000006ffa8c] .start_secondary+0x378/0x384
-[   67.123758] [c0000001e2ccbf90] [c00000000000936c] .start_secondary_prolog+0x10/0x14
-
-hrtimer_start was added in 198fd638 and ae515197. The patch below tries
-to use RCU_NONIDLE around it to avoid the above report. 
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
----
- drivers/cpuidle/governors/menu.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 2efee27..bd40b94 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -407,8 +407,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		perfect_us = perfect_cstate_ms * 1000;
- 
- 		if (repeat && (4 * timer_us < data->expected_us)) {
--			hrtimer_start(hrtmr, ns_to_ktime(1000 * timer_us),
--				HRTIMER_MODE_REL_PINNED);
-+			RCU_NONIDLE(hrtimer_start(hrtmr,
-+				ns_to_ktime(1000 * timer_us),
-+				HRTIMER_MODE_REL_PINNED));
- 			/* In repeat case, menu hrtimer is started */
- 			per_cpu(hrtimer_status, cpu) = MENU_HRTIMER_REPEAT;
- 		} else if (perfect_us < data->expected_us) {
-@@ -418,8 +419,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 			 * In that case, it makes sense to re-enter
- 			 * into a deeper C-state after some time.
- 			 */
--			hrtimer_start(hrtmr, ns_to_ktime(1000 * timer_us),
--				HRTIMER_MODE_REL_PINNED);
-+			RCU_NONIDLE(hrtimer_start(hrtmr,
-+				ns_to_ktime(1000 * timer_us),
-+				HRTIMER_MODE_REL_PINNED));
- 			/* In general case, menu hrtimer is started */
- 			per_cpu(hrtimer_status, cpu) = MENU_HRTIMER_GENERAL;
- 		}
--- 
-1.7.1
