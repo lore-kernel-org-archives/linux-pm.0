@@ -1,100 +1,86 @@
-From: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Thu, 22 Nov 2012 22:40:21 +0100
-Message-ID: <20121122214021.GA14771@avionic-0098.adnet.avionic-design.de>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
- <20121120215429.B621F3E1821@localhost>
- <13540495.epaCf4JVn9@percival>
- <20121122133941.24B883E129E@localhost>
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: [PATCH linux-next] cpuidle: fix a suspicious RCU usage in menu
+ governor
+Date: Thu, 22 Nov 2012 09:45:52 +0800
+Message-ID: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1875396289588321962=="
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <20121122133941.24B883E129E@localhost>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>
-Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+Sender: linux-next-owner@vger.kernel.org
+To: linux-next list <linux-next@vger.kernel.org>, linux-pm@vger.kernel.org
+Cc: riel@redhat.com, youquan.song@intel.com, rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
 
+Adding linux-pm list, and ACKs.
 
---===============1875396289588321962==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
-Content-Disposition: inline
+I saw this suspicious RCU usage on the next tree of 11/15
 
+[   67.123404] ===============================
+[   67.123413] [ INFO: suspicious RCU usage. ]
+[   67.123423] 3.7.0-rc5-next-20121115-dirty #1 Not tainted
+[   67.123434] -------------------------------
+[   67.123444] include/trace/events/timer.h:186 suspicious rcu_dereference_check() usage!
+[   67.123458] 
+[   67.123458] other info that might help us debug this:
+[   67.123458] 
+[   67.123474] 
+[   67.123474] RCU used illegally from idle CPU!
+[   67.123474] rcu_scheduler_active = 1, debug_locks = 0
+[   67.123493] RCU used illegally from extended quiescent state!
+[   67.123507] 1 lock held by swapper/1/0:
+[   67.123516]  #0:  (&cpu_base->lock){-.-...}, at: [<c0000000000979b0>] .__hrtimer_start_range_ns+0x28c/0x524
+[   67.123555] 
+[   67.123555] stack backtrace:
+[   67.123566] Call Trace:
+[   67.123576] [c0000001e2ccb920] [c00000000001275c] .show_stack+0x78/0x184 (unreliable)
+[   67.123599] [c0000001e2ccb9d0] [c0000000000c15a0] .lockdep_rcu_suspicious+0x120/0x148
+[   67.123619] [c0000001e2ccba70] [c00000000009601c] .enqueue_hrtimer+0x1c0/0x1c8
+[   67.123639] [c0000001e2ccbb00] [c000000000097aa0] .__hrtimer_start_range_ns+0x37c/0x524
+[   67.123660] [c0000001e2ccbc20] [c0000000005c9698] .menu_select+0x508/0x5bc
+[   67.123678] [c0000001e2ccbd20] [c0000000005c740c] .cpuidle_idle_call+0xa8/0x6e4
+[   67.123699] [c0000001e2ccbdd0] [c0000000000459a0] .pSeries_idle+0x10/0x34
+[   67.123717] [c0000001e2ccbe40] [c000000000014dc8] .cpu_idle+0x130/0x280
+[   67.123738] [c0000001e2ccbee0] [c0000000006ffa8c] .start_secondary+0x378/0x384
+[   67.123758] [c0000001e2ccbf90] [c00000000000936c] .start_secondary_prolog+0x10/0x14
 
---ibTvN161/egqYuK8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+hrtimer_start was added in 198fd638 and ae515197. The patch below tries
+to use RCU_NONIDLE around it to avoid the above report. 
 
-On Thu, Nov 22, 2012 at 01:39:41PM +0000, Grant Likely wrote:
-[...]
-> I do think that each sequence should be contained within a single
-> property, but I'm open to other suggestions.
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+---
+ drivers/cpuidle/governors/menu.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-IIRC a very early prototype did implement something like that. However
-because of the resource issues this had to be string based, so that the
-sequences looked somewhat like (Alex, correct me if I'm wrong):
-
-	power-on = <"REGULATOR", "power", 1, "GPIO", "enable", 1>;
-
-Instead we could possibly have something like:
-
-	power-on = <0 &reg 1,
-		    1 &gpio 42 0 1>;
-
-Where the first cell in each entry defines the type (0 = regulator, 1 =
-GPIO) and the rest would be a regular OF specifier for the given type of
-resource along with some defined parameter such as enable/disable,
-voltage, delay in ms, ... I don't know if that sounds any better. It
-looks sort of cryptic but it is more "in the spirit of" DT, right Grant?
-
-Writing this down, it seems to me like even that proposal was already
-discussed at some point. Again, Alex may remember better.
-
-Thierry
-
---ibTvN161/egqYuK8
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQrpvFAAoJEN0jrNd/PrOhhywP/AiT0Ylywbi9V9FNnZ6zwngi
-WtclXo/ALSEifXqZxDDw4wxS3rhQpSN34+l75lu5mbYP2FDgglRuKBrdXDGZuy7M
-fcQKA5SDJAypajIijGWSWLzHZCnKVXonfHOUKeVmfq+Oo7LXUSYKYT4W3yYV9LcK
-xJLtxJKJDNpIuxhcI0FaUewXRYjzhB/IFAf1IUWhV3YZ6ZfbR5PXwx/Jg6qvo5Ns
-Z8PDMyth0YY0LWMIJBMpvZZk1xlL3yw8imwNLw+P1seICh0mq8QATXf5zM07DXa1
-Lf8JWn/d8ueto4jCm0gavWLjexpN9baC2PUNkS313hRhbWGcnI+c95bMlpUx8QjI
-PN3WUXF2vPcfrrsgIZrFjr5PrEIS4vQfC9LfrCg44UxM0IlvCRVEiFhEgbyTEeW5
-qiuBaDnUMY6l39pZx7EG/hOU207u9ZaSM+w66COb630WzzpKnJd2ZTsf1H4dZ7w3
-Oyozguikk5Ohw2olOKsNkIncvRZEYa6GYpKIIDhmW3GoNE+/rC/dVSXM2CDBlQWJ
-A/QLnww1K0sKc0VN+m83JK/R7EvslAAv4gKVJ5U3AQbZm02k7bzUqFMw6ZHlNEw7
-CeHgOX35dN+SQHtaVwC5G27hNpBoKSjubd3xzrS+F+65Rdt97If0Q7FgmU1o+b/u
-zQV/10Xw4kMSFyk8raC3
-=8uOp
------END PGP SIGNATURE-----
-
---ibTvN161/egqYuK8--
-
---===============1875396289588321962==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-devicetree-discuss mailing list
-devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-https://lists.ozlabs.org/listinfo/devicetree-discuss
-
---===============1875396289588321962==--
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 2efee27..bd40b94 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -407,8 +407,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		perfect_us = perfect_cstate_ms * 1000;
+ 
+ 		if (repeat && (4 * timer_us < data->expected_us)) {
+-			hrtimer_start(hrtmr, ns_to_ktime(1000 * timer_us),
+-				HRTIMER_MODE_REL_PINNED);
++			RCU_NONIDLE(hrtimer_start(hrtmr,
++				ns_to_ktime(1000 * timer_us),
++				HRTIMER_MODE_REL_PINNED));
+ 			/* In repeat case, menu hrtimer is started */
+ 			per_cpu(hrtimer_status, cpu) = MENU_HRTIMER_REPEAT;
+ 		} else if (perfect_us < data->expected_us) {
+@@ -418,8 +419,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 			 * In that case, it makes sense to re-enter
+ 			 * into a deeper C-state after some time.
+ 			 */
+-			hrtimer_start(hrtmr, ns_to_ktime(1000 * timer_us),
+-				HRTIMER_MODE_REL_PINNED);
++			RCU_NONIDLE(hrtimer_start(hrtmr,
++				ns_to_ktime(1000 * timer_us),
++				HRTIMER_MODE_REL_PINNED));
+ 			/* In general case, menu hrtimer is started */
+ 			per_cpu(hrtimer_status, cpu) = MENU_HRTIMER_GENERAL;
+ 		}
+-- 
+1.7.1
