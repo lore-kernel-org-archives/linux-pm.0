@@ -1,95 +1,56 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH linux-next] cpuidle: fix a suspicious RCU usage in menu
- governor
-Date: Fri, 23 Nov 2012 00:12:38 +0100
-Message-ID: <50AEB166.7010300@intel.com>
-References: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Fri, 23 Nov 2012 10:44:44 +0900
+Message-ID: <20121123014443.GD4385@opensource.wolfsonmicro.com>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
+ <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
+ <20121120215429.B621F3E1821@localhost>
+ <20121121013133.GE4673@opensource.wolfsonmicro.com>
+ <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:10046 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120Ab2KVXMn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 22 Nov 2012 18:12:43 -0500
-In-Reply-To: <1353548752.3425.3.camel@ThinkPad-T5421.cn.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="jL2BoiuKMElzg3CS"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>, Alexandre Courbot <acourbot@nvidia.com>, Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>, Ola LILJA2 <ola.o.lilja@stericsson.com>
 List-Id: linux-pm@vger.kernel.org
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Cc: linux-next list <linux-next@vger.kernel.org>, linux-pm@vger.kernel.org, riel@redhat.com, youquan.song@intel.com, paulmck@linux.vnet.ibm.com
 
-T24gMTEvMjIvMjAxMiAyOjQ1IEFNLCBMaSBaaG9uZyB3cm90ZToKPiBBZGRpbmcgbGludXgtcG0g
-bGlzdCwgYW5kIEFDS3MuCj4KPiBJIHNhdyB0aGlzIHN1c3BpY2lvdXMgUkNVIHVzYWdlIG9uIHRo
-ZSBuZXh0IHRyZWUgb2YgMTEvMTUKPgo+IFsgICA2Ny4xMjM0MDRdID09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KPiBbICAgNjcuMTIzNDEzXSBbIElORk86IHN1c3BpY2lvdXMgUkNVIHVz
-YWdlLiBdCj4gWyAgIDY3LjEyMzQyM10gMy43LjAtcmM1LW5leHQtMjAxMjExMTUtZGlydHkgIzEg
-Tm90IHRhaW50ZWQKPiBbICAgNjcuMTIzNDM0XSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tCj4gWyAgIDY3LjEyMzQ0NF0gaW5jbHVkZS90cmFjZS9ldmVudHMvdGltZXIuaDoxODYgc3Vz
-cGljaW91cyByY3VfZGVyZWZlcmVuY2VfY2hlY2soKSB1c2FnZSEKPiBbICAgNjcuMTIzNDU4XQo+
-IFsgICA2Ny4xMjM0NThdIG90aGVyIGluZm8gdGhhdCBtaWdodCBoZWxwIHVzIGRlYnVnIHRoaXM6
-Cj4gWyAgIDY3LjEyMzQ1OF0KPiBbICAgNjcuMTIzNDc0XQo+IFsgICA2Ny4xMjM0NzRdIFJDVSB1
-c2VkIGlsbGVnYWxseSBmcm9tIGlkbGUgQ1BVIQo+IFsgICA2Ny4xMjM0NzRdIHJjdV9zY2hlZHVs
-ZXJfYWN0aXZlID0gMSwgZGVidWdfbG9ja3MgPSAwCj4gWyAgIDY3LjEyMzQ5M10gUkNVIHVzZWQg
-aWxsZWdhbGx5IGZyb20gZXh0ZW5kZWQgcXVpZXNjZW50IHN0YXRlIQo+IFsgICA2Ny4xMjM1MDdd
-IDEgbG9jayBoZWxkIGJ5IHN3YXBwZXIvMS8wOgo+IFsgICA2Ny4xMjM1MTZdICAjMDogICgmY3B1
-X2Jhc2UtPmxvY2spey0uLS4uLn0sIGF0OiBbPGMwMDAwMDAwMDAwOTc5YjA+XSAuX19ocnRpbWVy
-X3N0YXJ0X3JhbmdlX25zKzB4MjhjLzB4NTI0Cj4gWyAgIDY3LjEyMzU1NV0KPiBbICAgNjcuMTIz
-NTU1XSBzdGFjayBiYWNrdHJhY2U6Cj4gWyAgIDY3LjEyMzU2Nl0gQ2FsbCBUcmFjZToKPiBbICAg
-NjcuMTIzNTc2XSBbYzAwMDAwMDFlMmNjYjkyMF0gW2MwMDAwMDAwMDAwMTI3NWNdIC5zaG93X3N0
-YWNrKzB4NzgvMHgxODQgKHVucmVsaWFibGUpCj4gWyAgIDY3LjEyMzU5OV0gW2MwMDAwMDAxZTJj
-Y2I5ZDBdIFtjMDAwMDAwMDAwMGMxNWEwXSAubG9ja2RlcF9yY3Vfc3VzcGljaW91cysweDEyMC8w
-eDE0OAo+IFsgICA2Ny4xMjM2MTldIFtjMDAwMDAwMWUyY2NiYTcwXSBbYzAwMDAwMDAwMDA5NjAx
-Y10gLmVucXVldWVfaHJ0aW1lcisweDFjMC8weDFjOAo+IFsgICA2Ny4xMjM2MzldIFtjMDAwMDAw
-MWUyY2NiYjAwXSBbYzAwMDAwMDAwMDA5N2FhMF0gLl9faHJ0aW1lcl9zdGFydF9yYW5nZV9ucysw
-eDM3Yy8weDUyNAo+IFsgICA2Ny4xMjM2NjBdIFtjMDAwMDAwMWUyY2NiYzIwXSBbYzAwMDAwMDAw
-MDVjOTY5OF0gLm1lbnVfc2VsZWN0KzB4NTA4LzB4NWJjCj4gWyAgIDY3LjEyMzY3OF0gW2MwMDAw
-MDAxZTJjY2JkMjBdIFtjMDAwMDAwMDAwNWM3NDBjXSAuY3B1aWRsZV9pZGxlX2NhbGwrMHhhOC8w
-eDZlNAo+IFsgICA2Ny4xMjM2OTldIFtjMDAwMDAwMWUyY2NiZGQwXSBbYzAwMDAwMDAwMDA0NTlh
-MF0gLnBTZXJpZXNfaWRsZSsweDEwLzB4MzQKPiBbICAgNjcuMTIzNzE3XSBbYzAwMDAwMDFlMmNj
-YmU0MF0gW2MwMDAwMDAwMDAwMTRkYzhdIC5jcHVfaWRsZSsweDEzMC8weDI4MAo+IFsgICA2Ny4x
-MjM3MzhdIFtjMDAwMDAwMWUyY2NiZWUwXSBbYzAwMDAwMDAwMDZmZmE4Y10gLnN0YXJ0X3NlY29u
-ZGFyeSsweDM3OC8weDM4NAo+IFsgICA2Ny4xMjM3NThdIFtjMDAwMDAwMWUyY2NiZjkwXSBbYzAw
-MDAwMDAwMDAwOTM2Y10gLnN0YXJ0X3NlY29uZGFyeV9wcm9sb2crMHgxMC8weDE0Cj4KPiBocnRp
-bWVyX3N0YXJ0IHdhcyBhZGRlZCBpbiAxOThmZDYzOCBhbmQgYWU1MTUxOTcuIFRoZSBwYXRjaCBi
-ZWxvdyB0cmllcwo+IHRvIHVzZSBSQ1VfTk9OSURMRSBhcm91bmQgaXQgdG8gYXZvaWQgdGhlIGFi
-b3ZlIHJlcG9ydC4KCkFwcGxpZWQgdG8gdGhlIGxpbnV4LW5leHQgYnJhbmNoIG9mIHRoZSBsaW51
-eC1wbS5naXQgdHJlZSBhcyB2My44IG1hdGVyaWFsLgoKVGhhbmtzLApSYWZhZWwKCgo+IFNpZ25l
-ZC1vZmYtYnk6IExpIFpob25nIDx6aG9uZ0BsaW51eC52bmV0LmlibS5jb20+Cj4gQWNrZWQtYnk6
-IFBhdWwgRS4gTWNLZW5uZXkgPHBhdWxtY2tAbGludXgudm5ldC5pYm0uY29tPgo+IFJldmlld2Vk
-LWJ5OiBSaWsgdmFuIFJpZWwgPHJpZWxAcmVkaGF0LmNvbT4KPiAtLS0KPiAgIGRyaXZlcnMvY3B1
-aWRsZS9nb3Zlcm5vcnMvbWVudS5jIHwgICAxMCArKysrKystLS0tCj4gICAxIGZpbGVzIGNoYW5n
-ZWQsIDYgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL2NwdWlkbGUvZ292ZXJub3JzL21lbnUuYyBiL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMv
-bWVudS5jCj4gaW5kZXggMmVmZWUyNy4uYmQ0MGI5NCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2Nw
-dWlkbGUvZ292ZXJub3JzL21lbnUuYwo+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9nb3Zlcm5vcnMv
-bWVudS5jCj4gQEAgLTQwNyw4ICs0MDcsOSBAQCBzdGF0aWMgaW50IG1lbnVfc2VsZWN0KHN0cnVj
-dCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldikKPiAgIAkJ
-cGVyZmVjdF91cyA9IHBlcmZlY3RfY3N0YXRlX21zICogMTAwMDsKPiAgIAo+ICAgCQlpZiAocmVw
-ZWF0ICYmICg0ICogdGltZXJfdXMgPCBkYXRhLT5leHBlY3RlZF91cykpIHsKPiAtCQkJaHJ0aW1l
-cl9zdGFydChocnRtciwgbnNfdG9fa3RpbWUoMTAwMCAqIHRpbWVyX3VzKSwKPiAtCQkJCUhSVElN
-RVJfTU9ERV9SRUxfUElOTkVEKTsKPiArCQkJUkNVX05PTklETEUoaHJ0aW1lcl9zdGFydChocnRt
-ciwKPiArCQkJCW5zX3RvX2t0aW1lKDEwMDAgKiB0aW1lcl91cyksCj4gKwkJCQlIUlRJTUVSX01P
-REVfUkVMX1BJTk5FRCkpOwo+ICAgCQkJLyogSW4gcmVwZWF0IGNhc2UsIG1lbnUgaHJ0aW1lciBp
-cyBzdGFydGVkICovCj4gICAJCQlwZXJfY3B1KGhydGltZXJfc3RhdHVzLCBjcHUpID0gTUVOVV9I
-UlRJTUVSX1JFUEVBVDsKPiAgIAkJfSBlbHNlIGlmIChwZXJmZWN0X3VzIDwgZGF0YS0+ZXhwZWN0
-ZWRfdXMpIHsKPiBAQCAtNDE4LDggKzQxOSw5IEBAIHN0YXRpYyBpbnQgbWVudV9zZWxlY3Qoc3Ry
-dWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsIHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2KQo+ICAg
-CQkJICogSW4gdGhhdCBjYXNlLCBpdCBtYWtlcyBzZW5zZSB0byByZS1lbnRlcgo+ICAgCQkJICog
-aW50byBhIGRlZXBlciBDLXN0YXRlIGFmdGVyIHNvbWUgdGltZS4KPiAgIAkJCSAqLwo+IC0JCQlo
-cnRpbWVyX3N0YXJ0KGhydG1yLCBuc190b19rdGltZSgxMDAwICogdGltZXJfdXMpLAo+IC0JCQkJ
-SFJUSU1FUl9NT0RFX1JFTF9QSU5ORUQpOwo+ICsJCQlSQ1VfTk9OSURMRShocnRpbWVyX3N0YXJ0
-KGhydG1yLAo+ICsJCQkJbnNfdG9fa3RpbWUoMTAwMCAqIHRpbWVyX3VzKSwKPiArCQkJCUhSVElN
-RVJfTU9ERV9SRUxfUElOTkVEKSk7Cj4gICAJCQkvKiBJbiBnZW5lcmFsIGNhc2UsIG1lbnUgaHJ0
-aW1lciBpcyBzdGFydGVkICovCj4gICAJCQlwZXJfY3B1KGhydGltZXJfc3RhdHVzLCBjcHUpID0g
-TUVOVV9IUlRJTUVSX0dFTkVSQUw7Cj4gICAJCX0KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpJbnRlbCBUZWNobm9s
-b2d5IFBvbGFuZCBzcC4geiBvLm8uCnogc2llZHppYmEgdyBHZGFuc2t1CnVsLiBTbG93YWNraWVn
-byAxNzMKODAtMjk4IEdkYW5zawoKU2FkIFJlam9ub3d5IEdkYW5zayBQb2xub2MgdyBHZGFuc2t1
-LCAKVklJIFd5ZHppYWwgR29zcG9kYXJjenkgS3Jham93ZWdvIFJlamVzdHJ1IFNhZG93ZWdvLCAK
-bnVtZXIgS1JTIDEwMTg4MgoKTklQIDk1Ny0wNy01Mi0zMTYKS2FwaXRhbCB6YWtsYWRvd3kgMjAw
-LjAwMCB6bAoKVGhpcyBlLW1haWwgYW5kIGFueSBhdHRhY2htZW50cyBtYXkgY29udGFpbiBjb25m
-aWRlbnRpYWwgbWF0ZXJpYWwgZm9yCnRoZSBzb2xlIHVzZSBvZiB0aGUgaW50ZW5kZWQgcmVjaXBp
-ZW50KHMpLiBBbnkgcmV2aWV3IG9yIGRpc3RyaWJ1dGlvbgpieSBvdGhlcnMgaXMgc3RyaWN0bHkg
-cHJvaGliaXRlZC4gSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkCnJlY2lwaWVudCwgcGxlYXNl
-IGNvbnRhY3QgdGhlIHNlbmRlciBhbmQgZGVsZXRlIGFsbCBjb3BpZXMuCg==
 
+--jL2BoiuKMElzg3CS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, Nov 22, 2012 at 09:57:22AM +0100, Linus Walleij wrote:
+
+> Is it correct to assume that this library will be useful also for ALSA
+> SoC type of devices?
+
+ASoC has facilities for autogenerating the bulk of the sequences which
+with modern devices is all that you really need.
+
+--jL2BoiuKMElzg3CS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQrtUFAAoJELSic+t+oim9or0P/jeRd4BYe3ocqxtkm+e8e60Y
+blALWfdQExTsYg1gmoEASiBFm5vhQg9TDcmM1MdojCRV0+IfPem+a/Zo8DuLinqO
+QqNNY5pw/j7KLM2FflzoiFPtwz5w4Tg85eMZD9nsmmAUw//t+hlB1uCI6qo1RAQ7
+GAR4L6jCTNqe9q7osV5ydEw3rrKKTqo99MMO0inZ788wp+xzSCHcP5wljRwHZwSI
+3Q8vL3dQw+IGa6/XJM9pMAOd/IFwW8+5QCl89Z6hRLza9V+K9Ax7/Xgj4uv/E2CG
+ASe9HZ4hInv6kwJX0yUN4dQJPt5CH+ABnuRnB9WBEhxZ5EIeYDy3JIHfCBxevGiN
+j8g8mLQ8ihXQ3GcLHgHk6cXtxI/5EZhaOWDCN13sZ3FTnxKfm1xDQ9iQoEx/CTgR
+oirZajqnKJyVBI2j431JLtzwzsI37dS9gS12MLtudXTCMuuib/RZ1CtpqvUfV0Hq
+mTUaKqiUXl67Pu+nbbIlwUuvicPugTjMBJepjhQlXlrDwvOXGj6p2rX0ZHEJYel4
+/mzD0ZIlwhcHgfh7RUQefuDldbr2DLJSDveAi6mWPnS1/GuNn4KIKwJuKgRqNGgW
+dQvoKBvH5qEQvZpwEehl7HAt7UQ5blr8zcWMz4iQxv9q3WY4G3SmmgUIYLH9E+Qw
+31wJ1bVSScBxeHLbdGqf
+=yrHA
+-----END PGP SIGNATURE-----
+
+--jL2BoiuKMElzg3CS--
