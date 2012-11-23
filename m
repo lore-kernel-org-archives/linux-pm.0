@@ -1,160 +1,282 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] thermal: rcar: add .get_trip_type/temp and .notify
- support
-Date: Fri, 23 Nov 2012 14:29:49 +0800
-Message-ID: <1353652189.2111.7.camel@rzhang1-mobl4>
-References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
-	 <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:54007 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754616Ab2KWG3w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 23 Nov 2012 01:29:52 -0500
-In-Reply-To: <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH v4 1/2] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Fri, 23 Nov 2012 10:31:56 +0100
+Message-ID: <1353663117-10074-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org
 
-On Wed, 2012-11-21 at 22:50 -0800, Kuninori Morimoto wrote:
-> This patch adds .get_trip_type(), .get_trip_temp(), and .notify()
-> on rcar_thermal_zone_ops.
-> Driver will try platform power OFF if it reached to
-> critical temperature.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> ---
->  drivers/thermal/rcar_thermal.c |   81 ++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 78 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 454035c..16723ba 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -22,10 +22,13 @@
->  #include <linux/io.h>
->  #include <linux/module.h>
->  #include <linux/platform_device.h>
-> +#include <linux/reboot.h>
->  #include <linux/slab.h>
->  #include <linux/spinlock.h>
->  #include <linux/thermal.h>
->  
-> +#define IDLE_INTERVAL	5000
-> +
->  #define THSCR	0x2c
->  #define THSSR	0x30
->  
-> @@ -172,11 +175,82 @@ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
->  	}
->  
->  	*temp = tmp;
-> +
-> +	return 0;
-> +}
-> +
-> +static int rcar_thermal_get_trip_type(struct thermal_zone_device *zone,
-> +				      int trip, enum thermal_trip_type *type)
-> +{
-> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
-> +
-> +	/* see rcar_thermal_get_temp() */
-> +	switch (trip) {
-> +	case 0: /* -45 <= temp < +45 */
-> +		*type = THERMAL_TRIP_ACTIVE;
-> +		break;
-> +	case 1: /* +45 <= temp < +90 */
-> +		*type = THERMAL_TRIP_HOT;
-> +		break;
-> +	case 2: /* +90 <= temp < +135 */
-> +		*type = THERMAL_TRIP_CRITICAL;
-> +		break;
-> +	default:
-> +		dev_err(priv->dev, "rcar driver trip error\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zone,
-> +				      int trip, unsigned long *temp)
-> +{
-> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
-> +
-> +	/* see rcar_thermal_get_temp() */
-> +	switch (trip) {
-> +	case 0: /* -45 <= temp < +45 */
-> +		*temp = -45 - 1;
-> +		break;
+From: Rickard Andersson <rickard.andersson@stericsson.com>
 
-does this mean you expect the thermal driver to take some action when
-the temperature is higher than -45C?
+This patch fixes a bug that occured when we had load on a secondary CPU
+and the primary CPU was sleeping. Only one sampling timer was spawned
+and it was spawned as a deferred timer on the primary CPU, so when a
+secondary CPU had a change in load this was not detected by the ondemand
+governor.
 
-> +	case 1: /* +45 <= temp < +90 */
-> +		*temp = 45 - 1;
-> +		break;
-what do you expect to happen when the temperature is higher than 45C but
-lower than 90C?
+This patch make sure that deferred timers are run on all CPUs in the
+case of software controlled CPUs that run on the same frequency.
 
-> +	case 2: /* +90 <= temp < +135 */
-> +		*temp = 90 - 1;
-> +		break;
-> +	default:
-> +		dev_err(priv->dev, "rcar driver trip error\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int rcar_thermal_notify(struct thermal_zone_device *zone,
-> +			       int trip, enum thermal_trip_type type)
-> +{
-> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
-> +
-> +	switch (type) {
-> +	case THERMAL_TRIP_CRITICAL:
-> +		/* FIXME */
-> +		dev_warn(priv->dev,
-> +			 "Thermal reached to critical temperature\n");
-> +		machine_power_off();
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
->  	return 0;
->  }
->  
->  static struct thermal_zone_device_ops rcar_thermal_zone_ops = {
-> -	.get_temp = rcar_thermal_get_temp,
-> +	.get_temp	= rcar_thermal_get_temp,
-> +	.get_trip_type	= rcar_thermal_get_trip_type,
-> +	.get_trip_temp	= rcar_thermal_get_trip_temp,
-> +	.notify		= rcar_thermal_notify,
->  };
->  
-how does the active trip point work if you do not bind any cooling
-devices to it?
+Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+---
+Changes from v3:
+- moved update_sampling rate code on 2/2
+- simplified dbs_sw_coordinated_cpus
+- reworked timer handling for code readability, now:
+  * do_dbs_timer() [-> dbs_timer_coordinated()] -> dbs_timer_update()
+- simplified cpu_callback cases
 
->  /*
-> @@ -212,8 +286,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		goto error_free_priv;
->  	}
->  
-> -	zone = thermal_zone_device_register("rcar_thermal", 0, 0, priv,
-> -					    &rcar_thermal_zone_ops, 0, 0);
-> +	zone = thermal_zone_device_register("rcar_thermal", 4, 0, priv,
-> +					    &rcar_thermal_zone_ops, 0,
-> +					    IDLE_INTERVAL);
+ drivers/cpufreq/cpufreq_ondemand.c | 152 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 132 insertions(+), 20 deletions(-)
 
-there is no interrupt for any thermal changes on this platform,
-including critical overheat, right?
-
-thanks,
-rui
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 396322f..849788b 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -93,6 +93,7 @@ struct cpu_dbs_info_s {
+ 	 * when user is changing the governor or limits.
+ 	 */
+ 	struct mutex timer_mutex;
++	ktime_t time_stamp;
+ };
+ static DEFINE_PER_CPU(struct cpu_dbs_info_s, od_cpu_dbs_info);
+ 
+@@ -449,6 +450,13 @@ static struct attribute_group dbs_attr_group = {
+ 
+ /************************** sysfs end ************************/
+ 
++static bool dbs_sw_coordinated_cpus(struct cpu_dbs_info_s *dbs_info)
++{
++	struct cpufreq_policy *policy = dbs_info->cur_policy;
++
++	return cpumask_weight(policy->cpus) > 1;
++}
++
+ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+ {
+ 	if (dbs_tuners_ins.powersave_bias)
+@@ -596,22 +604,18 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
+ 	}
+ }
+ 
+-static void do_dbs_timer(struct work_struct *work)
++static void dbs_timer_update(struct cpu_dbs_info_s *dbs_info, bool sample,
++			     struct delayed_work *dw)
+ {
+-	struct cpu_dbs_info_s *dbs_info =
+-		container_of(work, struct cpu_dbs_info_s, work.work);
+-	unsigned int cpu = dbs_info->cpu;
+ 	int sample_type = dbs_info->sample_type;
+-
+ 	int delay;
+ 
+-	mutex_lock(&dbs_info->timer_mutex);
+-
+ 	/* Common NORMAL_SAMPLE setup */
+ 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
+ 	if (!dbs_tuners_ins.powersave_bias ||
+ 	    sample_type == DBS_NORMAL_SAMPLE) {
+-		dbs_check_cpu(dbs_info);
++		if (sample)
++			dbs_check_cpu(dbs_info);
+ 		if (dbs_info->freq_lo) {
+ 			/* Setup timer for SUB_SAMPLE */
+ 			dbs_info->sample_type = DBS_SUB_SAMPLE;
+@@ -627,32 +631,80 @@ static void do_dbs_timer(struct work_struct *work)
+ 				delay -= jiffies % delay;
+ 		}
+ 	} else {
+-		__cpufreq_driver_target(dbs_info->cur_policy,
+-			dbs_info->freq_lo, CPUFREQ_RELATION_H);
++		if (sample)
++			__cpufreq_driver_target(dbs_info->cur_policy,
++						dbs_info->freq_lo,
++						CPUFREQ_RELATION_H);
+ 		delay = dbs_info->freq_lo_jiffies;
+ 	}
+-	schedule_delayed_work_on(cpu, &dbs_info->work, delay);
++	schedule_delayed_work_on(smp_processor_id(), dw, delay);
++}
++
++static void dbs_timer_coordinated(struct cpu_dbs_info_s *dbs_info_local,
++				  struct delayed_work *dw)
++{
++	struct cpu_dbs_info_s *dbs_info;
++	ktime_t time_now;
++	s64 delta_us;
++	bool sample = true;
++
++	/* use leader CPU's dbs_info */
++	dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info_local->cpu);
++	mutex_lock(&dbs_info->timer_mutex);
++
++	time_now = ktime_get();
++	delta_us = ktime_us_delta(time_now, dbs_info->time_stamp);
++
++	/* Do nothing if we recently have sampled */
++	if (delta_us < (s64)(dbs_tuners_ins.sampling_rate / 2))
++		sample = false;
++	else
++		dbs_info->time_stamp = time_now;
++
++	dbs_timer_update(dbs_info, sample, dw);
+ 	mutex_unlock(&dbs_info->timer_mutex);
+ }
+ 
+-static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
++static void do_dbs_timer(struct work_struct *work)
++{
++	struct delayed_work *dw = to_delayed_work(work);
++	struct cpu_dbs_info_s *dbs_info =
++		container_of(work, struct cpu_dbs_info_s, work.work);
++
++	if (dbs_sw_coordinated_cpus(dbs_info)) {
++		dbs_timer_coordinated(dbs_info, dw);
++	} else {
++		mutex_lock(&dbs_info->timer_mutex);
++		dbs_timer_update(dbs_info, true, dw);
++		mutex_unlock(&dbs_info->timer_mutex);
++	}
++}
++
++static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info, int cpu)
+ {
+ 	/* We want all CPUs to do sampling nearly on same jiffy */
+ 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
++	struct cpu_dbs_info_s *dbs_info_local = &per_cpu(od_cpu_dbs_info, cpu);
+ 
+ 	if (num_online_cpus() > 1)
+ 		delay -= jiffies % delay;
+ 
++	cancel_delayed_work_sync(&dbs_info_local->work);
+ 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
+-	INIT_DEFERRABLE_WORK(&dbs_info->work, do_dbs_timer);
+-	schedule_delayed_work_on(dbs_info->cpu, &dbs_info->work, delay);
++	schedule_delayed_work_on(cpu, &dbs_info_local->work, delay);
+ }
+ 
+-static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
++static inline void dbs_timer_exit(int cpu)
+ {
++	struct cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 	cancel_delayed_work_sync(&dbs_info->work);
+ }
+ 
++static void dbs_timer_exit_per_cpu(struct work_struct *dummy)
++{
++	dbs_timer_exit(smp_processor_id());
++}
++
+ /*
+  * Not all CPUs want IO time to be accounted as busy; this dependson how
+  * efficient idling at a higher frequency/voltage is.
+@@ -676,6 +728,41 @@ static int should_io_be_busy(void)
+ 	return 0;
+ }
+ 
++static int __cpuinit cpu_callback(struct notifier_block *nfb,
++				  unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (unsigned long)hcpu;
++	struct device *cpu_dev;
++	struct cpu_dbs_info_s *dbs_info;
++
++	dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
++
++	/* use leader CPU's dbs_info */
++	if (dbs_sw_coordinated_cpus(dbs_info))
++		dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info->cpu);
++
++	cpu_dev = get_cpu_device(cpu);
++	if (cpu_dev) {
++		switch (action) {
++		case CPU_ONLINE:
++		case CPU_ONLINE_FROZEN:
++		case CPU_DOWN_FAILED:
++		case CPU_DOWN_FAILED_FROZEN:
++			dbs_timer_init(dbs_info, cpu);
++			break;
++		case CPU_DOWN_PREPARE:
++		case CPU_DOWN_PREPARE_FROZEN:
++			dbs_timer_exit(cpu);
++			break;
++		}
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __refdata ondemand_cpu_notifier = {
++	.notifier_call = cpu_callback,
++};
++
+ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 				   unsigned int event)
+ {
+@@ -704,9 +791,13 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 			if (dbs_tuners_ins.ignore_nice)
+ 				j_dbs_info->prev_cpu_nice =
+ 						kcpustat_cpu(j).cpustat[CPUTIME_NICE];
++
++			mutex_init(&j_dbs_info->timer_mutex);
++			INIT_DEFERRABLE_WORK(&j_dbs_info->work, do_dbs_timer);
++
++			j_dbs_info->rate_mult = 1;
+ 		}
+ 		this_dbs_info->cpu = cpu;
+-		this_dbs_info->rate_mult = 1;
+ 		ondemand_powersave_bias_init_cpu(cpu);
+ 		/*
+ 		 * Start the timerschedule work, when this governor
+@@ -736,21 +827,42 @@ static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		}
+ 		mutex_unlock(&dbs_mutex);
+ 
+-		mutex_init(&this_dbs_info->timer_mutex);
+-		dbs_timer_init(this_dbs_info);
++		/* If SW coordinated CPUs then register notifier */
++		if (dbs_sw_coordinated_cpus(this_dbs_info)) {
++			register_hotcpu_notifier(&ondemand_cpu_notifier);
++
++			/* Initiate timer time stamp */
++			this_dbs_info->time_stamp = ktime_get();
++
++			for_each_cpu(j, policy->cpus) {
++				struct cpu_dbs_info_s *j_dbs_info;
++
++				j_dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
++				dbs_timer_init(j_dbs_info, j);
++			}
++		} else {
++			dbs_timer_init(this_dbs_info, cpu);
++		}
+ 		break;
+ 
+ 	case CPUFREQ_GOV_STOP:
+-		dbs_timer_exit(this_dbs_info);
++		dbs_timer_exit(cpu);
+ 
+ 		mutex_lock(&dbs_mutex);
+ 		mutex_destroy(&this_dbs_info->timer_mutex);
+ 		dbs_enable--;
+ 		mutex_unlock(&dbs_mutex);
+-		if (!dbs_enable)
++		if (!dbs_enable) {
+ 			sysfs_remove_group(cpufreq_global_kobject,
+ 					   &dbs_attr_group);
+ 
++			if (dbs_sw_coordinated_cpus(this_dbs_info)) {
++				/* Make sure all pending timers/works are
++				 * stopped. */
++				schedule_on_each_cpu(dbs_timer_exit_per_cpu);
++				unregister_hotcpu_notifier(&ondemand_cpu_notifier);
++			}
++		}
+ 		break;
+ 
+ 	case CPUFREQ_GOV_LIMITS:
+-- 
+1.7.12.1
 
