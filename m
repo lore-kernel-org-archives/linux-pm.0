@@ -1,34 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v4 1/2] cpufreq: ondemand: handle SW coordinated CPUs
-Date: Fri, 23 Nov 2012 20:54:01 +0100
-Message-ID: <1694807.007dnPzdVx@vostro.rjw.lan>
-References: <1353663117-10074-1-git-send-email-fabio.baltieri@linaro.org> <20121123124221.GA7378@balto.lan>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH] cpufreq: ondemand: fix wrong delay sampling rate
+Date: Fri, 23 Nov 2012 20:57:02 +0100
+Message-ID: <20121123195700.GA29269@balto.lan>
+References: <1353676358-4385-1-git-send-email-fabio.baltieri@linaro.org>
+ <CAKohpommGWb0WRnUDd_Do4yuadA5RcR4_ULFEqt+t9DNFnCg-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20121123124221.GA7378@balto.lan>
+Content-Disposition: inline
+In-Reply-To: <CAKohpommGWb0WRnUDd_Do4yuadA5RcR4_ULFEqt+t9DNFnCg-Q@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 23, 2012 01:42:21 PM Fabio Baltieri wrote:
-> Hi Rafael,
+On Fri, Nov 23, 2012 at 07:23:28PM +0530, Viresh Kumar wrote:
+> On 23 November 2012 18:42, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
+> > Restore the correct delay value for ondemand's od_dbs_timer, as it was
+> > changed erroneously in 83f0e55.
+> >
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq_ondemand.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> > index bdaab92..cca3e9f 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -234,7 +234,8 @@ static void od_dbs_timer(struct work_struct *work)
+> >                         dbs_info->sample_type = OD_SUB_SAMPLE;
+> >                         delay = dbs_info->freq_hi_jiffies;
+> >                 } else {
+> > -                       delay = delay_for_sampling_rate(dbs_info->rate_mult);
+> > +                       delay = delay_for_sampling_rate(od_tuners.sampling_rate
+> > +                                               * dbs_info->rate_mult);
 > 
-> On Fri, Nov 23, 2012 at 10:31:56AM +0100, Fabio Baltieri wrote:
-> >  drivers/cpufreq/cpufreq_ondemand.c | 152 ++++++++++++++++++++++++++++++++-----
-> >  1 file changed, 132 insertions(+), 20 deletions(-)
-> 
-> I just noticed that the whole ondemand driver was refactored in your
-> linux-pm.git/linux-next branch so my patch does not apply.  I'm
-> preparing a rebased version of the set, so feel free to skip this one.
+> So sorry for my poor code :(
 
-Thanks for the heads up, I'll wait for the new version.
+Actually I think that the new code is much better structured, and the
+patch was so big that I'll be surprised if this would be the only bug!
 
-Rafael
+My problem is that I had to rewrite a patch based on the old code almost
+line-by-line but... these are the rules of the game!
 
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks,
+Fabio
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Fabio Baltieri
