@@ -1,48 +1,34 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: [PATCH 3.7+stable] pm: fix wrong error-checking condition
-Date: Fri, 23 Nov 2012 16:02:56 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1211231601040.14984@axis700.grange>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4 1/2] cpufreq: ondemand: handle SW coordinated CPUs
+Date: Fri, 23 Nov 2012 20:54:01 +0100
+Message-ID: <1694807.007dnPzdVx@vostro.rjw.lan>
+References: <1353663117-10074-1-git-send-email-fabio.baltieri@linaro.org> <20121123124221.GA7378@balto.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.17.9]:51691 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336Ab2KWPC6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Nov 2012 10:02:58 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20121123124221.GA7378@balto.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-dev_pm_qos_add_request() can return 0, 1, or a negative error code,
-therefore the correct error test is "if (error < 0)." Checking just for
-non-zero return code leads to erroneous setting of the req->dev pointer
-to NULL, which then leads to a repeated call to
-dev_pm_qos_add_ancestor_request() in st1232_ts_irq_handler(). This in turn
-leads to an Oops, when the I2C host adapter is unloaded and reloaded again
-because of the inconsistent state of its QoS request list.
+On Friday, November 23, 2012 01:42:21 PM Fabio Baltieri wrote:
+> Hi Rafael,
+> 
+> On Fri, Nov 23, 2012 at 10:31:56AM +0100, Fabio Baltieri wrote:
+> >  drivers/cpufreq/cpufreq_ondemand.c | 152 ++++++++++++++++++++++++++++++++-----
+> >  1 file changed, 132 insertions(+), 20 deletions(-)
+> 
+> I just noticed that the whole ondemand driver was refactored in your
+> linux-pm.git/linux-next branch so my patch does not apply.  I'm
+> preparing a rebased version of the set, so feel free to skip this one.
 
-Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
----
+Thanks for the heads up, I'll wait for the new version.
 
-Hi Rafael, please push to 3.7 and to stable.
+Rafael
 
- drivers/base/power/qos.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 74a67e0..fbbd4ed 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -451,7 +451,7 @@ int dev_pm_qos_add_ancestor_request(struct device *dev,
- 	if (ancestor)
- 		error = dev_pm_qos_add_request(ancestor, req, value);
- 
--	if (error)
-+	if (error < 0)
- 		req->dev = NULL;
- 
- 	return error;
 -- 
-1.7.2.5
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
