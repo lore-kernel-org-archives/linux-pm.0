@@ -1,56 +1,160 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Fri, 23 Nov 2012 10:44:44 +0900
-Message-ID: <20121123014443.GD4385@opensource.wolfsonmicro.com>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <1353149747-31871-2-git-send-email-acourbot@nvidia.com>
- <20121120215429.B621F3E1821@localhost>
- <20121121013133.GE4673@opensource.wolfsonmicro.com>
- <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/2] thermal: rcar: add .get_trip_type/temp and .notify
+ support
+Date: Fri, 23 Nov 2012 14:29:49 +0800
+Message-ID: <1353652189.2111.7.camel@rzhang1-mobl4>
+References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
+	 <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="jL2BoiuKMElzg3CS"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CACRpkdaNmBpfONDpt7zFqLaqfiGm+ELpO-v5gZmM0rEi_AzijQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Grant Likely <grant.likely@secretlab.ca>, Alexandre Courbot <acourbot@nvidia.com>, Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree-discuss@lists.ozlabs.org, linux-pm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>, Ola LILJA2 <ola.o.lilja@stericsson.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:54007 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754616Ab2KWG3w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 23 Nov 2012 01:29:52 -0500
+In-Reply-To: <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org
 
+On Wed, 2012-11-21 at 22:50 -0800, Kuninori Morimoto wrote:
+> This patch adds .get_trip_type(), .get_trip_temp(), and .notify()
+> on rcar_thermal_zone_ops.
+> Driver will try platform power OFF if it reached to
+> critical temperature.
+> 
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> ---
+>  drivers/thermal/rcar_thermal.c |   81 ++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 78 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 454035c..16723ba 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -22,10 +22,13 @@
+>  #include <linux/io.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+>  #include <linux/slab.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/thermal.h>
+>  
+> +#define IDLE_INTERVAL	5000
+> +
+>  #define THSCR	0x2c
+>  #define THSSR	0x30
+>  
+> @@ -172,11 +175,82 @@ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
+>  	}
+>  
+>  	*temp = tmp;
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_thermal_get_trip_type(struct thermal_zone_device *zone,
+> +				      int trip, enum thermal_trip_type *type)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	/* see rcar_thermal_get_temp() */
+> +	switch (trip) {
+> +	case 0: /* -45 <= temp < +45 */
+> +		*type = THERMAL_TRIP_ACTIVE;
+> +		break;
+> +	case 1: /* +45 <= temp < +90 */
+> +		*type = THERMAL_TRIP_HOT;
+> +		break;
+> +	case 2: /* +90 <= temp < +135 */
+> +		*type = THERMAL_TRIP_CRITICAL;
+> +		break;
+> +	default:
+> +		dev_err(priv->dev, "rcar driver trip error\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zone,
+> +				      int trip, unsigned long *temp)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	/* see rcar_thermal_get_temp() */
+> +	switch (trip) {
+> +	case 0: /* -45 <= temp < +45 */
+> +		*temp = -45 - 1;
+> +		break;
 
---jL2BoiuKMElzg3CS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+does this mean you expect the thermal driver to take some action when
+the temperature is higher than -45C?
 
-On Thu, Nov 22, 2012 at 09:57:22AM +0100, Linus Walleij wrote:
+> +	case 1: /* +45 <= temp < +90 */
+> +		*temp = 45 - 1;
+> +		break;
+what do you expect to happen when the temperature is higher than 45C but
+lower than 90C?
 
-> Is it correct to assume that this library will be useful also for ALSA
-> SoC type of devices?
+> +	case 2: /* +90 <= temp < +135 */
+> +		*temp = 90 - 1;
+> +		break;
+> +	default:
+> +		dev_err(priv->dev, "rcar driver trip error\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_thermal_notify(struct thermal_zone_device *zone,
+> +			       int trip, enum thermal_trip_type type)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	switch (type) {
+> +	case THERMAL_TRIP_CRITICAL:
+> +		/* FIXME */
+> +		dev_warn(priv->dev,
+> +			 "Thermal reached to critical temperature\n");
+> +		machine_power_off();
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+>  static struct thermal_zone_device_ops rcar_thermal_zone_ops = {
+> -	.get_temp = rcar_thermal_get_temp,
+> +	.get_temp	= rcar_thermal_get_temp,
+> +	.get_trip_type	= rcar_thermal_get_trip_type,
+> +	.get_trip_temp	= rcar_thermal_get_trip_temp,
+> +	.notify		= rcar_thermal_notify,
+>  };
+>  
+how does the active trip point work if you do not bind any cooling
+devices to it?
 
-ASoC has facilities for autogenerating the bulk of the sequences which
-with modern devices is all that you really need.
+>  /*
+> @@ -212,8 +286,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		goto error_free_priv;
+>  	}
+>  
+> -	zone = thermal_zone_device_register("rcar_thermal", 0, 0, priv,
+> -					    &rcar_thermal_zone_ops, 0, 0);
+> +	zone = thermal_zone_device_register("rcar_thermal", 4, 0, priv,
+> +					    &rcar_thermal_zone_ops, 0,
+> +					    IDLE_INTERVAL);
 
---jL2BoiuKMElzg3CS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+there is no interrupt for any thermal changes on this platform,
+including critical overheat, right?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+thanks,
+rui
 
-iQIcBAEBAgAGBQJQrtUFAAoJELSic+t+oim9or0P/jeRd4BYe3ocqxtkm+e8e60Y
-blALWfdQExTsYg1gmoEASiBFm5vhQg9TDcmM1MdojCRV0+IfPem+a/Zo8DuLinqO
-QqNNY5pw/j7KLM2FflzoiFPtwz5w4Tg85eMZD9nsmmAUw//t+hlB1uCI6qo1RAQ7
-GAR4L6jCTNqe9q7osV5ydEw3rrKKTqo99MMO0inZ788wp+xzSCHcP5wljRwHZwSI
-3Q8vL3dQw+IGa6/XJM9pMAOd/IFwW8+5QCl89Z6hRLza9V+K9Ax7/Xgj4uv/E2CG
-ASe9HZ4hInv6kwJX0yUN4dQJPt5CH+ABnuRnB9WBEhxZ5EIeYDy3JIHfCBxevGiN
-j8g8mLQ8ihXQ3GcLHgHk6cXtxI/5EZhaOWDCN13sZ3FTnxKfm1xDQ9iQoEx/CTgR
-oirZajqnKJyVBI2j431JLtzwzsI37dS9gS12MLtudXTCMuuib/RZ1CtpqvUfV0Hq
-mTUaKqiUXl67Pu+nbbIlwUuvicPugTjMBJepjhQlXlrDwvOXGj6p2rX0ZHEJYel4
-/mzD0ZIlwhcHgfh7RUQefuDldbr2DLJSDveAi6mWPnS1/GuNn4KIKwJuKgRqNGgW
-dQvoKBvH5qEQvZpwEehl7HAt7UQ5blr8zcWMz4iQxv9q3WY4G3SmmgUIYLH9E+Qw
-31wJ1bVSScBxeHLbdGqf
-=yrHA
------END PGP SIGNATURE-----
-
---jL2BoiuKMElzg3CS--
