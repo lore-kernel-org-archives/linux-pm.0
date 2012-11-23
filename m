@@ -1,58 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3.7+stable] pm: fix wrong error-checking condition
-Date: Fri, 23 Nov 2012 21:36:55 +0100
-Message-ID: <2410876.0MhetLSqTZ@vostro.rjw.lan>
-References: <Pine.LNX.4.64.1211231601040.14984@axis700.grange>
+Subject: [GIT PULL] Power management fix for v3.7-rc7
+Date: Fri, 23 Nov 2012 22:30:12 +0100
+Message-ID: <3473497.IpITgra4vk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ogre.sisk.pl ([193.178.161.156]:35348 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([193.178.161.156]:35368 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756207Ab2KWUcX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 23 Nov 2012 15:32:23 -0500
-In-Reply-To: <Pine.LNX.4.64.1211231601040.14984@axis700.grange>
+	id S1756366Ab2KWVZl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 23 Nov 2012 16:25:41 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, November 23, 2012 04:02:56 PM Guennadi Liakhovetski wrote:
-> dev_pm_qos_add_request() can return 0, 1, or a negative error code,
-> therefore the correct error test is "if (error < 0)." Checking just for
-> non-zero return code leads to erroneous setting of the req->dev pointer
-> to NULL, which then leads to a repeated call to
-> dev_pm_qos_add_ancestor_request() in st1232_ts_irq_handler(). This in turn
-> leads to an Oops, when the I2C host adapter is unloaded and reloaded again
-> because of the inconsistent state of its QoS request list.
-> 
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> ---
-> 
-> Hi Rafael, please push to 3.7 and to stable.
+Hi Linus,
 
-I will, thanks for the fix!
+Please pull from the git repository at
 
-Rafael
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-for-3.7-rc7
+
+to receive one power management fix for v3.7-rc7 as commit
+a7227a0faa117d0bc532aea546ae5ac5f89e8ed7
+
+  PM / QoS: fix wrong error-checking condition
+
+on top of commit f4a75d2eb7b1e2206094b901be09adb31ba63681
+
+  Linux 3.7-rc6
+
+It fixes a bug that has been there for quite a while, but it's a potential
+Oops and the fix is -stable material.
+
+Thanks!
 
 
->  drivers/base/power/qos.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-> index 74a67e0..fbbd4ed 100644
-> --- a/drivers/base/power/qos.c
-> +++ b/drivers/base/power/qos.c
-> @@ -451,7 +451,7 @@ int dev_pm_qos_add_ancestor_request(struct device *dev,
->  	if (ancestor)
->  		error = dev_pm_qos_add_request(ancestor, req, value);
->  
-> -	if (error)
-> +	if (error < 0)
->  		req->dev = NULL;
->  
->  	return error;
-> 
+ drivers/base/power/qos.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+---------------
+
+Guennadi Liakhovetski (1):
+      PM / QoS: fix wrong error-checking condition
+
+
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
