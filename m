@@ -1,69 +1,85 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal: rcar: add rcar_zone_to_priv() macro
-Date: Sun, 25 Nov 2012 17:24:47 +0800
-Message-ID: <1353835487.2176.6.camel@rzhang1-mobl4>
-References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
-	 <87r4nmuo66.wl%kuninori.morimoto.gx@renesas.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH 2/2] platform / ACPI: Attach/detach ACPI PM during probe/remove/shutdown
+Date: Sun, 25 Nov 2012 15:58:14 +0100
+Message-ID: <6227446.8xPtqi6yHi@vostro.rjw.lan>
+References: <1672179.qgDUs0YdYu@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:64346 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751923Ab2KYJYw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Nov 2012 04:24:52 -0500
-In-Reply-To: <87r4nmuo66.wl%kuninori.morimoto.gx@renesas.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1672179.qgDUs0YdYu@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Svahn, Kai" <kai.svahn@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Huang Ying <ying.huang@intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, Aaron Lu <aaron.lu@intel.com>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org
 
-On Wed, 2012-11-21 at 22:50 -0800, Kuninori Morimoto wrote:
-> This patch adds rcar_zone_to_priv()
-> which is a helper macro for gettign private data.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Patch rebased on thermal next.
+Drivers usually expect that the devices they are supposed to handle
+will be operational when their .probe() routines are called, but that
+need not be the case on some ACPI-based systems with ACPI-based
+device enumeration where the BIOSes don't put devices into D0 by
+default.  To work around this problem it is sufficient to change
+bus type .probe() routines to ensure that devices will be powered
+on before the drivers' .probe() routines run (and their .remove()
+and .shutdown() routines accordingly).
 
->From 5d251a94e56673b4fd22451c068a7a410cd6c687 Mon Sep 17 00:00:00 2001
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 21 Nov 2012 22:50:12 -0800
-Subject: [PATCH] thermal: rcar: add rcar_zone_to_priv() macro
+Modify platform_drv_probe() to run acpi_dev_pm_attach() for devices
+whose ACPI handles are present, so that ACPI power management is used
+to change their power states and change their power states to D0
+before driver probing.  Analogously, modify platform_drv_remove() and
+platform_drv_shutdown() to call acpi_dev_pm_detach() for those
+devices, so that they are not subject to ACPI PM any more.
 
-This patch adds rcar_zone_to_priv()
-which is a helper macro for gettign private data.
-
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/thermal/rcar_thermal.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/base/platform.c |   19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 81dce23..b8e6ffc 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -43,6 +43,8 @@ struct rcar_thermal_priv {
- 	u32 comp;
- };
- 
-+#define rcar_zone_to_priv(zone)		(zone->devdata)
-+
- /*
-  *		basic functions
-  */
-@@ -96,7 +98,7 @@ static void rcar_thermal_bset(struct rcar_thermal_priv *priv, u32 reg,
- static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
- 			   unsigned long *temp)
+Index: linux/drivers/base/platform.c
+===================================================================
+--- linux.orig/drivers/base/platform.c
++++ linux/drivers/base/platform.c
+@@ -484,8 +484,16 @@ static int platform_drv_probe(struct dev
  {
--	struct rcar_thermal_priv *priv = zone->devdata;
-+	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
- 	int val, min, max, tmp;
+ 	struct platform_driver *drv = to_platform_driver(_dev->driver);
+ 	struct platform_device *dev = to_platform_device(_dev);
++	int ret;
  
- 	tmp = -200; /* default */
--- 
-1.7.7.6
-
-
+-	return drv->probe(dev);
++	if (ACPI_HANDLE(_dev))
++		acpi_dev_pm_attach(_dev, true);
++
++	ret = drv->probe(dev);
++	if (ret && ACPI_HANDLE(_dev))
++		acpi_dev_pm_detach(_dev, true);
++
++	return ret;
+ }
+ 
+ static int platform_drv_probe_fail(struct device *_dev)
+@@ -497,8 +505,13 @@ static int platform_drv_remove(struct de
+ {
+ 	struct platform_driver *drv = to_platform_driver(_dev->driver);
+ 	struct platform_device *dev = to_platform_device(_dev);
++	int ret;
++
++	ret = drv->remove(dev);
++	if (ACPI_HANDLE(_dev))
++		acpi_dev_pm_detach(_dev, true);
+ 
+-	return drv->remove(dev);
++	return ret;
+ }
+ 
+ static void platform_drv_shutdown(struct device *_dev)
+@@ -507,6 +520,8 @@ static void platform_drv_shutdown(struct
+ 	struct platform_device *dev = to_platform_device(_dev);
+ 
+ 	drv->shutdown(dev);
++	if (ACPI_HANDLE(_dev))
++		acpi_dev_pm_detach(_dev, true);
+ }
+ 
+ /**
 
