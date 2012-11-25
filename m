@@ -1,74 +1,45 @@
-From: Jonathan Nieder <jrnieder@gmail.com>
-Subject: [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio 49
-Date: Sun, 25 Nov 2012 13:21:00 -0800
-Message-ID: <20121125212100.GE24024@elie.Belkin>
-References: <4FA2D481.4070304@droids-corp.org>
- <4FA2DB9D.1040303@droids-corp.org>
- <20120604110608.GG8248@droids-corp.org>
- <20120605232432.GE3619@burratino>
- <4FD06563.7050605@droids-corp.org>
- <20121125094110.GA21387@elie.Belkin>
- <50B2815E.2090105@droids-corp.org>
+From: Clemens Ladisch <clemens-P6GI/4k7KOmELgA04lAiVw@public.gmane.org>
+Subject: Re: [alsa-devel] [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio
+ 49
+Date: Sun, 25 Nov 2012 23:01:27 +0100
+Message-ID: <50B29537.7060007@ladisch.de>
+References: <4FA2D481.4070304@droids-corp.org> <4FA2DB9D.1040303@droids-corp.org> <20120604110608.GG8248@droids-corp.org> <20120605232432.GE3619@burratino> <4FD06563.7050605@droids-corp.org> <20121125094110.GA21387@elie.Belkin> <50B2815E.2090105@droids-corp.org> <20121125212100.GE24024@elie.Belkin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50B2815E.2090105@droids-corp.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-usb@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, David Banks <amoebae@gmail.com>, Olivier MATZ <zer0@droids-corp.org>, Ralf Lang <lang@b1-systems.de>, Steffen =?utf-8?Q?M=C3=BCller?= <steffen.mueller@radio-frei.de>, stable@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20121125212100.GE24024-fcEM2ccDkbL2nhBuCrrZHw@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jonathan Nieder <jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?ISO-8859-1?Q?Steffen_M=FCller?= <steffen.mueller-Coi19p7x1OHFVwzeVveEFA@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olivier MATZ <zer0-RqaWXwjnwG4BE+pwOMkbTQ@public.gmane.org>, stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Banks <amoebae-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ralf Lang <lang-shG/GajIFYqbacvFa/9K2g@public.gmane.org>, Oliver Neukum <oneukum-l3A5Bk7waGM@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Some USB MIDI keyboards fail to operate after a USB autosuspend.  The
-device is recognized by ALSA, but no events are received and the
-device goes quiet.
+Jonathan Nieder wrote:
+> Some USB MIDI keyboards fail to operate after a USB autosuspend.
 
-	$ amidi -l
-	Dir Device    Name
-	IO  hw:1,0,0  Oxygen 49 MIDI 1
-	$ amidi -p hw:1,0,0 -d
-	<... play some notes ...>
-	^C
-	0 bytes read
+Make that *all* USB MIDI devices with input ports.
 
-A workaround is to disable USB autosuspend for these devices by
-putting AUTOSUSPEND_USBID_BLACKLIST="0763:2027" (resp. 0763:019b) in
-/etc/laptop-mode/conf.d/usb-autosuspend.conf.  In the spirit of commit
-166cb70e97bd ("usb: add USB_QUIRK_RESET_RESUME for M-Audio 88es"),
-reset the device on resume so this workaround is not needed any more.
+This is not a bug in the device, but one of the many bugs introduced
+with the autosuspend code in <http://git.kernel.org/linus/88a8516a2128>.
 
-Noticed on a kernel close to 3.2.10.  Tested against 3.6.5.  Debian's
-2.6.32.54-based kernel did not seem to be affected, though it's not
-clear whether that is due to code or configuration.
+That patch does not handle input at all, i.e., when the driver wants to
+read from the device, it just doesn't take it out of suspend mode.
 
-Addresses http://bugs.debian.org/664068
+> A workaround is to disable USB autosuspend for these devices by
+> putting AUTOSUSPEND_USBID_BLACKLIST="0763:2027" (resp. 0763:019b) in
+> /etc/laptop-mode/conf.d/usb-autosuspend.conf.  In the spirit of commit
+> 166cb70e97bd ("usb: add USB_QUIRK_RESET_RESUME for M-Audio 88es"),
+> reset the device on resume so this workaround is not needed any more.
 
-Reported-and-tested-by: David Banks <amoebae@gmail.com> # Oxygen 49
-Reported-and-tested-by: Olivier MATZ <zer0@droids-corp.org> # KeyRig 49
-Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
-Cc: stable@vger.kernel.org
----
-Thoughts?
+It is not feasible to add the IDs of all USB MIDI devices.
 
- drivers/usb/core/quirks.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+I'm working on a fix that adds proper power management for input ports,
+but this requires the driver to be reorganized a little ...
 
-diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index fdefd9c7f7af..998c6a8290f6 100644
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -105,6 +105,12 @@ static const struct usb_device_id usb_quirk_list[] = {
- 	/* Midiman M-Audio Keystation 88es */
- 	{ USB_DEVICE(0x0763, 0x0192), .driver_info = USB_QUIRK_RESET_RESUME },
- 
-+	/* Midiman M-Audio KeyRig 49 */
-+	{ USB_DEVICE(0x0763, 0x019b), .driver_info = USB_QUIRK_RESET_RESUME },
-+
-+	/* Midiman M-Audio Oxygen 49 */
-+	{ USB_DEVICE(0x0763, 0x2027), .driver_info = USB_QUIRK_RESET_RESUME },
-+
- 	/* M-Systems Flash Disk Pioneers */
- 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
- 
--- 
-1.8.0
+
+Regards,
+Clemens
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
