@@ -1,54 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/6 v4] cpufreq: tolerate inexact values when collecting stats
-Date: Mon, 26 Nov 2012 16:25:01 +0100
-Message-ID: <2830056.M1sSqgI0LP@vostro.rjw.lan>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <3756540.1nyvqzWibd@vostro.rjw.lan> <50B3754A.50804@calxeda.com>
+Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: rebased on pm-devfreq
+Date: Mon, 26 Nov 2012 16:34:26 +0100
+Message-ID: <4927125.H2P7Hmrbbc@vostro.rjw.lan>
+References: <1562412.gSBZdyfWN8@vostro.rjw.lan> <1353925903-19557-1-git-send-email-myungjoo.ham@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:33675 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:33682 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753752Ab2KZPUS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Nov 2012 10:20:18 -0500
-In-Reply-To: <50B3754A.50804@calxeda.com>
+	id S1753492Ab2KZP3m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 26 Nov 2012 10:29:42 -0500
+In-Reply-To: <1353925903-19557-1-git-send-email-myungjoo.ham@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, Borislav Petkov <bp@alien8.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, linux-kernel@vger.kernel.org, myungjoo.ham@gmail.com
 
-On Monday, November 26, 2012 07:57:30 AM Mark Langsdorf wrote:
-> On 11/24/2012 04:05 AM, Rafael J. Wysocki wrote:
-> > On Saturday, November 17, 2012 03:50:48 PM Borislav Petkov wrote:
-> >> On Tue, Nov 13, 2012 at 02:13:38PM -0500, Mark Langsdorf wrote:
-> >>> Although cpufreq_driver has a flag field, no part of cpufreq_driver
-> >>> is directly passed to the cpufreq_stat code. Only cpufreq_policy
-> >>> is. It's cleaner to do passes of the while loop than to copy the
-> >>> cpufreq_driver.flag field into cpufreq_policy and then store it again
-> >>> in cpufreq_stats.
-> >>
-> >> That maybe so but this newly added loop which is only Calxeda-relevant
-> >> is called in cpufreq_stat_notifier_trans, which is the frequency change
-> >> notifier call, AFAICT.
+On Monday, November 26, 2012 07:31:43 PM MyungJoo Ham wrote:
 > 
-> Drivers only go through the loop if they can't find an exact frequency.
-> So every driver that isn't Calxeda shouldn't see the issue.
+> Rafael,
 > 
-> >> So you probably need to find a slick way of detecting calxeda hw
-> >> somewhere along the init path of cpufreq_stats_init and set a
-> >> hw-specific flag instead of adding that cost to each driver.
-> > 
-> > Mark, I suppose you'd like me to take this series for v3.8, but the above
-> > comment from Boris has to be addressed for that.
+> Here goes the pull request rebased on your pm-devfreq branch.
+> Sorry for all the confusion and mess invoked.
 > 
-> I think I'd rather drop this particular patch and not have cpufreq_stat
-> support for Highbank. Redesigning it to meet Boris' requirements is
-> going to take more time than I currently have available.
 > 
-> Would it be acceptable to drop this patch and fix the issues with
-> patches 4 and 6 to get the series in?
+> Cheers,
+> MyungJoo
+> 
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+> The following changes since commit 1a1357ea176670867f347419c3345e2becc07338:
+> 
+>   PM / devfreq: make devfreq_class static (2012-11-15 00:35:06 +0100)
+> 
+> are available in the git repository at:
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121126
 
-Yes, it would, but please resubmit ASAP.
+OK, pulled, but I'll merge it to my linux-next branch tomorrow.
 
 Thanks,
 Rafael
