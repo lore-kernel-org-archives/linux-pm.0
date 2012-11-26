@@ -1,72 +1,105 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request-3 bugfixes
-Date: Mon, 26 Nov 2012 15:41:22 +0900
-Message-ID: <1353912082-8550-1-git-send-email-myungjoo.ham@samsung.com>
-References: <3622510.QVzP2QoHuh@vostro.rjw.lan>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 26 Nov 2012 11:32:22 +0400
+Message-ID: <1353915142.2523.36.camel@dabdike>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+	  <20121119145605.GC15971@htj.dyndns.org>
+	  <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>
+	  <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike>
+	 <50B2F96D.9080405@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:38942 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751893Ab2KZGlW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 01:41:22 -0500
-In-reply-to: <3622510.QVzP2QoHuh@vostro.rjw.lan>
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:50021 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753934Ab2KZHc1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 02:32:27 -0500
+In-Reply-To: <50B2F96D.9080405@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, myungjoo.ham@gmail.com, sachin.kamat@linaro.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Dear Rafael,
+On Mon, 2012-11-26 at 13:09 +0800, Aaron Lu wrote:
+> On 11/26/2012 01:03 PM, James Bottomley wrote:
+> > On Mon, 2012-11-26 at 01:33 +0100, Rafael J. Wysocki wrote:
+> >> On Monday, November 19, 2012 03:06:51 PM James Bottomley wrote:
+> >>>> I really think we need a way for (auto)pm and event polling to talk to
+> >>>> each other so that autopm can tell event poll to sod off while pm is
+> >>>> in effect.  Trying to solve this from inside libata doesn't seem
+> >>>> right.  The problem, again, seems to be figuring out which hardware
+> >>>> device maps to which block device.  Hmmm... Any good ideas?
+> >>>
+> >>> I've asked the PM people several times about this, because it's a real
+> >>> problem for almost everything:  PM needs some type of top to bottom
+> >>> stack view, which the layering isolation we have within storage really
+> >>> doesn't cope with well.  No real suggestion has been forthcoming.
+> >>
+> >> Actually, I think that the particular case in question is really special
+> >> and the fact that there's the pollig loop that user space is involved in
+> >> doesn't make things more stratightforward.
+> >>
+> >> And PM really doesn't need to see things top to bottom, but the polling
+> >> needs to know what happens in the PM land.  We need to be able to tell it
+> >> "from now on tell user space that there are no events here".  The question
+> >> is where to put that information so that it's accessible to all parts of the
+> >> stack involved.
+> > 
+> > Right, open to suggestions ...
+> > 
+> >>> The reason I think it should be emulated (in the acpi layer, not libata,
+> >>> but as long as it's not in SCSI, I'm not so fussed where it ends up) is
+> >>> because ZPODD is the software equivalent of ZPREADY, which will be done
+> >>> in hardware and will be effectively invisible to autopm in the same way
+> >>> that SCSI (and ATA) power management is mostly invisible.  If we
+> >>> currently do ZPREADY emulation in the low layer (i.e. ZPODD has exact
+> >>> ZPREADY emulation), we won't care (except for flipping the sofware bit)
+> >>> whether the device support ZPODD or ZPREADY and it will all just
+> >>> work(tm).  The industry expectation is that ZPODD is just a transition
+> >>> state between current power management and ZPREADY.
+> >>
+> >> Well, if you poll a ZPREADY-capable drive, it will go off and on in cycles
+> >> transparently, but still it won't save as much energy as it can.  We'll need
+> >> to do something about the polling in that case too, it seems.
+> > 
+> > No: with ZPREADY, the device effectively lies to the poll.  The Spec
+> > says that when it powers off the mechanical pieces, it must reply from
+> > firmware to a certain preset emulations of SCSI commands and not wake
+> > from power off.  These commands include TEST UNIT READY and a few
+> > others, so the device will happily reply to polls while being off (it
+> > replies with the original state before power was lost).  When you issue
+> > actual medium access commands, or manually insert or remove media it
+> > will wake up.
+> > 
+> > That's why I think ZPODD should emulate this behaviour.
+> 
+> I suppose you are refering to section 15.3.5?
 
-sorry for the inconviences; I forgot that I've updated the tag name
-according to the date modified.
+That's the recommendation for emulating ZPREADY in ZPODD devices, yes.
 
-Please use "pull_req_20121122" tag instead of "pull_req_20121121" though
-I've pushed pull_req_20121121 tag again, which points to the same
-commit with pull_req_20121122 tag.
+> I don't think the SPEC says what the host software _must_ do, it's
+> informative. And I agree that when possible, we should emulate the
+> command without powering up the ODD, but if we can eliminate the noise,
+> wouldn't that be better?
+
+The way I look at it is we currently have no real power management for
+actual SCSI devices, we rely on the internal timers of the device to
+effect power management for us.  ZPREADY fits right into this scheme (as
+I think it was designed to) so it seems odd to me that we would
+introduce a software PM based scheme for ZPODD, which is an interim spec
+until everything supports ZPREADY, and then go back to doing nothing for
+ZPREADY.
+
+I'm amenable to a proposal that we *shouldn't* be doing nothing for SCSI
+PM and perhaps it should be plumbed into software PM, but it looks odd
+to me to have sofware PM for ZPODD but not for at least ZPREADY and
+probably for SCSI PM as well.
+
+If we elect to do nothing about ZPREADY and SCSI PM, then I think ZPODD
+should be implemented in a way that emulates ZPREADY (i.e. as section
+15.3.5 recommends).
+
+James
 
 
-"remove compiler error" patch in this set should resolve the "build failure"
-message sent by Stephen as well.
-
-Cheers,
-MyungJoo
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-The following changes since commit f928d1ce87ad5bd2152cb522de75de03be29e18b:
-
-  Merge branch 'pm-cpufreq-next' into linux-next (2012-11-22 00:23:28 +0100)
-, which is HEAD of Rafael's linux-pm.git linux-next branch on 2012-11-22.
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121122
-
-MyungJoo Ham (2):
-      PM / devfreq: remove compiler error when a governor is module
-      PM / devfreq: missing rcu_read_lock() added for find_device_opp()
-
-Sachin Kamat (2):
-      PM / devfreq: Fix incorrect argument in error message
-      PM / devfreq: Fix return value in devfreq_remove_governor()
-
- drivers/devfreq/devfreq.c |   30 ++++++++++++++++++++++--------
- include/linux/devfreq.h   |    2 +-
- 2 files changed, 23 insertions(+), 9 deletions(-)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQsw0gAAoJEBOhurvWBoCKFzsP/1uIw/V8sF7/Bi6yYEQVxIxF
-nrgH0BtjSMKyyEG+RJU5fz1xxkfzVIhLHeMzzTDHYG/sY7xwb+eeHWE+PFP6elvm
-NSCOqFf/olNM1dDrUsPpGPtn2Fmfl1wyAOXhdH1lHwQYyDyCgWgQtsqIck1UaLo2
-6vn9GSl/e/DfpVtg1Wdc63ggtAFk8srZKlU3RQk/Nh/GFMTmdxtG6hibjuM88FjT
-hfFETgaZYPfX+rz36XMa/7pMQQHcrl56K8r3Pu1/RhkM8lVCwlB4tV0Y2sBGfHuL
-2f0mbX+owjR4YuHS1QMI31Io9FB/F5KzVUdEKE73g2yalCa8ygJfMvJgQqbMYKpA
-IfxyoEvIzbH/T6+cMCQ0WaQ9Buf4KSjmmzL8MSiZB9Ny4Jw5ETg8bZjEU7cR7RWz
-i1grMqyfsjySu/N+slyY7SlvKK+58DytR2WvFvz4ba58dsqEjOoL2ovFz+W3KdlE
-6V8DGpi2bODbejm6pXx5K6x+VqrByMYCrRpSvmSpYG9PUWpUfjFQMMPgH/uTEXR6
-dJ0H8Hv5+xtUa9sHu9A6nVVSlFgukEVN5BjIEySuX+gj5mIywwN2ZXyIp0TeAis6
-SWUBFflIbjW9JuIP1hwdcrdRsgJ/RyoQZ2XqPVZEQKJgV6C+k38ShOO9Q3YAfJHq
-sO3Gz4WUsME2nkswuwgb
-=SPXQ
------END PGP SIGNATURE-----
