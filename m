@@ -1,45 +1,106 @@
-From: Clemens Ladisch <clemens-P6GI/4k7KOmELgA04lAiVw@public.gmane.org>
-Subject: Re: [alsa-devel] [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio
- 49
-Date: Sun, 25 Nov 2012 23:01:27 +0100
-Message-ID: <50B29537.7060007@ladisch.de>
-References: <4FA2D481.4070304@droids-corp.org> <4FA2DB9D.1040303@droids-corp.org> <20120604110608.GG8248@droids-corp.org> <20120605232432.GE3619@burratino> <4FD06563.7050605@droids-corp.org> <20121125094110.GA21387@elie.Belkin> <50B2815E.2090105@droids-corp.org> <20121125212100.GE24024@elie.Belkin>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 26 Nov 2012 01:33:17 +0100
+Message-ID: <35648985.61QNrr0Knq@vostro.rjw.lan>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <20121119145605.GC15971@htj.dyndns.org> <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20121125212100.GE24024-fcEM2ccDkbL2nhBuCrrZHw@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jonathan Nieder <jrnieder-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?ISO-8859-1?Q?Steffen_M=FCller?= <steffen.mueller-Coi19p7x1OHFVwzeVveEFA@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olivier MATZ <zer0-RqaWXwjnwG4BE+pwOMkbTQ@public.gmane.org>, stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Banks <amoebae-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ralf Lang <lang-shG/GajIFYqbacvFa/9K2g@public.gmane.org>, Oliver Neukum <oneukum-l3A5Bk7waGM@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:33373 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753646Ab2KZAi4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 25 Nov 2012 19:38:56 -0500
+In-Reply-To: <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Jonathan Nieder wrote:
-> Some USB MIDI keyboards fail to operate after a USB autosuspend.
+On Monday, November 19, 2012 03:06:51 PM James Bottomley wrote:
+> On Mon, 2012-11-19 at 06:56 -0800, Tejun Heo wrote:
+> > Hey, Aaron.
+> > 
+> > On Mon, Nov 19, 2012 at 11:09:40AM +0800, Aaron Lu wrote:
+> > > > What I'm confused about is what autopm does for devices w/o zpodd.
+> > > > What happens then?  Is it gonna leave power on for the device and,
+> > > > say, go on to suspend the controller?  But, how would that work for,
+> > > > say, future devices with async notification for media events?
+> > > 
+> > > Maybe we shouldn't allow autopm for such devices?
+> > 
+> > Yeah, maybe.  It would be nice to be able to automatically power off
+> > disks and ports which aren't being used tho.
+> > 
+> > > > That said, I can't say the snooping is pretty.  It's a rather nasty
+> > > > thing to do.  So, libata now wants information from the event polling
+> > > > in block layer, but reaching for block_device from ata_devices is
+> > > > nasty too.  Hmmm... but aren't you already doing that to block polling
+> > > > on a powered down device?
+> > > 
+> > > I was feeling brain damaged by this for some time :-)
+> > > 
+> > > Basically, only ATA layer is aware of the power off thing, and sr knows
+> > > nothing about this(or it is not supposed to know this, at least, this is
+> > > what SCSI people think) and once powered off, I do not want the poll to
+> > > disturb the device, so I need to block the poll. I can't come up with
+> > > another way to achieve this except this nasty way.
+> > > 
+> > > James suggests me to keep the poll, but emulate the command. The problem
+> > > with this is, the autopm for resume will kick in on each poll, so I'll
+> > > need to decide if power up the ODD for this time's resume is needed in
+> > > port's runtime resume callback. This made things complex and it also put
+> > > too much logic in the resume callback, which is not desired. And even if
+> > > I keep the ODD in powered off state by emulating this poll command, its
+> > > ancestor devices will still be resumed, and I may need to do some trick
+> > > in their resume callback to avoid needless power/state transitions. This
+> > > doesn't feel like an elegant way to solve this either.
+> > > 
+> > > So yes, I'm still using this _nasty_ way to make the ODD stay in powered
+> > > off state as long as possible. But if there is other elegant ways to
+> > > solve this, I would appreciate it and happily using it. Personally, I
+> > > hope we can make sr aware of ZPODD, that would make the pain gone.
+> > 
+> > I really think we need a way for (auto)pm and event polling to talk to
+> > each other so that autopm can tell event poll to sod off while pm is
+> > in effect.  Trying to solve this from inside libata doesn't seem
+> > right.  The problem, again, seems to be figuring out which hardware
+> > device maps to which block device.  Hmmm... Any good ideas?
+> 
+> I've asked the PM people several times about this, because it's a real
+> problem for almost everything:  PM needs some type of top to bottom
+> stack view, which the layering isolation we have within storage really
+> doesn't cope with well.  No real suggestion has been forthcoming.
 
-Make that *all* USB MIDI devices with input ports.
+Actually, I think that the particular case in question is really special
+and the fact that there's the pollig loop that user space is involved in
+doesn't make things more stratightforward.
 
-This is not a bug in the device, but one of the many bugs introduced
-with the autosuspend code in <http://git.kernel.org/linus/88a8516a2128>.
+And PM really doesn't need to see things top to bottom, but the polling
+needs to know what happens in the PM land.  We need to be able to tell it
+"from now on tell user space that there are no events here".  The question
+is where to put that information so that it's accessible to all parts of the
+stack involved.
 
-That patch does not handle input at all, i.e., when the driver wants to
-read from the device, it just doesn't take it out of suspend mode.
+> The reason I think it should be emulated (in the acpi layer, not libata,
+> but as long as it's not in SCSI, I'm not so fussed where it ends up) is
+> because ZPODD is the software equivalent of ZPREADY, which will be done
+> in hardware and will be effectively invisible to autopm in the same way
+> that SCSI (and ATA) power management is mostly invisible.  If we
+> currently do ZPREADY emulation in the low layer (i.e. ZPODD has exact
+> ZPREADY emulation), we won't care (except for flipping the sofware bit)
+> whether the device support ZPODD or ZPREADY and it will all just
+> work(tm).  The industry expectation is that ZPODD is just a transition
+> state between current power management and ZPREADY.
 
-> A workaround is to disable USB autosuspend for these devices by
-> putting AUTOSUSPEND_USBID_BLACKLIST="0763:2027" (resp. 0763:019b) in
-> /etc/laptop-mode/conf.d/usb-autosuspend.conf.  In the spirit of commit
-> 166cb70e97bd ("usb: add USB_QUIRK_RESET_RESUME for M-Audio 88es"),
-> reset the device on resume so this workaround is not needed any more.
+Well, if you poll a ZPREADY-capable drive, it will go off and on in cycles
+transparently, but still it won't save as much energy as it can.  We'll need
+to do something about the polling in that case too, it seems.
 
-It is not feasible to add the IDs of all USB MIDI devices.
-
-I'm working on a fix that adds proper power management for input ports,
-but this requires the driver to be reorganized a little ...
+Thanks,
+Rafael
 
 
-Regards,
-Clemens
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
