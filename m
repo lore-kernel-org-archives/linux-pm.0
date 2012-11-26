@@ -1,48 +1,43 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [alsa-devel] [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio
- 49
-Date: Mon, 26 Nov 2012 16:54:07 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211261646230.2168-100000@iolanthe.rowland.org>
-References: <50B3CD29.2060505@ladisch.de>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:44182 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756067Ab2KZVyI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 16:54:08 -0500
-In-Reply-To: <50B3CD29.2060505@ladisch.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v2 0/3]  pm: Intel powerclamp driver
+Date: Mon, 26 Nov 2012 06:37:10 -0800
+Message-ID: <1353940633-20084-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: Oliver Neukum <oneukum@suse.de>, Takashi Iwai <tiwai@suse.de>, Jonathan Nieder <jrnieder@gmail.com>, =?ISO-8859-1?Q?Steffen_M=FCller?= <steffen.mueller@radio-frei.de>, alsa-devel@alsa-project.org, Olivier MATZ <zer0@droids-corp.org>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, stable@vger.kernel.org, David Banks <amoebae@gmail.com>, Ralf Lang <lang@b1-systems.de>
 
-On Mon, 26 Nov 2012, Clemens Ladisch wrote:
+Minor syntax change since v1.
 
-> Alan Stern wrote:
-> > On Mon, 26 Nov 2012, Oliver Neukum wrote:
-> >> On Monday 26 November 2012 14:43:13 Clemens Ladisch wrote:
-> >>> usb_autopm_get_interface() cannot be called from the USB probe callback.
-> >>
-> >> You can use usb_autopm_get_interface_no_resume()
-> >> During probe() the device is known to not be suspended.
-> >
-> > In fact, as far as I know you _can_ use usb_autopm_get_interface() from
-> > within a probe routine.  Is there some problem with it I'm not aware of?
-> 
-> It returns -EACCES.
+We have done some experiment with idle injection on Intel platforms.
+The idea is to use the increasingly power efficient package level
+C-states for power capping and passive thermal control.
 
-That's odd.  -EACCES occurs only when the interface or the device it
-belongs to is disabled for runtime PM.  But the USB core enables
-interfaces before probing, provided the driver's supports_autosuspend
-flag is set.
+Documentation is included in the patch to explain the theory of
+operation, performance implication, calibration, scalability, and user
+interface. Please refer to the following file for more details.
 
-Furthermore, -EACCES can occur in usb_autopm_get_interface() only when 
-the interface or its device is not currently resumed -- but USB devices 
-and interfaces are always resumed during a probe.
+Documentation/thermal/intel_powerclamp.txt
 
-Do you have any idea about what's going wrong here?  Or do I need to 
-investigate more closely?
+Arjan van de Ven created the original idea and driver, I have been
+refining driver in hope that they can be to be useful beyond a proof
+of concept.
 
-Alan Stern
+Jacob Pan (3):
+  tick: export nohz tick idle symbols for module use
+  x86/nmi: export local_touch_nmi() symbol for modules
+  PM: Introduce Intel PowerClamp Driver
 
+ Documentation/thermal/intel_powerclamp.txt |  307 +++++++++++
+ arch/x86/kernel/nmi.c                      |    1 +
+ drivers/thermal/Kconfig                    |   10 +
+ drivers/thermal/Makefile                   |    1 +
+ drivers/thermal/intel_powerclamp.c         |  766 ++++++++++++++++++++++++++++
+ kernel/time/tick-sched.c                   |    2 +
+ 6 files changed, 1087 insertions(+)
+ create mode 100644 Documentation/thermal/intel_powerclamp.txt
+ create mode 100644 drivers/thermal/intel_powerclamp.c
+
+-- 
+1.7.9.5
