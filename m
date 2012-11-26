@@ -1,124 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] ACPI / PM: Allow attach/detach routines to change device power states
-Date: Mon, 26 Nov 2012 02:00:39 +0100
-Message-ID: <4238031.sDhWdlxYNQ@vostro.rjw.lan>
-References: <1672179.qgDUs0YdYu@vostro.rjw.lan> <2576372.XKUY0b7gBl@vostro.rjw.lan> <1353890590.28789.68.camel@yhuang-dev>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 26 Nov 2012 02:03:53 +0100
+Message-ID: <3650037.tRRn9I6XAb@vostro.rjw.lan>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <6529392.v4vtIGQYok@vostro.rjw.lan> <50B2BC73.5010905@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:33391 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753756Ab2KZAz7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Nov 2012 19:55:59 -0500
-In-Reply-To: <1353890590.28789.68.camel@yhuang-dev>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <50B2BC73.5010905@intel.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Tejun Heo <tj@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Svahn, Kai" <kai.svahn@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, Aaron Lu <aaron.lu@intel.com>, Grant Likely <grant.likely@secretlab.ca>
 
-On Monday, November 26, 2012 08:43:10 AM Huang Ying wrote:
-> On Sun, 2012-11-25 at 15:55 +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, November 26, 2012 08:48:51 AM Aaron Lu wrote:
+> On 11/26/2012 08:50 AM, Rafael J. Wysocki wrote:
+> > On Tuesday, November 20, 2012 04:59:57 PM Aaron Lu wrote:
+> >> On 11/20/2012 02:00 PM, Aaron Lu wrote:
+> >>> On 11/19/2012 10:56 PM, Tejun Heo wrote:
+> >>>> I really think we need a way for (auto)pm and event polling to talk to
+> >>>> each other so that autopm can tell event poll to sod off while pm is
+> >>>> in effect.  Trying to solve this from inside libata doesn't seem
+> >>>> right.  The problem, again, seems to be figuring out which hardware
+> >>>> device maps to which block device.  Hmmm... Any good ideas?
+> >>>
+> >>> A possible way of doing this is using pm qos.
+> >>>
+> >>> We currently have 2 pm qos flags, NO_POWER_OFF and REMOTE_WAKEUP, and we
+> >>> can add another one: NO_POLL, use it like the following:
+> >>> 1 Set the NO_POLL pm qos flag when the underlying driver thinks it is no
+> >>>   longer necessary. In the ZPODD's case, it should be set when the
+> >>>   device is to be powered off;
+> >>> 2 Clear it when poll is necessary again. In the ZPODD's case, when power
+> >>>   is re-gained, this flag will be cleared.
+> >>
+> >>
+> >>> 3 In the disk_events_workfn, check if this flag is set, if so, simply
+> >>>   return.
+> >>
+> >> It should be, skip calling disk->fops->check_events, but still queue the
+> >> work for next time's poll.
+> >>
+> >> -Aaron
+> >>
+> >>>
+> >>> The disk->driverfs_dev can be used to host the pm qos flag, ATA layer
+> >>> can access it through ata_device->sdev->sdev_gendev.
+> >>>
+> >>> Is this OK?
 > > 
-> > Make it possible to ask the routines used for adding/removing devices
-> > to/from the general ACPI PM domain, acpi_dev_pm_attach() and
-> > acpi_dev_pm_detach(), respectively, to change the power states of
-> > devices so that they are put into the full-power state automatically
-> > by acpi_dev_pm_attach() and into the lowest-power state available
-> > automatically by acpi_dev_pm_detach().
+> > No, I don't think so.  PM QoS is about telling the layer that will put the
+> > device into low-power states what states are to be taken into consideration.
+> > In this case, however, we need to tell someone else that the device has been
+> > turned off.  Clearly, we need a way to do that, but not through PM QoS.
 > > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/acpi/device_pm.c |   28 ++++++++++++++++++++++++----
-> >  include/linux/acpi.h     |   11 +++++++----
-> >  2 files changed, 31 insertions(+), 8 deletions(-)
-> > 
-> > Index: linux/drivers/acpi/device_pm.c
-> > ===================================================================
-> > --- linux.orig/drivers/acpi/device_pm.c
-> > +++ linux/drivers/acpi/device_pm.c
-> > @@ -599,10 +599,12 @@ static struct dev_pm_domain acpi_general
-> >  /**
-> >   * acpi_dev_pm_attach - Prepare device for ACPI power management.
-> >   * @dev: Device to prepare.
-> > + * @power_on: Whether or not to power on the device.
-> >   *
-> >   * If @dev has a valid ACPI handle that has a valid struct acpi_device object
-> >   * attached to it, install a wakeup notification handler for the device and
-> > - * add it to the general ACPI PM domain.
-> > + * add it to the general ACPI PM domain.  If @power_on is set, the device will
-> > + * be put into the ACPI D0 state before the function returns.
-> >   *
-> >   * This assumes that the @dev's bus type uses generic power management callbacks
-> >   * (or doesn't use any power management callbacks at all).
-> > @@ -610,7 +612,7 @@ static struct dev_pm_domain acpi_general
-> >   * Callers must ensure proper synchronization of this function with power
-> >   * management callbacks.
-> >   */
-> > -int acpi_dev_pm_attach(struct device *dev)
-> > +int acpi_dev_pm_attach(struct device *dev, bool power_on)
-> >  {
-> >  	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-> >  
-> > @@ -622,6 +624,10 @@ int acpi_dev_pm_attach(struct device *de
-> >  
-> >  	acpi_add_pm_notifier(adev, acpi_wakeup_device, dev);
-> >  	dev->pm_domain = &acpi_general_pm_domain;
-> > +	if (power_on) {
-> > +		acpi_dev_pm_full_power(adev);
-> > +		__acpi_device_run_wake(adev, false);
-> > +	}
-> >  	return 0;
-> >  }
-> >  EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
-> > @@ -629,20 +635,34 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
-> >  /**
-> >   * acpi_dev_pm_detach - Remove ACPI power management from the device.
-> >   * @dev: Device to take care of.
-> > + * @power_off: Whether or not to try to remove power from the device.
-> >   *
-> >   * Remove the device from the general ACPI PM domain and remove its wakeup
-> > - * notifier.
-> > + * notifier.  If @power_off is set, additionally remove power from the device if
-> > + * possible.
-> >   *
-> >   * Callers must ensure proper synchronization of this function with power
-> >   * management callbacks.
-> >   */
-> > -void acpi_dev_pm_detach(struct device *dev)
-> > +void acpi_dev_pm_detach(struct device *dev, bool power_off)
-> >  {
-> >  	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
-> >  
-> >  	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
-> >  		dev->pm_domain = NULL;
-> >  		acpi_remove_pm_notifier(adev, acpi_wakeup_device);
-> > +		if (power_off) {
-> > +			/*
-> > +			 * If the device's PM QoS resume latency limit or flags
-> > +			 * have been exposed to user space, they have to be
-> > +			 * hidden at this point, so that they don't affect the
-> > +			 * choice of the low-power state to put the device into.
-> > +			 */
-> > +			dev_pm_qos_hide_latency_limit(dev);
-> > +			dev_pm_qos_hide_flags(dev);
+> > Did you consider using pm_runtime_suspended() to check the device status?
 > 
-> NO_POWER_OFF flag is ignored here.  Is it possible for some device (or
-> corresponding ACPI method) has broken D3cold implementation, so that the
-> user need a way to disable it?
+> The problem is, a device can be in runtime suspended state while still
+> needs to be polled...
 
-We are removing the driver here and we haven't exposed the flags, have we?
+Well, maybe this is the problem, then?  Why does it need to be polled when
+suspended?
 
-If the driver had exposed them and then left them behind, we need to clean up
-after it and that's why I added those two lines.
-
-In the future we may decide that the flags need to be exposed by the core,
-because of the broken hardware, for example, before the driver's .probe()
-routine is run and in that case we obviously won't be removing them here any
-more.  For now, however, I think it's better to hide them here.
-
-Thanks,
 Rafael
 
 
