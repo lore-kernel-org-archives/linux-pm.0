@@ -1,62 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/3] thermal: rcar: add rcar_zone_to_priv() macro
-Date: Mon, 26 Nov 2012 10:59:32 +0800
-Message-ID: <1353898772.2299.30.camel@rzhang1-mobl4>
-References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
-	 <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
-	 <1353652189.2111.7.camel@rzhang1-mobl4>
-	 <87k3t9w39m.wl%kuninori.morimoto.gx@renesas.com>
-	 <1353894734.2299.16.camel@rzhang1-mobl4>
-	 <87ip8tw0x1.wl%kuninori.morimoto.gx@renesas.com>
-	 <87fw3xw0um.wl%kuninori.morimoto.gx@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH] MAINTAINERS: Add maintainers for exynos thermal driver
+Date: Mon, 26 Nov 2012 13:17:32 +0900
+Message-ID: <1353903452-20536-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:8328 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753393Ab2KZC7f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Nov 2012 21:59:35 -0500
-In-Reply-To: <87fw3xw0um.wl%kuninori.morimoto.gx@renesas.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:14513 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891Ab2KZERk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Nov 2012 23:17:40 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Zhang Rui <rui.zhang@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-On Sun, 2012-11-25 at 18:32 -0800, Kuninori Morimoto wrote:
-> This patch adds rcar_zone_to_priv()
-> which is a helper macro for gettign private data.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Add Amit and I as maintainers for exynos thermal driver.
 
-applied.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+---
+ MAINTAINERS |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-thanks,
-rui
-> ---
->  drivers/thermal/rcar_thermal.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index f2678ff..90db951 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -44,6 +44,7 @@ struct rcar_thermal_priv {
->  };
->  
->  #define MCELSIUS(temp)			((temp) * 1000)
-> +#define rcar_zone_to_priv(zone)		(zone->devdata)
->  
->  /*
->   *		basic functions
-> @@ -98,7 +99,7 @@ static void rcar_thermal_bset(struct rcar_thermal_priv *priv, u32 reg,
->  static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
->  			   unsigned long *temp)
->  {
-> -	struct rcar_thermal_priv *priv = zone->devdata;
-> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
->  	int val, min, max, tmp;
->  
->  	tmp = -200; /* default */
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 59203e7..cceedca 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2960,6 +2960,13 @@ S:	Maintained
+ F:	drivers/video/exynos/exynos_mipi*
+ F:	include/video/exynos_mipi*
+ 
++EXYNOS THREMAL DRIVER
++M:	Amit Daniel Kachhap <amit.kachhap@linaro.org>
++M:	Jonghwa Lee <jonghwa3.lee@samsung.com>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	drivers/thermal/exynos_thermal.c
++
+ F71805F HARDWARE MONITORING DRIVER
+ M:	Jean Delvare <khali@linux-fr.org>
+ L:	lm-sensors@lm-sensors.org
+-- 
+1.7.4.1
 
