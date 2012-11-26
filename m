@@ -1,46 +1,91 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request-3 bugfixes
-Date: Mon, 26 Nov 2012 10:33:55 +0000 (GMT)
-Message-ID: <30131019.36191353926035140.JavaMail.weblogic@epv6ml08>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:43468 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754266Ab2KZKd5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 05:33:57 -0500
-Received: from epcpsbge1.samsung.com (epcpsbge1 [203.254.230.11])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0ME3007IYC08MD01@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 26 Nov 2012 19:33:55 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+From: Wen Congyang <wency@cn.fujitsu.com>
+Subject: [PATCH 2/5] memory-hotplug: export the function try_offline_node()
+Date: Mon, 26 Nov 2012 18:20:24 +0800
+Message-ID: <1353925227-1877-3-git-send-email-wency@cn.fujitsu.com>
+References: <1353925227-1877-1-git-send-email-wency@cn.fujitsu.com>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1353925227-1877-1-git-send-email-wency@cn.fujitsu.com>
+Sender: owner-linux-mm@kvack.org
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org
+Cc: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, David Rientjes <rientjes@google.com>, Jiang Liu <liuj97@gmail.com>, Minchan Kim <minchan.kim@gmail.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Tang Chen <tangchen@cn.fujitsu.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Lai Jiangshan <laijs@cn.fujitsu.com>, Wen Congyang <wency@cn.fujitsu.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>
 
-PiBPbiBNb25kYXksIE5vdmVtYmVyIDI2LCAyMDEyIDAzOjQxOjIyIFBNIE15dW5nSm9vIEhhbSB3
-cm90ZToNCj4gPiBEZWFyIFJhZmFlbCwNCj4gPiANCj4gPiBzb3JyeSBmb3IgdGhlIGluY29udmll
-bmNlczsgSSBmb3Jnb3QgdGhhdCBJJ3ZlIHVwZGF0ZWQgdGhlIHRhZyBuYW1lDQo+ID4gYWNjb3Jk
-aW5nIHRvIHRoZSBkYXRlIG1vZGlmaWVkLg0KPiA+IA0KPiA+IFBsZWFzZSB1c2UgInB1bGxfcmVx
-XzIwMTIxMTIyIiB0YWcgaW5zdGVhZCBvZiAicHVsbF9yZXFfMjAxMjExMjEiIHRob3VnaA0KPiA+
-IEkndmUgcHVzaGVkIHB1bGxfcmVxXzIwMTIxMTIxIHRhZyBhZ2Fpbiwgd2hpY2ggcG9pbnRzIHRv
-IHRoZSBzYW1lDQo+ID4gY29tbWl0IHdpdGggcHVsbF9yZXFfMjAxMjExMjIgdGFnLg0KPiA+IA0K
-PiA+IA0KPiA+ICJyZW1vdmUgY29tcGlsZXIgZXJyb3IiIHBhdGNoIGluIHRoaXMgc2V0IHNob3Vs
-ZCByZXNvbHZlIHRoZSAiYnVpbGQgZmFpbHVyZSINCj4gPiBtZXNzYWdlIHNlbnQgYnkgU3RlcGhl
-biBhcyB3ZWxsLg0KPiANCj4gSXQgbG9va3MgbGlrZSB5b3UgcmViYXNlZCBpdCBvbiB0b3Agb2Yg
-bGludXgtbmV4dCwgZGlkbid0IHlvdT8NCj4gDQo+IFBsZWFzZSBkb24ndCBkbyB0aGF0LCBsaW51
-eC1uZXh0IGlzIGV2b2x2aW5nIGFuZCB0aGUgY29tbWl0IGhhc2hlcyBpbiB0aGVyZQ0KPiBhcmUg
-Y2hhbmdpbmcgb3ZlciB0aW1lLg0KPiANCj4gSSd2ZSBtZXJnZWQgeW91ciBwcmV2aW91cyBwdWxs
-IHJlcXVlc3QgaW50byBteSBwbS1kZXZmcmVxIGJyYW5jaCBhbmQgcHVzaGVkDQo+IGl0IG91dC4g
-IFBsZWFzZSByZWJhc2UgeW91ciBuZXcgbWF0ZXJpYWwgb24gdG9wIG9mIG15IHBtLWRldmZyZXEg
-YnJhbmNoIGFuZA0KPiByZXN1Ym1pdC4NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQoNCkkndmUg
-anVzdCByZWJhc2VkIHRoZSB0cmVlIGFuZCBzZW50IHRoZSBwdWxsLXJlcXVlc3QgbWVzc2FnZS4N
-Cg0KU29ycnkgZm9yIGFsbCB0aGUgbWVzcyBpbnZva2VkLg0KDQoNCg0KSSdsbCByZW1lbWJlciB0
-byBiYXNlIG9uIHRoZSB0b3BpYyBicmFuY2ggbmV4dCB0aW1lLg0KVGhhbmsgeW91Lg0KDQoNCg0K
-Q2hlZXJzLA0KTXl1bmdKb28uDQoNCg==
+The node will be offlined when all memory/cpu on the node
+have been hotremoved. So we need the function try_offline_node()
+in cpu-hotplug path.
 
+If the memory-hotplug is disabled, and cpu-hotplug is enabled
+1. no memory no the node
+   we don't online the node, and cpu's node is the nearest node.
+2. the node contains some memory
+   the node has been onlined, and cpu's node is still needed
+   to migrate the sleep task on the cpu to the same node.
+So we do nothing in try_offline_node() in this case.
 
+Cc: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Jiang Liu <liuj97@gmail.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Tang Chen <tangchen@cn.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+---
+ include/linux/memory_hotplug.h | 2 ++
+ mm/memory_hotplug.c            | 3 ++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index ad2dd17..48ece75 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -187,6 +187,7 @@ extern void get_page_bootmem(unsigned long ingo, struct page *page,
+ 
+ void lock_memory_hotplug(void);
+ void unlock_memory_hotplug(void);
++extern void try_offline_node(int nid);
+ 
+ #else /* ! CONFIG_MEMORY_HOTPLUG */
+ /*
+@@ -221,6 +222,7 @@ static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
+ 
+ static inline void lock_memory_hotplug(void) {}
+ static inline void unlock_memory_hotplug(void) {}
++static inline void try_offline_node(int nid) {}
+ 
+ #endif /* ! CONFIG_MEMORY_HOTPLUG */
+ 
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 52db031..b7c30bb 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1670,7 +1670,7 @@ static int check_cpu_on_node(void *data)
+ }
+ 
+ /* offline the node if all memory sections of this node are removed */
+-static void try_offline_node(int nid)
++void try_offline_node(int nid)
+ {
+ 	pg_data_t *pgdat = NODE_DATA(nid);
+ 	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
+@@ -1720,6 +1720,7 @@ static void try_offline_node(int nid)
+ 	arch_refresh_nodedata(nid, NULL);
+ 	arch_free_nodedata(pgdat);
+ }
++EXPORT_SYMBOL(try_offline_node);
+ 
+ int __ref remove_memory(int nid, u64 start, u64 size)
+ {
+-- 
+1.8.0
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
