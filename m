@@ -1,58 +1,63 @@
-From: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Mon, 26 Nov 2012 20:49:53 +0900
-Message-ID: <3319894.UD2L7QhyVv@percival>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <20121122133941.24B883E129E@localhost> <20121122214021.GA14771@avionic-0098.adnet.avionic-design.de>
+From: Clemens Ladisch <clemens@ladisch.de>
+Subject: Re: [alsa-devel] [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio
+ 49
+Date: Mon, 26 Nov 2012 13:35:31 +0100
+Message-ID: <50B36213.9090007@ladisch.de>
+References: <4FA2D481.4070304@droids-corp.org> <4FA2DB9D.1040303@droids-corp.org> <20120604110608.GG8248@droids-corp.org> <20120605232432.GE3619@burratino> <4FD06563.7050605@droids-corp.org> <20121125094110.GA21387@elie.Belkin> <50B2815E.2090105@droids-corp.org> <20121125212100.GE24024@elie.Belkin> <50B29537.7060007@ladisch.de> <s5hlidoiu5y.wl%tiwai@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20121122214021.GA14771-RM9K5IK7kjIyiCvfTdI0JKcOhU4Rzj621B7CTYaBSLdn68oJJulU0Q@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Cc: Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from out5-smtp.messagingengine.com ([66.111.4.29]:58617 "EHLO
+	out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755357Ab2KZMfh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 07:35:37 -0500
+In-Reply-To: <s5hlidoiu5y.wl%tiwai@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jonathan Nieder <jrnieder@gmail.com>, =?ISO-8859-1?Q?Steffen_M=FCll?= =?ISO-8859-1?Q?er?= <steffen.mueller@radio-frei.de>, alsa-devel@alsa-project.org, Olivier MATZ <zer0@droids-corp.org>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, stable@vger.kernel.org, David Banks <amoebae@gmail.com>, Ralf Lang <lang@b1-systems.de>
 
-On Friday 23 November 2012 05:40:21 Thierry Reding wrote:
-> On Thu, Nov 22, 2012 at 01:39:41PM +0000, Grant Likely wrote:
-> [...]
-> 
-> > I do think that each sequence should be contained within a single
-> > property, but I'm open to other suggestions.
-> 
-> IIRC a very early prototype did implement something like that. However
-> because of the resource issues this had to be string based, so that the
-> sequences looked somewhat like (Alex, correct me if I'm wrong):
-> 
-> 	power-on = <"REGULATOR", "power", 1, "GPIO", "enable", 1>;
+Takashi Iwai wrote:> At Sun, 25 Nov 2012 23:01:27 +0100,
+> Clemens Ladisch wrote:
+>>
+>> Jonathan Nieder wrote:
+>>> Some USB MIDI keyboards fail to operate after a USB autosuspend.
+>>
+>> Make that *all* USB MIDI devices with input ports.
+>>
+>> This is not a bug in the device, but one of the many bugs introduced
+>> with the autosuspend code in <http://git.kernel.org/linus/88a8516a2128>.
+>>
+>> That patch does not handle input at all, i.e., when the driver wants to
+>> read from the device, it just doesn't take it out of suspend mode.
+>>
+>>> A workaround is to disable USB autosuspend for these devices by
+>>> putting AUTOSUSPEND_USBID_BLACKLIST="0763:2027" (resp. 0763:019b) in
+>>> /etc/laptop-mode/conf.d/usb-autosuspend.conf.  In the spirit of commit
+>>> 166cb70e97bd ("usb: add USB_QUIRK_RESET_RESUME for M-Audio 88es"),
+>>> reset the device on resume so this workaround is not needed any more.
+>>
+>> It is not feasible to add the IDs of all USB MIDI devices.
+>>
+>> I'm working on a fix that adds proper power management for input ports,
+>> but this requires the driver to be reorganized a little ...
+>
+> Doesn't a simple patch like below work?
 
-You're right. Back when the burning sun of July was beating down a little bit 
-too hard on my head.
+> +static int substream_open(struct snd_rawmidi_substream *substream, int open)
+>  {
+> +	if (open && umidi->opened++ == 0) {
+> +		err = usb_autopm_get_interface(umidi->iface);
+>
+>  static int snd_usbmidi_input_open(struct snd_rawmidi_substream *substream)
+>  {
+> +	return substream_open(substream, 1);
 
-https://lkml.org/lkml/2012/7/9/30
+No, because the input URBs are submitted before the userspace device is
+opened.  (And usb_autopm_get_interface() cannot be called from the USB
+probe callback.)
 
-> Instead we could possibly have something like:
-> 
-> 	power-on = <0 &reg 1,
-> 		    1 &gpio 42 0 1>;
-> 
-> Where the first cell in each entry defines the type (0 = regulator, 1 =
-> GPIO) and the rest would be a regular OF specifier for the given type of
-> resource along with some defined parameter such as enable/disable,
-> voltage, delay in ms, ... I don't know if that sounds any better. It
-> looks sort of cryptic but it is more "in the spirit of" DT, right Grant?
-> 
-> Writing this down, it seems to me like even that proposal was already
-> discussed at some point. Again, Alex may remember better.
 
-The idea that we had was to use preprocessor support in DTC to use macros 
-instead of strings for the step type. We also thought about using phandles 
-directly in there as well, but this would require some more API support.
-
-Anyway, at the current point we are not even sure whether we want or need 
-power seqs in the DT - so let's keep this topic on hold for a while. We can 
-still introduce the feature without DT support, and if it eventually turns out 
-during this winter that expressing power seqs in the DT makes sense, we will 
-have plenty of archives to read in front of the fire.
-
-Alex.
+Regards,
+Clemens
