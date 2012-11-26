@@ -1,29 +1,53 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 26 Nov 2012 11:21:37 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1211261120190.2168-100000@iolanthe.rowland.org>
-References: <1353935850.2523.52.camel@dabdike>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:43875 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751589Ab2KZQVi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 11:21:38 -0500
-In-Reply-To: <1353935850.2523.52.camel@dabdike>
-Sender: linux-pm-owner@vger.kernel.org
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH v5 0/5] cpufreq: handle SW coordinated CPUs
+Date: Mon, 26 Nov 2012 17:39:51 +0100
+Message-ID: <1353947996-26723-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Mon, 26 Nov 2012, James Bottomley wrote:
+Hello Rafael,
 
-> I'm also curious about driving sleep from autopm, since mode page timers
-> don't control the sleep transition.
+this patchset is a new version of the cpufreq SW coordinated CPU bug fix.
+That's basically the v4 rebased on linux-pm's linux-next tree, split in 5
+patches for readability and with the bug fixed also in the "conservative"
+governor.
 
-Is it feasible to do this the other way around?  That is, to drive 
-runtime suspend by noticing when the device decides to put itself into 
-a low-power state?
+Regards,
+Fabio
 
-Alan Stern
 
+Changes:
+v5
+- rebased/reimplemented on linux-next
+- split hotplug code on a separate patch
+- split ondemand/conservative specific fixes on separate patches
+v4
+- moved update_sampling rate code on separate patch
+- simplified dbs_sw_coordinated_cpus
+- reworked timer handling for code readability, now:
+  * do_dbs_timer() [-> dbs_timer_coordinated()] -> dbs_timer_update()
+- simplified cpu_callback cases
+v3
+- original submission
+
+
+Fabio Baltieri (4):
+  cpufreq: star/stop cpufreq timers on cpu hotplug
+  cpufreq: ondemand: call dbs_check_cpu only when necessary
+  cpufreq: conservative: call dbs_check_cpu only when necessary
+  cpufreq: ondemand: use all CPUs in update_sampling_rate
+
+Rickard Andersson (1):
+  cpufreq: handle SW coordinated CPUs
+
+ drivers/cpufreq/cpufreq_conservative.c |  46 ++++++++++++--
+ drivers/cpufreq/cpufreq_governor.c     | 106 +++++++++++++++++++++++++++++++--
+ drivers/cpufreq/cpufreq_governor.h     |   2 +
+ drivers/cpufreq/cpufreq_ondemand.c     |  62 +++++++++++++++----
+ 4 files changed, 193 insertions(+), 23 deletions(-)
+
+-- 
+1.7.12.1
