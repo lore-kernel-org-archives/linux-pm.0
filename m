@@ -1,77 +1,41 @@
-From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: [PATCH] cpufreq: ondemand: update sampling rate only on right CPUs
-Date: Mon, 26 Nov 2012 19:10:12 +0100
-Message-ID: <1353953412-20667-1-git-send-email-fabio.baltieri@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 26 Nov 2012 23:15:54 +0400
+Message-ID: <1353957354.2681.6.camel@dabdike>
+References: <Pine.LNX.4.44L0.1211261120190.2168-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52362 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754116Ab2KZTQK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 14:16:10 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1211261120190.2168-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Fix cpufreq_gov_ondemand to skip CPU where another governor is used.
+On Mon, 2012-11-26 at 11:21 -0500, Alan Stern wrote:
+> On Mon, 26 Nov 2012, James Bottomley wrote:
+> 
+> > I'm also curious about driving sleep from autopm, since mode page timers
+> > don't control the sleep transition.
+> 
+> Is it feasible to do this the other way around?  That is, to drive 
+> runtime suspend by noticing when the device decides to put itself into 
+> a low-power state?
 
-The bug present itself as NULL pointer access on the mutex_lock() call,
-an can be reproduced on an SMP machine by setting the default governor
-to anything other than ondemand, setting a single CPU's governor to
-ondemand, then changing the sample rate by writing on:
+Well, yes and no.  The spec is annoyingly (and deliberately) vague about
+what the states actually mean.  The two states that the devices go into
+because of timers is idle and standby.  The supposedly deeper low power
+state of sleep can only be reached by sending a command to the device.
+The design is that software (or HBA drivers) don't really need to notice
+idle and standby; the device automatically manages transitions between
+them depending on command activity.  For sleep, we do have to care (if
+it actually makes some meaningful difference).
 
-> /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
+James
 
-Backtrace:
 
-Nov 26 17:36:54 balto kernel: [  839.585241] BUG: unable to handle kernel NULL pointer dereference at           (null)
-Nov 26 17:36:54 balto kernel: [  839.585311] IP: [<ffffffff8174e082>] __mutex_lock_slowpath+0xb2/0x170
-[snip]
-Nov 26 17:36:54 balto kernel: [  839.587005] Call Trace:
-Nov 26 17:36:54 balto kernel: [  839.587030]  [<ffffffff8174da82>] mutex_lock+0x22/0x40
-Nov 26 17:36:54 balto kernel: [  839.587067]  [<ffffffff81610b8f>] store_sampling_rate+0xbf/0x150
-Nov 26 17:36:54 balto kernel: [  839.587110]  [<ffffffff81031e9c>] ?  __do_page_fault+0x1cc/0x4c0
-Nov 26 17:36:54 balto kernel: [  839.587153]  [<ffffffff813309bf>] kobj_attr_store+0xf/0x20
-Nov 26 17:36:54 balto kernel: [  839.587192]  [<ffffffff811bb62d>] sysfs_write_file+0xcd/0x140
-Nov 26 17:36:54 balto kernel: [  839.587234]  [<ffffffff8114c12c>] vfs_write+0xac/0x180
-Nov 26 17:36:54 balto kernel: [  839.587271]  [<ffffffff8114c472>] sys_write+0x52/0xa0
-Nov 26 17:36:54 balto kernel: [  839.587306]  [<ffffffff810321ce>] ?  do_page_fault+0xe/0x10
-Nov 26 17:36:54 balto kernel: [  839.587345]  [<ffffffff81751202>] system_call_fastpath+0x16/0x1b
-
-Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
----
-
-Hi Rafael,
-
-this is based on a clean linux-pm linux-next branch (i.e. not with my other
-patch-set applied), so expect a context conflict if both are applied.
-
-Thanks,
-Fabio
-
- drivers/cpufreq/cpufreq_ondemand.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index cca3e9f..7731f7c 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -40,6 +40,10 @@
- static struct dbs_data od_dbs_data;
- static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
- 
-+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+static struct cpufreq_governor cpufreq_gov_ondemand;
-+#endif
-+
- static struct od_dbs_tuners od_tuners = {
- 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
- 	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
-@@ -279,6 +283,10 @@ static void update_sampling_rate(unsigned int new_rate)
- 		policy = cpufreq_cpu_get(cpu);
- 		if (!policy)
- 			continue;
-+		if (policy->governor != &cpufreq_gov_ondemand) {
-+			cpufreq_cpu_put(policy);
-+			continue;
-+		}
- 		dbs_info = &per_cpu(od_cpu_dbs_info, policy->cpu);
- 		cpufreq_cpu_put(policy);
- 
--- 
-1.7.12.1
