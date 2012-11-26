@@ -1,106 +1,142 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 26 Nov 2012 01:33:17 +0100
-Message-ID: <35648985.61QNrr0Knq@vostro.rjw.lan>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <20121119145605.GC15971@htj.dyndns.org> <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>
+From: Huang Ying <ying.huang@intel.com>
+Subject: Re: [PATCH 1/2] ACPI / PM: Allow attach/detach routines to change
+ device power states
+Date: Mon, 26 Nov 2012 08:43:10 +0800
+Message-ID: <1353890590.28789.68.camel@yhuang-dev>
+References: <1672179.qgDUs0YdYu@vostro.rjw.lan>
+	 <2576372.XKUY0b7gBl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:33373 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753646Ab2KZAi4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Nov 2012 19:38:56 -0500
-In-Reply-To: <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2576372.XKUY0b7gBl@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Svahn, Kai" <kai.svahn@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, Aaron Lu <aaron.lu@intel.com>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Monday, November 19, 2012 03:06:51 PM James Bottomley wrote:
-> On Mon, 2012-11-19 at 06:56 -0800, Tejun Heo wrote:
-> > Hey, Aaron.
-> > 
-> > On Mon, Nov 19, 2012 at 11:09:40AM +0800, Aaron Lu wrote:
-> > > > What I'm confused about is what autopm does for devices w/o zpodd.
-> > > > What happens then?  Is it gonna leave power on for the device and,
-> > > > say, go on to suspend the controller?  But, how would that work for,
-> > > > say, future devices with async notification for media events?
-> > > 
-> > > Maybe we shouldn't allow autopm for such devices?
-> > 
-> > Yeah, maybe.  It would be nice to be able to automatically power off
-> > disks and ports which aren't being used tho.
-> > 
-> > > > That said, I can't say the snooping is pretty.  It's a rather nasty
-> > > > thing to do.  So, libata now wants information from the event polling
-> > > > in block layer, but reaching for block_device from ata_devices is
-> > > > nasty too.  Hmmm... but aren't you already doing that to block polling
-> > > > on a powered down device?
-> > > 
-> > > I was feeling brain damaged by this for some time :-)
-> > > 
-> > > Basically, only ATA layer is aware of the power off thing, and sr knows
-> > > nothing about this(or it is not supposed to know this, at least, this is
-> > > what SCSI people think) and once powered off, I do not want the poll to
-> > > disturb the device, so I need to block the poll. I can't come up with
-> > > another way to achieve this except this nasty way.
-> > > 
-> > > James suggests me to keep the poll, but emulate the command. The problem
-> > > with this is, the autopm for resume will kick in on each poll, so I'll
-> > > need to decide if power up the ODD for this time's resume is needed in
-> > > port's runtime resume callback. This made things complex and it also put
-> > > too much logic in the resume callback, which is not desired. And even if
-> > > I keep the ODD in powered off state by emulating this poll command, its
-> > > ancestor devices will still be resumed, and I may need to do some trick
-> > > in their resume callback to avoid needless power/state transitions. This
-> > > doesn't feel like an elegant way to solve this either.
-> > > 
-> > > So yes, I'm still using this _nasty_ way to make the ODD stay in powered
-> > > off state as long as possible. But if there is other elegant ways to
-> > > solve this, I would appreciate it and happily using it. Personally, I
-> > > hope we can make sr aware of ZPODD, that would make the pain gone.
-> > 
-> > I really think we need a way for (auto)pm and event polling to talk to
-> > each other so that autopm can tell event poll to sod off while pm is
-> > in effect.  Trying to solve this from inside libata doesn't seem
-> > right.  The problem, again, seems to be figuring out which hardware
-> > device maps to which block device.  Hmmm... Any good ideas?
+On Sun, 2012-11-25 at 15:55 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I've asked the PM people several times about this, because it's a real
-> problem for almost everything:  PM needs some type of top to bottom
-> stack view, which the layering isolation we have within storage really
-> doesn't cope with well.  No real suggestion has been forthcoming.
+> Make it possible to ask the routines used for adding/removing devices
+> to/from the general ACPI PM domain, acpi_dev_pm_attach() and
+> acpi_dev_pm_detach(), respectively, to change the power states of
+> devices so that they are put into the full-power state automatically
+> by acpi_dev_pm_attach() and into the lowest-power state available
+> automatically by acpi_dev_pm_detach().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/acpi/device_pm.c |   28 ++++++++++++++++++++++++----
+>  include/linux/acpi.h     |   11 +++++++----
+>  2 files changed, 31 insertions(+), 8 deletions(-)
+> 
+> Index: linux/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux.orig/drivers/acpi/device_pm.c
+> +++ linux/drivers/acpi/device_pm.c
+> @@ -599,10 +599,12 @@ static struct dev_pm_domain acpi_general
+>  /**
+>   * acpi_dev_pm_attach - Prepare device for ACPI power management.
+>   * @dev: Device to prepare.
+> + * @power_on: Whether or not to power on the device.
+>   *
+>   * If @dev has a valid ACPI handle that has a valid struct acpi_device object
+>   * attached to it, install a wakeup notification handler for the device and
+> - * add it to the general ACPI PM domain.
+> + * add it to the general ACPI PM domain.  If @power_on is set, the device will
+> + * be put into the ACPI D0 state before the function returns.
+>   *
+>   * This assumes that the @dev's bus type uses generic power management callbacks
+>   * (or doesn't use any power management callbacks at all).
+> @@ -610,7 +612,7 @@ static struct dev_pm_domain acpi_general
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+>   */
+> -int acpi_dev_pm_attach(struct device *dev)
+> +int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
+>  	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
+>  
+> @@ -622,6 +624,10 @@ int acpi_dev_pm_attach(struct device *de
+>  
+>  	acpi_add_pm_notifier(adev, acpi_wakeup_device, dev);
+>  	dev->pm_domain = &acpi_general_pm_domain;
+> +	if (power_on) {
+> +		acpi_dev_pm_full_power(adev);
+> +		__acpi_device_run_wake(adev, false);
+> +	}
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+> @@ -629,20 +635,34 @@ EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+>  /**
+>   * acpi_dev_pm_detach - Remove ACPI power management from the device.
+>   * @dev: Device to take care of.
+> + * @power_off: Whether or not to try to remove power from the device.
+>   *
+>   * Remove the device from the general ACPI PM domain and remove its wakeup
+> - * notifier.
+> + * notifier.  If @power_off is set, additionally remove power from the device if
+> + * possible.
+>   *
+>   * Callers must ensure proper synchronization of this function with power
+>   * management callbacks.
+>   */
+> -void acpi_dev_pm_detach(struct device *dev)
+> +void acpi_dev_pm_detach(struct device *dev, bool power_off)
+>  {
+>  	struct acpi_device *adev = acpi_dev_pm_get_node(dev);
+>  
+>  	if (adev && dev->pm_domain == &acpi_general_pm_domain) {
+>  		dev->pm_domain = NULL;
+>  		acpi_remove_pm_notifier(adev, acpi_wakeup_device);
+> +		if (power_off) {
+> +			/*
+> +			 * If the device's PM QoS resume latency limit or flags
+> +			 * have been exposed to user space, they have to be
+> +			 * hidden at this point, so that they don't affect the
+> +			 * choice of the low-power state to put the device into.
+> +			 */
+> +			dev_pm_qos_hide_latency_limit(dev);
+> +			dev_pm_qos_hide_flags(dev);
 
-Actually, I think that the particular case in question is really special
-and the fact that there's the pollig loop that user space is involved in
-doesn't make things more stratightforward.
+NO_POWER_OFF flag is ignored here.  Is it possible for some device (or
+corresponding ACPI method) has broken D3cold implementation, so that the
+user need a way to disable it?
 
-And PM really doesn't need to see things top to bottom, but the polling
-needs to know what happens in the PM land.  We need to be able to tell it
-"from now on tell user space that there are no events here".  The question
-is where to put that information so that it's accessible to all parts of the
-stack involved.
+Best Regards,
+Huang Ying
 
-> The reason I think it should be emulated (in the acpi layer, not libata,
-> but as long as it's not in SCSI, I'm not so fussed where it ends up) is
-> because ZPODD is the software equivalent of ZPREADY, which will be done
-> in hardware and will be effectively invisible to autopm in the same way
-> that SCSI (and ATA) power management is mostly invisible.  If we
-> currently do ZPREADY emulation in the low layer (i.e. ZPODD has exact
-> ZPREADY emulation), we won't care (except for flipping the sofware bit)
-> whether the device support ZPODD or ZPREADY and it will all just
-> work(tm).  The industry expectation is that ZPODD is just a transition
-> state between current power management and ZPREADY.
+> +			__acpi_device_run_wake(adev, false);
+> +			acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
+> +		}
+>  	}
+>  }
+>  EXPORT_SYMBOL_GPL(acpi_dev_pm_detach);
+> Index: linux/include/linux/acpi.h
+> ===================================================================
+> --- linux.orig/include/linux/acpi.h
+> +++ linux/include/linux/acpi.h
+> @@ -510,11 +510,14 @@ static inline int acpi_subsys_resume_ear
+>  #endif
+>  
+>  #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
+> -int acpi_dev_pm_attach(struct device *dev);
+> -int acpi_dev_pm_detach(struct device *dev);
+> +int acpi_dev_pm_attach(struct device *dev, bool power_on);
+> +int acpi_dev_pm_detach(struct device *dev, bool power_off);
+>  #else
+> -static inline int acpi_dev_pm_attach(struct device *dev) { return -ENODEV; }
+> -static inline void acpi_dev_pm_detach(struct device *dev) {}
+> +static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+> +{
+> +	return -ENODEV;
+> +}
+> +static inline void acpi_dev_pm_detach(struct device *dev, bool power_off) {}
+>  #endif
+>  
+>  #ifdef CONFIG_ACPI
+> 
 
-Well, if you poll a ZPREADY-capable drive, it will go off and on in cycles
-transparently, but still it won't save as much energy as it can.  We'll need
-to do something about the polling in that case too, it seems.
 
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
