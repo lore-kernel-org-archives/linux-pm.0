@@ -1,7 +1,7 @@
 From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Subject: [PATCH 1/3] thermal: rcar: fixup the unit of temperature
-Date: Sun, 25 Nov 2012 18:32:06 -0800 (PST)
-Message-ID: <87haodw0v0.wl%kuninori.morimoto.gx@renesas.com>
+Subject: [PATCH 2/3] thermal: rcar: add rcar_zone_to_priv() macro
+Date: Sun, 25 Nov 2012 18:32:20 -0800 (PST)
+Message-ID: <87fw3xw0um.wl%kuninori.morimoto.gx@renesas.com>
 References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
 	<87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
 	<1353652189.2111.7.camel@rzhang1-mobl4>
@@ -13,10 +13,10 @@ Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mail-da0-f46.google.com ([209.85.210.46]:59301 "EHLO
 	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753344Ab2KZCcH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Nov 2012 21:32:07 -0500
+	with ESMTP id S1753344Ab2KZCcV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Nov 2012 21:32:21 -0500
 Received: by mail-da0-f46.google.com with SMTP id p5so3488559dak.19
-        for <linux-pm@vger.kernel.org>; Sun, 25 Nov 2012 18:32:07 -0800 (PST)
+        for <linux-pm@vger.kernel.org>; Sun, 25 Nov 2012 18:32:21 -0800 (PST)
 In-Reply-To: <87ip8tw0x1.wl%kuninori.morimoto.gx@renesas.com>
 From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -24,35 +24,35 @@ List-Id: linux-pm@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
 Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
 
-The unit of temperature is Milli-Celsius.
+This patch adds rcar_zone_to_priv()
+which is a helper macro for gettign private data.
 
 Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
- drivers/thermal/rcar_thermal.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/thermal/rcar_thermal.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 81dce23..f2678ff 100644
+index f2678ff..90db951 100644
 --- a/drivers/thermal/rcar_thermal.c
 +++ b/drivers/thermal/rcar_thermal.c
-@@ -43,6 +43,8 @@ struct rcar_thermal_priv {
- 	u32 comp;
+@@ -44,6 +44,7 @@ struct rcar_thermal_priv {
  };
  
-+#define MCELSIUS(temp)			((temp) * 1000)
-+
+ #define MCELSIUS(temp)			((temp) * 1000)
++#define rcar_zone_to_priv(zone)		(zone->devdata)
+ 
  /*
   *		basic functions
-  */
-@@ -169,7 +171,7 @@ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
- 		}
- 	}
+@@ -98,7 +99,7 @@ static void rcar_thermal_bset(struct rcar_thermal_priv *priv, u32 reg,
+ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
+ 			   unsigned long *temp)
+ {
+-	struct rcar_thermal_priv *priv = zone->devdata;
++	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+ 	int val, min, max, tmp;
  
--	*temp = tmp;
-+	*temp = MCELSIUS(tmp);
- 	return 0;
- }
- 
+ 	tmp = -200; /* default */
 -- 
 1.7.9.5
 
