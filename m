@@ -1,49 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: rebased on pm-devfreq
-Date: Mon, 26 Nov 2012 16:34:26 +0100
-Message-ID: <4927125.H2P7Hmrbbc@vostro.rjw.lan>
-References: <1562412.gSBZdyfWN8@vostro.rjw.lan> <1353925903-19557-1-git-send-email-myungjoo.ham@samsung.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [alsa-devel] [PATCH] usb: add USB_QUIRK_RESET_RESUME for M-Audio
+ 49
+Date: Mon, 26 Nov 2012 11:12:34 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1211261111130.2168-100000@iolanthe.rowland.org>
+References: <9473152.Oq5ztpgF62@linux-lqwf.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:33682 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753492Ab2KZP3m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Nov 2012 10:29:42 -0500
-In-Reply-To: <1353925903-19557-1-git-send-email-myungjoo.ham@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <9473152.Oq5ztpgF62@linux-lqwf.site>
+Sender: stable-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>, Jonathan Nieder <jrnieder@gmail.com>, Steffen =?ISO-8859-1?Q?M=FCller?= <steffen.mueller@radio-frei.de>, alsa-devel@alsa-project.org, Olivier MATZ <zer0@droids-corp.org>, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, stable@vger.kernel.org, David Banks <amoebae@gmail.com>, Ralf Lang <lang@b1-systems.de>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, linux-kernel@vger.kernel.org, myungjoo.ham@gmail.com
 
-On Monday, November 26, 2012 07:31:43 PM MyungJoo Ham wrote:
-> 
-> Rafael,
-> 
-> Here goes the pull request rebased on your pm-devfreq branch.
-> Sorry for all the confusion and mess invoked.
-> 
-> 
-> Cheers,
-> MyungJoo
-> 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
-> 
-> The following changes since commit 1a1357ea176670867f347419c3345e2becc07338:
-> 
->   PM / devfreq: make devfreq_class static (2012-11-15 00:35:06 +0100)
-> 
-> are available in the git repository at:
->   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121126
+On Mon, 26 Nov 2012, Oliver Neukum wrote:
 
-OK, pulled, but I'll merge it to my linux-next branch tomorrow.
+> On Monday 26 November 2012 14:43:13 Clemens Ladisch wrote:
+> 
+> > > If it has to be running, the easiest fix would be the patch like
+> > > below.  This will turn off the autopm essentially, but better than
+> > > breakage.
+> > >
+> > > @@ -2074,6 +2077,8 @@ static void snd_usbmidi_input_start_ep(struct snd_usb_midi_in_endpoint* ep)
+> > >
+> > > +	ep->autopm_reference =
+> > > +		usb_autopm_get_interface(ep->umidi->iface) >= 0;
+> > 
+> > usb_autopm_get_interface() cannot be called from the USB probe callback.
+> 
+> You can use usb_autopm_get_interface_no_resume()
+> During probe() the device is known to not be suspended.
 
-Thanks,
-Rafael
+In fact, as far as I know you _can_ use usb_autopm_get_interface() from
+within a probe routine.  Is there some problem with it I'm not aware of?
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Alan Stern
