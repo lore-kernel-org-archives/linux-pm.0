@@ -1,90 +1,46 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST for Rafael] PM / devfreq: rebased on pm-devfreq
-Date: Mon, 26 Nov 2012 19:31:43 +0900
-Message-ID: <1353925903-19557-1-git-send-email-myungjoo.ham@samsung.com>
-References: <1562412.gSBZdyfWN8@vostro.rjw.lan>
+Subject: Re: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request-3 bugfixes
+Date: Mon, 26 Nov 2012 10:33:55 +0000 (GMT)
+Message-ID: <30131019.36191353926035140.JavaMail.weblogic@epv6ml08>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:43378 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635Ab2KZKcE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 05:32:04 -0500
-In-reply-to: <1562412.gSBZdyfWN8@vostro.rjw.lan>
+Received: from mailout1.samsung.com ([203.254.224.24]:43468 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754266Ab2KZKd5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 05:33:57 -0500
+Received: from epcpsbge1.samsung.com (epcpsbge1 [203.254.230.11])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0ME3007IYC08MD01@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 26 Nov 2012 19:33:55 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, myungjoo.ham@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>
+
+PiBPbiBNb25kYXksIE5vdmVtYmVyIDI2LCAyMDEyIDAzOjQxOjIyIFBNIE15dW5nSm9vIEhhbSB3
+cm90ZToNCj4gPiBEZWFyIFJhZmFlbCwNCj4gPiANCj4gPiBzb3JyeSBmb3IgdGhlIGluY29udmll
+bmNlczsgSSBmb3Jnb3QgdGhhdCBJJ3ZlIHVwZGF0ZWQgdGhlIHRhZyBuYW1lDQo+ID4gYWNjb3Jk
+aW5nIHRvIHRoZSBkYXRlIG1vZGlmaWVkLg0KPiA+IA0KPiA+IFBsZWFzZSB1c2UgInB1bGxfcmVx
+XzIwMTIxMTIyIiB0YWcgaW5zdGVhZCBvZiAicHVsbF9yZXFfMjAxMjExMjEiIHRob3VnaA0KPiA+
+IEkndmUgcHVzaGVkIHB1bGxfcmVxXzIwMTIxMTIxIHRhZyBhZ2Fpbiwgd2hpY2ggcG9pbnRzIHRv
+IHRoZSBzYW1lDQo+ID4gY29tbWl0IHdpdGggcHVsbF9yZXFfMjAxMjExMjIgdGFnLg0KPiA+IA0K
+PiA+IA0KPiA+ICJyZW1vdmUgY29tcGlsZXIgZXJyb3IiIHBhdGNoIGluIHRoaXMgc2V0IHNob3Vs
+ZCByZXNvbHZlIHRoZSAiYnVpbGQgZmFpbHVyZSINCj4gPiBtZXNzYWdlIHNlbnQgYnkgU3RlcGhl
+biBhcyB3ZWxsLg0KPiANCj4gSXQgbG9va3MgbGlrZSB5b3UgcmViYXNlZCBpdCBvbiB0b3Agb2Yg
+bGludXgtbmV4dCwgZGlkbid0IHlvdT8NCj4gDQo+IFBsZWFzZSBkb24ndCBkbyB0aGF0LCBsaW51
+eC1uZXh0IGlzIGV2b2x2aW5nIGFuZCB0aGUgY29tbWl0IGhhc2hlcyBpbiB0aGVyZQ0KPiBhcmUg
+Y2hhbmdpbmcgb3ZlciB0aW1lLg0KPiANCj4gSSd2ZSBtZXJnZWQgeW91ciBwcmV2aW91cyBwdWxs
+IHJlcXVlc3QgaW50byBteSBwbS1kZXZmcmVxIGJyYW5jaCBhbmQgcHVzaGVkDQo+IGl0IG91dC4g
+IFBsZWFzZSByZWJhc2UgeW91ciBuZXcgbWF0ZXJpYWwgb24gdG9wIG9mIG15IHBtLWRldmZyZXEg
+YnJhbmNoIGFuZA0KPiByZXN1Ym1pdC4NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQoNCkkndmUg
+anVzdCByZWJhc2VkIHRoZSB0cmVlIGFuZCBzZW50IHRoZSBwdWxsLXJlcXVlc3QgbWVzc2FnZS4N
+Cg0KU29ycnkgZm9yIGFsbCB0aGUgbWVzcyBpbnZva2VkLg0KDQoNCg0KSSdsbCByZW1lbWJlciB0
+byBiYXNlIG9uIHRoZSB0b3BpYyBicmFuY2ggbmV4dCB0aW1lLg0KVGhhbmsgeW91Lg0KDQoNCg0K
+Q2hlZXJzLA0KTXl1bmdKb28uDQoNCg==
 
 
-Rafael,
-
-Here goes the pull request rebased on your pm-devfreq branch.
-Sorry for all the confusion and mess invoked.
-
-
-Cheers,
-MyungJoo
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-The following changes since commit 1a1357ea176670867f347419c3345e2becc07338:
-
-  PM / devfreq: make devfreq_class static (2012-11-15 00:35:06 +0100)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20121126
-
-Jonghwa Lee (1):
-      PM / devfreq: Add sysfs node for representing frequency transition information.
-
-MyungJoo Ham (2):
-      PM / devfreq: remove compiler error when a governor is module
-      PM / devfreq: missing rcu_read_lock() added for find_device_opp()
-
-Nishanth Menon (9):
-      PM / devfreq: documentation cleanups for devfreq header
-      PM / devfreq: Add sysfs node to expose available frequencies
-      PM / devfreq: export update_devfreq
-      PM / devfreq: provide hooks for governors to be registered
-      PM / devfreq: register governors with devfreq framework
-      PM / devfreq: map devfreq drivers to governor using name
-      PM / devfreq: governors: add GPL module license and allow module build
-      PM / devfreq: allow sysfs governor node to switch governor
-      PM / devfreq: Add sysfs node to expose available governors
-
-Sachin Kamat (3):
-      PM / devfreq: Use devm_* functions in exynos4_bus.c
-      PM / devfreq: Fix incorrect argument in error message
-      PM / devfreq: Fix return value in devfreq_remove_governor()
-
-Sangho Yi (1):
-      PM / devfreq: exynos4_bus.c: Fixed an alignment of the func call args.
-
- Documentation/ABI/testing/sysfs-class-devfreq |   29 ++-
- drivers/devfreq/Kconfig                       |    8 +-
- drivers/devfreq/devfreq.c                     |  413 ++++++++++++++++++++++++-
- drivers/devfreq/exynos4_bus.c                 |   45 +--
- drivers/devfreq/governor.h                    |    4 +
- drivers/devfreq/governor_performance.c        |   22 ++-
- drivers/devfreq/governor_powersave.c          |   22 ++-
- drivers/devfreq/governor_simpleondemand.c     |   22 ++-
- drivers/devfreq/governor_userspace.c          |   22 ++-
- include/linux/devfreq.h                       |   95 +++---
- 10 files changed, 581 insertions(+), 101 deletions(-)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQs0NoAAoJEBOhurvWBoCK2hIQAJuTMnRiWb2BkU30ENAug1FC
-oNvoFBTVA2J9vTp1Q1qtoPj+ualfg++auzt4e5U2rbAthQYpB1LYDvc/ycEpGkG0
-C+V3aleb9SK0TnqWp/s2i/KLWK1fTxbMGi2nDdCwwglbn59OlY6fVTyUA+jGzk3r
-AwpxSCnLhi7jhtbgSWhiQh2F5gehNXGtU6CsK0OebP2VlVK5ZFw6X3eqacfact/h
-kabXBsS+jJlrA90+jFFqQ4nSyU69Kgou/+de3rzrMOFYEv+uoGNmzRofh1BRaWM+
-ueyKdfF/oUJWmL8fvhMY556xrTBuGpI5btSmfYxSz+VFiDzV8HduIi8ThaVKMmGu
-MR77kgFSy0NkasCQ2l6q7LYIRoFJX/MQWnQpxvpZKOi5aqEgWsdCY75juRN3wOGm
-kCGecK2Rq/tTj3EzIS2brUPQJPcM1YS4QHKFYq3Oucnpbk6Ym1ojIYxTB7no7fKW
-7OhVOf3IHA3C0VMg8DiN9SoOW8ILU3EvknP6BguRRVf+iFjtUWqCoaNj14BOSjUx
-Ol/606xgVa6xEsDG1NeoYiEov/lmYDpHG/tnh2g5gF/YrKjbQsvT7uqSBbeFJO2u
-ybI2hz37OulNvur4ORFWTCOyNqknX9t+OIFFyQjdGmaPwjnJ+IZ5kWqBwPaHxd3x
-Y/8iwxoohO4ROW1pBln0
-=5A1F
------END PGP SIGNATURE-----
