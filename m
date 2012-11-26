@@ -1,38 +1,42 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 0/2] ACPI / platform: Put devices enumerated via ACPI
- into D0 before probing drivers
-Date: Mon, 26 Nov 2012 08:31:18 +0200
-Message-ID: <20121126063118.GF3867@intel.com>
-References: <1672179.qgDUs0YdYu@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Jonghwa Lee <jonghwa3.lee@samsung.com>
+Subject: [PATCH] MAINTAINERS: Add maintainers for exynos thermal driver
+Date: Mon, 26 Nov 2012 15:30:59 +0900
+Message-ID: <1353911459-18305-1-git-send-email-jonghwa3.lee@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13538 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893Ab2KZG2C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Nov 2012 01:28:02 -0500
-Content-Disposition: inline
-In-Reply-To: <1672179.qgDUs0YdYu@vostro.rjw.lan>
+Received: from mailout4.samsung.com ([203.254.224.34]:56333 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134Ab2KZGbH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Nov 2012 01:31:07 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, "Svahn, Kai" <kai.svahn@intel.com>, Huang Ying <ying.huang@intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, Aaron Lu <aaron.lu@intel.com>, Grant Likely <grant.likely@secretlab.ca>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Zhang Rui <rui.zhang@intel.com>, Durgadoss R <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>
 
-On Sun, Nov 25, 2012 at 03:54:14PM +0100, Rafael J. Wysocki wrote:
-> The following two patches are meant to work around a problem where some
-> devices may be in the ACPI D3cold power state (power off) before their
-> drivers' .probe() routines are called, but those routines assume devices
-> to be operational.  They also allow ACPI PM to be used going forward with
-> the devices in question.
+Add Amit and I as maintainers for exynos thermal driver.
 
-We have such machines here. I've tested the series on one of them and it
-solves the problem - drivers can now access device registers right from the
-start.
+Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+---
+ MAINTAINERS |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-> [1/2] - Allow ACPI PM attach/detach routines to change device power states.
-> [2/2] - Call the ACPI PM attach/detach routines in the platform probe and
->         remove/shutdown callbacks (and change power states of devices as
->         necessary).
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 59203e7..e839fb8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2960,6 +2960,13 @@ S:	Maintained
+ F:	drivers/video/exynos/exynos_mipi*
+ F:	include/video/exynos_mipi*
+ 
++EXYNOS THERMAL DRIVER
++M:	Jonghwa Lee <jonghwa3.lee@samsung.com>
++M:	Amit Daniel Kachhap <amit.kachhap@linaro.org>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	drivers/thermal/exynos_thermal.c
++
+ F71805F HARDWARE MONITORING DRIVER
+ M:	Jean Delvare <khali@linux-fr.org>
+ L:	lm-sensors@lm-sensors.org
+-- 
+1.7.4.1
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
