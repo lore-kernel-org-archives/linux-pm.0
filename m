@@ -1,73 +1,70 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
-Date: Tue, 27 Nov 2012 16:46:07 +0000
-Message-ID: <20121127164607.GG4468@opensource.wolfsonmicro.com>
-References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com>
- <6982060.HfOokt4dIn@avalon>
- <50B4D9E9.8070607@ti.com>
- <3136860.Z3VvKjeKpU@avalon>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 2/6 v5] clk, highbank: Prevent glitches in non-bypass
+ reset mode
+Date: Tue, 27 Nov 2012 10:15:52 -0800
+Message-ID: <CAPtuhTjjTTfXRAf6BAuG0L_NQubcYwCCi6WCBYR9ddtG-koMHw@mail.gmail.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com> <1354028674-23685-3-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="8/pVXlBMPtxfSuJG"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42033 "EHLO
-	opensource.wolfsonmicro.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755804Ab2K0QqM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Nov 2012 11:46:12 -0500
-Content-Disposition: inline
-In-Reply-To: <3136860.Z3VvKjeKpU@avalon>
+Received: from mail-vb0-f46.google.com ([209.85.212.46]:60479 "EHLO
+	mail-vb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756342Ab2K0SQN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Nov 2012 13:16:13 -0500
+Received: by mail-vb0-f46.google.com with SMTP id ff1so7146011vbb.19
+        for <linux-pm@vger.kernel.org>; Tue, 27 Nov 2012 10:16:12 -0800 (PST)
+In-Reply-To: <1354028674-23685-3-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@avionic-design.de>, Tomi Valkeinen <tomba@iki.fi>, Alex Courbot <acourbot@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Mark Zhang <markz@nvidia.com>, Rob Herring <rob.herring@calxeda.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
 
+On Tue, Nov 27, 2012 at 7:04 AM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+>
+> The highbank clock will glitch with the current code if the
+> clock rate is reset without relocking the PLL. Program the PLL
+> correctly to prevent glitches.
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Cc: mturquette@linaro.org
 
---8/pVXlBMPtxfSuJG
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Mike Turquette <mturquette@linaro.org>
 
-On Tue, Nov 27, 2012 at 04:37:32PM +0100, Laurent Pinchart wrote:
+Regards,
+Mike
 
-> One possibly crazy idea I had was to replace backlight devices as we know=
- them=20
-> with LED devices (a LED driver IC shouldn't be supported by different API=
-s=20
-> depending on whether the LEDs it drives are used as a backlight or not), =
-and=20
-> have the panel hook up with the associated LED device to expose backlight=
-=20
-> operations through the CDF. Panels with a backlight controller tied to th=
-e=20
-> panel controller (control through DSI for instance) would implement the=
-=20
-> backlight operations directly without instantiating a LED device. This st=
-ill=20
-> leaves the question of the userspace backlight brightness API open.
-
-I remember looking at that before but never actually got round to it, it
-seems like a sensible idea to me.
-
---8/pVXlBMPtxfSuJG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQtO5HAAoJELSic+t+oim9h/cP/i717a9Sz8TheSTibWIOtSwa
-A45+ZL/V55CNWf1jnydvAIilGimVeumAk95Xcqh7OkLC7VoeCFP8pHoicC83ilHj
-KNAhd54iK3IgMskORskeZ2XAb6Nk+DRq3I28mX4hzisI69HqmeDmqiCXLJeO0D/+
-YoYzyIj4ES3O7u2Asv+CS1b95biq22m3SwDqbKFTeS8hPpOnw/IzzCqp49R/sn/E
-LhJse7m1JoPi9o4W1+RfX0LTXSAYxsd4BMXb9qyqvUNE9FSL+l/mFOnsjEcFL/zQ
-U4mC/76QWBCFWdmLyHV71vV/JTXl0wr4S6ptpqeM9S6b/YO2reT919F5flqK74kf
-FTI5BS2ENSMXXaeVmpw7JMzvKIaKF3It0/Iy7FgIdBya0WYU/NXcFhlww6VNoFJr
-SC76XmGuAaOhdUYkL3LEISS5IXfoaD+OJq/x695ITfP+D5iBA6V4joPbC1kEKoNB
-COVPaBOTecjnKoqkPZDCw6TNLrTxCqVwo1BaO+didPejOSxxkahq8x5DrcrHb4PY
-YQDBRXr+ayV8uwHumaVogb+Zm4PCBFNw1XRlKs4EXkLDoAITmj1a+jqfx9TS203s
-lzXeCcm9i5B93sH4DzVQnEBWPeaF6uRQAkb18/tsDms9ImKr8mI69AgxBzNIAI6L
-pmhNMm9aDmAd3OpsIvhK
-=Ni3b
------END PGP SIGNATURE-----
-
---8/pVXlBMPtxfSuJG--
+> ---
+> Changes from v4
+>         None.
+> Changes from v3
+>         Changelog text and patch name now correspond to the actual patch.
+>         was clk, highbank: remove non-bypass reset mode.
+> Changes from v2
+>         None.
+> Changes from v1:
+>         Removed erroneous reformating.
+>
+>  drivers/clk/clk-highbank.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
+> index 52fecad..3a0b723 100644
+> --- a/drivers/clk/clk-highbank.c
+> +++ b/drivers/clk/clk-highbank.c
+> @@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
+>                 reg |= HB_PLL_EXT_ENA;
+>                 reg &= ~HB_PLL_EXT_BYPASS;
+>         } else {
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>                 reg &= ~HB_PLL_DIVQ_MASK;
+>                 reg |= divq << HB_PLL_DIVQ_SHIFT;
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>         }
+>         writel(reg, hbclk->reg);
+>
+> --
+> 1.7.11.7
+>
