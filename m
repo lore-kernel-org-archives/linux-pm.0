@@ -1,324 +1,131 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 4/6 v5] arm highbank: add support for pl320 IPC
-Date: Tue, 27 Nov 2012 09:04:32 -0600
-Message-ID: <1354028674-23685-5-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1354028674-23685-1-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, Rob Herring <rob.herring@calxeda.com>, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Subject: Re: [PATCHv9 1/3] Runtime Interpreted Power Sequences
+Date: Tue, 27 Nov 2012 16:08:23 +0100
+Message-ID: <6982060.HfOokt4dIn@avalon>
+References: <1353149747-31871-1-git-send-email-acourbot@nvidia.com> <20121121114018.GA31576@avionic-0098.adnet.avionic-design.de> <50ACC341.3090204@ti.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart15047295.rgReblTnmU"; micalg="pgp-sha1"; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <50ACC341.3090204-l0cyMroinI0@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>, Tomi Valkeinen <tomba-X3B1VOXEql0@public.gmane.org>, Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Anton Vorontsov <cbouatmailru-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mark Zhang <markz-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Rob Herring <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rob Herring <rob.herring@calxeda.com>
 
-The pl320 IPC allows for interprocessor communication between the highbank A9
-and the EnergyCore Management Engine. The pl320 implements a straightforward
-mailbox protocol.
+--nextPart15047295.rgReblTnmU
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
-This patch depends on Omar Ramirez Luna's <omar.luna@linaro.org>
-mailbox driver patch series.
+Hi Tomi,
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Cc: Omar Ramirez Luna <omar.luna@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
----
-Changes from v4
-	Moved pl320-ipc.c from arch/arm/mach-highbank to drivers/mailbox.
-	Moved header information to include/linux/mailbox.h.
-	Added Kconfig options to reflect the new code location.
-	Change drivers/mailbox/Makefile to build the omap mailboxes only 
-	when they are configured.
-	Removed ipc_call_fast and renamed ipc_call_slow ipc_transmit
-Changes from v3, v2
-        None.
-Changes from v1
-        Removed erroneous changes for cpufreq Kconfig.
+On Wednesday 21 November 2012 14:04:17 Tomi Valkeinen wrote:
+> On 2012-11-21 13:40, Thierry Reding wrote:
 
- arch/arm/mach-highbank/Kconfig |   2 +
- drivers/mailbox/Kconfig        |   9 ++
- drivers/mailbox/Makefile       |   4 +
- drivers/mailbox/pl320-ipc.c    | 197 +++++++++++++++++++++++++++++++++++++++++
- include/linux/mailbox.h        |  19 +++-
- 5 files changed, 230 insertions(+), 1 deletion(-)
- create mode 100644 drivers/mailbox/Makefile
- create mode 100644 drivers/mailbox/pl320-ipc.c
+[snip]
 
-diff --git a/arch/arm/mach-highbank/Kconfig b/arch/arm/mach-highbank/Kconfig
-index 0e1d0a4..2896881 100644
---- a/arch/arm/mach-highbank/Kconfig
-+++ b/arch/arm/mach-highbank/Kconfig
-@@ -11,5 +11,7 @@ config ARCH_HIGHBANK
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_ARM_SCU
- 	select HAVE_SMP
-+	select MAILBOX
-+	select PL320_MBOX
- 	select SPARSE_IRQ
- 	select USE_OF
-diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
-index be8cac0..e89fdb4 100644
---- a/drivers/mailbox/Kconfig
-+++ b/drivers/mailbox/Kconfig
-@@ -34,4 +34,13 @@ config OMAP_MBOX_KFIFO_SIZE
- 	  This can also be changed at runtime (via the mbox_kfifo_size
- 	  module parameter).
- 
-+config PL320_MBOX
-+	bool "ARM PL320 Mailbox"
-+	help
-+	  An implementation of the ARM PL320 Interprocessor Communication
-+	  Mailbox (IPCM), tailored for the Calxeda Highbank. It is used to
-+	  send short messages between Highbank's A9 cores and the EnergyCore
-+	  Management Engine, primarily for cpufreq. Say Y here if you want
-+	  to use the PL320 IPCM support.
-+
- endif
-diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
-new file mode 100644
-index 0000000..c9f14c3
---- /dev/null
-+++ b/drivers/mailbox/Makefile
-@@ -0,0 +1,4 @@
-+obj-$(CONFIG_OMAP1_MBOX)	+= mailbox.o mailbox-omap1.o
-+obj-$(CONFIG_OMAP2PLUS_MBOX)	+= mailbox.o mailbox-omap2.o
-+obj-$(CONFIG_PL320_MBOX)	+= pl320-ipc.o
-+
-diff --git a/drivers/mailbox/pl320-ipc.c b/drivers/mailbox/pl320-ipc.c
-new file mode 100644
-index 0000000..33eb97f
---- /dev/null
-+++ b/drivers/mailbox/pl320-ipc.c
-@@ -0,0 +1,197 @@
-+/*
-+ * Copyright 2012 Calxeda, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+#include <linux/types.h>
-+#include <linux/err.h>
-+#include <linux/delay.h>
-+#include <linux/export.h>
-+#include <linux/io.h>
-+#include <linux/interrupt.h>
-+#include <linux/completion.h>
-+#include <linux/mutex.h>
-+#include <linux/notifier.h>
-+#include <linux/spinlock.h>
-+#include <linux/device.h>
-+#include <linux/amba/bus.h>
-+
-+#include <linux/mailbox.h>
-+
-+#define IPCMxSOURCE(m)		((m) * 0x40)
-+#define IPCMxDSET(m)		(((m) * 0x40) + 0x004)
-+#define IPCMxDCLEAR(m)		(((m) * 0x40) + 0x008)
-+#define IPCMxDSTATUS(m)		(((m) * 0x40) + 0x00C)
-+#define IPCMxMODE(m)		(((m) * 0x40) + 0x010)
-+#define IPCMxMSET(m)		(((m) * 0x40) + 0x014)
-+#define IPCMxMCLEAR(m)		(((m) * 0x40) + 0x018)
-+#define IPCMxMSTATUS(m)		(((m) * 0x40) + 0x01C)
-+#define IPCMxSEND(m)		(((m) * 0x40) + 0x020)
-+#define IPCMxDR(m, dr)		(((m) * 0x40) + ((dr) * 4) + 0x024)
-+
-+#define IPCMMIS(irq)		(((irq) * 8) + 0x800)
-+#define IPCMRIS(irq)		(((irq) * 8) + 0x804)
-+
-+#define MBOX_MASK(n)		(1 << (n))
-+#define IPC_TX_MBOX		1
-+#define IPC_RX_MBOX		2
-+
-+#define CHAN_MASK(n)		(1 << (n))
-+#define A9_SOURCE		1
-+#define M3_SOURCE		0
-+
-+static void __iomem *ipc_base;
-+static int ipc_irq;
-+static DEFINE_MUTEX(ipc_m1_lock);
-+static DECLARE_COMPLETION(ipc_completion);
-+static ATOMIC_NOTIFIER_HEAD(ipc_notifier);
-+
-+static inline void set_destination(int source, int mbox)
-+{
-+	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxDSET(mbox));
-+	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxMSET(mbox));
-+}
-+
-+static inline void clear_destination(int source, int mbox)
-+{
-+	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxDCLEAR(mbox));
-+	__raw_writel(CHAN_MASK(source), ipc_base + IPCMxMCLEAR(mbox));
-+}
-+
-+static void __ipc_send(int mbox, u32 *data)
-+{
-+	int i;
-+	for (i = 0; i < 7; i++)
-+		__raw_writel(data[i], ipc_base + IPCMxDR(mbox, i));
-+	__raw_writel(0x1, ipc_base + IPCMxSEND(mbox));
-+}
-+
-+static u32 __ipc_rcv(int mbox, u32 *data)
-+{
-+	int i;
-+	for (i = 0; i < 7; i++)
-+		data[i] = __raw_readl(ipc_base + IPCMxDR(mbox, i));
-+	return data[1];
-+}
-+
-+/* blocking implmentation from the A9 side, not usuable in interrupts! */
-+int ipc_transmit(u32 *data)
-+{
-+	int ret;
-+
-+	mutex_lock(&ipc_m1_lock);
-+
-+	init_completion(&ipc_completion);
-+	__ipc_send(IPC_TX_MBOX, data);
-+	ret = wait_for_completion_timeout(&ipc_completion,
-+					  msecs_to_jiffies(1000));
-+	if (ret == 0) {
-+		ret = -ETIMEDOUT;
-+		goto out;
-+	}
-+
-+	ret = __ipc_rcv(IPC_TX_MBOX, data);
-+out:
-+	mutex_unlock(&ipc_m1_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL(ipc_transmit);
-+
-+irqreturn_t ipc_handler(int irq, void *dev)
-+{
-+	u32 irq_stat;
-+	u32 data[7];
-+
-+	irq_stat = __raw_readl(ipc_base + IPCMMIS(1));
-+	if (irq_stat & MBOX_MASK(IPC_TX_MBOX)) {
-+		__raw_writel(0, ipc_base + IPCMxSEND(IPC_TX_MBOX));
-+		complete(&ipc_completion);
-+	}
-+	if (irq_stat & MBOX_MASK(IPC_RX_MBOX)) {
-+		__ipc_rcv(IPC_RX_MBOX, data);
-+		atomic_notifier_call_chain(&ipc_notifier, data[0], data + 1);
-+		__raw_writel(2, ipc_base + IPCMxSEND(IPC_RX_MBOX));
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+int pl320_ipc_register_notifier(struct notifier_block *nb)
-+{
-+	return atomic_notifier_chain_register(&ipc_notifier, nb);
-+}
-+
-+int pl320_ipc_unregister_notifier(struct notifier_block *nb)
-+{
-+	return atomic_notifier_chain_unregister(&ipc_notifier, nb);
-+}
-+
-+static int __devinit pl320_probe(struct amba_device *adev,
-+				const struct amba_id *id)
-+{
-+	int ret;
-+
-+	ipc_base = ioremap(adev->res.start, resource_size(&adev->res));
-+	if (ipc_base == NULL)
-+		return -ENOMEM;
-+
-+	__raw_writel(0, ipc_base + IPCMxSEND(IPC_TX_MBOX));
-+
-+	ipc_irq = adev->irq[0];
-+	ret = request_irq(ipc_irq, ipc_handler, 0, dev_name(&adev->dev), NULL);
-+	if (ret < 0)
-+		goto err;
-+
-+	/* Init slow mailbox */
-+	__raw_writel(CHAN_MASK(A9_SOURCE),
-+			ipc_base + IPCMxSOURCE(IPC_TX_MBOX));
-+	__raw_writel(CHAN_MASK(M3_SOURCE),
-+			ipc_base + IPCMxDSET(IPC_TX_MBOX));
-+	__raw_writel(CHAN_MASK(M3_SOURCE) | CHAN_MASK(A9_SOURCE),
-+		     ipc_base + IPCMxMSET(IPC_TX_MBOX));
-+
-+	/* Init receive mailbox */
-+	__raw_writel(CHAN_MASK(M3_SOURCE),
-+			ipc_base + IPCMxSOURCE(IPC_RX_MBOX));
-+	__raw_writel(CHAN_MASK(A9_SOURCE),
-+			ipc_base + IPCMxDSET(IPC_RX_MBOX));
-+	__raw_writel(CHAN_MASK(M3_SOURCE) | CHAN_MASK(A9_SOURCE),
-+		     ipc_base + IPCMxMSET(IPC_RX_MBOX));
-+
-+	return 0;
-+err:
-+	iounmap(ipc_base);
-+	return ret;
-+}
-+
-+static struct amba_id pl320_ids[] = {
-+	{
-+		.id	= 0x00041320,
-+		.mask	= 0x000fffff,
-+	},
-+	{ 0, 0 },
-+};
-+
-+static struct amba_driver pl320_driver = {
-+	.drv = {
-+		.name	= "pl320",
-+	},
-+	.id_table	= pl320_ids,
-+	.probe		= pl320_probe,
-+};
-+
-+static int __init ipc_init(void)
-+{
-+	return amba_driver_register(&pl320_driver);
-+}
-+module_init(ipc_init);
-diff --git a/include/linux/mailbox.h b/include/linux/mailbox.h
-index e8e4131..ac50a03 100644
---- a/include/linux/mailbox.h
-+++ b/include/linux/mailbox.h
-@@ -1,4 +1,16 @@
--/* mailbox.h */
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
- 
- typedef u32 mbox_msg_t;
- struct omap_mbox;
-@@ -20,3 +32,8 @@ void omap_mbox_save_ctx(struct omap_mbox *mbox);
- void omap_mbox_restore_ctx(struct omap_mbox *mbox);
- void omap_mbox_enable_irq(struct omap_mbox *mbox, omap_mbox_irq_t irq);
- void omap_mbox_disable_irq(struct omap_mbox *mbox, omap_mbox_irq_t irq);
-+
-+int ipc_transmit(u32 *data);
-+
-+extern int pl320_ipc_register_notifier(struct notifier_block *nb);
-+extern int pl320_ipc_unregister_notifier(struct notifier_block *nb);
+> > One thing that's not very clear is how the backlight subsystem should be
+> > wired up with the display framework. I have a patch on top of the Tegra
+> > DRM driver which adds some ad-hoc display support using this power
+> > sequences series and the pwm-backlight.
+> 
+> I think that's a separate issue: how to associate the lcd device and
+> backlight device together. I don't have a clear answer to this.
+> 
+> There are many ways the backlight may be handled. In some cases the
+> panel and the backlight are truly independent, and you can use the other
+> without using the other (not very practical, though =).
+
+>From a control point of view that's always the case for DPI panels (as those 
+panels have no control bus, the backlight control bus is by definition 
+separate) and is the case for the two DBI panels I've seen (but I won't claim 
+that's a significative number of panels).
+
+> But then with some LCDs the backlight may be controlled by sending commands
+> to the panel, and in this case the two may be quite linked. Changing the
+> backlight requires the panel driver to be up and running, and sometimes the
+> sending the backlight commands may need to be (say, DSI display, with
+> backlight commands going over the DSI bus).
+
+When you write "sending commands to the panel", do you mean on the same 
+control bus that the panel use ? Or would that also include for instance an 
+I2C backlight controller integrated inside a DSI panel module ? In the later 
+case there might still be dependencies between the panel controller and the 
+backlight controller (let's say for instance that the panel controller has a 
+DSI-controller GPIO wired to the backlight controller reset signal), but in 
+practice I don't know if that's ever the case.
+
+> So my feeling is that the panel driver should know about the related
+> backlight device. In the first case the panel driver would just call
+> enable/disable in the backlight device when the panel is turned on.
+
+That makes sense. Unless I'm mistaken a backlight is always associated with a 
+panel (it would be called a light if there was no panel in front of it). We 
+can thus expose backlight operations in the panel CDF (in-kernel) API. The 
+panel driver would need a way to retrieve a pointer to the associated 
+backlight device.
+
+> In the second case of the DSI panel... I'm not sure. I've implemented it
+> so that the panel driver creates the backlight device, and implements
+> the backlight callbacks. It then sends the DSI commands from those
+> callbacks.
+
+If we decide to make the panel expose backlight operations we could get rid of 
+the backlight device in this case.
+
+> > From reading the proposal for the panel/display framework, it sounds
+> > like a lot more is planned than just enabling or disabling panels, but
+> > it also seems like a lot of code needs to be written to support things
+> > like DSI, DBI or other control busses.
+> > 
+> > At least for Tegra, and I think the same holds for a wide variety of
+> > other SoCs, dumb panels would be enough for a start. In the interest of
+> > getting a working solution for those setups, maybe we can start small
+> > and add just enough framework to register dumb panel drivers to along
+> > with code to wire up a backlight to light up the display. Then we could
+> > possibly still make it to have a proper solution to support the various
+> > LVDS panels for Tegra with 3.9.
+> 
+> Yes, we (Laurent and me) both agree that we should start simple.
+> 
+> However, the common panel framework is not strictly needed for this. I'm
+> not sure of the current architecture for Tegra, but for OMAP we already
+> have panel drivers (omap specific ones, though). The panel drivers may
+> support multiple models, (for example,
+> drivers/video/omap2/displays/panel-generic-dpi.c).
+> 
+> I don't see any problem with adding small Tegra specific panel drivers
+> for the time being, with the intention of converting to common panel
+> framework when that's available.
+
+I'm fine with that, but using the CDF would be even better :-)
+
+> Of course, the DT side is an issue. If you now create DT bindings for a
+> temporary model, and need to change it again later, you'll have some
+> headaches trying managing that without breaking the old bindings... This
+> is why I haven't pushed DT bindings for OMAP, as I know I have to change
+> them in the near future.
+
 -- 
-1.7.11.7
+Regards,
+
+Laurent Pinchart
+
+--nextPart15047295.rgReblTnmU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQEcBAABAgAGBQJQtNdnAAoJEIkPb2GL7hl1nbYH/0PgIwsNiH9EHYVVj54jSoy+
+SbMqePchdc7XAvYO4b+69BT/Dy4mQ1+zMkcIi6yzUPUnj6lenF/1B8J+K3eFfdpE
+XxANCRaUXZApHYBW3gIRw8MhKRKdlFQtELll4SCoZfpzEY9Ctdoo+gk/yV26kX1E
+0kexepEdcbRgqG23ljows1qlVu4y+SMY6mBGidZloVkwMsHHwj4g0MdmQQXtlblX
+ZXl/Ds4kG5YIWAAh1WFGu2OiS4NdzKq6kKbZMz6fStNulSntL8zZS+VmYkRaOgy3
+LQbHJPnconn1XwBQaV7XvtSQxuVNKWB3cQIp7sDJqdha8wfzdgRYNTujOHM76Y8=
+=cJOR
+-----END PGP SIGNATURE-----
+
+--nextPart15047295.rgReblTnmU--
