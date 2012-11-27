@@ -1,76 +1,77 @@
-From: "Len Brown via RT" <rt@kernel.org>
-Subject: Re: [k.org requests #104] Please add 2 categories
-Date: Tue, 27 Nov 2012 02:43:46 +0000
-Message-ID: <rt-3.8.13-18279-1353984226-95.104-6-0@kernel.org>
-References: <RT-Ticket-104@kernel.org> <508F40D5.2010109@kernel.org> <rt-3.8.13-793-1351610640-1281.104-7-0@kernel.org> <50B428D9.6080906@kernel.org>
-Reply-To: rt@kernel.org
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: RE: [PATCH 2/2] platform / ACPI: Attach/detach ACPI PM during
+ probe/remove/shutdown
+Date: Tue, 27 Nov 2012 05:24:46 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E88BD379D@SHSMSX101.ccr.corp.intel.com>
+References: <1672179.qgDUs0YdYu@vostro.rjw.lan>
+ <6227446.8xPtqi6yHi@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.19.201]:44593 "EHLO mail.kernel.org"
+Received: from mga02.intel.com ([134.134.136.20]:33461 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933003Ab2K0Cnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Nov 2012 21:43:47 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 1D3B120155
-	for <linux-pm@vger.kernel.org>; Tue, 27 Nov 2012 02:43:47 +0000 (UTC)
-Received: from support.int.kernel.org (unknown [172.20.0.35])
-	by mail.kernel.org (Postfix) with ESMTP id 8708E20151
-	for <linux-pm@vger.kernel.org>; Tue, 27 Nov 2012 02:43:46 +0000 (UTC)
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by support.int.kernel.org (Postfix) with ESMTP id 74B1713F4AF
-	for <linux-pm@vger.kernel.org>; Tue, 27 Nov 2012 02:43:46 +0000 (UTC)
-In-Reply-To: <50B428D9.6080906@kernel.org>
+	id S1751658Ab2K0FZB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Nov 2012 00:25:01 -0500
+In-Reply-To: <6227446.8xPtqi6yHi@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Svahn, Kai" <kai.svahn@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Huang, Ying" <ying.huang@intel.com>, "Lan, Tianyu" <tianyu.lan@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>, Grant Likely <grant.likely@secretlab.ca>
 
-Konstantin,
-Please sent the default assignees as below.
-They may not be perfect, but they are better than totally broken:-)
-
-thanks!
--Len
-
-
-On 10/30/2012 11:24 AM, Konstantin Ryabitsev via RT wrote:
-> On Tue Oct 30 15:10:36 2012, lenb@kernel.org wrote:
->> Dear Bugzilla Admins,
->>
->> Please add 2 additional Categories under Product "Power Management":
->>
->> Run-Time-PM - Issues related to Linux Device Run Time Power
->> Management.
-
-"Rafael J. Wysocki" <rjw@sisk.pl>
-
->>
->> Thermal - Issues related to OS-visible Thermal Management, such as
->> throttling.
-
-
-Zhang Rui <rui.zhang@intel.com>
-
-
-> Sure, but I'll need "default assignee" for both of these.
-> 
-> Speaking of default assignees, kernel-bugs.osdl.org doesn't appear to
-> exist any more either, so the following will need to be adjusted as well:
-> 
-> cpuidle             power-management_cpuidle@kernel-bugs.osdl.org 
-
-lenb@kernel.org
-
-> Hibernation/Suspend power-management_other@kernel-bugs.osdl.org 	
-
-"Rafael J. Wysocki" <rjw@sisk.pl>
-
-> intel_idle          power-management_intel_idle@kernel-bugs.osdl.org 	
-
-lenb@kernel.org
-
-> Other               power-management_other@kernel-bugs.osdl.org
-
-"Rafael J. Wysocki" <rjw@sisk.pl>
-
+SXQgbG9va3MgY2xlYW5lc3QgdW5sZXNzIG1vcmUgYWJzdHJhY3Rpb25zIGFyZSBpbnRyb2R1Y2Vk
+IGZvciBvdGhlciBwb3dlciBtYW5hZ2VtZW50IHByb3ZpZGVycy4NCg0KQmVzdCByZWdhcmRzL0x2
+IFpoZW5nDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEou
+IFd5c29ja2kgW21haWx0bzpyandAc2lzay5wbF0NCj4gU2VudDogU3VuZGF5LCBOb3ZlbWJlciAy
+NSwgMjAxMiAxMDo1OCBQTQ0KPiBUbzogTEtNTA0KPiBDYzogR3JlZyBLcm9haC1IYXJ0bWFuOyBM
+aW51eCBQTSBsaXN0OyBBQ1BJIERldmVsIE1hbGluZyBMaXN0OyBaaGFuZywgUnVpOw0KPiBTdmFo
+biwgS2FpOyBNaWthIFdlc3RlcmJlcmc7IEh1YW5nLCBZaW5nOyBMYW4sIFRpYW55dTsgWmhlbmcs
+IEx2OyBMdSwgQWFyb247DQo+IEdyYW50IExpa2VseQ0KPiBTdWJqZWN0OiBbUEFUQ0ggMi8yXSBw
+bGF0Zm9ybSAvIEFDUEk6IEF0dGFjaC9kZXRhY2ggQUNQSSBQTSBkdXJpbmcNCj4gcHJvYmUvcmVt
+b3ZlL3NodXRkb3duDQo+IA0KPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lz
+b2NraUBpbnRlbC5jb20+DQo+IA0KPiBEcml2ZXJzIHVzdWFsbHkgZXhwZWN0IHRoYXQgdGhlIGRl
+dmljZXMgdGhleSBhcmUgc3VwcG9zZWQgdG8gaGFuZGxlIHdpbGwgYmUNCj4gb3BlcmF0aW9uYWwg
+d2hlbiB0aGVpciAucHJvYmUoKSByb3V0aW5lcyBhcmUgY2FsbGVkLCBidXQgdGhhdCBuZWVkIG5v
+dCBiZSB0aGUNCj4gY2FzZSBvbiBzb21lIEFDUEktYmFzZWQgc3lzdGVtcyB3aXRoIEFDUEktYmFz
+ZWQgZGV2aWNlIGVudW1lcmF0aW9uIHdoZXJlDQo+IHRoZSBCSU9TZXMgZG9uJ3QgcHV0IGRldmlj
+ZXMgaW50byBEMCBieSBkZWZhdWx0LiAgVG8gd29yayBhcm91bmQgdGhpcyBwcm9ibGVtDQo+IGl0
+IGlzIHN1ZmZpY2llbnQgdG8gY2hhbmdlIGJ1cyB0eXBlIC5wcm9iZSgpIHJvdXRpbmVzIHRvIGVu
+c3VyZSB0aGF0IGRldmljZXMgd2lsbA0KPiBiZSBwb3dlcmVkIG9uIGJlZm9yZSB0aGUgZHJpdmVy
+cycgLnByb2JlKCkgcm91dGluZXMgcnVuIChhbmQgdGhlaXIgLnJlbW92ZSgpDQo+IGFuZCAuc2h1
+dGRvd24oKSByb3V0aW5lcyBhY2NvcmRpbmdseSkuDQo+IA0KPiBNb2RpZnkgcGxhdGZvcm1fZHJ2
+X3Byb2JlKCkgdG8gcnVuIGFjcGlfZGV2X3BtX2F0dGFjaCgpIGZvciBkZXZpY2VzIHdob3NlDQo+
+IEFDUEkgaGFuZGxlcyBhcmUgcHJlc2VudCwgc28gdGhhdCBBQ1BJIHBvd2VyIG1hbmFnZW1lbnQg
+aXMgdXNlZCB0byBjaGFuZ2UNCj4gdGhlaXIgcG93ZXIgc3RhdGVzIGFuZCBjaGFuZ2UgdGhlaXIg
+cG93ZXIgc3RhdGVzIHRvIEQwIGJlZm9yZSBkcml2ZXIgcHJvYmluZy4NCj4gQW5hbG9nb3VzbHks
+IG1vZGlmeSBwbGF0Zm9ybV9kcnZfcmVtb3ZlKCkgYW5kDQo+IHBsYXRmb3JtX2Rydl9zaHV0ZG93
+bigpIHRvIGNhbGwgYWNwaV9kZXZfcG1fZGV0YWNoKCkgZm9yIHRob3NlIGRldmljZXMsIHNvDQo+
+IHRoYXQgdGhleSBhcmUgbm90IHN1YmplY3QgdG8gQUNQSSBQTSBhbnkgbW9yZS4NCj4gDQo+IFNp
+Z25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNv
+bT4NCj4gLS0tDQo+ICBkcml2ZXJzL2Jhc2UvcGxhdGZvcm0uYyB8ICAgMTkgKysrKysrKysrKysr
+KysrKystLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDE3IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
+KC0pDQo+IA0KPiBJbmRleDogbGludXgvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQ0KPiA9PT0NCj4gLS0tIGxpbnV4Lm9yaWcvZHJpdmVycy9iYXNlL3BsYXRmb3JtLmMNCj4gKysr
+IGxpbnV4L2RyaXZlcnMvYmFzZS9wbGF0Zm9ybS5jDQo+IEBAIC00ODQsOCArNDg0LDE2IEBAIHN0
+YXRpYyBpbnQgcGxhdGZvcm1fZHJ2X3Byb2JlKHN0cnVjdCBkZXYgIHsNCj4gIAlzdHJ1Y3QgcGxh
+dGZvcm1fZHJpdmVyICpkcnYgPSB0b19wbGF0Zm9ybV9kcml2ZXIoX2Rldi0+ZHJpdmVyKTsNCj4g
+IAlzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYgPSB0b19wbGF0Zm9ybV9kZXZpY2UoX2Rldik7
+DQo+ICsJaW50IHJldDsNCj4gDQo+IC0JcmV0dXJuIGRydi0+cHJvYmUoZGV2KTsNCj4gKwlpZiAo
+QUNQSV9IQU5ETEUoX2RldikpDQo+ICsJCWFjcGlfZGV2X3BtX2F0dGFjaChfZGV2LCB0cnVlKTsN
+Cj4gKw0KPiArCXJldCA9IGRydi0+cHJvYmUoZGV2KTsNCj4gKwlpZiAocmV0ICYmIEFDUElfSEFO
+RExFKF9kZXYpKQ0KPiArCQlhY3BpX2Rldl9wbV9kZXRhY2goX2RldiwgdHJ1ZSk7DQo+ICsNCj4g
+KwlyZXR1cm4gcmV0Ow0KPiAgfQ0KPiANCj4gIHN0YXRpYyBpbnQgcGxhdGZvcm1fZHJ2X3Byb2Jl
+X2ZhaWwoc3RydWN0IGRldmljZSAqX2RldikgQEAgLTQ5Nyw4ICs1MDUsMTMNCj4gQEAgc3RhdGlj
+IGludCBwbGF0Zm9ybV9kcnZfcmVtb3ZlKHN0cnVjdCBkZSAgew0KPiAgCXN0cnVjdCBwbGF0Zm9y
+bV9kcml2ZXIgKmRydiA9IHRvX3BsYXRmb3JtX2RyaXZlcihfZGV2LT5kcml2ZXIpOw0KPiAgCXN0
+cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKmRldiA9IHRvX3BsYXRmb3JtX2RldmljZShfZGV2KTsNCj4g
+KwlpbnQgcmV0Ow0KPiArDQo+ICsJcmV0ID0gZHJ2LT5yZW1vdmUoZGV2KTsNCj4gKwlpZiAoQUNQ
+SV9IQU5ETEUoX2RldikpDQo+ICsJCWFjcGlfZGV2X3BtX2RldGFjaChfZGV2LCB0cnVlKTsNCj4g
+DQo+IC0JcmV0dXJuIGRydi0+cmVtb3ZlKGRldik7DQo+ICsJcmV0dXJuIHJldDsNCj4gIH0NCj4g
+DQo+ICBzdGF0aWMgdm9pZCBwbGF0Zm9ybV9kcnZfc2h1dGRvd24oc3RydWN0IGRldmljZSAqX2Rl
+dikgQEAgLTUwNyw2ICs1MjAsOA0KPiBAQCBzdGF0aWMgdm9pZCBwbGF0Zm9ybV9kcnZfc2h1dGRv
+d24oc3RydWN0DQo+ICAJc3RydWN0IHBsYXRmb3JtX2RldmljZSAqZGV2ID0gdG9fcGxhdGZvcm1f
+ZGV2aWNlKF9kZXYpOw0KPiANCj4gIAlkcnYtPnNodXRkb3duKGRldik7DQo+ICsJaWYgKEFDUElf
+SEFORExFKF9kZXYpKQ0KPiArCQlhY3BpX2Rldl9wbV9kZXRhY2goX2RldiwgdHJ1ZSk7DQo+ICB9
+DQo+IA0KPiAgLyoqDQoNCg==
