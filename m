@@ -1,103 +1,97 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v6 2/6] PM / Runtime: introduce pm_runtime_set_memalloc_noio()
-Date: Tue, 27 Nov 2012 22:46:34 +0100
-Message-ID: <3562840.kvm4ZTnunM@vostro.rjw.lan>
-References: <1353761958-12810-1-git-send-email-ming.lei@canonical.com> <1353761958-12810-3-git-send-email-ming.lei@canonical.com> <5434404.G1ERYjuorE@vostro.rjw.lan>
+Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
+Date: Tue, 27 Nov 2012 23:05:52 +0100
+Message-ID: <1723557.AFJjisZlEm@vostro.rjw.lan>
+References: <1353947996-26723-1-git-send-email-fabio.baltieri@linaro.org> <1353947996-26723-2-git-send-email-fabio.baltieri@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <5434404.G1ERYjuorE@vostro.rjw.lan>
-Sender: owner-linux-mm@kvack.org
-To: linux-pm@vger.kernel.org
-Cc: Ming Lei <ming.lei@canonical.com>, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-mm@kvack.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:34648 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754355Ab2K0WBJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Nov 2012 17:01:09 -0500
+In-Reply-To: <1353947996-26723-2-git-send-email-fabio.baltieri@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org
 
-On Tuesday, November 27, 2012 10:19:29 PM Rafael J. Wysocki wrote:
-> On Saturday, November 24, 2012 08:59:14 PM Ming Lei wrote:
-> > The patch introduces the flag of memalloc_noio in 'struct dev_pm_info'
-> > to help PM core to teach mm not allocating memory with GFP_KERNEL
-> > flag for avoiding probable deadlock.
-> > 
-> > As explained in the comment, any GFP_KERNEL allocation inside
-> > runtime_resume() or runtime_suspend() on any one of device in
-> > the path from one block or network device to the root device
-> > in the device tree may cause deadlock, the introduced
-> > pm_runtime_set_memalloc_noio() sets or clears the flag on
-> > device in the path recursively.
-> > 
-> > Cc: Alan Stern <stern@rowland.harvard.edu>
-> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > Signed-off-by: Ming Lei <ming.lei@canonical.com>
-> > ---
-> > v5:
-> > 	- fix code style error
-> > 	- add comment on clear the device memalloc_noio flag
-> > v4:
-> > 	- rename memalloc_noio_resume as memalloc_noio
-> > 	- remove pm_runtime_get_memalloc_noio()
-> > 	- add comments on pm_runtime_set_memalloc_noio
-> > v3:
-> > 	- introduce pm_runtime_get_memalloc_noio()
-> > 	- hold one global lock on pm_runtime_set_memalloc_noio
-> > 	- hold device power lock when accessing memalloc_noio_resume
-> > 	  flag suggested by Alan Stern
-> > 	- implement pm_runtime_set_memalloc_noio without recursion
-> > 	  suggested by Alan Stern
-> > v2:
-> > 	- introduce pm_runtime_set_memalloc_noio()
-> > ---
-> >  drivers/base/power/runtime.c |   60 ++++++++++++++++++++++++++++++++++++++++++
-> >  include/linux/pm.h           |    1 +
-> >  include/linux/pm_runtime.h   |    3 +++
-> >  3 files changed, 64 insertions(+)
-> > 
-> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > index 3148b10..3e198a0 100644
-> > --- a/drivers/base/power/runtime.c
-> > +++ b/drivers/base/power/runtime.c
-> > @@ -124,6 +124,66 @@ unsigned long pm_runtime_autosuspend_expiration(struct device *dev)
-> >  }
-> >  EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
-> >  
-> > +static int dev_memalloc_noio(struct device *dev, void *data)
-> > +{
-> > +	return dev->power.memalloc_noio;
-> > +}
-> > +
-> > +/*
-> > + * pm_runtime_set_memalloc_noio - Set a device's memalloc_noio flag.
-> > + * @dev: Device to handle.
-> > + * @enable: True for setting the flag and False for clearing the flag.
-> > + *
-> > + * Set the flag for all devices in the path from the device to the
-> > + * root device in the device tree if @enable is true, otherwise clear
-> > + * the flag for devices in the path whose siblings don't set the flag.
-> > + *
+On Monday, November 26, 2012 05:39:52 PM Fabio Baltieri wrote:
+> From: Rickard Andersson <rickard.andersson@stericsson.com>
 > 
-> Please use counters instead of walking the whole path every time.  Ie. in
-> addition to the flag add a counter to store the number of the device's
-> children having that flag set.
+> This patch fixes a bug that occurred when we had load on a secondary CPU
+> and the primary CPU was sleeping. Only one sampling timer was spawned
+> and it was spawned as a deferred timer on the primary CPU, so when a
+> secondary CPU had a change in load this was not detected by the cpufreq
+> governor (both ondemand and conservative).
+> 
+> This patch make sure that deferred timers are run on all CPUs in the
+> case of software controlled CPUs that run on the same frequency.
+> 
+> Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c |  3 +-
+>  drivers/cpufreq/cpufreq_governor.c     | 52 ++++++++++++++++++++++++++++++----
+>  drivers/cpufreq/cpufreq_governor.h     |  1 +
+>  drivers/cpufreq/cpufreq_ondemand.c     |  3 +-
+>  4 files changed, 51 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 64ef737..b9d7f14 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -122,7 +122,8 @@ static void cs_dbs_timer(struct work_struct *work)
+>  
+>  	dbs_check_cpu(&cs_dbs_data, cpu);
+>  
+> -	schedule_delayed_work_on(cpu, &dbs_info->cdbs.work, delay);
+> +	schedule_delayed_work_on(smp_processor_id(), &dbs_info->cdbs.work,
+> +			delay);
+>  	mutex_unlock(&dbs_info->cdbs.timer_mutex);
+>  }
+>  
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 6c5f1d3..a00f02d 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -161,13 +161,31 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  }
+>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
+>  
+> +bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
+> +{
+> +	struct cpufreq_policy *policy = cdbs->cur_policy;
+> +
+> +	return cpumask_weight(policy->cpus) > 1;
+> +}
+> +EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
+> +
+>  static inline void dbs_timer_init(struct dbs_data *dbs_data,
+> -		struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
+> +				  struct cpu_dbs_common_info *cdbs,
+> +				  unsigned int sampling_rate,
+> +				  int cpu)
+>  {
+>  	int delay = delay_for_sampling_rate(sampling_rate);
+> +	struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
+> +	struct od_cpu_dbs_info_s *od_dbs_info;
+> +
+> +	cancel_delayed_work_sync(&cdbs_local->work);
+> +
+> +	if (dbs_data->governor == GOV_ONDEMAND) {
+> +		od_dbs_info = dbs_data->get_cpu_dbs_info_s(cpu);
+> +		od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
+> +	}
 
-I would use the flag only to store the information that
-pm_runtime_set_memalloc_noio(dev, true) has been run for this device directly
-and I'd use a counter for everything else.
+The patch looks good in general except for the special case above.
 
-That is, have power.memalloc_count that would be incremented when (1)
-pm_runtime_set_memalloc_noio(dev, true) is called for that device and (2) when
-power.memalloc_count for one of its children changes from 0 to 1 (and
-analogously for decrementation).  Then, check the counter in rpm_callback().
+Why exactly is it necessary?
 
-Thanks,
 Rafael
 
 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
