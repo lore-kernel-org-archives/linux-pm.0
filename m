@@ -1,115 +1,92 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v6 5/6] PM / Runtime: force memory allocation with no I/O during Runtime PM callbcack
-Date: Tue, 27 Nov 2012 22:24:27 +0100
-Message-ID: <1354069667.BsTEhItmLz@vostro.rjw.lan>
-References: <1353761958-12810-1-git-send-email-ming.lei@canonical.com> <1353761958-12810-6-git-send-email-ming.lei@canonical.com>
+Subject: Re: [PATCH v6 2/6] PM / Runtime: introduce pm_runtime_set_memalloc_noio()
+Date: Tue, 27 Nov 2012 22:46:34 +0100
+Message-ID: <3562840.kvm4ZTnunM@vostro.rjw.lan>
+References: <1353761958-12810-1-git-send-email-ming.lei@canonical.com> <1353761958-12810-3-git-send-email-ming.lei@canonical.com> <5434404.G1ERYjuorE@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:34597 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753711Ab2K0VTn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Nov 2012 16:19:43 -0500
-In-Reply-To: <1353761958-12810-6-git-send-email-ming.lei@canonical.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <5434404.G1ERYjuorE@vostro.rjw.lan>
+Sender: owner-linux-mm@kvack.org
 To: linux-pm@vger.kernel.org
 Cc: Ming Lei <ming.lei@canonical.com>, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-mm@kvack.org
+List-Id: linux-pm@vger.kernel.org
 
-On Saturday, November 24, 2012 08:59:17 PM Ming Lei wrote:
-> This patch applies the introduced memalloc_noio_save() and
-> memalloc_noio_restore() to force memory allocation with no I/O
-> during runtime_resume/runtime_suspend callback on device with
-> the flag of 'memalloc_noio' set.
+On Tuesday, November 27, 2012 10:19:29 PM Rafael J. Wysocki wrote:
+> On Saturday, November 24, 2012 08:59:14 PM Ming Lei wrote:
+> > The patch introduces the flag of memalloc_noio in 'struct dev_pm_info'
+> > to help PM core to teach mm not allocating memory with GFP_KERNEL
+> > flag for avoiding probable deadlock.
+> > 
+> > As explained in the comment, any GFP_KERNEL allocation inside
+> > runtime_resume() or runtime_suspend() on any one of device in
+> > the path from one block or network device to the root device
+> > in the device tree may cause deadlock, the introduced
+> > pm_runtime_set_memalloc_noio() sets or clears the flag on
+> > device in the path recursively.
+> > 
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > Signed-off-by: Ming Lei <ming.lei@canonical.com>
+> > ---
+> > v5:
+> > 	- fix code style error
+> > 	- add comment on clear the device memalloc_noio flag
+> > v4:
+> > 	- rename memalloc_noio_resume as memalloc_noio
+> > 	- remove pm_runtime_get_memalloc_noio()
+> > 	- add comments on pm_runtime_set_memalloc_noio
+> > v3:
+> > 	- introduce pm_runtime_get_memalloc_noio()
+> > 	- hold one global lock on pm_runtime_set_memalloc_noio
+> > 	- hold device power lock when accessing memalloc_noio_resume
+> > 	  flag suggested by Alan Stern
+> > 	- implement pm_runtime_set_memalloc_noio without recursion
+> > 	  suggested by Alan Stern
+> > v2:
+> > 	- introduce pm_runtime_set_memalloc_noio()
+> > ---
+> >  drivers/base/power/runtime.c |   60 ++++++++++++++++++++++++++++++++++++++++++
+> >  include/linux/pm.h           |    1 +
+> >  include/linux/pm_runtime.h   |    3 +++
+> >  3 files changed, 64 insertions(+)
+> > 
+> > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > index 3148b10..3e198a0 100644
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -124,6 +124,66 @@ unsigned long pm_runtime_autosuspend_expiration(struct device *dev)
+> >  }
+> >  EXPORT_SYMBOL_GPL(pm_runtime_autosuspend_expiration);
+> >  
+> > +static int dev_memalloc_noio(struct device *dev, void *data)
+> > +{
+> > +	return dev->power.memalloc_noio;
+> > +}
+> > +
+> > +/*
+> > + * pm_runtime_set_memalloc_noio - Set a device's memalloc_noio flag.
+> > + * @dev: Device to handle.
+> > + * @enable: True for setting the flag and False for clearing the flag.
+> > + *
+> > + * Set the flag for all devices in the path from the device to the
+> > + * root device in the device tree if @enable is true, otherwise clear
+> > + * the flag for devices in the path whose siblings don't set the flag.
+> > + *
 > 
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Oliver Neukum <oneukum@suse.de>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Signed-off-by: Ming Lei <ming.lei@canonical.com>
-> ---
-> v5:
-> 	- use inline memalloc_noio_save()
-> v4:
-> 	- runtime_suspend need this too because rpm_resume may wait for
-> 	completion of concurrent runtime_suspend, so deadlock still may
-> 	be triggered in runtime_suspend path.
-> ---
->  drivers/base/power/runtime.c |   32 ++++++++++++++++++++++++++++++--
->  1 file changed, 30 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 3e198a0..96d99ea 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -371,6 +371,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  	int (*callback)(struct device *);
->  	struct device *parent = NULL;
->  	int retval;
-> +	unsigned int noio_flag;
->  
->  	trace_rpm_suspend(dev, rpmflags);
->  
-> @@ -480,7 +481,20 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  	if (!callback && dev->driver && dev->driver->pm)
->  		callback = dev->driver->pm->runtime_suspend;
->  
-> -	retval = rpm_callback(callback, dev);
-> +	/*
-> +	 * Deadlock might be caused if memory allocation with GFP_KERNEL
-> +	 * happens inside runtime_suspend callback of one block device's
-> +	 * ancestor or the block device itself. Network device might be
-> +	 * thought as part of iSCSI block device, so network device and
-> +	 * its ancestor should be marked as memalloc_noio.
-> +	 */
-> +	if (dev->power.memalloc_noio) {
-> +		noio_flag = memalloc_noio_save();
-> +		retval = rpm_callback(callback, dev);
-> +		memalloc_noio_restore(noio_flag);
-> +	} else {
-> +		retval = rpm_callback(callback, dev);
-> +	}
->  	if (retval)
->  		goto fail;
->  
-> @@ -563,6 +577,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  	int (*callback)(struct device *);
->  	struct device *parent = NULL;
->  	int retval = 0;
-> +	unsigned int noio_flag;
->  
->  	trace_rpm_resume(dev, rpmflags);
->  
-> @@ -712,7 +727,20 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  	if (!callback && dev->driver && dev->driver->pm)
->  		callback = dev->driver->pm->runtime_resume;
->  
-> -	retval = rpm_callback(callback, dev);
-> +	/*
-> +	 * Deadlock might be caused if memory allocation with GFP_KERNEL
-> +	 * happens inside runtime_resume callback of one block device's
-> +	 * ancestor or the block device itself. Network device might be
-> +	 * thought as part of iSCSI block device, so network device and
-> +	 * its ancestor should be marked as memalloc_noio.
-> +	 */
-> +	if (dev->power.memalloc_noio) {
-> +		noio_flag = memalloc_noio_save();
-> +		retval = rpm_callback(callback, dev);
-> +		memalloc_noio_restore(noio_flag);
-> +	} else {
-> +		retval = rpm_callback(callback, dev);
-> +	}
+> Please use counters instead of walking the whole path every time.  Ie. in
+> addition to the flag add a counter to store the number of the device's
+> children having that flag set.
 
-Please don't duplicate code this way.
+I would use the flag only to store the information that
+pm_runtime_set_memalloc_noio(dev, true) has been run for this device directly
+and I'd use a counter for everything else.
 
-You can move that whole thing to rpm_callback().  Yes, you'll probably need to
-check dev->power.memalloc_noio twice in there, but that's OK.
-
-
->  	if (retval) {
->  		__update_runtime_status(dev, RPM_SUSPENDED);
->  		pm_runtime_cancel_pending(dev);
-> 
+That is, have power.memalloc_count that would be incremented when (1)
+pm_runtime_set_memalloc_noio(dev, true) is called for that device and (2) when
+power.memalloc_count for one of its children changes from 0 to 1 (and
+analogously for decrementation).  Then, check the counter in rpm_callback().
 
 Thanks,
 Rafael
@@ -118,3 +95,9 @@ Rafael
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
