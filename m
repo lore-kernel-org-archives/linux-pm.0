@@ -1,76 +1,79 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Mon, 26 Nov 2012 15:27:25 -0800
-Message-ID: <1353972445.2493.19.camel@joe-AO722>
-References: <1353940633-20084-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	 <1353940633-20084-4-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Tue, 27 Nov 2012 09:41:40 +0800
+Message-ID: <50B41A54.8020905@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>    <20121119145605.GC15971@htj.dyndns.org>    <1353337611.2444.32.camel@dabdike.int.hansenpartnership.com>    <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike>   <50B2F96D.9080405@intel.com> <1353915142.2523.36.camel@dabdike>  <50B327FB.3020701@intel.com> <1353935850.2523.52.camel@dabdike>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from perches-mx.perches.com ([206.117.179.246]:47866 "EHLO
-	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755309Ab2KZX10 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Nov 2012 18:27:26 -0500
-In-Reply-To: <1353940633-20084-4-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-scsi-owner@vger.kernel.org>
+In-Reply-To: <1353935850.2523.52.camel@dabdike>
+Sender: linux-scsi-owner@vger.kernel.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-On Mon, 2012-11-26 at 06:37 -0800, Jacob Pan wrote:
-> Intel PowerClamp driver performs synchronized idle injection across
-> all online CPUs. The goal is to maintain a given package level C-state
-> ratio.
+On 11/26/2012 09:17 PM, James Bottomley wrote:
+> On Mon, 2012-11-26 at 16:27 +0800, Aaron Lu wrote:
+>> Well, ZPREADY is not a power state that we can program the ODD to
+>> enter(figure 234 and table 323 of the SPEC), it servers more like an
+>> information provided by ODD to host so that host does not need to do TUR
+>> and then examine the sense code to decide if zero power ready status is
+>> satisfied but simply query ODD if its current power state is ZPREADY.
+>> So it's not that we program the device to go into ZPREADY power state
+>> and the ODD's power will be omitted.
+>>
+>> The benefit of a ZPREADY capable ODD is that, when we need to decide if
+>> the ODD is in a zero power ready status, we can simply query the ODD by
+>> issuing a GET_EVENT_STATUS_NOTIFICATION and check the returned power
+>> class events, if it is in ZPREADY power state, then we can omit the
+>> power. To support ZPREADY, we just need some change to the zpready
+>> funtion, which currently uses sense code to check ZP ready status.
+>>
+>> So this is my understanding of ZPREADY, and I don't see it as a total
+>> different thing with ZPODD, it just changes the way how host senses the
+>> zero power ready status. But if I was wrong, please kindly let me know,
+>> thanks.
+> 
+> My understanding is that a ZPREADY device may be capable of internal
+> power down, meaning it doesn't necessarily need the host to omit the
+> power.  It depends what the difference is between Sleep and Off is
+> (they're deliberately left as implementation defined in the standard, Ch
+> 16, but the conditions of sleep are pretty onerous, so it sounds like
+> most of the mechanics are powered down).
 
-trivial notes:
+I Agree that when the ODD is put to Sleep state, it may power down most
+of the mechanics, good for power saving. The problem is, we have the 2
+seconds poll, and since Sleep state can not process any command, we will
+need to bring the ODD out of Sleep state every 2 seconds, is this
+feasible? Please note that leaving Sleep state needs full initialization
+of the ODD.
 
-> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+ZPODD system(ODD+platform) solves this problem with ACPI, when the ODD
+is powered off and any event that may induce a media change event will
+generate an ACPI interrupt, so we can stop the poll(though in whatever
+way is still in discussion).
 
-You should still add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-before any include so that all messages are prefixed with powerclamp:
+So I suppose we need to find a proper way to implement Sleep.
 
-> +
-> +/* #define DEBUG */
-> +
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-[]
-> +static void adjust_compensation(int target_ratio, unsigned int win)
-> +{
-> +	int delta;
+> 
+> However, if you want to work it similarly to ZPODD, then the timeouts
+> automatically transitions to ZPREADY, the device issues an event, we
+> trap the event at the low level and omit power.
 
-It'd be shorter code to use a temporary like
+Yeah, I can do this. Except that I don't quite understand how the device
+issues the event to host, by interrupt? My understanding is that, it
+will issue this event to itself...and host still needs to use command
+GET_EVENT_STATUS_NOTIFICATION to fetch the event, much the same way like
+the media related events it emits.
 
-	struct powerclamp_calibration_data *d = &cal_data[target_ratio];
+> 
+> I'm also curious about driving sleep from autopm, since mode page timers
+> don't control the sleep transition.
 
-> +
-> +	/*
-> +	 * adjust compensations if confidence level has not been reached or
-> +	 * there are too many wakeups during the last idle injection period, we
-> +	 * cannot trust the data for compensation.
-> +	 */
-> +	if (cal_data[target_ratio].confidence >= CONFIDENCE_OK ||
-> +		atomic_read(&idle_wakeup_counter) >
-> +		win * num_online_cpus())
-> +		return;
-> +
-> +	delta = set_target_ratio - current_ratio;
-> +	/* filter out bad data */
-> +	if (delta >= 0 && delta <= (1+target_ratio/10)) {
-> +		if (cal_data[target_ratio].steady_comp)
-> +			cal_data[target_ratio].steady_comp =
-> +				roundup(delta+
-> +					cal_data[target_ratio].steady_comp,
-> +					2)/2;
+I see. But we will need to work out a sensible way to put the ODD into
+that power state, if at all possible.
 
-so that this fits on a single line and becomes:
-
-		if (d->steady_comp)
-			d->steady_comp = roundup(delta + d->steady_comp, 2) / 2;
- 
-	etc.
-
-What clamps target_ratio to the correct range?
-I briefly scanned the code but didn't spot it.
+Thanks,
+Aaron
 
