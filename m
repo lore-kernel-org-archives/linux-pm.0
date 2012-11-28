@@ -1,40 +1,52 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH] PM / devfreq: remove compiler error with module
- governors (2)
-Date: Wed, 28 Nov 2012 10:26:59 +0000 (GMT)
-Message-ID: <18994982.208311354098418554.JavaMail.weblogic@epml02>
-Reply-To: myungjoo.ham@samsung.com
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH 5/5] cpufreq: dbx500: Update file header
+Date: Wed, 28 Nov 2012 11:27:44 +0100
+Message-ID: <1354098464-6665-6-git-send-email-ulf.hansson@stericsson.com>
+References: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:33355 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572Ab2K1K1A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Nov 2012 05:27:00 -0500
-Received: from epcpsbge7.samsung.com (epcpsbge7 [203.254.230.17])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0ME700A7Z0ZOPM01@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 28 Nov 2012 19:26:59 +0900 (KST)
-MIME-version: 1.0
+Received: from eu1sys200aog118.obsmtp.com ([207.126.144.145]:45048 "EHLO
+	eu1sys200aog118.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753816Ab2K1K2b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Nov 2012 05:28:31 -0500
+In-Reply-To: <1354098464-6665-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "nm@ti.com" <nm@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-PiBPbiBXZWRuZXNkYXksIE5vdmVtYmVyIDI4LCAyMDEyIDEwOjU3OjIxIEFNIE15dW5nSm9vIEhh
-bSB3cm90ZToNCj4gPiBHb3Zlcm5vcnMgY29tcGlsZWQgYXMgbW9kdWxlcyBtYXkgdXNlIHRoZXNl
-IGZ1bmN0aW9ucy4NCj4gDQo+IE9LDQo+IA0KPiBEbyB5b3Ugd2FudCBtZSB0byB0YWtlIHRoaXMg
-ZGlyZWN0bHk/DQo+IA0KPiBSYWZhZWwNCg0KDQpZZXMuDQoNCllvdSBjYW4gZWl0aGVyIHRha2Ug
-aXQgZGlyZWN0bHkgb3IgcHVsbCBpdCB3aXRoDQpnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2Nt
-L2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEgZm9yLXJhZmFlbCB0YWdzL3B1bGxfcmVxXzIw
-MTIxMTI4DQphcyB3ZWxsLg0KDQoNCg0KVGhhbmtzLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoN
-Cj4gDQo+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNh
-bXN1bmcuY29tPg0KPiA+IC0tLQ0KPiA+IFRoaXMgcGF0Y2ggaXMgYWxzbyBsb2NhdGFlZCBhdA0K
-PiA+IGdpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9tengvZGV2ZnJlcSBm
-b3ItcmFmYWVsIHRhZ3MvcHVsbF9yZXFfMjAxMjExMjgNCj4gPiANCj4gPiAgZHJpdmVycy9kZXZm
-cmVxL2RldmZyZXEuYyB8ICAgIDUgKysrKysNCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2Vy
-dGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4g
+From: Lee Jones <lee.jones@linaro.org>
 
+Real simple patch to extend the ST-Ericsson copyright date and
+remove unnecessary extra commented lines.
+
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/cpufreq/dbx500-cpufreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
+index d4cb782..047fc4f 100644
+--- a/drivers/cpufreq/dbx500-cpufreq.c
++++ b/drivers/cpufreq/dbx500-cpufreq.c
+@@ -1,13 +1,13 @@
+ /*
+  * Copyright (C) STMicroelectronics 2009
+- * Copyright (C) ST-Ericsson SA 2010
++ * Copyright (C) ST-Ericsson SA 2010-2012
+  *
+  * License Terms: GNU General Public License v2
+  * Author: Sundar Iyer <sundar.iyer@stericsson.com>
+  * Author: Martin Persson <martin.persson@stericsson.com>
+  * Author: Jonas Aaberg <jonas.aberg@stericsson.com>
+- *
+  */
++
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/cpufreq.h>
+-- 
+1.7.10
 
