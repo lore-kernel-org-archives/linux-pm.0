@@ -1,52 +1,93 @@
-From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 28 Nov 2012 10:32:42 +0800
-Message-ID: <20121128023240.GA28170@S2100-06.ap.freescale.net>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Wed, 28 Nov 2012 10:24:04 +0800
+Message-ID: <50B575C4.2040204@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1354046672-7392-7-git-send-email-mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Mark Langsdorf <mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-scsi-owner@vger.kernel.org>
+In-Reply-To: <20121128013928.GB15971@htj.dyndns.org>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 27, 2012 at 02:04:32PM -0600, Mark Langsdorf wrote:
-> Highbank processors depend on the external ECME to perform voltage
-> management based on a requested frequency. Communication between the
-> A9 cores and the ECME happens over the pl320 IPC channel.
+On 11/28/2012 09:39 AM, Tejun Heo wrote:
+> Hey, Rafael.
+> 
+> On Wed, Nov 28, 2012 at 01:51:00AM +0100, Rafael J. Wysocki wrote:
+>> Having considered that a bit more I'm now thinking that in fact the power state
+>> the device is in at the moment doesn't really matter, so the polling code need
+>> not really know what PM is doing.  What it needs to know is that the device
+>> will generate a hardware event when something interesting happens, so it is not
+>> necessary to poll it.
+>>
+>> In this particular case it is related to power management (apparently, hardware
+>> events will only be generated after the device has been put into ACPI D3cold,
+>> or so Aaron seems to be claiming), but it need not be in general, at least in
+>> principle.
+>>
+>> It looks like we need an "event driven" flag that the can be set in the lower
+>> layers and read by the upper layers.  I suppose this means it would need to be
+>> in struct device, but not necessarily in the PM-specific part of it.
+> 
+> We already have that.  That's what gendisk->async_events is for (as
+> opposed to gendisk->events).  If all events are async_events, block
+> won't poll for events, but I'm not sure that's the golden bullet.
 
-...
+Right. For ZPODD, the problem is, during power up time, it needs
+gendisk->events to be set to get poll; and after powered off, it will
+need to clear the gendisk->events field so that the poll work will stop.
+I'm not sure if the gendisk->async_events should be set here, as the
+interrupt only says that user pressed the eject button for the tray type
+ODD but he may not insert any disc. The whole point of the interrupt is
+to re-power the ODD, it is not designed to give notification of media
+change. This is my understanding of ZPODD.
 
-> +static int hb_voltage_change(unsigned int freq)
-> +{
-> +	int i;
-> +	u32 msg[7];
-> +
-> +	msg[0] = HB_CPUFREQ_CHANGE_NOTE;
-> +	msg[1] = freq / 1000;
-> +	for (i = 2; i < 7; i++)
-> +		msg[i] = 0;
-> +
-> +	return pl320_ipc_transmit(msg);
+> 
+> * None implements async_events yet and an API is missing -
 
-Is it possible to have this handled inside clk_set_rate() call of cpu
-clock?
+That's what I'm confused when reading the sata async support code, the
+SCSI sr driver will unconditionally set gendisk->events, so how the sata
+async can benefit? But this is another story.
 
-Shawn
+>   disk_check_events() - which is trivial to add, but it's the same
+>   story.  We'll need a mechanism to shoot up notification from libata
+>   to block layer.  It's admittedly easier to justify routing through
+>   SCSI tho.  So, we're mostly shifting the problem.  Given that async
+>   events is nice to have, so it isn't a bad idea.
+> 
+> * Still dunno much about zpodd but IIUC the notification from
+>   zero-power is via ACPI.  To advertise that the device doesn't need
 
-> +}
+Yes, when powered off, if users press the eject button of a tray type
+ODD or inserts a disc of the slot type ODD, the SATA ODD will generate a
+DEVICE ATTENTION signal, which will cause ACPI to emit an interrupt.
+
+On my test system, when I insert a disc into the slot type ODD to wake
+it up, it will continue to generate DEVICE ATTENTION signal, and thus,
+ACPI interrupts are coming all the time if I do not disable the ACPI GPE
+that controls the interrupt. I guess the behaviour is device by device,
+and the SPEC only states what ODD needs to do when in powered off state.
+And I don't think a tray type ODD will generate DEVICE ATTENTION signal
+when its eject button is pressed after powered up, but Jeff Wu from AMD
+may be able to test this behaviour as he has some tray type ODDs if this
+is meaningful to know.
+
+>   polling, it should also be able to do async notification while
+>   powered up, which isn't covered by zpodd but ATA async notification.
+
+Agree. For powered up media change notification, that's SATA async
+notification's job.
+
+>   So, ummm... that's another obstacle.  If zpodd requires the device
+>   to support ATA async notification, it might not be too bad tho.
+
+This doesn't seem to be the case, since ZPODD is for how ODD to get
+notified when it is powered off, so there is no words stating if the ODD
+should also support sata async notification.
+
+Thanks,
+Aaron
+
