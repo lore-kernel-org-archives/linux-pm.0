@@ -1,83 +1,52 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH] PM / devfreq: remove compiler error with module governors (2)
-Date: Wed, 28 Nov 2012 10:57:21 +0900
-Message-ID: <1354067841-4936-1-git-send-email-myungjoo.ham@samsung.com>
-References: <2278739.ton8Zzmpxv@vostro.rjw.lan>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:60278 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896Ab2K1B5Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Nov 2012 20:57:25 -0500
-Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0ME600AFCDFG8VA0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 28 Nov 2012 10:57:23 +0900 (KST)
-Received: from localhost.localdomain ([10.90.51.65])
- by mmp1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTPA id <0ME6009I4DFLZG50@mmp1.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 28 Nov 2012 10:57:23 +0900 (KST)
-In-reply-to: <2278739.ton8Zzmpxv@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
+Date: Wed, 28 Nov 2012 10:32:42 +0800
+Message-ID: <20121128023240.GA28170@S2100-06.ap.freescale.net>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1354046672-7392-7-git-send-email-mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Mark Langsdorf <mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: myungjoo.ham@gmail.com, linux-pm@vger.kernel.org, nm@ti.com
 
-Governors compiled as modules may use these functions.
+On Tue, Nov 27, 2012 at 02:04:32PM -0600, Mark Langsdorf wrote:
+> Highbank processors depend on the external ECME to perform voltage
+> management based on a requested frequency. Communication between the
+> A9 cores and the ECME happens over the pl320 IPC channel.
 
-Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
----
-This patch is also locataed at
-git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq for-rafael tags/pull_req_20121128
+...
 
- drivers/devfreq/devfreq.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+> +static int hb_voltage_change(unsigned int freq)
+> +{
+> +	int i;
+> +	u32 msg[7];
+> +
+> +	msg[0] = HB_CPUFREQ_CHANGE_NOTE;
+> +	msg[1] = freq / 1000;
+> +	for (i = 2; i < 7; i++)
+> +		msg[i] = 0;
+> +
+> +	return pl320_ipc_transmit(msg);
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 34c00c5..a8f0173 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -235,6 +235,7 @@ void devfreq_monitor_start(struct devfreq *devfreq)
- 		queue_delayed_work(devfreq_wq, &devfreq->work,
- 			msecs_to_jiffies(devfreq->profile->polling_ms));
- }
-+EXPORT_SYMBOL(devfreq_monitor_start);
- 
- /**
-  * devfreq_monitor_stop() - Stop load monitoring of a devfreq instance
-@@ -248,6 +249,7 @@ void devfreq_monitor_stop(struct devfreq *devfreq)
- {
- 	cancel_delayed_work_sync(&devfreq->work);
- }
-+EXPORT_SYMBOL(devfreq_monitor_stop);
- 
- /**
-  * devfreq_monitor_suspend() - Suspend load monitoring of a devfreq instance
-@@ -273,6 +275,7 @@ void devfreq_monitor_suspend(struct devfreq *devfreq)
- 	mutex_unlock(&devfreq->lock);
- 	cancel_delayed_work_sync(&devfreq->work);
- }
-+EXPORT_SYMBOL(devfreq_monitor_suspend);
- 
- /**
-  * devfreq_monitor_resume() - Resume load monitoring of a devfreq instance
-@@ -297,6 +300,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
- out:
- 	mutex_unlock(&devfreq->lock);
- }
-+EXPORT_SYMBOL(devfreq_monitor_resume);
- 
- /**
-  * devfreq_interval_update() - Update device devfreq monitoring interval
-@@ -343,6 +347,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
- out:
- 	mutex_unlock(&devfreq->lock);
- }
-+EXPORT_SYMBOL(devfreq_interval_update);
- 
- /**
-  * devfreq_notifier_call() - Notify that the device frequency requirements
--- 
-1.7.5.4
+Is it possible to have this handled inside clk_set_rate() call of cpu
+clock?
 
+Shawn
+
+> +}
