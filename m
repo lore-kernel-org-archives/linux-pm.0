@@ -1,56 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Longhaul: Disable driver by default
-Date: Wed, 28 Nov 2012 00:44:54 +0100
-Message-ID: <1451067.pE2ohDYtjy@vostro.rjw.lan>
-References: <1354054435-2459-1-git-send-email-rafalbilski@interia.pl> <1997813.IluQxocScm@vostro.rjw.lan> <50B54ED9.3090704@interia.pl>
+From: kbuild test robot <fengguang.wu@intel.com>
+Subject: ERROR: "devfreq_monitor_resume" undefined!
+Date: Wed, 28 Nov 2012 08:01:52 +0800
+Message-ID: <50b55470.8yQB+TYqddithSLm%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:34721 "EHLO hydra.sisk.pl"
+Received: from mga14.intel.com ([143.182.124.37]:29923 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754103Ab2K0XkK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Nov 2012 18:40:10 -0500
-In-Reply-To: <50B54ED9.3090704@interia.pl>
+	id S1751345Ab2K1ACY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Nov 2012 19:02:24 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Dave Jones <davej@redhat.com>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-pm@vger.kernel.org
 
-On Tuesday, November 27, 2012 11:38:01 PM Rafa=C5=82 Bilski wrote:
->=20
-> > On Tuesday, November 27, 2012 10:13:55 PM Rafal Bilski wrote:
-> >> This is only solution I can think of. User decides if he wants thi=
-s
-> >> driver on his machine. I don't have enough knowledge and time to f=
-ind
-> >> the reason why same code works on some machines and doesn't on oth=
-ers
-> >> which use same, or very similar,  chipset and processor.
-> > I always have problems with patches like this one, because they are=
- pretty much
-> > guaranteed to make someone complain.
-> >
-> > Is there any way to blacklist the affected machine you have?
-> >
-> > Rafael
-> No. Also problem seems to be larger than one machine. Also weirder.
-> One user claims his processor can't run below some frequency even
-> if it should be perfectly capable of doing so. System in question
-> freezes straight away. In past on good system I could change
-> frequency at least a couple of times without any protection. Just by
-> a chance. I tried to investigate "weird CPU 0 not listed by the BIOS"
-> message, but I have nothing. Also I seem to have far less time for
-> anything than in the past.
+tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+head:   0917293958d5d33213a23125ce5d9c7a852469d6
+commit: 883d588e556347c4b3221ac492a8acd8a75e730a PM / devfreq: remove compiler error when a governor is module
+date:   2 days ago
+config: make ARCH=m68k allmodconfig
 
-OK, I'll take the patch, then, but I won't include it in my first v3.8 =
-pull
-request.
+All error/warnings:
 
-Thanks,
-Rafael
+ERROR: "devfreq_monitor_resume" undefined!
+ERROR: "devfreq_monitor_suspend" undefined!
+ERROR: "devfreq_interval_update" undefined!
+ERROR: "devfreq_monitor_stop" undefined!
+ERROR: "devfreq_monitor_start" undefined!
 
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+---
+0-DAY kernel build testing backend         Open Source Technology Center
+Fengguang Wu, Yuanhan Liu                              Intel Corporation
