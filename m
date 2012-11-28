@@ -1,43 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Ming Lei <ming.lei@canonical.com>
 Subject: Re: [PATCH v6 2/6] PM / Runtime: introduce pm_runtime_set_memalloc_noio()
-Date: Wed, 28 Nov 2012 10:29:41 +0100
-Message-ID: <1408044.6czCGhbHJH@vostro.rjw.lan>
-References: <1353761958-12810-1-git-send-email-ming.lei@canonical.com> <5434404.G1ERYjuorE@vostro.rjw.lan> <CACVXFVODD9fRqQc3kR58OJm3ERgBWojnx=790xGwu=MPGaSmMA@mail.gmail.com>
+Date: Wed, 28 Nov 2012 17:47:18 +0800
+Message-ID: <CACVXFVOk45wr8jv3w=KO7uTThGSTSkq0FRsPD6p_AyQZLWGQJg@mail.gmail.com>
+References: <1353761958-12810-1-git-send-email-ming.lei@canonical.com>
+	<5434404.G1ERYjuorE@vostro.rjw.lan>
+	<CACVXFVODD9fRqQc3kR58OJm3ERgBWojnx=790xGwu=MPGaSmMA@mail.gmail.com>
+	<1408044.6czCGhbHJH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <CACVXFVODD9fRqQc3kR58OJm3ERgBWojnx=790xGwu=MPGaSmMA@mail.gmail.com>
+In-Reply-To: <1408044.6czCGhbHJH@vostro.rjw.lan>
 Sender: owner-linux-mm@kvack.org
-To: Ming Lei <ming.lei@canonical.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-mm@kvack.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, November 28, 2012 12:34:36 PM Ming Lei wrote:
-> On Wed, Nov 28, 2012 at 5:19 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >
-> > Please use counters instead of walking the whole path every time.  Ie. in
-> > addition to the flag add a counter to store the number of the device's
-> > children having that flag set.
-> 
-> Even though counter is added, walking the whole path can't be avoided too,
-> and may be a explicit walking or recursion, because pm_runtime_set_memalloc_noio
-> is required to set or clear the flag(or increase/decrease the counter) of
-> devices in the whole path.
+On Wed, Nov 28, 2012 at 5:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> But it doesn't have to walk the children.  Moreover, with counters it only
 
-But it doesn't have to walk the children.  Moreover, with counters it only
-needs to walk the whole path if all devices in it need to be updated.  For
-example, if you call pm_runtime_set_memalloc_noio(dev, true) for a device
-whose parent's counter is greater than zero already, you don't need to
-walk the path above the parent.
+Yeah, I got it, it is the advantage of counter, but with extra 'int'
+field introduced
+in 'struct device'.
+
+> needs to walk the whole path if all devices in it need to be updated.  For
+> example, if you call pm_runtime_set_memalloc_noio(dev, true) for a device
+> whose parent's counter is greater than zero already, you don't need to
+> walk the path above the parent.
+
+We still can do it with the flag only, pm_runtime_set_memalloc_noio(dev, true)
+can return immediately if one parent or the 'dev' flag is true.
+
+But considered that the pm_runtime_set_memalloc_noio(dev, false) is only
+called in a very infrequent path(network/block device->remove()), looks the
+introduced cost isn't worthy of the obtained advantage.
+
+So could you accept not introducing counter? and I will update with the
+above improvement you suggested.
 
 Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+Ming Lei
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
