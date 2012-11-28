@@ -1,85 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / devfreq: remove compiler error with module governors (2)
-Date: Wed, 28 Nov 2012 11:22:15 +0100
-Message-ID: <1637827.E9cBLQEQQc@vostro.rjw.lan>
-References: <2278739.ton8Zzmpxv@vostro.rjw.lan> <1354067841-4936-1-git-send-email-myungjoo.ham@samsung.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH] PM / devfreq: remove compiler error with module
+ governors (2)
+Date: Wed, 28 Nov 2012 10:26:59 +0000 (GMT)
+Message-ID: <18994982.208311354098418554.JavaMail.weblogic@epml02>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:35073 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753654Ab2K1KRb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Nov 2012 05:17:31 -0500
-In-Reply-To: <1354067841-4936-1-git-send-email-myungjoo.ham@samsung.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:33355 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572Ab2K1K1A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Nov 2012 05:27:00 -0500
+Received: from epcpsbge7.samsung.com (epcpsbge7 [203.254.230.17])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0ME700A7Z0ZOPM01@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 28 Nov 2012 19:26:59 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-pm@vger.kernel.org, myungjoo.ham@gmail.com, nm@ti.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "nm@ti.com" <nm@ti.com>
 
-On Wednesday, November 28, 2012 10:57:21 AM MyungJoo Ham wrote:
-> Governors compiled as modules may use these functions.
+PiBPbiBXZWRuZXNkYXksIE5vdmVtYmVyIDI4LCAyMDEyIDEwOjU3OjIxIEFNIE15dW5nSm9vIEhh
+bSB3cm90ZToNCj4gPiBHb3Zlcm5vcnMgY29tcGlsZWQgYXMgbW9kdWxlcyBtYXkgdXNlIHRoZXNl
+IGZ1bmN0aW9ucy4NCj4gDQo+IE9LDQo+IA0KPiBEbyB5b3Ugd2FudCBtZSB0byB0YWtlIHRoaXMg
+ZGlyZWN0bHk/DQo+IA0KPiBSYWZhZWwNCg0KDQpZZXMuDQoNCllvdSBjYW4gZWl0aGVyIHRha2Ug
+aXQgZGlyZWN0bHkgb3IgcHVsbCBpdCB3aXRoDQpnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2Nt
+L2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEgZm9yLXJhZmFlbCB0YWdzL3B1bGxfcmVxXzIw
+MTIxMTI4DQphcyB3ZWxsLg0KDQoNCg0KVGhhbmtzLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoN
+Cj4gDQo+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNh
+bXN1bmcuY29tPg0KPiA+IC0tLQ0KPiA+IFRoaXMgcGF0Y2ggaXMgYWxzbyBsb2NhdGFlZCBhdA0K
+PiA+IGdpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9tengvZGV2ZnJlcSBm
+b3ItcmFmYWVsIHRhZ3MvcHVsbF9yZXFfMjAxMjExMjgNCj4gPiANCj4gPiAgZHJpdmVycy9kZXZm
+cmVxL2RldmZyZXEuYyB8ICAgIDUgKysrKysNCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCA1IGluc2Vy
+dGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4g
 
-OK
 
-Do you want me to take this directly?
-
-Rafael
-
-
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> ---
-> This patch is also locataed at
-> git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq for-rafael tags/pull_req_20121128
-> 
->  drivers/devfreq/devfreq.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 34c00c5..a8f0173 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -235,6 +235,7 @@ void devfreq_monitor_start(struct devfreq *devfreq)
->  		queue_delayed_work(devfreq_wq, &devfreq->work,
->  			msecs_to_jiffies(devfreq->profile->polling_ms));
->  }
-> +EXPORT_SYMBOL(devfreq_monitor_start);
->  
->  /**
->   * devfreq_monitor_stop() - Stop load monitoring of a devfreq instance
-> @@ -248,6 +249,7 @@ void devfreq_monitor_stop(struct devfreq *devfreq)
->  {
->  	cancel_delayed_work_sync(&devfreq->work);
->  }
-> +EXPORT_SYMBOL(devfreq_monitor_stop);
->  
->  /**
->   * devfreq_monitor_suspend() - Suspend load monitoring of a devfreq instance
-> @@ -273,6 +275,7 @@ void devfreq_monitor_suspend(struct devfreq *devfreq)
->  	mutex_unlock(&devfreq->lock);
->  	cancel_delayed_work_sync(&devfreq->work);
->  }
-> +EXPORT_SYMBOL(devfreq_monitor_suspend);
->  
->  /**
->   * devfreq_monitor_resume() - Resume load monitoring of a devfreq instance
-> @@ -297,6 +300,7 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
->  out:
->  	mutex_unlock(&devfreq->lock);
->  }
-> +EXPORT_SYMBOL(devfreq_monitor_resume);
->  
->  /**
->   * devfreq_interval_update() - Update device devfreq monitoring interval
-> @@ -343,6 +347,7 @@ void devfreq_interval_update(struct devfreq *devfreq, unsigned int *delay)
->  out:
->  	mutex_unlock(&devfreq->lock);
->  }
-> +EXPORT_SYMBOL(devfreq_interval_update);
->  
->  /**
->   * devfreq_notifier_call() - Notify that the device frequency requirements
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
