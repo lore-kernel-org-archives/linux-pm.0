@@ -1,63 +1,48 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+From: Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 28 Nov 2012 18:24:15 -0600
-Message-ID: <50B6AB2F.5080903@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com> <20121128023240.GA28170@S2100-06.ap.freescale.net> <50B60E9C.9000405@calxeda.com> <20121128145759.GB28170@S2100-06.ap.freescale.net> <20121128151741.GC28170@S2100-06.ap.freescale.net> <20121128160115.21126.3841@nucleus> <50B6395B.806@calxeda.com> <20121128210552.21126.90710@nucleus>
+Date: Thu, 29 Nov 2012 09:51:36 +0800
+Message-ID: <20121129015133.GD28170@S2100-06.ap.freescale.net>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com>
+ <20121128023240.GA28170@S2100-06.ap.freescale.net>
+ <50B60E9C.9000405@calxeda.com>
+ <20121128145759.GB28170@S2100-06.ap.freescale.net>
+ <20121128151741.GC28170@S2100-06.ap.freescale.net>
+ <20121128160115.21126.3841@nucleus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:51858 "EHLO
-	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932883Ab2K2AYL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Nov 2012 19:24:11 -0500
-In-Reply-To: <20121128210552.21126.90710@nucleus>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20121128160115.21126.3841@nucleus>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Mike Turquette <mturquette-l0cyMroinI0@public.gmane.org>
+Cc: Mark Langsdorf <mark.langsdorf-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/28/2012 03:05 PM, Mike Turquette wrote:
-> Quoting Mark Langsdorf (2012-11-28 08:18:35)
->> On 11/28/2012 10:01 AM, Mike Turquette wrote:
->>> Quoting Shawn Guo (2012-11-28 07:17:44)
->>>> On Wed, Nov 28, 2012 at 10:58:02PM +0800, Shawn Guo wrote:
->>>>> On Wed, Nov 28, 2012 at 07:16:12AM -0600, Mark Langsdorf wrote:
->>>>>> I'd
->>>>>> have to move most of the logic of hb_set_target() into
->>>>>> clk_highbank.c:clk_pll_set_rate() and then add extra logic for when
->>>>>> cpufreq is not enabled/loaded.
->>>>>
->>>>> You only need to move hb_voltage_change() into cpu clock's .set_rate()
->>>>> hook with no need of checking if cpufreq is enabled or not.
->>>>>
->>>> Need to also check whether frequency or voltage should be changed first
->>>> in .set_rate() though.
->>>>
->>>> Shawn
->>>>
->>>
->>> The notifiers in the clk framework might be a better place for this than
->>> just simply hacking the logic into the .set_rate callback.
->>
->> Unless the clk notifiers are different than the cpufreq notifiers, they
->> don't handle returning error conditions very well. And given that the
->> voltage change operation can fail (though it almost always succeeds on a
->> retry) I need to be able to handle and detect that error condition.
-> 
-> The notifier handler can handle the case where the transition fails (and
-> needs to be retried).
-> 
-> Also you should check out the clk notifiers.  I think they handle
-> failure decently.  If a notifer returns an error code then everything
-> unrolls and the clk_set_rate operation aborts.
+> The notifiers in the clk framework might be a better place for this than
+> just simply hacking the logic into the .set_rate callback.
 
-Thanks for the pointer. The clk notifier calls seem to be working with
-cpufreq-cpu0.
+Ah, right.  How did I forget about that nice piece?
 
-I did enough surgery on the code that I want to run a lot of stress
-tests before I resubmit. I'll try to have something for Tuesday.
+> I haven't looked at the definition of hb_voltage_change but does the
+> call graph make any clk api calls?  Are you talking over i2c to a
+> regulator?  If so then you'll probably hit the same reentrancy problem I
+> hit when trying to make a general solution.
 
---Mark Langsdorf
-Calxeda, Inc.
+So, how is your "reentrancy in the common clk framework" series[1]
+going on?  Haven't seen any update since August.
 
+Shawn
+
+[1] http://thread.gmane.org/gmane.linux.ports.arm.kernel/182198
