@@ -1,66 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI/PM: Keep runtime PM enabled for unbound PCI devices
-Date: Wed, 28 Nov 2012 23:43:56 +0100
-Message-ID: <1962888.rQgbRUetgj@vostro.rjw.lan>
-References: <1353398902-21253-1-git-send-email-ying.huang@intel.com> <CAErSpo6CPSMXjq1eSTX41vtwOcd5rQOdC0-9ye5NZhds9U1B8A@mail.gmail.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 6/6 v6] cpufreq, highbank: add support for highbank cpufreq
+Date: Wed, 28 Nov 2012 18:24:15 -0600
+Message-ID: <50B6AB2F.5080903@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-1-git-send-email-mark.langsdorf@calxeda.com> <1354046672-7392-7-git-send-email-mark.langsdorf@calxeda.com> <20121128023240.GA28170@S2100-06.ap.freescale.net> <50B60E9C.9000405@calxeda.com> <20121128145759.GB28170@S2100-06.ap.freescale.net> <20121128151741.GC28170@S2100-06.ap.freescale.net> <20121128160115.21126.3841@nucleus> <50B6395B.806@calxeda.com> <20121128210552.21126.90710@nucleus>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:35552 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932312Ab2K1WjM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 28 Nov 2012 17:39:12 -0500
-In-Reply-To: <CAErSpo6CPSMXjq1eSTX41vtwOcd5rQOdC0-9ye5NZhds9U1B8A@mail.gmail.com>
+Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:51858 "EHLO
+	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932883Ab2K2AYL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Nov 2012 19:24:11 -0500
+In-Reply-To: <20121128210552.21126.90710@nucleus>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+To: Mike Turquette <mturquette@ti.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wednesday, November 28, 2012 03:25:59 PM Bjorn Helgaas wrote:
-> On Tue, Nov 20, 2012 at 1:08 AM, Huang Ying <ying.huang@intel.com> wrote:
-> > For unbound PCI devices, what we need is:
-> >
-> >  - Always in D0 state, because some devices does not work again after
-> >    being put into D3 by the PCI bus.
-> >
-> >  - In SUSPENDED state if allowed, so that the parent devices can still
-> >    be put into low power state.
-> >
-> > To satisfy these requirement, the runtime PM for the unbound PCI
-> > devices are disabled and set to SUSPENDED state.  One issue of this
-> > solution is that the PCI devices will be put into SUSPENDED state even
-> > if the SUSPENDED state is forbidden via the sysfs interface
-> > (.../power/control) of the device.  This is not an issue for most
-> > devices, because most PCI devices are not used at all if unbounded.
-> > But there are exceptions.  For example, unbound VGA card can be used
-> > for display, but suspend its parents make it stop working.
-> >
-> > To fix the issue, we keep the runtime PM enabled when the PCI devices
-> > are unbound.  But the runtime PM callbacks will do nothing if the PCI
-> > devices are unbound.  This way, we can put the PCI devices into
-> > SUSPENDED state without put the PCI devices into D3 state.
+On 11/28/2012 03:05 PM, Mike Turquette wrote:
+> Quoting Mark Langsdorf (2012-11-28 08:18:35)
+>> On 11/28/2012 10:01 AM, Mike Turquette wrote:
+>>> Quoting Shawn Guo (2012-11-28 07:17:44)
+>>>> On Wed, Nov 28, 2012 at 10:58:02PM +0800, Shawn Guo wrote:
+>>>>> On Wed, Nov 28, 2012 at 07:16:12AM -0600, Mark Langsdorf wrote:
+>>>>>> I'd
+>>>>>> have to move most of the logic of hb_set_target() into
+>>>>>> clk_highbank.c:clk_pll_set_rate() and then add extra logic for when
+>>>>>> cpufreq is not enabled/loaded.
+>>>>>
+>>>>> You only need to move hb_voltage_change() into cpu clock's .set_rate()
+>>>>> hook with no need of checking if cpufreq is enabled or not.
+>>>>>
+>>>> Need to also check whether frequency or voltage should be changed first
+>>>> in .set_rate() though.
+>>>>
+>>>> Shawn
+>>>>
+>>>
+>>> The notifiers in the clk framework might be a better place for this than
+>>> just simply hacking the logic into the .set_rate callback.
+>>
+>> Unless the clk notifiers are different than the cpufreq notifiers, they
+>> don't handle returning error conditions very well. And given that the
+>> voltage change operation can fail (though it almost always succeeds on a
+>> retry) I need to be able to handle and detect that error condition.
 > 
-> Does this fix a reported problem?  Is there a bug report URL?  What
-> problem would a user notice?
+> The notifier handler can handle the case where the transition fails (and
+> needs to be retried).
+> 
+> Also you should check out the clk notifiers.  I think they handle
+> failure decently.  If a notifer returns an error code then everything
+> unrolls and the clk_set_rate operation aborts.
 
-There is a BZ: https://bugzilla.kernel.org/show_bug.cgi?id=48201
+Thanks for the pointer. The clk notifier calls seem to be working with
+cpufreq-cpu0.
 
-Unfortunately, the reporter hasn't confirmed that the bug is fixed,
-although we're quite confident that it will be.
+I did enough surgery on the code that I want to run a lot of stress
+tests before I resubmit. I'll try to have something for Tuesday.
 
-> This doesn't look critical enough to try to put in v3.7 (correct me if
-> I'm wrong).  It's getting pretty late for the v3.8 merge window, but
-> it looks like it qualifies as a bug fix that we would merge even after
-> the merge window, so I'll put it in my -next branch headed for v3.8.
-> Then it can be backported to v3.6 and v3.7.
+--Mark Langsdorf
+Calxeda, Inc.
 
-I think that's OK.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
