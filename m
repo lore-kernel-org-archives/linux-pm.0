@@ -1,60 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PNP: Do not crash due to stale pointer use during system resume
-Date: Fri, 30 Nov 2012 00:10:54 +0100
-Message-ID: <1829835.4TBEQGhjkq@vostro.rjw.lan>
+From: Shuah Khan <shuahkhan@gmail.com>
+Subject: Re: [PATCH] ACPI / PNP: Do not crash due to stale pointer use during
+ system resume
+Date: Thu, 29 Nov 2012 16:25:20 -0700
+Message-ID: <CAKocOOOsOZ=g45cdFSZZoCVMBxf9aWNSa4RdGNCuAEKrxXkr1Q@mail.gmail.com>
+References: <1829835.4TBEQGhjkq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:36531 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776Ab2K2XGI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 29 Nov 2012 18:06:08 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1829835.4TBEQGhjkq@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Nov 29, 2012 at 4:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> During resume from system suspend the 'data' field of
+> struct pnp_dev in pnpacpi_set_resources() may be a stale pointer,
+> due to removal of the associated ACPI device node object in the
+> previous suspend-resume cycle.  This happens, for example, if a
+> dockable machine is booted in the docking station and then suspended
+> and resumed and suspended again.  If that happens,
+> pnpacpi_build_resource_template() called from pnpacpi_set_resources()
+> attempts to use that pointer and crashes.
+>
+> However, pnpacpi_set_resources() actually checks the device's ACPI
+> handle, attempts to find the ACPI device node object attached to it
+> and returns an error code if that fails, so in fact it knows what the
+> correct value of dev->data should be.  Use this observation to update
+> dev->data with the correct value if necessary and dump a call trace
+> if that's the case (once).
+>
+> We still need to fix the root cause of this issue, but preventing
+> systems from crashing because of it is an improvement too.
+>
+> Reported-and-tested-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+> References: https://bugzilla.kernel.org/show_bug.cgi?id=51071
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-During resume from system suspend the 'data' field of
-struct pnp_dev in pnpacpi_set_resources() may be a stale pointer,
-due to removal of the associated ACPI device node object in the
-previous suspend-resume cycle.  This happens, for example, if a
-dockable machine is booted in the docking station and then suspended
-and resumed and suspended again.  If that happens,
-pnpacpi_build_resource_template() called from pnpacpi_set_resources()
-attempts to use that pointer and crashes.
+Any reason why this shouldn't go into stable releases?
 
-However, pnpacpi_set_resources() actually checks the device's ACPI
-handle, attempts to find the ACPI device node object attached to it
-and returns an error code if that fails, so in fact it knows what the
-correct value of dev->data should be.  Use this observation to update
-dev->data with the correct value if necessary and dump a call trace
-if that's the case (once).
-
-We still need to fix the root cause of this issue, but preventing
-systems from crashing because of it is an improvement too.
-
-Reported-and-tested-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-References: https://bugzilla.kernel.org/show_bug.cgi?id=51071
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/pnp/pnpacpi/core.c |    3 +++
- 2 files changed, 6 insertions(+), 1 deletion(-)
-
-Index: linux/drivers/pnp/pnpacpi/core.c
-===================================================================
---- linux.orig/drivers/pnp/pnpacpi/core.c
-+++ linux/drivers/pnp/pnpacpi/core.c
-@@ -95,6 +95,9 @@ static int pnpacpi_set_resources(struct
- 		return -ENODEV;
- 	}
- 
-+	if (WARN_ON_ONCE(acpi_dev != dev->data))
-+		dev->data = acpi_dev;
-+
- 	ret = pnpacpi_build_resource_template(dev, &buffer);
- 	if (ret)
- 		return ret;
-
+-- Shuah
