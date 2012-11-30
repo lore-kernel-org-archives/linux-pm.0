@@ -1,56 +1,66 @@
-From: Shuah Khan <shuahkhan@gmail.com>
-Subject: Re: [PATCH] ACPI / PNP: Do not crash due to stale pointer use during
- system resume
-Date: Thu, 29 Nov 2012 16:50:20 -0700
-Message-ID: <CAKocOONs0M9R7tpF8k3J6AOptXwmrmWn9KwN9sgdxMKoB2pY8A@mail.gmail.com>
-References: <1829835.4TBEQGhjkq@vostro.rjw.lan>
-	<CAKocOOOsOZ=g45cdFSZZoCVMBxf9aWNSa4RdGNCuAEKrxXkr1Q@mail.gmail.com>
-	<28227702.6DTxM78Dej@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Fri, 30 Nov 2012 16:55:56 +0800
+Message-ID: <50B8749C.3050105@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <28227702.6DTxM78Dej@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20121128013928.GB15971@htj.dyndns.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 29, 2012 at 4:51 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, November 29, 2012 04:25:20 PM Shuah Khan wrote:
->> On Thu, Nov 29, 2012 at 4:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > During resume from system suspend the 'data' field of
->> > struct pnp_dev in pnpacpi_set_resources() may be a stale pointer,
->> > due to removal of the associated ACPI device node object in the
->> > previous suspend-resume cycle.  This happens, for example, if a
->> > dockable machine is booted in the docking station and then suspended
->> > and resumed and suspended again.  If that happens,
->> > pnpacpi_build_resource_template() called from pnpacpi_set_resources()
->> > attempts to use that pointer and crashes.
->> >
->> > However, pnpacpi_set_resources() actually checks the device's ACPI
->> > handle, attempts to find the ACPI device node object attached to it
->> > and returns an error code if that fails, so in fact it knows what the
->> > correct value of dev->data should be.  Use this observation to update
->> > dev->data with the correct value if necessary and dump a call trace
->> > if that's the case (once).
->> >
->> > We still need to fix the root cause of this issue, but preventing
->> > systems from crashing because of it is an improvement too.
->> >
->> > Reported-and-tested-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
->> > References: https://bugzilla.kernel.org/show_bug.cgi?id=51071
->> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 11/28/2012 09:39 AM, Tejun Heo wrote:
+> Hey, Rafael.
+> 
+> On Wed, Nov 28, 2012 at 01:51:00AM +0100, Rafael J. Wysocki wrote:
+>> Having considered that a bit more I'm now thinking that in fact the power state
+>> the device is in at the moment doesn't really matter, so the polling code need
+>> not really know what PM is doing.  What it needs to know is that the device
+>> will generate a hardware event when something interesting happens, so it is not
+>> necessary to poll it.
 >>
->> Any reason why this shouldn't go into stable releases?
->
-> Yes, it can go to -stable.  This is just a patch, not a git commit.  I can
-> still add the "stable" tag to it when it goes to git. :-)
->
+>> In this particular case it is related to power management (apparently, hardware
+>> events will only be generated after the device has been put into ACPI D3cold,
+>> or so Aaron seems to be claiming), but it need not be in general, at least in
+>> principle.
+>>
+>> It looks like we need an "event driven" flag that the can be set in the lower
+>> layers and read by the upper layers.  I suppose this means it would need to be
+>> in struct device, but not necessarily in the PM-specific part of it.
+> 
+> We already have that.  That's what gendisk->async_events is for (as
+> opposed to gendisk->events).  If all events are async_events, block
+> won't poll for events, but I'm not sure that's the golden bullet.
+> 
+> * None implements async_events yet and an API is missing -
+>   disk_check_events() - which is trivial to add, but it's the same
+>   story.  We'll need a mechanism to shoot up notification from libata
+>   to block layer.  It's admittedly easier to justify routing through
 
-Good. This patch applies just fine to 3.0.x, 3.4.x and 3.6.x for what
-its worth. That's how far I have gotten so far and getting ready to do
-compile tests on these.
+I don't see a way to do this, since libata has no chance of accessing
+the gendisk pointer. Or we can add a new field to struct device,
+something like no_poll, but I don't think it is the right thing to do,
+as not all devices are block ones.
 
--- Shuah
+Any other suggestions/ideas please?
+
+Thanks,
+Aaron
+
+>   SCSI tho.  So, we're mostly shifting the problem.  Given that async
+>   events is nice to have, so it isn't a bad idea.
+> 
+> * Still dunno much about zpodd but IIUC the notification from
+>   zero-power is via ACPI.  To advertise that the device doesn't need
+>   polling, it should also be able to do async notification while
+>   powered up, which isn't covered by zpodd but ATA async notification.
+>   So, ummm... that's another obstacle.  If zpodd requires the device
+>   to support ATA async notification, it might not be too bad tho.
+> 
+> Thanks.
+> 
+
