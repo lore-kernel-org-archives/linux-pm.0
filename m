@@ -1,73 +1,87 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 14/34] Thermal: Add a notification API
-Date: Sun,  2 Dec 2012 22:44:48 +0800
-Message-ID: <1354459508-3707-14-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 21/34] thermal: rcar_thermal: remove explicitly used devm_kfree/iounap()
+Date: Sun,  2 Dec 2012 22:44:55 +0800
+Message-ID: <1354459508-3707-21-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:6656 "EHLO mga14.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:29043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770Ab2LBOpi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 09:45:38 -0500
+	id S1752975Ab2LBOpm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:45:42 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Durgadoss R <durgadoss.r@intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>
 
-From: Durgadoss R <durgadoss.r@intel.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-This patch adds a notification API which the sensor drivers'
-can use to notify the framework. The framework then takes
-care of the throttling according to the configured policy.
+devm_kfree and devm_iounmap should not have to be explicitly used
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/thermal_sys.c |   18 ++++++++++++++++++
- include/linux/thermal.h       |    1 +
- 2 files changed, 19 insertions(+), 0 deletions(-)
+ drivers/thermal/rcar_thermal.c |   18 ++----------------
+ 1 files changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 64f3e97..a69f24c 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -1369,6 +1369,24 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- EXPORT_SYMBOL(thermal_cdev_update);
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 762f637..81dce23 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -185,7 +185,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	struct thermal_zone_device *zone;
+ 	struct rcar_thermal_priv *priv;
+ 	struct resource *res;
+-	int ret;
  
- /**
-+ * notify_thermal_framework - Sensor drivers use this API to notify framework
-+ * @tz:		thermal zone device
-+ * @trip:	indicates which trip point has been crossed
-+ *
-+ * This function handles the trip events from sensor drivers. It starts
-+ * throttling the cooling devices according to the policy configured.
-+ * For CRITICAL and HOT trip points, this notifies the respective drivers,
-+ * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
-+ * The throttling policy is based on the configured platform data; if no
-+ * platform data is provided, this uses the step_wise throttling policy.
-+ */
-+void notify_thermal_framework(struct thermal_zone_device *tz, int trip)
-+{
-+	handle_thermal_trip(tz, trip);
-+}
-+EXPORT_SYMBOL(notify_thermal_framework);
-+
-+/**
-  * create_trip_attrs - create attributes for trip points
-  * @tz:		the thermal zone device
-  * @mask:	Writeable trip point bitmap.
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 2bd9158..807f214 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -232,6 +232,7 @@ int get_tz_trend(struct thermal_zone_device *, int);
- struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
- 		struct thermal_cooling_device *, int);
- void thermal_cdev_update(struct thermal_cooling_device *);
-+void notify_thermal_framework(struct thermal_zone_device *, int);
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	if (!res) {
+@@ -206,16 +205,14 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 					  res->start, resource_size(res));
+ 	if (!priv->base) {
+ 		dev_err(&pdev->dev, "Unable to ioremap thermal register\n");
+-		ret = -ENOMEM;
+-		goto error_free_priv;
++		return -ENOMEM;
+ 	}
  
- int thermal_register_governor(struct thermal_governor *);
- void thermal_unregister_governor(struct thermal_governor *);
+ 	zone = thermal_zone_device_register("rcar_thermal", 0, 0, priv,
+ 				    &rcar_thermal_zone_ops, NULL, 0, 0);
+ 	if (IS_ERR(zone)) {
+ 		dev_err(&pdev->dev, "thermal zone device is NULL\n");
+-		ret = PTR_ERR(zone);
+-		goto error_iounmap;
++		return PTR_ERR(zone);
+ 	}
+ 
+ 	platform_set_drvdata(pdev, zone);
+@@ -223,26 +220,15 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "proved\n");
+ 
+ 	return 0;
+-
+-error_iounmap:
+-	devm_iounmap(&pdev->dev, priv->base);
+-error_free_priv:
+-	devm_kfree(&pdev->dev, priv);
+-
+-	return ret;
+ }
+ 
+ static int rcar_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct thermal_zone_device *zone = platform_get_drvdata(pdev);
+-	struct rcar_thermal_priv *priv = zone->devdata;
+ 
+ 	thermal_zone_device_unregister(zone);
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	devm_iounmap(&pdev->dev, priv->base);
+-	devm_kfree(&pdev->dev, priv);
+-
+ 	return 0;
+ }
+ 
 -- 
 1.7.7.6
 
