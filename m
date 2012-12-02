@@ -1,12 +1,12 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 08/34] Thermal: Update binding logic based on platform data
-Date: Sun,  2 Dec 2012 22:44:42 +0800
-Message-ID: <1354459508-3707-8-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 06/34] Thermal: Add thermal governor registration APIs
+Date: Sun,  2 Dec 2012 22:44:40 +0800
+Message-ID: <1354459508-3707-6-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:60872 "EHLO mga03.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:33009 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751579Ab2LBOpe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1751441Ab2LBOpe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Sun, 2 Dec 2012 09:45:34 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,291 +16,189 @@ Cc: Durgadoss R <durgadoss.r@intel.com>, Zhang Rui <rui.zhang@intel.com>
 
 From: Durgadoss R <durgadoss.r@intel.com>
 
-This patch updates the binding logic in thermal_sys.c
-It uses the platform layer data to bind a thermal zone
-to a cdev for a particular trip point.
-
- * If we do not have platform data and do not have
-   .bind defined, do not bind.
- * If we do not have platform data but .bind is
-   defined, then use tz->ops->bind.
- * If we have platform data, use it to create binding.
-
-The same logic sequence is followed for unbind also.
+This patch creates a structure to hold platform
+thermal governor information, and provides APIs
+for individual thermal governors to register/unregister
+with the Thermal framework.
 
 Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/thermal_sys.c |  183 +++++++++++++++++++++++++++++++++++------
- 1 files changed, 157 insertions(+), 26 deletions(-)
+ drivers/thermal/thermal_sys.c |   90 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |   16 +++++++
+ 2 files changed, 106 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index a6933da..a328032 100644
+index dca3bfc..0afd84c 100644
 --- a/drivers/thermal/thermal_sys.c
 +++ b/drivers/thermal/thermal_sys.c
-@@ -201,6 +201,111 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
- }
- EXPORT_SYMBOL(get_thermal_instance);
+@@ -49,7 +49,86 @@ static DEFINE_MUTEX(thermal_idr_lock);
  
-+static void print_bind_err_msg(struct thermal_zone_device *tz,
-+			struct thermal_cooling_device *cdev, int ret)
+ static LIST_HEAD(thermal_tz_list);
+ static LIST_HEAD(thermal_cdev_list);
++static LIST_HEAD(thermal_governor_list);
++
+ static DEFINE_MUTEX(thermal_list_lock);
++static DEFINE_MUTEX(thermal_governor_lock);
++
++static struct thermal_governor *__find_governor(const char *name)
 +{
-+	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
-+				tz->type, cdev->type, ret);
++	struct thermal_governor *pos;
++
++	list_for_each_entry(pos, &thermal_governor_list, governor_list)
++		if (!strnicmp(name, pos->name, THERMAL_NAME_LENGTH))
++			return pos;
++
++	return NULL;
 +}
 +
-+static void __bind(struct thermal_zone_device *tz, int mask,
-+			struct thermal_cooling_device *cdev)
++int thermal_register_governor(struct thermal_governor *governor)
 +{
-+	int i, ret;
++	int err;
++	const char *name;
++	struct thermal_zone_device *pos;
 +
-+	for (i = 0; i < tz->trips; i++) {
-+		if (mask & (1 << i)) {
-+			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
-+					THERMAL_NO_LIMIT, THERMAL_NO_LIMIT);
-+			if (ret)
-+				print_bind_err_msg(tz, cdev, ret);
-+		}
++	if (!governor)
++		return -EINVAL;
++
++	mutex_lock(&thermal_governor_lock);
++
++	err = -EBUSY;
++	if (__find_governor(governor->name) == NULL) {
++		err = 0;
++		list_add(&governor->governor_list, &thermal_governor_list);
 +	}
-+}
-+
-+static void __unbind(struct thermal_zone_device *tz, int mask,
-+			struct thermal_cooling_device *cdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < tz->trips; i++)
-+		if (mask & (1 << i))
-+			thermal_zone_unbind_cooling_device(tz, i, cdev);
-+}
-+
-+static void bind_cdev(struct thermal_cooling_device *cdev)
-+{
-+	int i, ret;
-+	const struct thermal_zone_params *tzp;
-+	struct thermal_zone_device *pos = NULL;
 +
 +	mutex_lock(&thermal_list_lock);
 +
 +	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		if (!pos->tzp && !pos->ops->bind)
++		if (pos->governor)
 +			continue;
-+
-+		if (!pos->tzp && pos->ops->bind) {
-+			ret = pos->ops->bind(pos, cdev);
-+			if (ret)
-+				print_bind_err_msg(pos, cdev, ret);
-+		}
-+
-+		tzp = pos->tzp;
-+		if (!tzp->tbp)
-+			return;
-+
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
-+				continue;
-+			if (tzp->tbp[i].match(pos, cdev))
-+				continue;
-+			tzp->tbp[i].cdev = cdev;
-+			__bind(pos, tzp->tbp[i].trip_mask, cdev);
-+		}
++		if (pos->tzp)
++			name = pos->tzp->governor_name;
++		else
++			name = DEFAULT_THERMAL_GOVERNOR;
++		if (!strnicmp(name, governor->name, THERMAL_NAME_LENGTH))
++			pos->governor = governor;
 +	}
 +
 +	mutex_unlock(&thermal_list_lock);
++	mutex_unlock(&thermal_governor_lock);
++
++	return err;
 +}
++EXPORT_SYMBOL_GPL(thermal_register_governor);
 +
-+static void bind_tz(struct thermal_zone_device *tz)
++void thermal_unregister_governor(struct thermal_governor *governor)
 +{
-+	int i, ret;
-+	struct thermal_cooling_device *pos = NULL;
-+	const struct thermal_zone_params *tzp = tz->tzp;
++	struct thermal_zone_device *pos;
 +
-+	if (!tzp && !tz->ops->bind)
++	if (!governor)
 +		return;
++
++	mutex_lock(&thermal_governor_lock);
++
++	if (__find_governor(governor->name) == NULL)
++		goto exit;
 +
 +	mutex_lock(&thermal_list_lock);
 +
-+	/* If there is no platform data, try to use ops->bind */
-+	if (!tzp && tz->ops->bind) {
-+		list_for_each_entry(pos, &thermal_cdev_list, node) {
-+			ret = tz->ops->bind(tz, pos);
-+			if (ret)
-+				print_bind_err_msg(tz, pos, ret);
-+		}
-+		goto exit;
++	list_for_each_entry(pos, &thermal_tz_list, node) {
++		if (!strnicmp(pos->governor->name, governor->name,
++						THERMAL_NAME_LENGTH))
++			pos->governor = NULL;
 +	}
 +
-+	if (!tzp->tbp)
-+		goto exit;
-+
-+	list_for_each_entry(pos, &thermal_cdev_list, node) {
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
-+				continue;
-+			if (tzp->tbp[i].match(tz, pos))
-+				continue;
-+			tzp->tbp[i].cdev = pos;
-+			__bind(tz, tzp->tbp[i].trip_mask, pos);
-+		}
-+	}
-+exit:
 +	mutex_unlock(&thermal_list_lock);
++	list_del(&governor->governor_list);
++exit:
++	mutex_unlock(&thermal_governor_lock);
++	return;
 +}
-+
- /* sys I/F for thermal zone */
++EXPORT_SYMBOL_GPL(thermal_unregister_governor);
  
- #define to_thermal_zone(_dev) \
-@@ -1026,7 +1131,6 @@ thermal_cooling_device_register(char *type, void *devdata,
- 				const struct thermal_cooling_device_ops *ops)
+ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
  {
- 	struct thermal_cooling_device *cdev;
--	struct thermal_zone_device *pos;
- 	int result;
- 
- 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-@@ -1076,20 +1180,15 @@ thermal_cooling_device_register(char *type, void *devdata,
+@@ -1437,6 +1516,16 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
  	if (result)
  		goto unregister;
  
-+	/* Add 'this' new cdev to the global cdev list */
- 	mutex_lock(&thermal_list_lock);
- 	list_add(&cdev->node, &thermal_cdev_list);
--	list_for_each_entry(pos, &thermal_tz_list, node) {
--		if (!pos->ops->bind)
--			continue;
--		result = pos->ops->bind(pos, cdev);
--		if (result)
--			break;
--
--	}
- 	mutex_unlock(&thermal_list_lock);
++	/* Update 'this' zone's governor information */
++	mutex_lock(&thermal_governor_lock);
++
++	if (tz->tzp)
++		tz->governor = __find_governor(tz->tzp->governor_name);
++	else
++		tz->governor = __find_governor(DEFAULT_THERMAL_GOVERNOR);
++
++	mutex_unlock(&thermal_governor_lock);
++
+ 	result = thermal_add_hwmon_sysfs(tz);
+ 	if (result)
+ 		goto unregister;
+@@ -1500,6 +1589,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	if (tz->ops->get_mode)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
+ 	remove_trip_attrs(tz);
++	tz->governor = NULL;
  
--	if (!result)
--		return cdev;
-+	/* Update binding information for 'this' new cdev */
-+	bind_cdev(cdev);
-+
-+	return cdev;
+ 	thermal_remove_hwmon_sysfs(tz);
+ 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 58cb1c0..6182bd5 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -46,6 +46,9 @@
+ #define THERMAL_GENL_VERSION                    0x01
+ #define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_group"
  
- unregister:
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
-@@ -1105,10 +1204,10 @@ EXPORT_SYMBOL(thermal_cooling_device_register);
-  * thermal_cooling_device_unregister() must be called when the device is no
-  * longer needed.
-  */
--void thermal_cooling_device_unregister(struct
--				       thermal_cooling_device
--				       *cdev)
-+void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- {
-+	int i;
-+	const struct thermal_zone_params *tzp;
- 	struct thermal_zone_device *tz;
- 	struct thermal_cooling_device *pos = NULL;
++/* Default Thermal Governor: Does Linear Throttling */
++#define DEFAULT_THERMAL_GOVERNOR	"step_wise"
++
+ struct thermal_zone_device;
+ struct thermal_cooling_device;
  
-@@ -1125,12 +1224,28 @@ void thermal_cooling_device_unregister(struct
- 		return;
- 	}
- 	list_del(&cdev->node);
-+
-+	/* Unbind all thermal zones associated with 'this' cdev */
- 	list_for_each_entry(tz, &thermal_tz_list, node) {
--		if (!tz->ops->unbind)
-+		if (tz->ops->unbind) {
-+			tz->ops->unbind(tz, cdev);
-+			continue;
-+		}
-+
-+		if (!tz->tzp || !tz->tzp->tbp)
- 			continue;
--		tz->ops->unbind(tz, cdev);
-+
-+		tzp = tz->tzp;
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev == cdev) {
-+				__unbind(tz, tzp->tbp[i].trip_mask, cdev);
-+				tzp->tbp[i].cdev = NULL;
-+			}
-+		}
- 	}
-+
- 	mutex_unlock(&thermal_list_lock);
-+
- 	if (cdev->type[0])
- 		device_remove_file(&cdev->device, &dev_attr_cdev_type);
- 	device_remove_file(&cdev->device, &dev_attr_max_state);
-@@ -1468,7 +1583,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	int passive_delay, int polling_delay)
- {
- 	struct thermal_zone_device *tz;
--	struct thermal_cooling_device *pos;
- 	enum thermal_trip_type trip_type;
- 	int result;
- 	int count;
-@@ -1567,14 +1681,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+@@ -158,6 +161,7 @@ struct thermal_zone_device {
+ 	unsigned int forced_passive;
+ 	const struct thermal_zone_device_ops *ops;
+ 	const struct thermal_zone_params *tzp;
++	struct thermal_governor *governor;
+ 	struct list_head thermal_instances;
+ 	struct idr idr;
+ 	struct mutex lock; /* protect thermal_instances list */
+@@ -165,6 +169,14 @@ struct thermal_zone_device {
+ 	struct delayed_work poll_queue;
+ };
  
- 	mutex_lock(&thermal_list_lock);
- 	list_add_tail(&tz->node, &thermal_tz_list);
--	if (ops->bind)
--		list_for_each_entry(pos, &thermal_cdev_list, node) {
--		result = ops->bind(tz, pos);
--		if (result)
--			break;
--		}
- 	mutex_unlock(&thermal_list_lock);
- 
-+	/* Bind cooling devices for this zone */
-+	bind_tz(tz);
++/* Structure that holds thermal governor information */
++struct thermal_governor {
++	char name[THERMAL_NAME_LENGTH];
++	int (*throttle)(struct thermal_zone_device *tz, int trip);
++	struct list_head	governor_list;
++	struct module		*owner;
++};
 +
- 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
- 
- 	thermal_zone_device_update(tz);
-@@ -1595,12 +1706,16 @@ EXPORT_SYMBOL(thermal_zone_device_register);
-  */
- void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- {
-+	int i;
-+	const struct thermal_zone_params *tzp;
+ /* Structure that holds binding parameters for a zone */
+ struct thermal_bind_params {
  	struct thermal_cooling_device *cdev;
- 	struct thermal_zone_device *pos = NULL;
+@@ -189,6 +201,7 @@ struct thermal_bind_params {
  
- 	if (!tz)
- 		return;
+ /* Structure to define Thermal Zone parameters */
+ struct thermal_zone_params {
++	char governor_name[THERMAL_NAME_LENGTH];
+ 	int num_tbps;	/* Number of tbp entries */
+ 	struct thermal_bind_params *tbp;
+ };
+@@ -219,6 +232,9 @@ int get_tz_trend(struct thermal_zone_device *, int);
+ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+ 		struct thermal_cooling_device *, int);
  
-+	tzp = tz->tzp;
++int thermal_register_governor(struct thermal_governor *);
++void thermal_unregister_governor(struct thermal_governor *);
 +
- 	mutex_lock(&thermal_list_lock);
- 	list_for_each_entry(pos, &thermal_tz_list, node)
- 	    if (pos == tz)
-@@ -1611,9 +1726,25 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 		return;
- 	}
- 	list_del(&tz->node);
--	if (tz->ops->unbind)
--		list_for_each_entry(cdev, &thermal_cdev_list, node)
--		    tz->ops->unbind(tz, cdev);
-+
-+	/* Unbind all cdevs associated with 'this' thermal zone */
-+	list_for_each_entry(cdev, &thermal_cdev_list, node) {
-+		if (tz->ops->unbind) {
-+			tz->ops->unbind(tz, cdev);
-+			continue;
-+		}
-+
-+		if (!tzp || !tzp->tbp)
-+			break;
-+
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev == cdev) {
-+				__unbind(tz, tzp->tbp[i].trip_mask, cdev);
-+				tzp->tbp[i].cdev = NULL;
-+			}
-+		}
-+	}
-+
- 	mutex_unlock(&thermal_list_lock);
- 
- 	thermal_zone_device_set_polling(tz, 0);
+ #ifdef CONFIG_NET
+ extern int thermal_generate_netlink_event(u32 orig, enum events event);
+ #else
 -- 
 1.7.7.6
 
