@@ -1,216 +1,45 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 30/34] Thermal: Add ST-Ericsson DB8500 thermal properties and platform data.
-Date: Sun,  2 Dec 2012 22:45:04 +0800
-Message-ID: <1354459508-3707-30-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 25/34] thermal: cpu_cooling: Make 'notify_device' static
+Date: Sun,  2 Dec 2012 22:44:59 +0800
+Message-ID: <1354459508-3707-25-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:40288 "EHLO mga03.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:29043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751673Ab2LBOpz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 09:45:55 -0500
+	id S1751630Ab2LBOps (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:45:48 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: "hongbo.zhang" <hongbo.zhang@linaro.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
 
-This patch adds device tree properties for ST-Ericsson DB8500 thermal driver,
-also adds the platform data to support the old fashion.
+Silences the following sparse warning:
 
-Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+drivers/thermal/cpu_cooling.c:67:31: warning:
+symbol 'notify_device' was not declared. Should it be static?
+
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- arch/arm/boot/dts/dbx5x0.dtsi      |   14 ++++++++
- arch/arm/boot/dts/snowball.dts     |   31 +++++++++++++++++
- arch/arm/configs/u8500_defconfig   |    2 +
- arch/arm/mach-ux500/board-mop500.c |   64 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 111 insertions(+), 0 deletions(-)
+ drivers/thermal/cpu_cooling.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/boot/dts/dbx5x0.dtsi b/arch/arm/boot/dts/dbx5x0.dtsi
-index 4b0e0ca..731086b 100644
---- a/arch/arm/boot/dts/dbx5x0.dtsi
-+++ b/arch/arm/boot/dts/dbx5x0.dtsi
-@@ -203,6 +203,14 @@
- 				reg = <0x80157450 0xC>;
- 			};
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 392d57d..6f94c2c 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -64,7 +64,7 @@ static unsigned int cpufreq_dev_count;
  
-+			thermal@801573c0 {
-+				compatible = "stericsson,db8500-thermal";
-+				reg = <0x801573c0 0x40>;
-+				interrupts = <21 0x4>, <22 0x4>;
-+				interrupt-names = "IRQ_HOTMON_LOW", "IRQ_HOTMON_HIGH";
-+				status = "disabled";
-+			 };
-+
- 			db8500-prcmu-regulators {
- 				compatible = "stericsson,db8500-prcmu-regulator";
+ /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
+ #define NOTIFY_INVALID NULL
+-struct cpufreq_cooling_device *notify_device;
++static struct cpufreq_cooling_device *notify_device;
  
-@@ -660,5 +668,11 @@
- 			ranges = <0 0x50000000 0x4000000>;
- 			status = "disabled";
- 		};
-+
-+		cpufreq-cooling {
-+			compatible = "stericsson,db8500-cpufreq-cooling";
-+			status = "disabled";
-+		 };
-+
- 	};
- };
-diff --git a/arch/arm/boot/dts/snowball.dts b/arch/arm/boot/dts/snowball.dts
-index 702c0ba..c6f85f0 100644
---- a/arch/arm/boot/dts/snowball.dts
-+++ b/arch/arm/boot/dts/snowball.dts
-@@ -99,6 +99,33 @@
- 			status = "okay";
- 		};
- 
-+		prcmu@80157000 {
-+			thermal@801573c0 {
-+				num-trips = <4>;
-+
-+				trip0-temp = <70000>;
-+				trip0-type = "active";
-+				trip0-cdev-num = <1>;
-+				trip0-cdev-name0 = "thermal-cpufreq-0";
-+
-+				trip1-temp = <75000>;
-+				trip1-type = "active";
-+				trip1-cdev-num = <1>;
-+				trip1-cdev-name0 = "thermal-cpufreq-0";
-+
-+				trip2-temp = <80000>;
-+				trip2-type = "active";
-+				trip2-cdev-num = <1>;
-+				trip2-cdev-name0 = "thermal-cpufreq-0";
-+
-+				trip3-temp = <85000>;
-+				trip3-type = "critical";
-+				trip3-cdev-num = <0>;
-+
-+				status = "okay";
-+			 };
-+		};
-+
- 		external-bus@50000000 {
- 			status = "okay";
- 
-@@ -183,5 +210,9 @@
- 				reg = <0x33>;
- 			};
- 		};
-+
-+		cpufreq-cooling {
-+			status = "okay";
-+		};
- 	};
- };
-diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
-index da68454..250625d 100644
---- a/arch/arm/configs/u8500_defconfig
-+++ b/arch/arm/configs/u8500_defconfig
-@@ -69,6 +69,8 @@ CONFIG_GPIO_TC3589X=y
- CONFIG_POWER_SUPPLY=y
- CONFIG_AB8500_BM=y
- CONFIG_AB8500_BATTERY_THERM_ON_BATCTRL=y
-+CONFIG_THERMAL=y
-+CONFIG_CPU_THERMAL=y
- CONFIG_MFD_STMPE=y
- CONFIG_MFD_TC3589X=y
- CONFIG_AB5500_CORE=y
-diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
-index 416d436..b03216b 100644
---- a/arch/arm/mach-ux500/board-mop500.c
-+++ b/arch/arm/mach-ux500/board-mop500.c
-@@ -16,6 +16,7 @@
- #include <linux/io.h>
- #include <linux/i2c.h>
- #include <linux/platform_data/i2c-nomadik.h>
-+#include <linux/platform_data/db8500_thermal.h>
- #include <linux/gpio.h>
- #include <linux/amba/bus.h>
- #include <linux/amba/pl022.h>
-@@ -229,6 +230,67 @@ static struct ab8500_platform_data ab8500_platdata = {
- };
- 
- /*
-+ * Thermal Sensor
-+ */
-+
-+static struct resource db8500_thsens_resources[] = {
-+	{
-+		.name = "IRQ_HOTMON_LOW",
-+		.start  = IRQ_PRCMU_HOTMON_LOW,
-+		.end    = IRQ_PRCMU_HOTMON_LOW,
-+		.flags  = IORESOURCE_IRQ,
-+	},
-+	{
-+		.name = "IRQ_HOTMON_HIGH",
-+		.start  = IRQ_PRCMU_HOTMON_HIGH,
-+		.end    = IRQ_PRCMU_HOTMON_HIGH,
-+		.flags  = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct db8500_thsens_platform_data db8500_thsens_data = {
-+	.trip_points[0] = {
-+		.temp = 70000,
-+		.type = THERMAL_TRIP_ACTIVE,
-+		.cdev_name = {
-+			[0] = "thermal-cpufreq-0",
-+		},
-+	},
-+	.trip_points[1] = {
-+		.temp = 75000,
-+		.type = THERMAL_TRIP_ACTIVE,
-+		.cdev_name = {
-+			[0] = "thermal-cpufreq-0",
-+		},
-+	},
-+	.trip_points[2] = {
-+		.temp = 80000,
-+		.type = THERMAL_TRIP_ACTIVE,
-+		.cdev_name = {
-+			[0] = "thermal-cpufreq-0",
-+		},
-+	},
-+	.trip_points[3] = {
-+		.temp = 85000,
-+		.type = THERMAL_TRIP_CRITICAL,
-+	},
-+	.num_trips = 4,
-+};
-+
-+static struct platform_device u8500_thsens_device = {
-+	.name           = "db8500-thermal",
-+	.resource       = db8500_thsens_resources,
-+	.num_resources  = ARRAY_SIZE(db8500_thsens_resources),
-+	.dev	= {
-+		.platform_data	= &db8500_thsens_data,
-+	},
-+};
-+
-+static struct platform_device u8500_cpufreq_cooling_device = {
-+	.name           = "db8500-cpufreq-cooling",
-+};
-+
-+/*
-  * TPS61052
-  */
- 
-@@ -583,6 +645,8 @@ static struct platform_device *snowball_platform_devs[] __initdata = {
- 	&snowball_key_dev,
- 	&snowball_sbnet_dev,
- 	&snowball_gpio_en_3v3_regulator_dev,
-+	&u8500_thsens_device,
-+	&u8500_cpufreq_cooling_device,
- };
- 
- static void __init mop500_init_machine(void)
+ /**
+  * get_idr - function to get a unique id.
 -- 
 1.7.7.6
 
