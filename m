@@ -1,225 +1,306 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 24/34] Thermal: Remove the cooling_cpufreq_list.
-Date: Sun,  2 Dec 2012 22:44:58 +0800
-Message-ID: <1354459508-3707-24-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 08/34] Thermal: Update binding logic based on platform data
+Date: Sun,  2 Dec 2012 22:44:42 +0800
+Message-ID: <1354459508-3707-8-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:29043 "EHLO mga03.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:60872 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753288Ab2LBOpr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 09:45:47 -0500
+	id S1751579Ab2LBOpe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:45:34 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: "hongbo.zhang" <hongbo.zhang@linaro.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Durgadoss R <durgadoss.r@intel.com>, Zhang Rui <rui.zhang@intel.com>
 
-From: "hongbo.zhang" <hongbo.zhang@linaro.com>
+From: Durgadoss R <durgadoss.r@intel.com>
 
-Problem of using this list is that the cpufreq_get_max_state callback will be
-called when register cooling device by thermal_cooling_device_register, but
-this list isn't ready at this moment. What's more, there is no need to maintain
-such a list, we can get cpufreq_cooling_device instance by the private
-thermal_cooling_device.devdata.
+This patch updates the binding logic in thermal_sys.c
+It uses the platform layer data to bind a thermal zone
+to a cdev for a particular trip point.
 
-Signed-off-by: hongbo.zhang <hongbo.zhang@linaro.com>
-Reviewed-by: Francesco Lavra <francescolavra.fl@gmail.com>
-Reviewed-by: Amit Daniel Kachhap <amit.kachhap@linaro.org>
+ * If we do not have platform data and do not have
+   .bind defined, do not bind.
+ * If we do not have platform data but .bind is
+   defined, then use tz->ops->bind.
+ * If we have platform data, use it to create binding.
+
+The same logic sequence is followed for unbind also.
+
+Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/cpu_cooling.c |   91 +++++++++--------------------------------
- 1 files changed, 19 insertions(+), 72 deletions(-)
+ drivers/thermal/thermal_sys.c |  183 +++++++++++++++++++++++++++++++++++------
+ 1 files changed, 157 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index bfd62b7..392d57d 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -58,8 +58,9 @@ struct cpufreq_cooling_device {
- };
- static LIST_HEAD(cooling_cpufreq_list);
- static DEFINE_IDR(cpufreq_idr);
-+static DEFINE_MUTEX(cooling_cpufreq_lock);
- 
--static struct mutex cooling_cpufreq_lock;
-+static unsigned int cpufreq_dev_count;
- 
- /* notify_table passes value to the CPUFREQ_ADJUST callback function. */
- #define NOTIFY_INVALID NULL
-@@ -240,28 +241,18 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
- {
--	int ret = -EINVAL, i = 0;
--	struct cpufreq_cooling_device *cpufreq_device;
--	struct cpumask *maskPtr;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-+	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
- 	unsigned int cpu;
- 	struct cpufreq_frequency_table *table;
- 	unsigned long count = 0;
-+	int i = 0;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev)
--			break;
--	}
--	if (cpufreq_device == NULL)
--		goto return_get_max_state;
--
--	maskPtr = &cpufreq_device->allowed_cpus;
- 	cpu = cpumask_any(maskPtr);
- 	table = cpufreq_frequency_get_table(cpu);
- 	if (!table) {
- 		*state = 0;
--		ret = 0;
--		goto return_get_max_state;
-+		return 0;
- 	}
- 
- 	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-@@ -272,12 +263,10 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 
- 	if (count > 0) {
- 		*state = --count;
--		ret = 0;
-+		return 0;
- 	}
- 
--return_get_max_state:
--	mutex_unlock(&cooling_cpufreq_lock);
--	return ret;
-+	return -EINVAL;
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index a6933da..a328032 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -201,6 +201,111 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
  }
+ EXPORT_SYMBOL(get_thermal_instance);
  
- /**
-@@ -288,20 +277,10 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
- {
--	int ret = -EINVAL;
--	struct cpufreq_cooling_device *cpufreq_device;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
--			*state = cpufreq_device->cpufreq_state;
--			ret = 0;
--			break;
--		}
--	}
--	mutex_unlock(&cooling_cpufreq_lock);
--
--	return ret;
-+	*state = cpufreq_device->cpufreq_state;
-+	return 0;
- }
- 
- /**
-@@ -312,22 +291,9 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long state)
- {
--	int ret = -EINVAL;
--	struct cpufreq_cooling_device *cpufreq_device;
-+	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 
--	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_device, &cooling_cpufreq_list, node) {
--		if (cpufreq_device && cpufreq_device->cool_dev == cdev) {
--			ret = 0;
--			break;
--		}
--	}
--	if (!ret)
--		ret = cpufreq_apply_cooling(cpufreq_device, state);
--
--	mutex_unlock(&cooling_cpufreq_lock);
--
--	return ret;
-+	return cpufreq_apply_cooling(cpufreq_device, state);
- }
- 
- /* Bind cpufreq callbacks to thermal cooling device ops */
-@@ -351,14 +317,11 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- {
- 	struct thermal_cooling_device *cool_dev;
- 	struct cpufreq_cooling_device *cpufreq_dev = NULL;
--	unsigned int cpufreq_dev_count = 0, min = 0, max = 0;
-+	unsigned int min = 0, max = 0;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	int ret = 0, i;
- 	struct cpufreq_policy policy;
- 
--	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node)
--		cpufreq_dev_count++;
--
- 	/*Verify that all the clip cpus have same freq_min, freq_max limit*/
- 	for_each_cpu(i, clip_cpus) {
- 		/*continue if cpufreq policy not found and not return error*/
-@@ -380,9 +343,6 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 
- 	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
- 
--	if (cpufreq_dev_count == 0)
--		mutex_init(&cooling_cpufreq_lock);
--
- 	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
- 	if (ret) {
- 		kfree(cpufreq_dev);
-@@ -401,12 +361,12 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	cpufreq_dev->cool_dev = cool_dev;
- 	cpufreq_dev->cpufreq_state = 0;
- 	mutex_lock(&cooling_cpufreq_lock);
--	list_add_tail(&cpufreq_dev->node, &cooling_cpufreq_list);
- 
- 	/* Register the notifier for first cpufreq cooling device */
- 	if (cpufreq_dev_count == 0)
- 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
- 						CPUFREQ_POLICY_NOTIFIER);
-+	cpufreq_dev_count++;
- 
- 	mutex_unlock(&cooling_cpufreq_lock);
- 	return cool_dev;
-@@ -419,33 +379,20 @@ EXPORT_SYMBOL(cpufreq_cooling_register);
-  */
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
--	struct cpufreq_cooling_device *cpufreq_dev = NULL;
--	unsigned int cpufreq_dev_count = 0;
-+	struct cpufreq_cooling_device *cpufreq_dev = cdev->devdata;
- 
- 	mutex_lock(&cooling_cpufreq_lock);
--	list_for_each_entry(cpufreq_dev, &cooling_cpufreq_list, node) {
--		if (cpufreq_dev && cpufreq_dev->cool_dev == cdev)
--			break;
--		cpufreq_dev_count++;
--	}
--
--	if (!cpufreq_dev || cpufreq_dev->cool_dev != cdev) {
--		mutex_unlock(&cooling_cpufreq_lock);
--		return;
--	}
--
--	list_del(&cpufreq_dev->node);
-+	cpufreq_dev_count--;
- 
- 	/* Unregister the notifier for the last cpufreq cooling device */
--	if (cpufreq_dev_count == 1) {
-+	if (cpufreq_dev_count == 0) {
- 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
- 					CPUFREQ_POLICY_NOTIFIER);
- 	}
- 	mutex_unlock(&cooling_cpufreq_lock);
++static void print_bind_err_msg(struct thermal_zone_device *tz,
++			struct thermal_cooling_device *cdev, int ret)
++{
++	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
++				tz->type, cdev->type, ret);
++}
 +
- 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
- 	release_idr(&cpufreq_idr, cpufreq_dev->id);
--	if (cpufreq_dev_count == 1)
--		mutex_destroy(&cooling_cpufreq_lock);
- 	kfree(cpufreq_dev);
- }
- EXPORT_SYMBOL(cpufreq_cooling_unregister);
++static void __bind(struct thermal_zone_device *tz, int mask,
++			struct thermal_cooling_device *cdev)
++{
++	int i, ret;
++
++	for (i = 0; i < tz->trips; i++) {
++		if (mask & (1 << i)) {
++			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
++					THERMAL_NO_LIMIT, THERMAL_NO_LIMIT);
++			if (ret)
++				print_bind_err_msg(tz, cdev, ret);
++		}
++	}
++}
++
++static void __unbind(struct thermal_zone_device *tz, int mask,
++			struct thermal_cooling_device *cdev)
++{
++	int i;
++
++	for (i = 0; i < tz->trips; i++)
++		if (mask & (1 << i))
++			thermal_zone_unbind_cooling_device(tz, i, cdev);
++}
++
++static void bind_cdev(struct thermal_cooling_device *cdev)
++{
++	int i, ret;
++	const struct thermal_zone_params *tzp;
++	struct thermal_zone_device *pos = NULL;
++
++	mutex_lock(&thermal_list_lock);
++
++	list_for_each_entry(pos, &thermal_tz_list, node) {
++		if (!pos->tzp && !pos->ops->bind)
++			continue;
++
++		if (!pos->tzp && pos->ops->bind) {
++			ret = pos->ops->bind(pos, cdev);
++			if (ret)
++				print_bind_err_msg(pos, cdev, ret);
++		}
++
++		tzp = pos->tzp;
++		if (!tzp->tbp)
++			return;
++
++		for (i = 0; i < tzp->num_tbps; i++) {
++			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
++				continue;
++			if (tzp->tbp[i].match(pos, cdev))
++				continue;
++			tzp->tbp[i].cdev = cdev;
++			__bind(pos, tzp->tbp[i].trip_mask, cdev);
++		}
++	}
++
++	mutex_unlock(&thermal_list_lock);
++}
++
++static void bind_tz(struct thermal_zone_device *tz)
++{
++	int i, ret;
++	struct thermal_cooling_device *pos = NULL;
++	const struct thermal_zone_params *tzp = tz->tzp;
++
++	if (!tzp && !tz->ops->bind)
++		return;
++
++	mutex_lock(&thermal_list_lock);
++
++	/* If there is no platform data, try to use ops->bind */
++	if (!tzp && tz->ops->bind) {
++		list_for_each_entry(pos, &thermal_cdev_list, node) {
++			ret = tz->ops->bind(tz, pos);
++			if (ret)
++				print_bind_err_msg(tz, pos, ret);
++		}
++		goto exit;
++	}
++
++	if (!tzp->tbp)
++		goto exit;
++
++	list_for_each_entry(pos, &thermal_cdev_list, node) {
++		for (i = 0; i < tzp->num_tbps; i++) {
++			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
++				continue;
++			if (tzp->tbp[i].match(tz, pos))
++				continue;
++			tzp->tbp[i].cdev = pos;
++			__bind(tz, tzp->tbp[i].trip_mask, pos);
++		}
++	}
++exit:
++	mutex_unlock(&thermal_list_lock);
++}
++
+ /* sys I/F for thermal zone */
+ 
+ #define to_thermal_zone(_dev) \
+@@ -1026,7 +1131,6 @@ thermal_cooling_device_register(char *type, void *devdata,
+ 				const struct thermal_cooling_device_ops *ops)
+ {
+ 	struct thermal_cooling_device *cdev;
+-	struct thermal_zone_device *pos;
+ 	int result;
+ 
+ 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+@@ -1076,20 +1180,15 @@ thermal_cooling_device_register(char *type, void *devdata,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Add 'this' new cdev to the global cdev list */
+ 	mutex_lock(&thermal_list_lock);
+ 	list_add(&cdev->node, &thermal_cdev_list);
+-	list_for_each_entry(pos, &thermal_tz_list, node) {
+-		if (!pos->ops->bind)
+-			continue;
+-		result = pos->ops->bind(pos, cdev);
+-		if (result)
+-			break;
+-
+-	}
+ 	mutex_unlock(&thermal_list_lock);
+ 
+-	if (!result)
+-		return cdev;
++	/* Update binding information for 'this' new cdev */
++	bind_cdev(cdev);
++
++	return cdev;
+ 
+ unregister:
+ 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
+@@ -1105,10 +1204,10 @@ EXPORT_SYMBOL(thermal_cooling_device_register);
+  * thermal_cooling_device_unregister() must be called when the device is no
+  * longer needed.
+  */
+-void thermal_cooling_device_unregister(struct
+-				       thermal_cooling_device
+-				       *cdev)
++void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ {
++	int i;
++	const struct thermal_zone_params *tzp;
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_cooling_device *pos = NULL;
+ 
+@@ -1125,12 +1224,28 @@ void thermal_cooling_device_unregister(struct
+ 		return;
+ 	}
+ 	list_del(&cdev->node);
++
++	/* Unbind all thermal zones associated with 'this' cdev */
+ 	list_for_each_entry(tz, &thermal_tz_list, node) {
+-		if (!tz->ops->unbind)
++		if (tz->ops->unbind) {
++			tz->ops->unbind(tz, cdev);
++			continue;
++		}
++
++		if (!tz->tzp || !tz->tzp->tbp)
+ 			continue;
+-		tz->ops->unbind(tz, cdev);
++
++		tzp = tz->tzp;
++		for (i = 0; i < tzp->num_tbps; i++) {
++			if (tzp->tbp[i].cdev == cdev) {
++				__unbind(tz, tzp->tbp[i].trip_mask, cdev);
++				tzp->tbp[i].cdev = NULL;
++			}
++		}
+ 	}
++
+ 	mutex_unlock(&thermal_list_lock);
++
+ 	if (cdev->type[0])
+ 		device_remove_file(&cdev->device, &dev_attr_cdev_type);
+ 	device_remove_file(&cdev->device, &dev_attr_max_state);
+@@ -1468,7 +1583,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	int passive_delay, int polling_delay)
+ {
+ 	struct thermal_zone_device *tz;
+-	struct thermal_cooling_device *pos;
+ 	enum thermal_trip_type trip_type;
+ 	int result;
+ 	int count;
+@@ -1567,14 +1681,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 
+ 	mutex_lock(&thermal_list_lock);
+ 	list_add_tail(&tz->node, &thermal_tz_list);
+-	if (ops->bind)
+-		list_for_each_entry(pos, &thermal_cdev_list, node) {
+-		result = ops->bind(tz, pos);
+-		if (result)
+-			break;
+-		}
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	/* Bind cooling devices for this zone */
++	bind_tz(tz);
++
+ 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+ 
+ 	thermal_zone_device_update(tz);
+@@ -1595,12 +1706,16 @@ EXPORT_SYMBOL(thermal_zone_device_register);
+  */
+ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ {
++	int i;
++	const struct thermal_zone_params *tzp;
+ 	struct thermal_cooling_device *cdev;
+ 	struct thermal_zone_device *pos = NULL;
+ 
+ 	if (!tz)
+ 		return;
+ 
++	tzp = tz->tzp;
++
+ 	mutex_lock(&thermal_list_lock);
+ 	list_for_each_entry(pos, &thermal_tz_list, node)
+ 	    if (pos == tz)
+@@ -1611,9 +1726,25 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 		return;
+ 	}
+ 	list_del(&tz->node);
+-	if (tz->ops->unbind)
+-		list_for_each_entry(cdev, &thermal_cdev_list, node)
+-		    tz->ops->unbind(tz, cdev);
++
++	/* Unbind all cdevs associated with 'this' thermal zone */
++	list_for_each_entry(cdev, &thermal_cdev_list, node) {
++		if (tz->ops->unbind) {
++			tz->ops->unbind(tz, cdev);
++			continue;
++		}
++
++		if (!tzp || !tzp->tbp)
++			break;
++
++		for (i = 0; i < tzp->num_tbps; i++) {
++			if (tzp->tbp[i].cdev == cdev) {
++				__unbind(tz, tzp->tbp[i].trip_mask, cdev);
++				tzp->tbp[i].cdev = NULL;
++			}
++		}
++	}
++
+ 	mutex_unlock(&thermal_list_lock);
+ 
+ 	thermal_zone_device_set_polling(tz, 0);
 -- 
 1.7.7.6
 
