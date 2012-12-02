@@ -1,123 +1,22 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] SDIO / PM: Add empty bus-level suspend/resume callbacks
-Date: Sun, 02 Dec 2012 14:48:50 +0100
-Message-ID: <2147450.LFoExqrKEF@vostro.rjw.lan>
-References: <20120325203849.7a908e32@notabene.brown> <201203260029.24826.rjw@sisk.pl> <20121202194625.5d66e239@notabene.brown>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20121202194625.5d66e239@notabene.brown>
-Sender: linux-mmc-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.de>, Chris Ball <cjb@laptop.org>
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, Thierry Reding <thierry.reding@avionic-design.de>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 00/34] Thermal: Linux/Thermal Patches for 3.8
+Date: Sun,  2 Dec 2012 22:40:04 +0800
+Message-ID: <1354459204-3575-1-git-send-email-rui.zhang@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:50592 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751301Ab2LBOkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:40:06 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>
 
-On Sunday, December 02, 2012 07:46:25 PM NeilBrown wrote:
-> On Mon, 26 Mar 2012 00:29:24 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> 
-> > Thanks for the confirmation.
-> > 
-> > Below it goes again with a changelog and tags.
-> > 
-> > I don't really think that SDIO does the right thing here overall, but that's
-> > all I can do to address the problem timely.
-> > 
-> > Thanks,
-> > Rafael
-> 
-> Hi Rafael,
->  I just discovered that this patch has since been reverted - with an 'ack'
->  from you:
-> ----------
-> commit d8e2ac330f65bcf47e8894fe5331a7e8ee019c06
-> Author: Thierry Reding <thierry.reding@avionic-design.de>
-> Date:   Thu Aug 9 09:32:21 2012 +0000
-> 
->     mmc: sdio: Fix PM_SLEEP related build warnings
->     
->     Power management callbacks defined by SIMPLE_DEV_PM_OPS are only used if
->     the PM_SLEEP Kconfig symbol has been defined. If not, the compiler will
->     complain about them being unused. However, since the callback for this
->     driver doesn't do anything it can just as well be dropped.
->     
->     Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
->     Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
->     Signed-off-by: Chris Ball <cjb@laptop.org>
-> -----------
-> 
-> Unsurprisingly the problem which your patch fixed has come back.
-> 
-> Do you think we could get the patch back in again.  This time maybe we should
-> put some comments in there pointing out that having a function which does
-> nothing is very different from not having any function at all?
+Hi, all,
 
-Well, I agree.  I didn't remember that the callback had been added for
-a purpose and hence my "ack" for that patch.
+these are the Linux/Thermal patches for 3.8.
+Please kindly review and check if I missed anything.
 
-What about applying the appended patch (hopefully, the build warnings should
-be fixed properly this time)?
+thanks.
+rui
 
-Rafael
-
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: SDIO / PM: Add empty bus-level suspend/resume callbacks
-
-Suspend methods provided by SDIO drivers are not supposed to be
-called by the PM core.  Instead, when the SDIO core gets to suspend
-a device's ancestor, it calls the device driver's suspend routine.
-However, the PM core executes suspend callback routines directly for
-device drivers whose bus types don't provide suspend callbacks.
-In consequece, because the SDIO bus type doesn't provide a suspend
-callback, the SDIO drivers' suspend routines will be executed by the
-PM core (which shouldn't happen).
-
-To prevent this from happening, add empty system suspend/resume
-callbacks for the SDIO bus type.
-
-An analogous change had been made already by commit (e841a7c mmc:
-sdio: Use empty system suspend/resume callbacks at the bus level),
-but then it was reverted inadvertently by commit (d8e2ac3 mmc: sdio:
-Fix PM_SLEEP related build warnings) that attempted to fix build
-warnings introduced by commit e841a7c.
-
-Reported-by: NeilBrown <neilb@suse.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/mmc/core/sdio_bus.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-Index: linux/drivers/mmc/core/sdio_bus.c
-===================================================================
---- linux.orig/drivers/mmc/core/sdio_bus.c
-+++ linux/drivers/mmc/core/sdio_bus.c
-@@ -193,7 +193,21 @@ static int sdio_bus_remove(struct device
- }
- 
- #ifdef CONFIG_PM
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int pm_no_operation(struct device *dev)
-+{
-+	/*
-+	 * Prevent the PM core from calling SDIO device drivers' suspend
-+	 * callback routines, which it is not supposed to do, by using this
-+	 * empty function as the bus type suspend callaback for SDIO.
-+	 */
-+	return 0;
-+}
-+#endif
-+
- static const struct dev_pm_ops sdio_bus_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(pm_no_operation, pm_no_operation)
- 	SET_RUNTIME_PM_OPS(
- 		pm_generic_runtime_suspend,
- 		pm_generic_runtime_resume,
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
