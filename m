@@ -1,74 +1,56 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 09/34] Thermal: Make thermal_cdev_update as a global function
-Date: Sun,  2 Dec 2012 22:44:43 +0800
-Message-ID: <1354459508-3707-9-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 18/34] thermal: step_wise: Add missing static storage class specifiers
+Date: Sun,  2 Dec 2012 22:44:52 +0800
+Message-ID: <1354459508-3707-18-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:33009 "EHLO mga14.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:29043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301Ab2LBOpg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 09:45:36 -0500
+	id S1751631Ab2LBOpi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:45:38 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Durgadoss R <durgadoss.r@intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, Zhang Rui <rui.zhang@intel.com>
 
-From: Durgadoss R <durgadoss.r@intel.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
 
-This patch makes the thermal_cdev_update function as a
-global one, so that other files can use it. This function
-serves as a single arbitrator to set the state of a cooling
-device.
+Fixes the following sparse warnings:
+drivers/thermal/step_wise.c:153:5: warning:
+symbol 'step_wise_throttle' was not declared. Should it be static?
+drivers/thermal/step_wise.c:172:25: warning:
+symbol 'thermal_gov_step_wise' was not declared. Should it be static?
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Acked-by: Durgadoss R <durgadoss.r@intel.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/thermal_sys.c |    5 +++--
- include/linux/thermal.h       |    1 +
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ drivers/thermal/step_wise.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index a328032..9d21f82 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -1257,7 +1257,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- }
- EXPORT_SYMBOL(thermal_cooling_device_unregister);
- 
--static void thermal_cdev_do_update(struct thermal_cooling_device *cdev)
-+void thermal_cdev_update(struct thermal_cooling_device *cdev)
- {
- 	struct thermal_instance *instance;
- 	unsigned long target = 0;
-@@ -1278,13 +1278,14 @@ static void thermal_cdev_do_update(struct thermal_cooling_device *cdev)
- 	cdev->ops->set_cur_state(cdev, target);
- 	cdev->updated = true;
- }
-+EXPORT_SYMBOL(thermal_cdev_update);
- 
- static void thermal_zone_do_update(struct thermal_zone_device *tz)
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index 3f9cfcf..1242cff 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -150,7 +150,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+  * step. If the zone is 'cooling down' it brings back the performance of
+  * the devices by one step.
+  */
+-int step_wise_throttle(struct thermal_zone_device *tz, int trip)
++static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
  {
  	struct thermal_instance *instance;
  
- 	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
--		thermal_cdev_do_update(instance->cdev);
-+		thermal_cdev_update(instance->cdev);
+@@ -169,7 +169,7 @@ int step_wise_throttle(struct thermal_zone_device *tz, int trip)
+ 	return 0;
  }
  
- /*
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 6182bd5..2bd9158 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -231,6 +231,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- int get_tz_trend(struct thermal_zone_device *, int);
- struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
- 		struct thermal_cooling_device *, int);
-+void thermal_cdev_update(struct thermal_cooling_device *);
- 
- int thermal_register_governor(struct thermal_governor *);
- void thermal_unregister_governor(struct thermal_governor *);
+-struct thermal_governor thermal_gov_step_wise = {
++static struct thermal_governor thermal_gov_step_wise = {
+ 	.name		= DEFAULT_THERMAL_GOVERNOR,
+ 	.throttle	= step_wise_throttle,
+ 	.owner		= THIS_MODULE,
 -- 
 1.7.7.6
 
