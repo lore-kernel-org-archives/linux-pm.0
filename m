@@ -1,78 +1,169 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 31/34] thermal: cpu cooling: use const parameter while registering
-Date: Sun,  2 Dec 2012 22:45:05 +0800
-Message-ID: <1354459508-3707-31-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 26/34] Refactor drivers/thermal/Kconfig
+Date: Sun,  2 Dec 2012 22:45:00 +0800
+Message-ID: <1354459508-3707-26-git-send-email-rui.zhang@intel.com>
 References: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:52515 "EHLO mga03.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:29043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751630Ab2LBOp4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 09:45:56 -0500
+	id S1751630Ab2LBOpt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 09:45:49 -0500
 In-Reply-To: <1354459508-3707-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
 
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-
-There are predefined cpu_masks that are const data structures.
-This patch changes the cpu cooling register function so that
-those const cpu_masks can be used, without compilation warnings.
-
-include/linux/cpumask.h
-
- * The following particular system cpumasks and operations manage
- * possible, present, active and online cpus.
- *
- *     cpu_possible_mask- has bit 'cpu' set iff cpu is populatable
- *     cpu_present_mask - has bit 'cpu' set iff cpu is populated
- *     cpu_online_mask  - has bit 'cpu' set iff cpu available to scheduler
- *     cpu_active_mask  - has bit 'cpu' set iff cpu available to migration
- *
-
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/cpu_cooling.c |    2 +-
- include/linux/cpu_cooling.h   |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/Kconfig |  103 +++++++++++++++++++++++------------------------
+ 1 files changed, 51 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 6f94c2c..836828e 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -313,7 +313,7 @@ static struct notifier_block thermal_cpufreq_notifier_block = {
-  * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
-  */
- struct thermal_cooling_device *cpufreq_cooling_register(
--	struct cpumask *clip_cpus)
-+	const struct cpumask *clip_cpus)
- {
- 	struct thermal_cooling_device *cool_dev;
- 	struct cpufreq_cooling_device *cpufreq_dev = NULL;
-diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index 8515301..b30cc79c 100644
---- a/include/linux/cpu_cooling.h
-+++ b/include/linux/cpu_cooling.h
-@@ -35,7 +35,7 @@
-  * @clip_cpus: cpumask of cpus where the frequency constraints will happen
-  */
- struct thermal_cooling_device *cpufreq_cooling_register(
--		struct cpumask *clip_cpus);
-+		const struct cpumask *clip_cpus);
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 266c15e..937a23d 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -13,15 +13,62 @@ menuconfig THERMAL
+ 	  All platforms with ACPI thermal support can use this driver.
+ 	  If you want this support, you should say Y or M here.
  
- /**
-  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
-@@ -44,7 +44,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
- #else /* !CONFIG_CPU_THERMAL */
- static inline struct thermal_cooling_device *cpufreq_cooling_register(
--	struct cpumask *clip_cpus)
-+	const struct cpumask *clip_cpus)
- {
- 	return NULL;
- }
++if THERMAL
++
+ config THERMAL_HWMON
+ 	bool
+-	depends on THERMAL
+ 	depends on HWMON=y || HWMON=THERMAL
+ 	default y
+ 
++choice
++	prompt "Default Thermal governor"
++	default THERMAL_DEFAULT_GOV_STEP_WISE
++	help
++	  This option sets which thermal governor shall be loaded at
++	  startup. If in doubt, select 'step_wise'.
++
++config THERMAL_DEFAULT_GOV_STEP_WISE
++	bool "step_wise"
++	select STEP_WISE
++	help
++	  Use the step_wise governor as default. This throttles the
++	  devices one step at a time.
++
++config THERMAL_DEFAULT_GOV_FAIR_SHARE
++	bool "fair_share"
++	select FAIR_SHARE
++	help
++	  Use the fair_share governor as default. This throttles the
++	  devices based on their 'contribution' to a zone. The
++	  contribution should be provided through platform data.
++
++config THERMAL_DEFAULT_GOV_USER_SPACE
++	bool "user_space"
++	select USER_SPACE
++	help
++	  Select this if you want to let the user space manage the
++	  lpatform thermals.
++
++endchoice
++
++config FAIR_SHARE
++	bool "Fair-share thermal governor"
++	help
++	  Enable this to manage platform thermals using fair-share governor.
++
++config STEP_WISE
++	bool "Step_wise thermal governor"
++	help
++	  Enable this to manage platform thermals using a simple linear
++
++config USER_SPACE
++	bool "User_space thermal governor"
++	help
++	  Enable this to let the user space manage the platform thermals.
++
+ config CPU_THERMAL
+ 	bool "generic cpu cooling support"
+-	depends on THERMAL && CPU_FREQ
++	depends on CPU_FREQ
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  This implements the generic cpu cooling mechanism through frequency
+@@ -33,7 +80,6 @@ config CPU_THERMAL
+ 
+ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+-	depends on THERMAL
+ 	depends on PLAT_SPEAR
+ 	depends on OF
+ 	help
+@@ -42,7 +88,6 @@ config SPEAR_THERMAL
+ 
+ config RCAR_THERMAL
+ 	tristate "Renesas R-Car thermal driver"
+-	depends on THERMAL
+ 	depends on ARCH_SHMOBILE
+ 	help
+ 	  Enable this to plug the R-Car thermal sensor driver into the Linux
+@@ -50,57 +95,11 @@ config RCAR_THERMAL
+ 
+ config EXYNOS_THERMAL
+ 	tristate "Temperature sensor on Samsung EXYNOS"
+-	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5) && THERMAL
++	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+ 	select CPU_FREQ_TABLE
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Managment
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
+ 
+-config FAIR_SHARE
+-	bool "Fair-share thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to manage platform thermals using fair-share governor.
+-
+-config STEP_WISE
+-	bool "Step_wise thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to manage platform thermals using a simple linear
+-
+-config USER_SPACE
+-	bool "User_space thermal governor"
+-	depends on THERMAL
+-	help
+-	  Enable this to let the user space manage the platform thermals.
+-
+-choice
+-	prompt "Default Thermal governor"
+-	depends on THERMAL
+-	default THERMAL_DEFAULT_GOV_STEP_WISE
+-	help
+-	  This option sets which thermal governor shall be loaded at
+-	  startup. If in doubt, select 'step_wise'.
+-
+-config THERMAL_DEFAULT_GOV_STEP_WISE
+-	bool "step_wise"
+-	select STEP_WISE
+-	help
+-	  Use the step_wise governor as default. This throttles the
+-	  devices one step at a time.
+-
+-config THERMAL_DEFAULT_GOV_FAIR_SHARE
+-	bool "fair_share"
+-	select FAIR_SHARE
+-	help
+-	  Use the fair_share governor as default. This throttles the
+-	  devices based on their 'contribution' to a zone. The
+-	  contribution should be provided through platform data.
+ 
+-config THERMAL_DEFAULT_GOV_USER_SPACE
+-	bool "user_space"
+-	select USER_SPACE
+-	help
+-	  Select this if you want to let the user space manage the
+-	  platform thermals.
+-endchoice
++endif
 -- 
 1.7.7.6
 
