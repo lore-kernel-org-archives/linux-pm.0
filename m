@@ -1,69 +1,55 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [RFC PATCH 2/7] Thermal: Create zone level APIs
-Date: Mon, 3 Dec 2012 13:12:21 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB592310F6@BGSMSX101.gar.corp.intel.com>
-References: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
-	<1353149158-19102-3-git-send-email-durgadoss.r@intel.com>
-	<CAJLyvQzptLcWPiJUquO2c2PegiMRt00SR+V=8kHA2wkZG4EFNQ@mail.gmail.com>
-	<4D68720C2E767A4AA6A8796D42C8EB59230E20@BGSMSX101.gar.corp.intel.com>
-	<CAJLyvQxW3fLrpyBhaKSpDoq2K4b4zOd8qLzAv1XsqEtNVgk8Sw@mail.gmail.com>
-	<4D68720C2E767A4AA6A8796D42C8EB59230FA6@BGSMSX101.gar.corp.intel.com>
- <CAJLyvQwaix91RjAoc2NdMHq4LOxc9iOLGCqa6R6iOMT2kBQbkA@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 3 Dec 2012 08:23:23 -0800
+Message-ID: <20121203162323.GB19802@htj.dyndns.org>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
+ <35648985.61QNrr0Knq@vostro.rjw.lan>
+ <1353906191.2523.25.camel@dabdike>
+ <21511277.LLinyDpbAK@vostro.rjw.lan>
+ <20121128013928.GB15971@htj.dyndns.org>
+ <1354092969.2276.49.camel@dabdike>
+ <20121203081321.GA9990@mint-spring.sh.intel.com>
+ <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:26262 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752768Ab2LCNMg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Dec 2012 08:12:36 -0500
-In-Reply-To: <CAJLyvQwaix91RjAoc2NdMHq4LOxc9iOLGCqa6R6iOMT2kBQbkA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@linaro.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "wni@nvidia.com" <wni@nvidia.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>
 
-Hi,
+Hello, James.
 
-[big cut.]
-> >> >> > +struct thermal_zone {
-> >> >> > +       char name[THERMAL_NAME_LENGTH];
-> >> >> > +       int id;
-> >> >> > +       void *devdata;
-> >> >> > +       struct thermal_zone *ops;
-> >> >> What is this, thermal_zone_device_ops? and how to initialize this ops?
-> >> >
-> >> > oh, Not required, for now. Will remove it..
-> >> > Good catch :-)
-> >>
-> >> I am still confused a bit.
-> >> Is this thermal_zone going to take the place of the old
-> >> thermal_zone_device?
-> >
-> > Yes, it will replace the older one.
-> >
-> >> If yes, which functions/callbacks are used to access
-> >> thermal_zone->trip[] like the old get_trip_*?
-> >
-> > We will not have call backs associated with 'zone'.
-> > A zone is kind of a virtual entity, which can have one or
-> > more sensors associated with it.
-> >
-> > Trip points are attached to 'a sensor' which can be in
-> > any zone. So, thermal_sensor_ops functions will help you
-> > access the trip values.
-> But I didn't find such functions in the current thermal_sensor_ops for
-> access trip points, only functions for thresholds now.
-> Will you add these functions when you update the governors?
+On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
+> > diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+> > index e65c62e..1756151 100644
+> > --- a/include/scsi/scsi_device.h
+> > +++ b/include/scsi/scsi_device.h
+> > @@ -160,6 +160,7 @@ struct scsi_device {
+> >  	unsigned can_power_off:1; /* Device supports runtime power off */
+> >  	unsigned wce_default_on:1;	/* Cache is ON by default */
+> >  	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
+> > +	unsigned event_driven:1; /* No need to poll the device */
+> >  
+> >  	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
+> >  	struct list_head event_list;	/* asserted events */
+> 
+> Yes, but if we can get away with doing that, it should be in genhd
+> because it's completely generic.
+> 
+> I was imagining we'd have to fake the reply to the test unit ready or
+> some other commands, which is why it would need to be in sr.c
+> 
+> The check events code is Tejun's baby, if he's OK with it then just do
+> it in genhd.c
 
-The idea is the governors need these values to calculate the trend
-of the thermal zone. And these are embedded inside thermal zone
-structure. So, when required a zone can 'know' about its sensors and
-their trip points through these pointers.
+The problem here is there's no easy to reach genhd from libata (or the
+other way around) without going through sr.  I think we're gonna have
+to have something in sr one way or the other.
 
-Having said that, when we modify governors, if a need arises to
-implement these functions, we will implement it.
+Thanks.
 
-Thanks,
-Durga
+-- 
+tejun
