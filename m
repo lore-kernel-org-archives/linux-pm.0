@@ -1,55 +1,58 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 3 Dec 2012 08:23:23 -0800
-Message-ID: <20121203162323.GB19802@htj.dyndns.org>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
- <35648985.61QNrr0Knq@vostro.rjw.lan>
- <1353906191.2523.25.camel@dabdike>
- <21511277.LLinyDpbAK@vostro.rjw.lan>
- <20121128013928.GB15971@htj.dyndns.org>
- <1354092969.2276.49.camel@dabdike>
- <20121203081321.GA9990@mint-spring.sh.intel.com>
- <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH 4/5] arm: omap2: support port power on lan95xx devices
+Date: Mon, 3 Dec 2012 12:09:58 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1212031154460.1309-100000@iolanthe.rowland.org>
+References: <50BC3003.80608@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <50BC3003.80608@linaro.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Andy Green <andy.green@linaro.org>
+Cc: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, linux-omap@vger.kernel.org, linux-usb@vger.kernel.org, Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello, James.
+On Mon, 3 Dec 2012, Andy Green wrote:
 
-On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
-> > diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-> > index e65c62e..1756151 100644
-> > --- a/include/scsi/scsi_device.h
-> > +++ b/include/scsi/scsi_device.h
-> > @@ -160,6 +160,7 @@ struct scsi_device {
-> >  	unsigned can_power_off:1; /* Device supports runtime power off */
-> >  	unsigned wce_default_on:1;	/* Cache is ON by default */
-> >  	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
-> > +	unsigned event_driven:1; /* No need to poll the device */
-> >  
-> >  	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
-> >  	struct list_head event_list;	/* asserted events */
-> 
-> Yes, but if we can get away with doing that, it should be in genhd
-> because it's completely generic.
-> 
-> I was imagining we'd have to fake the reply to the test unit ready or
-> some other commands, which is why it would need to be in sr.c
-> 
-> The check events code is Tejun's baby, if he's OK with it then just do
-> it in genhd.c
+> Unless someone NAKs it for sure already (if you're already sure you're 
+> going to, please do so to avoid wasting time), I'll issue a try#2 of my 
+> code later which demonstrates what I mean.  At least I guess it's useful 
+> for comparative purposes.
 
-The problem here is there's no easy to reach genhd from libata (or the
-other way around) without going through sr.  I think we're gonna have
-to have something in sr one way or the other.
+Before you go writing a whole lot more code, we should discuss the 
+basics a bit more clearly.  There are several unsettled issues here:
 
-Thanks.
+     1. Should the LAN95xx stuff be associated with the ehci-omap.0's
+	driver or with the hub port?  The port would be more flexible,
+	offering the ability to turn the power off and on while the
+	system is running without affecting anything else.  But the 
+	port code is currently in flux, which could cause this new 
+	addition to be delayed.
 
--- 
-tejun
+	(On the other hand, since the LAN95xx is the only thing
+	connected to the root hub, it could be powered off and on by
+	unbinding the ehci-omap.0 device from its driver and rebinding
+	it.)
+
+     2. If we do choose the port, do we want to identify it by matching
+	against a device name string or by matching a sequence of port
+	numbers (in this case, a length-1 sequence)?  The port numbers
+	are fixed by the board design, whereas the device name strings
+	might  get changed in the future.  On the other hand, the port 
+	numbers apply only to USB whereas device names can be used by 
+	any subsystem.
+
+     3. Should the matching mechanism go into the device core or into
+	the USB port code?  (This is related to the previous question.)
+
+     4. Should this be implemented simply as a regulator (or a pair of
+	regulators)?  Or should it be generalized to some sort of PM
+	domain thing?  The generic_pm_domain structure defined in
+	include/linux/pm_domain.h seems like overkill, but maybe it's
+	the most appropriate thing to use.
+
+Until we decide on the answers to these questions, there's no point 
+writing detailed patches.
+
+Alan Stern
+
