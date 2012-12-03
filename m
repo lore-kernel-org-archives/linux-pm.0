@@ -1,123 +1,90 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 3 Dec 2012 16:59:38 +0800
-Message-ID: <20121203085937.GA29898@aaronlu.sh.intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
- <35648985.61QNrr0Knq@vostro.rjw.lan>
- <1353906191.2523.25.camel@dabdike>
- <21511277.LLinyDpbAK@vostro.rjw.lan>
- <20121128013928.GB15971@htj.dyndns.org>
- <1354092969.2276.49.camel@dabdike>
- <20121203081321.GA9990@mint-spring.sh.intel.com>
- <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [RFC PATCH 0/7] Support for Multiple sensors per zone
+Date: Mon, 3 Dec 2012 17:01:19 +0800
+Message-ID: <CAJLyvQxn_cfYeJZ+XFaM8HZBq6mNRh5R-VtX2vN92Dp+S_9Mgw@mail.gmail.com>
+References: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>, Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:38449 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235Ab2LCJBU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Dec 2012 04:01:20 -0500
+Received: by mail-ia0-f174.google.com with SMTP id y25so1980596iay.19
+        for <linux-pm@vger.kernel.org>; Mon, 03 Dec 2012 01:01:20 -0800 (PST)
+In-Reply-To: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, wni@nvidia.com, eduardo.valentin@ti.com, amit.kachhap@linaro.org, sachin.kamat@linaro.org
 
-On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
-> On Mon, 2012-12-03 at 16:13 +0800, Aaron Lu wrote:
-> > On Wed, Nov 28, 2012 at 08:56:09AM +0000, James Bottomley wrote:
-> > > On Tue, 2012-11-27 at 17:39 -0800, Tejun Heo wrote:
-> > > > Hey, Rafael.
-> > > > 
-> > > > On Wed, Nov 28, 2012 at 01:51:00AM +0100, Rafael J. Wysocki wrote:
-> > > > > Having considered that a bit more I'm now thinking that in fact the power state
-> > > > > the device is in at the moment doesn't really matter, so the polling code need
-> > > > > not really know what PM is doing.  What it needs to know is that the device
-> > > > > will generate a hardware event when something interesting happens, so it is not
-> > > > > necessary to poll it.
-> > > > > 
-> > > > > In this particular case it is related to power management (apparently, hardware
-> > > > > events will only be generated after the device has been put into ACPI D3cold,
-> > > > > or so Aaron seems to be claiming), but it need not be in general, at least in
-> > > > > principle.
-> > > > > 
-> > > > > It looks like we need an "event driven" flag that the can be set in the lower
-> > > > > layers and read by the upper layers.  I suppose this means it would need to be
-> > > > > in struct device, but not necessarily in the PM-specific part of it.
-> > > > 
-> > > > We already have that.  That's what gendisk->async_events is for (as
-> > > > opposed to gendisk->events).  If all events are async_events, block
-> > > > won't poll for events, but I'm not sure that's the golden bullet.
-> > > > 
-> > > > * None implements async_events yet and an API is missing -
-> > > >   disk_check_events() - which is trivial to add, but it's the same
-> > > >   story.  We'll need a mechanism to shoot up notification from libata
-> > > >   to block layer.  It's admittedly easier to justify routing through
-> > > >   SCSI tho.  So, we're mostly shifting the problem.  Given that async
-> > > >   events is nice to have, so it isn't a bad idea.
-> > > 
-> > > Could we drive it in the polling code?  As in, if we set a flag to say
-> > > we're event driven and please don't bother us, we could just respond to
-> > > the poll with the last known state (this would probably have to be in
-> > > SCSI somewhere since most polls are Test Unit Readys).  That way ZPODD
-> > > sets this flag when the device powers down and unsets it when it powers
-> > > up.
-> > 
-> > Does it mean I can do something like this:
-> > 
-> > diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-> > index 5fc97d2..219820c 100644
-> > --- a/drivers/scsi/sr.c
-> > +++ b/drivers/scsi/sr.c
-> > @@ -578,7 +578,10 @@ static unsigned int sr_block_check_events(struct gendisk *disk,
-> >  					  unsigned int clearing)
-> >  {
-> >  	struct scsi_cd *cd = scsi_cd(disk);
-> > -	return cdrom_check_events(&cd->cdi, clearing);
-> > +	if (!cd->device->event_driven)
-> > +		return cdrom_check_events(&cd->cdi, clearing);
-> > +	else
-> > +		return 0;
-> >  }
-> >  
-> >  static int sr_block_revalidate_disk(struct gendisk *disk)
-> > diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-> > index e65c62e..1756151 100644
-> > --- a/include/scsi/scsi_device.h
-> > +++ b/include/scsi/scsi_device.h
-> > @@ -160,6 +160,7 @@ struct scsi_device {
-> >  	unsigned can_power_off:1; /* Device supports runtime power off */
-> >  	unsigned wce_default_on:1;	/* Cache is ON by default */
-> >  	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
-> > +	unsigned event_driven:1; /* No need to poll the device */
-> >  
-> >  	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
-> >  	struct list_head event_list;	/* asserted events */
-> 
-> Yes, but if we can get away with doing that, it should be in genhd
-> because it's completely generic.
-> 
-> I was imagining we'd have to fake the reply to the test unit ready or
-> some other commands, which is why it would need to be in sr.c
-> 
-> The check events code is Tejun's baby, if he's OK with it then just do
-> it in genhd.c
-
-I agree that it better be done in genhd, the only concern is, in that
-case, this flag will need to be in struct device. I'm not sure if this
-is acceptible though, since the whole events checking thing is for block
-based devices only.
-
-Ideally, it should be in struct disk_events, but I don't see a way for
-libata to access that structure... so any suggestion of doing this? or
-it is OK to add such a field to struct device?
-
-Thanks,
-Aaron
-
-> 
-> > Then when ZPODD is powered off, it will set this flag; and unset it when
-> > it is powered up.
-> 
-> Right.
-> 
-> James
-> 
-> 
+On 17 November 2012 18:45, Durgadoss R <durgadoss.r@intel.com> wrote:
+> This patch series attempts to add support for multiple
+> sensors per zone. The work is based on the Thermal discussion
+> happened in plumbers conference 2012, here:
+> http://www.linuxplumbersconf.org/2012/schedule/
+> Title: "Enhancing the Thermal Management Infrastructure in Linux"
+>
+> The intention is to make it easy for generic sensor drivers
+> to register with the framework, and let them participate in
+> platform thermal management. Another goal is to expose the
+> binding information in a consistent way so that user space
+> can consume the information and potentially manage platform thermals.
+>
+> This series contains 7 patches:
+> Patch 1/7: Creates new sensor level APIs
+> Patch 2/7: Creates new zone level APIs. The existing tzd structure is
+>            kept as such for clarity and compatibility purposes.
+> Patch 3/7: Creates functions to add/remove a cdev to/from a zone. The
+>            existing tcd structure need not be modified.
+> Patch 4/7: Adds a thermal_trip sysfs node, which exposes various trip
+>            points for all sensors present in a zone.
+> Patch 5/7: Adds a thermal_map sysfs node. It is a compact representation
+>            of the binding relationship between a sensor and a cdev,
+>            within a zone.
+> Patch 6/7: Creates Documentation for the new APIs. A new file is
+>            created for clarity. Final goal is to merge with the existing
+>            file or refactor the files, as whatever seems appropriate.
+> Patch 7/7: A dummy driver that can be used for testing. This is not for merge.
+>
+> Next steps:
+Do you have milestone?
+Because new thermal driver writers are wondering if to use the old
+framework or can wait the new one.
+>  1. Move all the existing drivers to the new implementation model.
+>     Help welcomed from individual driver authors/maintainers for this.
+>  2. Make the thermal governors work with this new model.
+>  3. Remove old/unused code from thermal_sys.c.
+>  4. Add more detailed documentation
+>
+>  I didn't want to submit patches for all these in one-go, since it
+>  might end-up being difficult to comprehend, besides delaying the
+>  review process. The other obvious reason being I cannot test all
+>  the changes on various drivers for 1.
+>
+>  All these patches have been tested on a Core-i5 desktop running
+>  ubuntu 12.04 and an atom notebook running ubuntu 11.10.
+>  Kindly help review.
+>
+> Durgadoss R (7):
+>   Thermal: Create sensor level APIs
+>   Thermal: Create zone level APIs
+>   Thermal: Add APIs to bind cdev to new zone structure
+>   Thermal: Add Thermal_trip sysfs node
+>   Thermal: Add 'thermal_map' sysfs node
+>   Thermal: Add Documentation to new APIs
+>   Thermal: Dummy driver used for testing
+>
+>  Documentation/thermal/sysfs-api2.txt |  213 ++++++++
+>  drivers/thermal/Kconfig              |    5 +
+>  drivers/thermal/Makefile             |    3 +
+>  drivers/thermal/thermal_sys.c        |  915 ++++++++++++++++++++++++++++++++++
+>  drivers/thermal/thermal_test.c       |  321 ++++++++++++
+>  include/linux/thermal.h              |  118 +++++
+>  6 files changed, 1575 insertions(+)
+>  create mode 100644 Documentation/thermal/sysfs-api2.txt
+>  create mode 100644 drivers/thermal/thermal_test.c
+>
+> --
+> 1.7.9.5
+>
