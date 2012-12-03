@@ -1,108 +1,403 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 3 Dec 2012 16:13:21 +0800
-Message-ID: <20121203081321.GA9990@mint-spring.sh.intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
- <35648985.61QNrr0Knq@vostro.rjw.lan>
- <1353906191.2523.25.camel@dabdike>
- <21511277.LLinyDpbAK@vostro.rjw.lan>
- <20121128013928.GB15971@htj.dyndns.org>
- <1354092969.2276.49.camel@dabdike>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [RFC PATCH 2/7] Thermal: Create zone level APIs
+Date: Mon, 3 Dec 2012 16:21:21 +0800
+Message-ID: <CAJLyvQxW3fLrpyBhaKSpDoq2K4b4zOd8qLzAv1XsqEtNVgk8Sw@mail.gmail.com>
+References: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
+	<1353149158-19102-3-git-send-email-durgadoss.r@intel.com>
+	<CAJLyvQzptLcWPiJUquO2c2PegiMRt00SR+V=8kHA2wkZG4EFNQ@mail.gmail.com>
+	<4D68720C2E767A4AA6A8796D42C8EB59230E20@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-scsi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1354092969.2276.49.camel@dabdike>
-Sender: linux-scsi-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f174.google.com ([209.85.223.174]:49775 "EHLO
+	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750760Ab2LCIVW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Dec 2012 03:21:22 -0500
+Received: by mail-ie0-f174.google.com with SMTP id c11so3729651ieb.19
+        for <linux-pm@vger.kernel.org>; Mon, 03 Dec 2012 00:21:21 -0800 (PST)
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59230E20@BGSMSX101.gar.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "wni@nvidia.com" <wni@nvidia.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>
 
-On Wed, Nov 28, 2012 at 08:56:09AM +0000, James Bottomley wrote:
-> On Tue, 2012-11-27 at 17:39 -0800, Tejun Heo wrote:
-> > Hey, Rafael.
-> > 
-> > On Wed, Nov 28, 2012 at 01:51:00AM +0100, Rafael J. Wysocki wrote:
-> > > Having considered that a bit more I'm now thinking that in fact the power state
-> > > the device is in at the moment doesn't really matter, so the polling code need
-> > > not really know what PM is doing.  What it needs to know is that the device
-> > > will generate a hardware event when something interesting happens, so it is not
-> > > necessary to poll it.
-> > > 
-> > > In this particular case it is related to power management (apparently, hardware
-> > > events will only be generated after the device has been put into ACPI D3cold,
-> > > or so Aaron seems to be claiming), but it need not be in general, at least in
-> > > principle.
-> > > 
-> > > It looks like we need an "event driven" flag that the can be set in the lower
-> > > layers and read by the upper layers.  I suppose this means it would need to be
-> > > in struct device, but not necessarily in the PM-specific part of it.
-> > 
-> > We already have that.  That's what gendisk->async_events is for (as
-> > opposed to gendisk->events).  If all events are async_events, block
-> > won't poll for events, but I'm not sure that's the golden bullet.
-> > 
-> > * None implements async_events yet and an API is missing -
-> >   disk_check_events() - which is trivial to add, but it's the same
-> >   story.  We'll need a mechanism to shoot up notification from libata
-> >   to block layer.  It's admittedly easier to justify routing through
-> >   SCSI tho.  So, we're mostly shifting the problem.  Given that async
-> >   events is nice to have, so it isn't a bad idea.
-> 
-> Could we drive it in the polling code?  As in, if we set a flag to say
-> we're event driven and please don't bother us, we could just respond to
-> the poll with the last known state (this would probably have to be in
-> SCSI somewhere since most polls are Test Unit Readys).  That way ZPODD
-> sets this flag when the device powers down and unsets it when it powers
-> up.
+On 3 December 2012 15:47, R, Durgadoss <durgadoss.r@intel.com> wrote:
+>
+>
+>> -----Original Message-----
+>> From: Hongbo Zhang [mailto:hongbo.zhang@linaro.org]
+>> Sent: Monday, December 03, 2012 1:13 PM
+>> To: R, Durgadoss
+>> Cc: Zhang, Rui; linux-pm@vger.kernel.org; wni@nvidia.com;
+>> eduardo.valentin@ti.com; amit.kachhap@linaro.org;
+>> sachin.kamat@linaro.org
+>> Subject: Re: [RFC PATCH 2/7] Thermal: Create zone level APIs
+>>
+>> On 17 November 2012 18:45, Durgadoss R <durgadoss.r@intel.com> wrote:
+>> > This patch adds a new thermal_zone structure to
+>> > thermal.h. Also, adds zone level APIs to the thermal
+>> > framework.
+>> >
+>> > Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+>> > ---
+>> >  drivers/thermal/thermal_sys.c |  206
+>> +++++++++++++++++++++++++++++++++++++++++
+>> >  include/linux/thermal.h       |   25 +++++
+>> >  2 files changed, 231 insertions(+)
+>> >
+>> > diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+>> > index e726c8b..9d386d7 100644
+>> > --- a/drivers/thermal/thermal_sys.c
+>> > +++ b/drivers/thermal/thermal_sys.c
+>> > @@ -44,19 +44,28 @@ MODULE_DESCRIPTION("Generic thermal
+>> management sysfs support");
+>> >  MODULE_LICENSE("GPL");
+>> >
+>> >  static DEFINE_IDR(thermal_tz_idr);
+>> > +static DEFINE_IDR(thermal_zone_idr);
+>> >  static DEFINE_IDR(thermal_cdev_idr);
+>> >  static DEFINE_IDR(thermal_sensor_idr);
+>> >  static DEFINE_MUTEX(thermal_idr_lock);
+>> >
+>> >  static LIST_HEAD(thermal_tz_list);
+>> >  static LIST_HEAD(thermal_sensor_list);
+>> > +static LIST_HEAD(thermal_zone_list);
+>> >  static LIST_HEAD(thermal_cdev_list);
+>> >  static LIST_HEAD(thermal_governor_list);
+>> >
+>> >  static DEFINE_MUTEX(thermal_list_lock);
+>> >  static DEFINE_MUTEX(ts_list_lock);
+>> > +static DEFINE_MUTEX(tz_list_lock);
+>> >  static DEFINE_MUTEX(thermal_governor_lock);
+>> >
+>> > +#define for_each_thermal_sensor(pos) \
+>> > +       list_for_each_entry(pos, &thermal_sensor_list, node)
+>> > +
+>> > +#define for_each_thermal_zone(pos) \
+>> > +       list_for_each_entry(pos, &thermal_zone_list, node)
+>> > +
+>> >  static struct thermal_governor *__find_governor(const char *name)
+>> >  {
+>> >         struct thermal_governor *pos;
+>> > @@ -419,15 +428,62 @@ static void thermal_zone_device_check(struct
+>> work_struct *work)
+>> >         thermal_zone_device_update(tz);
+>> >  }
+>> >
+>> > +static int get_sensor_indx(struct thermal_zone *tz, struct thermal_sensor
+>> *ts)
+>> > +{
+>> > +       int i, indx = -EINVAL;
+>> > +
+>> > +       if (!tz || !ts)
+>> > +               return -EINVAL;
+>> > +
+>> > +       mutex_lock(&ts_list_lock);
+>> > +       for (i = 0; i < tz->sensor_indx; i++) {
+>> > +               if (tz->sensors[i] == ts) {
+>> > +                       indx = i;
+>> > +                       break;
+>> > +               }
+>> > +       }
+>> > +       mutex_unlock(&ts_list_lock);
+>> > +       return indx;
+>> > +}
+>> > +
+>> > +static void remove_sensor_from_zone(struct thermal_zone *tz,
+>> > +                               struct thermal_sensor *ts)
+>> > +{
+>> > +       int indx, j;
+>> > +
+>> > +       indx = get_sensor_indx(tz, ts);
+>> > +       if (indx < 0)
+>> > +               return;
+>> > +
+>> > +       sysfs_remove_link(&tz->device.kobj, kobject_name(&ts-
+>> >device.kobj));
+>> > +
+>> > +       /* Shift the entries in the tz->sensors array */
+>> > +       for (j = indx; j < MAX_SENSORS_PER_ZONE - 1; j++)
+>> > +               tz->sensors[j] = tz->sensors[j + 1];
+>> > +
+>> > +       tz->sensor_indx--;
+>> > +}
+>> > +
+>> >  /* sys I/F for thermal zone */
+>> >
+>> >  #define to_thermal_zone(_dev) \
+>> >         container_of(_dev, struct thermal_zone_device, device)
+>> >
+>> > +#define to_zone(_dev) \
+>> > +       container_of(_dev, struct thermal_zone, device)
+>> > +
+>> >  #define to_thermal_sensor(_dev) \
+>> >         container_of(_dev, struct thermal_sensor, device)
+>> >
+>> >  static ssize_t
+>> > +zone_name_show(struct device *dev, struct device_attribute *attr, char
+>> *buf)
+>> > +{
+>> > +       struct thermal_zone *tz = to_zone(dev);
+>> > +
+>> > +       return sprintf(buf, "%s\n", tz->name);
+>> > +}
+>> > +
+>> > +static ssize_t
+>> >  sensor_name_show(struct device *dev, struct device_attribute *attr, char
+>> *buf)
+>> >  {
+>> >         struct thermal_sensor *ts = to_thermal_sensor(dev);
+>> > @@ -772,6 +828,8 @@ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR,
+>> policy_show, policy_store);
+>> >  static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
+>> >  static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
+>> >
+>> > +static DEVICE_ATTR(zone_name, 0444, zone_name_show, NULL);
+>> > +
+>> >  /* sys I/F for cooling device */
+>> >  #define to_cooling_device(_dev)        \
+>> >         container_of(_dev, struct thermal_cooling_device, device)
+>> > @@ -1557,6 +1615,146 @@ static void remove_trip_attrs(struct
+>> thermal_zone_device *tz)
+>> >         kfree(tz->trip_hyst_attrs);
+>> >  }
+>> >
+>> > +struct thermal_zone *create_thermal_zone(const char *name, void
+>> *devdata)
+>> > +{
+>> > +       struct thermal_zone *tz;
+>> > +       int ret;
+>> > +
+>> > +       if (!name || (name && strlen(name) >= THERMAL_NAME_LENGTH))
+>> > +               return ERR_PTR(-EINVAL);
+>> > +
+>> > +       tz = kzalloc(sizeof(*tz), GFP_KERNEL);
+>> > +       if (!tz)
+>> > +               return ERR_PTR(-ENOMEM);
+>> > +
+>> > +       idr_init(&tz->idr);
+>> > +       ret = get_idr(&thermal_zone_idr, &thermal_idr_lock, &tz->id);
+>> > +       if (ret)
+>> > +               goto exit_free;
+>> > +
+>> > +       strcpy(tz->name, name);
+>> > +       tz->devdata = devdata;
+>> > +       tz->device.class = &thermal_class;
+>> > +
+>> > +       dev_set_name(&tz->device, "zone%d", tz->id);
+>> > +       ret = device_register(&tz->device);
+>> > +       if (ret)
+>> > +               goto exit_idr;
+>> > +
+>> > +       ret = device_create_file(&tz->device, &dev_attr_zone_name);
+>> > +       if (ret)
+>> > +               goto exit_unregister;
+>> > +
+>> > +       /* Add this zone to the global list of thermal zones */
+>> > +       mutex_lock(&tz_list_lock);
+>> > +       list_add_tail(&tz->node, &thermal_zone_list);
+>> > +       mutex_unlock(&tz_list_lock);
+>> > +       return tz;
+>> > +
+>> > +exit_unregister:
+>> > +       device_unregister(&tz->device);
+>> > +exit_idr:
+>> > +       release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
+>> > +exit_free:
+>> > +       kfree(tz);
+>> > +       return ERR_PTR(ret);
+>> > +}
+>> > +EXPORT_SYMBOL(create_thermal_zone);
+>> > +
+>> > +void remove_thermal_zone(struct thermal_zone *tz)
+>> > +{
+>> > +       struct thermal_zone *pos, *next;
+>> > +       bool found = false;
+>> > +
+>> > +       if (!tz)
+>> > +               return;
+>> > +
+>> > +       mutex_lock(&tz_list_lock);
+>> > +
+>> > +       list_for_each_entry_safe(pos, next, &thermal_zone_list, node) {
+>> > +               if (pos == tz) {
+>> > +                       list_del(&tz->node);
+>> > +                       found = true;
+>> > +                       break;
+>> > +               }
+>> > +       }
+>> > +
+>> > +       if (!found)
+>> > +               goto exit;
+>> > +
+>> > +       device_remove_file(&tz->device, &dev_attr_zone_name);
+>> > +
+>> > +       release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
+>> > +       idr_destroy(&tz->idr);
+>> > +
+>> > +       device_unregister(&tz->device);
+>> > +       kfree(tz);
+>> > +exit:
+>> > +       mutex_unlock(&tz_list_lock);
+>> > +       return;
+>> > +}
+>> > +EXPORT_SYMBOL(remove_thermal_zone);
+>> > +
+>> > +struct thermal_sensor *get_sensor_by_name(const char *name)
+>> > +{
+>> > +       struct thermal_sensor *pos;
+>> > +       struct thermal_sensor *ts = NULL;
+>> > +
+>> > +       mutex_lock(&ts_list_lock);
+>> > +       for_each_thermal_sensor(pos) {
+>> > +               if (!strnicmp(pos->name, name, THERMAL_NAME_LENGTH)) {
+>> > +                       ts = pos;
+>> > +                       break;
+>> > +               }
+>> > +       }
+>> > +       mutex_unlock(&ts_list_lock);
+>> > +       return ts;
+>> > +}
+>> > +EXPORT_SYMBOL(get_sensor_by_name);
+>> > +
+>> > +int add_sensor_to_zone_by_name(struct thermal_zone *tz, const char
+>> *name)
+>> > +{
+>> > +       int ret;
+>> > +       struct thermal_sensor *ts = get_sensor_by_name(name);
+>> > +
+>> > +       if (!tz || !ts)
+>> > +               return -EINVAL;
+>> > +
+>> > +       mutex_lock(&tz_list_lock);
+>> > +
+>> > +       /* Ensure we are not adding the same sensor again!! */
+>> > +       ret = get_sensor_indx(tz, ts);
+>> > +       if (ret >= 0) {
+>> > +               ret = -EEXIST;
+>> > +               goto exit_zone;
+>> > +       }
+>> > +
+>> > +       mutex_lock(&ts_list_lock);
+>> > +
+>> > +       ret = sysfs_create_link(&tz->device.kobj, &ts->device.kobj,
+>> > +                               kobject_name(&ts->device.kobj));
+>> > +       if (ret)
+>> > +               goto exit_sensor;
+>> > +
+>> > +       tz->sensors[tz->sensor_indx++] = ts;
+>> > +
+>> > +exit_sensor:
+>> > +       mutex_unlock(&ts_list_lock);
+>> > +exit_zone:
+>> > +       mutex_unlock(&tz_list_lock);
+>> > +       return ret;
+>> > +}
+>> > +EXPORT_SYMBOL(add_sensor_to_zone_by_name);
+>> > +
+>> > +int add_sensor_to_zone(struct thermal_zone *tz, struct thermal_sensor
+>> *ts)
+>> > +{
+>> > +       if (!tz || !ts)
+>> > +               return -EINVAL;
+>> > +
+>> > +       return add_sensor_to_zone_by_name(tz, ts->name);
+>> > +}
+>> > +EXPORT_SYMBOL(add_sensor_to_zone);
+>> > +
+>> >  /**
+>> >   * thermal_sensor_register - register a new thermal sensor
+>> >   * @name:      name of the thermal sensor
+>> > @@ -1624,6 +1822,7 @@ EXPORT_SYMBOL(thermal_sensor_register);
+>> >  void thermal_sensor_unregister(struct thermal_sensor *ts)
+>> >  {
+>> >         int i;
+>> > +       struct thermal_zone *tz;
+>> >         struct thermal_sensor *pos, *next;
+>> >         bool found = false;
+>> >
+>> > @@ -1643,6 +1842,13 @@ void thermal_sensor_unregister(struct
+>> thermal_sensor *ts)
+>> >         if (!found)
+>> >                 return;
+>> >
+>> > +       mutex_lock(&tz_list_lock);
+>> > +
+>> > +       for_each_thermal_zone(tz)
+>> > +               remove_sensor_from_zone(tz, ts);
+>> > +
+>> > +       mutex_unlock(&tz_list_lock);
+>> > +
+>> >         for (i = 0; i < ts->thresholds; i++)
+>> >                 device_remove_file(&ts->device, &ts->thresh_attrs[i].attr);
+>> >
+>> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> > index e2f85ec..38438be 100644
+>> > --- a/include/linux/thermal.h
+>> > +++ b/include/linux/thermal.h
+>> > @@ -49,6 +49,11 @@
+>> >  /* Default Thermal Governor: Does Linear Throttling */
+>> >  #define DEFAULT_THERMAL_GOVERNOR       "step_wise"
+>> >
+>> > +/* Maximum number of sensors, allowed in a thermal zone
+>> > + * We will start with 5, and increase if needed.
+>> > + */
+>> > +#define MAX_SENSORS_PER_ZONE           5
+>> > +
+>> >  struct thermal_sensor;
+>> >  struct thermal_zone_device;
+>> >  struct thermal_cooling_device;
+>> > @@ -191,6 +196,21 @@ struct thermal_zone_device {
+>> >         struct delayed_work poll_queue;
+>> >  };
+>> >
+>> > +struct thermal_zone {
+>> > +       char name[THERMAL_NAME_LENGTH];
+>> > +       int id;
+>> > +       void *devdata;
+>> > +       struct thermal_zone *ops;
+>> What is this, thermal_zone_device_ops? and how to initialize this ops?
+>
+> oh, Not required, for now. Will remove it..
+> Good catch :-)
 
-Does it mean I can do something like this:
+I am still confused a bit.
+Is this thermal_zone going to take the place of the old thermal_zone_device?
+If yes, which functions/callbacks are used to access
+thermal_zone->trip[] like the old get_trip_*?
 
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index 5fc97d2..219820c 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -578,7 +578,10 @@ static unsigned int sr_block_check_events(struct gendisk *disk,
- 					  unsigned int clearing)
- {
- 	struct scsi_cd *cd = scsi_cd(disk);
--	return cdrom_check_events(&cd->cdi, clearing);
-+	if (!cd->device->event_driven)
-+		return cdrom_check_events(&cd->cdi, clearing);
-+	else
-+		return 0;
- }
- 
- static int sr_block_revalidate_disk(struct gendisk *disk)
-diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-index e65c62e..1756151 100644
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -160,6 +160,7 @@ struct scsi_device {
- 	unsigned can_power_off:1; /* Device supports runtime power off */
- 	unsigned wce_default_on:1;	/* Cache is ON by default */
- 	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
-+	unsigned event_driven:1; /* No need to poll the device */
- 
- 	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
- 	struct list_head event_list;	/* asserted events */
-
-
-Then when ZPODD is powered off, it will set this flag; and unset it when
-it is powered up.
-
-Thanks,
-Aaron
-
-> 
-> James
-> 
-> > * Still dunno much about zpodd but IIUC the notification from
-> >   zero-power is via ACPI.  To advertise that the device doesn't need
-> >   polling, it should also be able to do async notification while
-> >   powered up, which isn't covered by zpodd but ATA async notification.
-> >   So, ummm... that's another obstacle.  If zpodd requires the device
-> >   to support ATA async notification, it might not be too bad tho.
-> 
-> 
-> 
+>
+> Thanks,
+> Durga
+>>
+>> > +       struct thermal_governor *governor;
+>> > +       struct idr idr;
+>> > +       struct device device;
+>> > +       struct list_head node;
+>> > +
+>> > +       /* Sensor level information */
+>> > +       int sensor_indx; /* index into 'sensors' array */
+>> > +       struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
+>> > +};
+>> > +
+>> >  /* Structure that holds thermal governor information */
+>> >  struct thermal_governor {
+>> >         char name[THERMAL_NAME_LENGTH];
+>> > @@ -264,6 +284,11 @@ struct thermal_sensor
+>> *thermal_sensor_register(const char *,
+>> >  void thermal_sensor_unregister(struct thermal_sensor *);
+>> >  int enable_sensor_thresholds(struct thermal_sensor *, int);
+>> >
+>> > +struct thermal_zone *create_thermal_zone(const char *, void *);
+>> > +void remove_thermal_zone(struct thermal_zone *);
+>> > +int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor
+>> *);
+>> > +int add_sensor_to_zone_by_name(struct thermal_zone *, const char *);
+>> > +
+>> >  #ifdef CONFIG_NET
+>> >  extern int thermal_generate_netlink_event(u32 orig, enum events
+>> event);
+>> >  #else
+>> > --
+>> > 1.7.9.5
+>> >
