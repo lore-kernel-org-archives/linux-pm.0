@@ -1,8 +1,8 @@
 From: Zhang Rui <rui.zhang@intel.com>
 Subject: Re: [PATCH 3/3] thermal: rcar: add .get_trip_type/temp and .notify
  support
-Date: Mon, 03 Dec 2012 10:22:37 +0800
-Message-ID: <1354501357.1936.35.camel@rzhang1-mobl4>
+Date: Mon, 03 Dec 2012 10:25:53 +0800
+Message-ID: <1354501553.1936.38.camel@rzhang1-mobl4>
 References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
 	 <87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
 	 <1353652189.2111.7.camel@rzhang1-mobl4>
@@ -16,10 +16,10 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:62558 "EHLO mga02.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:5784 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754372Ab2LCCWm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Dec 2012 21:22:42 -0500
+	id S1754530Ab2LCCZ7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Dec 2012 21:25:59 -0500
 In-Reply-To: <87ip8jri4f.wl%kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -37,6 +37,11 @@ On Sun, 2012-12-02 at 18:20 -0800, Kuninori Morimoto wrote:
 > > > +	/* see rcar_thermal_get_temp() */
 > > > +	switch (trip) {
 > > > +	case 0: /* +90 <= temp < +135 */
+BTW, the thing I do not understand is,
+what does "135" in the comment mean?
+
+thanks,
+rui
 > > > +		*temp = MCELSIUS(90 - 1);
 > > 
 > > what does the comment above mean?
@@ -53,8 +58,9 @@ On Sun, 2012-12-02 at 18:20 -0800, Kuninori Morimoto wrote:
 > I can fix this, but which is best for you ?
 > v2 patch ? or additional patch ?
 > 
-please send V2.
 
-thanks,
-rui
+> Best regards
+> ---
+> Kuninori Morimoto
+
 
