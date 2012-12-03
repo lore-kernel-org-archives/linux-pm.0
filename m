@@ -1,58 +1,58 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH 4/5] arm: omap2: support port power on lan95xx devices
-Date: Mon, 3 Dec 2012 12:09:58 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1212031154460.1309-100000@iolanthe.rowland.org>
-References: <50BC3003.80608@linaro.org>
+From: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 03 Dec 2012 13:56:56 -0500
+Message-ID: <50BCF5F8.2030802@pobox.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <50BC3003.80608@linaro.org>
-Sender: linux-omap-owner@vger.kernel.org
-To: Andy Green <andy.green@linaro.org>
-Cc: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, linux-omap@vger.kernel.org, linux-usb@vger.kernel.org, Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f174.google.com ([209.85.216.174]:46615 "EHLO
+	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792Ab2LCS5A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Dec 2012 13:57:00 -0500
+In-Reply-To: <20121203162323.GB19802@htj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Aaron Lu <aaron.lu@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Mon, 3 Dec 2012, Andy Green wrote:
+On 12/03/2012 11:23 AM, Tejun Heo wrote:
+> Hello, James.
+>
+> On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
+>>> diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
+>>> index e65c62e..1756151 100644
+>>> --- a/include/scsi/scsi_device.h
+>>> +++ b/include/scsi/scsi_device.h
+>>> @@ -160,6 +160,7 @@ struct scsi_device {
+>>>   	unsigned can_power_off:1; /* Device supports runtime power off */
+>>>   	unsigned wce_default_on:1;	/* Cache is ON by default */
+>>>   	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
+>>> +	unsigned event_driven:1; /* No need to poll the device */
+>>>
+>>>   	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
+>>>   	struct list_head event_list;	/* asserted events */
+>>
+>> Yes, but if we can get away with doing that, it should be in genhd
+>> because it's completely generic.
+>>
+>> I was imagining we'd have to fake the reply to the test unit ready or
+>> some other commands, which is why it would need to be in sr.c
+>>
+>> The check events code is Tejun's baby, if he's OK with it then just do
+>> it in genhd.c
+>
+> The problem here is there's no easy to reach genhd from libata (or the
+> other way around) without going through sr.  I think we're gonna have
+> to have something in sr one way or the other.
 
-> Unless someone NAKs it for sure already (if you're already sure you're 
-> going to, please do so to avoid wasting time), I'll issue a try#2 of my 
-> code later which demonstrates what I mean.  At least I guess it's useful 
-> for comparative purposes.
+  ...which is precisely as I said when v1 of this ZPODD patchset appeared.
 
-Before you go writing a whole lot more code, we should discuss the 
-basics a bit more clearly.  There are several unsettled issues here:
+sr modifications cannot be avoided.
 
-     1. Should the LAN95xx stuff be associated with the ehci-omap.0's
-	driver or with the hub port?  The port would be more flexible,
-	offering the ability to turn the power off and on while the
-	system is running without affecting anything else.  But the 
-	port code is currently in flux, which could cause this new 
-	addition to be delayed.
+	Jeff
 
-	(On the other hand, since the LAN95xx is the only thing
-	connected to the root hub, it could be powered off and on by
-	unbinding the ehci-omap.0 device from its driver and rebinding
-	it.)
 
-     2. If we do choose the port, do we want to identify it by matching
-	against a device name string or by matching a sequence of port
-	numbers (in this case, a length-1 sequence)?  The port numbers
-	are fixed by the board design, whereas the device name strings
-	might  get changed in the future.  On the other hand, the port 
-	numbers apply only to USB whereas device names can be used by 
-	any subsystem.
 
-     3. Should the matching mechanism go into the device core or into
-	the USB port code?  (This is related to the previous question.)
-
-     4. Should this be implemented simply as a regulator (or a pair of
-	regulators)?  Or should it be generalized to some sort of PM
-	domain thing?  The generic_pm_domain structure defined in
-	include/linux/pm_domain.h seems like overkill, but maybe it's
-	the most appropriate thing to use.
-
-Until we decide on the answers to these questions, there's no point 
-writing detailed patches.
-
-Alan Stern
 
