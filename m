@@ -1,64 +1,131 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Tue, 04 Dec 2012 13:04:42 +0800
-Message-ID: <50BD846A.6050601@intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <50BCF5F8.2030802@pobox.com>
+From: wujianguo <wujianguo106@gmail.com>
+Subject: Re: [RFC PATCH 2/8] mm: Initialize node memory regions during boot
+Date: Tue, 04 Dec 2012 16:25:22 +0800
+Message-ID: <50BDB372.50106@gmail.com>
+References: <20121106195026.6941.24662.stgit@srivatsabhat.in.ibm.com> <20121106195241.6941.43309.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <50BCF5F8.2030802@pobox.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:62645 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001Ab2LDI0Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 03:26:16 -0500
+In-Reply-To: <20121106195241.6941.43309.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, mjg59@srcf.ucam.org, paulmck@linux.vnet.ibm.com, dave@linux.vnet.ibm.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, arjan@linux.intel.com, kmpark@infradead.org, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On 12/04/2012 02:56 AM, Jeff Garzik wrote:
-> On 12/03/2012 11:23 AM, Tejun Heo wrote:
->> Hello, James.
->>
->> On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
->>>> diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
->>>> index e65c62e..1756151 100644
->>>> --- a/include/scsi/scsi_device.h
->>>> +++ b/include/scsi/scsi_device.h
->>>> @@ -160,6 +160,7 @@ struct scsi_device {
->>>>   	unsigned can_power_off:1; /* Device supports runtime power off */
->>>>   	unsigned wce_default_on:1;	/* Cache is ON by default */
->>>>   	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
->>>> +	unsigned event_driven:1; /* No need to poll the device */
->>>>
->>>>   	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
->>>>   	struct list_head event_list;	/* asserted events */
->>>
->>> Yes, but if we can get away with doing that, it should be in genhd
->>> because it's completely generic.
->>>
->>> I was imagining we'd have to fake the reply to the test unit ready or
->>> some other commands, which is why it would need to be in sr.c
->>>
->>> The check events code is Tejun's baby, if he's OK with it then just do
->>> it in genhd.c
->>
->> The problem here is there's no easy to reach genhd from libata (or the
->> other way around) without going through sr.  I think we're gonna have
->> to have something in sr one way or the other.
-> 
->   ...which is precisely as I said when v1 of this ZPODD patchset appeared.
-> 
-> sr modifications cannot be avoided.
+Hi Srivatsa,
 
-So I'm gonna use the above code to silence the poll when ODD is powered
-off. I suppose everybody is OK with this, right? James, please let me
-know if you disagree.
+I got following compile waring:
+
+WARNING: vmlinux.o(.text+0x10b320): Section mismatch in reference from the function init_zone_memory_regions() to the function .meminit.text:__absent_pages_in_range()
+The function init_zone_memory_regions() references
+the function __meminit __absent_pages_in_range().
+This is often because init_zone_memory_regions lacks a __meminit
+annotation or the annotation of __absent_pages_in_range is wrong.
+
+WARNING: vmlinux.o(.text+0x10b457): Section mismatch in reference from the function init_node_memory_regions() to the function .meminit.text:__absent_pages_in_range()
+The function init_node_memory_regions() references
+the function __meminit __absent_pages_in_range().
+This is often because init_node_memory_regions lacks a __meminit
+annotation or the annotation of __absent_pages_in_range is wrong.
+
+I think should add *__paginginit* to the following three functions:
+init_memory_regions()
+init_node_memory_regions()
+init_zone_memory_regions()
 
 Thanks,
-Aaron
+Jianguo wu
 
+On 2012-11-7 3:52, Srivatsa S. Bhat wrote:
+> Initialize the node's memory regions structures with the information about
+> the region-boundaries, at boot time.
 > 
-> 	Jeff
+> Based-on-patch-by: Ankita Garg <gargankita@gmail.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
 > 
+>  include/linux/mm.h |    4 ++++
+>  mm/page_alloc.c    |   35 +++++++++++++++++++++++++++++++++++
+>  2 files changed, 39 insertions(+)
 > 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index fa06804..19c4fb0 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -657,6 +657,10 @@ static inline pte_t maybe_mkwrite(pte_t pte, struct vm_area_struct *vma)
+>  #define SECTIONS_MASK		((1UL << SECTIONS_WIDTH) - 1)
+>  #define ZONEID_MASK		((1UL << ZONEID_SHIFT) - 1)
+>  
+> +/* Hard-code memory regions size to be 512 MB for now. */
+> +#define MEM_REGION_SHIFT	(29 - PAGE_SHIFT)
+> +#define MEM_REGION_SIZE		(1UL << MEM_REGION_SHIFT)
+> +
+>  static inline enum zone_type page_zonenum(const struct page *page)
+>  {
+>  	return (page->flags >> ZONES_PGSHIFT) & ZONES_MASK;
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index bb90971..709e3c1 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -4560,6 +4560,40 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
+>  #endif /* CONFIG_FLAT_NODE_MEM_MAP */
+>  }
+>  
+> +void init_node_memory_regions(struct pglist_data *pgdat)
+> +{
+> +	int nid = pgdat->node_id;
+> +	unsigned long start_pfn = pgdat->node_start_pfn;
+> +	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
+> +	unsigned long i, absent;
+> +	int idx;
+> +	struct node_mem_region *region;
+> +
+> +	for (i = start_pfn, idx = 0; i < end_pfn;
+> +				i += region->spanned_pages, idx++) {
+> +
+> +		region = &pgdat->node_regions[idx];
+> +
+> +		if (i + MEM_REGION_SIZE <= end_pfn) {
+> +			region->start_pfn = i;
+> +			region->spanned_pages = MEM_REGION_SIZE;
+> +		} else {
+> +			region->start_pfn = i;
+> +			region->spanned_pages = end_pfn - i;
+> +		}
+> +
+> +		absent = __absent_pages_in_range(nid, region->start_pfn,
+> +						 region->start_pfn +
+> +						 region->spanned_pages);
+> +
+> +		region->present_pages = region->spanned_pages - absent;
+> +		region->idx = idx;
+> +		region->node = nid;
+> +		region->pgdat = pgdat;
+> +		pgdat->nr_node_regions++;
+> +	}
+> +}
+> +
+>  void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
+>  		unsigned long node_start_pfn, unsigned long *zholes_size)
+>  {
+> @@ -4581,6 +4615,7 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
+>  #endif
+>  
+>  	free_area_init_core(pgdat, zones_size, zholes_size);
+> +	init_node_memory_regions(pgdat);
+>  }
+>  
+>  #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
 > 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 > 
 
