@@ -1,79 +1,39 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH 02/10] smp, cpu hotplug: Fix smp_call_function_*()
- to prevent CPU offline properly
-Date: Tue, 4 Dec 2012 14:17:07 -0800
-Message-ID: <20121204141707.b792e488.akpm@linux-foundation.org>
-References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com>
-	<20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC PATCH 02/10] smp, cpu hotplug: Fix smp_call_function_*() to prevent CPU offline properly
+Date: Wed, 05 Dec 2012 10:09:22 +1030
+Message-ID: <87obi9gzf9.fsf@rustcorp.com.au>
+References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com> <20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:33340 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436Ab2LDWRI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 17:17:08 -0500
+Received: from ozlabs.org ([203.10.76.45]:49725 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407Ab2LDXmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Dec 2012 18:42:06 -0500
 In-Reply-To: <20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org
+Cc: sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 04 Dec 2012 14:24:28 +0530
-"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
 > From: Michael Wang <wangyun@linux.vnet.ibm.com>
-> 
+>
 > With stop_machine() gone from the CPU offline path, we can't depend on
 > preempt_disable() to prevent CPUs from going offline from under us.
-> 
-> Use the get/put_online_cpus_stable_atomic() APIs to prevent CPUs from going
-> offline, while invoking from atomic context.
->
-> ...
->
->  	 */
-> -	this_cpu = get_cpu();
-> +	get_online_cpus_stable_atomic();
-> +	this_cpu = smp_processor_id();
 
-I wonder if get_online_cpus_stable_atomic() should return the local CPU
-ID.  Just as a little convenience thing.  Time will tell.
- 
->  	/*
->  	 * Can deadlock when called with interrupts disabled.
->
-> ...
->
-> @@ -380,15 +383,15 @@ int smp_call_function_any(const struct cpumask *mask,
->  	nodemask = cpumask_of_node(cpu_to_node(cpu));
->  	for (cpu = cpumask_first_and(nodemask, mask); cpu < nr_cpu_ids;
->  	     cpu = cpumask_next_and(cpu, nodemask, mask)) {
-> -		if (cpu_online(cpu))
-> +		if (cpu_online_stable(cpu))
->  			goto call;
->  	}
->  
->  	/* Any online will do: smp_call_function_single handles nr_cpu_ids. */
-> -	cpu = cpumask_any_and(mask, cpu_online_mask);
-> +	cpu = cpumask_any_and(mask, cpu_online_stable_mask);
->  call:
->  	ret = smp_call_function_single(cpu, func, info, wait);
-> -	put_cpu();
-> +	put_online_cpus_stable_atomic();
->  	return ret;
->  }
->  EXPORT_SYMBOL_GPL(smp_call_function_any);
+Minor gripe: I'd prefer this paragraph to use the future rather than
+past tense, like: "Once stop_machine() is gone ... we won't be able to
+depend".
 
-So smp_call_function_any() has no synchronization against CPUs coming
-online.  Hence callers of smp_call_function_any() are responsible for
-ensuring that CPUs which are concurrently coming online will adopt the
-required state?
+Since you're not supposed to use the _stable() accessors without calling
+get_online_cpus_stable_atomic(), why not have
+get_online_cpus_stable_atomic() return a pointer to the stable cpumask?
+(Which is otherwise static, at least for debug).
 
-I guess that has always been the case...
+Might make the patches messier though...
 
+Oh, and I'd love to see actual benchmarks to make sure we've actually
+fixed a problem with this ;)
 
->
-> ...
->
-
+Rusty.
