@@ -1,68 +1,43 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 5/6 v7] power: export opp cpufreq functions
-Date: Tue,  4 Dec 2012 08:34:01 -0600
-Message-ID: <1354631642-30433-6-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354631642-30433-1-git-send-email-mark.langsdorf@calxeda.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1354631642-30433-1-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC PATCH 01/10] CPU hotplug: Introduce "stable" cpu online
+ mask, for atomic hotplug readers
+Date: Tue, 4 Dec 2012 07:17:34 -0800
+Message-ID: <20121204151734.GB3885@mtj.dyndns.org>
+References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com>
+ <20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:50922 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723Ab2LDPRn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 10:17:43 -0500
+Content-Disposition: inline
+In-Reply-To: <20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-These functions are needed to make the cpufreq-core0 and highbank-cpufreq
-drivers loadable as modules.
+Hello, Srivatsa.
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Acked-by: Nishanth Menon <nm@ti.com>
----
-Changes from v4, v5, v6
-        None.
-Changes from v3
-        includes linux/export.h instead of module.h.
-Changes from v2
-        None.
-Changes from v1
-        Added Nishanth Menon's ack.
-        Clarified the purpose of the change in the commit message.
+On Tue, Dec 04, 2012 at 02:23:41PM +0530, Srivatsa S. Bhat wrote:
+>  extern const struct cpumask *const cpu_possible_mask;
+>  extern const struct cpumask *const cpu_online_mask;
+> +extern const struct cpumask *const cpu_online_stable_mask;
+>  extern const struct cpumask *const cpu_present_mask;
+>  extern const struct cpumask *const cpu_active_mask;
 
- drivers/base/power/opp.c | 4 ++++
- 1 file changed, 4 insertions(+)
+This is a bit nasty.  The distinction between cpu_online_mask and the
+stable one is quite subtle and there's no mechanism to verify the
+right one is in use.  IIUC, the only time cpu_online_mask and
+cpu_online_stable_mask can deviate is during the final stage CPU take
+down, right?  If so, why not just make cpu_online_mask the stable one
+and the few cases where the actual online state matters deal with the
+internal version?  Anyone outside cpu hotplug proper should be happy
+with the stable version anyway, no?
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index d946864..4062ec3 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -23,6 +23,7 @@
- #include <linux/rcupdate.h>
- #include <linux/opp.h>
- #include <linux/of.h>
-+#include <linux/export.h>
- 
- /*
-  * Internal data structure organization with the OPP layer library is as
-@@ -643,6 +644,7 @@ int opp_init_cpufreq_table(struct device *dev,
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(opp_init_cpufreq_table);
- 
- /**
-  * opp_free_cpufreq_table() - free the cpufreq table
-@@ -660,6 +662,7 @@ void opp_free_cpufreq_table(struct device *dev,
- 	kfree(*table);
- 	*table = NULL;
- }
-+EXPORT_SYMBOL(opp_free_cpufreq_table);
- #endif		/* CONFIG_CPU_FREQ */
- 
- /**
-@@ -720,4 +723,5 @@ int of_init_opp_table(struct device *dev)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL(of_init_opp_table);
- #endif
+Thanks.
+
 -- 
-1.7.11.7
+tejun
