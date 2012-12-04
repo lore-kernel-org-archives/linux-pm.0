@@ -1,84 +1,264 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [RFC PATCH 01/10] CPU hotplug: Introduce "stable" cpu online
  mask, for atomic hotplug readers
-Date: Wed, 05 Dec 2012 02:44:44 +0530
-Message-ID: <50BE67C4.3040305@linux.vnet.ibm.com>
-References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com> <20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com> <20121204151734.GB3885@mtj.dyndns.org>
+Date: Tue, 4 Dec 2012 14:10:17 -0800
+Message-ID: <20121204141017.94a559f1.akpm@linux-foundation.org>
+References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com>
+	<20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:54601 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359Ab2LDVQT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 16:16:19 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 5 Dec 2012 02:46:05 +0530
-In-Reply-To: <20121204151734.GB3885@mtj.dyndns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Tejun,
+On Tue, 04 Dec 2012 14:23:41 +0530
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-On 12/04/2012 08:47 PM, Tejun Heo wrote:
-> Hello, Srivatsa.
+> From: Michael Wang <wangyun@linux.vnet.ibm.com>
 > 
-> On Tue, Dec 04, 2012 at 02:23:41PM +0530, Srivatsa S. Bhat wrote:
->>  extern const struct cpumask *const cpu_possible_mask;
->>  extern const struct cpumask *const cpu_online_mask;
->> +extern const struct cpumask *const cpu_online_stable_mask;
->>  extern const struct cpumask *const cpu_present_mask;
->>  extern const struct cpumask *const cpu_active_mask;
+> There are places where preempt_disable() is used to prevent any CPU from
+> going offline during the critical section. Let us call them as "atomic
+> hotplug readers" (atomic because they run in atomic contexts).
 > 
-> This is a bit nasty.  The distinction between cpu_online_mask and the
-> stable one is quite subtle and there's no mechanism to verify the
-> right one is in use.  IIUC, the only time cpu_online_mask and
-> cpu_online_stable_mask can deviate is during the final stage CPU take
-> down, right?
+> Often, these atomic hotplug readers have a simple need : they want the cpu
+> online mask that they work with (inside their critical section), to be
+> stable, i.e., it should be guaranteed that CPUs in that mask won't go
+> offline during the critical section. An important point here is that they
+> don't really care if such a "stable" mask is a subset of the actual
+> cpu_online_mask.
+> 
+> The intent of this patch is to provide such a "stable" cpu online mask
+> for that class of atomic hotplug readers.
+> 
+> Fundamental idea behind the design:
+> -----------------------------------
+> 
+> Simply put, have a separate mask called the stable cpu online mask; and
+> at the hotplug writer (cpu_down()), note down the CPU that is about to go
+> offline, and remove it from the stable cpu online mask. Then, feel free
+> to take that CPU offline, since the atomic hotplug readers won't see it
+> from now on. Also, don't start any new cpu_down() operations until all
+> existing atomic hotplug readers have completed (because they might still
+> be working with the old value of the stable online mask).
+> 
+> Some important design requirements and considerations:
+> -----------------------------------------------------
+> 
+> 1. The atomic hotplug readers should ideally *never* wait for the hotplug
+>    writer (cpu_down()) for *anything*. Because, these atomic hotplug readers
+>    can be in very hot-paths like interrupt handling/IPI and hence, if they
+>    have to wait for an ongoing cpu_down() to complete, it would pretty much
+>    introduce the same performance/latency problems as stop_machine().
+> 
+> 2. Any synchronization at the atomic hotplug readers side must be highly
+>    scalable - avoid global locks/counters etc. Because, these paths currently
+>    use the extremely fast preempt_disable(); our replacement to
+>    preempt_disable() should not become ridiculously costly.
+> 
+> 3. preempt_disable() was recursive. The replacement should also be recursive.
+> 
+> Implementation of the design:
+> ----------------------------
+> 
+> Atomic hotplug reader side:
+> 
+> We use per-cpu counters to mark the presence of atomic hotplug readers.
+> A reader would increment its per-cpu counter and continue, without waiting
+> for anything. And no locks are used in this path. Together, these satisfy
+> all the 3 requirements mentioned above.
+> 
+> The hotplug writer uses (reads) the per-cpu counters of all CPUs in order to
+> ensure that all existing atomic hotplug readers have completed. Only after
+> that, it will proceed to actually take the CPU offline.
+> 
+> [ Michael: Designed the synchronization for the IPI case ]
 
-No, actually they deviate in the initial stage itself. We flip the bit
-in the stable mask right in the beginning, and then flip the bit in the
-online mask slightly later, in __cpu_disable().
+Like this:
 
-...which makes it look stupid to have a separate "stable" mask in the
-first place! Hmm...
+[wangyun@linux.vnet.ibm.com: designed the synchronization for the IPI case]
 
-Thinking in this direction a bit more, I have written a patchset that
-doesn't need a separate stable mask, but which works with the existing
-cpu_online_mask itself. I'll post it tomorrow after testing and updating
-the patch descriptions.
+> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
+> [ Srivatsa: Generalized it to work for all cases and wrote the changelog ]
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>
+> ...
+>
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -175,6 +175,8 @@ extern struct bus_type cpu_subsys;
+>  
+>  extern void get_online_cpus(void);
+>  extern void put_online_cpus(void);
+> +extern void get_online_cpus_stable_atomic(void);
+> +extern void put_online_cpus_stable_atomic(void);
+>  #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+>  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+>  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+> @@ -198,6 +200,8 @@ static inline void cpu_hotplug_driver_unlock(void)
+>  
+>  #define get_online_cpus()	do { } while (0)
+>  #define put_online_cpus()	do { } while (0)
+> +#define get_online_cpus_stable_atomic()	do { } while (0)
+> +#define put_online_cpus_stable_atomic()	do { } while (0)
 
-One of the things I'm trying to achieve is to identify 2 types of
-hotplug readers: 
+static inline C functions would be preferred if possible.  Feel free to
+fix up the wrong crufty surrounding code as well ;)
 
-1. Readers who care only about synchronizing with the updates to
-cpu_online_mask (light-weight readers)
+>
+> ...
+>
+> @@ -705,12 +707,15 @@ extern const DECLARE_BITMAP(cpu_all_bits, NR_CPUS);
+>  
+>  #define for_each_possible_cpu(cpu) for_each_cpu((cpu), cpu_possible_mask)
+>  #define for_each_online_cpu(cpu)   for_each_cpu((cpu), cpu_online_mask)
+> +#define for_each_online_cpu_stable(cpu)					  \
+> +				for_each_cpu((cpu), cpu_online_stable_mask)
+>  #define for_each_present_cpu(cpu)  for_each_cpu((cpu), cpu_present_mask)
+>  
+>  /* Wrappers for arch boot code to manipulate normally-constant masks */
+>  void set_cpu_possible(unsigned int cpu, bool possible);
+>  void set_cpu_present(unsigned int cpu, bool present);
+>  void set_cpu_online(unsigned int cpu, bool online);
+> +void set_cpu_online_stable(unsigned int cpu, bool online);
 
-2. Readers who really want full synchronization with the entire CPU
-tear-down sequence.
+The naming is inconsistent.  This is "cpu_online_stable", but
+for_each_online_cpu_stable() is "online_cpu_stable".  Can we make
+everything the same?
 
-The reason for doing this, instead of assuming every reader to be of
-type 2 is that, if we don't make this distinction, we can end up in the
-very same latency issues and performance problems that we hit when
-using stop_machine(), without even using stop_machine()!
+>  void set_cpu_active(unsigned int cpu, bool active);
+>  void init_cpu_present(const struct cpumask *src);
+>  void init_cpu_possible(const struct cpumask *src);
+>
+> ...
+>
+> +void get_online_cpus_stable_atomic(void)
+> +{
+> +	preempt_disable();
+> +	this_cpu_inc(hotplug_reader_refcount);
+> +
+> +	/*
+> +	 * Prevent reordering of writes to hotplug_reader_refcount and
+> +	 * reads from cpu_online_stable_mask.
+> +	 */
+> +	smp_mb();
+> +}
+> +EXPORT_SYMBOL_GPL(get_online_cpus_stable_atomic);
+> +
+> +void put_online_cpus_stable_atomic(void)
+> +{
+> +	/*
+> +	 * Prevent reordering of reads from cpu_online_stable_mask and
+> +	 * writes to hotplug_reader_refcount.
+> +	 */
+> +	smp_mb();
+> +	this_cpu_dec(hotplug_reader_refcount);
+> +	preempt_enable();
+> +}
+> +EXPORT_SYMBOL_GPL(put_online_cpus_stable_atomic);
+> +
+>  static struct {
+>  	struct task_struct *active_writer;
+>  	struct mutex lock; /* Synchronizes accesses to refcount, */
+> @@ -237,6 +304,44 @@ static inline void check_for_tasks(int cpu)
+>  	write_unlock_irq(&tasklist_lock);
+>  }
+>  
+> +/*
+> + * We want all atomic hotplug readers to refer to the new value of
+> + * cpu_online_stable_mask. So wait for the existing atomic hotplug readers
+> + * to complete. Any new atomic hotplug readers will see the updated mask
+> + * and hence pose no problems.
+> + */
+> +static void sync_hotplug_readers(void)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_online_cpu(cpu) {
+> +		while (per_cpu(hotplug_reader_refcount, cpu))
+> +			cpu_relax();
+> +	}
+> +}
 
-[The readers can be in very hot paths, like interrupt handlers. So if
-there is no distinction between light-weight readers and full-readers,
-we can potentially slow down the entire machine unnecessarily, effectively
-creating the same effect as stop_machine()]
+That all looks solid to me.
 
-IOW, IMHO, one of the goals of the replacement to stop_machine() should
-be that it should not indirectly induce the "stop_machine() effect".
+> +/*
+> + * We are serious about taking this CPU down. So clear the CPU from the
+> + * stable online mask.
+> + */
+> +static void prepare_cpu_take_down(unsigned int cpu)
+> +{
+> +	set_cpu_online_stable(cpu, false);
+> +
+> +	/*
+> +	 * Prevent reordering of writes to cpu_online_stable_mask and reads
+> +	 * from hotplug_reader_refcount.
+> +	 */
+> +	smp_mb();
+> +
+> +	/*
+> +	 * Wait for all active hotplug readers to complete, to ensure that
+> +	 * there are no critical sections still referring to the old stable
+> +	 * online mask.
+> +	 */
+> +	sync_hotplug_readers();
+> +}
 
-The new patchset that I have written takes care of this requirement
-and provides APIs for both types of readers, and also doesn't use
-any extra cpu masks. I'll post this patchset tomorrow, after taking a
-careful look at it again.
+I wonder about the cpu-online case.  A typical caller might want to do:
 
-Regards,
-Srivatsa S. Bhat
 
+/*
+ * Set each online CPU's "foo" to "bar"
+ */
+
+int global_bar;
+
+void set_cpu_foo(int bar)
+{
+	get_online_cpus_stable_atomic();
+	global_bar = bar;
+	for_each_online_cpu_stable()
+		cpu->foo = bar;
+	put_online_cpus_stable_atomic()
+}
+
+void_cpu_online_notifier_handler(void)
+{
+	cpu->foo = global_bar;
+}
+
+And I think that set_cpu_foo() would be buggy, because a CPU could come
+online before global_bar was altered, and that newly-online CPU would
+pick up the old value of `bar'.
+
+So what's the rule here?  global_bar must be written before we run
+get_online_cpus_stable_atomic()?
+
+Anyway, please have a think and spell all this out?
+
+>  struct take_cpu_down_param {
+>  	unsigned long mod;
+>  	void *hcpu;
+> @@ -246,7 +351,9 @@ struct take_cpu_down_param {
+>  static int __ref take_cpu_down(void *_param)
+>  {
+>  	struct take_cpu_down_param *param = _param;
+> -	int err;
+> +	int err, cpu = (long)(param->hcpu);
+> +
+
+Like this please:
+
+	int err;
+	int cpu = (long)(param->hcpu);
+
+> +	prepare_cpu_take_down(cpu);
+>  
+>  	/* Ensure this CPU doesn't handle any more interrupts. */
+>  	err = __cpu_disable();
+>
+> ...
+>
