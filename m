@@ -1,111 +1,56 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH 6/6 v8] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 5 Dec 2012 10:49:47 -0800
-Message-ID: <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light" atomic
+ readers to prevent CPU offline
+Date: Thu, 06 Dec 2012 00:21:06 +0530
+Message-ID: <50BF979A.50304@linux.vnet.ibm.com>
+References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:61503 "EHLO
-	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753180Ab2LESuI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 13:50:08 -0500
-Received: by mail-ie0-f174.google.com with SMTP id c11so8756153ieb.19
-        for <linux-pm@vger.kernel.org>; Wed, 05 Dec 2012 10:50:08 -0800 (PST)
-In-Reply-To: <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com>
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:46849 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967Ab2LESwc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 13:52:32 -0500
+Received: from /spool/local
+	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 6 Dec 2012 00:22:18 +0530
+In-Reply-To: <50BF96DF.3000500@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Dec 5, 2012 at 8:48 AM, Mark Langsdorf
-<mark.langsdorf@calxeda.com> wrote:
-> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
-> new file mode 100644
-> index 0000000..1f28fa6
-> --- /dev/null
-> +++ b/drivers/cpufreq/highbank-cpufreq.c
-> @@ -0,0 +1,102 @@
+Replaying what Oleg wrote:
 
-Looks pretty good to me.  Some tedious nitpicks and discussion below.
-<snip>
+Hi,
 
-> +static int hb_voltage_change(unsigned int freq)
-> +{
-> +       int i;
-> +       u32 msg[7];
-> +
-> +       msg[0] = HB_CPUFREQ_CHANGE_NOTE;
-> +       msg[1] = freq / 1000000;
-> +       for (i = 2; i < 7; i++)
-> +               msg[i] = 0;
-> +
-> +       return pl320_ipc_transmit(msg);
-> +}
-> +
-> +static int hb_cpufreq_clk_notify(struct notifier_block *nb,
-> +                               unsigned long action, void *hclk)
-> +{
-> +       struct clk_notifier_data *clk_data = hclk;
-> +       int i = 0;
-> +
-> +       if (action == PRE_RATE_CHANGE) {
-> +               if (clk_data->new_rate > clk_data->old_rate)
-> +                       while (hb_voltage_change(clk_data->new_rate))
-> +                               if (i++ > 15)
+Sorry I don't understand the context and I can't find this thread
+anywhere, so I am not sure I understand...
 
-There are a few magic numbers here.  How about something like:
+> Replaying what Tejun wrote:
+> So, we basically need percpu_rwlock.  We already have percpu_rwsem.
 
-#define HB_VOLT_CHANGE_MAX_TRIES 15
+Yes, and with -mm patches it becomes reader-friendly. In particular
+see http://marc.info/?l=linux-mm-commits&m=135240650828875
 
-Maybe do the same for the i2c message length?
+> Oleg, it seems
+> CPU hotplug needs big-reader rwlock, ideas on how to proceed?
+> 
 
-> +                                       return NOTIFY_STOP;
+I am going to convert get_online_cpus() to use percpu_down_read(),
+this looks simple.
 
-How about NOTIFY_BAD?  It more clearly signals that an error has occurred.
+We already discussed this with Paul, see
 
-You could also return notifier_from_errno(-ETIMEDOUT) here if you
-prefer but that would only be for the sake of readability.
-clk_set_rate doesn't actually return the notifier error code in the
-event of a notifier abort.
+	http://marc.info/?l=linux-kernel&m=135248463226031
 
-> +       } else if (action == POST_RATE_CHANGE) {
-> +               if (clk_data->new_rate < clk_data->old_rate)
-> +                       while (hb_voltage_change(clk_data->new_rate))
-> +                               if (i++ > 15)
-> +                                       break;
+and the whole thread.
 
-Same as above.  It is true that the clock framework does nothing with
-post-rate change notifier aborts but that might change in the future.
+In short, all we need is percpu_down_write_recursive_readers() and
+afaics the only complication is lockdep, we need down_read_no_lockdep()
+which (like __up_read) doesn't do rwsem_acquire_read().
 
-> +       }
-> +
-> +       return NOTIFY_DONE;
-> +}
-> +
-> +static struct notifier_block hb_cpufreq_clk_nb = {
-> +       .notifier_call = hb_cpufreq_clk_notify,
-> +};
-> +
+Oleg.
 
-Do you have any plans to convert your voltage change routine over to
-the regulator framework?  Likewise do you plan to use the OPP library
-in the future?  I can understand if you do not do that since your
-regulator/dvfs programming model makes things very simple for you.
-
-The reason I bring this up is that I did float a patch a while back
-for a generalized dvfs notifier handler.  The prereqs for using it are
-1) ccf, 2) regulator fwk, 3) opp definitions.  Here is the patch:
-https://github.com/mturquette/linux/commit/05a280bbc0819a6858d73088a632666f0c7f68a4
-
-And an example usage in the OMAP CPUfreq driver:
-https://github.com/mturquette/linux/commit/958f10bb98a293aa912e7eb9cd6edbdc51c1c04a
-
-I understand if this approach incurs too much software overhead for
-you but I wanted to throw it out there.  It might working nicely in
-the cpufreq-cpu0 driver or some other "generic" CPUfreq driver for
-implementing DVFS.
-
-Regards,
-Mike
