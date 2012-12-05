@@ -1,45 +1,73 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC PATCH 4/5] arm: omap2: support port power on lan95xx
- devices
-Date: Wed, 5 Dec 2012 09:16:16 -0800
-Message-ID: <20121205171616.GE21682@atomide.com>
-References: <1354460467-28006-1-git-send-email-tom.leiming@gmail.com>
- <1354460467-28006-5-git-send-email-tom.leiming@gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 2/6 v8] clk, highbank: Prevent glitches in non-bypass
+ reset mode
+Date: Wed, 5 Dec 2012 10:02:14 -0800
+Message-ID: <CAPtuhTjsvSs5cif4yiDXwzET-hygqQk5yMn3WvqxiBHDgbpfcQ@mail.gmail.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+ <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-3-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:15987 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753992Ab2LERQ0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 12:16:26 -0500
-Content-Disposition: inline
-In-Reply-To: <1354460467-28006-5-git-send-email-tom.leiming@gmail.com>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:40583 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599Ab2LESCf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 13:02:35 -0500
+Received: by mail-ia0-f174.google.com with SMTP id y25so4191646iay.19
+        for <linux-pm@vger.kernel.org>; Wed, 05 Dec 2012 10:02:35 -0800 (PST)
+In-Reply-To: <1354726121-17190-3-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, linux-omap@vger.kernel.org, linux-usb@vger.kernel.org, Andy Green <andy.green@linaro.org>, Roger Quadros <rogerq@ti.com>, Felipe Balbi <balbi@ti.com>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
 
-Hi,
+On Wed, Dec 5, 2012 at 8:48 AM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+> The highbank clock will glitch with the current code if the
+> clock rate is reset without relocking the PLL. Program the PLL
+> correctly to prevent glitches.
+>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Cc: mturquette@linaro.org
+> ---
+> Changes from v6, v7
+>         None.
+> Changes from v5
+>         Added Mike Turquette's ack.
 
-* Ming Lei <tom.leiming@gmail.com> [121202 07:05]:
-> --- a/arch/arm/mach-omap2/board-omap4panda.c
-> +++ b/arch/arm/mach-omap2/board-omap4panda.c
-
-...
-
-> +
-> +static struct notifier_block usb_port_nb = {
-> +	.notifier_call = device_notify,
-> +};
-> +
-
-We'll be flipping omap4 over to be device tree only soon.
-So let's not make the conversion more complex by adding more
-platform code.
-
-This means that for am33xx, omap4, and omap5 this code
-can be device tree only code.
+It appears that my Ack has not been added to this version of the patch.
 
 Regards,
+Mike
 
-Tony
+> Changes from v4
+>         None.
+> Changes from v3
+>         Changelog text and patch name now correspond to the actual patch.
+>         was clk, highbank: remove non-bypass reset mode.
+> Changes from v2
+>         None.
+> Changes from v1
+>         Removed erroneous reformating.
+>
+>  drivers/clk/clk-highbank.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
+> index 52fecad..3a0b723 100644
+> --- a/drivers/clk/clk-highbank.c
+> +++ b/drivers/clk/clk-highbank.c
+> @@ -182,8 +182,10 @@ static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
+>                 reg |= HB_PLL_EXT_ENA;
+>                 reg &= ~HB_PLL_EXT_BYPASS;
+>         } else {
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>                 reg &= ~HB_PLL_DIVQ_MASK;
+>                 reg |= divq << HB_PLL_DIVQ_SHIFT;
+> +               writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
+>         }
+>         writel(reg, hbclk->reg);
+>
+> --
+> 1.7.11.7
+>
