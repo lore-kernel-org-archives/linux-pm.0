@@ -1,85 +1,132 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH RFC] PM/Devfreq: Add Exynos5-bus devfreq driver for Exynos5250.
-Date: Wed, 5 Dec 2012 08:35:00 +0530
-Message-ID: <CAM4voamXYaULm0WEA1EnHbAa5feOkouSvtSiuJ0u4wWrgjeQ4A@mail.gmail.com>
-References: <1354264973-11214-1-git-send-email-a.kesavan@samsung.com>
-	<000101cdd202$dc6e8310$954b8930$%choi@samsung.com>
-	<loom.20121204T170759-102@post.gmane.org>
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 01/10] CPU hotplug: Introduce "stable" cpu online
+ mask, for atomic hotplug readers
+Date: Wed, 05 Dec 2012 11:28:50 +0800
+Message-ID: <50BEBF72.80906@linux.vnet.ibm.com>
+References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com> <20121204085324.25919.53090.stgit@srivatsabhat.in.ibm.com> <20121204141017.94a559f1.akpm@linux-foundation.org> <50BEB7C4.9080906@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f46.google.com ([209.85.216.46]:54592 "EHLO
-	mail-qa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752808Ab2LEDFB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 22:05:01 -0500
-In-Reply-To: <loom.20121204T170759-102@post.gmane.org>
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:42324 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752808Ab2LED3J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 22:29:09 -0500
+Received: from /spool/local
+	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <wangyun@linux.vnet.ibm.com>;
+	Wed, 5 Dec 2012 13:25:13 +1000
+In-Reply-To: <50BEB7C4.9080906@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jhbird.choi@samsung.com, myungjoo.ham@samsung.com, Kukjin Kim <kgene.kim@samsung.com>
-Cc: kyungmin.park@samsung.com, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Cc'ing missed out recipients
-
----------- Forwarded message ----------
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Date: Tue, Dec 4, 2012 at 9:48 PM
-Subject: Re: [PATCH RFC] PM/Devfreq: Add Exynos5-bus devfreq driver
-for Exynos5250.
-To: linux-pm@vger.kernel.org
-
-
-Jonghwan Choi <jhbird.choi <at> samsung.com> writes:
-
->
->
-> Hi Abhilash Kesavan.
-Hi,
->
-> I compiled in 3.7-rc8
-> I got a compile error & warning.
->
-> Compile error.
->
-> CC      drivers/devfreq/exynos5_ppmu.o
-> drivers/devfreq/exynos5_ppmu.c:56:14: error: 'S5P_VA_PPMU_DDR_C' undeclared
-> here (not in a function)
-> drivers/devfreq/exynos5_ppmu.c:59:14: error: 'S5P_VA_PPMU_DDR_R1' undeclared
-> here (not in a function)
-> drivers/devfreq/exynos5_ppmu.c:62:13: error: 'S5P_VA_PPMU_DDR_L' undeclared
-> here (not in a function)
-> drivers/devfreq/exynos5_ppmu.c:65:13: error: 'S5P_VA_PPMU_RIGHT' undeclared
-> here (not in a function)
-> drivers/devfreq/exynos5_ppmu.c:68:14: error: 'S5P_VA_PPMU_CPU' undeclared
-> here (not in a function)
-> make[2]: *** [drivers/devfreq/exynos5_ppmu.o] Error 1
-I have submitted only the driver changes. As mentioned in the commit message I
-will post the arch side changes after the drivers gets a complete review.
-However, if you want to test the driver I will post it tommorrow.
-
+On 12/05/2012 10:56 AM, Michael Wang wrote:
 [...]
-> drivers/devfreq/exynos5_bus.c: In function 'exynos5_busfreq_int_probe':
-> drivers/devfreq/exynos5_bus.c:388:9: warning: passing argument 3 of
-> 'devfreq_add_device' from incompatible pointer type [enabled by default]
-> include/linux/devfreq.h:170:24: note: expected 'struct devfreq_governor
-> const *' but argument is of type 'char *'
-[...]
-> Need change?
-These changes are based on
-git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git : for-rafael
-devfreq_add_device prototype has recently changed and that might be the cause of
-the compilation error. Can you please try on this tree.
+>>
+>> I wonder about the cpu-online case.  A typical caller might want to do:
+>>
+>>
+>> /*
+>>  * Set each online CPU's "foo" to "bar"
+>>  */
+>>
+>> int global_bar;
+>>
+>> void set_cpu_foo(int bar)
+>> {
+>> 	get_online_cpus_stable_atomic();
+>> 	global_bar = bar;
+>> 	for_each_online_cpu_stable()
+>> 		cpu->foo = bar;
+>> 	put_online_cpus_stable_atomic()
+>> }
+>>
+>> void_cpu_online_notifier_handler(void)
+>> {
+>> 	cpu->foo = global_bar;
+>> }
 
-> How to change the INT clock? I think you have to change
-> arch/arm/mach-exynos/clock-exynos5250.c
-> (If you want to control via clock framework.)
-[...]
-> exynos5_int_clk.ops = &exynos5_clk_int_ops;
-This is part of the arch side patch that has not been posted.
+Oh, forgive me for misunderstanding your question :(
+
+In this case, we have to prevent hotplug happen, not just ensure the
+online mask is correct.
+
+Hmm..., we need more consideration.
 
 Regards,
-Abhilash
+Michael Wang
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>> And I think that set_cpu_foo() would be buggy, because a CPU could come
+>> online before global_bar was altered, and that newly-online CPU would
+>> pick up the old value of `bar'.
+>>
+>> So what's the rule here?  global_bar must be written before we run
+>> get_online_cpus_stable_atomic()?
+>>
+>> Anyway, please have a think and spell all this out?
+> 
+> That's right, actually this related to one question, should the hotplug
+> happen during get_online and put_online?
+> 
+> Answer will be YES according to old API which using mutex, the hotplug
+> won't happen in critical section, but the cost is get_online() will
+> block, which will kill the performance.
+> 
+> So we designed this mechanism to do acceleration, but as you pointed
+> out, although the result will never be wrong, but the 'stable' mask is
+> not stable since it could be changed in critical section.
+> 
+> And we have two solution.
+> 
+> One is from Srivatsa, using 'read_lock' and 'write_lock', it will
+> prevent hotplug happen just like the old rule, the cost is we need a
+> global 'rw_lock' which perform bad on NUMA system, and no doubt,
+> get_online() will block for short time when doing hotplug.
+> 
+> Another is to maintain a per-cpu cache mask, this mask will only be
+> updated in get_online(), and be used in critical section, then we will
+> get a real stable mask, but one flaw is, on different cpu in critical
+> section, online mask will be different.
+> 
+> We will be appreciate if we could collect some comments on which one to
+> be used in next version.
+> 
+> Regards,
+> Michael Wang
+> 
+>>
+>>>  struct take_cpu_down_param {
+>>>  	unsigned long mod;
+>>>  	void *hcpu;
+>>> @@ -246,7 +351,9 @@ struct take_cpu_down_param {
+>>>  static int __ref take_cpu_down(void *_param)
+>>>  {
+>>>  	struct take_cpu_down_param *param = _param;
+>>> -	int err;
+>>> +	int err, cpu = (long)(param->hcpu);
+>>> +
+>>
+>> Like this please:
+>>
+>> 	int err;
+>> 	int cpu = (long)(param->hcpu);
+>>
+>>> +	prepare_cpu_take_down(cpu);
+>>>  
+>>>  	/* Ensure this CPU doesn't handle any more interrupts. */
+>>>  	err = __cpu_disable();
+>>>
+>>> ...
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
+
