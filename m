@@ -1,51 +1,60 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 10/10] cpu: No more __stop_machine() in _cpu_down()
-Date: Thu, 06 Dec 2012 00:15:00 +0530
-Message-ID: <20121205184456.3750.35005.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v2 03/10] CPU hotplug: Convert preprocessor macros to
+ static inline functions
+Date: Thu, 06 Dec 2012 00:13:28 +0530
+Message-ID: <20121205184326.3750.97473.stgit@srivatsabhat.in.ibm.com>
 References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:41146 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753694Ab2LESo4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 13:44:56 -0500
+Received: from /spool/local
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 6 Dec 2012 00:14:41 +0530
 In-Reply-To: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com
 Cc: sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-From: Paul E. McKenney <paul.mckenney@linaro.org>
+On 12/05/2012 06:10 AM, Andrew Morton wrote:
+"static inline C functions would be preferred if possible.  Feel free to
+fix up the wrong crufty surrounding code as well ;-)"
 
-The _cpu_down() function invoked as part of the CPU-hotplug offlining
-process currently invokes __stop_machine(), which is slow and inflicts
-substantial real-time latencies on the entire system.  This patch
-substitutes stop_cpus() for __stop_machine() in order to improve
-both performance and real-time latency.
+Convert the macros in the CPU hotplug code to static inline C functions.
 
-This is currently unsafe, because there are a number of uses of
-preempt_disable() that are intended to block CPU-hotplug offlining.
-These will be fixed by using get/put_online_cpus_atomic_light(), or
-get/put_online_cpus_atomic_full(), but in the meantime, this commit is one
-way to help locate them.
-
-Signed-off-by: Paul E. McKenney <paul.mckenney@linaro.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-[ Srivatsa: Refer to the new sync primitives for readers, in the changelog ]
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/cpu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/cpu.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index c71c723..00a1edc 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -418,7 +418,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- 	}
- 	smpboot_park_threads(cpu);
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index e2a9c49..599b376 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -200,12 +200,12 @@ static inline void cpu_hotplug_driver_unlock(void)
  
--	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
-+	err = stop_cpus(cpumask_of(cpu), take_cpu_down, &tcd_param);
- 	if (err) {
- 		/* CPU didn't die: tell everyone.  Can't complain. */
- 		smpboot_unpark_threads(cpu);
+ #else		/* CONFIG_HOTPLUG_CPU */
+ 
+-#define get_online_cpus()	do { } while (0)
+-#define put_online_cpus()	do { } while (0)
+-#define get_online_cpus_atomic_light()	do { } while (0)
+-#define put_online_cpus_atomic_light()	do { } while (0)
+-#define get_online_cpus_atomic_full()	do { } while (0)
+-#define put_online_cpus_atomic_full()	do { } while (0)
++static inline void get_online_cpus(void) {}
++static inline void put_online_cpus(void) {}
++static inline void get_online_cpus_atomic_light(void) {}
++static inline void put_online_cpus_atomic_light(void) {}
++static inline void get_online_cpus_atomic_full(void) {}
++static inline void put_online_cpus_atomic_full(void) {}
+ #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+ /* These aren't inline functions due to a GCC bug. */
+ #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
+
