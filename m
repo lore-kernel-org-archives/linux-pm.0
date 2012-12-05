@@ -1,39 +1,54 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [RFC PATCH 02/10] smp, cpu hotplug: Fix smp_call_function_*() to prevent CPU offline properly
-Date: Wed, 05 Dec 2012 10:09:22 +1030
-Message-ID: <87obi9gzf9.fsf@rustcorp.com.au>
-References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com> <20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] PCI/PM: Keep runtime PM enabled for unbound PCI devices
+Date: Tue, 4 Dec 2012 17:06:36 -0700
+Message-ID: <CAErSpo5gLgcLcvWPGPMivYqGKBdyjsFgKtOVreCj4FO1P__Vgg@mail.gmail.com>
+References: <1353398902-21253-1-git-send-email-ying.huang@intel.com>
+ <CAErSpo6CPSMXjq1eSTX41vtwOcd5rQOdC0-9ye5NZhds9U1B8A@mail.gmail.com> <1962888.rQgbRUetgj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([203.10.76.45]:49725 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752407Ab2LDXmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Dec 2012 18:42:06 -0500
-In-Reply-To: <20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:34030 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460Ab2LEAG5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Dec 2012 19:06:57 -0500
+Received: by mail-lb0-f174.google.com with SMTP id gi11so3887744lbb.19
+        for <linux-pm@vger.kernel.org>; Tue, 04 Dec 2012 16:06:56 -0800 (PST)
+In-Reply-To: <1962888.rQgbRUetgj@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org
-Cc: sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
 
-"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
-> From: Michael Wang <wangyun@linux.vnet.ibm.com>
+On Wed, Nov 28, 2012 at 3:43 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, November 28, 2012 03:25:59 PM Bjorn Helgaas wrote:
+>> On Tue, Nov 20, 2012 at 1:08 AM, Huang Ying <ying.huang@intel.com> wrote:
+>> > For unbound PCI devices, what we need is:
+>> >
+>> >  - Always in D0 state, because some devices does not work again after
+>> >    being put into D3 by the PCI bus.
+>> >
+>> >  - In SUSPENDED state if allowed, so that the parent devices can still
+>> >    be put into low power state.
+>> >
+>> > To satisfy these requirement, the runtime PM for the unbound PCI
+>> > devices are disabled and set to SUSPENDED state.  One issue of this
+>> > solution is that the PCI devices will be put into SUSPENDED state even
+>> > if the SUSPENDED state is forbidden via the sysfs interface
+>> > (.../power/control) of the device.  This is not an issue for most
+>> > devices, because most PCI devices are not used at all if unbounded.
+>> > But there are exceptions.  For example, unbound VGA card can be used
+>> > for display, but suspend its parents make it stop working.
+>> >
+>> > To fix the issue, we keep the runtime PM enabled when the PCI devices
+>> > are unbound.  But the runtime PM callbacks will do nothing if the PCI
+>> > devices are unbound.  This way, we can put the PCI devices into
+>> > SUSPENDED state without put the PCI devices into D3 state.
+>>
+>> Does this fix a reported problem?  Is there a bug report URL?  What
+>> problem would a user notice?
 >
-> With stop_machine() gone from the CPU offline path, we can't depend on
-> preempt_disable() to prevent CPUs from going offline from under us.
+> There is a BZ: https://bugzilla.kernel.org/show_bug.cgi?id=48201
 
-Minor gripe: I'd prefer this paragraph to use the future rather than
-past tense, like: "Once stop_machine() is gone ... we won't be able to
-depend".
+I added the BZ link and put this in my -next branch.  Thanks!
 
-Since you're not supposed to use the _stable() accessors without calling
-get_online_cpus_stable_atomic(), why not have
-get_online_cpus_stable_atomic() return a pointer to the stable cpumask?
-(Which is otherwise static, at least for debug).
-
-Might make the patches messier though...
-
-Oh, and I'd love to see actual benchmarks to make sure we've actually
-fixed a problem with this ;)
-
-Rusty.
+Bjorn
