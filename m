@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/3] ACPI / PM: Export power states of ACPI devices via sysfs
-Date: Wed, 05 Dec 2012 01:42:35 +0100
-Message-ID: <1711926.9E8yF37X23@vostro.rjw.lan>
+Subject: [PATCH 1/3] ACPI / PM: More visible function for retrieving device power states
+Date: Wed, 05 Dec 2012 01:40:26 +0100
+Message-ID: <7406201.5441t27pIL@vostro.rjw.lan>
 References: <1464990.iyrX0DeZyT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,103 +15,69 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make it possible to retrieve the current power state of an ACPI
-device from user space via sysfs by adding a new attribute
-power_state to the power subdirectory of the sysfs directory
-associated with the struct acpi_device representing the device's
-ACPI node.
+The function used for retrieving ACPI device power states,
+__acpi_bus_get_power(), is now static, because it is only used
+internally in drivers/acpi/bus.c.  However, it will be used
+outside of that file going forward, so rename it to
+acpi_device_get_power(), in analogy with acpi_device_set_power(),
+add a kerneldoc comment to it and add its header to acpi_bus.h.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/ABI/testing/sysfs-devices-power |   13 ++++++++
- drivers/acpi/scan.c                           |   41 ++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
+ drivers/acpi/bus.c      |   15 ++++++++++++---
+ include/acpi/acpi_bus.h |    1 +
+ 2 files changed, 13 insertions(+), 3 deletions(-)
 
-Index: linux/drivers/acpi/scan.c
+Index: linux/drivers/acpi/bus.c
 ===================================================================
---- linux.orig/drivers/acpi/scan.c
-+++ linux/drivers/acpi/scan.c
-@@ -174,6 +174,43 @@ err_out:
+--- linux.orig/drivers/acpi/bus.c
++++ linux/drivers/acpi/bus.c
+@@ -200,7 +200,16 @@ static const char *state_string(int stat
+ 	}
  }
- EXPORT_SYMBOL(acpi_bus_hot_remove_device);
  
-+#ifdef CONFIG_PM
-+static ssize_t power_state_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	struct acpi_device *adev = to_acpi_device(dev);
-+	int state;
-+	int ret;
-+
-+	ret = acpi_device_get_power(adev, &state);
-+	return ret ? ret : sprintf(buf, "%s\n", acpi_power_state_string(state));
-+}
-+
-+static DEVICE_ATTR(power_state, 0444, power_state_show, NULL);
-+
-+static struct attribute *acpi_dev_pm_attrs[] = {
-+	&dev_attr_power_state.attr,
-+	NULL,
-+};
-+static struct attribute_group acpi_dev_pm_attr_group = {
-+	.name	= power_group_name,
-+	.attrs	= acpi_dev_pm_attrs,
-+};
-+
-+static void acpi_dev_pm_sysfs_add(struct device *dev)
-+{
-+	sysfs_merge_group(&dev->kobj, &acpi_dev_pm_attr_group);
-+}
-+
-+static void acpi_dev_pm_sysfs_remove(struct device *dev)
-+{
-+	sysfs_unmerge_group(&dev->kobj, &acpi_dev_pm_attr_group);
-+}
-+#else /* !CONFIG_PM */
-+static inline void acpi_dev_pm_sysfs_add(struct device *dev) {}
-+static inline void acpi_dev_pm_sysfs_remove(struct device *dev) {}
-+#endif /* !CONFIG_PM */
-+
- static ssize_t
- acpi_eject_store(struct device *d, struct device_attribute *attr,
- 		const char *buf, size_t count)
-@@ -367,6 +404,9 @@ static int acpi_device_setup_files(struc
- 	status = acpi_get_handle(dev->handle, "_EJ0", &temp);
- 	if (ACPI_SUCCESS(status))
- 		result = device_create_file(&dev->dev, &dev_attr_eject);
-+
-+	acpi_dev_pm_sysfs_add(&dev->dev);
-+
- end:
- 	return result;
- }
-@@ -376,6 +416,7 @@ static void acpi_device_remove_files(str
- 	acpi_status status;
- 	acpi_handle temp;
+-static int __acpi_bus_get_power(struct acpi_device *device, int *state)
++/**
++ * acpi_device_get_power - Get power state of an ACPI device.
++ * @device: Device to get the power state of.
++ * @state: Place to store the power state of the device.
++ *
++ * This function does not update the device's power.state field, but it may
++ * update its parent's power.state field (when the parent's power state is
++ * unknown and the device's power state turns out to be D0).
++ */
++int acpi_device_get_power(struct acpi_device *device, int *state)
+ {
+ 	int result = ACPI_STATE_UNKNOWN;
  
-+	acpi_dev_pm_sysfs_remove(&dev->dev);
- 	/*
- 	 * If device has _STR, remove 'description' file
- 	 */
-Index: linux/Documentation/ABI/testing/sysfs-devices-power
+@@ -389,7 +398,7 @@ int acpi_bus_init_power(struct acpi_devi
+ 
+ 	device->power.state = ACPI_STATE_UNKNOWN;
+ 
+-	result = __acpi_bus_get_power(device, &state);
++	result = acpi_device_get_power(device, &state);
+ 	if (result)
+ 		return result;
+ 
+@@ -413,7 +422,7 @@ int acpi_bus_update_power(acpi_handle ha
+ 	if (result)
+ 		return result;
+ 
+-	result = __acpi_bus_get_power(device, &state);
++	result = acpi_device_get_power(device, &state);
+ 	if (result)
+ 		return result;
+ 
+Index: linux/include/acpi/acpi_bus.h
 ===================================================================
---- linux.orig/Documentation/ABI/testing/sysfs-devices-power
-+++ linux/Documentation/ABI/testing/sysfs-devices-power
-@@ -235,3 +235,16 @@ Description:
- 
- 		This attribute has no effect on system-wide suspend/resume and
- 		hibernation.
-+
-+What:		/sys/devices/.../power/power_state
-+Date:		December 2012
-+Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+Description:
-+		The /sys/devices/.../power/power_state attribute is only present
-+		for ACPI device nodes (i.e. objects of type struct acpi_device).
-+
-+		If present, it contains the string representation of the current
-+		ACPI power state of the device represented by the given ACPI
-+		device node.
-+
-+		This attribute is read-only.
+--- linux.orig/include/acpi/acpi_bus.h
++++ linux/include/acpi/acpi_bus.h
+@@ -340,6 +340,7 @@ acpi_status acpi_bus_get_status_handle(a
+ 				       unsigned long long *sta);
+ int acpi_bus_get_status(struct acpi_device *device);
+ int acpi_bus_set_power(acpi_handle handle, int state);
++int acpi_device_get_power(struct acpi_device *device, int *state);
+ int acpi_device_set_power(struct acpi_device *device, int state);
+ int acpi_bus_update_power(acpi_handle handle, int *state_p);
+ bool acpi_bus_power_manageable(acpi_handle handle);
 
