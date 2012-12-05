@@ -1,101 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/3] ACPI / PM: Common string representations of device power states
-Date: Wed, 05 Dec 2012 01:41:09 +0100
-Message-ID: <1601129.nfEsz1avl8@vostro.rjw.lan>
-References: <1464990.iyrX0DeZyT@vostro.rjw.lan>
+Subject: [PATCH 0/3] ACPI / PM: Export ACPI power states of devices via sysfs
+Date: Wed, 05 Dec 2012 01:39:26 +0100
+Message-ID: <1464990.iyrX0DeZyT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464990.iyrX0DeZyT@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-The function returning string representations of ACPI device power
-states, state_string((), is now static, because it is only used
-internally in drivers/acpi/bus.c.  However, it will be used outside
-of that file going forward, so rename it to
-acpi_power_state_string(), add a kerneldoc comment to it and add its
-header to acpi_bus.h.
+In some situations it is very useful to know the current ACPI power states of
+devices.  For this reason, the following series of patches makes it possible
+to retrieve that information via sysfs.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/bus.c      |   18 ++++++++++++------
- include/acpi/acpi_bus.h |    1 +
- 2 files changed, 13 insertions(+), 6 deletions(-)
+Patches [1-2/3] are trivial function renames, patch [3/3] is the real thing.
 
-Index: linux/drivers/acpi/bus.c
-===================================================================
---- linux.orig/drivers/acpi/bus.c
-+++ linux/drivers/acpi/bus.c
-@@ -182,7 +182,11 @@ EXPORT_SYMBOL(acpi_bus_get_private_data)
-                                  Power Management
-    -------------------------------------------------------------------------- */
- 
--static const char *state_string(int state)
-+/**
-+ * acpi_power_state_string - String representation of ACPI device power state.
-+ * @state: ACPI device power state to return the string representation of.
-+ */
-+const char *acpi_power_state_string(int state)
- {
- 	switch (state) {
- 	case ACPI_STATE_D0:
-@@ -260,7 +264,7 @@ int acpi_device_get_power(struct acpi_de
- 
-  out:
- 	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device [%s] power state is %s\n",
--			  device->pnp.bus_id, state_string(*state)));
-+			  device->pnp.bus_id, acpi_power_state_string(*state)));
- 
- 	return 0;
- }
-@@ -287,13 +291,13 @@ int acpi_device_set_power(struct acpi_de
- 
- 	if (state == device->power.state) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Device is already at %s\n",
--				  state_string(state)));
-+				  acpi_power_state_string(state)));
- 		return 0;
- 	}
- 
- 	if (!device->power.states[state].flags.valid) {
- 		printk(KERN_WARNING PREFIX "Device does not support %s\n",
--		       state_string(state));
-+		       acpi_power_state_string(state));
- 		return -ENODEV;
- 	}
- 	if (device->parent && (state < device->parent->power.state)) {
-@@ -354,12 +358,14 @@ int acpi_device_set_power(struct acpi_de
- 	if (result)
- 		printk(KERN_WARNING PREFIX
- 			      "Device [%s] failed to transition to %s\n",
--			      device->pnp.bus_id, state_string(state));
-+			      device->pnp.bus_id,
-+			      acpi_power_state_string(state));
- 	else {
- 		device->power.state = state;
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "Device [%s] transitioned to %s\n",
--				  device->pnp.bus_id, state_string(state)));
-+				  device->pnp.bus_id,
-+				  acpi_power_state_string(state)));
- 	}
- 
- 	return result;
-Index: linux/include/acpi/acpi_bus.h
-===================================================================
---- linux.orig/include/acpi/acpi_bus.h
-+++ linux/include/acpi/acpi_bus.h
-@@ -340,6 +340,7 @@ acpi_status acpi_bus_get_status_handle(a
- 				       unsigned long long *sta);
- int acpi_bus_get_status(struct acpi_device *device);
- int acpi_bus_set_power(acpi_handle handle, int state);
-+const char *acpi_power_state_string(int state);
- int acpi_device_get_power(struct acpi_device *device, int *state);
- int acpi_device_set_power(struct acpi_device *device, int state);
- int acpi_bus_update_power(acpi_handle handle, int *state_p);
+The series is on top of the master branch of linux-pm.git.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
