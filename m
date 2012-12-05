@@ -1,88 +1,258 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light"	atomic
+Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light" atomic
  readers to prevent CPU offline
-Date: Thu, 06 Dec 2012 00:46:40 +0530
-Message-ID: <50BF9D98.6060609@linux.vnet.ibm.com>
-References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <20121205190703.GA13795@redhat.com>
+Date: Thu, 06 Dec 2012 01:44:15 +0530
+Message-ID: <50BFAB17.3090603@linux.vnet.ibm.com>
+References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com> <50BF999C.6030707@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp07.in.ibm.com ([122.248.162.7]:48481 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380Ab2LETSO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 14:18:14 -0500
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:48526 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754275Ab2LEUPr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 15:15:47 -0500
 Received: from /spool/local
-	by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 6 Dec 2012 00:47:55 +0530
-In-Reply-To: <20121205190703.GA13795@redhat.com>
+	Thu, 6 Dec 2012 01:45:31 +0530
+In-Reply-To: <50BF999C.6030707@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tj@kernel.org, oleg@redhat.com
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/06/2012 12:37 AM, Oleg Nesterov wrote:
-> I'll try to read this series later,
+> Replaying what Tejun wrote:
 > 
-> one minor and almost offtopic nit.
+> Hello, Oleg.
 > 
-> On 12/06, Srivatsa S. Bhat wrote:
+>> Replaying what Oleg wrote:
+>>> Replacing get_online_cpus() w/ percpu_rwsem is great but this thread
+>>> is about replacing preempt_disable with something finer grained and
+>>> less heavy on the writer side
 >>
->>  static int __ref take_cpu_down(void *_param)
->>  {
->>  	struct take_cpu_down_param *param = _param;
->> +	unsigned long flags;
->>  	int err;
+>> If only I understood why preempt_disable() is bad ;-)
 >>
->> +	/*
->> +	 *  __cpu_disable() is the step where the CPU is removed from the
->> +	 *  cpu_online_mask. Protect it with the light-lock held for write.
->> +	 */
->> +	write_lock_irqsave(&light_hotplug_rwlock, flags);
->> +
->>  	/* Ensure this CPU doesn't handle any more interrupts. */
->>  	err = __cpu_disable();
->> -	if (err < 0)
->> +	if (err < 0) {
->> +		write_unlock_irqrestore(&light_hotplug_rwlock, flags);
->>  		return err;
->> +	}
->> +
->> +	/*
->> +	 * We have successfully removed the CPU from the cpu_online_mask.
->> +	 * So release the light-lock, so that the light-weight atomic readers
->> +	 * (who care only about the cpu_online_mask updates, and not really
->> +	 * about the actual cpu-take-down operation) can continue.
->> +	 *
->> +	 * But don't enable interrupts yet, because we still have work left to
->> +	 * do, to actually bring the CPU down.
->> +	 */
->> +	write_unlock(&light_hotplug_rwlock);
+>> OK, I guess "less heavy on the writer side" is the hint, and in the
+>> previous email you mentioned that "stop_machine() itself is extremely
+>> heavy".
 >>
->>  	cpu_notify(CPU_DYING | param->mod, param->hcpu);
->> +
->> +	local_irq_restore(flags);
->>  	return 0;
+>> Looks like, you are going to remove stop_machine() from cpu_down ???
+>>
 > 
-> This is subjective, but imho _irqsave and the fat comment look confusing.
+> Yeah, that's what Srivatsa is trying to do.  The problem seems to be
+> that cpu up/down is very frequent on certain mobile platforms for
+> power management and as currently implemented cpu hotplug is too heavy
+> and latency-inducing.
+>   
+>>> The problem seems that we don't have percpu_rwlock yet.  It shouldn't
+>>> be too difficult to implement, right?
+>>>
+>>
+>> Oh, I am not sure... unless you simply copy-and-paste the lglock code
+>> and replace spinlock_t with rwlock_t.
+>>
 > 
-> Currently take_cpu_down() is always called with irqs disabled, so you
-> do not need to play with interrupts.
+> Ah... right, so that's where brlock ended up.  So, lglock is the new
+> thing and brlock is a wrapper around it.
 > 
-> 10/10 does s/__stop_machine/stop_cpus/ and that patch could simply add
-> local_irq_disable/enable into take_cpu_down().
+>> We probably want something more efficient, but I bet we can't avoid
+>> the barriers on the read side.
+>>
+>> And somehow we should avoid the livelocks. Say, we can't simply add
+>> the per_cpu_reader_counter, _read_lock should spin if the writer is
+>> active. But at the same time _read_lock should be recursive.
+>>
+> 
+> I think we should just go with lglock.  It does involve local atomic
+> ops but atomic ops themselves aren't that expensive and it's not like
+> we can avoid memory barriers.  Also, that's the non-sleeping
+> counterpart of percpu_rwsem.  If it's not good enough for some reason,
+> we should improve it rather than introducing something else.
 > 
 
-Hmm, we could certainly do that, but somehow I felt it would be easier to
-read if we tinker and fix up the take_cpu_down() logic at one place, as a
-whole, instead of breaking up into pieces in different patches. And that
-also makes the last patch look really cute: it just replaces stop_machine()
-with stop_cpus(), as the changelog intended.
+While working on the v2 yesterday, I had actually used rwlocks for
+the light readers and atomic ops for the full-readers. (Later I changed
+both to rwlocks while posting this v2). Anyway, the atomic ops version
+looked something like shown below.
 
-I'll see if doing like what you suggested improves the readability, and
-if yes, I'll change it. Thank you!
+I'll take a look at lglocks and see if that helps in our case.
 
 Regards,
 Srivatsa S. Bhat
+
+
+---
+
+ include/linux/cpu.h |    4 ++
+ kernel/cpu.c        |   98 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 102 insertions(+)
+
+
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index c64b6ed..5011c7d 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -177,6 +177,8 @@ extern void get_online_cpus(void);
+ extern void put_online_cpus(void);
+ extern void get_online_cpus_stable_atomic(void);
+ extern void put_online_cpus_stable_atomic(void);
++extern void get_online_cpus_atomic(void);
++extern void put_online_cpus_atomic(void);
+ #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+ #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+ #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+@@ -202,6 +204,8 @@ static inline void cpu_hotplug_driver_unlock(void)
+ #define put_online_cpus()	do { } while (0)
+ #define get_online_cpus_stable_atomic()	do { } while (0)
+ #define put_online_cpus_stable_atomic()	do { } while (0)
++#define get_online_cpus_atomic()	do { } while (0)
++#define put_online_cpus_atomic()	do { } while (0)
+ #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+ /* These aren't inline functions due to a GCC bug. */
+ #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 8c9eecc..76b07f7 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -19,6 +19,7 @@
+ #include <linux/mutex.h>
+ #include <linux/gfp.h>
+ #include <linux/suspend.h>
++#include <linux/atomic.h>
+ 
+ #include "smpboot.h"
+ 
+@@ -104,6 +105,58 @@ void put_online_cpus_stable_atomic(void)
+ }
+ EXPORT_SYMBOL_GPL(put_online_cpus_stable_atomic);
+ 
++static DEFINE_PER_CPU(atomic_t, atomic_reader_refcount);
++
++#define writer_active(v)	((v) < 0)
++#define reader_active(v)	((v) > 0)
++
++/*
++ * Invoked by hotplug reader, to prevent CPUs from going offline.
++ * Increments its per-cpu 'atomic_reader_refcount' to mark itself as being
++ * active.
++ *
++ * If 'atomic_reader_refcount' is negative, it means that a CPU offline
++ * operation is in progress (hotplug writer). Wait for it to complete
++ * and then mark your presence (increment the count) and return.
++ *
++ * You can call this recursively, because it doesn't hold any locks.
++ *
++ * Returns with preemption disabled.
++ */
++void get_online_cpus_atomic(void)
++{
++	int c, old;
++
++	preempt_disable();
++	read_lock(&hotplug_rwlock);
++
++	for (;;) {
++		c = atomic_read(&__get_cpu_var(atomic_reader_refcount));
++		if (unlikely(writer_active(c))) {
++			cpu_relax();
++			continue;
++		}
++
++		old = atomic_cmpxchg(&__get_cpu_var(atomic_reader_refcount),
++				     c, c + 1);
++
++		if (likely(old == c))
++			break;
++
++		c = old;
++	}
++}
++EXPORT_SYMBOL_GPL(get_online_cpus_atomic);
++
++void put_online_cpus_atomic(void)
++{
++	atomic_dec(&__get_cpu_var(atomic_reader_refcount));
++	smp_mb__after_atomic_dec();
++	read_unlock(&hotplug_rwlock);
++	preempt_enable();
++}
++EXPORT_SYMBOL_GPL(put_online_cpus_atomic);
++
+ static struct {
+ 	struct task_struct *active_writer;
+ 	struct mutex lock; /* Synchronizes accesses to refcount, */
+@@ -292,6 +345,42 @@ static inline void check_for_tasks(int cpu)
+ 	write_unlock_irq(&tasklist_lock);
+ }
+ 
++/*
++ * Invoked by hotplug writer, in preparation to take a CPU offline.
++ * Decrements the per-cpu 'atomic_reader_refcount' to mark itself as being
++ * active.
++ *
++ * If 'atomic_reader_refcount' is positive, it means that there are active
++ * hotplug readers (those that prevent hot-unplug). Wait for them to complete
++ * and then mark your presence (decrement the count) and return.
++ */
++static void disable_atomic_reader(unsigned int cpu)
++{
++	int c, old;
++
++	for (;;) {
++		c = atomic_read(&per_cpu(atomic_reader_refcount, cpu));
++		if (likely(reader_active(c))) {
++			cpu_relax();
++			continue;
++		}
++
++		old = atomic_cmpxchg(&per_cpu(atomic_reader_refcount, cpu),
++				     c, c - 1);
++
++		if (likely(old == c))
++			break;
++
++		c = old;
++	}
++}
++
++static void enable_atomic_reader(unsigned int cpu)
++{
++	atomic_inc(&per_cpu(atomic_reader_refcount, cpu));
++	smp_mb__after_atomic_inc();
++}
++
+ struct take_cpu_down_param {
+ 	unsigned long mod;
+ 	void *hcpu;
+@@ -302,6 +391,7 @@ static int __ref take_cpu_down(void *_param)
+ {
+ 	struct take_cpu_down_param *param = _param;
+ 	unsigned long flags;
++	unsigned int cpu;
+ 	int err;
+ 
+ 	/*
+@@ -317,6 +407,10 @@ static int __ref take_cpu_down(void *_param)
+ 		return err;
+ 	}
+ 
++	/* Disable the atomic hotplug readers who need full synchronization */
++	for_each_online_cpu(cpu)
++		disable_atomic_reader(cpu);
++
+ 	/*
+ 	 * We have successfully removed the CPU from the cpu_online_mask.
+ 	 * So release the lock, so that the light-weight atomic readers (who care
+@@ -330,6 +424,10 @@ static int __ref take_cpu_down(void *_param)
+ 
+ 	cpu_notify(CPU_DYING | param->mod, param->hcpu);
+ 
++	/* Enable the atomic hotplug readers who need full synchronization */
++	for_each_online_cpu(cpu)
++		enable_atomic_reader(cpu);
++
+ 	local_irq_restore(flags);
+ 	return 0;
+ }
 
