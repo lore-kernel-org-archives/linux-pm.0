@@ -1,248 +1,163 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 02/10] CPU hotplug: Provide APIs for "full" atomic
- readers to prevent CPU offline
-Date: Thu, 06 Dec 2012 00:13:17 +0530
-Message-ID: <20121205184313.3750.17752.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v2 04/10] smp,
+ cpu hotplug: Fix smp_call_function_*() to prevent CPU offline properly
+Date: Thu, 06 Dec 2012 00:13:38 +0530
+Message-ID: <20121205184336.3750.80479.stgit@srivatsabhat.in.ibm.com>
 References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:46413 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641Ab2LESor (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 13:44:47 -0500
-Received: from /spool/local
-	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 6 Dec 2012 00:14:33 +0530
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com
 Cc: sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Some of the atomic hotplug readers cannot tolerate CPUs going offline while
-they are in their critical section. That is, they can't get away with just
-synchronizing with the updates to the cpu_online_mask; they really need to
-synchronize with the entire CPU tear-down sequence, because they are very
-much involved in the hotplug related code paths.
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() to prevent CPUs from going offline from under us.
 
-Such "full" atomic hotplug readers need a way to *actually* and *truly*
-prevent CPUs from going offline while they are active.
-
-The intent of this patch is to provide synchronization APIs for such "full"
-atomic hotplug readers. [ get/put_online_cpus_atomic_full()]
-
-Some important design requirements and considerations:
------------------------------------------------------
-
-1. Scalable synchronization
-
-Any synchronization at the atomic hotplug readers side must be highly
-scalable - avoid global single-holder locks/counters etc. Because, these
-paths currently use the extremely fast preempt_disable(); our replacement
-to preempt_disable() should not become ridiculously costly and also should
-not serialize the readers among themselves needlessly.
-
-2. Should not have ABBA deadlock possibilities between the 2 types of atomic
-readers ("light" vs "full")
-
-Atomic readers who can get away with a stable online mask ("light" readers)
-and atomic readers who need full synchronization with CPU offline ("full"
-readers) must not end up in situations leading to ABBA deadlocks because of
-the APIs they use respectively.
-
-Also, we should not impose any ordering restrictions on how the 2 types of
-readers can nest. They should be allowed to nest freely in any way they want,
-and we should provide the guarantee that they won't deadlock.
-(preempt_disable() posed no ordering restrictions before. Neither should we).
-
-3. preempt_disable() was recursive. The replacement should also be recursive.
-
-Implementation of the design:
-----------------------------
-
-Basically, we use another reader-writer lock for synchronizing the "full"
-hotplug readers with the writer. But since we want to avoid ABBA deadlock
-possibilities, we need to be careful as well as clever while designing this
-"full" reader APIs.
-
-Simplification: All "full" readers are also "light" readers
------------------------------------------------------------
-
-This simplification helps us get rid of ABBA deadlock possibilites, because
-the lock ordering remains consistent to both types of readers, and looks
-something like this:
-
-Light reader:
-------------
-    Take light-lock for read
-
-        /* Critical section */
-
-    Release the light-lock
-
-Full reader:
------------
-    Take light-lock for read
-
-        Take full-lock for read
-
-            /* Critical section */
-
-        Release the full-lock
-
-    Release the light-lock
-
-
-But then, the writer path should be cleverly designed in such a way that
-after the update to cpu_online_mask, only the light-readers can continue, but
-the full-readers continue to spin until entire CPU offline operation is
-complete.
-
-So the lock ordering in the writer should look like this:
-
-Writer:
-------
-
-    Take light-lock for write
-
-        Take the full-lock for write
-
-            Update cpu_online_mask (flip the bit)
-
-
-    /*
-     * Now allow only the light-readers to continue, while keeping the
-     * full-readers spinning (ie., release the light-lock alone).
-     */
-    Release the light-lock
-
-    /* Continue CPU tear-down, calling CPU_DYING notifiers */
-
-    /* Finally, allow the full-readers to continue */
-    Release the full-lock
-
-
-It can be verified that, with this scheme, there is no possibility of any
-ABBA deadlocks, and that the 2 types of atomic readers can nest in any
-way they want, without fear.
-
-
-We expect that the atomic hotplug readers who need full synchronization
-with CPU offline (and cannot just get away with a stable online mask), be
-rare. Otherwise, we could end up creating a similar effect as
-stop_machine() without even using stop_machine()! [That is, if too many
-readers are of this kind, everybody will wait for the entire CPU offline to
-finish, which is almost like having stop_machine() itself.]
-
-So we hope that most atomic hotplug readers are of the "light" type.
-That would keeps things fast and scalable and make CPU offline operations
-painless.
+Use the get/put_online_cpus_atomic_light() APIs to prevent changes to the
+cpu_online_mask, while invoking from atomic context.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- include/linux/cpu.h |    4 ++++
- kernel/cpu.c        |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+ kernel/smp.c |   38 +++++++++++++++++++++++++-------------
+ 1 file changed, 25 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index dd0a3ee..e2a9c49 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -177,6 +177,8 @@ extern void get_online_cpus(void);
- extern void put_online_cpus(void);
- extern void get_online_cpus_atomic_light(void);
- extern void put_online_cpus_atomic_light(void);
-+extern void get_online_cpus_atomic_full(void);
-+extern void put_online_cpus_atomic_full(void);
- #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
- #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
- #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
-@@ -202,6 +204,8 @@ static inline void cpu_hotplug_driver_unlock(void)
- #define put_online_cpus()	do { } while (0)
- #define get_online_cpus_atomic_light()	do { } while (0)
- #define put_online_cpus_atomic_light()	do { } while (0)
-+#define get_online_cpus_atomic_full()	do { } while (0)
-+#define put_online_cpus_atomic_full()	do { } while (0)
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
- /* These aren't inline functions due to a GCC bug. */
- #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 381593c..c71c723 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -112,6 +112,46 @@ void put_online_cpus_atomic_light(void)
- }
- EXPORT_SYMBOL_GPL(put_online_cpus_atomic_light);
- 
-+/*
-+ * Reader-writer lock to synchronize between "full/heavy" atomic hotplug
-+ * readers and the hotplug writer while doing CPU offline operation.
-+ * "Full/heavy" atomic hotplug readers are those who need to synchronize
-+ * with the full CPU take-down sequence, and not just the bit flip in the
-+ * cpu_online_mask.
-+ */
-+static DEFINE_RWLOCK(full_hotplug_rwlock);
-+
-+/*
-+ * Some atomic hotplug readers need to synchronize with the entire CPU
-+ * tear-down sequence, and not just with the update of the cpu_online_mask.
-+ * Such readers are called "full" atomic hotplug readers.
-+ *
-+ * The following APIs help them synchronize fully with the CPU offline
-+ * operation.
-+ *
-+ * You can call this function recursively.
-+ *
-+ * Also, you can mix and match (nest) "full" and "light" atomic hotplug
-+ * readers in any way you want (without worrying about their ordering).
-+ * The respective APIs have been designed in such a way as to provide
-+ * the guarantee that you won't end up in a deadlock.
-+ */
-+void get_online_cpus_atomic_full(void)
-+{
-+	preempt_disable();
-+	read_lock(&light_hotplug_rwlock);
-+	read_lock(&full_hotplug_rwlock);
-+}
-+EXPORT_SYMBOL_GPL(get_online_cpus_atomic_full);
-+
-+void put_online_cpus_atomic_full(void)
-+{
-+	read_unlock(&full_hotplug_rwlock);
-+	read_unlock(&light_hotplug_rwlock);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(put_online_cpus_atomic_full);
-+
- static struct {
- 	struct task_struct *active_writer;
- 	struct mutex lock; /* Synchronizes accesses to refcount, */
-@@ -318,9 +358,13 @@ static int __ref take_cpu_down(void *_param)
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 29dd40a..abcc4d2 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -310,7 +310,8 @@ int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
+ 	 * prevent preemption and reschedule on another processor,
+ 	 * as well as CPU removal
  	 */
- 	write_lock_irqsave(&light_hotplug_rwlock, flags);
+-	this_cpu = get_cpu();
++	get_online_cpus_atomic_light();
++	this_cpu = smp_processor_id();
  
-+	/* Disable the atomic hotplug readers who need full synchronization */
-+	write_lock(&full_hotplug_rwlock);
-+
- 	/* Ensure this CPU doesn't handle any more interrupts. */
- 	err = __cpu_disable();
- 	if (err < 0) {
-+		write_unlock(&full_hotplug_rwlock);
- 		write_unlock_irqrestore(&light_hotplug_rwlock, flags);
- 		return err;
+ 	/*
+ 	 * Can deadlock when called with interrupts disabled.
+@@ -342,7 +343,7 @@ int smp_call_function_single(int cpu, smp_call_func_t func, void *info,
+ 		}
  	}
-@@ -338,6 +382,9 @@ static int __ref take_cpu_down(void *_param)
  
- 	cpu_notify(CPU_DYING | param->mod, param->hcpu);
+-	put_cpu();
++	put_online_cpus_atomic_light();
  
-+	/* Enable the atomic hotplug readers who need full synchronization */
-+	write_unlock(&full_hotplug_rwlock);
+ 	return err;
+ }
+@@ -371,8 +372,10 @@ int smp_call_function_any(const struct cpumask *mask,
+ 	const struct cpumask *nodemask;
+ 	int ret;
+ 
++	get_online_cpus_atomic_light();
+ 	/* Try for same CPU (cheapest) */
+-	cpu = get_cpu();
++	cpu = smp_processor_id();
 +
- 	local_irq_restore(flags);
+ 	if (cpumask_test_cpu(cpu, mask))
+ 		goto call;
+ 
+@@ -388,7 +391,7 @@ int smp_call_function_any(const struct cpumask *mask,
+ 	cpu = cpumask_any_and(mask, cpu_online_mask);
+ call:
+ 	ret = smp_call_function_single(cpu, func, info, wait);
+-	put_cpu();
++	put_online_cpus_atomic_light();
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(smp_call_function_any);
+@@ -409,14 +412,17 @@ void __smp_call_function_single(int cpu, struct call_single_data *data,
+ 	unsigned int this_cpu;
+ 	unsigned long flags;
+ 
+-	this_cpu = get_cpu();
++	get_online_cpus_atomic_light();
++
++	this_cpu = smp_processor_id();
++
+ 	/*
+ 	 * Can deadlock when called with interrupts disabled.
+ 	 * We allow cpu's that are not yet online though, as no one else can
+ 	 * send smp call function interrupt to this cpu and as such deadlocks
+ 	 * can't happen.
+ 	 */
+-	WARN_ON_ONCE(cpu_online(smp_processor_id()) && wait && irqs_disabled()
++	WARN_ON_ONCE(cpu_online(this_cpu) && wait && irqs_disabled()
+ 		     && !oops_in_progress);
+ 
+ 	if (cpu == this_cpu) {
+@@ -427,7 +433,7 @@ void __smp_call_function_single(int cpu, struct call_single_data *data,
+ 		csd_lock(data);
+ 		generic_exec_single(cpu, data, wait);
+ 	}
+-	put_cpu();
++	put_online_cpus_atomic_light();
+ }
+ 
+ /**
+@@ -451,6 +457,8 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	unsigned long flags;
+ 	int refs, cpu, next_cpu, this_cpu = smp_processor_id();
+ 
++	get_online_cpus_atomic_light();
++
+ 	/*
+ 	 * Can deadlock when called with interrupts disabled.
+ 	 * We allow cpu's that are not yet online though, as no one else can
+@@ -467,17 +475,18 @@ void smp_call_function_many(const struct cpumask *mask,
+ 
+ 	/* No online cpus?  We're done. */
+ 	if (cpu >= nr_cpu_ids)
+-		return;
++		goto out_unlock;
+ 
+ 	/* Do we have another CPU which isn't us? */
+ 	next_cpu = cpumask_next_and(cpu, mask, cpu_online_mask);
+ 	if (next_cpu == this_cpu)
+-		next_cpu = cpumask_next_and(next_cpu, mask, cpu_online_mask);
++		next_cpu = cpumask_next_and(next_cpu, mask,
++						cpu_online_mask);
+ 
+ 	/* Fastpath: do that cpu by itself. */
+ 	if (next_cpu >= nr_cpu_ids) {
+ 		smp_call_function_single(cpu, func, info, wait);
+-		return;
++		goto out_unlock;
+ 	}
+ 
+ 	data = &__get_cpu_var(cfd_data);
+@@ -523,7 +532,7 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	/* Some callers race with other cpus changing the passed mask */
+ 	if (unlikely(!refs)) {
+ 		csd_unlock(&data->csd);
+-		return;
++		goto out_unlock;
+ 	}
+ 
+ 	raw_spin_lock_irqsave(&call_function.lock, flags);
+@@ -554,6 +563,9 @@ void smp_call_function_many(const struct cpumask *mask,
+ 	/* Optionally wait for the CPUs to complete */
+ 	if (wait)
+ 		csd_lock_wait(&data->csd);
++
++out_unlock:
++	put_online_cpus_atomic_light();
+ }
+ EXPORT_SYMBOL(smp_call_function_many);
+ 
+@@ -574,9 +586,9 @@ EXPORT_SYMBOL(smp_call_function_many);
+  */
+ int smp_call_function(smp_call_func_t func, void *info, int wait)
+ {
+-	preempt_disable();
++	get_online_cpus_atomic_light();
+ 	smp_call_function_many(cpu_online_mask, func, info, wait);
+-	preempt_enable();
++	put_online_cpus_atomic_light();
+ 
  	return 0;
  }
-
