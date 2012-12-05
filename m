@@ -1,9 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 06/10] sched,
- cpu hotplug: Use stable online cpus in try_to_wake_up() &
- select_task_rq()
-Date: Thu, 06 Dec 2012 00:14:03 +0530
-Message-ID: <20121205184401.3750.67576.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v2 07/10] kick_process(),
+ cpu-hotplug: Prevent offlining of target CPU properly
+Date: Thu, 06 Dec 2012 00:14:14 +0530
+Message-ID: <20121205184412.3750.98544.stgit@srivatsabhat.in.ibm.com>
 References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -21,93 +20,27 @@ depend on preempt_disable() to prevent CPUs from going offline from under us.
 Use the get/put_online_cpus_atomic_light() APIs to prevent changes to the
 cpu_online_mask, while invoking from atomic context.
 
-Scheduler functions such as try_to_wake_up() and select_task_rq() (and even
-select_fallback_rq()) deal with picking new CPUs to run tasks. They care only
-about the cpu_online_mask and not really about the actual CPU tear-down. So
-they qualify as "light" atomic readers. So use the _light() variant of the APIs.
-
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/sched/core.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ kernel/sched/core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2d8927f..c9a331e 100644
+index c9a331e..84a8579 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -1103,6 +1103,10 @@ EXPORT_SYMBOL_GPL(kick_process);
- #ifdef CONFIG_SMP
- /*
-  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
-+ *
-+ *  Must be called under get/put_online_cpus_atomic_light() or
-+ *  equivalent, to avoid CPUs from going offline from underneath
-+ *  us.
-  */
- static int select_fallback_rq(int cpu, struct task_struct *p)
+@@ -1091,11 +1091,11 @@ void kick_process(struct task_struct *p)
  {
-@@ -1166,6 +1170,9 @@ out:
+ 	int cpu;
  
- /*
-  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
-+ *
-+ * Must be called under get/put_online_cpus_atomic_light(), to prevent
-+ * CPUs from going offline from underneath us.
-  */
- static inline
- int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
-@@ -1406,6 +1413,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
- 	int cpu, success = 0;
- 
- 	smp_wmb();
+-	preempt_disable();
 +	get_online_cpus_atomic_light();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- 	if (!(p->state & state))
- 		goto out;
-@@ -1446,6 +1454,7 @@ stat:
- 	ttwu_stat(p, cpu, wake_flags);
- out:
- 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+	put_online_cpus_atomic_light();
- 
- 	return success;
- }
-@@ -1624,6 +1633,7 @@ void wake_up_new_task(struct task_struct *p)
- 	unsigned long flags;
- 	struct rq *rq;
- 
-+	get_online_cpus_atomic_light();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- #ifdef CONFIG_SMP
- 	/*
-@@ -1644,6 +1654,7 @@ void wake_up_new_task(struct task_struct *p)
- 		p->sched_class->task_woken(rq, p);
- #endif
- 	task_rq_unlock(rq, p, &flags);
+ 	cpu = task_cpu(p);
+ 	if ((cpu != smp_processor_id()) && task_curr(p))
+ 		smp_send_reschedule(cpu);
+-	preempt_enable();
 +	put_online_cpus_atomic_light();
  }
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
-@@ -2541,6 +2552,7 @@ void sched_exec(void)
- 	unsigned long flags;
- 	int dest_cpu;
- 
-+	get_online_cpus_atomic_light();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- 	dest_cpu = p->sched_class->select_task_rq(p, SD_BALANCE_EXEC, 0);
- 	if (dest_cpu == smp_processor_id())
-@@ -2550,11 +2562,13 @@ void sched_exec(void)
- 		struct migration_arg arg = { p, dest_cpu };
- 
- 		raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+		put_online_cpus_atomic_light();
- 		stop_one_cpu(task_cpu(p), migration_cpu_stop, &arg);
- 		return;
- 	}
- unlock:
- 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+	put_online_cpus_atomic_light();
- }
- 
- #endif
+ EXPORT_SYMBOL_GPL(kick_process);
+ #endif /* CONFIG_SMP */
