@@ -1,76 +1,129 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light" atomic
- readers to prevent CPU offline
-Date: Thu, 06 Dec 2012 00:29:40 +0530
-Message-ID: <50BF999C.6030707@linux.vnet.ibm.com>
-References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com>
+From: dirk.brandewie@gmail.com
+Subject: =?UTF-8?q?=5BPATCH=20RFC=200/1=5D=20cpufreq/x86=3A=20Add=20P-state=20driver=20for=20sandy=20bridge=2E=20?=
+Date: Wed,  5 Dec 2012 11:01:30 -0800
+Message-ID: <1354734091-29870-1-git-send-email-dirk.brandewie@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:37760 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967Ab2LETBJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 14:01:09 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 6 Dec 2012 00:30:53 +0530
-In-Reply-To: <50BF98F7.3030600@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@sisk.pl, deneen.t.dock@intel.com, arjan@linux.intel.com, Dirk Brandewie <dirk.brandewie@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Replaying what Tejun wrote:
+=46rom: Dirk Brandewie <dirk.brandewie@gmail.com>
 
-Hello, Oleg.
+This driver provides a P state driver for Sandybridge and Ivybridge
+processors.
+=20
+Motivation:
+The goal of this driver is to improve the power efficiency of
+Sandybridge/Ivybridge based systems.  As the investigation into how to
+achieve this goal progressed it became apparent (to me) that some of th=
+e
+design assumptions of the cpufreq subsystem are no longer valid and
+that a micro-architecure specific P state driver would be less complex
+and potentially more effiecent.  As Intel continues to innovate in the
+area of freqency/power control this will become more true IMHO.
 
-> Replaying what Oleg wrote:
->> Replacing get_online_cpus() w/ percpu_rwsem is great but this thread
->> is about replacing preempt_disable with something finer grained and
->> less heavy on the writer side
-> 
-> If only I understood why preempt_disable() is bad ;-)
-> 
-> OK, I guess "less heavy on the writer side" is the hint, and in the
-> previous email you mentioned that "stop_machine() itself is extremely
-> heavy".
-> 
-> Looks like, you are going to remove stop_machine() from cpu_down ???
->
+General info:
+The driver uses a PID controller to adjust the core frequency based on
+the presented load. The driver exposes the tuning parameters for the
+controller in the /sys/devices/system/cpu/cpufreq/snb directory.  The
+controller code is being used in PI mode with the default tuning
+parmeters.
 
-Yeah, that's what Srivatsa is trying to do.  The problem seems to be
-that cpu up/down is very frequent on certain mobile platforms for
-power management and as currently implemented cpu hotplug is too heavy
-and latency-inducing.
-  
->> The problem seems that we don't have percpu_rwlock yet.  It shouldn't
->> be too difficult to implement, right?
->>
-> 
-> Oh, I am not sure... unless you simply copy-and-paste the lglock code
-> and replace spinlock_t with rwlock_t.
-> 
+Tuning parmeters:
+   setpoint - load in percent on the core will attempt to maintain.=09
+   sample_rate_ms - rate at which the driver will sample the load on th=
+e core.=20
+   deadband  - percent =C2=B1 around the setpoint the controller will
+               consider zero error.
+   p_gain_pct - Proportional gain in percent.=20
+   i_gain_pct - Integral gain in percent.=20
+   d_gain_pct - Derivative gain in percent
 
-Ah... right, so that's where brlock ended up.  So, lglock is the new
-thing and brlock is a wrapper around it.
+To use the driver as root run the following shell script:
+   #!/bin/sh
+   for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+   do=20
+      echo snb > $file
+   done
 
-> We probably want something more efficient, but I bet we can't avoid
-> the barriers on the read side.
-> 
-> And somehow we should avoid the livelocks. Say, we can't simply add
-> the per_cpu_reader_counter, _read_lock should spin if the writer is
-> active. But at the same time _read_lock should be recursive.
-> 
+Limitations:
 
-I think we should just go with lglock.  It does involve local atomic
-ops but atomic ops themselves aren't that expensive and it's not like
-we can avoid memory barriers.  Also, that's the non-sleeping
-counterpart of percpu_rwsem.  If it's not good enough for some reason,
-we should improve it rather than introducing something else.
+ATM this driver will only run on SandyBridge systems testing on
+Ivybridge systems is not complete.
+=20
+Open Questions:
 
-Thanks.
+What is the correct way to integrate this driver into the system?  The
+current implementation registers as a cpufreq frequency governor, this
+was done to streamline testing using cpufreq to load/unload governors.
 
--- tejun
+What tuning parameters should be exposed via sysfs (if any)?  ATM all
+the PID parameters are exposed to enable tuning of the driver.
+
+
+Performance information:
+
+ --- Kernel build ---
+The following is data collected for a bzImage kernel build.  The
+commands used were:
+	 make -j8 clean
+	 sysctl -w vm.drop_caches=3D3
+	 /usr/bin/time -f "%E %c" make -j8 bzImage
+
+Time and context switches measured with /usr/bin/time -f "%E %c"
+
+Energy measured with package energy status MSR described in section
+14.7 in the Intel=C2=AE 64 and IA-32 Architectures Software Developer=E2=
+=80=99s
+Manual Volume 3.
+       http://download.intel.com/products/processor/manual/325384.pdf
+
+Average watts calculated with energy/time in seconds
+
+           time		ctx sw	energy	avg watts
+perf      02:24.49	116721	6660	46.09
+snb       02:27.03	114940	6591	44.83
+ondemand  02:26.83	190948	6683	45.51
+
+A graph of the power usage during the kernel build for each governor
+is available here:
+    http://git.fenrus.org/dirk/kernel.png
+
+ --- Power benchmark ---
+I used industry standard power bench suite to compare the performance a=
+nd
+ondemand governors against the Sandybridge governor.
+
+  Governor    | ssj_ops/watt
+ -----------------------------
+  performance |   1855
+  ondemand    |   1839
+  snb         |   2016
+=20
+A graph of the power usage for each governor is avavailable here:
+    http://git.fenrus.org/dirk/power_benchmark.png
+
+A graph showing the results of cpufreq-bench tool shipped with the
+kernel Collected with
+   cpufreq-bench -l 6000 -s 6000 -x 2000 -y 2000 -c 0 \
+               -g {ondemand | snb} -n 40 -r 40=20
+is available here:
+    http://git.fenrus.org/dirk/cpufreq-bench.png
+
+Dirk Brandewie (1):
+  cpufreq/x86: Add P-state driver for sandy bridge.
+
+ drivers/cpufreq/Kconfig.x86   |    8 +
+ drivers/cpufreq/Makefile      |    1 +
+ drivers/cpufreq/cpufreq_snb.c |  727 +++++++++++++++++++++++++++++++++=
+++++++++
+ 3 files changed, 736 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/cpufreq/cpufreq_snb.c
+
+--=20
+1.7.7.6
 
