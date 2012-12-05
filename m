@@ -1,91 +1,42 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 02/10] smp, cpu hotplug: Fix smp_call_function_*()
- to prevent CPU offline properly
-Date: Wed, 05 Dec 2012 18:11:51 +0530
-Message-ID: <50BF410F.5020204@linux.vnet.ibm.com>
-References: <20121204085149.25919.29920.stgit@srivatsabhat.in.ibm.com> <20121204085419.25919.79543.stgit@srivatsabhat.in.ibm.com> <20121204141707.b792e488.akpm@linux-foundation.org>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] ACPI / PM: Fix header of acpi_dev_pm_detach() in acpi.h
+Date: Wed, 5 Dec 2012 14:48:46 +0200
+Message-ID: <20121205124846.GV3117@intel.com>
+References: <3898205.CQSHFfLUWL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:44036 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753750Ab2LEMnW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 07:43:22 -0500
-Received: from /spool/local
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Wed, 5 Dec 2012 22:39:28 +1000
-In-Reply-To: <20121204141707.b792e488.akpm@linux-foundation.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3898205.CQSHFfLUWL@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/05/2012 03:47 AM, Andrew Morton wrote:
-> On Tue, 04 Dec 2012 14:24:28 +0530
-> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+On Wed, Dec 05, 2012 at 12:08:12PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
->> From: Michael Wang <wangyun@linux.vnet.ibm.com>
->>
->> With stop_machine() gone from the CPU offline path, we can't depend on
->> preempt_disable() to prevent CPUs from going offline from under us.
->>
->> Use the get/put_online_cpus_stable_atomic() APIs to prevent CPUs from going
->> offline, while invoking from atomic context.
->>
->> ...
->>
->>  	 */
->> -	this_cpu = get_cpu();
->> +	get_online_cpus_stable_atomic();
->> +	this_cpu = smp_processor_id();
+> The header of acpi_dev_pm_detach() in include/linux/acpi.h has an
+> incorrect return type, which should be void.  Fix that.
 > 
-> I wonder if get_online_cpus_stable_atomic() should return the local CPU
-> ID.  Just as a little convenience thing.  Time will tell.
->
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-With the new version which doesn't use extra cpumasks, we won't have to
-bother about this..
- 
->>  	/*
->>  	 * Can deadlock when called with interrupts disabled.
->>
->> ...
->>
->> @@ -380,15 +383,15 @@ int smp_call_function_any(const struct cpumask *mask,
->>  	nodemask = cpumask_of_node(cpu_to_node(cpu));
->>  	for (cpu = cpumask_first_and(nodemask, mask); cpu < nr_cpu_ids;
->>  	     cpu = cpumask_next_and(cpu, nodemask, mask)) {
->> -		if (cpu_online(cpu))
->> +		if (cpu_online_stable(cpu))
->>  			goto call;
->>  	}
->>  
->>  	/* Any online will do: smp_call_function_single handles nr_cpu_ids. */
->> -	cpu = cpumask_any_and(mask, cpu_online_mask);
->> +	cpu = cpumask_any_and(mask, cpu_online_stable_mask);
->>  call:
->>  	ret = smp_call_function_single(cpu, func, info, wait);
->> -	put_cpu();
->> +	put_online_cpus_stable_atomic();
->>  	return ret;
->>  }
->>  EXPORT_SYMBOL_GPL(smp_call_function_any);
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+
+> ---
+>  include/linux/acpi.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> So smp_call_function_any() has no synchronization against CPUs coming
-> online.  Hence callers of smp_call_function_any() are responsible for
-> ensuring that CPUs which are concurrently coming online will adopt the
-> required state?
->
-
-Yes.
- 
-> I guess that has always been the case...
-> 
-
-Right.
-
-Regards,
-Srivatsa S. Bhat
-
+> Index: linux/include/linux/acpi.h
+> ===================================================================
+> --- linux.orig/include/linux/acpi.h
+> +++ linux/include/linux/acpi.h
+> @@ -506,7 +506,7 @@ static inline int acpi_subsys_resume_ear
+>  
+>  #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
+>  int acpi_dev_pm_attach(struct device *dev, bool power_on);
+> -int acpi_dev_pm_detach(struct device *dev, bool power_off);
+> +void acpi_dev_pm_detach(struct device *dev, bool power_off);
+>  #else
+>  static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
+>  {
