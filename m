@@ -1,38 +1,100 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC PATCH v2 02/10] CPU hotplug: Provide APIs for "full" atomic
- readers to prevent CPU offline
-Date: Wed, 5 Dec 2012 12:57:44 -0800
-Message-ID: <20121205205744.GB27465@mtj.dyndns.org>
-References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
- <20121205184313.3750.17752.stgit@srivatsabhat.in.ibm.com>
- <50BF99FA.8060109@linux.vnet.ibm.com>
- <50BFAF27.9060203@linux.vnet.ibm.com>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: Re: [PATCH 6/6 v8] cpufreq, highbank: add support for highbank cpufreq
+Date: Wed, 05 Dec 2012 16:09:44 -0600
+Message-ID: <50BFC628.606@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com> <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50BFAF27.9060203@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, oleg@redhat.com, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:57582 "EHLO
+	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752836Ab2LEWJX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 17:09:23 -0500
+In-Reply-To: <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>
 
-Hello,
+On 12/05/2012 12:49 PM, Mike Turquette wrote:
+> On Wed, Dec 5, 2012 at 8:48 AM, Mark Langsdorf
+> <mark.langsdorf@calxeda.com> wrote:
+>> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+>> new file mode 100644
+>> index 0000000..1f28fa6
+>> --- /dev/null
+>> +++ b/drivers/cpufreq/highbank-cpufreq.c
+>> @@ -0,0 +1,102 @@
+> 
+> Looks pretty good to me.  Some tedious nitpicks and discussion below.
+> <snip>
+> 
+>> +static int hb_voltage_change(unsigned int freq)
+>> +{
+>> +       int i;
+>> +       u32 msg[7];
+>> +
+>> +       msg[0] = HB_CPUFREQ_CHANGE_NOTE;
+>> +       msg[1] = freq / 1000000;
+>> +       for (i = 2; i < 7; i++)
+>> +               msg[i] = 0;
+>> +
+>> +       return pl320_ipc_transmit(msg);
+>> +}
+>> +
+>> +static int hb_cpufreq_clk_notify(struct notifier_block *nb,
+>> +                               unsigned long action, void *hclk)
+>> +{
+>> +       struct clk_notifier_data *clk_data = hclk;
+>> +       int i = 0;
+>> +
+>> +       if (action == PRE_RATE_CHANGE) {
+>> +               if (clk_data->new_rate > clk_data->old_rate)
+>> +                       while (hb_voltage_change(clk_data->new_rate))
+>> +                               if (i++ > 15)
+> 
+> There are a few magic numbers here.  How about something like:
+> 
+> #define HB_VOLT_CHANGE_MAX_TRIES 15
+> 
+> Maybe do the same for the i2c message length?
 
-On Thu, Dec 06, 2012 at 02:01:35AM +0530, Srivatsa S. Bhat wrote:
-> Yes, that _sounds_ sufficient, but IMHO it won't be, in practice. The
-> *number* of call-sites that you need to convert from preempt_disable/enable
-> to get/put_online_cpus_atomic() won't be too many, however the *frequency*
-> of usage of those call-sites can potentially be very high.
+Fixed.
 
-I don't think that will be the case and, even if it is, doing it this
-way would make it difficult to tell.  The right thing to do is
-replacing stop_machine with finer grained percpu locking first.
-Refining it further should happen iff that isn't enough and there
-isn't an simpler solution.  So, let's please do the simple conversion
-first.
+>> +                                       return NOTIFY_STOP;
+> 
+> How about NOTIFY_BAD?  It more clearly signals that an error has occurred.
 
-Thanks.
+> Same as above.  It is true that the clock framework does nothing with
+> post-rate change notifier aborts but that might change in the future.
 
--- 
-tejun
+Changed and added.
+
+>> +       }
+>> +
+>> +       return NOTIFY_DONE;
+>> +}
+>> +
+>> +static struct notifier_block hb_cpufreq_clk_nb = {
+>> +       .notifier_call = hb_cpufreq_clk_notify,
+>> +};
+>> +
+> 
+> Do you have any plans to convert your voltage change routine over to
+> the regulator framework?  Likewise do you plan to use the OPP library
+> in the future?  I can understand if you do not do that since your
+> regulator/dvfs programming model makes things very simple for you.
+
+I looked at treating the ECME as a voltage regulator, but it was a very
+bad fit. The ECME has a certain amount of intelligence built into it and
+corporate plans are to treat voltage control as a black box.
+
+The current solution is actually nicely generic from my perspective. The
+clk notifiers guarantee we can make the voltage changes at the right
+time regardless of the underlying cpufreq driver implementation. I don't
+think we need more until we get into cpufreq QoS issues, and even then
+I'd want to stick with something like the current structure.
+
+--Mark Langsdorf
+Calxeda, Inc.
