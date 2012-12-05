@@ -1,8 +1,9 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 05/10] smp,
- cpu hotplug: Fix on_each_cpu_*() to prevent CPU offline properly
-Date: Thu, 06 Dec 2012 00:13:53 +0530
-Message-ID: <20121205184350.3750.57621.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v2 06/10] sched,
+ cpu hotplug: Use stable online cpus in try_to_wake_up() &
+ select_task_rq()
+Date: Thu, 06 Dec 2012 00:14:03 +0530
+Message-ID: <20121205184401.3750.67576.stgit@srivatsabhat.in.ibm.com>
 References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -20,94 +21,93 @@ depend on preempt_disable() to prevent CPUs from going offline from under us.
 Use the get/put_online_cpus_atomic_light() APIs to prevent changes to the
 cpu_online_mask, while invoking from atomic context.
 
+Scheduler functions such as try_to_wake_up() and select_task_rq() (and even
+select_fallback_rq()) deal with picking new CPUs to run tasks. They care only
+about the cpu_online_mask and not really about the actual CPU tear-down. So
+they qualify as "light" atomic readers. So use the _light() variant of the APIs.
+
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/smp.c |   26 ++++++++++++++++----------
- 1 file changed, 16 insertions(+), 10 deletions(-)
+ kernel/sched/core.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index abcc4d2..b258a92 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -688,12 +688,12 @@ int on_each_cpu(void (*func) (void *info), void *info, int wait)
- 	unsigned long flags;
- 	int ret = 0;
- 
--	preempt_disable();
-+	get_online_cpus_atomic_light();
- 	ret = smp_call_function(func, info, wait);
- 	local_irq_save(flags);
- 	func(info);
- 	local_irq_restore(flags);
--	preempt_enable();
-+	put_online_cpus_atomic_light();
- 	return ret;
- }
- EXPORT_SYMBOL(on_each_cpu);
-@@ -715,7 +715,11 @@ EXPORT_SYMBOL(on_each_cpu);
- void on_each_cpu_mask(const struct cpumask *mask, smp_call_func_t func,
- 			void *info, bool wait)
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2d8927f..c9a331e 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -1103,6 +1103,10 @@ EXPORT_SYMBOL_GPL(kick_process);
+ #ifdef CONFIG_SMP
+ /*
+  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
++ *
++ *  Must be called under get/put_online_cpus_atomic_light() or
++ *  equivalent, to avoid CPUs from going offline from underneath
++ *  us.
+  */
+ static int select_fallback_rq(int cpu, struct task_struct *p)
  {
--	int cpu = get_cpu();
-+	int cpu;
-+
-+	get_online_cpus_atomic_light();
-+
-+	cpu = smp_processor_id();
+@@ -1166,6 +1170,9 @@ out:
  
- 	smp_call_function_many(mask, func, info, wait);
- 	if (cpumask_test_cpu(cpu, mask)) {
-@@ -723,7 +727,7 @@ void on_each_cpu_mask(const struct cpumask *mask, smp_call_func_t func,
- 		func(info);
- 		local_irq_enable();
- 	}
--	put_cpu();
+ /*
+  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
++ *
++ * Must be called under get/put_online_cpus_atomic_light(), to prevent
++ * CPUs from going offline from underneath us.
+  */
+ static inline
+ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
+@@ -1406,6 +1413,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
+ 	int cpu, success = 0;
+ 
+ 	smp_wmb();
++	get_online_cpus_atomic_light();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ 	if (!(p->state & state))
+ 		goto out;
+@@ -1446,6 +1454,7 @@ stat:
+ 	ttwu_stat(p, cpu, wake_flags);
+ out:
+ 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
++	put_online_cpus_atomic_light();
+ 
+ 	return success;
+ }
+@@ -1624,6 +1633,7 @@ void wake_up_new_task(struct task_struct *p)
+ 	unsigned long flags;
+ 	struct rq *rq;
+ 
++	get_online_cpus_atomic_light();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ #ifdef CONFIG_SMP
+ 	/*
+@@ -1644,6 +1654,7 @@ void wake_up_new_task(struct task_struct *p)
+ 		p->sched_class->task_woken(rq, p);
+ #endif
+ 	task_rq_unlock(rq, p, &flags);
 +	put_online_cpus_atomic_light();
  }
- EXPORT_SYMBOL(on_each_cpu_mask);
  
-@@ -748,8 +752,10 @@ EXPORT_SYMBOL(on_each_cpu_mask);
-  * The function might sleep if the GFP flags indicates a non
-  * atomic allocation is allowed.
-  *
-- * Preemption is disabled to protect against CPUs going offline but not online.
-- * CPUs going online during the call will not be seen or sent an IPI.
-+ * We use get/put_online_cpus_atomic_light() to have a stable online mask
-+ * to work with, whose CPUs won't go offline in-between our operation.
-+ * And we will skip those CPUs which have already begun their offline journey.
-+ * CPUs coming online during the call will not be seen or sent an IPI.
-  *
-  * You must not call this function with disabled interrupts or
-  * from a hardware interrupt handler or from a bottom half handler.
-@@ -764,26 +770,26 @@ void on_each_cpu_cond(bool (*cond_func)(int cpu, void *info),
- 	might_sleep_if(gfp_flags & __GFP_WAIT);
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+@@ -2541,6 +2552,7 @@ void sched_exec(void)
+ 	unsigned long flags;
+ 	int dest_cpu;
  
- 	if (likely(zalloc_cpumask_var(&cpus, (gfp_flags|__GFP_NOWARN)))) {
--		preempt_disable();
-+		get_online_cpus_atomic_light();
- 		for_each_online_cpu(cpu)
- 			if (cond_func(cpu, info))
- 				cpumask_set_cpu(cpu, cpus);
- 		on_each_cpu_mask(cpus, func, info, wait);
--		preempt_enable();
++	get_online_cpus_atomic_light();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ 	dest_cpu = p->sched_class->select_task_rq(p, SD_BALANCE_EXEC, 0);
+ 	if (dest_cpu == smp_processor_id())
+@@ -2550,11 +2562,13 @@ void sched_exec(void)
+ 		struct migration_arg arg = { p, dest_cpu };
+ 
+ 		raw_spin_unlock_irqrestore(&p->pi_lock, flags);
 +		put_online_cpus_atomic_light();
- 		free_cpumask_var(cpus);
- 	} else {
- 		/*
- 		 * No free cpumask, bother. No matter, we'll
- 		 * just have to IPI them one by one.
- 		 */
--		preempt_disable();
-+		get_online_cpus_atomic_light();
- 		for_each_online_cpu(cpu)
- 			if (cond_func(cpu, info)) {
- 				ret = smp_call_function_single(cpu, func,
- 								info, wait);
- 				WARN_ON_ONCE(!ret);
- 			}
--		preempt_enable();
-+		put_online_cpus_atomic_light();
+ 		stop_one_cpu(task_cpu(p), migration_cpu_stop, &arg);
+ 		return;
  	}
+ unlock:
+ 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
++	put_online_cpus_atomic_light();
  }
- EXPORT_SYMBOL(on_each_cpu_cond);
+ 
+ #endif
