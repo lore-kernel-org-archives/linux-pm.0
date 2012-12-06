@@ -1,61 +1,33 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light"
-	atomic readers to prevent CPU offline
-Date: Thu, 6 Dec 2012 17:18:50 +0100
-Message-ID: <20121206161850.GA6710@redhat.com>
-References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com> <50BF999C.6030707@linux.vnet.ibm.com> <50BFAB17.3090603@linux.vnet.ibm.com>
+From: "Konstantin Ryabitsev via RT" <rt@kernel.org>
+Subject: [k.org requests #104] Add 2 categories to linux-pm bugzilla
+Date: Thu, 6 Dec 2012 17:51:43 +0000
+Message-ID: <rt-3.8.13-32201-1354816303-422.104-6-0@kernel.org>
+References: <RT-Ticket-104@kernel.org> <508F40D5.2010109@kernel.org> <rt-3.8.13-793-1351610640-1281.104-7-0@kernel.org> <50B428D9.6080906@kernel.org> <rt-3.8.13-18279-1353984226-332.104-6-0@kernel.org>
+Reply-To: rt@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:33561 "EHLO mx1.redhat.com"
+Received: from mail.kernel.org ([198.145.19.201]:44444 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423988Ab2LFQTi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Dec 2012 11:19:38 -0500
-Content-Disposition: inline
-In-Reply-To: <50BFAB17.3090603@linux.vnet.ibm.com>
+	id S1946455Ab2LFRvp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 6 Dec 2012 12:51:45 -0500
+In-Reply-To: <rt-3.8.13-18279-1353984226-332.104-6-0@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tj@kernel.org, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: lenb@kernel.org
+Cc: linux-pm@vger.kernel.org
 
-On 12/06, Srivatsa S. Bhat wrote:
->
-> +void get_online_cpus_atomic(void)
-> +{
-> +	int c, old;
-> +
-> +	preempt_disable();
-> +	read_lock(&hotplug_rwlock);
+On Tue Nov 27 02:43:46 2012, lenb@kernel.org wrote:
+> Konstantin,
+> Please sent the default assignees as below.
+> They may not be perfect, but they are better than totally broken:-)
 
-Confused... Why it also takes hotplug_rwlock?
+All requested changes have been made. Sorry for the delay.
 
-> +
-> +	for (;;) {
-> +		c = atomic_read(&__get_cpu_var(atomic_reader_refcount));
-> +		if (unlikely(writer_active(c))) {
-> +			cpu_relax();
-> +			continue;
-> +		}
-> +
-> +		old = atomic_cmpxchg(&__get_cpu_var(atomic_reader_refcount),
-> +				     c, c + 1);
-> +
-> +		if (likely(old == c))
-> +			break;
-> +
-> +		c = old;
-> +	}
-> +}
-
-	while (!atomic_inc_unless_negative(...))
-		cpu_relax();
-	
-and atomic_dec_unless_positive() in disable_atomic_reader().
-
-
-Obviously you can't use get_online_cpus_atomic() under rq->lock or
-task->pi_lock or any other lock CPU_DYING can take. Probably this is
-fine, but perhaps it makes sense to add the lockdep annotations.
-
-Oleg.
-
+Best,
+--=20
+Konstantin Ryabitsev
+Systems Administrator
+Linux Foundation, kernel.org
+Montr=C3=A9al, Qu=C3=A9bec
