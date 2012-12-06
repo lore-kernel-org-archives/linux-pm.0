@@ -1,125 +1,61 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH 4/5] arm: omap2: support port power on lan95xx devices
-Date: Thu, 6 Dec 2012 10:25:25 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1212061012570.1383-100000@iolanthe.rowland.org>
-References: <50BFE159.1010009@linaro.org>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light"
+	atomic readers to prevent CPU offline
+Date: Thu, 6 Dec 2012 17:18:50 +0100
+Message-ID: <20121206161850.GA6710@redhat.com>
+References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com> <50BF999C.6030707@linux.vnet.ibm.com> <50BFAB17.3090603@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:44754 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755144Ab2LFPZ0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Dec 2012 10:25:26 -0500
-In-Reply-To: <50BFE159.1010009@linaro.org>
+Received: from mx1.redhat.com ([209.132.183.28]:33561 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423988Ab2LFQTi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 6 Dec 2012 11:19:38 -0500
+Content-Disposition: inline
+In-Reply-To: <50BFAB17.3090603@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Green <andy.green@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ming Lei <tom.leiming@gmail.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tj@kernel.org, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 6 Dec 2012, Andy Green wrote:
+On 12/06, Srivatsa S. Bhat wrote:
+>
+> +void get_online_cpus_atomic(void)
+> +{
+> +	int c, old;
+> +
+> +	preempt_disable();
+> +	read_lock(&hotplug_rwlock);
 
-> > Right.  The question is should it be done in this somewhat roundabout
-> > way (you've got two separate assets for setting up this one thing), or
-> > should the USB port code be responsible for explicitly checking if
-> > there are any applicable assets when the port is created?
-> >
-> > The advantange of the second approach is that it doesn't involve
-> > checking all the ancestors every time a new device is added (and it
-> > involves only one asset).  The disadvantage is that it works only for
-> > USB ports.
-> 
-> It's done in two steps to strongly filter candidate child devices 
-> against being children of a known platform device.  If you go around 
-> that, you will be back to full device path matching with wildcards at 
-> the USB child to determine if he is "the one".  So that's a feature not 
-> an issue I think.
+Confused... Why it also takes hotplug_rwlock?
 
-I don't follow.  Suppose an asset is attached to ehci-omap.0 with its
-string set to "-0:1.0/port1" and the other members pointing to the
-regulator, clock and so on.  And suppose the USB port code, when
-creating a new port, checks for a name match against all the assets
-attached to its bus's host controller device structure.  That should
-do exactly what you want while using only one asset.
+> +
+> +	for (;;) {
+> +		c = atomic_read(&__get_cpu_var(atomic_reader_refcount));
+> +		if (unlikely(writer_active(c))) {
+> +			cpu_relax();
+> +			continue;
+> +		}
+> +
+> +		old = atomic_cmpxchg(&__get_cpu_var(atomic_reader_refcount),
+> +				     c, c + 1);
+> +
+> +		if (likely(old == c))
+> +			break;
+> +
+> +		c = old;
+> +	}
+> +}
 
-> I can see doing it generically or not is equally a political issue as a 
-> technical one, but I think if we bother to add this kind of support we 
-> should prefer to do it generally.  It's going to be about the same 
-> amount of code.
+	while (!atomic_inc_unless_negative(...))
+		cpu_relax();
+	
+and atomic_dec_unless_positive() in disable_atomic_reader().
 
-Not quite.  If you do it generally then you have to insert hooks at all 
-the places where a subsystem _might_ need it.  If you do it 
-specifically then no hooks are needed at all -- just a match call at 
-the right place in the subsystem that needs it.
 
-> As Tony Lindgren said, even board-omap4panda.c itself is deprecated, to 
-> project platform info into USB stack you either have to add DT code into 
-> usb stack then to go find things directly, or provide a generic 
-> methodology like assets which have the dt bindings done outside of any 
-> subsystem and apply their operations outside the subsystem too.
+Obviously you can't use get_online_cpus_atomic() under rq->lock or
+task->pi_lock or any other lock CPU_DYING can take. Probably this is
+fine, but perhaps it makes sense to add the lockdep annotations.
 
-Assuming DT can be extended to support assets, adding one asset will be 
-simpler than adding two.
-
-> > To answer the question, we need to know how other subsystems might
-> > want to use the asset-matching approach.  My guess is that only a small
-> > number of device types would care about assets (in the same way that
-> > assets matter to USB ports but not to other USB device types).  And it
-> > might not be necessary to check against every ancestor; we might know
-> > beforehand where to check (just as the USB port would know to look for
-> > an asset attached to the host controller device).
-> 
-> Yes I think it boils down to "buses" in general can benefit from this. 
-> They're the thing that dynamically - later - create child devices you 
-> might need to target with what was ultimately platform information.
-> 
-> On Panda the other bus thing that can benefit is the WLAN module on 
-> SDIO.  In fact that's a very illuminating case for your question above. 
->   Faced with exactly the same problem, that they needed to project 
-> platform info on to SDIO-probed device instance to tell it what clock 
-> rate it had been given, they invented an api which you can see today in 
-> board-omap4panda.c and other boards there, wl12xx_set_platform_data(). 
-> This is from board-4430sdp:
-> 
-> static struct wl12xx_platform_data omap4_sdp4430_wlan_data __initdata = {
->          .board_ref_clock = WL12XX_REFCLOCK_26,
->          .board_tcxo_clock = WL12XX_TCXOCLOCK_26,
-> };
-> 
-> ...
-> 
-> 	ret = wl12xx_set_platform_data(&omap4_sdp4430_wlan_data);
-> 
-> You can find the other end of it here in 
-> drivers/net/wireless/ti/wlcore/wl12xx_platform_data.c
-> 
-> static struct wl12xx_platform_data *platform_data;
-> 
-> int __init wl12xx_set_platform_data(const struct wl12xx_platform_data *data)
-> {
-> 	if (platform_data)
-> 		return -EBUSY;
-> 	if (!data)
-> 		return -EINVAL;
-> 
-> 	platform_data = kmemdup(data, sizeof(*data), GFP_KERNEL);
-> 	if (!platform_data)
-> 		return -ENOMEM;
-> 
-> 	return 0;
-> }
-> 
-> when the driver for the device instance wants to "get" its platform data 
-> it reads the static pointer via another api.  Obviously if you want two 
-> modules on your platform that's not so good.
-
-Also it isn't type-safe, although that's probably not a big concern.
-
-> I doubt that's the only SDIO device that wants to know platform info. 
-> So I think by providing a generic way we help other buses and devices.
-
-I agree, assets look like a good way to improve this.  In fact, to some
-extent assets appear to be a generalization or extension of platform
-data.
-
-Alan Stern
+Oleg.
 
