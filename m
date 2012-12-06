@@ -1,92 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Unreliable USB3 with NEC uPD720200 and Delock Cardreader
-Date: Thu, 06 Dec 2012 13:43:28 +0100
-Message-ID: <2672908.h2kiZqDT1O@vostro.rjw.lan>
-References: <20121126191002.GE6504@xanatos> <20121206003344.GC5324@xanatos> <1354778234.7216.9.camel@yhuang-dev>
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [RFC PATCH 1/5] Device Power: introduce power controller
+Date: Thu, 6 Dec 2012 21:18:17 +0800
+Message-ID: <CACVXFVMKYAANsNJKBZ90ThaJ7KNOTzpyvARGnNcHsVVczxyO4A@mail.gmail.com>
+References: <1354460467-28006-1-git-send-email-tom.leiming@gmail.com>
+	<1354460467-28006-2-git-send-email-tom.leiming@gmail.com>
+	<50BB7BA9.4090902@linaro.org>
+	<CACVXFVNfGZRE4y0+LpBixiMab2=QhOKCcRG_QEz-u7ZwuPnMvQ@mail.gmail.com>
+	<50BF7B30.9050904@ti.com>
+	<CACVXFVOiu5+M3A14Q-U2FiHYrBjAswp4Jv+Aybs_kV9DiWNHZw@mail.gmail.com>
+	<CAJe_ZhcUV7mYaNSEw1kLe8-Ym6RcVEab-1-ZZMT20xsWAb=szQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1354778234.7216.9.camel@yhuang-dev>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Sarah Sharp <sarah.a.sharp@linux.intel.com>, =?ISO-8859-1?Q?Bj=F8rn?= Mork <bjorn@mork.no>, Ulrich Eckhardt <usb@uli-eckhardt.de>, Andrew Lutomirski <luto@mit.edu>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Ming Lei <ming.lei@canonical.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f46.google.com ([74.125.83.46]:37003 "EHLO
+	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932517Ab2LFNST (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Dec 2012 08:18:19 -0500
+In-Reply-To: <CAJe_ZhcUV7mYaNSEw1kLe8-Ym6RcVEab-1-ZZMT20xsWAb=szQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jassi Brar <jaswinder.singh@linaro.org>
+Cc: Roger Quadros <rogerq@ti.com>, Andy Green <andy.green@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, linux-omap@vger.kernel.org, linux-usb@vger.kernel.org, Felipe Balbi <balbi@ti.com>
 
-On Thursday, December 06, 2012 03:17:14 PM Huang Ying wrote:
-> On Wed, 2012-12-05 at 16:33 -0800, Sarah Sharp wrote:
-> > On Wed, Nov 28, 2012 at 02:54:06PM -0800, Sarah Sharp wrote:
-> > > On Mon, Nov 26, 2012 at 10:48:03PM +0100, Bj=C3=B8rn Mork wrote:
-> > > > Sarah Sharp <sarah.a.sharp@linux.intel.com> writes:
-> > > >=20
-> > > > > It looks like both Ulrich and Andrew have the same issue.  I =
-also have a
-> > > > > Lenovo x220, and I confirmed that when I turn on PCI runtime =
-suspend,
-> > > > > the NEC host controller does not report port status changes w=
-hen a new
-> > > > > USB device is plugged in.
-> > > > >
-> > > > > I'm running 3.6.7, and I'm pretty sure that runtime suspend w=
-orked for
-> > > > > the NEC host on some older kernel.  I don't think the NEC hos=
-t went into
-> > > > > D3cold on that kernel, though.  Is there a way to disable D3c=
-old and
-> > > > > just use D3hot instead?
-> > > >=20
-> > > > Yes, you have /sys/bus/pci/devices/.../d3cold_allowed
-> > > > See Documentation/ABI/testing/sysfs-bus-pci
-> > > >=20
-> > > > If this really is a problem with the D3cold support that went i=
-nto 3.6
-> > > > then I guess you should include Huang Ying in the discussions a=
-s well
-> > > > (CCed).
-> > >=20
-> > > Turning off D3 cold didn't help.  Once the PCI device is suspende=
-d,
-> > > connect events do not generate an interrupt.
-> > >=20
-> > > I'll go see if I can figure out which kernel this worked on and b=
-isect.
-> >=20
-> > Wakeup from D3 works fine on the 3.5.0 kernel, but fails on 3.6.2. =
- I
-> > haven't fully bisected yet.
-> >=20
-> > In debugging, I found that if you only enable runtime suspend for t=
-he
-> > NEC host controller, the host successfully comes out of D3 when you=
- plug
-> > in a USB device.  However, if you enable runtime PM for the parent =
-PCIe root
-> > port, it stops working.  Disabling D3cold for both devices did not =
-help.
-> >=20
-> > It looks like a PCI issue, so what sort of debugging info do you ne=
-ed
-> > from me?
->=20
-> I do some debug with my NEC uPD720200, the patch is attached.  I foun=
-d
-> that NEC uPD720200 can not generate PME interrupt, so it can be remot=
-e
-> waken up only via polling.  But if the PCIe bridge connected to NEC
-> uPD720200 goes into suspended, we can not poll it.  Maybe we need a w=
-ay
-> to disable PCIe bridge suspended if the underlying device can only be
-> waken up via polling.
+On Thu, Dec 6, 2012 at 11:46 AM, Jassi Brar <jaswinder.singh@linaro.org> wrote:
+>> The patch can make usb port deal with the 'power controller' only, and make it
+>> avoid to deal with regulators/clocks/... directly.
+>>
+> I am curious too, except for clocks and voltage supplies (regulators),
+> what other external resources does a chip need ?
 
-I think we need to be more intelligent about that.  It looks like we ca=
-n
-only suspend a port (or bridge in general) if all devices below it have
-the pme_poll flag unset.
+For example, one indicator LED which doesn't connect to the same power
+domain might need to be triggered after the power switch state is changed.
 
 Thanks,
-Rafael
-
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-- 
+Ming Lei
