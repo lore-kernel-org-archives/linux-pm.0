@@ -1,100 +1,171 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 6/6 v8] cpufreq, highbank: add support for highbank cpufreq
-Date: Wed, 05 Dec 2012 16:09:44 -0600
-Message-ID: <50BFC628.606@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-1-git-send-email-mark.langsdorf@calxeda.com> <1354726121-17190-7-git-send-email-mark.langsdorf@calxeda.com> <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
+From: Andy Green <andy.green@linaro.org>
+Subject: Re: [RFC PATCH 4/5] arm: omap2: support port power on lan95xx devices
+Date: Thu, 06 Dec 2012 08:05:45 +0800
+Message-ID: <50BFE159.1010009@linaro.org>
+References: <Pine.LNX.4.44L0.1212051129140.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp157.dfw.emailsrvr.com ([67.192.241.157]:57582 "EHLO
-	smtp157.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836Ab2LEWJX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 17:09:23 -0500
-In-Reply-To: <CAPtuhTg4N7zAMf_Vfw1Xfbn3OmZ7hVffVuc=kMByxf_hJLkpPw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1212051129140.1659-100000@iolanthe.rowland.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ming Lei <tom.leiming@gmail.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, linux-omap@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>
 
-On 12/05/2012 12:49 PM, Mike Turquette wrote:
-> On Wed, Dec 5, 2012 at 8:48 AM, Mark Langsdorf
-> <mark.langsdorf@calxeda.com> wrote:
->> diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
->> new file mode 100644
->> index 0000000..1f28fa6
->> --- /dev/null
->> +++ b/drivers/cpufreq/highbank-cpufreq.c
->> @@ -0,0 +1,102 @@
-> 
-> Looks pretty good to me.  Some tedious nitpicks and discussion below.
-> <snip>
-> 
->> +static int hb_voltage_change(unsigned int freq)
->> +{
->> +       int i;
->> +       u32 msg[7];
->> +
->> +       msg[0] = HB_CPUFREQ_CHANGE_NOTE;
->> +       msg[1] = freq / 1000000;
->> +       for (i = 2; i < 7; i++)
->> +               msg[i] = 0;
->> +
->> +       return pl320_ipc_transmit(msg);
->> +}
->> +
->> +static int hb_cpufreq_clk_notify(struct notifier_block *nb,
->> +                               unsigned long action, void *hclk)
->> +{
->> +       struct clk_notifier_data *clk_data = hclk;
->> +       int i = 0;
->> +
->> +       if (action == PRE_RATE_CHANGE) {
->> +               if (clk_data->new_rate > clk_data->old_rate)
->> +                       while (hb_voltage_change(clk_data->new_rate))
->> +                               if (i++ > 15)
-> 
-> There are a few magic numbers here.  How about something like:
-> 
-> #define HB_VOLT_CHANGE_MAX_TRIES 15
-> 
-> Maybe do the same for the i2c message length?
+On 06/12/12 00:42, the mail apparently from Alan Stern included:
+> On Wed, 5 Dec 2012, Andy Green wrote:
+>
+>>> The details of this aren't clear yet.  For instance, should the dev=
+ice
+>>> core try to match the port with the asset info, or should this be d=
+one
+>>> by the USB code when the port is created?
+>>
+>> Currently what I have (this is before changing it to pm domain, but =
+this
+>> should be unchanged) lets the asset define a callback op which will
+>> receive notifications for all added child devices that have the devi=
+ce
+>> the asset is bound to as an ancestor.
+>>
+>> So you would bind an asset to the host controller device...
+>>
+>> static struct device_asset assets_ehci_omap0[] =3D {
+>> 	{
+>>                   .name =3D "-0:1.0/port1",
+>>                   .asset =3D assets_ehci_omap0_smsc_port,
+>>                   .ops =3D &device_descendant_attach_default_asset_o=
+ps,
+>> 	},
+>>           { }
+>> };
+>>
+>> ...with this descendant filter callback pointing to a generic "end o=
+f
+>> the device path" matcher.
+>>
+>> when device_descendant_attach_default_asset_ops() sees the child tha=
+t
+>> was foretold has appeared (and it only hears about children of
+>> ehci-omap.0 in this case), it binds the assets pointed to by .asset =
+to
+>> the new child before its probe.  assets_ehci_omap0_smsc_port is an a=
+rray
+>> of the actual regulator and clock that need switching by the child. =
+ So
+>> the effect is to magic the right assets to the child device just bef=
+ore
+>> it gets added (and probe called etc).
+>>
+>> This is working well and the matcher helper is small and simple.
+>
+> Right.  The question is should it be done in this somewhat roundabout
+> way (you've got two separate assets for setting up this one thing), o=
+r
+> should the USB port code be responsible for explicitly checking if
+> there are any applicable assets when the port is created?
+>
+> The advantange of the second approach is that it doesn't involve
+> checking all the ancestors every time a new device is added (and it
+> involves only one asset).  The disadvantage is that it works only for
+> USB ports.
 
-Fixed.
+It's done in two steps to strongly filter candidate child devices=20
+against being children of a known platform device.  If you go around=20
+that, you will be back to full device path matching with wildcards at=20
+the USB child to determine if he is "the one".  So that's a feature not=
+=20
+an issue I think.
 
->> +                                       return NOTIFY_STOP;
-> 
-> How about NOTIFY_BAD?  It more clearly signals that an error has occurred.
+I can see doing it generically or not is equally a political issue as a=
+=20
+technical one, but I think if we bother to add this kind of support we=20
+should prefer to do it generally.  It's going to be about the same=20
+amount of code.
 
-> Same as above.  It is true that the clock framework does nothing with
-> post-rate change notifier aborts but that might change in the future.
+As Tony Lindgren said, even board-omap4panda.c itself is deprecated, to=
+=20
+project platform info into USB stack you either have to add DT code int=
+o=20
+usb stack then to go find things directly, or provide a generic=20
+methodology like assets which have the dt bindings done outside of any=20
+subsystem and apply their operations outside the subsystem too.
 
-Changed and added.
+> To answer the question, we need to know how other subsystems might
+> want to use the asset-matching approach.  My guess is that only a sma=
+ll
+> number of device types would care about assets (in the same way that
+> assets matter to USB ports but not to other USB device types).  And i=
+t
+> might not be necessary to check against every ancestor; we might know
+> beforehand where to check (just as the USB port would know to look fo=
+r
+> an asset attached to the host controller device).
 
->> +       }
->> +
->> +       return NOTIFY_DONE;
->> +}
->> +
->> +static struct notifier_block hb_cpufreq_clk_nb = {
->> +       .notifier_call = hb_cpufreq_clk_notify,
->> +};
->> +
-> 
-> Do you have any plans to convert your voltage change routine over to
-> the regulator framework?  Likewise do you plan to use the OPP library
-> in the future?  I can understand if you do not do that since your
-> regulator/dvfs programming model makes things very simple for you.
+Yes I think it boils down to "buses" in general can benefit from this.=20
+They're the thing that dynamically - later - create child devices you=20
+might need to target with what was ultimately platform information.
 
-I looked at treating the ECME as a voltage regulator, but it was a very
-bad fit. The ECME has a certain amount of intelligence built into it and
-corporate plans are to treat voltage control as a black box.
+On Panda the other bus thing that can benefit is the WLAN module on=20
+SDIO.  In fact that's a very illuminating case for your question above.=
+=20
+  Faced with exactly the same problem, that they needed to project=20
+platform info on to SDIO-probed device instance to tell it what clock=20
+rate it had been given, they invented an api which you can see today in=
+=20
+board-omap4panda.c and other boards there, wl12xx_set_platform_data().=20
+This is from board-4430sdp:
 
-The current solution is actually nicely generic from my perspective. The
-clk notifiers guarantee we can make the voltage changes at the right
-time regardless of the underlying cpufreq driver implementation. I don't
-think we need more until we get into cpufreq QoS issues, and even then
-I'd want to stick with something like the current structure.
+static struct wl12xx_platform_data omap4_sdp4430_wlan_data __initdata =3D=
+ {
+         .board_ref_clock =3D WL12XX_REFCLOCK_26,
+         .board_tcxo_clock =3D WL12XX_TCXOCLOCK_26,
+};
 
---Mark Langsdorf
-Calxeda, Inc.
+=2E..
+
+	ret =3D wl12xx_set_platform_data(&omap4_sdp4430_wlan_data);
+
+You can find the other end of it here in=20
+drivers/net/wireless/ti/wlcore/wl12xx_platform_data.c
+
+static struct wl12xx_platform_data *platform_data;
+
+int __init wl12xx_set_platform_data(const struct wl12xx_platform_data *=
+data)
+{
+	if (platform_data)
+		return -EBUSY;
+	if (!data)
+		return -EINVAL;
+
+	platform_data =3D kmemdup(data, sizeof(*data), GFP_KERNEL);
+	if (!platform_data)
+		return -ENOMEM;
+
+	return 0;
+}
+
+when the driver for the device instance wants to "get" its platform dat=
+a=20
+it reads the static pointer via another api.  Obviously if you want two=
+=20
+modules on your platform that's not so good.
+
+I doubt that's the only SDIO device that wants to know platform info.=20
+So I think by providing a generic way we help other buses and devices.
+
+-Andy
+
+--=20
+Andy Green | TI Landing Team Leader
+Linaro.org =E2=94=82 Open source software for ARM SoCs | Follow Linaro
+http://facebook.com/pages/Linaro/155974581091106  -=20
+http://twitter.com/#!/linaroorg - http://linaro.org/linaro-blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
