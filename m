@@ -1,68 +1,50 @@
-From: Jassi Brar <jaswinder.singh@linaro.org>
-Subject: Re: [RFC PATCH 1/5] Device Power: introduce power controller
-Date: Thu, 6 Dec 2012 09:16:42 +0530
-Message-ID: <CAJe_ZhcUV7mYaNSEw1kLe8-Ym6RcVEab-1-ZZMT20xsWAb=szQ@mail.gmail.com>
-References: <1354460467-28006-1-git-send-email-tom.leiming@gmail.com>
-	<1354460467-28006-2-git-send-email-tom.leiming@gmail.com>
-	<50BB7BA9.4090902@linaro.org>
-	<CACVXFVNfGZRE4y0+LpBixiMab2=QhOKCcRG_QEz-u7ZwuPnMvQ@mail.gmail.com>
-	<50BF7B30.9050904@ti.com>
-	<CACVXFVOiu5+M3A14Q-U2FiHYrBjAswp4Jv+Aybs_kV9DiWNHZw@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 02/10] CPU hotplug: Provide APIs for "full" atomic
+ readers to prevent CPU offline
+Date: Thu, 06 Dec 2012 10:01:23 +0530
+Message-ID: <50C01F9B.1020107@linux.vnet.ibm.com>
+References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184313.3750.17752.stgit@srivatsabhat.in.ibm.com> <50BF99FA.8060109@linux.vnet.ibm.com> <50BFAF27.9060203@linux.vnet.ibm.com> <20121205205744.GB27465@mtj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f52.google.com ([209.85.212.52]:43669 "EHLO
-	mail-vb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753563Ab2LFDqn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 22:46:43 -0500
-Received: by mail-vb0-f52.google.com with SMTP id ez10so3312219vbb.11
-        for <linux-pm@vger.kernel.org>; Wed, 05 Dec 2012 19:46:42 -0800 (PST)
-In-Reply-To: <CACVXFVOiu5+M3A14Q-U2FiHYrBjAswp4Jv+Aybs_kV9DiWNHZw@mail.gmail.com>
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:45407 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753772Ab2LFEdB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Dec 2012 23:33:01 -0500
+Received: from /spool/local
+	by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 6 Dec 2012 14:31:49 +1000
+In-Reply-To: <20121205205744.GB27465@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: Roger Quadros <rogerq@ti.com>, Andy Green <andy.green@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Oliver Neukum <oneukum@suse.de>, linux-omap@vger.kernel.org, linux-usb@vger.kernel.org, Felipe Balbi <balbi@ti.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, oleg@redhat.com, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 6 December 2012 06:57, Ming Lei <tom.leiming@gmail.com> wrote:
-> On Thu, Dec 6, 2012 at 12:49 AM, Roger Quadros <rogerq@ti.com> wrote:
->> On 12/03/2012 05:00 AM, Ming Lei wrote:
->>> On Mon, Dec 3, 2012 at 12:02 AM, Andy Green <andy.green@linaro.org> wrote:
->>>> On 02/12/12 23:01, the mail apparently from Ming Lei included:
->>>>
->>>>> Power controller is an abstract on simple power on/off switch.
->>>>>
->>>>> One power controller can bind to more than one device, which
->>>>> provides power logically, for example, we can think one usb port
->>>>> in hub provides power to the usb device attached to the port, even
->>>>> though the power is supplied actually by other ways, eg. the usb
->>>>> hub is a self-power device. From hardware view, more than one
->>>>> device can share one power domain, and power controller can power
->>>>> on if one of these devices need to provide power, and power off if
->>>>> all these devices don't need to provide power.
->>>>
->>>>
->>>> What stops us using struct regulator here?  If you have child regulators
->>>> supplied by a parent supply, isn't that the right semantic already without
->>>> introducing a whole new thing?  Apologies if I missed the point.
->>>
->>> There are two purposes:
->>>
->>> One is to hide the implementation details of the power controller because
->>> the user doesn't care how it is implemented, maybe clock, regulator, gpio
->>> and other platform dependent stuffs involved, so the patch simplify the usage
->>> from the view of users.
->>>
->>
->> Which user are you talking about?
->
-> Here it is the usb port device.
->
-> At least, there are many boards which have hardwired and self-powered usb
-> devices, so in theory they can benefits from the power controller.  Maybe
-> only regulator and clock can't be covered completely for other boards.
->
-> The patch can make usb port deal with the 'power controller' only, and make it
-> avoid to deal with regulators/clocks/... directly.
->
-I am curious too, except for clocks and voltage supplies (regulators),
-what other external resources does a chip need ?
+On 12/06/2012 02:27 AM, Tejun Heo wrote:
+> Hello,
+> 
+> On Thu, Dec 06, 2012 at 02:01:35AM +0530, Srivatsa S. Bhat wrote:
+>> Yes, that _sounds_ sufficient, but IMHO it won't be, in practice. The
+>> *number* of call-sites that you need to convert from preempt_disable/enable
+>> to get/put_online_cpus_atomic() won't be too many, however the *frequency*
+>> of usage of those call-sites can potentially be very high.
+> 
+> I don't think that will be the case and, even if it is, doing it this
+> way would make it difficult to tell.  The right thing to do is
+> replacing stop_machine with finer grained percpu locking first.
+> Refining it further should happen iff that isn't enough and there
+> isn't an simpler solution.  So, let's please do the simple conversion
+> first.
+> 
+
+Hmm, OK, that sounds like a good plan. So I'll drop the "light" and
+"full" variants for now and work on providing a straight-forward
+get/put_online_cpus_atomic() APIs.
+
+Thank you!
+ 
+Regards,
+Srivatsa S. Bhat
+
