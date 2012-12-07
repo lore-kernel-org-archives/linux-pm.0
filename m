@@ -1,72 +1,49 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v3 1/9] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-Date: Sat, 08 Dec 2012 00:08:01 +0530
-Message-ID: <50C23789.9000705@linux.vnet.ibm.com>
-References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com> <20121207175724.GA2821@htj.dyndns.org> <50C23441.7020309@linux.vnet.ibm.com> <20121207183141.GC2821@htj.dyndns.org>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light"
+	atomic readers to prevent CPU offline
+Date: Fri, 7 Dec 2012 20:56:29 +0100
+Message-ID: <20121207195629.GA13238@redhat.com>
+References: <20121205184041.3750.64945.stgit@srivatsabhat.in.ibm.com> <20121205184258.3750.31879.stgit@srivatsabhat.in.ibm.com> <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com> <50BF999C.6030707@linux.vnet.ibm.com> <50BFAB17.3090603@linux.vnet.ibm.com> <20121206161850.GA6710@redhat.com> <50C0E88E.9050909@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:33246 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964946Ab2LGSjn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Dec 2012 13:39:43 -0500
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Sat, 8 Dec 2012 04:34:53 +1000
-In-Reply-To: <20121207183141.GC2821@htj.dyndns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <50C0E88E.9050909@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tj@kernel.org, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, oleg@redhat.com, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/08/2012 12:01 AM, Tejun Heo wrote:
-> Hello, Srivatsa.
-> 
-> On Fri, Dec 07, 2012 at 11:54:01PM +0530, Srivatsa S. Bhat wrote:
->>> lg_lock doesn't do local nesting and I'm not sure how big a deal that
->>> is as I don't know how many should be converted.  But if nesting is an
->>> absolute necessity, it would be much better to implement generic
->>> rwlock variant (say, lg_rwlock) rather than implementing unusual
->>> cpuhotplug-specific percpu synchronization construct.
->>
->> To be honest, at a certain point in time while designing this, I did
->> realize that this was getting kinda overly complicated ;-) ... but I
->> wanted to see how this would actually work out when finished and get
->> some feedback on the same, hence I posted it out. But this also proves
->> that we _can_ actually compete with the flexibility of preempt_disable()
->> and still be safe with respect to locking, if we really want to ;-)
-> 
-> I got confused by comparison to preempt_disable() but you're right
-> that percpu rwlock shouldn't be able to introduce locking dependency
-> which doesn't exist with non-percpu rwlock.  ie. write locking should
-> be atomic w.r.t. to all readers.
+On 12/07, Srivatsa S. Bhat wrote:
+>
+> On 12/06/2012 09:48 PM, Oleg Nesterov wrote:
+> > On 12/06, Srivatsa S. Bhat wrote:
+> >>
+> >> +void get_online_cpus_atomic(void)
+> >> +{
+> >> +	int c, old;
+> >> +
+> >> +	preempt_disable();
+> >> +	read_lock(&hotplug_rwlock);
+> >
+> > Confused... Why it also takes hotplug_rwlock?
+>
+> To avoid ABBA deadlocks.
+>
+> hotplug_rwlock was meant for the "light" readers.
+> The atomic counters were meant for the "heavy/full" readers.
 
-Yep!
+OK, I got lost a bit. I'll try to read v3 tomorrow.
 
->  At the simplest, this can be
-> implemented by writer backing out all the way if try-locking any CPU
-> fails and retrying the whole thing.  That should be correct but has
-> the potential of starving the writer.
-> 
+> > Obviously you can't use get_online_cpus_atomic() under rq->lock or
+> > task->pi_lock or any other lock CPU_DYING can take. Probably this is
+> > fine, but perhaps it makes sense to add the lockdep annotations.
+>
+> Hmm, you are right. We can't use _atomic() in the CPU_DYING path.
 
-Exactly! This is what I mentioned yesterday in the link below, and said
-that its not good because of writer starvation ("too wasteful"):
-https://lkml.org/lkml/2012/12/6/290
+Not sure I undestand... I simply meant that, say,
+get_online_cpus_atomic() under task->pi_lock can obviously deadlock
+with take_cpu_down() which can want the same task->pi_lock after
+disable_atomic_reader().
 
-> What we need here is a generic percpu-rwlock.  I don't know which
-> exact implementation strategy we should choose.  Maybe your switching
-> to global rwlock is the right solution.  But, at any rate, I think it
-> would be best to implement proper percpu-rwlock and then apply it to
-> CPU hotplug.  It's actually gonna be pretty fitting as
-> get_online_cpus() is being converted to percpu-rwsem.  IIUC, Oleg has
-> been working on this for a while now.  Oleg, what do you think?
-> 
-
-Hmm, that sounds good.
-
-Regards,
-Srivatsa S. Bhat
-
+Oleg.
