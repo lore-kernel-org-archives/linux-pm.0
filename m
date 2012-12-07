@@ -1,71 +1,33 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: Re: Race condition between driver_probe_device and device_shutdown
-Date: Fri, 7 Dec 2012 21:04:19 +0800
-Message-ID: <CACVXFVMOxQEJ-nrvGQ-PkevqKkLnXu+QjHgeswkbzFjqOVYCdQ@mail.gmail.com>
-References: <20120524021429.GB12557@kroah.com>
-	<Pine.LNX.4.44L0.1205241029260.1349-100000@iolanthe.rowland.org>
-	<CACVXFVPu_nbVCVR_HTt9H764+4JKC3=GPyhsf8Lpsch4Fa=xqQ@mail.gmail.com>
-	<CANeycqo8sFVeWVEeW3mdPPVRt35+kfkdUzenLB+YgNs4y-T7Cg@mail.gmail.com>
-	<CACVXFVPbpbb-PAJAweoLj8uec=KgoUKvybSey+R=L=oY16Ozbw@mail.gmail.com>
-	<CANeycqq177AzPdYfBr-VU+ksh+Jwd9i4aLpZo6VwxcO+Xx6ETg@mail.gmail.com>
-	<CACVXFVPH=yw_Y3AcnTXUqVd5A0yGiw+hju8__-g7dymAe-Q8dA@mail.gmail.com>
-	<CANeycqqO06+u6Qy3zL=G_a=_sTYDOzUYf8wu7B7RGFJfuGNoRg@mail.gmail.com>
+From: Thiago Farina <tfransosi@gmail.com>
+Subject: Re: [PATCH 1/6 v9] arm: use devicetree to get smp_twd clock
+Date: Fri, 7 Dec 2012 12:55:27 -0200
+Message-ID: <CACnwZYdsVcr5atoZ9GfPMJmsAt9cOofWDwzzWs4gEpsTQZzjkw@mail.gmail.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+	<1354833773-22845-1-git-send-email-mark.langsdorf@calxeda.com>
+	<1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:43453 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030208Ab2LGNEV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Dec 2012 08:04:21 -0500
-In-Reply-To: <CANeycqqO06+u6Qy3zL=G_a=_sTYDOzUYf8wu7B7RGFJfuGNoRg@mail.gmail.com>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:52824 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176Ab2LGOz3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Dec 2012 09:55:29 -0500
+In-Reply-To: <1354833773-22845-2-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wedson Almeida Filho <wedsonaf@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@linuxfoundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Linux PM List <linux-pm@vger.kernel.org>
+To: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
 
-On Fri, Dec 7, 2012 at 8:16 PM, Wedson Almeida Filho <wedsonaf@gmail.com> wrote:
->> Because device_del() will put reference count of the parent, and the patch
->> only focuses on race between probe/release and shutdown.
+On Thu, Dec 6, 2012 at 8:42 PM, Mark Langsdorf
+<mark.langsdorf@calxeda.com> wrote:
+> From: Rob Herring <rob.herring@calxeda.com>
 >
-> Right. device_del() puts the reference count of the parent -- is it
-> guaranteed that device_del() won't ever reassign dev->parent though
-> (e.g., to NULL)? I don't think it is, so I think that patch should
-> also save the pointer to the parent and use it (instead of what
-> happens to be in than dev->parent) to release the lock and put the
-> ref.
->
->> As far as device_move() concerned, looks it might be a problem.
->> The problem even exits on driver attach vs. device open/release,
->> if device_move is called in open() and open() happens before driver
->> attach completes.
->
-> Yeah, the pattern of locking the parent followed by the device occurs
-> in a few places. It looks like they were added by Alan with commit
-> bf74ad5bc41727d5f2f1c6bedb2c1fac394de731. (And as Greg mentioned,
-> might be occurring often enough to merit being moved into a common
-> function.)
+> Signed-off-by: Rob Herring <rob.herring@calxeda.com>
+> Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+> ---
+> Changes from v4, v5, v6, v7, v8
+Why you keep sending these emails without real changes? Is this a
+rebase process or what? I saw at least two other emails where you do
+the same thing.
 
-In fact, there is no shutdown callback defined for usb driver, so holding
-the parent lock in device_shutdown() might be removed.
-
->
-> I guess the question is whether the callee is allowed to call
-> device_move(), if not, we're good.
-
-Not only the callee, and other contexts can change device->parent
-too. Looks rfcomm_tty_open() which calls device_move() is called
-in open() context, so the parent might be changed before unlock(dev->parent)
-in __driver_attach().
-
->
->> Your concern on device_remove() might be correct. Also, I am wondering
->> if we can walk the 'dpm_list' backwards for device shutdown, which should
->> be simpler and more reasonable.
->
-> How would that help?
-
-device_pm_lock() can prevent device_move() from being running.
-
-Thanks,
---
-Ming Lei
+Thank you!
