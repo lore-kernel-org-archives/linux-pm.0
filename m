@@ -1,59 +1,34 @@
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Subject: [PATCH 2/2] ARM: Kirkwood: Add support thermal sensor for 88F6282 and 88F6283
-Date: Sat,  8 Dec 2012 08:15:51 +0900
-Message-ID: <1354922151-3250-2-git-send-email-iwamatsu@nigauri.org>
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Kirkwood
+ SoC
+Date: Fri, 7 Dec 2012 16:24:59 -0700
+Message-ID: <20121207232459.GA4304@obsidianresearch.com>
 References: <1354922151-3250-1-git-send-email-iwamatsu@nigauri.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:50174 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031010Ab2LGXD0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Dec 2012 18:03:26 -0500
-Received: by mail-pa0-f46.google.com with SMTP id bh2so780221pad.19
-        for <linux-pm@vger.kernel.org>; Fri, 07 Dec 2012 15:03:26 -0800 (PST)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
 In-Reply-To: <1354922151-3250-1-git-send-email-iwamatsu@nigauri.org>
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Cc: rui.zhang@intel.com, jason@lakedaemon.net, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, jason@lakedaemon.net, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
-88F6282 and 88F6283 has thermal sensor.
-This patch enables DT and kernel config.
+On Sat, Dec 08, 2012 at 08:15:50AM +0900, Nobuhiro Iwamatsu wrote:
+> Some kirkwood SoC has thermal sensor.
+> This patch adds support for 88F6282 and 88F6283.
 
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
----
- arch/arm/boot/dts/kirkwood-6282.dtsi |    6 ++++++
- arch/arm/configs/kirkwood_defconfig  |    2 ++
- 2 files changed, 8 insertions(+)
+Thanks! I was just about to write this.. Looks good here.
 
-diff --git a/arch/arm/boot/dts/kirkwood-6282.dtsi b/arch/arm/boot/dts/kirkwood-6282.dtsi
-index 9ae2004..4d9cd74 100644
---- a/arch/arm/boot/dts/kirkwood-6282.dtsi
-+++ b/arch/arm/boot/dts/kirkwood-6282.dtsi
-@@ -41,5 +41,11 @@
- 			clock-frequency = <100000>;
- 			status = "disabled";
- 		};
-+
-+		thermal@10078 {
-+			compatible = "marvel,thermal-kirkwood";
-+			reg = <0x10078 0x4>;
-+			status = "okay";
-+		};
- 	};
- };
-diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-index 93f3794..3d8667f 100644
---- a/arch/arm/configs/kirkwood_defconfig
-+++ b/arch/arm/configs/kirkwood_defconfig
-@@ -118,6 +118,8 @@ CONFIG_SPI=y
- CONFIG_SPI_ORION=y
- CONFIG_GPIO_SYSFS=y
- # CONFIG_HWMON is not set
-+CONFIG_THERMAL=y
-+CONFIG_KIRKWOOD_THERMAL=y
- CONFIG_WATCHDOG=y
- CONFIG_ORION_WATCHDOG=y
- CONFIG_HID_DRAGONRISE=y
--- 
-1.7.10.4
+Tested-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
+Jason
