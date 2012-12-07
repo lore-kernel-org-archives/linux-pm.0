@@ -1,8 +1,8 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v3 6/9] kick_process(),
- cpu-hotplug: Prevent offlining of target CPU properly
-Date: Fri, 07 Dec 2012 23:09:40 +0530
-Message-ID: <20121207173937.27305.11059.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v3 7/9] yield_to(),
+ cpu-hotplug: Prevent offlining of other CPUs properly
+Date: Fri, 07 Dec 2012 23:09:53 +0530
+Message-ID: <20121207173950.27305.39499.stgit@srivatsabhat.in.ibm.com>
 References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,7 +15,7 @@ Cc: sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, sri
 List-Id: linux-pm@vger.kernel.org
 
 Once stop_machine() is gone from the CPU offline path, we won't be able to
-depend on preempt_disable() to prevent CPUs from going offline from under us.
+depend on local_irq_save() to prevent CPUs from going offline from under us.
 
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
@@ -23,24 +23,34 @@ while invoking from atomic context.
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/sched/core.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/sched/core.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index f51e0aa..cff7656 100644
+index cff7656..4b982bf 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -1091,11 +1091,11 @@ void kick_process(struct task_struct *p)
- {
- 	int cpu;
+@@ -4312,6 +4312,7 @@ bool __sched yield_to(struct task_struct *p, bool preempt)
+ 	unsigned long flags;
+ 	bool yielded = 0;
  
--	preempt_disable();
 +	get_online_cpus_atomic();
- 	cpu = task_cpu(p);
- 	if ((cpu != smp_processor_id()) && task_curr(p))
- 		smp_send_reschedule(cpu);
--	preempt_enable();
+ 	local_irq_save(flags);
+ 	rq = this_rq();
+ 
+@@ -4339,13 +4340,14 @@ again:
+ 		 * Make p's CPU reschedule; pick_next_entity takes care of
+ 		 * fairness.
+ 		 */
+-		if (preempt && rq != p_rq)
++		if (preempt && rq != p_rq && cpu_online(task_cpu(p)))
+ 			resched_task(p_rq->curr);
+ 	}
+ 
+ out:
+ 	double_rq_unlock(rq, p_rq);
+ 	local_irq_restore(flags);
 +	put_online_cpus_atomic();
- }
- EXPORT_SYMBOL_GPL(kick_process);
- #endif /* CONFIG_SMP */
+ 
+ 	if (yielded)
+ 		schedule();
