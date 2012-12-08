@@ -1,39 +1,55 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for
-	Kirkwood SoC
-Date: Sat, 8 Dec 2012 00:11:52 +0000
-Message-ID: <20121208001152.GA14363@n2100.arm.linux.org.uk>
-References: <1354922151-3250-1-git-send-email-iwamatsu@nigauri.org> <20121208010708.260209f5@skate>
+From: Devendra Naga <develkernel412222@gmail.com>
+Subject: =?UTF-8?q?=5BPATCH=5D=20power=3A=20bq2414x=3A=20use=20module=5Fi2c=5Fdriver=20macro?=
+Date: Sat,  8 Dec 2012 12:16:20 -0500
+Message-ID: <1354986980-10489-1-git-send-email-develkernel412222@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56460 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755636Ab2LHAO7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Dec 2012 19:14:59 -0500
-Content-Disposition: inline
-In-Reply-To: <20121208010708.260209f5@skate>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:44971 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964947Ab2LHRQ3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Dec 2012 12:16:29 -0500
+Received: by mail-pa0-f46.google.com with SMTP id bh2so1137787pad.19
+        for <linux-pm@vger.kernel.org>; Sat, 08 Dec 2012 09:16:29 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, rui.zhang@intel.com, jason@lakedaemon.net, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+Cc: Devendra Naga <develkernel412222@gmail.com>
 
-On Sat, Dec 08, 2012 at 01:07:08AM +0100, Thomas Petazzoni wrote:
-> Hello,
-> 
-> On Sat,  8 Dec 2012 08:15:50 +0900, Nobuhiro Iwamatsu wrote:
-> > +static const struct of_device_id kirkwood_thermal_id_table[] = {
-> > +	{ .compatible = "marvel,thermal-kirkwood" },
-> 
-> marvel -> marvell
-> 
-> Also, I think it should be marvell,kirkwood-thermal, since most other
-> DT compatible strings that we have for Marvell SoCs are
-> marvell,<soc>-<function>.
-> 
-> Also, the Device Tree binding documentation is missing (even though it
-> is admittedly going to be a very short documentation).
+use the module_i2c_driver macro and reduce code and also remove the
+duplicated module init and exit places.
 
-Is this in any way compatible with the thermal monitoring found on
-Dove (510) stuff?  If so, should it have the SoC prefix in there,
-or should it be "armada-thermal" for the SoC family?
+Signed-off-by: Devendra Naga <develkernel412222@gmail.com>
+---
+ drivers/power/bq2415x_charger.c |   13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_ch=
+arger.c
+index ee842b3..b05df0a 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -1653,18 +1653,7 @@ static struct i2c_driver bq2415x_driver =3D {
+ 	.id_table =3D bq2415x_i2c_id_table,
+ };
+=20
+-static int __init bq2415x_init(void)
+-{
+-	return i2c_add_driver(&bq2415x_driver);
+-}
+-module_init(bq2415x_init);
+-
+-static void __exit bq2415x_exit(void)
+-{
+-	i2c_del_driver(&bq2415x_driver);
+-}
+-module_exit(bq2415x_exit);
+-
++module_i2c_driver(bq2415x_driver);
+ MODULE_AUTHOR("Pali Roh=C3=A1r <pali.rohar@gmail.com>");
+ MODULE_DESCRIPTION("bq2415x charger driver");
+ MODULE_LICENSE("GPL");
+--=20
+1.7.10.4
+
