@@ -1,18 +1,18 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [RFC PATCH v3 1/9] CPU hotplug: Provide APIs to prevent CPU
-	offline from atomic context
-Date: Sun, 9 Dec 2012 20:14:37 +0100
-Message-ID: <20121209191437.GA2816@redhat.com>
-References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com>
+Subject: Re: [RFC PATCH v3 7/9] yield_to(), cpu-hotplug: Prevent offlining
+	of other CPUs properly
+Date: Sun, 9 Dec 2012 20:48:26 +0100
+Message-ID: <20121209194826.GB2816@redhat.com>
+References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173950.27305.39499.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:17791 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:3895 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756814Ab2LITOn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 9 Dec 2012 14:14:43 -0500
+	id S1758871Ab2LITsZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 9 Dec 2012 14:48:25 -0500
 Content-Disposition: inline
-In-Reply-To: <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20121207173950.27305.39499.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
@@ -20,67 +20,27 @@ Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@
 
 On 12/07, Srivatsa S. Bhat wrote:
 >
-> Per-cpu counters can help solve the cache-line bouncing problem. So we
-> actually use the best of both: per-cpu counters (no-waiting) at the reader
-> side in the fast-path, and global rwlocks in the slowpath.
->
-> [ Fastpath = no writer is active; Slowpath = a writer is active ]
->
-> IOW, the hotplug readers just increment/decrement their per-cpu refcounts
-> when no writer is active.
+> Once stop_machine() is gone from the CPU offline path, we won't be able to
+> depend on local_irq_save() to prevent CPUs from going offline from under us.
 
-Plus LOCK and cli/sti. I do not pretend I really know how bad this is
-performance-wise though. And at first glance this look overcomplicated.
+OK, I guess we need to avoid resched_task()->smp_send_reschedule()
+after __cpu_disable() and before migrate_tasks().
 
-But yes, it is easy to blame somebody else's code ;) And I can't suggest
-something better at least right now. If I understand correctly, we can not
-use, say, synchronize_sched() in _cpu_down() path, you also want to improve
-the latency. And I guess something like kick_all_cpus_sync() is "too heavy".
+But, whatever problem we have,
 
-Also. After the quick reading this doesn't look correct, please see below.
+> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+> while invoking from atomic context.
 
-> +void get_online_cpus_atomic(void)
-> +{
-> +	unsigned int cpu = smp_processor_id();
-> +	unsigned long flags;
-> +
-> +	preempt_disable();
-> +	local_irq_save(flags);
-> +
-> +	if (cpu_hotplug.active_writer == current)
-> +		goto out;
-> +
-> +	smp_rmb(); /* Paired with smp_wmb() in drop_writer_signal() */
-> +
-> +	if (likely(!writer_active(cpu))) {
+it should be solved, so...
 
-WINDOW. Suppose that reader_active() == F.
+> -		if (preempt && rq != p_rq)
+> +		if (preempt && rq != p_rq && cpu_online(task_cpu(p)))
 
-> +		mark_reader_fastpath();
-> +		goto out;
+Why do we need this change?
 
-Why take_cpu_down() can't do announce_cpu_offline_begin() + sync_all_readers()
-in between?
+Afaics, you could add BUG_ON(!cpu_online(...)) instead?
 
-Looks like we should increment the counter first, then check writer_active().
-And sync_atomic_reader() needs rmb between 2 atomic_read's.
-
-
-Or. Again, suppose that reader_active() == F. But is_new_writer() == T.
-
-> +	if (is_new_writer(cpu)) {
-> +		/*
-> +		 * ACK the writer's signal only if this is a fresh read-side
-> +		 * critical section, and not just an extension of a running
-> +		 * (nested) read-side critical section.
-> +		 */
-> +		if (!reader_active(cpu)) {
-> +			ack_writer_signal();
-
-What if take_cpu_down() does announce_cpu_offline_end() right before
-ack_writer_signal() ? In this case get_online_cpus_atomic() returns
-with writer_signal == -1. If nothing else this breaks the next
-raise_writer_signal().
+I am just curious.
 
 Oleg.
 
