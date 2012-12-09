@@ -1,55 +1,61 @@
-From: Devendra Naga <develkernel412222@gmail.com>
-Subject: =?UTF-8?q?=5BPATCH=5D=20power=3A=20bq2414x=3A=20use=20module=5Fi2c=5Fdriver=20macro?=
-Date: Sat,  8 Dec 2012 12:16:20 -0500
-Message-ID: <1354986980-10489-1-git-send-email-develkernel412222@gmail.com>
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Kirkwood
+ SoC
+Date: Sun, 09 Dec 2012 14:54:58 +0100
+Message-ID: <50C49832.7070503@gmail.com>
+References: <1354922151-3250-1-git-send-email-iwamatsu@nigauri.org> <20121208010708.260209f5@skate> <20121208001152.GA14363@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:44971 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964947Ab2LHRQ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Dec 2012 12:16:29 -0500
-Received: by mail-pa0-f46.google.com with SMTP id bh2so1137787pad.19
-        for <linux-pm@vger.kernel.org>; Sat, 08 Dec 2012 09:16:29 -0800 (PST)
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:42018 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758570Ab2LINzD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Dec 2012 08:55:03 -0500
+Received: by mail-bk0-f46.google.com with SMTP id q16so728785bkw.19
+        for <linux-pm@vger.kernel.org>; Sun, 09 Dec 2012 05:55:01 -0800 (PST)
+In-Reply-To: <20121208001152.GA14363@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
-Cc: Devendra Naga <develkernel412222@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, jason@lakedaemon.net, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org
 
-use the module_i2c_driver macro and reduce code and also remove the
-duplicated module init and exit places.
+On 12/08/2012 01:11 AM, Russell King - ARM Linux wrote:
+> On Sat, Dec 08, 2012 at 01:07:08AM +0100, Thomas Petazzoni wrote:
+>> Hello,
+>>
+>> On Sat,  8 Dec 2012 08:15:50 +0900, Nobuhiro Iwamatsu wrote:
+>>> +static const struct of_device_id kirkwood_thermal_id_table[] = {
+>>> +	{ .compatible = "marvel,thermal-kirkwood" },
+>>
+>> marvel ->  marvell
+>>
+>> Also, I think it should be marvell,kirkwood-thermal, since most other
+>> DT compatible strings that we have for Marvell SoCs are
+>> marvell,<soc>-<function>.
+>>
+>> Also, the Device Tree binding documentation is missing (even though it
+>> is admittedly going to be a very short documentation).
+>
+> Is this in any way compatible with the thermal monitoring found on
+> Dove (510) stuff?  If so, should it have the SoC prefix in there,
+> or should it be "armada-thermal" for the SoC family?
 
-Signed-off-by: Devendra Naga <develkernel412222@gmail.com>
----
- drivers/power/bq2415x_charger.c |   13 +------------
- 1 file changed, 1 insertion(+), 12 deletions(-)
+I haven't checked the driver in detail but at least register offsets
+and the register-to-temperature function are different for Dove.
+This is no big deal and can be handled with compatible strings.
 
-diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_ch=
-arger.c
-index ee842b3..b05df0a 100644
---- a/drivers/power/bq2415x_charger.c
-+++ b/drivers/power/bq2415x_charger.c
-@@ -1653,18 +1653,7 @@ static struct i2c_driver bq2415x_driver =3D {
- 	.id_table =3D bq2415x_i2c_id_table,
- };
-=20
--static int __init bq2415x_init(void)
--{
--	return i2c_add_driver(&bq2415x_driver);
--}
--module_init(bq2415x_init);
--
--static void __exit bq2415x_exit(void)
--{
--	i2c_del_driver(&bq2415x_driver);
--}
--module_exit(bq2415x_exit);
--
-+module_i2c_driver(bq2415x_driver);
- MODULE_AUTHOR("Pali Roh=C3=A1r <pali.rohar@gmail.com>");
- MODULE_DESCRIPTION("bq2415x charger driver");
- MODULE_LICENSE("GPL");
---=20
-1.7.10.4
+But more important, "kirkwood" includes 88f618x, 88f619x, and 88f6281
+that have no thermal diode - at least it is not mentioned in the public
+datasheet. So, finally for Nobuhiro's patch I suggest to have two
+compatible strings, one for marvell,88f6282-thermal and one for
+marvell,88f6282-thermal. Numbering scheme of Marvell SoCs is a mess..
+
+For the driver, the name should be either orion_thermal.c (as we will
+reuse it for Dove), or mvebu_thermal.c if there is also a thermal diode
+on Armada 370/XP. Using "armada" alone is not a good idea, as it also
+includes some pxa-based SoCs - naming scheme of Marvell SoCs is even
+more broken than numbering scheme ;)
+
+Sebastian
 
