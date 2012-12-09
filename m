@@ -1,61 +1,86 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Kirkwood
- SoC
-Date: Sun, 09 Dec 2012 14:54:58 +0100
-Message-ID: <50C49832.7070503@gmail.com>
-References: <1354922151-3250-1-git-send-email-iwamatsu@nigauri.org> <20121208010708.260209f5@skate> <20121208001152.GA14363@n2100.arm.linux.org.uk>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v3 1/9] CPU hotplug: Provide APIs to prevent CPU
+	offline from atomic context
+Date: Sun, 9 Dec 2012 20:14:37 +0100
+Message-ID: <20121209191437.GA2816@redhat.com>
+References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:42018 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758570Ab2LINzD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Dec 2012 08:55:03 -0500
-Received: by mail-bk0-f46.google.com with SMTP id q16so728785bkw.19
-        for <linux-pm@vger.kernel.org>; Sun, 09 Dec 2012 05:55:01 -0800 (PST)
-In-Reply-To: <20121208001152.GA14363@n2100.arm.linux.org.uk>
+Received: from mx1.redhat.com ([209.132.183.28]:17791 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756814Ab2LITOn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 9 Dec 2012 14:14:43 -0500
+Content-Disposition: inline
+In-Reply-To: <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, jason@lakedaemon.net, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/08/2012 01:11 AM, Russell King - ARM Linux wrote:
-> On Sat, Dec 08, 2012 at 01:07:08AM +0100, Thomas Petazzoni wrote:
->> Hello,
->>
->> On Sat,  8 Dec 2012 08:15:50 +0900, Nobuhiro Iwamatsu wrote:
->>> +static const struct of_device_id kirkwood_thermal_id_table[] = {
->>> +	{ .compatible = "marvel,thermal-kirkwood" },
->>
->> marvel ->  marvell
->>
->> Also, I think it should be marvell,kirkwood-thermal, since most other
->> DT compatible strings that we have for Marvell SoCs are
->> marvell,<soc>-<function>.
->>
->> Also, the Device Tree binding documentation is missing (even though it
->> is admittedly going to be a very short documentation).
+On 12/07, Srivatsa S. Bhat wrote:
 >
-> Is this in any way compatible with the thermal monitoring found on
-> Dove (510) stuff?  If so, should it have the SoC prefix in there,
-> or should it be "armada-thermal" for the SoC family?
+> Per-cpu counters can help solve the cache-line bouncing problem. So we
+> actually use the best of both: per-cpu counters (no-waiting) at the reader
+> side in the fast-path, and global rwlocks in the slowpath.
+>
+> [ Fastpath = no writer is active; Slowpath = a writer is active ]
+>
+> IOW, the hotplug readers just increment/decrement their per-cpu refcounts
+> when no writer is active.
 
-I haven't checked the driver in detail but at least register offsets
-and the register-to-temperature function are different for Dove.
-This is no big deal and can be handled with compatible strings.
+Plus LOCK and cli/sti. I do not pretend I really know how bad this is
+performance-wise though. And at first glance this look overcomplicated.
 
-But more important, "kirkwood" includes 88f618x, 88f619x, and 88f6281
-that have no thermal diode - at least it is not mentioned in the public
-datasheet. So, finally for Nobuhiro's patch I suggest to have two
-compatible strings, one for marvell,88f6282-thermal and one for
-marvell,88f6282-thermal. Numbering scheme of Marvell SoCs is a mess..
+But yes, it is easy to blame somebody else's code ;) And I can't suggest
+something better at least right now. If I understand correctly, we can not
+use, say, synchronize_sched() in _cpu_down() path, you also want to improve
+the latency. And I guess something like kick_all_cpus_sync() is "too heavy".
 
-For the driver, the name should be either orion_thermal.c (as we will
-reuse it for Dove), or mvebu_thermal.c if there is also a thermal diode
-on Armada 370/XP. Using "armada" alone is not a good idea, as it also
-includes some pxa-based SoCs - naming scheme of Marvell SoCs is even
-more broken than numbering scheme ;)
+Also. After the quick reading this doesn't look correct, please see below.
 
-Sebastian
+> +void get_online_cpus_atomic(void)
+> +{
+> +	unsigned int cpu = smp_processor_id();
+> +	unsigned long flags;
+> +
+> +	preempt_disable();
+> +	local_irq_save(flags);
+> +
+> +	if (cpu_hotplug.active_writer == current)
+> +		goto out;
+> +
+> +	smp_rmb(); /* Paired with smp_wmb() in drop_writer_signal() */
+> +
+> +	if (likely(!writer_active(cpu))) {
+
+WINDOW. Suppose that reader_active() == F.
+
+> +		mark_reader_fastpath();
+> +		goto out;
+
+Why take_cpu_down() can't do announce_cpu_offline_begin() + sync_all_readers()
+in between?
+
+Looks like we should increment the counter first, then check writer_active().
+And sync_atomic_reader() needs rmb between 2 atomic_read's.
+
+
+Or. Again, suppose that reader_active() == F. But is_new_writer() == T.
+
+> +	if (is_new_writer(cpu)) {
+> +		/*
+> +		 * ACK the writer's signal only if this is a fresh read-side
+> +		 * critical section, and not just an extension of a running
+> +		 * (nested) read-side critical section.
+> +		 */
+> +		if (!reader_active(cpu)) {
+> +			ack_writer_signal();
+
+What if take_cpu_down() does announce_cpu_offline_end() right before
+ack_writer_signal() ? In this case get_online_cpus_atomic() returns
+with writer_signal == -1. If nothing else this breaks the next
+raise_writer_signal().
+
+Oleg.
 
