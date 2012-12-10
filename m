@@ -1,66 +1,86 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [RFC PATCH v3 1/9] CPU hotplug: Provide APIs to prevent CPU offline
  from atomic context
-Date: Mon, 10 Dec 2012 09:58:29 +0530
-Message-ID: <50C564ED.9090803@linux.vnet.ibm.com>
-References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com> <20121209191437.GA2816@redhat.com> <50C4EB79.5050203@linux.vnet.ibm.com> <20121209202234.GA5793@redhat.com>
+Date: Mon, 10 Dec 2012 10:31:52 +0530
+Message-ID: <50C56CC0.4000200@linux.vnet.ibm.com>
+References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com> <20121209191437.GA2816@redhat.com> <50C4EB79.5050203@linux.vnet.ibm.com> <20121209211338.GA8090@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:50558 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849Ab2LJEaL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Dec 2012 23:30:11 -0500
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:39007 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696Ab2LJFDb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Dec 2012 00:03:31 -0500
 Received: from /spool/local
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 10 Dec 2012 09:59:50 +0530
-In-Reply-To: <20121209202234.GA5793@redhat.com>
+	Mon, 10 Dec 2012 15:00:50 +1000
+In-Reply-To: <20121209211338.GA8090@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Oleg Nesterov <oleg@redhat.com>
 Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/10/2012 01:52 AM, Oleg Nesterov wrote:
+On 12/10/2012 02:43 AM, Oleg Nesterov wrote:
+> Damn, sorry for noise. I missed this part...
+> 
 > On 12/10, Srivatsa S. Bhat wrote:
 >>
 >> On 12/10/2012 12:44 AM, Oleg Nesterov wrote:
+>>> the latency. And I guess something like kick_all_cpus_sync() is "too heavy".
 >>
->>> But yes, it is easy to blame somebody else's code ;) And I can't suggest
->>> something better at least right now. If I understand correctly, we can not
->>> use, say, synchronize_sched() in _cpu_down() path
->>
->> We can't sleep in that code.. so that's a no-go.
+>> I hadn't considered that. Thinking of it, I don't think it would help us..
+>> It won't get rid of the currently running preempt_disable() sections no?
 > 
-> But we can?
+> Sure. But (again, this is only my feeling so far) given that get_online_cpus_atomic()
+> does cli/sti,
+
+Ah, that one! Actually, the only reason I do that cli/sti is because, potentially
+interrupt handlers can be hotplug readers too. So we need to protect the portion
+of the code of get_online_cpus_atomic() which is not re-entrant.
+(Which reminds me to try and reduce the length of cli/sti in that code, if possible).
+
+> this can help to implement ensure-the-readers-must-see-the-pending-writer.
+> IOW this might help to implement sync-with-readers.
 > 
-> Note that I meant _cpu_down(), not get_online_cpus_atomic() or take_cpu_down().
-> 
 
-Maybe I'm missing something, but how would it help if we did a
-synchronize_sched() so early (in _cpu_down())? Another bunch of preempt_disable()
-sections could start immediately after our call to synchronize_sched() no?
-How would we deal with that?
+2 problems:
 
-What we need to ensure here is that all existing preempt_disable() sections
-are over and that *we* (meaning, the cpu offline writer) get to proceed immediately
-after that, making all the new readers wait for us. And that is possible only if
-we do our 'wait-for-readers' thing very close to our actual cpu offline operation
-(which is take_cpu_down). Moreover, the writer needs to remain stable
-(non-preemptible) while doing the wait-for-readers. Else (if the writer himself
-keeps getting scheduled in and out of the CPU) I can't see how he can possibly
-do justice to the wait.
+1. It won't help with cases like this:
 
-Also, synchronize_sched() only helps us do the 'wait-for-existing-readers' logic.
-What would take care of the 'prevent-new-readers-from-going-ahead' logic?
+   preempt_disable()
+	...
+	preempt_disable()
+		...
+			<------- Here
+		...
+	preempt_enable()
+	...
+   preempt_enable()
 
-To add to it all, synchronize_sched() waits for _all_ preempt_disable() sections
-to complete, whereas only a handful of them might actually care about CPU hotplug.
-Which is an unnecessary burden for the writer (ie., waiting for unrelated readers
-to complete).
+If the IPI hits at the point marked above, the IPI is useless, because, at
+that point, since we are already in a nested read-side critical section, we can't
+switch the synchronization protocol. We need to wait till we start a fresh
+non-nested read-side critical section, in order to switch to global rwlock.
+The reason is that preempt_enable() or put_online_cpus_atomic() can only undo
+what its predecessor (preempt_disable()/get_online_cpus_atomic()) did.
 
-I bet you meant something else. Sorry if I misunderstood it.
+2. Part of the reason we want to get rid of stop_machine() is to avoid the
+latency it induces on _all_ CPUs just to take *one* CPU offline. If we use
+kick_all_cpus_sync(), we get into that territory again : we unfairly interrupt
+every CPU, _even when_ that CPU's existing preempt_disabled() sections might
+not actually be hotplug readers! (ie., not bothered about CPU Hotplug).
+
+So, I think whatever synchronization scheme we develop, must not induce the very
+same problems that stop_machine() had. Otherwise, we can end up going a full-circle
+and coming back to the same stop_machine() scenario that we intended to get rid of.
+
+(That's part of the reason why I initially tried to provide that _light() variant
+of the reader APIs in the previous version of the patchset, so that light readers
+can remain as undisturbed from cpu hotplug as possible, thereby avoiding indirectly
+inducing the "stop_machine effect", like I mentioned here:
+https://lkml.org/lkml/2012/12/5/369)
 
 Regards,
 Srivatsa S. Bhat
