@@ -1,93 +1,52 @@
 From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [RFC PATCH v3 1/9] CPU hotplug: Provide APIs to prevent CPU
-	offline from atomic context
-Date: Mon, 10 Dec 2012 19:15:21 +0100
-Message-ID: <20121210181521.GA30684@redhat.com>
-References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173759.27305.84316.stgit@srivatsabhat.in.ibm.com> <20121209205733.GA7038@redhat.com> <50C570F9.2020801@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 01/10] CPU hotplug: Provide APIs for "light"
+	atomic readers to prevent CPU offline
+Date: Mon, 10 Dec 2012 19:21:15 +0100
+Message-ID: <20121210182115.GA30892@redhat.com>
+References: <50BF96DF.3000500@linux.vnet.ibm.com> <50BF979A.50304@linux.vnet.ibm.com> <50BF982D.7090704@linux.vnet.ibm.com> <50BF98F7.3030600@linux.vnet.ibm.com> <50BF999C.6030707@linux.vnet.ibm.com> <50BFAB17.3090603@linux.vnet.ibm.com> <20121206161850.GA6710@redhat.com> <50C0E88E.9050909@linux.vnet.ibm.com> <1354822103.17101.24.camel@gandalf.local.home> <20121207200014.GB13238@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:12915 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750803Ab2LJSVY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Dec 2012 13:21:24 -0500
 Content-Disposition: inline
-In-Reply-To: <50C570F9.2020801@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: rostedt@goodmis.org, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20121207200014.GB13238@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/10, Srivatsa S. Bhat wrote:
+On 12/07, Oleg Nesterov wrote:
 >
-> On 12/10/2012 02:27 AM, Oleg Nesterov wrote:
-> > On 12/07, Srivatsa S. Bhat wrote:
-> >>
-> >> 4. No deadlock possibilities
-> >>
-> >>    Per-cpu locking is not the way to go if we want to have relaxed rules
-> >>    for lock-ordering. Because, we can end up in circular-locking dependencies
-> >>    as explained in https://lkml.org/lkml/2012/12/6/290
+> On 12/06, Steven Rostedt wrote:
 > >
-> > OK, but this assumes that, contrary to what Steven said, read-write-read
-> > deadlock is not possible when it comes to rwlock_t.
+> > You know reader locks can deadlock with each other, right? And this
+> > isn't caught be lockdep yet. This is because rwlocks have been made to
+> > be fair with writers. Before writers could be starved if a CPU always
+> > let a reader in. Now if a writer is waiting, a reader will block behind
+> > the writer. But this has introduced new issues with the kernel as
+> > follows:
+> >
+> >
+> >    CPU0			   CPU1	 	   CPU2		   CPU3
+> >    ----			   ----		   ----		   ----
+> > read_lock(A);
+> > 			read_lock(B)
+> > 					write_lock(A) <- block
+> > 							write_lock(B) <- block
+> > read_lock(B) <-block
+> >
+> > 			read_lock(A) <- block
+> >
+> > DEADLOCK!
 >
-> What I meant is, with a single (global) rwlock, you can't deadlock like that.
-
-Ah. I greatly misunderstood Steven's email,
-
-http://marc.info/?l=linux-pm&m=135482212307876
-
-Somehow I didn't notice he described the deadlock with _two_ rwlock's, I
-wrongly thought that his point is that read_lock() is not recursive (like
-down_read).
-
-> Let me know if my assumptions are incorrect!
-
-No, sorry, I misunderstood Steven.
-
-
-> > However. If this is true, then compared to preempt_disable/stop_machine
-> > livelock is possible. Probably this is fine, we have the same problem with
-> > get_online_cpus(). But if we can accept this fact I feel we can simmplify
-> > this somehow... Can't prove, only feel ;)
+> Really??? Oh I didn't know...
 >
-> Not sure I follow..
+> Yes this was always true for rwsem, but rwlock_t?
 
-I meant that write_lock_irqsave(&hotplug_rwlock) in take_cpu_down()
-can spin "forever".
-
-Suppose that reader_acked() == T on every CPU, so that
-get_online_cpus_atomic() always takes read_lock(&hotplug_rwlock).
-
-It is possible that this lock will be never released by readers,
-
-	CPU_0				CPU_1
-
-	get_online_cpus_atomic()
-					get_online_cpus_atomic()
-	put_online_cpus_atomic()
-
-	get_online_cpus_atomic()
-					put_online_cpus_atomic()
-
-					get_online_cpus_atomic()
-	put_online_cpus_atomic()
-
-and so on.
-
-
-> Reader-side:
->    -> read_lock() your per-cpu rwlock and proceed.
->
-> Writer-side:
->    -> for_each_online_cpu(cpu)
->           write_lock(per-cpu rwlock of 'cpu');
-
-Yes, yes, this is clear.
-
-> Also, like Tejun said, one of the important measures for per-cpu rwlocks
-> should be that, if a user replaces global rwlocks with percpu rwlocks (for
-> performance reasons), he shouldn't suddenly end up in numerous deadlock
-> possibilities which never existed before. The replacement should continue to
-> remain safe, and perhaps improve the performance.
-
-Sure, I agree.
+Sorry, please ignore my email. I misread your email.
 
 Oleg.
+
