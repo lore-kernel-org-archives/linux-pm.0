@@ -1,95 +1,54 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 10 Dec 2012 11:26:07 +0800
-Message-ID: <50C5564F.8030000@intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>  <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike>  <21511277.LLinyDpbAK@vostro.rjw.lan>  <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike>  <20121203081321.GA9990@mint-spring.sh.intel.com>  <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>  <20121203162323.GB19802@htj.dyndns.org> <1354623100.3206.34.camel@dabdike.int.hansenpartnership.com> <50C1891A.7040900@intel.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v3 7/9] yield_to(), cpu-hotplug: Prevent offlining
+ of other CPUs properly
+Date: Mon, 10 Dec 2012 09:34:58 +0530
+Message-ID: <50C55F6A.4040909@linux.vnet.ibm.com>
+References: <20121207173702.27305.1486.stgit@srivatsabhat.in.ibm.com> <20121207173950.27305.39499.stgit@srivatsabhat.in.ibm.com> <20121209194826.GB2816@redhat.com> <50C4ED46.3070100@linux.vnet.ibm.com> <20121209204053.GA6593@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <50C1891A.7040900@intel.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:38488 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873Ab2LJEGo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Dec 2012 23:06:44 -0500
+Received: from /spool/local
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Mon, 10 Dec 2012 09:36:16 +0530
+In-Reply-To: <20121209204053.GA6593@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/07/2012 02:13 PM, Aaron Lu wrote:
-> On 12/04/2012 08:11 PM, James Bottomley wrote:
->> On Mon, 2012-12-03 at 08:23 -0800, Tejun Heo wrote:
->>> Hello, James.
+On 12/10/2012 02:10 AM, Oleg Nesterov wrote:
+> On 12/10, Srivatsa S. Bhat wrote:
+>>
+>> On 12/10/2012 01:18 AM, Oleg Nesterov wrote:
+>>>> -		if (preempt && rq != p_rq)
+>>>> +		if (preempt && rq != p_rq && cpu_online(task_cpu(p)))
 >>>
->>> On Mon, Dec 03, 2012 at 08:25:43AM +0000, James Bottomley wrote:
->>>>> diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
->>>>> index e65c62e..1756151 100644
->>>>> --- a/include/scsi/scsi_device.h
->>>>> +++ b/include/scsi/scsi_device.h
->>>>> @@ -160,6 +160,7 @@ struct scsi_device {
->>>>>  	unsigned can_power_off:1; /* Device supports runtime power off */
->>>>>  	unsigned wce_default_on:1;	/* Cache is ON by default */
->>>>>  	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
->>>>> +	unsigned event_driven:1; /* No need to poll the device */
->>>>>  
->>>>>  	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
->>>>>  	struct list_head event_list;	/* asserted events */
->>>>
->>>> Yes, but if we can get away with doing that, it should be in genhd
->>>> because it's completely generic.
->>>>
->>>> I was imagining we'd have to fake the reply to the test unit ready or
->>>> some other commands, which is why it would need to be in sr.c
->>>>
->>>> The check events code is Tejun's baby, if he's OK with it then just do
->>>> it in genhd.c
+>>> Why do we need this change?
 >>>
->>> The problem here is there's no easy to reach genhd from libata (or the
->>> other way around) without going through sr.  I think we're gonna have
->>> to have something in sr one way or the other.
+>>> Afaics, you could add BUG_ON(!cpu_online(...)) instead?
+>>>
+>>> I am just curious.
+>>>
 >>
->> Can't we do that via an event? It's a bit clunky because we need the
->> callback in the layer that sees the sdev, which is libata-scsi, we just
->> need an analogue of ata_scsi_media_change_notify, but ignoring and
->> allowing polling is essentially event driven as well, so it should all
->> work.  We'll need a listener in genhd, which might be trickier.
+>> Oh, I think that's a remnant of v1 (which needed readers to use
+>> cpu_online_stable()). You're right, we don't need it.
 > 
-> Hi Tejun,
+> Ah OK, thanks.
 > 
-> Do you have any comments on James' suggestion? I want to know your
-> opinion, thanks.
+>> Or we could put a
+>> BUG_ON instead, like you suggested.
+> 
+> IMHO it would be better to simply drop this chunk.
+> 
 
-Hi Tejun,
+Sure, will drop it. Its distracting, if nothing else ;-)
 
-A colleague of mine reminded me that it's impolite to write something
-like this, and here is my apology. I didn't mean to be rude, I'm sorry
-for this if it made you feel uncomfortable.
-
-If possible, can you please shed some light on this problem and James'
-suggestion? I need your opinions to make progress, thanks.
-
--Aaron
-
-> 
-> Hi James,
-> 
-> Do you mean we start a thread in genhd that listen to events, so that
-> some driver can send an event to genhd about if the device should be
-> polled? I'm thinking where to store such information. If store it in
-> struct disk_events, then we will need to know which gendisk is for
-> the device, but how? Maybe by loop scan all gendisk's driverfs_dev?
-> If store it in struct device, then we do not need to send the event but
-> just set a flag in sturct device in libata, and let genhd check this
-> flag when poll. So I don't quite understand this, can you please
-> elaborate? Thanks.
-> 
-> Thanks,
-> Aaron
-> 
->>
->> This may also work as the more generic route for stuff where we can't
->> connect the bottom to the top of the stack (which looks like a problem
->> we'll begin wrestling with a lot now).
->>
->> James
->>
->>
-> 
+Regards,
+Srivatsa S. Bhat
 
