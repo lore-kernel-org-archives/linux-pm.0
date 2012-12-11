@@ -1,56 +1,112 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 2/9] CPU hotplug: Convert preprocessor macros to static
- inline functions
-Date: Tue, 11 Dec 2012 19:34:41 +0530
-Message-ID: <20121211140438.23621.81204.stgit@srivatsabhat.in.ibm.com>
+Subject: [RFC PATCH v4 5/9] sched,
+ cpu hotplug: Use stable online cpus in try_to_wake_up() &
+ select_task_rq()
+Date: Tue, 11 Dec 2012 19:35:03 +0530
+Message-ID: <20121211140502.23621.18600.stgit@srivatsabhat.in.ibm.com>
 References: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:51263 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664Ab2LKOIe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Dec 2012 09:08:34 -0500
-Received: from /spool/local
-	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 11 Dec 2012 19:38:08 +0530
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com
 Cc: sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 12/05/2012 06:10 AM, Andrew Morton wrote:
-"static inline C functions would be preferred if possible.  Feel free to
-fix up the wrong crufty surrounding code as well ;-)"
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() to prevent CPUs from going offline from under us.
 
-Convert the macros in the CPU hotplug code to static inline C functions.
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+while invoking from atomic context.
+
+Scheduler functions such as try_to_wake_up() and select_task_rq() (and even
+select_fallback_rq()) deal with picking new CPUs to run tasks. So they need
+to synchronize with CPU offline operations.
 
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- include/linux/cpu.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ kernel/sched/core.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index cf24da1..eb79f47 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -198,10 +198,10 @@ static inline void cpu_hotplug_driver_unlock(void)
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2d8927f..f51e0aa 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -1103,6 +1103,10 @@ EXPORT_SYMBOL_GPL(kick_process);
+ #ifdef CONFIG_SMP
+ /*
+  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
++ *
++ *  Must be called under get/put_online_cpus_atomic() or
++ *  equivalent, to avoid CPUs from going offline from underneath
++ *  us.
+  */
+ static int select_fallback_rq(int cpu, struct task_struct *p)
+ {
+@@ -1166,6 +1170,9 @@ out:
  
- #else		/* CONFIG_HOTPLUG_CPU */
+ /*
+  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
++ *
++ * Must be called under get/put_online_cpus_atomic(), to prevent
++ * CPUs from going offline from underneath us.
+  */
+ static inline
+ int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
+@@ -1406,6 +1413,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
+ 	int cpu, success = 0;
  
--#define get_online_cpus()	do { } while (0)
--#define put_online_cpus()	do { } while (0)
--#define get_online_cpus_atomic()	do { } while (0)
--#define put_online_cpus_atomic()	do { } while (0)
-+static inline void get_online_cpus(void) {}
-+static inline void put_online_cpus(void) {}
-+static inline void get_online_cpus_atomic(void) {}
-+static inline void put_online_cpus_atomic(void) {}
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
- /* These aren't inline functions due to a GCC bug. */
- #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
-
+ 	smp_wmb();
++	get_online_cpus_atomic();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ 	if (!(p->state & state))
+ 		goto out;
+@@ -1446,6 +1454,7 @@ stat:
+ 	ttwu_stat(p, cpu, wake_flags);
+ out:
+ 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
++	put_online_cpus_atomic();
+ 
+ 	return success;
+ }
+@@ -1624,6 +1633,7 @@ void wake_up_new_task(struct task_struct *p)
+ 	unsigned long flags;
+ 	struct rq *rq;
+ 
++	get_online_cpus_atomic();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ #ifdef CONFIG_SMP
+ 	/*
+@@ -1644,6 +1654,7 @@ void wake_up_new_task(struct task_struct *p)
+ 		p->sched_class->task_woken(rq, p);
+ #endif
+ 	task_rq_unlock(rq, p, &flags);
++	put_online_cpus_atomic();
+ }
+ 
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+@@ -2541,6 +2552,7 @@ void sched_exec(void)
+ 	unsigned long flags;
+ 	int dest_cpu;
+ 
++	get_online_cpus_atomic();
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
+ 	dest_cpu = p->sched_class->select_task_rq(p, SD_BALANCE_EXEC, 0);
+ 	if (dest_cpu == smp_processor_id())
+@@ -2550,11 +2562,13 @@ void sched_exec(void)
+ 		struct migration_arg arg = { p, dest_cpu };
+ 
+ 		raw_spin_unlock_irqrestore(&p->pi_lock, flags);
++		put_online_cpus_atomic();
+ 		stop_one_cpu(task_cpu(p), migration_cpu_stop, &arg);
+ 		return;
+ 	}
+ unlock:
+ 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
++	put_online_cpus_atomic();
+ }
+ 
+ #endif
