@@ -1,52 +1,22 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: Re: [PATCH][RFC] smsc95xx: enable dynamic autosuspend (RFC)
-Date: Tue, 11 Dec 2012 23:58:19 +0800
-Message-ID: <CACVXFVMN85g2+B_-1kyTJ=kSDWD5vbSja-hjTHvy2dLk1YN6cw@mail.gmail.com>
-References: <1353607526-19307-6-git-send-email-steve.glendinning@shawell.net>
-	<1881907.JmjSTg2PBW@linux-lqwf.site>
-	<CACVXFVMNshNMJ+hYHTCfE2+UOuMgGLb0dKq8qEM-LfUseuy2qA@mail.gmail.com>
-	<3108632.YdjKGB5H1R@linux-lqwf.site>
+From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Subject: Re: [GIT PULL] ACPI and power management updates for v3.8-rc1
+Date: Tue, 11 Dec 2012 17:25:09 +0100
+Message-ID: <50C75E65.70802@gmx.net>
+References: <4460434.rhV1bpKLo5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:33019 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771Ab2LKP6V (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Dec 2012 10:58:21 -0500
-In-Reply-To: <3108632.YdjKGB5H1R@linux-lqwf.site>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4460434.rhV1bpKLo5@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Steve Glendinning <steve@shawell.net>, Steve Glendinning <steve.glendinning@shawell.net>, netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM List <linux-pm@vger.kernel.org>
 
-CC linux-power
+Hi Rafael, 
 
-On Tue, Dec 11, 2012 at 11:19 PM, Oliver Neukum <oliver@neukum.org> wrote:
-> On Tuesday 11 December 2012 20:53:19 Ming Lei wrote:
->> In fact, I have test data which can show a much power save
->> on OMAP3 based beagle board plus asix usbnet device with
->> the periodic work. IMO, the power save after introducing periodic
->> timer depends on the arch or platform, there should be much power
->> save if the CPU power consumption is very less. So how about letting
->> module parameter switch on/off the periodic work?
->
-> You could ask on linux-power and netdev. But there would be an
-> obvious question: Why kernel space?
+please consider the inclusion of the two patches from https://lkml.org/lkml/2012/7/29/87 and https://lkml.org/lkml/2012/7/29/86, as discussed in our e-mail conversation on Oct 19 and 20.  The patches apply without modification against 3.7 as well.  (Since there is no change since 3.5, I did not resend them.) 
 
-How does user space utility know one interface doesn't support remote
-wakeup for link change? and how to do it in user space?  Or could we
-persuade user space guys to do it? Or could the previous user space
-utility can support power save on these devices?
+Thanks in advance!  If a separate re-send of the patches is needed, please let me know. 
 
-At least, one advantage of doing it in kernel space is that we can let
-current and previous user space utility support power save on these
-devices when the link is off.
-
-Also, suppose user space utility may close interface automatically when
-the link becomes off, some configurations(such as IP address) of the
-network interface will be lost after it is brought up again next time once
-the link becomes on. The problem might break some application.
-
-Thanks,
---
-Ming Lei
+--- Witold
