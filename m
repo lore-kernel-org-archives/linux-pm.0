@@ -1,112 +1,52 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v4 5/9] sched,
- cpu hotplug: Use stable online cpus in try_to_wake_up() &
- select_task_rq()
-Date: Tue, 11 Dec 2012 19:35:03 +0530
-Message-ID: <20121211140502.23621.18600.stgit@srivatsabhat.in.ibm.com>
-References: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: Re: [PATCH][RFC] smsc95xx: enable dynamic autosuspend (RFC)
+Date: Tue, 11 Dec 2012 23:58:19 +0800
+Message-ID: <CACVXFVMN85g2+B_-1kyTJ=kSDWD5vbSja-hjTHvy2dLk1YN6cw@mail.gmail.com>
+References: <1353607526-19307-6-git-send-email-steve.glendinning@shawell.net>
+	<1881907.JmjSTg2PBW@linux-lqwf.site>
+	<CACVXFVMNshNMJ+hYHTCfE2+UOuMgGLb0dKq8qEM-LfUseuy2qA@mail.gmail.com>
+	<3108632.YdjKGB5H1R@linux-lqwf.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, oleg@redhat.com
-Cc: sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, srivatsa.bhat@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from youngberry.canonical.com ([91.189.89.112]:33019 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771Ab2LKP6V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Dec 2012 10:58:21 -0500
+In-Reply-To: <3108632.YdjKGB5H1R@linux-lqwf.site>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Steve Glendinning <steve@shawell.net>, Steve Glendinning <steve.glendinning@shawell.net>, netdev <netdev@vger.kernel.org>, linux-usb@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM List <linux-pm@vger.kernel.org>
 
-Once stop_machine() is gone from the CPU offline path, we won't be able to
-depend on preempt_disable() to prevent CPUs from going offline from under us.
+CC linux-power
 
-Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
-while invoking from atomic context.
+On Tue, Dec 11, 2012 at 11:19 PM, Oliver Neukum <oliver@neukum.org> wrote:
+> On Tuesday 11 December 2012 20:53:19 Ming Lei wrote:
+>> In fact, I have test data which can show a much power save
+>> on OMAP3 based beagle board plus asix usbnet device with
+>> the periodic work. IMO, the power save after introducing periodic
+>> timer depends on the arch or platform, there should be much power
+>> save if the CPU power consumption is very less. So how about letting
+>> module parameter switch on/off the periodic work?
+>
+> You could ask on linux-power and netdev. But there would be an
+> obvious question: Why kernel space?
 
-Scheduler functions such as try_to_wake_up() and select_task_rq() (and even
-select_fallback_rq()) deal with picking new CPUs to run tasks. So they need
-to synchronize with CPU offline operations.
+How does user space utility know one interface doesn't support remote
+wakeup for link change? and how to do it in user space?  Or could we
+persuade user space guys to do it? Or could the previous user space
+utility can support power save on these devices?
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
+At least, one advantage of doing it in kernel space is that we can let
+current and previous user space utility support power save on these
+devices when the link is off.
 
- kernel/sched/core.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+Also, suppose user space utility may close interface automatically when
+the link becomes off, some configurations(such as IP address) of the
+network interface will be lost after it is brought up again next time once
+the link becomes on. The problem might break some application.
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2d8927f..f51e0aa 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -1103,6 +1103,10 @@ EXPORT_SYMBOL_GPL(kick_process);
- #ifdef CONFIG_SMP
- /*
-  * ->cpus_allowed is protected by both rq->lock and p->pi_lock
-+ *
-+ *  Must be called under get/put_online_cpus_atomic() or
-+ *  equivalent, to avoid CPUs from going offline from underneath
-+ *  us.
-  */
- static int select_fallback_rq(int cpu, struct task_struct *p)
- {
-@@ -1166,6 +1170,9 @@ out:
- 
- /*
-  * The caller (fork, wakeup) owns p->pi_lock, ->cpus_allowed is stable.
-+ *
-+ * Must be called under get/put_online_cpus_atomic(), to prevent
-+ * CPUs from going offline from underneath us.
-  */
- static inline
- int select_task_rq(struct task_struct *p, int sd_flags, int wake_flags)
-@@ -1406,6 +1413,7 @@ try_to_wake_up(struct task_struct *p, unsigned int state, int wake_flags)
- 	int cpu, success = 0;
- 
- 	smp_wmb();
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- 	if (!(p->state & state))
- 		goto out;
-@@ -1446,6 +1454,7 @@ stat:
- 	ttwu_stat(p, cpu, wake_flags);
- out:
- 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+	put_online_cpus_atomic();
- 
- 	return success;
- }
-@@ -1624,6 +1633,7 @@ void wake_up_new_task(struct task_struct *p)
- 	unsigned long flags;
- 	struct rq *rq;
- 
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- #ifdef CONFIG_SMP
- 	/*
-@@ -1644,6 +1654,7 @@ void wake_up_new_task(struct task_struct *p)
- 		p->sched_class->task_woken(rq, p);
- #endif
- 	task_rq_unlock(rq, p, &flags);
-+	put_online_cpus_atomic();
- }
- 
- #ifdef CONFIG_PREEMPT_NOTIFIERS
-@@ -2541,6 +2552,7 @@ void sched_exec(void)
- 	unsigned long flags;
- 	int dest_cpu;
- 
-+	get_online_cpus_atomic();
- 	raw_spin_lock_irqsave(&p->pi_lock, flags);
- 	dest_cpu = p->sched_class->select_task_rq(p, SD_BALANCE_EXEC, 0);
- 	if (dest_cpu == smp_processor_id())
-@@ -2550,11 +2562,13 @@ void sched_exec(void)
- 		struct migration_arg arg = { p, dest_cpu };
- 
- 		raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+		put_online_cpus_atomic();
- 		stop_one_cpu(task_cpu(p), migration_cpu_stop, &arg);
- 		return;
- 	}
- unlock:
- 	raw_spin_unlock_irqrestore(&p->pi_lock, flags);
-+	put_online_cpus_atomic();
- }
- 
- #endif
+Thanks,
+--
+Ming Lei
