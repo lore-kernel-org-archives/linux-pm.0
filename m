@@ -1,86 +1,52 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH RFC] PM/Devfreq: Add Exynos5-bus devfreq driver for Exynos5250.
-Date: Tue, 11 Dec 2012 10:20:51 +0900
-Message-ID: <CAJ0PZbTTDdAXJ378R7CDO2=spx7WF_RpztG5ch7iFZWx-v3N2Q@mail.gmail.com>
-References: <1354264973-11214-1-git-send-email-a.kesavan@samsung.com>
-Reply-To: myungjoo.ham@gmail.com
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Mon, 10 Dec 2012 21:10:27 -0800
+Message-ID: <20121211051027.GB1932@mtj.dyndns.org>
+References: <1353906191.2523.25.camel@dabdike>
+ <21511277.LLinyDpbAK@vostro.rjw.lan>
+ <20121128013928.GB15971@htj.dyndns.org>
+ <1354092969.2276.49.camel@dabdike>
+ <20121203081321.GA9990@mint-spring.sh.intel.com>
+ <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
+ <20121203162323.GB19802@htj.dyndns.org>
+ <1354623100.3206.34.camel@dabdike.int.hansenpartnership.com>
+ <50C1891A.7040900@intel.com>
+ <50C5564F.8030000@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f46.google.com ([209.85.215.46]:64463 "EHLO
-	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750902Ab2LKBUx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Dec 2012 20:20:53 -0500
-In-Reply-To: <1354264973-11214-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <50C5564F.8030000@intel.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <a.kesavan@samsung.com>
-Cc: kyungmin.park@samsung.com, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, jhbird.choi@samsung.com
 
-On Fri, Nov 30, 2012 at 5:42 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
-> Exynos5-bus device devfreq driver monitors PPMU counters and
-> adjusts operating frequencies and voltages with OPP. ASV should
-> be used to provide appropriate voltages as per the speed group
-> of the SoC rather than using a constant 1.025V.
->
-> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
+Hello, guys.
 
-I've got a few general comments and questions on your patch.
+On Mon, Dec 10, 2012 at 11:26:07AM +0800, Aaron Lu wrote:
+> >>> The problem here is there's no easy to reach genhd from libata (or the
+> >>> other way around) without going through sr.  I think we're gonna have
+> >>> to have something in sr one way or the other.
+> >>
+> >> Can't we do that via an event? It's a bit clunky because we need the
+> >> callback in the layer that sees the sdev, which is libata-scsi, we just
+> >> need an analogue of ata_scsi_media_change_notify, but ignoring and
+> >> allowing polling is essentially event driven as well, so it should all
+> >> work.  We'll need a listener in genhd, which might be trickier.
 
-> ---
-> This code is based on Jonghwan Choi's <jhbird.choi@samsung.com> devfreq work
-> for Exynos5250. This requires corresponding machine specific changes which
-> will be posted once the driver is reviewed.
->
->  drivers/devfreq/Kconfig        |   10 +
->  drivers/devfreq/Makefile       |    1 +
->  drivers/devfreq/exynos5_bus.c  |  595 ++++++++++++++++++++++++++++++++++++++++
->  drivers/devfreq/exynos5_ppmu.c |  395 ++++++++++++++++++++++++++
->  drivers/devfreq/exynos5_ppmu.h |   26 ++
->  drivers/devfreq/exynos_ppmu.c  |   56 ++++
->  drivers/devfreq/exynos_ppmu.h  |   79 ++++++
->  7 files changed, 1162 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/devfreq/exynos5_bus.c
->  create mode 100644 drivers/devfreq/exynos5_ppmu.c
->  create mode 100644 drivers/devfreq/exynos5_ppmu.h
->  create mode 100644 drivers/devfreq/exynos_ppmu.c
->  create mode 100644 drivers/devfreq/exynos_ppmu.h
+I'm not really following what you mean.  Can you please elaborate?
+One way or the other, doesn't the notification have to bubble up
+through SCSI?
 
-I understand that Exynos PPMU drivers seem not to be used (at least in
-mainline Linux) widely and it'd be convinent for a bus driver to have
-ppmu driver located in the same source directory.
+> A colleague of mine reminded me that it's impolite to write something
+> like this, and here is my apology. I didn't mean to be rude, I'm sorry
+> for this if it made you feel uncomfortable.
 
-However, I don't feel very comfortable to have ppmu drivers explicitly
-landing in devfreq directory. Would it be possible to place them
-somewhere else? (in drivers/misc, arch/arm/mach-exynos, or somewhere
-appropriate?) If PPMU drivers really have nowhere to relocate, they
-may be located along with its sole user (exynos5_bus.c) anyway.
+Oh, no, it's not rude at all.  I was just being distracted w/ other
+stuff and lazy.  Sorry about that.
 
-
-> +
-> +struct exynos5_bus_int_handle {
-> +       struct list_head node;
-> +       struct delayed_work work;
-> +       bool boost;
-> +       bool poll;
-> +       unsigned long min;
-> +};
-
-It appears that "boost" is something may be handled by per-dev QoS.
-It looks like that you are reimplementing the pm-qos infrastructure in
-the driver.
-
-Could you please implement this w/ per-dev QoS?
-Or explain why this is required instead of per-dev PM-QoS?
-
-
-
-Cheers,
-MyungJoo
-
+Thanks.
 
 -- 
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab, DMC Business, Samsung Electronics
+tejun
