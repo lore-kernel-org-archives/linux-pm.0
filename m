@@ -1,52 +1,36 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Mon, 10 Dec 2012 21:10:27 -0800
-Message-ID: <20121211051027.GB1932@mtj.dyndns.org>
-References: <1353906191.2523.25.camel@dabdike>
- <21511277.LLinyDpbAK@vostro.rjw.lan>
- <20121128013928.GB15971@htj.dyndns.org>
- <1354092969.2276.49.camel@dabdike>
- <20121203081321.GA9990@mint-spring.sh.intel.com>
- <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
- <20121203162323.GB19802@htj.dyndns.org>
- <1354623100.3206.34.camel@dabdike.int.hansenpartnership.com>
- <50C1891A.7040900@intel.com>
- <50C5564F.8030000@intel.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some parts
+Date: Tue, 11 Dec 2012 10:15:51 +0100
+Message-ID: <CACRpkdYE+WcOqbB0whqW+bKVOXmdAmF0rCFacsYkREu=gPGXew@mail.gmail.com>
+References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-scsi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50C5564F.8030000@intel.com>
-Sender: linux-scsi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f174.google.com ([209.85.215.174]:52744 "EHLO
+	mail-ea0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751421Ab2LKJPw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Dec 2012 04:15:52 -0500
+Received: by mail-ea0-f174.google.com with SMTP id e13so1414130eaa.19
+        for <linux-pm@vger.kernel.org>; Tue, 11 Dec 2012 01:15:51 -0800 (PST)
+In-Reply-To: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@stericsson.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Mike Turquette <mturquette@ti.com>, Mike Turquette <mturquette@linaro.org>, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hello, guys.
+On Mon, Dec 10, 2012 at 4:25 PM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
 
-On Mon, Dec 10, 2012 at 11:26:07AM +0800, Aaron Lu wrote:
-> >>> The problem here is there's no easy to reach genhd from libata (or the
-> >>> other way around) without going through sr.  I think we're gonna have
-> >>> to have something in sr one way or the other.
-> >>
-> >> Can't we do that via an event? It's a bit clunky because we need the
-> >> callback in the layer that sees the sdev, which is libata-scsi, we just
-> >> need an analogue of ata_scsi_media_change_notify, but ignoring and
-> >> allowing polling is essentially event driven as well, so it should all
-> >> work.  We'll need a listener in genhd, which might be trickier.
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> This patchset starts by renaming the db8500 cpufreq driver to a more generic
+> name. There are new variants which rely on it too, so instead we give it a
+> family name of dbx500.
+>
+> On top of that a fixup patch for initialization of the driver and some minor
+> cleanup patches are included as well.
 
-I'm not really following what you mean.  Can you please elaborate?
-One way or the other, doesn't the notification have to bubble up
-through SCSI?
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+For all patches.
 
-> A colleague of mine reminded me that it's impolite to write something
-> like this, and here is my apology. I didn't mean to be rude, I'm sorry
-> for this if it made you feel uncomfortable.
-
-Oh, no, it's not rude at all.  I was just being distracted w/ other
-stuff and lazy.  Sorry about that.
-
-Thanks.
-
--- 
-tejun
+Yours,
+Linus Walleij
