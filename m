@@ -1,43 +1,92 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: pci_pm_runtime_suspend(): azx_runtime_suspend+0x0/0x50 [snd_hda_intel] returns -11
-Date: Wed, 12 Dec 2012 00:44:33 +0100
-Message-ID: <15066310.xXEWfqCuJc@vostro.rjw.lan>
-References: <20121211170315.GC28827@liondog.tnic> <2487425.bAQggRZzC4@vostro.rjw.lan> <20121211175508.GE28827@liondog.tnic>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [RFC PATCH] ARM: EXYNOS5: Support Exynos5-bus devfreq driver
+Date: Wed, 12 Dec 2012 08:33:29 +0530
+Message-ID: <CAM4voakRaNU-7=vF1+e8RAu14XP6NKWMmjiCRHgzn14B4SH8rQ@mail.gmail.com>
+References: <1355141166-17205-1-git-send-email-a.kesavan@samsung.com>
+	<001701cdd732$53119410$f934bc30$%choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56453 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759Ab2LKXjb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Dec 2012 18:39:31 -0500
-In-Reply-To: <20121211175508.GE28827@liondog.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <001701cdd732$53119410$f934bc30$%choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jonghwan Choi <jhbird.choi@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Takashi Iwai <tiwai@suse.de>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tuesday, December 11, 2012 06:55:08 PM Borislav Petkov wrote:
-> On Tue, Dec 11, 2012 at 06:48:23PM +0100, Rafael J. Wysocki wrote:
-> > Boris, please send the output of "lspci -vvv' from that box.
-> 
-> Attached.
+On Tue, Dec 11, 2012 at 5:29 AM, Jonghwan Choi <jhbird.choi@samsung.com> wrote:
+> Hi Abhilash Kesavan.
+Hi Mr Choi,
 
-So the audio is a Root Complex Integrated Endpoind and there shouldn't be
-any problems with it related to PCIe ports power management.
-
-It looks like azx_runtime_suspend() is new in 3.7 and it returns -EAGAIN
-to indicate that it actually can't be suspended (if my understanding the
-code is correct).  However, it shouldn't do that, because that causes
-the runtime PM core to repeat the attempts.  It rather should implement
-a .runtime_idle() callback returning an error code instead.
-
-Those messages are just noise, though.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks for your comments.
+>
+>
+>> +     /* Change Divider - LEX */
+>> +     tmp = __raw_readl(EXYNOS5_CLKDIV_LEX);
+>> +
+>> +     tmp &= ~(EXYNOS5_CLKDIV_LEX_ATCLK_LEX_MASK |
+>> +             EXYNOS5_CLKDIV_LEX_PCLK_LEX_MASK);
+>> +
+>> +     tmp |= int_freq[div_index].clk_div_lex;
+>> +
+>> +     __raw_writel(tmp, EXYNOS5_CLKDIV_LEX);
+>> +
+>
+> I knew that only ATCLK_LEX & PCLK_LEX divider value are in CLKDIV_LEX
+> register. (Others are reserved and value is 0)
+> So, I think
+> "
+> tmp = int_freq[div_index].clk_div_lex;
+> __raw_writel(tmp, EXYNOS5_CLKDIV_LEX);
+> "
+> Is enough.
+>
+>> +     tmp = __raw_readl(EXYNOS5_CLKDIV_LEX);
+>> +
+>> +     tmp &= ~(EXYNOS5_CLKDIV_LEX_ATCLK_LEX_MASK |
+>> +             EXYNOS5_CLKDIV_LEX_PCLK_LEX_MASK);
+> -> not need.
+>
+>
+>
+>> +     while (__raw_readl(EXYNOS5_CLKDIV_STAT_LEX) & 0x110)
+>> +             cpu_relax();
+>> +
+>> +     /* Change Divider - R0X */
+>> +     tmp = __raw_readl(EXYNOS5_CLKDIV_R0X);
+>> +
+>> +     tmp &= ~EXYNOS5_CLKDIV_R0X_PCLK_R0X_MASK;
+>> +
+>> +     tmp |= int_freq[div_index].clk_div_r0x;
+>> +
+>> +     __raw_writel(tmp, EXYNOS5_CLKDIV_R0X);
+>> +
+>
+> Same here
+>
+>
+>> +     while (__raw_readl(EXYNOS5_CLKDIV_STAT_R0X) & 0x10)
+>> +             cpu_relax();
+>> +
+>> +     /* Change Divider - R1X */
+>> +     tmp = __raw_readl(EXYNOS5_CLKDIV_R1X);
+>> +
+>> +     tmp &= ~EXYNOS5_CLKDIV_R1X_PCLK_R1X_MASK;
+>> +
+>> +     tmp |= int_freq[div_index].clk_div_r1x;
+>> +
+>> +     __raw_writel(tmp, EXYNOS5_CLKDIV_R1X);
+>> +
+>
+> Same here
+>
+>> +     while (__raw_readl(EXYNOS5_CLKDIV_STAT_R1X) & 0x10)
+>> +             cpu_relax();
+>
+> How about your opinion?
+I have verified the registers against the 5250 User Manual. You are
+right on all counts.
+I will fix them all and re-post.
+>
+> thanks
+Regards,
+Abhilash
