@@ -1,52 +1,49 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle - remove the power_specified field in the driver
-Date: Wed, 12 Dec 2012 21:00:53 +0100
-Message-ID: <50C8E275.9050308@linaro.org>
-References: <1355325801-1317-1-git-send-email-daniel.lezcano@linaro.org> <CAODwPW81fXDNMTvG8juR6iAGFeDV9PXE-65Wp+dAE-mcKYU2nw@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some parts
+Date: Wed, 12 Dec 2012 12:56:48 -0800
+Message-ID: <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
+References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:49164 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985Ab2LLUBD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 15:01:03 -0500
-Received: by mail-bk0-f46.google.com with SMTP id q16so618386bkw.19
-        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 12:01:01 -0800 (PST)
-In-Reply-To: <CAODwPW81fXDNMTvG8juR6iAGFeDV9PXE-65Wp+dAE-mcKYU2nw@mail.gmail.com>
+Received: from mail-vc0-f174.google.com ([209.85.220.174]:61091 "EHLO
+	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756134Ab2LLU5J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 15:57:09 -0500
+Received: by mail-vc0-f174.google.com with SMTP id d16so1312142vcd.19
+        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 12:57:08 -0800 (PST)
+In-Reply-To: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julius Werner <jwerner@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Francesco Lavra <francescolavra.fl@gmail.com>, linux-pm@vger.kernel.org, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Trinabh Gupta <g.trinabh@gmail.com>, Lists Linaro-dev <linaro-dev@lists.linaro.org>, len.brown@intel.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Sameer Nanda <snanda@chromium.org>
+To: Ulf Hansson <ulf.hansson@stericsson.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 12/12/2012 07:50 PM, Julius Werner wrote:
-> Thanks again for making this happen, Daniel. I like this version,
-> except for the small nitpick that I still think it would make sense t=
-o
-> also turn the loop in menu.c around. How about something like this:
->=20
->        for (i =3D drv->state_count - 1; i >=3D CPUIDLE_DRIVER_STATE_S=
-TART; i++) {
->                 struct cpuidle_state *s =3D &drv->states[i];
->                 if (!s->disable && s->exit_latency <=3D latency_req &=
-&
->                     s->target_residency <=3D data->predicted_us &&
->                     s->exit_latency * multiplier <=3D data->predicted=
-_us) {
->                         data->last_state_idx =3D i;
->                         data->exit_us =3D s->exit_latency;
->                         break;
->                 }
->         }
+On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+> From: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> This patchset starts by renaming the db8500 cpufreq driver to a more generic
+> name. There are new variants which rely on it too, so instead we give it a
+> family name of dbx500.
+>
+> On top of that a fixup patch for initialization of the driver and some minor
+> cleanup patches are included as well.
+>
+> These patches can be material for 3.8.
+>
+> Since some patches for the db8500 cpufreq driver has recently been merged
+> through Mike Turquette's clk tree, I decided to base these patches on top
+> of the clk-next branch. So I hope Mike is fine by merging these patches
+> through his tree.
+>
+> So I will try to collect ACKs from Rafael for the cpufreq patches. The
+> mfd patch has already been ACKED by Samuel.
+>
 
-Actually I was planning to do that in a separate patch.
+Ulf,
 
+Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
+this branch once Rafael ACKs the CPUfreq bits if you want, but I think
+you have more options now that clk-next is merged in.  It's up to you.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Regards,
+Mike
