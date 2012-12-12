@@ -1,49 +1,51 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 1/1] thermal: exynos: Use of_match_ptr() macro
-Date: Wed, 12 Dec 2012 15:54:24 +0530
-Message-ID: <1355307864-22194-1-git-send-email-sachin.kamat@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: pci_pm_runtime_suspend(): azx_runtime_suspend+0x0/0x50
+ [snd_hda_intel] returns -11
+Date: Wed, 12 Dec 2012 11:51:43 +0100
+Message-ID: <20121212105143.GA9252@liondog.tnic>
+References: <20121211170315.GC28827@liondog.tnic>
+ <2487425.bAQggRZzC4@vostro.rjw.lan>
+ <20121211175508.GE28827@liondog.tnic>
+ <15066310.xXEWfqCuJc@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:48159 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343Ab2LLKbg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 05:31:36 -0500
-Received: by mail-pb0-f46.google.com with SMTP id wy7so442245pbc.19
-        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 02:31:35 -0800 (PST)
+Received: from mail.skyhub.de ([78.46.96.112]:49209 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751632Ab2LLKvq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Dec 2012 05:51:46 -0500
+Content-Disposition: inline
+In-Reply-To: <15066310.xXEWfqCuJc@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, sachin.kamat@linaro.org, patches@linaro.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Takashi Iwai <tiwai@suse.de>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mengdong Lin <mengdong.lin@intel.com>
 
-This eliminates having an #ifdef returning NULL for the case
-when OF is disabled.
+On Wed, Dec 12, 2012 at 12:44:33AM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, December 11, 2012 06:55:08 PM Borislav Petkov wrote:
+> > On Tue, Dec 11, 2012 at 06:48:23PM +0100, Rafael J. Wysocki wrote:
+> > > Boris, please send the output of "lspci -vvv' from that box.
+> > 
+> > Attached.
+> 
+> So the audio is a Root Complex Integrated Endpoind and there shouldn't be
+> any problems with it related to PCIe ports power management.
+> 
+> It looks like azx_runtime_suspend() is new in 3.7 and it returns -EAGAIN
+> to indicate that it actually can't be suspended (if my understanding the
+> code is correct).  However, it shouldn't do that, because that causes
+> the runtime PM core to repeat the attempts.  It rather should implement
+> a .runtime_idle() callback returning an error code instead.
+> 
+> Those messages are just noise, though.
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/thermal/exynos_thermal.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+Adding author of this (b8dfc4624162c0547d7f36a9df48da2d9b4bd58a).
 
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 7772d16..3f6a54a 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -800,8 +800,6 @@ static const struct of_device_id exynos_tmu_match[] = {
- 	{},
- };
- MODULE_DEVICE_TABLE(of, exynos_tmu_match);
--#else
--#define  exynos_tmu_match NULL
- #endif
- 
- static struct platform_device_id exynos_tmu_driver_ids[] = {
-@@ -982,7 +980,7 @@ static struct platform_driver exynos_tmu_driver = {
- 		.name   = "exynos-tmu",
- 		.owner  = THIS_MODULE,
- 		.pm     = EXYNOS_TMU_PM,
--		.of_match_table = exynos_tmu_match,
-+		.of_match_table = of_match_ptr(exynos_tmu_match),
- 	},
- 	.probe = exynos_tmu_probe,
- 	.remove	= __devexit_p(exynos_tmu_remove),
+Thanks.
+
 -- 
-1.7.4.1
+Regards/Gruss,
+    Boris.
 
+Sent from a fat crate under my desk. Formatting is fine.
+--
