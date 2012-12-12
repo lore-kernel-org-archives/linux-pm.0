@@ -1,31 +1,26 @@
 From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Subject: [PATCH] PNP: Simplify setting of resources
-Date: Wed, 12 Dec 2012 16:32:33 +0100
-Message-ID: <50C8A391.3010900@gmx.net>
+Subject: [PATCH] PNP: Handle IORESOURCE_BITS in resource allocation
+Date: Wed, 12 Dec 2012 16:34:31 +0100
+Message-ID: <50C8A407.7070906@gmx.net>
 References: <4460434.rhV1bpKLo5@vostro.rjw.lan> <50C75E65.70802@gmx.net> <7930705.OcvDjiPjJD@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout-de.gmx.net ([213.165.64.22]:60564 "HELO
-	mailout-de.gmx.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753447Ab2LLPcn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 10:32:43 -0500
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <7930705.OcvDjiPjJD@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-This patch factors out the setting of PNP resources into one function which is 
-then reused for all PNP resource types.  This makes the code more concise and 
-avoids duplication.  The parameters "type" and "flags" are not used at the
-moment but may be used by follow-up patches.  Placeholders for these patches 
-can be found in the comment lines that contain the "TBD" marker. 
+The patch copies the flags masked by IORESOURCE_BITS from a resource's 
+template.  This is necessary because the resource settings require proper
+IORESOURCE_BITS which are not known during the definition of these resources 
+using the "/sys/bus/pnp/*/*/resources" interface.  (In fact, they should not 
+be set by the user as the resource templates define the proper settings.)
 
-As the code does not make any changes to the ABI, no regressions are expected.
-
-NB: While at it, support for bus type resources is added. 
+If the patch is not applied, the resource flags are not initialized properly 
+and obscure messages in the kernel log have been seen ("invalid flags").  
 
 The patch is applied against Linux 3.7 as well as linux-pm.git/master 
 as of 2012-12-12.
@@ -35,141 +30,73 @@ Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
 Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
 
 
-Index: linux/drivers/pnp/interface.c
+Index: linux/drivers/pnp/manager.c
 ===================================================================
---- linux.orig/drivers/pnp/interface.c
-+++ linux/drivers/pnp/interface.c
-@@ -298,6 +298,39 @@ static ssize_t pnp_show_current_resource
- 	return ret;
- }
+--- linux.orig/drivers/pnp/manager.c
++++ linux/drivers/pnp/manager.c
+@@ -18,11 +18,27 @@
  
-+static char *pnp_get_resource_value(char *buf,
-+				    unsigned long type,
-+				    resource_size_t *start,
-+				    resource_size_t *end,
-+				    unsigned long *flags)
+ DEFINE_MUTEX(pnp_res_mutex);
+ 
++static struct resource *pnp_find_resource(struct pnp_dev *dev,
++					  unsigned char rule,
++					  unsigned long type,
++					  unsigned int bar)
 +{
-+	if (start)
-+		*start = 0;
-+	if (end)
-+		*end = 0;
-+	if (flags)
-+		*flags = 0;
++	struct resource *res = pnp_get_resource(dev, type, bar);
 +
-+	/* TBD: allow for disabled resources */
-+
-+	buf = skip_spaces(buf);
-+	if (start) {
-+		*start = simple_strtoull(buf, &buf, 0);
-+		if (end) {
-+			buf = skip_spaces(buf);
-+			if (*buf == '-') {
-+				buf = skip_spaces(buf + 1);
-+				*end = simple_strtoull(buf, &buf, 0);
-+			} else
-+				*end = *start;
-+		}
++	/* when the resource already exists, set its resource bits from rule */
++	if (res) {
++		res->flags &= ~IORESOURCE_BITS;
++		res->flags |= rule & IORESOURCE_BITS;
 +	}
 +
-+	/* TBD: allow for additional flags, e.g., IORESOURCE_WINDOW */
-+
-+	return buf;
++	return res;
 +}
 +
- static ssize_t pnp_set_current_resources(struct device *dmdev,
- 					 struct device_attribute *attr,
- 					 const char *ubuf, size_t count)
-@@ -305,7 +338,6 @@ static ssize_t pnp_set_current_resources
- 	struct pnp_dev *dev = to_pnp_dev(dmdev);
- 	char *buf = (void *)ubuf;
- 	int retval = 0;
--	resource_size_t start, end;
+ static int pnp_assign_port(struct pnp_dev *dev, struct pnp_port *rule, int idx)
+ {
+ 	struct resource *res, local_res;
  
- 	if (dev->status & PNP_ATTACHED) {
- 		retval = -EBUSY;
-@@ -349,6 +381,10 @@ static ssize_t pnp_set_current_resources
- 		goto done;
- 	}
- 	if (!strnicmp(buf, "set", 3)) {
-+		resource_size_t start;
-+		resource_size_t end;
-+		unsigned long flags;
-+
- 		if (dev->active)
- 			goto done;
- 		buf += 3;
-@@ -357,42 +393,37 @@ static ssize_t pnp_set_current_resources
- 		while (1) {
- 			buf = skip_spaces(buf);
- 			if (!strnicmp(buf, "io", 2)) {
--				buf = skip_spaces(buf + 2);
--				start = simple_strtoul(buf, &buf, 0);
--				buf = skip_spaces(buf);
--				if (*buf == '-') {
--					buf = skip_spaces(buf + 1);
--					end = simple_strtoul(buf, &buf, 0);
--				} else
--					end = start;
--				pnp_add_io_resource(dev, start, end, 0);
--				continue;
--			}
--			if (!strnicmp(buf, "mem", 3)) {
--				buf = skip_spaces(buf + 3);
--				start = simple_strtoul(buf, &buf, 0);
--				buf = skip_spaces(buf);
--				if (*buf == '-') {
--					buf = skip_spaces(buf + 1);
--					end = simple_strtoul(buf, &buf, 0);
--				} else
--					end = start;
--				pnp_add_mem_resource(dev, start, end, 0);
--				continue;
--			}
--			if (!strnicmp(buf, "irq", 3)) {
--				buf = skip_spaces(buf + 3);
--				start = simple_strtoul(buf, &buf, 0);
--				pnp_add_irq_resource(dev, start, 0);
--				continue;
--			}
--			if (!strnicmp(buf, "dma", 3)) {
--				buf = skip_spaces(buf + 3);
--				start = simple_strtoul(buf, &buf, 0);
--				pnp_add_dma_resource(dev, start, 0);
--				continue;
--			}
--			break;
-+				buf = pnp_get_resource_value(buf + 2,
-+							     IORESOURCE_IO,
-+							     &start, &end,
-+							     &flags);
-+				pnp_add_io_resource(dev, start, end, flags);
-+			} else if (!strnicmp(buf, "mem", 3)) {
-+				buf = pnp_get_resource_value(buf + 3,
-+							     IORESOURCE_MEM,
-+							     &start, &end,
-+							     &flags);
-+				pnp_add_mem_resource(dev, start, end, flags);
-+			} else if (!strnicmp(buf, "irq", 3)) {
-+				buf = pnp_get_resource_value(buf + 3,
-+							     IORESOURCE_IRQ,
-+							     &start, NULL,
-+							     &flags);
-+				pnp_add_irq_resource(dev, start, flags);
-+			} else if (!strnicmp(buf, "dma", 3)) {
-+				buf = pnp_get_resource_value(buf + 3,
-+							     IORESOURCE_DMA,
-+							     &start, NULL,
-+							     &flags);
-+				pnp_add_dma_resource(dev, start, flags);
-+			} else if (!strnicmp(buf, "bus", 3)) {
-+				buf = pnp_get_resource_value(buf + 3,
-+							     IORESOURCE_BUS,
-+							     &start, &end,
-+							     NULL);
-+				pnp_add_bus_resource(dev, start, end);
-+			} else
-+				break;
- 		}
- 		mutex_unlock(&pnp_res_mutex);
- 		goto done;
+-	res = pnp_get_resource(dev, IORESOURCE_IO, idx);
++	res = pnp_find_resource(dev, rule->flags, IORESOURCE_IO, idx);
+ 	if (res) {
+ 		pnp_dbg(&dev->dev, "  io %d already set to %#llx-%#llx "
+ 			"flags %#lx\n", idx, (unsigned long long) res->start,
+@@ -65,7 +81,7 @@ static int pnp_assign_mem(struct pnp_dev
+ {
+ 	struct resource *res, local_res;
+ 
+-	res = pnp_get_resource(dev, IORESOURCE_MEM, idx);
++	res = pnp_find_resource(dev, rule->flags, IORESOURCE_MEM, idx);
+ 	if (res) {
+ 		pnp_dbg(&dev->dev, "  mem %d already set to %#llx-%#llx "
+ 			"flags %#lx\n", idx, (unsigned long long) res->start,
+@@ -78,6 +94,7 @@ static int pnp_assign_mem(struct pnp_dev
+ 	res->start = 0;
+ 	res->end = 0;
+ 
++	/* ??? rule->flags restricted to 8 bits, all tests bogus ??? */
+ 	if (!(rule->flags & IORESOURCE_MEM_WRITEABLE))
+ 		res->flags |= IORESOURCE_READONLY;
+ 	if (rule->flags & IORESOURCE_MEM_CACHEABLE)
+@@ -123,7 +140,7 @@ static int pnp_assign_irq(struct pnp_dev
+ 		5, 10, 11, 12, 9, 14, 15, 7, 3, 4, 13, 0, 1, 6, 8, 2
+ 	};
+ 
+-	res = pnp_get_resource(dev, IORESOURCE_IRQ, idx);
++	res = pnp_find_resource(dev, rule->flags, IORESOURCE_IRQ, idx);
+ 	if (res) {
+ 		pnp_dbg(&dev->dev, "  irq %d already set to %d flags %#lx\n",
+ 			idx, (int) res->start, res->flags);
+@@ -182,7 +199,7 @@ static int pnp_assign_dma(struct pnp_dev
+ 		1, 3, 5, 6, 7, 0, 2, 4
+ 	};
+ 
+-	res = pnp_get_resource(dev, IORESOURCE_DMA, idx);
++	res = pnp_find_resource(dev, rule->flags, IORESOURCE_DMA, idx);
+ 	if (res) {
+ 		pnp_dbg(&dev->dev, "  dma %d already set to %d flags %#lx\n",
+ 			idx, (int) res->start, res->flags);
+
 
