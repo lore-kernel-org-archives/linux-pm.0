@@ -1,44 +1,166 @@
-From: "Lin, Mengdong" <mengdong.lin@intel.com>
-Subject: RE: pci_pm_runtime_suspend(): azx_runtime_suspend+0x0/0x50
- [snd_hda_intel] returns -11
-Date: Wed, 12 Dec 2012 15:20:25 +0000
-Message-ID: <F46914AEC2663F4A9BB62374E5EEF8F829248F@SHSMSX101.ccr.corp.intel.com>
-References: <20121211170315.GC28827@liondog.tnic>
- <2487425.bAQggRZzC4@vostro.rjw.lan> <20121211175508.GE28827@liondog.tnic>
- <15066310.xXEWfqCuJc@vostro.rjw.lan> <20121212105143.GA9252@liondog.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20121212105143.GA9252@liondog.tnic>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Takashi Iwai <tiwai@suse.de>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle - remove the power_specified field in the driver
+Date: Wed, 12 Dec 2012 16:23:21 +0100
+Message-ID: <1355325801-1317-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f174.google.com ([209.85.215.174]:42850 "EHLO
+	mail-ea0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276Ab2LLPX2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 10:23:28 -0500
+Received: by mail-ea0-f174.google.com with SMTP id e13so274761eaa.19
+        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 07:23:26 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: jwerner@chromium.org, francescolavra.fl@gmail.com, linux-pm@vger.kernel.org, deepthi@linux.vnet.ibm.com, g.trinabh@gmail.com, linaro-dev@lists.linaro.org, len.brown@intel.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, snanda@chromium.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCb3Jpc2xhdiBQZXRrb3YgW21h
-aWx0bzpicEBhbGllbjguZGVdDQo+IFNlbnQ6IFdlZG5lc2RheSwgRGVjZW1iZXIgMTIsIDIwMTIg
-Njo1MiBQTQ0KDQoNCj4gPiBJdCBsb29rcyBsaWtlIGF6eF9ydW50aW1lX3N1c3BlbmQoKSBpcyBu
-ZXcgaW4gMy43IGFuZCBpdCByZXR1cm5zDQo+ID4gLUVBR0FJTiB0byBpbmRpY2F0ZSB0aGF0IGl0
-IGFjdHVhbGx5IGNhbid0IGJlIHN1c3BlbmRlZCAoaWYgbXkNCj4gPiB1bmRlcnN0YW5kaW5nIHRo
-ZSBjb2RlIGlzIGNvcnJlY3QpLiAgSG93ZXZlciwgaXQgc2hvdWxkbid0IGRvIHRoYXQsDQo+ID4g
-YmVjYXVzZSB0aGF0IGNhdXNlcyB0aGUgcnVudGltZSBQTSBjb3JlIHRvIHJlcGVhdCB0aGUgYXR0
-ZW1wdHMuICBJdA0KPiA+IHJhdGhlciBzaG91bGQgaW1wbGVtZW50IGEgLnJ1bnRpbWVfaWRsZSgp
-IGNhbGxiYWNrIHJldHVybmluZyBhbiBlcnJvciBjb2RlDQo+IGluc3RlYWQuDQoNCg0KSGkgQm9y
-aXMgYW5kIFJhZmFlbCwNCg0KSSByZW1lbWJlciBJIGRpZG4ndCBvYnNlcnZlZCByZXBldGl0aXZl
-IGF0dGVtcHRzIHRvIHN1c3BlbmQgaWYgdGhlIGF6eF9ydW50aW1lX3N1c3BlbmQoKSByZXR1cm5z
-IC1FQUdBSU4uDQoNCkJlY2F1c2UgdGhlIEhELUEgZHJpdmVyIGRvZXMgbm90IGltcGxlbWVudCB0
-aGUgcnVudGltZSBpZGxlIGNhbGxiYWNrLCBwY2lfcG1fcnVudGltZV9pZGxlKCkgd2lsbCBjYWxs
-IHBtX3J1bnRpbWVfc3VzcGVuZChkZXYpLA0KYW5kIHRoZW4gX19wbV9ydW50aW1lX3N1c3BlbmQo
-ZGV2LCAwKSB3aWxsIGJlIGNhbGxlZC4gDQpGaW5hbGx5IHRoZSBjb2RlIHdpbGwgZ28gdG8gJ2Zh
-aWwnIG9mIHJwbV9zdXNwZW5kOiANCi4uLg0KZmFpbDoNCglfX3VwZGF0ZV9ydW50aW1lX3N0YXR1
-cyhkZXYsIFJQTV9BQ1RJVkUpOw0KCWRldi0+cG93ZXIuZGVmZXJyZWRfcmVzdW1lID0gZmFsc2U7
-DQoJd2FrZV91cF9hbGwoJmRldi0+cG93ZXIud2FpdF9xdWV1ZSk7DQoNCglpZiAocmV0dmFsID09
-IC1FQUdBSU4gfHwgcmV0dmFsID09IC1FQlVTWSkgew0KCQlkZXYtPnBvd2VyLnJ1bnRpbWVfZXJy
-b3IgPSAwOw0KCQkuLi4NCgkJaWYgKChycG1mbGFncyAmIFJQTV9BVVRPKSAmJg0KCQkgICAgcG1f
-cnVudGltZV9hdXRvc3VzcGVuZF9leHBpcmF0aW9uKGRldikgIT0gMCkgICAgICAuLi4gYnV0IHNp
-bmNlIHRoZSBycG1mbGFncyBpcyAwLCB0aGUgY29kZSB3aWxsIG5vdCBnbyB0byAncmVwZWF0JyBi
-dXQgdG8gJ291dCcuDQoJCQlnb3RvIHJlcGVhdDsNCgl9IGVsc2Ugew0KCQlwbV9ydW50aW1lX2Nh
-bmNlbF9wZW5kaW5nKGRldik7DQoJfQ0KCWdvdG8gb3V0Ow0KDQpQbGVhc2UgY29ycmVjdCBtZSBp
-ZiBJIG1pc3VuZGVyc3RhbmQgc29tZXRoaW5nLg0KDQpUaGFua3MNCk1lbmdkb25nDQoNCg==
+This patch follows the discussion about reinitializing the power usage
+when a C-state is added/removed.
+
+ https://lkml.org/lkml/2012/10/16/518
+
+We realized the power usage field is never filled and when it is
+filled for tegra, the power_specified flag is not set making all these
+values to be resetted when the driver is initialized with the set_power_state
+function.
+
+Julius and I feel this is over-engineered and the power_specified
+flag could be simply removed and continue assuming the states are
+backward sorted.
+
+The menu governor select function is simplified as the power is ordered.
+Actually the condition is always true with the current code.
+
+The cpuidle_play_dead function is also simplified by doing a reverse lookup
+on the array.
+
+The set_power_states function is removed as it does no make sense anymore.
+
+As a consequence, this patch fix also the bug where on the dynamic C-state
+system, the power fields is not initialized.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Julius Werner <jwerner@chromium.org>
+---
+ drivers/cpuidle/cpuidle.c        |   17 ++++-------------
+ drivers/cpuidle/driver.c         |   25 -------------------------
+ drivers/cpuidle/governors/menu.c |    8 ++------
+ include/linux/cpuidle.h          |    2 +-
+ 4 files changed, 7 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 8df53dd..e1f6860 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
+ {
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+-	int i, dead_state = -1;
+-	int power_usage = -1;
++	int i;
+ 
+ 	if (!drv)
+ 		return -ENODEV;
+ 
+ 	/* Find lowest-power state that supports long-term idle */
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+-		struct cpuidle_state *s = &drv->states[i];
+-
+-		if (s->power_usage < power_usage && s->enter_dead) {
+-			power_usage = s->power_usage;
+-			dead_state = i;
+-		}
+-	}
+-
+-	if (dead_state != -1)
+-		return drv->states[dead_state].enter_dead(dev, dead_state);
++	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
++		if (drv->states[i].enter_dead)
++			return drv->states[i].enter_dead(dev, i);
+ 
+ 	return -ENODEV;
+ }
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 3af841f..bb045f1 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -19,34 +19,9 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
+ static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, int cpu);
+ static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
+ 
+-static void set_power_states(struct cpuidle_driver *drv)
+-{
+-	int i;
+-
+-	/*
+-	 * cpuidle driver should set the drv->power_specified bit
+-	 * before registering if the driver provides
+-	 * power_usage numbers.
+-	 *
+-	 * If power_specified is not set,
+-	 * we fill in power_usage with decreasing values as the
+-	 * cpuidle code has an implicit assumption that state Cn
+-	 * uses less power than C(n-1).
+-	 *
+-	 * With CONFIG_ARCH_HAS_CPU_RELAX, C0 is already assigned
+-	 * an power value of -1.  So we use -2, -3, etc, for other
+-	 * c-states.
+-	 */
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++)
+-		drv->states[i].power_usage = -1 - i;
+-}
+-
+ static void __cpuidle_driver_init(struct cpuidle_driver *drv)
+ {
+ 	drv->refcnt = 0;
+-
+-	if (!drv->power_specified)
+-		set_power_states(drv);
+ }
+ 
+ static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index bd40b94..fe343a0 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -312,7 +312,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+-	int power_usage = -1;
+ 	int i;
+ 	int multiplier;
+ 	struct timespec t;
+@@ -383,11 +382,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		if (s->exit_latency * multiplier > data->predicted_us)
+ 			continue;
+ 
+-		if (s->power_usage < power_usage) {
+-			power_usage = s->power_usage;
+-			data->last_state_idx = i;
+-			data->exit_us = s->exit_latency;
+-		}
++		data->last_state_idx = i;
++		data->exit_us = s->exit_latency;
+ 	}
+ 
+ 	/* not deepest C-state chosen for low predicted residency */
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 3711b34..24cd103 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -126,9 +126,9 @@ struct cpuidle_driver {
+ 	struct module 		*owner;
+ 	int                     refcnt;
+ 
+-	unsigned int		power_specified:1;
+ 	/* set to 1 to use the core cpuidle time keeping (for all states). */
+ 	unsigned int		en_core_tk_irqen:1;
++	/* states array must be ordered in decreasing power consumption */
+ 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
+ 	int			state_count;
+ 	int			safe_state_index;
+-- 
+1.7.5.4
+
