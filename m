@@ -1,49 +1,78 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some parts
-Date: Wed, 12 Dec 2012 12:56:48 -0800
-Message-ID: <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
-References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU
+	offline from atomic context
+Date: Wed, 12 Dec 2012 22:10:52 +0100
+Message-ID: <20121212211052.GA31735@redhat.com>
+References: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com> <20121211140358.23621.97011.stgit@srivatsabhat.in.ibm.com> <20121212171720.GA22289@redhat.com> <50C8C4A5.4080104@linux.vnet.ibm.com> <20121212180248.GA24882@redhat.com> <20121212193646.GA29395@redhat.com> <50C8DE7B.8080708@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f174.google.com ([209.85.220.174]:61091 "EHLO
-	mail-vc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756134Ab2LLU5J (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 15:57:09 -0500
-Received: by mail-vc0-f174.google.com with SMTP id d16so1312142vcd.19
-        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 12:57:08 -0800 (PST)
-In-Reply-To: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
+Received: from mx1.redhat.com ([209.132.183.28]:11320 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754312Ab2LLVMm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Dec 2012 16:12:42 -0500
+Content-Disposition: inline
+In-Reply-To: <50C8DE7B.8080708@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@stericsson.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
-> From: Ulf Hansson <ulf.hansson@linaro.org>
+On 12/13, Srivatsa S. Bhat wrote:
 >
-> This patchset starts by renaming the db8500 cpufreq driver to a more generic
-> name. There are new variants which rely on it too, so instead we give it a
-> family name of dbx500.
->
-> On top of that a fixup patch for initialization of the driver and some minor
-> cleanup patches are included as well.
->
-> These patches can be material for 3.8.
->
-> Since some patches for the db8500 cpufreq driver has recently been merged
-> through Mike Turquette's clk tree, I decided to base these patches on top
-> of the clk-next branch. So I hope Mike is fine by merging these patches
-> through his tree.
->
-> So I will try to collect ACKs from Rafael for the cpufreq patches. The
-> mfd patch has already been ACKED by Samuel.
->
+> On 12/13/2012 01:06 AM, Oleg Nesterov wrote:
+> >
+> > But perhaps there is another reason to make it per-cpu...
 
-Ulf,
+Actually this is not the reason, please see below. But let me repeat,
+it is not that I suggest to remove "per-cpu".
 
-Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
-this branch once Rafael ACKs the CPUfreq bits if you want, but I think
-you have more options now that clk-next is merged in.  It's up to you.
+> > It seems we can avoid cpu_hotplug.active_writer == current check in
+> > get/put.
+> >
+> > take_cpu_down() can clear this_cpu(writer_signal) right after it takes
+> > hotplug_rwlock for writing. It runs with irqs and preemption disabled,
+> > nobody else will ever look at writer_signal on its CPU.
+> >
+>
+> Hmm.. And then the get/put_ on that CPU will increment/decrement the per-cpu
+> refcount, but we don't care.. because we only need to ensure that they don't
+> deadlock by taking the rwlock for read.
 
-Regards,
-Mike
+Yes, but...
+
+Probably it would be more clean to simply do this_cpu_inc(reader_percpu_refcnt)
+after write_lock(hotplug_rwlock). This will have the same effect for get/put,
+and we still can make writer_signal global (if we want).
+
+And note that this will also simplify the lockdep annotations which we (imho)
+should add later.
+
+Ignoring all complications get_online_cpus_atomic() does:
+
+	if (this_cpu_read(reader_percpu_refcnt))
+		this_cpu_inc(reader_percpu_refcnt);
+	else if (!writer_signal)
+		this_cpu_inc(reader_percpu_refcnt);	// same as above
+	else
+		read_lock(&hotplug_rwlock);
+
+But for lockdep it should do:
+
+	if (this_cpu_read(reader_percpu_refcnt))
+		this_cpu_inc(reader_percpu_refcnt);
+	else if (!writer_signal) {
+		this_cpu_inc(reader_percpu_refcnt);
+		// pretend we take hotplug_rwlock for lockdep
+		rwlock_acquire_read(&hotplug_rwlock.dep_map, 0, 0);
+	}
+	else
+		read_lock(&hotplug_rwlock);
+
+And we need to ensure that rwlock_acquire_read() is not called under
+write_lock(hotplug_rwlock).
+
+If we use reader_percpu_refcnt to fool get/put, we should not worry.
+
+Oleg.
+
