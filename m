@@ -1,166 +1,175 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] cpuidle - remove the power_specified field in the driver
-Date: Wed, 12 Dec 2012 16:23:21 +0100
-Message-ID: <1355325801-1317-1-git-send-email-daniel.lezcano@linaro.org>
+From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Subject: [PATCH] PNP: Simplify setting of resources
+Date: Wed, 12 Dec 2012 16:32:33 +0100
+Message-ID: <50C8A391.3010900@gmx.net>
+References: <4460434.rhV1bpKLo5@vostro.rjw.lan> <50C75E65.70802@gmx.net> <7930705.OcvDjiPjJD@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f174.google.com ([209.85.215.174]:42850 "EHLO
-	mail-ea0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276Ab2LLPX2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 10:23:28 -0500
-Received: by mail-ea0-f174.google.com with SMTP id e13so274761eaa.19
-        for <linux-pm@vger.kernel.org>; Wed, 12 Dec 2012 07:23:26 -0800 (PST)
+Received: from mailout-de.gmx.net ([213.165.64.22]:60564 "HELO
+	mailout-de.gmx.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753447Ab2LLPcn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Dec 2012 10:32:43 -0500
+In-Reply-To: <7930705.OcvDjiPjJD@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: jwerner@chromium.org, francescolavra.fl@gmail.com, linux-pm@vger.kernel.org, deepthi@linux.vnet.ibm.com, g.trinabh@gmail.com, linaro-dev@lists.linaro.org, len.brown@intel.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, snanda@chromium.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-This patch follows the discussion about reinitializing the power usage
-when a C-state is added/removed.
+This patch factors out the setting of PNP resources into one function which is 
+then reused for all PNP resource types.  This makes the code more concise and 
+avoids duplication.  The parameters "type" and "flags" are not used at the
+moment but may be used by follow-up patches.  Placeholders for these patches 
+can be found in the comment lines that contain the "TBD" marker. 
 
- https://lkml.org/lkml/2012/10/16/518
+As the code does not make any changes to the ABI, no regressions are expected.
 
-We realized the power usage field is never filled and when it is
-filled for tegra, the power_specified flag is not set making all these
-values to be resetted when the driver is initialized with the set_power_state
-function.
+NB: While at it, support for bus type resources is added. 
 
-Julius and I feel this is over-engineered and the power_specified
-flag could be simply removed and continue assuming the states are
-backward sorted.
+The patch is applied against Linux 3.7 as well as linux-pm.git/master 
+as of 2012-12-12.
 
-The menu governor select function is simplified as the power is ordered.
-Actually the condition is always true with the current code.
 
-The cpuidle_play_dead function is also simplified by doing a reverse lookup
-on the array.
+Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
 
-The set_power_states function is removed as it does no make sense anymore.
 
-As a consequence, this patch fix also the bug where on the dynamic C-state
-system, the power fields is not initialized.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Julius Werner <jwerner@chromium.org>
----
- drivers/cpuidle/cpuidle.c        |   17 ++++-------------
- drivers/cpuidle/driver.c         |   25 -------------------------
- drivers/cpuidle/governors/menu.c |    8 ++------
- include/linux/cpuidle.h          |    2 +-
- 4 files changed, 7 insertions(+), 45 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 8df53dd..e1f6860 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -69,24 +69,15 @@ int cpuidle_play_dead(void)
- {
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
--	int i, dead_state = -1;
--	int power_usage = -1;
-+	int i;
- 
- 	if (!drv)
- 		return -ENODEV;
- 
- 	/* Find lowest-power state that supports long-term idle */
--	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
--		struct cpuidle_state *s = &drv->states[i];
--
--		if (s->power_usage < power_usage && s->enter_dead) {
--			power_usage = s->power_usage;
--			dead_state = i;
--		}
--	}
--
--	if (dead_state != -1)
--		return drv->states[dead_state].enter_dead(dev, dead_state);
-+	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
-+		if (drv->states[i].enter_dead)
-+			return drv->states[i].enter_dead(dev, i);
- 
- 	return -ENODEV;
- }
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 3af841f..bb045f1 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -19,34 +19,9 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
- static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, int cpu);
- static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
- 
--static void set_power_states(struct cpuidle_driver *drv)
--{
--	int i;
--
--	/*
--	 * cpuidle driver should set the drv->power_specified bit
--	 * before registering if the driver provides
--	 * power_usage numbers.
--	 *
--	 * If power_specified is not set,
--	 * we fill in power_usage with decreasing values as the
--	 * cpuidle code has an implicit assumption that state Cn
--	 * uses less power than C(n-1).
--	 *
--	 * With CONFIG_ARCH_HAS_CPU_RELAX, C0 is already assigned
--	 * an power value of -1.  So we use -2, -3, etc, for other
--	 * c-states.
--	 */
--	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++)
--		drv->states[i].power_usage = -1 - i;
--}
--
- static void __cpuidle_driver_init(struct cpuidle_driver *drv)
- {
- 	drv->refcnt = 0;
--
--	if (!drv->power_specified)
--		set_power_states(drv);
+Index: linux/drivers/pnp/interface.c
+===================================================================
+--- linux.orig/drivers/pnp/interface.c
++++ linux/drivers/pnp/interface.c
+@@ -298,6 +298,39 @@ static ssize_t pnp_show_current_resource
+ 	return ret;
  }
  
- static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index bd40b94..fe343a0 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -312,7 +312,6 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
--	int power_usage = -1;
- 	int i;
- 	int multiplier;
- 	struct timespec t;
-@@ -383,11 +382,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		if (s->exit_latency * multiplier > data->predicted_us)
- 			continue;
++static char *pnp_get_resource_value(char *buf,
++				    unsigned long type,
++				    resource_size_t *start,
++				    resource_size_t *end,
++				    unsigned long *flags)
++{
++	if (start)
++		*start = 0;
++	if (end)
++		*end = 0;
++	if (flags)
++		*flags = 0;
++
++	/* TBD: allow for disabled resources */
++
++	buf = skip_spaces(buf);
++	if (start) {
++		*start = simple_strtoull(buf, &buf, 0);
++		if (end) {
++			buf = skip_spaces(buf);
++			if (*buf == '-') {
++				buf = skip_spaces(buf + 1);
++				*end = simple_strtoull(buf, &buf, 0);
++			} else
++				*end = *start;
++		}
++	}
++
++	/* TBD: allow for additional flags, e.g., IORESOURCE_WINDOW */
++
++	return buf;
++}
++
+ static ssize_t pnp_set_current_resources(struct device *dmdev,
+ 					 struct device_attribute *attr,
+ 					 const char *ubuf, size_t count)
+@@ -305,7 +338,6 @@ static ssize_t pnp_set_current_resources
+ 	struct pnp_dev *dev = to_pnp_dev(dmdev);
+ 	char *buf = (void *)ubuf;
+ 	int retval = 0;
+-	resource_size_t start, end;
  
--		if (s->power_usage < power_usage) {
--			power_usage = s->power_usage;
--			data->last_state_idx = i;
--			data->exit_us = s->exit_latency;
--		}
-+		data->last_state_idx = i;
-+		data->exit_us = s->exit_latency;
+ 	if (dev->status & PNP_ATTACHED) {
+ 		retval = -EBUSY;
+@@ -349,6 +381,10 @@ static ssize_t pnp_set_current_resources
+ 		goto done;
  	}
- 
- 	/* not deepest C-state chosen for low predicted residency */
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 3711b34..24cd103 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -126,9 +126,9 @@ struct cpuidle_driver {
- 	struct module 		*owner;
- 	int                     refcnt;
- 
--	unsigned int		power_specified:1;
- 	/* set to 1 to use the core cpuidle time keeping (for all states). */
- 	unsigned int		en_core_tk_irqen:1;
-+	/* states array must be ordered in decreasing power consumption */
- 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
- 	int			state_count;
- 	int			safe_state_index;
--- 
-1.7.5.4
+ 	if (!strnicmp(buf, "set", 3)) {
++		resource_size_t start;
++		resource_size_t end;
++		unsigned long flags;
++
+ 		if (dev->active)
+ 			goto done;
+ 		buf += 3;
+@@ -357,42 +393,37 @@ static ssize_t pnp_set_current_resources
+ 		while (1) {
+ 			buf = skip_spaces(buf);
+ 			if (!strnicmp(buf, "io", 2)) {
+-				buf = skip_spaces(buf + 2);
+-				start = simple_strtoul(buf, &buf, 0);
+-				buf = skip_spaces(buf);
+-				if (*buf == '-') {
+-					buf = skip_spaces(buf + 1);
+-					end = simple_strtoul(buf, &buf, 0);
+-				} else
+-					end = start;
+-				pnp_add_io_resource(dev, start, end, 0);
+-				continue;
+-			}
+-			if (!strnicmp(buf, "mem", 3)) {
+-				buf = skip_spaces(buf + 3);
+-				start = simple_strtoul(buf, &buf, 0);
+-				buf = skip_spaces(buf);
+-				if (*buf == '-') {
+-					buf = skip_spaces(buf + 1);
+-					end = simple_strtoul(buf, &buf, 0);
+-				} else
+-					end = start;
+-				pnp_add_mem_resource(dev, start, end, 0);
+-				continue;
+-			}
+-			if (!strnicmp(buf, "irq", 3)) {
+-				buf = skip_spaces(buf + 3);
+-				start = simple_strtoul(buf, &buf, 0);
+-				pnp_add_irq_resource(dev, start, 0);
+-				continue;
+-			}
+-			if (!strnicmp(buf, "dma", 3)) {
+-				buf = skip_spaces(buf + 3);
+-				start = simple_strtoul(buf, &buf, 0);
+-				pnp_add_dma_resource(dev, start, 0);
+-				continue;
+-			}
+-			break;
++				buf = pnp_get_resource_value(buf + 2,
++							     IORESOURCE_IO,
++							     &start, &end,
++							     &flags);
++				pnp_add_io_resource(dev, start, end, flags);
++			} else if (!strnicmp(buf, "mem", 3)) {
++				buf = pnp_get_resource_value(buf + 3,
++							     IORESOURCE_MEM,
++							     &start, &end,
++							     &flags);
++				pnp_add_mem_resource(dev, start, end, flags);
++			} else if (!strnicmp(buf, "irq", 3)) {
++				buf = pnp_get_resource_value(buf + 3,
++							     IORESOURCE_IRQ,
++							     &start, NULL,
++							     &flags);
++				pnp_add_irq_resource(dev, start, flags);
++			} else if (!strnicmp(buf, "dma", 3)) {
++				buf = pnp_get_resource_value(buf + 3,
++							     IORESOURCE_DMA,
++							     &start, NULL,
++							     &flags);
++				pnp_add_dma_resource(dev, start, flags);
++			} else if (!strnicmp(buf, "bus", 3)) {
++				buf = pnp_get_resource_value(buf + 3,
++							     IORESOURCE_BUS,
++							     &start, &end,
++							     NULL);
++				pnp_add_bus_resource(dev, start, end);
++			} else
++				break;
+ 		}
+ 		mutex_unlock(&pnp_res_mutex);
+ 		goto done;
 
