@@ -1,53 +1,53 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle - remove the power_specified field in the driver
-Date: Thu, 13 Dec 2012 08:30:27 +0100
-Message-ID: <50C98413.5050707@linaro.org>
-References: <1355325801-1317-1-git-send-email-daniel.lezcano@linaro.org> <CAODwPW81fXDNMTvG8juR6iAGFeDV9PXE-65Wp+dAE-mcKYU2nw@mail.gmail.com> <50C8E275.9050308@linaro.org> <2077776.UzqC1zVIVr@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some parts
+Date: Thu, 13 Dec 2012 10:20:49 +0100
+Message-ID: <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
+References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
+	<CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2077776.UzqC1zVIVr@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Julius Werner <jwerner@chromium.org>, Francesco Lavra <francescolavra.fl@gmail.com>, linux-pm@vger.kernel.org, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>, Trinabh Gupta <g.trinabh@gmail.com>, Lists Linaro-dev <linaro-dev@lists.linaro.org>, len.brown@intel.com, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Sameer Nanda <snanda@chromium.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Mike Turquette <mturquette@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Lee Jones <lee.jones@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, Rickard Andersson <rickard.andersson@stericsson.com>, Jonas Aberg <jonas.aberg@stericsson.com>, Vincent Guittot <vincent.guittot@linaro.org>, Philippe Begnic <philippe.begnic@st.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/12/2012 11:42 PM, Rafael J. Wysocki wrote:
-> On Wednesday, December 12, 2012 09:00:53 PM Daniel Lezcano wrote:
->> On 12/12/2012 07:50 PM, Julius Werner wrote:
->>> Thanks again for making this happen, Daniel. I like this version,
->>> except for the small nitpick that I still think it would make sense=
- to
->>> also turn the loop in menu.c around. How about something like this:
->>>
->>>        for (i =3D drv->state_count - 1; i >=3D CPUIDLE_DRIVER_STATE=
-_START; i++) {
->>>                 struct cpuidle_state *s =3D &drv->states[i];
->>>                 if (!s->disable && s->exit_latency <=3D latency_req=
- &&
->>>                     s->target_residency <=3D data->predicted_us &&
->>>                     s->exit_latency * multiplier <=3D data->predict=
-ed_us) {
->>>                         data->last_state_idx =3D i;
->>>                         data->exit_us =3D s->exit_latency;
->>>                         break;
->>>                 }
->>>         }
+On 12 December 2012 21:56, Mike Turquette <mturquette@linaro.org> wrote:
+> On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+>> From: Ulf Hansson <ulf.hansson@linaro.org>
 >>
->> Actually I was planning to do that in a separate patch.
->=20
-> Can you submit that second patch too, please, so that people don't ha=
-ve to
-> wonder?
+>> This patchset starts by renaming the db8500 cpufreq driver to a more generic
+>> name. There are new variants which rely on it too, so instead we give it a
+>> family name of dbx500.
+>>
+>> On top of that a fixup patch for initialization of the driver and some minor
+>> cleanup patches are included as well.
+>>
+>> These patches can be material for 3.8.
+>>
+>> Since some patches for the db8500 cpufreq driver has recently been merged
+>> through Mike Turquette's clk tree, I decided to base these patches on top
+>> of the clk-next branch. So I hope Mike is fine by merging these patches
+>> through his tree.
+>>
+>> So I will try to collect ACKs from Rafael for the cpufreq patches. The
+>> mfd patch has already been ACKED by Samuel.
+>>
+>
+> Ulf,
+>
+> Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
+> this branch once Rafael ACKs the CPUfreq bits if you want, but I think
+> you have more options now that clk-next is merged in.  It's up to you.
 
-Sure.
+I think the easiest way forward (at least for me :-) ) would be if we
+could send them as for 3.8 rcs. Is that possible for you Mike?
 
+>
+> Regards,
+> Mike
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Thanks!
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Ulf Hansson
