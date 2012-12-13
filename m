@@ -1,52 +1,56 @@
-From: Oleg Nesterov <oleg@redhat.com>
+From: Tejun Heo <tj@kernel.org>
 Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU
-	offline from atomic context
-Date: Thu, 13 Dec 2012 17:17:09 +0100
-Message-ID: <20121213161709.GA19125@redhat.com>
-References: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com> <20121211140358.23621.97011.stgit@srivatsabhat.in.ibm.com> <20121212171720.GA22289@redhat.com> <50C8C4A5.4080104@linux.vnet.ibm.com> <20121212180248.GA24882@redhat.com> <50C8CD52.8040808@linux.vnet.ibm.com> <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com>
+ offline from atomic context
+Date: Thu, 13 Dec 2012 08:32:33 -0800
+Message-ID: <20121213163233.GA2728@htj.dyndns.org>
+References: <20121211140314.23621.64088.stgit@srivatsabhat.in.ibm.com>
+ <20121211140358.23621.97011.stgit@srivatsabhat.in.ibm.com>
+ <20121212171720.GA22289@redhat.com>
+ <50C8C4A5.4080104@linux.vnet.ibm.com>
+ <20121212180248.GA24882@redhat.com>
+ <50C8CD52.8040808@linux.vnet.ibm.com>
+ <20121212184849.GA26784@redhat.com>
+ <50C8D739.6030903@linux.vnet.ibm.com>
+ <50C9F38F.3020005@linux.vnet.ibm.com>
+ <20121213161709.GA19125@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:33207 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755733Ab2LMQRR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Dec 2012 11:17:17 -0500
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:59962 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756071Ab2LMQcj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Dec 2012 11:32:39 -0500
 Content-Disposition: inline
-In-Reply-To: <50C9F38F.3020005@linux.vnet.ibm.com>
+In-Reply-To: <20121213161709.GA19125@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/13, Srivatsa S. Bhat wrote:
->
-> On 12/13/2012 12:42 AM, Srivatsa S. Bhat wrote:
-> >
-> > Even I don't spot anything wrong with it. But I'll give it some more
-> > thought..
->
-> Since an interrupt handler can also run get_online_cpus_atomic(), we
-> cannot use the __this_cpu_* versions for modifying reader_percpu_refcnt,
-> right?
+Hello, Oleg.
 
-Hmm. I thought that __this_cpu_* must be safe under preempt_disable().
-IOW, I thought that, say, this_cpu_inc() is "equal" to preempt_disable +
-__this_cpu_inc() correctness-wise.
+On Thu, Dec 13, 2012 at 05:17:09PM +0100, Oleg Nesterov wrote:
+> Hmm. I thought that __this_cpu_* must be safe under preempt_disable().
+> IOW, I thought that, say, this_cpu_inc() is "equal" to preempt_disable +
+> __this_cpu_inc() correctness-wise.
 
-And. I thought that this_cpu_inc() is safe wrt interrupt, like local_t.
+this_cpu_inc() equals local_irq_save() + __this_cpu_inc().
 
-But when I try to read the comments percpu.h, I am starting to think that
-even this_cpu_inc() is not safe if irq handler can do the same?
+> And. I thought that this_cpu_inc() is safe wrt interrupt, like local_t.
 
-Confused...
+Yes, it is safe.
 
-I am shy to ask... will, say, DEFINE_PER_CPU(local_t) and
-local_inc(__this_cpu_ptr(...)) work??
+> But when I try to read the comments percpu.h, I am starting to think that
+> even this_cpu_inc() is not safe if irq handler can do the same?
+> 
+> Confused...
 
-> But still, this scheme is better, because the reader doesn't have to spin
-> on the read_lock() with interrupts disabled.
+Yeah, the comment is confusing and the way these macros are defined
+doesn't help.  There used to be three variants and it looks like we
+didn't update the comment while removing the preempt safe ones.  Gotta
+clean those up.  Anyways, yes, this_cpu_*() are safe against irqs.
 
-Yes, but my main concern is that irq_disable/enable itself is not that cheap.
+Thanks.
 
-Oleg.
-
+-- 
+tejun
