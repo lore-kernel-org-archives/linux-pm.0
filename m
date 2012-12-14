@@ -1,56 +1,42 @@
-From: Sivaram Nair <sivaramn@nvidia.com>
-Subject: [PATCH 2/2] cpuidle: fix sysfs output for power_usage
-Date: Fri, 14 Dec 2012 15:17:37 +0200
-Message-ID: <1355491060-970-2-git-send-email-sivaramn@nvidia.com>
-References: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 0/2][V2] cpuidle - remove power from the select equation
+Date: Fri, 14 Dec 2012 14:57:33 +0100
+Message-ID: <1355493455-30665-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:3007 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116Ab2LNNS1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Dec 2012 08:18:27 -0500
-In-Reply-To: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org
+Cc: deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, g.trinabh-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jwerner-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org, snanda-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, shuox.liu@intel.com, akpm@linux-foundation.org, yanmin_zhang@intel.com
-Cc: linux-pm@vger.kernel.org, Sivaram Nair <sivaramn@nvidia.com>, linux-kernel@vger.kernel.org
 
-cpuidle_state->power_usage is signed; so change the corresponding sysfs
-ops to output signed value instead of unsigned.
+The states could be sorted in the power backward order, we get rid of
+some lines of code and by this way that fixes also a bug in the dynamic
+c-states.
 
-Signed-off-by: Sivaram Nair <sivaramn@nvidia.com>
----
- drivers/cpuidle/sysfs.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+Changelog:
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 3409429..2fc79cd 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -232,6 +232,13 @@ static struct cpuidle_state_attr attr_##_name = __ATTR(_name, 0644, show, store)
- static ssize_t show_state_##_name(struct cpuidle_state *state, \
- 			 struct cpuidle_state_usage *state_usage, char *buf) \
- { \
-+	return sprintf(buf, "%d\n", state->_name);\
-+}
-+
-+#define define_show_state_u_function(_name) \
-+static ssize_t show_state_##_name(struct cpuidle_state *state, \
-+			 struct cpuidle_state_usage *state_usage, char *buf) \
-+{ \
- 	return sprintf(buf, "%u\n", state->_name);\
- }
- 
-@@ -270,7 +277,7 @@ static ssize_t show_state_##_name(struct cpuidle_state *state, \
- 	return sprintf(buf, "%s\n", state->_name);\
- }
- 
--define_show_state_function(exit_latency)
-+define_show_state_u_function(exit_latency)
- define_show_state_function(power_usage)
- define_show_state_ull_function(usage)
- define_show_state_ull_function(time)
+V2:
+ * added the optimization in the select menu governor
+
+Daniel Lezcano (2):
+  cpuidle - remove the power_specified field in the driver
+  cpuidle - optimize the select function for the 'menu' governor
+
+ drivers/cpuidle/cpuidle.c        |   17 ++++-------------
+ drivers/cpuidle/driver.c         |   25 -------------------------
+ drivers/cpuidle/governors/menu.c |   20 ++++++++------------
+ include/linux/cpuidle.h          |    2 +-
+ 4 files changed, 13 insertions(+), 51 deletions(-)
+
 -- 
-1.7.9.5
-
+1.7.5.4
