@@ -1,189 +1,115 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [RFC PATCH 2/7] Thermal: Create zone level APIs
-Date: Fri, 14 Dec 2012 05:10:43 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59248A66@BGSMSX101.gar.corp.intel.com>
-References: <1353149158-19102-1-git-send-email-durgadoss.r@intel.com>
-	<1353149158-19102-3-git-send-email-durgadoss.r@intel.com>
-	<CAJLyvQzB6nGayefJM5-Qak7XxG_yPGFEPc6gv=j8cPrtUjP=Pg@mail.gmail.com>
-	<4D68720C2E767A4AA6A8796D42C8EB592487C8@BGSMSX101.gar.corp.intel.com>
- <CAJLyvQxp9A_PT4HDhV9NUizDS9Ax+ibAb8q-j48pUOt8221zOQ@mail.gmail.com>
+From: Konstantin Khlebnikov <khlebnikov@openvz.org>
+Subject: [PATCH] cpufreq_stats: fix race between stats allocation and first
+ usage
+Date: Fri, 14 Dec 2012 14:59:21 +0400
+Message-ID: <20121214105921.5139.502.stgit@zurg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:48768 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967Ab2LNFKr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Dec 2012 00:10:47 -0500
-In-Reply-To: <CAJLyvQxp9A_PT4HDhV9NUizDS9Ax+ibAb8q-j48pUOt8221zOQ@mail.gmail.com>
-Content-Language: en-US
+Received: from mail-la0-f46.google.com ([209.85.215.46]:46248 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751323Ab2LNK73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Dec 2012 05:59:29 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@linaro.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "wni@nvidia.com" <wni@nvidia.com>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "sachin.kamat@linaro.org" <sachin.kamat@linaro.org>
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq <cpufreq@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
 
-Hi,
+This patch forces complete struct cpufreq_stats allocation for all cpus before
+registering CPUFREQ_TRANSITION_NOTIFIER notifier, otherwise in some conditions
+cpufreq_stat_notifier_trans() can be called in the middle of stats allocation,
+in this case cpufreq_stats_table already exists, but stat->freq_table is NULL.
 
+Signed-off-by: Konstantin Khlebnikov <khlebnikov@openvz.org>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: cpufreq <cpufreq@vger.kernel.org>
+Cc: linux-pm <linux-pm@vger.kernel.org>
 
-> -----Original Message-----
-> From: Hongbo Zhang [mailto:hongbo.zhang@linaro.org]
-> Sent: Friday, December 14, 2012 9:41 AM
-> To: R, Durgadoss
-> Cc: Zhang, Rui; linux-pm@vger.kernel.org; wni@nvidia.com;
-> eduardo.valentin@ti.com; amit.kachhap@linaro.org;
-> sachin.kamat@linaro.org
-> Subject: Re: [RFC PATCH 2/7] Thermal: Create zone level APIs
-> 
-> On 13 December 2012 23:00, R, Durgadoss <durgadoss.r@intel.com> wrote:
-> > Hi,
-> >
-> >
-> >> -----Original Message-----
-> >> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> >> owner@vger.kernel.org] On Behalf Of Hongbo Zhang
-> >> Sent: Thursday, December 13, 2012 11:53 AM
-> >> To: R, Durgadoss
-> >> Cc: Zhang, Rui; linux-pm@vger.kernel.org; wni@nvidia.com;
-> >> eduardo.valentin@ti.com; amit.kachhap@linaro.org;
-> >> sachin.kamat@linaro.org
-> >> Subject: Re: [RFC PATCH 2/7] Thermal: Create zone level APIs
-> >>
-> >> On 17 November 2012 18:45, Durgadoss R <durgadoss.r@intel.com>
-> wrote:
-> >> > This patch adds a new thermal_zone structure to
-> >> > thermal.h. Also, adds zone level APIs to the thermal
-> >> > framework.
-> >> >
-> >> > Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
-> >
-> > [A big cut.]
-> >
-> >> >  #define to_cooling_device(_dev)        \
-> >> >         container_of(_dev, struct thermal_cooling_device, device)
-> >> > @@ -1557,6 +1615,146 @@ static void remove_trip_attrs(struct
-> >> thermal_zone_device *tz)
-> >> >         kfree(tz->trip_hyst_attrs);
-> >> >  }
-> >> >
-> >> > +struct thermal_zone *create_thermal_zone(const char *name, void
-> >> *devdata)
-> >> Durgaross,
-> >> Since more sensors can be added into one thermal zone, think about
-> >> this situation that every sensor is in itself file separately:
-> >
-> > Yes, we thought about this scenario.
-> > The way the new framework is designed is like below:
-> >
-> > The thermal sensor source file can be generic (can be any sensor driver, in
-> any
-> > subsystem). This driver will use the sensor APIs and register with thermal
-> > framework to participate in platform Thermal management. This does not
-> > (and should not) know about which zone it belongs to, or any other
-> information
-> > about platform thermals. A sensor driver is a standalone piece of code,
-> which
-> > can optionally register with thermal framework.
-> >
-> > However, for any platform, there should be a platformX_thermal.c file,
-> > which will know about the platform thermal characteristics (like how many
-> sensors,
-> > zones, cooling devices, etc.. And how they are related to each other i.e the
-> > mapping information). Only in this file, the zone level APIs should be used,
-> in
-> > which case the file will have all information required to attach various
-> sensors
-> > to a particular zone.
-> I guess you will remove the bind callback, I suggest to remove it if
-> you don't have this plan.
+---
 
-Yes, We will remove this.
+<1>[  363.116198] BUG: unable to handle kernel NULL pointer dereference at (null)
+<1>[  363.116668] IP: [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
+<4>[  363.116977] PGD 23177e067 PUD 2349c1067 PMD 0
+<4>[  363.117151] Oops: 0000 [#1] SMP
+<4>[  363.117151] last sysfs file: /sys/module/freq_table/initstate
+<4>[  363.117151] CPU 5
+<4>[  363.117151] Modules linked in: cpufreq_stats(+)(U) [a lot] [last unloaded: umc]
+<4>[  363.117151]
+<4>[  363.117151] Pid: 1690, comm: kondemand/5 veid: 0 Tainted: P        WC ---------------  T 2.6.32-279.5.1.el6-042stab061.7-vz #112 042stab061_7 System manufacturer System Product Name/Crosshair IV Formula
+<4>[  363.117151] RIP: 0010:[<ffffffffa11a70e4>]  [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
+<4>[  363.117151] RSP: 0018:ffff880234281920  EFLAGS: 00010246
+<4>[  363.117151] RAX: 00000000001e12e8 RBX: 0000000000000000 RCX: 00000000002ab980
+<4>[  363.117151] RDX: 0000000000000004 RSI: 0000000000000000 RDI: 0000000000000005
+<4>[  363.117151] RBP: ffff880234281940 R08: 0000000000000000 R09: 0000000000000000
+<4>[  363.117151] R10: 0000000000000000 R11: 2222222222222222 R12: ffff880218ce7400
+<4>[  363.117151] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+<4>[  363.117151] FS:  00007f499ffe0700(0000) GS:ffff880031000000(0000) knlGS:0000000000000000
+<4>[  363.117151] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+<4>[  363.117151] CR2: 0000000000000000 CR3: 0000000230af7000 CR4: 00000000000006e0
+<4>[  363.117151] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+<4>[  363.117151] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+<4>[  363.117151] Process kondemand/5 (pid: 1690, veid: 0, threadinfo ffff880234280000, task ffff8802330c48c0)
+<4>[  363.117151] Stack:
+<4>[  363.117151]  ffffffff810cf4f3 0000000000000001 00000000ffffffff ffffffffa11a7ac0
+<4>[  363.117151] <d> ffff880234281990 ffffffff815454a8 ffff880234281c80 0000000000000000
+<4>[  363.117151] <d> ffff880234281a10 ffffffff833be978 ffffffff833be8e0 0000000000000001
+<4>[  363.117151] Call Trace:
+<4>[  363.117151]  [<ffffffff810cf4f3>] ? is_module_text_address+0x23/0x30
+<4>[  363.117151]  [<ffffffff815454a8>] notifier_call_chain+0x58/0xb0
+<4>[  363.117151]  [<ffffffff810a5a8d>] __srcu_notifier_call_chain+0x5d/0x90
+<4>[  363.117151]  [<ffffffff810a5ad6>] srcu_notifier_call_chain+0x16/0x20
+<4>[  363.117151]  [<ffffffff81442a0a>] cpufreq_notify_transition+0x12a/0x190
+<4>[  363.117151]  [<ffffffffa026df08>] powernowk8_target+0x628/0xb30 [powernow_k8]
+<4>[  363.117151]  [<ffffffff8144289b>] __cpufreq_driver_target+0x8b/0x90
+<4>[  363.117151]  [<ffffffffa0279388>] do_dbs_timer+0x3b8/0x3bc [cpufreq_ondemand]
+<4>[  363.117151]  [<ffffffffa0278fd0>] ? do_dbs_timer+0x0/0x3bc [cpufreq_ondemand]
+<4>[  363.117151]  [<ffffffff81097df4>] worker_thread+0x264/0x440
+<4>[  363.117151]  [<ffffffff81097da3>] ? worker_thread+0x213/0x440
+<4>[  363.117151]  [<ffffffff81097b90>] ? worker_thread+0x0/0x440
+<4>[  363.117151]  [<ffffffff8109f050>] ? autoremove_wake_function+0x0/0x40
+<4>[  363.117151]  [<ffffffff81097b90>] ? worker_thread+0x0/0x440
+<4>[  363.117151]  [<ffffffff8109e986>] kthread+0x96/0xa0
+<4>[  363.117151]  [<ffffffff8100c34a>] child_rip+0xa/0x20
+<4>[  363.117151]  [<ffffffff8100bc90>] ? restore_args+0x0/0x30
+<4>[  363.117151]  [<ffffffff8109e8f0>] ? kthread+0x0/0xa0
+<4>[  363.117151]  [<ffffffff8100c340>] ? child_rip+0x0/0x20
+<4>[  363.117151] Code: 89 f9 48 8b 0c cd 20 53 9c 81 4c 8b 24 08 4d 85 e4 74 d3 8b 4a 08 41 8b 54 24 10 45 8b 6c 24 18 85 d2 74 22 49 8b 74 24 28 31 db <3b> 0e 75 10 eb 1a 66 0f 1f 44 00 00 48 63 c3 3b 0c 86 74 0c 83
+<1>[  363.117151] RIP  [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
+<4>[  363.117151]  RSP <ffff880234281920>
+<4>[  363.117151] CR2: 0000000000000000
+---
+ drivers/cpufreq/cpufreq_stats.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
 
-> A match callback or/and mapping data can be used to identify the
-> binding relationship, the current binding process is abundant and
-> strange a bit.
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index e40e508..9d7732b 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -364,18 +364,21 @@ static int __init cpufreq_stats_init(void)
+ 	if (ret)
+ 		return ret;
+ 
++	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
++	for_each_online_cpu(cpu)
++		cpufreq_update_policy(cpu);
++
+ 	ret = cpufreq_register_notifier(&notifier_trans_block,
+ 				CPUFREQ_TRANSITION_NOTIFIER);
+ 	if (ret) {
+ 		cpufreq_unregister_notifier(&notifier_policy_block,
+ 				CPUFREQ_POLICY_NOTIFIER);
++		unregister_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
++		for_each_online_cpu(cpu)
++			cpufreq_stats_free_table(cpu);
+ 		return ret;
+ 	}
+ 
+-	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
+-	for_each_online_cpu(cpu) {
+-		cpufreq_update_policy(cpu);
+-	}
+ 	return 0;
+ }
+ static void __exit cpufreq_stats_exit(void)
 
-Yes, the mapping data can be used.
-
-> >
-> > This way, we can have one platform level thermal file, which can support
-> > multiple platforms (may be)using the same set of sensors (but)binded in a
-> different way.
-> > This file can get the platform thermal information through Firmware,
-> > ACPI tables, device tree etc.
-> >
-> > Unfortunately, today we don't have many drivers that can be clearly
-> differentiated
-> > as 'sensor_file.c' and 'platform_thermal_file.c'. But very soon we will
-> need/have.
-> > The reason I am saying this is because we are seeing a lot of chip drivers,
-> > starting to use thermal framework, and we should keep it really light-
-> weight
-> > for them to do so.
-> >
-> > An Example: drivers/hwmon/emc1403.c - a generic thermal chip driver
-> > In one platform this sensor can belong to 'ZoneA' and in another the
-> > same can belong to 'ZoneB'. But, emc1403.c does not really care about
-> > where does it belong. It just reports temperature.
-> > [Okay, I just picked an example, it doesn't register with framework,
-> > as of today :-)]
-
-> Clear about the above information.
-
-Thank you :-)
-
-> This is a good design, I believe more and more drivers will use this.
-> But much efforts are needed.
-
-Yes, we need quite some code modifications.
-
-> >
-> >>
-> >> sensorA_file.c:
-> >> if common_zone_for_AB not there;
-> >> create common_zone_for_AB;
-> >
-> > This create_zone should not even be in sensorA_file.c.
-> > It should be moved to platform level file.
-> >
-> >> add sensorA into common_zone_for_AB;
-> >>
-> >> sensorB_file.c:
-> >> if common_zone_for_AB not there;
-> >> create common_zone_for_AB;
-> >> add sensorB into common_zone_for_AB;
-> >>
-> >
-> > Same here..
-> >
-> >> But how to check dedicate thermal zone is created or not? we are
-> >> lacking of this interface.
-> >> Here are two ways to achieve this from my point of view:
-> >> a)
-> >> add interface get_thermal_zone_byname(const char *name) which will
-> >> walk through the thermal_zone_list.
-> >
-> > However, (despite this problem we are talking about)
-> > we can introduce this API, if needed.
-> >
-> >> b)
-> >> add one more parameter for current interface, like this
-> >> create_thermal_zone(const char *name, void *devdata, bool reuse)
-> >> if reuse==ture {
-> >> if thermal zone already created, return it;
-> >> else create thermal zone;
-> >> } else {
-> >> if thermal zone already created, return error;
-> >> else create thermal zone;
-> >> }
-> >>
-> >> I prefer a), how do you think about it?
-> >
-> > I know I wrote a lengthy explanation. Let me know if it makes sense.
-> > If it does, then probably I will add it to our Documentation file.
-> Yes, It really makes sense.
-> Thanks.
-
-Okay, Then I am adding this to our Documentation file.
-
-Thanks,
-Durga
