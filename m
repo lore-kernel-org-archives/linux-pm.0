@@ -1,31 +1,62 @@
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 1/2] cpuidle: fix finding state with min power_usage
-Date: Fri, 14 Dec 2012 12:43:48 -0500
-Message-ID: <50CB6554.8060305@redhat.com>
-References: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU
+	offline from atomic context
+Date: Fri, 14 Dec 2012 19:03:45 +0100
+Message-ID: <20121214180345.GA22024@redhat.com>
+References: <20121211140358.23621.97011.stgit@srivatsabhat.in.ibm.com> <20121212171720.GA22289@redhat.com> <50C8C4A5.4080104@linux.vnet.ibm.com> <20121212180248.GA24882@redhat.com> <50C8CD52.8040808@linux.vnet.ibm.com> <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <20121213161709.GA19125@redhat.com> <50CA0317.90501@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:34882 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:9001 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756101Ab2LNRoG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 14 Dec 2012 12:44:06 -0500
-In-Reply-To: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
+	id S1756662Ab2LNSD5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Dec 2012 13:03:57 -0500
+Content-Disposition: inline
+In-Reply-To: <50CA0317.90501@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sivaram Nair <sivaramn@nvidia.com>
-Cc: rafael.j.wysocki@intel.com, len.brown@intel.com, daniel.lezcano@linaro.org, khilman@ti.com, ccross@android.com, youquan.song@intel.com, akpm@linux-foundation.org, shuox.liu@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/14/2012 08:17 AM, Sivaram Nair wrote:
-> Since cpuidle_state.power_usage is a signed value, use INT_MAX (instead
-> of -1) to init the local copies so that functions that tries to find
-> cpuidle states with minimum power usage works correctly even if they use
-> non-negative values.
+On 12/13, Srivatsa S. Bhat wrote:
 >
-> Signed-off-by: Sivaram Nair <sivaramn@nvidia.com>
+> On 12/13/2012 09:47 PM, Oleg Nesterov wrote:
+> > On 12/13, Srivatsa S. Bhat wrote:
+> >>
+> >> On 12/13/2012 12:42 AM, Srivatsa S. Bhat wrote:
+> >>>
+> >>> Even I don't spot anything wrong with it. But I'll give it some more
+> >>> thought..
+> >>
+> >> Since an interrupt handler can also run get_online_cpus_atomic(), we
+> >> cannot use the __this_cpu_* versions for modifying reader_percpu_refcnt,
+> >> right?
+> >
+> > Hmm. I thought that __this_cpu_* must be safe under preempt_disable().
+> > IOW, I thought that, say, this_cpu_inc() is "equal" to preempt_disable +
+> > __this_cpu_inc() correctness-wise.
+> >
+> > And. I thought that this_cpu_inc() is safe wrt interrupt, like local_t.
+> >
+> > But when I try to read the comments percpu.h, I am starting to think that
+> > even this_cpu_inc() is not safe if irq handler can do the same?
+> >
+>
+> The comment seems to say that its not safe wrt interrupts. But looking at
+> the code in include/linux/percpu.h, IIUC, that is true only about
+> this_cpu_read() because it only disables preemption.
+>
+> However, this_cpu_inc() looks safe wrt interrupts because it wraps the
+> increment within raw_local_irqsave()/restore().
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+You mean _this_cpu_generic_to_op() I guess. So yes, I think you are right,
+this_cpu_* should be irq-safe, but __this_cpu_* is not.
 
--- 
-All rights reversed
+Thanks.
+
+At least on x86 there is no difference between this_ and __this_, both do
+percpu_add_op() without local_irq_disable/enable. But it seems that most
+of architectures use generic code.
+
+Oleg.
+
