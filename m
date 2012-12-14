@@ -1,96 +1,76 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Orion SoC
-Date: Fri, 14 Dec 2012 23:11:59 +0100
-Message-ID: <20121214221159.GE7717@lunn.ch>
-References: <1355482986-885-1-git-send-email-andrew@lunn.ch>
- <1355482986-885-2-git-send-email-andrew@lunn.ch>
- <CABMQnV+zNWz4UJ_127Xe+MkTt9eQVPA8StJzyEXt58Z4OqZBYw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCIe/PM: Do not suspend port if any subordinate device need PME polling
+Date: Sat, 15 Dec 2012 00:03:33 +0100
+Message-ID: <3929168.xsIhODq3Fi@vostro.rjw.lan>
+References: <1355453531-23348-1-git-send-email-ying.huang@intel.com> <20121214051131.GA31440@richard.>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:46737 "EHLO londo.lunn.ch"
+Received: from hydra.sisk.pl ([212.160.235.94]:34165 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755876Ab2LNWMQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 14 Dec 2012 17:12:16 -0500
-Content-Disposition: inline
-In-Reply-To: <CABMQnV+zNWz4UJ_127Xe+MkTt9eQVPA8StJzyEXt58Z4OqZBYw@mail.gmail.com>
+	id S1756766Ab2LNW60 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Dec 2012 17:58:26 -0500
+In-Reply-To: <20121214051131.GA31440@richard.>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com
+To: Richard Yang <weiyang@linux.vnet.ibm.com>
+Cc: Huang Ying <ying.huang@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, Dec 15, 2012 at 06:54:17AM +0900, Nobuhiro Iwamatsu wrote:
-> Hi,
-> 
-> Thanks you for your work.
-> Sorry, I dont hava a time at this week about this.
-
-Its not a problem. We have plenty of time before the next merge
-window. I was just interested in seeing it work on my QNAP device, so
-did some of the cleanup work.
-
-> On Fri, Dec 14, 2012 at 8:03 PM, Andrew Lunn <andrew@lunn.ch> wrote:
-> > From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+On Friday, December 14, 2012 01:11:31 PM Richard Yang wrote:
+> On Fri, Dec 14, 2012 at 10:52:11AM +0800, Huang Ying wrote:
+> >In
 > >
-> > Some Orion SoC has thermal sensor.
-> > This patch adds support for 88F6282 and 88F6283.
+> >  http://www.mail-archive.com/linux-usb@vger.kernel.org/msg07976.html
 > >
-> > Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> > ---
-> >  .../devicetree/bindings/thermal/orion-thermal.txt  |   16 +++
-> >  drivers/thermal/Kconfig                            |    7 ++
-> >  drivers/thermal/Makefile                           |    1 +
-> >  drivers/thermal/orion_thermal.c                    |  133 ++++++++++++++++++++
-> >  4 files changed, 157 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> >  create mode 100644 drivers/thermal/orion_thermal.c
+> >Ulrich reported that his USB3 cardreader does not work reliably when
+> >connected to the USB3 port.  It turns out that USB3 controller failed
+> >to be waken up when plugging in the USB3 cardreader.  Further
+> >experiment found that the USB3 host controller can only be waken up
+> >via polling, while not via PME interrupt.  But if the PCIe port that
+> >the USB3 host controller is connected is suspended, we can not poll
+> >the USB3 host controller because its config space is not accessible if
+> >the PCIe port is put into low power state.
 > >
-> > diff --git a/Documentation/devicetree/bindings/thermal/orion-thermal.txt b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> > new file mode 100644
-> > index 0000000..5ce925d
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> > @@ -0,0 +1,16 @@
-> > +* Orion Thermal
-> > +
-> > +This initial version is for Kirkwood 88F8262 & 88F6283 SoCs, however
-> > +it is expected the driver will sometime in the future be expanded to
-> > +also support Dove, using a different compatibility string.
-> > +
-> > +Required properties:
-> > +- compatible : "marvell,kirkwood-thermal"
-> > +- reg : Address range of the thermal registers
-> > +
-> > +Example:
-> > +
-> > +       thermal@10078 {
-> > +               compatible = "marvell,kirkwood";
+> >To solve the issue, the PCIe port will not be suspended if any
+> >subordinate device need PME polling.
+> >
+> >Reported-by: Ulrich Eckhardt <usb@uli-eckhardt.de>
+> >Signed-off-by: Huang Ying <ying.huang@intel.com>
+> >Tested-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+> >Cc: stable@vger.kernel.org	# 3.6+
+> >---
+> > drivers/pci/pcie/portdrv_pci.c |   18 +++++++++++++++++-
+> > 1 file changed, 17 insertions(+), 1 deletion(-)
+> >
+> >--- a/drivers/pci/pcie/portdrv_pci.c
+> >+++ b/drivers/pci/pcie/portdrv_pci.c
+> >@@ -134,10 +134,26 @@ static int pcie_port_runtime_resume(stru
+> > 	return 0;
+> > }
+> >
+> >+static int pci_dev_pme_poll(struct pci_dev *pdev, void *data)
+> >+{
+> >+	int *pme_poll = data;
+> >+	*pme_poll = *pme_poll || pdev->pme_poll;
+> >+	return 0;
+> >+}
+> >+
+> > static int pcie_port_runtime_idle(struct device *dev)
+> > {
+> >+	struct pci_dev *pdev = to_pci_dev(dev);
+> >+	int pme_poll = false;
 > 
-> compatible = "marvell,kirkwood-thermal"; ?
-
-Yep, my error.
-
-> > +               reg = <0x10078 0x4>;
-> > +       };
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index e1cb6bd..3bba13f 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -55,3 +55,10 @@ config EXYNOS_THERMAL
-> >         help
-> >           If you say yes here you get support for TMU (Thermal Managment
-> >           Unit) on SAMSUNG EXYNOS series of SoC.
-> > +
-> > +config ORION_THERMAL
-> > +       tristate "Temperature sensor on Marvel Orion SoCs"
+> You want to use int or bool? 
 > 
-> Marvel -> Marvell
+> I think bool is better?
 
-Missed that one, thanks.
+Well, bool would be nicer, but it's not a big deal.
 
-Thanks for the Tested-by. I will add it to the next version.  I
-started work on Dove support, so i will probably repost when i have
-that ready for testing.
+Thanks,
+Rafael
 
-     Andrew
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
