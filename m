@@ -1,115 +1,221 @@
-From: Konstantin Khlebnikov <khlebnikov@openvz.org>
-Subject: [PATCH] cpufreq_stats: fix race between stats allocation and first
- usage
-Date: Fri, 14 Dec 2012 14:59:21 +0400
-Message-ID: <20121214105921.5139.502.stgit@zurg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: [PATCH 1/2] thermal: Add support for thermal sensor for Orion SoC
+Date: Fri, 14 Dec 2012 12:03:05 +0100
+Message-ID: <1355482986-885-2-git-send-email-andrew@lunn.ch>
+References: <1355482986-885-1-git-send-email-andrew@lunn.ch>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f46.google.com ([209.85.215.46]:46248 "EHLO
-	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323Ab2LNK73 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Dec 2012 05:59:29 -0500
+Received: from londo.lunn.ch ([80.238.139.98]:46156 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756355Ab2LNLD2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Dec 2012 06:03:28 -0500
+In-Reply-To: <1355482986-885-1-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq <cpufreq@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
+To: linux ARM <linux-arm-kernel@lists.infradead.org>, iwamatsu@nigauri.org, linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com, Andrew Lunn <andrew@lunn.ch>
 
-This patch forces complete struct cpufreq_stats allocation for all cpus before
-registering CPUFREQ_TRANSITION_NOTIFIER notifier, otherwise in some conditions
-cpufreq_stat_notifier_trans() can be called in the middle of stats allocation,
-in this case cpufreq_stats_table already exists, but stat->freq_table is NULL.
+From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
-Signed-off-by: Konstantin Khlebnikov <khlebnikov@openvz.org>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: cpufreq <cpufreq@vger.kernel.org>
-Cc: linux-pm <linux-pm@vger.kernel.org>
+Some Orion SoC has thermal sensor.
+This patch adds support for 88F6282 and 88F6283.
 
+Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
+ .../devicetree/bindings/thermal/orion-thermal.txt  |   16 +++
+ drivers/thermal/Kconfig                            |    7 ++
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/orion_thermal.c                    |  133 ++++++++++++++++++++
+ 4 files changed, 157 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/orion-thermal.txt
+ create mode 100644 drivers/thermal/orion_thermal.c
 
-<1>[  363.116198] BUG: unable to handle kernel NULL pointer dereference at (null)
-<1>[  363.116668] IP: [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
-<4>[  363.116977] PGD 23177e067 PUD 2349c1067 PMD 0
-<4>[  363.117151] Oops: 0000 [#1] SMP
-<4>[  363.117151] last sysfs file: /sys/module/freq_table/initstate
-<4>[  363.117151] CPU 5
-<4>[  363.117151] Modules linked in: cpufreq_stats(+)(U) [a lot] [last unloaded: umc]
-<4>[  363.117151]
-<4>[  363.117151] Pid: 1690, comm: kondemand/5 veid: 0 Tainted: P        WC ---------------  T 2.6.32-279.5.1.el6-042stab061.7-vz #112 042stab061_7 System manufacturer System Product Name/Crosshair IV Formula
-<4>[  363.117151] RIP: 0010:[<ffffffffa11a70e4>]  [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
-<4>[  363.117151] RSP: 0018:ffff880234281920  EFLAGS: 00010246
-<4>[  363.117151] RAX: 00000000001e12e8 RBX: 0000000000000000 RCX: 00000000002ab980
-<4>[  363.117151] RDX: 0000000000000004 RSI: 0000000000000000 RDI: 0000000000000005
-<4>[  363.117151] RBP: ffff880234281940 R08: 0000000000000000 R09: 0000000000000000
-<4>[  363.117151] R10: 0000000000000000 R11: 2222222222222222 R12: ffff880218ce7400
-<4>[  363.117151] R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
-<4>[  363.117151] FS:  00007f499ffe0700(0000) GS:ffff880031000000(0000) knlGS:0000000000000000
-<4>[  363.117151] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-<4>[  363.117151] CR2: 0000000000000000 CR3: 0000000230af7000 CR4: 00000000000006e0
-<4>[  363.117151] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-<4>[  363.117151] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-<4>[  363.117151] Process kondemand/5 (pid: 1690, veid: 0, threadinfo ffff880234280000, task ffff8802330c48c0)
-<4>[  363.117151] Stack:
-<4>[  363.117151]  ffffffff810cf4f3 0000000000000001 00000000ffffffff ffffffffa11a7ac0
-<4>[  363.117151] <d> ffff880234281990 ffffffff815454a8 ffff880234281c80 0000000000000000
-<4>[  363.117151] <d> ffff880234281a10 ffffffff833be978 ffffffff833be8e0 0000000000000001
-<4>[  363.117151] Call Trace:
-<4>[  363.117151]  [<ffffffff810cf4f3>] ? is_module_text_address+0x23/0x30
-<4>[  363.117151]  [<ffffffff815454a8>] notifier_call_chain+0x58/0xb0
-<4>[  363.117151]  [<ffffffff810a5a8d>] __srcu_notifier_call_chain+0x5d/0x90
-<4>[  363.117151]  [<ffffffff810a5ad6>] srcu_notifier_call_chain+0x16/0x20
-<4>[  363.117151]  [<ffffffff81442a0a>] cpufreq_notify_transition+0x12a/0x190
-<4>[  363.117151]  [<ffffffffa026df08>] powernowk8_target+0x628/0xb30 [powernow_k8]
-<4>[  363.117151]  [<ffffffff8144289b>] __cpufreq_driver_target+0x8b/0x90
-<4>[  363.117151]  [<ffffffffa0279388>] do_dbs_timer+0x3b8/0x3bc [cpufreq_ondemand]
-<4>[  363.117151]  [<ffffffffa0278fd0>] ? do_dbs_timer+0x0/0x3bc [cpufreq_ondemand]
-<4>[  363.117151]  [<ffffffff81097df4>] worker_thread+0x264/0x440
-<4>[  363.117151]  [<ffffffff81097da3>] ? worker_thread+0x213/0x440
-<4>[  363.117151]  [<ffffffff81097b90>] ? worker_thread+0x0/0x440
-<4>[  363.117151]  [<ffffffff8109f050>] ? autoremove_wake_function+0x0/0x40
-<4>[  363.117151]  [<ffffffff81097b90>] ? worker_thread+0x0/0x440
-<4>[  363.117151]  [<ffffffff8109e986>] kthread+0x96/0xa0
-<4>[  363.117151]  [<ffffffff8100c34a>] child_rip+0xa/0x20
-<4>[  363.117151]  [<ffffffff8100bc90>] ? restore_args+0x0/0x30
-<4>[  363.117151]  [<ffffffff8109e8f0>] ? kthread+0x0/0xa0
-<4>[  363.117151]  [<ffffffff8100c340>] ? child_rip+0x0/0x20
-<4>[  363.117151] Code: 89 f9 48 8b 0c cd 20 53 9c 81 4c 8b 24 08 4d 85 e4 74 d3 8b 4a 08 41 8b 54 24 10 45 8b 6c 24 18 85 d2 74 22 49 8b 74 24 28 31 db <3b> 0e 75 10 eb 1a 66 0f 1f 44 00 00 48 63 c3 3b 0c 86 74 0c 83
-<1>[  363.117151] RIP  [<ffffffffa11a70e4>] cpufreq_stat_notifier_trans+0x64/0xf0 [cpufreq_stats]
-<4>[  363.117151]  RSP <ffff880234281920>
-<4>[  363.117151] CR2: 0000000000000000
----
- drivers/cpufreq/cpufreq_stats.c |   11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index e40e508..9d7732b 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -364,18 +364,21 @@ static int __init cpufreq_stats_init(void)
- 	if (ret)
- 		return ret;
- 
-+	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
-+	for_each_online_cpu(cpu)
-+		cpufreq_update_policy(cpu);
+diff --git a/Documentation/devicetree/bindings/thermal/orion-thermal.txt b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+new file mode 100644
+index 0000000..5ce925d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+@@ -0,0 +1,16 @@
++* Orion Thermal
 +
- 	ret = cpufreq_register_notifier(&notifier_trans_block,
- 				CPUFREQ_TRANSITION_NOTIFIER);
- 	if (ret) {
- 		cpufreq_unregister_notifier(&notifier_policy_block,
- 				CPUFREQ_POLICY_NOTIFIER);
-+		unregister_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
-+		for_each_online_cpu(cpu)
-+			cpufreq_stats_free_table(cpu);
- 		return ret;
- 	}
- 
--	register_hotcpu_notifier(&cpufreq_stat_cpu_notifier);
--	for_each_online_cpu(cpu) {
--		cpufreq_update_policy(cpu);
--	}
- 	return 0;
- }
- static void __exit cpufreq_stats_exit(void)
++This initial version is for Kirkwood 88F8262 & 88F6283 SoCs, however
++it is expected the driver will sometime in the future be expanded to
++also support Dove, using a different compatibility string.
++
++Required properties:
++- compatible : "marvell,kirkwood-thermal"
++- reg : Address range of the thermal registers
++
++Example:
++
++	thermal@10078 {
++		compatible = "marvell,kirkwood";
++		reg = <0x10078 0x4>;
++	};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e1cb6bd..3bba13f 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -55,3 +55,10 @@ config EXYNOS_THERMAL
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Managment
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
++
++config ORION_THERMAL
++	tristate "Temperature sensor on Marvel Orion SoCs"
++	depends on PLAT_ORION && THERMAL
++	help
++	  Support for the Orion thermal sensor driver into the Linux thermal
++	  framework. This currently supports only 88F6282 and 88F6283.
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 885550d..2fc64aa 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -6,4 +6,5 @@ obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+ obj-$(CONFIG_CPU_THERMAL)		+= cpu_cooling.o
+ obj-$(CONFIG_SPEAR_THERMAL)		+= spear_thermal.o
+ obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
++obj-$(CONFIG_ORION_THERMAL)         	+= orion_thermal.o
+ obj-$(CONFIG_EXYNOS_THERMAL)		+= exynos_thermal.o
+diff --git a/drivers/thermal/orion_thermal.c b/drivers/thermal/orion_thermal.c
+new file mode 100644
+index 0000000..e8a2a68
+--- /dev/null
++++ b/drivers/thermal/orion_thermal.c
+@@ -0,0 +1,133 @@
++/*
++ * Orion thermal sensor driver
++ *
++ * Copyright (C) 2012 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ */
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define THERMAL_VALID_OFFSET	9
++#define THERMAL_VALID_MASK	0x1
++#define THERMAL_TEMP_OFFSET	10
++#define THERMAL_TEMP_MASK	0x1FF
++
++/* Orion Thermal Sensor Dev Structure */
++struct orion_thermal_dev {
++	void __iomem *base_addr;
++};
++
++static int orion_get_temp(struct thermal_zone_device *thermal,
++			  unsigned long *temp)
++{
++	unsigned long reg;
++	struct orion_thermal_dev *thermal_dev = thermal->devdata;
++
++	reg = readl_relaxed(thermal_dev->base_addr);
++
++	/* Valid check */
++	if (!(reg >> THERMAL_VALID_OFFSET) & THERMAL_VALID_MASK) {
++		dev_info(&thermal->device,
++			 "Temperature sensor reading not valid\n");
++		return -EIO;
++	}
++
++	reg = (reg >> THERMAL_TEMP_OFFSET) & THERMAL_TEMP_MASK;
++	/* Calculate temperature. See Table 814 in 8262 hardware manual. */
++	*temp = ((322UL - reg) * 10000UL * 1000UL) / 13625UL;
++
++	return 0;
++}
++
++static struct thermal_zone_device_ops ops = {
++	.get_temp = orion_get_temp,
++};
++
++static int orion_thermal_probe(struct platform_device *pdev)
++{
++	struct thermal_zone_device *thermal = NULL;
++	struct orion_thermal_dev *thermal_dev;
++	struct resource *res;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "Failed to get platform resource\n");
++		return -ENODEV;
++	}
++
++	thermal_dev = devm_kzalloc(&pdev->dev, sizeof(*thermal_dev),
++				   GFP_KERNEL);
++	if (!thermal_dev) {
++		dev_err(&pdev->dev, "kzalloc fail\n");
++		return -ENOMEM;
++	}
++
++	thermal_dev->base_addr = devm_ioremap(&pdev->dev, res->start,
++					      resource_size(res));
++	if (!thermal_dev->base_addr) {
++		dev_err(&pdev->dev, "Failed to ioremap memory\n");
++		return -ENOMEM;
++	}
++
++	thermal = thermal_zone_device_register("orion_thermal", 0, 0,
++				   thermal_dev, &ops, 0, 0);
++	if (IS_ERR(thermal)) {
++		dev_err(&pdev->dev,
++			"Failed to register thermal zone device\n");
++		return  PTR_ERR(thermal);
++	}
++
++	platform_set_drvdata(pdev, thermal);
++
++	dev_info(&thermal->device,
++		 KBUILD_MODNAME ": Thermal sensor registered\n");
++
++	return 0;
++}
++
++static int orion_thermal_exit(struct platform_device *pdev)
++{
++	struct thermal_zone_device *orion_thermal = platform_get_drvdata(pdev);
++
++	thermal_zone_device_unregister(orion_thermal);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++static const struct of_device_id orion_thermal_id_table[] = {
++	{ .compatible = "marvell,kirkwood-thermal" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, orion_thermal_id_table);
++
++static struct platform_driver orion_thermal_driver = {
++	.probe = orion_thermal_probe,
++	.remove = orion_thermal_exit,
++	.driver = {
++		.name = "orion_thermal",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(orion_thermal_id_table),
++	},
++};
++
++module_platform_driver(orion_thermal_driver);
++
++MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu@nigauri.org>");
++MODULE_DESCRIPTION("orion thermal driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.10.4
 
