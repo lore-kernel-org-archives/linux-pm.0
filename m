@@ -1,84 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCIe/PM: Do not suspend port if any subordinate device need PME polling
-Date: Sat, 15 Dec 2012 00:43:51 +0100
-Message-ID: <1488189.MmZvkLhUAM@vostro.rjw.lan>
-References: <1355453531-23348-1-git-send-email-ying.huang@intel.com>
+Subject: Re: [PATCH 1/2] cpuidle: fix finding state with min power_usage
+Date: Sat, 15 Dec 2012 01:02:15 +0100
+Message-ID: <1380999.e8r58IGCHN@vostro.rjw.lan>
+References: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1355453531-23348-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Huang Ying <ying.huang@intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:34232 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757105Ab2LNX5K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Dec 2012 18:57:10 -0500
+In-Reply-To: <1355491060-970-1-git-send-email-sivaramn@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sivaram Nair <sivaramn@nvidia.com>
+Cc: rafael.j.wysocki@intel.com, len.brown@intel.com, daniel.lezcano@linaro.org, khilman@ti.com, ccross@android.com, riel@redhat.com, youquan.song@intel.com, akpm@linux-foundation.org, shuox.liu@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, December 14, 2012 10:52:11 AM Huang Ying wrote:
-> In
-> 
->   http://www.mail-archive.com/linux-usb@vger.kernel.org/msg07976.html
-> 
-> Ulrich reported that his USB3 cardreader does not work reliably when
-> connected to the USB3 port.  It turns out that USB3 controller failed
-> to be waken up when plugging in the USB3 cardreader.  Further
-> experiment found that the USB3 host controller can only be waken up
-> via polling, while not via PME interrupt.  But if the PCIe port that
-> the USB3 host controller is connected is suspended, we can not poll
-> the USB3 host controller because its config space is not accessible if
-> the PCIe port is put into low power state.
-> 
-> To solve the issue, the PCIe port will not be suspended if any
-> subordinate device need PME polling.
-> 
-> Reported-by: Ulrich Eckhardt <usb@uli-eckhardt.de>
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> Tested-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-> Cc: stable@vger.kernel.org	# 3.6+
+On Friday, December 14, 2012 03:17:36 PM Sivaram Nair wrote:
+> Since cpuidle_state.power_usage is a signed value, use INT_MAX (instead
+> of -1) to init the local copies so that functions that tries to find
+> cpuidle states with minimum power usage works correctly even if they use
+> non-negative values.
+
+I'm queuing this up for submission as v3.8 material.
+
+Thanks,
+Rafael
+
+
+> Signed-off-by: Sivaram Nair <sivaramn@nvidia.com>
 > ---
->  drivers/pci/pcie/portdrv_pci.c |   18 +++++++++++++++++-
->  1 file changed, 17 insertions(+), 1 deletion(-)
+>  drivers/cpuidle/cpuidle.c        |    2 +-
+>  drivers/cpuidle/governors/menu.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -134,10 +134,26 @@ static int pcie_port_runtime_resume(stru
->  	return 0;
->  }
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 8df53dd..fb4a7dd 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -70,7 +70,7 @@ int cpuidle_play_dead(void)
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>  	int i, dead_state = -1;
+> -	int power_usage = -1;
+> +	int power_usage = INT_MAX;
 >  
-> +static int pci_dev_pme_poll(struct pci_dev *pdev, void *data)
-> +{
-> +	int *pme_poll = data;
-> +	*pme_poll = *pme_poll || pdev->pme_poll;
-
-I would write that as
-
-	*pme_poll ||= pdev->pme_poll;
-
-It is not a big deal, though.
-
-> +	return 0;
-> +}
-> +
->  static int pcie_port_runtime_idle(struct device *dev)
+>  	if (!drv)
+>  		return -ENODEV;
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index bd40b94..20ea33a 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -312,7 +312,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
 >  {
-> +	struct pci_dev *pdev = to_pci_dev(dev);
-> +	int pme_poll = false;
-> +
-> +	/*
-> +	 * If any subordinate device needs pme poll, we should keep
-> +	 * the port in D0, because we need port in D0 to poll it.
-> +	 */
-> +	pci_walk_bus(pdev->subordinate, pci_dev_pme_poll, &pme_poll);
->  	/* Delay for a short while to prevent too frequent suspend/resume */
-> -	pm_schedule_suspend(dev, 10);
-> +	if (!pme_poll)
-> +		pm_schedule_suspend(dev, 10);
->  	return -EBUSY;
->  }
->  #else
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-
+>  	struct menu_device *data = &__get_cpu_var(menu_devices);
+>  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> -	int power_usage = -1;
+> +	int power_usage = INT_MAX;
+>  	int i;
+>  	int multiplier;
+>  	struct timespec t;
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
