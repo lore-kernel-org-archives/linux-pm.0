@@ -1,180 +1,113 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PNP: Simplify setting of resources
-Date: Sat, 15 Dec 2012 01:17:41 +0100
-Message-ID: <3252517.LSIXc8EikE@vostro.rjw.lan>
-References: <4460434.rhV1bpKLo5@vostro.rjw.lan> <7930705.OcvDjiPjJD@vostro.rjw.lan> <50C8A391.3010900@gmx.net>
+Subject: [Resend][PATCH] PM: Move disabling/enabling runtime PM to late suspend/early resume
+Date: Sat, 15 Dec 2012 01:25:58 +0100
+Message-ID: <3307221.dy6xvn45xe@vostro.rjw.lan>
+References: <1988667.JSHu2WyJuF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <50C8A391.3010900@gmx.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <lenb@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:34264 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756797Ab2LOAUw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Dec 2012 19:20:52 -0500
+In-Reply-To: <1988667.JSHu2WyJuF@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jan-Matthias Braun <jan_braun@gmx.net>, Jiri Kosina <jkosina@suse.cz>, Alan Stern <stern@rowland.harvard.edu>
 
-On Wednesday, December 12, 2012 04:32:33 PM Witold Szczeponik wrote:
-> This patch factors out the setting of PNP resources into one function which is 
-> then reused for all PNP resource types.  This makes the code more concise and 
-> avoids duplication.  The parameters "type" and "flags" are not used at the
-> moment but may be used by follow-up patches.  Placeholders for these patches 
-> can be found in the comment lines that contain the "TBD" marker. 
-> 
-> As the code does not make any changes to the ABI, no regressions are expected.
-> 
-> NB: While at it, support for bus type resources is added. 
-> 
-> The patch is applied against Linux 3.7 as well as linux-pm.git/master 
-> as of 2012-12-12.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Both patches queued up for submission as v3.8 material later in the cycle.
+Currently, the PM core disables runtime PM for all devices right
+after executing subsystem/driver .suspend() callbacks for them
+and re-enables it right before executing subsystem/driver .resume()
+callbacks for them.  This may lead to problems when there are
+two devices such that the .suspend() callback executed for one of
+them depends on runtime PM working for the other.  In that case,
+if runtime PM has already been disabled for the second device,
+the first one's .suspend() won't work correctly (and analogously
+for resume).
 
-Thanks,
-Rafael
+To make those issues go away, make the PM core disable runtime PM
+for devices right before executing subsystem/driver .suspend_late()
+callbacks for them and enable runtime PM for them right after
+executing subsystem/driver .resume_early() callbacks for them.  This
+way the potential conflitcs between .suspend_late()/.resume_early()
+and their runtime PM counterparts are still prevented from happening,
+but the subtle ordering issues related to disabling/enabling runtime
+PM for devices during system suspend/resume are much easier to avoid.
 
+Reported-and-tested-by: Jan-Matthias Braun <jan_braun@gmx.net>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/power/runtime_pm.txt |    9 +++++----
+ drivers/base/power/main.c          |    9 ++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-> Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
-> Reviewed-by: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> 
-> Index: linux/drivers/pnp/interface.c
-> ===================================================================
-> --- linux.orig/drivers/pnp/interface.c
-> +++ linux/drivers/pnp/interface.c
-> @@ -298,6 +298,39 @@ static ssize_t pnp_show_current_resource
->  	return ret;
->  }
->  
-> +static char *pnp_get_resource_value(char *buf,
-> +				    unsigned long type,
-> +				    resource_size_t *start,
-> +				    resource_size_t *end,
-> +				    unsigned long *flags)
-> +{
-> +	if (start)
-> +		*start = 0;
-> +	if (end)
-> +		*end = 0;
-> +	if (flags)
-> +		*flags = 0;
-> +
-> +	/* TBD: allow for disabled resources */
-> +
-> +	buf = skip_spaces(buf);
-> +	if (start) {
-> +		*start = simple_strtoull(buf, &buf, 0);
-> +		if (end) {
-> +			buf = skip_spaces(buf);
-> +			if (*buf == '-') {
-> +				buf = skip_spaces(buf + 1);
-> +				*end = simple_strtoull(buf, &buf, 0);
-> +			} else
-> +				*end = *start;
-> +		}
-> +	}
-> +
-> +	/* TBD: allow for additional flags, e.g., IORESOURCE_WINDOW */
-> +
-> +	return buf;
-> +}
-> +
->  static ssize_t pnp_set_current_resources(struct device *dmdev,
->  					 struct device_attribute *attr,
->  					 const char *ubuf, size_t count)
-> @@ -305,7 +338,6 @@ static ssize_t pnp_set_current_resources
->  	struct pnp_dev *dev = to_pnp_dev(dmdev);
->  	char *buf = (void *)ubuf;
->  	int retval = 0;
-> -	resource_size_t start, end;
->  
->  	if (dev->status & PNP_ATTACHED) {
->  		retval = -EBUSY;
-> @@ -349,6 +381,10 @@ static ssize_t pnp_set_current_resources
->  		goto done;
->  	}
->  	if (!strnicmp(buf, "set", 3)) {
-> +		resource_size_t start;
-> +		resource_size_t end;
-> +		unsigned long flags;
-> +
->  		if (dev->active)
->  			goto done;
->  		buf += 3;
-> @@ -357,42 +393,37 @@ static ssize_t pnp_set_current_resources
->  		while (1) {
->  			buf = skip_spaces(buf);
->  			if (!strnicmp(buf, "io", 2)) {
-> -				buf = skip_spaces(buf + 2);
-> -				start = simple_strtoul(buf, &buf, 0);
-> -				buf = skip_spaces(buf);
-> -				if (*buf == '-') {
-> -					buf = skip_spaces(buf + 1);
-> -					end = simple_strtoul(buf, &buf, 0);
-> -				} else
-> -					end = start;
-> -				pnp_add_io_resource(dev, start, end, 0);
-> -				continue;
-> -			}
-> -			if (!strnicmp(buf, "mem", 3)) {
-> -				buf = skip_spaces(buf + 3);
-> -				start = simple_strtoul(buf, &buf, 0);
-> -				buf = skip_spaces(buf);
-> -				if (*buf == '-') {
-> -					buf = skip_spaces(buf + 1);
-> -					end = simple_strtoul(buf, &buf, 0);
-> -				} else
-> -					end = start;
-> -				pnp_add_mem_resource(dev, start, end, 0);
-> -				continue;
-> -			}
-> -			if (!strnicmp(buf, "irq", 3)) {
-> -				buf = skip_spaces(buf + 3);
-> -				start = simple_strtoul(buf, &buf, 0);
-> -				pnp_add_irq_resource(dev, start, 0);
-> -				continue;
-> -			}
-> -			if (!strnicmp(buf, "dma", 3)) {
-> -				buf = skip_spaces(buf + 3);
-> -				start = simple_strtoul(buf, &buf, 0);
-> -				pnp_add_dma_resource(dev, start, 0);
-> -				continue;
-> -			}
-> -			break;
-> +				buf = pnp_get_resource_value(buf + 2,
-> +							     IORESOURCE_IO,
-> +							     &start, &end,
-> +							     &flags);
-> +				pnp_add_io_resource(dev, start, end, flags);
-> +			} else if (!strnicmp(buf, "mem", 3)) {
-> +				buf = pnp_get_resource_value(buf + 3,
-> +							     IORESOURCE_MEM,
-> +							     &start, &end,
-> +							     &flags);
-> +				pnp_add_mem_resource(dev, start, end, flags);
-> +			} else if (!strnicmp(buf, "irq", 3)) {
-> +				buf = pnp_get_resource_value(buf + 3,
-> +							     IORESOURCE_IRQ,
-> +							     &start, NULL,
-> +							     &flags);
-> +				pnp_add_irq_resource(dev, start, flags);
-> +			} else if (!strnicmp(buf, "dma", 3)) {
-> +				buf = pnp_get_resource_value(buf + 3,
-> +							     IORESOURCE_DMA,
-> +							     &start, NULL,
-> +							     &flags);
-> +				pnp_add_dma_resource(dev, start, flags);
-> +			} else if (!strnicmp(buf, "bus", 3)) {
-> +				buf = pnp_get_resource_value(buf + 3,
-> +							     IORESOURCE_BUS,
-> +							     &start, &end,
-> +							     NULL);
-> +				pnp_add_bus_resource(dev, start, end);
-> +			} else
-> +				break;
->  		}
->  		mutex_unlock(&pnp_res_mutex);
->  		goto done;
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux/drivers/base/power/main.c
+===================================================================
+--- linux.orig/drivers/base/power/main.c
++++ linux/drivers/base/power/main.c
+@@ -513,6 +513,8 @@ static int device_resume_early(struct de
+ 
+  Out:
+ 	TRACE_RESUME(error);
++
++	pm_runtime_enable(dev);
+ 	return error;
+ }
+ 
+@@ -589,8 +591,6 @@ static int device_resume(struct device *
+ 	if (!dev->power.is_suspended)
+ 		goto Unlock;
+ 
+-	pm_runtime_enable(dev);
+-
+ 	if (dev->pm_domain) {
+ 		info = "power domain ";
+ 		callback = pm_op(&dev->pm_domain->ops, state);
+@@ -930,6 +930,8 @@ static int device_suspend_late(struct de
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 
++	__pm_runtime_disable(dev, false);
++
+ 	if (dev->power.syscore)
+ 		return 0;
+ 
+@@ -1133,11 +1135,8 @@ static int __device_suspend(struct devic
+ 
+  Complete:
+ 	complete_all(&dev->power.completion);
+-
+ 	if (error)
+ 		async_error = error;
+-	else if (dev->power.is_suspended)
+-		__pm_runtime_disable(dev, false);
+ 
+ 	return error;
+ }
+Index: linux/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux.orig/Documentation/power/runtime_pm.txt
++++ linux/Documentation/power/runtime_pm.txt
+@@ -642,12 +642,13 @@ out the following operations:
+   * During system suspend it calls pm_runtime_get_noresume() and
+     pm_runtime_barrier() for every device right before executing the
+     subsystem-level .suspend() callback for it.  In addition to that it calls
+-    pm_runtime_disable() for every device right after executing the
+-    subsystem-level .suspend() callback for it.
++    __pm_runtime_disable() with 'false' as the second argument for every device
++    right before executing the subsystem-level .suspend_late() callback for it.
+ 
+   * During system resume it calls pm_runtime_enable() and pm_runtime_put_sync()
+-    for every device right before and right after executing the subsystem-level
+-    .resume() callback for it, respectively.
++    for every device right after executing the subsystem-level .resume_early()
++    callback and right after executing the subsystem-level .resume() callback
++    for it, respectively.
+ 
+ 7. Generic subsystem callbacks
+ 
+
