@@ -1,97 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/3] cpufreq: Don't use cpu removed during cpufreq_driver_unregister
-Date: Sun, 16 Dec 2012 11:20:10 +0530
-Message-ID: <1fe21314c2e17585e22c546e2cac12544f8f9733.1355636864.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
+Date: Sun, 16 Dec 2012 14:04:24 +0100
+Message-ID: <4137114.myBUIQvsg3@vostro.rjw.lan>
 References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f46.google.com ([209.85.160.46]:56314 "EHLO
-	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767Ab2LPFug (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Dec 2012 00:50:36 -0500
-Received: by mail-pb0-f46.google.com with SMTP id wy7so3281519pbc.19
-        for <linux-pm@vger.kernel.org>; Sat, 15 Dec 2012 21:50:35 -0800 (PST)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-In-Reply-To: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, rafael.j.wysocki@intel.com
-Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-This is how the core works:
-cpufreq_driver_unregister()
- - subsys_interface_unregister()
-   - for_each_cpu() call cpufreq_remove_dev(), i.e. 0,1,2,3,4 when we
-     unregister.
+On Sunday, December 16, 2012 11:20:08 AM Viresh Kumar wrote:
+> cpufreq core doesn't manage offline cpus and if driver->init() has returned
+> mask including offline cpus, it may result in unwanted behavior by cpufreq core
+> or governors.
+> 
+> We need to get only online cpus in this mask. There are two places to fix this
+> mask, cpufreq core and cpufreq driver. It makes sense to do this at common place
+> and hence is done in core.
 
-cpufreq_remove_dev():
- - Remove policy node
- - Call cpufreq_add_dev() for next cpu, sharing mask with removed cpu.
-   i.e. When cpu 0 is removed, we call it for cpu 1. And when called for cpu 2,
-   we call it for cpu 3.
-   - cpufreq_add_dev() would call cpufreq_driver->init()
-   - init would return mask as AND of 2, 3 and 4 for cluster A7.
-   - cpufreq core would do online_cpu && policy->cpus
-     Here is the BUG(). Because cpu hasn't died but we have just unregistered
-     the cpufreq driver, online cpu would still have cpu 2 in it. And so thing
-     go bad again.
+Well, this series makes sense to me, but I'd like to hear what the other people
+think.
 
-Solution: Keep cpumask of cpus that are registered with cpufreq core and clear
-	  cpus when we get a call from subsys_interface_unregister() via
-	  cpufreq_remove_dev().
+Thanks,
+Rafael
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a0a33bd..271d3be 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -47,6 +47,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- static DEFINE_SPINLOCK(cpufreq_driver_lock);
- 
-+/* Used when we unregister cpufreq driver */
-+struct cpumask	cpufreq_online_mask;
-+
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-  * all cpufreq/hotplug/workqueue/etc related lock issues.
-@@ -981,6 +984,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	 * managing offline cpus here.
- 	 */
- 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-+	cpumask_and(policy->cpus, policy->cpus, &cpufreq_online_mask);
- 
- 	policy->user_policy.min = policy->min;
- 	policy->user_policy.max = policy->max;
-@@ -1064,7 +1068,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 	}
- 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
--
- #ifdef CONFIG_SMP
- 	/* if this isn't the CPU which is the parent of the kobj, we
- 	 * only need to unlink, put and exit
-@@ -1185,6 +1188,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
- 	if (unlikely(lock_policy_rwsem_write(cpu)))
- 		BUG();
- 
-+	cpumask_clear_cpu(cpu, &cpufreq_online_mask);
- 	retval = __cpufreq_remove_dev(dev, sif);
- 	return retval;
- }
-@@ -1903,6 +1907,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	cpufreq_driver = driver_data;
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	cpumask_setall(&cpufreq_online_mask);
-+
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
- 		goto err_null_driver;
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 1f93dbd..de99517 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -970,6 +970,13 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>  		pr_debug("initialization failed\n");
+>  		goto err_unlock_policy;
+>  	}
+> +
+> +	/*
+> +	 * affected cpus must always be the one, which are online. We aren't
+> +	 * managing offline cpus here.
+> +	 */
+> +	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+> +
+>  	policy->user_policy.min = policy->min;
+>  	policy->user_policy.max = policy->max;
+>  
+> 
 -- 
-1.7.12.rc2.18.g61b472e
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
