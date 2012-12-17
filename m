@@ -1,57 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpuidle: fix sysfs output for power_usage
-Date: Mon, 17 Dec 2012 13:09:48 +0100
-Message-ID: <3292933.Vhp5q9ibyJ@vostro.rjw.lan>
-References: <1355491060-970-1-git-send-email-sivaramn@nvidia.com> <4160971.sv9ruOS3QC@vostro.rjw.lan> <20121217084607.GN10090@sivaramn-lnx>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 2/2] cpufreq: db8500: set CPUFREQ_CONST_LOOPS
+Date: Mon, 17 Dec 2012 10:24:15 -0800
+Message-ID: <50CF634F.1040708@codeaurora.org>
+References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
+ <1354615845-2758-3-git-send-email-fabio.baltieri@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:36098 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752154Ab2LQMEk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Dec 2012 07:04:40 -0500
-In-Reply-To: <20121217084607.GN10090@sivaramn-lnx>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1354615845-2758-3-git-send-email-fabio.baltieri@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, John Stultz <johnstul@us.ibm.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Sivaram Nair <sivaramn@nvidia.com>
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "shuox.liu@intel.com" <shuox.liu@intel.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "yanmin_zhang@intel.com" <yanmin_zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, December 17, 2012 10:46:07 AM Sivaram Nair wrote:
-> On Mon, Dec 17, 2012 at 08:56:45AM +0100, Rafael J. Wysocki wrote:
-> > On Monday, December 17, 2012 09:38:15 AM Sivaram Nair wrote:
-> > > On Sat, Dec 15, 2012 at 01:03:02AM +0100, Rafael J. Wysocki wrote:
-> > > > On Friday, December 14, 2012 03:17:37 PM Sivaram Nair wrote:
-> > > > > cpuidle_state->power_usage is signed; so change the corresponding sysfs
-> > > > > ops to output signed value instead of unsigned.
-> > > > 
-> > > > What's actually wrong with printing it as an unsigned int?
-> > > 
-> > > power_usage could have negative values (for example cpuidle/driver.c
-> > > inits this value to -1, -2 etc. when drv->power_specified is not set) and
-> > > these shows up badly in the sysfs output.
-> > 
-> > Does "badly" mean "as big positive numbers"?
-> 
-> Yes (sorry for not being clearer).
-> 
-> > 
-> > Should we actually print them at all in those case?  Perhaps it'll be better to
-> > make the file appear empty then?
-> 
-> May be, but why is power_usage signed in the first place?
+On 12/04/12 02:10, Fabio Baltieri wrote:
+> As ux500 is being converted to timer based delay loops, and the timer
+> used is not depending on CPUs clock frequency, set cpufreq_driver flag
+> CPUFREQ_CONST_LOOPS to prevent cpufreq rescaling loops_for_jiffies.
+>
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+> ---
+>  drivers/cpufreq/db8500-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/db8500-cpufreq.c b/drivers/cpufreq/db8500-cpufreq.c
+> index 74b830b..e758891 100644
+> --- a/drivers/cpufreq/db8500-cpufreq.c
+> +++ b/drivers/cpufreq/db8500-cpufreq.c
+> @@ -150,7 +150,7 @@ static int __cpuinit db8500_cpufreq_init(struct cpufreq_policy *policy)
+>  }
+>  
+>  static struct cpufreq_driver db8500_cpufreq_driver = {
+> -	.flags  = CPUFREQ_STICKY,
+> +	.flags  = CPUFREQ_STICKY | CPUFREQ_CONST_LOOPS,
+>  	.verify = db8500_cpufreq_verify_speed,
+>  	.target = db8500_cpufreq_target,
+>  	.get    = db8500_cpufreq_getspeed,
 
-Please read the comment in driver.c:set_power_states() for the answer. :-)
-
-> I also noticed
-> Daniel Lezcano's patches that reduces the scope of this variable. So,
-> perhaps we can just ignore this change.
-
-OK
-
-Rafael
-
+Wouldn't you want to fold this into the previous patch so bisection is
+not broken? Otherwise you have a place where lpj is all screwed up when
+cpufreq mucks with it.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
