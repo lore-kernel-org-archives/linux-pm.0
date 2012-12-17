@@ -1,46 +1,57 @@
-From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: Re: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
-Date: Mon, 17 Dec 2012 12:36:11 +0100
-Message-ID: <20121217113611.GA31470@balto.lan>
-References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] cpuidle: fix sysfs output for power_usage
+Date: Mon, 17 Dec 2012 13:09:48 +0100
+Message-ID: <3292933.Vhp5q9ibyJ@vostro.rjw.lan>
+References: <1355491060-970-1-git-send-email-sivaramn@nvidia.com> <4160971.sv9ruOS3QC@vostro.rjw.lan> <20121217084607.GN10090@sivaramn-lnx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: John Stultz <johnstul@us.ibm.com>, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:36098 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154Ab2LQMEk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Dec 2012 07:04:40 -0500
+In-Reply-To: <20121217084607.GN10090@sivaramn-lnx>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sivaram Nair <sivaramn@nvidia.com>
+Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "shuox.liu@intel.com" <shuox.liu@intel.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "yanmin_zhang@intel.com" <yanmin_zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi all,
-
-On Tue, Dec 04, 2012 at 11:10:43AM +0100, Fabio Baltieri wrote:
-> this implements timer-based delay support for nomadik and ux500
-> platforms, using the MTU as time source, and marks the u8500 cpufreq
-> driver as CPUFREQ_CONST_LOOPS accordingly.
+On Monday, December 17, 2012 10:46:07 AM Sivaram Nair wrote:
+> On Mon, Dec 17, 2012 at 08:56:45AM +0100, Rafael J. Wysocki wrote:
+> > On Monday, December 17, 2012 09:38:15 AM Sivaram Nair wrote:
+> > > On Sat, Dec 15, 2012 at 01:03:02AM +0100, Rafael J. Wysocki wrote:
+> > > > On Friday, December 14, 2012 03:17:37 PM Sivaram Nair wrote:
+> > > > > cpuidle_state->power_usage is signed; so change the corresponding sysfs
+> > > > > ops to output signed value instead of unsigned.
+> > > > 
+> > > > What's actually wrong with printing it as an unsigned int?
+> > > 
+> > > power_usage could have negative values (for example cpuidle/driver.c
+> > > inits this value to -1, -2 etc. when drv->power_specified is not set) and
+> > > these shows up badly in the sysfs output.
+> > 
+> > Does "badly" mean "as big positive numbers"?
 > 
-> The patches are based on Arnd's arm-soc/ux500/mtu-clk branch, as that
-> contains latest MTU driver developments, including a driver move/rename,
-> but I can rebase if necessary.
-
-The patches applies cleanly on current mainline now, as all dependencies
-has already been merged, can this be considered for for merging too?
-
-Also, the nomadik-mtu driver has been moved into drivers/clocksource so
-do anybody knows if this this should end up into arm-soc or in the
-clocksource tree?
-
-Thanks,
-Fabio
-
-> Fabio Baltieri (2):
->   clocksource: nomadik-mtu: support timer-based delay
->   cpufreq: db8500: set CPUFREQ_CONST_LOOPS
+> Yes (sorry for not being clearer).
 > 
->  drivers/clocksource/nomadik-mtu.c | 11 +++++++++++
->  drivers/cpufreq/db8500-cpufreq.c  |  2 +-
->  2 files changed, 12 insertions(+), 1 deletion(-)
+> > 
+> > Should we actually print them at all in those case?  Perhaps it'll be better to
+> > make the file appear empty then?
+> 
+> May be, but why is power_usage signed in the first place?
+
+Please read the comment in driver.c:set_power_states() for the answer. :-)
+
+> I also noticed
+> Daniel Lezcano's patches that reduces the scope of this variable. So,
+> perhaps we can just ignore this change.
+
+OK
+
+Rafael
+
 
 -- 
-Fabio Baltieri
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
