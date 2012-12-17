@@ -1,35 +1,78 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
-Date: Mon, 17 Dec 2012 10:59:03 -0800
-Message-ID: <50CF6B77.3000000@linaro.org>
-References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org> <20121217113611.GA31470@balto.lan> <CACRpkdYRJvFEUvB++fKgVWEXZrTQ7aob0MPMwW4TBs_VRNuzsA@mail.gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: [GIT PULL] power tools for Linux-3.8
+Date: Mon, 17 Dec 2012 14:17:25 -0500
+Message-ID: <50CF6FC5.20005@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdYRJvFEUvB++fKgVWEXZrTQ7aob0MPMwW4TBs_VRNuzsA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f53.google.com ([209.85.216.53]:38848 "EHLO
+	mail-qa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179Ab2LQTR3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Dec 2012 14:17:29 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On 12/17/2012 10:38 AM, Linus Walleij wrote:
-> On Mon, Dec 17, 2012 at 12:36 PM, Fabio Baltieri
-> <fabio.baltieri@linaro.org> wrote:
->> On Tue, Dec 04, 2012 at 11:10:43AM +0100, Fabio Baltieri wrote:
->>> this implements timer-based delay support for nomadik and ux500
->>> platforms, using the MTU as time source, and marks the u8500 cpufreq
->>> driver as CPUFREQ_CONST_LOOPS accordingly.
->>>
->>> The patches are based on Arnd's arm-soc/ux500/mtu-clk branch, as that
->>> contains latest MTU driver developments, including a driver move/rename,
->>> but I can rebase if necessary.
->> The patches applies cleanly on current mainline now, as all dependencies
->> has already been merged, can this be considered for for merging too?
-> If no clocksource maintainer steps up in a week then notify me and
-> I'll simply stick these into the ux500 tree.
-Yea, I'd actually prefer these go through the arch tree where they can 
-get testing.
+Hi Linus,
 
-thanks
--john
+Please pull these power tools patches.
+This updates the tree w/ the latest version of turbostat,
+which reports temperature and - on SNB and later - Watts.
+
+There will be a logical conflict with the uapi changes
+which breaks the turbostat build.  It can be fixed this way:
+
+diff --git a/tools/power/x86/turbostat/Makefile b/tools/power/x86/turbostat/Makefile
+index e48ef07..f09641d 100644
+--- a/tools/power/x86/turbostat/Makefile
++++ b/tools/power/x86/turbostat/Makefile
+@@ -5,7 +5,7 @@ DESTDIR         :=
+ 
+ turbostat : turbostat.c
+ CFLAGS +=      -Wall
+-CFLAGS +=      -I../../../../arch/x86/include/
++CFLAGS +=      -I../../../../arch/x86/include/uapi/
+
+
+thanks!
+Len Brown, Intel Open Source Technology Center
+
+
+The following changes since commit d91bb17c2a874493603c4d99db305d8caf2d180c:
+
+  tools/power turbostat: graceful fail on garbage input (2012-11-01 00:22:00 -0400)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git next
+
+for you to fetch changes up to 55f1f545f709a6023371848028a3029118855576:
+
+  tools: Allow tools to be installed in a user specified location (2012-11-30 01:09:45 -0500)
+
+----------------------------------------------------------------
+Colin Ian King (1):
+      tools/power x86_energy_perf_policy: close /proc/stat in for_every_cpu()
+
+Josh Boyer (1):
+      tools: Allow tools to be installed in a user specified location
+
+Len Brown (5):
+      tools/power/x86/turbostat: share kernel MSR #defines
+      x86 power: define RAPL MSRs
+      tools/power turbostat: prevent infinite loop on migration error path
+      tools/power turbostat: fix output buffering issue
+      tools/power turbostat: v3.0: monitor Watts and Temperature
+
+Mark Asselstine (1):
+      tools/power: turbostat: make Makefile a bit more capable
+
+ arch/x86/include/asm/msr-index.h                   |  37 ++
+ tools/power/x86/turbostat/Makefile                 |  21 +-
+ tools/power/x86/turbostat/turbostat.8              | 103 ++--
+ tools/power/x86/turbostat/turbostat.c              | 677 +++++++++++++++++++--
+ tools/power/x86/x86_energy_perf_policy/Makefile    |   6 +-
+ .../x86_energy_perf_policy.c                       |   2 +-
+ 6 files changed, 765 insertions(+), 81 deletions(-)
