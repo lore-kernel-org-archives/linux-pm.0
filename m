@@ -1,397 +1,338 @@
 From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCH 4/8] Thermal: Add Thermal_trip sysfs node
-Date: Tue, 18 Dec 2012 14:59:33 +0530
-Message-ID: <1355822977-4804-5-git-send-email-durgadoss.r@intel.com>
+Subject: [PATCH 2/8] Thermal: Create zone level APIs
+Date: Tue, 18 Dec 2012 14:59:31 +0530
+Message-ID: <1355822977-4804-3-git-send-email-durgadoss.r@intel.com>
 References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:29474 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754180Ab2LRJeC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 18 Dec 2012 04:34:02 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds a thermal_trip directory under
-/sys/class/thermal/zoneX. This directory contains
-the trip point values for sensors bound to this
-zone.
+This patch adds a new thermal_zone structure to
+thermal.h. Also, adds zone level APIs to the thermal
+framework.
+
+A thermal zone is a hot spot on the platform, which
+can have one or more sensors and cooling devices attached
+to it. These sensors can be mapped to a set of cooling
+devices, which when throttled, can help to bring down
+the temperature of the hot spot.
 
 Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 ---
- drivers/thermal/thermal_sys.c |  237 ++++++++++++++++++++++++++++++++++++++++-
- include/linux/thermal.h       |   37 +++++++
- 2 files changed, 272 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_sys.c |  194 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |   21 +++++
+ 2 files changed, 215 insertions(+)
 
 diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index b39bf97..29ec073 100644
+index b2becb9..06d5a12 100644
 --- a/drivers/thermal/thermal_sys.c
 +++ b/drivers/thermal/thermal_sys.c
-@@ -448,6 +448,22 @@ static void thermal_zone_device_check(struct work_struct *work)
+@@ -44,19 +44,44 @@ MODULE_DESCRIPTION("Generic thermal management sysfs support");
+ MODULE_LICENSE("GPL");
+ 
+ static DEFINE_IDR(thermal_tz_idr);
++static DEFINE_IDR(thermal_zone_idr);
+ static DEFINE_IDR(thermal_cdev_idr);
+ static DEFINE_IDR(thermal_sensor_idr);
+ static DEFINE_MUTEX(thermal_idr_lock);
+ 
+ static LIST_HEAD(thermal_tz_list);
+ static LIST_HEAD(thermal_sensor_list);
++static LIST_HEAD(thermal_zone_list);
+ static LIST_HEAD(thermal_cdev_list);
+ static LIST_HEAD(thermal_governor_list);
+ 
+ static DEFINE_MUTEX(thermal_list_lock);
+ static DEFINE_MUTEX(sensor_list_lock);
++static DEFINE_MUTEX(zone_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
+ 
++#define for_each_thermal_sensor(pos) \
++	list_for_each_entry(pos, &thermal_sensor_list, node)
++
++#define for_each_thermal_zone(pos) \
++	list_for_each_entry(pos, &thermal_zone_list, node)
++
++#define GET_INDEX(tz, ptr, indx, type)			\
++	do {						\
++		int i;					\
++		indx = -EINVAL;				\
++		if (!tz || !ptr)			\
++			break;				\
++		mutex_lock(&type##_list_lock);		\
++		for (i = 0; i < tz->type##_indx; i++) {	\
++			if (tz->type##s[i] == ptr) {	\
++				indx = i;		\
++				break;			\
++			}				\
++		}					\
++		mutex_unlock(&type##_list_lock);	\
++	} while (0)
++
+ static struct thermal_governor *__find_governor(const char *name)
+ {
+ 	struct thermal_governor *pos;
+@@ -419,15 +444,44 @@ static void thermal_zone_device_check(struct work_struct *work)
  	thermal_zone_device_update(tz);
  }
  
-+static int get_sensor_indx_by_kobj(struct thermal_zone *tz, const char *name)
++static void remove_sensor_from_zone(struct thermal_zone *tz,
++				struct thermal_sensor *ts)
 +{
-+	int i, indx = -EINVAL;
++	int j, indx;
++
++	GET_INDEX(tz, ts, indx, sensor);
++	if (indx < 0)
++		return;
++
++	sysfs_remove_link(&tz->device.kobj, kobject_name(&ts->device.kobj));
++
++	/* Shift the entries in the tz->sensors array */
++	for (j = indx; j < MAX_SENSORS_PER_ZONE - 1; j++)
++		tz->sensors[j] = tz->sensors[j + 1];
++
++	tz->sensor_indx--;
++}
++
+ /* sys I/F for thermal zone */
+ 
+ #define to_thermal_zone(_dev) \
+ 	container_of(_dev, struct thermal_zone_device, device)
+ 
++#define to_zone(_dev) \
++	container_of(_dev, struct thermal_zone, device)
++
+ #define to_thermal_sensor(_dev) \
+ 	container_of(_dev, struct thermal_sensor, device)
+ 
+ static ssize_t
++zone_name_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct thermal_zone *tz = to_zone(dev);
++
++	return sprintf(buf, "%s\n", tz->name);
++}
++
++static ssize_t
+ sensor_name_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct thermal_sensor *ts = to_thermal_sensor(dev);
+@@ -809,6 +863,8 @@ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+ static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
+ static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
+ 
++static DEVICE_ATTR(zone_name, 0444, zone_name_show, NULL);
++
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
+@@ -1654,6 +1710,136 @@ static int enable_sensor_thresholds(struct thermal_sensor *ts, int count)
+ 	return 0;
+ }
+ 
++struct thermal_zone *create_thermal_zone(const char *name, void *devdata)
++{
++	struct thermal_zone *tz;
++	int ret;
++
++	if (!name || (name && strlen(name) >= THERMAL_NAME_LENGTH))
++		return ERR_PTR(-EINVAL);
++
++	tz = kzalloc(sizeof(*tz), GFP_KERNEL);
++	if (!tz)
++		return ERR_PTR(-ENOMEM);
++
++	idr_init(&tz->idr);
++	ret = get_idr(&thermal_zone_idr, &thermal_idr_lock, &tz->id);
++	if (ret)
++		goto exit_free;
++
++	strcpy(tz->name, name);
++	tz->devdata = devdata;
++	tz->device.class = &thermal_class;
++
++	dev_set_name(&tz->device, "zone%d", tz->id);
++	ret = device_register(&tz->device);
++	if (ret)
++		goto exit_idr;
++
++	ret = device_create_file(&tz->device, &dev_attr_zone_name);
++	if (ret)
++		goto exit_unregister;
++
++	/* Add this zone to the global list of thermal zones */
++	mutex_lock(&zone_list_lock);
++	list_add_tail(&tz->node, &thermal_zone_list);
++	mutex_unlock(&zone_list_lock);
++	return tz;
++
++exit_unregister:
++	device_unregister(&tz->device);
++exit_idr:
++	release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
++exit_free:
++	kfree(tz);
++	return ERR_PTR(ret);
++}
++EXPORT_SYMBOL(create_thermal_zone);
++
++void remove_thermal_zone(struct thermal_zone *tz)
++{
++	struct thermal_zone *pos, *next;
++	bool found = false;
++
++	if (!tz)
++		return;
++
++	mutex_lock(&zone_list_lock);
++
++	list_for_each_entry_safe(pos, next, &thermal_zone_list, node) {
++		if (pos == tz) {
++			list_del(&tz->node);
++			found = true;
++			break;
++		}
++	}
++
++	if (!found)
++		goto exit;
++
++	device_remove_file(&tz->device, &dev_attr_zone_name);
++
++	release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
++	idr_destroy(&tz->idr);
++
++	device_unregister(&tz->device);
++	kfree(tz);
++exit:
++	mutex_unlock(&zone_list_lock);
++	return;
++}
++EXPORT_SYMBOL(remove_thermal_zone);
++
++struct thermal_sensor *get_sensor_by_name(const char *name)
++{
++	struct thermal_sensor *pos;
++	struct thermal_sensor *ts = NULL;
 +
 +	mutex_lock(&sensor_list_lock);
-+	for (i = 0; i < tz->sensor_indx; i++) {
-+		if (!strnicmp(name, kobject_name(tz->kobj_trip[i]),
-+			THERMAL_NAME_LENGTH)) {
-+			indx = i;
++	for_each_thermal_sensor(pos) {
++		if (!strnicmp(pos->name, name, THERMAL_NAME_LENGTH)) {
++			ts = pos;
 +			break;
 +		}
 +	}
 +	mutex_unlock(&sensor_list_lock);
-+	return indx;
++	return ts;
 +}
++EXPORT_SYMBOL(get_sensor_by_name);
 +
- static void remove_sensor_from_zone(struct thermal_zone *tz,
- 				struct thermal_sensor *ts)
- {
-@@ -459,9 +475,15 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
- 
- 	sysfs_remove_link(&tz->device.kobj, kobject_name(&ts->device.kobj));
- 
-+	/* Delete this sensor's trip Kobject */
-+	kobject_del(tz->kobj_trip[indx]);
-+
- 	/* Shift the entries in the tz->sensors array */
--	for (j = indx; j < MAX_SENSORS_PER_ZONE - 1; j++)
-+	for (j = indx; j < MAX_SENSORS_PER_ZONE - 1; j++) {
- 		tz->sensors[j] = tz->sensors[j + 1];
-+		tz->sensor_trip[j] = tz->sensor_trip[j + 1];
-+		tz->kobj_trip[j] = tz->kobj_trip[j + 1];
-+	}
- 
- 	tz->sensor_indx--;
- }
-@@ -875,6 +897,120 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
- }
- 
-+static ssize_t
-+active_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
++int add_sensor_to_zone(struct thermal_zone *tz, struct thermal_sensor *ts)
 +{
-+	int i, indx, ret = 0;
-+	struct thermal_zone *tz;
-+	struct device *dev;
++	int ret;
 +
-+	/* In this function, for
-+	 * /sys/class/thermal/zoneX/thermal_trip/sensorY:
-+	 * attr			points to sysfs node 'active'
-+	 * kobj			points to sensorY
-+	 * kobj->parent		points to thermal_trip
-+	 * kobj->parent->parent	points to zoneX
-+	 */
-+
-+	/* Get the zone pointer */
-+	dev = container_of(kobj->parent->parent, struct device, kobj);
-+	tz = to_zone(dev);
-+	if (!tz)
++	if (!tz || !ts)
 +		return -EINVAL;
-+
-+	/*
-+	 * We need this because in the sysfs tree, 'sensorY' is
-+	 * not really the sensor pointer. It just has the name
-+	 * 'sensorY'; whereas 'zoneX' is actually the zone pointer.
-+	 * This means container_of(kobj, struct device, kobj) will not
-+	 * provide the actual sensor pointer.
-+	 */
-+	indx = get_sensor_indx_by_kobj(tz, kobject_name(kobj));
-+	if (indx < 0)
-+		return indx;
-+
-+	if (tz->sensor_trip[indx]->num_active_trips <= 0)
-+		return sprintf(buf, "<Not available>\n");
-+
-+	ret += sprintf(buf, "0x%x", tz->sensor_trip[indx]->active_trip_mask);
-+	for (i = 0; i < tz->sensor_trip[indx]->num_active_trips; i++) {
-+		ret += sprintf(buf + ret, " %d",
-+			tz->sensor_trip[indx]->active_trips[i]);
-+	}
-+
-+	ret += sprintf(buf + ret, "\n");
-+	return ret;
-+}
-+
-+static ssize_t
-+ptrip_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-+{
-+	int i, indx, ret = 0;
-+	struct thermal_zone *tz;
-+	struct device *dev;
-+
-+	/* Get the zone pointer */
-+	dev = container_of(kobj->parent->parent, struct device, kobj);
-+	tz = to_zone(dev);
-+	if (!tz)
-+		return -EINVAL;
-+
-+	indx = get_sensor_indx_by_kobj(tz, kobject_name(kobj));
-+	if (indx < 0)
-+		return indx;
-+
-+	if (tz->sensor_trip[indx]->num_passive_trips <= 0)
-+		return sprintf(buf, "<Not available>\n");
-+
-+	for (i = 0; i < tz->sensor_trip[indx]->num_passive_trips; i++) {
-+		ret += sprintf(buf + ret, "%d ",
-+			tz->sensor_trip[indx]->passive_trips[i]);
-+	}
-+
-+	ret += sprintf(buf + ret, "\n");
-+	return ret;
-+}
-+
-+static ssize_t
-+hot_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-+{
-+	int indx;
-+	struct thermal_zone *tz;
-+	struct device *dev;
-+
-+	/* Get the zone pointer */
-+	dev = container_of(kobj->parent->parent, struct device, kobj);
-+	tz = to_zone(dev);
-+	if (!tz)
-+		return -EINVAL;
-+
-+	indx = get_sensor_indx_by_kobj(tz, kobject_name(kobj));
-+	if (indx < 0)
-+		return indx;
-+
-+	return sprintf(buf, "%d\n", tz->sensor_trip[indx]->hot);
-+}
-+
-+static ssize_t
-+critical_show(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
-+{
-+	int indx;
-+	struct thermal_zone *tz;
-+	struct device *dev;
-+
-+	/* Get the zone pointer */
-+	dev = container_of(kobj->parent->parent, struct device, kobj);
-+	tz = to_zone(dev);
-+	if (!tz)
-+		return -EINVAL;
-+
-+	indx = get_sensor_indx_by_kobj(tz, kobject_name(kobj));
-+	if (indx < 0)
-+		return indx;
-+
-+	return sprintf(buf, "%d\n", tz->sensor_trip[indx]->crit);
-+}
-+
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-@@ -885,7 +1021,27 @@ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
- static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
- 
--static DEVICE_ATTR(zone_name, 0444, zone_name_show, NULL);
-+/* Thermal zone attributes */
-+static DEVICE_ATTR(zone_name, S_IRUGO, zone_name_show, NULL);
-+
-+/* Thermal trip attributes */
-+static struct kobj_attribute active_attr = __ATTR_RO(active);
-+/* TODO: rename this to passive while removing old code */
-+static struct kobj_attribute passive_attr = __ATTR_RO(ptrip);
-+static struct kobj_attribute hot_attr = __ATTR_RO(hot);
-+static struct kobj_attribute crit_attr = __ATTR_RO(critical);
-+
-+static struct attribute *trip_attrs[] = {
-+			&active_attr.attr,
-+			&passive_attr.attr,
-+			&hot_attr.attr,
-+			&crit_attr.attr,
-+			NULL,
-+			};
-+
-+static struct attribute_group trip_attr_group = {
-+			.attrs = trip_attrs,
-+			};
- 
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
-@@ -1770,12 +1926,19 @@ struct thermal_zone *create_thermal_zone(const char *name, void *devdata)
- 	if (ret)
- 		goto exit_unregister;
- 
-+	tz->kobj_thermal_trip = kobject_create_and_add("thermal_trip",
-+					&tz->device.kobj);
-+	if (!tz->kobj_thermal_trip)
-+		goto exit_name;
-+
- 	/* Add this zone to the global list of thermal zones */
- 	mutex_lock(&zone_list_lock);
- 	list_add_tail(&tz->node, &thermal_zone_list);
- 	mutex_unlock(&zone_list_lock);
- 	return tz;
- 
-+exit_name:
-+	device_remove_file(&tz->device, &dev_attr_zone_name);
- exit_unregister:
- 	device_unregister(&tz->device);
- exit_idr:
-@@ -1789,6 +1952,7 @@ EXPORT_SYMBOL(create_thermal_zone);
- void remove_thermal_zone(struct thermal_zone *tz)
- {
- 	struct thermal_zone *pos, *next;
-+	int i;
- 	bool found = false;
- 
- 	if (!tz)
-@@ -1809,6 +1973,33 @@ void remove_thermal_zone(struct thermal_zone *tz)
- 
- 	device_remove_file(&tz->device, &dev_attr_zone_name);
- 
-+	/* Just for ease of usage */
-+	i = tz->sensor_indx;
-+
-+	while (--i >= 0) {
-+		/* Remove /sys/class/thermal/zoneX/sensorY */
-+		sysfs_remove_link(&tz->device.kobj,
-+				kobject_name(&tz->sensors[i]->device.kobj));
-+
-+		/* Remove /sys/class/thermal/zoneX/thermal_trip/sensorY */
-+		if (tz->kobj_trip[i]) {
-+			sysfs_remove_group(tz->kobj_trip[i], &trip_attr_group);
-+			kobject_del(tz->kobj_trip[i]);
-+		}
-+	}
-+
-+	/* Remove /sys/class/thermal/zoneX/thermal_trip */
-+	kobject_del(tz->kobj_thermal_trip);
-+
-+	/* Release the cdevs attached to this zone */
-+	i = tz->cdev_indx;
-+
-+	while (--i >= 0) {
-+		/* Remove /sys/class/thermal/zoneX/cooling_deviceY */
-+		sysfs_remove_link(&tz->device.kobj,
-+				kobject_name(&tz->cdevs[i]->device.kobj));
-+	}
-+
- 	release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
- 	idr_destroy(&tz->idr);
- 
-@@ -1920,6 +2111,48 @@ exit_zone:
- }
- EXPORT_SYMBOL(add_cdev_to_zone);
- 
-+int add_sensor_trip_info(struct thermal_zone *tz, struct thermal_sensor *ts,
-+			struct thermal_trip_point *trip)
-+{
-+	int indx, ret = -EINVAL;
-+
-+	if (!tz || !ts || !trip)
-+		return ret;
 +
 +	mutex_lock(&zone_list_lock);
 +
-+	GET_INDEX(tz, ts, indx, sensor);
-+	if (indx < 0)
-+		goto exit_indx;
-+
-+	/* Create kobj for /sys/class/thermal/zoneX/thermal_trip/sensorY */
-+	tz->kobj_trip[indx] = kobject_create_and_add(
-+					kobject_name(&ts->device.kobj),
-+					tz->kobj_thermal_trip);
-+	if (!tz->kobj_trip[indx]) {
-+		ret = -ENOMEM;
-+		goto exit_indx;
++	/* Ensure we are not adding the same sensor again!! */
++	GET_INDEX(tz, ts, ret, sensor);
++	if (ret >= 0) {
++		ret = -EEXIST;
++		goto exit_zone;
 +	}
 +
-+	ret = sysfs_create_group(tz->kobj_trip[indx], &trip_attr_group);
-+	if (ret) {
-+		dev_err(&tz->device, "sysfs_create_group failed:%d\n", ret);
-+		goto exit_kobj;
-+	}
++	mutex_lock(&sensor_list_lock);
 +
-+	tz->sensor_trip[indx] = trip;
-+	mutex_unlock(&zone_list_lock);
-+	return 0;
++	ret = sysfs_create_link(&tz->device.kobj, &ts->device.kobj,
++				kobject_name(&ts->device.kobj));
++	if (ret)
++		goto exit_sensor;
 +
-+exit_kobj:
-+	kobject_del(tz->kobj_trip[indx]);
-+	tz->kobj_trip[indx] = NULL;
-+exit_indx:
++	tz->sensors[tz->sensor_indx++] = ts;
++
++exit_sensor:
++	mutex_unlock(&sensor_list_lock);
++exit_zone:
 +	mutex_unlock(&zone_list_lock);
 +	return ret;
 +}
-+EXPORT_SYMBOL(add_sensor_trip_info);
++EXPORT_SYMBOL(add_sensor_to_zone);
 +
  /**
   * thermal_sensor_register - register a new thermal sensor
   * @name:	name of the thermal sensor
+@@ -1730,6 +1916,7 @@ EXPORT_SYMBOL(thermal_sensor_register);
+ void thermal_sensor_unregister(struct thermal_sensor *ts)
+ {
+ 	int i;
++	struct thermal_zone *tz;
+ 	struct thermal_sensor *pos, *next;
+ 	bool found = false;
+ 
+@@ -1749,6 +1936,13 @@ void thermal_sensor_unregister(struct thermal_sensor *ts)
+ 	if (!found)
+ 		return;
+ 
++	mutex_lock(&zone_list_lock);
++
++	for_each_thermal_zone(tz)
++		remove_sensor_from_zone(tz, ts);
++
++	mutex_unlock(&zone_list_lock);
++
+ 	for (i = 0; i < ts->thresholds; i++) {
+ 		device_remove_file(&ts->device, &ts->thresh_attrs[i].attr);
+ 		if (ts->ops->get_hyst) {
 diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index c4e45c7..8372f05 100644
+index a49cb38..f08f774 100644
 --- a/include/linux/thermal.h
 +++ b/include/linux/thermal.h
-@@ -158,6 +158,30 @@ struct thermal_attr {
- 	char name[THERMAL_NAME_LENGTH];
+@@ -49,6 +49,8 @@
+ /* Default Thermal Governor: Does Linear Throttling */
+ #define DEFAULT_THERMAL_GOVERNOR	"step_wise"
+ 
++#define MAX_SENSORS_PER_ZONE		5
++
+ struct thermal_sensor;
+ struct thermal_zone_device;
+ struct thermal_cooling_device;
+@@ -194,6 +196,21 @@ struct thermal_zone_device {
+ 	struct delayed_work poll_queue;
  };
  
-+/*
-+ * This structure defines the trip points for a sensor.
-+ * The actual values for these trip points come from
-+ * platform characterization. The thermal governors
-+ * (either kernel or user space) may take appropriate
-+ * actions when the sensors reach these trip points.
-+ * See Documentation/thermal/sysfs-api2.txt for more details.
-+ *
-+ * As of now, For a particular sensor, we support:
-+ * a) 1 hot trip point
-+ * b) 1 critical trip point
-+ * c) 'n' passive trip points
-+ * d) 'm' active trip points
-+ */
-+struct thermal_trip_point {
-+	int hot;
-+	int crit;
-+	int num_passive_trips;
-+	int *passive_trips;
-+	int num_active_trips;
-+	int *active_trips;
-+	int active_trip_mask;
++struct thermal_zone {
++	char name[THERMAL_NAME_LENGTH];
++	int id;
++	void *devdata;
++	struct thermal_zone *ops;
++	struct thermal_governor *governor;
++	struct idr idr;
++	struct device device;
++	struct list_head node;
++
++	/* Sensor level information */
++	int sensor_indx; /* index into 'sensors' array */
++	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
 +};
 +
- struct thermal_sensor {
- 	char name[THERMAL_NAME_LENGTH];
- 	int id;
-@@ -215,6 +239,16 @@ struct thermal_zone {
- 	/* cdev level information */
- 	int cdev_indx; /* index into 'cdevs' array */
- 	struct thermal_cooling_device *cdevs[MAX_CDEVS_PER_ZONE];
-+
-+	/*
-+	 * Thermal sensors trip information:
-+	 * kobj_thermal_trip: /sys/class/thermal/zoneX/thermal_trip
-+	 * kobj_trip: /sys/class/thermal/zoneX/thermal_trip/sensorY
-+	 * sensor_trip: trip point information for each sensor
-+	 */
-+	struct kobject *kobj_thermal_trip;
-+	struct kobject *kobj_trip[MAX_SENSORS_PER_ZONE];
-+	struct thermal_trip_point *sensor_trip[MAX_SENSORS_PER_ZONE];
- };
- 
  /* Structure that holds thermal governor information */
-@@ -295,6 +329,9 @@ int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
+ struct thermal_governor {
+ 	char name[THERMAL_NAME_LENGTH];
+@@ -266,6 +283,10 @@ struct thermal_sensor *thermal_sensor_register(const char *, int,
+ 				struct thermal_sensor_ops *, void *);
+ void thermal_sensor_unregister(struct thermal_sensor *);
  
- int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
- 
-+int add_sensor_trip_info(struct thermal_zone *, struct thermal_sensor *,
-+			struct thermal_trip_point *);
++struct thermal_zone *create_thermal_zone(const char *, void *);
++void remove_thermal_zone(struct thermal_zone *);
++int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
 +
  #ifdef CONFIG_NET
  extern int thermal_generate_netlink_event(u32 orig, enum events event);
  #else
 -- 
 1.7.9.5
-
