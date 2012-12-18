@@ -1,78 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Resend][PATCH] PM: Move disabling/enabling runtime PM to late suspend/early resume
-Date: Tue, 18 Dec 2012 00:35:31 +0100
-Message-ID: <1689510.lSH9oXFSB8@vostro.rjw.lan>
-References: <3558004.3QJ46yYCyI@vostro.rjw.lan> <Pine.LNX.4.44L0.1212161028330.13850-100000@netrider.rowland.org> <CAPDyKFpXAokEr-ktU9=R+SWnfJvhRNhYPbmz-pw8-YpJiuNSSA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Sonny Rao <sonnyrao@chromium.org>
+Subject: [PATCH] [RFC] cpufreq: can't raise max frequency with cpu_thermal
+Date: Tue, 18 Dec 2012 00:29:44 -0800
+Message-ID: <1355819384-25983-1-git-send-email-sonnyrao@chromium.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:36443 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752491Ab2LQXaU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Dec 2012 18:30:20 -0500
-In-Reply-To: <CAPDyKFpXAokEr-ktU9=R+SWnfJvhRNhYPbmz-pw8-YpJiuNSSA@mail.gmail.com>
+Received: from mail-wi0-f202.google.com ([209.85.212.202]:55246 "EHLO
+	mail-wi0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754502Ab2LRI3s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Dec 2012 03:29:48 -0500
+Received: by mail-wi0-f202.google.com with SMTP id hn17so19731wib.5
+        for <linux-pm@vger.kernel.org>; Tue, 18 Dec 2012 00:29:47 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Jiri Kosina <jkosina@suse.cz>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan-Matthias Braun <jan_braun@gmx.net>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Doug Anderson <dianders@chromium.org>, Sameer Nanda <snanda@chromium.org>, Sonny Rao <sonnyrao@chromium.org>
 
-On Monday, December 17, 2012 10:18:14 PM Ulf Hansson wrote:
-> On 16 December 2012 16:29, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Sun, 16 Dec 2012, Rafael J. Wysocki wrote:
-> >
-> >> On Saturday, December 15, 2012 10:16:29 PM Jiri Kosina wrote:
-> >> > On Sat, 15 Dec 2012, Rafael J. Wysocki wrote:
-> >> >
-> >> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> > >
-> >> > > Currently, the PM core disables runtime PM for all devices right
-> >> > > after executing subsystem/driver .suspend() callbacks for them
-> >> > > and re-enables it right before executing subsystem/driver .resume()
-> >> > > callbacks for them.  This may lead to problems when there are
-> >> > > two devices such that the .suspend() callback executed for one of
-> >> > > them depends on runtime PM working for the other.  In that case,
-> >> > > if runtime PM has already been disabled for the second device,
-> >> > > the first one's .suspend() won't work correctly (and analogously
-> >> > > for resume).
-> >> > >
-> >> > > To make those issues go away, make the PM core disable runtime PM
-> >> > > for devices right before executing subsystem/driver .suspend_late()
-> >> > > callbacks for them and enable runtime PM for them right after
-> >> > > executing subsystem/driver .resume_early() callbacks for them.  This
-> >> > > way the potential conflitcs between .suspend_late()/.resume_early()
-> >> > > and their runtime PM counterparts are still prevented from happening,
-> >> > > but the subtle ordering issues related to disabling/enabling runtime
-> >> > > PM for devices during system suspend/resume are much easier to avoid.
-> >> > >
-> >> > > Reported-and-tested-by: Jan-Matthias Braun <jan_braun@gmx.net>
-> >> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >
-> >> > Hi Rafael,
-> >> >
-> >> > just curious what is the reason for resend? Do you want to gather more
-> >> > Acks before pushing this upstream?
-> >>
-> >> Well, I thought that some people might actually look at it when they found it
-> >> again in their mailboxes. :-)
-> >
-> > I did look at it the first time it appeared.  It seemed to be okay, but
-> > I haven't tried any testing.
-> >
-> > Alan Stern
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> I believe this should work fine for ux500 platforms, so:
-> 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+The cpu_thermal generic thermal management code has a bug where once
+max cpu frequency has been lowered in sysfs (scaling_max_freq) it is
+not possible to raise the max back up later.  The bug is that the
+notifer gets called by __cpufreq_set_policy() before the user policy
+max is raised, and is incorrectly trying to enforce the max frequency
+policy even when we are trying to change the policy.  It is also not
+clear why this driver is looking at the user policy since it is
+primarily supposed to enforce thermal policy, not user set policy.
 
-Thanks!
+Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+---
+ drivers/thermal/cpu_cooling.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
 
-
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 836828e..63bc708 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -219,10 +219,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
+ 		max_freq = notify_device->cpufreq_val;
+ 
+-	/* Never exceed user_policy.max*/
+-	if (max_freq > policy->user_policy.max)
+-		max_freq = policy->user_policy.max;
+-
+ 	if (policy->max != max_freq)
+ 		cpufreq_verify_within_limits(policy, 0, max_freq);
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.7.3
+
