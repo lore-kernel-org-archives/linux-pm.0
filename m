@@ -1,57 +1,63 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Tue, 18 Dec 2012 16:30:51 +0800
-Message-ID: <50D029BB.7060408@intel.com>
-References: <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <1354623100.3206.34.camel@dabdike.int.hansenpartnership.com> <50C1891A.7040900@intel.com> <50C5564F.8030000@intel.com> <20121211051027.GB1932@mtj.dyndns.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <20121211051027.GB1932@mtj.dyndns.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+From: Durgadoss R <durgadoss.r@intel.com>
+Subject: [PATCH 0/8] Thermal Framework Enhancements
+Date: Tue, 18 Dec 2012 14:59:29 +0530
+Message-ID: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:29474 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751028Ab2LRJd5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 18 Dec 2012 04:33:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 
-Hi Everyone,
+This patch is a v1 based on the RFC submitted here:
+https://patchwork.kernel.org/patch/1758921/
 
-Due to lack of information, I think I'll go ahead and pick up a simple
-solution for this(i.e. the code I attached previously to set a flag
-event_driven in scsi_device to let sr skip events poll) and send a new
-series out for you to review. After all, I can't wait forever...
+This patch set is based on Rui's -thermal tree, and is
+tested on a Core-i5 and an Atom netbook.
 
-Please feel free to let me know if you don't think I should send a new
-series with the above mentioned solution.
+This series contains 8 patches:
+Patch 1/8: Creates new sensor level APIs
+Patch 2/8: Creates new zone level APIs. The existing tzd structure is
+           kept as such for clarity and compatibility purposes.
+Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
+           existing tcd structure need not be modified.
+Patch 4/8: Adds a thermal_trip sysfs node, which exposes various trip
+           points for all sensors present in a zone.
+Patch 5/8: Adds a thermal_map sysfs node. It is a compact representation
+           of the binding relationship between a sensor and a cdev,
+           within a zone.
+Patch 6/8: Creates Documentation for the new APIs. A new file is
+           created for clarity. Final goal is to merge with the existing
+           file or refactor the files, as whatever seems appropriate.
+Patch 7/8: Make PER ZONE values configurable through Kconfig
+Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
 
-Thanks a lot for your(all of you) kind help and comments.
+Thanks to Rui Zhang, Honghbo Zhang, Wei Ni for their feedback on the
+RFC version.
 
--Aaron
+Durgadoss R (8):
+  Thermal: Create sensor level APIs
+  Thermal: Create zone level APIs
+  Thermal: Add APIs to bind cdev to new zone structure
+  Thermal: Add Thermal_trip sysfs node
+  Thermal: Add 'thermal_map' sysfs node
+  Thermal: Add Documentation to new APIs
+  Thermal: Make PER_ZONE values configurable
+  Thermal: Dummy driver used for testing
 
-On 12/11/2012 01:10 PM, Tejun Heo wrote:
-> Hello, guys.
-> 
-> On Mon, Dec 10, 2012 at 11:26:07AM +0800, Aaron Lu wrote:
->>>>> The problem here is there's no easy to reach genhd from libata (or the
->>>>> other way around) without going through sr.  I think we're gonna have
->>>>> to have something in sr one way or the other.
->>>>
->>>> Can't we do that via an event? It's a bit clunky because we need the
->>>> callback in the layer that sees the sdev, which is libata-scsi, we just
->>>> need an analogue of ata_scsi_media_change_notify, but ignoring and
->>>> allowing polling is essentially event driven as well, so it should all
->>>> work.  We'll need a listener in genhd, which might be trickier.
-> 
-> I'm not really following what you mean.  Can you please elaborate?
-> One way or the other, doesn't the notification have to bubble up
-> through SCSI?
-> 
->> A colleague of mine reminded me that it's impolite to write something
->> like this, and here is my apology. I didn't mean to be rude, I'm sorry
->> for this if it made you feel uncomfortable.
-> 
-> Oh, no, it's not rude at all. I was just being distracted w/ other
-> stuff and lazy.  Sorry about that.
-> 
-> Thanks.
-> 
+ Documentation/thermal/sysfs-api2.txt |  248 +++++++++
+ drivers/thermal/Kconfig              |   19 +
+ drivers/thermal/Makefile             |    3 +
+ drivers/thermal/thermal_sys.c        |  932 ++++++++++++++++++++++++++++++++++
+ drivers/thermal/thermal_test.c       |  315 ++++++++++++
+ include/linux/thermal.h              |  124 +++++
+ 6 files changed, 1641 insertions(+)
+ create mode 100644 Documentation/thermal/sysfs-api2.txt
+ create mode 100644 drivers/thermal/thermal_test.c
+
+-- 
+1.7.9.5
 
