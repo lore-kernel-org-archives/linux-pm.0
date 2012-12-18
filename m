@@ -1,109 +1,60 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-Date: Tue, 18 Dec 2012 21:23:36 +0530
-Message-ID: <50D09180.4080703@linux.vnet.ibm.com>
-References: <20121211140358.23621.97011.stgit@srivatsabhat.in.ibm.com> <20121212171720.GA22289@redhat.com> <50C8C4A5.4080104@linux.vnet.ibm.com> <20121212180248.GA24882@redhat.com> <50C8CD52.8040808@linux.vnet.ibm.com> <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <20121213161709.GA19125@redhat.com> <50CA0317.90501@linux.vnet.ibm.com> <20121214180345.GA22024@redhat.com>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [PATCH] [RFC] cpufreq: can't raise max frequency with cpu_thermal
+Date: Tue, 18 Dec 2012 08:03:36 -0800
+Message-ID: <CAD=FV=XP9sPUEJPGZtrFqyPhBbAzsPYFBb6sAgbsSuj8qtiX=A@mail.gmail.com>
+References: <1355819384-25983-1-git-send-email-sonnyrao@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:46688 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754992Ab2LRPzQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Dec 2012 10:55:16 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 18 Dec 2012 21:24:28 +0530
-In-Reply-To: <20121214180345.GA22024@redhat.com>
+Received: from mail-vc0-f173.google.com ([209.85.220.173]:51214 "EHLO
+	mail-vc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932220Ab2LRQ2D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Dec 2012 11:28:03 -0500
+Received: by mail-vc0-f173.google.com with SMTP id f13so1084909vcb.18
+        for <linux-pm@vger.kernel.org>; Tue, 18 Dec 2012 08:28:02 -0800 (PST)
+In-Reply-To: <1355819384-25983-1-git-send-email-sonnyrao@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sonny Rao <sonnyrao@chromium.org>
+Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Sameer Nanda <snanda@chromium.org>, Subash <subash.rp@samsung.com>
 
-On 12/14/2012 11:33 PM, Oleg Nesterov wrote:
-> On 12/13, Srivatsa S. Bhat wrote:
->>
->> On 12/13/2012 09:47 PM, Oleg Nesterov wrote:
->>> On 12/13, Srivatsa S. Bhat wrote:
->>>>
->>>> On 12/13/2012 12:42 AM, Srivatsa S. Bhat wrote:
->>>>>
->>>>> Even I don't spot anything wrong with it. But I'll give it some more
->>>>> thought..
->>>>
->>>> Since an interrupt handler can also run get_online_cpus_atomic(), we
->>>> cannot use the __this_cpu_* versions for modifying reader_percpu_refcnt,
->>>> right?
->>>
->>> Hmm. I thought that __this_cpu_* must be safe under preempt_disable().
->>> IOW, I thought that, say, this_cpu_inc() is "equal" to preempt_disable +
->>> __this_cpu_inc() correctness-wise.
->>>
->>> And. I thought that this_cpu_inc() is safe wrt interrupt, like local_t.
->>>
->>> But when I try to read the comments percpu.h, I am starting to think that
->>> even this_cpu_inc() is not safe if irq handler can do the same?
->>>
->>
->> The comment seems to say that its not safe wrt interrupts. But looking at
->> the code in include/linux/percpu.h, IIUC, that is true only about
->> this_cpu_read() because it only disables preemption.
->>
->> However, this_cpu_inc() looks safe wrt interrupts because it wraps the
->> increment within raw_local_irqsave()/restore().
-> 
-> You mean _this_cpu_generic_to_op() I guess. So yes, I think you are right,
-> this_cpu_* should be irq-safe, but __this_cpu_* is not.
-> 
+On Tue, Dec 18, 2012 at 12:29 AM, Sonny Rao <sonnyrao@chromium.org> wrote:
+> The cpu_thermal generic thermal management code has a bug where once
+> max cpu frequency has been lowered in sysfs (scaling_max_freq) it is
+> not possible to raise the max back up later.  The bug is that the
+> notifer gets called by __cpufreq_set_policy() before the user policy
+> max is raised, and is incorrectly trying to enforce the max frequency
+> policy even when we are trying to change the policy.  It is also not
+> clear why this driver is looking at the user policy since it is
+> primarily supposed to enforce thermal policy, not user set policy.
+>
+> Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+> ---
+>  drivers/thermal/cpu_cooling.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 836828e..63bc708 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -219,10 +219,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+>         if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
+>                 max_freq = notify_device->cpufreq_val;
+>
+> -       /* Never exceed user_policy.max*/
+> -       if (max_freq > policy->user_policy.max)
+> -               max_freq = policy->user_policy.max;
+> -
+>         if (policy->max != max_freq)
+>                 cpufreq_verify_within_limits(policy, 0, max_freq);
+>
+> --
+> 1.7.7.3
+>
 
-Yes.
+Sonny's change matches what the "ACPI version" of this code
+(drivers/acpi/processor_thermal.c) does as well.  I would certainly be
+interested to know why the code was added here in the first place.
+Amit: do you know?
 
-> Thanks.
-> 
-> At least on x86 there is no difference between this_ and __this_, both do
-> percpu_add_op() without local_irq_disable/enable. But it seems that most
-> of architectures use generic code.
-> 
-
-So now that we can't avoid disabling and enabling interrupts, I was
-wondering if we could exploit this to avoid the smp_mb()..
-
-Maybe this is a stupid question, but I'll shoot it anyway...
-Does local_irq_disable()/enable provide any ordering guarantees by any chance?
-I think the answer is no, but if it is yes, I guess we can do as shown
-below to ensure that STORE(reader_percpu_refcnt) happens before
-LOAD(writer_signal).
-
-void get_online_cpus_atomic(void)
-{
-	unsigned long flags;
-
-	preempt_disable();
-
-	//only for writer
-	local_irq_save(flags);
-	__this_cpu_add(reader_percpu_refcnt, XXXX);
-	local_irq_restore(flags);
-
-	//no need of an explicit smp_mb()
-
-	if (__this_cpu_read(reader_percpu_refcnt) & MASK) {
-		this_cpu_inc(reader_percpu_refcnt);
-	} else if (writer_active()) {
-		...
-	}
-
-	this_cpu_dec(reader_percpu_refcnt, XXXX);
-
-}
-
-I tried thinking about other ways to avoid that smp_mb() in the reader,
-but was unsuccessful. So if the above assumption is wrong, I guess we'll
-just have to go with the version that uses synchronize_sched() at the
-writer-side.
-
-Regards,
-Srivatsa S. Bhat
-
+Reviewed-by: Doug Anderson <dianders@chromium.org>
