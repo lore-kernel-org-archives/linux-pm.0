@@ -1,7 +1,7 @@
 From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCH 7/8] Thermal: Make PER_ZONE values configurable
-Date: Tue, 18 Dec 2012 14:59:36 +0530
-Message-ID: <1355822977-4804-8-git-send-email-durgadoss.r@intel.com>
+Subject: [PATCH 3/8] Thermal: Add APIs to bind cdev to new zone structure
+Date: Tue, 18 Dec 2012 14:59:32 +0530
+Message-ID: <1355822977-4804-4-git-send-email-durgadoss.r@intel.com>
 References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
@@ -10,59 +10,181 @@ To: rui.zhang@intel.com, linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch makes MAX_SENSORS_PER_ZONE and
-MAX_CDEVS_PER_ZONE values configurable. The
-default value is 1, and range is 1-12.
+This patch creates new APIs to add/remove a
+cdev to/from a zone. This patch does not change
+the old cooling device implementation.
 
 Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 ---
-No great reason for using 12.
----
- drivers/thermal/Kconfig |   14 ++++++++++++++
- include/linux/thermal.h |    6 +++---
- 2 files changed, 17 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_sys.c |   80 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |    8 +++++
+ 2 files changed, 88 insertions(+)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index d96da07..c5ba3340 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -15,6 +15,20 @@ menuconfig THERMAL
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 06d5a12..b39bf97 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -58,6 +58,7 @@ static LIST_HEAD(thermal_governor_list);
+ static DEFINE_MUTEX(thermal_list_lock);
+ static DEFINE_MUTEX(sensor_list_lock);
+ static DEFINE_MUTEX(zone_list_lock);
++static DEFINE_MUTEX(cdev_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
  
- if THERMAL
+ #define for_each_thermal_sensor(pos) \
+@@ -82,6 +83,9 @@ static DEFINE_MUTEX(thermal_governor_lock);
+ 		mutex_unlock(&type##_list_lock);	\
+ 	} while (0)
  
-+config THERMAL_MAX_SENSORS_PER_ZONE
-+	int "Maximum number of sensors allowed per thermal zone"
-+	default 1
-+	range 1 12
-+	---help---
-+	  Specify the number of sensors allowed per zone
++#define for_each_cdev(pos) \
++	list_for_each_entry(pos, &thermal_cdev_list, node)
 +
-+config THERMAL_MAX_CDEVS_PER_ZONE
-+	int "Maximum number of cooling devices allowed per thermal zone"
-+	default 1
-+	range 1 12
-+	---help---
-+	  Specify the number of cooling devices allowed per zone
+ static struct thermal_governor *__find_governor(const char *name)
+ {
+ 	struct thermal_governor *pos;
+@@ -462,6 +466,24 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
+ 	tz->sensor_indx--;
+ }
+ 
++static void remove_cdev_from_zone(struct thermal_zone *tz,
++				struct thermal_cooling_device *cdev)
++{
++	int j, indx;
 +
- config THERMAL_HWMON
- 	bool
- 	depends on HWMON=y || HWMON=THERMAL
++	GET_INDEX(tz, cdev, indx, cdev);
++	if (indx < 0)
++		return;
++
++	sysfs_remove_link(&tz->device.kobj, kobject_name(&cdev->device.kobj));
++
++	/* Shift the entries in the tz->cdevs array */
++	for (j = indx; j < MAX_CDEVS_PER_ZONE - 1; j++)
++		tz->cdevs[j] = tz->cdevs[j + 1];
++
++	tz->cdev_indx--;
++}
++
+ /* sys I/F for thermal zone */
+ 
+ #define to_thermal_zone(_dev) \
+@@ -1458,6 +1480,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ 	int i;
+ 	const struct thermal_zone_params *tzp;
+ 	struct thermal_zone_device *tz;
++	struct thermal_zone *tmp_tz;
+ 	struct thermal_cooling_device *pos = NULL;
+ 
+ 	if (!cdev)
+@@ -1495,6 +1518,13 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	mutex_lock(&zone_list_lock);
++
++	for_each_thermal_zone(tmp_tz)
++		remove_cdev_from_zone(tmp_tz, cdev);
++
++	mutex_unlock(&zone_list_lock);
++
+ 	if (cdev->type[0])
+ 		device_remove_file(&cdev->device, &dev_attr_cdev_type);
+ 	device_remove_file(&cdev->device, &dev_attr_max_state);
+@@ -1790,6 +1820,23 @@ exit:
+ }
+ EXPORT_SYMBOL(remove_thermal_zone);
+ 
++struct thermal_cooling_device *get_cdev_by_name(const char *name)
++{
++	struct thermal_cooling_device *pos;
++	struct thermal_cooling_device *cdev = NULL;
++
++	mutex_lock(&cdev_list_lock);
++	for_each_cdev(pos) {
++		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
++			cdev = pos;
++			break;
++		}
++	}
++	mutex_unlock(&cdev_list_lock);
++	return cdev;
++}
++EXPORT_SYMBOL(get_cdev_by_name);
++
+ struct thermal_sensor *get_sensor_by_name(const char *name)
+ {
+ 	struct thermal_sensor *pos;
+@@ -1840,6 +1887,39 @@ exit_zone:
+ }
+ EXPORT_SYMBOL(add_sensor_to_zone);
+ 
++int add_cdev_to_zone(struct thermal_zone *tz,
++			struct thermal_cooling_device *cdev)
++{
++	int ret;
++
++	if (!tz || !cdev)
++		return -EINVAL;
++
++	mutex_lock(&zone_list_lock);
++
++	/* Ensure we are not adding the same cdev again!! */
++	GET_INDEX(tz, cdev, ret, cdev);
++	if (ret >= 0) {
++		ret = -EEXIST;
++		goto exit_zone;
++	}
++
++	mutex_lock(&cdev_list_lock);
++	ret = sysfs_create_link(&tz->device.kobj, &cdev->device.kobj,
++				kobject_name(&cdev->device.kobj));
++	if (ret)
++		goto exit_cdev;
++
++	tz->cdevs[tz->cdev_indx++] = cdev;
++
++exit_cdev:
++	mutex_unlock(&cdev_list_lock);
++exit_zone:
++	mutex_unlock(&zone_list_lock);
++	return ret;
++}
++EXPORT_SYMBOL(add_cdev_to_zone);
++
+ /**
+  * thermal_sensor_register - register a new thermal sensor
+  * @name:	name of the thermal sensor
 diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 581dc87..7b0359b 100644
+index f08f774..c4e45c7 100644
 --- a/include/linux/thermal.h
 +++ b/include/linux/thermal.h
-@@ -49,9 +49,9 @@
- /* Default Thermal Governor: Does Linear Throttling */
- #define DEFAULT_THERMAL_GOVERNOR	"step_wise"
+@@ -51,6 +51,8 @@
  
--#define MAX_SENSORS_PER_ZONE		5
--
--#define MAX_CDEVS_PER_ZONE		5
-+/* Maximum number of sensors/cdevs per zone, defined through Kconfig */
-+#define MAX_SENSORS_PER_ZONE	CONFIG_THERMAL_MAX_SENSORS_PER_ZONE
-+#define MAX_CDEVS_PER_ZONE	CONFIG_THERMAL_MAX_CDEVS_PER_ZONE
+ #define MAX_SENSORS_PER_ZONE		5
  
- /* If we map each sensor with every possible cdev for a zone */
- #define MAX_MAPS_PER_ZONE	(MAX_SENSORS_PER_ZONE * MAX_CDEVS_PER_ZONE)
++#define MAX_CDEVS_PER_ZONE		5
++
+ struct thermal_sensor;
+ struct thermal_zone_device;
+ struct thermal_cooling_device;
+@@ -209,6 +211,10 @@ struct thermal_zone {
+ 	/* Sensor level information */
+ 	int sensor_indx; /* index into 'sensors' array */
+ 	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
++
++	/* cdev level information */
++	int cdev_indx; /* index into 'cdevs' array */
++	struct thermal_cooling_device *cdevs[MAX_CDEVS_PER_ZONE];
+ };
+ 
+ /* Structure that holds thermal governor information */
+@@ -287,6 +293,8 @@ struct thermal_zone *create_thermal_zone(const char *, void *);
+ void remove_thermal_zone(struct thermal_zone *);
+ int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
+ 
++int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
++
+ #ifdef CONFIG_NET
+ extern int thermal_generate_netlink_event(u32 orig, enum events event);
+ #else
 -- 
 1.7.9.5
