@@ -1,48 +1,57 @@
-From: Sonny Rao <sonnyrao@chromium.org>
-Subject: [PATCH] [RFC] cpufreq: can't raise max frequency with cpu_thermal
-Date: Tue, 18 Dec 2012 00:29:44 -0800
-Message-ID: <1355819384-25983-1-git-send-email-sonnyrao@chromium.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f202.google.com ([209.85.212.202]:55246 "EHLO
-	mail-wi0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754502Ab2LRI3s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Dec 2012 03:29:48 -0500
-Received: by mail-wi0-f202.google.com with SMTP id hn17so19731wib.5
-        for <linux-pm@vger.kernel.org>; Tue, 18 Dec 2012 00:29:47 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Tue, 18 Dec 2012 16:30:51 +0800
+Message-ID: <50D029BB.7060408@intel.com>
+References: <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <1354623100.3206.34.camel@dabdike.int.hansenpartnership.com> <50C1891A.7040900@intel.com> <50C5564F.8030000@intel.com> <20121211051027.GB1932@mtj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <20121211051027.GB1932@mtj.dyndns.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Doug Anderson <dianders@chromium.org>, Sameer Nanda <snanda@chromium.org>, Sonny Rao <sonnyrao@chromium.org>
 
-The cpu_thermal generic thermal management code has a bug where once
-max cpu frequency has been lowered in sysfs (scaling_max_freq) it is
-not possible to raise the max back up later.  The bug is that the
-notifer gets called by __cpufreq_set_policy() before the user policy
-max is raised, and is incorrectly trying to enforce the max frequency
-policy even when we are trying to change the policy.  It is also not
-clear why this driver is looking at the user policy since it is
-primarily supposed to enforce thermal policy, not user set policy.
+Hi Everyone,
 
-Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
----
- drivers/thermal/cpu_cooling.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+Due to lack of information, I think I'll go ahead and pick up a simple
+solution for this(i.e. the code I attached previously to set a flag
+event_driven in scsi_device to let sr skip events poll) and send a new
+series out for you to review. After all, I can't wait forever...
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 836828e..63bc708 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -219,10 +219,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- 	if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
- 		max_freq = notify_device->cpufreq_val;
- 
--	/* Never exceed user_policy.max*/
--	if (max_freq > policy->user_policy.max)
--		max_freq = policy->user_policy.max;
--
- 	if (policy->max != max_freq)
- 		cpufreq_verify_within_limits(policy, 0, max_freq);
- 
--- 
-1.7.7.3
+Please feel free to let me know if you don't think I should send a new
+series with the above mentioned solution.
+
+Thanks a lot for your(all of you) kind help and comments.
+
+-Aaron
+
+On 12/11/2012 01:10 PM, Tejun Heo wrote:
+> Hello, guys.
+> 
+> On Mon, Dec 10, 2012 at 11:26:07AM +0800, Aaron Lu wrote:
+>>>>> The problem here is there's no easy to reach genhd from libata (or the
+>>>>> other way around) without going through sr.  I think we're gonna have
+>>>>> to have something in sr one way or the other.
+>>>>
+>>>> Can't we do that via an event? It's a bit clunky because we need the
+>>>> callback in the layer that sees the sdev, which is libata-scsi, we just
+>>>> need an analogue of ata_scsi_media_change_notify, but ignoring and
+>>>> allowing polling is essentially event driven as well, so it should all
+>>>> work.  We'll need a listener in genhd, which might be trickier.
+> 
+> I'm not really following what you mean.  Can you please elaborate?
+> One way or the other, doesn't the notification have to bubble up
+> through SCSI?
+> 
+>> A colleague of mine reminded me that it's impolite to write something
+>> like this, and here is my apology. I didn't mean to be rude, I'm sorry
+>> for this if it made you feel uncomfortable.
+> 
+> Oh, no, it's not rude at all. I was just being distracted w/ other
+> stuff and lazy.  Sorry about that.
+> 
+> Thanks.
+> 
 
