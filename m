@@ -1,117 +1,85 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-Date: Sun, 23 Dec 2012 01:47:37 +0530
-Message-ID: <50D61561.7090805@linux.vnet.ibm.com>
-References: <20121212180248.GA24882@redhat.com> <50C8CD52.8040808@linux.vnet.ibm.com> <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <50D0CCB3.10105@linux.vnet.ibm.com> <20121219163900.GA18516@redhat.com> <50D2047A.1040606@linux.vnet.ibm.com> <20121219191436.GA25829@redhat.com> <50D21A5F.4040604@linux.vnet.ibm.com> <20121220134203.GB10813@redhat.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
+Date: Wed, 19 Dec 2012 08:18:14 -0800
+Message-ID: <CALAqxLUY+EF1jpVou2g-G00kLxYBTpbBQitHVQuoRepNKXPEpg@mail.gmail.com>
+References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
+ <20121217113611.GA31470@balto.lan>
+ <CACRpkdYRJvFEUvB++fKgVWEXZrTQ7aob0MPMwW4TBs_VRNuzsA@mail.gmail.com>
+ <50CF6B77.3000000@linaro.org>
+ <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:48267 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034Ab2LVUTW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Dec 2012 15:19:22 -0500
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Sun, 23 Dec 2012 06:14:01 +1000
-In-Reply-To: <20121220134203.GB10813@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============0794967325464724918=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/20/2012 07:12 PM, Oleg Nesterov wrote:
-> On 12/20, Srivatsa S. Bhat wrote:
->>
->> On 12/20/2012 12:44 AM, Oleg Nesterov wrote:
->>>
->>> We need 2 helpers for writer, the 1st one does synchronize_sched() and the
->>> 2nd one takes rwlock. A generic percpu_write_lock() simply calls them both.
->>>
->>
->> Ah, that's the problem no? Users of reader-writer locks expect to run in
->> atomic context (ie., they don't want to sleep).
-> 
-> Ah, I misunderstood.
-> 
-> Sure, percpu_write_lock() should be might_sleep(), and this is not
-> symmetric to percpu_read_lock().
-> 
->> We can't expose an API that
->> can make the task go to sleep under the covers!
-> 
-> Why? Just this should be documented. However I would not worry until we
-> find another user. Until then we do not even need to add percpu_write_lock
-> or try to generalize this code too much.
-> 
->>> To me, the main question is: can we use synchronize_sched() in cpu_down?
->>> It is slow.
->>>
->>
->> Haha :-) So we don't want smp_mb() in the reader,
-> 
-> We need mb() + rmb(). Plust cli/sti unless this arch has optimized
-> this_cpu_add() like x86 (as you pointed out).
-> 
+--===============0794967325464724918==
+Content-Type: multipart/alternative; boundary=14dae9cfce941d16cd04d136f601
 
-Hey, IIUC, we actually don't need mb() in the reader!! Just an rmb() will do.
+--14dae9cfce941d16cd04d136f601
+Content-Type: text/plain; charset=ISO-8859-1
 
-This is the reader code I have so far:
+On Dec 19, 2012 7:34 AM, "Linus Walleij" <linus.walleij@linaro.org> wrote:
+>
+> On Mon, Dec 17, 2012 at 7:59 PM, John Stultz <john.stultz@linaro.org>
+wrote:
+> > On 12/17/2012 10:38 AM, Linus Walleij wrote:
+> >> If no clocksource maintainer steps up in a week then notify me and
+> >> I'll simply stick these into the ux500 tree.
+> >
+> > Yea, I'd actually prefer these go through the arch tree where they can
+get
+> > testing.
+>
+> OK, can I have your ACK?
 
-#define reader_nested_percpu()						\
-	     (__this_cpu_read(reader_percpu_refcnt) & READER_REFCNT_MASK)
+Acked-by: John Stultz <john.stultz@linaro.org>
 
-#define writer_active()							\
-				(__this_cpu_read(writer_signal))
+thanks
+-john
+
+--14dae9cfce941d16cd04d136f601
+Content-Type: text/html; charset=ISO-8859-1
+
+<p dir="ltr"><br>
+On Dec 19, 2012 7:34 AM, &quot;Linus Walleij&quot; &lt;<a href="mailto:linus.walleij@linaro.org">linus.walleij@linaro.org</a>&gt; wrote:<br>
+&gt;<br>
+&gt; On Mon, Dec 17, 2012 at 7:59 PM, John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt; wrote:<br>
+&gt; &gt; On 12/17/2012 10:38 AM, Linus Walleij wrote:<br>
+&gt; &gt;&gt; If no clocksource maintainer steps up in a week then notify me and<br>
+&gt; &gt;&gt; I&#39;ll simply stick these into the ux500 tree.<br>
+&gt; &gt;<br>
+&gt; &gt; Yea, I&#39;d actually prefer these go through the arch tree where they can get<br>
+&gt; &gt; testing.<br>
+&gt;<br>
+&gt; OK, can I have your ACK?</p>
+<p dir="ltr">Acked-by: John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt;</p>
+<p dir="ltr">thanks<br>
+-john</p>
+
+--14dae9cfce941d16cd04d136f601--
 
 
-#define READER_PRESENT		(1UL << 16)
-#define READER_REFCNT_MASK	(READER_PRESENT - 1)
+--===============0794967325464724918==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-void get_online_cpus_atomic(void)
-{
-	preempt_disable();
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-	/*
-	 * First and foremost, make your presence known to the writer.
-	 */
-	this_cpu_add(reader_percpu_refcnt, READER_PRESENT);
-
-	/*
-	 * If we are already using per-cpu refcounts, it is not safe to switch
-	 * the synchronization scheme. So continue using the refcounts.
-	 */
-	if (reader_nested_percpu()) {
-		this_cpu_inc(reader_percpu_refcnt);
-	} else {
-		smp_rmb();
-		if (unlikely(writer_active())) {
-			... //take hotplug_rwlock
-		}
-	}
-
-	...
-
-	/* Prevent reordering of any subsequent reads of cpu_online_mask. */
-	smp_rmb();
-}
-
-The smp_rmb() before writer_active() ensures that LOAD(writer_signal) follows
-LOAD(reader_percpu_refcnt) (at the 'if' condition). And in turn, that load is
-automatically going to follow the STORE(reader_percpu_refcnt) (at this_cpu_add())
-due to the data dependency. So it is something like a transitive relation.
-
-So, the result is that, we mark ourselves as active in reader_percpu_refcnt before
-we check writer_signal. This is exactly what we wanted to do right?
-And luckily, due to the dependency, we can achieve it without using the heavy
-smp_mb(). And, we can't crib about the smp_rmb() because it is unavoidable anyway
-(because we want to prevent reordering of the reads to cpu_online_mask, like you
-pointed out earlier).
-
-I hope I'm not missing anything...
-
-Regards,
-Srivatsa S. Bhat
-
+--===============0794967325464724918==--
