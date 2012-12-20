@@ -1,35 +1,103 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 4/8] Thermal: Add Thermal_trip sysfs node
-Date: Wed, 19 Dec 2012 21:42:01 -0800
-Message-ID: <20121220054201.GE28007@kroah.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 2/8] Thermal: Create zone level APIs
+Date: Thu, 20 Dec 2012 06:02:36 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5924C5D9@BGSMSX101.gar.corp.intel.com>
 References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
- <1355822977-4804-5-git-send-email-durgadoss.r@intel.com>
+	 <1355822977-4804-3-git-send-email-durgadoss.r@intel.com>
+ <1355830214.19706.39.camel@joe-AO722>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1355822977-4804-5-git-send-email-durgadoss.r@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hongbo.zhang@linaro.org, wni@nvidia.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:21217 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838Ab2LTGEI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Dec 2012 01:04:08 -0500
+In-Reply-To: <1355830214.19706.39.camel@joe-AO722>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-On Tue, Dec 18, 2012 at 02:59:33PM +0530, Durgadoss R wrote:
-> This patch adds a thermal_trip directory under
-> /sys/class/thermal/zoneX. This directory contains
-> the trip point values for sensors bound to this
-> zone.
+Hi Joe,
 
-Eeek, you just broke userspace tools that now can no longer see these
-entries :(
+> -----Original Message-----
+> From: Joe Perches [mailto:joe@perches.com]
+> Sent: Tuesday, December 18, 2012 5:00 PM
+> To: R, Durgadoss
+> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> hongbo.zhang@linaro.org; wni@nvidia.com
+> Subject: Re: [PATCH 2/8] Thermal: Create zone level APIs
+> 
+> On Tue, 2012-12-18 at 14:59 +0530, Durgadoss R wrote:
+> > This patch adds a new thermal_zone structure to
+> > thermal.h. Also, adds zone level APIs to the thermal
+> > framework.
+> 
+> []
+> 
+> > diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> 
+> > +#define GET_INDEX(tz, ptr, indx, type)			\
+> > +	do {						\
+> > +		int i;					\
+> > +		indx = -EINVAL;				\
+> > +		if (!tz || !ptr)			\
+> > +			break;				\
+> > +		mutex_lock(&type##_list_lock);		\
+> > +		for (i = 0; i < tz->type##_indx; i++) {	\
+> > +			if (tz->type##s[i] == ptr) {	\
+> > +				indx = i;		\
+> > +				break;			\
+> > +			}				\
+> > +		}					\
+> > +		mutex_unlock(&type##_list_lock);	\
+> > +	} while (0)
+> 
+> A statement expression macro returning int would be
+> more kernel style like and better to use.
+> 
 
-Why do you need to create a subdirectory?  As you found out, doing so
-isn't the easiest, right?  That is on purpose.
+Yes, makes sense. Will fix this in next rev.
 
-I really wouldn't recommend doing this at all, please stick within the
-'struct device' framework here, don't create new kobjects and hang sysfs
-files off of them.
+Thanks,
+Durga
 
-thanks,
+> (sorry about the whitespace, evolution 3.6 is crappy)
+> 
+> #define GET_INDEX(tx, ptr, type)				\
+> ({								\
+> 	int rtn = -EINVAL;					\
+> 	do {							\
+> 		int i;						\
+> 		if (!tz || !ptr)				\
+> 			break;					\
+> 		mutex_lock(&type##_list_lock);			\
+> 		for (i = 0; i < tz->type##_indx; i++) {		\
+> 			if (tz->type##s[i] == ptr) {		\
+> 				rtn = i;			\
+> 				break;				\
+> 			}					\
+> 		}						\
+> 		mutex_unlock(&type##_list_lock);		\
+> 	} while (0);						\
+> 	rtn;							\
+> })
+> 
+> 
+> > +static void remove_sensor_from_zone(struct thermal_zone *tz,
+> > +				struct thermal_sensor *ts)
+> > +{
+> > +	int j, indx;
+> > +
+> > +	GET_INDEX(tz, ts, indx, sensor);
+> 
+> This becomes
+> 
+> 	indx = GET_INDEX(tx, ts, sensor);
+> 
+> > +	if (indx < 0)
+> > +		return;
+> 
 
-greg k-h
