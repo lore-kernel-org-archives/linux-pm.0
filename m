@@ -1,115 +1,76 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [regression] cpuidle_get_cpu_driver livelocks idle system
-Date: Thu, 20 Dec 2012 19:16:46 +0100
-Message-ID: <50D3560E.7080802@linaro.org>
-References: <20121217193612.GA28600@sgi.com> <50CF95AD.8030406@linaro.org> <2092099.bR8HA2X8Pe@vostro.rjw.lan>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] PCIe/PM: Do not suspend port if any subordinate device
+ need PME polling
+Date: Thu, 20 Dec 2012 14:44:42 -0700
+Message-ID: <CAErSpo6xUDEdbtoOvReb+QX4PZ2_wGzUw4t=sJXCUTX-guUjRQ@mail.gmail.com>
+References: <1355453531-23348-1-git-send-email-ying.huang@intel.com>
+ <20121214051131.GA31440@richard.> <3929168.xsIhODq3Fi@vostro.rjw.lan> <50cdc89b.2788440a.0cfe.ffff8fb7SMTPIN_ADDED_BROKEN@mx.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2092099.bR8HA2X8Pe@vostro.rjw.lan>
+In-Reply-To: <50cdc89b.2788440a.0cfe.ffff8fb7SMTPIN_ADDED_BROKEN@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sivaram Nair <sivaramn@nvidia.com>, Russ Anderson <rja@sgi.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "shuox.liu@intel.com" <shuox.liu@intel.com>, "yanmin_zhang@intel.com" <yanmin_zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Richard Yang <weiyang@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/18/2012 12:33 AM, Rafael J. Wysocki wrote:
-> On Monday, December 17, 2012 10:59:09 PM Daniel Lezcano wrote:
->> On 12/17/2012 08:36 PM, Russ Anderson wrote:
->>> The 3.7 kernel grinds to a halt on boot of a system with
->>> 2048 cpus.  NMI showed most of the cpus in
->>> _raw_spin_lock in cpuidle_get_cpu_driver().  (backtrace below)
+On Sun, Dec 16, 2012 at 6:11 AM, Richard Yang
+<weiyang@linux.vnet.ibm.com> wrote:
+> On Sat, Dec 15, 2012 at 12:03:33AM +0100, Rafael J. Wysocki wrote:
+>>On Friday, December 14, 2012 01:11:31 PM Richard Yang wrote:
+>>> On Fri, Dec 14, 2012 at 10:52:11AM +0800, Huang Ying wrote:
+>>> >In
+>>> >
+>>> >  http://www.mail-archive.com/linux-usb@vger.kernel.org/msg07976.html
+>>> >
+>>> >Ulrich reported that his USB3 cardreader does not work reliably when
+>>> >connected to the USB3 port.  It turns out that USB3 controller failed
+>>> >to be waken up when plugging in the USB3 cardreader.  Further
+>>> >experiment found that the USB3 host controller can only be waken up
+>>> >via polling, while not via PME interrupt.  But if the PCIe port that
+>>> >the USB3 host controller is connected is suspended, we can not poll
+>>> >the USB3 host controller because its config space is not accessible if
+>>> >the PCIe port is put into low power state.
+>>> >
+>>> >To solve the issue, the PCIe port will not be suspended if any
+>>> >subordinate device need PME polling.
+>>> >
+>>> >Reported-by: Ulrich Eckhardt <usb@uli-eckhardt.de>
+>>> >Signed-off-by: Huang Ying <ying.huang@intel.com>
+>>> >Tested-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+>>> >Cc: stable@vger.kernel.org  # 3.6+
+>>> >---
+>>> > drivers/pci/pcie/portdrv_pci.c |   18 +++++++++++++++++-
+>>> > 1 file changed, 17 insertions(+), 1 deletion(-)
+>>> >
+>>> >--- a/drivers/pci/pcie/portdrv_pci.c
+>>> >+++ b/drivers/pci/pcie/portdrv_pci.c
+>>> >@@ -134,10 +134,26 @@ static int pcie_port_runtime_resume(stru
+>>> >    return 0;
+>>> > }
+>>> >
+>>> >+static int pci_dev_pme_poll(struct pci_dev *pdev, void *data)
+>>> >+{
+>>> >+   int *pme_poll = data;
+>>> >+   *pme_poll = *pme_poll || pdev->pme_poll;
+>>> >+   return 0;
+>>> >+}
+>>> >+
+>>> > static int pcie_port_runtime_idle(struct device *dev)
+>>> > {
+>>> >+   struct pci_dev *pdev = to_pci_dev(dev);
+>>> >+   int pme_poll = false;
 >>>
->>> A quick look at cpuidle_get_cpu_driver() shows the hot lock.
+>>> You want to use int or bool?
 >>>
->>> In drivers/cpuidle/driver.c:
->>> --------------------------------------------------------
->>> /**
->>>  * cpuidle_get_cpu_driver - return the driver tied with a cpu
->>>  */
->>> struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device=
- *dev)
->>> {
->>>         struct cpuidle_driver *drv;
->>>
->>>         if (!dev)
->>>                 return NULL;
->>>
->>>         spin_lock(&cpuidle_driver_lock);
->>>         drv =3D __cpuidle_get_cpu_driver(dev->cpu);
->>>         spin_unlock(&cpuidle_driver_lock);
->>>
->>>         return drv;
->>> }
->>> --------------------------------------------------------
+>>> I think bool is better?
 >>
->> Hi Russ,
+>>Well, bool would be nicer, but it's not a big deal.
 >>
->> thanks for investigating the problem. You are right, there is a
->> bottleneck here.
->>
->> Regarding how is used the cpuidle code, I think it is safe to remove=
- the
->> locks.
->=20
-> OK, a patch would be appreciated. :-)
->=20
-> If you prepare one, please explain in the changelog why it is safe to=
- drop the
-> locks.
+>
+> Yep, not a big deal.
 
-Ok, sure. I have some troubles with my x86 hardware, so it could take a
-couple of days before I can send a fix a bit tested.
+I fixed up the int/bool confusion and added this to my pci/for-3.8
+branch.  I'll push it soon after v3.8-rc1.  Thanks!
 
-
->>> This change was added in on Nov 14th, 2012.
->>> http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux.git;a=3D=
-commit;h=3Dbf4d1b5ddb78f86078ac6ae0415802d5f0c68f92
->>>
->>> The patch says it adds support for cpus with different characterist=
-ics,
->>> but adds a big global lock.  The comment claims "no impact for the =
-other
->>> platforms if the option is disabled", which leads me to believe the
->>> spin_lock was added inadvertently.  CPU_IDLE_MULTIPLE_DRIVERS is of=
-f
->>> in my config file.
->>>
->>> linux$ grep CPU_IDLE_MULTIPLE_DRIVERS .config
->>> # CONFIG_CPU_IDLE_MULTIPLE_DRIVERS is not set
->>>
->>> As more cpus become idle, more cpus fight over the lock until
->>> the system livelocks on the crushing weight of idle.
->>>
->>> The fix may be to move the spin_lock into __cpuidle_get_cpu_driver,
->>> which has different versions for CONFIG_CPU_IDLE_MULTIPLE_DRIVERS,
->>> to avoid impacting the disabled case, or get rid of the spin_lock
->>> all together.
->>>
->>>
->>> --------------------------------------------------------
->>> =3D=3D UV NMI process trace cpu 12: =3D=3D
->>> CPU 12
->>> Pid: 0, comm: swapper/12 Tainted: G           O 3.7.0.rja-sgi+ #38
->>> RIP: 0010:[<ffffffff81614e45>]  [<ffffffff81614e45>] _raw_spin_lock=
-+0x25/0x30
->>> [...]
->>> Call Trace:
->>>  [<ffffffff814c891c>] cpuidle_get_cpu_driver+0x1c/0x30
->>>  [<ffffffff814c871d>] cpuidle_idle_call+0x7d/0x1b0
->>>  [<ffffffff8101d08d>] cpu_idle+0xdd/0x130
->>>  [<ffffffff8160a3ea>] start_secondary+0xc6/0xcc
->>> --------------------------------------------------------
->>>
->>
->>
->>
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Bjorn
