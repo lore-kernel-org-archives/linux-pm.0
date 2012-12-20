@@ -1,101 +1,65 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-Date: Thu, 20 Dec 2012 19:36:57 +0530
-Message-ID: <50D31B81.4090601@linux.vnet.ibm.com>
-References: <20121212180248.GA24882@redhat.com> <50C8CD52.8040808@linux.vnet.ibm.com> <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <50D0CCB3.10105@linux.vnet.ibm.com> <20121219163900.GA18516@redhat.com> <50D2047A.1040606@linux.vnet.ibm.com> <20121219191436.GA25829@redhat.com> <50D21A5F.4040604@linux.vnet.ibm.com> <20121220134203.GB10813@redhat.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 4/8] Thermal: Add Thermal_trip sysfs node
+Date: Thu, 20 Dec 2012 08:12:02 -0800
+Message-ID: <20121220161202.GA29796@kroah.com>
+References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
+ <1355822977-4804-5-git-send-email-durgadoss.r@intel.com>
+ <20121220054201.GE28007@kroah.com>
+ <4D68720C2E767A4AA6A8796D42C8EB5924CB6C@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:40442 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769Ab2LTOIn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Dec 2012 09:08:43 -0500
-Received: from /spool/local
-	by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Thu, 20 Dec 2012 19:38:00 +0530
-In-Reply-To: <20121220134203.GB10813@redhat.com>
+Received: from mail-da0-f45.google.com ([209.85.210.45]:64854 "EHLO
+	mail-da0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203Ab2LTQJC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Dec 2012 11:09:02 -0500
+Received: by mail-da0-f45.google.com with SMTP id w4so1593945dam.32
+        for <linux-pm@vger.kernel.org>; Thu, 20 Dec 2012 08:09:01 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB5924CB6C@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-On 12/20/2012 07:12 PM, Oleg Nesterov wrote:
-> On 12/20, Srivatsa S. Bhat wrote:
->>
->> On 12/20/2012 12:44 AM, Oleg Nesterov wrote:
->>>
->>> We need 2 helpers for writer, the 1st one does synchronize_sched() and the
->>> 2nd one takes rwlock. A generic percpu_write_lock() simply calls them both.
->>>
->>
->> Ah, that's the problem no? Users of reader-writer locks expect to run in
->> atomic context (ie., they don't want to sleep).
+On Thu, Dec 20, 2012 at 07:52:03AM +0000, R, Durgadoss wrote:
+> > On Tue, Dec 18, 2012 at 02:59:33PM +0530, Durgadoss R wrote:
+> > > This patch adds a thermal_trip directory under
+> > > /sys/class/thermal/zoneX. This directory contains
+> > > the trip point values for sensors bound to this
+> > > zone.
+> > 
+> > Eeek, you just broke userspace tools that now can no longer see these
+> > entries :(
+> > 
+> > Why do you need to create a subdirectory?  As you found out, doing so
+> > isn't the easiest, right?  That is on purpose.
 > 
-> Ah, I misunderstood.
+> Yes, I observed the complexity.
 > 
-> Sure, percpu_write_lock() should be might_sleep(), and this is not
-> symmetric to percpu_read_lock().
+> > 
+> > I really wouldn't recommend doing this at all, please stick within the
+> > 'struct device' framework here, don't create new kobjects and hang sysfs
+> > files off of them.
 > 
->> We can't expose an API that
->> can make the task go to sleep under the covers!
-> 
-> Why? Just this should be documented. However I would not worry until we
-> find another user. Until then we do not even need to add percpu_write_lock
-> or try to generalize this code too much.
-> 
+> But, we cannot put all _trip directly under ZoneX directory.
 
-Hmm.. But considering the disable_nonboot_cpus() case you mentioned below, I'm
-only getting farther away from using synchronize_sched() ;-) And that also makes
-it easier to expose a generic percpu rwlock API, like Tejun was suggesting.
-So I'll give it a shot.
+Why not?  What is preventing this?
 
->>> To me, the main question is: can we use synchronize_sched() in cpu_down?
->>> It is slow.
->>>
->>
->> Haha :-) So we don't want smp_mb() in the reader,
+> We can remove the thermal_trip directory, and put sensorY_trip under
+> /sys/class/thermal/zoneX/.  But this sensorY_trip needs to be a
+> directory which has four sysfs nodes named, active, passive, crit,
+> hot.
 > 
-> We need mb() + rmb(). Plust cli/sti unless this arch has optimized
-> this_cpu_add() like x86 (as you pointed out).
+> Rui, What do you think about this ?
 > 
->> *and* also don't want
->> synchronize_sched() in the writer! Sounds like saying we want to have the cake
->> and eat it too ;-) :P
-> 
-> Personally I'd vote for synchronize_sched() but I am not sure. And I do
-> not really understand the problem space.
-> 
->> And moreover, since I'm still not convinced about the writer API part if use
->> synchronize_sched(), I'd rather avoid synchronize_sched().)
-> 
-> Understand.
-> 
-> And yes, synchronize_sched() adds more problems. For example, where should
-> we call it? I do not this _cpu_down() should do this, in this case, say,
-> disable_nonboot_cpus() needs num_online_cpus() synchronize_sched's.
-> 
+> The only other way I see, is directly put sensorY_trip_[active/passive/hot/crit]
+> which will create way too many nodes, under /sys/class/thermal/zoneX/.
 
-Ouch! I should have seen that coming!
+What is "too many"?  20000?  50000?  How many are we talking about here?
+What is the limiting factor that is preventing this from all going into
+one directory?
 
-> So probably cpu_down() should call it before cpu_maps_update_begin(), this
-> makes the locking even less obvious.
-> 
+thanks,
 
-True.
-
-> In short. What I am trying to say is, don't ask me I do not know ;)
->
-
-OK then, I'll go with what I believe is a reasonably good way (not necessarily
-the best way) to deal with this:
-
-I'll avoid the use of synchronize_sched(), expose a decent-looking percpu
-rwlock implementation, use it in CPU hotplug and get rid of stop_machine().
-That would certainly be a good starting base, IMHO.
-
-Regards,
-Srivatsa S. Bhat
-
+greg k-h
