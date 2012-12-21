@@ -1,76 +1,74 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] PCIe/PM: Do not suspend port if any subordinate device
- need PME polling
-Date: Thu, 20 Dec 2012 14:44:42 -0700
-Message-ID: <CAErSpo6xUDEdbtoOvReb+QX4PZ2_wGzUw4t=sJXCUTX-guUjRQ@mail.gmail.com>
-References: <1355453531-23348-1-git-send-email-ying.huang@intel.com>
- <20121214051131.GA31440@richard.> <3929168.xsIhODq3Fi@vostro.rjw.lan> <50cdc89b.2788440a.0cfe.ffff8fb7SMTPIN_ADDED_BROKEN@mx.google.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH 0/8] Thermal Framework Enhancements
+Date: Fri, 21 Dec 2012 16:05:52 +0800
+Message-ID: <50D41860.7040406@nvidia.com>
+References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <50cdc89b.2788440a.0cfe.ffff8fb7SMTPIN_ADDED_BROKEN@mx.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Richard Yang <weiyang@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate04.nvidia.com ([216.228.121.35]:19477 "EHLO
+	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079Ab2LUIFv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Dec 2012 03:05:51 -0500
+In-Reply-To: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
 
-On Sun, Dec 16, 2012 at 6:11 AM, Richard Yang
-<weiyang@linux.vnet.ibm.com> wrote:
-> On Sat, Dec 15, 2012 at 12:03:33AM +0100, Rafael J. Wysocki wrote:
->>On Friday, December 14, 2012 01:11:31 PM Richard Yang wrote:
->>> On Fri, Dec 14, 2012 at 10:52:11AM +0800, Huang Ying wrote:
->>> >In
->>> >
->>> >  http://www.mail-archive.com/linux-usb@vger.kernel.org/msg07976.html
->>> >
->>> >Ulrich reported that his USB3 cardreader does not work reliably when
->>> >connected to the USB3 port.  It turns out that USB3 controller failed
->>> >to be waken up when plugging in the USB3 cardreader.  Further
->>> >experiment found that the USB3 host controller can only be waken up
->>> >via polling, while not via PME interrupt.  But if the PCIe port that
->>> >the USB3 host controller is connected is suspended, we can not poll
->>> >the USB3 host controller because its config space is not accessible if
->>> >the PCIe port is put into low power state.
->>> >
->>> >To solve the issue, the PCIe port will not be suspended if any
->>> >subordinate device need PME polling.
->>> >
->>> >Reported-by: Ulrich Eckhardt <usb@uli-eckhardt.de>
->>> >Signed-off-by: Huang Ying <ying.huang@intel.com>
->>> >Tested-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
->>> >Cc: stable@vger.kernel.org  # 3.6+
->>> >---
->>> > drivers/pci/pcie/portdrv_pci.c |   18 +++++++++++++++++-
->>> > 1 file changed, 17 insertions(+), 1 deletion(-)
->>> >
->>> >--- a/drivers/pci/pcie/portdrv_pci.c
->>> >+++ b/drivers/pci/pcie/portdrv_pci.c
->>> >@@ -134,10 +134,26 @@ static int pcie_port_runtime_resume(stru
->>> >    return 0;
->>> > }
->>> >
->>> >+static int pci_dev_pme_poll(struct pci_dev *pdev, void *data)
->>> >+{
->>> >+   int *pme_poll = data;
->>> >+   *pme_poll = *pme_poll || pdev->pme_poll;
->>> >+   return 0;
->>> >+}
->>> >+
->>> > static int pcie_port_runtime_idle(struct device *dev)
->>> > {
->>> >+   struct pci_dev *pdev = to_pci_dev(dev);
->>> >+   int pme_poll = false;
->>>
->>> You want to use int or bool?
->>>
->>> I think bool is better?
->>
->>Well, bool would be nicer, but it's not a big deal.
->>
->
-> Yep, not a big deal.
+On 12/18/2012 05:29 PM, Durgadoss R wrote:
+> This patch is a v1 based on the RFC submitted here:
+> https://patchwork.kernel.org/patch/1758921/
+> 
+> This patch set is based on Rui's -thermal tree, and is
+> tested on a Core-i5 and an Atom netbook.
+> 
+> This series contains 8 patches:
+> Patch 1/8: Creates new sensor level APIs
+> Patch 2/8: Creates new zone level APIs. The existing tzd structure is
+>            kept as such for clarity and compatibility purposes.
+> Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
+>            existing tcd structure need not be modified.
+> Patch 4/8: Adds a thermal_trip sysfs node, which exposes various trip
+>            points for all sensors present in a zone.
+> Patch 5/8: Adds a thermal_map sysfs node. It is a compact representation
+>            of the binding relationship between a sensor and a cdev,
+>            within a zone.
+> Patch 6/8: Creates Documentation for the new APIs. A new file is
+>            created for clarity. Final goal is to merge with the existing
+>            file or refactor the files, as whatever seems appropriate.
+> Patch 7/8: Make PER ZONE values configurable through Kconfig
+> Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
 
-I fixed up the int/bool confusion and added this to my pci/for-3.8
-branch.  I'll push it soon after v3.8-rc1.  Thanks!
+I read these patches, they create new APIs and sysfs, but it seems they
+didn't use the thermal_zone to handle the thermal_throttle issue,
+something like update thermal_zone, update temperature, handle governors
+when cross the trip temp. So will you send out next serial patches for
+these implementation?
 
-Bjorn
+> 
+> Thanks to Rui Zhang, Honghbo Zhang, Wei Ni for their feedback on the
+> RFC version.
+> 
+> Durgadoss R (8):
+>   Thermal: Create sensor level APIs
+>   Thermal: Create zone level APIs
+>   Thermal: Add APIs to bind cdev to new zone structure
+>   Thermal: Add Thermal_trip sysfs node
+>   Thermal: Add 'thermal_map' sysfs node
+>   Thermal: Add Documentation to new APIs
+>   Thermal: Make PER_ZONE values configurable
+>   Thermal: Dummy driver used for testing
+> 
+>  Documentation/thermal/sysfs-api2.txt |  248 +++++++++
+>  drivers/thermal/Kconfig              |   19 +
+>  drivers/thermal/Makefile             |    3 +
+>  drivers/thermal/thermal_sys.c        |  932 ++++++++++++++++++++++++++++++++++
+>  drivers/thermal/thermal_test.c       |  315 ++++++++++++
+>  include/linux/thermal.h              |  124 +++++
+>  6 files changed, 1641 insertions(+)
+>  create mode 100644 Documentation/thermal/sysfs-api2.txt
+>  create mode 100644 drivers/thermal/thermal_test.c
+> 
+
