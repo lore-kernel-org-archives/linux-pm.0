@@ -1,81 +1,56 @@
-From: Mike Turquette <mturquette@linaro.org>
-Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some
- parts
-Date: Fri, 21 Dec 2012 11:18:28 -0600
-Message-ID: <CAPtuhTgJysTATpAjG5fJv_RUgL-60fwpDYcoF2KUQ8U7+W=Yjg@mail.gmail.com>
-References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
- <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
- <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Subject: Re: [Resend][PATCH] PM: Move disabling/enabling runtime PM to late suspend/early resume
+Date: Fri, 21 Dec 2012 11:52:56 -0800
+Message-ID: <87d2y3dvxj.fsf@deeprootsystems.com>
+References: <1988667.JSHu2WyJuF@vostro.rjw.lan>
+	<3307221.dy6xvn45xe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Philippe Begnic <philippe.begnic@st.com>, Vincent Guittot <vincent.guittot@linaro.org>, Jonas Aberg <jonas.aberg@stericsson.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee.jones@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3307221.dy6xvn45xe@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Sat, 15 Dec 2012 01:25:58 +0100")
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan-Matthias Braun <jan_braun@gmx.net>, Jiri Kosina <jkosina@suse.cz>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 13, 2012 at 3:20 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 12 December 2012 21:56, Mike Turquette <mturquette@linaro.org> wrote:
->> On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
->>> From: Ulf Hansson <ulf.hansson@linaro.org>
->>>
->>> This patchset starts by renaming the db8500 cpufreq driver to a more generic
->>> name. There are new variants which rely on it too, so instead we give it a
->>> family name of dbx500.
->>>
->>> On top of that a fixup patch for initialization of the driver and some minor
->>> cleanup patches are included as well.
->>>
->>> These patches can be material for 3.8.
->>>
->>> Since some patches for the db8500 cpufreq driver has recently been merged
->>> through Mike Turquette's clk tree, I decided to base these patches on top
->>> of the clk-next branch. So I hope Mike is fine by merging these patches
->>> through his tree.
->>>
->>> So I will try to collect ACKs from Rafael for the cpufreq patches. The
->>> mfd patch has already been ACKED by Samuel.
->>>
->>
->> Ulf,
->>
->> Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
->> this branch once Rafael ACKs the CPUfreq bits if you want, but I think
->> you have more options now that clk-next is merged in.  It's up to you.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> I think the easiest way forward (at least for me :-) ) would be if we
-> could send them as for 3.8 rcs. Is that possible for you Mike?
+> Currently, the PM core disables runtime PM for all devices right
+> after executing subsystem/driver .suspend() callbacks for them
+> and re-enables it right before executing subsystem/driver .resume()
+> callbacks for them.  This may lead to problems when there are
+> two devices such that the .suspend() callback executed for one of
+> them depends on runtime PM working for the other.  In that case,
+> if runtime PM has already been disabled for the second device,
+> the first one's .suspend() won't work correctly (and analogously
+> for resume).
 >
-
-Hi Ulf,
-
-I did not want to leave you hanging on this point.  I decided at the
-last minute to not bring a development platform or a nice laptop on my
-vacation so I will not be sending any more pull requests to Linus for
-3.8-rc unless some patches come in which are just obvious fixes.  Even
-then I will wait until I return in January to properly test any fixes
-before I send the request out.
-
-Sorry that these patches did not make it in for 3.8 but I will queue
-them up into clk-next in January.
-
-Thanks,
-Mike
-
->>
->> Regards,
->> Mike
+> To make those issues go away, make the PM core disable runtime PM
+> for devices right before executing subsystem/driver .suspend_late()
+> callbacks for them and enable runtime PM for them right after
+> executing subsystem/driver .resume_early() callbacks for them.  This
+> way the potential conflitcs between .suspend_late()/.resume_early()
+> and their runtime PM counterparts are still prevented from happening,
+> but the subtle ordering issues related to disabling/enabling runtime
+> PM for devices during system suspend/resume are much easier to avoid.
 >
-> Thanks!
->
-> Ulf Hansson
+> Reported-and-tested-by: Jan-Matthias Braun <jan_braun@gmx.net>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Yes!  
+
+Of course if there are dependencies between drivers late/early
+callbacks, we'll still have the same problems, but those should be
+*very* rare compared to the suspend/resume dependencies.  
+
+I haven't been able to do any testing with this yet (I'm away from my
+hardware for a bit), but I totally support this change.  
+
+Reviewed-by: Kevin Hilman <khilman@deeprootsystems.com>
+
+Thanks!
+
+Kevin
