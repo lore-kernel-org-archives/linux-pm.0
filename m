@@ -1,93 +1,81 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 0/8] Thermal Framework Enhancements
-Date: Fri, 21 Dec 2012 09:17:27 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5924D83E@BGSMSX101.gar.corp.intel.com>
-References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
-	<50D41860.7040406@nvidia.com>
-	<4D68720C2E767A4AA6A8796D42C8EB5924D729@BGSMSX101.gar.corp.intel.com>
- <CAJLyvQztwuvG0GooBUKApR+VnP9=yxKUu6sRn1AqR8Sno_MP8Q@mail.gmail.com>
+From: Mike Turquette <mturquette@linaro.org>
+Subject: Re: [RESEND PATCH 0/5] cpufreq: db8500: Rename driver and update some
+ parts
+Date: Fri, 21 Dec 2012 11:18:28 -0600
+Message-ID: <CAPtuhTgJysTATpAjG5fJv_RUgL-60fwpDYcoF2KUQ8U7+W=Yjg@mail.gmail.com>
+References: <1355153142-9534-1-git-send-email-ulf.hansson@stericsson.com>
+ <CAPtuhTgcmdxtG9B6L5NMyLCrhQh2o0DFkq47e_YCMoBzVhaF=g@mail.gmail.com>
+ <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:27339 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751549Ab2LUJRj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Dec 2012 04:17:39 -0500
-In-Reply-To: <CAJLyvQztwuvG0GooBUKApR+VnP9=yxKUu6sRn1AqR8Sno_MP8Q@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAPDyKFpN_MM+3N6U07UFu71rEPFkjwExCsnTwMkXbt0ei9ryfg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Philippe Begnic <philippe.begnic@st.com>, Vincent Guittot <vincent.guittot@linaro.org>, Jonas Aberg <jonas.aberg@stericsson.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, cpufreq@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee.jones@linaro.org>, Ulf Hansson <ulf.hansson@stericsson.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hongbo Zhang <hongbo.zhang@linaro.org>
-Cc: Wei Ni <wni@nvidia.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+On Thu, Dec 13, 2012 at 3:20 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 12 December 2012 21:56, Mike Turquette <mturquette@linaro.org> wrote:
+>> On Mon, Dec 10, 2012 at 7:25 AM, Ulf Hansson <ulf.hansson@stericsson.com> wrote:
+>>> From: Ulf Hansson <ulf.hansson@linaro.org>
+>>>
+>>> This patchset starts by renaming the db8500 cpufreq driver to a more generic
+>>> name. There are new variants which rely on it too, so instead we give it a
+>>> family name of dbx500.
+>>>
+>>> On top of that a fixup patch for initialization of the driver and some minor
+>>> cleanup patches are included as well.
+>>>
+>>> These patches can be material for 3.8.
+>>>
+>>> Since some patches for the db8500 cpufreq driver has recently been merged
+>>> through Mike Turquette's clk tree, I decided to base these patches on top
+>>> of the clk-next branch. So I hope Mike is fine by merging these patches
+>>> through his tree.
+>>>
+>>> So I will try to collect ACKs from Rafael for the cpufreq patches. The
+>>> mfd patch has already been ACKED by Samuel.
+>>>
+>>
+>> Ulf,
+>>
+>> Just FYI clk-next has been pulled by Linus for 3.8.  I can still take
+>> this branch once Rafael ACKs the CPUfreq bits if you want, but I think
+>> you have more options now that clk-next is merged in.  It's up to you.
+>
+> I think the easiest way forward (at least for me :-) ) would be if we
+> could send them as for 3.8 rcs. Is that possible for you Mike?
+>
 
-> -----Original Message-----
-> From: Hongbo Zhang [mailto:hongbo.zhang@linaro.org]
-> Sent: Friday, December 21, 2012 2:17 PM
-> To: R, Durgadoss
-> Cc: Wei Ni; Zhang, Rui; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: Re: [PATCH 0/8] Thermal Framework Enhancements
-> 
-> On 21 December 2012 16:30, R, Durgadoss <durgadoss.r@intel.com> wrote:
-> > Hi Ni,
-> >
-> >> -----Original Message-----
-> >> From: Wei Ni [mailto:wni@nvidia.com]
-> >> Sent: Friday, December 21, 2012 1:36 PM
-> >> To: R, Durgadoss
-> >> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> >> hongbo.zhang@linaro.org
-> >> Subject: Re: [PATCH 0/8] Thermal Framework Enhancements
-> >>
-> >> On 12/18/2012 05:29 PM, Durgadoss R wrote:
-> >> > This patch is a v1 based on the RFC submitted here:
-> >> > https://patchwork.kernel.org/patch/1758921/
-> >> >
-> >> > This patch set is based on Rui's -thermal tree, and is
-> >> > tested on a Core-i5 and an Atom netbook.
-> >> >
-> >> > This series contains 8 patches:
-> >> > Patch 1/8: Creates new sensor level APIs
-> >> > Patch 2/8: Creates new zone level APIs. The existing tzd structure is
-> >> >            kept as such for clarity and compatibility purposes.
-> >> > Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
-> >> >            existing tcd structure need not be modified.
-> >> > Patch 4/8: Adds a thermal_trip sysfs node, which exposes various trip
-> >> >            points for all sensors present in a zone.
-> >> > Patch 5/8: Adds a thermal_map sysfs node. It is a compact
-> representation
-> >> >            of the binding relationship between a sensor and a cdev,
-> >> >            within a zone.
-> >> > Patch 6/8: Creates Documentation for the new APIs. A new file is
-> >> >            created for clarity. Final goal is to merge with the existing
-> >> >            file or refactor the files, as whatever seems appropriate.
-> >> > Patch 7/8: Make PER ZONE values configurable through Kconfig
-> >> > Patch 8/8: A dummy driver that can be used for testing. This is not for
-> >> merge.
-> >>
-> >> I read these patches, they create new APIs and sysfs, but it seems they
-> >> didn't use the thermal_zone to handle the thermal_throttle issue,
-> >> something like update thermal_zone, update temperature, handle
-> >> governors
-> >> when cross the trip temp. So will you send out next serial patches for
-> >> these implementation?
-> >
-> > Yes, once these get into Rui's tree, we will start migrating the existing
-> drivers/
-> > and governors, to get things working.
-> Durgadoss,
-> See function psy_register_thermal() in power_supply_core.c,
-> thermal_zone_device_register() is used here, what will this look like
-> in future?
+Hi Ulf,
 
-Yes, I know this code.
-This will be a thermal_sensor_register.
-Basically this will expose battery's temperature as a 'sensor'
-under /sys/class/thermal/.
+I did not want to leave you hanging on this point.  I decided at the
+last minute to not bring a development platform or a nice laptop on my
+vacation so I will not be sending any more pull requests to Linus for
+3.8-rc unless some patches come in which are just obvious fixes.  Even
+then I will wait until I return in January to properly test any fixes
+before I send the request out.
 
-Then, each platform can add it to whatever zone they like to.
+Sorry that these patches did not make it in for 3.8 but I will queue
+them up into clk-next in January.
 
 Thanks,
-Durga
+Mike
+
+>>
+>> Regards,
+>> Mike
+>
+> Thanks!
+>
+> Ulf Hansson
