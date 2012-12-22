@@ -1,75 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Resend][PATCH] PM: Move disabling/enabling runtime PM to late suspend/early resume
-Date: Fri, 21 Dec 2012 23:09:57 +0100
-Message-ID: <1399643.20qlzBtAyt@vostro.rjw.lan>
-References: <1988667.JSHu2WyJuF@vostro.rjw.lan> <3307221.dy6xvn45xe@vostro.rjw.lan> <87d2y3dvxj.fsf@deeprootsystems.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40264 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949Ab2LUWEl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 21 Dec 2012 17:04:41 -0500
-In-Reply-To: <87d2y3dvxj.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 16/25] PM / Domains: don't use [delayed_]work_pending()
+Date: Fri, 21 Dec 2012 17:57:06 -0800
+Message-ID: <1356141435-17340-17-git-send-email-tj@kernel.org>
+References: <1356141435-17340-1-git-send-email-tj@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1356141435-17340-1-git-send-email-tj@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jan-Matthias Braun <jan_braun@gmx.net>, Jiri Kosina <jkosina@suse.cz>, Alan Stern <stern@rowland.harvard.edu>
 
-On Friday, December 21, 2012 11:52:56 AM Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Currently, the PM core disables runtime PM for all devices right
-> > after executing subsystem/driver .suspend() callbacks for them
-> > and re-enables it right before executing subsystem/driver .resume()
-> > callbacks for them.  This may lead to problems when there are
-> > two devices such that the .suspend() callback executed for one of
-> > them depends on runtime PM working for the other.  In that case,
-> > if runtime PM has already been disabled for the second device,
-> > the first one's .suspend() won't work correctly (and analogously
-> > for resume).
-> >
-> > To make those issues go away, make the PM core disable runtime PM
-> > for devices right before executing subsystem/driver .suspend_late()
-> > callbacks for them and enable runtime PM for them right after
-> > executing subsystem/driver .resume_early() callbacks for them.  This
-> > way the potential conflitcs between .suspend_late()/.resume_early()
-> > and their runtime PM counterparts are still prevented from happening,
-> > but the subtle ordering issues related to disabling/enabling runtime
-> > PM for devices during system suspend/resume are much easier to avoid.
-> >
-> > Reported-and-tested-by: Jan-Matthias Braun <jan_braun@gmx.net>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Yes!  
-> 
-> Of course if there are dependencies between drivers late/early
-> callbacks, we'll still have the same problems, but those should be
-> *very* rare compared to the suspend/resume dependencies.  
+There's no need to test whether a (delayed) work item in pending
+before queueing, flushing or cancelling it.  Most uses are unnecessary
+and quite a few of them are buggy.
 
-Well, let's put it this way: Any dependencies between drivers' late/early
-callbacks that make things break because runtime PM is disabled at that time
-are bugs that need to be fixed.
+Remove unnecessary pending tests from power domains.  Only compile
+tested.
 
-Why?
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+Please let me know how this patch should be routed.  I can take it
+through the workqueue tree if necessary.
 
-Because runtime PM has always been disabled during late/early callbacks since
-they were introduced and if somebody conveniently ignored that, then this is
-this person's problem entirely.
+Thanks.
 
-> I haven't been able to do any testing with this yet (I'm away from my
-> hardware for a bit), but I totally support this change.  
-> 
-> Reviewed-by: Kevin Hilman <khilman@deeprootsystems.com>
+ drivers/base/power/domain.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Thanks!
-
-Rafael
-
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index acc3a8d..9a6b05a 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -433,8 +433,7 @@ static bool genpd_abort_poweroff(struct generic_pm_domain *genpd)
+  */
+ void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+ {
+-	if (!work_pending(&genpd->power_off_work))
+-		queue_work(pm_wq, &genpd->power_off_work);
++	queue_work(pm_wq, &genpd->power_off_work);
+ }
+ 
+ /**
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.0.2
