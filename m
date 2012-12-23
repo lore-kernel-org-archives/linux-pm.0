@@ -1,85 +1,107 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH 0/2] clocksource: nomadik-mtu: support timer-based delay
-Date: Wed, 19 Dec 2012 08:18:14 -0800
-Message-ID: <CALAqxLUY+EF1jpVou2g-G00kLxYBTpbBQitHVQuoRepNKXPEpg@mail.gmail.com>
-References: <1354615845-2758-1-git-send-email-fabio.baltieri@linaro.org>
- <20121217113611.GA31470@balto.lan>
- <CACRpkdYRJvFEUvB++fKgVWEXZrTQ7aob0MPMwW4TBs_VRNuzsA@mail.gmail.com>
- <50CF6B77.3000000@linaro.org>
- <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU
+	offline from atomic context
+Date: Sun, 23 Dec 2012 17:42:42 +0100
+Message-ID: <20121223164242.GA9979@redhat.com>
+References: <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <50D0CCB3.10105@linux.vnet.ibm.com> <20121219163900.GA18516@redhat.com> <50D2047A.1040606@linux.vnet.ibm.com> <20121219191436.GA25829@redhat.com> <50D21A5F.4040604@linux.vnet.ibm.com> <20121220134203.GB10813@redhat.com> <50D61561.7090805@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0794967325464724918=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CACRpkdZe4eJ_0ND1gTPFKbXVSXaiCTeLW-m4YjZ87ZoDTiFxhA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
-List-Id: linux-pm@vger.kernel.org
-
---===============0794967325464724918==
-Content-Type: multipart/alternative; boundary=14dae9cfce941d16cd04d136f601
-
---14dae9cfce941d16cd04d136f601
-Content-Type: text/plain; charset=ISO-8859-1
-
-On Dec 19, 2012 7:34 AM, "Linus Walleij" <linus.walleij@linaro.org> wrote:
->
-> On Mon, Dec 17, 2012 at 7:59 PM, John Stultz <john.stultz@linaro.org>
-wrote:
-> > On 12/17/2012 10:38 AM, Linus Walleij wrote:
-> >> If no clocksource maintainer steps up in a week then notify me and
-> >> I'll simply stick these into the ux500 tree.
-> >
-> > Yea, I'd actually prefer these go through the arch tree where they can
-get
-> > testing.
->
-> OK, can I have your ACK?
-
-Acked-by: John Stultz <john.stultz@linaro.org>
-
-thanks
--john
-
---14dae9cfce941d16cd04d136f601
-Content-Type: text/html; charset=ISO-8859-1
-
-<p dir="ltr"><br>
-On Dec 19, 2012 7:34 AM, &quot;Linus Walleij&quot; &lt;<a href="mailto:linus.walleij@linaro.org">linus.walleij@linaro.org</a>&gt; wrote:<br>
-&gt;<br>
-&gt; On Mon, Dec 17, 2012 at 7:59 PM, John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt; wrote:<br>
-&gt; &gt; On 12/17/2012 10:38 AM, Linus Walleij wrote:<br>
-&gt; &gt;&gt; If no clocksource maintainer steps up in a week then notify me and<br>
-&gt; &gt;&gt; I&#39;ll simply stick these into the ux500 tree.<br>
-&gt; &gt;<br>
-&gt; &gt; Yea, I&#39;d actually prefer these go through the arch tree where they can get<br>
-&gt; &gt; testing.<br>
-&gt;<br>
-&gt; OK, can I have your ACK?</p>
-<p dir="ltr">Acked-by: John Stultz &lt;<a href="mailto:john.stultz@linaro.org">john.stultz@linaro.org</a>&gt;</p>
-<p dir="ltr">thanks<br>
--john</p>
-
---14dae9cfce941d16cd04d136f601--
-
-
---===============0794967325464724918==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:18511 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751154Ab2LWQnH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 23 Dec 2012 11:43:07 -0500
 Content-Disposition: inline
+In-Reply-To: <50D61561.7090805@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+On 12/23, Srivatsa S. Bhat wrote:
+>
+> On 12/20/2012 07:12 PM, Oleg Nesterov wrote:
+> >
+> > We need mb() + rmb(). Plust cli/sti unless this arch has optimized
+> > this_cpu_add() like x86 (as you pointed out).
+> >
+>
+> Hey, IIUC, we actually don't need mb() in the reader!! Just an rmb() will do.
 
---===============0794967325464724918==--
+Well. I don't think so. But when it comes to the barriers I am never sure
+until Paul confirms my understanding ;)
+
+> #define reader_nested_percpu()						\
+> 	     (__this_cpu_read(reader_percpu_refcnt) & READER_REFCNT_MASK)
+>
+> #define writer_active()							\
+> 				(__this_cpu_read(writer_signal))
+>
+>
+> #define READER_PRESENT		(1UL << 16)
+> #define READER_REFCNT_MASK	(READER_PRESENT - 1)
+>
+> void get_online_cpus_atomic(void)
+> {
+> 	preempt_disable();
+>
+> 	/*
+> 	 * First and foremost, make your presence known to the writer.
+> 	 */
+> 	this_cpu_add(reader_percpu_refcnt, READER_PRESENT);
+>
+> 	/*
+> 	 * If we are already using per-cpu refcounts, it is not safe to switch
+> 	 * the synchronization scheme. So continue using the refcounts.
+> 	 */
+> 	if (reader_nested_percpu()) {
+> 		this_cpu_inc(reader_percpu_refcnt);
+> 	} else {
+> 		smp_rmb();
+> 		if (unlikely(writer_active())) {
+> 			... //take hotplug_rwlock
+> 		}
+> 	}
+>
+> 	...
+>
+> 	/* Prevent reordering of any subsequent reads of cpu_online_mask. */
+> 	smp_rmb();
+> }
+>
+> The smp_rmb() before writer_active() ensures that LOAD(writer_signal) follows
+> LOAD(reader_percpu_refcnt) (at the 'if' condition). And in turn, that load is
+> automatically going to follow the STORE(reader_percpu_refcnt)
+
+But why this STORE should be visible on another CPU before we LOAD(writer_signal)?
+
+Lets discuss the simple and artificial example. Suppose we have
+
+	int X, Y;
+
+	int func(void)
+	{
+		X = 1;	// suppose that nobody else can change it
+		mb();
+		return Y;
+	}
+
+Now you are saying that we can change it and avoid the costly mb():
+
+	int func(void)
+	{
+		X = 1;
+
+		if (X != 1)
+			BUG();
+	
+		rmb();
+		return Y;
+	}
+
+I doubt. rmb() can only guarantee that the preceding LOAD's should be
+completed. Without mb() it is possible that this CPU won't write X to
+memory at all.
+
+Oleg.
+
