@@ -1,73 +1,53 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Tue, 25 Dec 2012 12:17:23 -0500
-Message-ID: <20121225171723.GI10220@mtj.dyndns.org>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com>
- <35648985.61QNrr0Knq@vostro.rjw.lan>
- <1353906191.2523.25.camel@dabdike>
- <21511277.LLinyDpbAK@vostro.rjw.lan>
- <20121128013928.GB15971@htj.dyndns.org>
- <1354092969.2276.49.camel@dabdike>
- <20121203081321.GA9990@mint-spring.sh.intel.com>
- <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com>
- <20121203162323.GB19802@htj.dyndns.org>
- <50D2AB1D.9050602@intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 16/25] PM / Domains: don't use [delayed_]work_pending()
+Date: Tue, 25 Dec 2012 21:33:07 +0100
+Message-ID: <43765611.nGGJ409TUC@vostro.rjw.lan>
+References: <1356141435-17340-1-git-send-email-tj@kernel.org> <21556832.hKrqJSonFg@vostro.rjw.lan> <20121225170328.GH10220@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50D2AB1D.9050602@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:44374 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754139Ab2LYU1q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Dec 2012 15:27:46 -0500
+In-Reply-To: <20121225170328.GH10220@mtj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Hello, Aaron.
+On Tuesday, December 25, 2012 09:03:28 AM Tejun Heo wrote:
+> Hello, Rafael.
+> 
+> On Sat, Dec 22, 2012 at 12:57:20PM +0100, Rafael J. Wysocki wrote:
+> > On Friday, December 21, 2012 05:57:06 PM Tejun Heo wrote:
+> > > There's no need to test whether a (delayed) work item in pending
+> > > before queueing, flushing or cancelling it.  Most uses are unnecessary
+> > > and quite a few of them are buggy.
+> > 
+> > Is the particular one you're removing from domain.c buggy?
+> 
+> It's a bit difficult to tell without understanding the code base but
+> from quick glancing it looks like it could be.  The queueing and
+> actual excution don't grab the same lock, so there doesn't seem to be
+> anything work_pending() returning %true for a work item which already
+> started executing.  Even if the bug is there, it's likely to be very
+> difficult to trigger tho, so I wouldn't consider it an urgent fix.
 
-On Thu, Dec 20, 2012 at 02:07:25PM +0800, Aaron Lu wrote:
-> +static int is_gendisk_part0(struct device *dev, void *data)
-> +{
-> +	struct device **child = data;
-> +
-> +	if (dev->class == &block_class && dev->type == &disk_type) {
-> +		*child = dev;
-> +		return 1;
-> +	} else
-> +		return 0;
-> +}
-> +
-> +/**
-> + * disk_from_device - Get the gendisk pointer for this device.
-> + * @dev: the device this gendisk is created for, i.e. gendisk->driverfs_dev
-> + *
-> + * LLD sometimes need to play with the gendisk without HLD's aware,
-> + * this routine gives LLD the required access to gendisk.
-> + *
-> + * CONTEXT:
-> + * Don't care.
-> + */
-> +struct gendisk *disk_from_device(struct device *dev)
-> +{
-> +	struct device *child;
-> +
-> +	if (device_for_each_child(dev, &child, is_gendisk_part0))
-> +		return dev_to_disk(child);
-> +	else
-> +		return NULL;
-> +}
-> +EXPORT_SYMBOL(disk_from_device);
+OK, so I'd generally prefer changelogs like this:
 
-This is really a round-about way to find out the matching device and
-it wouldn't work if the disk device nests deeper.  Doesn't really look
-like a good idea to me.
+"There's no need to test whether a (delayed) work item is pending
+before queueing, flushing or cancelling it, so remove work_pending()
+tests used in those cases."
 
-> Then together with disk_try_block_events and disk_unblock_events, we can
-> avoid touching SCSI layer to let ODD stay in zero power state.
+If that's fine with you, I'll queue up [16/25] and [11/25] for v3.9
+with the above as the changelog.
 
-Also, I'd much prefer something along the line of
-block_events_nowait() instead of try_block.
+Thanks,
+Rafael
 
-Thanks.
 
 -- 
-tejun
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
