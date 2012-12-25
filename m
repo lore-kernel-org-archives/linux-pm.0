@@ -1,117 +1,197 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v4 1/9] CPU hotplug: Provide APIs to prevent CPU offline
- from atomic context
-Date: Mon, 24 Dec 2012 21:20:00 +0530
-Message-ID: <50D879A8.5040407@linux.vnet.ibm.com>
-References: <20121212184849.GA26784@redhat.com> <50C8D739.6030903@linux.vnet.ibm.com> <50C9F38F.3020005@linux.vnet.ibm.com> <50D0CCB3.10105@linux.vnet.ibm.com> <20121219163900.GA18516@redhat.com> <50D2047A.1040606@linux.vnet.ibm.com> <20121219191436.GA25829@redhat.com> <50D21A5F.4040604@linux.vnet.ibm.com> <20121220134203.GB10813@redhat.com> <50D61561.7090805@linux.vnet.ibm.com> <20121223164242.GA9979@redhat.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCH 3/8] Thermal: Add APIs to bind cdev to new zone structure
+Date: Tue, 25 Dec 2012 16:30:48 +0800
+Message-ID: <50D96438.3090105@nvidia.com>
+References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com> <1355822977-4804-4-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:40241 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597Ab2LXPvl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Dec 2012 10:51:41 -0500
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 24 Dec 2012 21:20:38 +0530
-In-Reply-To: <20121223164242.GA9979@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1355822977-4804-4-git-send-email-durgadoss.r@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, vincent.guittot@linaro.org, tj@kernel.org, sbw@mit.edu, amit.kucheria@linaro.org, rostedt@goodmis.org, rjw@sisk.pl, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/23/2012 10:12 PM, Oleg Nesterov wrote:
-> On 12/23, Srivatsa S. Bhat wrote:
->>
->> On 12/20/2012 07:12 PM, Oleg Nesterov wrote:
->>>
->>> We need mb() + rmb(). Plust cli/sti unless this arch has optimized
->>> this_cpu_add() like x86 (as you pointed out).
->>>
->>
->> Hey, IIUC, we actually don't need mb() in the reader!! Just an rmb() will do.
+On 12/18/2012 05:29 PM, Durgadoss R wrote:
+> This patch creates new APIs to add/remove a
+> cdev to/from a zone. This patch does not change
+> the old cooling device implementation.
 > 
-> Well. I don't think so. But when it comes to the barriers I am never sure
-> until Paul confirms my understanding ;)
+> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> ---
+>  drivers/thermal/thermal_sys.c |   80 +++++++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h       |    8 +++++
+>  2 files changed, 88 insertions(+)
 > 
->> #define reader_nested_percpu()						\
->> 	     (__this_cpu_read(reader_percpu_refcnt) & READER_REFCNT_MASK)
->>
->> #define writer_active()							\
->> 				(__this_cpu_read(writer_signal))
->>
->>
->> #define READER_PRESENT		(1UL << 16)
->> #define READER_REFCNT_MASK	(READER_PRESENT - 1)
->>
->> void get_online_cpus_atomic(void)
->> {
->> 	preempt_disable();
->>
->> 	/*
->> 	 * First and foremost, make your presence known to the writer.
->> 	 */
->> 	this_cpu_add(reader_percpu_refcnt, READER_PRESENT);
->>
->> 	/*
->> 	 * If we are already using per-cpu refcounts, it is not safe to switch
->> 	 * the synchronization scheme. So continue using the refcounts.
->> 	 */
->> 	if (reader_nested_percpu()) {
->> 		this_cpu_inc(reader_percpu_refcnt);
->> 	} else {
->> 		smp_rmb();
->> 		if (unlikely(writer_active())) {
->> 			... //take hotplug_rwlock
->> 		}
->> 	}
->>
->> 	...
->>
->> 	/* Prevent reordering of any subsequent reads of cpu_online_mask. */
->> 	smp_rmb();
->> }
->>
->> The smp_rmb() before writer_active() ensures that LOAD(writer_signal) follows
->> LOAD(reader_percpu_refcnt) (at the 'if' condition). And in turn, that load is
->> automatically going to follow the STORE(reader_percpu_refcnt)
-> 
-> But why this STORE should be visible on another CPU before we LOAD(writer_signal)?
-> 
-> Lets discuss the simple and artificial example. Suppose we have
-> 
-> 	int X, Y;
-> 
-> 	int func(void)
-> 	{
-> 		X = 1;	// suppose that nobody else can change it
-> 		mb();
-> 		return Y;
-> 	}
-> 
-> Now you are saying that we can change it and avoid the costly mb():
-> 
-> 	int func(void)
-> 	{
-> 		X = 1;
-> 
-> 		if (X != 1)
-> 			BUG();
-> 	
-> 		rmb();
-> 		return Y;
-> 	}
-> 
-> I doubt. rmb() can only guarantee that the preceding LOAD's should be
-> completed. Without mb() it is possible that this CPU won't write X to
-> memory at all.
-> 
+> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> index 06d5a12..b39bf97 100644
+> --- a/drivers/thermal/thermal_sys.c
+> +++ b/drivers/thermal/thermal_sys.c
+> @@ -58,6 +58,7 @@ static LIST_HEAD(thermal_governor_list);
+>  static DEFINE_MUTEX(thermal_list_lock);
+>  static DEFINE_MUTEX(sensor_list_lock);
+>  static DEFINE_MUTEX(zone_list_lock);
+> +static DEFINE_MUTEX(cdev_list_lock);
+>  static DEFINE_MUTEX(thermal_governor_lock);
+>  
+>  #define for_each_thermal_sensor(pos) \
+> @@ -82,6 +83,9 @@ static DEFINE_MUTEX(thermal_governor_lock);
+>  		mutex_unlock(&type##_list_lock);	\
+>  	} while (0)
+>  
+> +#define for_each_cdev(pos) \
+> +	list_for_each_entry(pos, &thermal_cdev_list, node)
+> +
+>  static struct thermal_governor *__find_governor(const char *name)
+>  {
+>  	struct thermal_governor *pos;
+> @@ -462,6 +466,24 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
+>  	tz->sensor_indx--;
+>  }
+>  
+> +static void remove_cdev_from_zone(struct thermal_zone *tz,
+> +				struct thermal_cooling_device *cdev)
+> +{
+> +	int j, indx;
+> +
+> +	GET_INDEX(tz, cdev, indx, cdev);
+> +	if (indx < 0)
+> +		return;
+> +
+> +	sysfs_remove_link(&tz->device.kobj, kobject_name(&cdev->device.kobj));
+> +
+> +	/* Shift the entries in the tz->cdevs array */
+> +	for (j = indx; j < MAX_CDEVS_PER_ZONE - 1; j++)
+> +		tz->cdevs[j] = tz->cdevs[j + 1];
+> +
+> +	tz->cdev_indx--;
+> +}
+> +
+>  /* sys I/F for thermal zone */
+>  
+>  #define to_thermal_zone(_dev) \
+> @@ -1458,6 +1480,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+>  	int i;
+>  	const struct thermal_zone_params *tzp;
+>  	struct thermal_zone_device *tz;
+> +	struct thermal_zone *tmp_tz;
+>  	struct thermal_cooling_device *pos = NULL;
+>  
+>  	if (!cdev)
+> @@ -1495,6 +1518,13 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+>  
+>  	mutex_unlock(&thermal_list_lock);
+>  
+> +	mutex_lock(&zone_list_lock);
+> +
+> +	for_each_thermal_zone(tmp_tz)
+> +		remove_cdev_from_zone(tmp_tz, cdev);
+> +
+> +	mutex_unlock(&zone_list_lock);
+> +
+>  	if (cdev->type[0])
+>  		device_remove_file(&cdev->device, &dev_attr_cdev_type);
+>  	device_remove_file(&cdev->device, &dev_attr_max_state);
+> @@ -1790,6 +1820,23 @@ exit:
+>  }
+>  EXPORT_SYMBOL(remove_thermal_zone);
+>  
+> +struct thermal_cooling_device *get_cdev_by_name(const char *name)
+> +{
+> +	struct thermal_cooling_device *pos;
+> +	struct thermal_cooling_device *cdev = NULL;
+> +
+> +	mutex_lock(&cdev_list_lock);
+> +	for_each_cdev(pos) {
+> +		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
+> +			cdev = pos;
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&cdev_list_lock);
+> +	return cdev;
+> +}
+> +EXPORT_SYMBOL(get_cdev_by_name);
 
-Oh, ok :-( Thanks for correcting me and for the detailed explanation!
-For a moment, I really thought we had it solved at last! ;-(
+It seems you forgot to add get_cdev_by_name() and get_sensor_by_name()
+to the include file.
 
-Regards,
-Srivatsa S. Bhat
-
+> +
+>  struct thermal_sensor *get_sensor_by_name(const char *name)
+>  {
+>  	struct thermal_sensor *pos;
+> @@ -1840,6 +1887,39 @@ exit_zone:
+>  }
+>  EXPORT_SYMBOL(add_sensor_to_zone);
+>  
+> +int add_cdev_to_zone(struct thermal_zone *tz,
+> +			struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	if (!tz || !cdev)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&zone_list_lock);
+> +
+> +	/* Ensure we are not adding the same cdev again!! */
+> +	GET_INDEX(tz, cdev, ret, cdev);
+> +	if (ret >= 0) {
+> +		ret = -EEXIST;
+> +		goto exit_zone;
+> +	}
+> +
+> +	mutex_lock(&cdev_list_lock);
+> +	ret = sysfs_create_link(&tz->device.kobj, &cdev->device.kobj,
+> +				kobject_name(&cdev->device.kobj));
+> +	if (ret)
+> +		goto exit_cdev;
+> +
+> +	tz->cdevs[tz->cdev_indx++] = cdev;
+> +
+> +exit_cdev:
+> +	mutex_unlock(&cdev_list_lock);
+> +exit_zone:
+> +	mutex_unlock(&zone_list_lock);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(add_cdev_to_zone);
+> +
+>  /**
+>   * thermal_sensor_register - register a new thermal sensor
+>   * @name:	name of the thermal sensor
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f08f774..c4e45c7 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -51,6 +51,8 @@
+>  
+>  #define MAX_SENSORS_PER_ZONE		5
+>  
+> +#define MAX_CDEVS_PER_ZONE		5
+> +
+>  struct thermal_sensor;
+>  struct thermal_zone_device;
+>  struct thermal_cooling_device;
+> @@ -209,6 +211,10 @@ struct thermal_zone {
+>  	/* Sensor level information */
+>  	int sensor_indx; /* index into 'sensors' array */
+>  	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
+> +
+> +	/* cdev level information */
+> +	int cdev_indx; /* index into 'cdevs' array */
+> +	struct thermal_cooling_device *cdevs[MAX_CDEVS_PER_ZONE];
+>  };
+>  
+>  /* Structure that holds thermal governor information */
+> @@ -287,6 +293,8 @@ struct thermal_zone *create_thermal_zone(const char *, void *);
+>  void remove_thermal_zone(struct thermal_zone *);
+>  int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
+>  
+> +int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
+> +
+>  #ifdef CONFIG_NET
+>  extern int thermal_generate_netlink_event(u32 orig, enum events event);
+>  #else
+> 
