@@ -1,79 +1,243 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Wed, 26 Dec 2012 09:42:14 +0800
-Message-ID: <50DA55F6.8080706@intel.com>
-References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <50D2AB1D.9050602@intel.com> <20121225171723.GI10220@mtj.dyndns.org>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 8/8] Thermal: Dummy driver used for testing
+Date: Wed, 26 Dec 2012 03:29:21 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5924ED4F@BGSMSX101.gar.corp.intel.com>
+References: <1355822977-4804-1-git-send-email-durgadoss.r@intel.com>
+ <1355822977-4804-9-git-send-email-durgadoss.r@intel.com>
+ <50D965F1.6000806@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:40934 "EHLO mga03.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:3730 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639Ab2LZBln (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Dec 2012 20:41:43 -0500
-In-Reply-To: <20121225171723.GI10220@mtj.dyndns.org>
+	id S1753105Ab2LZD30 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Dec 2012 22:29:26 -0500
+In-Reply-To: <50D965F1.6000806@nvidia.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
 
-On 12/26/2012 01:17 AM, Tejun Heo wrote:
-> Hello, Aaron.
-> 
-> On Thu, Dec 20, 2012 at 02:07:25PM +0800, Aaron Lu wrote:
->> +static int is_gendisk_part0(struct device *dev, void *data)
->> +{
->> +	struct device **child = data;
->> +
->> +	if (dev->class == &block_class && dev->type == &disk_type) {
->> +		*child = dev;
->> +		return 1;
->> +	} else
->> +		return 0;
->> +}
->> +
->> +/**
->> + * disk_from_device - Get the gendisk pointer for this device.
->> + * @dev: the device this gendisk is created for, i.e. gendisk->driverfs_dev
->> + *
->> + * LLD sometimes need to play with the gendisk without HLD's aware,
->> + * this routine gives LLD the required access to gendisk.
->> + *
->> + * CONTEXT:
->> + * Don't care.
->> + */
->> +struct gendisk *disk_from_device(struct device *dev)
->> +{
->> +	struct device *child;
->> +
->> +	if (device_for_each_child(dev, &child, is_gendisk_part0))
->> +		return dev_to_disk(child);
->> +	else
->> +		return NULL;
->> +}
->> +EXPORT_SYMBOL(disk_from_device);
-> 
-> This is really a round-about way to find out the matching device and
-> it wouldn't work if the disk device nests deeper.  Doesn't really look
-> like a good idea to me.
 
-I don't quite understand the 'disk device nests deeper' case, can you
-please elaborate? My understanding is, as long as the disk's part0
-device has a parent, this function should work. For LLDs want to take
-advantage of this function, it should pass the device that is the parent
-of part0 as the param, this function itself doesn't try to dig further.
-The only problem I can see is when there are multiple gendisks created
-for a single device, which I don't know if there is such a case?
 
+> -----Original Message-----
+> From: Wei Ni [mailto:wni@nvidia.com]
+> Sent: Tuesday, December 25, 2012 2:08 PM
+> To: R, Durgadoss
+> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> hongbo.zhang@linaro.org
+> Subject: Re: [PATCH 8/8] Thermal: Dummy driver used for testing
 > 
->> Then together with disk_try_block_events and disk_unblock_events, we can
->> avoid touching SCSI layer to let ODD stay in zero power state.
+> On 12/18/2012 05:29 PM, Durgadoss R wrote:
+> > This patch has a dummy driver that can be used for
+> > testing purposes. This patch is not for merge.
+> >
+> > Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> > ---
+> >  drivers/thermal/Kconfig        |    5 +
+> >  drivers/thermal/Makefile       |    3 +
+> >  drivers/thermal/thermal_test.c |  315
+> ++++++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 323 insertions(+)
+> >  create mode 100644 drivers/thermal/thermal_test.c
+> >
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index c5ba3340..3b92a76 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -136,4 +136,9 @@ config DB8500_CPUFREQ_COOLING
+> >  	  bound cpufreq cooling device turns active to set CPU frequency low
+> to
+> >  	  cool down the CPU.
+> >
+> > +config THERMAL_TEST
+> > +	tristate "test driver"
+> > +	help
+> > +	  Enable this to test the thermal framework.
+> > +
+> >  endif
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index d8da683..02c3edb 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -18,3 +18,6 @@ obj-$(CONFIG_RCAR_THERMAL)	+=
+> rcar_thermal.o
+> >  obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+> >  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+> >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=
+> db8500_cpufreq_cooling.o
+> > +
+> > +# dummy driver for testing
+> > +obj-$(CONFIG_THERMAL_TEST)	+= thermal_test.o
+> > diff --git a/drivers/thermal/thermal_test.c
+> b/drivers/thermal/thermal_test.c
+> > new file mode 100644
+> > index 0000000..5a11e34
+> > --- /dev/null
+> > +++ b/drivers/thermal/thermal_test.c
+> > @@ -0,0 +1,315 @@
+> > +/*
+> > + * thermal_test.c - This driver can be used to test Thermal
+> > + *			   Framework changes. Not specific to any
+> > + *			   platform. Fills the log buffer generously ;)
+> > + *
+> > + * Copyright (C) 2012 Intel Corporation
+> > + *
+> > + *
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ~~~~~~~~~~~~~~~~
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; version 2 of the License.
+> > + *
+> > + * This program is distributed in the hope that it will be useful, but
+> > + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See
+> the GNU
+> > + * General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License
+> along
+> > + * with this program; if not, write to the Free Software Foundation, Inc.,
+> > + * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+> > + *
+> > + *
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ~~~~~~~~~~~~~~~~
+> > + * Author: Durgadoss R <durgadoss.r@intel.com>
+> > + */
+> > +
+> > +#define pr_fmt(fmt)  "thermal_test: " fmt
+> > +
+> > +#include <linux/module.h>
+> > +#include <linux/init.h>
+> > +#include <linux/err.h>
+> > +#include <linux/param.h>
+> > +#include <linux/device.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/pm.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/thermal.h>
+> > +
+> > +#define MAX_THERMAL_ZONES	2
+> > +#define MAX_THERMAL_SENSORS	2
+> > +#define MAX_COOLING_DEVS	4
+> > +#define NUM_THRESHOLDS		3
+> > +
+> > +static struct ts_data {
+> > +	int curr_temp;
+> > +	int flag;
+> > +} ts_data;
+> > +
+> > +int active_trips[10] = {100, 90, 80, 70, 60, 50, 40, 30, 20, 10};
+> > +int passive_trips[5] = {100, 90, 60, 50, 40};
+> > +
+> > +static struct platform_device *pdev;
+> > +static unsigned long cur_cdev_state = 2;
+> > +static struct thermal_sensor *ts, *ts1;
+> > +static struct thermal_zone *tz;
+> > +static struct thermal_cooling_device *cdev;
+> > +
+> > +static long thermal_thresholds[NUM_THRESHOLDS] = {30000, 40000,
+> 50000};
+> > +
+> > +static struct thermal_trip_point trip = {
+> > +	.hot = 90,
+> > +	.crit = 100,
+> > +	.num_passive_trips = 5,
+> > +	.passive_trips = passive_trips,
+> > +	.num_active_trips = 10,
+> > +	.active_trips = active_trips,
+> > +	.active_trip_mask = 0xCFF,
+> > +};
+> > +
+> > +static struct thermal_trip_point trip1 = {
+> > +	.hot = 95,
+> > +	.crit = 125,
+> > +	.num_passive_trips = 0,
+> > +	.passive_trips = passive_trips,
+> > +	.num_active_trips = 6,
+> > +	.active_trips = active_trips,
+> > +	.active_trip_mask = 0xFF,
+> > +};
+> > +
+> > +static int read_cur_state(struct thermal_cooling_device *cdev,
+> > +			unsigned long *state)
+> > +{
+> > +	*state = cur_cdev_state;
+> > +	return 0;
+> > +}
+> > +
+> > +static int write_cur_state(struct thermal_cooling_device *cdev,
+> > +			unsigned long state)
+> > +{
+> > +	cur_cdev_state = state;
+> > +	return 0;
+> > +}
+> > +
+> > +static int read_max_state(struct thermal_cooling_device *cdev,
+> > +			unsigned long *state)
+> > +{
+> > +	*state = 5;
+> > +	return 0;
+> > +}
+> > +
+> > +static int read_curr_temp(struct thermal_sensor *ts, long *temp)
+> > +{
+> > +	*temp = ts_data.curr_temp;
+> > +	return 0;
+> > +}
+> > +
+> > +static ssize_t
+> > +flag_show(struct device *dev, struct device_attribute *devattr, char
+> *buf)
+> > +{
+> > +	return sprintf(buf, "%d\n", ts_data.flag);
+> > +}
+> > +
+> > +static ssize_t
+> > +flag_store(struct device *dev, struct device_attribute *attr,
+> > +		    const char *buf, size_t count)
+> > +{
+> > +	long flag;
+> > +
+> > +	if (kstrtol(buf, 10, &flag))
+> > +		return -EINVAL;
+> > +
+> > +	ts_data.flag = flag;
+> > +
+> > +	if (flag == 0) {
+> > +		thermal_sensor_unregister(ts);
+> > +		ts = NULL;
+> > +		pr_err("thermal_sensor_unregister (ts) done\n");
+> > +	} else if (flag == 1) {
+> > +		thermal_sensor_unregister(ts1);
+> > +		ts1 = NULL;
+> > +		pr_err("thermal_sensor_unregister (ts1) done\n");
+> > +	} else if (flag == 2) {
+> > +		thermal_cooling_device_unregister(cdev);
+> > +		cdev = NULL;
+> > +		pr_err("cdev unregister (cdev) done\n");
+> > +	} else if (flag == 3) {
+> > +		if (tz)
+> > +			remove_thermal_zone(tz);
+> > +		tz = NULL;
+> > +		pr_err("removed thermal zone\n");
+> > +	}
+> > +
+> > +	return count;
+> > +}
 > 
-> Also, I'd much prefer something along the line of
-> block_events_nowait() instead of try_block.
+> What does this flag_show()/flag_store() mean?
+> I noticed that you didn't call xxx_unregister() in the remove callback.
+> Do you mean we need to provide these functions in the platform thermal
+> driver? or this is just for test?
 
-Sure, no problem.
+At Runtime, I wanted to test register/unregister APIs. That's why I used this
+kind of a mechanism. This is _only_ for test.
 
 Thanks,
-Aaron
-
+Durga
