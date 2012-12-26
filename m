@@ -1,40 +1,79 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 16/25] PM / Domains: don't use [delayed_]work_pending()
-Date: Tue, 25 Dec 2012 20:23:45 -0500
-Message-ID: <20121226012345.GJ10220@mtj.dyndns.org>
-References: <1356141435-17340-1-git-send-email-tj@kernel.org>
- <21556832.hKrqJSonFg@vostro.rjw.lan>
- <20121225170328.GH10220@mtj.dyndns.org>
- <43765611.nGGJ409TUC@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Wed, 26 Dec 2012 09:42:14 +0800
+Message-ID: <50DA55F6.8080706@intel.com>
+References: <1352443922-13734-1-git-send-email-aaron.lu@intel.com> <35648985.61QNrr0Knq@vostro.rjw.lan> <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <50D2AB1D.9050602@intel.com> <20121225171723.GI10220@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f173.google.com ([209.85.220.173]:62511 "EHLO
-	mail-vc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752677Ab2LZBXv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Dec 2012 20:23:51 -0500
-Content-Disposition: inline
-In-Reply-To: <43765611.nGGJ409TUC@vostro.rjw.lan>
+Received: from mga03.intel.com ([143.182.124.21]:40934 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752639Ab2LZBln (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Dec 2012 20:41:43 -0500
+In-Reply-To: <20121225171723.GI10220@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Hello,
-
-On Tue, Dec 25, 2012 at 09:33:07PM +0100, Rafael J. Wysocki wrote:
-> OK, so I'd generally prefer changelogs like this:
+On 12/26/2012 01:17 AM, Tejun Heo wrote:
+> Hello, Aaron.
 > 
-> "There's no need to test whether a (delayed) work item is pending
-> before queueing, flushing or cancelling it, so remove work_pending()
-> tests used in those cases."
+> On Thu, Dec 20, 2012 at 02:07:25PM +0800, Aaron Lu wrote:
+>> +static int is_gendisk_part0(struct device *dev, void *data)
+>> +{
+>> +	struct device **child = data;
+>> +
+>> +	if (dev->class == &block_class && dev->type == &disk_type) {
+>> +		*child = dev;
+>> +		return 1;
+>> +	} else
+>> +		return 0;
+>> +}
+>> +
+>> +/**
+>> + * disk_from_device - Get the gendisk pointer for this device.
+>> + * @dev: the device this gendisk is created for, i.e. gendisk->driverfs_dev
+>> + *
+>> + * LLD sometimes need to play with the gendisk without HLD's aware,
+>> + * this routine gives LLD the required access to gendisk.
+>> + *
+>> + * CONTEXT:
+>> + * Don't care.
+>> + */
+>> +struct gendisk *disk_from_device(struct device *dev)
+>> +{
+>> +	struct device *child;
+>> +
+>> +	if (device_for_each_child(dev, &child, is_gendisk_part0))
+>> +		return dev_to_disk(child);
+>> +	else
+>> +		return NULL;
+>> +}
+>> +EXPORT_SYMBOL(disk_from_device);
 > 
-> If that's fine with you, I'll queue up [16/25] and [11/25] for v3.9
-> with the above as the changelog.
+> This is really a round-about way to find out the matching device and
+> it wouldn't work if the disk device nests deeper.  Doesn't really look
+> like a good idea to me.
 
-Sure thing.  Please go ahead.
+I don't quite understand the 'disk device nests deeper' case, can you
+please elaborate? My understanding is, as long as the disk's part0
+device has a parent, this function should work. For LLDs want to take
+advantage of this function, it should pass the device that is the parent
+of part0 as the param, this function itself doesn't try to dig further.
+The only problem I can see is when there are multiple gendisks created
+for a single device, which I don't know if there is such a case?
 
-Thanks.
+> 
+>> Then together with disk_try_block_events and disk_unblock_events, we can
+>> avoid touching SCSI layer to let ODD stay in zero power state.
+> 
+> Also, I'd much prefer something along the line of
+> block_events_nowait() instead of try_block.
 
--- 
-tejun
+Sure, no problem.
+
+Thanks,
+Aaron
+
