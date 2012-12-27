@@ -1,114 +1,97 @@
 From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: [PATCH 2/5] cpufreq: star/stop cpufreq timers on cpu hotplug
-Date: Thu, 27 Dec 2012 15:55:39 +0100
-Message-ID: <1356620142-8680-3-git-send-email-fabio.baltieri@linaro.org>
+Subject: [PATCH 4/5] cpufreq: conservative: call dbs_check_cpu only when necessary
+Date: Thu, 27 Dec 2012 15:55:41 +0100
+Message-ID: <1356620142-8680-5-git-send-email-fabio.baltieri@linaro.org>
 References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:61461 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041Ab2L0O4b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Dec 2012 09:56:31 -0500
+Received: by mail-wi0-f175.google.com with SMTP id hm11so7743138wib.8
+        for <linux-pm@vger.kernel.org>; Thu, 27 Dec 2012 06:56:30 -0800 (PST)
 In-Reply-To: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Add a CPU notifier to start and stop individual core timers on CPU
-hotplug events when running on CPUs with SW coordinated frequency.
+Modify conservative timer to not resample CPU utilization if recently
+sampled from another SW coordinated core.
 
 Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c | 51 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ drivers/cpufreq/cpufreq_conservative.c | 47 +++++++++++++++++++++++++++++-----
+ 1 file changed, 41 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index b0e4506..e881250 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -25,9 +25,12 @@
- #include <linux/tick.h>
- #include <linux/types.h>
- #include <linux/workqueue.h>
-+#include <linux/cpu.h>
- 
- #include "cpufreq_governor.h"
- 
-+static DEFINE_PER_CPU(struct dbs_data *, cpu_cur_dbs);
-+
- static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- {
- 	u64 idle_time;
-@@ -185,6 +188,46 @@ static inline void dbs_timer_exit(struct cpu_dbs_common_info *cdbs)
- 	cancel_delayed_work_sync(&cdbs->work);
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index b9d7f14..5d8e894 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -111,22 +111,57 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 	}
  }
  
-+static int __cpuinit cpu_callback(struct notifier_block *nfb,
-+		unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+	struct device *cpu_dev = get_cpu_device(cpu);
-+	struct dbs_data *dbs_data = per_cpu(cpu_cur_dbs, cpu);
-+	struct cpu_dbs_common_info *cpu_cdbs = dbs_data->get_cpu_cdbs(cpu);
-+	unsigned int sampling_rate;
+-static void cs_dbs_timer(struct work_struct *work)
++static void cs_timer_update(struct cs_cpu_dbs_info_s *dbs_info, bool sample,
++			    struct delayed_work *dw)
+ {
+-	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
+-			struct cs_cpu_dbs_info_s, cdbs.work.work);
+ 	unsigned int cpu = dbs_info->cdbs.cpu;
+ 	int delay = delay_for_sampling_rate(cs_tuners.sampling_rate);
+ 
++	if (sample)
++		dbs_check_cpu(&cs_dbs_data, cpu);
 +
-+	if (dbs_data->governor == GOV_CONSERVATIVE) {
-+		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-+		sampling_rate = cs_tuners->sampling_rate;
-+	} else {
-+		struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-+		sampling_rate = od_tuners->sampling_rate;
-+	}
-+
-+	if (cpu_dev) {
-+		switch (action) {
-+		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
-+		case CPU_DOWN_FAILED:
-+		case CPU_DOWN_FAILED_FROZEN:
-+			dbs_timer_init(dbs_data, cpu_cdbs,
-+					sampling_rate, cpu);
-+			break;
-+		case CPU_DOWN_PREPARE:
-+		case CPU_DOWN_PREPARE_FROZEN:
-+			dbs_timer_exit(cpu_cdbs);
-+			break;
-+		}
-+	}
-+
-+	return NOTIFY_OK;
++	schedule_delayed_work_on(smp_processor_id(), dw, delay);
 +}
 +
-+static struct notifier_block __refdata ondemand_cpu_notifier = {
-+	.notifier_call = cpu_callback,
-+};
++static void cs_timer_coordinated(struct cs_cpu_dbs_info_s *dbs_info_local,
++				 struct delayed_work *dw)
++{
++	struct cs_cpu_dbs_info_s *dbs_info;
++	ktime_t time_now;
++	s64 delta_us;
++	bool sample = true;
 +
- int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- 		struct cpufreq_policy *policy, unsigned int event)
++	/* use leader CPU's dbs_info */
++	dbs_info = &per_cpu(cs_cpu_dbs_info, dbs_info_local->cdbs.cpu);
+ 	mutex_lock(&dbs_info->cdbs.timer_mutex);
+ 
+-	dbs_check_cpu(&cs_dbs_data, cpu);
++	time_now = ktime_get();
++	delta_us = ktime_us_delta(time_now, dbs_info->cdbs.time_stamp);
+ 
+-	schedule_delayed_work_on(smp_processor_id(), &dbs_info->cdbs.work,
+-			delay);
++	/* Do nothing if we recently have sampled */
++	if (delta_us < (s64)(cs_tuners.sampling_rate / 2))
++		sample = false;
++	else
++		dbs_info->cdbs.time_stamp = time_now;
++
++	cs_timer_update(dbs_info, sample, dw);
+ 	mutex_unlock(&dbs_info->cdbs.timer_mutex);
+ }
+ 
++static void cs_dbs_timer(struct work_struct *work)
++{
++	struct delayed_work *dw = to_delayed_work(work);
++	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
++			struct cs_cpu_dbs_info_s, cdbs.work.work);
++
++	if (dbs_sw_coordinated_cpus(&dbs_info->cdbs)) {
++		cs_timer_coordinated(dbs_info, dw);
++	} else {
++		mutex_lock(&dbs_info->cdbs.timer_mutex);
++		cs_timer_update(dbs_info, true, dw);
++		mutex_unlock(&dbs_info->cdbs.timer_mutex);
++	}
++}
+ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 		void *data)
  {
-@@ -296,7 +339,11 @@ second_time:
- 				j_cdbs = dbs_data->get_cpu_cdbs(j);
- 				dbs_timer_init(dbs_data, j_cdbs,
- 					       *sampling_rate, j);
-+
-+				per_cpu(cpu_cur_dbs, j) = dbs_data;
- 			}
-+
-+			register_hotcpu_notifier(&ondemand_cpu_notifier);
- 		} else {
- 			dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate, cpu);
- 		}
-@@ -307,11 +354,15 @@ second_time:
- 			cs_dbs_info->enable = 0;
- 
- 		if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
-+			unregister_hotcpu_notifier(&ondemand_cpu_notifier);
-+
- 			for_each_cpu(j, policy->cpus) {
- 				struct cpu_dbs_common_info *j_cdbs;
- 
- 				j_cdbs = dbs_data->get_cpu_cdbs(j);
- 				dbs_timer_exit(j_cdbs);
-+
-+				per_cpu(cpu_cur_dbs, j) = NULL;
- 			}
- 		} else {
- 			dbs_timer_exit(cpu_cdbs);
 -- 
 1.7.12.1
+
