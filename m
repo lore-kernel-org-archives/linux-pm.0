@@ -1,67 +1,129 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: [PATCH V3] Fix problem with cpufreq_ondemand or cpufreq_conservative
-Date: Sat, 29 Dec 2012 11:24:45 -0600
-Message-ID: <50DF275D.1080702@lwfinger.net>
-References: <50de4d88.M3WYPilXC8de/dVl%Larry.Finger@lwfinger.net> <2035804.da5iyiYDGE@vostro.rjw.lan>
+From: Sonny Rao <sonnyrao@chromium.org>
+Subject: Re: [PATCH] [RFC] cpufreq: can't raise max frequency with cpu_thermal
+Date: Sat, 29 Dec 2012 13:04:52 -0800
+Message-ID: <CAPz6YkU4TCOvAP7z53e+XX46rovxi7bTOBda1VSpKWMHok7BjA@mail.gmail.com>
+References: <1355819384-25983-1-git-send-email-sonnyrao@chromium.org>
+ <CADGdYn6P8T9AKBpHV+uz6avh0+8uWQ+qnKyCjYsYdHQRpPriRg@mail.gmail.com>
+ <CAD=FV=W+tO_3MfGYv_kc3XLw4VWHUXB2NUC+Etj9gW+1vSgvHQ@mail.gmail.com> <CADGdYn7m-rE_jJG_qV7hS_Lh=3Z+hx+9BjmqPpRrxt_BeMA5tA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2035804.da5iyiYDGE@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: fabio.baltieri@linaro.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f179.google.com ([209.85.216.179]:57631 "EHLO
+	mail-qc0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086Ab2L2VFN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 29 Dec 2012 16:05:13 -0500
+Received: by mail-qc0-f179.google.com with SMTP id b14so5909933qcs.24
+        for <linux-pm@vger.kernel.org>; Sat, 29 Dec 2012 13:05:12 -0800 (PST)
+In-Reply-To: <CADGdYn7m-rE_jJG_qV7hS_Lh=3Z+hx+9BjmqPpRrxt_BeMA5tA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: amit daniel kachhap <amit.daniel@samsung.com>
+Cc: Doug Anderson <dianders@chromium.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Sameer Nanda <snanda@chromium.org>
 
-On 12/29/2012 07:27 AM, Rafael J. Wysocki wrote:
-> On Friday, December 28, 2012 07:55:20 PM Larry Finger wrote:
->> Since commit 2aacdff entitled "cpufreq: Move common part from governors
->> to separate file", whenever the drivers that depend on this new file
->> (cpufreq_ondemand or cpufreq_conservative) are built as modules, a new
->> module named cpufreq_governor is created because the Makefile includes
->> cpufreq_governor.o twice. As drivers/cpufreq/cpufreq_governor.c contains no
->> MODULE directives, the resulting module has no license specified, which
->> results in logging of a "module license 'unspecified' taints kernel". In
->> addition, a number of globals are exported GPL only, and are therefore
->> not available. This fix establishes a new boolean configuration variable
->> that forces cpufreq_governor.o to be linked into the kernel whenever
->> either cpufreq_ondemand or cpufreq_conservative is selected.
->>
->> Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
->> ---
->> V3 changes only Kconfig and Makefile and avoids creating a new module.
+On Wed, Dec 26, 2012 at 11:32 AM, amit daniel kachhap
+<amit.daniel@samsung.com> wrote:
 >
-> OK, thanks for the patch!
+> On Tue, Dec 18, 2012 at 9:45 PM, Doug Anderson <dianders@chromium.org> wrote:
+> > Amit,
+> >
+> > On Tue, Dec 18, 2012 at 8:17 PM, amit daniel kachhap
+> > <amit.daniel@samsung.com> wrote:
+> >> On Tue, Dec 18, 2012 at 12:29 AM, Sonny Rao <sonnyrao@chromium.org> wrote:
+> >>> The cpu_thermal generic thermal management code has a bug where once
+> >>> max cpu frequency has been lowered in sysfs (scaling_max_freq) it is
+> >>> not possible to raise the max back up later.  The bug is that the
+> >>> notifer gets called by __cpufreq_set_policy() before the user policy
+> >>> max is raised, and is incorrectly trying to enforce the max frequency
+> >>> policy even when we are trying to change the policy.  It is also not
+> >>> clear why this driver is looking at the user policy since it is
+> >>> primarily supposed to enforce thermal policy, not user set policy.
+> >>
+> >> Hi Sunny,
+> >>
+> >> I am not sure if this change is needed.
+> >
+> > Do you have a machine that's running with your code?  Can you go into
+> > sysfs (/sys/devices/system/cpu/cpu0/cpufreq/) and try lowering then
+> > raising the max frequency by doing something like this (assumes that
+> > you can scale down to 200MHz):
+> >
+> >   cd /sys/devices/system/cpu/cpu0/cpufreq/
+> >   OLD_VAL=$(cat scaling_max_freq)
+> >   cat scaling_min_freq > scaling_max_freq
+> >   echo ${OLD_VAL} > scaling_max_freq
+> >
+> >   echo "$(cat scaling_max_freq) should be ${OLD_VAL}.  Is it?"
+> >
+> > ...when I run the above without Sonny's patch on my system I see:
+> >   200000 should be 1700000. Is it?
+> >
+> > ...after Sonny's patch then the above works.
+> Hi Doug,
 >
-> If you don't mind, I'll rename CONFIG_CPU_FREQ_GOVERNOR to
-> CONFIG_CPU_FREQ_GOV_COMMON when applying it, though.
+> I tested the above steps on exynos origen board with all cpufreq
+> cooling configs enabled in kernel version 3.8-rc1.
+> In my tests I am able to vary scaling_max_freq to all values. Also I
+> am in normal temperature threshold. So basically I am not able to
+> reproduce the error reported,
+>
+> Thanks,
+> Amit Daniel
 
-The following does the job and is somewhat cleaner. If you want, I can remove 
-the line wrap and submit it as V4. The downside of this approach is that the 
-nested ifs will get cumbersome is more governors need cpufreq_governor.o.
 
-Larry
+Hi, thanks for checking it out.  I'm a bit surprised that you couldn't
+reproduce it, but it might just be that it will only manifest on a
+platform which is using that driver - like Exynos 5?  We'll try it out
+on a 3.8-rc on an Exynos and let you know if we see it or not.
 
-Index: wireless-testing-new/drivers/cpufreq/Makefile
-===================================================================
---- wireless-testing-new.orig/drivers/cpufreq/Makefile
-+++ wireless-testing-new/drivers/cpufreq/Makefile
-@@ -7,8 +7,15 @@ obj-$(CONFIG_CPU_FREQ_STAT)
-  obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE) += cpufreq_performance.o
-  obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)   += cpufreq_powersave.o
-  obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)   += cpufreq_userspace.o
--obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)    += cpufreq_ondemand.o cpufreq_governor.o
--obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)        += cpufreq_conservative.o 
-cpufreq_governor.o
-+obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)    += cpufreq_ondemand.o
-+obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)        += cpufreq_conservative.o
-+ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND
-+  obj-y += cpufreq_governor.o
-+else
-+  ifdef CONFIG_CPU_FREQ_GOV_CONSERVATIVE
-+    obj-y += cpufreq_governor.o
-+  endif
-+endif
+Thanks again,
+Sonny
 
-  # CPUfreq cross-arch helpers
-  obj-$(CONFIG_CPU_FREQ_TABLE)           += freq_table.o
+
+>
+> >
+> >> There is a check in cpufreq_thermal_notifier function to return 0 if
+> >> notify_device == NOTIFY_INVALID. So the user will be always able to
+> >> change the max frequency in normal situation. Did you tested this for
+> >> some corner cases?
+> >> The reason behind putting this check is that I don't want to override
+> >> the user constraints.
+> >>
+> >> Thanks,
+> >> Amit Daniel
+> >>
+> >>>
+> >>> Signed-off-by: Sonny Rao <sonnyrao@chromium.org>
+> >>> ---
+> >>>  drivers/thermal/cpu_cooling.c |    4 ----
+> >>>  1 files changed, 0 insertions(+), 4 deletions(-)
+> >>>
+> >>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> >>> index 836828e..63bc708 100644
+> >>> --- a/drivers/thermal/cpu_cooling.c
+> >>> +++ b/drivers/thermal/cpu_cooling.c
+> >>> @@ -219,10 +219,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+> >>>         if (cpumask_test_cpu(policy->cpu, &notify_device->allowed_cpus))
+> >>>                 max_freq = notify_device->cpufreq_val;
+> >>>
+> >>> -       /* Never exceed user_policy.max*/
+> >>> -       if (max_freq > policy->user_policy.max)
+> >>> -               max_freq = policy->user_policy.max;
+> >>> -
+> >>>         if (policy->max != max_freq)
+> >>>                 cpufreq_verify_within_limits(policy, 0, max_freq);
+> >>>
+> >>> --
+> >>> 1.7.7.3
+> >>>
+> >>> --
+> >>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> >>> the body of a message to majordomo@vger.kernel.org
+> >>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >>> Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> > -Doug
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
