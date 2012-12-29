@@ -1,7 +1,7 @@
 From: Larry Finger <Larry.Finger@lwfinger.net>
 Subject: Re: [PATCH V3] Fix problem with cpufreq_ondemand or cpufreq_conservative
-Date: Sat, 29 Dec 2012 09:39:16 -0600
-Message-ID: <50DF0EA4.8090603@lwfinger.net>
+Date: Sat, 29 Dec 2012 11:24:45 -0600
+Message-ID: <50DF275D.1080702@lwfinger.net>
 References: <50de4d88.M3WYPilXC8de/dVl%Larry.Finger@lwfinger.net> <2035804.da5iyiYDGE@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -36,64 +36,32 @@ On 12/29/2012 07:27 AM, Rafael J. Wysocki wrote:
 > If you don't mind, I'll rename CONFIG_CPU_FREQ_GOVERNOR to
 > CONFIG_CPU_FREQ_GOV_COMMON when applying it, though.
 
-No problem. It occurred to me that if one can do logic in a Makefile, then the 
-extra configuration variable can be eliminated. I still need to check if that is 
-possible.
+The following does the job and is somewhat cleaner. If you want, I can remove 
+the line wrap and submit it as V4. The downside of this approach is that the 
+nested ifs will get cumbersome is more governors need cpufreq_governor.o.
 
 Larry
 
->
-> Thanks,
-> Rafael
->
->
->>   Kconfig  |    5 +++++
->>   Makefile |    5 +++--
->>   2 files changed, 8 insertions(+), 2 deletions(-)
->>
->> Index: wireless-testing-new/drivers/cpufreq/Kconfig
->> ===================================================================
->> --- wireless-testing-new.orig/drivers/cpufreq/Kconfig
->> +++ wireless-testing-new/drivers/cpufreq/Kconfig
->> @@ -20,6 +20,9 @@ if CPU_FREQ
->>   config CPU_FREQ_TABLE
->>   	tristate
->>
->> +config CPU_FREQ_GOVERNOR
->> +	bool
->> +
->>   config CPU_FREQ_STAT
->>   	tristate "CPU frequency translation statistics"
->>   	select CPU_FREQ_TABLE
->> @@ -141,6 +144,7 @@ config CPU_FREQ_GOV_USERSPACE
->>   config CPU_FREQ_GOV_ONDEMAND
->>   	tristate "'ondemand' cpufreq policy governor"
->>   	select CPU_FREQ_TABLE
->> +	select CPU_FREQ_GOVERNOR
->>   	help
->>   	  'ondemand' - This driver adds a dynamic cpufreq policy governor.
->>   	  The governor does a periodic polling and
->> @@ -159,6 +163,7 @@ config CPU_FREQ_GOV_ONDEMAND
->>   config CPU_FREQ_GOV_CONSERVATIVE
->>   	tristate "'conservative' cpufreq governor"
->>   	depends on CPU_FREQ
->> +	select CPU_FREQ_GOVERNOR
->>   	help
->>   	  'conservative' - this driver is rather similar to the 'ondemand'
->>   	  governor both in its source code and its purpose, the difference is
->> Index: wireless-testing-new/drivers/cpufreq/Makefile
->> ===================================================================
->> --- wireless-testing-new.orig/drivers/cpufreq/Makefile
->> +++ wireless-testing-new/drivers/cpufreq/Makefile
->> @@ -7,8 +7,9 @@ obj-$(CONFIG_CPU_FREQ_STAT)
->>   obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
->>   obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
->>   obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= cpufreq_userspace.o
->> -obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o cpufreq_governor.o
->> -obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+= cpufreq_conservative.o cpufreq_governor.o
->> +obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+= cpufreq_ondemand.o
->> +obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+= cpufreq_conservative.o
->> +obj-$(CONFIG_CPU_FREQ_GOVERNOR)		+= cpufreq_governor.o
->>
->>   # CPUfreq cross-arch helpers
->>   obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o
+Index: wireless-testing-new/drivers/cpufreq/Makefile
+===================================================================
+--- wireless-testing-new.orig/drivers/cpufreq/Makefile
++++ wireless-testing-new/drivers/cpufreq/Makefile
+@@ -7,8 +7,15 @@ obj-$(CONFIG_CPU_FREQ_STAT)
+  obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE) += cpufreq_performance.o
+  obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)   += cpufreq_powersave.o
+  obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)   += cpufreq_userspace.o
+-obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)    += cpufreq_ondemand.o cpufreq_governor.o
+-obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)        += cpufreq_conservative.o 
+cpufreq_governor.o
++obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)    += cpufreq_ondemand.o
++obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)        += cpufreq_conservative.o
++ifdef CONFIG_CPU_FREQ_GOV_ONDEMAND
++  obj-y += cpufreq_governor.o
++else
++  ifdef CONFIG_CPU_FREQ_GOV_CONSERVATIVE
++    obj-y += cpufreq_governor.o
++  endif
++endif
+
+  # CPUfreq cross-arch helpers
+  obj-$(CONFIG_CPU_FREQ_TABLE)           += freq_table.o
