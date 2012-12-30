@@ -1,129 +1,250 @@
-From: Tim Hockin <thockin@hockin.org>
-Subject: Re: kernel panic on resume from S3 - stumped
-Date: Sat, 29 Dec 2012 21:34:57 -0800
-Message-ID: <CAAAKZwsn8cYURZZ9dSAHqUzAFGXQBU_jNYBsX30rvAMZfZvdFw@mail.gmail.com>
-References: <CAAAKZwsU=jMb6SCvUrAZqRn-uD8HNX3cJ8VFqrG-dqiOoW3+QQ@mail.gmail.com>
- <22263901.MJnoQmEgLn@vostro.rjw.lan>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] ARM: EXYNOS5: Support Exynos5-bus devfreq driver
+Date: Sat, 29 Dec 2012 22:15:42 -0800
+Message-ID: <20121230061542.GA21331@quad.lixom.net>
+References: <1355141166-17205-1-git-send-email-a.kesavan@samsung.com>
+ <1356686649-15856-1-git-send-email-a.kesavan@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <22263901.MJnoQmEgLn@vostro.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <1356686649-15856-1-git-send-email-a.kesavan@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>
+To: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Running a suspend with pm_trace set, I get:
+Hi,
 
-aer 0000:00:03.0:pcie02: hash matches
 
-I don't know what magic might be needed here, though.
+Just a quick hit of review, I haven't done anything more in-depth yet.
 
-I guess next step is to try to build a non-distro kernel.
+On Fri, Dec 28, 2012 at 04:24:09AM -0500, Abhilash Kesavan wrote:
+> - Setup the INT clock ops to control/vary INT frequency
+> - Add PPMU support for Exynos5250
+> - Add mappings initially for the PPMU device
+> 
+> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> ---
+> +config EXYNOS5250_PPMU
+> +	bool "Exynos5250 PPMU Driver"
+> +        depends on SOC_EXYNOS5250
+> +        help
+> +          This adds the Performance Profiling Monitoring Unit (PPMU) support
+> +	  for Exynos5250. This code is used by the devfreq driver to read the
+> +	  PPMU counters and vary the INT bus frequency/voltage.
 
-On Sat, Dec 29, 2012 at 1:57 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday, December 29, 2012 12:03:13 PM Tim Hockin wrote:
->> 4 days ago I had Ubuntu Lucid running on this computer. Suspend and
->> resume worked flawlessly every time.
->>
->> Then I upgraded to Ubuntu Precise.
->
-> Well, do you use a distro kernel or a kernel.org kernel?
->
->> Suspend seems to work, but resume
->> fails every time. The video never initializes.  By the flashing
->> keyboard lights, I guess it's a kernel panic. It fails from the Live
->> CD and from a fresh install.
->>
->> Here is my debug so far.
->>
->> Install all updates (3.2 kernel, nouveau driver)
->> Reboot
->> Try suspend = fails
->>
->> Install Ubuntu's linux-generic-lts-quantal (3.5 kernel, nouveau driver)
->> Reboot
->> Try suspend = fails
->>
->> Install nVidia's 304 driver
->> Reboot
->> Try suspend = fails
->>
->> From within X:
->>   echo core > /sys/power/pm_test
->>   echo mem > /sys/power/state
->> The system acts like it is going to sleep, and then wakes up a few
->> seconds later. dmesg shows:
->>
->> [ 1230.083404] ------------[ cut here ]------------
->> [ 1230.083410] WARNING: at
->> /build/buildd/linux-lts-quantal-3.5.0/kernel/power/suspend_test.c:53
->> suspend_test_finish+0x86/0x90()
->> [ 1230.083411] Hardware name: To Be Filled By O.E.M.
->> [ 1230.083412] Component: resume devices, time: 14424
->> [ 1230.083412] Modules linked in: snd_emu10k1_synth snd_emux_synth
->> snd_seq_virmidi snd_seq_midi_emul bnep rfcomm parport_pc ppdev
->> nvidia(PO) snd_emu10k1 snd_ac97_codec ac97_bus snd_pcm snd_page_alloc
->> snd_util_mem snd_hwdep snd_seq_midi snd_rawmidi snd_seq_midi_event
->> snd_seq snd_timer coretemp snd_seq_device kvm_intel kvm snd
->> ghash_clmulni_intel soundcore aesni_intel btusb cryptd aes_x86_64
->> bluetooth i7core_edac edac_core microcode mac_hid lpc_ich mxm_wmi
->> shpchp serio_raw wmi hid_generic lp parport usbhid hid r8169
->> pata_marvell
->> [ 1230.083445] Pid: 3329, comm: bash Tainted: P O 3.5.0-21-generic
->> #32~precise1-Ubuntu
->> [ 1230.083446] Call Trace:
->> [ 1230.083448] [<ffffffff81052c9f>] warn_slowpath_common+0x7f/0xc0
->> [ 1230.083452] [<ffffffff81052d96>] warn_slowpath_fmt+0x46/0x50
->> [ 1230.083455] [<ffffffff8109b836>] suspend_test_finish+0x86/0x90
->> [ 1230.083457] [<ffffffff8109b53b>] suspend_devices_and_enter+0x10b/0x200
->> [ 1230.083460] [<ffffffff8109b701>] enter_state+0xd1/0x100
->> [ 1230.083463] [<ffffffff8109b74b>] pm_suspend+0x1b/0x60
->> [ 1230.083465] [<ffffffff8109a7a5>] state_store+0x45/0x70
->> [ 1230.083467] [<ffffffff81331d2f>] kobj_attr_store+0xf/0x30
->> [ 1230.083471] [<ffffffff811f77ff>] sysfs_write_file+0xef/0x170
->> [ 1230.083476] [<ffffffff811879d3>] vfs_write+0xb3/0x180
->> [ 1230.083480] [<ffffffff81187cfa>] sys_write+0x4a/0x90
->> [ 1230.083483] [<ffffffff816a6e69>] system_call_fastpath+0x16/0x1b
->> [ 1230.083488] ---[ end trace 839cdd0078b3ce03 ]---
->>
->> Boot with init=/bin/bash
->> unload all modules except USBHID
->> echo core > /sys/power/pm_test
->> echo mem > /sys/power/state
->> system acts like it is going to sleep, and then wakes up a few seconds later
->> echo none > /sys/power/pm_test
->> echo mem > /sys/power/state
->> system goes to sleep
->> press power to resume = fails
->>
->> At this point I am stumped on how to debug. This is a "modern"
->> computer with no serial ports. It worked under Lucid, so I know it is
->> POSSIBLE.
->>
->> Mobo: ASRock X58 single-socket
->> CPU: Westmere 6 core (12 hyperthreads) 3.2 GHz
->> RAM: 12 GB ECC
->> Disk: sda = Intel SSD, mounted on /
->> Disk: sdb = Intel SSD, not mounted
->> Disk: sdc = Seagate HDD, not mounted
->> Disk: sdd = Seagate HDD, not mounted
->> NIC = Onboard RTL8168e/8111e
->> Sound = EMU1212 (emu10k1, not even configured yet)
->> Video = nVidia GeForce 7600 GT
->> KB = PS2 (also tried USB)
->> Mouse = USB
->>
->> I have not updated to a more current kernel than 3.5, but I will if
->> there's evidence that this is resolved.  Any other clever trick to
->> try?
->
-> There is no evidence and there won't be if you don't try a newer kernel.
->
-> Thanks,
-> Rafael
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Whitespace seems munged here.
+
+> --- a/arch/arm/mach-exynos/Makefile
+> +++ b/arch/arm/mach-exynos/Makefile
+> @@ -74,3 +74,7 @@ obj-$(CONFIG_EXYNOS4_SETUP_KEYPAD)	+= setup-keypad.o
+>  obj-$(CONFIG_EXYNOS4_SETUP_SDHCI_GPIO)	+= setup-sdhci-gpio.o
+>  obj-$(CONFIG_EXYNOS4_SETUP_USB_PHY)	+= setup-usb-phy.o
+>  obj-$(CONFIG_EXYNOS_SETUP_SPI)		+= setup-spi.o
+> +
+> +# ppmu support
+> +
+> +obj-$(CONFIG_EXYNOS5250_PPMU)		+= exynos_ppmu.o exynos5_ppmu.o
+
+Quite obvious that it's ppmu support from the file names. No need for
+a comment.
+
+> diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
+> index 578a610..a285080 100644
+> --- a/arch/arm/mach-exynos/common.c
+> +++ b/arch/arm/mach-exynos/common.c
+> @@ -308,6 +308,31 @@ static struct map_desc exynos5_iodesc[] __initdata = {
+>  		.pfn		= __phys_to_pfn(EXYNOS5_PA_UART),
+>  		.length		= SZ_512K,
+>  		.type		= MT_DEVICE,
+> +	}, {
+> +		.virtual        = (unsigned long)S5P_VA_PPMU_CPU,
+> +		.pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_CPU),
+> +		.length         = SZ_8K,
+> +		.type		= MT_DEVICE,
+> +	}, {
+> +		.virtual        = (unsigned long)S5P_VA_PPMU_DDR_C,
+> +		.pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_C),
+> +		.length         = SZ_8K,
+> +		.type           = MT_DEVICE,
+> +	}, {
+> +		.virtual        = (unsigned long)S5P_VA_PPMU_DDR_R1,
+> +		.pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_R1),
+> +		.length         = SZ_8K,
+> +		.type           = MT_DEVICE,
+> +	}, {
+> +		.virtual        = (unsigned long)S5P_VA_PPMU_DDR_L,
+> +		.pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_L),
+> +		.length         = SZ_8K,
+> +		.type           = MT_DEVICE,
+> +	}, {
+> +		.virtual        = (unsigned long)S5P_VA_PPMU_RIGHT,
+> +		.pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_RIGHT),
+> +		.length         = SZ_8K,
+> +		.type           = MT_DEVICE,
+>  	},
+
+You should add the ppmu device to the device tree, and get the addresses from
+there instead (via ioremap).
+
+That way you can make this driver probe using regular methods too.
+
+> --- /dev/null
+> +++ b/arch/arm/mach-exynos/exynos5_ppmu.c
+> @@ -0,0 +1,396 @@
+> +/*
+> + * Copyright (c) 2012 Samsung Electronics Co., Ltd.
+> + *		http://www.samsung.com/
+> + *
+> + * EXYNOS5 PPMU support
+> + * Support for only EXYNOS5250 is present.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/delay.h>
+> +#include <linux/hrtimer.h>
+> +#include <linux/io.h>
+> +#include <linux/slab.h>
+> +
+> +#include <mach/map.h>
+> +
+> +#include <mach/exynos_ppmu.h>
+> +#include <mach/exynos5_ppmu.h>
+
+Can you avoid adding new mach includes for this, perhaps? We're working hard on
+removing them for all platforms, even though exynos is lagging behind on it.
+Local defines that are used in just one C file can either go in that file, or
+in a header file that sits next to it instead of in the shared directory. For
+the devfreq driver, include/linux/* is a better location.
+
+> +#define FIXED_POINT_OFFSET 8
+> +#define FIXED_POINT_MASK ((1 << FIXED_POINT_OFFSET) - 1)
+
+0xff. Easier to read for a single entry like this.
+
+
+> +enum exynos5_ppmu_list {
+> +	PPMU_DDR_C,
+> +	PPMU_DDR_R1,
+> +	PPMU_DDR_L,
+> +	PPMU_RIGHT,
+> +	PPMU_CPU,
+> +	PPMU_END,
+> +};
+> +
+> +struct exynos5_ppmu_handle {
+> +	struct list_head node;
+> +	struct exynos_ppmu ppmu[PPMU_END];
+> +};
+> +
+> +static DEFINE_SPINLOCK(exynos5_ppmu_lock);
+> +static LIST_HEAD(exynos5_ppmu_handle_list);
+> +static struct exynos5_ppmu_handle *exynos5_ppmu_trace_handle;
+> +
+> +static const char *exynos5_ppmu_name[PPMU_END] = {
+> +	[PPMU_DDR_C]	= "DDR_C",
+> +	[PPMU_DDR_R1]	= "DDR_R1",
+> +	[PPMU_DDR_L]	= "DDR_L",
+> +	[PPMU_RIGHT]	= "RIGHT",
+> +	[PPMU_CPU]	= "CPU",
+> +};
+> +
+> +static struct exynos_ppmu ppmu[PPMU_END] = {
+> +	[PPMU_DDR_C] = {
+> +		.hw_base = S5P_VA_PPMU_DDR_C,
+> +	},
+> +	[PPMU_DDR_R1] = {
+> +		.hw_base = S5P_VA_PPMU_DDR_R1,
+> +	},
+> +	[PPMU_DDR_L] = {
+> +		.hw_base = S5P_VA_PPMU_DDR_L,
+> +	},
+> +	[PPMU_RIGHT] = {
+> +		.hw_base = S5P_VA_PPMU_RIGHT,
+> +	},
+> +	[PPMU_CPU] = {
+> +		.hw_base = S5P_VA_PPMU_CPU,
+> +	},
+> +};
+> +
+> +static void exynos5_ppmu_reset(struct exynos_ppmu *ppmu)
+> +{
+> +	unsigned long flags;
+> +
+> +	void __iomem *ppmu_base = ppmu->hw_base;
+
+No need for whitespace between these two declarations.
+
+> +	/* Reset PPMU */
+> +	exynos_ppmu_reset(ppmu_base);
+
+Quite obvious from looking at the function call.
+
+> +	/* Set PPMU Event */
+
+Obvious. Comment on why you do things, not _what_ you are doing.
+
+> +	ppmu->event[PPMU_PMNCNT0] = RD_DATA_COUNT;
+> +	exynos_ppmu_setevent(ppmu_base, PPMU_PMNCNT0,
+> +			ppmu->event[PPMU_PMNCNT0]);
+> +	ppmu->event[PPMU_PMCCNT1] = WR_DATA_COUNT;
+> +	exynos_ppmu_setevent(ppmu_base, PPMU_PMCCNT1,
+> +			ppmu->event[PPMU_PMCCNT1]);
+> +	ppmu->event[PPMU_PMNCNT3] = RDWR_DATA_COUNT;
+> +	exynos_ppmu_setevent(ppmu_base, PPMU_PMNCNT3,
+> +			ppmu->event[PPMU_PMNCNT3]);
+> +
+> +	local_irq_save(flags);
+> +	ppmu->reset_time = ktime_get();
+> +	/* Start PPMU */
+> +	exynos_ppmu_start(ppmu_base);
+
+Again, quite obvious.
+
+> +	local_irq_restore(flags);
+> +}
+> +
+> +static void exynos5_ppmu_read(struct exynos_ppmu *ppmu)
+> +{
+> +	int j;
+> +	unsigned long flags;
+> +	ktime_t read_time;
+> +	ktime_t t;
+> +	u32 reg;
+> +
+> +	void __iomem *ppmu_base = ppmu->hw_base;
+
+Again, no need for empty line. Also, all these base references will go away
+once you switch over to a device/driver model.
+
+> +	local_irq_save(flags);
+> +	read_time = ktime_get();
+> +	/* Stop PPMU */
+> +	exynos_ppmu_stop(ppmu_base);
+> +	local_irq_restore(flags);
+> +
+> +	/* Update local data from PPMU */
+> +	ppmu->ccnt = __raw_readl(ppmu_base + PPMU_CCNT);
+> +	reg = __raw_readl(ppmu_base + PPMU_FLAG);
+> +	ppmu->ccnt_overflow = reg & PPMU_CCNT_OVERFLOW;
+> +
+> +	for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
+> +		if (ppmu->event[j] == 0)
+> +			ppmu->count[j] = 0;
+> +		else
+> +			ppmu->count[j] = exynos_ppmu_read(ppmu_base, j);
+> +	}
+> +	t = ktime_sub(read_time, ppmu->reset_time);
+> +	ppmu->ns = ktime_to_ns(t);
+> +}
+
+[...]
+
+-Olof
