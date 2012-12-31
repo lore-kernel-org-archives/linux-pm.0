@@ -1,92 +1,108 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH] ARM: EXYNOS5: Support Exynos5-bus devfreq driver
-Date: Mon, 31 Dec 2012 07:42:32 +0530
-Message-ID: <CAM4voakbSS08cJ19Yh1Vgh7E7w0VnPK42A3HzHg90Bm3qTzJ+Q@mail.gmail.com>
-References: <1355141166-17205-1-git-send-email-a.kesavan@samsung.com>
-	<1356686649-15856-1-git-send-email-a.kesavan@samsung.com>
-	<20121230061542.GA21331@quad.lixom.net>
+From: Russ Anderson <rja@sgi.com>
+Subject: Re: [PATCH] cpuidle - fix lock contention in the idle path
+Date: Mon, 31 Dec 2012 09:08:33 -0600
+Message-ID: <20121231150833.GA5425@sgi.com>
+References: <1356516108-11191-1-git-send-email-daniel.lezcano@linaro.org> <50DEBFD7.5000104@linaro.org>
+Reply-To: Russ Anderson <rja@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f47.google.com ([209.85.216.47]:45627 "EHLO
-	mail-qa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656Ab2LaCMd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 30 Dec 2012 21:12:33 -0500
-In-Reply-To: <20121230061542.GA21331@quad.lixom.net>
+Received: from relay2.sgi.com ([192.48.179.30]:39387 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751238Ab2LaPIg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 31 Dec 2012 10:08:36 -0500
+Content-Disposition: inline
+In-Reply-To: <50DEBFD7.5000104@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, rja@americas.sgi.com
 
-On Sun, Dec 30, 2012 at 11:45 AM, Olof Johansson <olof@lixom.net> wrote:
-> Hi,
-Hi Olof,
->> +# ppmu support
->> +
->> +obj-$(CONFIG_EXYNOS5250_PPMU)                += exynos_ppmu.o exynos5_ppmu.o
->
-> Quite obvious that it's ppmu support from the file names. No need for
-> a comment.
-Will improve the commenting in the file.
-Also, will fix the whitespace, empty lines in the file.
->
->> diff --git a/arch/arm/mach-exynos/common.c b/arch/arm/mach-exynos/common.c
->> index 578a610..a285080 100644
->> --- a/arch/arm/mach-exynos/common.c
->> +++ b/arch/arm/mach-exynos/common.c
->> @@ -308,6 +308,31 @@ static struct map_desc exynos5_iodesc[] __initdata = {
->>               .pfn            = __phys_to_pfn(EXYNOS5_PA_UART),
->>               .length         = SZ_512K,
->>               .type           = MT_DEVICE,
->> +     }, {
->> +             .virtual        = (unsigned long)S5P_VA_PPMU_CPU,
->> +             .pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_CPU),
->> +             .length         = SZ_8K,
->> +             .type           = MT_DEVICE,
->> +     }, {
->> +             .virtual        = (unsigned long)S5P_VA_PPMU_DDR_C,
->> +             .pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_C),
->> +             .length         = SZ_8K,
->> +             .type           = MT_DEVICE,
->> +     }, {
->> +             .virtual        = (unsigned long)S5P_VA_PPMU_DDR_R1,
->> +             .pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_R1),
->> +             .length         = SZ_8K,
->> +             .type           = MT_DEVICE,
->> +     }, {
->> +             .virtual        = (unsigned long)S5P_VA_PPMU_DDR_L,
->> +             .pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_DDR_L),
->> +             .length         = SZ_8K,
->> +             .type           = MT_DEVICE,
->> +     }, {
->> +             .virtual        = (unsigned long)S5P_VA_PPMU_RIGHT,
->> +             .pfn            = __phys_to_pfn(EXYNOS5_PA_PPMU_RIGHT),
->> +             .length         = SZ_8K,
->> +             .type           = MT_DEVICE,
->>       },
->
-> You should add the ppmu device to the device tree, and get the addresses from
-> there instead (via ioremap).
->
-> That way you can make this driver probe using regular methods too.
-Will re-work to remove these static mappings.
->
->> +
->> +#include <mach/exynos_ppmu.h>
->> +#include <mach/exynos5_ppmu.h>
->
-> Can you avoid adding new mach includes for this, perhaps? We're working hard on
-> removing them for all platforms, even though exynos is lagging behind on it.
-> Local defines that are used in just one C file can either go in that file, or
-> in a header file that sits next to it instead of in the shared directory. For
-> the devfreq driver, include/linux/* is a better location.
-Will do.
->
->> +#define FIXED_POINT_OFFSET 8
->> +#define FIXED_POINT_MASK ((1 << FIXED_POINT_OFFSET) - 1)
->
-> 0xff. Easier to read for a single entry like this.
-OK
+On Sat, Dec 29, 2012 at 11:03:03AM +0100, Daniel Lezcano wrote:
+>=20
+> Hi Russ,
+>=20
+> Is it possible you try this patch on your 2048 cpus ?
 
-Thanks,
-Abhilash
+Yes, I will try it later today.
+Thanks
+
+
+> Thanks
+>=20
+>   -- Daniel
+>=20
+> On 12/26/2012 11:01 AM, Daniel Lezcano wrote:
+> > The commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 introduces
+> > a lock in the cpuidle_get_cpu_driver function. This function
+> > is used in the idle_call function.
+> >=20
+> > The problem is the contention with a large number of cpus because
+> > they try to access the idle routine at the same time.
+> >=20
+> > The lock could be safely removed because of how is used the
+> > cpuidle api. The cpuidle_register_driver is called first but
+> > until the cpuidle_register_device is not called we don't
+> > enter in the cpuidle idle call function because the device
+> > is not enabled.
+> >=20
+> > The cpuidle_unregister_driver function, leading the a NULL driver,
+> > is not called before the cpuidle_unregister_device.
+> >=20
+> > This is how is used the cpuidle api from the different drivers.
+> >=20
+> > However, a cleanup around the lock and a proper refcounting
+> > mechanism should be used to ensure the consistency in the api,
+> > like cpuidle_unregister_driver should failed if its refcounting
+> > is not 0.
+> >=20
+> > These modifications will need some code reorganization and rewrite
+> > which does not fit with a fix.
+> >=20
+> > The following patch is a hot fix by returning to the initial behavi=
+or
+> > by removing the lock when getting the driver.
+> >=20
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
+> >  drivers/cpuidle/driver.c |    8 +-------
+> >  1 file changed, 1 insertion(+), 7 deletions(-)
+> >=20
+> > diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> > index 3af841f..c2b281a 100644
+> > --- a/drivers/cpuidle/driver.c
+> > +++ b/drivers/cpuidle/driver.c
+> > @@ -235,16 +235,10 @@ EXPORT_SYMBOL_GPL(cpuidle_get_driver);
+> >   */
+> >  struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_devic=
+e *dev)
+> >  {
+> > -	struct cpuidle_driver *drv;
+> > -
+> >  	if (!dev)
+> >  		return NULL;
+> > =20
+> > -	spin_lock(&cpuidle_driver_lock);
+> > -	drv =3D __cpuidle_get_cpu_driver(dev->cpu);
+> > -	spin_unlock(&cpuidle_driver_lock);
+> > -
+> > -	return drv;
+> > +	return __cpuidle_get_cpu_driver(dev->cpu);
+> >  }
+> >  EXPORT_SYMBOL_GPL(cpuidle_get_cpu_driver);
+> > =20
+> >=20
+>=20
+>=20
+> --=20
+>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM SoCs
+>=20
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+
+--=20
+Russ Anderson, OS RAS/Partitioning Project Lead =20
+SGI - Silicon Graphics Inc          rja@sgi.com
