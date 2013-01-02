@@ -1,91 +1,148 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [RFC PATCH 1/1] thermal: introduce thermal_zone_lookup_temperature helper function
-Date: Wed, 2 Jan 2013 17:53:44 +0200
-Message-ID: <1357142024-8324-1-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [PATCH RESEND 1/4] thermal: Use thermal zone device id in netlink
+ messages
+Date: Wed, 2 Jan 2013 17:55:56 +0200
+Message-ID: <50E4588C.5000900@ti.com>
+References: <1357140582-8151-1-git-send-email-eduardo.valentin@ti.com> <1357140582-8151-2-git-send-email-eduardo.valentin@ti.com> <4D68720C2E767A4AA6A8796D42C8EB59252E14@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:53970 "EHLO comal.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:59721 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761Ab3ABPyG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 2 Jan 2013 10:54:06 -0500
+	id S1752783Ab3ABP4G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Jan 2013 10:56:06 -0500
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59252E14@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: durgadoss.r@intel.com
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-pm@lists.linux-foundation.org, Eduardo Valentin <eduardo.valentin@ti.com>
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This patch adds a helper function to get temperature of
-a thermal zone, based on the zone type name.
+Hello,
 
-It will perform a zone name lookup and return the last
-sensor temperature reading. In case the zone is not found
-or if the required parameters are invalid, it will return
-the corresponding error code.
+On 02-01-2013 17:48, R, Durgadoss wrote:
+>> -----Original Message-----
+>> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
+>> Sent: Wednesday, January 02, 2013 9:00 PM
+>> To: Zhang, Rui
+>> Cc: R, Durgadoss; linux-pm@lists.linux-foundation.org; linux-
+>> pm@vger.kernel.org; Eduardo Valentin
+>> Subject: [PATCH RESEND 1/4] thermal: Use thermal zone device id in netlink
+>> messages
+>>
+>> This patch changes the function thermal_generate_netlink_event
+>> to receive a thermal zone device instead of a originator id.
+>>
+>> This way, the messages will always be bound to a thermal zone.
+>
+> As you have mentioned, we are planning to deprecate this API.
+> But, for now, this change is Ok :-)
 
+Good.
 
-With this, we could write platform code to fetch several temperature
-from several sensors and derive "summary" temperature for a virtual
-thermal zone.
+>
+> And I believe all these four patches are on Rui's tree ?
 
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- drivers/thermal/thermal_sys.c |   30 ++++++++++++++++++++++++++++++
- include/linux/thermal.h       |    1 +
- 2 files changed, 31 insertions(+), 0 deletions(-)
+They are not :-(
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index a24b010..4269571 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -1703,6 +1703,36 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- }
- EXPORT_SYMBOL(thermal_zone_device_unregister);
- 
-+/**
-+ * thermal_lookup_temperature - search for a zone and returns its temperature
-+ * @name: thermal zone name to fetch the temperature
-+ * @temperature: pointer to store the zone temperature, in case it is found
-+ *
-+ * When the zone is found, updates @temperature and returns 0. Returns
-+ * -EINVAL in case of wrong parameters and -ENODEV in case the zone is not found
-+ */
-+int thermal_zone_lookup_temperature(const char *name, int *temperature)
-+{
-+	struct thermal_zone_device *pos = NULL;
-+	bool found = false;
-+
-+	if (!name || !temperature)
-+		return -EINVAL;
-+
-+	mutex_lock(&thermal_list_lock);
-+	list_for_each_entry(pos, &thermal_tz_list, node)
-+		if (!strcmp(pos->type, name)) {
-+			found = true;
-+			break;
-+		}
-+	if (found)
-+		*temperature = pos->last_temperature;
-+	mutex_unlock(&thermal_list_lock);
-+
-+	return found ? 0 : -ENODEV;
-+}
-+EXPORT_SYMBOL(thermal_zone_lookup_temperature);
-+
- #ifdef CONFIG_NET
- static struct genl_family thermal_event_genl_family = {
- 	.id = GENL_ID_GENERATE,
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index e85ac70..e0cb335c 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -233,6 +233,7 @@ void thermal_zone_device_update(struct thermal_zone_device *);
- struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
- 		const struct thermal_cooling_device_ops *);
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
-+int thermal_zone_lookup_temperature(const char *name, int *temperature);
- 
- int get_tz_trend(struct thermal_zone_device *, int);
- struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
--- 
-1.7.7.1.488.ge8e1c
+>
+>>
+>
+> Reviewed-by: Durgadoss R <durgadoss.r@intel.com>
+>
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>   Documentation/thermal/sysfs-api.txt |    5 +++--
+>>   drivers/thermal/thermal_sys.c       |    8 ++++++--
+>>   include/linux/thermal.h             |    6 ++++--
+>>   3 files changed, 13 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/Documentation/thermal/sysfs-api.txt
+>> b/Documentation/thermal/sysfs-api.txt
+>> index 88c0233..526d4b9 100644
+>> --- a/Documentation/thermal/sysfs-api.txt
+>> +++ b/Documentation/thermal/sysfs-api.txt
+>> @@ -329,8 +329,9 @@ The framework includes a simple notification
+>> mechanism, in the form of a
+>>   netlink event. Netlink socket initialization is done during the _init_
+>>   of the framework. Drivers which intend to use the notification mechanism
+>>   just need to call thermal_generate_netlink_event() with two arguments viz
+>> -(originator, event). Typically the originator will be an integer assigned
+>> -to a thermal_zone_device when it registers itself with the framework. The
+>> +(originator, event). The originator is a pointer to struct
+>> thermal_zone_device
+>> +from where the event has been originated. An integer which represents
+>> the
+>> +thermal zone device will be used in the message to identify the zone. The
+>>   event will be one of:{THERMAL_AUX0, THERMAL_AUX1,
+>> THERMAL_CRITICAL,
+>>   THERMAL_DEV_FAULT}. Notification can be sent when the current
+>> temperature
+>>   crosses any of the configured thresholds.
+>> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+>> index 8c8ce80..d85f51f 100644
+>> --- a/drivers/thermal/thermal_sys.c
+>> +++ b/drivers/thermal/thermal_sys.c
+>> @@ -1711,7 +1711,8 @@ static struct genl_multicast_group
+>> thermal_event_mcgrp = {
+>>   	.name = THERMAL_GENL_MCAST_GROUP_NAME,
+>>   };
+>>
+>> -int thermal_generate_netlink_event(u32 orig, enum events event)
+>> +int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+>> +					enum events event)
+>>   {
+>>   	struct sk_buff *skb;
+>>   	struct nlattr *attr;
+>> @@ -1721,6 +1722,9 @@ int thermal_generate_netlink_event(u32 orig,
+>> enum events event)
+>>   	int result;
+>>   	static unsigned int thermal_event_seqnum;
+>>
+>> +	if (!tz)
+>> +		return -EINVAL;
+>> +
+>>   	/* allocate memory */
+>>   	size = nla_total_size(sizeof(struct thermal_genl_event)) +
+>>   	       nla_total_size(0);
+>> @@ -1755,7 +1759,7 @@ int thermal_generate_netlink_event(u32 orig,
+>> enum events event)
+>>
+>>   	memset(thermal_event, 0, sizeof(struct thermal_genl_event));
+>>
+>> -	thermal_event->orig = orig;
+>> +	thermal_event->orig = tz->id;
+>>   	thermal_event->event = event;
+>>
+>>   	/* send multicast genetlink message */
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index fe82022..e85ac70 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -244,9 +244,11 @@ int thermal_register_governor(struct
+>> thermal_governor *);
+>>   void thermal_unregister_governor(struct thermal_governor *);
+>>
+>>   #ifdef CONFIG_NET
+>> -extern int thermal_generate_netlink_event(u32 orig, enum events event);
+>> +extern int thermal_generate_netlink_event(struct thermal_zone_device
+>> *tz,
+>> +						enum events event);
+>>   #else
+>> -static inline int thermal_generate_netlink_event(u32 orig, enum events
+>> event)
+>> +static int thermal_generate_netlink_event(struct thermal_zone_device
+>> *tz,
+>> +						enum events event)
+>>   {
+>>   	return 0;
+>>   }
+>> --
+>> 1.7.7.1.488.ge8e1c
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
