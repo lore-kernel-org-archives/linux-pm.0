@@ -1,73 +1,91 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH RESEND 4/4] thermal: check for invalid trip setup when
- registering thermal device
-Date: Wed, 2 Jan 2013 15:53:15 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59252E5F@BGSMSX101.gar.corp.intel.com>
-References: <1357140582-8151-1-git-send-email-eduardo.valentin@ti.com>
- <1357140582-8151-5-git-send-email-eduardo.valentin@ti.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [RFC PATCH 1/1] thermal: introduce thermal_zone_lookup_temperature helper function
+Date: Wed, 2 Jan 2013 17:53:44 +0200
+Message-ID: <1357142024-8324-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:35386 "EHLO mga14.intel.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:53970 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752761Ab3ABPxV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jan 2013 10:53:21 -0500
-In-Reply-To: <1357140582-8151-5-git-send-email-eduardo.valentin@ti.com>
-Content-Language: en-US
+	id S1752761Ab3ABPyG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 2 Jan 2013 10:54:06 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@lists.linux-foundation.org" <linux-pm@lists.linux-foundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: durgadoss.r@intel.com
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-pm@lists.linux-foundation.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Wednesday, January 02, 2013 9:00 PM
-> To: Zhang, Rui
-> Cc: R, Durgadoss; linux-pm@lists.linux-foundation.org; linux-
-> pm@vger.kernel.org; Eduardo Valentin
-> Subject: [PATCH RESEND 4/4] thermal: check for invalid trip setup when
-> registering thermal device
-> 
-> This patch adds an extra check in the data structure while registering
-> a thermal device. The check is to avoid registering zones with a number
-> of trips greater than zero, but with no .get_trip_temp nor .get_trip_type
-> callbacks. Receiving such data structure may end in wrong data access.
+This patch adds a helper function to get temperature of
+a thermal zone, based on the zone type name.
 
-Yes, agreed. we are moving away from this API too :-(
-But Nothing hurts to have this fix. So,
+It will perform a zone name lookup and return the last
+sensor temperature reading. In case the zone is not found
+or if the required parameters are invalid, it will return
+the corresponding error code.
 
-Reviewed-by: Durgadoss R <durgadoss.r@intel.com>
 
-Thanks,
-Durga
+With this, we could write platform code to fetch several temperature
+from several sensors and derive "summary" temperature for a virtual
+thermal zone.
 
-> 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  drivers/thermal/thermal_sys.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index fba27c3..0a1bf6b 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -1530,6 +1530,9 @@ struct thermal_zone_device
-> *thermal_zone_device_register(const char *type,
->  	if (!ops || !ops->get_temp)
->  		return ERR_PTR(-EINVAL);
-> 
-> +	if (trips > 0 && !ops->get_trip_type)
-> +		return ERR_PTR(-EINVAL);
-> +
->  	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
->  	if (!tz)
->  		return ERR_PTR(-ENOMEM);
-> --
-> 1.7.7.1.488.ge8e1c
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/thermal_sys.c |   30 ++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |    1 +
+ 2 files changed, 31 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index a24b010..4269571 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -1703,6 +1703,36 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ }
+ EXPORT_SYMBOL(thermal_zone_device_unregister);
+ 
++/**
++ * thermal_lookup_temperature - search for a zone and returns its temperature
++ * @name: thermal zone name to fetch the temperature
++ * @temperature: pointer to store the zone temperature, in case it is found
++ *
++ * When the zone is found, updates @temperature and returns 0. Returns
++ * -EINVAL in case of wrong parameters and -ENODEV in case the zone is not found
++ */
++int thermal_zone_lookup_temperature(const char *name, int *temperature)
++{
++	struct thermal_zone_device *pos = NULL;
++	bool found = false;
++
++	if (!name || !temperature)
++		return -EINVAL;
++
++	mutex_lock(&thermal_list_lock);
++	list_for_each_entry(pos, &thermal_tz_list, node)
++		if (!strcmp(pos->type, name)) {
++			found = true;
++			break;
++		}
++	if (found)
++		*temperature = pos->last_temperature;
++	mutex_unlock(&thermal_list_lock);
++
++	return found ? 0 : -ENODEV;
++}
++EXPORT_SYMBOL(thermal_zone_lookup_temperature);
++
+ #ifdef CONFIG_NET
+ static struct genl_family thermal_event_genl_family = {
+ 	.id = GENL_ID_GENERATE,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e85ac70..e0cb335c 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -233,6 +233,7 @@ void thermal_zone_device_update(struct thermal_zone_device *);
+ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 		const struct thermal_cooling_device_ops *);
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
++int thermal_zone_lookup_temperature(const char *name, int *temperature);
+ 
+ int get_tz_trend(struct thermal_zone_device *, int);
+ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+-- 
+1.7.7.1.488.ge8e1c
+
