@@ -1,116 +1,51 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] cpufreq: Don't use cpu removed during cpufreq_driver_unregister
-Date: Thu, 03 Jan 2013 19:55:54 +0530
-Message-ID: <50E594F2.4000800@linux.vnet.ibm.com>
-References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org> <1fe21314c2e17585e22c546e2cac12544f8f9733.1355636864.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1fe21314c2e17585e22c546e2cac12544f8f9733.1355636864.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, rafael.j.wysocki@intel.com, linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v4 0/3] PM: Intel PowerClamp driver
+Date: Thu,  3 Jan 2013 03:01:12 -0800
+Message-ID: <1357210875-5025-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:38776 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753017Ab3ACTBa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Jan 2013 14:01:30 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Joe Perches <joe@perches.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Hi Viresh,
+v4 changes:
+More cosmetic changes since v3 based on
+https://lkml.org/lkml/2012/11/26/778
 
-On 12/16/2012 11:20 AM, Viresh Kumar wrote:
-> This is how the core works:
-> cpufreq_driver_unregister()
->  - subsys_interface_unregister()
->    - for_each_cpu() call cpufreq_remove_dev(), i.e. 0,1,2,3,4 when we
->      unregister.
-> 
-> cpufreq_remove_dev():
->  - Remove policy node
->  - Call cpufreq_add_dev() for next cpu, sharing mask with removed cpu.
->    i.e. When cpu 0 is removed, we call it for cpu 1. And when called for cpu 2,
->    we call it for cpu 3.
->    - cpufreq_add_dev() would call cpufreq_driver->init()
->    - init would return mask as AND of 2, 3 and 4 for cluster A7.
->    - cpufreq core would do online_cpu && policy->cpus
->      Here is the BUG(). Because cpu hasn't died but we have just unregistered
->      the cpufreq driver, online cpu would still have cpu 2 in it. And so thing
->      go bad again.
-> 
-> Solution: Keep cpumask of cpus that are registered with cpufreq core and clear
-> 	  cpus when we get a call from subsys_interface_unregister() via
-> 	  cpufreq_remove_dev().
-> 
+We have done some experiment with idle injection on Intel platforms.
+The idea is to use the increasingly power efficient package level
+C-states for power capping and passive thermal control.
 
-I took a quick look at the problem you described above, and the cpufreq code..
-If we cannot avoid calling cpufreq_add_dev() from cpufreq_remove_dev(), then I can't
-think of anything better than what your patch does.
+Documentation is included in the patch to explain the theory of
+operation, performance implication, calibration, scalability, and user
+interface. Please refer to the following file for more details.
 
-BTW, off-topic, while going through that path, I think I found a memory leak
-in __cpufreq_remove_dev():
+Documentation/thermal/intel_powerclamp.txt
 
-        if (unlikely(cpumask_weight(data->cpus) > 1)) {
-                for_each_cpu(j, data->cpus) {
-                        if (j == cpu) 
-                                continue;
-                        per_cpu(cpufreq_cpu_data, j) = NULL;
-                }
-        }
-
-We are assigning NULL without freeing that memory.
+Arjan van de Ven created the original idea and driver, I have been
+refining driver in hope that they can be to be useful beyond a proof
+of concept.
 
 
-Regards,
-Srivatsa S. Bhat
+Jacob Pan (3):
+  tick: export nohz tick idle symbols for module use
+  x86/nmi: export local_touch_nmi() symbol for modules
+  PM: Introduce Intel PowerClamp Driver
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index a0a33bd..271d3be 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -47,6 +47,9 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  #endif
->  static DEFINE_SPINLOCK(cpufreq_driver_lock);
-> 
-> +/* Used when we unregister cpufreq driver */
-> +struct cpumask	cpufreq_online_mask;
-> +
->  /*
->   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
->   * all cpufreq/hotplug/workqueue/etc related lock issues.
-> @@ -981,6 +984,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->  	 * managing offline cpus here.
->  	 */
->  	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
-> +	cpumask_and(policy->cpus, policy->cpus, &cpufreq_online_mask);
-> 
->  	policy->user_policy.min = policy->min;
->  	policy->user_policy.max = policy->max;
-> @@ -1064,7 +1068,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->  	}
->  	per_cpu(cpufreq_cpu_data, cpu) = NULL;
-> 
-> -
->  #ifdef CONFIG_SMP
->  	/* if this isn't the CPU which is the parent of the kobj, we
->  	 * only need to unlink, put and exit
-> @@ -1185,6 +1188,7 @@ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
->  	if (unlikely(lock_policy_rwsem_write(cpu)))
->  		BUG();
-> 
-> +	cpumask_clear_cpu(cpu, &cpufreq_online_mask);
->  	retval = __cpufreq_remove_dev(dev, sif);
->  	return retval;
->  }
-> @@ -1903,6 +1907,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->  	cpufreq_driver = driver_data;
->  	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
-> +	cpumask_setall(&cpufreq_online_mask);
-> +
->  	ret = subsys_interface_register(&cpufreq_interface);
->  	if (ret)
->  		goto err_null_driver;
-> 
+ Documentation/thermal/intel_powerclamp.txt |  307 +++++++++++
+ arch/x86/kernel/nmi.c                      |    1 +
+ drivers/thermal/Kconfig                    |   10 +
+ drivers/thermal/Makefile                   |    2 +
+ drivers/thermal/intel_powerclamp.c         |  762 ++++++++++++++++++++++++++++
+ kernel/time/tick-sched.c                   |    2 +
+ 6 files changed, 1084 insertions(+)
+ create mode 100644 Documentation/thermal/intel_powerclamp.txt
+ create mode 100644 drivers/thermal/intel_powerclamp.c
+
+-- 
+1.7.9.5
 
