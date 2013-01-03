@@ -1,58 +1,47 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v4 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Thu, 3 Jan 2013 07:03:48 -0800
-Message-ID: <20130103070348.59b89cf7@jacob-desktop>
-References: <1357210875-5025-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1357210875-5025-4-git-send-email-jacob.jun.pan@linux.intel.com>
-	<1357241654.5452.16.camel@joe-AO722>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v5 1/3] tick: export nohz tick idle symbols for module use
+Date: Thu,  3 Jan 2013 07:10:02 -0800
+Message-ID: <1357225804-27191-2-git-send-email-jacob.jun.pan@linux.intel.com>
+References: <1357225804-27191-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:55380 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:41404 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753770Ab3ACXEC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Jan 2013 18:04:02 -0500
-In-Reply-To: <1357241654.5452.16.camel@joe-AO722>
+	id S1753987Ab3ACXKS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Jan 2013 18:10:18 -0500
+In-Reply-To: <1357225804-27191-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Joe Perches <joe@perches.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Thu, 03 Jan 2013 11:34:14 -0800
-Joe Perches <joe@perches.com> wrote:
+Allow drivers such as intel_powerclamp to use these apis for
+turning on/off ticks during idle.
 
-> On Thu, 2013-01-03 at 03:01 -0800, Jacob Pan wrote:
-> > Intel PowerClamp driver performs synchronized idle injection across
-> > all online CPUs. The goal is to maintain a given package level
-> > C-state ratio.
-> 
-> just trivia:
-> 
-> > diff --git a/drivers/thermal/intel_powerclamp.c
-> > b/drivers/thermal/intel_powerclamp.c
-> 
-> > +static int clamping;
-> 
-> bool and use true/false?
-sure. will change in v5
-> 
-> > +static int window_size_set(const char *arg, const struct
-> > kernel_param *kp)
-> []
-> > +	if (new_window_size >= 10 || new_window_size < 2) {
-> > +		pr_err("Invalid window size %lu, between 2-10\n",
-> > +			new_window_size);
-> 
-> This is a misleading message or a bad test,
-> It's from 2 to 9
-> 
-> This would more normally be tested/written as
-> 
-> 	val < low || val > high
-> 
-will change to make the range match error message, between 2 to 10.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ kernel/time/tick-sched.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks,
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index d58e552..a767757 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -553,6 +553,7 @@ void tick_nohz_idle_enter(void)
+ 
+ 	local_irq_enable();
+ }
++EXPORT_SYMBOL_GPL(tick_nohz_idle_enter);
+ 
+ /**
+  * tick_nohz_irq_exit - update next tick event from interrupt exit
+@@ -681,6 +682,7 @@ void tick_nohz_idle_exit(void)
+ 
+ 	local_irq_enable();
+ }
++EXPORT_SYMBOL_GPL(tick_nohz_idle_exit);
+ 
+ static int tick_nohz_reprogram(struct tick_sched *ts, ktime_t now)
+ {
+-- 
+1.7.9.5
 
-Jacob
