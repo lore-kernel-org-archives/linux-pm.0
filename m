@@ -1,69 +1,34 @@
-From: Hongbo Zhang <hongbo.zhang@linaro.org>
-Subject: Re: [PATCH 2/2] thermal: db8500: Use of_match_ptr() macro in db8500_cpufreq_cooling.c
-Date: Thu, 3 Jan 2013 17:07:13 +0800
-Message-ID: <CAJLyvQxEiWmc7fG_F7brbpKHg5Tt9=yDywtRY+sQWZJ77_L4+w@mail.gmail.com>
-References: <1355907059-28720-1-git-send-email-sachin.kamat@linaro.org>
-	<1355907059-28720-2-git-send-email-sachin.kamat@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
+Date: Thu, 03 Jan 2013 13:02:26 +0100
+Message-ID: <6008147.vspAd29d9L@vostro.rjw.lan>
+References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org> <7569403.CvHy03LdiU@vostro.rjw.lan> <CAKohponGtLNBnWWX1miV3zjO4pJPumbWoPwoQ2+adCE5t2w5Dw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:42463 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867Ab3ACJHP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jan 2013 04:07:15 -0500
-Received: by mail-la0-f51.google.com with SMTP id fj20so7355245lab.24
-        for <linux-pm@vger.kernel.org>; Thu, 03 Jan 2013 01:07:14 -0800 (PST)
-In-Reply-To: <1355907059-28720-2-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponGtLNBnWWX1miV3zjO4pJPumbWoPwoQ2+adCE5t2w5Dw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, patches@linaro.org, Hongbo Zhang <hongbo.zhang@stericsson.com>
 
-On 19 December 2012 16:50, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> This eliminates having an #ifdef returning NULL for the case
-> when OF is disabled.
->
-> Cc: Hongbo Zhang <hongbo.zhang@stericsson.com>
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> ---
-> Compile tested on linux-next.
-> ---
->  drivers/thermal/db8500_cpufreq_cooling.c |    5 ++---
->  1 files changed, 2 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
-> index 4cf8e72..2141985 100644
-> --- a/drivers/thermal/db8500_cpufreq_cooling.c
-> +++ b/drivers/thermal/db8500_cpufreq_cooling.c
-> @@ -21,6 +21,7 @@
->  #include <linux/cpufreq.h>
->  #include <linux/err.h>
->  #include <linux/module.h>
-> +#include <linux/of.h>
->  #include <linux/platform_device.h>
->  #include <linux/slab.h>
->
-> @@ -73,15 +74,13 @@ static const struct of_device_id db8500_cpufreq_cooling_match[] = {
->         { .compatible = "stericsson,db8500-cpufreq-cooling" },
->         {},
->  };
-> -#else
-> -#define db8500_cpufreq_cooling_match NULL
->  #endif
->
->  static struct platform_driver db8500_cpufreq_cooling_driver = {
->         .driver = {
->                 .owner = THIS_MODULE,
->                 .name = "db8500-cpufreq-cooling",
-> -               .of_match_table = db8500_cpufreq_cooling_match,
-> +               .of_match_table = of_match_ptr(db8500_cpufreq_cooling_match),
->         },
->         .probe = db8500_cpufreq_cooling_probe,
->         .suspend = db8500_cpufreq_cooling_suspend,
-> --
-> 1.7.4.1
->
-Good one.
-Reviewed-by: hongbo.zhang@linaro.org
+On Thursday, January 03, 2013 09:02:22 AM Viresh Kumar wrote:
+> On 3 January 2013 06:43, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> BTW, i consider them as fixes and so would make sense to get them in next rc.
+> >> What do you think?
+> >
+> > Yes, if somebody tells me "yes, this fixes a problem for me".  Otherwise,
+> > I don't quite see the reason.
+> 
+> I don't know how much people test HOTPLUG, but there are clear bugs related
+> to hotplug of cpus on a multiple cpu system :)
 
-Thanks.
+True, but have those bugs been introduced recently (ie. in v3.8-rc1 or later)?
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
