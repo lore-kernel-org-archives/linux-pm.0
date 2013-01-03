@@ -1,32 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
-Date: Thu, 3 Jan 2013 09:02:22 +0530
-Message-ID: <CAKohponGtLNBnWWX1miV3zjO4pJPumbWoPwoQ2+adCE5t2w5Dw@mail.gmail.com>
-References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
-	<CAKohpomfEHGrCdbZ-EakRN4=qF8epd5seX5TWRcErQj9BEFpNA@mail.gmail.com>
-	<CAKohpomxCSVRXkvde-P6T3Ks=7Z8PX1NSjzFfvKsPYQXTScwRw@mail.gmail.com>
-	<7569403.CvHy03LdiU@vostro.rjw.lan>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH 1/2] thermal: db8500: Use of_match_ptr() macro in db8500_thermal.c
+Date: Thu, 3 Jan 2013 17:05:18 +0800
+Message-ID: <CAJLyvQyk=1BRmvZKLMNZdA4Gj9QyCK3fJ8f0FL_kghc_YfZ7Cw@mail.gmail.com>
+References: <1355907059-28720-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f46.google.com ([209.85.219.46]:57975 "EHLO
-	mail-oa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150Ab3ACDcX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Jan 2013 22:32:23 -0500
-Received: by mail-oa0-f46.google.com with SMTP id h16so13621104oag.5
-        for <linux-pm@vger.kernel.org>; Wed, 02 Jan 2013 19:32:22 -0800 (PST)
-In-Reply-To: <7569403.CvHy03LdiU@vostro.rjw.lan>
+Received: from mail-la0-f51.google.com ([209.85.215.51]:38596 "EHLO
+	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422Ab3ACJFU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Jan 2013 04:05:20 -0500
+Received: by mail-la0-f51.google.com with SMTP id fj20so7556289lab.38
+        for <linux-pm@vger.kernel.org>; Thu, 03 Jan 2013 01:05:18 -0800 (PST)
+In-Reply-To: <1355907059-28720-1-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, patches@linaro.org, Hongbo Zhang <hongbo.zhang@stericsson.com>
 
-On 3 January 2013 06:43, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> BTW, i consider them as fixes and so would make sense to get them in next rc.
->> What do you think?
+On 19 December 2012 16:50, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> This eliminates having an #ifdef returning NULL for the case
+> when OF is disabled.
 >
-> Yes, if somebody tells me "yes, this fixes a problem for me".  Otherwise,
-> I don't quite see the reason.
-
-I don't know how much people test HOTPLUG, but there are clear bugs related
-to hotplug of cpus on a multiple cpu system :)
+> Cc: Hongbo Zhang <hongbo.zhang@stericsson.com>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> ---
+> Compile tested on linux-next.
+> ---
+>  drivers/thermal/db8500_thermal.c |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
+> index ec71ade..61ce60a 100644
+> --- a/drivers/thermal/db8500_thermal.c
+> +++ b/drivers/thermal/db8500_thermal.c
+> @@ -508,15 +508,13 @@ static const struct of_device_id db8500_thermal_match[] = {
+>         { .compatible = "stericsson,db8500-thermal" },
+>         {},
+>  };
+> -#else
+> -#define db8500_thermal_match NULL
+>  #endif
+>
+>  static struct platform_driver db8500_thermal_driver = {
+>         .driver = {
+>                 .owner = THIS_MODULE,
+>                 .name = "db8500-thermal",
+> -               .of_match_table = db8500_thermal_match,
+> +               .of_match_table = of_match_ptr(db8500_thermal_match),
+>         },
+>         .probe = db8500_thermal_probe,
+>         .suspend = db8500_thermal_suspend,
+> --
+> 1.7.4.1
+>
+Good one.
+Reviewed-by: hongbo.zhang@linaro.org
