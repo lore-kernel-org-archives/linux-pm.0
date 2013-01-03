@@ -1,47 +1,46 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH v4 1/3] tick: export nohz tick idle symbols for module use
-Date: Thu,  3 Jan 2013 03:01:13 -0800
-Message-ID: <1357210875-5025-2-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v4 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Thu, 03 Jan 2013 11:34:14 -0800
+Message-ID: <1357241654.5452.16.camel@joe-AO722>
 References: <1357210875-5025-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	 <1357210875-5025-4-git-send-email-jacob.jun.pan@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:38776 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698Ab3ACTBb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Jan 2013 14:01:31 -0500
-In-Reply-To: <1357210875-5025-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from perches-mx.perches.com ([206.117.179.246]:36508 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753426Ab3ACTeO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Jan 2013 14:34:14 -0500
+In-Reply-To: <1357210875-5025-4-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Joe Perches <joe@perches.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Allow drivers such as intel_powerclamp to use these apis for
-turning on/off ticks during idle.
+On Thu, 2013-01-03 at 03:01 -0800, Jacob Pan wrote:
+> Intel PowerClamp driver performs synchronized idle injection across
+> all online CPUs. The goal is to maintain a given package level C-state
+> ratio.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- kernel/time/tick-sched.c |    2 ++
- 1 file changed, 2 insertions(+)
+just trivia:
 
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index d58e552..a767757 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -553,6 +553,7 @@ void tick_nohz_idle_enter(void)
- 
- 	local_irq_enable();
- }
-+EXPORT_SYMBOL_GPL(tick_nohz_idle_enter);
- 
- /**
-  * tick_nohz_irq_exit - update next tick event from interrupt exit
-@@ -681,6 +682,7 @@ void tick_nohz_idle_exit(void)
- 
- 	local_irq_enable();
- }
-+EXPORT_SYMBOL_GPL(tick_nohz_idle_exit);
- 
- static int tick_nohz_reprogram(struct tick_sched *ts, ktime_t now)
- {
--- 
-1.7.9.5
+> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+
+> +static int clamping;
+
+bool and use true/false?
+
+> +static int window_size_set(const char *arg, const struct kernel_param *kp)
+[]
+> +	if (new_window_size >= 10 || new_window_size < 2) {
+> +		pr_err("Invalid window size %lu, between 2-10\n",
+> +			new_window_size);
+
+This is a misleading message or a bad test,
+It's from 2 to 9
+
+This would more normally be tested/written as
+
+	val < low || val > high
 
