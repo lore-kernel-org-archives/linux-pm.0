@@ -1,123 +1,47 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH v7u1 31/31] x86, 64bit, mm: hibernate use generic mapping_init
-Date: Thu,  3 Jan 2013 16:48:51 -0800
-Message-ID: <1357260531-11115-32-git-send-email-yinghai@kernel.org>
-References: <1357260531-11115-1-git-send-email-yinghai@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1357260531-11115-1-git-send-email-yinghai@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@alien8.de>, Jan Kiszka <jan.kiszka@web.de>, Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
+Date: Fri, 04 Jan 2013 09:04:04 +0800
+Message-ID: <50E62A84.2070702@intel.com>
+References: <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <50D2AB1D.9050602@intel.com> <20121225171723.GI10220@mtj.dyndns.org> <50DA55F6.8080706@intel.com> <20121228211635.GB3062@mtj.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:22306 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753894Ab3ADBD2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Jan 2013 20:03:28 -0500
+In-Reply-To: <20121228211635.GB3062@mtj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Make it only map range in pfn_mapped array.
+On 12/29/2012 05:16 AM, Tejun Heo wrote:
+> Hello,
+> 
+> On Wed, Dec 26, 2012 at 09:42:14AM +0800, Aaron Lu wrote:
+>>> This is really a round-about way to find out the matching device and
+>>> it wouldn't work if the disk device nests deeper.  Doesn't really look
+>>> like a good idea to me.
+>>
+>> I don't quite understand the 'disk device nests deeper' case, can you
+>> please elaborate? My understanding is, as long as the disk's part0
+>> device has a parent, this function should work. For LLDs want to take
+> 
+> Hmmm, maybe I misread but it looked like it wouldn't work if there are
+> intermediate nodes between the parent device and part0.  It might not
+> happen for sata but I don't think it's a good idea to assume that the
+> part0 and hardware device are connected directly.
+> 
+> In general, it's a quite roundabout way to do it.  Let's just push it
+> through SCSI.  That's how everything else is routed after all.  It's
+> confusing to do this one differently.
 
-and it has kernel mapping with EXEC.
+OK, thanks for the suggestion.
+I'll prepare v11 using the previous demonstrated way(adding the
+event_driven flag to scsi_device) to silence the poll.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org
----
- arch/x86/power/hibernate_64.c |   66 ++++++++++++++---------------------------
- 1 file changed, 22 insertions(+), 44 deletions(-)
+Best regards,
+Aaron
 
-diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-index 460f314..a0fde91 100644
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -11,6 +11,8 @@
- #include <linux/gfp.h>
- #include <linux/smp.h>
- #include <linux/suspend.h>
-+
-+#include <asm/init.h>
- #include <asm/proto.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -39,41 +41,21 @@ pgd_t *temp_level4_pgt;
- 
- void *relocated_restore_code;
- 
--static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
-+static void *alloc_pgt_page(void *context)
- {
--	long i, j;
--
--	i = pud_index(address);
--	pud = pud + i;
--	for (; i < PTRS_PER_PUD; pud++, i++) {
--		unsigned long paddr;
--		pmd_t *pmd;
--
--		paddr = address + i*PUD_SIZE;
--		if (paddr >= end)
--			break;
--
--		pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
--		if (!pmd)
--			return -ENOMEM;
--		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
--		for (j = 0; j < PTRS_PER_PMD; pmd++, j++, paddr += PMD_SIZE) {
--			unsigned long pe;
--
--			if (paddr >= end)
--				break;
--			pe = __PAGE_KERNEL_LARGE_EXEC | paddr;
--			pe &= __supported_pte_mask;
--			set_pmd(pmd, __pmd(pe));
--		}
--	}
--	return 0;
-+	return (void *)get_safe_page(GFP_ATOMIC);
- }
- 
- static int set_up_temporary_mappings(void)
- {
--	unsigned long start, end, next;
--	int error;
-+	struct x86_mapping_info info = {
-+		.alloc_pgt_page	= alloc_pgt_page,
-+		.pmd_flag	= __PAGE_KERNEL_LARGE_EXEC,
-+		.kernel_mapping = true,
-+	};
-+	unsigned long mstart, mend;
-+	int result;
-+	int i;
- 
- 	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
- 	if (!temp_level4_pgt)
-@@ -84,21 +66,17 @@ static int set_up_temporary_mappings(void)
- 		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
- 
- 	/* Set up the direct mapping from scratch */
--	start = (unsigned long)pfn_to_kaddr(0);
--	end = (unsigned long)pfn_to_kaddr(max_pfn);
--
--	for (; start < end; start = next) {
--		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
--		if (!pud)
--			return -ENOMEM;
--		next = start + PGDIR_SIZE;
--		if (next > end)
--			next = end;
--		if ((error = res_phys_pud_init(pud, __pa(start), __pa(next))))
--			return error;
--		set_pgd(temp_level4_pgt + pgd_index(start),
--			mk_kernel_pgd(__pa(pud)));
-+	for (i = 0; i < nr_pfn_mapped; i++) {
-+		mstart = pfn_mapped[i].start << PAGE_SHIFT;
-+		mend   = pfn_mapped[i].end << PAGE_SHIFT;
-+
-+		result = kernel_ident_mapping_init(&info, temp_level4_pgt,
-+						   mstart, mend);
-+
-+		if (result)
-+			return result;
- 	}
-+
- 	return 0;
- }
- 
--- 
-1.7.10.4
