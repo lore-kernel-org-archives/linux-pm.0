@@ -1,79 +1,153 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle - fix lock contention in the idle path
-Date: Fri, 04 Jan 2013 07:27:24 +0100
-Message-ID: <50E6764C.9060608@linaro.org>
-References: <1356516108-11191-1-git-send-email-daniel.lezcano@linaro.org> <20130102211314.GA29447@sgi.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2] thermal: rcar: add .get_trip_type/temp and .notify
+ support
+Date: Fri, 04 Jan 2013 15:23:36 +0800
+Message-ID: <1357284216.2152.0.camel@rzhang1-mobl4>
+References: <87sj82uo7o.wl%kuninori.morimoto.gx@renesas.com>
+		<87pq36uo5v.wl%kuninori.morimoto.gx@renesas.com>
+		<1353652189.2111.7.camel@rzhang1-mobl4>
+		<87k3t9w39m.wl%kuninori.morimoto.gx@renesas.com>
+		<1353894734.2299.16.camel@rzhang1-mobl4>
+		<87ip8tw0x1.wl%kuninori.morimoto.gx@renesas.com>
+		<87ehjhw0ty.wl%kuninori.morimoto.gx@renesas.com>
+		<1354496556.1936.7.camel@rzhang1-mobl4>
+		<87ip8jri4f.wl%kuninori.morimoto.gx@renesas.com>
+		<1354501553.1936.38.camel@rzhang1-mobl4>
+		<87hao3rh9t.wl%kuninori.morimoto.gx@renesas.com>
+	 <87fw3nrgu1.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:63657 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751186Ab3ADG12 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jan 2013 01:27:28 -0500
-Received: by mail-wg0-f47.google.com with SMTP id dq11so7567804wgb.14
-        for <linux-pm@vger.kernel.org>; Thu, 03 Jan 2013 22:27:27 -0800 (PST)
-In-Reply-To: <20130102211314.GA29447@sgi.com>
+Received: from mga14.intel.com ([143.182.124.37]:64787 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752316Ab3ADHXl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 02:23:41 -0500
+In-Reply-To: <87fw3nrgu1.wl%kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: Russ Anderson <rja@sgi.com>, linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, rja@americas.sgi.com
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
 
-On 01/02/2013 10:13 PM, Russ Anderson wrote:
-> On Wed, Dec 26, 2012 at 11:01:48AM +0100, Daniel Lezcano wrote:
->> The commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 introduces
->> a lock in the cpuidle_get_cpu_driver function. This function
->> is used in the idle_call function.
->>
->> The problem is the contention with a large number of cpus because
->> they try to access the idle routine at the same time.
->>
->> The lock could be safely removed because of how is used the
->> cpuidle api. The cpuidle_register_driver is called first but
->> until the cpuidle_register_device is not called we don't
->> enter in the cpuidle idle call function because the device
->> is not enabled.
->>
->> The cpuidle_unregister_driver function, leading the a NULL driver,
->> is not called before the cpuidle_unregister_device.
->>
->> This is how is used the cpuidle api from the different drivers.
->>
->> However, a cleanup around the lock and a proper refcounting
->> mechanism should be used to ensure the consistency in the api,
->> like cpuidle_unregister_driver should failed if its refcounting
->> is not 0.
->>
->> These modifications will need some code reorganization and rewrite
->> which does not fit with a fix.
->=20
-> I agree.
->=20
->> The following patch is a hot fix by returning to the initial behavio=
-r
->> by removing the lock when getting the driver.
->=20
-> The patch fixes the problem.  Verified on a system with 1024 cpus.
-> Thanks.
->=20
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> Reported-by: Russ Anderson <rja@sgi.com>
-> Acked-by: Russ Anderson <rja@sgi.com>
+On Sun, 2012-12-02 at 18:48 -0800, Kuninori Morimoto wrote:
+> This patch adds .get_trip_type(), .get_trip_temp(), and .notify()
+> on rcar_thermal_zone_ops.
+> Driver will try platform power OFF if it reached to
+> critical temperature.
+> 
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-Hi Rafael,
+applied to thermal-next tree.
 
-could you consider this patch for merging ?
+thanks,
+rui
 
-Thanks
-  -- Daniel
+> ---
+> v1 -> v2
+> 
+>  - fixup (90 - 1) -> (90)
+>  - fixup comment /* +90 <= temp <= +135 */ -> /* +90 <= temp */
+> 
+>  drivers/thermal/rcar_thermal.c |   68 ++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 65 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 90db951..89979ff 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -22,10 +22,13 @@
+>  #include <linux/io.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+>  #include <linux/slab.h>
+>  #include <linux/spinlock.h>
+>  #include <linux/thermal.h>
+>  
+> +#define IDLE_INTERVAL	5000
+> +
+>  #define THSCR	0x2c
+>  #define THSSR	0x30
+>  
+> @@ -176,8 +179,66 @@ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
+>  	return 0;
+>  }
+>  
+> +static int rcar_thermal_get_trip_type(struct thermal_zone_device *zone,
+> +				      int trip, enum thermal_trip_type *type)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	/* see rcar_thermal_get_temp() */
+> +	switch (trip) {
+> +	case 0: /* +90 <= temp */
+> +		*type = THERMAL_TRIP_CRITICAL;
+> +		break;
+> +	default:
+> +		dev_err(priv->dev, "rcar driver trip error\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zone,
+> +				      int trip, unsigned long *temp)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	/* see rcar_thermal_get_temp() */
+> +	switch (trip) {
+> +	case 0: /* +90 <= temp */
+> +		*temp = MCELSIUS(90);
+> +		break;
+> +	default:
+> +		dev_err(priv->dev, "rcar driver trip error\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_thermal_notify(struct thermal_zone_device *zone,
+> +			       int trip, enum thermal_trip_type type)
+> +{
+> +	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> +
+> +	switch (type) {
+> +	case THERMAL_TRIP_CRITICAL:
+> +		/* FIXME */
+> +		dev_warn(priv->dev,
+> +			 "Thermal reached to critical temperature\n");
+> +		machine_power_off();
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  static struct thermal_zone_device_ops rcar_thermal_zone_ops = {
+> -	.get_temp = rcar_thermal_get_temp,
+> +	.get_temp	= rcar_thermal_get_temp,
+> +	.get_trip_type	= rcar_thermal_get_trip_type,
+> +	.get_trip_temp	= rcar_thermal_get_trip_temp,
+> +	.notify		= rcar_thermal_notify,
+>  };
+>  
+>  /*
+> @@ -211,8 +272,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  	}
+>  
+> -	zone = thermal_zone_device_register("rcar_thermal", 0, 0, priv,
+> -				    &rcar_thermal_zone_ops, NULL, 0, 0);
+> +	zone = thermal_zone_device_register("rcar_thermal", 1, 0, priv,
+> +					    &rcar_thermal_zone_ops, NULL, 0,
+> +					    IDLE_INTERVAL);
+>  	if (IS_ERR(zone)) {
+>  		dev_err(&pdev->dev, "thermal zone device is NULL\n");
+>  		return PTR_ERR(zone);
 
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
