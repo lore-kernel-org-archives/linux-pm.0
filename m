@@ -1,47 +1,53 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v9 06/10] ata: zpodd: check zero power ready status
-Date: Fri, 04 Jan 2013 09:04:04 +0800
-Message-ID: <50E62A84.2070702@intel.com>
-References: <1353906191.2523.25.camel@dabdike> <21511277.LLinyDpbAK@vostro.rjw.lan> <20121128013928.GB15971@htj.dyndns.org> <1354092969.2276.49.camel@dabdike> <20121203081321.GA9990@mint-spring.sh.intel.com> <1354523143.2307.2.camel@dabdike.int.hansenpartnership.com> <20121203162323.GB19802@htj.dyndns.org> <50D2AB1D.9050602@intel.com> <20121225171723.GI10220@mtj.dyndns.org> <50DA55F6.8080706@intel.com> <20121228211635.GB3062@mtj.dyndns.org>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH v5 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Thu, 03 Jan 2013 19:51:04 -0800
+Message-ID: <1357271464.5452.31.camel@joe-AO722>
+References: <1357225804-27191-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	 <1357225804-27191-4-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:22306 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753894Ab3ADBD2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Jan 2013 20:03:28 -0500
-In-Reply-To: <20121228211635.GB3062@mtj.dyndns.org>
+Received: from perches-mx.perches.com ([206.117.179.246]:51268 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754187Ab3ADDvG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Jan 2013 22:51:06 -0500
+In-Reply-To: <1357225804-27191-4-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>, Alan Stern <stern@rowland.harvard.edu>, Jeff Wu <jeff.wu@amd.com>, Aaron Lu <aaron.lwe@gmail.com>, linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-On 12/29/2012 05:16 AM, Tejun Heo wrote:
-> Hello,
-> 
-> On Wed, Dec 26, 2012 at 09:42:14AM +0800, Aaron Lu wrote:
->>> This is really a round-about way to find out the matching device and
->>> it wouldn't work if the disk device nests deeper.  Doesn't really look
->>> like a good idea to me.
->>
->> I don't quite understand the 'disk device nests deeper' case, can you
->> please elaborate? My understanding is, as long as the disk's part0
->> device has a parent, this function should work. For LLDs want to take
-> 
-> Hmmm, maybe I misread but it looked like it wouldn't work if there are
-> intermediate nodes between the parent device and part0.  It might not
-> happen for sata but I don't think it's a good idea to assume that the
-> part0 and hardware device are connected directly.
-> 
-> In general, it's a quite roundabout way to do it.  Let's just push it
-> through SCSI.  That's how everything else is routed after all.  It's
-> confusing to do this one differently.
+On Thu, 2013-01-03 at 07:10 -0800, Jacob Pan wrote:
+> Intel PowerClamp driver performs synchronized idle injection across
+> all online CPUs. The goal is to maintain a given package level C-state
+> ratio.
 
-OK, thanks for the suggestion.
-I'll prepare v11 using the previous demonstrated way(adding the
-event_driven flag to scsi_device) to silence the poll.
+[]
 
-Best regards,
-Aaron
+> +static int window_size_set(const char *arg, const struct kernel_param *kp)
+> +{
+> +	int ret = 0;
+> +	unsigned long new_window_size;
+> +
+> +	ret = kstrtoul(arg, 10, &new_window_size);
+> +	if (ret)
+> +		goto exit_win;
+> +	if (new_window_size > 10 || new_window_size < 2) {
+> +		pr_err("Invalid window size %lu, between 2-10\n",
+> +			new_window_size);
+> +		ret = -EINVAL;
+> +	}
+> +
+> +	window_size = new_window_size;
+
+Possible assignment of known invalid windows size?
+Maybe you should add
+	goto exit;
+after
+	ret = -EINVAL;
+
+or add
+	new_window_size = clamp(new_window_size, 2ul, 10ul);
+
 
