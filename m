@@ -1,104 +1,70 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Orion
- SoC
-Date: Fri, 04 Jan 2013 15:33:03 +0800
-Message-ID: <1357284783.2152.2.camel@rzhang1-mobl4>
-References: <1355482986-885-1-git-send-email-andrew@lunn.ch>
-	 <1355482986-885-2-git-send-email-andrew@lunn.ch>
-	 <CABMQnV+zNWz4UJ_127Xe+MkTt9eQVPA8StJzyEXt58Z4OqZBYw@mail.gmail.com>
-	 <20121214221159.GE7717@lunn.ch>
+Subject: Re: [PATCH 2/2] thermal: db8500: Use of_match_ptr() macro in
+ db8500_cpufreq_cooling.c
+Date: Fri, 04 Jan 2013 15:36:14 +0800
+Message-ID: <1357284974.2152.3.camel@rzhang1-mobl4>
+References: <1355907059-28720-1-git-send-email-sachin.kamat@linaro.org>
+	 <1355907059-28720-2-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:63156 "EHLO mga14.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:37294 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091Ab3ADHdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Jan 2013 02:33:08 -0500
-In-Reply-To: <20121214221159.GE7717@lunn.ch>
+	id S1752346Ab3ADHgS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 02:36:18 -0500
+In-Reply-To: <1355907059-28720-2-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: linux-pm@vger.kernel.org, hongbo.zhang@linaro.org, patches@linaro.org, Hongbo Zhang <hongbo.zhang@stericsson.com>
 
-On Fri, 2012-12-14 at 23:11 +0100, Andrew Lunn wrote:
-> On Sat, Dec 15, 2012 at 06:54:17AM +0900, Nobuhiro Iwamatsu wrote:
-> > Hi,
-> > 
-> > Thanks you for your work.
-> > Sorry, I dont hava a time at this week about this.
+On Wed, 2012-12-19 at 14:20 +0530, Sachin Kamat wrote:
+> This eliminates having an #ifdef returning NULL for the case
+> when OF is disabled.
 > 
-> Its not a problem. We have plenty of time before the next merge
-> window. I was just interested in seeing it work on my QNAP device, so
-> did some of the cleanup work.
-> 
-> > On Fri, Dec 14, 2012 at 8:03 PM, Andrew Lunn <andrew@lunn.ch> wrote:
-> > > From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> > >
-> > > Some Orion SoC has thermal sensor.
-> > > This patch adds support for 88F6282 and 88F6283.
-> > >
-> > > Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> > > ---
-> > >  .../devicetree/bindings/thermal/orion-thermal.txt  |   16 +++
-> > >  drivers/thermal/Kconfig                            |    7 ++
-> > >  drivers/thermal/Makefile                           |    1 +
-> > >  drivers/thermal/orion_thermal.c                    |  133 ++++++++++++++++++++
-> > >  4 files changed, 157 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> > >  create mode 100644 drivers/thermal/orion_thermal.c
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/thermal/orion-thermal.txt b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> > > new file mode 100644
-> > > index 0000000..5ce925d
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
-> > > @@ -0,0 +1,16 @@
-> > > +* Orion Thermal
-> > > +
-> > > +This initial version is for Kirkwood 88F8262 & 88F6283 SoCs, however
-> > > +it is expected the driver will sometime in the future be expanded to
-> > > +also support Dove, using a different compatibility string.
-> > > +
-> > > +Required properties:
-> > > +- compatible : "marvell,kirkwood-thermal"
-> > > +- reg : Address range of the thermal registers
-> > > +
-> > > +Example:
-> > > +
-> > > +       thermal@10078 {
-> > > +               compatible = "marvell,kirkwood";
-> > 
-> > compatible = "marvell,kirkwood-thermal"; ?
-> 
-> Yep, my error.
-> 
-> > > +               reg = <0x10078 0x4>;
-> > > +       };
-> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > index e1cb6bd..3bba13f 100644
-> > > --- a/drivers/thermal/Kconfig
-> > > +++ b/drivers/thermal/Kconfig
-> > > @@ -55,3 +55,10 @@ config EXYNOS_THERMAL
-> > >         help
-> > >           If you say yes here you get support for TMU (Thermal Managment
-> > >           Unit) on SAMSUNG EXYNOS series of SoC.
-> > > +
-> > > +config ORION_THERMAL
-> > > +       tristate "Temperature sensor on Marvel Orion SoCs"
-> > 
-> > Marvel -> Marvell
-> 
-> Missed that one, thanks.
-> 
-> Thanks for the Tested-by. I will add it to the next version.  I
-> started work on Dove support, so i will probably repost when i have
-> that ready for testing.
+> Cc: Hongbo Zhang <hongbo.zhang@stericsson.com>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 
-sorry for the late response, can you resend the refreshed version on top
-of the thermal next tree?
+applied to thermal-next.
 
 thanks,
 rui
+
+> ---
+> Compile tested on linux-next.
+> ---
+>  drivers/thermal/db8500_cpufreq_cooling.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
+> index 4cf8e72..2141985 100644
+> --- a/drivers/thermal/db8500_cpufreq_cooling.c
+> +++ b/drivers/thermal/db8500_cpufreq_cooling.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+> +#include <linux/of.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/slab.h>
+>  
+> @@ -73,15 +74,13 @@ static const struct of_device_id db8500_cpufreq_cooling_match[] = {
+>  	{ .compatible = "stericsson,db8500-cpufreq-cooling" },
+>  	{},
+>  };
+> -#else
+> -#define db8500_cpufreq_cooling_match NULL
+>  #endif
+>  
+>  static struct platform_driver db8500_cpufreq_cooling_driver = {
+>  	.driver = {
+>  		.owner = THIS_MODULE,
+>  		.name = "db8500-cpufreq-cooling",
+> -		.of_match_table = db8500_cpufreq_cooling_match,
+> +		.of_match_table = of_match_ptr(db8500_cpufreq_cooling_match),
+>  	},
+>  	.probe = db8500_cpufreq_cooling_probe,
+>  	.suspend = db8500_cpufreq_cooling_suspend,
+
 
