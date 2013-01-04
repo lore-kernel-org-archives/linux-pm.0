@@ -1,83 +1,104 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] drivers/thermal/spear_thermal.c: use devm_clk_get
-Date: Fri, 04 Jan 2013 15:27:31 +0800
-Message-ID: <1357284451.2152.1.camel@rzhang1-mobl4>
-References: <1354876172-1634-1-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Orion
+ SoC
+Date: Fri, 04 Jan 2013 15:33:03 +0800
+Message-ID: <1357284783.2152.2.camel@rzhang1-mobl4>
+References: <1355482986-885-1-git-send-email-andrew@lunn.ch>
+	 <1355482986-885-2-git-send-email-andrew@lunn.ch>
+	 <CABMQnV+zNWz4UJ_127Xe+MkTt9eQVPA8StJzyEXt58Z4OqZBYw@mail.gmail.com>
+	 <20121214221159.GE7717@lunn.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:20564 "EHLO mga01.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:63156 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752316Ab3ADH1g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Jan 2013 02:27:36 -0500
-In-Reply-To: <1354876172-1634-1-git-send-email-Julia.Lawall@lip6.fr>
+	id S1752091Ab3ADHdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 02:33:08 -0500
+In-Reply-To: <20121214221159.GE7717@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com
 
-On Fri, 2012-12-07 at 11:29 +0100, Julia Lawall wrote:
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Fri, 2012-12-14 at 23:11 +0100, Andrew Lunn wrote:
+> On Sat, Dec 15, 2012 at 06:54:17AM +0900, Nobuhiro Iwamatsu wrote:
+> > Hi,
+> > 
+> > Thanks you for your work.
+> > Sorry, I dont hava a time at this week about this.
 > 
-> devm_clk_get allocates a resource that is released when a driver detaches.
-> This patch uses devm_clk_get for data that is allocated in the probe
-> function of a platform device and is only released in the remove function.
+> Its not a problem. We have plenty of time before the next merge
+> window. I was just interested in seeing it work on my QNAP device, so
+> did some of the cleanup work.
 > 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> > On Fri, Dec 14, 2012 at 8:03 PM, Andrew Lunn <andrew@lunn.ch> wrote:
+> > > From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> > >
+> > > Some Orion SoC has thermal sensor.
+> > > This patch adds support for 88F6282 and 88F6283.
+> > >
+> > > Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> > > ---
+> > >  .../devicetree/bindings/thermal/orion-thermal.txt  |   16 +++
+> > >  drivers/thermal/Kconfig                            |    7 ++
+> > >  drivers/thermal/Makefile                           |    1 +
+> > >  drivers/thermal/orion_thermal.c                    |  133 ++++++++++++++++++++
+> > >  4 files changed, 157 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/thermal/orion-thermal.txt
+> > >  create mode 100644 drivers/thermal/orion_thermal.c
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/thermal/orion-thermal.txt b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+> > > new file mode 100644
+> > > index 0000000..5ce925d
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+> > > @@ -0,0 +1,16 @@
+> > > +* Orion Thermal
+> > > +
+> > > +This initial version is for Kirkwood 88F8262 & 88F6283 SoCs, however
+> > > +it is expected the driver will sometime in the future be expanded to
+> > > +also support Dove, using a different compatibility string.
+> > > +
+> > > +Required properties:
+> > > +- compatible : "marvell,kirkwood-thermal"
+> > > +- reg : Address range of the thermal registers
+> > > +
+> > > +Example:
+> > > +
+> > > +       thermal@10078 {
+> > > +               compatible = "marvell,kirkwood";
+> > 
+> > compatible = "marvell,kirkwood-thermal"; ?
 > 
-applied to thermal-next.
+> Yep, my error.
+> 
+> > > +               reg = <0x10078 0x4>;
+> > > +       };
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > index e1cb6bd..3bba13f 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -55,3 +55,10 @@ config EXYNOS_THERMAL
+> > >         help
+> > >           If you say yes here you get support for TMU (Thermal Managment
+> > >           Unit) on SAMSUNG EXYNOS series of SoC.
+> > > +
+> > > +config ORION_THERMAL
+> > > +       tristate "Temperature sensor on Marvel Orion SoCs"
+> > 
+> > Marvel -> Marvell
+> 
+> Missed that one, thanks.
+> 
+> Thanks for the Tested-by. I will add it to the next version.  I
+> started work on Dove support, so i will probably repost when i have
+> that ready for testing.
+
+sorry for the late response, can you resend the refreshed version on top
+of the thermal next tree?
 
 thanks,
 rui
-
-> ---
-> I was not able to compile this code.  At one point, devm_clk_get was not
-> supported for all architectures.  If that is still the case, and the code
-> doesn't compile, then just ignore the patch.
-> 
->  drivers/thermal/spear_thermal.c |    7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
-> index 6b2d8b2..3c5ee56 100644
-> --- a/drivers/thermal/spear_thermal.c
-> +++ b/drivers/thermal/spear_thermal.c
-> @@ -131,7 +131,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  	}
->  
-> -	stdev->clk = clk_get(&pdev->dev, NULL);
-> +	stdev->clk = devm_clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(stdev->clk)) {
->  		dev_err(&pdev->dev, "Can't get clock\n");
->  		return PTR_ERR(stdev->clk);
-> @@ -140,7 +140,7 @@ static int spear_thermal_probe(struct platform_device *pdev)
->  	ret = clk_enable(stdev->clk);
->  	if (ret) {
->  		dev_err(&pdev->dev, "Can't enable clock\n");
-> -		goto put_clk;
-> +		return ret;
->  	}
->  
->  	stdev->flags = val;
-> @@ -163,8 +163,6 @@ static int spear_thermal_probe(struct platform_device *pdev)
->  
->  disable_clk:
->  	clk_disable(stdev->clk);
-> -put_clk:
-> -	clk_put(stdev->clk);
->  
->  	return ret;
->  }
-> @@ -183,7 +181,6 @@ static int spear_thermal_exit(struct platform_device *pdev)
->  	writel_relaxed(actual_mask & ~stdev->flags, stdev->thermal_base);
->  
->  	clk_disable(stdev->clk);
-> -	clk_put(stdev->clk);
->  
->  	return 0;
->  }
-> 
-
 
