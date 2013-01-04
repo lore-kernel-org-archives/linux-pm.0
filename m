@@ -1,97 +1,63 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: [PATCH 1/4 v10] arm: use devicetree to get smp_twd clock
-Date: Fri,  4 Jan 2013 10:35:43 -0600
-Message-ID: <1357317346-1120-2-git-send-email-mark.langsdorf@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1357317346-1120-1-git-send-email-mark.langsdorf@calxeda.com>
+From: jacob pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v5 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Fri, 4 Jan 2013 08:51:13 -0800
+Message-ID: <20130104085113.00001574@unknown>
+References: <1357225804-27191-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1357225804-27191-4-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1357271464.5452.31.camel@joe-AO722>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp137.dfw.emailsrvr.com ([67.192.241.137]:50030 "EHLO
-	smtp137.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754919Ab3ADQfZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jan 2013 11:35:25 -0500
-In-Reply-To: <1357317346-1120-1-git-send-email-mark.langsdorf@calxeda.com>
+Received: from mga03.intel.com ([143.182.124.21]:35810 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755018Ab3ADQvQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 11:51:16 -0500
+In-Reply-To: <1357271464.5452.31.camel@joe-AO722>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>, Rob Herring <rob.herring@calxeda.com>
+To: Joe Perches <joe@perches.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-From: Rob Herring <rob.herring@calxeda.com>
+On Thu, 03 Jan 2013 19:51:04 -0800
+Joe Perches <joe@perches.com> wrote:
 
-Signed-off-by: Rob Herring <rob.herring@calxeda.com>
-Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
----
-Changes from v9
-	Updated to work with 3.8 kernel.
-Changes from v4, v5, v6, v7, v8
-        None.
-Changes from v3
-        No longer setting *clk to NULL in twd_get_clock().
-Changes from v2
-        Turned the check for the node pointer into an if-then-else statement.
-        Removed the second, redundant clk_get_rate.
-Changes from v1
-        None.
+> On Thu, 2013-01-03 at 07:10 -0800, Jacob Pan wrote:
+> > Intel PowerClamp driver performs synchronized idle injection across
+> > all online CPUs. The goal is to maintain a given package level
+> > C-state ratio.
+> 
+> []
+> 
+> > +static int window_size_set(const char *arg, const struct
+> > kernel_param *kp) +{
+> > +	int ret = 0;
+> > +	unsigned long new_window_size;
+> > +
+> > +	ret = kstrtoul(arg, 10, &new_window_size);
+> > +	if (ret)
+> > +		goto exit_win;
+> > +	if (new_window_size > 10 || new_window_size < 2) {
+> > +		pr_err("Invalid window size %lu, between 2-10\n",
+> > +			new_window_size);
+> > +		ret = -EINVAL;
+> > +	}
+> > +
+> > +	window_size = new_window_size;
+> 
+> Possible assignment of known invalid windows size?
+> Maybe you should add
+> 	goto exit;
+> after
+> 	ret = -EINVAL;
+> 
+> or add
+> 	new_window_size = clamp(new_window_size, 2ul, 10ul);
+Good catch. The window size range 2-10 is somewhat arbitrary, greater
+than 10 should also work just not recommended. I will reword that. But
+it is good to clamp it as you suggested, i will do that for the
+duration parameter also.
 
- arch/arm/kernel/smp_twd.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Thanks,
 
-diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-index 49f335d..dad2d81 100644
---- a/arch/arm/kernel/smp_twd.c
-+++ b/arch/arm/kernel/smp_twd.c
-@@ -239,12 +239,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
- 	return IRQ_NONE;
- }
- 
--static struct clk *twd_get_clock(void)
-+static struct clk *twd_get_clock(struct device_node *np)
- {
- 	struct clk *clk;
- 	int err;
- 
--	clk = clk_get_sys("smp_twd", NULL);
-+	if (np)
-+		clk = of_clk_get(np, 0);
-+	else
-+		clk = clk_get_sys("smp_twd", NULL);
- 	if (IS_ERR(clk)) {
- 		pr_err("smp_twd: clock not found: %d\n", (int)PTR_ERR(clk));
- 		return clk;
-@@ -257,6 +260,7 @@ static struct clk *twd_get_clock(void)
- 		return ERR_PTR(err);
- 	}
- 
-+	twd_timer_rate = clk_get_rate(clk);
- 	return clk;
- }
- 
-@@ -285,7 +289,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
- 	 * during the runtime of the system.
- 	 */
- 	if (!common_setup_called) {
--		twd_clk = twd_get_clock();
-+		twd_clk = twd_get_clock(NULL);
- 
- 		/*
- 		 * We use IS_ERR_OR_NULL() here, because if the clock stubs
-@@ -373,6 +377,8 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
- 	if (!twd_base)
- 		return -ENOMEM;
- 
-+	twd_clk = twd_get_clock(NULL);
-+
- 	return twd_local_timer_common_register();
- }
- 
-@@ -405,6 +411,8 @@ void __init twd_local_timer_of_register(void)
- 		goto out;
- 	}
- 
-+	twd_clk = twd_get_clock(np);
-+
- 	err = twd_local_timer_common_register();
- 
- out:
--- 
-1.8.0.2
-
+Jacob
