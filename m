@@ -1,53 +1,22 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v5 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Thu, 03 Jan 2013 19:51:04 -0800
-Message-ID: <1357271464.5452.31.camel@joe-AO722>
-References: <1357225804-27191-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	 <1357225804-27191-4-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: Manage only online cpus
+Date: Fri, 4 Jan 2013 10:44:36 +0530
+Message-ID: <CAKohpo=ok5aH77ycMKPAdHgUkf2HcwMgik+6eZp1Du1QVYxPZQ@mail.gmail.com>
+References: <98330b2deb910453a356404b8cf774c94326bc42.1355636864.git.viresh.kumar@linaro.org>
+	<7569403.CvHy03LdiU@vostro.rjw.lan>
+	<CAKohponGtLNBnWWX1miV3zjO4pJPumbWoPwoQ2+adCE5t2w5Dw@mail.gmail.com>
+	<6008147.vspAd29d9L@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from perches-mx.perches.com ([206.117.179.246]:51268 "EHLO
-	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754187Ab3ADDvG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Jan 2013 22:51:06 -0500
-In-Reply-To: <1357225804-27191-4-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <6008147.vspAd29d9L@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-dev@lists.linaro.org, nicolas.pitre@linaro.org, amit.kucheria@linaro.org, mathieu.poirier@linaro.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, pdsw-power-team@arm.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Zhang Rui <rui.zhang@intel.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-On Thu, 2013-01-03 at 07:10 -0800, Jacob Pan wrote:
-> Intel PowerClamp driver performs synchronized idle injection across
-> all online CPUs. The goal is to maintain a given package level C-state
-> ratio.
+On 3 January 2013 17:32, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> True, but have those bugs been introduced recently (ie. in v3.8-rc1 or later)?
 
-[]
-
-> +static int window_size_set(const char *arg, const struct kernel_param *kp)
-> +{
-> +	int ret = 0;
-> +	unsigned long new_window_size;
-> +
-> +	ret = kstrtoul(arg, 10, &new_window_size);
-> +	if (ret)
-> +		goto exit_win;
-> +	if (new_window_size > 10 || new_window_size < 2) {
-> +		pr_err("Invalid window size %lu, between 2-10\n",
-> +			new_window_size);
-> +		ret = -EINVAL;
-> +	}
-> +
-> +	window_size = new_window_size;
-
-Possible assignment of known invalid windows size?
-Maybe you should add
-	goto exit;
-after
-	ret = -EINVAL;
-
-or add
-	new_window_size = clamp(new_window_size, 2ul, 10ul);
-
-
+Don't know... I feel they were always there, its just that nobody
+tested it that way :)
