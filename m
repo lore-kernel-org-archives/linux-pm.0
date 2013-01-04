@@ -1,91 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7u1 31/31] x86, 64bit, mm: hibernate use generic mapping_init
-Date: Fri, 04 Jan 2013 23:07:37 +0100
-Message-ID: <1827179.UIfxDLWPxM@vostro.rjw.lan>
-References: <1357260531-11115-1-git-send-email-yinghai@kernel.org> <61708402.lBGARq0J34@vostro.rjw.lan> <CAE9FiQX6pPE9EbqRNCRvN+a_rSU6Zdt4QKa4hNGApyYfVYySzw@mail.gmail.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Subject: drivers/acpi/processor_driver.c:351:2: error: 'else' without a
+ previous 'if'
+Date: Sat, 05 Jan 2013 07:02:44 +0800
+Message-ID: <50e75f94.QueKkJ7Ms/cbp/Qu%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:60481 "EHLO hydra.sisk.pl"
+Received: from mga03.intel.com ([143.182.124.21]:15880 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755023Ab3ADWCB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Jan 2013 17:02:01 -0500
-In-Reply-To: <CAE9FiQX6pPE9EbqRNCRvN+a_rSU6Zdt4QKa4hNGApyYfVYySzw@mail.gmail.com>
+	id S1755229Ab3ADXGp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 18:06:45 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@alien8.de>, Jan Kiszka <jan.kiszka@web.de>, Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+To: Bob Moore <robert.moore@intel.com>
+Cc: linux-pm@vger.kernel.org, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Friday, January 04, 2013 01:59:33 PM Yinghai Lu wrote:
-> On Fri, Jan 4, 2013 at 3:43 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday, January 03, 2013 04:48:51 PM Yinghai Lu wrote:
-> >> Make it only map range in pfn_mapped array.
-> >
-> > Can you please explain why that should be sufficient?
-> 
-> It is needed.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/tip/tip.git;a=commitdiff;h=66520ebc2df3fe52eb4792f8101fac573b766baf
-> 
-> Subject: [PATCH] x86, mm: Only direct map addresses that are marked as
->  E820_RAM
-> 
-> Currently direct mappings are created for [ 0 to max_low_pfn<<PAGE_SHIFT )
-> and [ 4GB to max_pfn<<PAGE_SHIFT ), which may include regions that are not
-> backed by actual DRAM. This is fine for holes under 4GB which are covered
-> by fixed and variable range MTRRs to be UC. However, we run into trouble
-> on higher memory addresses which cannot be covered by MTRRs.
-> 
-> Our system with 1TB of RAM has an e820 that looks like this:
-> 
->  BIOS-e820: [mem 0x0000000000000000-0x00000000000983ff] usable
->  BIOS-e820: [mem 0x0000000000098400-0x000000000009ffff] reserved
->  BIOS-e820: [mem 0x00000000000d0000-0x00000000000fffff] reserved
->  BIOS-e820: [mem 0x0000000000100000-0x00000000c7ebffff] usable
->  BIOS-e820: [mem 0x00000000c7ec0000-0x00000000c7ed7fff] ACPI data
->  BIOS-e820: [mem 0x00000000c7ed8000-0x00000000c7ed9fff] ACPI NVS
->  BIOS-e820: [mem 0x00000000c7eda000-0x00000000c7ffffff] reserved
->  BIOS-e820: [mem 0x00000000fec00000-0x00000000fec0ffff] reserved
->  BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
->  BIOS-e820: [mem 0x00000000fff00000-0x00000000ffffffff] reserved
->  BIOS-e820: [mem 0x0000000100000000-0x000000e037ffffff] usable
->  BIOS-e820: [mem 0x000000e038000000-0x000000fcffffffff] reserved
->  BIOS-e820: [mem 0x0000010000000000-0x0000011ffeffffff] usable
-> 
-> and so direct mappings are created for huge memory hole between
-> 0x000000e038000000 to 0x0000010000000000. Even though the kernel never
-> generates memory accesses in that region, since the page tables mark
-> them incorrectly as being WB, our (AMD) processor ends up causing a MCE
-> while doing some memory bookkeeping/optimizations around that area.
-> 
-> This patch iterates through e820 and only direct maps ranges that are
-> marked as E820_RAM, and keeps track of those pfn ranges. Depending on
-> the alignment of E820 ranges, this may possibly result in using smaller
-> size (i.e. 4K instead of 2M or 1G) page tables.
-> 
-> >
-> > Have you tested it?
-> >
-> 
-> No
-> 
-> will update to
-> 
-> Subject: [PATCH] x86, 64bit, mm: hibernate use generic mapping_init
-> 
-> We should not set mapping for all under max_pfn.
-> That causes same problem that is fixed by
->         x86, mm: Only direct map addresses that are marked as E820_RAM
-> 
-> Make it only map range in pfn_mapped array.
+tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+head:   279355c3da8cc9b3ce41865fddfa1cedc9625bf9
+commit: 2e6bce9096cf01e4b57e1d1ae7574a2bd986dd8e ACPICA: DEBUG_PRINT macros: Update to improve performance.
+date:   42 minutes ago
+config: make ARCH=x86_64 allmodconfig
 
-OK
+All error/warnings:
 
-Thanks,
-Rafael
+drivers/acpi/processor_driver.c: In function 'acpi_processor_get_info':
+drivers/acpi/processor_driver.c:351:2: error: 'else' without a previous 'if'
+drivers/acpi/processor_driver.c: In function 'is_processor_present':
+drivers/acpi/processor_driver.c:674:2: error: 'else' without a previous 'if'
 
+vim +351 drivers/acpi/processor_driver.c
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+4be44fcd drivers/acpi/processor_core.c   Len Brown           2005-08-05  335  	}
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  336  	/*
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  337  	 * On some boxes several processors use the same processor bus id.
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  338  	 * But they are located in different scope. For example:
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  339  	 * \_SB.SCK0.CPU0
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  340  	 * \_SB.SCK1.CPU0
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  341  	 * Rename the processor device bus id. And the new bus id will be
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  342  	 * generated as the following format:
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  343  	 * CPU+CPU ID.
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  344  	 */
+7a04b849 drivers/acpi/processor_core.c   Zhao Yakui          2009-06-24  345  	sprintf(acpi_device_bid(device), "CPU%X", pr->id);
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  346  	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Processor [%d:%d]\n", pr->id,
+4be44fcd drivers/acpi/processor_core.c   Len Brown           2005-08-05  347  			  pr->acpi_id));
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  348  
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  349  	if (!object.processor.pblk_address)
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  350  		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No PBLK (NULL address)\n"));
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16 @351  	else if (object.processor.pblk_length != 6)
+47db4547 drivers/acpi/processor_driver.c Toshi Kani          2012-11-20  352  		dev_err(&device->dev, "Invalid PBLK length [%d]\n",
+6468463a drivers/acpi/processor_core.c   Len Brown           2006-06-26  353  			    object.processor.pblk_length);
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  354  	else {
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  355  		pr->throttling.address = object.processor.pblk_address;
+cee324b1 drivers/acpi/processor_core.c   Alexey Starikovskiy 2007-02-02  356  		pr->throttling.duty_offset = acpi_gbl_FADT.duty_offset;
+cee324b1 drivers/acpi/processor_core.c   Alexey Starikovskiy 2007-02-02  357  		pr->throttling.duty_width = acpi_gbl_FADT.duty_width;
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  358  
+^1da177e drivers/acpi/processor_core.c   Linus Torvalds      2005-04-16  359  		pr->pblk = object.processor.pblk_address;
+
+---
+0-DAY kernel build testing backend         Open Source Technology Center
+Fengguang Wu, Yuanhan Liu                              Intel Corporation
