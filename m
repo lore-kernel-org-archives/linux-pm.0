@@ -1,40 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: drivers/acpi/processor_driver.c:351:2: error: 'else' without a previous 'if'
-Date: Sat, 05 Jan 2013 00:49:39 +0100
-Message-ID: <8935203.oQUE83Y3lT@vostro.rjw.lan>
-References: <50e75f94.QueKkJ7Ms/cbp/Qu%fengguang.wu@intel.com>
+Subject: Re: [PATCH] cpuidle - fix lock contention in the idle path
+Date: Sat, 05 Jan 2013 01:03:11 +0100
+Message-ID: <3077900.eue4T2ZoF8@vostro.rjw.lan>
+References: <1356516108-11191-1-git-send-email-daniel.lezcano@linaro.org> <20130102211314.GA29447@sgi.com> <50E6764C.9060608@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:60550 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:60561 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755289Ab3ADXoC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Jan 2013 18:44:02 -0500
-In-Reply-To: <50e75f94.QueKkJ7Ms/cbp/Qu%fengguang.wu@intel.com>
+	id S1754749Ab3ADX5f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Jan 2013 18:57:35 -0500
+In-Reply-To: <50E6764C.9060608@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <fengguang.wu@intel.com>
-Cc: Bob Moore <robert.moore@intel.com>, linux-pm@vger.kernel.org, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Russ Anderson <rja@sgi.com>
+Cc: linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, rja@americas.sgi.com
 
-On Saturday, January 05, 2013 07:02:44 AM kbuild test robot wrote:
-> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-> head:   279355c3da8cc9b3ce41865fddfa1cedc9625bf9
-> commit: 2e6bce9096cf01e4b57e1d1ae7574a2bd986dd8e ACPICA: DEBUG_PRINT macros: Update to improve performance.
-> date:   42 minutes ago
-> config: make ARCH=x86_64 allmodconfig
+On Friday, January 04, 2013 07:27:24 AM Daniel Lezcano wrote:
+> On 01/02/2013 10:13 PM, Russ Anderson wrote:
+> > On Wed, Dec 26, 2012 at 11:01:48AM +0100, Daniel Lezcano wrote:
+> >> The commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 introduces
+> >> a lock in the cpuidle_get_cpu_driver function. This function
+> >> is used in the idle_call function.
+> >>
+> >> The problem is the contention with a large number of cpus because
+> >> they try to access the idle routine at the same time.
+> >>
+> >> The lock could be safely removed because of how is used the
+> >> cpuidle api. The cpuidle_register_driver is called first but
+> >> until the cpuidle_register_device is not called we don't
+> >> enter in the cpuidle idle call function because the device
+> >> is not enabled.
+> >>
+> >> The cpuidle_unregister_driver function, leading the a NULL driver,
+> >> is not called before the cpuidle_unregister_device.
+> >>
+> >> This is how is used the cpuidle api from the different drivers.
+> >>
+> >> However, a cleanup around the lock and a proper refcounting
+> >> mechanism should be used to ensure the consistency in the api,
+> >> like cpuidle_unregister_driver should failed if its refcounting
+> >> is not 0.
+> >>
+> >> These modifications will need some code reorganization and rewrite
+> >> which does not fit with a fix.
+> > 
+> > I agree.
+> > 
+> >> The following patch is a hot fix by returning to the initial behavior
+> >> by removing the lock when getting the driver.
+> > 
+> > The patch fixes the problem.  Verified on a system with 1024 cpus.
+> > Thanks.
+> > 
+> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > 
+> > Reported-by: Russ Anderson <rja@sgi.com>
+> > Acked-by: Russ Anderson <rja@sgi.com>
 > 
-> All error/warnings:
+> Hi Rafael,
 > 
-> drivers/acpi/processor_driver.c: In function 'acpi_processor_get_info':
-> drivers/acpi/processor_driver.c:351:2: error: 'else' without a previous 'if'
-> drivers/acpi/processor_driver.c: In function 'is_processor_present':
-> drivers/acpi/processor_driver.c:674:2: error: 'else' without a previous 'if'
+> could you consider this patch for merging ?
 
-Thanks for the report.
+Yes, I've taken it already.
 
-Resetted the acpica-next branch to "ACPICA: Update version to 20121114."
+I'll include it into the next pull request.
 
+Thanks,
 Rafael
 
 
