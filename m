@@ -1,76 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle - fix lock contention in the idle path
-Date: Sat, 05 Jan 2013 01:03:11 +0100
-Message-ID: <3077900.eue4T2ZoF8@vostro.rjw.lan>
-References: <1356516108-11191-1-git-send-email-daniel.lezcano@linaro.org> <20130102211314.GA29447@sgi.com> <50E6764C.9060608@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: [PATCH/RFC 0/1] Delete legacy power trace API
+Date: Fri,  4 Jan 2013 20:49:03 -0500
+Message-ID: <1357350544-32704-1-git-send-email-paul.gortmaker@windriver.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:60561 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754749Ab3ADX5f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Jan 2013 18:57:35 -0500
-In-Reply-To: <50E6764C.9060608@linaro.org>
+Received: from mail.windriver.com ([147.11.1.11]:51155 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755290Ab3AEBtV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Jan 2013 20:49:21 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Russ Anderson <rja@sgi.com>
-Cc: linux-pm@vger.kernel.org, pdeschrijver@nvidia.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, rja@americas.sgi.com
+To: linux-pm@vger.kernel.org
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>
 
-On Friday, January 04, 2013 07:27:24 AM Daniel Lezcano wrote:
-> On 01/02/2013 10:13 PM, Russ Anderson wrote:
-> > On Wed, Dec 26, 2012 at 11:01:48AM +0100, Daniel Lezcano wrote:
-> >> The commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 introduces
-> >> a lock in the cpuidle_get_cpu_driver function. This function
-> >> is used in the idle_call function.
-> >>
-> >> The problem is the contention with a large number of cpus because
-> >> they try to access the idle routine at the same time.
-> >>
-> >> The lock could be safely removed because of how is used the
-> >> cpuidle api. The cpuidle_register_driver is called first but
-> >> until the cpuidle_register_device is not called we don't
-> >> enter in the cpuidle idle call function because the device
-> >> is not enabled.
-> >>
-> >> The cpuidle_unregister_driver function, leading the a NULL driver,
-> >> is not called before the cpuidle_unregister_device.
-> >>
-> >> This is how is used the cpuidle api from the different drivers.
-> >>
-> >> However, a cleanup around the lock and a proper refcounting
-> >> mechanism should be used to ensure the consistency in the api,
-> >> like cpuidle_unregister_driver should failed if its refcounting
-> >> is not 0.
-> >>
-> >> These modifications will need some code reorganization and rewrite
-> >> which does not fit with a fix.
-> > 
-> > I agree.
-> > 
-> >> The following patch is a hot fix by returning to the initial behavior
-> >> by removing the lock when getting the driver.
-> > 
-> > The patch fixes the problem.  Verified on a system with 1024 cpus.
-> > Thanks.
-> > 
-> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > 
-> > Reported-by: Russ Anderson <rja@sgi.com>
-> > Acked-by: Russ Anderson <rja@sgi.com>
-> 
-> Hi Rafael,
-> 
-> could you consider this patch for merging ?
+The actual deletion is mind-numbingly simple; and if you go by the
+comments in the code, it is well overdue.  However, in discussions
+with Frederic, he suggested to me that those comments might have
+been overly optimistic, and that there may still be people out
+there who are still unknowingly using this dead API.
 
-Yes, I've taken it already.
-
-I'll include it into the next pull request.
+So, that is the crux of the RFC component -- to check whether the
+comments saying "delete by v3.1" can be taken at face value, or
+whether they were overly optimistic, and hence this stuff is still
+actively used even though it is overdue for deletion.
 
 Thanks,
-Rafael
+Paul.
+---
 
+Paul Gortmaker (1):
+  tracing: remove deprecated power trace API
+
+ Documentation/trace/events-power.txt | 27 +----------
+ arch/arm/mach-omap2/pm34xx.c         |  2 -
+ arch/x86/kernel/process.c            |  6 ---
+ drivers/cpufreq/cpufreq.c            |  1 -
+ drivers/cpuidle/cpuidle.c            |  2 -
+ include/trace/events/power.h         | 92 ------------------------------------
+ kernel/trace/Kconfig                 | 15 ------
+ kernel/trace/power-traces.c          |  3 --
+ 8 files changed, 1 insertion(+), 147 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.1
+
