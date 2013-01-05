@@ -1,73 +1,79 @@
-From: Ming Lei <ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
-Subject: [PATCH v7 5/6] PM / Runtime: force memory allocation with no I/O during Runtime PM callbcack
-Date: Sat,  5 Jan 2013 10:25:43 +0800
-Message-ID: <1357352744-8138-6-git-send-email-ming.lei@canonical.com>
+From: Ming Lei <ming.lei@canonical.com>
+Subject: [PATCH v7 6/6] USB: forbid memory allocation with I/O during bus reset
+Date: Sat,  5 Jan 2013 10:25:44 +0800
+Message-ID: <1357352744-8138-7-git-send-email-ming.lei@canonical.com>
 References: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1357352744-8138-1-git-send-email-ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Oliver Neukum <oneukum-l3A5Bk7waGM@public.gmane.org>, Minchan Kim <minchan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Jens Axboe <axboe-tSWWG44O7X1aa/9Udqfwiw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Ming Lei <ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Ming Lei <ming.lei@canonical.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch applies the introduced memalloc_noio_save() and
-memalloc_noio_restore() to force memory allocation with no I/O
-during runtime_resume/runtime_suspend callback on device with
-the flag of 'memalloc_noio' set.
+If one storage interface or usb network interface(iSCSI case)
+exists in current configuration, memory allocation with
+GFP_KERNEL during usb_device_reset() might trigger I/O transfer
+on the storage interface itself and cause deadlock because
+the 'us->dev_mutex' is held in .pre_reset() and the storage
+interface can't do I/O transfer when the reset is triggered
+by other interface, or the error handling can't be completed
+if the reset is triggered by the storage itself(error handling path).
 
-Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Oliver Neukum <oneukum-l3A5Bk7waGM@public.gmane.org>
-Cc: Rafael J. Wysocki <rjw-KKrjLPT3xs0@public.gmane.org>
-Signed-off-by: Ming Lei <ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>
+Signed-off-by: Ming Lei <ming.lei@canonical.com>
 --
-v7:
-	- move memalloc_noio_save/memalloc_noio_restore into
-	rpm_callback to avoid code duplication, as suggested
-	by Rafael
 v5:
 	- use inline memalloc_noio_save()
 v4:
-	- runtime_suspend need this too because rpm_resume may wait for
-	completion of concurrent runtime_suspend, so deadlock still may
-	be triggered in runtime_suspend path.
+	- mark current memalloc_noio for every usb device reset
 ---
- drivers/base/power/runtime.c |   19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+ drivers/usb/core/hub.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index cd92e1c..1244930 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -348,7 +348,24 @@ static int rpm_callback(int (*cb)(struct device *), struct device *dev)
- 	if (!cb)
- 		return -ENOSYS;
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index a815fd2..698922e 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -5040,6 +5040,7 @@ int usb_reset_device(struct usb_device *udev)
+ {
+ 	int ret;
+ 	int i;
++	unsigned int noio_flag;
+ 	struct usb_host_config *config = udev->actconfig;
  
--	retval = __rpm_callback(cb, dev);
-+	if (dev->power.memalloc_noio) {
-+		unsigned int noio_flag;
+ 	if (udev->state == USB_STATE_NOTATTACHED ||
+@@ -5049,6 +5050,17 @@ int usb_reset_device(struct usb_device *udev)
+ 		return -EINVAL;
+ 	}
+ 
++	/*
++	 * Don't allocate memory with GFP_KERNEL in current
++	 * context to avoid possible deadlock if usb mass
++	 * storage interface or usbnet interface(iSCSI case)
++	 * is included in current configuration. The easist
++	 * approach is to do it for every device reset,
++	 * because the device 'memalloc_noio' flag may have
++	 * not been set before reseting the usb device.
++	 */
++	noio_flag = memalloc_noio_save();
 +
-+		/*
-+		 * Deadlock might be caused if memory allocation with
-+		 * GFP_KERNEL happens inside runtime_suspend and
-+		 * runtime_resume callbacks of one block device's
-+		 * ancestor or the block device itself. Network
-+		 * device might be thought as part of iSCSI block
-+		 * device, so network device and its ancestor should
-+		 * be marked as memalloc_noio too.
-+		 */
-+		noio_flag = memalloc_noio_save();
-+		retval = __rpm_callback(cb, dev);
-+		memalloc_noio_restore(noio_flag);
-+	} else {
-+		retval = __rpm_callback(cb, dev);
-+	}
+ 	/* Prevent autosuspend during the reset */
+ 	usb_autoresume_device(udev);
  
- 	dev->power.runtime_error = retval;
- 	return retval != -EACCES ? retval : -EIO;
+@@ -5093,6 +5105,7 @@ int usb_reset_device(struct usb_device *udev)
+ 	}
+ 
+ 	usb_autosuspend_device(udev);
++	memalloc_noio_restore(noio_flag);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(usb_reset_device);
 -- 
 1.7.9.5
 
 --
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
