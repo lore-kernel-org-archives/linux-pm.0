@@ -1,79 +1,48 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: [PATCH v7 6/6] USB: forbid memory allocation with I/O during bus reset
-Date: Sat,  5 Jan 2013 10:25:44 +0800
-Message-ID: <1357352744-8138-7-git-send-email-ming.lei@canonical.com>
-References: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>, Ming Lei <ming.lei@canonical.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 3.8-rc[12] cpufreq build errors...
+Date: Sat, 05 Jan 2013 22:53:35 +0100
+Message-ID: <2446683.GzoeULsVfp@vostro.rjw.lan>
+References: <50E83B2D.9000609@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:32937 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755851Ab3AEVr5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 5 Jan 2013 16:47:57 -0500
+In-Reply-To: <50E83B2D.9000609@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Woody Suwalski <terraluna977@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-If one storage interface or usb network interface(iSCSI case)
-exists in current configuration, memory allocation with
-GFP_KERNEL during usb_device_reset() might trigger I/O transfer
-on the storage interface itself and cause deadlock because
-the 'us->dev_mutex' is held in .pre_reset() and the storage
-interface can't do I/O transfer when the reset is triggered
-by other interface, or the error handling can't be completed
-if the reset is triggered by the storage itself(error handling path).
+On Saturday, January 05, 2013 09:39:41 AM Woody Suwalski wrote:
+> Rafael, in 3.8 kernel part of the common logic has been moved to a 
+> separate cpufreq_governor.c file.
+> According to the Makefile, the cpufreq_governor.o is to be linked to 
+> other cpufreq  modules.
+> 
+> However I see that a separate malformed cpufreq_governor.ko is created, 
+> and then the real modules can not work without the common logic either.
+> 
+> The build config is a simple 32-bit config, on top of vanilla source.
+> 
+> I submit a verbose build log with "ls *.ko" and some "modinfo" outputs 
+> attached to the bottom.
+> Clearly the build subsystem is misinterpreting the build intentions.
+> 
+> Could you please check if you see the same issue in your builds?
+> I am using a 32-bit October-ish Debian Testing as a build machine (Eeepc 
+> netbook).
 
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Ming Lei <ming.lei@canonical.com>
---
-v5:
-	- use inline memalloc_noio_save()
-v4:
-	- mark current memalloc_noio for every usb device reset
----
- drivers/usb/core/hub.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+This issue has already been reported and there's a fix scheduled for
+inclusion in the master branch of the linux-pm.git tree.
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index a815fd2..698922e 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -5040,6 +5040,7 @@ int usb_reset_device(struct usb_device *udev)
- {
- 	int ret;
- 	int i;
-+	unsigned int noio_flag;
- 	struct usb_host_config *config = udev->actconfig;
- 
- 	if (udev->state == USB_STATE_NOTATTACHED ||
-@@ -5049,6 +5050,17 @@ int usb_reset_device(struct usb_device *udev)
- 		return -EINVAL;
- 	}
- 
-+	/*
-+	 * Don't allocate memory with GFP_KERNEL in current
-+	 * context to avoid possible deadlock if usb mass
-+	 * storage interface or usbnet interface(iSCSI case)
-+	 * is included in current configuration. The easist
-+	 * approach is to do it for every device reset,
-+	 * because the device 'memalloc_noio' flag may have
-+	 * not been set before reseting the usb device.
-+	 */
-+	noio_flag = memalloc_noio_save();
-+
- 	/* Prevent autosuspend during the reset */
- 	usb_autoresume_device(udev);
- 
-@@ -5093,6 +5105,7 @@ int usb_reset_device(struct usb_device *udev)
- 	}
- 
- 	usb_autosuspend_device(udev);
-+	memalloc_noio_restore(noio_flag);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(usb_reset_device);
+Thanks,
+Rafael
+
+
 -- 
-1.7.9.5
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
