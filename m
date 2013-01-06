@@ -1,94 +1,64 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH v11 8/9] libata: no poll when ODD is powered off
-Date: Sun,  6 Jan 2013 10:48:28 +0800
-Message-ID: <1357440509-28108-9-git-send-email-aaron.lu@intel.com>
-References: <1357440509-28108-1-git-send-email-aaron.lu@intel.com>
+From: Anton Vorontsov <anton@enomsg.org>
+Subject: Re: power: max17040: use devm_kzalloc
+Date: Sat, 5 Jan 2013 19:04:24 -0800
+Message-ID: <20130106030424.GF6919@lizard.sbx05280.losalca.wayport.net>
+References: <CA+C2MxQVdgWn_fjrbiHBDeENHce5FT2xYxYxom84XncQ3bB1nQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:43075 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755625Ab3AFCsg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 5 Jan 2013 21:48:36 -0500
-In-Reply-To: <1357440509-28108-1-git-send-email-aaron.lu@intel.com>
+Received: from mail-da0-f50.google.com ([209.85.210.50]:49513 "EHLO
+	mail-da0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755234Ab3AFDH4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Jan 2013 22:07:56 -0500
+Received: by mail-da0-f50.google.com with SMTP id h15so8132080dan.23
+        for <linux-pm@vger.kernel.org>; Sat, 05 Jan 2013 19:07:55 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CA+C2MxQVdgWn_fjrbiHBDeENHce5FT2xYxYxom84XncQ3bB1nQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>
-Cc: Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lu@intel.com>
+To: Devendra Naga <develkernel412222@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-When the ODD is powered off, any action the user did to the ODD that
-would generate a media event will trigger an ACPI interrupt, so the
-poll for media event is no longer necessary. And the poll will also
-cause a runtime status change, which will stop the ODD from staying in
-powered off state, so the poll should better be stopped.
+On Fri, Dec 07, 2012 at 01:01:06PM +0530, Devendra Naga wrote:
+> use devm_kzalloc and no need of error path and unload frees
+> 
+> Signed-off-by: Devendra Naga <develkernel412222@gmail.com>
+> ---
 
-But since we don't have access to the gendisk structure in LLDs, here
-comes the event_driven flag for scsi device. This flag serves as a
-capability of the device, conveyed by the LLDs to upper layer. It is set
-when LLDs know that this device will no longer generate any media
-related events, so that the check_events can simply return 0 without
-bothering the device, effectively silence the poll.
+The patch doesn't apply, it is whitespace-damaged...
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- drivers/ata/libata-zpodd.c | 8 ++++++++
- drivers/scsi/sr.c          | 6 +++++-
- include/scsi/scsi_device.h | 1 +
- 3 files changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/ata/libata-zpodd.c b/drivers/ata/libata-zpodd.c
-index 3c39987..5843a18 100644
---- a/drivers/ata/libata-zpodd.c
-+++ b/drivers/ata/libata-zpodd.c
-@@ -177,6 +177,13 @@ void zpodd_pre_poweroff(struct ata_device *dev)
- {
- 	struct zpodd *zpodd = dev->zpodd;
- 
-+	/*
-+	 * Silence the media change poll, as we will be notified when
-+	 * user wants to use the ODD so there is no meaning to poll
-+	 * it when it is powered off
-+	 */
-+	dev->sdev->event_driven = true;
-+
- 	zpodd->powered_off = true;
- 	device_set_run_wake(&dev->sdev->sdev_gendev, true);
- 	acpi_pm_device_run_wake(&dev->sdev->sdev_gendev, true);
-@@ -209,6 +216,7 @@ void zpodd_post_resume(struct ata_device *dev)
- 
- 	zpodd->last_ready = 0;
- 	zpodd->zp_ready = false;
-+	dev->sdev->event_driven = false;
- }
- 
- static void zpodd_wake_dev(acpi_handle handle, u32 event, void *context)
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index 4d1a610..b034274 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -594,7 +594,11 @@ static unsigned int sr_block_check_events(struct gendisk *disk,
- 					  unsigned int clearing)
- {
- 	struct scsi_cd *cd = scsi_cd(disk);
--	return cdrom_check_events(&cd->cdi, clearing);
-+
-+	if (!cd->device->event_driven)
-+		return cdrom_check_events(&cd->cdi, clearing);
-+	else
-+		return 0;
- }
- 
- static int sr_block_revalidate_disk(struct gendisk *disk)
-diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-index e65c62e..1756151 100644
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -160,6 +160,7 @@ struct scsi_device {
- 	unsigned can_power_off:1; /* Device supports runtime power off */
- 	unsigned wce_default_on:1;	/* Cache is ON by default */
- 	unsigned no_dif:1;	/* T10 PI (DIF) should be disabled */
-+	unsigned event_driven:1; /* No need to poll the device */
- 
- 	DECLARE_BITMAP(supported_events, SDEV_EVT_MAXBITS); /* supported events */
- 	struct list_head event_list;	/* asserted events */
--- 
-1.7.11.7
-
+>  drivers/power/max17040_battery.c |    4 +---
+>  1 files changed, 1 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/max17040_battery.c
+> b/drivers/power/max17040_battery.c
+> index 22cfe9c..74a0bd9 100644
+> --- a/drivers/power/max17040_battery.c
+> +++ b/drivers/power/max17040_battery.c
+> @@ -207,7 +207,7 @@ static int max17040_probe(struct i2c_client *client,
+>         if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
+>                 return -EIO;
+> 
+> -       chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+> +       chip = devm_kzalloc(&client->dev, sizeof(*chip), GFP_KERNEL);
+>         if (!chip)
+>                 return -ENOMEM;
+> 
+> @@ -225,7 +225,6 @@ static int max17040_probe(struct i2c_client *client,
+>         ret = power_supply_register(&client->dev, &chip->battery);
+>         if (ret) {
+>                 dev_err(&client->dev, "failed: power supply register\n");
+> -               kfree(chip);
+>                 return ret;
+>         }
+> 
+> @@ -244,7 +243,6 @@ static int max17040_remove(struct i2c_client *client)
+> 
+>         power_supply_unregister(&chip->battery);
+>         cancel_delayed_work(&chip->work);
+> -       kfree(chip);
+>         return 0;
+>  }
+> 
+> -- 
+> 1.7.5.4
