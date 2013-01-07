@@ -1,127 +1,66 @@
 From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCH 8/9] Thermal: Add ABI Documentation for sysfs interfaces
-Date: Mon,  7 Jan 2013 12:43:25 +0530
-Message-ID: <1357542806-20449-9-git-send-email-durgadoss.r@intel.com>
+Subject: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+Date: Mon,  7 Jan 2013 12:43:24 +0530
+Message-ID: <1357542806-20449-8-git-send-email-durgadoss.r@intel.com>
 References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:19149 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753706Ab3AGHSh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Jan 2013 02:18:37 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds Documentation for ABI's introduced
-for thermal subsystem (under /sys/class/thermal/).
+This patch makes MAX_SENSORS_PER_ZONE and
+MAX_CDEVS_PER_ZONE values configurable. The
+default value is 1, and range is 1-12.
 
 Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
 ---
- Documentation/ABI/testing/sysfs-class-thermal |   93 +++++++++++++++++++++++++
- 1 file changed, 93 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+ drivers/thermal/Kconfig |   14 ++++++++++++++
+ include/linux/thermal.h |    6 +++---
+ 2 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-thermal b/Documentation/ABI/testing/sysfs-class-thermal
-new file mode 100644
-index 0000000..d1a450e
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-thermal
-@@ -0,0 +1,93 @@
-+What:		/sys/class/thermal/sensorX/temp
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Exposes 'temperature' of a thermal sensor in mC
-+Users:		Kernel/User space thermal governors
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index d96da07..c5ba3340 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -15,6 +15,20 @@ menuconfig THERMAL
+ 
+ if THERMAL
+ 
++config THERMAL_MAX_SENSORS_PER_ZONE
++	int "Maximum number of sensors allowed per thermal zone"
++	default 1
++	range 1 12
++	---help---
++	  Specify the number of sensors allowed per zone
 +
-+What:		/sys/class/thermal/sensorX/name
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Name of the thermal sensor
-+Users:		Kernel/User space thermal governors
++config THERMAL_MAX_CDEVS_PER_ZONE
++	int "Maximum number of cooling devices allowed per thermal zone"
++	default 1
++	range 1 12
++	---help---
++	  Specify the number of cooling devices allowed per zone
 +
-+What:		/sys/class/thermal/sensorX/thresholdY
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Programmable threshold (in terms of mC). On reaching
-+		this, the thermal governors may take action to control
-+		temperature.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/name
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Name of the thermal zone.
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Symlink to a sensor associated with this zone.
-+Users:		User space thermal governors or applications
-+
-+What:		/sys/class/thermal/zoneX/cooling_deviceY
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Symlink to a cooling device associated with this zone.
-+Users:		User space thermal governors or applications
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_active
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Space separated list of active trip points for 'sensorY'
-+		in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_passive
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Space separated list of passive trip points for 'sensorY'
-+		in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_hot
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Hot trip point for 'sensorY' in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/sensorY_trip_critical
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Critical trip point for 'sensorY' in 'zoneX' (in mC).
-+Users:		Kernel/User space thermal governors
-+
-+What:		/sys/class/thermal/zoneX/mapY
-+Date:		January 2013
-+KernelVersion:	3.8
-+Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-+Description:
-+		Mapping information between a sensor and a cooling device
-+		in 'zoneX'. See Documentation/thermal/sysfs-api2.txt for more
-+		information on this interface.
-+Users:		Kernel/User space thermal governors
+ config THERMAL_HWMON
+ 	bool
+ 	depends on HWMON=y || HWMON=THERMAL
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 187fadb..cf19fba 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -50,9 +50,9 @@
+ /* Default Thermal Governor: Does Linear Throttling */
+ #define DEFAULT_THERMAL_GOVERNOR	"step_wise"
+ 
+-#define MAX_SENSORS_PER_ZONE		5
+-
+-#define MAX_CDEVS_PER_ZONE		5
++/* Maximum number of sensors/cdevs per zone, defined through Kconfig */
++#define MAX_SENSORS_PER_ZONE	CONFIG_THERMAL_MAX_SENSORS_PER_ZONE
++#define MAX_CDEVS_PER_ZONE	CONFIG_THERMAL_MAX_CDEVS_PER_ZONE
+ 
+ /* If we map each sensor with every possible cdev for a zone */
+ #define MAX_MAPS_PER_ZONE	(MAX_SENSORS_PER_ZONE * MAX_CDEVS_PER_ZONE)
 -- 
 1.7.9.5
-
