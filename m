@@ -1,38 +1,93 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v6 4/4] sd: change to auto suspend mode
-Date: Mon, 07 Jan 2013 17:31:40 +0800
-Message-ID: <50EA95FC.2020103@intel.com>
-References: <1357461697-4219-1-git-send-email-aaron.lu@intel.com> <1357461697-4219-5-git-send-email-aaron.lu@intel.com> <2040976.slu5Ii8g67@linux-5eaq.site>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Orion
+ SoC
+Date: Mon, 7 Jan 2013 12:06:08 +0200
+Message-ID: <50EA9E10.7080605@ti.com>
+References: <1355482986-885-1-git-send-email-andrew@lunn.ch> <1355482986-885-2-git-send-email-andrew@lunn.ch> <50E6A378.90503@ti.com> <50E6F6AA.4000905@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:54516 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087Ab3AGJbB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Jan 2013 04:31:01 -0500
-In-Reply-To: <2040976.slu5Ii8g67@linux-5eaq.site>
+Received: from devils.ext.ti.com ([198.47.26.153]:45030 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751674Ab3AGKGj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jan 2013 05:06:39 -0500
+In-Reply-To: <50E6F6AA.4000905@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, iwamatsu@nigauri.org, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>
 
-On 01/07/2013 05:19 PM, Oliver Neukum wrote:
-> On Sunday 06 January 2013 16:41:37 Aaron Lu wrote:
->> From: Lin Ming <ming.m.lin@intel.com>
+On 04-01-2013 17:35, Andrew Lunn wrote:
+> On 04/01/13 10:40, Eduardo Valentin wrote:
+>> Hey Andrew,
 >>
->> Uses block layer runtime pm helper functions in
->> scsi_runtime_suspend/resume.
->> Remove scsi_autopm_* from sd open/release path and check_events path.
->> And remove the quiesce call in runtime suspend path, as we know there is
->> no request to quiesce for the device.
-> 
-> How does this handle ioctl() ?
+>> On 14-12-2012 13:03, Andrew Lunn wrote:
+>>> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+>>>
+>>> Some Orion SoC has thermal sensor.
+>>> This patch adds support for 88F6282 and 88F6283.
+>>>
+>>> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+>>> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+>>> ---
+>>> .../devicetree/bindings/thermal/orion-thermal.txt | 16 +++
+>>> drivers/thermal/Kconfig | 7 ++
+>>> drivers/thermal/Makefile | 1 +
+>>> drivers/thermal/orion_thermal.c | 133 ++++++++++++++++++++
+>>> 4 files changed, 157 insertions(+)
+>>> create mode 100644
+>>> Documentation/devicetree/bindings/thermal/orion-thermal.txt
+>>> create mode 100644 drivers/thermal/orion_thermal.c
+>>>
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+>>> b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+>>> new file mode 100644
+>>> index 0000000..5ce925d
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/thermal/orion-thermal.txt
+>>> @@ -0,0 +1,16 @@
+>>> +* Orion Thermal
+>>> +
+>>> +This initial version is for Kirkwood 88F8262 & 88F6283 SoCs, however
+>>> +it is expected the driver will sometime in the future be expanded to
+>>> +also support Dove, using a different compatibility string.
+>>> +
+>>> +Required properties:
+>>> +- compatible : "marvell,kirkwood-thermal"
+>>> +- reg : Address range of the thermal registers
+>>> +
+>>> +Example:
+>>> +
+>>> + thermal@10078 {
+>>> + compatible = "marvell,kirkwood";
+>>> + reg = <0x10078 0x4>;
+>>> + };
+>>
+>> How do you differentiate if the SoC has the temperature sensor? On your
+>> patch description you are very clear saying that this supports only
+>> 88F8262 & 88F6283 SoCs.
+>
+> Hi Eduardo
+>
+> Thanks for the comments. I will address them in the next version.
+>
 
-The ioctl code will allocate a new request and execute it through block
-layer API, which involves adding the request to the queue and releasing
-it when it is finished.
+OK. Please put me on Cc so I will keep the review.
 
-Thanks,
-Aaron
+> We differentiate between the different SoCs by DT. Each has its own
+> .dtsi file and we will put the node into only those which have the
+> hardware.
+
+Ok. That I understand, but my question was more into the difference 
+between 88F6282 and 88F6283. Do you need to differentiate those two? Is 
+there feature set which  is specific to one which is not present in the 
+second ? Because the DT entries you have you won't differentiate them, 
+besides you don't read any revision register to check the chip version. 
+That's my point.
+
+>
+> Thanks
+>      Andrew
 
