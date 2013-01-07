@@ -1,51 +1,76 @@
-From: Kevin Liu <kliu5@marvell.com>
-Subject: [PATCH 2/2] mmc: sdhci: fix dummy regulator issue
-Date: Mon,  7 Jan 2013 13:38:51 +0800
-Message-ID: <1357537131-8000-2-git-send-email-kliu5@marvell.com>
-References: <1357537131-8000-1-git-send-email-kliu5@marvell.com>
+From: Durgadoss R <durgadoss.r@intel.com>
+Subject: [PATCHv2 0/9] Thermal Framework Enhancements
+Date: Mon,  7 Jan 2013 12:43:17 +0530
+Message-ID: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog118.obsmtp.com ([74.125.149.244]:52627 "EHLO
-	na3sys009aog118.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750961Ab3AGFkA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jan 2013 00:40:00 -0500
-In-Reply-To: <1357537131-8000-1-git-send-email-kliu5@marvell.com>
+Received: from mga03.intel.com ([143.182.124.21]:19149 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416Ab3AGHSR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Jan 2013 02:18:17 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Rainer Kaluscha <rainer.kaluscha@web.de>, Rainer Kaluscha <ich@rainer-kaluscha.de>, Philip Rakity <prakity@nvidia.com>, Zhangfei Gao <zhangfei.gao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Chao Xie <cxie4@marvell.com>, Kevin Liu <keyuan.liu@gmail.com>, Kevin Liu <kliu5@marvell.com>
+To: rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
 
-Should consider the case that dummy regulator is used for host->vmmc
-and host->vqmmc and skip the regulator voltage check.
+This patch set is a v2 of the previous versions submitted here:
+[v1]:  https://lkml.org/lkml/2012/12/18/108 
+[RFC]: https://patchwork.kernel.org/patch/1758921/
 
-Signed-off-by: Kevin Liu <kliu5@marvell.com>
----
- drivers/mmc/host/sdhci.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+This patch set is based on Rui's -thermal tree, and is
+tested on a Core-i5 and an Atom netbook.
 
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index c13415c..561d126 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -2897,8 +2897,8 @@ int sdhci_add_host(struct sdhci_host *host)
- 		}
- 	} else {
- 		regulator_enable(host->vqmmc);
--		if (!regulator_is_supported_voltage(host->vqmmc, 1700000,
--			1950000))
-+		if ((regulator_is_supported_voltage(host->vqmmc, 1700000,
-+			1950000) <= 0) && !regulator_is_dummy(host->vqmmc))
- 			caps[1] &= ~(SDHCI_SUPPORT_SDR104 |
- 					SDHCI_SUPPORT_SDR50 |
- 					SDHCI_SUPPORT_DDR50);
-@@ -2965,7 +2965,7 @@ int sdhci_add_host(struct sdhci_host *host)
- 	}
- 
- #ifdef CONFIG_REGULATOR
--	if (host->vmmc) {
-+	if (host->vmmc && !regulator_is_dummy(host->vmmc)) {
- 		ret = regulator_is_supported_voltage(host->vmmc, 2700000,
- 			3600000);
- 		if ((ret <= 0) || (!(caps[0] & SDHCI_CAN_VDD_330)))
+Changes Since v1:
+ * Removed kobject creation for thermal_trip and thermal_map
+   nodes as per Greg-KH's comments.
+ * Added ABI Documentation under 'testing'.
+ * Modified the GET_INDEX macro to be more linux-like, thanks
+   to Joe Perches.
+ * Added get_[sensor/cdev]_by_name APIs to thermal.h
+
+This series contains 9 patches:
+Patch 1/9: Creates new sensor level APIs
+Patch 2/9: Creates new zone level APIs. The existing tzd structure is
+           kept as such for clarity and compatibility purposes.
+Patch 3/9: Creates functions to add/remove a cdev to/from a zone. The
+           existing tcd structure need not be modified.
+Patch 4/9: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
+	   under /sys/class/thermal/zoneY/. This exposes various trip
+           points for sensorX present in zoneY.
+Patch 5/9: Adds mapX sysfs node. It is a compact representation
+           of the binding relationship between a sensor and a cdev,
+           within a zone.
+Patch 6/9: Creates Documentation for the new APIs. A new file is
+           created for clarity. Final goal is to merge with the existing
+           file or refactor the files, as whatever seems appropriate.
+Patch 7/9: Make PER ZONE values configurable through Kconfig
+Patch 8/9: Add ABI documentation for sysfs interfaces introduced in this patch.
+Patch 9/9: A dummy driver that can be used for testing. This is not for merge.
+
+Thanks to Greg-KH, Hongbo Zhang and Joe Perches for their comments on v1.
+
+Durgadoss R (9):
+  Thermal: Create sensor level APIs
+  Thermal: Create zone level APIs
+  Thermal: Add APIs to bind cdev to new zone structure
+  Thermal: Add trip point sysfs nodes for sensor
+  Thermal: Create 'mapX' sysfs node for a zone
+  Thermal: Add Documentation to new APIs
+  Thermal: Make PER_ZONE values configurable
+  Thermal: Add ABI Documentation for sysfs interfaces
+  Thermal: Dummy driver used for testing
+
+ Documentation/ABI/testing/sysfs-class-thermal |   93 +++
+ Documentation/thermal/sysfs-api2.txt          |  248 +++++++
+ drivers/thermal/Kconfig                       |   19 +
+ drivers/thermal/Makefile                      |    3 +
+ drivers/thermal/thermal_sys.c                 |  881 +++++++++++++++++++++++++
+ drivers/thermal/thermal_test.c                |  315 +++++++++
+ include/linux/thermal.h                       |  117 +++-
+ 7 files changed, 1675 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+ create mode 100644 Documentation/thermal/sysfs-api2.txt
+ create mode 100644 drivers/thermal/thermal_test.c
+
 -- 
 1.7.9.5
 
