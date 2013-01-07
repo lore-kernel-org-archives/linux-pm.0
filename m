@@ -1,39 +1,56 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 1/2] thermal: Add support for thermal sensor for Orion SoC
-Date: Mon, 7 Jan 2013 11:16:55 +0100
-Message-ID: <20130107101655.GS3392@lunn.ch>
-References: <1355482986-885-1-git-send-email-andrew@lunn.ch>
- <1355482986-885-2-git-send-email-andrew@lunn.ch>
- <50E6A378.90503@ti.com>
- <50E6F6AA.4000905@lunn.ch>
- <50EA9E10.7080605@ti.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/2] regulator: add regulator_is_dummy function
+Date: Mon, 7 Jan 2013 11:25:27 +0000
+Message-ID: <20130107112527.GD4544@opensource.wolfsonmicro.com>
+References: <1357537131-8000-1-git-send-email-kliu5@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BRE3mIcgqKzpedwo"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:42181 "EHLO londo.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991Ab3AGKRH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Jan 2013 05:17:07 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49672 "EHLO
+	opensource.wolfsonmicro.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754449Ab3AGLZ3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jan 2013 06:25:29 -0500
 Content-Disposition: inline
-In-Reply-To: <50EA9E10.7080605@ti.com>
+In-Reply-To: <1357537131-8000-1-git-send-email-kliu5@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux ARM <linux-arm-kernel@lists.infradead.org>, iwamatsu@nigauri.org, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, jgunthorpe@obsidianresearch.com, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Jason Cooper <jason@lakedaemon.net>
+To: Kevin Liu <kliu5@marvell.com>
+Cc: linux-pm@vger.kernel.org, linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Rainer Kaluscha <rainer.kaluscha@web.de>, Rainer Kaluscha <ich@rainer-kaluscha.de>, Philip Rakity <prakity@nvidia.com>, Zhangfei Gao <zhangfei.gao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Chao Xie <cxie4@marvell.com>, Kevin Liu <keyuan.liu@gmail.com>
 
-> OK. Please put me on Cc so I will keep the review.
-> 
-> >We differentiate between the different SoCs by DT. Each has its own
-> >.dtsi file and we will put the node into only those which have the
-> >hardware.
-> 
-> Ok. That I understand, but my question was more into the difference
-> between 88F6282 and 88F6283. Do you need to differentiate those two?
 
-Hi Eduardo
+--BRE3mIcgqKzpedwo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-No, there is no need to differentiate between these. As far as the
-temperature sensor goes, they are identical. I've been testing on a
-88F6282 and Nobuhiro Iwamatsu on a 88F6283.
+On Mon, Jan 07, 2013 at 01:38:50PM +0800, Kevin Liu wrote:
+> Introduce a regulator_is_dummy function to check whether the
+> regulator is dummy.
 
-	    Andrew
+No, we've been through this repeatedly.  Whatever problem you're trying
+to bodge around is going to be a problem with some real physical
+regulators too.
+
+--BRE3mIcgqKzpedwo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ6rCaAAoJELSic+t+oim9/5sP/iTU5w8hezXC5uUp8M1NBtGX
+f9TwtnFgEOrkbE04sPE6uw1b37H2R7sA3EUy37LmDpDty8xfFt+6P2cmECHTGT/8
+Nzx5f6tU957XPd1ogY+AqxuPwBu0FaffL3QCzQpO6a3Ygu6ZSOsqLPiwGyhAdUCK
+/jT0wDwnNNMUn4Ogsaz59ju56rUisarMh08APxl4WQ1CmPEq3oTyfWbcoJ6um7MO
+MKT+xOrjXAhy8aHMNhoSm2I4ETW4ZOUCm6jb/AYLxn0kElakqIqnqwcYqLy6jK96
+wm+t3IHC8NahcXg7TBOFOe/cPbYqzLHbK7rG7fSNKMY+volu3aXVjQTzFKVxBWRy
+z8RnklzTfkj4PB6JU4261pPTY5RLdCSTHN48NvKa350//QApXepfmXPLZVov6wXh
+dm8s6e/Y+lRErsU2hU8r7sidHjaDjTsqpn9QDnvm4L8b71gm11DzvErxaTEW4wcw
+ommyo7EDEKpB++fmNDKtqj4xLgHMCPsSBX59Rsm4X4LpbMxsWQ5OpoKseqJweB5M
+5kuGj7mBDHiq9qtZme7TEqjOacbAN44LSLMlNR1dZcot1/xBJkYr694WXREgh7fU
+uYjDj+PSx8sWs2E95vXAzRsR+owJtedRpKWbRIPV0paoWMTilXxyxiomYgts/qRU
+tNv6MHyHMBDJlWdkNZEm
+=+/ca
+-----END PGP SIGNATURE-----
+
+--BRE3mIcgqKzpedwo--
