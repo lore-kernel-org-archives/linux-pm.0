@@ -1,69 +1,78 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v11 9/9] libata: do not suspend port if normal ODD is
- attached
-Date: Mon, 07 Jan 2013 09:09:41 +0800
-Message-ID: <50EA2055.1030600@intel.com>
-References: <1357440509-28108-1-git-send-email-aaron.lu@intel.com> <1357440509-28108-10-git-send-email-aaron.lu@intel.com> <50E98B7C.7030908@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Kevin Liu <kliu5@marvell.com>
+Subject: [PATCH 1/2] regulator: add regulator_is_dummy function
+Date: Mon,  7 Jan 2013 13:38:50 +0800
+Message-ID: <1357537131-8000-1-git-send-email-kliu5@marvell.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:55736 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752664Ab3AGBJG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 6 Jan 2013 20:09:06 -0500
-In-Reply-To: <50E98B7C.7030908@mvista.com>
+Received: from na3sys009aog118.obsmtp.com ([74.125.149.244]:52586 "EHLO
+	na3sys009aog118.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750776Ab3AGFjo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Jan 2013 00:39:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: linux-pm@vger.kernel.org, Mark Brown <broonie@opensource.wolfsonmicro.com>, linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Rainer Kaluscha <rainer.kaluscha@web.de>, Rainer Kaluscha <ich@rainer-kaluscha.de>, Philip Rakity <prakity@nvidia.com>, Zhangfei Gao <zhangfei.gao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Chao Xie <cxie4@marvell.com>, Kevin Liu <keyuan.liu@gmail.com>, Kevin Liu <kliu5@marvell.com>
 
-Hi Sergei,
+Introduce a regulator_is_dummy function to check whether the
+regulator is dummy.
 
-Thanks for reviewing, will update in next revision.
+Signed-off-by: Kevin Liu <kliu5@marvell.com>
+---
+ drivers/regulator/core.c           |   17 +++++++++++++++++
+ include/linux/regulator/consumer.h |    6 ++++++
+ 2 files changed, 23 insertions(+)
 
--Aaron
-
-On 01/06/2013 10:34 PM, Sergei Shtylyov wrote:
-> Hello.
-> 
-> On 06-01-2013 6:48, Aaron Lu wrote:
-> 
->> For ODDs, the upper layer will poll for media change every a few
->> seconds, which will make it enter and leave suspend state very
->> oftern. And as each suspend will also cause a hard/soft reset,
-> 
->     s/oftern/often/
-> 
->> the gain of runtime suspend is very little while the ODD may
->> mis-function after constantly being reset. So the idle callback
->> here will not proceed to suspend if a non-ZPODD capable ODD is
->> attached to the port.
-> 
->> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->> ---
->>   drivers/ata/libata-core.c | 19 +++++++++++++++++++
->>   1 file changed, 19 insertions(+)
-> 
->> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
->> index 65a362e..f664a90 100644
->> --- a/drivers/ata/libata-core.c
->> +++ b/drivers/ata/libata-core.c
->> @@ -5408,8 +5408,27 @@ static int ata_port_resume(struct device *dev)
->>   	return rc;
->>   }
->>
->> +/*
->> + * For ODDs, the upper layer will poll for media change every a few seconds,
->> + * which will make it enter and leave suspend state every a few seconds. And
-> 
->     Article is not needed before "few". (Same comment to the changelog.)
-> 
->> + * as each suspend will cause a hard/soft reset, the gain of runtime suspend
->> + * is very little and the ODD may mis-function after constantly being reset.
-> 
->     s/mis-function/malfunction/ perhaps? (Same in the changelog.)
-> 
-> MBR, Sergei
-> 
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index e872c8b..d2a8bdb 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1826,6 +1826,23 @@ int regulator_disable_regmap(struct regulator_dev *rdev)
+ }
+ EXPORT_SYMBOL_GPL(regulator_disable_regmap);
+ 
++/**
++ * regulator_is_dummy - check if regulator is dummy
++ * @regulator: regulator source
++ *
++ * Returns positive if the regulator is dummy, zero if it's not.
++ */
++int regulator_is_dummy(struct regulator *regulator)
++{
++	struct regulator_dev	*rdev = regulator->rdev;
++
++	if (!strcmp(rdev_get_name(rdev), "regulator-dummy"))
++		return 1;
++	else
++		return 0;
++}
++EXPORT_SYMBOL_GPL(regulator_is_dummy);
++
+ static int _regulator_is_enabled(struct regulator_dev *rdev)
+ {
+ 	/* A GPIO control always takes precedence */
+diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
+index c43cd35..fe549d0 100644
+--- a/include/linux/regulator/consumer.h
++++ b/include/linux/regulator/consumer.h
+@@ -164,6 +164,7 @@ int regulator_count_voltages(struct regulator *regulator);
+ int regulator_list_voltage(struct regulator *regulator, unsigned selector);
+ int regulator_is_supported_voltage(struct regulator *regulator,
+ 				   int min_uV, int max_uV);
++int regulator_is_dummy(struct regulator *regulator);
+ int regulator_set_voltage(struct regulator *regulator, int min_uV, int max_uV);
+ int regulator_set_voltage_time(struct regulator *regulator,
+ 			       int old_uV, int new_uV);
+@@ -249,6 +250,11 @@ static inline int regulator_is_enabled(struct regulator *regulator)
+ 	return 1;
+ }
+ 
++static inline int regulator_is_dummy(struct regulator *regulator)
++{
++	return 0;
++}
++
+ static inline int regulator_bulk_get(struct device *dev,
+ 				     int num_consumers,
+ 				     struct regulator_bulk_data *consumers)
+-- 
+1.7.9.5
 
