@@ -1,54 +1,31 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Export more symbols for module usage
-Date: Tue, 8 Jan 2013 23:06:15 +0800
-Message-ID: <20130108150610.GE19534@S2101-09.ap.freescale.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/3] cpufreq: add imx6q-cpufreq driver
+Date: Tue, 8 Jan 2013 20:49:14 +0530
+Message-ID: <CAKohpo=yahfREsWvCPN6BjoxiifKZWCM19-mLEvao0e4UCT6Vg@mail.gmail.com>
 References: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
- <1357628043-19256-2-git-send-email-shawn.guo@linaro.org>
- <20130108144720.GA6062@kahuna>
+	<1357628043-19256-3-git-send-email-shawn.guo@linaro.org>
+	<CAOh2x=mv9_iWt+y9cP0oA4WKs86Ne9nRP6CgKy_1COnPm57YOA@mail.gmail.com>
+	<20130108143554.GC19534@S2101-09.ap.freescale.net>
+	<CAKohpomQuoUgPVp6e9_UrK0sk+z26cG36DoxH91LWSmBHD36BQ@mail.gmail.com>
+	<20130108150357.GD19534@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130108144720.GA6062@kahuna>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:55738 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616Ab3AHPTP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 10:19:15 -0500
+Received: by mail-ob0-f182.google.com with SMTP id 16so469165obc.27
+        for <linux-pm@vger.kernel.org>; Tue, 08 Jan 2013 07:19:14 -0800 (PST)
+In-Reply-To: <20130108150357.GD19534@S2101-09.ap.freescale.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>
 
-On Tue, Jan 08, 2013 at 08:47:21AM -0600, Nishanth Menon wrote:
-> On 14:54-20130108, Shawn Guo wrote:
-> > Export opp_init_cpufreq_table and opp_free_cpufreq_table for module
-> > usage.
-> > 
-> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> > ---
-> >  drivers/base/power/opp.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> > index 50b2831..d16db9a 100644
-> > --- a/drivers/base/power/opp.c
-> > +++ b/drivers/base/power/opp.c
-> > @@ -661,6 +661,7 @@ int opp_init_cpufreq_table(struct device *dev,
-> >  
-> >  	return 0;
-> >  }
-> > +EXPORT_SYMBOL(opp_init_cpufreq_table);
-> >  
-> >  /**
-> >   * opp_free_cpufreq_table() - free the cpufreq table
-> > @@ -678,6 +679,7 @@ void opp_free_cpufreq_table(struct device *dev,
-> >  	kfree(*table);
-> >  	*table = NULL;
-> >  }
-> > +EXPORT_SYMBOL(opp_free_cpufreq_table);
-> >  #endif		/* CONFIG_CPU_FREQ */
-> 
-> Is'nt this already covered in 
-> https://patchwork.kernel.org/patch/1847261/
-> ?
+On 8 January 2013 20:34, Shawn Guo <shawn.guo@linaro.org> wrote:
+> I'm seeing that the .init() will be called on cpu1 when removing the
+> module.
 
-Sorry, I'm working against v3.8-rc and missed that.  Will drop it.
-
-Shawn
-
+Hmm... Can you give me sometime to think about how to fix that?
+You can go ahead with keeping this change in v2.
