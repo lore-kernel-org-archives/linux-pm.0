@@ -1,187 +1,134 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH 3/3] ARM: imx: enable imx6q-cpufreq support
-Date: Tue, 8 Jan 2013 14:54:03 +0800
-Message-ID: <1357628043-19256-4-git-send-email-shawn.guo@linaro.org>
-References: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v6 0/4] block layer runtime pm
+Date: Tue, 08 Jan 2013 15:33:23 +0800
+Message-ID: <50EBCBC3.4070606@intel.com>
+References: <Pine.LNX.4.44L0.1301071200420.1658-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from db3ehsobe003.messaging.microsoft.com ([213.199.154.141]:46601
-	"EHLO db3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751586Ab3AHGyw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 01:54:52 -0500
-In-Reply-To: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
+Received: from mga14.intel.com ([143.182.124.37]:52614 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751586Ab3AHHcp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Jan 2013 02:32:45 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1301071200420.1658-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-Update operating-points per hardware document and add support for
-1 GHz and 1.2 GHz frequencies.
+On 01/08/2013 01:11 AM, Alan Stern wrote:
+> On Sun, 6 Jan 2013, Aaron Lu wrote:
+> 
+>> In August 2010, Jens and Alan discussed about "Runtime PM and the block
+>> layer". http://marc.info/?t=128259108400001&r=1&w=2
+>> And then Alan has given a detailed implementation guide:
+>> http://marc.info/?l=linux-scsi&m=133727953625963&w=2
+>>
+>> To test:
+>> # ls -l /sys/block/sda
+>> /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda
+>>
+>> # echo 10000 > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/autosuspend_delay_ms
+>> # echo auto > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/control
+>> Then you'll see sda is suspended after 10secs idle.
+>>
+>> [ 1767.680192] sd 2:0:0:0: [sda] Synchronizing SCSI cache
+>> [ 1767.680317] sd 2:0:0:0: [sda] Stopping disk
+>>
+>> And if you do some IO, it will resume immediately.
+>> [ 1791.052438] sd 2:0:0:0: [sda] Starting disk
+>>
+>> For test, I often set the autosuspend time to 1 second. If you are using
+>> a GUI, the 10 seconds delay may be too long that the disk can not enter
+>> runtime suspended state.
+>>
+>> Note that sd's runtime suspend callback will dump some kernel messages
+>> and the syslog daemon will write kernel message to /var/log/messages,
+>> making the disk instantly resume after suspended. So for test, the
+>> syslog daemon should better be temporarily stopped.
+>>
+>> v6:
+>> Take over from Lin Ming.
+>>
+>> - Instead of put the device into autosuspend state in
+>>   blk_post_runtime_suspend, do it when the last request is finished.
+>>   This can also solve the problem illustrated below:
+>>
+>>       thread A				      thread B
+>> |suspend timer expired			|
+>> |  ... ...				|a new request comes in,
+>> |  ... ...				|blk_pm_add_request
+>> |  ... ...				|skip request_resume due to
+>> |  ... ...				|q->status is still RPM_ACTIVE
+>> |  rpm_suspend				|  ... ...
+>> |    scsi_runtime_suspend		|  ... ...
+>> |      blk_pre_runtime_suspend		|  ... ...
+>> |      return -EBUSY due to nr_pending	|  ... ...
+>> |  rpm_suspend done			|  ... ...
+>> |					|    blk_pm_put_request, mark last busy
+>>
+>> But no more trigger point, and the device will stay at RPM_ACTIVE state.
+>> Run pm_runtime_autosuspend after the last request is finished solved
+>> this problem.
+> 
+> This doesn't look like the best solution, because it involves adding a 
+> nontrivial routine (pm_runtime_autosuspend) to a hot path.
 
-400 MHz, 800 MHz and 1 GHz should be supported by all i.MX6Q chips,
-while 1.2 GHz support needs to know from OTP fuse bit.
+Oh right, I didn't realize this. Thanks for pointing this out.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- arch/arm/boot/dts/imx6q.dtsi   |   19 ++++++++----
- arch/arm/mach-imx/mach-imx6q.c |   64 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 77 insertions(+), 6 deletions(-)
+> 
+> How about this instead?  When blk_pre_runtime_suspend returns -EBUSY,
+> have it do a mark-last-busy.  Then rpm_suspend will automatically
+> reschedule the autosuspend for later.
 
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index d6265ca..17c5618 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -38,12 +38,18 @@
- 			next-level-cache = <&L2>;
- 			operating-points = <
- 				/* kHz    uV */
--				792000  1100000
-+				996000  1250000
-+				792000  1150000
- 				396000  950000
--				198000  850000
- 			>;
- 			clock-latency = <61036>; /* two CLK32 periods */
--			cpu0-supply = <&reg_cpu>;
-+			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
-+				 <&clks 17>, <&clks 170>;
-+			clock-names = "arm", "pll2_pfd2_396m", "step",
-+				      "pll1_sw", "pll1_sys";
-+			arm-supply = <&reg_arm>;
-+			pu-supply = <&reg_pu>;
-+			soc-supply = <&reg_soc>;
- 		};
- 
- 		cpu@1 {
-@@ -471,7 +477,7 @@
- 					anatop-max-voltage = <2750000>;
- 				};
- 
--				reg_cpu: regulator-vddcore@140 {
-+				reg_arm: regulator-vddcore@140 {
- 					compatible = "fsl,anatop-regulator";
- 					regulator-name = "cpu";
- 					regulator-min-microvolt = <725000>;
-@@ -485,7 +491,7 @@
- 					anatop-max-voltage = <1450000>;
- 				};
- 
--				regulator-vddpu@140 {
-+				reg_pu: regulator-vddpu@140 {
- 					compatible = "fsl,anatop-regulator";
- 					regulator-name = "vddpu";
- 					regulator-min-microvolt = <725000>;
-@@ -499,7 +505,7 @@
- 					anatop-max-voltage = <1450000>;
- 				};
- 
--				regulator-vddsoc@140 {
-+				reg_soc: regulator-vddsoc@140 {
- 					compatible = "fsl,anatop-regulator";
- 					regulator-name = "vddsoc";
- 					regulator-min-microvolt = <725000>;
-@@ -965,6 +971,7 @@
- 			};
- 
- 			ocotp@021bc000 {
-+				compatible = "fsl,imx6q-ocotp";
- 				reg = <0x021bc000 0x4000>;
- 			};
- 
-diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-imx6q.c
-index 4eb1b3a..26f63f28 100644
---- a/arch/arm/mach-imx/mach-imx6q.c
-+++ b/arch/arm/mach-imx/mach-imx6q.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/clk.h>
- #include <linux/clkdev.h>
-+#include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/delay.h>
- #include <linux/export.h>
-@@ -22,6 +23,7 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
-+#include <linux/opp.h>
- #include <linux/phy.h>
- #include <linux/regmap.h>
- #include <linux/micrel_phy.h>
-@@ -209,9 +211,71 @@ static struct cpuidle_driver imx6q_cpuidle_driver = {
- 	.state_count		= 1,
- };
- 
-+#define OCOTP_CFG3			0x440
-+#define OCOTP_CFG3_SPEED_SHIFT		16
-+#define OCOTP_CFG3_SPEED_1P2GHZ		0x3
-+
-+static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
-+{
-+	struct device_node *np;
-+	void __iomem *base;
-+	u32 val;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		pr_warn("failed to map ocotp\n");
-+		goto put_node;
-+	}
-+
-+	val = readl_relaxed(base + OCOTP_CFG3);
-+	val >>= OCOTP_CFG3_SPEED_SHIFT;
-+	if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
-+		if (opp_add(cpu_dev, 1200000000, 1275000))
-+			pr_warn("failed to add 1.2 GHz operating point\n");
-+
-+put_node:
-+	of_node_put(np);
-+}
-+
-+static void __init imx6q_opp_init(void)
-+{
-+	struct device *cpu_dev;
-+	struct device_node *np;
-+
-+	np = of_find_node_by_path("/cpus/cpu@0");
-+	if (!np) {
-+		pr_warn("failed to find cpu0 node\n");
-+		return;
-+	}
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev) {
-+		pr_warn("failed to get cpu0 device\n");
-+		goto put_node;
-+	}
-+
-+	cpu_dev->of_node = np;
-+	if (of_init_opp_table(cpu_dev))
-+		pr_warn("failed to init OPP table\n");
-+
-+	imx6q_opp_check_1p2ghz(cpu_dev);
-+
-+put_node:
-+	of_node_put(np);
-+}
-+
- static void __init imx6q_init_late(void)
- {
- 	imx_cpuidle_init(&imx6q_cpuidle_driver);
-+
-+	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
-+		struct platform_device_info pdevinfo = {
-+			.name = "imx6q_cpufreq",
-+		};
-+		imx6q_opp_init();
-+		platform_device_register_full(&pdevinfo);
-+	}
- }
- 
- static void __init imx6q_map_io(void)
--- 
-1.7.9.5
+Yes, this is better.
 
+> 
+>> - Requests which have the REQ_PM flag should not involve nr_pending
+>>   counting, or we may lose the condition to resume the device:
+>>   Suppose queue is active and nr_pending is 0. Then a REQ_PM request
+>>   comes and nr_pending will be increased to 1, but since the request has
+>>   REQ_PM flag, it will not cause resume. Before it is finished, a normal
+>>   request comes in, and since nr_pending is 1 now, it will not trigger
+>>   the resume of the device either. Bug.
+>>
+>> - Do not quiesce the device in scsi bus level runtime suspend callback.
+>>   Since the only reason the device is to be runtime suspended is due to
+>>   no more requests pending for it, quiesce it is pointless.
+>>
+>> - Remove scsi_autopm_* from sd_check_events as we are request driven.
+>>
+>> - Call blk_pm_runtime_init in scsi_sysfs_initialize_dev, so that we do
+>>   not need to check queue's device in blk_pm_add/put_request.
+> 
+> I think you still need to have that check.  After all, the block layer 
+> has other users besides the SCSI stack, and those users don't call 
+> blk_pm_runtime_init.
+
+Right...
+
+So this also reminds me that as long as CONFIG_PM_RUNTIME is selected,
+the blk_pm_add/put/peek_request functions will be in the block IO path.
+Shall we introduce a new config option to selectively build block
+runtime PM functionality? something like CONFIG_BLK_PM_RUNTIME perhaps?
+
+Just some condition checks in those functions, not sure if it is worth a
+new config though. Please suggest, thanks.
+
+> 
+>> - Do not mark last busy and initiate an autosuspend for the device in
+>>   blk_pm_runtime_init function.
+>>
+>> - Do not mark last busy and initiate an autosuspend for the device in
+>>   block_post_runtime_resume, as when the request that triggered the
+>>   resume finished, the blk_pm_put_request will mark last busy and
+>>   initiate an autosuspend.
+> 
+> If you make the change that I recommended above then this is still 
+> necessary.
+
+Yes, they are needed. Thanks!
+
+-Aaron
 
