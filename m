@@ -1,31 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: add imx6q-cpufreq driver
-Date: Tue, 8 Jan 2013 20:49:14 +0530
-Message-ID: <CAKohpo=yahfREsWvCPN6BjoxiifKZWCM19-mLEvao0e4UCT6Vg@mail.gmail.com>
-References: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
-	<1357628043-19256-3-git-send-email-shawn.guo@linaro.org>
-	<CAOh2x=mv9_iWt+y9cP0oA4WKs86Ne9nRP6CgKy_1COnPm57YOA@mail.gmail.com>
-	<20130108143554.GC19534@S2101-09.ap.freescale.net>
-	<CAKohpomQuoUgPVp6e9_UrK0sk+z26cG36DoxH91LWSmBHD36BQ@mail.gmail.com>
-	<20130108150357.GD19534@S2101-09.ap.freescale.net>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v6 3/4] block: implement runtime pm strategy
+Date: Tue, 8 Jan 2013 10:22:45 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301081016310.1535-100000@iolanthe.rowland.org>
+References: <50EBCC93.5000203@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:55738 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616Ab3AHPTP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 10:19:15 -0500
-Received: by mail-ob0-f182.google.com with SMTP id 16so469165obc.27
-        for <linux-pm@vger.kernel.org>; Tue, 08 Jan 2013 07:19:14 -0800 (PST)
-In-Reply-To: <20130108150357.GD19534@S2101-09.ap.freescale.net>
+Received: from iolanthe.rowland.org ([192.131.102.54]:34886 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756598Ab3AHPWq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 10:22:46 -0500
+In-Reply-To: <50EBCC93.5000203@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On 8 January 2013 20:34, Shawn Guo <shawn.guo@linaro.org> wrote:
-> I'm seeing that the .init() will be called on cpu1 when removing the
-> module.
+On Tue, 8 Jan 2013, Aaron Lu wrote:
 
-Hmm... Can you give me sometime to think about how to fix that?
-You can go ahead with keeping this change in v2.
+> >> --- a/include/linux/blkdev.h
+> >> +++ b/include/linux/blkdev.h
+> >> @@ -974,6 +974,40 @@ extern int blk_pre_runtime_suspend(struct request_queue *q);
+> >>  extern void blk_post_runtime_suspend(struct request_queue *q, int err);
+> >>  extern void blk_pre_runtime_resume(struct request_queue *q);
+> >>  extern void blk_post_runtime_resume(struct request_queue *q, int err);
+> >> +
+> >> +static inline void blk_pm_put_request(struct request *rq)
+> >> +{
+> >> +	if (!(rq->cmd_flags & REQ_PM) && !--rq->q->nr_pending) {
+> >> +		pm_runtime_mark_last_busy(rq->q->dev);
+> >> +		pm_runtime_autosuspend(rq->q->dev);
+> >> +	}
+> >> +}
+> >> +
+> >> +static inline struct request *blk_pm_peek_request(
+> >> +	struct request_queue *q, struct request *rq)
+> >> +{
+> >> +	if (q->rpm_status == RPM_SUSPENDED ||
+> >> +		  (q->rpm_status != RPM_ACTIVE && !(rq->cmd_flags & REQ_PM)))
+> >> +		return NULL;
+> >> +	else
+> >> +		return rq;
+> >> +}
+> >> +
+> >> +static inline void blk_pm_requeue_request(struct request *rq)
+> >> +{
+> >> +	if (!(rq->cmd_flags & REQ_PM))
+> >> +		rq->q->nr_pending--;
+> >> +}
+> >> +
+> >> +static inline void blk_pm_add_request(struct request_queue *q,
+> >> +	struct request *rq)
+> >> +{
+> >> +	if (!(rq->cmd_flags & REQ_PM) &&
+> >> +	    q->nr_pending++ == 0 &&
+> >> +	    (q->rpm_status == RPM_SUSPENDED ||
+> >> +	     q->rpm_status == RPM_SUSPENDING))
+> >> +		pm_request_resume(q->dev);
+> >> +}
+> > 
+> > These routines also don't belong in include/linux.  And they don't need 
+> > to be marked inline.
+> 
+> OK, will move them.
+> 
+> What about create a new file blk-pm.c for all these block pm related
+> code?
+
+Sure, go ahead if Jens doesn't mind.  Alternatively, you could put each
+of these functions in the file where it gets used.
+
+Just as importantly, all of the public routines added in patch 2/4 to
+blk-core.c should have kerneldoc explaining how and where to use them.  
+In particular, the kerneldoc for blk_pm_runtime_init() has to mention
+that the block runtime PM implementation works only for drivers that
+use request structures for their I/O; it doesn't work for drivers that
+use bio's directly.
+
+Alan Stern
+
