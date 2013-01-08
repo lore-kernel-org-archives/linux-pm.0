@@ -1,254 +1,43 @@
-From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Subject: [RFC PATCH] PM / devfreq: Add runtime-pm support
-Date: Tue,  8 Jan 2013 12:10:36 +0530
-Message-ID: <1357627236-16485-1-git-send-email-rajagopal.venkat@linaro.org>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH 0/3] Add imx6q-cpufreq driver support
+Date: Tue, 8 Jan 2013 14:54:00 +0800
+Message-ID: <1357628043-19256-1-git-send-email-shawn.guo@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f52.google.com ([209.85.160.52]:46078 "EHLO
-	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083Ab3AHGor (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 01:44:47 -0500
-Received: by mail-pb0-f52.google.com with SMTP id ro2so52851pbb.11
-        for <linux-pm@vger.kernel.org>; Mon, 07 Jan 2013 22:44:46 -0800 (PST)
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:45412 "EHLO
+	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750990Ab3AHGyi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 01:54:38 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, mturquette@linaro.org, rjw@sisk.pl
-Cc: patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rajagopal Venkat <rajagopal.venkat@linaro.org>
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>
 
-Instead of devfreq device driver explicitly calling devfreq suspend
-and resume apis perhaps from runtime-pm suspend and resume callbacks,
-let devfreq core handle it automatically.
+The generic cpufreq-cpu0 driver works well for imx6q before.  But it
+does not work for 1 GHz and 1.2 GHz operating points the series adds
+here.  We ended up with having to add an imx6q specific cpufreq driver
+to handle those special frequency and voltage scaling requirements for
+the new operating points.
 
-Attach devfreq core to runtime-pm framework so that, devfreq device
-driver pm_runtime_suspend() will automatically suspend the devfreq
-and pm_runtime_resume() will resume the devfreq.
+I expect patches #1 and #2 go via cpufreq tree and the #3 through
+arm-soc tree.
 
-Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
----
- drivers/devfreq/devfreq.c |   89 ++++++++++++++++++++++++++++++++++++++-------
- include/linux/devfreq.h   |   12 ------
- 2 files changed, 76 insertions(+), 25 deletions(-)
+Shawn Guo (3):
+  PM / OPP: Export more symbols for module usage
+  cpufreq: add imx6q-cpufreq driver
+  ARM: imx: enable imx6q-cpufreq support
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4c50235..781ea47 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -25,10 +25,9 @@
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-+#include <linux/pm_runtime.h>
- #include "governor.h"
- 
--static struct class *devfreq_class;
--
- /*
-  * devfreq core provides delayed work based load monitoring helper
-  * functions. Governors can use these or can implement their own
-@@ -42,6 +41,9 @@ static LIST_HEAD(devfreq_governor_list);
- static LIST_HEAD(devfreq_list);
- static DEFINE_MUTEX(devfreq_list_lock);
- 
-+static int devfreq_suspend_device(struct devfreq *devfreq);
-+static int devfreq_resume_device(struct devfreq *devfreq);
-+
- /**
-  * find_device_devfreq() - find devfreq struct using device pointer
-  * @dev:	device pointer used to lookup device devfreq.
-@@ -453,6 +455,61 @@ static void devfreq_dev_release(struct device *dev)
- 	_remove_devfreq(devfreq, true);
- }
- 
-+static int devfreq_runtime_suspend(struct device *dev)
-+{
-+	int ret;
-+	struct devfreq *devfreq;
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	ret = devfreq_suspend_device(devfreq);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = pm_generic_runtime_suspend(dev);
-+out:
-+	return ret;
-+}
-+
-+static int devfreq_runtime_resume(struct device *dev)
-+{
-+	int ret;
-+	struct devfreq *devfreq;
-+
-+	mutex_lock(&devfreq_list_lock);
-+	devfreq = find_device_devfreq(dev);
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	ret = devfreq_resume_device(devfreq);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = pm_generic_runtime_resume(dev);
-+out:
-+	return ret;
-+}
-+
-+static int devfreq_runtime_idle(struct device *dev)
-+{
-+	return pm_generic_runtime_idle(dev);
-+}
-+
-+static const struct dev_pm_ops devfreq_pm_ops = {
-+	SET_RUNTIME_PM_OPS(
-+		devfreq_runtime_suspend,
-+		devfreq_runtime_resume,
-+		devfreq_runtime_idle
-+	)
-+};
-+
-+static struct class devfreq_class = {
-+	.name = "devfreq",
-+	.owner = THIS_MODULE,
-+	.pm = &devfreq_pm_ops,
-+};
-+
- /**
-  * devfreq_add_device() - Add devfreq feature to the device
-  * @dev:	the device to add devfreq feature.
-@@ -494,8 +551,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	mutex_init(&devfreq->lock);
- 	mutex_lock(&devfreq->lock);
-+	dev->class = &devfreq_class;
- 	devfreq->dev.parent = dev;
--	devfreq->dev.class = devfreq_class;
-+	devfreq->dev.class = &devfreq_class;
- 	devfreq->dev.release = devfreq_dev_release;
- 	devfreq->profile = profile;
- 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
-@@ -538,6 +596,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_init;
- 	}
- 
-+	pm_runtime_get_noresume(dev);
-+	pm_runtime_set_active(dev);
-+
- 	return devfreq;
- 
- err_init:
-@@ -569,7 +630,7 @@ EXPORT_SYMBOL(devfreq_remove_device);
-  * devfreq_suspend_device() - Suspend devfreq of a device.
-  * @devfreq: the devfreq instance to be suspended
-  */
--int devfreq_suspend_device(struct devfreq *devfreq)
-+static int devfreq_suspend_device(struct devfreq *devfreq)
- {
- 	if (!devfreq)
- 		return -EINVAL;
-@@ -580,13 +641,12 @@ int devfreq_suspend_device(struct devfreq *devfreq)
- 	return devfreq->governor->event_handler(devfreq,
- 				DEVFREQ_GOV_SUSPEND, NULL);
- }
--EXPORT_SYMBOL(devfreq_suspend_device);
- 
- /**
-  * devfreq_resume_device() - Resume devfreq of a device.
-  * @devfreq: the devfreq instance to be resumed
-  */
--int devfreq_resume_device(struct devfreq *devfreq)
-+static int devfreq_resume_device(struct devfreq *devfreq)
- {
- 	if (!devfreq)
- 		return -EINVAL;
-@@ -597,12 +657,12 @@ int devfreq_resume_device(struct devfreq *devfreq)
- 	return devfreq->governor->event_handler(devfreq,
- 				DEVFREQ_GOV_RESUME, NULL);
- }
--EXPORT_SYMBOL(devfreq_resume_device);
- 
- /**
-  * devfreq_add_governor() - Add devfreq governor
-  * @governor:	the devfreq governor to be added
-  */
-+
- int devfreq_add_governor(struct devfreq_governor *governor)
- {
- 	struct devfreq_governor *g;
-@@ -770,6 +830,7 @@ out:
- 		ret = count;
- 	return ret;
- }
-+
- static ssize_t show_available_governors(struct device *d,
- 				    struct device_attribute *attr,
- 				    char *buf)
-@@ -992,19 +1053,21 @@ static struct device_attribute devfreq_attrs[] = {
- 
- static int __init devfreq_init(void)
- {
--	devfreq_class = class_create(THIS_MODULE, "devfreq");
--	if (IS_ERR(devfreq_class)) {
-+	int err;
-+
-+	err = class_register(&devfreq_class);
-+	if (err < 0) {
- 		pr_err("%s: couldn't create class\n", __FILE__);
--		return PTR_ERR(devfreq_class);
-+		return err;
- 	}
- 
- 	devfreq_wq = create_freezable_workqueue("devfreq_wq");
- 	if (IS_ERR(devfreq_wq)) {
--		class_destroy(devfreq_class);
-+		class_unregister(&devfreq_class);
- 		pr_err("%s: couldn't create workqueue\n", __FILE__);
- 		return PTR_ERR(devfreq_wq);
- 	}
--	devfreq_class->dev_attrs = devfreq_attrs;
-+	devfreq_class.dev_attrs = devfreq_attrs;
- 
- 	return 0;
- }
-@@ -1012,7 +1075,7 @@ subsys_initcall(devfreq_init);
- 
- static void __exit devfreq_exit(void)
- {
--	class_destroy(devfreq_class);
-+	class_unregister(&devfreq_class);
- 	destroy_workqueue(devfreq_wq);
- }
- module_exit(devfreq_exit);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index e83ef39..b84840c 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -181,8 +181,6 @@ extern struct devfreq *devfreq_add_device(struct device *dev,
- 				  const char *governor_name,
- 				  void *data);
- extern int devfreq_remove_device(struct devfreq *devfreq);
--extern int devfreq_suspend_device(struct devfreq *devfreq);
--extern int devfreq_resume_device(struct devfreq *devfreq);
- 
- /* Helper functions for devfreq user device driver with OPP. */
- extern struct opp *devfreq_recommended_opp(struct device *dev,
-@@ -226,16 +224,6 @@ static int devfreq_remove_device(struct devfreq *devfreq)
- 	return 0;
- }
- 
--static int devfreq_suspend_device(struct devfreq *devfreq)
--{
--	return 0;
--}
--
--static int devfreq_resume_device(struct devfreq *devfreq)
--{
--	return 0;
--}
--
- static struct opp *devfreq_recommended_opp(struct device *dev,
- 					   unsigned long *freq, u32 flags)
- {
+ arch/arm/boot/dts/imx6q.dtsi    |   19 ++-
+ arch/arm/mach-imx/mach-imx6q.c  |   64 ++++++++
+ drivers/base/power/opp.c        |    2 +
+ drivers/cpufreq/Kconfig.arm     |    9 ++
+ drivers/cpufreq/Makefile        |    1 +
+ drivers/cpufreq/imx6q-cpufreq.c |  325 +++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 414 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
+
 -- 
-1.7.10.4
+1.7.9.5
+
 
