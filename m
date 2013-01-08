@@ -1,166 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.8-rc3
-Date: Tue, 08 Jan 2013 00:53:14 +0100
-Message-ID: <1839593.9xn3VhCMTU@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Subject: [PATCH 1/3] PM / devfreq: set min/max freq limit from freq table
+Date: Tue,  8 Jan 2013 11:20:37 +0530
+Message-ID: <1357624239-13938-1-git-send-email-rajagopal.venkat@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f43.google.com ([209.85.210.43]:59132 "EHLO
+	mail-da0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911Ab3AHFye (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 00:54:34 -0500
+Received: by mail-da0-f43.google.com with SMTP id u36so21826dak.2
+        for <linux-pm@vger.kernel.org>; Mon, 07 Jan 2013 21:54:32 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, mturquette@linaro.org, rjw@sisk.pl
+Cc: patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rajagopal Venkat <rajagopal.venkat@linaro.org>
 
-Hi Linus,
+Set devfreq device min and max frequency limits when device
+is added to devfreq, provided frequency table is supplied.
+This helps governors to suggest target frequency with in
+limits.
 
-Please pull from the git repository at
+Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+---
+ drivers/devfreq/devfreq.c |   24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+=
-acpi-for-3.8-rc3
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a8f0173..5782c9b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -69,6 +69,29 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+ }
+ 
+ /**
++ * devfreq_set_freq_limits() - Set min and max frequency from freq_table
++ * @devfreq:	the devfreq instance
++ */
++static void devfreq_set_freq_limits(struct devfreq *devfreq)
++{
++	int idx;
++	unsigned long min = ~0, max = 0;
++
++	if (!devfreq->profile->freq_table)
++		return;
++
++	for (idx = 0; idx < devfreq->profile->max_state; idx++) {
++		if (min > devfreq->profile->freq_table[idx])
++			min = devfreq->profile->freq_table[idx];
++		if (max < devfreq->profile->freq_table[idx])
++			max = devfreq->profile->freq_table[idx];
++	}
++
++	devfreq->min_freq = min;
++	devfreq->max_freq = max;
++}
++
++/**
+  * devfreq_get_freq_level() - Lookup freq_table for the frequency
+  * @devfreq:	the devfreq instance
+  * @freq:	the target frequency
+@@ -476,6 +499,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 						devfreq->profile->max_state,
+ 						GFP_KERNEL);
+ 	devfreq->last_stat_updated = jiffies;
++	devfreq_set_freq_limits(devfreq);
+ 
+ 	dev_set_name(&devfreq->dev, dev_name(dev));
+ 	err = device_register(&devfreq->dev);
+-- 
+1.7.10.4
 
-to receive ACPI and power management fixes for v3.8-rc3 with top-most c=
-ommit
-f67ffa95836b31be5d8fe336aee3bfc6412c5696
-
-  Merge branch 'pm-sleep'
-
-on top of commit d1c3ed669a2d452cacfb48c2d171a1f364dae2ed
-
-  Linux 3.8-rc2
-
-Included are:
-
-* Removal of some ACPICA code that the kernel will never use from Lv Zh=
-eng.
-
-* APEI fix for erst_dbg_read() return value when persistent store is em=
-pty
-  initially from Adrian Huang.
-
-* Removal of some unnecessary code from ACPI memory hotplug driver from
-  Liu Jinsong.
-
-* ACPI power management fixes preventing useless messages from being pr=
-inted
-  and correcting acpi_bus_get_device() result check.
-
-* ACPI debug code fix to prevent some debug messages from being printed
-  with levels greater than KERN_DEBUG from Joe Perches.
-
-* ACPI namespace scanning code fix to make system bus device nodes (lik=
-e _SB)
-  get the right names (-stable material).
-
-* PNP resources handling fixes from Witold Szczeponik.
-
-* cpuidle fix for a recent regression stalling boot on systems with gre=
-at
-  numbers (like hundreds) of CPUs from Daniel Lezcano.
-
-* cpuidle fixes (one of them being -stable material) from Sivaram Nair.
-
-* intel_idle debug message fix from Youquan Song.
-
-* cpufreq build regression fix from Larry Finger.
-
-* cpufreq fix for an obscure initialization race related to statistics =
-from
-  Konstantin Khlebnikov.
-
-* cpufreq change disabling the Longhaul driver by default (which appare=
-ntly
-  is hopless to debug and fix) from Rafa=C5=82 Bilski.
-
-* PM core fix preventing device suspend errors from happening during sy=
-stem
-  suspend due to obscure race conditions (-stable material).
-
-* PM QoS local variable name cleanup.
-
-Thanks!
-
-
- Documentation/power/runtime_pm.txt |   9 +-
- drivers/acpi/acpi_memhotplug.c     |  18 --
- drivers/acpi/acpica/Makefile       |   2 +-
- drivers/acpi/acpica/utclib.c       | 749 -----------------------------=
-----------------
- drivers/acpi/apei/erst-dbg.c       |  11 +-
- drivers/acpi/device_pm.c           |   3 +-
- drivers/acpi/glue.c                |   9 +-
- drivers/acpi/power.c               |  11 +-
- drivers/acpi/scan.c                |   2 +-
- drivers/base/power/main.c          |   9 +-
- drivers/base/power/qos.c           |  10 +-
- drivers/cpufreq/Kconfig            |   5 +
- drivers/cpufreq/Makefile           |   5 +-
- drivers/cpufreq/cpufreq_stats.c    |  11 +-
- drivers/cpufreq/longhaul.c         |  10 +-
- drivers/cpuidle/coupled.c          |   2 +-
- drivers/cpuidle/cpuidle.c          |   2 +-
- drivers/cpuidle/driver.c           |   8 +-
- drivers/cpuidle/governors/menu.c   |   2 +-
- drivers/idle/intel_idle.c          |   2 +-
- drivers/pnp/interface.c            | 105 ++++---
- drivers/pnp/manager.c              |  25 +-
- 22 files changed, 154 insertions(+), 856 deletions(-)
-
----------------
-
-Adrian Huang (1):
-      ACPI / APEI: Fix the returned value in erst_dbg_read
-
-Daniel Lezcano (1):
-      cpuidle: fix lock contention in the idle path
-
-Joe Perches (1):
-      ACPI / glue: Update DBG macro to include KERN_DEBUG
-
-Konstantin Khlebnikov (1):
-      cpufreq / stats: fix race between stats allocation and first usag=
-e
-
-Larry Finger (1):
-      cpufreq / governor: Fix problem with cpufreq_ondemand or cpufreq_=
-conservative
-
-Liu Jinsong (1):
-      ACPI / memhotplug: remove redundant logic of acpi memory hotadd
-
-Lv Zheng (1):
-      ACPICA: Remove useless mini-C library.
-
-Rafael J. Wysocki (5):
-      ACPI / PM: Do not apply ACPI_SUCCESS() to acpi_bus_get_device() r=
-esult
-      ACPI / power: Remove useless message from device registering rout=
-ine
-      ACPI / scan: Do not use dummy HID for system bus ACPI nodes
-      PM / QoS: Rename local variable in dev_pm_qos_add_ancestor_reques=
-t()
-      PM: Move disabling/enabling runtime PM to late suspend/early resu=
-me
-
-Rafa=C5=82 Bilski (1):
-      cpufreq / Longhaul: Disable driver by default
-
-Sivaram Nair (2):
-      cpuidle: Fix finding state with min power_usage
-      cpuidle / coupled: fix ready counter decrement
-
-Witold Szczeponik (2):
-      PNP: Simplify setting of resources
-      PNP: Handle IORESOURCE_BITS in resource allocation
-
-Youquan Song (1):
-      intel_idle: pr_debug information need separated
-
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
