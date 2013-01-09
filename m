@@ -1,58 +1,64 @@
 From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
-Date: Wed, 9 Jan 2013 09:00:23 -0800
-Message-ID: <20130109170023.GA7068@kroah.com>
+Subject: Re: [PATCH 3/9] Thermal: Add APIs to bind cdev to new zone structure
+Date: Wed, 9 Jan 2013 09:01:23 -0800
+Message-ID: <20130109170123.GB7068@kroah.com>
 References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <1357542806-20449-8-git-send-email-durgadoss.r@intel.com>
- <20130107192414.GC4465@kroah.com>
- <4D68720C2E767A4AA6A8796D42C8EB59257F01@BGSMSX101.gar.corp.intel.com>
+ <1357542806-20449-4-git-send-email-durgadoss.r@intel.com>
+ <20130107192602.GD4465@kroah.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59257F38@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59257F01@BGSMSX101.gar.corp.intel.com>
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59257F38@BGSMSX101.gar.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "R, Durgadoss" <durgadoss.r@intel.com>
 Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 09, 2013 at 09:12:29AM +0000, R, Durgadoss wrote:
-> Hi Greg,
-> 
+On Wed, Jan 09, 2013 at 09:21:23AM +0000, R, Durgadoss wrote:
 > > -----Original Message-----
 > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
-> > Sent: Tuesday, January 08, 2013 12:54 AM
+> > Sent: Tuesday, January 08, 2013 12:56 AM
 > > To: R, Durgadoss
 > > Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
 > > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
-> > Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+> > Subject: Re: [PATCH 3/9] Thermal: Add APIs to bind cdev to new zone
+> > structure
 > > 
-> > On Mon, Jan 07, 2013 at 12:43:24PM +0530, Durgadoss R wrote:
-> > > This patch makes MAX_SENSORS_PER_ZONE and
-> > > MAX_CDEVS_PER_ZONE values configurable. The
-> > > default value is 1, and range is 1-12.
+> > On Mon, Jan 07, 2013 at 12:43:20PM +0530, Durgadoss R wrote:
+> > > +struct thermal_cooling_device *get_cdev_by_name(const char *name)
+> > > +{
+> > > +	struct thermal_cooling_device *pos;
+> > > +	struct thermal_cooling_device *cdev = NULL;
+> > > +
+> > > +	mutex_lock(&cdev_list_lock);
+> > > +	for_each_cdev(pos) {
+> > > +		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
+> > > +			cdev = pos;
+> > > +			break;
+> > > +		}
+> > > +	}
+> > > +	mutex_unlock(&cdev_list_lock);
+> > > +	return cdev;
+> > > +}
+> > > +EXPORT_SYMBOL(get_cdev_by_name);
 > > 
-> > Why would we ever want to change this?  Why make this configurable at
-> > all, how is a distro supposed to set this value?
-> > 
-> > Shouldn't it be specified from the driver itself?
+> > EXPORT_SYMBOL_GPL?
 > 
-> These are platform level parameters, that can differ for various platforms.
-> (Mostly due to board design and thermistor layouts). Stand-alone thermal
-> sensor drivers are not (need not be) aware of these values.
+> We have all other exports as EXPORT_SYMBOL in this file(thermal_sys.c)
+> If _GPL is required, the we will do a single patch changing all of them to
+> EXPORT_SYMBOL_GPL.
 
-Ok, and how does anyone know how to set them properly?
+Fair enough.
 
-> That's why these values are made configurable.
+> > You also forgot to increment the reference count, which is required for
+> > all reference counted objects.
+> 
+> Sorry, I could not get what you are saying here.
 
-Pushing work onto other people, without telling them what they need to
-do, isn't nice.  Please, either make it auto-configurable, or don't make
-it configurable at all.  As it is, this is useless for a distro, or any
-"normal" user, right?
-
-If these are platform specific things, shouldn't they be defined in the
-platform data for the hardware?
-
-thanks,
+You are doing a "get" call, yet you are failing to increment a reference
+count on the object.  That isn't allowed and can cause bad problems.
+Please use proper reference counting for your structures.
 
 greg k-h
