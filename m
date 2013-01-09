@@ -1,90 +1,71 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v11 3/9] libata: identify and init ZPODD devices
-Date: Wed, 09 Jan 2013 11:20:37 +0800
-Message-ID: <50ECE205.3000005@intel.com>
-References: <1357440509-28108-1-git-send-email-aaron.lu@intel.com> <1357440509-28108-4-git-send-email-aaron.lu@intel.com> <20130107182052.GP3926@htj.dyndns.org> <50EBE1E2.5080406@intel.com> <20130108175202.GZ3926@htj.dyndns.org>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 2/5 RESEND] thermal: exynos: Miscellaneous fixes to
+ support falling threshold interrupt
+Date: Tue, 8 Jan 2013 20:30:55 -0800
+Message-ID: <CADGdYn4CeWB5zHuHrfSLYsyOCA_zcSgm9LHTwtei1zAhfmDJNQ@mail.gmail.com>
+References: <1353937640-9939-3-git-send-email-amit.kachhap@linaro.org>
+	<1357516248-31350-1-git-send-email-amit.daniel@samsung.com>
+	<1357516522.4940.8.camel@joe-AO722>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:12456 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756279Ab3AIDUA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Jan 2013 22:20:00 -0500
-In-Reply-To: <20130108175202.GZ3926@htj.dyndns.org>
+Received: from mail-ia0-f174.google.com ([209.85.210.174]:62979 "EHLO
+	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756568Ab3AIEa4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 23:30:56 -0500
+In-Reply-To: <1357516522.4940.8.camel@joe-AO722>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Tejun,
+Hi Joe,
 
-On 01/09/2013 01:52 AM, Tejun Heo wrote:
-> Hello, Aaron.
-> 
-> On Tue, Jan 08, 2013 at 05:07:46PM +0800, Aaron Lu wrote:
->>>> +struct zpodd {
->>>> +	bool slot:1;
->>>> +	bool drawer:1;
->>>> +
->>>> +	struct ata_device *dev;
->>>> +};
->>>
->>> Field names are usually indented.  It would be nice to have a comment
+Thanks for the review. Will re-post with your suggestion,
+
+On Sun, Jan 6, 2013 at 3:55 PM, Joe Perches <joe@perches.com> wrote:
+> On Sun, 2013-01-06 at 15:50 -0800, Amit Daniel Kachhap wrote:
+>> Below fixes are done to support falling threshold interrupt,
+>> * Falling interrupt status macro corrected according to exynos5 data sheet.
+>> * The get trend function modified to calculate trip temperature correctly.
+>> * The clearing of interrupt status in the isr is now done after handling
+>>   the event that caused the interrupt.
+> []
+>> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> []
+>> @@ -373,12 +373,19 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
+>>  static int exynos_get_trend(struct thermal_zone_device *thermal,
+>>                       int trip, enum thermal_trend *trend)
+>>  {
+>> -     if (thermal->temperature >= trip)
+>> +     int ret = 0;
+Yes agreed. Will modify it.
+>
+> Unnecessary initialization
+>
+>> +     unsigned long trip_temp;
+>> +
+>> +     ret = exynos_get_trip_temp(thermal, trip, &trip_temp);
+>> +     if (ret < 0)
+>> +             return ret;
+>> +
+>> +     if (thermal->temperature >= trip_temp)
+>>               *trend = THERMAL_TREND_RAISING;
+>>       else
+>>               *trend = THERMAL_TREND_DROPPING;
+>
+> THERMAL_TREND_STABLE ?
+Only 2 trend is sufficient. It is stable for some time as the falling
+threshold interrupt is some units below the trip temp.
+>
 >>
->> checkscript.sh doesn't seem like this if I put a tab around the ':'
->>
->> ERROR: spaces prohibited around that ':' (ctx:VxW)
->> #222: FILE: include/uapi/linux/cdrom.h:915:
->> +	__u8 reserved1:		2;
->>  	              ^
->>
->> Which style should I follow?
-> 
-> struct zpodd {
-> 	bool			slot:1;
-> 	bool			drawer:1;
-> 
-> 	struct ata_device	*dev;
-> };
-
-Oh, got it :-)
-
-> 
->>> explaining synchronization.  Bitfields w/ their implicit RMW ops tend
->>> to make people wonder about what the access rules are.
->>
->> The slot and drawer bit field is assigned only once during ata probe
->> time in EH context, and accessed later in PM's callback context.
->> Not sure what access rule should I describe...
-> 
-> /* init during probe, RO afterwards */ should do but I'd prefer if you
-> stay away from bitfields altogether.  There are cases where bitfields
-> are okay but when you're working across multiple locking domains, it
-> usually is a bad idea because the code which accesses those fields
-> look completely independent while still being able to interact with
-> each other.  They look properly synchronized until you realized they
-> live on the same machine word.
-
-Then I will not use bitfields, I was just thinking to save some space
-and didn't realize it would bring such nasty problems...
-
-> 
->>>> +/*
->>>> + * Per the spec, only slot type and drawer type ODD can be supported
->>>> + *
->>>> + * Return 0 for slot type, 1 for drawer, -ENODEV for other types or on error.
->>>> + */
->>>
->>> Maybe bool odd_has_drawer() is better?
->>
->> There are other types of ODD other than slot and drawer, and both slot
->> and drawer type ODDs can be supported for ZPODD. So a bool can't convey
->> such information :-)
-> 
-> Then please make it a proper ATA enum and use it in struct zpodd too.
-
-Sure, and thanks for all the suggestions!
-
--Aaron
-
+>> -     return 0;
+>> +     return ret;
+Ok agreed
+>
+> return 0 is clearer.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
