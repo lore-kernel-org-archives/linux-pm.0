@@ -1,71 +1,59 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH 2/5 RESEND] thermal: exynos: Miscellaneous fixes to
- support falling threshold interrupt
-Date: Tue, 8 Jan 2013 20:30:55 -0800
-Message-ID: <CADGdYn4CeWB5zHuHrfSLYsyOCA_zcSgm9LHTwtei1zAhfmDJNQ@mail.gmail.com>
-References: <1353937640-9939-3-git-send-email-amit.kachhap@linaro.org>
-	<1357516248-31350-1-git-send-email-amit.daniel@samsung.com>
-	<1357516522.4940.8.camel@joe-AO722>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v11 7/9] libata: expose pm qos flags for ata device
+Date: Wed, 09 Jan 2013 13:11:39 +0800
+Message-ID: <50ECFC0B.5070008@intel.com>
+References: <1357440509-28108-1-git-send-email-aaron.lu@intel.com> <1357440509-28108-8-git-send-email-aaron.lu@intel.com> <20130107184358.GT3926@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f174.google.com ([209.85.210.174]:62979 "EHLO
-	mail-ia0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756568Ab3AIEa4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Jan 2013 23:30:56 -0500
-In-Reply-To: <1357516522.4940.8.camel@joe-AO722>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20130107184358.GT3926@htj.dyndns.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Joe,
-
-Thanks for the review. Will re-post with your suggestion,
-
-On Sun, Jan 6, 2013 at 3:55 PM, Joe Perches <joe@perches.com> wrote:
-> On Sun, 2013-01-06 at 15:50 -0800, Amit Daniel Kachhap wrote:
->> Below fixes are done to support falling threshold interrupt,
->> * Falling interrupt status macro corrected according to exynos5 data sheet.
->> * The get trend function modified to calculate trip temperature correctly.
->> * The clearing of interrupt status in the isr is now done after handling
->>   the event that caused the interrupt.
-> []
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-> []
->> @@ -373,12 +373,19 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
->>  static int exynos_get_trend(struct thermal_zone_device *thermal,
->>                       int trip, enum thermal_trend *trend)
->>  {
->> -     if (thermal->temperature >= trip)
->> +     int ret = 0;
-Yes agreed. Will modify it.
->
-> Unnecessary initialization
->
->> +     unsigned long trip_temp;
->> +
->> +     ret = exynos_get_trip_temp(thermal, trip, &trip_temp);
->> +     if (ret < 0)
->> +             return ret;
->> +
->> +     if (thermal->temperature >= trip_temp)
->>               *trend = THERMAL_TREND_RAISING;
->>       else
->>               *trend = THERMAL_TREND_DROPPING;
->
-> THERMAL_TREND_STABLE ?
-Only 2 trend is sufficient. It is stable for some time as the falling
-threshold interrupt is some units below the trip temp.
->
+On 01/08/2013 02:43 AM, Tejun Heo wrote:
+> On Sun, Jan 06, 2013 at 10:48:27AM +0800, Aaron Lu wrote:
+>> Expose pm qos flags to user space so that user has a chance to disable
+>> pm features like power off, if he/she has a broken platform or devices
+>> or simply does not like this pm feature.
 >>
->> -     return 0;
->> +     return ret;
-Ok agreed
->
-> return 0 is clearer.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> This flag is exposed to user space only for ata device or atapi device
+>> that is zero power capable. For normal atapi device, it will never be
+>> powered off.
+>>
+>> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+>> ---
+>>  drivers/ata/libata-acpi.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+>> index e832bf6..5b67be3 100644
+>> --- a/drivers/ata/libata-acpi.c
+>> +++ b/drivers/ata/libata-acpi.c
+>> @@ -17,6 +17,7 @@
+>>  #include <linux/pci.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/pm_runtime.h>
+>> +#include <linux/pm_qos.h>
+>>  #include <scsi/scsi_device.h>
+>>  #include "libata.h"
+>>  
+>> @@ -1022,6 +1023,8 @@ static void ata_acpi_unregister_power_resource(struct ata_device *dev)
+>>  void ata_acpi_bind(struct ata_device *dev)
+>>  {
+>>  	ata_acpi_register_power_resource(dev);
+>> +	if (dev->class == ATA_DEV_ATA || zpodd_dev_enabled(dev))
+>> +		dev_pm_qos_expose_flags(&dev->sdev->sdev_gendev, 0);
+>>  }
+> 
+> Why from ata_acpi_bind()?
+
+I think I should add a check to see if platform can power off the device
+before export this qos flag. The check is done by ACPI, and the qos flag
+is for the scsi device. So looks like this is the proper place?
+
+Thanks,
+Aaron
+
