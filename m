@@ -1,49 +1,63 @@
 From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
-Date: Wed, 9 Jan 2013 09:12:29 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59257F01@BGSMSX101.gar.corp.intel.com>
+Subject: RE: [PATCH 3/9] Thermal: Add APIs to bind cdev to new zone structure
+Date: Wed, 9 Jan 2013 09:21:23 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59257F38@BGSMSX101.gar.corp.intel.com>
 References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <1357542806-20449-8-git-send-email-durgadoss.r@intel.com>
- <20130107192414.GC4465@kroah.com>
+ <1357542806-20449-4-git-send-email-durgadoss.r@intel.com>
+ <20130107192602.GD4465@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:40127 "EHLO mga14.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:46864 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756879Ab3AIJMd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jan 2013 04:12:33 -0500
-In-Reply-To: <20130107192414.GC4465@kroah.com>
+	id S1757420Ab3AIJVr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Jan 2013 04:21:47 -0500
+In-Reply-To: <20130107192602.GD4465@kroah.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Greg KH <gregkh@linuxfoundation.org>
 Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-Hi Greg,
-
 > -----Original Message-----
 > From: Greg KH [mailto:gregkh@linuxfoundation.org]
-> Sent: Tuesday, January 08, 2013 12:54 AM
+> Sent: Tuesday, January 08, 2013 12:56 AM
 > To: R, Durgadoss
 > Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
 > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
-> Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+> Subject: Re: [PATCH 3/9] Thermal: Add APIs to bind cdev to new zone
+> structure
 > 
-> On Mon, Jan 07, 2013 at 12:43:24PM +0530, Durgadoss R wrote:
-> > This patch makes MAX_SENSORS_PER_ZONE and
-> > MAX_CDEVS_PER_ZONE values configurable. The
-> > default value is 1, and range is 1-12.
+> On Mon, Jan 07, 2013 at 12:43:20PM +0530, Durgadoss R wrote:
+> > +struct thermal_cooling_device *get_cdev_by_name(const char *name)
+> > +{
+> > +	struct thermal_cooling_device *pos;
+> > +	struct thermal_cooling_device *cdev = NULL;
+> > +
+> > +	mutex_lock(&cdev_list_lock);
+> > +	for_each_cdev(pos) {
+> > +		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
+> > +			cdev = pos;
+> > +			break;
+> > +		}
+> > +	}
+> > +	mutex_unlock(&cdev_list_lock);
+> > +	return cdev;
+> > +}
+> > +EXPORT_SYMBOL(get_cdev_by_name);
 > 
-> Why would we ever want to change this?  Why make this configurable at
-> all, how is a distro supposed to set this value?
-> 
-> Shouldn't it be specified from the driver itself?
+> EXPORT_SYMBOL_GPL?
 
-These are platform level parameters, that can differ for various platforms.
-(Mostly due to board design and thermistor layouts). Stand-alone thermal
-sensor drivers are not (need not be) aware of these values.
-That's why these values are made configurable.
+We have all other exports as EXPORT_SYMBOL in this file(thermal_sys.c)
+If _GPL is required, the we will do a single patch changing all of them to
+EXPORT_SYMBOL_GPL.
+
+> 
+> You also forgot to increment the reference count, which is required for
+> all reference counted objects.
+
+Sorry, I could not get what you are saying here.
 
 Thanks,
 Durga
