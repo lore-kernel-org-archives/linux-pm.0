@@ -1,60 +1,68 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 5/9] Thermal: Create 'mapX' sysfs node for a zone
-Date: Thu, 10 Jan 2013 12:50:20 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59258F6C@BGSMSX101.gar.corp.intel.com>
-References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <1357542806-20449-6-git-send-email-durgadoss.r@intel.com>
- <20130107192129.GA4465@kroah.com>
+From: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
+Subject: RE: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
+Date: Thu, 10 Jan 2013 13:02:30 +0000
+Message-ID: <B5906170F1614E41A8A28DE3B8D121433ECDFC9B@DBDE01.ent.ti.com>
+References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+ <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
+ <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
+ <20130110110742.GI2265@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13781 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753849Ab3AJMuZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 07:50:25 -0500
-In-Reply-To: <20130107192129.GA4465@kroah.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130110110742.GI2265@S2101-09.ap.freescale.net>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Greg KH
-> Sent: Tuesday, January 08, 2013 12:51 AM
-> To: R, Durgadoss
-> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
-> Subject: Re: [PATCH 5/9] Thermal: Create 'mapX' sysfs node for a zone
+On Thu, Jan 10, 2013 at 16:37:45, Shawn Guo wrote:
+> On Thu, Jan 10, 2013 at 10:50:25AM +0000, Bedia, Vaibhav wrote:
+> ...
+> > > +static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
+> > > +{
+> > > +	struct device_node *np;
+> > > +	void __iomem *base;
+> > > +	u32 val;
+> > > +
+> > > +	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
+> > > +	if (!np) {
+> > > +		pr_warn("failed to find ocotp node\n");
+> > > +		return;
+> > > +	}
+> > > +
+> > > +	base = of_iomap(np, 0);
+> > > +	if (!base) {
+> > > +		pr_warn("failed to map ocotp\n");
+> > > +		goto put_node;
+> > > +	}
+> > > +
+> > > +	val = readl_relaxed(base + OCOTP_CFG3);
+> > > +	val >>= OCOTP_CFG3_SPEED_SHIFT;
+> > > +	if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
+> > > +		if (opp_add(cpu_dev, 1200000000, 1275000))
+> > > +			pr_warn("failed to add 1.2 GHz operating point\n");
+> > > +
+> > 
+> > I just happened to be thinking about the problem of enabling additional OPPs based on
+> > some Si rev info for TI's AM335x. 
+> > 
+> > The other approach could be to register additional OPPs and mark then as disabled to begin with.
+> > A platform specific hook could then be used to selectively enable the OPPs for based on the Si rev
+> > info.
 > 
-> On Mon, Jan 07, 2013 at 12:43:22PM +0530, Durgadoss R wrote:
-> > This patch creates a thermal map sysfs node under
-> > /sys/class/thermal/zoneX/. This contains
-> > entries named map0, map1 .. mapN. Each map has the
-> > following space separated values:
-> > trip_type sensor_name cdev_name trip_mask weights
+> May I ask the advantage of this approach?  I hate to create
+> platform_data merely for passing a platform specific hook to driver.
 > 
-> sysfs file are always "one value per file".  This seems to violate that
-> rule, so please rework this.
 
-These values together represent the binding information of
-sensors and cooling devices in a zone. That's why we put
-them in a single file.
+In the current approach the OPP data is split across DT and kernel code. If you take the
+other approach all OPP entries can reside in DT and for someone just looking at that file
+there's no confusion about what the kernel could potentially support. Whether a particular
+an OPP should be supported is best decided at runtime.
 
->From our previous discussion, I understand we can support
-a lot of nodes in sysfs. So, I will work with Rui to see how we can
-split this in a meaningful way.
+Also, IMHO letting platforms invoke opp_add() is open to abuse and platforms should be
+restricted to invoking opp_enable/disable to indicate what's possible on a particular Si rev. 
 
-Something like:
-map0_trip_type
-map0_sensor_name
-map0_cdev_name
-map0_mask
-etc..
-
-Rui, What do you think ?
-
-Thanks,
-Durga
+Regards,
+Vaibhav
