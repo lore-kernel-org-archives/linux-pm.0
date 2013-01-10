@@ -1,178 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
-Date: Thu, 10 Jan 2013 14:49:10 +0530
-Message-ID: <CAKohpo=1drznitjyZ=JbUgh_vn10D-BhgahPWPobCtmW1uxwiQ@mail.gmail.com>
-References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:46169 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938Ab3AJJTL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 04:19:11 -0500
-Received: by mail-oa0-f45.google.com with SMTP id i18so321006oag.4
-        for <linux-pm@vger.kernel.org>; Thu, 10 Jan 2013 01:19:10 -0800 (PST)
-In-Reply-To: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH v12 1/9] scsi: sr: support runtime pm
+Date: Thu, 10 Jan 2013 17:24:22 +0800
+Message-ID: <1357809870-18816-2-git-send-email-aaron.lu@intel.com>
+References: <1357809870-18816-1-git-send-email-aaron.lu@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1357809870-18816-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>
+Cc: Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lu@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 9 January 2013 16:50, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> +static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
-> +{
+This patch adds runtime pm support for sr.
 
-> +       cpufreq_frequency_table_update_policy_cpu(old_cpu, cpu);
-> +       cpufreq_stats_update_policy_cpu(old_cpu, cpu);
+It did this by increasing the runtime usage_count of the device when:
+- its block device is opened;
+- the events checking is to run.
 
-This looked a bit ugly to me, as there may be other users too who want
-to get this notification and so have below patch for this: pushed in my repo.
+And decreasing the runtime usage_count of the device when:
+- its block device is closed;
+- After the events checking is done.
 
-Tested on TC2. I have tested my patches well now and the activity is over from
-my end now, unless somebody finds something objectionable :)
+The idea is discussed in this mail thread:
+http://thread.gmane.org/gmane.linux.acpi.devel/55243/focus=52703
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index e3f7c7b..8a0b65e0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -990,9 +990,9 @@ module_out:
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/scsi/sr.c | 30 +++++++++++++++++++++++++-----
+ 1 file changed, 25 insertions(+), 5 deletions(-)
 
- static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index 5fc97d2..4d1a610 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -45,6 +45,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
+ #include <asm/uaccess.h>
+ 
+ #include <scsi/scsi.h>
+@@ -146,7 +147,8 @@ static inline struct scsi_cd *scsi_cd_get(struct gendisk *disk)
+ 	kref_get(&cd->kref);
+ 	if (scsi_device_get(cd->device))
+ 		goto out_put;
+-	goto out;
++	if (!scsi_autopm_get_device(cd->device))
++		goto out;
+ 
+  out_put:
+ 	kref_put(&cd->kref, sr_kref_release);
+@@ -162,6 +164,7 @@ static void scsi_cd_put(struct scsi_cd *cd)
+ 
+ 	mutex_lock(&sr_ref_mutex);
+ 	kref_put(&cd->kref, sr_kref_release);
++	scsi_autopm_put_device(sdev);
+ 	scsi_device_put(sdev);
+ 	mutex_unlock(&sr_ref_mutex);
+ }
+@@ -211,7 +214,7 @@ static unsigned int sr_check_events(struct cdrom_device_info *cdi,
+ 				    unsigned int clearing, int slot)
  {
--	unsigned int old_cpu = policy->cpu;
- 	int j;
-
-+	policy->last_cpu = policy->cpu;
- 	policy->cpu = cpu;
-
- 	for_each_cpu(j, policy->cpus) {
-@@ -1001,8 +1001,9 @@ static void update_policy_cpu(struct
-cpufreq_policy *policy, unsigned int cpu)
- 		per_cpu(cpufreq_policy_cpu, j) = cpu;
- 	}
-
--	cpufreq_frequency_table_update_policy_cpu(old_cpu, cpu);
--	cpufreq_stats_update_policy_cpu(old_cpu, cpu);
-+	cpufreq_frequency_table_update_policy_cpu(policy);
-+	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-+			CPUFREQ_UPDATE_POLICY_CPU, policy);
- }
-
- /**
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index b0df77a..2665f0a 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -267,17 +267,17 @@ error_get_fail:
- 	return ret;
- }
-
--void cpufreq_stats_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu)
-+static void cpufreq_stats_update_policy_cpu(struct cpufreq_policy *policy)
- {
--	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, old_cpu);
--
--	pr_debug("Updating stats_table for new_cpu %u from old_cpu %u\n",
--			new_cpu, old_cpu);
--	per_cpu(cpufreq_stats_table, new_cpu) = per_cpu(cpufreq_stats_table,
--			old_cpu);
--	per_cpu(cpufreq_stats_table, old_cpu) = NULL;
--	stat->cpu = new_cpu;
-+	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table,
-+			policy->last_cpu);
-+
-+	pr_debug("Updating stats_table for new_cpu %u from last_cpu %u\n",
-+			policy->cpu, policy->last_cpu);
-+	per_cpu(cpufreq_stats_table, policy->cpu) = per_cpu(cpufreq_stats_table,
-+			policy->last_cpu);
-+	per_cpu(cpufreq_stats_table, policy->last_cpu) = NULL;
-+	stat->cpu = policy->cpu;
- }
-
- static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
-@@ -287,6 +287,12 @@ static int cpufreq_stat_notifier_policy(struct
-notifier_block *nb,
- 	struct cpufreq_policy *policy = data;
- 	struct cpufreq_frequency_table *table;
- 	unsigned int cpu = policy->cpu;
-+
-+	if (val == CPUFREQ_UPDATE_POLICY_CPU) {
-+		cpufreq_stats_update_policy_cpu(policy);
-+		return 0;
-+	}
-+
- 	if (val != CPUFREQ_NOTIFY)
+ 	struct scsi_cd *cd = cdi->handle;
+-	bool last_present;
++	bool last_present = cd->media_present;
+ 	struct scsi_sense_hdr sshdr;
+ 	unsigned int events;
+ 	int ret;
+@@ -220,6 +223,8 @@ static unsigned int sr_check_events(struct cdrom_device_info *cdi,
+ 	if (CDSL_CURRENT != slot)
  		return 0;
- 	table = cpufreq_frequency_get_table(cpu);
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 2c3b07b..281e3b4 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -225,14 +225,13 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu)
+ 
++	scsi_autopm_get_device(cd->device);
++
+ 	events = sr_get_events(cd->device);
+ 	cd->get_event_changed |= events & DISK_EVENT_MEDIA_CHANGE;
+ 
+@@ -246,10 +251,9 @@ static unsigned int sr_check_events(struct cdrom_device_info *cdi,
+ 	}
+ 
+ 	if (!(clearing & DISK_EVENT_MEDIA_CHANGE))
+-		return events;
++		goto out;
+ do_tur:
+ 	/* let's see whether the media is there with TUR */
+-	last_present = cd->media_present;
+ 	ret = scsi_test_unit_ready(cd->device, SR_TIMEOUT, MAX_RETRIES, &sshdr);
+ 
+ 	/*
+@@ -270,7 +274,7 @@ do_tur:
+ 	}
+ 
+ 	if (cd->ignore_get_event)
+-		return events;
++		goto out;
+ 
+ 	/* check whether GET_EVENT is reporting spurious MEDIA_CHANGE */
+ 	if (!cd->tur_changed) {
+@@ -287,6 +291,18 @@ do_tur:
+ 	cd->tur_changed = false;
+ 	cd->get_event_changed = false;
+ 
++out:
++	/*
++	 * If there is no medium detected or the medium has been there
++	 * since last poll, try to suspend the device. Otherwise, keep
++	 * it active for one more poll interval so that if user space
++	 * application opens the block device, we can avoid a runtime
++	 * status change.
++	 */
++	pm_runtime_put_noidle(&cd->device->sdev_gendev);
++	if (!cd->media_present || last_present)
++		pm_runtime_suspend(&cd->device->sdev_gendev);
++
+ 	return events;
  }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_put_attr);
-
--void cpufreq_frequency_table_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu)
-+void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy)
+ 
+@@ -718,6 +734,8 @@ static int sr_probe(struct device *dev)
+ 
+ 	sdev_printk(KERN_DEBUG, sdev,
+ 		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
++	scsi_autopm_put_device(cd->device);
++
+ 	return 0;
+ 
+ fail_put:
+@@ -965,6 +983,8 @@ static int sr_remove(struct device *dev)
  {
--	pr_debug("Updating show_table for new_cpu %u from old_cpu %u\n",
--			new_cpu, old_cpu);
--	per_cpu(cpufreq_show_table, new_cpu) = per_cpu(cpufreq_show_table,
--			old_cpu);
--	per_cpu(cpufreq_show_table, old_cpu) = NULL;
-+	pr_debug("Updating show_table for new_cpu %u from last_cpu %u\n",
-+			policy->cpu, policy->last_cpu);
-+	per_cpu(cpufreq_show_table, policy->cpu) = per_cpu(cpufreq_show_table,
-+			policy->last_cpu);
-+	per_cpu(cpufreq_show_table, policy->last_cpu) = NULL;
- }
+ 	struct scsi_cd *cd = dev_get_drvdata(dev);
+ 
++	scsi_autopm_get_device(cd->device);
++
+ 	blk_queue_prep_rq(cd->device->request_queue, scsi_prep_fn);
+ 	del_gendisk(cd->disk);
+ 
+-- 
+1.7.11.7
 
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index af50dbd..7a3192a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -90,7 +90,9 @@ struct cpufreq_policy {
- 	cpumask_var_t		related_cpus; /* CPUs with any coordination */
- 	unsigned int		shared_type; /* ANY or ALL affected CPUs
- 						should set cpufreq */
--	unsigned int		cpu;    /* cpu nr of registered CPU */
-+	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
-+	unsigned int		last_cpu; /* cpu nr of previous CPU that managed
-+					   * this policy */
- 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
-
- 	unsigned int		min;    /* in kHz */
-@@ -109,10 +111,11 @@ struct cpufreq_policy {
- 	struct completion	kobj_unregister;
- };
-
--#define CPUFREQ_ADJUST		(0)
--#define CPUFREQ_INCOMPATIBLE	(1)
--#define CPUFREQ_NOTIFY		(2)
--#define CPUFREQ_START		(3)
-+#define CPUFREQ_ADJUST			(0)
-+#define CPUFREQ_INCOMPATIBLE		(1)
-+#define CPUFREQ_NOTIFY			(2)
-+#define CPUFREQ_START			(3)
-+#define CPUFREQ_UPDATE_POLICY_CPU	(4)
-
- #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
- #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
-@@ -405,12 +408,8 @@ extern struct freq_attr
-cpufreq_freq_attr_scaling_available_freqs;
-
- void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
- 				      unsigned int cpu);
--void cpufreq_frequency_table_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu);
-+void cpufreq_frequency_table_update_policy_cpu(struct cpufreq_policy *policy);
-
- void cpufreq_frequency_table_put_attr(unsigned int cpu);
-
--void cpufreq_stats_update_policy_cpu(unsigned int old_cpu,
--		unsigned int new_cpu);
--
