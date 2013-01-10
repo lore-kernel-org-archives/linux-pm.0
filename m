@@ -1,56 +1,48 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
-Date: Thu, 10 Jan 2013 19:07:45 +0800
-Message-ID: <20130110110742.GI2265@S2101-09.ap.freescale.net>
+Subject: Re: [PATCH v2 1/2] cpufreq: add imx6q-cpufreq driver
+Date: Thu, 10 Jan 2013 19:55:03 +0800
+Message-ID: <20130110115500.GJ2265@S2101-09.ap.freescale.net>
 References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
- <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
- <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
+ <1357806863-6899-2-git-send-email-shawn.guo@linaro.org>
+ <CAKohpom2Z0LmTNjq6mbZAa=JvQfBeRBzfXU3Jifn8y_C6XJkQw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
+In-Reply-To: <CAKohpom2Z0LmTNjq6mbZAa=JvQfBeRBzfXU3Jifn8y_C6XJkQw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 10, 2013 at 10:50:25AM +0000, Bedia, Vaibhav wrote:
+On Thu, Jan 10, 2013 at 02:15:44PM +0530, Viresh Kumar wrote:
 ...
-> > +static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
-> > +{
-> > +	struct device_node *np;
-> > +	void __iomem *base;
-> > +	u32 val;
-> > +
-> > +	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
-> > +	if (!np) {
-> > +		pr_warn("failed to find ocotp node\n");
-> > +		return;
-> > +	}
-> > +
-> > +	base = of_iomap(np, 0);
-> > +	if (!base) {
-> > +		pr_warn("failed to map ocotp\n");
-> > +		goto put_node;
-> > +	}
-> > +
-> > +	val = readl_relaxed(base + OCOTP_CFG3);
-> > +	val >>= OCOTP_CFG3_SPEED_SHIFT;
-> > +	if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
-> > +		if (opp_add(cpu_dev, 1200000000, 1275000))
-> > +			pr_warn("failed to add 1.2 GHz operating point\n");
-> > +
+> > +       clk_prepare_enable(pll2_pfd2_396m_clk);
+> > +       clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+> > +       clk_set_parent(pll1_sw_clk, step_clk);
+> > +       clk_prepare_enable(pll1_sys_clk);
 > 
-> I just happened to be thinking about the problem of enabling additional OPPs based on
-> some Si rev info for TI's AM335x. 
+> all these fns can fail too.. don't want to check return values?
 > 
-> The other approach could be to register additional OPPs and mark then as disabled to begin with.
-> A platform specific hook could then be used to selectively enable the OPPs for based on the Si rev
-> info.
+I initially had every single clk and regulator call return checked
+and error handled properly.  But the code becomes very messy with
+the error messages and recovering logic all over the places.  I think
+it's a bit over engineering, and made a compromise to only check limited
+ones to ensure the correctness at subsystem level.
 
-May I ask the advantage of this approach?  I hate to create
-platform_data merely for passing a platform specific hook to driver.
+> > +static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+> > +{
+> > +       int ret;
+> > +
+> 
+> So you finally removed the ugly check :)
+> 
+I just found though it's less optimal, removing the check does not
+really cause any problem for me.
+
+> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks.
 
 Shawn
 
