@@ -1,44 +1,187 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH v2 0/2] Add imx6q-cpufreq driver support
-Date: Thu, 10 Jan 2013 16:34:21 +0800
-Message-ID: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+Subject: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
+Date: Thu, 10 Jan 2013 16:34:23 +0800
+Message-ID: <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
+References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:12499
-	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751994Ab3AJIeu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 03:34:50 -0500
+Received: from co1ehsobe001.messaging.microsoft.com ([216.32.180.184]:33308
+	"EHLO co1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751894Ab3AJIfD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 03:35:03 -0500
+In-Reply-To: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Sascha Hauer <s.hauer@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
 
-Changes since v1:
- - Drop patch "PM / OPP: Export more symbols for module usage", as
-   there is already one "[PATCH 5/6 v9] power: export opp cpufreq
-   functions" from Mark Langsdorf.
- - Instead of having cpu_dev be the struct device retrieved from
-   get_cpu_device(), have it be &pdev->dev, so that we can use managed
-   functions to simplified the cleanup path.
- - Use dev_* rather than pr_* for message output
- - Fix Typos and others commented by Viresh and Sascha. 
+Update operating-points per hardware document and add support for
+1 GHz and 1.2 GHz frequencies.
 
-Once the first patch gets accepted, I will apply the second one for
-going through arm-soc tree.
+400 MHz, 800 MHz and 1 GHz should be supported by all i.MX6Q chips,
+while 1.2 GHz support needs to know from OTP fuse bit.
 
-Shawn Guo (2):
-  cpufreq: add imx6q-cpufreq driver
-  ARM: imx: enable imx6q-cpufreq support
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ arch/arm/boot/dts/imx6q.dtsi   |   19 ++++++++----
+ arch/arm/mach-imx/mach-imx6q.c |   65 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+), 6 deletions(-)
 
- arch/arm/boot/dts/imx6q.dtsi    |   19 ++-
- arch/arm/mach-imx/mach-imx6q.c  |   65 +++++++++
- drivers/cpufreq/Kconfig.arm     |    9 ++
- drivers/cpufreq/Makefile        |    1 +
- drivers/cpufreq/imx6q-cpufreq.c |  296 +++++++++++++++++++++++++++++++++++++++
- 5 files changed, 384 insertions(+), 6 deletions(-)
- create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
-
+diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
+index d6265ca..17c5618 100644
+--- a/arch/arm/boot/dts/imx6q.dtsi
++++ b/arch/arm/boot/dts/imx6q.dtsi
+@@ -38,12 +38,18 @@
+ 			next-level-cache = <&L2>;
+ 			operating-points = <
+ 				/* kHz    uV */
+-				792000  1100000
++				996000  1250000
++				792000  1150000
+ 				396000  950000
+-				198000  850000
+ 			>;
+ 			clock-latency = <61036>; /* two CLK32 periods */
+-			cpu0-supply = <&reg_cpu>;
++			clocks = <&clks 104>, <&clks 6>, <&clks 16>,
++				 <&clks 17>, <&clks 170>;
++			clock-names = "arm", "pll2_pfd2_396m", "step",
++				      "pll1_sw", "pll1_sys";
++			arm-supply = <&reg_arm>;
++			pu-supply = <&reg_pu>;
++			soc-supply = <&reg_soc>;
+ 		};
+ 
+ 		cpu@1 {
+@@ -471,7 +477,7 @@
+ 					anatop-max-voltage = <2750000>;
+ 				};
+ 
+-				reg_cpu: regulator-vddcore@140 {
++				reg_arm: regulator-vddcore@140 {
+ 					compatible = "fsl,anatop-regulator";
+ 					regulator-name = "cpu";
+ 					regulator-min-microvolt = <725000>;
+@@ -485,7 +491,7 @@
+ 					anatop-max-voltage = <1450000>;
+ 				};
+ 
+-				regulator-vddpu@140 {
++				reg_pu: regulator-vddpu@140 {
+ 					compatible = "fsl,anatop-regulator";
+ 					regulator-name = "vddpu";
+ 					regulator-min-microvolt = <725000>;
+@@ -499,7 +505,7 @@
+ 					anatop-max-voltage = <1450000>;
+ 				};
+ 
+-				regulator-vddsoc@140 {
++				reg_soc: regulator-vddsoc@140 {
+ 					compatible = "fsl,anatop-regulator";
+ 					regulator-name = "vddsoc";
+ 					regulator-min-microvolt = <725000>;
+@@ -965,6 +971,7 @@
+ 			};
+ 
+ 			ocotp@021bc000 {
++				compatible = "fsl,imx6q-ocotp";
+ 				reg = <0x021bc000 0x4000>;
+ 			};
+ 
+diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-imx6q.c
+index 4eb1b3a..16f9a13 100644
+--- a/arch/arm/mach-imx/mach-imx6q.c
++++ b/arch/arm/mach-imx/mach-imx6q.c
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/clkdev.h>
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/delay.h>
+ #include <linux/export.h>
+@@ -22,6 +23,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
++#include <linux/opp.h>
+ #include <linux/phy.h>
+ #include <linux/regmap.h>
+ #include <linux/micrel_phy.h>
+@@ -209,9 +211,72 @@ static struct cpuidle_driver imx6q_cpuidle_driver = {
+ 	.state_count		= 1,
+ };
+ 
++#define OCOTP_CFG3			0x440
++#define OCOTP_CFG3_SPEED_SHIFT		16
++#define OCOTP_CFG3_SPEED_1P2GHZ		0x3
++
++static void __init imx6q_opp_check_1p2ghz(struct device *cpu_dev)
++{
++	struct device_node *np;
++	void __iomem *base;
++	u32 val;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-ocotp");
++	if (!np) {
++		pr_warn("failed to find ocotp node\n");
++		return;
++	}
++
++	base = of_iomap(np, 0);
++	if (!base) {
++		pr_warn("failed to map ocotp\n");
++		goto put_node;
++	}
++
++	val = readl_relaxed(base + OCOTP_CFG3);
++	val >>= OCOTP_CFG3_SPEED_SHIFT;
++	if ((val & 0x3) == OCOTP_CFG3_SPEED_1P2GHZ)
++		if (opp_add(cpu_dev, 1200000000, 1275000))
++			pr_warn("failed to add 1.2 GHz operating point\n");
++
++put_node:
++	of_node_put(np);
++}
++
++static void __init imx6q_opp_init(struct device *cpu_dev)
++{
++	struct device_node *np;
++
++	np = of_find_node_by_path("/cpus/cpu@0");
++	if (!np) {
++		pr_warn("failed to find cpu0 node\n");
++		return;
++	}
++
++	cpu_dev->of_node = np;
++	if (of_init_opp_table(cpu_dev)) {
++		pr_warn("failed to init OPP table\n");
++		goto put_node;
++	}
++
++	imx6q_opp_check_1p2ghz(cpu_dev);
++
++put_node:
++	of_node_put(np);
++}
++
++struct platform_device imx6q_cpufreq_pdev = {
++	.name = "imx6q-cpufreq",
++};
++
+ static void __init imx6q_init_late(void)
+ {
+ 	imx_cpuidle_init(&imx6q_cpuidle_driver);
++
++	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
++		imx6q_opp_init(&imx6q_cpufreq_pdev.dev);
++		platform_device_register(&imx6q_cpufreq_pdev);
++	}
+ }
+ 
+ static void __init imx6q_map_io(void)
 -- 
 1.7.9.5
 
