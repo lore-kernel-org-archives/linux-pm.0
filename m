@@ -1,62 +1,85 @@
-From: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
-Subject: RE: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
-Date: Thu, 10 Jan 2013 14:02:53 +0000
-Message-ID: <B5906170F1614E41A8A28DE3B8D121433ECDFE3B@DBDE01.ent.ti.com>
-References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
- <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
- <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
- <20130110110742.GI2265@S2101-09.ap.freescale.net>
- <B5906170F1614E41A8A28DE3B8D121433ECDFC9B@DBDE01.ent.ti.com>
- <20130110132053.GA9139@S2101-09.ap.freescale.net>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+Date: Thu, 10 Jan 2013 06:27:38 -0800
+Message-ID: <20130110142738.GA15787@kroah.com>
+References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
+ <1357542806-20449-8-git-send-email-durgadoss.r@intel.com>
+ <20130107192414.GC4465@kroah.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59257F01@BGSMSX101.gar.corp.intel.com>
+ <20130109170023.GA7068@kroah.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59258F12@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:39015 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609Ab3AJODJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 09:03:09 -0500
-In-Reply-To: <20130110132053.GA9139@S2101-09.ap.freescale.net>
-Content-Language: en-US
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:62344 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041Ab3AJO1E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 09:27:04 -0500
+Received: by mail-pa0-f44.google.com with SMTP id hz11so386192pad.17
+        for <linux-pm@vger.kernel.org>; Thu, 10 Jan 2013 06:27:03 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59258F12@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-On Thu, Jan 10, 2013 at 18:50:55, Shawn Guo wrote:
-> On Thu, Jan 10, 2013 at 01:02:30PM +0000, Bedia, Vaibhav wrote:
-> > In the current approach the OPP data is split across DT and kernel code. If you take the
-> > other approach all OPP entries can reside in DT and for someone just looking at that file
-> > there's no confusion about what the kernel could potentially support. Whether a particular
-> > an OPP should be supported is best decided at runtime.
+On Thu, Jan 10, 2013 at 12:43:16PM +0000, R, Durgadoss wrote:
+> Hi Greg,
+> 
+> > -----Original Message-----
+> > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > Sent: Wednesday, January 09, 2013 10:30 PM
+> > To: R, Durgadoss
+> > Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+> > Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
 > > 
-> Listing the OPP that some Si rev can not support in DT is also
-> a confusion to people who is just looking at DTS.  To me, the approach
-> is not really doing anything better on this aspect.
-> 
-
-I still think putting the OPP data in a single place is better.
-
-> > Also, IMHO letting platforms invoke opp_add() is open to abuse and platforms should be
-> > restricted to invoking opp_enable/disable to indicate what's possible on a particular Si rev. 
+> > On Wed, Jan 09, 2013 at 09:12:29AM +0000, R, Durgadoss wrote:
+> > > Hi Greg,
+> > >
+> > > > -----Original Message-----
+> > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > > > Sent: Tuesday, January 08, 2013 12:54 AM
+> > > > To: R, Durgadoss
+> > > > Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+> > > > Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+> > > >
+> > > > On Mon, Jan 07, 2013 at 12:43:24PM +0530, Durgadoss R wrote:
+> > > > > This patch makes MAX_SENSORS_PER_ZONE and
+> > > > > MAX_CDEVS_PER_ZONE values configurable. The
+> > > > > default value is 1, and range is 1-12.
+> > > >
+> > > > Why would we ever want to change this?  Why make this configurable at
+> > > > all, how is a distro supposed to set this value?
+> > > >
+> > > > Shouldn't it be specified from the driver itself?
+> > >
+> > > These are platform level parameters, that can differ for various platforms.
+> > > (Mostly due to board design and thermistor layouts). Stand-alone thermal
+> > > sensor drivers are not (need not be) aware of these values.
 > > 
-> I do not see anything wrong with platform adding the OPP it can support.
-> Isn't omap_init_opp_table() being called by platform code?  I do not see
-> omap-cpufreq driver is calling a platform hook to do that.
+> > Ok, and how does anyone know how to set them properly?
+> > 
+> > > That's why these values are made configurable.
+> > 
+> > Pushing work onto other people, without telling them what they need to
+> > do, isn't nice.  Please, either make it auto-configurable, or don't make
+> > it configurable at all.  As it is, this is useless for a distro, or any
+> > "normal" user, right?
 > 
-> Sorry, I'm not really a fan of platform hook, and I have spent past
-> couple years to minimize the use of it when converting IMX family to
-> device tree.
-> 
+> These values are for OEM's to configure according to their platform design.
+> So, not making them configurable won't be good IMHO.
 
-I don't know what the OMAP plans are but with DT + generic driver adoption I would expect most
-of it to go away. And adding the platform hook with the right DT data is just preparing
-things for the future with 2 potential users right now.
+Ok, but you are guaranteeing that the same kernel can not work on
+multiple platforms, which is something that people have been working
+very hard to solve.
 
-If OPP data across Si rev starts looking very different all entries can be placed in a single
-place and the platform code enables what are relevant. Unless there's a Si rev specific blob a bunch
-of opp_add() calls ignoring what was passed defeats the purpose of moving the information out of the
-kernel.
- 
-Regards,
-Vaibhav
+So again, please make this a platform data field, or autoconfigurable,
+and not a kernel build time configuration option, that isn't acceptable
+anymore.
+
+thanks,
+
+greg k-h
