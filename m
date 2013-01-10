@@ -1,48 +1,47 @@
-From: Aravind Gopalakrishnan <Aravind.Gopalakrishnan@amd.com>
-Subject: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to fall back to acpi-cpufreq and it is unavailable.
-Date: Wed, 9 Jan 2013 19:09:21 -0600
-Message-ID: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
+Date: Thu, 10 Jan 2013 11:31:35 +0530
+Message-ID: <CAKohpok4WLHkBQFoh1-T8H33Mi=+ZHmuKYnik_dZBOG_B2LzOA@mail.gmail.com>
+References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
+	<CAKohpo=ajxxanDPNpdxiJO8vvcQPxeQA29sZgeRtRg85F4CVGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Aravind Gopalakrishnan <Aravind.Gopalakrishnan@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:41554 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029Ab3AJGBg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 01:01:36 -0500
+Received: by mail-ob0-f176.google.com with SMTP id un3so193401obb.35
+        for <linux-pm@vger.kernel.org>; Wed, 09 Jan 2013 22:01:35 -0800 (PST)
+In-Reply-To: <CAKohpo=ajxxanDPNpdxiJO8vvcQPxeQA29sZgeRtRg85F4CVGg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linaro-dev@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shawn.guo@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch is in reference to bug#:51741. (https://bugzilla.kernel.org/show_bug.cgi?id=51741)
-powernow-k8 falls back to acpi-cpufreq if CPU is not supported. However, it states that acpi-cpufreq
-has taken over even if acpi-cpufreq is not compiled in. This patch rewords the warning message to
-clarify that the CPU is unsupported and prints a warning message when there is no acpi-cpufreq
-present.
+On 9 January 2013 21:09, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 9 January 2013 16:50, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> [Probably need to simplify cpufreq_add_dev() too, but that can be done as next
+>> step.]
+>
+> I have tried that too, it is also pushed at:
+>
+> https://lkml.org/lkml/2012/12/16/5
+>
+> [Untested for now, will be doing it tomorrow]
+>
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Wed, 9 Jan 2013 21:02:50 +0530
+> Subject: [PATCH] cpufreq: Simplify cpufreq_add_dev()
+>
+> Currently cpufreq_add_dev() firsts allocated policy, calls ->init() and then
+> checks if this cpu should be already managed or not. And if it already managed,
+> free its policy.
+>
+> We can save all this if we somehow know if this cpu is managed or not in
+> advance. policy->related_cpus contains list of all valid sibling cpus of
+> policy->cpu. We can check this to know if current cpu is already managed.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Aravind Gopalakrishnan <Aravind.Gopalakrishnan@amd.com>
----
- drivers/cpufreq/powernow-k8.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-index 056faf6..6fa58b4 100644
---- a/drivers/cpufreq/powernow-k8.c
-+++ b/drivers/cpufreq/powernow-k8.c
-@@ -1256,7 +1256,15 @@ static int __cpuinit powernowk8_init(void)
- 	int rv;
- 
- 	if (static_cpu_has(X86_FEATURE_HW_PSTATE)) {
--		pr_warn(PFX "this CPU is not supported anymore, using acpi-cpufreq instead.\n");
-+		pr_warn(PFX
-+			"this CPU is not supported anymore, use acpi-cpufreq instead"
-+			"Look for message from acpi-cpufreq to ensure it is loaded."
-+			".\n");
-+#ifndef CONFIG_X86_ACPI_CPUFREQ
-+	pr_warn(PFX "acpi-cpufreq is disabled."
-+		"Enable it in the config options to get frequency scaling.\n");
-+	return -ENODEV;
-+#endif
- 		request_module("acpi-cpufreq");
- 		return -ENODEV;
- 	}
--- 
-1.7.10.4
-
-
+Tested-by: Viresh Kumar <viresh.kumar@linaro.org>
