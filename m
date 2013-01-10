@@ -1,48 +1,76 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 1/2] cpufreq: add imx6q-cpufreq driver
-Date: Thu, 10 Jan 2013 19:55:03 +0800
-Message-ID: <20130110115500.GJ2265@S2101-09.ap.freescale.net>
-References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
- <1357806863-6899-2-git-send-email-shawn.guo@linaro.org>
- <CAKohpom2Z0LmTNjq6mbZAa=JvQfBeRBzfXU3Jifn8y_C6XJkQw@mail.gmail.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+Date: Thu, 10 Jan 2013 12:43:16 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59258F12@BGSMSX101.gar.corp.intel.com>
+References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
+ <1357542806-20449-8-git-send-email-durgadoss.r@intel.com>
+ <20130107192414.GC4465@kroah.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59257F01@BGSMSX101.gar.corp.intel.com>
+ <20130109170023.GA7068@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpom2Z0LmTNjq6mbZAa=JvQfBeRBzfXU3Jifn8y_C6XJkQw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sascha Hauer <s.hauer@pengutronix.de>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:39840 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754362Ab3AJMni convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Jan 2013 07:43:38 -0500
+In-Reply-To: <20130109170023.GA7068@kroah.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-On Thu, Jan 10, 2013 at 02:15:44PM +0530, Viresh Kumar wrote:
-...
-> > +       clk_prepare_enable(pll2_pfd2_396m_clk);
-> > +       clk_set_parent(step_clk, pll2_pfd2_396m_clk);
-> > +       clk_set_parent(pll1_sw_clk, step_clk);
-> > +       clk_prepare_enable(pll1_sys_clk);
+Hi Greg,
+
+> -----Original Message-----
+> From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> Sent: Wednesday, January 09, 2013 10:30 PM
+> To: R, Durgadoss
+> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+> Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
 > 
-> all these fns can fail too.. don't want to check return values?
+> On Wed, Jan 09, 2013 at 09:12:29AM +0000, R, Durgadoss wrote:
+> > Hi Greg,
+> >
+> > > -----Original Message-----
+> > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > > Sent: Tuesday, January 08, 2013 12:54 AM
+> > > To: R, Durgadoss
+> > > Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+> > > Subject: Re: [PATCH 7/9] Thermal: Make PER_ZONE values configurable
+> > >
+> > > On Mon, Jan 07, 2013 at 12:43:24PM +0530, Durgadoss R wrote:
+> > > > This patch makes MAX_SENSORS_PER_ZONE and
+> > > > MAX_CDEVS_PER_ZONE values configurable. The
+> > > > default value is 1, and range is 1-12.
+> > >
+> > > Why would we ever want to change this?  Why make this configurable at
+> > > all, how is a distro supposed to set this value?
+> > >
+> > > Shouldn't it be specified from the driver itself?
+> >
+> > These are platform level parameters, that can differ for various platforms.
+> > (Mostly due to board design and thermistor layouts). Stand-alone thermal
+> > sensor drivers are not (need not be) aware of these values.
 > 
-I initially had every single clk and regulator call return checked
-and error handled properly.  But the code becomes very messy with
-the error messages and recovering logic all over the places.  I think
-it's a bit over engineering, and made a compromise to only check limited
-ones to ensure the correctness at subsystem level.
-
-> > +static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
-> > +{
-> > +       int ret;
-> > +
+> Ok, and how does anyone know how to set them properly?
 > 
-> So you finally removed the ugly check :)
+> > That's why these values are made configurable.
 > 
-I just found though it's less optimal, removing the check does not
-really cause any problem for me.
+> Pushing work onto other people, without telling them what they need to
+> do, isn't nice.  Please, either make it auto-configurable, or don't make
+> it configurable at all.  As it is, this is useless for a distro, or any
+> "normal" user, right?
 
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+These values are for OEM's to configure according to their platform design.
+So, not making them configurable won't be good IMHO.
 
-Thanks.
+But, as you said, for normal users, it does not matter; so they can
+leave it as it is, which will set it to the default value (i.e 1).
 
-Shawn
-
+Thanks,
+Durga
