@@ -1,74 +1,48 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v12 7/9] libata: scsi: no poll when ODD is powered off
-Date: Fri, 11 Jan 2013 11:16:26 +0800
-Message-ID: <20130111031626.GA26613@aaronlu.sh.intel.com>
-References: <1357809870-18816-1-git-send-email-aaron.lu@intel.com>
- <1357809870-18816-8-git-send-email-aaron.lu@intel.com>
- <20130110195610.GL20454@htj.dyndns.org>
- <20130111021110.GB26270@aaronlu.sh.intel.com>
- <20130111021701.GA2513@mtj.dyndns.org>
+From: "Bedia, Vaibhav" <vaibhav.bedia@ti.com>
+Subject: RE: [PATCH v2 2/2] ARM: imx: enable imx6q-cpufreq support
+Date: Fri, 11 Jan 2013 04:43:30 +0000
+Message-ID: <B5906170F1614E41A8A28DE3B8D121433ECE0DA7@DBDE01.ent.ti.com>
+References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+ <1357806863-6899-3-git-send-email-shawn.guo@linaro.org>
+ <B5906170F1614E41A8A28DE3B8D121433ECDF7BF@DBDE01.ent.ti.com>
+ <20130110110742.GI2265@S2101-09.ap.freescale.net>
+ <B5906170F1614E41A8A28DE3B8D121433ECDFC9B@DBDE01.ent.ti.com>
+ <20130110132053.GA9139@S2101-09.ap.freescale.net>
+ <B5906170F1614E41A8A28DE3B8D121433ECDFE3B@DBDE01.ent.ti.com>
+ <20130110144121.GC8680@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:65152 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800Ab3AKDPu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Jan 2013 22:15:50 -0500
-Content-Disposition: inline
-In-Reply-To: <20130111021701.GA2513@mtj.dyndns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130110144121.GC8680@S2101-09.ap.freescale.net>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Hi Tejun,
-
-On Thu, Jan 10, 2013 at 06:17:01PM -0800, Tejun Heo wrote:
-> Hello, Aaron.
+On Thu, Jan 10, 2013 at 20:11:25, Shawn Guo wrote:
+> On Thu, Jan 10, 2013 at 02:02:53PM +0000, Bedia, Vaibhav wrote:
+> > On Thu, Jan 10, 2013 at 18:50:55, Shawn Guo wrote:
+> > > On Thu, Jan 10, 2013 at 01:02:30PM +0000, Bedia, Vaibhav wrote:
+> > > > In the current approach the OPP data is split across DT and kernel code. If you take the
+> > > > other approach all OPP entries can reside in DT and for someone just looking at that file
+> > > > there's no confusion about what the kernel could potentially support. Whether a particular
+> > > > an OPP should be supported is best decided at runtime.
+> > > > 
+> > > Listing the OPP that some Si rev can not support in DT is also
+> > > a confusion to people who is just looking at DTS.  To me, the approach
+> > > is not really doing anything better on this aspect.
+> > > 
+> > 
+> > I still think putting the OPP data in a single place is better.
+> > 
+> Okay, I agree with you on that and plan to commit the following changes.
+> But no, still no platform hook.
 > 
-> On Fri, Jan 11, 2013 at 10:11:10AM +0800, Aaron Lu wrote:
-> > > What's the synchronization rule for this field?
-> > 
-> > I documented the rule in include/scsi/scsi_device.h.
-> > 
-> > This field is modified in the ata port's runtime suspend and resume
-> > callback, and is read accessed in the check_events callback of the sr
-> > block driver. The runtime PM callback is synchronized by PM core, in
-> > that the two callbacks will never run concurrently. So I guess saying
-> > synchronized by PM core is enough for this field?
-> > 
-> > This is what I've added in v12 for scsi_device structure:
-> > 
-> > +	bool disable_disk_events; /* disable poll for disk events, used in
-> > +				   * ATA layer, sychronized by PM core */
-> > +
-> > 
-> > Or do you mean I should add a comment explaining the sync rule when it
-> > is modifed, like in the above code?
-> 
-> The thing is that disabling disk events doesn't necessarily have
-> anything to do with PM, so tying synchronization to PM subsystem is a
-> bit unexpected.  How about making it an atomic_t?  That way, disabling
-> can stack and synchronization dependency to PM is removed.
 
-OK, will make it atomic in next version, thanks for the advice.
+Fair enough.
 
-Perhaps I can add two scsi helper functions in scsi_lib.c like:
-
-void sdev_disable_disk_events(struct scsi_device *sdev)
-{
-	atomic_inc(&sdev->disk_events_disable_depth);
-}
-
-void sdev_enable_disk_events(struct scsi_device *sdev)
-{
-	if (WARN_ON_ONCE(atomic_read(&sdev->disk_events_disable_depth) <= 0))
-		return;
-	atomic_dec(&sdev->disk_events_disable_depth);
-}
-
-And call them in ATA layer. Do you like this?
-
-Thanks,
-Aaron
+Regards,
+Vaibhav
 
