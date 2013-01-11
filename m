@@ -1,24 +1,40 @@
-From: Julius Werner <jwerner@google.com>
-Subject: Re: [PATCH 2/2][V2] cpuidle - optimize the select function for the 'menu' governor
-Date: Fri, 11 Jan 2013 11:12:49 -0800
-Message-ID: <AF9BE237-8E69-4D09-BB78-EE54058EDE56@google.com>
-References: <1355493455-30665-1-git-send-email-daniel.lezcano@linaro.org> <1355493455-30665-3-git-send-email-daniel.lezcano@linaro.org> <50CDF2A2.3090405@gmail.com>
-Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
+Date: Fri, 11 Jan 2013 23:11:38 +0100
+Message-ID: <9372306.uEln1VHseC@vostro.rjw.lan>
+References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org> <CAKohpone-pXUjuDsP7r73mP+rzSUUb1oWiu5c+NL8R_WsYoJZg@mail.gmail.com> <CAAQ0ZWTvKcn5qR8_J5hx+qsxHGTJ8rSE41VD6aQhipM6c+CqTA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:64535 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753841Ab3AKTMw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jan 2013 14:12:52 -0500
-Received: by mail-pa0-f45.google.com with SMTP id bg2so1170578pad.4
-        for <linux-pm@vger.kernel.org>; Fri, 11 Jan 2013 11:12:51 -0800 (PST)
-In-Reply-To: <50CDF2A2.3090405@gmail.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:38197 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754674Ab3AKWFw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Jan 2013 17:05:52 -0500
+In-Reply-To: <CAAQ0ZWTvKcn5qR8_J5hx+qsxHGTJ8rSE41VD6aQhipM6c+CqTA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@sisk.pl, jwerner@chromium.org, linux-pm@vger.kernel.org, deepthi@linux.vnet.ibm.com, g.trinabh@gmail.com, linaro-dev@lists.linaro.org, len.brown@intel.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, snanda@chromium.org
+To: Shawn Guo <shawn.guo@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org
 
-*Ping!*
+On Thursday, January 10, 2013 04:10:55 PM Shawn Guo wrote:
+> On 10 January 2013 16:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Another thing, can i have a tested-by from you for both my patches ? remove and
+> > add dev?
+> >
+> For both:
+> 
+> Tested-by: Shawn Guo <shawn.guo@linaro.org>
 
-Happy New Year everyone. Is there any update on this? I think Francesco already pointed out how to solve the last remaining issue with this, so I hope we can now resubmit these patches and finally get them merged. Daniel?
+OK
+
+Can any one of you two create a series of patches for me to take for v3.9
+with all of the correct Tested-by and Reviewed-by etc. tags, because I've
+already lost track of your multiple versions and threads?
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
