@@ -1,40 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
-Date: Fri, 11 Jan 2013 23:11:38 +0100
-Message-ID: <9372306.uEln1VHseC@vostro.rjw.lan>
-References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org> <CAKohpone-pXUjuDsP7r73mP+rzSUUb1oWiu5c+NL8R_WsYoJZg@mail.gmail.com> <CAAQ0ZWTvKcn5qR8_J5hx+qsxHGTJ8rSE41VD6aQhipM6c+CqTA@mail.gmail.com>
+Subject: Re: [PATCH/RFC 0/1] Delete legacy power trace API
+Date: Fri, 11 Jan 2013 23:32:34 +0100
+Message-ID: <1919783.ReCP0b2FdU@vostro.rjw.lan>
+References: <1357350544-32704-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38197 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:38212 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754674Ab3AKWFw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 11 Jan 2013 17:05:52 -0500
-In-Reply-To: <CAAQ0ZWTvKcn5qR8_J5hx+qsxHGTJ8rSE41VD6aQhipM6c+CqTA@mail.gmail.com>
+	id S1754762Ab3AKW0s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Jan 2013 17:26:48 -0500
+In-Reply-To: <1357350544-32704-1-git-send-email-paul.gortmaker@windriver.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: linux-pm@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
 
-On Thursday, January 10, 2013 04:10:55 PM Shawn Guo wrote:
-> On 10 January 2013 16:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Another thing, can i have a tested-by from you for both my patches ? remove and
-> > add dev?
-> >
-> For both:
+On Friday, January 04, 2013 08:49:03 PM Paul Gortmaker wrote:
+> The actual deletion is mind-numbingly simple; and if you go by the
+> comments in the code, it is well overdue.  However, in discussions
+> with Frederic, he suggested to me that those comments might have
+> been overly optimistic, and that there may still be people out
+> there who are still unknowingly using this dead API.
 > 
-> Tested-by: Shawn Guo <shawn.guo@linaro.org>
+> So, that is the crux of the RFC component -- to check whether the
+> comments saying "delete by v3.1" can be taken at face value, or
+> whether they were overly optimistic, and hence this stuff is still
+> actively used even though it is overdue for deletion.
 
-OK
+Applied to the linux-next branch of the linux-pm.git tree as v3.9 material.
 
-Can any one of you two create a series of patches for me to take for v3.9
-with all of the correct Tested-by and Reviewed-by etc. tags, because I've
-already lost track of your multiple versions and threads?
-
+Thanks,
 Rafael
 
 
+> ---
+> 
+> Paul Gortmaker (1):
+>   tracing: remove deprecated power trace API
+> 
+>  Documentation/trace/events-power.txt | 27 +----------
+>  arch/arm/mach-omap2/pm34xx.c         |  2 -
+>  arch/x86/kernel/process.c            |  6 ---
+>  drivers/cpufreq/cpufreq.c            |  1 -
+>  drivers/cpuidle/cpuidle.c            |  2 -
+>  include/trace/events/power.h         | 92 ------------------------------------
+>  kernel/trace/Kconfig                 | 15 ------
+>  kernel/trace/power-traces.c          |  3 --
+>  8 files changed, 1 insertion(+), 147 deletions(-)
+> 
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
