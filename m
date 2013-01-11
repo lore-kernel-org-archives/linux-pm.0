@@ -1,56 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH/RFC 0/1] Delete legacy power trace API
-Date: Fri, 11 Jan 2013 23:32:34 +0100
-Message-ID: <1919783.ReCP0b2FdU@vostro.rjw.lan>
-References: <1357350544-32704-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: Re: [PATCH v6 0/3] PM: Intel PowerClamp driver
+Date: Fri, 11 Jan 2013 23:37:27 +0100
+Message-ID: <11047380.k1dbzbnuXT@vostro.rjw.lan>
+References: <1357297965-17839-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38212 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754762Ab3AKW0s (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 11 Jan 2013 17:26:48 -0500
-In-Reply-To: <1357350544-32704-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1357297965-17839-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Joe Perches <joe@perches.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-pm@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
 
-On Friday, January 04, 2013 08:49:03 PM Paul Gortmaker wrote:
-> The actual deletion is mind-numbingly simple; and if you go by the
-> comments in the code, it is well overdue.  However, in discussions
-> with Frederic, he suggested to me that those comments might have
-> been overly optimistic, and that there may still be people out
-> there who are still unknowingly using this dead API.
+On Friday, January 04, 2013 03:12:42 AM Jacob Pan wrote:
+> v6 changes:
+> - clamp module parameters duration and window size, reword warning
+>   messages when input parameters are out of range.
 > 
-> So, that is the crux of the RFC component -- to check whether the
-> comments saying "delete by v3.1" can be taken at face value, or
-> whether they were overly optimistic, and hence this stuff is still
-> actively used even though it is overdue for deletion.
+> We have done some experiment with idle injection on Intel platforms.
+> The idea is to use the increasingly power efficient package level
+> C-states for power capping and passive thermal control.
+> 
+> Documentation is included in the patch to explain the theory of
+> operation, performance implication, calibration, scalability, and user
+> interface. Please refer to the following file for more details.
+> 
+> Documentation/thermal/intel_powerclamp.txt
+> 
+> Arjan van de Ven created the original idea and driver, I have been
+> refining driver in hope that they can be to be useful beyond a proof
+> of concept.
+> 
+> Jacob Pan (3):
+>   tick: export nohz tick idle symbols for module use
+>   x86/nmi: export local_touch_nmi() symbol for modules
+>   PM: Introduce Intel PowerClamp Driver
+> 
+>  Documentation/thermal/intel_powerclamp.txt |  307 +++++++++++
+>  arch/x86/kernel/nmi.c                      |    1 +
+>  drivers/thermal/Kconfig                    |   10 +
+>  drivers/thermal/Makefile                   |    2 +
+>  drivers/thermal/intel_powerclamp.c         |  788 ++++++++++++++++++++++++++++
+>  kernel/time/tick-sched.c                   |    2 +
+>  6 files changed, 1110 insertions(+)
+>  create mode 100644 Documentation/thermal/intel_powerclamp.txt
+>  create mode 100644 drivers/thermal/intel_powerclamp.c
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.9 material.
+I'm not seeing any more comments here, so I think this is suitable for v3.9.
 
-Thanks,
+Rui, are you going to take it or do you want me to?
+
 Rafael
 
 
-> ---
-> 
-> Paul Gortmaker (1):
->   tracing: remove deprecated power trace API
-> 
->  Documentation/trace/events-power.txt | 27 +----------
->  arch/arm/mach-omap2/pm34xx.c         |  2 -
->  arch/x86/kernel/process.c            |  6 ---
->  drivers/cpufreq/cpufreq.c            |  1 -
->  drivers/cpuidle/cpuidle.c            |  2 -
->  include/trace/events/power.h         | 92 ------------------------------------
->  kernel/trace/Kconfig                 | 15 ------
->  kernel/trace/power-traces.c          |  3 --
->  8 files changed, 1 insertion(+), 147 deletions(-)
-> 
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
