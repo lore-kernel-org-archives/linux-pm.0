@@ -1,103 +1,103 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/4 v10] arm: use devicetree to get smp_twd clock
-Date: Thu, 10 Jan 2013 23:34:42 +0000
-Message-ID: <20130110233442.GA30875@n2100.arm.linux.org.uk>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1357317346-1120-1-git-send-email-mark.langsdorf@calxeda.com> <1357317346-1120-2-git-send-email-mark.langsdorf@calxeda.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v12 4/9] libata: check zero power ready status for ZPODD
+Date: Fri, 11 Jan 2013 10:00:59 +0800
+Message-ID: <20130111020059.GA26270@aaronlu.sh.intel.com>
+References: <1357809870-18816-1-git-send-email-aaron.lu@intel.com>
+ <1357809870-18816-5-git-send-email-aaron.lu@intel.com>
+ <20130110195231.GI20454@htj.dyndns.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1357317346-1120-2-git-send-email-mark.langsdorf@calxeda.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rob Herring <rob.herring@calxeda.com>
+In-Reply-To: <20130110195231.GI20454@htj.dyndns.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Mark,
+Hi Tejun,
 
-Rafael just asked me to look at this patch, though I guess these comments
-should be directed to Rob who was the original patch author.
+On Thu, Jan 10, 2013 at 11:52:31AM -0800, Tejun Heo wrote:
+> Hello, Aaron.
+> 
+> On Thu, Jan 10, 2013 at 05:24:25PM +0800, Aaron Lu wrote:
+> > +/*
+> > + * Update the zpodd->zp_ready field. This field will only be set
+> > + * if the ODD has stayed in ZP ready state for zpodd_poweroff_delay
+> > + * time, and will be used to decide if power off is allowed. If it
+> > + * is set, it will be cleared during resume from powered off state.
+> > + */
+> > +void zpodd_on_suspend(struct ata_device *dev)
+> > +{
+> > +	struct zpodd *zpodd = dev->zpodd;
+> > +	unsigned long expires;
+> > +
+> > +	if (!zpready(dev)) {
+> > +		zpodd->zp_sampled = false;
+> > +		return;
+> > +	}
+> > +
+> > +	if (!zpodd->zp_sampled) {
+> > +		zpodd->zp_sampled = true;
+> > +		zpodd->last_ready = jiffies;
+> > +		return;
+> 
+> Is the above return necessary?  Can't we just fall through and always
+> check the actual condition?
 
-On Fri, Jan 04, 2013 at 10:35:43AM -0600, Mark Langsdorf wrote:
-> diff --git a/arch/arm/kernel/smp_twd.c b/arch/arm/kernel/smp_twd.c
-> index 49f335d..dad2d81 100644
-> --- a/arch/arm/kernel/smp_twd.c
-> +++ b/arch/arm/kernel/smp_twd.c
-> @@ -239,12 +239,15 @@ static irqreturn_t twd_handler(int irq, void *dev_id)
->  	return IRQ_NONE;
->  }
->  
-> -static struct clk *twd_get_clock(void)
-> +static struct clk *twd_get_clock(struct device_node *np)
->  {
->  	struct clk *clk;
->  	int err;
->  
-> -	clk = clk_get_sys("smp_twd", NULL);
-> +	if (np)
-> +		clk = of_clk_get(np, 0);
-> +	else
-> +		clk = clk_get_sys("smp_twd", NULL);
->  	if (IS_ERR(clk)) {
->  		pr_err("smp_twd: clock not found: %d\n", (int)PTR_ERR(clk));
->  		return clk;
-> @@ -257,6 +260,7 @@ static struct clk *twd_get_clock(void)
->  		return ERR_PTR(err);
->  	}
->  
-> +	twd_timer_rate = clk_get_rate(clk);
+The zpready(dev) function will check the actual condition by issuing a
+TUR and check the returned sense code. And the zp_sampled serves as an
+indication if this is the first time we sensed the ODD in ZP ready
+status.
 
-Hmm, so this overrides the later clk_get_rate() in twd_timer_setup(), making
-the later one redundant.  However...
+The zpodd_on_suspend works like this:
 
->  	return clk;
->  }
->  
-> @@ -285,7 +289,7 @@ static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
->  	 * during the runtime of the system.
->  	 */
->  	if (!common_setup_called) {
-> -		twd_clk = twd_get_clock();
-> +		twd_clk = twd_get_clock(NULL);
->  
->  		/*
->  		 * We use IS_ERR_OR_NULL() here, because if the clock stubs
-> @@ -373,6 +377,8 @@ int __init twd_local_timer_register(struct twd_local_timer *tlt)
->  	if (!twd_base)
->  		return -ENOMEM;
->  
-> +	twd_clk = twd_get_clock(NULL);
-> +
->  	return twd_local_timer_common_register();
+check ZP ready status by calling zpready(dev)
+  if not, clear zp_sampled and zp_ready
+  return
 
-Ok, so this sets up twd_clk, and also twd_timer_rate, but
-twd_local_timer_common_register() just ends up registering the set of
-function pointers with the local timer code.  Some point later, the
-->setup function is called, and that will happen with common_setup_called
-false.  The result will be another call to twd_get_clock().
+ODD is ZP ready
 
->  }
->  
-> @@ -405,6 +411,8 @@ void __init twd_local_timer_of_register(void)
->  		goto out;
->  	}
->  
-> +	twd_clk = twd_get_clock(np);
-> +
->  	err = twd_local_timer_common_register();
+check if this is the first time we sensed it is ZP ready
+  if not, set the zp_sampled flag and record timestamp
+  return
 
-And a similar thing happens here.  Except... the twd_clk gets overwritten
-by the call to twd_get_clock(NULL) from twd_timer_setup().
+This is not the first time we sensed ZP ready for the ODD
 
-I wonder if it would be much better to move twd_get_clock() out of
-twd_timer_setup() entirely, moving it into twd_local_timer_common_register().
-twd_local_timer_common_register() would have to take the dev node.
-Also, leave the setting of twd_timer_rate in twd_timer_setup().
+check if the ODD has been in this state long enough
+  if not, return
 
-An alternative strategy would be to move the initialization of the
-timer rate also into twd_local_timer_common_register(), detect the
-NULL or error clock, and run the calibration from there (I don't think
-we can move the calibration).  If that's chosen, then "common_setup_called"
-should probably be renamed to "twd_calibration_done".
+The ODD has been in ZP ready state long enough
+  set the zp_ready flag, the zpodd_zpready will use that flag
 
-What do you think?
+Done.
+
+Does this work flow look OK?
+
+BTW, I just realized I mistakenly removed the clear of zp_ready in v12
+when zpready(dev) returns false, I thought it is not necessary since
+each time we set that flag, the ODD will be powered off and the flag
+will always be cleared during resume time in post_poweron. But when
+qos_no_poweroff is set, this is not the case and can cause problem when
+ODD is not in ZP ready state and user cleared the qos_no_poweroff flag.
+I'll add a comment for this in next version to avoid making this mistake
+again in the future...
+
+Thanks,
+Aaron
+
+> 
+> > +	}
+> > +
+> > +	expires = zpodd->last_ready +
+> > +		  msecs_to_jiffies(zpodd_poweroff_delay * 1000);
+> > +	if (time_before(jiffies, expires))
+> > +		return;
+> > +
+> > +	zpodd->zp_ready = true;
+> > +}
+> 
+> Thanks.
+> 
+> -- 
+> tejun
