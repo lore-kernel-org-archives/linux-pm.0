@@ -1,51 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/5] Cpufreq Fixes for 3.9
-Date: Sat, 12 Jan 2013 14:27:25 +0100
-Message-ID: <3417394.mgXgKYU9J9@vostro.rjw.lan>
-References: <cover.1357967566.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: SPEAr: Fix sparse warning for cpufreq driver
+Date: Sat, 12 Jan 2013 14:27:54 +0100
+Message-ID: <2860847.JDCmaU39LZ@vostro.rjw.lan>
+References: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38760 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:38761 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753210Ab3ALNVi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 12 Jan 2013 08:21:38 -0500
-In-Reply-To: <cover.1357967566.git.viresh.kumar@linaro.org>
+	id S1752921Ab3ALNWG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 12 Jan 2013 08:22:06 -0500
+In-Reply-To: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, January 12, 2013 10:44:37 AM Viresh Kumar wrote:
-> Hi Rafael,
+On Saturday, January 12, 2013 10:42:09 AM Viresh Kumar wrote:
+> This patch fixes following sparse warning:
 > 
-> As requested, i am resending all my cpufreq fixes together. I have added correct
-> Tested-by flags.
+> drivers/cpufreq/spear-cpufreq.c:33:5: warning: symbol 'spear_cpufreq_verify' was
+> not declared. Should it be static?
 
-I have dropped the previous versions and applied this series instead.
+Applied to the linux-next branch of the linux-pm.git tree as v3.9 material.
 
-There's no need to add a Tested-by for yourself if you sign-off a patch,
-though.  Tested-by is information that somebody *in* *addition* to the
-original author has tested the patch, because we all should test the patches
-we sign-off, right?
-
+Thanks,
 Rafael
 
 
-> Viresh Kumar (5):
->   cpufreq: Manage only online cpus
->   cpufreq: Notify governors when cpus are hot-[un]plugged
->   cpufreq: Don't use cpu removed during cpufreq_driver_unregister
->   cpufreq: Simplify __cpufreq_remove_dev()
->   cpufreq: Simplify cpufreq_add_dev()
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/spear-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->  drivers/cpufreq/cpufreq.c       | 316 +++++++++++++++++-----------------------
->  drivers/cpufreq/cpufreq_stats.c |  27 +++-
->  drivers/cpufreq/freq_table.c    |   9 ++
->  include/linux/cpufreq.h         |  14 +-
->  4 files changed, 178 insertions(+), 188 deletions(-)
-> 
+> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+> index 4575cfe..8ff26af 100644
+> --- a/drivers/cpufreq/spear-cpufreq.c
+> +++ b/drivers/cpufreq/spear-cpufreq.c
+> @@ -30,7 +30,7 @@ static struct {
+>  	u32 cnt;
+>  } spear_cpufreq;
+>  
+> -int spear_cpufreq_verify(struct cpufreq_policy *policy)
+> +static int spear_cpufreq_verify(struct cpufreq_policy *policy)
+>  {
+>  	return cpufreq_frequency_table_verify(policy, spear_cpufreq.freq_tbl);
+>  }
 > 
 -- 
 I speak only for myself.
