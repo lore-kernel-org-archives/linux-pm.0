@@ -1,28 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/5] Cpufreq Fixes for 3.9
-Date: Sat, 12 Jan 2013 19:12:05 +0530
-Message-ID: <CAKohpon1uv1cXKJaOKQdw2_jLcOTABk86BYEicsHJjJ7Y1od_Q@mail.gmail.com>
-References: <cover.1357967566.git.viresh.kumar@linaro.org>
-	<3417394.mgXgKYU9J9@vostro.rjw.lan>
+From: Jiri Slaby <jirislaby@gmail.com>
+Subject: hibernation fails from kexec'ed kernel
+Date: Sat, 12 Jan 2013 16:47:03 +0100
+Message-ID: <50F18577.3030506@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:38368 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753232Ab3ALNmH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jan 2013 08:42:07 -0500
-Received: by mail-ob0-f177.google.com with SMTP id uo13so2568246obb.8
-        for <linux-pm@vger.kernel.org>; Sat, 12 Jan 2013 05:42:05 -0800 (PST)
-In-Reply-To: <3417394.mgXgKYU9J9@vostro.rjw.lan>
+Received: from mail-ea0-f180.google.com ([209.85.215.180]:40825 "EHLO
+	mail-ea0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752009Ab3ALPrI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jan 2013 10:47:08 -0500
+Received: by mail-ea0-f180.google.com with SMTP id c1so755314eaa.25
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jan 2013 07:47:05 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
+To: Linux PM list <linux-pm@vger.kernel.org>
 
-On 12 January 2013 18:57, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> There's no need to add a Tested-by for yourself if you sign-off a patch,
-> though.  Tested-by is information that somebody *in* *addition* to the
-> original author has tested the patch, because we all should test the patches
-> we sign-off, right?
+Hi,
 
-Correct. I did it this time only, as it was something major.
+when I try to hibernate and resume from a kexec'ed kernel, the resume
+fails with:
+PM: Image not found (code -22)
+
+I dumped sig and orig_sig from swsusp_check and it looks like this:
+53 57 41 50 53 50 41 43 45 32                    SWAPSPACE2
+53 57 41 50 53 50 41 43 45 32                    SWAPSPACE2
+
+So it looks like the image (or only the signature) did not land to the disk.
+
+I use only the in-kernel hibernation, I do not even have the suspend
+package installed. This is with 3.7.2 and happens this way for some time
+already. When I boot the kernel normally, hib+resume works just fine.
+
+Any ideas?
+
+thanks,
+-- 
+js
