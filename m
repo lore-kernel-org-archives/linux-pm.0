@@ -1,28 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: drivers/cpufreq/cpufreq.c:51:17: sparse: symbol
- 'cpufreq_online_mask' was not declared. Should it be static?
-Date: Sat, 12 Jan 2013 09:38:32 +0530
-Message-ID: <CAKohpokyaJyykm7_jKmAAATTJToiWFvBYJMzok5rD3qdtagjkw@mail.gmail.com>
-References: <50f017f7.SoVcNexmm6uNvfQX%yuanhan.liu@linux.intel.com>
-	<20130111140301.GA25489@localhost>
-	<CAKohponzGnFdzAk0PzTsvrt9PA2OH1Aaa9VQh4+En3KdGbJwFA@mail.gmail.com>
-	<4518630.CgYC5fVtRj@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] cpufreq: SPEAr: Fix sparse warning for cpufreq driver
+Date: Sat, 12 Jan 2013 10:42:09 +0530
+Message-ID: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:58428 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754433Ab3ALEId (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jan 2013 23:08:33 -0500
-Received: by mail-ob0-f181.google.com with SMTP id oi10so2397783obb.26
-        for <linux-pm@vger.kernel.org>; Fri, 11 Jan 2013 20:08:32 -0800 (PST)
-In-Reply-To: <4518630.CgYC5fVtRj@vostro.rjw.lan>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:41899 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732Ab3ALFMU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jan 2013 00:12:20 -0500
+Received: by mail-pb0-f46.google.com with SMTP id wy7so1297189pbc.19
+        for <linux-pm@vger.kernel.org>; Fri, 11 Jan 2013 21:12:20 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Fengguang Wu <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 12 January 2013 04:17, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> I could, but I prefer you to send me a fixed patch. :-)
+This patch fixes following sparse warning:
 
-Ok. I will post all the 5 patches again :)
+drivers/cpufreq/spear-cpufreq.c:33:5: warning: symbol 'spear_cpufreq_verify' was
+not declared. Should it be static?
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/spear-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+index 4575cfe..8ff26af 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -30,7 +30,7 @@ static struct {
+ 	u32 cnt;
+ } spear_cpufreq;
+ 
+-int spear_cpufreq_verify(struct cpufreq_policy *policy)
++static int spear_cpufreq_verify(struct cpufreq_policy *policy)
+ {
+ 	return cpufreq_frequency_table_verify(policy, spear_cpufreq.freq_tbl);
+ }
+-- 
+1.7.12.rc2.18.g61b472e
+
