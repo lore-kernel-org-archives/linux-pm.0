@@ -1,46 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 0/2] Add imx6q-cpufreq driver support
-Date: Sat, 12 Jan 2013 14:34:24 +0100
-Message-ID: <1615305.5RaFjClze9@vostro.rjw.lan>
-References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/5] Cpufreq Fixes for 3.9
+Date: Sat, 12 Jan 2013 19:12:05 +0530
+Message-ID: <CAKohpon1uv1cXKJaOKQdw2_jLcOTABk86BYEicsHJjJ7Y1od_Q@mail.gmail.com>
+References: <cover.1357967566.git.viresh.kumar@linaro.org>
+	<3417394.mgXgKYU9J9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38770 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921Ab3ALN2i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 12 Jan 2013 08:28:38 -0500
-In-Reply-To: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:38368 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232Ab3ALNmH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Jan 2013 08:42:07 -0500
+Received: by mail-ob0-f177.google.com with SMTP id uo13so2568246obb.8
+        for <linux-pm@vger.kernel.org>; Sat, 12 Jan 2013 05:42:05 -0800 (PST)
+In-Reply-To: <3417394.mgXgKYU9J9@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sascha Hauer <s.hauer@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org
 
-On Thursday, January 10, 2013 04:34:21 PM Shawn Guo wrote:
-> Changes since v1:
->  - Drop patch "PM / OPP: Export more symbols for module usage", as
->    there is already one "[PATCH 5/6 v9] power: export opp cpufreq
->    functions" from Mark Langsdorf.
->  - Instead of having cpu_dev be the struct device retrieved from
->    get_cpu_device(), have it be &pdev->dev, so that we can use managed
->    functions to simplified the cleanup path.
->  - Use dev_* rather than pr_* for message output
->  - Fix Typos and others commented by Viresh and Sascha. 
-> 
-> Once the first patch gets accepted, I will apply the second one for
-> going through arm-soc tree.
-> 
-> Shawn Guo (2):
->   cpufreq: add imx6q-cpufreq driver
->   ARM: imx: enable imx6q-cpufreq support
+On 12 January 2013 18:57, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> There's no need to add a Tested-by for yourself if you sign-off a patch,
+> though.  Tested-by is information that somebody *in* *addition* to the
+> original author has tested the patch, because we all should test the patches
+> we sign-off, right?
 
-I would prefer these two to go through the arm-soc tree if that's not a problem.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Correct. I did it this time only, as it was something major.
