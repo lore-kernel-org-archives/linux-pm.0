@@ -1,30 +1,28 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Simplify __cpufreq_remove_dev()
-Date: Sat, 12 Jan 2013 09:37:23 +0530
-Message-ID: <CAKohpo=mrSvh_Dyu3BJO0904nSFArrV1Asc4-8pY4CifzUqCbg@mail.gmail.com>
-References: <aa10abe640afed8700abf262dbfc9b9c22659b6a.1357729671.git.viresh.kumar@linaro.org>
-	<CAKohpone-pXUjuDsP7r73mP+rzSUUb1oWiu5c+NL8R_WsYoJZg@mail.gmail.com>
-	<CAAQ0ZWTvKcn5qR8_J5hx+qsxHGTJ8rSE41VD6aQhipM6c+CqTA@mail.gmail.com>
-	<9372306.uEln1VHseC@vostro.rjw.lan>
+Subject: Re: drivers/cpufreq/cpufreq.c:51:17: sparse: symbol
+ 'cpufreq_online_mask' was not declared. Should it be static?
+Date: Sat, 12 Jan 2013 09:38:32 +0530
+Message-ID: <CAKohpokyaJyykm7_jKmAAATTJToiWFvBYJMzok5rD3qdtagjkw@mail.gmail.com>
+References: <50f017f7.SoVcNexmm6uNvfQX%yuanhan.liu@linux.intel.com>
+	<20130111140301.GA25489@localhost>
+	<CAKohponzGnFdzAk0PzTsvrt9PA2OH1Aaa9VQh4+En3KdGbJwFA@mail.gmail.com>
+	<4518630.CgYC5fVtRj@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:32801 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656Ab3ALEHY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jan 2013 23:07:24 -0500
-Received: by mail-ob0-f171.google.com with SMTP id dn14so2400471obc.16
-        for <linux-pm@vger.kernel.org>; Fri, 11 Jan 2013 20:07:23 -0800 (PST)
-In-Reply-To: <9372306.uEln1VHseC@vostro.rjw.lan>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:58428 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754433Ab3ALEId (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Jan 2013 23:08:33 -0500
+Received: by mail-ob0-f181.google.com with SMTP id oi10so2397783obb.26
+        for <linux-pm@vger.kernel.org>; Fri, 11 Jan 2013 20:08:32 -0800 (PST)
+In-Reply-To: <4518630.CgYC5fVtRj@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org
+Cc: Fengguang Wu <fengguang.wu@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-On 12 January 2013 03:41, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Can any one of you two create a series of patches for me to take for v3.9
-> with all of the correct Tested-by and Reviewed-by etc. tags, because I've
-> already lost track of your multiple versions and threads?
+On 12 January 2013 04:17, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I could, but I prefer you to send me a fixed patch. :-)
 
-:)
-I will.
+Ok. I will post all the 5 patches again :)
