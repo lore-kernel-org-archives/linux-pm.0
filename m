@@ -1,53 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: SPEAr: Fix sparse warning for cpufreq driver
-Date: Sat, 12 Jan 2013 14:27:54 +0100
-Message-ID: <2860847.JDCmaU39LZ@vostro.rjw.lan>
-References: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 0/2] Add imx6q-cpufreq driver support
+Date: Sat, 12 Jan 2013 14:34:24 +0100
+Message-ID: <1615305.5RaFjClze9@vostro.rjw.lan>
+References: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38761 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:38770 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921Ab3ALNWG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 12 Jan 2013 08:22:06 -0500
-In-Reply-To: <6d76f8457b4eb42bcbab8e0221f90168a8fbc328.1357967480.git.viresh.kumar@linaro.org>
+	id S1752921Ab3ALN2i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 12 Jan 2013 08:28:38 -0500
+In-Reply-To: <1357806863-6899-1-git-send-email-shawn.guo@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sascha Hauer <s.hauer@pengutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Saturday, January 12, 2013 10:42:09 AM Viresh Kumar wrote:
-> This patch fixes following sparse warning:
+On Thursday, January 10, 2013 04:34:21 PM Shawn Guo wrote:
+> Changes since v1:
+>  - Drop patch "PM / OPP: Export more symbols for module usage", as
+>    there is already one "[PATCH 5/6 v9] power: export opp cpufreq
+>    functions" from Mark Langsdorf.
+>  - Instead of having cpu_dev be the struct device retrieved from
+>    get_cpu_device(), have it be &pdev->dev, so that we can use managed
+>    functions to simplified the cleanup path.
+>  - Use dev_* rather than pr_* for message output
+>  - Fix Typos and others commented by Viresh and Sascha. 
 > 
-> drivers/cpufreq/spear-cpufreq.c:33:5: warning: symbol 'spear_cpufreq_verify' was
-> not declared. Should it be static?
+> Once the first patch gets accepted, I will apply the second one for
+> going through arm-soc tree.
+> 
+> Shawn Guo (2):
+>   cpufreq: add imx6q-cpufreq driver
+>   ARM: imx: enable imx6q-cpufreq support
 
-Applied to the linux-next branch of the linux-pm.git tree as v3.9 material.
+I would prefer these two to go through the arm-soc tree if that's not a problem.
 
 Thanks,
 Rafael
 
 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/spear-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-> index 4575cfe..8ff26af 100644
-> --- a/drivers/cpufreq/spear-cpufreq.c
-> +++ b/drivers/cpufreq/spear-cpufreq.c
-> @@ -30,7 +30,7 @@ static struct {
->  	u32 cnt;
->  } spear_cpufreq;
->  
-> -int spear_cpufreq_verify(struct cpufreq_policy *policy)
-> +static int spear_cpufreq_verify(struct cpufreq_policy *policy)
->  {
->  	return cpufreq_frequency_table_verify(policy, spear_cpufreq.freq_tbl);
->  }
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
