@@ -1,25 +1,21 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 1/4] ARM: EXYNOS5: Add PPMU device tree support
-Date: Mon, 14 Jan 2013 23:26:41 +0900
-Message-ID: <CAJ0PZbRG4OVckLo=rNy+nxBjQJ1Lz6=obKMECEVbhvEk0w9OJg@mail.gmail.com>
+Subject: Re: [PATCH 2/4] ARM: EXYNOS5: Support Exynos5-bus devfreq driver
+Date: Mon, 14 Jan 2013 23:29:31 +0900
+Message-ID: <CAJ0PZbQa7+9umrrG7DAYsBs8GJ00pZvZrFtGdG9rsduenKfQig@mail.gmail.com>
 References: <1357733199-17206-1-git-send-email-a.kesavan@samsung.com>
+	<1357733199-17206-2-git-send-email-a.kesavan@samsung.com>
 Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f45.google.com ([209.85.215.45]:48988 "EHLO
-	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757124Ab3ANO0n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jan 2013 09:26:43 -0500
-In-Reply-To: <1357733199-17206-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1357733199-17206-2-git-send-email-a.kesavan@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Abhilash Kesavan <a.kesavan@samsung.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
+List-Id: linux-pm@vger.kernel.org
 
 On Wed, Jan 9, 2013 at 9:06 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
-> PPMU is required by the devfreq driver. Add a device tree
-> node for it.
+> Setup the INT clock ops to control/vary INT frequency
 >
 > Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
 > Cc: Jonghwan Choi <jhbird.choi@samsung.com>
@@ -27,64 +23,247 @@ On Wed, Jan 9, 2013 at 9:06 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
 
 Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
+
+Is this part going to be merged at exynos-tree?
+
+Anyways, as I don't have Exynos5 devices personally, I can't test the code.
+
+
 > ---
->  .../bindings/arm/exynos/ppmu-exynos5.txt           |   28 ++++++++++++++++++++
->  arch/arm/boot/dts/exynos5250.dtsi                  |    9 ++++++
->  2 files changed, 37 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+>  arch/arm/mach-exynos/clock-exynos5.c           |  143 ++++++++++++++++++++++++
+>  arch/arm/mach-exynos/include/mach/regs-clock.h |   37 ++++++
+>  2 files changed, 180 insertions(+), 0 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
-> new file mode 100644
-> index 0000000..a424dfa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
-> @@ -0,0 +1,28 @@
-> +Exynos5 PPMU driver
-> +-------------------
-> +
-> +Performance events are primitive values used to get performance data. These
-> +events provide information about the behavior of the SoC that can be used
-> +when analyzing system performance. These events are made visible using the
-> +PPMU logic.
-> +Exynos5 PPMU driver is used by the exynos5 devfreq driver to control the bus
-> +frequency/voltage.
-> +
-> +Required properties:
-> +- compatible: should be one of the following.
-> +       * samsung,exynos5-ppmu - for exynos5250 type ppmu.
-> +- reg:
-> +       * physical base address of the PPMUs (DDR, Right Bus and CPU) and
-> +       length of memory mapped region.
-> +
-> +Example:
-> +--------
-> +
-> +       ppmu {
-> +               compatible = "samsung,exynos5250-ppmu";
-> +               reg = <0x10C40000 0x2000
-> +                      0x10C50000 0x2000
-> +                      0x10C60000 0x2000
-> +                      0x10CB0000 0x2000
-> +                      0x13660000 0x2000>;
-> +       };
-> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
-> index 30485de..d504cba 100644
-> --- a/arch/arm/boot/dts/exynos5250.dtsi
-> +++ b/arch/arm/boot/dts/exynos5250.dtsi
-> @@ -732,4 +732,13 @@
->                 interrupt-parent = <&combiner>;
->                 interrupts = <24 1>;
->         };
-> +
-> +       ppmu {
-> +               compatible = "samsung,exynos5250-ppmu";
-> +               reg = <0x10C40000 0x2000        /* PPMU_DDR_C */
-> +                      0x10C50000 0x2000        /* PPMU_DDR_R1 */
-> +                      0x10CB0000 0x2000        /* PPMU_DDR_L */
-> +                      0x13660000 0x2000        /* PPMU_DDR_RIGHT */
-> +                      0x10C60000 0x2000>;      /* PPMU_DDR_CPU */
-> +       };
+> diff --git a/arch/arm/mach-exynos/clock-exynos5.c b/arch/arm/mach-exynos/clock-exynos5.c
+> index 0208c3a..050879c 100644
+> --- a/arch/arm/mach-exynos/clock-exynos5.c
+> +++ b/arch/arm/mach-exynos/clock-exynos5.c
+> @@ -108,6 +108,11 @@ static struct clk exynos5_clk_sclk_usbphy = {
+>         .rate           = 48000000,
 >  };
+>
+> +/* Virtual Bus INT clock */
+> +static struct clk exynos5_int_clk = {
+> +       .name           = "int_clk",
+> +};
+> +
+>  static int exynos5_clksrc_mask_top_ctrl(struct clk *clk, int enable)
+>  {
+>         return s5p_gatectrl(EXYNOS5_CLKSRC_MASK_TOP, clk, enable);
+> @@ -1426,6 +1431,141 @@ static struct clk *exynos5_clks[] __initdata = {
+>         &clk_fout_cpll,
+>         &clk_fout_mpll_div2,
+>         &exynos5_clk_armclk,
+> +       &exynos5_int_clk,
+> +};
+> +
+> +#define INT_FREQ(f, a0, a1, a2, a3, a4, a5, b0, b1, b2, b3, \
+> +                       c0, c1, d0, e0) \
+> +       { \
+> +               .freq = (f) * 1000000, \
+> +               .clk_div_top0 = ((a0) << 0 | (a1) << 8 | (a2) << 12 | \
+> +                               (a3) << 16 | (a4) << 20 | (a5) << 28), \
+> +               .clk_div_top1 = ((b0) << 12 | (b1) << 16 | (b2) << 20 | \
+> +                               (b3) << 24), \
+> +               .clk_div_lex = ((c0) << 4 | (c1) << 8), \
+> +               .clk_div_r0x = ((d0) << 4), \
+> +               .clk_div_r1x = ((e0) << 4), \
+> +       }
+> +
+> +static struct {
+> +       unsigned long freq;
+> +       u32 clk_div_top0;
+> +       u32 clk_div_top1;
+> +       u32 clk_div_lex;
+> +       u32 clk_div_r0x;
+> +       u32 clk_div_r1x;
+> +} int_freq[] = {
+> +       /*
+> +        * values:
+> +        * freq
+> +        * clock divider for ACLK66, ACLK166, ACLK200, ACLK266,
+> +                       ACLK333, ACLK300_DISP1
+> +        * clock divider for ACLK300_GSCL, ACLK400_IOP, ACLK400_ISP, ACLK66_PRE
+> +        * clock divider for PCLK_LEX, ATCLK_LEX
+> +        * clock divider for ACLK_PR0X
+> +        * clock divider for ACLK_PR1X
+> +        */
+> +       INT_FREQ(266, 1, 1, 3, 2, 0, 0, 0, 1, 1, 5, 1, 0, 1, 1),
+> +       INT_FREQ(200, 1, 2, 4, 3, 1, 0, 0, 3, 2, 5, 1, 0, 1, 1),
+> +       INT_FREQ(160, 1, 3, 4, 4, 2, 0, 0, 3, 3, 5, 1, 0, 1, 1),
+> +       INT_FREQ(133, 1, 3, 5, 5, 2, 1, 1, 4, 4, 5, 1, 0, 1, 1),
+> +       INT_FREQ(100, 1, 7, 7, 7, 7, 3, 7, 7, 7, 5, 1, 0, 1, 1),
+> +};
+> +
+> +static unsigned long exynos5_clk_int_get_rate(struct clk *clk)
+> +{
+> +       return clk->rate;
+> +}
+> +
+> +static void exynos5_int_set_clkdiv(unsigned int div_index)
+> +{
+> +       unsigned int tmp;
+> +
+> +       /* Change Divider - TOP0 */
+> +       tmp = __raw_readl(EXYNOS5_CLKDIV_TOP0);
+> +
+> +       tmp &= ~(EXYNOS5_CLKDIV_TOP0_ACLK266_MASK |
+> +               EXYNOS5_CLKDIV_TOP0_ACLK200_MASK |
+> +               EXYNOS5_CLKDIV_TOP0_ACLK66_MASK |
+> +               EXYNOS5_CLKDIV_TOP0_ACLK333_MASK |
+> +               EXYNOS5_CLKDIV_TOP0_ACLK166_MASK |
+> +               EXYNOS5_CLKDIV_TOP0_ACLK300_DISP1_MASK);
+> +
+> +       tmp |= int_freq[div_index].clk_div_top0;
+> +
+> +       __raw_writel(tmp, EXYNOS5_CLKDIV_TOP0);
+> +
+> +       /* Wait for TOP0 divider to stabilize */
+> +       while (__raw_readl(EXYNOS5_CLKDIV_STAT_TOP0) & 0x151101)
+> +               cpu_relax();
+> +
+> +       /* Change Divider - TOP1 */
+> +       tmp = __raw_readl(EXYNOS5_CLKDIV_TOP1);
+> +
+> +       tmp &= ~(EXYNOS5_CLKDIV_TOP1_ACLK400_ISP_MASK |
+> +               EXYNOS5_CLKDIV_TOP1_ACLK400_IOP_MASK |
+> +               EXYNOS5_CLKDIV_TOP1_ACLK66_PRE_MASK |
+> +               EXYNOS5_CLKDIV_TOP1_ACLK300_GSCL_MASK);
+> +
+> +       tmp |= int_freq[div_index].clk_div_top1;
+> +
+> +       __raw_writel(tmp, EXYNOS5_CLKDIV_TOP1);
+> +
+> +       /* Wait for TOP0 and TOP1 dividers to stabilize */
+> +       while ((__raw_readl(EXYNOS5_CLKDIV_STAT_TOP1) & 0x1110000) &&
+> +               (__raw_readl(EXYNOS5_CLKDIV_STAT_TOP0) & 0x80000))
+> +               cpu_relax();
+> +
+> +       /* Change Divider - LEX */
+> +       tmp = int_freq[div_index].clk_div_lex;
+> +
+> +       __raw_writel(tmp, EXYNOS5_CLKDIV_LEX);
+> +
+> +       /* Wait for LEX divider to stabilize */
+> +       while (__raw_readl(EXYNOS5_CLKDIV_STAT_LEX) & 0x110)
+> +               cpu_relax();
+> +
+> +       /* Change Divider - R0X */
+> +       tmp = int_freq[div_index].clk_div_r0x;
+> +
+> +       __raw_writel(tmp, EXYNOS5_CLKDIV_R0X);
+> +
+> +       /* Wait for R0X divider to stabilize */
+> +       while (__raw_readl(EXYNOS5_CLKDIV_STAT_R0X) & 0x10)
+> +               cpu_relax();
+> +
+> +       /* Change Divider - R1X */
+> +       tmp = int_freq[div_index].clk_div_r1x;
+> +
+> +       __raw_writel(tmp, EXYNOS5_CLKDIV_R1X);
+> +
+> +       /* Wait for R1X divider to stabilize */
+> +       while (__raw_readl(EXYNOS5_CLKDIV_STAT_R1X) & 0x10)
+> +               cpu_relax();
+> +}
+> +
+> +static int exynos5_clk_int_set_rate(struct clk *clk, unsigned long rate)
+> +{
+> +       int index;
+> +
+> +       for (index = 0; index < ARRAY_SIZE(int_freq); index++)
+> +               if (int_freq[index].freq == rate)
+> +                       break;
+> +
+> +       if (index == ARRAY_SIZE(int_freq))
+> +               return -EINVAL;
+> +
+> +       /* Change the system clock divider values */
+> +       exynos5_int_set_clkdiv(index);
+> +
+> +       clk->rate = rate;
+> +
+> +       return 0;
+> +}
+> +
+> +static struct clk_ops exynos5_clk_int_ops = {
+> +       .get_rate = exynos5_clk_int_get_rate,
+> +       .set_rate = exynos5_clk_int_set_rate
+>  };
+>
+>  static u32 epll_div[][6] = {
+> @@ -1620,6 +1760,9 @@ void __init_or_cpufreq exynos5_setup_clocks(void)
+>
+>         clk_fout_epll.ops = &exynos5_epll_ops;
+>
+> +       exynos5_int_clk.ops = &exynos5_clk_int_ops;
+> +       exynos5_int_clk.rate = aclk_266;
+> +
+>         if (clk_set_parent(&exynos5_clk_mout_epll.clk, &clk_fout_epll))
+>                 printk(KERN_ERR "Unable to set parent %s of clock %s.\n",
+>                                 clk_fout_epll.name, exynos5_clk_mout_epll.clk.name);
+> diff --git a/arch/arm/mach-exynos/include/mach/regs-clock.h b/arch/arm/mach-exynos/include/mach/regs-clock.h
+> index d36ad76..3d3cbc8 100644
+> --- a/arch/arm/mach-exynos/include/mach/regs-clock.h
+> +++ b/arch/arm/mach-exynos/include/mach/regs-clock.h
+> @@ -323,6 +323,9 @@
+>  #define EXYNOS5_CLKDIV_PERIC5                  EXYNOS_CLKREG(0x1056C)
+>  #define EXYNOS5_SCLK_DIV_ISP                   EXYNOS_CLKREG(0x10580)
+>
+> +#define EXYNOS5_CLKDIV_STAT_TOP0               EXYNOS_CLKREG(0x10610)
+> +#define EXYNOS5_CLKDIV_STAT_TOP1               EXYNOS_CLKREG(0x10614)
+> +
+>  #define EXYNOS5_CLKGATE_IP_ACP                 EXYNOS_CLKREG(0x08800)
+>  #define EXYNOS5_CLKGATE_IP_ISP0                        EXYNOS_CLKREG(0x0C800)
+>  #define EXYNOS5_CLKGATE_IP_ISP1                        EXYNOS_CLKREG(0x0C804)
+> @@ -337,6 +340,18 @@
+>  #define EXYNOS5_CLKGATE_IP_PERIS               EXYNOS_CLKREG(0x10960)
+>  #define EXYNOS5_CLKGATE_BLOCK                  EXYNOS_CLKREG(0x10980)
+>
+> +#define EXYNOS5_CLKGATE_BUS_SYSLFT             EXYNOS_CLKREG(0x08920)
+> +
+> +#define EXYNOS5_CLKOUT_CMU_TOP                 EXYNOS_CLKREG(0x10A00)
+> +
+> +#define EXYNOS5_CLKDIV_LEX                     EXYNOS_CLKREG(0x14500)
+> +#define EXYNOS5_CLKDIV_STAT_LEX                        EXYNOS_CLKREG(0x14600)
+> +
+> +#define EXYNOS5_CLKDIV_R0X                     EXYNOS_CLKREG(0x18500)
+> +#define EXYNOS5_CLKDIV_STAT_R0X                        EXYNOS_CLKREG(0x18600)
+> +
+> +#define EXYNOS5_CLKDIV_R1X                     EXYNOS_CLKREG(0x1C500)
+> +#define EXYNOS5_CLKDIV_STAT_R1X                        EXYNOS_CLKREG(0x1C600)
+>  #define EXYNOS5_BPLL_CON0                      EXYNOS_CLKREG(0x20110)
+>  #define EXYNOS5_CLKSRC_CDREX                   EXYNOS_CLKREG(0x20200)
+>  #define EXYNOS5_CLKDIV_CDREX                   EXYNOS_CLKREG(0x20500)
+> @@ -347,6 +362,28 @@
+>
+>  #define EXYNOS5_EPLLCON0_LOCKED_SHIFT          (29)
+>
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK300_DISP1_SHIFT        (28)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK300_DISP1_MASK (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK300_DISP1_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK333_SHIFT      (20)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK333_MASK       (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK333_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK266_SHIFT      (16)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK266_MASK       (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK266_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK200_SHIFT      (12)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK200_MASK       (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK200_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK166_SHIFT      (8)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK166_MASK       (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK166_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK66_SHIFT       (0)
+> +#define EXYNOS5_CLKDIV_TOP0_ACLK66_MASK                (0x7 << EXYNOS5_CLKDIV_TOP0_ACLK66_SHIFT)
+> +
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK66_PRE_SHIFT   (24)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK66_PRE_MASK    (0x7 << EXYNOS5_CLKDIV_TOP1_ACLK66_PRE_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK400_ISP_SHIFT  (20)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK400_ISP_MASK   (0x7 << EXYNOS5_CLKDIV_TOP1_ACLK400_ISP_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK400_IOP_SHIFT  (16)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK400_IOP_MASK   (0x7 << EXYNOS5_CLKDIV_TOP1_ACLK400_IOP_SHIFT)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK300_GSCL_SHIFT (12)
+> +#define EXYNOS5_CLKDIV_TOP1_ACLK300_GSCL_MASK  (0x7 << EXYNOS5_CLKDIV_TOP1_ACLK300_GSCL_SHIFT)
+> +
+>  #define PWR_CTRL1_CORE2_DOWN_RATIO             (7 << 28)
+>  #define PWR_CTRL1_CORE1_DOWN_RATIO             (7 << 16)
+>  #define PWR_CTRL1_DIV2_DOWN_EN                 (1 << 9)
 > --
 > 1.7.8.6
 >
