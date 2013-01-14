@@ -1,251 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: Simplify cpufreq_add_dev()
-Date: Mon, 14 Jan 2013 18:53:04 +0530
-Message-ID: <c8858f2e2768be94901696e5fc208efe9104b26e.1358169251.git.viresh.kumar@linaro.org>
-References: <52283ef705d795f3bbc50f8444c292e80364372e.1358169251.git.viresh.kumar@linaro.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/4] ARM: EXYNOS5: Add PPMU device tree support
+Date: Mon, 14 Jan 2013 23:26:41 +0900
+Message-ID: <CAJ0PZbRG4OVckLo=rNy+nxBjQJ1Lz6=obKMECEVbhvEk0w9OJg@mail.gmail.com>
+References: <1357733199-17206-1-git-send-email-a.kesavan@samsung.com>
+Reply-To: myungjoo.ham@gmail.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f44.google.com ([209.85.160.44]:56161 "EHLO
-	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756382Ab3ANNX3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jan 2013 08:23:29 -0500
-Received: by mail-pb0-f44.google.com with SMTP id uo1so2163864pbc.17
-        for <linux-pm@vger.kernel.org>; Mon, 14 Jan 2013 05:23:28 -0800 (PST)
-In-Reply-To: <52283ef705d795f3bbc50f8444c292e80364372e.1358169251.git.viresh.kumar@linaro.org>
-In-Reply-To: <52283ef705d795f3bbc50f8444c292e80364372e.1358169251.git.viresh.kumar@linaro.org>
-References: <52283ef705d795f3bbc50f8444c292e80364372e.1358169251.git.viresh.kumar@linaro.org>
+Received: from mail-la0-f45.google.com ([209.85.215.45]:48988 "EHLO
+	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757124Ab3ANO0n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Jan 2013 09:26:43 -0500
+In-Reply-To: <1357733199-17206-1-git-send-email-a.kesavan@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Abhilash Kesavan <a.kesavan@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
 
-Currently cpufreq_add_dev() firsts allocates policy, calls driver->init() and
-then checks if this cpu is already managed or not. And if it is already managed,
-free its policy.
+On Wed, Jan 9, 2013 at 9:06 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
+> PPMU is required by the devfreq driver. Add a device tree
+> node for it.
+>
+> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
 
-We can save all this if we somehow know cpu is managed or not in advance.
-policy->related_cpus contains list of all valid sibling cpus of policy->cpu. We
-can check this to know if current cpu is already managed.
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Shawn Guo <shawn.guo@linaro.org>
----
-V1->V2:
-- #ifdef,endif CONFIG_HOTPLUG added across: cpufreq_add_policy_cpu() and its
-  usage.
+> ---
+>  .../bindings/arm/exynos/ppmu-exynos5.txt           |   28 ++++++++++++++++++++
+>  arch/arm/boot/dts/exynos5250.dtsi                  |    9 ++++++
+>  2 files changed, 37 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+>
+> diff --git a/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+> new file mode 100644
+> index 0000000..a424dfa
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/exynos/ppmu-exynos5.txt
+> @@ -0,0 +1,28 @@
+> +Exynos5 PPMU driver
+> +-------------------
+> +
+> +Performance events are primitive values used to get performance data. These
+> +events provide information about the behavior of the SoC that can be used
+> +when analyzing system performance. These events are made visible using the
+> +PPMU logic.
+> +Exynos5 PPMU driver is used by the exynos5 devfreq driver to control the bus
+> +frequency/voltage.
+> +
+> +Required properties:
+> +- compatible: should be one of the following.
+> +       * samsung,exynos5-ppmu - for exynos5250 type ppmu.
+> +- reg:
+> +       * physical base address of the PPMUs (DDR, Right Bus and CPU) and
+> +       length of memory mapped region.
+> +
+> +Example:
+> +--------
+> +
+> +       ppmu {
+> +               compatible = "samsung,exynos5250-ppmu";
+> +               reg = <0x10C40000 0x2000
+> +                      0x10C50000 0x2000
+> +                      0x10C60000 0x2000
+> +                      0x10CB0000 0x2000
+> +                      0x13660000 0x2000>;
+> +       };
+> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
+> index 30485de..d504cba 100644
+> --- a/arch/arm/boot/dts/exynos5250.dtsi
+> +++ b/arch/arm/boot/dts/exynos5250.dtsi
+> @@ -732,4 +732,13 @@
+>                 interrupt-parent = <&combiner>;
+>                 interrupts = <24 1>;
+>         };
+> +
+> +       ppmu {
+> +               compatible = "samsung,exynos5250-ppmu";
+> +               reg = <0x10C40000 0x2000        /* PPMU_DDR_C */
+> +                      0x10C50000 0x2000        /* PPMU_DDR_R1 */
+> +                      0x10CB0000 0x2000        /* PPMU_DDR_L */
+> +                      0x13660000 0x2000        /* PPMU_DDR_RIGHT */
+> +                      0x10C60000 0x2000>;      /* PPMU_DDR_CPU */
+> +       };
+>  };
+> --
+> 1.7.8.6
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
- drivers/cpufreq/cpufreq.c | 153 +++++++++++++++++-----------------------------
- 1 file changed, 55 insertions(+), 98 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9af14a8..5f72ad4 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -703,92 +703,6 @@ static struct kobj_type ktype_cpufreq = {
- 	.release	= cpufreq_sysfs_release,
- };
- 
--/*
-- * Returns:
-- *   Negative: Failure
-- *   0:        Success
-- *   Positive: When we have a managed CPU and the sysfs got symlinked
-- */
--static int cpufreq_add_dev_policy(unsigned int cpu,
--				  struct cpufreq_policy *policy,
--				  struct device *dev)
--{
--	int ret = 0;
--#ifdef CONFIG_SMP
--	unsigned long flags;
--	unsigned int j;
--#ifdef CONFIG_HOTPLUG_CPU
--	struct cpufreq_governor *gov;
--
--	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
--	if (gov) {
--		policy->governor = gov;
--		pr_debug("Restoring governor %s for cpu %d\n",
--		       policy->governor->name, cpu);
--	}
--#endif
--
--	for_each_cpu(j, policy->cpus) {
--		struct cpufreq_policy *managed_policy;
--
--		if (cpu == j)
--			continue;
--
--		/* Check for existing affected CPUs.
--		 * They may not be aware of it due to CPU Hotplug.
--		 * cpufreq_cpu_put is called when the device is removed
--		 * in __cpufreq_remove_dev()
--		 */
--		managed_policy = cpufreq_cpu_get(j);
--		if (unlikely(managed_policy)) {
--
--			/* Set proper policy_cpu */
--			unlock_policy_rwsem_write(cpu);
--			per_cpu(cpufreq_policy_cpu, cpu) = managed_policy->cpu;
--
--			if (lock_policy_rwsem_write(cpu) < 0) {
--				/* Should not go through policy unlock path */
--				if (cpufreq_driver->exit)
--					cpufreq_driver->exit(policy);
--				cpufreq_cpu_put(managed_policy);
--				return -EBUSY;
--			}
--
--			__cpufreq_governor(managed_policy, CPUFREQ_GOV_STOP);
--
--			spin_lock_irqsave(&cpufreq_driver_lock, flags);
--			cpumask_copy(managed_policy->cpus, policy->cpus);
--			per_cpu(cpufreq_cpu_data, cpu) = managed_policy;
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
--			__cpufreq_governor(managed_policy, CPUFREQ_GOV_START);
--			__cpufreq_governor(managed_policy, CPUFREQ_GOV_LIMITS);
--
--			pr_debug("CPU already managed, adding link\n");
--			ret = sysfs_create_link(&dev->kobj,
--						&managed_policy->kobj,
--						"cpufreq");
--			if (ret)
--				cpufreq_cpu_put(managed_policy);
--			/*
--			 * Success. We only needed to be added to the mask.
--			 * Call driver->exit() because only the cpu parent of
--			 * the kobj needed to call init().
--			 */
--			if (cpufreq_driver->exit)
--				cpufreq_driver->exit(policy);
--
--			if (!ret)
--				return 1;
--			else
--				return ret;
--		}
--	}
--#endif
--	return ret;
--}
--
--
- /* symlink affected CPUs */
- static int cpufreq_add_dev_symlink(unsigned int cpu,
- 				   struct cpufreq_policy *policy)
-@@ -893,6 +807,42 @@ err_out_kobj_put:
- 	return ret;
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
-+				  struct device *dev)
-+{
-+	struct cpufreq_policy *policy;
-+	int ret = 0;
-+	unsigned long flags;
-+
-+	policy = cpufreq_cpu_get(sibling);
-+	WARN_ON(!policy);
-+
-+	per_cpu(cpufreq_policy_cpu, cpu) = policy->cpu;
-+
-+	lock_policy_rwsem_write(cpu);
-+
-+	__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	cpumask_set_cpu(cpu, policy->cpus);
-+	per_cpu(cpufreq_cpu_data, cpu) = policy;
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+
-+	__cpufreq_governor(policy, CPUFREQ_GOV_START);
-+	__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-+
-+	unlock_policy_rwsem_write(cpu);
-+
-+	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-+	if (ret) {
-+		cpufreq_cpu_put(policy);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+#endif
- 
- /**
-  * cpufreq_add_dev - add a CPU device
-@@ -905,12 +855,12 @@ err_out_kobj_put:
-  */
- static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- {
--	unsigned int cpu = dev->id;
--	int ret = 0, found = 0;
-+	unsigned int j, cpu = dev->id;
-+	int ret = -ENOMEM, found = 0;
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
--	unsigned int j;
- #ifdef CONFIG_HOTPLUG_CPU
-+	struct cpufreq_governor *gov;
- 	int sibling;
- #endif
- 
-@@ -927,6 +877,15 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		cpufreq_cpu_put(policy);
- 		return 0;
- 	}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	/* Check if this cpu was hot-unplugged earlier and has siblings */
-+	for_each_online_cpu(sibling) {
-+		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
-+		if (cp && cpumask_test_cpu(cpu, cp->related_cpus))
-+			return cpufreq_add_policy_cpu(cpu, sibling, dev);
-+	}
-+#endif
- #endif
- 
- 	if (!try_module_get(cpufreq_driver->owner)) {
-@@ -934,7 +893,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		goto module_out;
- 	}
- 
--	ret = -ENOMEM;
- 	policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
- 	if (!policy)
- 		goto nomem_out;
-@@ -992,14 +950,14 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				     CPUFREQ_START, policy);
- 
--	ret = cpufreq_add_dev_policy(cpu, policy, dev);
--	if (ret) {
--		if (ret > 0)
--			/* This is a managed cpu, symlink created,
--			   exit with 0 */
--			ret = 0;
--		goto err_unlock_policy;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	gov = __find_governor(per_cpu(cpufreq_cpu_governor, cpu));
-+	if (gov) {
-+		policy->governor = gov;
-+		pr_debug("Restoring governor %s for cpu %d\n",
-+		       policy->governor->name, cpu);
- 	}
-+#endif
- 
- 	ret = cpufreq_add_dev_interface(cpu, policy, dev);
- 	if (ret)
-@@ -1013,7 +971,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 
- 	return 0;
- 
--
- err_out_unregister:
- 	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
+
 -- 
-1.7.12.rc2.18.g61b472e
-
+MyungJoo Ham, Ph.D.
+Mobile Software Platform Lab, DMC Business, Samsung Electronics
