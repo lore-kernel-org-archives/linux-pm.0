@@ -1,92 +1,75 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] PM / Runtime: Fix the twice judgement in
- rpm_suspend/resume()
-Date: Tue, 15 Jan 2013 01:20:05 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A20400F@SHSMSX101.ccr.corp.intel.com>
-References: <2969423.iZ1VgpHf54@vostro.rjw.lan>
- <Pine.LNX.4.44L0.1301141027290.1782-100000@iolanthe.rowland.org>
+From: Chuansheng Liu <chuansheng.liu@intel.com>
+Subject: [PATCH] PM / Runtime: return the right value when deferred_resume
+ is true in rpm_suspend()
+Date: Tue, 15 Jan 2013 23:26:11 +0800
+Message-ID: <1358263571.1223.26.camel@cliu38-desktop-build>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1301141027290.1782-100000@iolanthe.rowland.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:42838 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892Ab3AOGWe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Jan 2013 01:22:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, stern@rowland.harvard.edu
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
+
+
+For the case that in rpm_suspend() and deferred_resume is true,
+the rpm_resume() will be called, and if rpm_resume() return error,
+at this time, the device is still in SUSPENDED state.
+
+In this case it is still an suspend succeeding case, we should
+return non-error instead of EAGAIN.
+
+An example like below for this case:
+CPU1:                                                      CPU2:
+pm_runtime_get_sync()
+pm_runtime_put_sync_suspend()
+  rpm_suspend()
+    __update_runtime_status(dev, RPM_SUSPENDING)
+    rpm_callback()
+        spin_unlock_irq()
+          ...                                               pm_runtime_get()
+                                                              spin_lock_irqsave()
+          cb()                                                rpm_resume()
+          ...                                                   dev->power.deferred_resume = true
+                                                              spin_unlock_irqrestore()
+        spin_lock_irq()
+    __update_runtime_status(dev, RPM_SUSPENDED)
+    rpm_resume() is called due to deferred_resume is true
+
+Here if rpm_resume() failed in CPU1, the runtime_status is still SUSPENDED,
+we should return 0 in this case.
+
+Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
+---
+ drivers/base/power/runtime.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 3148b10..0adc713 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -436,9 +436,11 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+ 
+ 	if (dev->power.deferred_resume) {
+ 		dev->power.deferred_resume = false;
+-		rpm_resume(dev, 0);
+-		retval = -EAGAIN;
+-		goto out;
++		if (rpm_resume(dev, 0) >= 0) {
++			/* In case resuming succeeded, return EAGAIN error */
++			retval = -EAGAIN;
++			goto out;
++		}
+ 	}
+ 
+ 	/* Maybe the parent is now able to suspend. */
+-- 
+1.7.0.4
 
 
 
-> -----Original Message-----
-> From: Alan Stern [mailto:stern@rowland.harvard.edu]
-> Sent: Monday, January 14, 2013 11:30 PM
-> To: Rafael J. Wysocki
-> Cc: Liu, Chuansheng; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] PM / Runtime: Fix the twice judgement in
-> rpm_suspend/resume()
-> 
-> On Mon, 14 Jan 2013, Rafael J. Wysocki wrote:
-> 
-> > On Tuesday, January 15, 2013 01:48:18 AM Chuansheng Liu wrote:
-> > >
-> > > In function rpm_suspend/resume(), when going into the for(;;),
-> > > the pre-condition judgement has been done, and the variable
-> runtime_status
-> > > are always protected by &power.lock, so it is not necessary to judge
-> > > them again before unlock_irq &power.lock in for(;;).
-> > >
-> > > This patch clean them up.
-> >
-> > Well, I don't really think this fixes anything.  Yes, we may save one check
-> > here and there, but the current code follows the wait_event() convention.
-OK, thanks.
-
-> 
-> Indeed, this patch introduces a race.  If runtime_status changes from
-> RPM_SUSPENDING and power.wait_queue is signalled in between the test at
-> the end of the loop and the prepare_to_wait() call, the loop will never
-> end.
-Checking the race case, it should not happen?
-Updating runtime_status and wake_up wait_queue are protected by power.lock.
-spin_lock(&power.lock)
-...
-__update_runtime_status()
-...
-wake_up_all(&dev->power.wait_queue)
-...
-spin_unlock(&power.lock)
-
-
-> 
-> Alan Stern
-> 
-> > Thanks,
-> > Rafael
-> >
-> >
-> > > Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
-> > > ---
-> > >  drivers/base/power/runtime.c |   18 +++++++++---------
-> > >  1 files changed, 9 insertions(+), 9 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > index 3148b10..32d6497 100644
-> > > --- a/drivers/base/power/runtime.c
-> > > +++ b/drivers/base/power/runtime.c
-> > > @@ -377,14 +377,14 @@ static int rpm_suspend(struct device *dev, int
-> rpmflags)
-> > >  		for (;;) {
-> > >  			prepare_to_wait(&dev->power.wait_queue, &wait,
-> > >  					TASK_UNINTERRUPTIBLE);
-> > > -			if (dev->power.runtime_status != RPM_SUSPENDING)
-> > > -				break;
-> > >
-> > >  			spin_unlock_irq(&dev->power.lock);
-> > >
-> > >  			schedule();
-> > >
-> > >  			spin_lock_irq(&dev->power.lock);
-> > > +			if (dev->power.runtime_status != RPM_SUSPENDING)
-> > > +				break;
-> > >  		}
