@@ -1,42 +1,100 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: [PATCH] PM / Runtime: Fix the twice judgement in rpm_suspend/resume()
-Date: Tue, 15 Jan 2013 10:50:18 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301151044560.6514-100000@netrider.rowland.org>
-References: <27240C0AC20F114CBF8149A2696CBE4A20400F@SHSMSX101.ccr.corp.intel.com>
+From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] clk: remove unreachable code
+Date: Tue, 15 Jan 2013 14:45:02 -0800
+Message-ID: <20130115224502.23734.7414@quantum>
+References: <1357650191-30842-1-git-send-email-rajagopal.venkat@linaro.org>
+	<1357712988-22317-1-git-send-email-rajagopal.venkat@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:48178 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757174Ab3AOPuU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Jan 2013 10:50:20 -0500
-In-Reply-To: <27240C0AC20F114CBF8149A2696CBE4A20400F@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <1357712988-22317-1-git-send-email-rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, 15 Jan 2013, Liu, Chuansheng wrote:
+Quoting Rajagopal Venkat (2013-01-08 22:29:48)
+> while reparenting a clock, NULL check is done for clock in
+> consideration and its new parent. So re-check is not required.
+> If done, else part becomes unreachable.
+> 
+> Signed-off-by: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/clk/clk.c |   13 ++-----------
+>  1 file changed, 2 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 251e45d..1c4097c 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1040,7 +1040,6 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+>  {
+>  #ifdef CONFIG_COMMON_CLK_DEBUG
+>         struct dentry *d;
+> -       struct dentry *new_parent_d;
+>  #endif
+>  
+>         if (!clk || !new_parent)
+> @@ -1048,22 +1047,14 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+>  
+>         hlist_del(&clk->child_node);
+>  
+> -       if (new_parent)
+> -               hlist_add_head(&clk->child_node, &new_parent->children);
+> -       else
+> -               hlist_add_head(&clk->child_node, &clk_orphan_list);
+> +       hlist_add_head(&clk->child_node, &new_parent->children);
 
-> > Indeed, this patch introduces a race.  If runtime_status changes from
-> > RPM_SUSPENDING and power.wait_queue is signalled in between the test at
-> > the end of the loop and the prepare_to_wait() call, the loop will never
-> > end.
-> Checking the race case, it should not happen?
-> Updating runtime_status and wake_up wait_queue are protected by power.lock.
-> spin_lock(&power.lock)
-> ...
-> __update_runtime_status()
-> ...
-> wake_up_all(&dev->power.wait_queue)
-> ...
-> spin_unlock(&power.lock)
+Rajagopal,
 
-You're right, the lock prevents this race from happening.
+You found a bug, but not the right one :)
 
-On the other hand, with your change we would end up calling finish_wait()
-without calling prepare_to_wait() first.  And as Rafael mentioned, the
-current code fits the pattern that people expect to see.
+This change would result in never moving a clock into the orphan list if
+the parent is missing.  The right thing to do is to allow the operation
+to succeed and migrate this clock into the orphan list.  In keeping
+with the clk.h api we need to treat struct clk new_parent as an opaque
+cookie and not care whether or not it is NULL.
 
-Alan Stern
+Untested patch below fixes the real bug:
 
+
+
+>From a4d56e3ee51452366365749873710e16631e9de7 Mon Sep 17 00:00:00 2001
+From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Date: Tue, 15 Jan 2013 14:39:06 -0800
+Subject: [PATCH] clk: allow re-parenting to NULL clks
+
+__clk_reparent presently bails early if the new parent of a clk is NULL.
+This is wrong and prevents dynamically migrating clocks into the orphan
+list.  The fix is to remove the NULL pointer check for new_parent in
+__clk_parent.
+
+Signed-off-by: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ drivers/clk/clk.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 593a2e4..f056230 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -1186,7 +1186,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+ 	struct dentry *new_parent_d;
+ #endif
+ 
+-	if (!clk || !new_parent)
++	if (!clk)
+ 		return;
+ 
+ 	hlist_del(&clk->child_node);
+-- 
+1.7.10.4
