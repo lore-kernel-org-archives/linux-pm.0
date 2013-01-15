@@ -1,75 +1,58 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH] PM / Runtime: return the right value when deferred_resume
- is true in rpm_suspend()
-Date: Tue, 15 Jan 2013 23:26:11 +0800
-Message-ID: <1358263571.1223.26.camel@cliu38-desktop-build>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v12 7/9] libata: scsi: no poll when ODD is powered off
+Date: Tue, 15 Jan 2013 15:12:42 +0800
+Message-ID: <20130115071242.GA16590@aaronlu.sh.intel.com>
+References: <1357809870-18816-1-git-send-email-aaron.lu@intel.com>
+ <1357809870-18816-8-git-send-email-aaron.lu@intel.com>
+ <20130110195610.GL20454@htj.dyndns.org>
+ <20130111021110.GB26270@aaronlu.sh.intel.com>
+ <20130111021701.GA2513@mtj.dyndns.org>
+ <20130111031626.GA26613@aaronlu.sh.intel.com>
+ <20130111184457.GQ20454@htj.dyndns.org>
+ <50F4480B.7050001@pobox.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:42838 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892Ab3AOGWe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Jan 2013 01:22:34 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-scsi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <50F4480B.7050001@pobox.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Tejun Heo <tj@kernel.org>, James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, stern@rowland.harvard.edu
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
+On Mon, Jan 14, 2013 at 01:01:47PM -0500, Jeff Garzik wrote:
+> On 01/11/2013 01:44 PM, Tejun Heo wrote:
+> >Hello,
+> >
+> >On Fri, Jan 11, 2013 at 11:16:26AM +0800, Aaron Lu wrote:
+> >>OK, will make it atomic in next version, thanks for the advice.
+> >>
+> >>Perhaps I can add two scsi helper functions in scsi_lib.c like:
+> >>
+> >>void sdev_disable_disk_events(struct scsi_device *sdev)
+> >>{
+> >>	atomic_inc(&sdev->disk_events_disable_depth);
+> >>}
+> >>
+> >>void sdev_enable_disk_events(struct scsi_device *sdev)
+> >>{
+> >>	if (WARN_ON_ONCE(atomic_read(&sdev->disk_events_disable_depth) <= 0))
+> >>		return;
+> >>	atomic_dec(&sdev->disk_events_disable_depth);
+> >>}
+> >>
+> >>And call them in ATA layer. Do you like this?
+> >
+> >Sounds good to me.  James, how does the series look to you?
+> 
+> Indeed.  Want James' Acked-by for patch #1.
+> 
+> I think it's ready.  It can go into libata-dev.git #upstream, and be
+> reverted prior to Linus push if James NAKs.
 
-For the case that in rpm_suspend() and deferred_resume is true,
-the rpm_resume() will be called, and if rpm_resume() return error,
-at this time, the device is still in SUSPENDED state.
+Great! Thanks.
 
-In this case it is still an suspend succeeding case, we should
-return non-error instead of EAGAIN.
+I'll incorporate Tejun's suggestions into v13 and send them out soon.
 
-An example like below for this case:
-CPU1:                                                      CPU2:
-pm_runtime_get_sync()
-pm_runtime_put_sync_suspend()
-  rpm_suspend()
-    __update_runtime_status(dev, RPM_SUSPENDING)
-    rpm_callback()
-        spin_unlock_irq()
-          ...                                               pm_runtime_get()
-                                                              spin_lock_irqsave()
-          cb()                                                rpm_resume()
-          ...                                                   dev->power.deferred_resume = true
-                                                              spin_unlock_irqrestore()
-        spin_lock_irq()
-    __update_runtime_status(dev, RPM_SUSPENDED)
-    rpm_resume() is called due to deferred_resume is true
-
-Here if rpm_resume() failed in CPU1, the runtime_status is still SUSPENDED,
-we should return 0 in this case.
-
-Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
----
- drivers/base/power/runtime.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 3148b10..0adc713 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -436,9 +436,11 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 
- 	if (dev->power.deferred_resume) {
- 		dev->power.deferred_resume = false;
--		rpm_resume(dev, 0);
--		retval = -EAGAIN;
--		goto out;
-+		if (rpm_resume(dev, 0) >= 0) {
-+			/* In case resuming succeeded, return EAGAIN error */
-+			retval = -EAGAIN;
-+			goto out;
-+		}
- 	}
- 
- 	/* Maybe the parent is now able to suspend. */
--- 
-1.7.0.4
-
-
+-Aaron
 
