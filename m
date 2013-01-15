@@ -1,163 +1,92 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] aspm.c: allow to enable PCIe ASPM for PCIe bridges acting
- as an endpoint
-Date: Mon, 14 Jan 2013 17:29:07 -0700
-Message-ID: <CAErSpo43U3FLyWo9DoK9ZRFRrDHzV4YmDHVZARLGQMMw6SPGpg@mail.gmail.com>
-References: <201301071014.22087.roman.fietze@telemotive.de>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH] PM / Runtime: Fix the twice judgement in
+ rpm_suspend/resume()
+Date: Tue, 15 Jan 2013 01:20:05 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A20400F@SHSMSX101.ccr.corp.intel.com>
+References: <2969423.iZ1VgpHf54@vostro.rjw.lan>
+ <Pine.LNX.4.44L0.1301141027290.1782-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <201301071014.22087.roman.fietze@telemotive.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Roman Fietze <roman.fietze@telemotive.de>
-Cc: linux-pci@vger.kernel.org, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1301141027290.1782-100000@iolanthe.rowland.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-[+cc Kenji, Rafael, linux-pm]
 
-On Mon, Jan 7, 2013 at 2:14 AM, Roman Fietze <roman.fietze@telemotive.de> wrote:
-> Hello Linux PCI List Members,
->
-> We are using a system that contains, besides some other PCIe
-> components, two FPGAs connected to the PCIe via two PEX8311 bridges.
-> Those PEX8311 are a kind of copy & paste design from a PEX8111 PCIe to
-> PCI-X and a PEX9056 PCI-X to local bridge.
->
-> I was wondering why the PEX8311's PCIe side, the PEX8111, was never
-> able to activate its ASPM link states L0S or L1, or ASPM at all. The
-> cause was the code now slightly modified by this patch, disabling ASPM
-> for bridges.
->
-> In our setup this PCIe bridge definitively acts as a PCIe endpoint,
-> the PEX8311 (PEX8111) also has registers to define e.g. the L0S and L1
-> timings that only exist in PCIe endpoints (and e.g. not in PCIe
-> switches like a PEX8059).
->
-> For the possible additional power savings see the commit message
-> itself.
->
-> I made this new functionality configurable so it wont disturb or risk
-> existing systems. It seems that there are a few devices out there
-> using a PEX8311 to connect local endpoints to a PCIe bus, at least in
-> the embedded market, so this configuration option might help some of
-> the developers out there.
->
-> Any comments are welcome, as always.
->
->
-> From 4f32a8c3db8f4f76ac9777be952fbc7b9c4db65e Mon Sep 17 00:00:00 2001
-> From: Roman Fietze <roman.fietze@telemotive.de>
-> Date: Mon, 7 Jan 2013 09:29:24 +0100
-> Subject: [PATCH] aspm.c: allow to enable PCIe ASPM for PCIe bridges acting as an endpoint
->
-> This enables PCI Express ASPM for PCIe-PCI bridges. In this case the
-> bridge acts as a PCIe endpoint.
->
-> An example for such a device is e.g. the PEX8311, a combined PCIe to
-> PCI-X and PCI-X to local bridge. This allows for additional power
-> savings when L0S and L1 can be enabled, which depends on the L0S and
-> L1 timings programmed in the PCIe part of the device. These programmed
-> timings have to match the attached device on the local side of such a
-> device.
->
-> The measured power savings on an active and busy system with two such
-> bridges connected to a PCIe switch are about 20mA at 13.8V when L0S
-> up/down and L1 link states can be activated. The test system is an
-> Atom Z530 with an US15W, a PEX8509, some other PCIe devices and two
-> PEX8311 devices having FPGAs as their local endpoint.
->
-> Signed-off-by: Roman Fietze <roman.fietze@telemotive.de>
-> ---
->  drivers/pci/pcie/Kconfig |   16 ++++++++++++++++
->  drivers/pci/pcie/aspm.c  |    9 +++++++++
->  2 files changed, 25 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/pci/pcie/Kconfig b/drivers/pci/pcie/Kconfig
-> index 6c8bc58..273ba7e 100644
-> --- a/drivers/pci/pcie/Kconfig
-> +++ b/drivers/pci/pcie/Kconfig
-> @@ -80,6 +80,22 @@ config PCIEASPM_PERFORMANCE
->           Disable PCI Express ASPM L0s and L1, even if the BIOS enabled them.
->  endchoice
->
-> +config PCIEASPM_BRIDGES
-> +       bool "Enable PCI Express ASPM for PCIe bridges"
-> +       depends on PCIEASPM && EXPERIMENTAL
-> +       default n
-> +       help
-> +         This enables PCI Express ASPM for PCIe-PCI bridges. In this
-> +         case the bridge acts as a PCIe endpoint.
-> +
-> +         An example for such a device is e.g. the PEX8311, a combined
-> +         PCIe to PCI-X and PCI-X to local bridge. This allows for
-> +         additional power savings when L0S and L1 can be enabled,
-> +         which depends on the L0S and L1 timings programmed in the
-> +         PCIe part of the device. These programmed timings have to
-> +         match the attached device on the local side of such a
-> +         device.
 
-I don't know why the current code treats bridges differently.
+> -----Original Message-----
+> From: Alan Stern [mailto:stern@rowland.harvard.edu]
+> Sent: Monday, January 14, 2013 11:30 PM
+> To: Rafael J. Wysocki
+> Cc: Liu, Chuansheng; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] PM / Runtime: Fix the twice judgement in
+> rpm_suspend/resume()
+> 
+> On Mon, 14 Jan 2013, Rafael J. Wysocki wrote:
+> 
+> > On Tuesday, January 15, 2013 01:48:18 AM Chuansheng Liu wrote:
+> > >
+> > > In function rpm_suspend/resume(), when going into the for(;;),
+> > > the pre-condition judgement has been done, and the variable
+> runtime_status
+> > > are always protected by &power.lock, so it is not necessary to judge
+> > > them again before unlock_irq &power.lock in for(;;).
+> > >
+> > > This patch clean them up.
+> >
+> > Well, I don't really think this fixes anything.  Yes, we may save one check
+> > here and there, but the current code follows the wait_event() convention.
+OK, thanks.
 
-I see why you added a config option, because it clearly won't break
-anything.  But I don't really like the config option because either
-doing ASPM for bridges is supposed to work according to the spec, in
-which case everybody should turn this on and enjoy the benefit, or it
-isn't, in which case the parts in your system have non-standard
-behavior, and we should use a quirk or similar approach.
+> 
+> Indeed, this patch introduces a race.  If runtime_status changes from
+> RPM_SUSPENDING and power.wait_queue is signalled in between the test at
+> the end of the loop and the prepare_to_wait() call, the loop will never
+> end.
+Checking the race case, it should not happen?
+Updating runtime_status and wake_up wait_queue are protected by power.lock.
+spin_lock(&power.lock)
+...
+__update_runtime_status()
+...
+wake_up_all(&dev->power.wait_queue)
+...
+spin_unlock(&power.lock)
 
->  config PCIE_PME
->         def_bool y
->         depends on PCIEPORTBUS && PM_RUNTIME && EXPERIMENTAL && ACPI
-> diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-> index b52630b..435a14a 100644
-> --- a/drivers/pci/pcie/aspm.c
-> +++ b/drivers/pci/pcie/aspm.c
-> @@ -391,6 +391,8 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
->
->         /* Setup initial capable state. Will be updated later */
->         link->aspm_capable = link->aspm_support;
-> +
-> +#ifndef CONFIG_PCIEASPM_BRIDGES
->         /*
->          * If the downstream component has pci bridge function, don't
->          * do ASPM for now.
-> @@ -401,6 +403,7 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
->                         break;
->                 }
->         }
-> +#endif
->
->         /* Get and check endpoint acceptable latencies */
->         list_for_each_entry(child, &linkbus->devices, bus_list) {
-> @@ -409,6 +412,9 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
->                         &link->acceptable[PCI_FUNC(child->devfn)];
->
->                 if (pci_pcie_type(child) != PCI_EXP_TYPE_ENDPOINT &&
-> +#ifdef CONFIG_PCIEASPM_BRIDGES
-> +                   pci_pcie_type(child) != PCI_EXP_TYPE_PCI_BRIDGE &&
-> +#endif
->                     pci_pcie_type(child) != PCI_EXP_TYPE_LEG_END)
->                         continue;
->
-> @@ -621,6 +627,9 @@ static void pcie_update_aspm_capable(struct pcie_link_state *root)
->                         continue;
->                 list_for_each_entry(child, &linkbus->devices, bus_list) {
->                         if ((pci_pcie_type(child) != PCI_EXP_TYPE_ENDPOINT) &&
-> +#ifdef CONFIG_PCIEASPM_BRIDGES
-> +                           (pci_pcie_type(child) != PCI_EXP_TYPE_PCI_BRIDGE) &&
-> +#endif
->                             (pci_pcie_type(child) != PCI_EXP_TYPE_LEG_END))
->                                 continue;
->                         pcie_aspm_check_latency(child);
-> --
-> 1.7.3.4
->
->
->
-> Roman
->
->
-> --
-> Roman Fietze              Telemotive AG Buero Muehlhausen
-> Breitwiesen                             73347 Muehlhausen
-> Tel.: +49(0)7335/18493-45        http://www.telemotive.de
+
+> 
+> Alan Stern
+> 
+> > Thanks,
+> > Rafael
+> >
+> >
+> > > Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
+> > > ---
+> > >  drivers/base/power/runtime.c |   18 +++++++++---------
+> > >  1 files changed, 9 insertions(+), 9 deletions(-)
+> > >
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 3148b10..32d6497 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -377,14 +377,14 @@ static int rpm_suspend(struct device *dev, int
+> rpmflags)
+> > >  		for (;;) {
+> > >  			prepare_to_wait(&dev->power.wait_queue, &wait,
+> > >  					TASK_UNINTERRUPTIBLE);
+> > > -			if (dev->power.runtime_status != RPM_SUSPENDING)
+> > > -				break;
+> > >
+> > >  			spin_unlock_irq(&dev->power.lock);
+> > >
+> > >  			schedule();
+> > >
+> > >  			spin_lock_irq(&dev->power.lock);
+> > > +			if (dev->power.runtime_status != RPM_SUSPENDING)
+> > > +				break;
+> > >  		}
