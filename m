@@ -1,175 +1,121 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v6 3/3] PM: Introduce Intel PowerClamp Driver
-Date: Wed, 16 Jan 2013 20:20:08 +0800
-Message-ID: <1358338808.2252.54.camel@rzhang1-mobl4>
-References: <1357297965-17839-1-git-send-email-jacob.jun.pan@linux.intel.com>
-	 <1357297965-17839-4-git-send-email-jacob.jun.pan@linux.intel.com>
-	 <1358338729.2252.53.camel@rzhang1-mobl4>
+From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Subject: Re: [PATCH] clk: remove unreachable code
+Date: Wed, 16 Jan 2013 18:15:13 +0530
+Message-ID: <CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg@mail.gmail.com>
+References: <1357650191-30842-1-git-send-email-rajagopal.venkat@linaro.org>
+	<1357712988-22317-1-git-send-email-rajagopal.venkat@linaro.org>
+	<20130115224502.23734.7414@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:56432 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751969Ab3APMUS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Jan 2013 07:20:18 -0500
-In-Reply-To: <1358338729.2252.53.camel@rzhang1-mobl4>
+Received: from mail-qa0-f52.google.com ([209.85.216.52]:63004 "EHLO
+	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441Ab3APMpO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jan 2013 07:45:14 -0500
+Received: by mail-qa0-f52.google.com with SMTP id d13so1092699qak.4
+        for <linux-pm@vger.kernel.org>; Wed, 16 Jan 2013 04:45:14 -0800 (PST)
+In-Reply-To: <20130115224502.23734.7414@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Joe Perches <joe@perches.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
+To: Mike Turquette <mturquette@linaro.org>
+Cc: patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 2013-01-16 at 20:18 +0800, Zhang Rui wrote:
-> Hi, Jacob,
->=20
-> On Fri, 2013-01-04 at 03:12 -0800, Jacob Pan wrote:
-> > Intel PowerClamp driver performs synchronized idle injection across
-> > all online CPUs. The goal is to maintain a given package level C-st=
-ate
-> > ratio.
-> >=20
-> > Compared to other throttling methods already exist in the kernel,
-> > such as ACPI PAD (taking CPUs offline) and clock modulation, this i=
-s often
-> > more efficient in terms of performance per watt.
-> >=20
-> > Please refer to Documentation/thermal/intel_powerclamp.txt for more=
- details.
-> >=20
-> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > ---
-> >  Documentation/thermal/intel_powerclamp.txt |  307 +++++++++++
-> >  drivers/thermal/Kconfig                    |   10 +
-> >  drivers/thermal/Makefile                   |    2 +
-> >  drivers/thermal/intel_powerclamp.c         |  788 ++++++++++++++++=
-++++++++++++
-> >  4 files changed, 1107 insertions(+)
-> >  create mode 100644 Documentation/thermal/intel_powerclamp.txt
-> >  create mode 100644 drivers/thermal/intel_powerclamp.c
->=20
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index c2c77d1..7d90ab8 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -122,4 +122,14 @@ config DB8500_CPUFREQ_COOLING
-> >  	  bound cpufreq cooling device turns active to set CPU frequency =
-low to
-> >  	  cool down the CPU.
-> > =20
-> > +config INTEL_POWERCLAMP
-> > +	tristate "Intel PowerClamp idle injection driver"
-> > +	depends on THERMAL
-> > +	depends on X86
-> > +	depends on CPU_SUP_INTEL
-> > +	help
-> > +	  Enable this to enable Intel PowerClamp idle injection driver. T=
-his
-> > +	  enforce idle time which results in more package C-state residen=
-cy. The
-> > +	  user interface is exposed via generic thermal framework.
-> > +
-> >  endif
-> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> > index d8da683..574f5f5 100644
-> > --- a/drivers/thermal/Makefile
-> > +++ b/drivers/thermal/Makefile
-> > @@ -18,3 +18,5 @@ obj-$(CONFIG_RCAR_THERMAL)	+=3D rcar_thermal.o
-> >  obj-$(CONFIG_EXYNOS_THERMAL)	+=3D exynos_thermal.o
-> >  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
-> >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
-> > +obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
-> > +
-> > diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/i=
-ntel_powerclamp.c
-> > new file mode 100644
-> > index 0000000..314b6fc
-> > --- /dev/null
-> > +++ b/drivers/thermal/intel_powerclamp.c
-> > @@ -0,0 +1,788 @@
-> > +/*
-> > + * intel_powerclamp.c - package c-state idle injection
-> > + *
-> > + * Copyright (c) 2012, Intel Corporation.
-> > + *
-> > + * Authors:
-> > + *     Arjan van de Ven <arjan@linux.intel.com>
-> > + *     Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or m=
-odify it
-> > + * under the terms and conditions of the GNU General Public Licens=
-e,
-> > + * version 2, as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope it will be useful, but =
-WITHOUT
-> > + * ANY WARRANTY; without even the implied warranty of MERCHANTABIL=
-ITY or
-> > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public L=
-icense for
-> > + * more details.
-> > + *
-> > + * You should have received a copy of the GNU General Public Licen=
-se along with
-> > + * this program; if not, write to the Free Software Foundation, In=
-c.,
-> > + * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-> > + *
-> > + *
-> > + *	TODO:
-> > + *           1. better handle wakeup from external interrupts, cur=
-rently a fixed
-> > + *              compensation is added to clamping duration when ex=
-cessive amount
-> > + *              of wakeups are observed during idle time. the reas=
-on is that in
-> > + *              case of external interrupts without need for ack, =
-clamping down
-> > + *              cpu in non-irq context does not reduce irq. for ma=
-jority of the
-> > + *              cases, clamping down cpu does help reduce irq as w=
-ell, we should
-> > + *              be able to differenciate the two cases and give a =
-quantitative
-> > + *              solution for the irqs that we can control. perhaps=
- based on
-> > + *              get_cpu_iowait_time_us()
-> > + *
-> > + *	     2. synchronization with other hw blocks
-> > + *
-> > + *
-> > + */
-> > +
-> > +#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/kthread.h>
-> > +#include <linux/freezer.h>
-> > +#include <linux/cpu.h>
-> > +#include <linux/thermal.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/tick.h>
-> > +#include <linux/debugfs.h>
-> > +#include <linux/seq_file.h>
-> > +#include <linux/nmi.h>
-> > +
-> drivers/thermal/intel_powerclamp.c: In function =E2=80=98clamp_thread=
-=E2=80=99:
-> drivers/thermal/intel_powerclamp.c:435:4: error: implicit declaration=
- of
-> function =E2=80=98local_touch_nmi=E2=80=99 [-Werror=3Dimplicit-functi=
-on-declaration]
->=20
-> changing to=20
-> #include <asm/nmi.h>
-> fixes the problem.
->=20
-and this is because I have neither CONFIG_HAVE_NMI_WATCHDOG set nor
-CONFIG_HARDLOCKUP_DETECTOR set in my configuration. :)
+On 16 January 2013 04:15, Mike Turquette <mturquette@linaro.org> wrote:
+> Quoting Rajagopal Venkat (2013-01-08 22:29:48)
+>> while reparenting a clock, NULL check is done for clock in
+>> consideration and its new parent. So re-check is not required.
+>> If done, else part becomes unreachable.
+>>
+>> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+>> ---
+>>  drivers/clk/clk.c |   13 ++-----------
+>>  1 file changed, 2 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+>> index 251e45d..1c4097c 100644
+>> --- a/drivers/clk/clk.c
+>> +++ b/drivers/clk/clk.c
+>> @@ -1040,7 +1040,6 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+>>  {
+>>  #ifdef CONFIG_COMMON_CLK_DEBUG
+>>         struct dentry *d;
+>> -       struct dentry *new_parent_d;
+>>  #endif
+>>
+>>         if (!clk || !new_parent)
+>> @@ -1048,22 +1047,14 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+>>
+>>         hlist_del(&clk->child_node);
+>>
+>> -       if (new_parent)
+>> -               hlist_add_head(&clk->child_node, &new_parent->children);
+>> -       else
+>> -               hlist_add_head(&clk->child_node, &clk_orphan_list);
+>> +       hlist_add_head(&clk->child_node, &new_parent->children);
+>
+> Rajagopal,
+>
+> You found a bug, but not the right one :)
+>
+> This change would result in never moving a clock into the orphan list if
+> the parent is missing.  The right thing to do is to allow the operation
+> to succeed and migrate this clock into the orphan list.  In keeping
+> with the clk.h api we need to treat struct clk new_parent as an opaque
+> cookie and not care whether or not it is NULL.
+>
+Mike,
 
-thanks,
-rui
+The only path where __clk_reparent() can get new parent as NULL is from
+clk_set_parent() api. Tracing this path, here are the reasons why I submitted
+this patch.
 
+1. The clk_set_parent() function takes new parent for granted and tries to
+access new_parent->rate when notifiers are registered,
+2. For clocks with multiple parents, the __clk_set_parent() function also
+takes new parent for granted and tries to access parent name while finding
+the index of new parent from cached parent pointers.
+
+But if the design decision is to allow clock to be re-parented to orphan list
+when new parent is missing, I can provide the new working patch.
+
+> Untested patch below fixes the real bug:
+>
+>
+>
+> From a4d56e3ee51452366365749873710e16631e9de7 Mon Sep 17 00:00:00 2001
+> From: Mike Turquette <mturquette@linaro.org>
+> Date: Tue, 15 Jan 2013 14:39:06 -0800
+> Subject: [PATCH] clk: allow re-parenting to NULL clks
+>
+> __clk_reparent presently bails early if the new parent of a clk is NULL.
+> This is wrong and prevents dynamically migrating clocks into the orphan
+> list.  The fix is to remove the NULL pointer check for new_parent in
+> __clk_parent.
+>
+> Signed-off-by: Mike Turquette <mturquette@linaro.org>
+> ---
+>  drivers/clk/clk.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 593a2e4..f056230 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1186,7 +1186,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+>         struct dentry *new_parent_d;
+>  #endif
+>
+> -       if (!clk || !new_parent)
+> +       if (!clk)
+>                 return;
+>
+>         hlist_del(&clk->child_node);
+> --
+> 1.7.10.4
+>
+
+
+
+-- 
+Regards,
+Rajagopal
