@@ -1,41 +1,42 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
-Date: Wed, 16 Jan 2013 11:31:31 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301161127540.1704-100000@iolanthe.rowland.org>
-References: <1358351148.2384.34.camel@dabdike.int.hansenpartnership.com>
+From: jacob pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v6 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Wed, 16 Jan 2013 09:09:50 -0800
+Message-ID: <20130116090950.00007e90@unknown>
+References: <1357297965-17839-1-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1357297965-17839-4-git-send-email-jacob.jun.pan@linux.intel.com>
+	<1358338729.2252.53.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <1358351148.2384.34.camel@dabdike.int.hansenpartnership.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:4690 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757135Ab3APRJv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jan 2013 12:09:51 -0500
+In-Reply-To: <1358338729.2252.53.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, Joe Perches <joe@perches.com>, Rob Landley <rob@landley.net>, Arjan van de Ven <arjan@linux.intel.com>, Paul McKenney <paulmck@linux.vnet.ibm.com>
 
-On Wed, 16 Jan 2013, James Bottomley wrote:
+On Wed, 16 Jan 2013 20:18:49 +0800
+Zhang Rui <rui.zhang@intel.com> wrote:
 
-> On Tue, 2013-01-15 at 17:20 +0800, Aaron Lu wrote:
-> > This patch adds runtime pm support for sr.
-> > 
-> > It did this by increasing the runtime usage_count of the device when:
-> > - its block device is opened;
-> > - the events checking is to run.
-> > 
-> > And decreasing the runtime usage_count of the device when:
-> > - its block device is closed;
-> > - After the events checking is done.
-> > 
-> > The idea is discussed in this mail thread:
-> > http://thread.gmane.org/gmane.linux.acpi.devel/55243/focus=52703
-> > 
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> 
-> I'd like an ack from Alan Stern as well, please, but with that, you can
-> add my acked-by.
+> > +#include <linux/nmi.h>
+> > + =20
+> drivers/thermal/intel_powerclamp.c: In function =E2=80=98clamp_thread=
+=E2=80=99:
+> drivers/thermal/intel_powerclamp.c:435:4: error: implicit declaration
+> of function =E2=80=98local_touch_nmi=E2=80=99 [-Werror=3Dimplicit-fun=
+ction-declaration]
+>=20
+> changing to=20
+> #include <asm/nmi.h>
+> fixes the problem.
+good catch. I missed this in my .config tests. I had
+CONFIG_HARDLOCKUP_DETECTOR on so the problem was not shown. I will send
+you an update.
 
-Aaron, have you checked whether this patch works okay when you play a
-track on an audio-only CD on the computer?  The block interface looks 
-okay but I'm not sure about the cdrom_device interface.
+Thanks,
 
-Alan Stern
-
+Jacob
