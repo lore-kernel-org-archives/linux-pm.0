@@ -1,395 +1,152 @@
-From: Mattias NILSSON1 <mattias.q.nilsson@stericsson.com>
-Subject: RE: [PATCH 6/9] Thermal: Add Documentation to new APIs
-Date: Wed, 16 Jan 2013 09:04:38 +0100
-Message-ID: <CEE6BB42CAD6E947908279175AF8470A1E178DB91D@EXDCVYMBSTM006.EQ1STM.local>
-References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <1357542806-20449-7-git-send-email-durgadoss.r@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1357542806-20449-7-git-send-email-durgadoss.r@intel.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH v7 0/4] block layer runtime pm
+Date: Wed, 16 Jan 2013 17:02:17 +0800
+Message-ID: <1358326941-3725-1-git-send-email-aaron.lu@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:18972 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932108Ab3APJBo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Jan 2013 04:01:44 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Aaron Lu <aaron.lu@intel.com>, Shane Huang <shane.huang@amd.com>
 
-Hi Durgadoss, Rui, all,
+In August 2010, Jens and Alan discussed about "Runtime PM and the block
+layer". http://marc.info/?t=128259108400001&r=1&w=2
+And then Alan has given a detailed implementation guide:
+http://marc.info/?l=linux-scsi&m=133727953625963&w=2
 
-Please see some questions inline below from a user space thermal control loop point of view. I should maybe have tagged this as QUESTIONS but relates pretty well to the sysfs documentation so I hope you excuse me for addressing the topic in this thread.
+To test:
+# ls -l /sys/block/sda
+/sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda
 
-Btw, let me introduce myself as this is my first appearance on the list: I work on ST-Ericsson with thermal SW architecture in our mobile platform projects.
+# echo 10000 > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/autosuspend_delay_ms
+# echo auto > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/control
+Then you'll see sda is suspended after 10secs idle.
 
-Best regards
-Mattias Nilsson
+[ 1767.680192] sd 2:0:0:0: [sda] Synchronizing SCSI cache
+[ 1767.680317] sd 2:0:0:0: [sda] Stopping disk
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Durgadoss R
-> Sent: den 7 januari 2013 08:13
-> To: rui.zhang@intel.com; linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org; eduardo.valentin@ti.com;
-> hongbo.zhang@linaro.org; wni@nvidia.com; Durgadoss R
-> Subject: [PATCH 6/9] Thermal: Add Documentation to new APIs
->
-> This patch adds Documentation for the new APIs introduced in this patch set.
-> The documentation also has a model sysfs structure for reference.
->
-> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
-> ---
->  Documentation/thermal/sysfs-api2.txt |  248
-> ++++++++++++++++++++++++++++++++++
->  1 file changed, 248 insertions(+)
->  create mode 100644 Documentation/thermal/sysfs-api2.txt
->
-> diff --git a/Documentation/thermal/sysfs-api2.txt
-> b/Documentation/thermal/sysfs-api2.txt
-> new file mode 100644
-> index 0000000..ffd0402
-> --- /dev/null
-> +++ b/Documentation/thermal/sysfs-api2.txt
-> @@ -0,0 +1,248 @@
-> +Thermal Framework
-> +-----------------
-> +
-> +Written by Durgadoss R <durgadoss.r@intel.com> Copyright (c) 2012 Intel
-> +Corporation
-> +
-> +Created on: 4 November 2012
-> +Updated on: 18 December 2012
-> +
-> +0. Introduction
-> +---------------
-> +The Linux thermal framework provides a set of interfaces for thermal
-> +sensors and thermal cooling devices (fan, processor...) to register
-> +with the thermal management solution and to be a part of it.
-> +
-> +This document focuses on how to enable new thermal sensors and cooling
-> +devices to participate in thermal management. This solution is intended
-> +to be 'light-weight' and platform/architecture independent. Any thermal
-> +sensor/cooling device should be able to use the infrastructure easily.
-> +
-> +The goal of thermal framework is to expose the thermal sensor/zone and
-> +cooling device attributes in a consistent way. This will help the
-> +thermal governors to make use of the information to manage platform
-> +thermals efficiently.
-> +
-> +The thermal sensor source file can be generic (can be any sensor
-> +driver, in any subsystem). This driver will use the sensor APIs and
-> +register with thermal framework to participate in platform Thermal
-> +management. This does not (and should not) know about which zone it
-> +belongs to, or any other information about platform thermals. A sensor
-> +driver is a standalone piece of code, which can optionally register with
-> thermal framework.
-> +
-> +However, for any platform, there should be a platformX_thermal.c file,
-> +which will know about the platform thermal characteristics (like how
-> +many sensors, zones, cooling devices, etc.. And how they are related to
-> +each other i.e the mapping information). Only in this file, the zone
-> +level APIs should be used, in which case the file will have all
-> +information required to attach various sensors to a particular zone.
-> +
-> +This way, we can have one platform level thermal file, which can
-> +support multiple platforms (may be)using the same set of sensors
-> +(but)binded in a different way. This file can get the platform thermal
-> +information through Firmware, ACPI tables, device tree etc.
-> +
-> +Unfortunately, today we don't have many drivers that can be clearly
-> +differentiated as 'sensor_file.c' and 'platform_thermal_file.c'.
-> +But very soon we will need/have. The reason I am saying this is because
-> +we are seeing a lot of chip drivers, starting to use thermal framework,
-> +and we should keep it really light-weight for them to do so.
-> +
-> +An Example: drivers/hwmon/emc1403.c - a generic thermal chip driver In
-> +one platform this sensor can belong to 'ZoneA' and in another the same
-> +can belong to 'ZoneB'. But, emc1403.c does not really care about where
-> +does it belong. It just reports temperature.
+And if you do some IO, it will resume immediately.
+[ 1791.052438] sd 2:0:0:0: [sda] Starting disk
 
-I miss some information on not just the API but how the user space control is intended to work. To my understanding user space control is based around the use of the user space governor for notifications on kernel defined trip points (active or passive types only), or will that change by your current work?
+For test, I often set the autosuspend time to 1 second. If you are using
+a GUI, the 10 seconds delay may be too long that the disk can not enter
+runtime suspended state.
 
-The governor is an attribute of the zone rather than the trip points so for me that means that for a sensor that is shared between a kernel control zone and a user space zone, we need two zones defined. Is that correctly understood?
+Note that sd's runtime suspend callback will dump some kernel messages
+and the syslog daemon will write kernel message to /var/log/messages,
+making the disk instantly resume after suspended. So for test, the
+syslog daemon should better be temporarily stopped.
 
-Is it an active decision to have the governor on zone level rather than on a per trip level (also see my below questions)?
+A git repo for it:
+https://github.com/aaronlu/linux.git blockpm_v7
 
+v7:
+- Add kernel doc for block layer runtime PM API as suggested by
+  Alan Stern;
 
-> +
-> +1. Terminology
-> +--------------
-> +This section describes the terminology used in the rest of this
-> +document as well as the thermal framework code.
-> +
-> +thermal_sensor: Hardware that can report temperature of a particular
-> +             spot in the platform, where it is placed. The
-> temperature
-> +             reported by the sensor is the 'real' temperature
-> reported
-> +             by the hardware.
-> +thermal_zone:        A virtual area on the device, that gets heated
-> up. It may
-> +             have one or more thermal sensors attached to
-> it.
-> +cooling_device:      Any component that can help in reducing the
-> temperature of
-> +             a 'hot spot' either by reducing its performance
-> (passive
-> +             cooling) or by other means(Active cooling E.g.
-> Fan)
-> +
-> +trip_points: Various temperature levels for each sensor. As of now, we
-> +             have four levels namely active, passive, hot and
-> critical.
-> +             Hot and critical trip point support only one value
-> whereas
-> +             active and passive can have any number of
-> values. These
-> +             temperature values can come from platform
-> data, and are
-> +             exposed through sysfs in a consistent manner.
-> Stand-alone
-> +             thermal sensor drivers are not expected to
-> know these values.
-> +             These values are RO.
-> +thresholds:  These are programmable temperature limits, on reaching
-> which
-> +             the thermal sensor generates an interrupt. The
-> framework is
-> +             notified about this interrupt to take appropriate
-> action.
-> +             There can be as many number of thresholds as
-> that of the
-> +             hardware supports. These values are RW.
-> +
-> +thermal_map: This provides the mapping (aka binding)
-> information between
-> +             various sensors and cooling devices in a
-> particular zone.
-> +             Typically, this also comes from platform data;
-> Stand-alone
-> +             sensor drivers or cooling device drivers are not
-> expected
-> +             to know these mapping information.
-> +
-> +2. Thermal framework APIs
-> +-------------------------
-> +2.1: For Thermal Sensors
-> +2.1.1 thermal_sensor_register:
-> +     This function creates a new sensor directory under
-> /sys/class/thermal/
-> +     as sensor[0-*]. This API is expected to be called by thermal
-> sensor
-> +     drivers. These drivers may or may not be in thermal
-> subsystem. This
-> +     function returns a thermal_sensor structure on success and
-> appropriate
-> +     error on failure.
-> +
-> +     name: Name of the sensor
-> +     count: Number of programmable thresholds associated with
-> this sensor
-> +     devdata: Device private data
-> +     ops: Thermal sensor callbacks
-> +             .get_temp: obtain the current temperature of
-> the sensor
-> +             .get_trend: obtain the trend of the sensor
-> +             .get_threshold: get a particular threshold
-> temperature
-> +             .set_threshold: set a particular threshold
-> temperature
-> +             .get_hyst: get hysteresis value associated with a
-> threshold
-> +             .set_hyst: set hysteresis value associated with a
-> threshold
-> +
-> +2.1.2 thermal_sensor_unregister:
-> +     This function deletes the sensor directory under
-> /sys/class/thermal/
-> +     for the given sensor. Thermal sensor drivers may call this API
-> +     during the driver's 'exit' routine.
-> +
-> +     ts: Thermal sensor that has to be unregistered
-> +
-> +2.1.3 enable_sensor_thresholds:
-> +     This function creates 'threshold[0-*]' attributes under a
-> particular
-> +     sensorX directory. These values are RW. This function is called
-> by
-> +     the sensr driver only if the sensor supports interrupt
-> mechanism.
-> +
-> +     ts: Thermal sensor for which thresholds have to be enabled
-> +     num_thresholds: Number of thresholds supported by the
-> sensor
-> +
-> +2.2: For Cooling Devices
-> +2.2.1 thermal_cooling_device_register:
-> +     This function adds a new thermal cooling device
-> (fan/processor/...)
-> +     to /sys/class/thermal/ folder as cooling_device[0-*]. This
-> function
-> +     is expected to be called by cooling device drivers that may be
-> +     present in other subsystems also.
-> +
-> +     name: the cooling device name
-> +     devdata: device private data
-> +     ops: thermal cooling devices callbacks
-> +     .get_max_state: get the Maximum throttle state of the cooling
-> device
-> +     .get_cur_state: get the Current throttle state of the cooling
-> device
-> +     .set_cur_state: set the Current throttle state of the cooling
-> device
-> +
-> +2.2.2 thermal_cooling_device_unregister:
-> +     This function deletes the given cdev entry form
-> /sys/class/thermal;
-> +     and also cleans all the symlinks referred from various zones.
-> +
-> +     cdev: Cooling device to be unregistered
-> +
-> +2.3: For Thermal Zones
-> +2.3.1 create_thermal_zone:
-> +     This function adds a new 'zone' under /sys/class/thermal/
-> +     directory as zone[0-*]. This zone has at least one thermal
-> +     sensor and at most MAX_SENSORS_PER_ZONE number of
-> sensors
-> +     attached to it. Similarly, this zone has at least one cdev
-> +     and at most MAX_CDEVS_PER_ZONE number of cdevs
-> attached to it.
-> +     Both the MAX_*_PER_ZONE values are configurable, through
-> +     Kconfig option(during 'menuconfig').
-> +
-> +     name: Name of the thermal zone
-> +     devdata: Device private data
-> +
-> +2.3.2 add_sensor_to_zone
-> +     This function adds a 'sensorX' entry under /sys/class/thermal/
-> +     zoneY/ directory. This 'sensorX' is a symlink to the actual
-> +     sensor entry under /sys/class/thermal/. Correspondingly, the
-> +     method remove_sensor_from_zone deletes the symlink.
-> +
-> +     tz: thermal zone structure
-> +     ts: thermal sensor structure
-> +
-> +2.3.3 add_cdev_to_zone
-> +     This function adds a 'cdevX' entry under /sys/class/thermal/
-> +     zoneY/ directory. This 'cdevX' is a symlink to the actual
-> +     cdev entry under /sys/class/thermal/. Correspondingly, the
-> +     method remove_cdev_from_zone deletes the symlink.
-> +
-> +     tz: thermal zone structure
-> +     cdev: thermal cooling device structure
-> +
-> +2.4 For Thermal Trip
-> +2.4.1 add_sensor_trip_info
-> +     This function adds trip point information for the given sensor,
-> +     (under a given zone) under
-> /sys/class/thermal/zoneX/thermal_trip/
-> +     This API creates 4 sysfs attributes namely active, passive, hot,
-> +     and critical. Each of these hold one or more trip point
-> temperature
-> +     values, as provided from platform data.
-> +
-> +     tz: thermal zone structure
-> +     ts: thermal sensor to which the trip points are attached
-> +     trip: trip point structure. Usually obtained from platform data
-> +
-> +2.5 For Thermal Map
-> +2.5.1 add_map_entry
-> +     This function adds a 'map[0-*]' sysfs attribute under
-> +     /sys/class/thermal/zoneX/thermal_map/. Each map holds a
-> space
-> +     separated list of values, that specify the binding relationship
-> +     between a sensor and a cdev in the given zone. The map
-> structure
-> +     is typically obtained as platform data. For example, through
-> +     ACPI tables, SFI tables, Device tree etc.
-> +
-> +     tz: thermal zone to which a 'map' is being added
-> +     map: thermal_map structure
-> +
-> +3. Sysfs attributes structure
-> +-----------------------------
-> +Thermal sysfs attributes will be represented under /sys/class/thermal.
+- Add back check for q->dev, as that serves as a flag if driver
+  is using block layer runtime PM;
 
+- Do not auto suspend when last request is finished, as that's a hot
+  path and auto suspend is not a trivial function. Instead, mark last
+  busy in pre_suspend so that runtim PM core will retry suspend some
+  time later to solve the 1st problem demostrated in v6, suggested by
+  Alan Stern.
 
-Adding the access information here too as in the previous documentation (RO/RW).
+- Move block layer runtime PM strtegy functions to where they are
+  needed instead of in include/linux/blkdev.h as suggested by Alan
+  Stern since clients of block layer do not need to know those
+  functions.
 
+v6:
+Take over from Lin Ming.
 
-> +
-> +3.1: For Thermal Sensors
-> +     /sys/class/thermal/sensor[0-*]:
-> +             |---type:               Name of the
-> thermal sensor
-> +             |---temp_input:
->       Current temperature in mC
-> +             |---threshold[0-*]:     Threshold
-> temperature in mC
-> +             |---threshold[0-*]_hyst:Optional hysteresis
-> value in mC
-> +
-> +3.2: For Thermal Cooling Devices
-> +     /sys/class/thermal/cooling_device[0-*]:
-> +             |---type:               Type of the cooling
-> device
-> +             |---max_state:
->       Maximum throttle state of the cdev
-> +             |---cur_state:          Current throttle
-> state of the cdev
-> +
-> +3.3: For Thermal Zones
+- Instead of put the device into autosuspend state in
+  blk_post_runtime_suspend, do it when the last request is finished.
+  This can also solve the problem illustrated below:
 
-With the below, how do user space know which thermal zones that are governed by the user space governor and that may be ok to manipulate trip point temps for (vs potentially kernel managed thermal zones with trip points with RW access on the temp node)?
+      thread A				      thread B
+|suspend timer expired			|
+|  ... ...				|a new request comes in,
+|  ... ...				|blk_pm_add_request
+|  ... ...				|skip request_resume due to
+|  ... ...				|q->status is still RPM_ACTIVE
+|  rpm_suspend				|  ... ...
+|    scsi_runtime_suspend		|  ... ...
+|      blk_pre_runtime_suspend		|  ... ...
+|      return -EBUSY due to nr_pending	|  ... ...
+|  rpm_suspend done			|  ... ...
+|					|    blk_pm_put_request, mark last busy
 
-> +     /sys/class/thermal/zone[0-*]:
-> +             |---name:               Name of the
-> thermal
-> +             |---sensorX:            Symlink to
-> ../sensorX
-> +             |---cdevY:              Symlink to ../cdevY
-> +             |---thermal_trip:       trip point values for
-> sensors
-> +             |---thermal_map:        mapping info
-> between sensors and cdevs
-> +
+But no more trigger point, and the device will stay at RPM_ACTIVE state.
+Run pm_runtime_autosuspend after the last request is finished solved
+this problem.
 
+- Requests which have the REQ_PM flag should not involve nr_pending
+  counting, or we may lose the condition to resume the device:
+  Suppose queue is active and nr_pending is 0. Then a REQ_PM request
+  comes and nr_pending will be increased to 1, but since the request has
+  REQ_PM flag, it will not cause resume. Before it is finished, a normal
+  request comes in, and since nr_pending is 1 now, it will not trigger
+  the resume of the device either. Bug.
 
-> +3.4: For Thermal Trip
-> +     This attribute represents the trip point values for all sensors
-> +     present in the thermal zone. All values are in mC.
+- Do not quiesce the device in scsi bus level runtime suspend callback.
+  Since the only reason the device is to be runtime suspended is due to
+  no more requests pending for it, quiesce it is pointless.
 
-How do these trip point types relate to user space management (only active/passive really relevant as the user space governor only act on those)? Actually, what is the reason for having a separate management of hot/critical compared to the active/passive governed setup? Couldn't the trip type be encapsulated in the governors (if that is moved to a per trip level and not per zone)? As a newcomer I feel I may have missed something essential here...
+- Remove scsi_autopm_* from sd_check_events as we are request driven.
 
-Also, I don't see any nodes indicating status ("trip point is active"). So how is user space intended to make use of the notification from the user space governor? Poll all the zones for temp at each notification? Any reason for not implementing something like the alarm nodes in hwmon also in the thermal framework?
+- Call blk_pm_runtime_init in scsi_sysfs_initialize_dev, so that we do
+  not need to check queue's device in blk_pm_add/put_request.
 
-> +     /sys/class/thermal/zoneX/thermal_trip/sensorY:
-> +             |---hot:                hot trip point value
-> +             |---critical:           critical trip point
-> value
-> +             |---passive:            list of passive trip
-> point values
-> +             |---active:             list of active trip
-> point values
-> +
-> +3.5: For Thermal Map
-> +     Each attribute represents the mapping/binding information
-> between
-> +     a sensor and a cdev, together with a trip type.
-> +     /sys/class/thermal/zoneX/thermal_map/:
-> +             |---mapX:               mapping
-> information
-> +     A typical map entry is like below:
-> +
-> +     trip_type  sensor  cdev  trip_mask  weight(s)
-> +     passive    cpu     proc  0x03       50 30
-> +     active     cpu     fan0  0x03       50 70
-> +
-> +     The trip mask is a bit string; if 'n' th bit is set, then for
-> +     trip point 'n' this cdev is throttled with the given weight[n].
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in the
-> body of a message to majordomo@vger.kernel.org More majordomo info at
-> http://vger.kernel.org/majordomo-info.html
+- Do not mark last busy and initiate an autosuspend for the device in
+  blk_pm_runtime_init function.
+
+- Do not mark last busy and initiate an autosuspend for the device in
+  block_post_runtime_resume, as when the request that triggered the
+  resume finished, the blk_pm_put_request will mark last busy and
+  initiate an autosuspend.
+
+v5:
+- rename scsi_execute_req to scsi_execute_req_flags
+  and wrap scsi_execute_req around it.
+- add detail function descriptions in patch 2 log
+- define static helper functions to do runtime pm work on block layer
+  and put the definitions inside a #ifdef block
+
+v4:
+- add CONFIG_PM_RUNTIME check
+- update queue runtime pm status after system resume
+- use pm_runtime_autosuspend instead of pm_request_autosuspend in scsi_runtime_idle
+- always count PM request
+
+v3:
+- remove block layer suspend/resume callbacks
+- add block layer runtime pm helper functions
+
+v2:
+- remove queue idle timer, use runtime pm core's auto suspend
+
+Lin Ming (4):
+  block: add a flag to identify PM request
+  block: add runtime pm helpers
+  block: implement runtime pm strategy
+  sd: change to auto suspend mode
+
+ block/blk-core.c           | 175 +++++++++++++++++++++++++++++++++++++++++++++
+ block/elevator.c           |  26 +++++++
+ drivers/scsi/scsi_lib.c    |   9 ++-
+ drivers/scsi/scsi_pm.c     |  35 +++++----
+ drivers/scsi/scsi_sysfs.c  |   2 +
+ drivers/scsi/sd.c          |  21 ++----
+ include/linux/blk_types.h  |   2 +
+ include/linux/blkdev.h     |  27 +++++++
+ include/scsi/scsi_device.h |  17 +++--
+ 9 files changed, 277 insertions(+), 37 deletions(-)
+
+-- 
+1.8.0.2
+
