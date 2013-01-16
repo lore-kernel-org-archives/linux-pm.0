@@ -1,92 +1,74 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] cpufreq: handle cpufreq being disabled for all exported function.
-Date: Wed, 16 Jan 2013 12:42:47 -0800
-Message-ID: <1358368967-16294-1-git-send-email-dirk.brandewie@gmail.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: rjw@sisk.pl, Dirk Brandewie <dirk.brandewie@gmail.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [Update] [PATCH v6 3/3] PM: Introduce Intel PowerClamp Driver
+Date: Wed, 16 Jan 2013 21:59:43 +0100
+Message-ID: <50F714BF.4080102@intel.com>
+References: <1358329528-1286-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:28753 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557Ab3APU7q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jan 2013 15:59:46 -0500
+In-Reply-To: <1358329528-1286-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>
 
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Hi,
 
-When disable_cpufreq() is called some exported functions are still
-being used that do not have a check for cpufreq being disabled.
+Please send a new version of the original patch [3/3] including this fix.
 
-Add a disabled check into cpufreq_cpu_get() to return NULL if
-cpufreq is disabled this covers most of the exported functions. For
-the exported functions that do not call cpufreq_cpu_get() add an
-explicit check.
+There's no need to resend patches [1-2/3], though.
 
-Signed-off-by: Dirk Brandewie <dirk.brandewie@gmail.com>
----
- drivers/cpufreq/cpufreq.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+Thanks,
+Rafael
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1f93dbd..b7663f7 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -180,6 +180,9 @@ err_out:
- 
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- {
-+	if (cpufreq_disabled())
-+		return NULL;
-+
- 	return __cpufreq_cpu_get(cpu, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
-@@ -198,6 +201,9 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
- 
- void cpufreq_cpu_put(struct cpufreq_policy *data)
- {
-+	if (cpufreq_disabled())
-+		return;
-+
- 	__cpufreq_cpu_put(data, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
-@@ -264,6 +270,9 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 
- 	BUG_ON(irqs_disabled());
- 
-+	if (cpufreq_disabled())
-+		return;
-+
- 	freqs->flags = cpufreq_driver->flags;
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
-@@ -1408,6 +1417,9 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	WARN_ON(!init_cpufreq_transition_notifier_list_called);
- 
- 	switch (list) {
-@@ -1442,6 +1454,9 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	switch (list) {
- 	case CPUFREQ_TRANSITION_NOTIFIER:
- 		ret = srcu_notifier_chain_unregister(
-@@ -1522,6 +1537,9 @@ int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	int ret = 0;
- 
-+	if (cpufreq_disabled())
-+		return ret;
-+
- 	if (!(cpu_online(cpu) && cpufreq_driver->getavg))
- 		return 0;
- 
--- 
-1.7.7.6
+
+On 1/16/2013 10:45 AM, Jacob Pan wrote:
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+>
+> ---
+> Need to include the proper nmi.h file such that
+> local_touch_nmi is always declared.
+>
+>
+>   drivers/thermal/intel_powerclamp.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+> index 314b6fc..81ebf87 100644
+> --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -50,8 +50,8 @@
+>   #include <linux/tick.h>
+>   #include <linux/debugfs.h>
+>   #include <linux/seq_file.h>
+> -#include <linux/nmi.h>
+>   
+> +#include <asm/nmi.h>
+>   #include <asm/msr.h>
+>   #include <asm/mwait.h>
+>   #include <asm/cpu_device_id.h>
+
+---------------------------------------------------------------------
+Intel Technology Poland sp. z o.o.
+z siedziba w Gdansku
+ul. Slowackiego 173
+80-298 Gdansk
+
+Sad Rejonowy Gdansk Polnoc w Gdansku, 
+VII Wydzial Gospodarczy Krajowego Rejestru Sadowego, 
+numer KRS 101882
+
+NIP 957-07-52-316
+Kapital zakladowy 200.000 zl
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
