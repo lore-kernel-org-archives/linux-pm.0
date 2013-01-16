@@ -1,121 +1,106 @@
-From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Subject: Re: [PATCH] clk: remove unreachable code
-Date: Wed, 16 Jan 2013 18:15:13 +0530
-Message-ID: <CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg@mail.gmail.com>
-References: <1357650191-30842-1-git-send-email-rajagopal.venkat@linaro.org>
-	<1357712988-22317-1-git-send-email-rajagopal.venkat@linaro.org>
-	<20130115224502.23734.7414@quantum>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: -next: no resume from suspend
+Date: Wed, 16 Jan 2013 15:00:52 +0100
+Message-ID: <1383787.8I6fLLmNxl@vostro.rjw.lan>
+References: <50F3D9E8.6040802@suse.cz> <16191961.j5ydKsJ3d3@vostro.rjw.lan> <50F68443.3040900@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f52.google.com ([209.85.216.52]:63004 "EHLO
-	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441Ab3APMpO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Jan 2013 07:45:14 -0500
-Received: by mail-qa0-f52.google.com with SMTP id d13so1092699qak.4
-        for <linux-pm@vger.kernel.org>; Wed, 16 Jan 2013 04:45:14 -0800 (PST)
-In-Reply-To: <20130115224502.23734.7414@quantum>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <50F68443.3040900@suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>
-Cc: patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 16 January 2013 04:15, Mike Turquette <mturquette@linaro.org> wrote:
-> Quoting Rajagopal Venkat (2013-01-08 22:29:48)
->> while reparenting a clock, NULL check is done for clock in
->> consideration and its new parent. So re-check is not required.
->> If done, else part becomes unreachable.
->>
->> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
->> ---
->>  drivers/clk/clk.c |   13 ++-----------
->>  1 file changed, 2 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
->> index 251e45d..1c4097c 100644
->> --- a/drivers/clk/clk.c
->> +++ b/drivers/clk/clk.c
->> @@ -1040,7 +1040,6 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
->>  {
->>  #ifdef CONFIG_COMMON_CLK_DEBUG
->>         struct dentry *d;
->> -       struct dentry *new_parent_d;
->>  #endif
->>
->>         if (!clk || !new_parent)
->> @@ -1048,22 +1047,14 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
->>
->>         hlist_del(&clk->child_node);
->>
->> -       if (new_parent)
->> -               hlist_add_head(&clk->child_node, &new_parent->children);
->> -       else
->> -               hlist_add_head(&clk->child_node, &clk_orphan_list);
->> +       hlist_add_head(&clk->child_node, &new_parent->children);
->
-> Rajagopal,
->
-> You found a bug, but not the right one :)
->
-> This change would result in never moving a clock into the orphan list if
-> the parent is missing.  The right thing to do is to allow the operation
-> to succeed and migrate this clock into the orphan list.  In keeping
-> with the clk.h api we need to treat struct clk new_parent as an opaque
-> cookie and not care whether or not it is NULL.
->
-Mike,
+On Wednesday, January 16, 2013 11:43:15 AM Jiri Slaby wrote:
+> On 01/14/2013 01:56 PM, Rafael J. Wysocki wrote:
+> > On Monday, January 14, 2013 11:11:52 AM Jiri Slaby wrote:
+> >> Hi,
+> >>
+> >> since friday's -next (the last known to be working is the last monday's)
+> >> I cannot resume from suspend. The last thing I see with
+> >> no_console_suspend is:
+> >> i915: No ACPI video bus found
+> >>
+> >> But I used to see the message always, so this is no difference. Any idea
+> >> before I start bisecting?
+> > 
+> > Well, what's the next message you normally see with no_console_suspend?
+> 
+> As I wrote in the other message, the kernel is spinning in
+> acpi_rs_get_aml_length. There are weird resources in the list. For
+> serial 00:05 there is resource with type and length equal to 0 and for
+> parport_pc 00:06 there is resource type 58196295 with length of
+> 134284152. See:
+> acpi_rs_get_aml_length: ffff8801b9f7b380 type=3 len=16
+> acpi_rs_get_aml_length: ffff8801b9f7b390 type=0 len=0
+> acpi_rs_get_aml_length: BAD ffff8801b9f7b390 type=0 len=0
+> serial 00:05: activation failed
+> dpm_run_callback(): pnp_bus_resume+0x0/0x80 returns -5
+> PM: Device 00:05 failed to resume: error -5
+> acpi_rs_get_aml_length: ffff8801b9f7b680 type=3 len=24
+> acpi_rs_get_aml_length: ffff8801b9f7b698 type=58196295 len=134284152
+> parport_pc 00:06: activation failed
+> dpm_run_callback(): pnp_bus_resume+0x0/0x80 returns -5
+> PM: Device 00:06 failed to resume: error -5
+> 
+> if (!length)
+>   return error;
+> 
+> makes it resume again with the errors above...
+> 
+> This was 3.8.0-rc3-next-20130114. Going to test 20130116 as there are
+> these patches:
+> 616979e memory-hotplug: remove sysfs file of node
+> a41a27d ACPI / PM: remove leading whitespace from #ifdef
+> ace2342 ACPI / PM: Consolidate suspend-specific and hibernate-specific code
+> 27a5fb8 ACPI / PM: Move device power management functions to device_pm.c
+> 717a5d1 ACPI / PM: Export power states of ACPI devices via sysfs
+> ee8f808 ACPI / PM: Common string representations of device power states
+> 44fed9b ACPI / PM: More visible function for retrieving device power states
+> 81ed027 ACPI / PM: Change the way power transitions to D3cold are
+> carried out
+> 113542c ACPI: Use system level attribute of wakeup power resources
+> c6fdf80 ACPI: Take power resource initialization errors into account
+> b6568e5 ACPI / scan: Consolidate extraction of power resources lists
+> 8a0a4d6 ACPI / scan: Remove unnecessary initialization of local variables
+> 5c24aa4 ACPI / scan: Move power state initialization to a separate routine
+> 59e8500 ACPI / PM: Take order attribute of wakeup power resources into
+> account
+> f369253 ACPI / PM: Take order attribute of power resources into account
+> 3170b40 ACPI: Do not use device power states of power resources
+> 17ece8c ACPI: Drop power resources driver
+> 5e4cd24 ACPI / scan: Treat power resources in a special way
+> 5b32520 ACPI / scan: More straightforward preparation of ACPI device objects
+> 5a62e76 ACPI / PM: Rework the handling of devices depending on power
+> resources
+> 5993c46 ACPI: update ej_event interface to take acpi_device
+> 05404d8 ACPI / scan: Add second pass to acpi_bus_trim()
+> cecdb19 ACPI / scan: Change the implementation of acpi_bus_trim()
+> ae28179 ACPI / scan: Drop the second argument of acpi_bus_trim()
+> b17b537 ACPI / scan: Drop the second argument of acpi_device_unregister()
+> a412a11 ACPI / glue: Fix build with ACPI_GLUE_DEBUG set
+> abe9921 ACPI / scan: Fix check of device_attach() return value.
+> e92a79b ACPI thermal: remove unnecessary newline from exception message
+> 2b16c77 ACPI sysfs: remove unnecessary newline from exception
+> f1f37cb ACPI video: remove unnecessary newline from error messages
+> b43e106 ACPICA: Cleanup table handler naming conflicts.
+> 42f8fb7 ACPICA: Source restructuring: split large files into 8 new files.
 
-The only path where __clk_reparent() can get new parent as NULL is from
-clk_set_parent() api. Tracing this path, here are the reasons why I submitted
-this patch.
+None of the ACPI patches above has anything to do with resources.
 
-1. The clk_set_parent() function takes new parent for granted and tries to
-access new_parent->rate when notifiers are registered,
-2. For clocks with multiple parents, the __clk_set_parent() function also
-takes new parent for granted and tries to access parent name while finding
-the index of new parent from cached parent pointers.
+There are two things you can try.  First, revert all of the ACPICA patches
+and see if that helps.  Second, if that doesn't help, try to revert things in
+the PCI tree (alternatively, you can try the PCI tree alone).
 
-But if the design decision is to allow clock to be re-parented to orphan list
-when new parent is missing, I can provide the new working patch.
+I have tested suspend/resume with the ACPI (including ACPICA) patches applied,
+but I haven't tested the PCI tree.
 
-> Untested patch below fixes the real bug:
->
->
->
-> From a4d56e3ee51452366365749873710e16631e9de7 Mon Sep 17 00:00:00 2001
-> From: Mike Turquette <mturquette@linaro.org>
-> Date: Tue, 15 Jan 2013 14:39:06 -0800
-> Subject: [PATCH] clk: allow re-parenting to NULL clks
->
-> __clk_reparent presently bails early if the new parent of a clk is NULL.
-> This is wrong and prevents dynamically migrating clocks into the orphan
-> list.  The fix is to remove the NULL pointer check for new_parent in
-> __clk_parent.
->
-> Signed-off-by: Mike Turquette <mturquette@linaro.org>
-> ---
->  drivers/clk/clk.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index 593a2e4..f056230 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -1186,7 +1186,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
->         struct dentry *new_parent_d;
->  #endif
->
-> -       if (!clk || !new_parent)
-> +       if (!clk)
->                 return;
->
->         hlist_del(&clk->child_node);
-> --
-> 1.7.10.4
->
-
+Thanks,
+Rafael
 
 
 -- 
-Regards,
-Rajagopal
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
