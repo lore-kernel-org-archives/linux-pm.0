@@ -1,70 +1,95 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH RESEND 4/4] thermal: check for invalid trip setup when
- registering thermal device
-Date: Wed, 16 Jan 2013 16:22:40 +0200
-Message-ID: <50F6B7B0.90804@ti.com>
-References: <1357140582-8151-1-git-send-email-eduardo.valentin@ti.com>  <1357140582-8151-5-git-send-email-eduardo.valentin@ti.com> <1358304336.2252.27.camel@rzhang1-mobl4>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
+Date: Wed, 16 Jan 2013 10:30:45 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301161020190.1704-100000@iolanthe.rowland.org>
+References: <1358326941-3725-4-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:36616 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751222Ab3APOWu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Jan 2013 09:22:50 -0500
-In-Reply-To: <1358304336.2252.27.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1358326941-3725-4-git-send-email-aaron.lu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: durgadoss.r@intel.com, linux-pm@lists.linux-foundation.org, linux-pm@vger.kernel.org
 
-On 16-01-2013 04:45, Zhang Rui wrote:
-> On Wed, 2013-01-02 at 17:29 +0200, Eduardo Valentin wrote:
->> This patch adds an extra check in the data structure while registering
->> a thermal device. The check is to avoid registering zones with a number
->> of trips greater than zero, but with no .get_trip_temp nor .get_trip_type
->> callbacks. Receiving such data structure may end in wrong data access.
->>
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>   drivers/thermal/thermal_sys.c |    3 +++
->>   1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
->> index fba27c3..0a1bf6b 100644
->> --- a/drivers/thermal/thermal_sys.c
->> +++ b/drivers/thermal/thermal_sys.c
->> @@ -1530,6 +1530,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->>   	if (!ops || !ops->get_temp)
->>   		return ERR_PTR(-EINVAL);
->>
->> +	if (trips > 0 && !ops->get_trip_type)
->> +		return ERR_PTR(-EINVAL);
->> +
-> Hmmm, I do not think we need this.
->
-> the sysfs I/F trip_point_X_type already does this check.
+On Wed, 16 Jan 2013, Aaron Lu wrote:
 
-Well that's not the point. If you trust only the sysfs handling, fine. 
-The fix is very punctual. If you pass wrong parameters to 
-thermal_zone_device_register, it will crash.
+> From: Lin Ming <ming.m.lin@intel.com>
+> 
+> When a request is added:
+>     If device is suspended or is suspending and the request is not a
+>     PM request, resume the device.
+> 
+> When the last request finishes:
+>     Call pm_runtime_mark_last_busy().
+> 
+> When pick a request:
+>     If device is resuming/suspending, then only PM request is allowed
+>     to go.
+> 
+> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
 
-Of course, in either case, with or without his patch, it won't register 
-the device, so you won't get to the sysfs handling part. At least with 
-this fix, the crash won't happen and the driver writer will receive an 
-error code to treat.
+Just a couple of minor problems remaining...
 
-Ok. being specific, what happens is that there are accesses to 
-ops->get_trip_type, even if trips > 0 and if .get_trip_type is NULL, 
-right below inside the register function. Instead of checking for 
-.get_trip_type every time before using it, this patch adds a single 
-constraint, so that, if you have trips, you must specify their types.. 
-To me sounds reasonable enough.
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+
+> @@ -2051,6 +2063,28 @@ static void blk_account_io_done(struct request *req)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_PM_RUNTIME
+> +/*
+> + * Don't process normal requests when queue is suspended
+> + * or in the process of suspending/resuming
+> + */
+> +static struct request *blk_pm_peek_request(struct request_queue *q,
+> +					   struct request *rq)
+> +{
+> +	if (q->rpm_status == RPM_SUSPENDED ||
+> +	    (q->rpm_status != RPM_ACTIVE && !(rq->cmd_flags & REQ_PM)))
+> +		return NULL;
+> +	else
+> +		return rq;
+> +}
+
+You don't check q->dev here, so the result is indefinite for devices
+that don't use runtime PM.  (Actually it will work out because
+RPM_ACTIVE is defined as 0, but that's a pretty fragile approach.)
+
+Either do check q->dev here, or else explicitly initialize
+q->rpm_status when the queue is created.
 
 
+> --- a/block/elevator.c
+> +++ b/block/elevator.c
+> @@ -34,6 +34,7 @@
+>  #include <linux/blktrace_api.h>
+>  #include <linux/hash.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include <trace/events/block.h>
+>  
+> @@ -515,6 +516,27 @@ void elv_bio_merged(struct request_queue *q, struct request *rq,
+>  		e->type->ops.elevator_bio_merged_fn(q, rq, bio);
+>  }
+>  
+> +#ifdef CONFIG_PM_RUNTIME
+> +static void blk_pm_requeue_request(struct request *rq)
+> +{
+> +	if (!(rq->cmd_flags & REQ_PM))
+> +		rq->q->nr_pending--;
+> +}
 
->
-> thanks,
-> rui
->
+You don't check q->dev here.  That's okay, but it means that
+q->nr_pending will be meaningless or wrong if any I/O takes place
+before blk_pm_runtime_init is called.
 
+Therefore the kerneldoc for blk_pm_runtime_init should mention that it
+must not be called after any requests have been submitted.  Also
+mention that blk_pm_runtime_init enables runtime PM for q->dev, so the 
+caller shouldn't do it.
+
+Alan Stern
