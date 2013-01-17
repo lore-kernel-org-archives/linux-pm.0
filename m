@@ -1,99 +1,54 @@
-From: dirk.brandewie@gmail.com
-Subject: [PATCH] cpufreq: handle cpufreq being disabled for all exported function.
-Date: Thu, 17 Jan 2013 08:22:21 -0800
-Message-ID: <1358439741-16100-1-git-send-email-dirk.j.brandewie@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f50.google.com ([209.85.210.50]:57818 "EHLO
-	mail-da0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757163Ab3AQQWc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Jan 2013 11:22:32 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Subject: Re: [PATCH v7 0/6] solve deadlock caused by memory allocation with
+ I/O
+Date: Thu, 17 Jan 2013 13:57:26 -0800
+Message-ID: <20130117135726.5b31fd0f.akpm@linux-foundation.org>
+References: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
+	<20130116153744.70210fa3.akpm@linux-foundation.org>
+	<CACVXFVOipr0VMyPQaZTLckxTaPan7ZneERUqZ1S_mYo11A5AeA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CACVXFVOipr0VMyPQaZTLckxTaPan7ZneERUqZ1S_mYo11A5AeA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ming Lei <ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Oliver Neukum <oneukum-l3A5Bk7waGM@public.gmane.org>, Minchan Kim <minchan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Jens Axboe <axboe-tSWWG44O7X1aa/9Udqfwiw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
-Cc: rjw@sisk.pl, Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-From: Dirk Brandewie <dirk.j.brandewie@intel.com>
+On Thu, 17 Jan 2013 09:28:14 +0800
+Ming Lei <ming.lei-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org> wrote:
 
-When disable_cpufreq() is called some exported functions are still
-being used that do not have a check for cpufreq being disabled.
+> > If so, I wonder if we could avoid the whole problem by appropriately
+> > syncing all dirty memory back to storage before starting to turn devices
+> > off?
+> 
+> The patchset is to address the probable deadlock problem by GFP_KERNEL
+> during runtime suspend/resume which is per block/network device. I am
+> wondering if syncing all dirty memory is suitable or necessary during
+> per-storage/network device runtime resume/suspend:
+> 
+>       - sys_sync is very slow and runtime pm operation is frequent
+> 
+>       - it is not efficient because only sync dirty memory against the affected
+>         device is needed in theory and not necessary to sync all
+> 
+>      - we still need some synchronization to avoid accessing the storage
+>        between sys_sync and device suspend, just like system sleep case,
+>        pm_restrict_gfp_mask is needed even sys_sync has been done
+>        inside enter_state().
+> 
+> So looks the approach in the patch is simpler and more efficient, :-)
+> 
+> Also, with the patchset, we can avoid many GFP_NOIO allocation
+> which is fragile and not easy to use.
 
-Add a disabled check into cpufreq_cpu_get() to return NULL if
-cpufreq is disabled this covers most of the exported functions. For
-the exported functions that do not call cpufreq_cpu_get() add an
-explicit check.
+Fair enough, thanks.
 
-Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
----
+I grabbed the patches for 3.9-rc1.  It is good that the page
+allocator's newly-added test of current->flags is not on the fastpath.
 
-Updated sign-off 
-
- drivers/cpufreq/cpufreq.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1f93dbd..b7663f7 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -180,6 +180,9 @@ err_out:
- 
- struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
- {
-+	if (cpufreq_disabled())
-+		return NULL;
-+
- 	return __cpufreq_cpu_get(cpu, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_get);
-@@ -198,6 +201,9 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
- 
- void cpufreq_cpu_put(struct cpufreq_policy *data)
- {
-+	if (cpufreq_disabled())
-+		return;
-+
- 	__cpufreq_cpu_put(data, false);
- }
- EXPORT_SYMBOL_GPL(cpufreq_cpu_put);
-@@ -264,6 +270,9 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 
- 	BUG_ON(irqs_disabled());
- 
-+	if (cpufreq_disabled())
-+		return;
-+
- 	freqs->flags = cpufreq_driver->flags;
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
-@@ -1408,6 +1417,9 @@ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	WARN_ON(!init_cpufreq_transition_notifier_list_called);
- 
- 	switch (list) {
-@@ -1442,6 +1454,9 @@ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list)
- {
- 	int ret;
- 
-+	if (cpufreq_disabled())
-+		return -EINVAL;
-+
- 	switch (list) {
- 	case CPUFREQ_TRANSITION_NOTIFIER:
- 		ret = srcu_notifier_chain_unregister(
-@@ -1522,6 +1537,9 @@ int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	int ret = 0;
- 
-+	if (cpufreq_disabled())
-+		return ret;
-+
- 	if (!(cpu_online(cpu) && cpufreq_driver->getavg))
- 		return 0;
- 
--- 
-1.7.7.6
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
