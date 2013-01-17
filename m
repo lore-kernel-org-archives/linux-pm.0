@@ -1,29 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH] powernow-k8: Add a kconfig dependency on acpi-cpufreq
-Date: Thu, 17 Jan 2013 23:10:56 +0100
-Message-ID: <3845649.nP3d3cdOBJ@vostro.rjw.lan>
-References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com> <7359167.GTsCEtNASI@vostro.rjw.lan> <20130117141758.GA3386@pd.tnic>
+Date: Thu, 17 Jan 2013 23:12:40 +0100
+Message-ID: <20130117221240.GA4122@pd.tnic>
+References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
+ <7359167.GTsCEtNASI@vostro.rjw.lan>
+ <20130117141758.GA3386@pd.tnic>
+ <3845649.nP3d3cdOBJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130117141758.GA3386@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3845649.nP3d3cdOBJ@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, January 17, 2013 03:17:58 PM Borislav Petkov wrote:
-> On Thu, Jan 17, 2013 at 01:53:55PM +0100, Rafael J. Wysocki wrote:
-> > Do we need that in -stable?
-> 
-> Yes, please.
+On Thu, Jan 17, 2013 at 11:10:56PM +0100, Rafael J. Wysocki wrote:
+> 3.7+ I suppose?
 
-3.7+ I suppose?
+Yes, the patch adding the request_module() call went in in 3.7:
 
-Rafael
-
+$ git tag --contains e1f0b8e9b04a2
+v3.7
+v3.7-rc1
+v3.7-rc2
+v3.7-rc3
+v3.7-rc4
+v3.7-rc5
+v3.7-rc6
+v3.7-rc7
+v3.7-rc8
+v3.7.1
+v3.8-rc1
+v3.8-rc2
+v3.8-rc3
+$
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
