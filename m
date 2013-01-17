@@ -1,18 +1,22 @@
 From: Aaron Lu <aaron.lu@intel.com>
 Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
-Date: Thu, 17 Jan 2013 13:13:25 +0800
-Message-ID: <20130117051325.GA31469@aaronlu.sh.intel.com>
+Date: Thu, 17 Jan 2013 14:31:47 +0800
+Message-ID: <20130117063147.GA25352@aaronlu.sh.intel.com>
 References: <1358326941-3725-4-git-send-email-aaron.lu@intel.com>
  <Pine.LNX.4.44L0.1301161020190.1704-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:13528 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754465Ab3AQGbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Jan 2013 01:31:05 -0500
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44L0.1301161020190.1704-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
 Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
-List-Id: linux-pm@vger.kernel.org
 
 On Wed, Jan 16, 2013 at 10:30:45AM -0500, Alan Stern wrote:
 > On Wed, 16 Jan 2013, Aaron Lu wrote:
@@ -63,9 +67,6 @@ On Wed, Jan 16, 2013 at 10:30:45AM -0500, Alan Stern wrote:
 > 
 > Either do check q->dev here, or else explicitly initialize
 > q->rpm_status when the queue is created.
-
-I think I'll check q->dev, which is more clear.
-
 > 
 > 
 > > --- a/block/elevator.c
@@ -92,18 +93,19 @@ I think I'll check q->dev, which is more clear.
 > You don't check q->dev here.  That's okay, but it means that
 > q->nr_pending will be meaningless or wrong if any I/O takes place
 > before blk_pm_runtime_init is called.
-
-Right, so I had better check q->dev here too.
-
 > 
 > Therefore the kerneldoc for blk_pm_runtime_init should mention that it
 > must not be called after any requests have been submitted.  Also
 
-So with the q->dev check added above, I believe this is not needed.
-
+------------
 > mention that blk_pm_runtime_init enables runtime PM for q->dev, so the 
 > caller shouldn't do it.
 
-OK, thanks for the suggestion.
+I may misunderstandd this in last email.
 
--Aaron
+We didn't enable runtime PM for the device in blk_pm_runtime_init, just
+some auto suspend related settings.
+
+Thanks,
+Aaron
+
