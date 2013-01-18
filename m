@@ -1,57 +1,54 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
- fall back to acpi-cpufreq and it is unavailable.
-Date: Fri, 18 Jan 2013 20:58:06 +0100
-Message-ID: <20130118195806.GA3252@pd.tnic>
-References: <20130111144940.GB21882@liondog.tnic>
- <20130111165054.GD10751@liondog.tnic>
- <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
- <20130117115436.GA3853@pd.tnic>
- <20130118162347.GA31499@srcf.ucam.org>
- <20130118170755.GB4062@pd.tnic>
- <20130118190021.GD4062@pd.tnic>
- <20130118190659.GB16757@srcf.ucam.org>
- <20130118193656.GE4062@pd.tnic>
- <20130118193834.GA17734@srcf.ucam.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v7 4/4] sd: change to auto suspend mode
+Date: Fri, 18 Jan 2013 16:25:10 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
+References: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130118193834.GA17734@srcf.ucam.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 18, 2013 at 07:38:34PM +0000, Matthew Garrett wrote:
-> On Fri, Jan 18, 2013 at 08:36:56PM +0100, Borislav Petkov wrote:
+On Wed, 16 Jan 2013, Aaron Lu wrote:
+
+> From: Lin Ming <ming.m.lin@intel.com>
 > 
-> > Ok, how much can we rely on ACPI to have this ACPI_ADR_SPACE_SYSTEM_IO
-> > properly set on K8? Because the thing is, we want to use acpi-cpufreq on
-> > F10h onwards and leave powernow-k8 to K8s.
+> Uses block layer runtime pm helper functions in
+> scsi_runtime_suspend/resume.
+> Remove scsi_autopm_* from sd open/release path and check_events path.
+> And remove the quiesce call in runtime suspend path, as we know there is
+> no request to quiesce for the device.
 > 
-> SYSTEM_IO only supports single processors and was superceded in ACPI 
-> 2.0. Are there any single-core F10h?
+> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
 
-Hmm, maybe some downcored creations, who knows? But actually, that
-doesn't matter: we want to exit early from acpi-cpufreq loading on K8
-only so the check should simply be:
+> --- a/drivers/scsi/scsi_sysfs.c
+> +++ b/drivers/scsi/scsi_sysfs.c
+> @@ -893,6 +893,8 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+>  	 */
+>  	scsi_autopm_get_device(sdev);
+>  
+> +	blk_pm_runtime_init(rq, &sdev->sdev_gendev);
+> +
+>  	error = device_add(&sdev->sdev_gendev);
+>  	if (error) {
+>  		sdev_printk(KERN_INFO, sdev,
 
-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-	    boot_cpu_data.x86 == 0xf) {
-		pr_debug(...)
-		...
-	}
+Someone just asked about the default autosuspend delay, and I realized
+your patch series doesn't set one.  Since we don't know the properties
+of the disk drive at this point (or even whether the device is a disk
+drive), the only safe course is to call
 
-Yeah, I think that should work. I'll add your patch to the others and
-make a patchset to give it a run. If it looks good, we'll queue it for
-3.9 so that it can see more testing.
+	pm_runtime_set_autosuspend_delay(&sdev->sdev_gendev, -1);
 
-Thanks.
+before calling blk_pm_runtime_init().  Then autosuspends will be 
+prevented until userspace writes a non-negative value into the device's 
+control/autosuspend_delay_ms file.
 
--- 
-Regards/Gruss,
-    Boris.
+The kerneldoc for blk_pm_runtime_init() should mention that the caller 
+needs to set the autosuspend delay beforehand.
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+Alan Stern
