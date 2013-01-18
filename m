@@ -1,135 +1,50 @@
-From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] clk: remove unreachable code
-Date: Fri, 18 Jan 2013 09:43:13 -0800
-Message-ID: <20130118174313.3982.60050@quantum>
-References: <1357650191-30842-1-git-send-email-rajagopal.venkat@linaro.org>
-	<1357712988-22317-1-git-send-email-rajagopal.venkat@linaro.org>
-	<20130115224502.23734.7414@quantum>
-	<CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
+ fall back to acpi-cpufreq and it is unavailable.
+Date: Fri, 18 Jan 2013 20:00:21 +0100
+Message-ID: <20130118190021.GD4062@pd.tnic>
+References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
+ <20130111144940.GB21882@liondog.tnic>
+ <20130111165054.GD10751@liondog.tnic>
+ <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
+ <20130117115436.GA3853@pd.tnic>
+ <20130118162347.GA31499@srcf.ucam.org>
+ <20130118170755.GB4062@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130118170755.GB4062@pd.tnic>
+Sender: cpufreq-owner@vger.kernel.org
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Rajagopal Venkat (2013-01-16 04:45:13)
-> On 16 January 2013 04:15, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> > Quoting Rajagopal Venkat (2013-01-08 22:29:48)
-> >> while reparenting a clock, NULL check is done for clock in
-> >> consideration and its new parent. So re-check is not required.
-> >> If done, else part becomes unreachable.
-> >>
-> >> Signed-off-by: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >> ---
-> >>  drivers/clk/clk.c |   13 ++-----------
-> >>  1 file changed, 2 insertions(+), 11 deletions(-)
-> >>
-> >> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> >> index 251e45d..1c4097c 100644
-> >> --- a/drivers/clk/clk.c
-> >> +++ b/drivers/clk/clk.c
-> >> @@ -1040,7 +1040,6 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
-> >>  {
-> >>  #ifdef CONFIG_COMMON_CLK_DEBUG
-> >>         struct dentry *d;
-> >> -       struct dentry *new_parent_d;
-> >>  #endif
-> >>
-> >>         if (!clk || !new_parent)
-> >> @@ -1048,22 +1047,14 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
-> >>
-> >>         hlist_del(&clk->child_node);
-> >>
-> >> -       if (new_parent)
-> >> -               hlist_add_head(&clk->child_node, &new_parent->children);
-> >> -       else
-> >> -               hlist_add_head(&clk->child_node, &clk_orphan_list);
-> >> +       hlist_add_head(&clk->child_node, &new_parent->children);
-> >
-> > Rajagopal,
-> >
-> > You found a bug, but not the right one :)
-> >
-> > This change would result in never moving a clock into the orphan list if
-> > the parent is missing.  The right thing to do is to allow the operation
-> > to succeed and migrate this clock into the orphan list.  In keeping
-> > with the clk.h api we need to treat struct clk new_parent as an opaque
-> > cookie and not care whether or not it is NULL.
-> >
-> Mike,
-> 
-> The only path where __clk_reparent() can get new parent as NULL is from
-> clk_set_parent() api. Tracing this path, here are the reasons why I submitted
-> this patch.
-> 
-> 1. The clk_set_parent() function takes new parent for granted and tries to
-> access new_parent->rate when notifiers are registered,
-> 2. For clocks with multiple parents, the __clk_set_parent() function also
-> takes new parent for granted and tries to access parent name while finding
-> the index of new parent from cached parent pointers.
-> 
-> But if the design decision is to allow clock to be re-parented to orphan list
-> when new parent is missing, I can provide the new working patch.
-> 
+On Fri, Jan 18, 2013 at 06:07:55PM +0100, Borislav Petkov wrote:
+> > Just flip the link order? It's only the way it is because in the
+> > past we wanted to try hardware-specific drivers before more generic
+> > ones, and I don't think that's a concern in this case now.
+>
+> Yeah, I heard that the acpi-idle and intel-idle drivers do that and also
+> heard that it was a hack. It doesn't look too ugly IMHO:
+>
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=2671717265ae6e720a9ba5f13fbec3a718983b65
 
-Rajagopal,
+Haha, this turns into one of those chicken-or-the-egg problems:
 
-Yes, reparenting a clock to the orphan list should be supported.  Let me
-know if you are going to spin a new patch or not.
+>From <drivers/cpufreq/Makefile>:
 
-Thanks,
-Mike
+##################################################################################
+# x86 drivers.
+# Link order matters. K8 is preferred to ACPI because of firmware bugs in early
+# K8 systems.
+...
 
-> > Untested patch below fixes the real bug:
-> >
-> >
-> >
-> > From a4d56e3ee51452366365749873710e16631e9de7 Mon Sep 17 00:00:00 2001
-> > From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > Date: Tue, 15 Jan 2013 14:39:06 -0800
-> > Subject: [PATCH] clk: allow re-parenting to NULL clks
-> >
-> > __clk_reparent presently bails early if the new parent of a clk is NULL.
-> > This is wrong and prevents dynamically migrating clocks into the orphan
-> > list.  The fix is to remove the NULL pointer check for new_parent in
-> > __clk_parent.
-> >
-> > Signed-off-by: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > ---
-> >  drivers/clk/clk.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> > index 593a2e4..f056230 100644
-> > --- a/drivers/clk/clk.c
-> > +++ b/drivers/clk/clk.c
-> > @@ -1186,7 +1186,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
-> >         struct dentry *new_parent_d;
-> >  #endif
-> >
-> > -       if (!clk || !new_parent)
-> > +       if (!clk)
-> >                 return;
-> >
-> >         hlist_del(&clk->child_node);
-> > --
-> > 1.7.10.4
-> >
-> 
-> 
-> 
-> -- 
-> Regards,
-> Rajagopal
+Great. :(
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
