@@ -1,34 +1,36 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
-Date: Fri, 18 Jan 2013 10:26:38 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301181024340.1988-100000@iolanthe.rowland.org>
-References: <20130118082720.GA12599@aaronlu.sh.intel.com>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] drivers/cpufreq: Warn user when powernow-k8 tries to
+ fall back to acpi-cpufreq and it is unavailable.
+Date: Fri, 18 Jan 2013 16:23:47 +0000
+Message-ID: <20130118162347.GA31499@srcf.ucam.org>
+References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
+ <20130111144940.GB21882@liondog.tnic>
+ <20130111165054.GD10751@liondog.tnic>
+ <4923C2DE085EEB4FAB1D375DD09D0BA6100CF170@sausexdag04.amd.com>
+ <20130117115436.GA3853@pd.tnic>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:43570 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750807Ab3ARP0i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jan 2013 10:26:38 -0500
-In-Reply-To: <20130118082720.GA12599@aaronlu.sh.intel.com>
+Received: from cavan.codon.org.uk ([93.93.128.6]:45905 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754310Ab3ARQXx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jan 2013 11:23:53 -0500
+Content-Disposition: inline
+In-Reply-To: <20130117115436.GA3853@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+To: Borislav Petkov <bp@alien8.de>, "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, "rjw@sisk.pl" <rjw@sisk.pl>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
 
-On Fri, 18 Jan 2013, Aaron Lu wrote:
+On Thu, Jan 17, 2013 at 12:54:37PM +0100, Borislav Petkov wrote:
 
-> > Either you have to make sure the q->nr_pending is always correct, even 
-> > when runtime PM isn't being used, or else the caller has to make sure 
-> > that no I/O takes place before blk_pm_runtime_init is called.
-> 
-> I think we can say:
-> blk_pm_runtime_init can't be called after any requests have been
-> submitted but not finished.
-> Sounds more accurate?
+> So, handoff to acpi-cpufreq still has some issues. When both are
+> built-in, the module_init functions turn into normal initcalls and
+> in that case, they're executed in link order and it can happen that
+> powernowk8_init() runs before acpi_cpufreq_init().
 
-Okay.  I think you can add (in parentheses) that in most cases drivers
-should call the routine before any I/O has taken place.
+Just flip the link order? It's only the way it is because in the past we 
+wanted to try hardware-specific drivers before more generic ones, and I 
+don't think that's a concern in this case now.
 
-Alan Stern
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
