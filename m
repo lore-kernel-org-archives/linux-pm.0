@@ -1,45 +1,55 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] powernow-k8: Add a kconfig dependency on acpi-cpufreq
-Date: Thu, 17 Jan 2013 23:12:40 +0100
-Message-ID: <20130117221240.GA4122@pd.tnic>
-References: <1357780161-30581-1-git-send-email-Aravind.Gopalakrishnan@amd.com>
- <7359167.GTsCEtNASI@vostro.rjw.lan>
- <20130117141758.GA3386@pd.tnic>
- <3845649.nP3d3cdOBJ@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
+Date: Fri, 18 Jan 2013 15:42:40 +0800
+Message-ID: <20130118074240.GA6861@aaronlu.sh.intel.com>
+References: <1358351148.2384.34.camel@dabdike.int.hansenpartnership.com>
+ <Pine.LNX.4.44L0.1301161127540.1704-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3845649.nP3d3cdOBJ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Gopalakrishnan, Aravind" <Aravind.Gopalakrishnan@amd.com>, Andre Przywara <andre@andrep.de>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Andreas <linuxuser330250@gmx.net>
+In-Reply-To: <Pine.LNX.4.44L0.1301161127540.1704-100000@iolanthe.rowland.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 17, 2013 at 11:10:56PM +0100, Rafael J. Wysocki wrote:
-> 3.7+ I suppose?
+On Wed, Jan 16, 2013 at 11:31:31AM -0500, Alan Stern wrote:
+> On Wed, 16 Jan 2013, James Bottomley wrote:
+> 
+> > On Tue, 2013-01-15 at 17:20 +0800, Aaron Lu wrote:
+> > > This patch adds runtime pm support for sr.
+> > > 
+> > > It did this by increasing the runtime usage_count of the device when:
+> > > - its block device is opened;
+> > > - the events checking is to run.
+> > > 
+> > > And decreasing the runtime usage_count of the device when:
+> > > - its block device is closed;
+> > > - After the events checking is done.
+> > > 
+> > > The idea is discussed in this mail thread:
+> > > http://thread.gmane.org/gmane.linux.acpi.devel/55243/focus=52703
+> > > 
+> > > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> > 
+> > I'd like an ack from Alan Stern as well, please, but with that, you can
+> > add my acked-by.
+> 
+> Aaron, have you checked whether this patch works okay when you play a
+> track on an audio-only CD on the computer?  The block interface looks 
+> okay but I'm not sure about the cdrom_device interface.
 
-Yes, the patch adding the request_module() call went in in 3.7:
+Just verified it works OK with the whole patchset applied using 2 audio
+CDs.
 
-$ git tag --contains e1f0b8e9b04a2
-v3.7
-v3.7-rc1
-v3.7-rc2
-v3.7-rc3
-v3.7-rc4
-v3.7-rc5
-v3.7-rc6
-v3.7-rc7
-v3.7-rc8
-v3.7.1
-v3.8-rc1
-v3.8-rc2
-v3.8-rc3
-$
+After the ODD has been put into zero power state, insert an audio cd.
+ODD will be resumed, gvfs will automatically mount the disc, and a
+dialog titled "Audio Disc" asks me what to do. Press OK, the rhythmbox
+application will get started. Press the Play button of rhythmbox, songs
+will start to play, and runtime_usage is 2. Eject the disc, the ODD will
+be put to zero power state some time later.
 
--- 
-Regards/Gruss,
-    Boris.
+Thanks,
+Aaron
 
-Sent from a fat crate under my desk. Formatting is fine.
---
