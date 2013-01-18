@@ -1,44 +1,135 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [UPDATE v7 3/3] pm/powerclamp: fix type check warnings
-Date: Fri, 18 Jan 2013 01:30:05 -0800
-Message-ID: <1358501405-3718-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30879 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411Ab3ARRa2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 18 Jan 2013 12:30:28 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] clk: remove unreachable code
+Date: Fri, 18 Jan 2013 09:43:13 -0800
+Message-ID: <20130118174313.3982.60050@quantum>
+References: <1357650191-30842-1-git-send-email-rajagopal.venkat@linaro.org>
+	<1357712988-22317-1-git-send-email-rajagopal.venkat@linaro.org>
+	<20130115224502.23734.7414@quantum>
+	<CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CA+Z25wW=g+-Uo2DLpD=0ADjWTh5DKQb5ePPXR1tz0LXH3_b-xg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Sparse reports the following warning due to incorrect types.
+Quoting Rajagopal Venkat (2013-01-16 04:45:13)
+> On 16 January 2013 04:15, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> > Quoting Rajagopal Venkat (2013-01-08 22:29:48)
+> >> while reparenting a clock, NULL check is done for clock in
+> >> consideration and its new parent. So re-check is not required.
+> >> If done, else part becomes unreachable.
+> >>
+> >> Signed-off-by: Rajagopal Venkat <rajagopal.venkat-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >> ---
+> >>  drivers/clk/clk.c |   13 ++-----------
+> >>  1 file changed, 2 insertions(+), 11 deletions(-)
+> >>
+> >> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> >> index 251e45d..1c4097c 100644
+> >> --- a/drivers/clk/clk.c
+> >> +++ b/drivers/clk/clk.c
+> >> @@ -1040,7 +1040,6 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+> >>  {
+> >>  #ifdef CONFIG_COMMON_CLK_DEBUG
+> >>         struct dentry *d;
+> >> -       struct dentry *new_parent_d;
+> >>  #endif
+> >>
+> >>         if (!clk || !new_parent)
+> >> @@ -1048,22 +1047,14 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+> >>
+> >>         hlist_del(&clk->child_node);
+> >>
+> >> -       if (new_parent)
+> >> -               hlist_add_head(&clk->child_node, &new_parent->children);
+> >> -       else
+> >> -               hlist_add_head(&clk->child_node, &clk_orphan_list);
+> >> +       hlist_add_head(&clk->child_node, &new_parent->children);
+> >
+> > Rajagopal,
+> >
+> > You found a bug, but not the right one :)
+> >
+> > This change would result in never moving a clock into the orphan list if
+> > the parent is missing.  The right thing to do is to allow the operation
+> > to succeed and migrate this clock into the orphan list.  In keeping
+> > with the clk.h api we need to treat struct clk new_parent as an opaque
+> > cookie and not care whether or not it is NULL.
+> >
+> Mike,
+> 
+> The only path where __clk_reparent() can get new parent as NULL is from
+> clk_set_parent() api. Tracing this path, here are the reasons why I submitted
+> this patch.
+> 
+> 1. The clk_set_parent() function takes new parent for granted and tries to
+> access new_parent->rate when notifiers are registered,
+> 2. For clocks with multiple parents, the __clk_set_parent() function also
+> takes new parent for granted and tries to access parent name while finding
+> the index of new parent from cached parent pointers.
+> 
+> But if the design decision is to allow clock to be re-parented to orphan list
+> when new parent is missing, I can provide the new working patch.
+> 
 
-drivers/thermal/intel_powerclamp.c:516:25: warning: incorrect type in initializer (different address spaces)
-drivers/thermal/intel_powerclamp.c:516:25:    expected void const [noderef] <asn:3>*__vpp_verify
-drivers/thermal/intel_powerclamp.c:516:25:    got struct task_struct [noderef] <asn:3>**<noident>
-drivers/thermal/intel_powerclamp.c:516:25: warning: incorrect type in initializer (different address spaces)
-drivers/thermal/intel_powerclamp.c:516:25:    expected struct task_struct **p
-drivers/thermal/intel_powerclamp.c:516:25:    got struct task_struct [noderef] <asn:3>**<noident>
+Rajagopal,
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/intel_powerclamp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yes, reparenting a clock to the orphan list should be supported.  Let me
+know if you are going to spin a new patch or not.
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 81ebf87..33edf5d 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -86,7 +86,7 @@ static unsigned int control_cpu; /* The cpu assigned to collect stat and update
- static bool clamping;
- 
- 
--static struct task_struct __percpu **powerclamp_thread;
-+static struct task_struct * __percpu *powerclamp_thread;
- static struct thermal_cooling_device *cooling_dev;
- static unsigned long *cpu_clamping_mask;  /* bit map for tracking per cpu
- 					   * clamping thread
--- 
-1.7.9.5
+Thanks,
+Mike
 
+> > Untested patch below fixes the real bug:
+> >
+> >
+> >
+> > From a4d56e3ee51452366365749873710e16631e9de7 Mon Sep 17 00:00:00 2001
+> > From: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > Date: Tue, 15 Jan 2013 14:39:06 -0800
+> > Subject: [PATCH] clk: allow re-parenting to NULL clks
+> >
+> > __clk_reparent presently bails early if the new parent of a clk is NULL.
+> > This is wrong and prevents dynamically migrating clocks into the orphan
+> > list.  The fix is to remove the NULL pointer check for new_parent in
+> > __clk_parent.
+> >
+> > Signed-off-by: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > ---
+> >  drivers/clk/clk.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> > index 593a2e4..f056230 100644
+> > --- a/drivers/clk/clk.c
+> > +++ b/drivers/clk/clk.c
+> > @@ -1186,7 +1186,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
+> >         struct dentry *new_parent_d;
+> >  #endif
+> >
+> > -       if (!clk || !new_parent)
+> > +       if (!clk)
+> >                 return;
+> >
+> >         hlist_del(&clk->child_node);
+> > --
+> > 1.7.10.4
+> >
+> 
+> 
+> 
+> -- 
+> Regards,
+> Rajagopal
