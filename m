@@ -1,54 +1,66 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v7 4/4] sd: change to auto suspend mode
-Date: Fri, 18 Jan 2013 16:25:10 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
-References: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] OPP usage fixes for RCU locking
+Date: Fri, 18 Jan 2013 23:28:22 +0100
+Message-ID: <2007041.tOt4VKpdOD@vostro.rjw.lan>
+References: <1358538755-29109-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1358538755-29109-1-git-send-email-nm@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Kevin <khilman@deeprootsystems.com>, lkml <linux-kernel@vger.kernel.org>, lo <linux-omap@vger.kernel.org>, Jack <jack@embed.me.uk>, Alexander <holler@ahsoftware.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Jan 2013, Aaron Lu wrote:
-
-> From: Lin Ming <ming.m.lin@intel.com>
+On Friday, January 18, 2013 01:52:31 PM Nishanth Menon wrote:
+> Hi,
+> Despite being documented in function documentation and in
+> Documentation/power/opp.txt, many of the users of OPP APIs
+> dont honor RCU lock usage appropriately.
 > 
-> Uses block layer runtime pm helper functions in
-> scsi_runtime_suspend/resume.
-> Remove scsi_autopm_* from sd open/release path and check_events path.
-> And remove the quiesce call in runtime suspend path, as we know there is
-> no request to quiesce for the device.
+> This recently appeared in IRC discussion earlier today [1]. 
+> I did an audit of current usage and the following series
+> is a result of this.
 > 
-> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> NOTE:
+> 1. The patch "PM / devfreq: exynos4_bus: honor RCU lock usage" has only
+>    been build tested as I dont have an exynos platform to try it on. I have
+>    tried to make it as least intrusive as possible and at least reviewed
+>    to ensure I haven't screwed anything up.
+> 
+> Other than this, I have added appropriate tested by information in requisite
+> patches.
 
-> --- a/drivers/scsi/scsi_sysfs.c
-> +++ b/drivers/scsi/scsi_sysfs.c
-> @@ -893,6 +893,8 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
->  	 */
->  	scsi_autopm_get_device(sdev);
->  
-> +	blk_pm_runtime_init(rq, &sdev->sdev_gendev);
-> +
->  	error = device_add(&sdev->sdev_gendev);
->  	if (error) {
->  		sdev_printk(KERN_INFO, sdev,
+Thanks for the fixes.
 
-Someone just asked about the default autosuspend delay, and I realized
-your patch series doesn't set one.  Since we don't know the properties
-of the disk drive at this point (or even whether the device is a disk
-drive), the only safe course is to call
+MyungJoo, do you want me to take the devfreq ones too?
 
-	pm_runtime_set_autosuspend_delay(&sdev->sdev_gendev, -1);
+Rafael
 
-before calling blk_pm_runtime_init().  Then autosuspends will be 
-prevented until userspace writes a non-negative value into the device's 
-control/autosuspend_delay_ms file.
 
-The kerneldoc for blk_pm_runtime_init() should mention that the caller 
-needs to set the autosuspend delay beforehand.
-
-Alan Stern
+> Series is based off: v3.8-rc4 tag
+> Also available in the following location[2]:
+> https://github.com/nmenon/linux-2.6-playground branch: post/pm/opp-fixes-v1
+> 
+> Nishanth Menon (4):
+>   cpufreq: OMAP: use RCU locks around usage of OPP
+>   cpufreq: cpufreq-cpu0: use RCU locks around usage of OPP
+>   PM / devfreq: add locking documentation for recommend_opp
+>   PM / devfreq: exynos4_bus: honor RCU lock usage
+> 
+>  drivers/cpufreq/cpufreq-cpu0.c |    5 +++
+>  drivers/cpufreq/omap-cpufreq.c |    3 ++
+>  drivers/devfreq/devfreq.c      |    5 +++
+>  drivers/devfreq/exynos4_bus.c  |   94 ++++++++++++++++++++++++++++------------
+>  4 files changed, 80 insertions(+), 27 deletions(-)
+> 
+> [1] http://www.beagleboard.org/irclogs/index.php?date=2013-01-18#T14:14:07
+> [2] https://github.com/nmenon/linux-2.6-playground/commits/post/pm/opp-fixes-v1
+> 
+> Regards,
+> Nishanth Menon
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
