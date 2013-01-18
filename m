@@ -1,40 +1,58 @@
-From: Ming Lei <ming.lei@canonical.com>
-Subject: Re: [PATCH v7 0/6] solve deadlock caused by memory allocation with I/O
-Date: Fri, 18 Jan 2013 18:22:59 +0800
-Message-ID: <CACVXFVPEcZCCxA1+EeW-qdouiaBMPPjx7fn+jbROzSwBRN58SA@mail.gmail.com>
-References: <1357352744-8138-1-git-send-email-ming.lei@canonical.com>
-	<20130116153744.70210fa3.akpm@linux-foundation.org>
-	<CACVXFVOipr0VMyPQaZTLckxTaPan7ZneERUqZ1S_mYo11A5AeA@mail.gmail.com>
-	<20130117135726.5b31fd0f.akpm@linux-foundation.org>
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: [PATCH 4/4] PM/Devfreq: Add Exynos5-bus devfreq driver for Exynos5250
+Date: Fri, 18 Jan 2013 18:52:02 +0530
+Message-ID: <CAM4voa=_43XqvOBzYYzO7H3DQ6Avw=rQgZLZ6FQSvp1v9rPEGA@mail.gmail.com>
+References: <1357733199-17206-1-git-send-email-a.kesavan@samsung.com>
+	<1357733199-17206-4-git-send-email-a.kesavan@samsung.com>
+	<CA+Z25wWsv6z+GEQzvUhPL1NXnE-ha+pkobD7X-eUnds3jp2a8g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20130117135726.5b31fd0f.akpm@linux-foundation.org>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-mm@kvack.org, Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Minchan Kim <minchan@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Jens Axboe <axboe@kernel.dk>, "David S. Miller" <davem@davemloft.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f178.google.com ([209.85.216.178]:65439 "EHLO
+	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572Ab3ARNWE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Jan 2013 08:22:04 -0500
+In-Reply-To: <CA+Z25wWsv6z+GEQzvUhPL1NXnE-ha+pkobD7X-eUnds3jp2a8g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Cc: myungjoo.ham@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
 
-On Fri, Jan 18, 2013 at 5:57 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
+Hi Rajagopal,
+
+Thanks for the review. Sorry for the late response, have been a little
+busy with other things,
+
+[...]
+>> +#include "../governor.h"
 >
-> Fair enough, thanks.
+> This header file is meant for governors use. What's the need of it here?
+I was using a custom monitor function and needed update_devfreq for
+it. Will change this in the next version.
+[...]
+>> +       stat->current_frequency = data->curr_freq;
+>> +       stat->busy_time = data->busy;
+>> +       stat->total_time = 100;
 >
-> I grabbed the patches for 3.9-rc1.  It is good that the page
-> allocator's newly-added test of current->flags is not on the fastpath.
+> How is busy_time is relative to total_time here? busy_time <=
+> total_time is guaranteed?
+Will modify the get_dev_status function to do PPMU reads and populate
+the device status structure.
 >
+[...]
+> Again, update_devfreq() is meant for devfreq governors use. Why is the devfreq
+> driver is doing devfreq governor job? any specific reason? The devfreq device
+> load monitoring is done by governors.
+>
+Same as above.
+[...]
+>> +       .polling_ms             = 0,
+>
+> why is polling_ms is set to zero? It defeats the purpose of devfreq driver.
+I bypassed the devfreq_monitor with the new custom function created. Am fixing
+this.
 
-Andrew, great thanks, :-)
+I have now done this on the lines of the exynos4 driver. Will re-post in a bit.
 
-Also thank Alan, Oliver, Minchan, Rafael, Greg and other guys who
-reviewed and gave suggestions on this patch set.
-
-Thanks,
---
-Ming Lei
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Regards,
+Abhilash
