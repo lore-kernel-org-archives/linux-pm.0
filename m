@@ -1,66 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] OPP usage fixes for RCU locking
-Date: Fri, 18 Jan 2013 23:28:22 +0100
-Message-ID: <2007041.tOt4VKpdOD@vostro.rjw.lan>
-References: <1358538755-29109-1-git-send-email-nm@ti.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
+Date: Sat, 19 Jan 2013 14:24:56 +0800
+Message-ID: <50FA3C38.5030308@intel.com>
+References: <Pine.LNX.4.44L0.1301181024340.1988-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1358538755-29109-1-git-send-email-nm@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Kevin <khilman@deeprootsystems.com>, lkml <linux-kernel@vger.kernel.org>, lo <linux-omap@vger.kernel.org>, Jack <jack@embed.me.uk>, Alexander <holler@ahsoftware.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f47.google.com ([209.85.210.47]:34494 "EHLO
+	mail-da0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051Ab3ASGZC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 19 Jan 2013 01:25:02 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1301181024340.1988-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On Friday, January 18, 2013 01:52:31 PM Nishanth Menon wrote:
-> Hi,
-> Despite being documented in function documentation and in
-> Documentation/power/opp.txt, many of the users of OPP APIs
-> dont honor RCU lock usage appropriately.
-> 
-> This recently appeared in IRC discussion earlier today [1]. 
-> I did an audit of current usage and the following series
-> is a result of this.
-> 
-> NOTE:
-> 1. The patch "PM / devfreq: exynos4_bus: honor RCU lock usage" has only
->    been build tested as I dont have an exynos platform to try it on. I have
->    tried to make it as least intrusive as possible and at least reviewed
->    to ensure I haven't screwed anything up.
-> 
-> Other than this, I have added appropriate tested by information in requisite
-> patches.
+On 01/18/2013 11:26 PM, Alan Stern wrote:
+> On Fri, 18 Jan 2013, Aaron Lu wrote:
+>
+>>> Either you have to make sure the q->nr_pending is always correct, even
+>>> when runtime PM isn't being used, or else the caller has to make sure
+>>> that no I/O takes place before blk_pm_runtime_init is called.
+>>
+>> I think we can say:
+>> blk_pm_runtime_init can't be called after any requests have been
+>> submitted but not finished.
+>> Sounds more accurate?
+>
+> Okay.  I think you can add (in parentheses) that in most cases drivers
+> should call the routine before any I/O has taken place.
 
-Thanks for the fixes.
+The reason I put it that way is, in patch 4, the blk_pm_runtime_init is
+called after a request is executed(scsi_probe_lun). I do not want people
+get confused by the comments for blk_pm_runtime_init and the example
+code in patch 4 where we didn't follow it :-)
 
-MyungJoo, do you want me to take the devfreq ones too?
+Considering ODD's use case, I was thinking of moving the
+blk_pm_runtime_init call to sd.c, as sr will not use request based auto
+suspend. Probably right before we decrease usage count for the device in
+sd_probe_async. What do you think?
 
-Rafael
-
-
-> Series is based off: v3.8-rc4 tag
-> Also available in the following location[2]:
-> https://github.com/nmenon/linux-2.6-playground branch: post/pm/opp-fixes-v1
-> 
-> Nishanth Menon (4):
->   cpufreq: OMAP: use RCU locks around usage of OPP
->   cpufreq: cpufreq-cpu0: use RCU locks around usage of OPP
->   PM / devfreq: add locking documentation for recommend_opp
->   PM / devfreq: exynos4_bus: honor RCU lock usage
-> 
->  drivers/cpufreq/cpufreq-cpu0.c |    5 +++
->  drivers/cpufreq/omap-cpufreq.c |    3 ++
->  drivers/devfreq/devfreq.c      |    5 +++
->  drivers/devfreq/exynos4_bus.c  |   94 ++++++++++++++++++++++++++++------------
->  4 files changed, 80 insertions(+), 27 deletions(-)
-> 
-> [1] http://www.beagleboard.org/irclogs/index.php?date=2013-01-18#T14:14:07
-> [2] https://github.com/nmenon/linux-2.6-playground/commits/post/pm/opp-fixes-v1
-> 
-> Regards,
-> Nishanth Menon
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Aaron
