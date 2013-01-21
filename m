@@ -1,99 +1,75 @@
-From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Subject: [PATCH] clk: allow reparenting of a clock to the orphan list
-Date: Mon, 21 Jan 2013 18:33:57 +0530
-Message-ID: <1358773437-21163-1-git-send-email-rajagopal.venkat@linaro.org>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
+Date: Mon, 21 Jan 2013 21:36:02 +0800
+Message-ID: <50FD4442.9080600@intel.com>
+References: <Pine.LNX.4.44L0.1301191312050.13032-100000@netrider.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f52.google.com ([209.85.160.52]:62048 "EHLO
-	mail-pb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753668Ab3AUNIG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jan 2013 08:08:06 -0500
-Received: by mail-pb0-f52.google.com with SMTP id ro2so3305563pbb.25
-        for <linux-pm@vger.kernel.org>; Mon, 21 Jan 2013 05:08:05 -0800 (PST)
+Received: from mail-pb0-f47.google.com ([209.85.160.47]:36167 "EHLO
+	mail-pb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752Ab3AUNgm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jan 2013 08:36:42 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1301191312050.13032-100000@netrider.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mturquette@linaro.org
-Cc: patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rajagopal Venkat <rajagopal.venkat@linaro.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Aaron Lu <aaron.lu@intel.com>, Oliver Neukum <oneukum@suse.de>, James Bottomley <James.Bottomley@HansenPartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-Allow reparenting of a clock(multiple and single parent)
-to the orphan list when new parent clock is NULL.
+On 01/20/2013 02:46 AM, Alan Stern wrote:
+> On Sat, 19 Jan 2013, Aaron Lu wrote:
+>> Then we indeed have a problem. But I didn't find any such app in
+>> Fedora's repo or by searching the internet.
+>
+> http://rpm.pbone.net/index.php3/stat/4/idpl/2392183/dir/redhat_5.x/com/cdp-0.33-10.i386.rpm.html
 
-Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
----
- drivers/clk/clk.c |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+Now that with the RFC PATCH, the cd drive's runtime status will always
+be active if there is disc inside, so we don't have this problem any
+more. Tested on two systems, one with a ZP-drive and the other with a
+normal one.
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index e964994..5c9277a 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1102,7 +1102,7 @@ void __clk_reparent(struct clk *clk, struct clk *new_parent)
- 	struct dentry *new_parent_d;
- #endif
- 
--	if (!clk || !new_parent)
-+	if (!clk)
- 		return;
- 
- 	hlist_del(&clk->child_node);
-@@ -1140,11 +1140,14 @@ static int __clk_set_parent(struct clk *clk, struct clk *parent)
- {
- 	struct clk *old_parent;
- 	unsigned long flags;
--	int ret = -EINVAL;
--	u8 i;
-+	int ret = 0;
-+	u8 i = 0;
- 
- 	old_parent = clk->parent;
- 
-+	if (clk->num_parents == 1 || !parent)
-+		goto migrate;
-+
- 	if (!clk->parents)
- 		clk->parents = kzalloc((sizeof(struct clk*) * clk->num_parents),
- 								GFP_KERNEL);
-@@ -1165,11 +1168,13 @@ static int __clk_set_parent(struct clk *clk, struct clk *parent)
- 	}
- 
- 	if (i == clk->num_parents) {
-+		ret = -EINVAL;
- 		pr_debug("%s: clock %s is not a possible parent of clock %s\n",
- 				__func__, parent->name, clk->name);
- 		goto out;
- 	}
- 
-+migrate:
- 	/* migrate prepare and enable */
- 	if (clk->prepare_count)
- 		__clk_prepare(parent);
-@@ -1181,7 +1186,8 @@ static int __clk_set_parent(struct clk *clk, struct clk *parent)
- 	spin_unlock_irqrestore(&enable_lock, flags);
- 
- 	/* change clock input source */
--	ret = clk->ops->set_parent(clk->hw, i);
-+	if (clk->ops->set_parent)
-+		ret = clk->ops->set_parent(clk->hw, i);
- 
- 	/* clean up old prepare and enable */
- 	spin_lock_irqsave(&enable_lock, flags);
-@@ -1215,7 +1221,7 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
- 	if (!clk || !clk->ops)
- 		return -EINVAL;
- 
--	if (!clk->ops->set_parent)
-+	if (clk->num_parents > 1 && !clk->ops->set_parent)
- 		return -ENOSYS;
- 
- 	/* prevent racing with updates to the clock topology */
-@@ -1226,7 +1232,7 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
- 
- 	/* propagate PRE_RATE_CHANGE notifications */
- 	if (clk->notifier_count)
--		ret = __clk_speculate_rates(clk, parent->rate);
-+		ret = __clk_speculate_rates(clk, parent ? parent->rate : 0);
- 
- 	/* abort if a driver objects */
- 	if (ret == NOTIFY_STOP)
--- 
-1.7.10.4
+BTW, I can't get the above app run, as it requires an old ncurses lib.
+And compiling it is not easy...
 
+For an amusement, I wrote the following stupid simple app intended for
+test:
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/cdrom.h>
+
+int main(void)
+{
+	int ret = 0;
+	struct cdrom_msf msf = { 1, 0, 0, 2, 0, 0 };
+	int fd;
+	
+	fd = open("/dev/sr0", O_RDONLY | O_NONBLOCK);
+	if (fd == -1) {
+		perror("open");
+		return -1;
+	}
+
+	ret = ioctl(fd, CDROMPLAYMSF, &msf);
+	if (ret) {
+		perror("ioctl");
+		goto out;
+	}
+out:
+	close(fd);
+
+	return ret;
+}
+
+Insert an audio disc, make sure no app is accessing it, run the above
+app, then the app will exit and the led on the drive will be blinking
+for roughly one minute, as the app has set, but I didn't hear any sound...
+
+And the runtime status is of course active all the time, no matter if
+there is app accessing it or not as expected.
+
+Thanks,
+Aaron
