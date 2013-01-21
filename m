@@ -1,113 +1,66 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [PATCHv2 0/9] Thermal Framework Enhancements
-Date: Mon, 21 Jan 2013 18:10:10 +0800
-Message-ID: <50FD1402.4050502@nvidia.com>
-References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/2] cpufreq: exynos: Initialise return variable
+Date: Mon, 21 Jan 2013 15:59:53 +0530
+Message-ID: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: swarren@wwwdotorg.org, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f43.google.com ([209.85.160.43]:40341 "EHLO
+	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751509Ab3AUKir (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Jan 2013 05:38:47 -0500
+Received: by mail-pb0-f43.google.com with SMTP id jt11so1886083pbb.30
+        for <linux-pm@vger.kernel.org>; Mon, 21 Jan 2013 02:38:47 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rjw@sisk.pl, jhbird.choi@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
 
+'ret' is undefined when the function returns from the first
+error condition. Without this patch we get the following warning:
 
-On 01/07/2013 03:13 PM, Durgadoss R wrote:
-> This patch set is a v2 of the previous versions submitted here:
-> [v1]:  https://lkml.org/lkml/2012/12/18/108 
-> [RFC]: https://patchwork.kernel.org/patch/1758921/
-> 
-> This patch set is based on Rui's -thermal tree, and is
-> tested on a Core-i5 and an Atom netbook.
-> 
-> Changes Since v1:
->  * Removed kobject creation for thermal_trip and thermal_map
->    nodes as per Greg-KH's comments.
->  * Added ABI Documentation under 'testing'.
->  * Modified the GET_INDEX macro to be more linux-like, thanks
->    to Joe Perches.
->  * Added get_[sensor/cdev]_by_name APIs to thermal.h
-> 
-> This series contains 9 patches:
-> Patch 1/9: Creates new sensor level APIs
-> Patch 2/9: Creates new zone level APIs. The existing tzd structure is
->            kept as such for clarity and compatibility purposes.
-> Patch 3/9: Creates functions to add/remove a cdev to/from a zone. The
->            existing tcd structure need not be modified.
-> Patch 4/9: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
-> 	   under /sys/class/thermal/zoneY/. This exposes various trip
->            points for sensorX present in zoneY.
-> Patch 5/9: Adds mapX sysfs node. It is a compact representation
->            of the binding relationship between a sensor and a cdev,
->            within a zone.
-> Patch 6/9: Creates Documentation for the new APIs. A new file is
->            created for clarity. Final goal is to merge with the existing
->            file or refactor the files, as whatever seems appropriate.
-> Patch 7/9: Make PER ZONE values configurable through Kconfig
-> Patch 8/9: Add ABI documentation for sysfs interfaces introduced in this patch.
-> Patch 9/9: A dummy driver that can be used for testing. This is not for merge.
-> 
-> Thanks to Greg-KH, Hongbo Zhang and Joe Perches for their comments on v1.
-> 
-> Durgadoss R (9):
->   Thermal: Create sensor level APIs
->   Thermal: Create zone level APIs
->   Thermal: Add APIs to bind cdev to new zone structure
->   Thermal: Add trip point sysfs nodes for sensor
->   Thermal: Create 'mapX' sysfs node for a zone
->   Thermal: Add Documentation to new APIs
->   Thermal: Make PER_ZONE values configurable
->   Thermal: Add ABI Documentation for sysfs interfaces
->   Thermal: Dummy driver used for testing
-> 
->  Documentation/ABI/testing/sysfs-class-thermal |   93 +++
->  Documentation/thermal/sysfs-api2.txt          |  248 +++++++
->  drivers/thermal/Kconfig                       |   19 +
->  drivers/thermal/Makefile                      |    3 +
->  drivers/thermal/thermal_sys.c                 |  881 +++++++++++++++++++++++++
->  drivers/thermal/thermal_test.c                |  315 +++++++++
->  include/linux/thermal.h                       |  117 +++-
->  7 files changed, 1675 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
->  create mode 100644 Documentation/thermal/sysfs-api2.txt
->  create mode 100644 drivers/thermal/thermal_test.c
+drivers/cpufreq/exynos-cpufreq.c: In function =E2=80=98exynos_target=E2=
+=80=99:
+drivers/cpufreq/exynos-cpufreq.c:182:2: warning:
+=E2=80=98ret=E2=80=99 may be used uninitialized in this function [-Wuni=
+nitialized]
 
-Hi, Durgadoss
-Did you think about how to use this framework for the device tree.
-for example, we add a dt node for the lm90 sensor:
-lm90: lm90@4c {
-    compatible = "lm90";
-    ......;
-};
-This sensor driver can register two sensors to the thermal framework,
-which are named as "lm90_remote" and "lm90_local". If we want to add the
-"lm90_remote" in the thermal zone, we could add nodes like this:
-xxx-thermal {
-    compatible = "xxxx";
-    sensor-name = "lm90_remote";
-    ......;
-}
-then the xxx-thermal driver can read the sensor-name and use
-get_sensor_by_name() to get the snesor.
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-But this is not the canonical DT way. We think it's better to use
-pandle+args to get that sensor, something like this
-lm90: lm90@4c {
-    compatible = "lm90";
-    #sensor-cells = <1>;
-    ......;
-};
-xxx-thermal {
-    compatible = "xxxx";
-    sensors = <&lm90 0>;
-    ......;
-}
-If we want to use this way, we need to add new APIs to decode it.
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-=
+cpufreq.c
+index 218b3ce..38c6158 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -159,7 +159,7 @@ static int exynos_target(struct cpufreq_policy *pol=
+icy,
+ {
+ 	struct cpufreq_frequency_table *freq_table =3D exynos_info->freq_tabl=
+e;
+ 	unsigned int index;
+-	int ret;
++	int ret =3D -EINVAL;
+=20
+ 	mutex_lock(&cpufreq_lock);
+=20
+@@ -167,10 +167,8 @@ static int exynos_target(struct cpufreq_policy *po=
+licy,
+ 		goto out;
+=20
+ 	if (cpufreq_frequency_table_target(policy, freq_table,
+-					   target_freq, relation, &index)) {
+-		ret =3D -EINVAL;
++					   target_freq, relation, &index))
+ 		goto out;
+-	}
+=20
+ 	freqs.new =3D freq_table[index].frequency;
+=20
+--=20
+1.7.4.1
 
-Do you have any idea for this issue?
-
-Thanks.
-Wei.
-> 
