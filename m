@@ -1,34 +1,40 @@
 From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH v13 8/9] libata: do not suspend port if normal ODD is
- attached
-Date: Mon, 21 Jan 2013 15:42:55 -0500
-Message-ID: <50FDA84F.8030204@pobox.com>
-References: <1358241665-2156-1-git-send-email-aaron.lu@intel.com> <1358241665-2156-9-git-send-email-aaron.lu@intel.com>
+Subject: Re: [PATCH] libata: pm: differentiate system and runtime pm for ata
+ port
+Date: Mon, 21 Jan 2013 15:44:35 -0500
+Message-ID: <50FDA8B3.6090100@pobox.com>
+References: <1346143791-2995-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1358241665-2156-9-git-send-email-aaron.lu@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-ide-owner@vger.kernel.org>
+In-Reply-To: <1346143791-2995-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-ide-owner@vger.kernel.org
 To: Aaron Lu <aaron.lu@intel.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Cc: linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/15/2013 04:21 AM, Aaron Lu wrote:
-> For ODDs, the upper layer will poll for media change every few
-> seconds, which will make it enter and leave suspend state very
-> often. And as each suspend will also cause a hard/soft reset,
-> the gain of runtime suspend is very little while the ODD may
-> malfunction after constantly being reset. So the idle callback
-> here will not proceed to suspend if a non-ZPODD capable ODD is
-> attached to the port.
+On 08/28/2012 04:49 AM, Aaron Lu wrote:
+> For sata port, only runtime pm needs to be taken care of;
+> For IDE port, only system pm needs to be taken care of.
+> Currently, we use PMSG_SUSPEND for both system suspend and runtime
+> suspend and PMSG_ON for both system resume and runtime resume.
+>
+> Change this by using PMSG_AUTO_SUSPEND for runtime suspend and
+> PMSG_AUTO_RESUME for runtime resume.
+>
+> The ata_acpi_set_state is modified accordingly. And the sata case and
+> pata case is seperated for easy understanding.
 >
 > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> Acked-by: Tejun Heo <tj@kernel.org>
 > ---
->   drivers/ata/libata-core.c | 19 +++++++++++++++++++
->   1 file changed, 19 insertions(+)
+>   drivers/ata/libata-acpi.c | 83 ++++++++++++++++++++++++++++++++---------------
+>   drivers/ata/libata-core.c | 22 +++++++++----
+>   drivers/ata/libata-eh.c   |  9 ++---
+>   3 files changed, 78 insertions(+), 36 deletions(-)
 
-applied patches #2-6 and #8
+
+Can you rediff this on top of libata-dev.git #upstream?
+
 
 
