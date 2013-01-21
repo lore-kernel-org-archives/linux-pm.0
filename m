@@ -1,46 +1,113 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: [PATCH 27/33] thermal: Convert to devm_ioremap_resource()
-Date: Mon, 21 Jan 2013 11:09:20 +0100
-Message-ID: <1358762966-20791-28-git-send-email-thierry.reding@avionic-design.de>
-References: <1358762966-20791-1-git-send-email-thierry.reding@avionic-design.de>
+From: Wei Ni <wni@nvidia.com>
+Subject: Re: [PATCHv2 0/9] Thermal Framework Enhancements
+Date: Mon, 21 Jan 2013 18:10:10 +0800
+Message-ID: <50FD1402.4050502@nvidia.com>
+References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1358762966-20791-1-git-send-email-thierry.reding@avionic-design.de>
+In-Reply-To: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Wolfram Sang <w.sang@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: swarren@wwwdotorg.org, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Convert all uses of devm_request_and_ioremap() to the newly introduced
-devm_ioremap_resource() which provides more consistent error handling.
 
-devm_ioremap_resource() provides its own error messages so all explicit
-error messages can be removed from the failure code paths.
+On 01/07/2013 03:13 PM, Durgadoss R wrote:
+> This patch set is a v2 of the previous versions submitted here:
+> [v1]:  https://lkml.org/lkml/2012/12/18/108 
+> [RFC]: https://patchwork.kernel.org/patch/1758921/
+> 
+> This patch set is based on Rui's -thermal tree, and is
+> tested on a Core-i5 and an Atom netbook.
+> 
+> Changes Since v1:
+>  * Removed kobject creation for thermal_trip and thermal_map
+>    nodes as per Greg-KH's comments.
+>  * Added ABI Documentation under 'testing'.
+>  * Modified the GET_INDEX macro to be more linux-like, thanks
+>    to Joe Perches.
+>  * Added get_[sensor/cdev]_by_name APIs to thermal.h
+> 
+> This series contains 9 patches:
+> Patch 1/9: Creates new sensor level APIs
+> Patch 2/9: Creates new zone level APIs. The existing tzd structure is
+>            kept as such for clarity and compatibility purposes.
+> Patch 3/9: Creates functions to add/remove a cdev to/from a zone. The
+>            existing tcd structure need not be modified.
+> Patch 4/9: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
+> 	   under /sys/class/thermal/zoneY/. This exposes various trip
+>            points for sensorX present in zoneY.
+> Patch 5/9: Adds mapX sysfs node. It is a compact representation
+>            of the binding relationship between a sensor and a cdev,
+>            within a zone.
+> Patch 6/9: Creates Documentation for the new APIs. A new file is
+>            created for clarity. Final goal is to merge with the existing
+>            file or refactor the files, as whatever seems appropriate.
+> Patch 7/9: Make PER ZONE values configurable through Kconfig
+> Patch 8/9: Add ABI documentation for sysfs interfaces introduced in this patch.
+> Patch 9/9: A dummy driver that can be used for testing. This is not for merge.
+> 
+> Thanks to Greg-KH, Hongbo Zhang and Joe Perches for their comments on v1.
+> 
+> Durgadoss R (9):
+>   Thermal: Create sensor level APIs
+>   Thermal: Create zone level APIs
+>   Thermal: Add APIs to bind cdev to new zone structure
+>   Thermal: Add trip point sysfs nodes for sensor
+>   Thermal: Create 'mapX' sysfs node for a zone
+>   Thermal: Add Documentation to new APIs
+>   Thermal: Make PER_ZONE values configurable
+>   Thermal: Add ABI Documentation for sysfs interfaces
+>   Thermal: Dummy driver used for testing
+> 
+>  Documentation/ABI/testing/sysfs-class-thermal |   93 +++
+>  Documentation/thermal/sysfs-api2.txt          |  248 +++++++
+>  drivers/thermal/Kconfig                       |   19 +
+>  drivers/thermal/Makefile                      |    3 +
+>  drivers/thermal/thermal_sys.c                 |  881 +++++++++++++++++++++++++
+>  drivers/thermal/thermal_test.c                |  315 +++++++++
+>  include/linux/thermal.h                       |  117 +++-
+>  7 files changed, 1675 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+>  create mode 100644 Documentation/thermal/sysfs-api2.txt
+>  create mode 100644 drivers/thermal/thermal_test.c
 
-Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/thermal/exynos_thermal.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+Hi, Durgadoss
+Did you think about how to use this framework for the device tree.
+for example, we add a dt node for the lm90 sensor:
+lm90: lm90@4c {
+    compatible = "lm90";
+    ......;
+};
+This sensor driver can register two sensors to the thermal framework,
+which are named as "lm90_remote" and "lm90_local". If we want to add the
+"lm90_remote" in the thermal zone, we could add nodes like this:
+xxx-thermal {
+    compatible = "xxxx";
+    sensor-name = "lm90_remote";
+    ......;
+}
+then the xxx-thermal driver can read the sensor-name and use
+get_sensor_by_name() to get the snesor.
 
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 224751e..bada130 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -866,11 +866,9 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 		return -ENOENT;
- 	}
- 
--	data->base = devm_request_and_ioremap(&pdev->dev, data->mem);
--	if (!data->base) {
--		dev_err(&pdev->dev, "Failed to ioremap memory\n");
--		return -ENODEV;
--	}
-+	data->base = devm_ioremap_resource(&pdev->dev, data->mem);
-+	if (IS_ERR(data->base))
-+		return PTR_ERR(data->base);
- 
- 	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
- 		IRQF_TRIGGER_RISING, "exynos-tmu", data);
--- 
-1.8.1.1
+But this is not the canonical DT way. We think it's better to use
+pandle+args to get that sensor, something like this
+lm90: lm90@4c {
+    compatible = "lm90";
+    #sensor-cells = <1>;
+    ......;
+};
+xxx-thermal {
+    compatible = "xxxx";
+    sensors = <&lm90 0>;
+    ......;
+}
+If we want to use this way, we need to add new APIs to decode it.
+
+Do you have any idea for this issue?
+
+Thanks.
+Wei.
+> 
