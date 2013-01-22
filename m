@@ -1,41 +1,50 @@
 From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
-Date: Tue, 22 Jan 2013 17:20:27 +0800
-Message-ID: <50FE59DB.20508@intel.com>
-References: <50FA5F67.4080102@intel.com> <1671780.QshOn4REzF@linux-5eaq.site> <20130122022531.GA20211@aaronlu.sh.intel.com> <10228102.NgVGz9qsxX@linux-5eaq.site>
+Subject: Re: [PATCH v13 8/9] libata: do not suspend port if normal ODD is
+ attached
+Date: Tue, 22 Jan 2013 19:27:46 +0800
+Message-ID: <20130122112746.GA26380@aaronlu.sh.intel.com>
+References: <1358241665-2156-1-git-send-email-aaron.lu@intel.com>
+ <1358241665-2156-9-git-send-email-aaron.lu@intel.com>
+ <50FDA84F.8030204@pobox.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <10228102.NgVGz9qsxX@linux-5eaq.site>
-Sender: linux-ide-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Julian Calaby <julian.calaby@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:29099 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750723Ab3AVL1C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Jan 2013 06:27:02 -0500
+Content-Disposition: inline
+In-Reply-To: <50FDA84F.8030204@pobox.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 01/22/2013 05:13 PM, Oliver Neukum wrote:
-> On Tuesday 22 January 2013 10:25:31 Aaron Lu wrote:
->> On Mon, Jan 21, 2013 at 03:56:43PM +0100, Oliver Neukum wrote:
->>> On Monday 21 January 2013 17:11:04 Aaron Lu wrote:
->>>> It is not easy for the OS to tell if the drive is being used or not
->>>> sometimes 
->>>>
->>>> Alan has reminded me it is possible for an app to open the block device
->>>> file(/dev/sr0), issue a command(play audio), then close the device file.
->>>> From the OS' point of view, we think nobody is using it. But actually,
->>>> the drive is playing cd for the user, so we can't suspend the device.
->>>
->>> Are there drives that support ZPODD and have an audio output?
->>
->> I'm afraid I don't know, since there are so many ODD makers.
->> But at least we can say, the SPEC doesn't forbid it.
+On Mon, Jan 21, 2013 at 03:42:55PM -0500, Jeff Garzik wrote:
+> On 01/15/2013 04:21 AM, Aaron Lu wrote:
+> >For ODDs, the upper layer will poll for media change every few
+> >seconds, which will make it enter and leave suspend state very
+> >often. And as each suspend will also cause a hard/soft reset,
+> >the gain of runtime suspend is very little while the ODD may
+> >malfunction after constantly being reset. So the idle callback
+> >here will not proceed to suspend if a non-ZPODD capable ODD is
+> >attached to the port.
+> >
+> >Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> >Acked-by: Tejun Heo <tj@kernel.org>
+> >---
+> >  drivers/ata/libata-core.c | 19 +++++++++++++++++++
+> >  1 file changed, 19 insertions(+)
 > 
-> Well, then we have to handle it.
+> applied patches #2-6 and #8
 
-Yes, and the way we handle it is by checking the cd->media_present: if
-it is true, we will not allow runtime suspend as shown in the RFC patch.
-http://marc.info/?l=linux-scsi&m=135876099800714&w=2
+Thanks!
 
-Thanks,
-Aaron
+Now that patch 1 has ack from Alan Stern(and thus James), and consider
+the smatch warning of patch #3, I can either send out the remaining 3
+patches(#1, #7 and #9) together with a small fix patch for the smatch
+warning or I can re-send the whole patchset. Just let me know which way
+you prefer, thanks.
+
+-Aaron
 
