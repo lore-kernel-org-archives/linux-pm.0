@@ -1,33 +1,74 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 0/4] ACPI / PM: Initial power state checking and power state setting changes
-Date: Tue, 22 Jan 2013 03:05:41 +0100
-Message-ID: <1792467.qHBR6KraFh@vostro.rjw.lan>
+Subject: [PATCH 1/4] ACPI / PM: Make acpi_bus_init_power() more robust
+Date: Tue, 22 Jan 2013 03:09:01 +0100
+Message-ID: <24285515.9Jp3KUo9Px@vostro.rjw.lan>
+References: <1792467.qHBR6KraFh@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1792467.qHBR6KraFh@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi All,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The following patches make the determination of the initial device power state
-more robust and change the way ACPI device power states are changed to be more
-in line with the spec.
+The ACPI specification requires the _PSC method to be present under
+a device object if its power state cannot be inferred from the states
+of power resources used by it (ACPI 5, Section 7.6.2).  However, it
+also requires that (for power states D0-D2 and D3hot) if the _PSn
+(n = 0, 1, 2, 3) method is present under the device object, it also
+must be executed after the power resources have been set
+appropriately for the device to go into power state Dn (D3 means
+D3hot in this case).  Thus it is not clear from the specification
+whether or not the _PSn method should be executed if the initial
+configuraion of power resources used by the device indicates power
+state Dn and the _PSC method is not present.
 
-[1/4] Make the determination of initial device power states more robust.
-[2/4] Reduce duplication of code between ACPI device PM functions.
-[3/4] Make the changing of device power states follow the spec literally.
-[4/4] Sanitize checks in acpi_power_on_resources().
+The current implementation of acpi_bus_init_power() is based on the
+assumption that it should not be necessary to execute _PSn in the
+above situation, but experience shows that in fact that assumption
+need not be satisfied.  For this reason, make acpi_bus_init_power()
+always execute _PSn if the initial configuration of device power
+resources indicates power state Dn.
 
-The patches are on top of linux-pm.git/linux-next.
+Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/device_pm.c |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -330,13 +330,23 @@ int acpi_bus_init_power(struct acpi_devi
+ 	if (result)
+ 		return result;
+ 
+-	if (device->power.flags.power_resources)
++	if (state < ACPI_STATE_D3_COLD && device->power.flags.power_resources) {
+ 		result = acpi_power_on_resources(device, state);
++		if (result)
++			return result;
+ 
+-	if (!result)
+-		device->power.state = state;
++		if (device->power.states[state].flags.explicit_set) {
++			char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
++			acpi_status status;
+ 
+-	return result;
++			status = acpi_evaluate_object(device->handle, method,
++						      NULL, NULL);
++			if (ACPI_FAILURE(status))
++				return -ENODEV;
++		}
++	}
++	device->power.state = state;
++	return 0;
+ }
+ 
+ int acpi_bus_update_power(acpi_handle handle, int *state_p)
