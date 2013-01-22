@@ -1,50 +1,70 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v13 8/9] libata: do not suspend port if normal ODD is
- attached
-Date: Tue, 22 Jan 2013 19:27:46 +0800
-Message-ID: <20130122112746.GA26380@aaronlu.sh.intel.com>
-References: <1358241665-2156-1-git-send-email-aaron.lu@intel.com>
- <1358241665-2156-9-git-send-email-aaron.lu@intel.com>
- <50FDA84F.8030204@pobox.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: Initialise return variable
+Date: Tue, 22 Jan 2013 14:59:14 +0100
+Message-ID: <2641184.NcZpVXpRem@vostro.rjw.lan>
+References: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:29099 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750723Ab3AVL1C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Jan 2013 06:27:02 -0500
-Content-Disposition: inline
-In-Reply-To: <50FDA84F.8030204@pobox.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1358764194-22753-1-git-send-email-sachin.kamat@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, jhbird.choi@samsung.com, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Mon, Jan 21, 2013 at 03:42:55PM -0500, Jeff Garzik wrote:
-> On 01/15/2013 04:21 AM, Aaron Lu wrote:
-> >For ODDs, the upper layer will poll for media change every few
-> >seconds, which will make it enter and leave suspend state very
-> >often. And as each suspend will also cause a hard/soft reset,
-> >the gain of runtime suspend is very little while the ODD may
-> >malfunction after constantly being reset. So the idle callback
-> >here will not proceed to suspend if a non-ZPODD capable ODD is
-> >attached to the port.
-> >
-> >Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> >Acked-by: Tejun Heo <tj@kernel.org>
-> >---
-> >  drivers/ata/libata-core.c | 19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> 
-> applied patches #2-6 and #8
+On Monday, January 21, 2013 03:59:53 PM Sachin Kamat wrote:
+> 'ret' is undefined when the function returns from the first
+> error condition. Without this patch we get the following warning:
+>=20
+> drivers/cpufreq/exynos-cpufreq.c: In function =E2=80=98exynos_target=E2=
+=80=99:
+> drivers/cpufreq/exynos-cpufreq.c:182:2: warning:
+> =E2=80=98ret=E2=80=99 may be used uninitialized in this function [-Wu=
+ninitialized]
 
-Thanks!
+I'd prefer these two patches to go through the Exynos tree.
 
-Now that patch 1 has ack from Alan Stern(and thus James), and consider
-the smatch warning of patch #3, I can either send out the remaining 3
-patches(#1, #7 and #9) together with a small fix patch for the smatch
-warning or I can re-send the whole patchset. Just let me know which way
-you prefer, thanks.
+Thanks,
+Rafael
 
--Aaron
 
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+> ---
+>  drivers/cpufreq/exynos-cpufreq.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exyno=
+s-cpufreq.c
+> index 218b3ce..38c6158 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -159,7 +159,7 @@ static int exynos_target(struct cpufreq_policy *p=
+olicy,
+>  {
+>  	struct cpufreq_frequency_table *freq_table =3D exynos_info->freq_ta=
+ble;
+>  	unsigned int index;
+> -	int ret;
+> +	int ret =3D -EINVAL;
+> =20
+>  	mutex_lock(&cpufreq_lock);
+> =20
+> @@ -167,10 +167,8 @@ static int exynos_target(struct cpufreq_policy *=
+policy,
+>  		goto out;
+> =20
+>  	if (cpufreq_frequency_table_target(policy, freq_table,
+> -					   target_freq, relation, &index)) {
+> -		ret =3D -EINVAL;
+> +					   target_freq, relation, &index))
+>  		goto out;
+> -	}
+> =20
+>  	freqs.new =3D freq_table[index].frequency;
+> =20
+>=20
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
