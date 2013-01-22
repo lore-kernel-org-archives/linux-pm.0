@@ -1,74 +1,118 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/4] ACPI / PM: Make acpi_bus_init_power() more robust
-Date: Tue, 22 Jan 2013 03:09:01 +0100
-Message-ID: <24285515.9Jp3KUo9Px@vostro.rjw.lan>
+Subject: [PATCH 2/4] ACPI / PM: Introduce helper for executing _PSn methods
+Date: Tue, 22 Jan 2013 03:09:46 +0100
+Message-ID: <1467956.knoMQ0FPoi@vostro.rjw.lan>
 References: <1792467.qHBR6KraFh@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1792467.qHBR6KraFh@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The ACPI specification requires the _PSC method to be present under
-a device object if its power state cannot be inferred from the states
-of power resources used by it (ACPI 5, Section 7.6.2).  However, it
-also requires that (for power states D0-D2 and D3hot) if the _PSn
-(n = 0, 1, 2, 3) method is present under the device object, it also
-must be executed after the power resources have been set
-appropriately for the device to go into power state Dn (D3 means
-D3hot in this case).  Thus it is not clear from the specification
-whether or not the _PSn method should be executed if the initial
-configuraion of power resources used by the device indicates power
-state Dn and the _PSC method is not present.
+To reduce code duplication between acpi_device_set_power() and
+acpi_bus_init_power(), introduce a new helper function for executing
+ACPI devices' _PSn (n = 0..3) methods, acpi_dev_pm_explicit_set().
 
-The current implementation of acpi_bus_init_power() is based on the
-assumption that it should not be necessary to execute _PSn in the
-above situation, but experience shows that in fact that assumption
-need not be satisfied.  For this reason, make acpi_bus_init_power()
-always execute _PSn if the initial configuration of device power
-resources indicates power state Dn.
-
-Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c |   18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/acpi/device_pm.c |   51 +++++++++++++++++++++--------------------------
+ 1 file changed, 23 insertions(+), 28 deletions(-)
 
 Index: linux-pm/drivers/acpi/device_pm.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/device_pm.c
 +++ linux-pm/drivers/acpi/device_pm.c
-@@ -330,13 +330,23 @@ int acpi_bus_init_power(struct acpi_devi
- 	if (result)
- 		return result;
- 
--	if (device->power.flags.power_resources)
-+	if (state < ACPI_STATE_D3_COLD && device->power.flags.power_resources) {
- 		result = acpi_power_on_resources(device, state);
-+		if (result)
-+			return result;
- 
--	if (!result)
--		device->power.state = state;
-+		if (device->power.states[state].flags.explicit_set) {
-+			char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
-+			acpi_status status;
- 
--	return result;
-+			status = acpi_evaluate_object(device->handle, method,
-+						      NULL, NULL);
-+			if (ACPI_FAILURE(status))
-+				return -ENODEV;
-+		}
-+	}
-+	device->power.state = state;
-+	return 0;
+@@ -186,6 +186,19 @@ int acpi_device_get_power(struct acpi_de
+ 	return 0;
  }
  
- int acpi_bus_update_power(acpi_handle handle, int *state_p)
++static int acpi_dev_pm_explicit_set(struct acpi_device *adev, int state)
++{
++	if (adev->power.states[state].flags.explicit_set) {
++		char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
++		acpi_status status;
++
++		status = acpi_evaluate_object(adev->handle, method, NULL, NULL);
++		if (ACPI_FAILURE(status))
++			return -ENODEV;
++	}
++	return 0;
++}
++
+ /**
+  * acpi_device_set_power - Set power state of an ACPI device.
+  * @device: Device to set the power state of.
+@@ -197,8 +210,6 @@ int acpi_device_get_power(struct acpi_de
+ int acpi_device_set_power(struct acpi_device *device, int state)
+ {
+ 	int result = 0;
+-	acpi_status status = AE_OK;
+-	char object_name[5] = { '_', 'P', 'S', '0' + state, '\0' };
+ 	bool cut_power = false;
+ 
+ 	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
+@@ -228,7 +239,6 @@ int acpi_device_set_power(struct acpi_de
+ 	if (state == ACPI_STATE_D3_COLD
+ 	    && device->power.states[ACPI_STATE_D3_COLD].flags.os_accessible) {
+ 		state = ACPI_STATE_D3_HOT;
+-		object_name[3] = '3';
+ 		cut_power = true;
+ 	}
+ 
+@@ -251,23 +261,14 @@ int acpi_device_set_power(struct acpi_de
+ 			if (result)
+ 				goto end;
+ 		}
+-		if (device->power.states[state].flags.explicit_set) {
+-			status = acpi_evaluate_object(device->handle,
+-						      object_name, NULL, NULL);
+-			if (ACPI_FAILURE(status)) {
+-				result = -ENODEV;
+-				goto end;
+-			}
+-		}
++		result = acpi_dev_pm_explicit_set(device, state);
++		if (result)
++			goto end;
+ 	} else {
+-		if (device->power.states[state].flags.explicit_set) {
+-			status = acpi_evaluate_object(device->handle,
+-						      object_name, NULL, NULL);
+-			if (ACPI_FAILURE(status)) {
+-				result = -ENODEV;
+-				goto end;
+-			}
+-		}
++		result = acpi_dev_pm_explicit_set(device, state);
++		if (result)
++			goto end;
++
+ 		if (device->power.flags.power_resources) {
+ 			result = acpi_power_transition(device, state);
+ 			if (result)
+@@ -335,15 +336,9 @@ int acpi_bus_init_power(struct acpi_devi
+ 		if (result)
+ 			return result;
+ 
+-		if (device->power.states[state].flags.explicit_set) {
+-			char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
+-			acpi_status status;
+-
+-			status = acpi_evaluate_object(device->handle, method,
+-						      NULL, NULL);
+-			if (ACPI_FAILURE(status))
+-				return -ENODEV;
+-		}
++		result = acpi_dev_pm_explicit_set(device, state);
++		if (result)
++			return result;
+ 	}
+ 	device->power.state = state;
+ 	return 0;
+
