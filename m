@@ -1,118 +1,40 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 2/4] ACPI / PM: Introduce helper for executing _PSn methods
-Date: Tue, 22 Jan 2013 03:09:46 +0100
-Message-ID: <1467956.knoMQ0FPoi@vostro.rjw.lan>
-References: <1792467.qHBR6KraFh@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
+Date: Tue, 22 Jan 2013 10:25:31 +0800
+Message-ID: <20130122022531.GA20211@aaronlu.sh.intel.com>
+References: <50FA5F67.4080102@intel.com>
+ <CAGRGNgWc2QTnY==NdMeZpw-7L3WwQfBFOwm=UZZ3Jcz+dp=h3g@mail.gmail.com>
+ <20130121091104.GA11010@aaronlu.sh.intel.com>
+ <1671780.QshOn4REzF@linux-5eaq.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1792467.qHBR6KraFh@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lv Zheng <lv.zheng@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:25272 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752900Ab3AVCYz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jan 2013 21:24:55 -0500
+Content-Disposition: inline
+In-Reply-To: <1671780.QshOn4REzF@linux-5eaq.site>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: Julian Calaby <julian.calaby@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Mon, Jan 21, 2013 at 03:56:43PM +0100, Oliver Neukum wrote:
+> On Monday 21 January 2013 17:11:04 Aaron Lu wrote:
+> > It is not easy for the OS to tell if the drive is being used or not
+> > sometimes 
+> > 
+> > Alan has reminded me it is possible for an app to open the block device
+> > file(/dev/sr0), issue a command(play audio), then close the device file.
+> > From the OS' point of view, we think nobody is using it. But actually,
+> > the drive is playing cd for the user, so we can't suspend the device.
+> 
+> Are there drives that support ZPODD and have an audio output?
 
-To reduce code duplication between acpi_device_set_power() and
-acpi_bus_init_power(), introduce a new helper function for executing
-ACPI devices' _PSn (n = 0..3) methods, acpi_dev_pm_explicit_set().
+I'm afraid I don't know, since there are so many ODD makers.
+But at least we can say, the SPEC doesn't forbid it.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c |   51 +++++++++++++++++++++--------------------------
- 1 file changed, 23 insertions(+), 28 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -186,6 +186,19 @@ int acpi_device_get_power(struct acpi_de
- 	return 0;
- }
- 
-+static int acpi_dev_pm_explicit_set(struct acpi_device *adev, int state)
-+{
-+	if (adev->power.states[state].flags.explicit_set) {
-+		char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
-+		acpi_status status;
-+
-+		status = acpi_evaluate_object(adev->handle, method, NULL, NULL);
-+		if (ACPI_FAILURE(status))
-+			return -ENODEV;
-+	}
-+	return 0;
-+}
-+
- /**
-  * acpi_device_set_power - Set power state of an ACPI device.
-  * @device: Device to set the power state of.
-@@ -197,8 +210,6 @@ int acpi_device_get_power(struct acpi_de
- int acpi_device_set_power(struct acpi_device *device, int state)
- {
- 	int result = 0;
--	acpi_status status = AE_OK;
--	char object_name[5] = { '_', 'P', 'S', '0' + state, '\0' };
- 	bool cut_power = false;
- 
- 	if (!device || (state < ACPI_STATE_D0) || (state > ACPI_STATE_D3_COLD))
-@@ -228,7 +239,6 @@ int acpi_device_set_power(struct acpi_de
- 	if (state == ACPI_STATE_D3_COLD
- 	    && device->power.states[ACPI_STATE_D3_COLD].flags.os_accessible) {
- 		state = ACPI_STATE_D3_HOT;
--		object_name[3] = '3';
- 		cut_power = true;
- 	}
- 
-@@ -251,23 +261,14 @@ int acpi_device_set_power(struct acpi_de
- 			if (result)
- 				goto end;
- 		}
--		if (device->power.states[state].flags.explicit_set) {
--			status = acpi_evaluate_object(device->handle,
--						      object_name, NULL, NULL);
--			if (ACPI_FAILURE(status)) {
--				result = -ENODEV;
--				goto end;
--			}
--		}
-+		result = acpi_dev_pm_explicit_set(device, state);
-+		if (result)
-+			goto end;
- 	} else {
--		if (device->power.states[state].flags.explicit_set) {
--			status = acpi_evaluate_object(device->handle,
--						      object_name, NULL, NULL);
--			if (ACPI_FAILURE(status)) {
--				result = -ENODEV;
--				goto end;
--			}
--		}
-+		result = acpi_dev_pm_explicit_set(device, state);
-+		if (result)
-+			goto end;
-+
- 		if (device->power.flags.power_resources) {
- 			result = acpi_power_transition(device, state);
- 			if (result)
-@@ -335,15 +336,9 @@ int acpi_bus_init_power(struct acpi_devi
- 		if (result)
- 			return result;
- 
--		if (device->power.states[state].flags.explicit_set) {
--			char method[5] = { '_', 'P', 'S', '0' + state, '\0' };
--			acpi_status status;
--
--			status = acpi_evaluate_object(device->handle, method,
--						      NULL, NULL);
--			if (ACPI_FAILURE(status))
--				return -ENODEV;
--		}
-+		result = acpi_dev_pm_explicit_set(device, state);
-+		if (result)
-+			return result;
- 	}
- 	device->power.state = state;
- 	return 0;
+Thanks,
+Aaron
 
