@@ -1,73 +1,203 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [RFC PATCH] scsi: sr: support runtime pm
-Date: Tue, 22 Jan 2013 10:27:23 +0800
-Message-ID: <20130122022723.GB20211@aaronlu.sh.intel.com>
-References: <20130121093707.GB11010@aaronlu.sh.intel.com>
- <Pine.LNX.4.44L0.1301211157530.19920-100000@netrider.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] thermal: sysfs: Add a new sysfs node emul_temp
+Date: Tue, 22 Jan 2013 11:20:04 +0800
+Message-ID: <1358824804.2607.31.camel@rzhang1-mobl4>
+References: <1357517296-31402-1-git-send-email-amit.daniel@samsung.com>
+	 <1358321601.2252.36.camel@rzhang1-mobl4>
+	 <CADGdYn4CWscQf0y6dmgYUsKB8u25BOmLYq+T64haBKpwnZ3KBQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1301211157530.19920-100000@netrider.rowland.org>
-Sender: linux-ide-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Julian Calaby <julian.calaby@gmail.com>, James Bottomley <James.Bottomley@HansenPartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:48464 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751529Ab3AVDUJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 21 Jan 2013 22:20:09 -0500
+In-Reply-To: <CADGdYn4CWscQf0y6dmgYUsKB8u25BOmLYq+T64haBKpwnZ3KBQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: amit kachhap <amit.kachhap@gmail.com>
+Cc: linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Durgadoss <durgadoss.r@intel.com>
 
-On Mon, Jan 21, 2013 at 11:59:06AM -0500, Alan Stern wrote:
-> On Mon, 21 Jan 2013, Aaron Lu wrote:
+On Wed, 2013-01-16 at 11:30 -0800, amit kachhap wrote:
+> Hi Rui,
 > 
-> > On Sat, Jan 19, 2013 at 01:46:15PM -0500, Alan Stern wrote:
-> > > On Sat, 19 Jan 2013, Aaron Lu wrote:
-> > > > I don't think we should drop such support.
-> > > > And the safest way to avoid such break is we refine the suspend
-> > > > condition for ODD, and using what ZPODD defined condition isn't that
-> > > > bad to me:
-> > > > - for tray type, no media inside and tray close;
-> > > > - for slot type, no media inside.
-> > > > While whether tray is closed or not may not be that important, but at
-> > > > least we should make sure there is no media inside.
-> > > > 
-> > > > Thoughts?
-> > > 
-> > > That sounds reasonable to me, at least as a first step.  If people want 
-> > > their CD drive to suspend, they can eject the disc.
-> > 
-> > Here is an updated patch to address the problem, please review, thanks.
-> > 
-> > Changes to v13:
-> > - Add PM get/put pair functions to all the block device operation
-> >   functions; Move the existing PM get/put pair functions in
-> >   sr_check_events to sr_block_check_events;
-> > - Add sr_runtime_suspend, it will check if there is media inside and if
-> >   yes, avoid suspend.
-> > 
-> > From 378bf55810a1118ede481f45132b5c39af891d23 Mon Sep 17 00:00:00 2001
-> > From: Aaron Lu <aaron.lu@intel.com>
-> > Date: Wed, 26 Sep 2012 15:14:56 +0800
-> > Subject: [RFC PATCH] scsi: sr: support runtime pm
-> > 
-> > This patch adds runtime pm support for sr.
-> > 
-> > It did this by increasing the runtime usage_count of the device when
-> > its block device is accessed. And decreasing the runtime usage_count
-> > of the device when the access is done.
-> > 
-> > The idea is discussed here:
-> > http://thread.gmane.org/gmane.linux.acpi.devel/55243/focus=52703
-> > and here:
-> > http://thread.gmane.org/gmane.linux.ide/53665/focus=58836
-> > 
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> Thanks for the review comments,
+> On Tue, Jan 15, 2013 at 11:33 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> > Hi, Amit,
+> >
+> > On Sun, 2013-01-06 at 16:08 -0800, Amit Daniel Kachhap wrote:
+> >> This patch adds support to set the emulated temperature method in
+> >> thermal zone (sensor). After setting this feature thermal zone must
+> >> report this temperature and not the actual temperature. The actual
+> >> implementation of this emulated temperature is based on sensor
+> >> capability or platform specific. This is useful in debugging different
+> >> temperature threshold and its associated cooling action. Writing 0 on
+> >> this node should disable emulation.
+> >
+> > Question:
+> > will this bring hardware issue? Say, critical temperature reached while
+> > in emulation mode?
+> No emulation does cause any h/w issue.
+> >
+> > As this is for debug purpose, I'd prefer to have a seperate Kconfig
+> > option for this feature.
+> Yes agreed. Will re-submit with kconfig option.
+> >
+> >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> >> ---
+> >>  Documentation/thermal/sysfs-api.txt |   14 ++++++++++++++
+> >>  drivers/thermal/thermal_sys.c       |   26 ++++++++++++++++++++++++++
+> >>  include/linux/thermal.h             |    1 +
+> >>  3 files changed, 41 insertions(+), 0 deletions(-)
+> >>
+> >> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> >> index 88c0233..e8f2ee4 100644
+> >> --- a/Documentation/thermal/sysfs-api.txt
+> >> +++ b/Documentation/thermal/sysfs-api.txt
+> >> @@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
+> >>       .get_trip_type: get the type of certain trip point.
+> >>       .get_trip_temp: get the temperature above which the certain trip point
+> >>                       will be fired.
+> >> +     .set_emul_temp: set the emulation temperature which helps in debugging
+> >> +                     different threshold temperature points.
+> >>
+> >>  1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+> >>
+> >> @@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
+> >>      |---trip_point_[0-*]_temp:       Trip point temperature
+> >>      |---trip_point_[0-*]_type:       Trip point type
+> >>      |---trip_point_[0-*]_hyst:       Hysteresis value for this trip point
+> >> +    |---emul_temp:           Emulated temperature set node
+> >>
+> >>  Thermal cooling device sys I/F, created once it's registered:
+> >>  /sys/class/thermal/cooling_device[0-*]:
+> >> @@ -252,6 +255,17 @@ passive
+> >>       Valid values: 0 (disabled) or greater than 1000
+> >>       RW, Optional
+> >>
+> >> +emul_temp
+> >> +     Interface to set the emulated temperature method in thermal zone
+> >> +     (sensor). After setting this feature thermal zone must report
+> >> +     this temperature and not the actual temperature. The actual
+> >> +     implementation of this emulated temperature is platform specific.
+> >
+> > can we have a pure software temperature emulation method?
+> > say, the generic thermal layer caches the emulated temperature value,
+> > and hook it in update_temperature()?
+> > This is also useful for testing in polling mode, and it does not require
+> > platform specific callback support. I mean thermal_ops->set_emul_temp is
+> > optional, but thermal emulation is always available for all platforms.
+> Yes It makes sense and we can have pure software emulation and use the
+> cached temperature when no platform call is registered. In my case I
+> needed this in h/w so to have the same sensor trigger interrupts
+> behaviour.
 > 
-> This looks good now.  When you submit the patch, you might want to 
-> mention the restriction about no media being present in the changelog 
-> entry.
+> So the code flow can be like this,
 > 
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> #ifdef CONFIG_THERMAL_EMULATION
+> if (thermal_ops->set_emul_temp)
+> then pass emul_temp to platform and use the normal platform
+> thermal_ops->get_temp
+> else
+> Store it locally and use emul_temp  instead of calling platform
+> thermal_ops->get_temp
+> #endif
 > 
+No.
+We should not support emulation is CONFIG_THERMAL_EMULATION is cleared.
+And further more, for pure software emulation, we should check if the
+real temperature reaches critical trip point.
 
-Will add that in the changelog, thanks a lot for your kind help.
+thanks,
+rui
+> I will re-submit with this change.
+> 
+> Thanks,
+> Amit
+> >
+> > thanks,
+> > rui
+> >> +     This is useful in debugging different temperature threshold and its
+> >> +     associated cooling action. Writing 0 on this node should disable
+> >> +     emulation.
+> >> +     Unit: millidegree Celsius
+> >> +     WO, Optional
+> >> +
+> >>  *****************************
+> >>  * Cooling device attributes *
+> >>  *****************************
+> >> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> >> index 8c8ce80..ecdfc7d 100644
+> >> --- a/drivers/thermal/thermal_sys.c
+> >> +++ b/drivers/thermal/thermal_sys.c
+> >> @@ -700,11 +700,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+> >>       return sprintf(buf, "%s\n", tz->governor->name);
+> >>  }
+> >>
+> >> +static ssize_t
+> >> +emul_temp_store(struct device *dev, struct device_attribute *attr,
+> >> +                  const char *buf, size_t count)
+> >> +{
+> >> +     struct thermal_zone_device *tz = to_thermal_zone(dev);
+> >> +     int ret;
+> >> +     unsigned long temperature;
+> >> +
+> >> +     if (!tz->ops->set_emul_temp)
+> >> +             return -EPERM;
+> >> +
+> >> +     if (kstrtoul(buf, 10, &temperature))
+> >> +             return -EINVAL;
+> >> +
+> >> +     ret = tz->ops->set_emul_temp(tz, temperature);
+> >> +
+> >> +     return ret ? ret : count;
+> >> +}
+> >> +
+> >>  static DEVICE_ATTR(type, 0444, type_show, NULL);
+> >>  static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+> >>  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+> >>  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+> >>  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+> >> +static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+> >>
+> >>  /* sys I/F for cooling device */
+> >>  #define to_cooling_device(_dev)      \
+> >> @@ -1592,6 +1612,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+> >>                       goto unregister;
+> >>       }
+> >>
+> >> +     if (ops->set_emul_temp) {
+> >> +             result = device_create_file(&tz->device, &dev_attr_emul_temp);
+> >> +             if (result)
+> >> +                     goto unregister;
+> >> +     }
+> >> +
+> >>       /* Create policy attribute */
+> >>       result = device_create_file(&tz->device, &dev_attr_policy);
+> >>       if (result)
+> >> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> >> index 883bcda..fbb87d4 100644
+> >> --- a/include/linux/thermal.h
+> >> +++ b/include/linux/thermal.h
+> >> @@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
+> >>       int (*set_trip_hyst) (struct thermal_zone_device *, int,
+> >>                             unsigned long);
+> >>       int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
+> >> +     int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
+> >>       int (*get_trend) (struct thermal_zone_device *, int,
+> >>                         enum thermal_trend *);
+> >>       int (*notify) (struct thermal_zone_device *, int,
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
--Aaron
 
