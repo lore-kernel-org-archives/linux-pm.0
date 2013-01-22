@@ -1,44 +1,36 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH] libata: pm: differentiate system and runtime pm for ata
- port
-Date: Tue, 22 Jan 2013 16:48:54 +0800
-Message-ID: <20130122084854.GA26256@aaronlu.sh.intel.com>
-References: <1346143791-2995-1-git-send-email-aaron.lu@intel.com>
- <50FDA8B3.6090100@pobox.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [PATCH v13 1/9] scsi: sr: support runtime pm
+Date: Tue, 22 Jan 2013 10:13:26 +0100
+Message-ID: <10228102.NgVGz9qsxX@linux-5eaq.site>
+References: <50FA5F67.4080102@intel.com> <1671780.QshOn4REzF@linux-5eaq.site> <20130122022531.GA20211@aaronlu.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ide-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <50FDA8B3.6090100@pobox.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-scsi-owner@vger.kernel.org>
+In-Reply-To: <20130122022531.GA20211@aaronlu.sh.intel.com>
+Sender: linux-scsi-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Julian Calaby <julian.calaby@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, James Bottomley <James.Bottomley@hansenpartnership.com>, Jeff Garzik <jgarzik@pobox.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 21, 2013 at 03:44:35PM -0500, Jeff Garzik wrote:
-> On 08/28/2012 04:49 AM, Aaron Lu wrote:
-> >For sata port, only runtime pm needs to be taken care of;
-> >For IDE port, only system pm needs to be taken care of.
-> >Currently, we use PMSG_SUSPEND for both system suspend and runtime
-> >suspend and PMSG_ON for both system resume and runtime resume.
-> >
-> >Change this by using PMSG_AUTO_SUSPEND for runtime suspend and
-> >PMSG_AUTO_RESUME for runtime resume.
-> >
-> >The ata_acpi_set_state is modified accordingly. And the sata case and
-> >pata case is seperated for easy understanding.
-> >
-> >Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> >---
-> >  drivers/ata/libata-acpi.c | 83 ++++++++++++++++++++++++++++++++---------------
-> >  drivers/ata/libata-core.c | 22 +++++++++----
-> >  drivers/ata/libata-eh.c   |  9 ++---
-> >  3 files changed, 78 insertions(+), 36 deletions(-)
+On Tuesday 22 January 2013 10:25:31 Aaron Lu wrote:
+> On Mon, Jan 21, 2013 at 03:56:43PM +0100, Oliver Neukum wrote:
+> > On Monday 21 January 2013 17:11:04 Aaron Lu wrote:
+> > > It is not easy for the OS to tell if the drive is being used or not
+> > > sometimes 
+> > > 
+> > > Alan has reminded me it is possible for an app to open the block device
+> > > file(/dev/sr0), issue a command(play audio), then close the device file.
+> > > From the OS' point of view, we think nobody is using it. But actually,
+> > > the drive is playing cd for the user, so we can't suspend the device.
+> > 
+> > Are there drives that support ZPODD and have an audio output?
 > 
-> 
-> Can you rediff this on top of libata-dev.git #upstream?
+> I'm afraid I don't know, since there are so many ODD makers.
+> But at least we can say, the SPEC doesn't forbid it.
 
-Sure. Will send out when it's ready, thanks.
+Well, then we have to handle it.
 
--Aaron
+	Regards
+		Oliver
 
