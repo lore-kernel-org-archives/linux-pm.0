@@ -1,73 +1,97 @@
-From: shuox.liu@intel.com
-Subject: [PATCH] PM / Runtime: Add new helper function: pm_runtime_active()
-Date: Wed, 23 Jan 2013 16:54:01 +0800
-Message-ID: <1358931241-32375-1-git-send-email-shuox.liu@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:25634 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753738Ab3AWJBM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 23 Jan 2013 04:01:12 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Wed, 23 Jan 2013 10:55:22 -0800
+Message-ID: <20130123185522.GG2373@mtj.dyndns.org>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, yanmin_zhang@linux.intel.com, ShuoX Liu <shuox.liu@intel.com>, Yanmin Zhang <yanmin.zhang@intel.com>
 
-From: ShuoX Liu <shuox.liu@intel.com>
+Hello, Srivatsa.
 
-This boolean function simply returns whether or not the runtime
-status of the device is 'active'. The typical scenario is driver
-calls pm_runtime_get firstly, then check pm_runtime_active in
-atomic environment.
+First of all, I'm not sure whether we need to be this step-by-step
+when introducing something new.  It's not like we're transforming an
+existing implementation and it doesn't seem to help understanding the
+series that much either.
 
-Also add entry to Documentation/power/runtime.txt
+On Tue, Jan 22, 2013 at 01:03:53PM +0530, Srivatsa S. Bhat wrote:
+> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
+> lock-ordering related problems (unlike per-cpu locks). However, global
 
-Signed-off-by: Yanmin Zhang <yanmin.zhang@intel.com>
-Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
----
- Documentation/power/runtime_pm.txt |    4 ++++
- include/linux/pm_runtime.h         |    7 +++++++
- 2 files changed, 11 insertions(+), 0 deletions(-)
+So, unfortunately, this already seems broken, right?  The problem here
+seems to be that previously, say, read_lock() implied
+preempt_disable() but as this series aims to move away from it, it
+introduces the problem of locking order between such locks and the new
+contruct.
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 03591a7..6c9f5d9 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -426,6 +426,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-       'power.runtime_error' is set or 'power.disable_depth' is greater than
-       zero)
- 
-+  bool pm_runtime_active(struct device *dev);
-+    - return true if the device's runtime PM status is 'active' or its
-+      'power.disable_depth' field is not equal to zero, or false otherwise
-+
-   bool pm_runtime_suspended(struct device *dev);
-     - return true if the device's runtime PM status is 'suspended' and its
-       'power.disable_depth' field is equal to zero, or false otherwise
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index f271860..c785c21 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -80,6 +80,12 @@ static inline bool pm_runtime_suspended(struct device *dev)
- 		&& !dev->power.disable_depth;
- }
- 
-+static inline bool pm_runtime_active(struct device *dev)
-+{
-+	return dev->power.runtime_status == RPM_ACTIVE
-+		|| dev->power.disable_depth;
-+}
-+
- static inline bool pm_runtime_status_suspended(struct device *dev)
- {
- 	return dev->power.runtime_status == RPM_SUSPENDED;
-@@ -132,6 +138,7 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
- static inline bool device_run_wake(struct device *dev) { return false; }
- static inline void device_set_run_wake(struct device *dev, bool enable) {}
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
-+static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
+The only two options are either punishing writers or identifying and
+updating all such possible deadlocks.  percpu_rwsem does the former,
+right?  I don't know how feasible the latter would be.  Srivatsa,
+you've been looking at all the places which would require conversion,
+how difficult would doing the latter be?
+
+> +#define reader_uses_percpu_refcnt(pcpu_rwlock, cpu)			\
+> +		(ACCESS_ONCE(per_cpu(*((pcpu_rwlock)->reader_refcnt), cpu)))
+> +
+> +#define reader_nested_percpu(pcpu_rwlock)				\
+> +			(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) > 1)
+> +
+> +#define writer_active(pcpu_rwlock)					\
+> +			(__this_cpu_read(*((pcpu_rwlock)->writer_signal)))
+
+Why are these in the public header file?  Are they gonna be used to
+inline something?
+
+> +static inline void raise_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				       unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = true;
+> +}
+> +
+> +static inline void drop_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				      unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = false;
+> +}
+> +
+> +static void announce_writer_active(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_online_cpu(cpu)
+> +		raise_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+> +
+> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	drop_writer_signal(pcpu_rwlock, smp_processor_id());
+> +
+> +	for_each_online_cpu(cpu)
+> +		drop_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+
+It could be just personal preference but I find the above one line
+wrappers more obfuscating than anything else.  What's the point of
+wrapping writer_signal = true/false into a separate function?  These
+simple wrappers just add layers that people have to dig through to
+figure out what's going on without adding anything of value.  I'd much
+prefer collapsing these into the percpu_write_[un]lock().
+
+Thanks.
+
 -- 
-1.7.1
-
+tejun
