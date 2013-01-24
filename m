@@ -1,110 +1,51 @@
-From: Gu1 <gu1@aeroxteam.fr>
-Subject: [PATCH] Thermal: fix iteration over CPU frequency list
-Date: Thu, 24 Jan 2013 16:24:05 +0100
-Message-ID: <1359041045-24341-1-git-send-email-gu1@aeroxteam.fr>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:41490 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207Ab3AXPe7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jan 2013 10:34:59 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v5 01/45] percpu_rwlock: Introduce the global
+ reader-writer lock backend
+Date: Thu, 24 Jan 2013 16:58:40 +0100
+Message-ID: <20130124155840.GA10651@redhat.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122073315.13822.27093.stgit@srivatsabhat.in.ibm.com>
+ <1358883152.21576.55.camel@gandalf.local.home>
+ <CANN689HOmiO-5714UiyuOcjrRYW2DkR4cPLgt96f5YeB9Ws3RQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <CANN689HOmiO-5714UiyuOcjrRYW2DkR4cPLgt96f5YeB9Ws3RQ@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Michel Lespinasse <walken@google.com>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, Steven Rostedt <rostedt@goodmis.org>, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, sbw@mit.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>
-Cc: Gu1 <gu1@aeroxteam.fr>
 
-In different places in the Thermal code, the CPU frequency list is iterated
-in an incorrect way, leading to endless loops when the frequency list contains
-a CPUFREQ_TABLE_INVALID entry, which is the case by default in the the Exynos
-4x12 cpufreq driver, for example.
+On 01/23, Michel Lespinasse wrote:
+>
+> On Tue, Jan 22, 2013 at 11:32 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> >
+> > I thought global locks are now fair. That is, a reader will block if a
+> > writer is waiting. Hence, the above should deadlock on the current
+> > rwlock_t types.
+>
+> I believe you are mistaken here. struct rw_semaphore is fair (and
+> blocking), but rwlock_t is unfair. The reason we can't easily make
+> rwlock_t fair is because tasklist_lock currently depends on the
+> rwlock_t unfairness - tasklist_lock readers typically don't disable
+> local interrupts, and tasklist_lock may be acquired again from within
+> an interrupt, which would deadlock if rwlock_t was fair and a writer
+> was queued by the time the interrupt is processed.
 
-The frequency list is iterated with a while loop, and when a
-CPUFREQ_TABLE_INVALID entry is encountered, the continue; statement is used to
-skip it, but the index is not incremented, causing an endless loop.
+Yes.
 
-A similar bug was fixed by hongbo.zhang in commit:
-  Thermal: fix bug of counting cpu frequencies
+And, iirc, it was even documented somewhere that while rwlock_t is not
+really nice, it is good to share the locking with interrupts. You do
+not need to disable irqs.
 
-Signed-off-by: Gu1 <gu1@aeroxteam.fr>
----
- drivers/thermal/cpu_cooling.c    | 8 +++-----
- drivers/thermal/exynos_thermal.c | 9 +++++----
- 2 files changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 836828e..51acd26 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -123,7 +123,7 @@ static int is_cpufreq_valid(int cpu)
-  */
- static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- {
--	int ret = 0, i = 0;
-+	int ret = 0, i;
- 	unsigned long level_index;
- 	bool descend = false;
- 	struct cpufreq_frequency_table *table =
-@@ -131,7 +131,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- 	if (!table)
- 		return ret;
- 
--	while (table[i].frequency != CPUFREQ_TABLE_END) {
-+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 
-@@ -145,7 +145,6 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- 		/*return if level matched and table in descending order*/
- 		if (descend && i == level)
- 			return table[i].frequency;
--		i++;
- 	}
- 	i--;
- 
-@@ -154,13 +153,12 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- 	level_index = i - level;
- 
- 	/*Scan the table in reverse order and match the level*/
--	while (i >= 0) {
-+	for (; i >= 0; i--) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 		/*return if level matched*/
- 		if (i == level_index)
- 			return table[i].frequency;
--		i--;
- 	}
- 	return ret;
- }
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 224751e..fa9e1d7 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -233,7 +233,8 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
- 
- static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
- {
--	int i = 0, ret = -EINVAL;
-+	int i, ret = -EINVAL;
-+	unsigned int count = 0;
- 	struct cpufreq_frequency_table *table = NULL;
- #ifdef CONFIG_CPU_FREQ
- 	table = cpufreq_frequency_get_table(cpu);
-@@ -241,12 +242,12 @@ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
- 	if (!table)
- 		return ret;
- 
--	while (table[i].frequency != CPUFREQ_TABLE_END) {
-+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 		if (table[i].frequency == freq)
--			return i;
--		i++;
-+			return count;
-+		count++;
- 	}
- 	return ret;
- }
--- 
-1.8.1.1
-
+Oleg.
