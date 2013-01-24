@@ -1,144 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 33/35] x86, 64bit, mm: hibernate use generic mapping_init
-Date: Thu, 24 Jan 2013 23:50:41 +0100
-Message-ID: <3179011.uLpFQkKUJq@vostro.rjw.lan>
-References: <1359058816-7615-1-git-send-email-yinghai@kernel.org> <1359058816-7615-34-git-send-email-yinghai@kernel.org>
+Subject: Re: [PATCH] PM / Runtime: Add new helper function: pm_runtime_active()
+Date: Fri, 25 Jan 2013 00:00:43 +0100
+Message-ID: <45313302.HOtnqx7V8P@vostro.rjw.lan>
+References: <1358931241-32375-1-git-send-email-shuox.liu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:54340 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:54363 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755623Ab3AXWok (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Jan 2013 17:44:40 -0500
-In-Reply-To: <1359058816-7615-34-git-send-email-yinghai@kernel.org>
+	id S1756305Ab3AXWyk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 24 Jan 2013 17:54:40 -0500
+In-Reply-To: <1358931241-32375-1-git-send-email-shuox.liu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Andrew Morton <akpm@linux-foundation.org>, Jan Kiszka <jan.kiszka@web.de>, Jason Wessel <jason.wessel@windriver.com>, Borislav Petkov <bp@alien8.de>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+To: shuox.liu@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pavel@ucw.cz, len.brown@intel.com, yanmin_zhang@linux.intel.com, Yanmin Zhang <yanmin.zhang@intel.com>
 
-On Thursday, January 24, 2013 12:20:14 PM Yinghai Lu wrote:
-> We should set mappings only for usable memory ranges under max_pfn
-> Otherwise causes same problem that is fixed by
+On Wednesday, January 23, 2013 04:54:01 PM shuox.liu@intel.com wrote:
+> From: ShuoX Liu <shuox.liu@intel.com>
 > 
-> 	x86, mm: Only direct map addresses that are marked as E820_RAM
+> This boolean function simply returns whether or not the runtime
+> status of the device is 'active'. The typical scenario is driver
+> calls pm_runtime_get firstly, then check pm_runtime_active in
+> atomic environment.
 > 
-> Make it only map range in pfn_mapped array.
+> Also add entry to Documentation/power/runtime.txt
 
-Well.
+Well, why not if that helps.
 
-While I don't have fundamental objections, I can't really ACK the patch,
-because I haven't been following arch/x86 development for several months
-and I can't really say how this is supposed to work after the change.
+Applied to linux-pm.git/linux-next.
 
 Thanks,
 Rafael
 
 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Yanmin Zhang <yanmin.zhang@intel.com>
+> Signed-off-by: ShuoX Liu <shuox.liu@intel.com>
 > ---
->  arch/x86/power/hibernate_64.c |   66 ++++++++++++++---------------------------
->  1 file changed, 22 insertions(+), 44 deletions(-)
+>  Documentation/power/runtime_pm.txt |    4 ++++
+>  include/linux/pm_runtime.h         |    7 +++++++
+>  2 files changed, 11 insertions(+), 0 deletions(-)
 > 
-> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> index 460f314..a0fde91 100644
-> --- a/arch/x86/power/hibernate_64.c
-> +++ b/arch/x86/power/hibernate_64.c
-> @@ -11,6 +11,8 @@
->  #include <linux/gfp.h>
->  #include <linux/smp.h>
->  #include <linux/suspend.h>
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 03591a7..6c9f5d9 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -426,6 +426,10 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
+>        'power.runtime_error' is set or 'power.disable_depth' is greater than
+>        zero)
+>  
+> +  bool pm_runtime_active(struct device *dev);
+> +    - return true if the device's runtime PM status is 'active' or its
+> +      'power.disable_depth' field is not equal to zero, or false otherwise
 > +
-> +#include <asm/init.h>
->  #include <asm/proto.h>
->  #include <asm/page.h>
->  #include <asm/pgtable.h>
-> @@ -39,41 +41,21 @@ pgd_t *temp_level4_pgt;
->  
->  void *relocated_restore_code;
->  
-> -static int res_phys_pud_init(pud_t *pud, unsigned long address, unsigned long end)
-> +static void *alloc_pgt_page(void *context)
->  {
-> -	long i, j;
-> -
-> -	i = pud_index(address);
-> -	pud = pud + i;
-> -	for (; i < PTRS_PER_PUD; pud++, i++) {
-> -		unsigned long paddr;
-> -		pmd_t *pmd;
-> -
-> -		paddr = address + i*PUD_SIZE;
-> -		if (paddr >= end)
-> -			break;
-> -
-> -		pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-> -		if (!pmd)
-> -			return -ENOMEM;
-> -		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
-> -		for (j = 0; j < PTRS_PER_PMD; pmd++, j++, paddr += PMD_SIZE) {
-> -			unsigned long pe;
-> -
-> -			if (paddr >= end)
-> -				break;
-> -			pe = __PAGE_KERNEL_LARGE_EXEC | paddr;
-> -			pe &= __supported_pte_mask;
-> -			set_pmd(pmd, __pmd(pe));
-> -		}
-> -	}
-> -	return 0;
-> +	return (void *)get_safe_page(GFP_ATOMIC);
+>    bool pm_runtime_suspended(struct device *dev);
+>      - return true if the device's runtime PM status is 'suspended' and its
+>        'power.disable_depth' field is equal to zero, or false otherwise
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index f271860..c785c21 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -80,6 +80,12 @@ static inline bool pm_runtime_suspended(struct device *dev)
+>  		&& !dev->power.disable_depth;
 >  }
 >  
->  static int set_up_temporary_mappings(void)
+> +static inline bool pm_runtime_active(struct device *dev)
+> +{
+> +	return dev->power.runtime_status == RPM_ACTIVE
+> +		|| dev->power.disable_depth;
+> +}
+> +
+>  static inline bool pm_runtime_status_suspended(struct device *dev)
 >  {
-> -	unsigned long start, end, next;
-> -	int error;
-> +	struct x86_mapping_info info = {
-> +		.alloc_pgt_page	= alloc_pgt_page,
-> +		.pmd_flag	= __PAGE_KERNEL_LARGE_EXEC,
-> +		.kernel_mapping = true,
-> +	};
-> +	unsigned long mstart, mend;
-> +	int result;
-> +	int i;
->  
->  	temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
->  	if (!temp_level4_pgt)
-> @@ -84,21 +66,17 @@ static int set_up_temporary_mappings(void)
->  		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
->  
->  	/* Set up the direct mapping from scratch */
-> -	start = (unsigned long)pfn_to_kaddr(0);
-> -	end = (unsigned long)pfn_to_kaddr(max_pfn);
-> -
-> -	for (; start < end; start = next) {
-> -		pud_t *pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-> -		if (!pud)
-> -			return -ENOMEM;
-> -		next = start + PGDIR_SIZE;
-> -		if (next > end)
-> -			next = end;
-> -		if ((error = res_phys_pud_init(pud, __pa(start), __pa(next))))
-> -			return error;
-> -		set_pgd(temp_level4_pgt + pgd_index(start),
-> -			mk_kernel_pgd(__pa(pud)));
-> +	for (i = 0; i < nr_pfn_mapped; i++) {
-> +		mstart = pfn_mapped[i].start << PAGE_SHIFT;
-> +		mend   = pfn_mapped[i].end << PAGE_SHIFT;
-> +
-> +		result = kernel_ident_mapping_init(&info, temp_level4_pgt,
-> +						   mstart, mend);
-> +
-> +		if (result)
-> +			return result;
->  	}
-> +
->  	return 0;
->  }
+>  	return dev->power.runtime_status == RPM_SUSPENDED;
+> @@ -132,6 +138,7 @@ static inline void pm_runtime_put_noidle(struct device *dev) {}
+>  static inline bool device_run_wake(struct device *dev) { return false; }
+>  static inline void device_set_run_wake(struct device *dev, bool enable) {}
+>  static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+> +static inline bool pm_runtime_active(struct device *dev) { return true; }
+>  static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+>  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
 >  
 > 
 -- 
