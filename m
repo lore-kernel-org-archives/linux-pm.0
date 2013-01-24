@@ -1,96 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.8-rc5
-Date: Thu, 24 Jan 2013 13:57:55 +0100
-Message-ID: <4322980.ey5AOPpS2x@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Gu1 <gu1@aeroxteam.fr>
+Subject: [PATCH] Thermal: fix iteration over CPU frequency list
+Date: Thu, 24 Jan 2013 16:24:05 +0100
+Message-ID: <1359041045-24341-1-git-send-email-gu1@aeroxteam.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:53313 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753054Ab3AXMvx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Jan 2013 07:51:53 -0500
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:41490 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207Ab3AXPe7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Jan 2013 10:34:59 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@linaro.org>
+Cc: Gu1 <gu1@aeroxteam.fr>
 
-Hi Linus,
+In different places in the Thermal code, the CPU frequency list is iterated
+in an incorrect way, leading to endless loops when the frequency list contains
+a CPUFREQ_TABLE_INVALID entry, which is the case by default in the the Exynos
+4x12 cpufreq driver, for example.
 
-Please pull from the git repository at
+The frequency list is iterated with a while loop, and when a
+CPUFREQ_TABLE_INVALID entry is encountered, the continue; statement is used to
+skip it, but the index is not incremented, causing an endless loop.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-for-3.8-rc5
+A similar bug was fixed by hongbo.zhang in commit:
+  Thermal: fix bug of counting cpu frequencies
 
-to receive ACPI and power management fixes for v3.8-rc5 with top-most commit
-efa17194581bdfca0986dabc178908bd7c21ba00
+Signed-off-by: Gu1 <gu1@aeroxteam.fr>
+---
+ drivers/thermal/cpu_cooling.c    | 8 +++-----
+ drivers/thermal/exynos_thermal.c | 9 +++++----
+ 2 files changed, 8 insertions(+), 9 deletions(-)
 
-  cpufreq: Add module aliases for acpi-cpufreq
-
-on top of commit 7d1f9aeff1ee4a20b1aeb377dd0f579fe9647619
-
-  Linux 3.8-rc4
-
-Included are:
-
-* Two cpuidle initialization fixes (both -stable material) from
-  Konrad Rzeszutek Wilk.
-
-* cpufreq regression fixes for AMD processors, mostly related to the change
-  of the default driver for newer CPUs from powernow-k8 to acpi-cpufreq.
-  From Borislav Petkov, Stefan Bader, Matthew Garrett.
-
-* ACPI cpufreq fix related to system reconfigurations such as the switch
-  from battery to AC power from Thomas Schlichter (-stable material).
-
-* cpufreq and devfreq fixes related to incorrect usage of operating
-  performance points (OPP) framework and RCU from Nishanth Menon
-  (-stable material).
-
-* APEI workaround for incorrect BIOS information from Lans Zhang.
-
-Thanks!
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 836828e..51acd26 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -123,7 +123,7 @@ static int is_cpufreq_valid(int cpu)
+  */
+ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+ {
+-	int ret = 0, i = 0;
++	int ret = 0, i;
+ 	unsigned long level_index;
+ 	bool descend = false;
+ 	struct cpufreq_frequency_table *table =
+@@ -131,7 +131,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+ 	if (!table)
+ 		return ret;
  
-
- drivers/acpi/apei/apei-base.c    |    3 ++
- drivers/acpi/processor_idle.c    |    4 ++
- drivers/acpi/processor_perflib.c |    7 ++++
- drivers/cpufreq/Kconfig.x86      |    2 +-
- drivers/cpufreq/acpi-cpufreq.c   |    7 ++++
- drivers/cpufreq/cpufreq-cpu0.c   |    5 +++
- drivers/cpufreq/omap-cpufreq.c   |    3 ++
- drivers/devfreq/devfreq.c        |    5 +++
- drivers/devfreq/exynos4_bus.c    |   94 +++++++++++++++++++++++++++++++++-------------
- drivers/idle/intel_idle.c        |    3 +-
- 10 files changed, 103 insertions(+), 30 deletions(-)
-
----------------
-
-Borislav Petkov (1):
-      powernow-k8: Add a kconfig dependency on acpi-cpufreq
-
-Konrad Rzeszutek Wilk (2):
-      intel_idle: Don't register CPU notifier if we are not running.
-      ACPI / cpuidle: Fix NULL pointer issues when cpuidle is disabled
-
-Lans Zhang (1):
-      ACPI, APEI: Fixup incorrect 64-bit access width firmware bug
-
-Matthew Garrett (1):
-      cpufreq: Add module aliases for acpi-cpufreq
-
-Nishanth Menon (4):
-      cpufreq: OMAP: use RCU locks around usage of OPP
-      cpufreq: cpufreq-cpu0: use RCU locks around usage of OPP
-      PM / devfreq: add locking documentation for recommended_opp
-      PM / devfreq: exynos4_bus: honor RCU lock usage
-
-Stefan Bader (1):
-      ACPI: Check MSR valid bit before using P-state frequencies
-
-Thomas Schlichter (1):
-      ACPI / processor: Get power info before updating the C-states
-
-
+-	while (table[i].frequency != CPUFREQ_TABLE_END) {
++	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 
+@@ -145,7 +145,6 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+ 		/*return if level matched and table in descending order*/
+ 		if (descend && i == level)
+ 			return table[i].frequency;
+-		i++;
+ 	}
+ 	i--;
+ 
+@@ -154,13 +153,12 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+ 	level_index = i - level;
+ 
+ 	/*Scan the table in reverse order and match the level*/
+-	while (i >= 0) {
++	for (; i >= 0; i--) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 		/*return if level matched*/
+ 		if (i == level_index)
+ 			return table[i].frequency;
+-		i--;
+ 	}
+ 	return ret;
+ }
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index 224751e..fa9e1d7 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -233,7 +233,8 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+ 
+ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+ {
+-	int i = 0, ret = -EINVAL;
++	int i, ret = -EINVAL;
++	unsigned int count = 0;
+ 	struct cpufreq_frequency_table *table = NULL;
+ #ifdef CONFIG_CPU_FREQ
+ 	table = cpufreq_frequency_get_table(cpu);
+@@ -241,12 +242,12 @@ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+ 	if (!table)
+ 		return ret;
+ 
+-	while (table[i].frequency != CPUFREQ_TABLE_END) {
++	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 		if (table[i].frequency == freq)
+-			return i;
+-		i++;
++			return count;
++		count++;
+ 	}
+ 	return ret;
+ }
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.1.1
+
