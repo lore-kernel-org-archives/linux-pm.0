@@ -1,37 +1,45 @@
 From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH v2 2/2] libata: PM code cleanup for ata port
-Date: Fri, 25 Jan 2013 15:34:03 -0500
-Message-ID: <5102EC3B.9040901@pobox.com>
-References: <1346143791-2995-1-git-send-email-aaron.lu@intel.com> <50FDA8B3.6090100@pobox.com> <20130125062935.GA9779@aaronlu.sh.intel.com> <510226F9.5000709@intel.com>
+Subject: Re: [PATCH v14 1/3] scsi: sr: support runtime pm
+Date: Fri, 25 Jan 2013 15:37:28 -0500
+Message-ID: <5102ED08.2070201@pobox.com>
+References: <1358924973-18269-1-git-send-email-aaron.lu@intel.com> <1358924973-18269-2-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <510226F9.5000709@intel.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qa0-f52.google.com ([209.85.216.52]:48676 "EHLO
+	mail-qa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067Ab3AYUhb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jan 2013 15:37:31 -0500
+In-Reply-To: <1358924973-18269-2-git-send-email-aaron.lu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <tj@kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 01/25/2013 01:32 AM, Aaron Lu wrote:
-> For system freeze, if the port is already runtime suspended, leave it
-> alone and just return. The port will be resumed on thaw before it will
-> be used.
+On 01/23/2013 02:09 AM, Aaron Lu wrote:
+> This patch adds runtime pm support for sr.
 >
-> And since we will call get_noresume for every device during prepare
-> phase, and the port is resumed during thaw phase, it can't be in runtime
-> suspended state during the poweroff phase. So remove the
-> runtime_suspended check in poweroff callback.
+> It did this by increasing the runtime usage_count of the device when
+> its block device is accessed. And decreasing the runtime usage_count
+> of the device when the access is done.
 >
-> And for all suspend(freeze/suspend/poweroff/etc.), there is no need to
-> touch the device, so set no_autopsy and no_recovery for them all.
+> If there is media inside, runtime suspend is not allowed as we don't
+> always know if the ODD is being used or not.
+>
+> The idea is discussed here:
+> http://thread.gmane.org/gmane.linux.acpi.devel/55243/focus=52703
+> and the restriction to check media inside is discussed here:
+> http://thread.gmane.org/gmane.linux.ide/53665/focus=58836
 >
 > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> Acked-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 > ---
->   drivers/ata/libata-core.c | 16 ++++------------
->   1 file changed, 4 insertions(+), 12 deletions(-)
+>   drivers/scsi/sr.c | 42 +++++++++++++++++++++++++++++++++++++++---
+>   1 file changed, 39 insertions(+), 3 deletions(-)
 
-applied 1-2
+applied 1-3
 
 
 
