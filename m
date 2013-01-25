@@ -1,83 +1,27 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 2/2] libata: PM code cleanup for ata port
-Date: Fri, 25 Jan 2013 13:29:10 +0100
-Message-ID: <1512636.TS44I6d7Dq@vostro.rjw.lan>
-References: <1346143791-2995-1-git-send-email-aaron.lu@intel.com> <510226F9.5000709@intel.com> <51026D90.7040309@mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <51026D90.7040309@mvista.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Cc: Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Jeff Wu <jeff.wu@amd.com>, Tejun Heo <tj@kernel.org>
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 0/4 v11] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Fri, 25 Jan 2013 13:46:41 -0600
+Message-ID: <1359143205-20279-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp187.dfw.emailsrvr.com ([67.192.241.187]:57401 "EHLO
+	smtp187.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750819Ab3AYTql (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Jan 2013 14:46:41 -0500
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Friday, January 25, 2013 03:33:36 PM Sergei Shtylyov wrote:
-> Hello.
-> 
-> On 25-01-2013 10:32, Aaron Lu wrote:
-> 
-> > For system freeze, if the port is already runtime suspended, leave it
-> > alone and just return. The port will be resumed on thaw before it will
-> > be used.
-> 
-> > And since we will call get_noresume for every device during prepare
-> > phase, and the port is resumed during thaw phase, it can't be in runtime
-> > suspended state during the poweroff phase. So remove the
-> > runtime_suspended check in poweroff callback.
-> 
-> > And for all suspend(freeze/suspend/poweroff/etc.), there is no need to
-> > touch the device, so set no_autopsy and no_recovery for them all.
-> 
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> > ---
-> >   drivers/ata/libata-core.c | 16 ++++------------
-> >   1 file changed, 4 insertions(+), 12 deletions(-)
-> 
-> > diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-> > index 6a5ef86..439c608 100644
-> > --- a/drivers/ata/libata-core.c
-> > +++ b/drivers/ata/libata-core.c
-> > @@ -5334,9 +5334,6 @@ static int ata_port_request_pm(struct ata_port *ap, pm_message_t mesg,
-> >
-> >   static int __ata_port_suspend_common(struct ata_port *ap, pm_message_t mesg, int *async)
-> >   {
-> > -	unsigned int ehi_flags = ATA_EHI_QUIET;
-> > -	int rc;
-> > -
-> >   	/*
-> >   	 * On some hardware, device fails to respond after spun down
-> >   	 * for suspend.  As the device won't be used before being
-> > @@ -5345,11 +5342,9 @@ static int __ata_port_suspend_common(struct ata_port *ap, pm_message_t mesg, int
-> >   	 *
-> >   	 * http://thread.gmane.org/gmane.linux.ide/46764
-> >   	 */
-> > -	if (mesg.event & PM_EVENT_SUSPEND)
-> > -		ehi_flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_NO_RECOVERY;
-> > -
-> > -	rc = ata_port_request_pm(ap, mesg, 0, ehi_flags, async);
-> > -	return rc;
-> > +	unsigned int ehi_flags = ATA_EHI_QUIET | ATA_EHI_NO_AUTOPSY |
-> > +				 ATA_EHI_NO_RECOVERY;
-> 
->     Please keep the existing coding style and insert empty line after 
-> declarations.
->     Wait, you don't need this variable at all...
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The EnergyCore Management Engine (ECME) on
+the ECX-1000 manages the voltage for the part and communications with
+Linux through a pl320 mailbox. clk notifications are used to control
+when to send messages to the ECME.
 
-Well, I suppose Aaron just wanted to avoid ugly line breaks in the return
-line below and whether or not to keep the empty line in this case is a matter
-of taste IMHO.
+Previous versions of this patch set include two other patches. One has
+been dropped as unworkable and the other turned out to be unnecessary.
 
-In my personal opinion it would be cleaner with the empty line.
+--Mark Langsdorf
+Calxeda, Inc.
 
-> > +	return ata_port_request_pm(ap, mesg, 0, ehi_flags, async);
-> >   }
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
