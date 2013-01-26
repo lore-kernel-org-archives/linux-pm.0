@@ -1,390 +1,156 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH v4] cpufreq: add imx6q-cpufreq driver
-Date: Sat, 26 Jan 2013 23:31:43 +0800
-Message-ID: <1359214303-3319-1-git-send-email-shawn.guo@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Sat, 26 Jan 2013 23:21:27 +0100
+Message-ID: <7196597.b9sJl95POM@vostro.rjw.lan>
+References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Eric Nelson <eric.nelson@boundarydevices.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
-hardware specific frequency and voltage scaling requirements.
+On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
+> As multiplatform build is being adopted by more and more ARM platforms,
+> initcall function should be used very carefully.  For example, when
+> GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
+> will be called on all the platforms to initialize cpufreq-cpu0 driver.
+> 
+> To eliminate this undesired the effect, the patch changes cpufreq-cpu0
+> driver to have it instantiated as a platform_driver.  Then it will only
+> run on platforms that create the platform_device "cpufreq-cpu0".
+> 
+> Along with the change, it also changes cpu_dev to be &pdev->dev,
+> so that managed functions can start working, and module build gets
+> supported too.
+> 
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+> Rafael,
+> 
+> The patch depends patch "power: export opp cpufreq functions".
+> https://patchwork.kernel.org/patch/1847261/
 
-The driver supports module build and is instantiated by the platform
-device/driver mechanism, so that it will not be instantiated on other
-platforms, as IMX is built with multiplatform support.
+That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
----
-Changes since v3:
- * Add RCU lock for OPP pointer
- * Handle regulator latency
+Care to add a fixed version to the patch set along with the $subject one?
 
- drivers/cpufreq/Kconfig.arm     |    9 ++
- drivers/cpufreq/Makefile        |    1 +
- drivers/cpufreq/imx6q-cpufreq.c |  308 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 318 insertions(+)
- create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
+> AnilKumar,
+> 
+> Unfortunately, the change will require some platform level adoption
+> to have cpufreq-cpu0 driver continue working for am33xx.  But it should
+> be as simple as something like below.
+> 
+> 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+> 	platform_device_register_full(&devinfo);
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index a0b3661..9e628ba 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
- 	  This adds the CPUFreq driver for Samsung EXYNOS5250
- 	  SoC.
- 
-+config ARM_IMX6Q_CPUFREQ
-+	tristate "Freescale i.MX6Q cpufreq support"
-+	depends on SOC_IMX6Q
-+	depends on REGULATOR_ANATOP
-+	help
-+	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
-+
-+	  If in doubt, say N.
-+
- config ARM_SPEAR_CPUFREQ
- 	bool "SPEAr CPUFreq support"
- 	depends on PLAT_SPEAR
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 1f254ec0..31699a0 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -49,6 +49,7 @@ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= exynos-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)	+= exynos4x12-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
-+obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-new file mode 100644
-index 0000000..368b6e7
---- /dev/null
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -0,0 +1,308 @@
-+/*
-+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/opp.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+
-+#define PU_SOC_VOLTAGE_NORMAL	1250000
-+#define PU_SOC_VOLTAGE_HIGH	1275000
-+#define FREQ_1P2_GHZ		1200000000
-+
-+/*
-+ * 1275000 mV - 950000 mV = 325 mV, 325 mV / 25 mV = 13 steps
-+ * 512 clock cycles at 24 MHz for one step = 21.33 uS
-+ * 21.33 us * 13 = ~280 uS
-+ */
-+#define MAX_REG_LATENCY		280
-+
-+static struct regulator *arm_reg;
-+static struct regulator *pu_reg;
-+static struct regulator *soc_reg;
-+
-+static struct clk *arm_clk;
-+static struct clk *pll1_sys_clk;
-+static struct clk *pll1_sw_clk;
-+static struct clk *step_clk;
-+static struct clk *pll2_pfd2_396m_clk;
-+
-+static struct device *cpu_dev;
-+static struct cpufreq_frequency_table *freq_table;
-+static unsigned int transition_latency = MAX_REG_LATENCY;
-+
-+static int imx6q_verify_speed(struct cpufreq_policy *policy)
-+{
-+	return cpufreq_frequency_table_verify(policy, freq_table);
-+}
-+
-+static unsigned int imx6q_get_speed(unsigned int cpu)
-+{
-+	return clk_get_rate(arm_clk) / 1000;
-+}
-+
-+static int imx6q_set_target(struct cpufreq_policy *policy,
-+			    unsigned int target_freq, unsigned int relation)
-+{
-+	struct cpufreq_freqs freqs;
-+	struct opp *opp;
-+	unsigned long freq_hz, volt, volt_old;
-+	unsigned int index, cpu;
-+	int ret;
-+
-+	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
-+					     relation, &index);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
-+			target_freq, ret);
-+		return ret;
-+	}
-+
-+	freqs.new = freq_table[index].frequency;
-+	freq_hz = freqs.new * 1000;
-+	freqs.old = clk_get_rate(arm_clk) / 1000;
-+
-+	if (freqs.old == freqs.new)
-+		return 0;
-+
-+	for_each_online_cpu(cpu) {
-+		freqs.cpu = cpu;
-+		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	}
-+
-+	rcu_read_lock();
-+	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
-+	if (IS_ERR(opp)) {
-+		rcu_read_unlock();
-+		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
-+		return PTR_ERR(opp);
-+	}
-+
-+	volt = opp_get_voltage(opp);
-+	rcu_read_unlock();
-+	volt_old = regulator_get_voltage(arm_reg);
-+
-+	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
-+		freqs.old / 1000, volt_old / 1000,
-+		freqs.new / 1000, volt / 1000);
-+
-+	/* scaling up?  scale voltage before frequency */
-+	if (freqs.new > freqs.old) {
-+		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-+		if (ret) {
-+			dev_err(cpu_dev, "failed to scale voltage up: %d\n", ret);
-+			return ret;
-+		}
-+
-+		/*
-+		 * Need to increase vddpu and vddsoc for safety
-+		 * if we are about to run at 1.2 GHz.
-+		 */
-+		if (freqs.new == FREQ_1P2_GHZ / 1000) {
-+			regulator_set_voltage_tol(pu_reg,
-+					PU_SOC_VOLTAGE_HIGH, 0);
-+			regulator_set_voltage_tol(soc_reg,
-+					PU_SOC_VOLTAGE_HIGH, 0);
-+		}
-+
-+		/* Wait for LDOs to ramp up */
-+		udelay(MAX_REG_LATENCY);
-+	}
-+
-+	/*
-+	 * The setpoints are selected per PLL/PDF frequencies, so we need to
-+	 * reprogram PLL for frequency scaling.  The procedure of reprogramming
-+	 * PLL1 is as below.
-+	 *
-+	 *  - Enable pll2_pfd2_396m_clk and reparent pll1_sw_clk to it
-+	 *  - Disable pll1_sys_clk and reprogram it
-+	 *  - Enable pll1_sys_clk and reparent pll1_sw_clk back to it
-+	 *  - Disable pll2_pfd2_396m_clk
-+	 */
-+	clk_prepare_enable(pll2_pfd2_396m_clk);
-+	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
-+	clk_set_parent(pll1_sw_clk, step_clk);
-+	clk_prepare_enable(pll1_sys_clk);
-+	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
-+		clk_disable_unprepare(pll1_sys_clk);
-+		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
-+		clk_prepare_enable(pll1_sys_clk);
-+		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-+		clk_disable_unprepare(pll2_pfd2_396m_clk);
-+	} else {
-+		/*
-+		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
-+		 * to provide the frequency.
-+		 */
-+		clk_disable_unprepare(pll1_sys_clk);
-+	}
-+
-+	/* Ensure the arm clock divider is what we expect */
-+	ret = clk_set_rate(arm_clk, freqs.new * 1000);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
-+		regulator_set_voltage_tol(arm_reg, volt_old, 0);
-+		return ret;
-+	}
-+
-+	/* scaling down?  scale voltage after frequency */
-+	if (freqs.new < freqs.old) {
-+		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-+		if (ret)
-+			dev_warn(cpu_dev, "failed to scale voltage down: %d\n", ret);
-+
-+		if (freqs.old == FREQ_1P2_GHZ / 1000) {
-+			regulator_set_voltage_tol(pu_reg,
-+					PU_SOC_VOLTAGE_NORMAL, 0);
-+			regulator_set_voltage_tol(soc_reg,
-+					PU_SOC_VOLTAGE_NORMAL, 0);
-+		}
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		freqs.cpu = cpu;
-+		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
-+		return ret;
-+	}
-+
-+	policy->cpuinfo.transition_latency = transition_latency;
-+	policy->cur = clk_get_rate(arm_clk) / 1000;
-+	policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-+	cpumask_setall(policy->cpus);
-+	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
-+
-+	return 0;
-+}
-+
-+static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
-+static struct freq_attr *imx6q_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver imx6q_cpufreq_driver = {
-+	.verify = imx6q_verify_speed,
-+	.target = imx6q_set_target,
-+	.get = imx6q_get_speed,
-+	.init = imx6q_cpufreq_init,
-+	.exit = imx6q_cpufreq_exit,
-+	.name = "imx6q-cpufreq",
-+	.attr = imx6q_cpufreq_attr,
-+};
-+
-+static int imx6q_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np;
-+	int ret;
-+
-+	cpu_dev = &pdev->dev;
-+
-+	np = of_find_node_by_path("/cpus/cpu@0");
-+	if (!np) {
-+		dev_err(cpu_dev, "failed to find cpu0 node\n");
-+		return -ENOENT;
-+	}
-+
-+	cpu_dev->of_node = np;
-+
-+	arm_clk = devm_clk_get(cpu_dev, "arm");
-+	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-+	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-+	step_clk = devm_clk_get(cpu_dev, "step");
-+	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-+	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
-+	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
-+		dev_err(cpu_dev, "failed to get clocks\n");
-+		ret = -ENOENT;
-+		goto put_node;
-+	}
-+
-+	arm_reg = devm_regulator_get(cpu_dev, "arm");
-+	pu_reg = devm_regulator_get(cpu_dev, "pu");
-+	soc_reg = devm_regulator_get(cpu_dev, "soc");
-+	if (!arm_reg || !pu_reg || !soc_reg) {
-+		dev_err(cpu_dev, "failed to get regulators\n");
-+		ret = -ENOENT;
-+		goto put_node;
-+	}
-+
-+	/* We expect an OPP table supplied by platform */
-+	ret = opp_get_opp_count(cpu_dev);
-+	if (ret < 0) {
-+		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-+		goto put_node;
-+	}
-+
-+	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-+		goto put_node;
-+	}
-+
-+	if (of_property_read_u32(np, "clock-latency", &transition_latency))
-+		transition_latency = CPUFREQ_ETERNAL;
-+
-+	ret = cpufreq_register_driver(&imx6q_cpufreq_driver);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-+		goto free_freq_table;
-+	}
-+
-+	of_node_put(np);
-+	return 0;
-+
-+free_freq_table:
-+	opp_free_cpufreq_table(cpu_dev, &freq_table);
-+put_node:
-+	of_node_put(np);
-+	return ret;
-+}
-+
-+static int imx6q_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
-+	opp_free_cpufreq_table(cpu_dev, &freq_table);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver imx6q_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "imx6q-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= imx6q_cpufreq_probe,
-+	.remove		= imx6q_cpufreq_remove,
-+};
-+module_platform_driver(imx6q_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
-+MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
-+MODULE_LICENSE("GPL");
+That should be included in your patch, then.
+
+Thanks,
+Rafael
+
+
+>  drivers/cpufreq/Kconfig        |    2 +-
+>  drivers/cpufreq/cpufreq-cpu0.c |   35 +++++++++++++++++++++++------------
+>  2 files changed, 24 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index ea512f4..774dc1c 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -180,7 +180,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
+>  	  If in doubt, say N.
+>  
+>  config GENERIC_CPUFREQ_CPU0
+> -	bool "Generic CPU0 cpufreq driver"
+> +	tristate "Generic CPU0 cpufreq driver"
+>  	depends on HAVE_CLK && REGULATOR && PM_OPP && OF
+>  	select CPU_FREQ_TABLE
+>  	help
+> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> index debc5a7..dae0667 100644
+> --- a/drivers/cpufreq/cpufreq-cpu0.c
+> +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> @@ -12,12 +12,12 @@
+>  #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+>  
+>  #include <linux/clk.h>
+> -#include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/opp.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/regulator/consumer.h>
+>  #include <linux/slab.h>
+>  
+> @@ -177,7 +177,7 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+>  	.attr = cpu0_cpufreq_attr,
+>  };
+>  
+> -static int cpu0_cpufreq_driver_init(void)
+> +static int cpu0_cpufreq_probe(struct platform_device *pdev)
+>  {
+>  	struct device_node *np;
+>  	int ret;
+> @@ -188,23 +188,17 @@ static int cpu0_cpufreq_driver_init(void)
+>  		return -ENOENT;
+>  	}
+>  
+> -	cpu_dev = get_cpu_device(0);
+> -	if (!cpu_dev) {
+> -		pr_err("failed to get cpu0 device\n");
+> -		ret = -ENODEV;
+> -		goto out_put_node;
+> -	}
+> -
+> +	cpu_dev = &pdev->dev;
+>  	cpu_dev->of_node = np;
+>  
+> -	cpu_clk = clk_get(cpu_dev, NULL);
+> +	cpu_clk = devm_clk_get(cpu_dev, NULL);
+>  	if (IS_ERR(cpu_clk)) {
+>  		ret = PTR_ERR(cpu_clk);
+>  		pr_err("failed to get cpu0 clock: %d\n", ret);
+>  		goto out_put_node;
+>  	}
+>  
+> -	cpu_reg = regulator_get(cpu_dev, "cpu0");
+> +	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+>  	if (IS_ERR(cpu_reg)) {
+>  		pr_warn("failed to get cpu0 regulator\n");
+>  		cpu_reg = NULL;
+> @@ -267,7 +261,24 @@ out_put_node:
+>  	of_node_put(np);
+>  	return ret;
+>  }
+> -late_initcall(cpu0_cpufreq_driver_init);
+> +
+> +static int cpu0_cpufreq_remove(struct platform_device *pdev)
+> +{
+> +	cpufreq_unregister_driver(&cpu0_cpufreq_driver);
+> +	opp_free_cpufreq_table(cpu_dev, &freq_table);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver cpu0_cpufreq_platdrv = {
+> +	.driver = {
+> +		.name	= "cpufreq-cpu0",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe		= cpu0_cpufreq_probe,
+> +	.remove		= cpu0_cpufreq_remove,
+> +};
+> +module_platform_driver(cpu0_cpufreq_platdrv);
+>  
+>  MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
+>  MODULE_DESCRIPTION("Generic CPU0 cpufreq driver");
+> 
 -- 
-1.7.9.5
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
