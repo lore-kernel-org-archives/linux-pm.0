@@ -1,82 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] drivers: cpufreq: exynos: update related_cpus mask to fix hotplug dump
-Date: Mon, 28 Jan 2013 13:26:31 +0100
-Message-ID: <5258369.So5tj1UHcd@vostro.rjw.lan>
-References: <1359000647-8366-1-git-send-email-inderpal.singh@linaro.org> <CAOh2x==_n7d+FUyAA6nWuHHLK0TA7smBYXd2M=72HDQef3NG4w@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Mon, 28 Jan 2013 13:29:46 +0100
+Message-ID: <13207641.5ODXr2fVG6@vostro.rjw.lan>
+References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org> <7196597.b9sJl95POM@vostro.rjw.lan> <20130128083159.GD31689@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57713 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:57726 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032Ab3A1MUW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Jan 2013 07:20:22 -0500
-In-Reply-To: <CAOh2x==_n7d+FUyAA6nWuHHLK0TA7smBYXd2M=72HDQef3NG4w@mail.gmail.com>
+	id S1751895Ab3A1MXk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jan 2013 07:23:40 -0500
+In-Reply-To: <20130128083159.GD31689@S2101-09.ap.freescale.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Inderpal Singh <inderpal.singh@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, patches@linaro.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On Monday, January 28, 2013 09:45:02 AM Viresh Kumar wrote:
-> On Thu, Jan 24, 2013 at 9:40 AM, Inderpal Singh
-> <inderpal.singh@linaro.org> wrote:
-> > commit "7e6087e595d3...cpufreq: Simplify cpufreq_add_dev()" started using
-> > related_cpus mask to check if the current cpu is already managed.
-> >
-> > With above commit hotplug in exynos gives following dump.
-> >
-> > / $ echo 1 > /sys/devices/system/cpu/cpu1/online
-> > CPU1: Booted secondary processor
-> > ------------[ cut here ]------------
-> > WARNING: at fs/sysfs/dir.c:536 sysfs_add_one+0x88/0xbc()
-> > sysfs: cannot create duplicate filename '/devices/system/cpu/cpu0/cpufreq'
-> > Modules linked in:
-> > [<c0014560>] (unwind_backtrace+0x0/0xf8) from [<c0020214>] (warn_slowpath_common+0x4c/0x64)
-> > [<c0020214>] (warn_slowpath_common+0x4c/0x64) from [<c00202c0>] (warn_slowpath_fmt+0x30/0x40)
-> > [<c00202c0>] (warn_slowpath_fmt+0x30/0x40) from [<c00fb548>] (sysfs_add_one+0x88/0xbc)
-> > [<c00fb548>] (sysfs_add_one+0x88/0xbc) from [<c00fc184>] (sysfs_do_create_link+0x110/0x208)
-> > [<c00fc184>] (sysfs_do_create_link+0x110/0x208) from [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0)
-> > [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0) from [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448)
-> > [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448) from [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c)
-> > [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c) from [<c0040fac>] (notifier_call_chain+0x44/0x84)
-> > [<c0040fac>] (notifier_call_chain+0x44/0x84) from [<c0023484>] (__cpu_notify+0x28/0x44)
-> > [<c0023484>] (__cpu_notify+0x28/0x44) from [<c01bc320>] (_cpu_up+0x104/0x154)
-> > [<c01bc320>] (_cpu_up+0x104/0x154) from [<c01bc3d4>] (cpu_up+0x64/0x84)
-> > [<c01bc3d4>] (cpu_up+0x64/0x84) from [<c01bafc8>] (store_online+0x50/0x78)
-> > [<c01bafc8>] (store_online+0x50/0x78) from [<c016850c>] (dev_attr_store+0x18/0x24)
-> > [<c016850c>] (dev_attr_store+0x18/0x24) from [<c00fa12c>] (sysfs_write_file+0x168/0x198)
-> > [<c00fa12c>] (sysfs_write_file+0x168/0x198) from [<c00a7424>] (vfs_write+0x9c/0x140)
-> > [<c00a7424>] (vfs_write+0x9c/0x140) from [<c00a76b0>] (sys_write+0x3c/0x70)
-> > [<c00a76b0>] (sys_write+0x3c/0x70) from [<c000e2c0>] (ret_fast_syscall+0x0/0x30)
-> > ---[ end trace 3d002b0ded69f43b ]---
-> >
-> > This patch fixes it by updating the related_cpus mask.
-> >
-> > Tested on Rafael's linux-next.
-> >
-> > Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
-> > ---
-> >  drivers/cpufreq/exynos-cpufreq.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-> > index 7012ea8..8ba4cdb 100644
-> > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > @@ -238,6 +238,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> >                 cpumask_copy(policy->cpus, cpu_online_mask);
-> >         } else {
-> >                 policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-> > +               cpumask_setall(policy->related_cpus);
-> >                 cpumask_setall(policy->cpus);
-> 
-> This is required for all SMP systems.
+On Monday, January 28, 2013 04:32:01 PM Shawn Guo wrote:
+> On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
+> > On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
+> > > As multiplatform build is being adopted by more and more ARM platforms,
+> > > initcall function should be used very carefully.  For example, when
+> > > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
+> > > will be called on all the platforms to initialize cpufreq-cpu0 driver.
+> > > 
+> > > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
+> > > driver to have it instantiated as a platform_driver.  Then it will only
+> > > run on platforms that create the platform_device "cpufreq-cpu0".
+> > > 
+> > > Along with the change, it also changes cpu_dev to be &pdev->dev,
+> > > so that managed functions can start working, and module build gets
+> > > supported too.
+> > > 
+> > > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> > > ---
+> > > Rafael,
+> > > 
+> > > The patch depends patch "power: export opp cpufreq functions".
+> > > https://patchwork.kernel.org/patch/1847261/
+> > 
+> > That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
+> > 
+> When commit 80126ce (PM / OPP: Export symbols for module usage.)
+> already exported a few symbols with EXPORT_SYMBOL()?
 
-Grumble.
+Yes, even then.
 
-So here's a deal: I'll drop "cpufreq: Simplify cpufreq_add_dev()" for now and
-you'll generate a new patch that won't cause the WARN_ON() to trigger.  OK?
+All symbols in new patches that I apply have to be exported with _GPL.
 
+Thanks,
 Rafael
 
 
