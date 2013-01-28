@@ -1,64 +1,69 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 16:32:01 +0800
-Message-ID: <20130128083159.GD31689@S2101-09.ap.freescale.net>
-References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
- <7196597.b9sJl95POM@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH] PM/CORE: Fix using sizeof without parenthesis in the sysfs.c
+Date: Mon, 28 Jan 2013 16:31:49 +0800
+Message-ID: <1359361909-28793-1-git-send-email-tianyu.lan@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from va3ehsobe006.messaging.microsoft.com ([216.32.180.16]:17550
-	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754251Ab3A1Ib5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 03:31:57 -0500
-Content-Disposition: inline
-In-Reply-To: <7196597.b9sJl95POM@vostro.rjw.lan>
+Received: from mga01.intel.com ([192.55.52.88]:19265 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754176Ab3A1IeI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jan 2013 03:34:08 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+To: rjw@sisk.pl
+Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
-> On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
-> > As multiplatform build is being adopted by more and more ARM platforms,
-> > initcall function should be used very carefully.  For example, when
-> > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> > will be called on all the platforms to initialize cpufreq-cpu0 driver.
-> > 
-> > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> > driver to have it instantiated as a platform_driver.  Then it will only
-> > run on platforms that create the platform_device "cpufreq-cpu0".
-> > 
-> > Along with the change, it also changes cpu_dev to be &pdev->dev,
-> > so that managed functions can start working, and module build gets
-> > supported too.
-> > 
-> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> > ---
-> > Rafael,
-> > 
-> > The patch depends patch "power: export opp cpufreq functions".
-> > https://patchwork.kernel.org/patch/1847261/
-> 
-> That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
-> 
-When commit 80126ce (PM / OPP: Export symbols for module usage.)
-already exported a few symbols with EXPORT_SYMBOL()?
+Kernel style uses parenthesis around sizeof. Commit 66c80b60
+has already added such check in the scripts/checkpatch.pl.
 
-> Care to add a fixed version to the patch set along with the $subject one?
-> 
-> > AnilKumar,
-> > 
-> > Unfortunately, the change will require some platform level adoption
-> > to have cpufreq-cpu0 driver continue working for am33xx.  But it should
-> > be as simple as something like below.
-> > 
-> > 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-> > 	platform_device_register_full(&devinfo);
-> 
-> That should be included in your patch, then.
-> 
-Fair enough.  Will do.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/base/power/sysfs.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Shawn
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 50d16e3..f089b80 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -119,9 +119,9 @@ static ssize_t control_store(struct device * dev, struct device_attribute *attr,
+ 	if (cp)
+ 		len = cp - buf;
+ 	device_lock(dev);
+-	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
++	if (len == sizeof(ctrl_auto - 1) && strncmp(buf, ctrl_auto, len) == 0)
+ 		pm_runtime_allow(dev);
+-	else if (len == sizeof ctrl_on - 1 && strncmp(buf, ctrl_on, len) == 0)
++	else if (len == sizeof(ctrl_on - 1) && strncmp(buf, ctrl_on, len) == 0)
+ 		pm_runtime_forbid(dev);
+ 	else
+ 		n = -EINVAL;
+@@ -321,11 +321,11 @@ wake_store(struct device * dev, struct device_attribute *attr,
+ 	cp = memchr(buf, '\n', n);
+ 	if (cp)
+ 		len = cp - buf;
+-	if (len == sizeof enabled - 1
+-			&& strncmp(buf, enabled, sizeof enabled - 1) == 0)
++	if (len == sizeof(enabled - 1)
++			&& strncmp(buf, enabled, sizeof(enabled - 1)) == 0)
+ 		device_set_wakeup_enable(dev, 1);
+-	else if (len == sizeof disabled - 1
+-			&& strncmp(buf, disabled, sizeof disabled - 1) == 0)
++	else if (len == sizeof(disabled - 1)
++			&& strncmp(buf, disabled, sizeof(disabled - 1)) == 0)
+ 		device_set_wakeup_enable(dev, 0);
+ 	else
+ 		return -EINVAL;
+@@ -546,9 +546,9 @@ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 	cp = memchr(buf, '\n', n);
+ 	if (cp)
+ 		len = cp - buf;
+-	if (len == sizeof enabled - 1 && strncmp(buf, enabled, len) == 0)
++	if (len == sizeof(enabled - 1) && strncmp(buf, enabled, len) == 0)
+ 		device_enable_async_suspend(dev);
+-	else if (len == sizeof disabled - 1 && strncmp(buf, disabled, len) == 0)
++	else if (len == sizeof(disabled - 1) && strncmp(buf, disabled, len) == 0)
+ 		device_disable_async_suspend(dev);
+ 	else
+ 		return -EINVAL;
+-- 
+1.7.10.4
 
