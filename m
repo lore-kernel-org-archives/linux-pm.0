@@ -1,152 +1,92 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
-Date: Mon, 28 Jan 2013 17:21:21 +0800
-Message-ID: <20130128092121.GB2568@aaronlu.sh.intel.com>
-References: <50FA3C38.5030308@intel.com>
- <Pine.LNX.4.44L0.1301191259040.13032-100000@netrider.rowland.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [Intel-gfx] [RFC PATCH 3/3] i915: ignore lid open event when
+ resuming
+Date: Mon, 28 Jan 2013 18:06:38 +0800
+Message-ID: <1359367598.2089.18.camel@rzhang1-mobl4>
+References: <1359300060-2967-1-git-send-email-rui.zhang@intel.com>
+	 <1359300060-2967-3-git-send-email-rui.zhang@intel.com>
+	 <CAKMK7uF4u-3XFogzdQQCBqA2Q61D1s3PhVF7BOT90d88TkqT0g@mail.gmail.com>
+	 <1359340583.2249.14.camel@rzhang1-mobl4>
+	 <CAKMK7uFWqtcnvkExz2_+0Vm+6pSREhRJ1szpHi2_CEmmHL6Nzg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:27548 "EHLO mga01.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:19202 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754060Ab3A1JUc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Jan 2013 04:20:32 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1301191259040.13032-100000@netrider.rowland.org>
+	id S1751577Ab3A1KGo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jan 2013 05:06:44 -0500
+In-Reply-To: <CAKMK7uFWqtcnvkExz2_+0Vm+6pSREhRJ1szpHi2_CEmmHL6Nzg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, intel-gfx@lists.freedesktop.org, rjw@sisk.pl, lenb@kernel.org
 
-On Sat, Jan 19, 2013 at 01:11:45PM -0500, Alan Stern wrote:
-> On Sat, 19 Jan 2013, Aaron Lu wrote:
-> > Considering ODD's use case, I was thinking of moving the
-> > blk_pm_runtime_init call to sd.c, as sr will not use request based auto
-> > suspend. Probably right before we decrease usage count for the device in
-> > sd_probe_async. What do you think?
+On Mon, 2013-01-28 at 09:31 +0100, Daniel Vetter wrote:
+> On Mon, Jan 28, 2013 at 3:36 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+> >> Given that this essentially requires users to manually set this module
+> >> option to make stuff work I don't like this.
+> >>
+> > sorry, I do not understand.
+> > this patch just disables modeset_on_lid during suspend.
 > 
-> That makes sense.  But then you should review the changes in scsi_pm.c 
-> to make sure they will work okay for devices that aren't using 
-> block-layer runtime PM.
+> Pardon me, the misunderstanding is on my side - I've mixed up
+> dev_priv->modeset_on_lid with the corresponding module option.
+> 
+> Is my understanding correct that only with the new SCI pm state this
+> can happen, since that still allows acpi events to be processed (and
+> so our lid_notifier being called?
+> 
+yep.
 
-Now that we have two different runtime PM schemes for scsi device, and
-I think there are two ways to make them work:
+> >> I see a few possible options:
+> >> - plug the races between all the different parts - I've never really
+> >> understood why acpi sends us events before the resume code has
+> >> completed ... If that's indeed intentional, we could delay the
+> >> handling a bit until at least the i915 resume code completed.
+> >
+> > IMO, the real question is that, during a suspend/resume cycle, if we
+> > need to take care of the lid open event or not.
+> > To me, the answer is no, because when resuming from STR, i915 is not
+> > aware of such an event, and the i915 resume code works well, right?
+> > so I do not think it is a problem to ignore the lid event for another
+> > lightweight suspend state, which is introduced in Patch 1/3 in this
+> > series.
+> >
+> >> - Judging from the diff context you're not on the latest 3.8-rc
+> >> codebase - we've applied a few fixes to this lid hack recently. Please
+> >> retest on a kernel with
+> >>
+> > the patch is based on 3.8.0-rc3, which already includes the commit
+> > below.
+> > And yes, the problem still exists.
+> 
+> Ok, I think I see the issue now. But I suspect that we need some
+> additional locking to make this solid, since currently
+> dev_priv->modeset_on_lid updates can race with our lid notifier
+> handler. Let me think about this a bit more.
 
-1 Do it all in scsi_pm.c. In bus' runtime PM callback, check if this
-  device is using block layer runtime PM API, and act accordingly;
-2 Do it in indivisual drivers' runtime PM callback. Bus' runtime PM
-  callbacks just call pm_generic_runtime_xxx, and each driver's runtime
-  PM callback will need to do what is appropriate for them.
+hmm,
+with this patch, intel_lid_notify() will return immediately if
+modeset_on_lid is set to -1. So the only problem in my mind is that we
+got a lid open event during i915_suspend().
 
-Personally I want to go with option 1, but I would like to hear your
-opinion :-)
+Say,
+lid is opened -> i915_lid_notify() is invoked (modeset_on_lid is 1 at
+this time) -> i915_suspend() set modeset_on_lid to -1, just before
+intel_modeset_setup_hw_state() being invoked in i915_lid_notify() ->
+intel_modeset_setup_hw_state() breaks the system.
 
-And for option 1, the code would be like this:
+but my first question would be is this (lid open on suspend) possible in
+real world?
+If the answer is yes, then my second question is that, this problem
+exists for STR as well because SCI is still valid at this time when
+suspending to memory, have we seen such issues for STR before?
 
-static int scsi_blk_runtime_suspend(struct device *dev)
-{
-	struct scsi_device *sdev = to_scsi_device(dev);
-	int err;
+Anyway, if the current code does not break STR, this patch should be
+enough for the new suspend state.
+what do you think?
 
-	err = blk_pre_runtime_suspend(sdev->request_queue);
-	if (err)
-		return err;
-	err = pm_generic_runtime_suspend(dev);
-	blk_post_runtime_suspend(sdev->request_queue, err);
-
-	return err;
-}
-
-static int scsi_dev_runtime_suspend(struct device *dev)
-{
-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-	int err;
-
-	err = scsi_dev_type_suspend(dev, pm ? pm->runtime_suspend : NULL);
-	if (err == -EAGAIN)
-		pm_schedule_suspend(dev, jiffies_to_msecs(
-					round_jiffies_up_relative(HZ/10)));
-
-	return err;
-}
-
-static int scsi_runtime_suspend(struct device *dev)
-{
-	int err = 0;
-
-	dev_dbg(dev, "scsi_runtime_suspend\n");
-	if (scsi_is_sdev_device(dev)) {
-		struct scsi_device *sdev = to_scsi_device(dev);
-		if (sdev->request_queue->dev)
-			err = scsi_blk_runtime_suspend(dev);
-		else
-			err = scsi_dev_runtime_suspend(dev);
-	}
-
-	/* Insert hooks here for targets, hosts, and transport classes */
-
-	return err;
-}
-
-static int scsi_blk_runtime_resume(struct device *dev)
-{
-	struct scsi_device *sdev = to_scsi_device(dev);
-	int err;
-
-	blk_pre_runtime_resume(sdev->request_queue);
-	err = pm_generic_runtime_resume(dev);
-	blk_post_runtime_resume(sdev->request_queue, err);
-
-	return err;
-}
-
-static int scsi_dev_runtime_resume(struct device *dev)
-{
-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-	return scsi_dev_type_resume(dev, pm ? pm->runtime_resume : NULL);
-}
-
-static int scsi_runtime_resume(struct device *dev)
-{
-	int err = 0;
-
-	dev_dbg(dev, "scsi_runtime_resume\n");
-	if (scsi_is_sdev_device(dev)) {
-		struct scsi_device *sdev = to_scsi_device(dev);
-		if (sdev->request_queue->dev)
-			err = scsi_blk_runtime_resume(dev);
-		else
-			err = scsi_dev_runtime_resume(dev);
-	}
-
-	/* Insert hooks here for targets, hosts, and transport classes */
-
-	return err;
-}
-
-static int scsi_runtime_idle(struct device *dev)
-{
-	int err;
-
-	dev_dbg(dev, "scsi_runtime_idle\n");
-
-	/* Insert hooks here for targets, hosts, and transport classes */
-
-	if (scsi_is_sdev_device(dev)) {
-		struct scsi_device *sdev = to_scsi_device(dev);
-		if (sdev->request_queue->dev) {
-			pm_runtime_mark_last_busy(dev);
-			err = pm_runtime_autosuspend(dev);
-		} else {
-			err = pm_schedule_suspend(dev, 100);
-		}
-	} else {
-		err = pm_runtime_suspend(dev);
-	}
-	return err;
-}
-
-Please feel free to suggest, thanks.
-
--Aaron
+thanks,
+rui
 
