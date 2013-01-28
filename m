@@ -1,65 +1,68 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: [PATCH 1/2] ACPI/Sleep: Add init_nvs_nosave_s3() function
-Date: Mon, 28 Jan 2013 21:05:32 +0800
-Message-ID: <5106779C.6010305@gmail.com>
-References: <1359359225-28223-1-git-send-email-tianyu.lan@intel.com> <1473081.Cm0g80OnKE@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM/CORE: Fix using sizeof without parenthesis in the sysfs.c
+Date: Mon, 28 Jan 2013 14:13:14 +0100
+Message-ID: <13740912.iO1omHu2tD@vostro.rjw.lan>
+References: <1359361909-28793-1-git-send-email-tianyu.lan@intel.com> <3030648.5OBcUztiBY@vostro.rjw.lan> <5106775D.1080101@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1473081.Cm0g80OnKE@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lan Tianyu <tianyu.lan@intel.com>, stern@rowland.harvard.edu, swilmet@gnome.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:57790 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751773Ab3A1NHG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 08:07:06 -0500
+In-Reply-To: <5106775D.1080101@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lan Tianyu <lantianyu1986@gmail.com>
+Cc: James Courtier-Dutton <james.dutton@gmail.com>, Lan Tianyu <tianyu.lan@intel.com>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-=E4=BA=8E 2013/1/28 20:21, Rafael J. Wysocki =E5=86=99=E9=81=93:
-> On Monday, January 28, 2013 03:47:04 PM Lan Tianyu wrote:
->> commit 1bad2f19f7f7 introduces nvs_nosave_s3 flag to just ban
->> saving nvs in ths s3 rather than both of s3 and s4. This patch
->> is to add init_nvs_nosave_s3() to set nvs_nosave_s3 to true for
->> those machines in the nonvs blacklist which only don't need to
->> saving nvs during s3 rather than both s3 and s4.
->>
->> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
->
-> Please fold [2/2] into [1/2] and resend.
->
-Ok. I get it and will update.
-> Thanks,
-> Rafael
->
->
->> ---
->>   drivers/acpi/sleep.c |    6 ++++++
->>   1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
->> index 2fcc67d..405b962 100644
->> --- a/drivers/acpi/sleep.c
->> +++ b/drivers/acpi/sleep.c
->> @@ -141,6 +141,12 @@ static int __init init_nvs_nosave(const struct =
-dmi_system_id *d)
->>   	return 0;
->>   }
->>
->> +static int __init init_nvs_nosave_s3(const struct dmi_system_id *d)
->> +{
->> +	acpi_nvs_nosave_s3();
->> +	return 0;
->> +}
->> +
->>   static struct dmi_system_id __initdata acpisleep_dmi_table[] =3D {
->>   	{
->>   	.callback =3D init_old_suspend_ordering,
->>
+On Monday, January 28, 2013 09:04:29 PM Lan Tianyu wrote:
+> =E4=BA=8E 2013/1/28 20:18, Rafael J. Wysocki =E5=86=99=E9=81=93:
+> > On Monday, January 28, 2013 09:03:28 AM James Courtier-Dutton wrote=
+:
+> >> On 28 January 2013 08:31, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> >>> -       if (len =3D=3D sizeof ctrl_auto - 1 && strncmp(buf, ctrl_=
+auto, len) =3D=3D 0)
+> >>> +       if (len =3D=3D sizeof(ctrl_auto - 1) && strncmp(buf, ctrl=
+_auto, len) =3D=3D 0)
+> >>
+> >> This looks wrong to me.
+> >> sizeof ctrl_auto - 1
+> >> is not the same value as
+> >> sizeof(ctrl_auto - 1)
+> >> because sizeof(x) is normally the same as sizeof(x - 1), unless si=
+zeof
+> >> x and sizeof 1 are different.
+> >> Consider that is maybe should be:
+> >> if (len =3D=3D (sizeof(ctrl_auto) - 1)) && strncmp(buf, ctrl_auto,=
+ len) =3D=3D 0)
+> Hi James:
+> 	Yes. You are correct. Thanks for your review.
+> >
+> > The outer parentheses in the comparison with len are not necessary.
+> >
+> >> I a not sure what the correct answer is for this particular bit of
+> >> code, because I have not looked at it in detail,I just wanted to p=
+oint
+> >> out that the brackets might be in the wrong place here.
+> >
+> > You are right and the patch doesn't make sense.
+> Hi Rafael:
+> 	So this patch is not necessary?
+
+It is incorrect in the first place.
+
+Yes, you could change spaces to parentheses in those places, but first,=
+ please
+do that correctly and second, it's just going to be a cosmetic change. =
+ The
+code works as is.
+
+Thanks,
+Rafael
+
 
 --=20
-Best regards
-Tianyu Lan
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
