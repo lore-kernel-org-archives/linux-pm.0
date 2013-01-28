@@ -1,45 +1,46 @@
 From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: [PATCH 1/2] ACPI/Sleep: Add init_nvs_nosave_s3() function
-Date: Mon, 28 Jan 2013 15:47:04 +0800
-Message-ID: <1359359225-28223-1-git-send-email-tianyu.lan@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:30048 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752899Ab3A1HtR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Jan 2013 02:49:17 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] ACPI/Sleep: use init_nvs_nosave_s3() for Sony Vaio VPCCW29FX and VPCEB1S1E  callback in the non-nvs blacklist
+Date: Mon, 28 Jan 2013 15:47:05 +0800
+Message-ID: <1359359225-28223-2-git-send-email-tianyu.lan@intel.com>
+References: <1359359225-28223-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1359359225-28223-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: Lan Tianyu <tianyu.lan@intel.com>, stern@rowland.harvard.edu, swilmet@gnome.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-commit 1bad2f19f7f7 introduces nvs_nosave_s3 flag to just ban
-saving nvs in ths s3 rather than both of s3 and s4. This patch
-is to add init_nvs_nosave_s3() to set nvs_nosave_s3 to true for
-those machines in the nonvs blacklist which only don't need to
-saving nvs during s3 rather than both s3 and s4.
+Sony Vaio VPCCW29FX and VPCEB1S1E just need to ban saving
+nvs during s3 rather than both s3 and s4. So this patch is
+to set their callbacks to be init_nvs_nosave_s3().
 
 Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 ---
- drivers/acpi/sleep.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/acpi/sleep.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 2fcc67d..405b962 100644
+index 405b962..ee33a9a 100644
 --- a/drivers/acpi/sleep.c
 +++ b/drivers/acpi/sleep.c
-@@ -141,6 +141,12 @@ static int __init init_nvs_nosave(const struct dmi_system_id *d)
- 	return 0;
- }
- 
-+static int __init init_nvs_nosave_s3(const struct dmi_system_id *d)
-+{
-+	acpi_nvs_nosave_s3();
-+	return 0;
-+}
-+
- static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+@@ -230,7 +230,7 @@ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 		},
+ 	},
  	{
- 	.callback = init_old_suspend_ordering,
+-	.callback = init_nvs_nosave,
++	.callback = init_nvs_nosave_s3,
+ 	.ident = "Sony Vaio VPCCW29FX",
+ 	.matches = {
+ 		DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
+@@ -270,7 +270,7 @@ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 		},
+ 	},
+ 	{
+-	.callback = init_nvs_nosave,
++	.callback = init_nvs_nosave_s3,
+ 	.ident = "Sony Vaio VPCEB1S1E",
+ 	.matches = {
+ 		DMI_MATCH(DMI_SYS_VENDOR, "Sony Corporation"),
 -- 
 1.7.10.4
 
