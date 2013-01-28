@@ -1,250 +1,55 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2 1/2] thermal: sysfs: Add a new sysfs node emul_temp for thermal emulation
-Date: Sun, 27 Jan 2013 19:28:19 -0800
-Message-ID: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
-Cc: jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Mon, 28 Jan 2013 09:42:29 +0530
+Message-ID: <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
+References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds support to set the emulated temperature method in
-thermal zone (sensor). After setting this feature thermal zone may
-report this temperature and not the actual temperature. The emulation
-implementation may be based on sensor capability through platform
-specific handler or pure software emulation if no platform handler defined.
+On Sat, Jan 26, 2013 at 7:25 PM, Shawn Guo <shawn.guo@linaro.org> wrote:
+> As multiplatform build is being adopted by more and more ARM platforms,
+> initcall function should be used very carefully.  For example, when
+> GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
+> will be called on all the platforms to initialize cpufreq-cpu0 driver.
+>
+> To eliminate this undesired the effect, the patch changes cpufreq-cpu0
+> driver to have it instantiated as a platform_driver.  Then it will only
+> run on platforms that create the platform_device "cpufreq-cpu0".
+>
+> Along with the change, it also changes cpu_dev to be &pdev->dev,
+> so that managed functions can start working, and module build gets
+> supported too.
+>
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
+> Rafael,
+>
+> The patch depends patch "power: export opp cpufreq functions".
+> https://patchwork.kernel.org/patch/1847261/
+>
+> AnilKumar,
+>
+> Unfortunately, the change will require some platform level adoption
+> to have cpufreq-cpu0 driver continue working for am33xx.  But it should
+> be as simple as something like below.
+>
+>         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+>         platform_device_register_full(&devinfo);
 
-This is useful in debugging different temperature threshold and its
-associated cooling action. Critical threshold's cannot be emulated.
-Writing 0 on this node should disable emulation.
+Something similar was being discussed with Andrew (cc'd) on his patch
+for kikwood cpufreq driver.
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
----
+We shouldn't encourage addition of above as we are moving towards DT.
+So, i would except an compatible array too in your patch and then driver
+can be probed based on compatible string being present in cpu node.
 
-Changes in V2:
-* Added config option for enabling emulation support.
-* Added s/w emulation if no platform handler registered.
-* skip the critical trip point emulation
+What do you say?
 
-This patchset is based on thermal maintainer next tree.
-git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next 
-
- Documentation/thermal/sysfs-api.txt |   13 ++++++
- drivers/thermal/Kconfig             |    8 +++
- drivers/thermal/thermal_sys.c       |   82 ++++++++++++++++++++++++++++++-----
- include/linux/thermal.h             |    2 +
- 4 files changed, 94 insertions(+), 11 deletions(-)
-
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 526d4b9..6859661 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
- 	.get_trip_type: get the type of certain trip point.
- 	.get_trip_temp: get the temperature above which the certain trip point
- 			will be fired.
-+	.set_emul_temp: set the emulation temperature which helps in debugging
-+			different threshold temperature points.
- 
- 1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 
-@@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
-     |---trip_point_[0-*]_temp:	Trip point temperature
-     |---trip_point_[0-*]_type:	Trip point type
-     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-+    |---emul_temp:		Emulated temperature set node
- 
- Thermal cooling device sys I/F, created once it's registered:
- /sys/class/thermal/cooling_device[0-*]:
-@@ -252,6 +255,16 @@ passive
- 	Valid values: 0 (disabled) or greater than 1000
- 	RW, Optional
- 
-+emul_temp
-+	Interface to set the emulated temperature method in thermal zone
-+	(sensor). After setting this temperature, the thermal zone may pass
-+	this temperature to platform emulation function if registered or
-+	cache it locally. This is useful in debugging different temperature
-+	threshold and its associated cooling action. This is write only node
-+	and writing 0 on this node should disable emulation.
-+	Unit: millidegree Celsius
-+	WO, Optional
-+
- *****************************
- * Cooling device attributes *
- *****************************
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index faf38c5..e4cf7fb 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -78,6 +78,14 @@ config CPU_THERMAL
- 	  and not the ACPI interface.
- 	  If you want this support, you should say Y here.
- 
-+config THERMAL_EMULATION
-+	bool "Thermal emulation mode support"
-+	help
-+	  Enable this option to make a emul_temp sysfs node in thermal zone
-+	  directory to support temperature emulation. With emulation sysfs node,
-+	  user can manually input temperature and test the different trip
-+	  threshold behaviour for simulation purpose.
-+
- config SPEAR_THERMAL
- 	bool "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 0a1bf6b..59ba709 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -378,24 +378,57 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
- 	monitor_thermal_zone(tz);
- }
- 
-+static int thermal_zone_get_temp(struct thermal_zone_device *tz,
-+				unsigned long *temp)
-+{
-+	int ret = 0, count;
-+	unsigned long crit_temp = -1UL;
-+	enum thermal_trip_type type;
-+
-+	mutex_lock(&tz->lock);
-+
-+	if (tz->ops->get_temp)
-+		ret = tz->ops->get_temp(tz, temp);
-+	else
-+		ret = -EPERM;
-+
-+	if (!tz->emul_temperature)
-+		goto skip_emul;
-+
-+	for (count = 0; count < tz->trips; count++) {
-+		ret = tz->ops->get_trip_type(tz, count, &type);
-+		if (!ret && type == THERMAL_TRIP_CRITICAL) {
-+			ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
-+			break;
-+		}
-+	}
-+
-+	if (ret)
-+		goto skip_emul;
-+
-+	if (*temp < crit_temp)
-+		*temp = tz->emul_temperature;
-+
-+skip_emul:
-+	mutex_unlock(&tz->lock);
-+	return ret;
-+}
-+
- static void update_temperature(struct thermal_zone_device *tz)
- {
- 	long temp;
- 	int ret;
- 
--	mutex_lock(&tz->lock);
--
--	ret = tz->ops->get_temp(tz, &temp);
-+	ret = thermal_zone_get_temp(tz, &temp);
- 	if (ret) {
- 		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
- 			 tz->id);
--		goto exit;
-+		return;
- 	}
- 
-+	mutex_lock(&tz->lock);
- 	tz->last_temperature = tz->temperature;
- 	tz->temperature = temp;
--
--exit:
- 	mutex_unlock(&tz->lock);
- }
- 
-@@ -438,10 +471,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	long temperature;
- 	int ret;
- 
--	if (!tz->ops->get_temp)
--		return -EPERM;
--
--	ret = tz->ops->get_temp(tz, &temperature);
-+	ret = thermal_zone_get_temp(tz, &temperature);
- 
- 	if (ret)
- 		return ret;
-@@ -701,6 +731,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
- }
- 
-+#ifdef CONFIG_THERMAL_EMULATION
-+static ssize_t
-+emul_temp_store(struct device *dev, struct device_attribute *attr,
-+		     const char *buf, size_t count)
-+{
-+	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	int ret = 0;
-+	unsigned long temperature;
-+
-+	if (kstrtoul(buf, 10, &temperature))
-+		return -EINVAL;
-+
-+	if (!tz->ops->set_emul_temp) {
-+		mutex_lock(&tz->lock);
-+		tz->emul_temperature = temperature;
-+		mutex_unlock(&tz->lock);
-+	} else {
-+		ret = tz->ops->set_emul_temp(tz, temperature);
-+	}
-+
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-+#endif/*CONFIG_THERMAL_EMULATION*/
-+
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-@@ -843,7 +898,7 @@ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
- 				       temp_input);
- 	struct thermal_zone_device *tz = temp->tz;
- 
--	ret = tz->ops->get_temp(tz, &temperature);
-+	ret = thermal_zone_get_temp(tz, &temperature);
- 
- 	if (ret)
- 		return ret;
-@@ -1596,6 +1651,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 			goto unregister;
- 	}
- 
-+#ifdef CONFIG_THERMAL_EMULATION
-+	result = device_create_file(&tz->device, &dev_attr_emul_temp);
-+	if (result)
-+		goto unregister;
-+#endif
- 	/* Create policy attribute */
- 	result = device_create_file(&tz->device, &dev_attr_policy);
- 	if (result)
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 9b78f8c..f0bd7f9 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
- 	int (*set_trip_hyst) (struct thermal_zone_device *, int,
- 			      unsigned long);
- 	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
-+	int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
- 	int (*get_trend) (struct thermal_zone_device *, int,
- 			  enum thermal_trend *);
- 	int (*notify) (struct thermal_zone_device *, int,
-@@ -165,6 +166,7 @@ struct thermal_zone_device {
- 	int polling_delay;
- 	int temperature;
- 	int last_temperature;
-+	int emul_temperature;
- 	int passive;
- 	unsigned int forced_passive;
- 	const struct thermal_zone_device_ops *ops;
--- 
-1.7.5.4
+--
+viresh
