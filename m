@@ -1,65 +1,32 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v7 4/4] sd: change to auto suspend mode
-Date: Mon, 28 Jan 2013 16:56:51 +0800
-Message-ID: <20130128085651.GA2568@aaronlu.sh.intel.com>
-References: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
- <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
+From: James Courtier-Dutton <james.dutton@gmail.com>
+Subject: Re: [PATCH] PM/CORE: Fix using sizeof without parenthesis in the sysfs.c
+Date: Mon, 28 Jan 2013 09:03:28 +0000
+Message-ID: <CAAMvbhEx69V026n4uhyPrq2aOXcx_vR1PQ-1-k2245JvSXQ=6A@mail.gmail.com>
+References: <1359361909-28793-1-git-send-email-tianyu.lan@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:12120 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754702Ab3A1I4E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Jan 2013 03:56:04 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1359361909-28793-1-git-send-email-tianyu.lan@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lan Tianyu <tianyu.lan@intel.com>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On Fri, Jan 18, 2013 at 04:25:10PM -0500, Alan Stern wrote:
-> On Wed, 16 Jan 2013, Aaron Lu wrote:
-> 
-> > From: Lin Ming <ming.m.lin@intel.com>
-> > 
-> > Uses block layer runtime pm helper functions in
-> > scsi_runtime_suspend/resume.
-> > Remove scsi_autopm_* from sd open/release path and check_events path.
-> > And remove the quiesce call in runtime suspend path, as we know there is
-> > no request to quiesce for the device.
-> > 
-> > Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> 
-> > --- a/drivers/scsi/scsi_sysfs.c
-> > +++ b/drivers/scsi/scsi_sysfs.c
-> > @@ -893,6 +893,8 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
-> >  	 */
-> >  	scsi_autopm_get_device(sdev);
-> >  
-> > +	blk_pm_runtime_init(rq, &sdev->sdev_gendev);
-> > +
-> >  	error = device_add(&sdev->sdev_gendev);
-> >  	if (error) {
-> >  		sdev_printk(KERN_INFO, sdev,
-> 
-> Someone just asked about the default autosuspend delay, and I realized
-> your patch series doesn't set one.  Since we don't know the properties
-> of the disk drive at this point (or even whether the device is a disk
-> drive), the only safe course is to call
-> 
-> 	pm_runtime_set_autosuspend_delay(&sdev->sdev_gendev, -1);
-> 
-> before calling blk_pm_runtime_init().  Then autosuspends will be 
-> prevented until userspace writes a non-negative value into the device's 
-> control/autosuspend_delay_ms file.
+On 28 January 2013 08:31, Lan Tianyu <tianyu.lan@intel.com> wrote:
+> -       if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
+> +       if (len == sizeof(ctrl_auto - 1) && strncmp(buf, ctrl_auto, len) == 0)
 
-Shall we do it inside blk_pm_runtime_init? This way, we do not need to
-do it for every driver. And for drivers that do know a proper value for
-autosuspend delay, they can call pm_runtime_set_autosuspend_delay
-somewhere after blk_pm_runtime_init.
+This looks wrong to me.
+sizeof ctrl_auto - 1
+is not the same value as
+sizeof(ctrl_auto - 1)
+because sizeof(x) is normally the same as sizeof(x - 1), unless sizeof
+x and sizeof 1 are different.
+Consider that is maybe should be:
+if (len == (sizeof(ctrl_auto) - 1)) && strncmp(buf, ctrl_auto, len) == 0)
 
-Thanks,
-Aaron
+I a not sure what the correct answer is for this particular bit of
+code, because I have not looked at it in detail,I just wanted to point
+out that the brackets might be in the wrong place here.
 
+James
