@@ -1,41 +1,27 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v7 4/4] sd: change to auto suspend mode
-Date: Mon, 28 Jan 2013 10:12:44 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301281011570.1997-100000@iolanthe.rowland.org>
-References: <20130128085651.GA2568@aaronlu.sh.intel.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Mark Langsdorf <mark.langsdorf@calxeda.com>
+Subject: [PATCH 0/4 v12] cpufreq: add support for Calxeda ECX-1000 (highbank)
+Date: Mon, 28 Jan 2013 10:13:11 -0600
+Message-ID: <1359389595-26580-1-git-send-email-mark.langsdorf@calxeda.com>
+References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:37326 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754352Ab3A1PMp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 10:12:45 -0500
-In-Reply-To: <20130128085651.GA2568@aaronlu.sh.intel.com>
+Received: from smtp127.dfw.emailsrvr.com ([67.192.241.127]:48626 "EHLO
+	smtp127.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877Ab3A1QNG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 11:13:06 -0500
+In-Reply-To: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+To: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, 28 Jan 2013, Aaron Lu wrote:
+This patch series adds cpufreq support for the Calxeda
+ECX-1000 (highbank) SoCs. The EnergyCore Management Engine (ECME) on
+the ECX-1000 manages the voltage for the part and communications with
+Linux through a pl320 mailbox. clk notifications are used to control
+when to send messages to the ECME.
 
-> > Someone just asked about the default autosuspend delay, and I realized
-> > your patch series doesn't set one.  Since we don't know the properties
-> > of the disk drive at this point (or even whether the device is a disk
-> > drive), the only safe course is to call
-> > 
-> > 	pm_runtime_set_autosuspend_delay(&sdev->sdev_gendev, -1);
-> > 
-> > before calling blk_pm_runtime_init().  Then autosuspends will be 
-> > prevented until userspace writes a non-negative value into the device's 
-> > control/autosuspend_delay_ms file.
-> 
-> Shall we do it inside blk_pm_runtime_init? This way, we do not need to
-> do it for every driver. And for drivers that do know a proper value for
-> autosuspend delay, they can call pm_runtime_set_autosuspend_delay
-> somewhere after blk_pm_runtime_init.
+Previous versions of this patch set include two other patches. One has
+been dropped as unworkable and the other turned out to be unnecessary.
 
-Yes, that seems like a good approach.  Be sure to mention it in the 
-kerneldoc.
-
-Alan Stern
+--Mark Langsdorf
+Calxeda, Inc.
 
