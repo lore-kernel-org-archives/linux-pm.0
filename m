@@ -1,303 +1,209 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2 2/2] thermal: exynos: Use the framework for temperature emulation support
-Date: Sun, 27 Jan 2013 19:28:20 -0800
-Message-ID: <1359343700-30190-2-git-send-email-amit.daniel@samsung.com>
-References: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
-Cc: jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: sysfs: Add a new sysfs node emul_temp
+Date: Sun, 27 Jan 2013 19:32:02 -0800
+Message-ID: <CADGdYn6gQJcXes+atFL7dTJfVtL_vSVgvbbct3n7jPaZXwB1_Q@mail.gmail.com>
+References: <1357517296-31402-1-git-send-email-amit.daniel@samsung.com>
+	<1358321601.2252.36.camel@rzhang1-mobl4>
+	<CADGdYn4CWscQf0y6dmgYUsKB8u25BOmLYq+T64haBKpwnZ3KBQ@mail.gmail.com>
+	<1358824804.2607.31.camel@rzhang1-mobl4>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f176.google.com ([209.85.210.176]:33862 "EHLO
+	mail-ia0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228Ab3A1DcE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Jan 2013 22:32:04 -0500
+In-Reply-To: <1358824804.2607.31.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Durgadoss <durgadoss.r@intel.com>, Kukjin Kim <kgene.kim@samsung.com>
 
-This removes the driver specific sysfs support of the temperature
-emulation and uses the newly added core thermal framework for thermal
-emulation. A platform specific handler is added to support this.
+On Mon, Jan 21, 2013 at 7:20 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Wed, 2013-01-16 at 11:30 -0800, amit kachhap wrote:
+>> Hi Rui,
+>>
+>> Thanks for the review comments,
+>> On Tue, Jan 15, 2013 at 11:33 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+>> > Hi, Amit,
+>> >
+>> > On Sun, 2013-01-06 at 16:08 -0800, Amit Daniel Kachhap wrote:
+>> >> This patch adds support to set the emulated temperature method in
+>> >> thermal zone (sensor). After setting this feature thermal zone must
+>> >> report this temperature and not the actual temperature. The actual
+>> >> implementation of this emulated temperature is based on sensor
+>> >> capability or platform specific. This is useful in debugging different
+>> >> temperature threshold and its associated cooling action. Writing 0 on
+>> >> this node should disable emulation.
+>> >
+>> > Question:
+>> > will this bring hardware issue? Say, critical temperature reached while
+>> > in emulation mode?
+>> No emulation does cause any h/w issue.
+>> >
+>> > As this is for debug purpose, I'd prefer to have a seperate Kconfig
+>> > option for this feature.
+>> Yes agreed. Will re-submit with kconfig option.
+>> >
+>> >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> >> ---
+>> >>  Documentation/thermal/sysfs-api.txt |   14 ++++++++++++++
+>> >>  drivers/thermal/thermal_sys.c       |   26 ++++++++++++++++++++++++++
+>> >>  include/linux/thermal.h             |    1 +
+>> >>  3 files changed, 41 insertions(+), 0 deletions(-)
+>> >>
+>> >> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+>> >> index 88c0233..e8f2ee4 100644
+>> >> --- a/Documentation/thermal/sysfs-api.txt
+>> >> +++ b/Documentation/thermal/sysfs-api.txt
+>> >> @@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
+>> >>       .get_trip_type: get the type of certain trip point.
+>> >>       .get_trip_temp: get the temperature above which the certain trip point
+>> >>                       will be fired.
+>> >> +     .set_emul_temp: set the emulation temperature which helps in debugging
+>> >> +                     different threshold temperature points.
+>> >>
+>> >>  1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>> >>
+>> >> @@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
+>> >>      |---trip_point_[0-*]_temp:       Trip point temperature
+>> >>      |---trip_point_[0-*]_type:       Trip point type
+>> >>      |---trip_point_[0-*]_hyst:       Hysteresis value for this trip point
+>> >> +    |---emul_temp:           Emulated temperature set node
+>> >>
+>> >>  Thermal cooling device sys I/F, created once it's registered:
+>> >>  /sys/class/thermal/cooling_device[0-*]:
+>> >> @@ -252,6 +255,17 @@ passive
+>> >>       Valid values: 0 (disabled) or greater than 1000
+>> >>       RW, Optional
+>> >>
+>> >> +emul_temp
+>> >> +     Interface to set the emulated temperature method in thermal zone
+>> >> +     (sensor). After setting this feature thermal zone must report
+>> >> +     this temperature and not the actual temperature. The actual
+>> >> +     implementation of this emulated temperature is platform specific.
+>> >
+>> > can we have a pure software temperature emulation method?
+>> > say, the generic thermal layer caches the emulated temperature value,
+>> > and hook it in update_temperature()?
+>> > This is also useful for testing in polling mode, and it does not require
+>> > platform specific callback support. I mean thermal_ops->set_emul_temp is
+>> > optional, but thermal emulation is always available for all platforms.
+>> Yes It makes sense and we can have pure software emulation and use the
+>> cached temperature when no platform call is registered. In my case I
+>> needed this in h/w so to have the same sensor trigger interrupts
+>> behaviour.
+>>
+>> So the code flow can be like this,
+>>
+>> #ifdef CONFIG_THERMAL_EMULATION
+>> if (thermal_ops->set_emul_temp)
+>> then pass emul_temp to platform and use the normal platform
+>> thermal_ops->get_temp
+>> else
+>> Store it locally and use emul_temp  instead of calling platform
+>> thermal_ops->get_temp
+>> #endif
+>>
+> No.
+> We should not support emulation is CONFIG_THERMAL_EMULATION is cleared.
+> And further more, for pure software emulation, we should check if the
+> real temperature reaches critical trip point.
+Yes agreed. Submitted the V2 version with your suggestion.
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
----
-Changes in V2:
-* Added config option CONFIG_THERMAL_EMULATION instead of
- CONFIG_EXYNOS_THERMAL_EMUL 
+Thanks,
+Amit Daniel
 
-This patchset is based on thermal maintainer next tree.
-git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next 
-
- Documentation/thermal/exynos_thermal_emulation |    8 +-
- drivers/thermal/Kconfig                        |    9 --
- drivers/thermal/exynos_thermal.c               |  158 ++++++++++--------------
- 3 files changed, 67 insertions(+), 108 deletions(-)
-
-diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
-index b73bbfb..36a3e79 100644
---- a/Documentation/thermal/exynos_thermal_emulation
-+++ b/Documentation/thermal/exynos_thermal_emulation
-@@ -13,11 +13,11 @@ Thermal emulation mode supports software debug for TMU's operation. User can set
- manually with software code and TMU will read current temperature from user value not from
- sensor's value.
- 
--Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
--When it's enabled, sysfs node will be created under
--/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
-+Enabling CONFIG_THERMAL_EMULATION option will make this support available.
-+When it's enabled, sysfs node will be created as
-+/sys/devices/virtual/thermal/thermal_zone'zone id'/emul_temp.
- 
--The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
-+The sysfs node, 'emul_node', will contain value 0 for the initial state. When you input any
- temperature you want to update to sysfs node, it automatically enable emulation mode and
- current temperature will be changed into it.
- (Exynos also supports user changable delay time which would be used to delay of
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index e4cf7fb..2a79510 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -109,15 +109,6 @@ config EXYNOS_THERMAL
- 	  If you say yes here you get support for TMU (Thermal Management
- 	  Unit) on SAMSUNG EXYNOS series of SoC.
- 
--config EXYNOS_THERMAL_EMUL
--	bool "EXYNOS TMU emulation mode support"
--	depends on EXYNOS_THERMAL
--	help
--	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
--	  Enable this option will be make sysfs node in exynos thermal platform
--	  device directory to support emulation mode. With emulation mode sysfs
--	  node, you can manually input temperature to TMU for simulation purpose.
--
- config DB8500_THERMAL
- 	bool "DB8500 thermal management"
- 	depends on ARCH_U8500
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 327102a..afe9c2a 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -99,13 +99,13 @@
- #define IDLE_INTERVAL 10000
- #define MCELSIUS	1000
- 
--#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+#ifdef CONFIG_THERMAL_EMULATION
- #define EXYNOS_EMUL_TIME	0x57F0
- #define EXYNOS_EMUL_TIME_SHIFT	16
- #define EXYNOS_EMUL_DATA_SHIFT	8
- #define EXYNOS_EMUL_DATA_MASK	0xFF
- #define EXYNOS_EMUL_ENABLE	0x1
--#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
-+#endif /* CONFIG_THERMAL_EMULATION */
- 
- /* CPU Zone information */
- #define PANIC_ZONE      4
-@@ -143,6 +143,7 @@ struct	thermal_cooling_conf {
- struct thermal_sensor_conf {
- 	char name[SENSOR_NAME_LEN];
- 	int (*read_temperature)(void *data);
-+	int (*write_emul_temp)(void *data, unsigned long temp);
- 	struct thermal_trip_point_conf trip_data;
- 	struct thermal_cooling_conf cooling_data;
- 	void *private_data;
-@@ -366,6 +367,23 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
-+/* Get temperature callback functions for thermal zone */
-+static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
-+						unsigned long temp)
-+{
-+	void *data;
-+	int ret = -EINVAL;
-+
-+	if (!th_zone->sensor_conf) {
-+		pr_info("Temperature sensor not initialised\n");
-+		return -EINVAL;
-+	}
-+	data = th_zone->sensor_conf->private_data;
-+	if (th_zone->sensor_conf->write_emul_temp)
-+		ret = th_zone->sensor_conf->write_emul_temp(data, temp);
-+	return ret;
-+}
-+
- /* Get the temperature trend */
- static int exynos_get_trend(struct thermal_zone_device *thermal,
- 			int trip, enum thermal_trend *trend)
-@@ -382,6 +400,7 @@ static struct thermal_zone_device_ops const exynos_dev_ops = {
- 	.bind = exynos_bind,
- 	.unbind = exynos_unbind,
- 	.get_temp = exynos_get_temp,
-+	.set_emul_temp = exynos_set_emul_temp,
- 	.get_trend = exynos_get_trend,
- 	.get_mode = exynos_get_mode,
- 	.set_mode = exynos_set_mode,
-@@ -700,6 +719,44 @@ static int exynos_tmu_read(struct exynos_tmu_data *data)
- 	return temp;
- }
- 
-+#ifdef CONFIG_THERMAL_EMULATION
-+static int exynos_tmu_set_emulation(struct exynos_tmu_data *data,
-+					unsigned long temp)
-+{
-+	unsigned int reg;
-+	int ret = -EINVAL;
-+
-+	if (data->soc == SOC_ARCH_EXYNOS4210)
-+		goto out;
-+
-+	if (temp && temp < MCELSIUS)
-+		goto out;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+
-+	if (temp) {
-+		temp /= MCELSIUS;
-+
-+		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
-+			(temp_to_code(data, temp)
-+			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
-+	} else {
-+		reg &= ~EXYNOS_EMUL_ENABLE;
-+	}
-+
-+	writel(reg, data->base + EXYNOS_EMUL_CON);
-+
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+	return 0;
-+out:
-+	return ret;
-+}
-+#endif/*CONFIG_THERMAL_EMULATION*/
-+
- static void exynos_tmu_work(struct work_struct *work)
- {
- 	struct exynos_tmu_data *data = container_of(work,
-@@ -839,93 +896,6 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
- 			platform_get_device_id(pdev)->driver_data;
- }
- 
--#ifdef CONFIG_EXYNOS_THERMAL_EMUL
--static ssize_t exynos_tmu_emulation_show(struct device *dev,
--					 struct device_attribute *attr,
--					 char *buf)
--{
--	struct platform_device *pdev = container_of(dev,
--					struct platform_device, dev);
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	unsigned int reg;
--	u8 temp_code;
--	int temp = 0;
--
--	if (data->soc == SOC_ARCH_EXYNOS4210)
--		goto out;
--
--	mutex_lock(&data->lock);
--	clk_enable(data->clk);
--	reg = readl(data->base + EXYNOS_EMUL_CON);
--	clk_disable(data->clk);
--	mutex_unlock(&data->lock);
--
--	if (reg & EXYNOS_EMUL_ENABLE) {
--		reg >>= EXYNOS_EMUL_DATA_SHIFT;
--		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
--		temp = code_to_temp(data, temp_code);
--	}
--out:
--	return sprintf(buf, "%d\n", temp * MCELSIUS);
--}
--
--static ssize_t exynos_tmu_emulation_store(struct device *dev,
--					struct device_attribute *attr,
--					const char *buf, size_t count)
--{
--	struct platform_device *pdev = container_of(dev,
--					struct platform_device, dev);
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	unsigned int reg;
--	int temp;
--
--	if (data->soc == SOC_ARCH_EXYNOS4210)
--		goto out;
--
--	if (!sscanf(buf, "%d\n", &temp) || temp < 0)
--		return -EINVAL;
--
--	mutex_lock(&data->lock);
--	clk_enable(data->clk);
--
--	reg = readl(data->base + EXYNOS_EMUL_CON);
--
--	if (temp) {
--		/* Both CELSIUS and MCELSIUS type are available for input */
--		if (temp > MCELSIUS)
--			temp /= MCELSIUS;
--
--		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
--			(temp_to_code(data, (temp / MCELSIUS))
--			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
--	} else {
--		reg &= ~EXYNOS_EMUL_ENABLE;
--	}
--
--	writel(reg, data->base + EXYNOS_EMUL_CON);
--
--	clk_disable(data->clk);
--	mutex_unlock(&data->lock);
--
--out:
--	return count;
--}
--
--static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
--					exynos_tmu_emulation_store);
--static int create_emulation_sysfs(struct device *dev)
--{
--	return device_create_file(dev, &dev_attr_emulation);
--}
--static void remove_emulation_sysfs(struct device *dev)
--{
--	device_remove_file(dev, &dev_attr_emulation);
--}
--#else
--static inline int create_emulation_sysfs(struct device *dev) { return 0; }
--static inline void remove_emulation_sysfs(struct device *dev) {}
--#endif
--
- static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data;
-@@ -1002,6 +972,10 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- 
- 	/* Register the sensor with thermal management interface */
- 	(&exynos_sensor_conf)->private_data = data;
-+#ifdef CONFIG_THERMAL_EMULATION
-+	(&exynos_sensor_conf)->write_emul_temp =
-+		(int (*)(void *, unsigned long))exynos_tmu_set_emulation;
-+#endif
- 	exynos_sensor_conf.trip_data.trip_count = pdata->trigger_level0_en +
- 			pdata->trigger_level1_en + pdata->trigger_level2_en +
- 			pdata->trigger_level3_en;
-@@ -1025,10 +999,6 @@ static int __devinit exynos_tmu_probe(struct platform_device *pdev)
- 		goto err_clk;
- 	}
- 
--	ret = create_emulation_sysfs(&pdev->dev);
--	if (ret)
--		dev_err(&pdev->dev, "Failed to create emulation mode sysfs node\n");
--
- 	return 0;
- err_clk:
- 	platform_set_drvdata(pdev, NULL);
-@@ -1040,8 +1010,6 @@ static int __devexit exynos_tmu_remove(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 
--	remove_emulation_sysfs(&pdev->dev);
--
- 	exynos_tmu_control(pdev, false);
- 
- 	exynos_unregister_thermal();
--- 
-1.7.5.4
+>
+> thanks,
+> rui
+>> I will re-submit with this change.
+>>
+>> Thanks,
+>> Amit
+>> >
+>> > thanks,
+>> > rui
+>> >> +     This is useful in debugging different temperature threshold and its
+>> >> +     associated cooling action. Writing 0 on this node should disable
+>> >> +     emulation.
+>> >> +     Unit: millidegree Celsius
+>> >> +     WO, Optional
+>> >> +
+>> >>  *****************************
+>> >>  * Cooling device attributes *
+>> >>  *****************************
+>> >> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+>> >> index 8c8ce80..ecdfc7d 100644
+>> >> --- a/drivers/thermal/thermal_sys.c
+>> >> +++ b/drivers/thermal/thermal_sys.c
+>> >> @@ -700,11 +700,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+>> >>       return sprintf(buf, "%s\n", tz->governor->name);
+>> >>  }
+>> >>
+>> >> +static ssize_t
+>> >> +emul_temp_store(struct device *dev, struct device_attribute *attr,
+>> >> +                  const char *buf, size_t count)
+>> >> +{
+>> >> +     struct thermal_zone_device *tz = to_thermal_zone(dev);
+>> >> +     int ret;
+>> >> +     unsigned long temperature;
+>> >> +
+>> >> +     if (!tz->ops->set_emul_temp)
+>> >> +             return -EPERM;
+>> >> +
+>> >> +     if (kstrtoul(buf, 10, &temperature))
+>> >> +             return -EINVAL;
+>> >> +
+>> >> +     ret = tz->ops->set_emul_temp(tz, temperature);
+>> >> +
+>> >> +     return ret ? ret : count;
+>> >> +}
+>> >> +
+>> >>  static DEVICE_ATTR(type, 0444, type_show, NULL);
+>> >>  static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+>> >>  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+>> >>  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+>> >>  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+>> >> +static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+>> >>
+>> >>  /* sys I/F for cooling device */
+>> >>  #define to_cooling_device(_dev)      \
+>> >> @@ -1592,6 +1612,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>> >>                       goto unregister;
+>> >>       }
+>> >>
+>> >> +     if (ops->set_emul_temp) {
+>> >> +             result = device_create_file(&tz->device, &dev_attr_emul_temp);
+>> >> +             if (result)
+>> >> +                     goto unregister;
+>> >> +     }
+>> >> +
+>> >>       /* Create policy attribute */
+>> >>       result = device_create_file(&tz->device, &dev_attr_policy);
+>> >>       if (result)
+>> >> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> >> index 883bcda..fbb87d4 100644
+>> >> --- a/include/linux/thermal.h
+>> >> +++ b/include/linux/thermal.h
+>> >> @@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
+>> >>       int (*set_trip_hyst) (struct thermal_zone_device *, int,
+>> >>                             unsigned long);
+>> >>       int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
+>> >> +     int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
+>> >>       int (*get_trend) (struct thermal_zone_device *, int,
+>> >>                         enum thermal_trend *);
+>> >>       int (*notify) (struct thermal_zone_device *, int,
+>> >
+>> >
+>> > --
+>> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> > the body of a message to majordomo@vger.kernel.org
+>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > Please read the FAQ at  http://www.tux.org/lkml/
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
