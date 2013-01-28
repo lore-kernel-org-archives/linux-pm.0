@@ -1,52 +1,33 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 12:20:11 -0600
-Message-ID: <20130128182011.GA6704@kahuna>
-References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
- <7196597.b9sJl95POM@vostro.rjw.lan>
- <20130128083159.GD31689@S2101-09.ap.freescale.net>
+Subject: [PATCH 0/2] PM / OPP : export symbol consolidation
+Date: Mon, 28 Jan 2013 12:26:14 -0600
+Message-ID: <1359397576-26131-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130128083159.GD31689@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Rafael <rjw@sisk.pl>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 16:32-20130128, Shawn Guo wrote:
-> On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
-> > On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
-> > > As multiplatform build is being adopted by more and more ARM platforms,
-> > > initcall function should be used very carefully.  For example, when
-> > > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> > > will be called on all the platforms to initialize cpufreq-cpu0 driver.
-> > > 
-> > > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> > > driver to have it instantiated as a platform_driver.  Then it will only
-> > > run on platforms that create the platform_device "cpufreq-cpu0".
-> > > 
-> > > Along with the change, it also changes cpu_dev to be &pdev->dev,
-> > > so that managed functions can start working, and module build gets
-> > > supported too.
-> > > 
-> > > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> > > ---
-> > > Rafael,
-> > > 
-> > > The patch depends patch "power: export opp cpufreq functions".
-> > > https://patchwork.kernel.org/patch/1847261/
-> > 
-> > That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
-> > 
-> When commit 80126ce (PM / OPP: Export symbols for module usage.)
-> already exported a few symbols with EXPORT_SYMBOL()?
+Hi,
+This is a consolidation of Rafael's request for usage of EXPORT_SYMBOL_GPL
+and requirement for cpufreq helpers to be exported to be used by cpufreq
+drivers which may be modules.
 
-I have split this out as a separate OPP series with a variant of 
-https://patchwork.kernel.org/patch/1847261/ added at last.
-Will post this out in a few mins.
+https://patchwork.kernel.org/patch/1847261/ is patch #2 in this series.
+
+Mark Langsdorf (1):
+  PM / OPP: Export more symbols for module usage
+
+Nishanth Menon (1):
+  PM / OPP: switch exported symbols to GPL variant
+
+ drivers/base/power/opp.c |   19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
 -- 
+1.7.9.5
+
 Regards,
 Nishanth Menon
