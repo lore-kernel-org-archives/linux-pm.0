@@ -1,42 +1,48 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 3/4 v11] arm highbank: add support for pl320 IPC
-Date: Mon, 28 Jan 2013 07:44:13 -0600
-Message-ID: <510680AD.2070908@calxeda.com>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1359143205-20279-1-git-send-email-mark.langsdorf@calxeda.com> <1359143205-20279-4-git-send-email-mark.langsdorf@calxeda.com> <1457500.uzVh9cxXhS@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v7 3/4] block: implement runtime pm strategy
+Date: Mon, 28 Jan 2013 10:11:53 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301281010160.1997-100000@iolanthe.rowland.org>
+References: <20130128092121.GB2568@aaronlu.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1457500.uzVh9cxXhS@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <rob.herring@calxeda.com>, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:37314 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750874Ab3A1PLy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 10:11:54 -0500
+In-Reply-To: <20130128092121.GB2568@aaronlu.sh.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On 01/28/2013 06:49 AM, Rafael J. Wysocki wrote:
+On Mon, 28 Jan 2013, Aaron Lu wrote:
 
->> +int pl320_ipc_register_notifier(struct notifier_block *nb)
->> +{
->> +	return atomic_notifier_chain_register(&ipc_notifier, nb);
->> +}
->> +EXPORT_SYMBOL(pl320_ipc_register_notifier);
->> +
->> +int pl320_ipc_unregister_notifier(struct notifier_block *nb)
->> +{
->> +	return atomic_notifier_chain_unregister(&ipc_notifier, nb);
->> +}
->> +EXPORT_SYMBOL(pl320_ipc_unregister_notifier);
+> On Sat, Jan 19, 2013 at 01:11:45PM -0500, Alan Stern wrote:
+> > On Sat, 19 Jan 2013, Aaron Lu wrote:
+> > > Considering ODD's use case, I was thinking of moving the
+> > > blk_pm_runtime_init call to sd.c, as sr will not use request based auto
+> > > suspend. Probably right before we decrease usage count for the device in
+> > > sd_probe_async. What do you think?
+> > 
+> > That makes sense.  But then you should review the changes in scsi_pm.c 
+> > to make sure they will work okay for devices that aren't using 
+> > block-layer runtime PM.
 > 
-> I need all of your symbols to be exported with EXPORT_SYMBOL_GPL().
+> Now that we have two different runtime PM schemes for scsi device, and
+> I think there are two ways to make them work:
 > 
-> Is it OK to make that change when applying the patch or do you want to send
-> a new one?
+> 1 Do it all in scsi_pm.c. In bus' runtime PM callback, check if this
+>   device is using block layer runtime PM API, and act accordingly;
+> 2 Do it in indivisual drivers' runtime PM callback. Bus' runtime PM
+>   callbacks just call pm_generic_runtime_xxx, and each driver's runtime
+>   PM callback will need to do what is appropriate for them.
+> 
+> Personally I want to go with option 1, but I would like to hear your
+> opinion :-)
 
-I probably should resend so I can include the drivers level Kconfig and
-Makefile.
+I don't think it matters very much.  Option 1 is okay with me.  James 
+might have a stronger feeling one way or the other.
 
-I'll get that out this morning.
-
---Mark Langsdorf
-Calxeda, Inc.
+Alan Stern
 
