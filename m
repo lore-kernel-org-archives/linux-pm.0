@@ -1,43 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 12:50:44 +0530
-Message-ID: <CAKohponYt7RPh=4u22LJhjBWeDbw0MScpYCAyj5fiZqDKjsdvQ@mail.gmail.com>
-References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
-	<CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
-	<20130128070206.GB31689@S2101-09.ap.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130128070206.GB31689@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 1/2] ACPI/Sleep: Add init_nvs_nosave_s3() function
+Date: Mon, 28 Jan 2013 15:47:04 +0800
+Message-ID: <1359359225-28223-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:30048 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752899Ab3A1HtR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jan 2013 02:49:17 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: Lan Tianyu <tianyu.lan@intel.com>, stern@rowland.harvard.edu, swilmet@gnome.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On 28 January 2013 12:32, Shawn Guo <shawn.guo@linaro.org> wrote:
-> On Mon, Jan 28, 2013 at 09:42:29AM +0530, Viresh Kumar wrote:
->> >         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
->> >         platform_device_register_full(&devinfo);
->>
->> Something similar was being discussed with Andrew (cc'd) on his patch
->> for kikwood cpufreq driver.
->>
->> We shouldn't encourage addition of above as we are moving towards DT.
->
-> Moving towards DT does not really mean that we should never register
-> platform_device from platform code.  DT is designed to present physical
-> devices, while what I'm adding here is somewhat a virtual one.  I'm
-> just using the platform_device/platform_driver mechanism to instantiate
-> the driver on particular platform.
->
->> So, i would except an compatible array too in your patch and then driver
->> can be probed based on compatible string being present in cpu node.
->
-> I believe device tree maintainer already stated that we should not
-> have node/compatible for cpuidle/cpufreq such stuff in DT merely for
-> asking DT core to create platform_device for them.
+commit 1bad2f19f7f7 introduces nvs_nosave_s3 flag to just ban
+saving nvs in ths s3 rather than both of s3 and s4. This patch
+is to add init_nvs_nosave_s3() to set nvs_nosave_s3 to true for
+those machines in the nonvs blacklist which only don't need to
+saving nvs during s3 rather than both s3 and s4.
 
-I see. I am really not sure if the alternative of DT node (i.e. platform_device)
-is good enough.
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/acpi/sleep.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-@Arnd: What do you say?
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 2fcc67d..405b962 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -141,6 +141,12 @@ static int __init init_nvs_nosave(const struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
++static int __init init_nvs_nosave_s3(const struct dmi_system_id *d)
++{
++	acpi_nvs_nosave_s3();
++	return 0;
++}
++
+ static struct dmi_system_id __initdata acpisleep_dmi_table[] = {
+ 	{
+ 	.callback = init_old_suspend_ordering,
+-- 
+1.7.10.4
+
