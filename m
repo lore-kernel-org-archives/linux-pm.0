@@ -1,55 +1,70 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 09:42:29 +0530
-Message-ID: <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
-References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+Subject: Re: [PATCH] drivers: cpufreq: exynos: update related_cpus mask to fix
+ hotplug dump
+Date: Mon, 28 Jan 2013 09:45:02 +0530
+Message-ID: <CAOh2x==_n7d+FUyAA6nWuHHLK0TA7smBYXd2M=72HDQef3NG4w@mail.gmail.com>
+References: <1359000647-8366-1-git-send-email-inderpal.singh@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1359000647-8366-1-git-send-email-inderpal.singh@linaro.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Inderpal Singh <inderpal.singh@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, rjw@sisk.pl, kgene.kim@samsung.com, linux-samsung-soc@vger.kernel.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 26, 2013 at 7:25 PM, Shawn Guo <shawn.guo@linaro.org> wrote:
-> As multiplatform build is being adopted by more and more ARM platforms,
-> initcall function should be used very carefully.  For example, when
-> GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> will be called on all the platforms to initialize cpufreq-cpu0 driver.
+On Thu, Jan 24, 2013 at 9:40 AM, Inderpal Singh
+<inderpal.singh@linaro.org> wrote:
+> commit "7e6087e595d3...cpufreq: Simplify cpufreq_add_dev()" started using
+> related_cpus mask to check if the current cpu is already managed.
 >
-> To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> driver to have it instantiated as a platform_driver.  Then it will only
-> run on platforms that create the platform_device "cpufreq-cpu0".
+> With above commit hotplug in exynos gives following dump.
 >
-> Along with the change, it also changes cpu_dev to be &pdev->dev,
-> so that managed functions can start working, and module build gets
-> supported too.
+> / $ echo 1 > /sys/devices/system/cpu/cpu1/online
+> CPU1: Booted secondary processor
+> ------------[ cut here ]------------
+> WARNING: at fs/sysfs/dir.c:536 sysfs_add_one+0x88/0xbc()
+> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu0/cpufreq'
+> Modules linked in:
+> [<c0014560>] (unwind_backtrace+0x0/0xf8) from [<c0020214>] (warn_slowpath_common+0x4c/0x64)
+> [<c0020214>] (warn_slowpath_common+0x4c/0x64) from [<c00202c0>] (warn_slowpath_fmt+0x30/0x40)
+> [<c00202c0>] (warn_slowpath_fmt+0x30/0x40) from [<c00fb548>] (sysfs_add_one+0x88/0xbc)
+> [<c00fb548>] (sysfs_add_one+0x88/0xbc) from [<c00fc184>] (sysfs_do_create_link+0x110/0x208)
+> [<c00fc184>] (sysfs_do_create_link+0x110/0x208) from [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0)
+> [<c019a868>] (cpufreq_add_dev_interface+0x218/0x2b0) from [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448)
+> [<c019ac0c>] (cpufreq_add_dev+0x30c/0x448) from [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c)
+> [<c01bdb84>] (cpufreq_cpu_callback+0x94/0x9c) from [<c0040fac>] (notifier_call_chain+0x44/0x84)
+> [<c0040fac>] (notifier_call_chain+0x44/0x84) from [<c0023484>] (__cpu_notify+0x28/0x44)
+> [<c0023484>] (__cpu_notify+0x28/0x44) from [<c01bc320>] (_cpu_up+0x104/0x154)
+> [<c01bc320>] (_cpu_up+0x104/0x154) from [<c01bc3d4>] (cpu_up+0x64/0x84)
+> [<c01bc3d4>] (cpu_up+0x64/0x84) from [<c01bafc8>] (store_online+0x50/0x78)
+> [<c01bafc8>] (store_online+0x50/0x78) from [<c016850c>] (dev_attr_store+0x18/0x24)
+> [<c016850c>] (dev_attr_store+0x18/0x24) from [<c00fa12c>] (sysfs_write_file+0x168/0x198)
+> [<c00fa12c>] (sysfs_write_file+0x168/0x198) from [<c00a7424>] (vfs_write+0x9c/0x140)
+> [<c00a7424>] (vfs_write+0x9c/0x140) from [<c00a76b0>] (sys_write+0x3c/0x70)
+> [<c00a76b0>] (sys_write+0x3c/0x70) from [<c000e2c0>] (ret_fast_syscall+0x0/0x30)
+> ---[ end trace 3d002b0ded69f43b ]---
 >
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> This patch fixes it by updating the related_cpus mask.
+>
+> Tested on Rafael's linux-next.
+>
+> Signed-off-by: Inderpal Singh <inderpal.singh@linaro.org>
 > ---
-> Rafael,
+>  drivers/cpufreq/exynos-cpufreq.c |    1 +
+>  1 file changed, 1 insertion(+)
 >
-> The patch depends patch "power: export opp cpufreq functions".
-> https://patchwork.kernel.org/patch/1847261/
->
-> AnilKumar,
->
-> Unfortunately, the change will require some platform level adoption
-> to have cpufreq-cpu0 driver continue working for am33xx.  But it should
-> be as simple as something like below.
->
->         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
->         platform_device_register_full(&devinfo);
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> index 7012ea8..8ba4cdb 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -238,6 +238,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>                 cpumask_copy(policy->cpus, cpu_online_mask);
+>         } else {
+>                 policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+> +               cpumask_setall(policy->related_cpus);
+>                 cpumask_setall(policy->cpus);
 
-Something similar was being discussed with Andrew (cc'd) on his patch
-for kikwood cpufreq driver.
+This is required for all SMP systems.
 
-We shouldn't encourage addition of above as we are moving towards DT.
-So, i would except an compatible array too in your patch and then driver
-can be probed based on compatible string being present in cpu node.
-
-What do you say?
-
---
-viresh
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
