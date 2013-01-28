@@ -1,40 +1,43 @@
-From: Shawn Guo <shawn.guo@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Mon, 28 Jan 2013 15:02:08 +0800
-Message-ID: <20130128070206.GB31689@S2101-09.ap.freescale.net>
+Date: Mon, 28 Jan 2013 12:50:44 +0530
+Message-ID: <CAKohponYt7RPh=4u22LJhjBWeDbw0MScpYCAyj5fiZqDKjsdvQ@mail.gmail.com>
 References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
- <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
+	<CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
+	<20130128070206.GB31689@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAOh2x=kCKbxX6ThzEty0F-MxxhsRMhh8++Nc7BqBaXNfaozoJw@mail.gmail.com>
+In-Reply-To: <20130128070206.GB31689@S2101-09.ap.freescale.net>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shawn Guo <shawn.guo@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 28, 2013 at 09:42:29AM +0530, Viresh Kumar wrote:
-> >         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-> >         platform_device_register_full(&devinfo);
-> 
-> Something similar was being discussed with Andrew (cc'd) on his patch
-> for kikwood cpufreq driver.
-> 
-> We shouldn't encourage addition of above as we are moving towards DT.
+On 28 January 2013 12:32, Shawn Guo <shawn.guo@linaro.org> wrote:
+> On Mon, Jan 28, 2013 at 09:42:29AM +0530, Viresh Kumar wrote:
+>> >         struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+>> >         platform_device_register_full(&devinfo);
+>>
+>> Something similar was being discussed with Andrew (cc'd) on his patch
+>> for kikwood cpufreq driver.
+>>
+>> We shouldn't encourage addition of above as we are moving towards DT.
+>
+> Moving towards DT does not really mean that we should never register
+> platform_device from platform code.  DT is designed to present physical
+> devices, while what I'm adding here is somewhat a virtual one.  I'm
+> just using the platform_device/platform_driver mechanism to instantiate
+> the driver on particular platform.
+>
+>> So, i would except an compatible array too in your patch and then driver
+>> can be probed based on compatible string being present in cpu node.
+>
+> I believe device tree maintainer already stated that we should not
+> have node/compatible for cpuidle/cpufreq such stuff in DT merely for
+> asking DT core to create platform_device for them.
 
-Moving towards DT does not really mean that we should never register
-platform_device from platform code.  DT is designed to present physical
-devices, while what I'm adding here is somewhat a virtual one.  I'm
-just using the platform_device/platform_driver mechanism to instantiate
-the driver on particular platform.
+I see. I am really not sure if the alternative of DT node (i.e. platform_device)
+is good enough.
 
-> So, i would except an compatible array too in your patch and then driver
-> can be probed based on compatible string being present in cpu node.
-
-I believe device tree maintainer already stated that we should not
-have node/compatible for cpuidle/cpufreq such stuff in DT merely for
-asking DT core to create platform_device for them.
-
-Shawn
-
+@Arnd: What do you say?
