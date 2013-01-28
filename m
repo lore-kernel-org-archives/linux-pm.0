@@ -1,47 +1,65 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 4/4] cpufreq, highbank: add support for highbank cpufreq
-Date: Mon, 28 Jan 2013 16:37:18 +0800
-Message-ID: <20130128083716.GE31689@S2101-09.ap.freescale.net>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com>
- <1359143205-20279-5-git-send-email-mark.langsdorf@calxeda.com>
- <20130126143950.GA7079@S2101-09.ap.freescale.net>
- <1523559.2KevGvelzH@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v7 4/4] sd: change to auto suspend mode
+Date: Mon, 28 Jan 2013 16:56:51 +0800
+Message-ID: <20130128085651.GA2568@aaronlu.sh.intel.com>
+References: <1358326941-3725-5-git-send-email-aaron.lu@intel.com>
+ <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:12120 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754702Ab3A1I4E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Jan 2013 03:56:04 -0500
 Content-Disposition: inline
-In-Reply-To: <1523559.2KevGvelzH@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, linux-pm@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.44L0.1301181613060.1190-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-Rafael,
-
-On Sat, Jan 26, 2013 at 11:24:12PM +0100, Rafael J. Wysocki wrote:
-> > As we are moving to multiplatform build, this init function will run
-> > on all other platforms built together with highbank.  We should
-> > probably eliminate that effect.
+On Fri, Jan 18, 2013 at 04:25:10PM -0500, Alan Stern wrote:
+> On Wed, 16 Jan 2013, Aaron Lu wrote:
 > 
-> That change can be made on top of the Mark's patches I think, right?
+> > From: Lin Ming <ming.m.lin@intel.com>
+> > 
+> > Uses block layer runtime pm helper functions in
+> > scsi_runtime_suspend/resume.
+> > Remove scsi_autopm_* from sd open/release path and check_events path.
+> > And remove the quiesce call in runtime suspend path, as we know there is
+> > no request to quiesce for the device.
+> > 
+> > Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
 > 
-Yes.
-
-> If so, I'd prefer it that way.  The Mark's patches have been in a limbo for
-> too long already and that issue doesn't seem to be serious enough to block
-> them any longer.
+> > --- a/drivers/scsi/scsi_sysfs.c
+> > +++ b/drivers/scsi/scsi_sysfs.c
+> > @@ -893,6 +893,8 @@ int scsi_sysfs_add_sdev(struct scsi_device *sdev)
+> >  	 */
+> >  	scsi_autopm_get_device(sdev);
+> >  
+> > +	blk_pm_runtime_init(rq, &sdev->sdev_gendev);
+> > +
+> >  	error = device_add(&sdev->sdev_gendev);
+> >  	if (error) {
+> >  		sdev_printk(KERN_INFO, sdev,
 > 
-Ok, I will take care of the changes needed on highbank.  Do you have
-a branch with Mark's series and the EXPORT_SYMBOL() one applied,
-so that I can start my patch from there.
+> Someone just asked about the default autosuspend delay, and I realized
+> your patch series doesn't set one.  Since we don't know the properties
+> of the disk drive at this point (or even whether the device is a disk
+> drive), the only safe course is to call
+> 
+> 	pm_runtime_set_autosuspend_delay(&sdev->sdev_gendev, -1);
+> 
+> before calling blk_pm_runtime_init().  Then autosuspends will be 
+> prevented until userspace writes a non-negative value into the device's 
+> control/autosuspend_delay_ms file.
 
-Shawn
+Shall we do it inside blk_pm_runtime_init? This way, we do not need to
+do it for every driver. And for drivers that do know a proper value for
+autosuspend delay, they can call pm_runtime_set_autosuspend_delay
+somewhere after blk_pm_runtime_init.
+
+Thanks,
+Aaron
+
