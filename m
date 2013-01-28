@@ -1,62 +1,64 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Subject: Re: [Intel-gfx] [RFC PATCH 3/3] i915: ignore lid open event when resuming
-Date: Mon, 28 Jan 2013 09:31:54 +0100
-Message-ID: <CAKMK7uFWqtcnvkExz2_+0Vm+6pSREhRJ1szpHi2_CEmmHL6Nzg@mail.gmail.com>
-References: <1359300060-2967-1-git-send-email-rui.zhang@intel.com>
-	<1359300060-2967-3-git-send-email-rui.zhang@intel.com>
-	<CAKMK7uF4u-3XFogzdQQCBqA2Q61D1s3PhVF7BOT90d88TkqT0g@mail.gmail.com>
-	<1359340583.2249.14.camel@rzhang1-mobl4>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
+Date: Mon, 28 Jan 2013 16:32:01 +0800
+Message-ID: <20130128083159.GD31689@S2101-09.ap.freescale.net>
+References: <1359208550-16402-1-git-send-email-shawn.guo@linaro.org>
+ <7196597.b9sJl95POM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1359340583.2249.14.camel@rzhang1-mobl4>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, intel-gfx@lists.freedesktop.org, rjw@sisk.pl, lenb@kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from va3ehsobe006.messaging.microsoft.com ([216.32.180.16]:17550
+	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754251Ab3A1Ib5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 03:31:57 -0500
+Content-Disposition: inline
+In-Reply-To: <7196597.b9sJl95POM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, AnilKumar Ch <anilkumar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On Mon, Jan 28, 2013 at 3:36 AM, Zhang Rui <rui.zhang@intel.com> wrote:
->> Given that this essentially requires users to manually set this module
->> option to make stuff work I don't like this.
->>
-> sorry, I do not understand.
-> this patch just disables modeset_on_lid during suspend.
+On Sat, Jan 26, 2013 at 11:21:27PM +0100, Rafael J. Wysocki wrote:
+> On Saturday, January 26, 2013 09:55:50 PM Shawn Guo wrote:
+> > As multiplatform build is being adopted by more and more ARM platforms,
+> > initcall function should be used very carefully.  For example, when
+> > GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
+> > will be called on all the platforms to initialize cpufreq-cpu0 driver.
+> > 
+> > To eliminate this undesired the effect, the patch changes cpufreq-cpu0
+> > driver to have it instantiated as a platform_driver.  Then it will only
+> > run on platforms that create the platform_device "cpufreq-cpu0".
+> > 
+> > Along with the change, it also changes cpu_dev to be &pdev->dev,
+> > so that managed functions can start working, and module build gets
+> > supported too.
+> > 
+> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> > ---
+> > Rafael,
+> > 
+> > The patch depends patch "power: export opp cpufreq functions".
+> > https://patchwork.kernel.org/patch/1847261/
+> 
+> That one should use EXPORT_SYMBOL_GPL() for exporting symbols, though.
+> 
+When commit 80126ce (PM / OPP: Export symbols for module usage.)
+already exported a few symbols with EXPORT_SYMBOL()?
 
-Pardon me, the misunderstanding is on my side - I've mixed up
-dev_priv->modeset_on_lid with the corresponding module option.
+> Care to add a fixed version to the patch set along with the $subject one?
+> 
+> > AnilKumar,
+> > 
+> > Unfortunately, the change will require some platform level adoption
+> > to have cpufreq-cpu0 driver continue working for am33xx.  But it should
+> > be as simple as something like below.
+> > 
+> > 	struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+> > 	platform_device_register_full(&devinfo);
+> 
+> That should be included in your patch, then.
+> 
+Fair enough.  Will do.
 
-Is my understanding correct that only with the new SCI pm state this
-can happen, since that still allows acpi events to be processed (and
-so our lid_notifier being called?
+Shawn
 
->> I see a few possible options:
->> - plug the races between all the different parts - I've never really
->> understood why acpi sends us events before the resume code has
->> completed ... If that's indeed intentional, we could delay the
->> handling a bit until at least the i915 resume code completed.
->
-> IMO, the real question is that, during a suspend/resume cycle, if we
-> need to take care of the lid open event or not.
-> To me, the answer is no, because when resuming from STR, i915 is not
-> aware of such an event, and the i915 resume code works well, right?
-> so I do not think it is a problem to ignore the lid event for another
-> lightweight suspend state, which is introduced in Patch 1/3 in this
-> series.
->
->> - Judging from the diff context you're not on the latest 3.8-rc
->> codebase - we've applied a few fixes to this lid hack recently. Please
->> retest on a kernel with
->>
-> the patch is based on 3.8.0-rc3, which already includes the commit
-> below.
-> And yes, the problem still exists.
-
-Ok, I think I see the issue now. But I suspect that we need some
-additional locking to make this solid, since currently
-dev_priv->modeset_on_lid updates can race with our lid notifier
-handler. Let me think about this a bit more.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
