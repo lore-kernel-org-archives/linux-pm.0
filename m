@@ -1,55 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] mailbox: prevent pl320-ipc code from breaking none-AMBA systems
-Date: Wed, 30 Jan 2013 00:11:53 +0100
-Message-ID: <27770386.tfMWkOKqd2@vostro.rjw.lan>
-References: <1359477413-27881-1-git-send-email-mark.langsdorf@calxeda.com> <1807311.dyJeq56cRL@vostro.rjw.lan> <21672683C5A3814BB4DB938EBE482DE435D976610A@IAD2MBX09.mex02.mlsrvr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <21672683C5A3814BB4DB938EBE482DE435D976610A@IAD2MBX09.mex02.mlsrvr.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: [PATCH] PM / Hibernate: remove duplicate disable_nonboot_cpus()
+Date: Tue, 29 Jan 2013 16:20:15 -0700
+Message-ID: <1359501615-16435-1-git-send-email-swarren@wwwdotorg.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:35212 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073Ab3A2XU0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jan 2013 18:20:26 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@nvidia.com>
 
-On Tuesday, January 29, 2013 05:13:09 PM Mark Langsdorf wrote:
-> > From: Rafael J. Wysocki [rjw@sisk.pl]
-> > On Tuesday, January 29, 2013 10:36:53 AM Mark Langsdorf wrote:
-> > > The pl320-ipc code depends on ARM AMBA, and should have the dependency
-> > > in its Kconfig.
-> > 
-> > May I fold this into "ARM / highbank: add support for pl320 IPC"?
-> 
-> Yes. I didn't want to regenerate the patch series =)
+From: Stephen Warren <swarren@nvidia.com>
 
-Done.
+Within hibernate.c, hibernation_platform_enter() is only called from
+power_down(), which in turn is only called by hibernate() after having
+called hibernation_snapshot(), which in turn calls create_image() which
+in turn calls disable_nonboot_cpus().
 
-Thanks,
-Rafael
+Elsewhere, snapshot_ioctl() allows hibernation_snapshot() and
+hibernation_platform_enter() to be invoked via separate IOCTLs, but I
+assume the rule is that SNAPSHOT_CREATE_IMAGE must be executed before
+IOCTL SNAPSHOT_POWER_OFF, and hence the same ordering applies.
 
+This means that disable_nonboot_cpus() must have been called already
+before hibernation_platform_enter() is entered, and hence the call there
+is redundant, so remove it.
 
-> > Signed-off-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> > ---
-> >  drivers/mailbox/Kconfig | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
-> > index 9489554..9545c9f 100644
-> > --- a/drivers/mailbox/Kconfig
-> > +++ b/drivers/mailbox/Kconfig
-> > @@ -8,6 +8,7 @@ menuconfig MAILBOX
-> >  if MAILBOX
-> >  config PL320_MBOX
-> >       bool "ARM PL320 Mailbox"
-> > +     depends on ARM_AMBA
-> >       help
-> >         An implementation of the ARM PL320 Interprocessor Communication
-> >         Mailbox (IPCM), tailored for the Calxeda Highbank. It is used to
-> >
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+---
+Note: I have compile-tested this on x86-64, but have not attempted to test
+it in any way; I'm proposing this patch following code inspection.
+---
+ kernel/power/hibernate.c |    5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index b26f5f1..4ddeacc 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -537,10 +537,6 @@ int hibernation_platform_enter(void)
+ 	if (error)
+ 		goto Platform_finish;
+ 
+-	error = disable_nonboot_cpus();
+-	if (error)
+-		goto Platform_finish;
+-
+ 	local_irq_disable();
+ 	syscore_suspend();
+ 	if (pm_wakeup_pending()) {
+@@ -555,7 +551,6 @@ int hibernation_platform_enter(void)
+  Power_up:
+ 	syscore_resume();
+ 	local_irq_enable();
+-	enable_nonboot_cpus();
+ 
+  Platform_finish:
+ 	hibernation_ops->finish();
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10.4
+
