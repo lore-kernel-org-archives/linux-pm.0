@@ -1,76 +1,146 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] Revert "cpufreq: Don't use cpu removed during cpufreq_driver_unregister"
-Date: Tue, 29 Jan 2013 10:10:00 +0530
-Message-ID: <c5f698edde8215a706fb82c158fb0050798797f2.1359434113.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: Set policy->related_cpus to atleast policy->cpus
+Date: Tue, 29 Jan 2013 10:11:06 +0530
+Message-ID: <CAKohpomvP2yP6qMNcSRyGWG-BRDq_dtU+OmfKE42=VyohWQXTg@mail.gmail.com>
 References: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=bcaec550b13685fd2b04d4660045
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
-In-Reply-To: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
-References: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl, inderpal.singh@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 956f33948b95aa91f6cbc6860087671c6ac1de4b.
+--bcaec550b13685fd2b04d4660045
+Content-Type: text/plain; charset=ISO-8859-1
 
-With the addition of following patch, this change/variable is not required:
+On 29 January 2013 10:09, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> With the addition of following patch, related_cpus is required to be set by
+> cpufreq platform drivers:
+>
+> commit c1070fd743533efb54e98142252283583f379190
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Mon Jan 14 13:23:04 2013 +0000
+>
+>     cpufreq: Simplify cpufreq_add_dev()
+>
+> Because this change is required by all platform drivers, why not do this in the
+> core itself. Hence, this patch is an attempt towards fixing all broken drivers.
+>
+> From now on, platforms don't really need to set related_cpus from their init()
+> routines, as the same work is done by core too.
+>
+> If platform driver needs to set the related_cpus mask with some additional cpus,
+> other than cpus present in policy->cpus, they are free to do it as we aren't
+> overriding anything.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Inderpal,
+>
+> Can you please add your tested-by for this patch? And this will require you to
+> drop your patch for exynos-cpufreq.c :)
 
-commit b9ba2725343ae57add3f324dfa5074167f48de96
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Mon Jan 14 13:23:03 2013 +0000
+ARM mail servers are broken. Patches attached.
 
-    cpufreq: Simplify __cpufreq_remove_dev()
+--bcaec550b13685fd2b04d4660045
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-Set-policy-related_cpus-to-atleast-policy-cp.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-Set-policy-related_cpus-to-atleast-policy-cp.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hcik6f6o0
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+RnJvbSBkNjgyNzk3NmE1NmQ0Mjk4NDhhYjhhYmFiYTI3NzlhMjFjNjhkNjVmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZDY4Mjc5NzZhNTZkNDI5ODQ4YWI4YWJhYmEyNzc5
+YTIxYzY4ZDY1Zi4xMzU5NDM0MTEzLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVHVlLCAyOSBKYW4g
+MjAxMyAwOTo1NTowMCArMDUzMApTdWJqZWN0OiBbUEFUQ0ggMS8yXSBjcHVmcmVxOiBTZXQgcG9s
+aWN5LT5yZWxhdGVkX2NwdXMgdG8gYXRsZWFzdAogcG9saWN5LT5jcHVzCgpXaXRoIHRoZSBhZGRp
+dGlvbiBvZiBmb2xsb3dpbmcgcGF0Y2gsIHJlbGF0ZWRfY3B1cyBpcyByZXF1aXJlZCB0byBiZSBz
+ZXQgYnkKY3B1ZnJlcSBwbGF0Zm9ybSBkcml2ZXJzOgoKY29tbWl0IGMxMDcwZmQ3NDM1MzNlZmI1
+NGU5ODE0MjI1MjI4MzU4M2YzNzkxOTAKQXV0aG9yOiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1h
+ckBsaW5hcm8ub3JnPgpEYXRlOiAgIE1vbiBKYW4gMTQgMTM6MjM6MDQgMjAxMyArMDAwMAoKICAg
+IGNwdWZyZXE6IFNpbXBsaWZ5IGNwdWZyZXFfYWRkX2RldigpCgpCZWNhdXNlIHRoaXMgY2hhbmdl
+IGlzIHJlcXVpcmVkIGJ5IGFsbCBwbGF0Zm9ybSBkcml2ZXJzLCB3aHkgbm90IGRvIHRoaXMgaW4g
+dGhlCmNvcmUgaXRzZWxmLiBIZW5jZSwgdGhpcyBwYXRjaCBpcyBhbiBhdHRlbXB0IHRvd2FyZHMg
+Zml4aW5nIGFsbCBicm9rZW4gZHJpdmVycy4KCkZyb20gbm93IG9uLCBwbGF0Zm9ybXMgZG9uJ3Qg
+cmVhbGx5IG5lZWQgdG8gc2V0IHJlbGF0ZWRfY3B1cyBmcm9tIHRoZWlyIGluaXQoKQpyb3V0aW5l
+cywgYXMgdGhlIHNhbWUgd29yayBpcyBkb25lIGJ5IGNvcmUgdG9vLgoKSWYgcGxhdGZvcm0gZHJp
+dmVyIG5lZWRzIHRvIHNldCB0aGUgcmVsYXRlZF9jcHVzIG1hc2sgd2l0aCBzb21lIGFkZGl0aW9u
+YWwgY3B1cywKb3RoZXIgdGhhbiBjcHVzIHByZXNlbnQgaW4gcG9saWN5LT5jcHVzLCB0aGV5IGFy
+ZSBmcmVlIHRvIGRvIGl0IGFzIHdlIGFyZW4ndApvdmVycmlkaW5nIGFueXRoaW5nLgoKU2lnbmVk
+LW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCkluZGVy
+cGFsLAoKQ2FuIHlvdSBwbGVhc2UgYWRkIHlvdXIgdGVzdGVkLWJ5IGZvciB0aGlzIHBhdGNoPyBB
+bmQgdGhpcyB3aWxsIHJlcXVpcmUgeW91IHRvCmRyb3AgeW91ciBwYXRjaCBmb3IgZXh5bm9zLWNw
+dWZyZXEuYyA6KQoKIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA1ICsrKy0tCiAxIGZpbGUg
+Y2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCmluZGV4
+IGY1ZGMwMmIuLmRiODEzODIgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMK
+KysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpAQCAtNTU0LDggKzU1NCw2IEBAIHN0YXRp
+YyBzc2l6ZV90IHNob3dfY3B1cyhjb25zdCBzdHJ1Y3QgY3B1bWFzayAqbWFzaywgY2hhciAqYnVm
+KQogICovCiBzdGF0aWMgc3NpemVfdCBzaG93X3JlbGF0ZWRfY3B1cyhzdHJ1Y3QgY3B1ZnJlcV9w
+b2xpY3kgKnBvbGljeSwgY2hhciAqYnVmKQogewotCWlmIChjcHVtYXNrX2VtcHR5KHBvbGljeS0+
+cmVsYXRlZF9jcHVzKSkKLQkJcmV0dXJuIHNob3dfY3B1cyhwb2xpY3ktPmNwdXMsIGJ1Zik7CiAJ
+cmV0dXJuIHNob3dfY3B1cyhwb2xpY3ktPnJlbGF0ZWRfY3B1cywgYnVmKTsKIH0KIApAQCAtOTQ1
+LDYgKzk0Myw5IEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfZGV2KHN0cnVjdCBkZXZpY2UgKmRl
+diwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZikKIAkJZ290byBlcnJfdW5sb2NrX3BvbGlj
+eTsKIAl9CiAKKwkvKiByZWxhdGVkIGNwdXMgc2hvdWxkIGF0bGVhc3QgaGF2ZSBwb2xpY3ktPmNw
+dXMgKi8KKwljcHVtYXNrX29yKHBvbGljeS0+cmVsYXRlZF9jcHVzLCBwb2xpY3ktPnJlbGF0ZWRf
+Y3B1cywgcG9saWN5LT5jcHVzKTsKKwogCS8qCiAJICogYWZmZWN0ZWQgY3B1cyBtdXN0IGFsd2F5
+cyBiZSB0aGUgb25lLCB3aGljaCBhcmUgb25saW5lLiBXZSBhcmVuJ3QKIAkgKiBtYW5hZ2luZyBv
+ZmZsaW5lIGNwdXMgaGVyZS4KLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
+--bcaec550b13685fd2b04d4660045
+Content-Type: application/octet-stream;
+	name="0002-Revert-cpufreq-Don-t-use-cpu-removed-during-cpufreq_.patch"
+Content-Disposition: attachment;
+	filename="0002-Revert-cpufreq-Don-t-use-cpu-removed-during-cpufreq_.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hcik6f6t1
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index db81382..8d521422 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -47,9 +47,6 @@ static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu=
-_governor);
- #endif
- static DEFINE_SPINLOCK(cpufreq_driver_lock);
-=20
--/* Used when we unregister cpufreq driver */
--static struct cpumask cpufreq_online_mask;
--
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-  * all cpufreq/hotplug/workqueue/etc related lock issues.
-@@ -951,7 +948,6 @@ static int cpufreq_add_dev(struct device *dev, struct s=
-ubsys_interface *sif)
- =09 * managing offline cpus here.
- =09 */
- =09cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
--=09cpumask_and(policy->cpus, policy->cpus, &cpufreq_online_mask);
-=20
- =09policy->user_policy.min =3D policy->min;
- =09policy->user_policy.max =3D policy->max;
-@@ -1133,7 +1129,6 @@ static int cpufreq_remove_dev(struct device *dev, str=
-uct subsys_interface *sif)
- =09if (unlikely(lock_policy_rwsem_write(cpu)))
- =09=09BUG();
-=20
--=09cpumask_clear_cpu(cpu, &cpufreq_online_mask);
- =09retval =3D __cpufreq_remove_dev(dev, sif);
- =09return retval;
- }
-@@ -1875,8 +1870,6 @@ int cpufreq_register_driver(struct cpufreq_driver *dr=
-iver_data)
- =09cpufreq_driver =3D driver_data;
- =09spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-=20
--=09cpumask_setall(&cpufreq_online_mask);
--
- =09ret =3D subsys_interface_register(&cpufreq_interface);
- =09if (ret)
- =09=09goto err_null_driver;
---=20
-1.7.12.rc2.18.g61b472e
+RnJvbSBjNWY2OThlZGRlODIxNWE3MDZmYjgyYzE1OGZiMDA1MDc5ODc5N2YyIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8YzVmNjk4ZWRkZTgyMTVhNzA2ZmI4MmMxNThmYjAw
+NTA3OTg3OTdmMi4xMzU5NDM0MTEzLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KSW4tUmVw
+bHktVG86IDxkNjgyNzk3NmE1NmQ0Mjk4NDhhYjhhYmFiYTI3NzlhMjFjNjhkNjVmLjEzNTk0MzQx
+MTMuZ2l0LnZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgpSZWZlcmVuY2VzOiA8ZDY4Mjc5NzZhNTZk
+NDI5ODQ4YWI4YWJhYmEyNzc5YTIxYzY4ZDY1Zi4xMzU5NDM0MTEzLmdpdC52aXJlc2gua3VtYXJA
+bGluYXJvLm9yZz4KRnJvbTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4K
+RGF0ZTogVHVlLCAyOSBKYW4gMjAxMyAxMDowMToxOSArMDUzMApTdWJqZWN0OiBbUEFUQ0ggMi8y
+XSBSZXZlcnQgImNwdWZyZXE6IERvbid0IHVzZSBjcHUgcmVtb3ZlZCBkdXJpbmcKIGNwdWZyZXFf
+ZHJpdmVyX3VucmVnaXN0ZXIiCgpUaGlzIHJldmVydHMgY29tbWl0IDk1NmYzMzk0OGI5NWFhOTFm
+NmNiYzY4NjAwODc2NzFjNmFjMWRlNGIuCgpXaXRoIHRoZSBhZGRpdGlvbiBvZiBmb2xsb3dpbmcg
+cGF0Y2gsIHRoaXMgY2hhbmdlL3ZhcmlhYmxlIGlzIG5vdCByZXF1aXJlZDoKCmNvbW1pdCBiOWJh
+MjcyNTM0M2FlNTdhZGQzZjMyNGRmYTUwNzQxNjdmNDhkZTk2CkF1dGhvcjogVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogICBNb24gSmFuIDE0IDEzOjIzOjAzIDIw
+MTMgKzAwMDAKCiAgICBjcHVmcmVxOiBTaW1wbGlmeSBfX2NwdWZyZXFfcmVtb3ZlX2RldigpCgpT
+aWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgotLS0K
+IGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgfCA3IC0tLS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA3
+IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9k
+cml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCmluZGV4IGRiODEzODIuLjhkNTIxNDIyIDEwMDY0NAot
+LS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVm
+cmVxLmMKQEAgLTQ3LDkgKzQ3LDYgQEAgc3RhdGljIERFRklORV9QRVJfQ1BVKGNoYXJbQ1BVRlJF
+UV9OQU1FX0xFTl0sIGNwdWZyZXFfY3B1X2dvdmVybm9yKTsKICNlbmRpZgogc3RhdGljIERFRklO
+RV9TUElOTE9DSyhjcHVmcmVxX2RyaXZlcl9sb2NrKTsKIAotLyogVXNlZCB3aGVuIHdlIHVucmVn
+aXN0ZXIgY3B1ZnJlcSBkcml2ZXIgKi8KLXN0YXRpYyBzdHJ1Y3QgY3B1bWFzayBjcHVmcmVxX29u
+bGluZV9tYXNrOwotCiAvKgogICogY3B1X3BvbGljeV9yd3NlbSBpcyBhIHBlciBDUFUgcmVhZGVy
+LXdyaXRlciBzZW1hcGhvcmUgZGVzaWduZWQgdG8gY3VyZQogICogYWxsIGNwdWZyZXEvaG90cGx1
+Zy93b3JrcXVldWUvZXRjIHJlbGF0ZWQgbG9jayBpc3N1ZXMuCkBAIC05NTEsNyArOTQ4LDYgQEAg
+c3RhdGljIGludCBjcHVmcmVxX2FkZF9kZXYoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3Qgc3Vi
+c3lzX2ludGVyZmFjZSAqc2lmKQogCSAqIG1hbmFnaW5nIG9mZmxpbmUgY3B1cyBoZXJlLgogCSAq
+LwogCWNwdW1hc2tfYW5kKHBvbGljeS0+Y3B1cywgcG9saWN5LT5jcHVzLCBjcHVfb25saW5lX21h
+c2spOwotCWNwdW1hc2tfYW5kKHBvbGljeS0+Y3B1cywgcG9saWN5LT5jcHVzLCAmY3B1ZnJlcV9v
+bmxpbmVfbWFzayk7CiAKIAlwb2xpY3ktPnVzZXJfcG9saWN5Lm1pbiA9IHBvbGljeS0+bWluOwog
+CXBvbGljeS0+dXNlcl9wb2xpY3kubWF4ID0gcG9saWN5LT5tYXg7CkBAIC0xMTMzLDcgKzExMjks
+NiBAQCBzdGF0aWMgaW50IGNwdWZyZXFfcmVtb3ZlX2RldihzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0
+cnVjdCBzdWJzeXNfaW50ZXJmYWNlICpzaWYpCiAJaWYgKHVubGlrZWx5KGxvY2tfcG9saWN5X3J3
+c2VtX3dyaXRlKGNwdSkpKQogCQlCVUcoKTsKIAotCWNwdW1hc2tfY2xlYXJfY3B1KGNwdSwgJmNw
+dWZyZXFfb25saW5lX21hc2spOwogCXJldHZhbCA9IF9fY3B1ZnJlcV9yZW1vdmVfZGV2KGRldiwg
+c2lmKTsKIAlyZXR1cm4gcmV0dmFsOwogfQpAQCAtMTg3NSw4ICsxODcwLDYgQEAgaW50IGNwdWZy
+ZXFfcmVnaXN0ZXJfZHJpdmVyKHN0cnVjdCBjcHVmcmVxX2RyaXZlciAqZHJpdmVyX2RhdGEpCiAJ
+Y3B1ZnJlcV9kcml2ZXIgPSBkcml2ZXJfZGF0YTsKIAlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZj
+cHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7CiAKLQljcHVtYXNrX3NldGFsbCgmY3B1ZnJlcV9v
+bmxpbmVfbWFzayk7Ci0KIAlyZXQgPSBzdWJzeXNfaW50ZXJmYWNlX3JlZ2lzdGVyKCZjcHVmcmVx
+X2ludGVyZmFjZSk7CiAJaWYgKHJldCkKIAkJZ290byBlcnJfbnVsbF9kcml2ZXI7Ci0tIAoxLjcu
+MTIucmMyLjE4Lmc2MWI0NzJlCgo=
+--bcaec550b13685fd2b04d4660045--
