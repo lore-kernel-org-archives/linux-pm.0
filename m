@@ -1,48 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 3/4 v11] arm highbank: add support for pl320 IPC
-Date: Mon, 28 Jan 2013 21:48:36 +0100
-Message-ID: <10392328.6vDAltcmAi@vostro.rjw.lan>
-References: <1351631056-25938-1-git-send-email-mark.langsdorf@calxeda.com> <1457500.uzVh9cxXhS@vostro.rjw.lan> <510680AD.2070908@calxeda.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 31/45] blackfin/smp: Use get/put_online_cpus_atomic()
+ to prevent CPU offline
+Date: Tue, 29 Jan 2013 12:14:02 +1100
+Message-ID: <5107225A.5040702@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <20130122074123.13822.39102.stgit@srivatsabhat.in.ibm.com> <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com> <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <510680AD.2070908@calxeda.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Rob Herring <rob.herring@calxeda.com>, Omar Ramirez Luna <omar.luna@linaro.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:53415 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342Ab3A2BQN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 20:16:13 -0500
+Received: from /spool/local
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 29 Jan 2013 06:43:52 +0530
+In-Reply-To: <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Bob Liu <lliubbo@gmail.com>, tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, January 28, 2013 07:44:13 AM Mark Langsdorf wrote:
-> On 01/28/2013 06:49 AM, Rafael J. Wysocki wrote:
+On 01/29/2013 06:06 AM, Tejun Heo wrote:
+> Hello, Bob.
 > 
-> >> +int pl320_ipc_register_notifier(struct notifier_block *nb)
-> >> +{
-> >> +	return atomic_notifier_chain_register(&ipc_notifier, nb);
-> >> +}
-> >> +EXPORT_SYMBOL(pl320_ipc_register_notifier);
-> >> +
-> >> +int pl320_ipc_unregister_notifier(struct notifier_block *nb)
-> >> +{
-> >> +	return atomic_notifier_chain_unregister(&ipc_notifier, nb);
-> >> +}
-> >> +EXPORT_SYMBOL(pl320_ipc_unregister_notifier);
-> > 
-> > I need all of your symbols to be exported with EXPORT_SYMBOL_GPL().
-> > 
-> > Is it OK to make that change when applying the patch or do you want to send
-> > a new one?
+> On Mon, Jan 28, 2013 at 1:09 AM, Bob Liu <lliubbo@gmail.com> wrote:
+>> Thanks, will be applied to my blackfin arch tree.
 > 
-> I probably should resend so I can include the drivers level Kconfig and
-> Makefile.
+> I think we still have some work ahead of us to have this patchset
+> ready for inclusion and even then it probably would be best to route
+> these patches together, so probably not a very good idea to apply this
+> to blackfin right now.
 > 
-> I'll get that out this morning.
 
-OK, thanks!
+Thanks Tejun for pointing that out! I'll address the review comments
+soon and respin the patchset.
+ 
+Regards,
+Srivatsa S. Bhat
 
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
