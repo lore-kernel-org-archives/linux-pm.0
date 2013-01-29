@@ -1,99 +1,75 @@
 From: Huang Ying <ying.huang@intel.com>
-Subject: [PATCH 1/4] PCI/ACPI: Add target state as parameter to pci_platform_pm_ops->run_wake
-Date: Tue, 29 Jan 2013 12:34:15 +0800
-Message-ID: <1359434058-15918-2-git-send-email-ying.huang@intel.com>
+Subject: [PATCH 3/4] PCI/PM: Set pci_dev->set_d3cold in pci_set_power_state
+Date: Tue, 29 Jan 2013 12:34:17 +0800
+Message-ID: <1359434058-15918-4-git-send-email-ying.huang@intel.com>
 References: <1359434058-15918-1-git-send-email-ying.huang@intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1359434058-15918-1-git-send-email-ying.huang@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Bjorn Helgaas <bhelgaas@google.com>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Huang Ying <ying.huang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Normally, if PCI device uses native PME interrupt for runtime wake up,
-platform need not to do anything for runtime wake up.
-
-But per PCI Express Base Specification Revision 2.0 section 5.3.3.2
-Link Wakeup, platform support is needed for D3cold waking up to power
-on the main link even if there is native PME interrupt support for
-D3cold.
-
-So the needed work for platform runtime wake up is different among
-different target state.  Originally, pci_dev->runtime_d3cold flag is
-used for that, but we want to restrict its usage.  Now the target
-state is added as parameter to pci_platform_pm_ops->run_wake to solve
-the issue.
+Because now pci_dev->set_d3cold is only used after
+pci_set_power_state(, PCI_D3cold) and before pci_set_power_state(,
+PCI_D0).  And we will use pci_dev->set_d3cold for D3cold support
+during system suspend too, but now pci_dev->set_d3cold is set only in
+runtime power management code path now.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 ---
- drivers/pci/pci-acpi.c |    5 +++--
- drivers/pci/pci.c      |    9 +++++----
- drivers/pci/pci.h      |    2 +-
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/pci/pci-driver.c |    2 --
+ drivers/pci/pci.c        |   12 +++++++-----
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -261,7 +261,8 @@ static void acpi_pci_propagate_run_wake(
- 		acpi_pm_device_run_wake(bus->bridge, enable);
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -1036,8 +1036,6 @@ static int pci_pm_runtime_resume(struct
+ 
+ 	rc = pm->runtime_resume(dev);
+ 
+-	pci_dev->set_d3cold = false;
+-
+ 	return rc;
  }
  
--static int acpi_pci_run_wake(struct pci_dev *dev, bool enable)
-+static int acpi_pci_run_wake(struct pci_dev *dev, bool enable,
-+			     pci_power_t state)
- {
- 	/*
- 	 * Per PCI Express Base Specification Revision 2.0 section
-@@ -269,7 +270,7 @@ static int acpi_pci_run_wake(struct pci_
- 	 * waking up to power on the main link even if there is PME
- 	 * support for D3cold
- 	 */
--	if (dev->pme_interrupt && !dev->runtime_d3cold)
-+	if (dev->pme_interrupt && state != PCI_D3cold)
- 		return 0;
- 
- 	if (!acpi_pm_device_run_wake(&dev->dev, enable))
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -484,10 +484,11 @@ static inline int platform_pci_sleep_wak
- 			pci_platform_pm->sleep_wake(dev, enable) : -ENODEV;
+@@ -775,6 +775,9 @@ int pci_set_power_state(struct pci_dev *
+ 	if (dev->current_state == state)
+ 		return 0;
+ 
++	if (state == PCI_D3cold)
++		dev->set_d3cold = true;
++
+ 	__pci_start_power_transition(dev, state);
+ 
+ 	/* This device is quirked not to be put into D3, so
+@@ -798,6 +801,9 @@ int pci_set_power_state(struct pci_dev *
+ 	if (!error && dev->bus->self)
+ 		pcie_aspm_powersave_config_link(dev->bus->self);
+ 
++	if (error || state != PCI_D3cold)
++		dev->set_d3cold = false;
++
+ 	return error;
  }
  
--static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable)
-+static inline int platform_pci_run_wake(struct pci_dev *dev, bool enable,
-+					pci_power_t state)
- {
- 	return pci_platform_pm ?
--			pci_platform_pm->run_wake(dev, enable) : -ENODEV;
-+			pci_platform_pm->run_wake(dev, enable, state) : -ENODEV;
+@@ -1833,16 +1839,12 @@ int pci_finish_runtime_suspend(struct pc
+ 	if (target_state == PCI_POWER_ERROR)
+ 		return -EIO;
+ 
+-	dev->set_d3cold = target_state == PCI_D3cold;
+-
+ 	__pci_enable_wake(dev, target_state, true, pci_dev_run_wake(dev));
+ 
+ 	error = pci_set_power_state(dev, target_state);
+ 
+-	if (error) {
++	if (error)
+ 		__pci_enable_wake(dev, target_state, true, false);
+-		dev->set_d3cold = false;
+-	}
+ 
+ 	return error;
  }
- 
- /**
-@@ -1687,7 +1688,7 @@ int __pci_enable_wake(struct pci_dev *de
- 			pci_pme_active(dev, true);
- 		else
- 			ret = 1;
--		error = runtime ? platform_pci_run_wake(dev, true) :
-+		error = runtime ? platform_pci_run_wake(dev, true, state) :
- 					platform_pci_sleep_wake(dev, true);
- 		if (ret)
- 			ret = error;
-@@ -1695,7 +1696,7 @@ int __pci_enable_wake(struct pci_dev *de
- 			dev->wakeup_prepared = true;
- 	} else {
- 		if (runtime)
--			platform_pci_run_wake(dev, false);
-+			platform_pci_run_wake(dev, false, state);
- 		else
- 			platform_pci_sleep_wake(dev, false);
- 		pci_pme_active(dev, false);
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -61,7 +61,7 @@ struct pci_platform_pm_ops {
- 	pci_power_t (*choose_state)(struct pci_dev *dev);
- 	bool (*can_wakeup)(struct pci_dev *dev);
- 	int (*sleep_wake)(struct pci_dev *dev, bool enable);
--	int (*run_wake)(struct pci_dev *dev, bool enable);
-+	int (*run_wake)(struct pci_dev *dev, bool enable, pci_power_t state);
- };
- 
- extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
