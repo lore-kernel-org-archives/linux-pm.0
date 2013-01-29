@@ -1,121 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] suspend: enable freeze timeout configuration through sysctl
-Date: Tue, 29 Jan 2013 12:42:16 +0100
-Message-ID: <2146878.OLeVueUb0g@vostro.rjw.lan>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+Subject: Re: [PATCH 1/2] cpufreq: Set policy->related_cpus to atleast policy->cpus
+Date: Tue, 29 Jan 2013 12:51:23 +0100
+Message-ID: <2215618.GPIWS1OcnB@vostro.rjw.lan>
+References: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58443 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:58459 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483Ab3A2LgI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Jan 2013 06:36:08 -0500
-In-Reply-To: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	id S1751732Ab3A2LpO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Jan 2013 06:45:14 -0500
+In-Reply-To: <d6827976a56d429848ab8ababa2779a21c68d65f.1359434113.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: fli24 <fei.li@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: inderpal.singh@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On Tuesday, January 29, 2013 10:58:20 AM fli24 wrote:
+On Tuesday, January 29, 2013 10:09:59 AM Viresh Kumar wrote:
+> With the addition of following patch, related_cpus is required to be set by
+> cpufreq platform drivers:
 > 
-> At present, the timeout value for freezing tasks is fixed as 20s,
-> which is too long for handheld device usage, especially for mobile
-> phone.
+> commit c1070fd743533efb54e98142252283583f379190
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Mon Jan 14 13:23:04 2013 +0000
 > 
-> In order to improve user experience, we enable freeze timeout
-> configuration through sysctl, so that we can tune the value easily
-> for concrete usage, such as smaller value for handheld device such
-> as mobile phone.
+>     cpufreq: Simplify cpufreq_add_dev()
+> 
 
-Well, I'd argue that you shouldn't see freeze problems on such systems.
-If you're seeing them, it's better to fix them than to try to hide them
-from users (they are problems after all).
+I've dropped this one in the meantime.
 
-Do you have a specific example in which that new knob will be useful?
-
-Why do you want to do that through sysctl and not sysfs?
+Can you please fold the $subject patch into "cpufreq: Simplify cpufreq_add_dev()"
+and post the result instead?  That surely will be less confusing?
 
 Rafael
 
 
-> Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-> Signed-off-by: Li Fei <fei.li@intel.com>
-> ---
->  include/linux/freezer.h |    5 +++++
->  kernel/power/process.c  |    4 ++--
->  kernel/sysctl.c         |   12 ++++++++++++
->  3 files changed, 19 insertions(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> index e4238ce..f37b3be 100644
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
->  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
->  
->  /*
-> + * Timeout for stopping processes
-> + */
-> +extern unsigned int sysctl_freeze_process_timeout_secs;
-> +
-> +/*
->   * Check if a process has been frozen
->   */
->  static inline bool frozen(struct task_struct *p)
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index d5a258b..f7eb7c9 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -21,7 +21,7 @@
->  /* 
->   * Timeout for stopping processes
->   */
-> -#define TIMEOUT	(20 * HZ)
-> +unsigned int __read_mostly sysctl_freeze_process_timeout_secs = 20;
->  
->  static int try_to_freeze_tasks(bool user_only)
->  {
-> @@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
->  
->  	do_gettimeofday(&start);
->  
-> -	end_time = jiffies + TIMEOUT;
-> +	end_time = jiffies + sysctl_freeze_process_timeout_secs * HZ;
->  
->  	if (!user_only)
->  		freeze_workqueues_begin();
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index c88878d..f88bcb9 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -90,6 +90,9 @@
->  #include <linux/nmi.h>
->  #endif
->  
-> +#ifdef CONFIG_FREEZER
-> +#include <linux/freezer.h>
-> +#endif
->  
->  #if defined(CONFIG_SYSCTL)
->  
-> @@ -1047,6 +1050,15 @@ static struct ctl_table kern_table[] = {
->  		.proc_handler	= proc_dointvec,
->  	},
->  #endif
-> +#ifdef CONFIG_FREEZER
-> +	{
-> +		.procname	= "freeze_process_timeout_secs",
-> +		.data		= &sysctl_freeze_process_timeout_secs,
-> +		.maxlen		= sizeof(unsigned int),
-> +		.mode		= 0644,
-> +		.proc_handler	= proc_dointvec,
-> +	},
-> +#endif
->  	{ }
->  };
->  
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
