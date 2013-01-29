@@ -1,38 +1,79 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: pl320-ipc.c:undefined reference to `amba_driver_register'
-Date: Tue, 29 Jan 2013 23:21:34 +0800
-Message-ID: <5107e8fe.D1ryP/mCHLvnm4xO%fengguang.wu@intel.com>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
+Date: Tue, 29 Jan 2013 17:04:23 +0100
+Message-ID: <20130129170423.0f83cd31@stein>
+References: <1359410988-3740-1-git-send-email-mark.einon@gmail.com>
+	<20130129000149.5fa5b0c3@stein>
+	<CANK3SE0w08n1RSzqy5dV4eAymAfmnb-a+T9UfVSxw-+3fP-PVA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:29217 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753961Ab3A2P0T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Jan 2013 10:26:19 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:36125 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752411Ab3A2QEf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jan 2013 11:04:35 -0500
+In-Reply-To: <CANK3SE0w08n1RSzqy5dV4eAymAfmnb-a+T9UfVSxw-+3fP-PVA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <rob.herring@calxeda.com>
-Cc: linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Mark Einon <mark.einon@gmail.com>
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   37170124ff3c6d53a8ef4fbdd16e3e91245dba05
-commit: 970066f5b2698589d1c06bdbfcaf36dcc997eef6 ARM / highbank: add support for pl320 IPC
-date:   18 hours ago
-config: make ARCH=i386 allyesconfig
+Added Cc: linux-pm.
 
-All error/warnings:
+On Jan 29 Mark Einon wrote:
+> On 28 January 2013 23:01, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> > On Jan 28 Mark Einon wrote:
+> >> This patch fixes the kernel warning generated when putting an MSI MS-1727
+> >> GT740 laptop into suspend mode. The call sequence in this case calls
+> >> free_irq() twice, once in pci_remove() and once then in pci_suspend().
+> >
+> > You mean /first/ in pci_suspend() and /then/ in pci_remove() on the
+> > already suspended devices, right?
+> 
+> Yes, I did. The call sequence is suspend then resume. My bad.
+> 
+> >
+> > Because the other way around, first pci_remove(), then pci_suspend(),
+> > surely must not appen.  And if it does, the bug is elsewhere but not in
+> > firewire-ohci.
+> >
+> > On that note, is pci_suspend() -> pci_remove() actually a legal state
+> > transition that must be handled by drivers?
+> 
+> It's happening on the Ubuntu 12.10 distro which performs the suspend
+> then remove sequence. I assumed that was normal.
 
->> WARNING: drivers/mailbox/built-in.o(.data+0xf4): Section mismatch in reference from the variable pl320_driver to the function .init.text:pl320_probe()
-   The variable pl320_driver references
-   the function __init pl320_probe()
-   If the reference is valid then annotate the
-   variable with or __refdata (see linux/init.h) or name the variable:
-   
---
-   drivers/built-in.o: In function `ipc_init':
->> pl320-ipc.c:(.init.text+0x7df09): undefined reference to `amba_driver_register'
+Maybe a parent device (PCI bridge or the likes) of the OHCI is
+requested to be removed during suspend or is being removed during
+resume, thereby causing a removal request to the OHCI?
 
----
-0-DAY kernel build testing backend              Open Source Technology Center
-http://lists.01.org/mailman/listinfo/kbuild                 Intel Corporation
+Or the suspend method of firewire-ohci exited with an error return code...
+but then the suspend sequence would be rolled back, not the offending
+device be removed, right?
+
+In any case, could you check the dmesg right before the warning which you
+already posted --- and right after it too --- whether there is an
+indication what else was going on?
+
+Also, what are the parent devices of the OHCI according to "lspci -tv" (or
+what else can show PCI topology)?
+
+> > Another comment below.
+> <snip>
+> >
+> > firewire-ohci's pci_resume() calls request_irq() a little bit before that,
+> > in ohci_enable().  Is the sequence pci_probe/request_irq() ->
+> > pci_suspend/disable_irq() -> pci_resume/request_irq() ->
+> > pci_resume/enable_irq() legal?
+> 
+> I missed the call to request_irq(). Perhaps the simplest way to handle
+> the fix would be to use a flag that holds the irq state? I'm open to
+> suggestions.
+
+Not sure what extent of state tracking the PCI core or driver core already
+offer; I'll have to look.
+-- 
+Stefan Richter
+-=====-===-= ---= ===-=
+http://arcgraph.de/sr/
