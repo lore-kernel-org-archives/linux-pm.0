@@ -1,42 +1,39 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 31/45] blackfin/smp: Use get/put_online_cpus_atomic()
- to prevent CPU offline
-Date: Tue, 29 Jan 2013 12:14:02 +1100
-Message-ID: <5107225A.5040702@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <20130122074123.13822.39102.stgit@srivatsabhat.in.ibm.com> <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com> <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
+From: Andreas Mohr <andi@lisas.de>
+Subject: Re: [RFC PATCH 1/3] PM: Introduce suspend state PM_SUSPEND_FREEZE
+Date: Tue, 29 Jan 2013 03:05:32 +0100
+Message-ID: <20130129020532.GA22941@rhlx01.hs-esslingen.de>
+References: <1359300060-2967-1-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:53415 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342Ab3A2BQN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Jan 2013 20:16:13 -0500
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 29 Jan 2013 06:43:52 +0530
-In-Reply-To: <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1359300060-2967-1-git-send-email-rui.zhang@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, intel-gfx@lists.freedesktop.org, rjw@sisk.pl, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Bob Liu <lliubbo@gmail.com>, tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 01/29/2013 06:06 AM, Tejun Heo wrote:
-> Hello, Bob.
-> 
-> On Mon, Jan 28, 2013 at 1:09 AM, Bob Liu <lliubbo@gmail.com> wrote:
->> Thanks, will be applied to my blackfin arch tree.
-> 
-> I think we still have some work ahead of us to have this patchset
-> ready for inclusion and even then it probably would be best to route
-> these patches together, so probably not a very good idea to apply this
-> to blackfin right now.
-> 
+Hi,
 
-Thanks Tejun for pointing that out! I'll address the review comments
-soon and respin the patchset.
- 
-Regards,
-Srivatsa S. Bhat
+first, thanks a lot for advancing PM infrastructure!
 
+>  #define PM_SUSPEND_ON		((__force suspend_state_t) 0)
+> -#define PM_SUSPEND_STANDBY	((__force suspend_state_t) 1)
+> +#define PM_SUSPEND_FREEZE	((__force suspend_state_t) 1)
+> +#define PM_SUSPEND_STANDBY	((__force suspend_state_t) 2)
+>  #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
+> +#define PM_SUSPEND_MIN		PM_SUSPEND_FREEZE
+>  #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
+
+I'll just pretend to be hopeful that you managed to hunt down all
+relevant code sites (possibly even splattered around drivers?)
+which may have made illegally hard-coded assumptions
+about the number of PM_SUSPEND state "enum"s ;)
+(e.g. comparisons - such as "==", "<=" etc. - come into mind)
+
+
+Review of your patch was all fine, nothing to object about.
+
+Thanks,
+
+Andreas Mohr
