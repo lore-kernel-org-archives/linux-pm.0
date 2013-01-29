@@ -1,105 +1,121 @@
-From: Namhyung Kim <namhyung@kernel.org>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of Per-CPU Reader-Writer Locks
-Date: Tue, 29 Jan 2013 20:12:37 +0900
-Message-ID: <87ip6gutsq.fsf@sejong.aot.lge.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
-	<20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
-	<20130123185522.GG2373@mtj.dyndns.org>
-	<51003B20.2060506@linux.vnet.ibm.com>
-	<20130123195740.GI2373@mtj.dyndns.org>
-	<5100B8CC.4080406@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] suspend: enable freeze timeout configuration through sysctl
+Date: Tue, 29 Jan 2013 12:42:16 +0100
+Message-ID: <2146878.OLeVueUb0g@vostro.rjw.lan>
+References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <5100B8CC.4080406@linux.vnet.ibm.com> (Srivatsa S. Bhat's message
-	of "Thu, 24 Jan 2013 10:00:04 +0530")
-Sender: netdev-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>, tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, walken@google.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:58443 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751483Ab3A2LgI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 29 Jan 2013 06:36:08 -0500
+In-Reply-To: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: fli24 <fei.li@intel.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com
 
-On Thu, 24 Jan 2013 10:00:04 +0530, Srivatsa S. Bhat wrote:
-> On 01/24/2013 01:27 AM, Tejun Heo wrote:
->> On Thu, Jan 24, 2013 at 01:03:52AM +0530, Srivatsa S. Bhat wrote:
->>> CPU 0                          CPU 1
->>>
->>> read_lock(&rwlock)
->>>
->>>                               write_lock(&rwlock) //spins, because CPU 0
->>>                               //has acquired the lock for read
->>>
->>> read_lock(&rwlock)
->>>    ^^^^^
->>> What happens here? Does CPU 0 start spinning (and hence deadlock) or will
->>> it continue realizing that it already holds the rwlock for read?
->> 
->> I don't think rwlock allows nesting write lock inside read lock.
->> read_lock(); write_lock() will always deadlock.
->> 
->
-> Sure, I understand that :-) My question was, what happens when *two* CPUs
-> are involved, as in, the read_lock() is invoked only on CPU 0 whereas the
-> write_lock() is invoked on CPU 1.
->
-> For example, the same scenario shown above, but with slightly different
-> timing, will NOT result in a deadlock:
->
-> Scenario 2:
->   CPU 0                                CPU 1
->
-> read_lock(&rwlock)
->
->
-> read_lock(&rwlock) //doesn't spin
->
->                                     write_lock(&rwlock) //spins, because CPU 0
->                                     //has acquired the lock for read
->
->
-> So I was wondering whether the "fairness" logic of rwlocks would cause
-> the second read_lock() to spin (in the first scenario shown above) because
-> a writer is already waiting (and hence new readers should spin) and thus
-> cause a deadlock.
+On Tuesday, January 29, 2013 10:58:20 AM fli24 wrote:
+> 
+> At present, the timeout value for freezing tasks is fixed as 20s,
+> which is too long for handheld device usage, especially for mobile
+> phone.
+> 
+> In order to improve user experience, we enable freeze timeout
+> configuration through sysctl, so that we can tune the value easily
+> for concrete usage, such as smaller value for handheld device such
+> as mobile phone.
 
-In my understanding, current x86 rwlock does basically this (of course,
-in an atomic fashion):
+Well, I'd argue that you shouldn't see freeze problems on such systems.
+If you're seeing them, it's better to fix them than to try to hide them
+from users (they are problems after all).
+
+Do you have a specific example in which that new knob will be useful?
+
+Why do you want to do that through sysctl and not sysfs?
+
+Rafael
 
 
-#define RW_LOCK_BIAS 0x10000
-
-rwlock_init(rwlock)
-{
-	rwlock->lock = RW_LOCK_BIAS;
-}
-
-arch_read_lock(rwlock)
-{
-retry:
-	if (--rwlock->lock >= 0)
-		return;
-
-        rwlock->lock++;
-        while (rwlock->lock < 1)
-        	continue;
-
-        goto retry;
-}
-
-arch_write_lock(rwlock)
-{
-retry:
-	if ((rwlock->lock -= RW_LOCK_BIAS) == 0)
-        	return;
-
-        rwlock->lock += RW_LOCK_BIAS;
-	while (rwlock->lock != RW_LOCK_BIAS)
-		continue;
-
-        goto retry;
-}
-
-
-So I can't find where the 'fairness' logic comes from..
-
-Thanks,
-Namhyung
+> Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
+> Signed-off-by: Li Fei <fei.li@intel.com>
+> ---
+>  include/linux/freezer.h |    5 +++++
+>  kernel/power/process.c  |    4 ++--
+>  kernel/sysctl.c         |   12 ++++++++++++
+>  3 files changed, 19 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+> index e4238ce..f37b3be 100644
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
+>  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
+>  
+>  /*
+> + * Timeout for stopping processes
+> + */
+> +extern unsigned int sysctl_freeze_process_timeout_secs;
+> +
+> +/*
+>   * Check if a process has been frozen
+>   */
+>  static inline bool frozen(struct task_struct *p)
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index d5a258b..f7eb7c9 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -21,7 +21,7 @@
+>  /* 
+>   * Timeout for stopping processes
+>   */
+> -#define TIMEOUT	(20 * HZ)
+> +unsigned int __read_mostly sysctl_freeze_process_timeout_secs = 20;
+>  
+>  static int try_to_freeze_tasks(bool user_only)
+>  {
+> @@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
+>  
+>  	do_gettimeofday(&start);
+>  
+> -	end_time = jiffies + TIMEOUT;
+> +	end_time = jiffies + sysctl_freeze_process_timeout_secs * HZ;
+>  
+>  	if (!user_only)
+>  		freeze_workqueues_begin();
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index c88878d..f88bcb9 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -90,6 +90,9 @@
+>  #include <linux/nmi.h>
+>  #endif
+>  
+> +#ifdef CONFIG_FREEZER
+> +#include <linux/freezer.h>
+> +#endif
+>  
+>  #if defined(CONFIG_SYSCTL)
+>  
+> @@ -1047,6 +1050,15 @@ static struct ctl_table kern_table[] = {
+>  		.proc_handler	= proc_dointvec,
+>  	},
+>  #endif
+> +#ifdef CONFIG_FREEZER
+> +	{
+> +		.procname	= "freeze_process_timeout_secs",
+> +		.data		= &sysctl_freeze_process_timeout_secs,
+> +		.maxlen		= sizeof(unsigned int),
+> +		.mode		= 0644,
+> +		.proc_handler	= proc_dointvec,
+> +	},
+> +#endif
+>  	{ }
+>  };
+>  
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
