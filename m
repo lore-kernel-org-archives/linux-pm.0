@@ -1,139 +1,134 @@
-From: fli24 <fei.li@intel.com>
-Subject: [PATCH V2] suspend: enable freeze timeout configuration through sys
-Date: Wed, 30 Jan 2013 14:23:39 +0800
-Message-ID: <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
+Date: Wed, 30 Jan 2013 12:33:40 +0530
+Message-ID: <CAOh2x==SG32h-BbrnLN8gwiYNz7bS-REVcmXN67fdYPqFVmCiA@mail.gmail.com>
+References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
+	<1356620142-8680-2-git-send-email-fabio.baltieri@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:18685 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266Ab3A3GZN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Jan 2013 01:25:13 -0500
-In-Reply-To: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1356620142-8680-2-git-send-email-fabio.baltieri@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, fei.li@intel.com
 
+I am starting to follow cpufreq patches religiously now and so have to come
+back to this old thread due to some crash we got :)
 
-At present, the timeout value for freezing tasks is fixed as 20s,
-which is too long for handheld device usage, especially for mobile
-phone.
+Its still not pushed upstream, so better to get it resolved before 3.9.
 
-In order to improve user experience, we enable freeze timeout
-configuration through sys, so that we can tune the value easily
-for concrete usage, such as smaller value for handheld device such
-as mobile phone.
+On Thu, Dec 27, 2012 at 8:25 PM, Fabio Baltieri
+<fabio.baltieri@linaro.org> wrote:
 
-Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-Signed-off-by: Li Fei <fei.li@intel.com>
----
- Documentation/power/freezing-of-tasks.txt |    5 +++++
- include/linux/freezer.h                   |    5 +++++
- kernel/power/main.c                       |   27 +++++++++++++++++++++++++++
- kernel/power/process.c                    |    4 ++--
- 4 files changed, 39 insertions(+), 2 deletions(-)
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
 
-diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
-index 6ec291e..85894d8 100644
---- a/Documentation/power/freezing-of-tasks.txt
-+++ b/Documentation/power/freezing-of-tasks.txt
-@@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task, since it is anyway
- only after the entire suspend/hibernation sequence is complete.
- So, to summarize, use [un]lock_system_sleep() instead of directly using
- mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
-+
-+V. Miscellaneous
-+/sys/power/pm_freeze_timeout controls how long it will cost at most to freeze
-+all user space processes or all freezable kernel threads, in unit of millisecond.
-+The default value is 20000, with range of unsigned integer.
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index e4238ce..5a24a33 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
- extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
- 
- /*
-+ * Timeout for stopping processes
-+ */
-+extern unsigned int sys_freeze_process_timeout_msecs;
-+
-+/*
-  * Check if a process has been frozen
-  */
- static inline bool frozen(struct task_struct *p)
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 1c16f91..453ead1 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
- 
- #endif /* CONFIG_PM_TRACE */
- 
-+#ifdef CONFIG_FREEZER
-+static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
-+				      struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
-+}
-+
-+static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
-+				       struct kobj_attribute *attr,
-+				       const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (kstrtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	sys_freeze_process_timeout_msecs = val;
-+	return n;
-+}
-+
-+power_attr(pm_freeze_timeout);
-+
-+#endif	/* CONFIG_FREEZER*/
-+
- static struct attribute * g[] = {
- 	&state_attr.attr,
- #ifdef CONFIG_PM_TRACE
-@@ -576,6 +600,9 @@ static struct attribute * g[] = {
- 	&pm_print_times_attr.attr,
- #endif
- #endif
-+#ifdef CONFIG_FREEZER
-+	&pm_freeze_timeout_attr.attr,
-+#endif
- 	NULL,
- };
- 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index d5a258b..ba45a26 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -21,7 +21,7 @@
- /* 
-  * Timeout for stopping processes
-  */
--#define TIMEOUT	(20 * HZ)
-+unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
- 
- static int try_to_freeze_tasks(bool user_only)
- {
-@@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
- 
- 	do_gettimeofday(&start);
- 
--	end_time = jiffies + TIMEOUT;
-+	end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs);
- 
- 	if (!user_only)
- 		freeze_workqueues_begin();
--- 
-1.7.4.1
+>  static inline void dbs_timer_init(struct dbs_data *dbs_data,
+> -               struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
+> +                                 struct cpu_dbs_common_info *cdbs,
+> +                                 unsigned int sampling_rate,
+> +                                 int cpu)
+>  {
+>         int delay = delay_for_sampling_rate(sampling_rate);
+> +       struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
 
+I couldn't understand the real need for this, as it should really give
+back the same
+pointer pointed out by: cdbs and hence no need of cpu in params too..
 
+I may be wrong here :)
 
+>
+> -       INIT_DEFERRABLE_WORK(&cdbs->work, dbs_data->gov_dbs_timer);
+> -       schedule_delayed_work_on(cdbs->cpu, &cdbs->work, delay);
+> +       schedule_delayed_work_on(cpu, &cdbs_local->work, delay);
+>  }
+>
+>  static inline void dbs_timer_exit(struct cpu_dbs_common_info *cdbs)
+> @@ -217,6 +227,10 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>                         if (ignore_nice)
+>                                 j_cdbs->prev_cpu_nice =
+>                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> +
+> +                       mutex_init(&j_cdbs->timer_mutex);
+> +                       INIT_DEFERRABLE_WORK(&j_cdbs->work,
+> +                                            dbs_data->gov_dbs_timer);
+>                 }
+>
+>                 /*
+> @@ -275,15 +289,33 @@ second_time:
+>                 }
+>                 mutex_unlock(&dbs_data->mutex);
+>
+> -               mutex_init(&cpu_cdbs->timer_mutex);
+> -               dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate);
+> +               if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+> +                       for_each_cpu(j, policy->cpus) {
+> +                               struct cpu_dbs_common_info *j_cdbs;
+> +
+> +                               j_cdbs = dbs_data->get_cpu_cdbs(j);
+> +                               dbs_timer_init(dbs_data, j_cdbs,
+> +                                              *sampling_rate, j);
+> +                       }
+> +               } else {
+> +                       dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate, cpu);
+> +               }
+
+do you really need this else part? In case of uniprocessor systems also, the if
+block should be enough. Isn't it?
+
+>                 break;
+>
+>         case CPUFREQ_GOV_STOP:
+>                 if (dbs_data->governor == GOV_CONSERVATIVE)
+>                         cs_dbs_info->enable = 0;
+>
+> -               dbs_timer_exit(cpu_cdbs);
+> +               if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+> +                       for_each_cpu(j, policy->cpus) {
+> +                               struct cpu_dbs_common_info *j_cdbs;
+> +
+> +                               j_cdbs = dbs_data->get_cpu_cdbs(j);
+> +                               dbs_timer_exit(j_cdbs);
+> +                       }
+> +               } else {
+> +                       dbs_timer_exit(cpu_cdbs);
+> +               }
+
+ditto.
+
+>                 mutex_lock(&dbs_data->mutex);
+>                 mutex_destroy(&cpu_cdbs->timer_mutex);
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index f661654..5bf6fb8 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -171,6 +171,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
+>
+>  u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
+>  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+> +bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs);
+>  int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+>                 struct cpufreq_policy *policy, unsigned int event);
+>  #endif /* _CPUFREQ_GOVERNER_H */
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 7731f7c..93bb56d 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -243,7 +243,8 @@ static void od_dbs_timer(struct work_struct *work)
+>                 }
+>         }
+>
+> -       schedule_delayed_work_on(cpu, &dbs_info->cdbs.work, delay);
+> +       schedule_delayed_work_on(smp_processor_id(), &dbs_info->cdbs.work,
+> +                       delay);
+>         mutex_unlock(&dbs_info->cdbs.timer_mutex);
+>  }
+>
+> --
+> 1.7.12.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
