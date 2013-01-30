@@ -1,39 +1,54 @@
 From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 12:42:33 +0100
-Message-ID: <20130130114233.GD32315@balto.lan>
-References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
- <1356620142-8680-2-git-send-email-fabio.baltieri@linaro.org>
- <CAOh2x==SG32h-BbrnLN8gwiYNz7bS-REVcmXN67fdYPqFVmCiA@mail.gmail.com>
- <20130130091453.GA32315@balto.lan>
- <20130130110429.GC32315@balto.lan>
- <CAKohpo=_oim1FN+Cu+kMKLRpH1c+6-wuQACEdpVS8yHoANHhcA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH v7 0/5] cpufreq: handle SW coordinated CPUs
+Date: Wed, 30 Jan 2013 13:59:59 +0100
+Message-ID: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=_oim1FN+Cu+kMKLRpH1c+6-wuQACEdpVS8yHoANHhcA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, linaro-dev@lists.linaro.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 30, 2013 at 04:47:58PM +0530, Viresh Kumar wrote:
-> On 30 January 2013 16:34, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> > Small sidenote, actually what I'm going to drop here i *cdbs, as I need
-> > cpu for schedule_delayed_work_on and can't use cdbs->cpu for that as
-> > it's the master's one.
-> 
-> I can't find code which would do j_cdbs->cpu = j and so j_cdbs->cpu is
-> un-initialized. So, if that's true, you can initialize that and drop
-> cpu param too.
+Hello Rafael,
 
-Right, it looks like cdbs->cpu is not really needed anymore.  Anyway I'm
-quite happy with how it came out passing cpu number, code is a bit more
-compact, so I'm sending that version and than we can discuss if recycle
-cdbs->cpu or just drop it.
+this is the v7 for the cpufreq SW coordinated CPU bug fix, developed
+after the discussion with Viresh about some issues that appeared after
+the merge of both mine and his patches.
 
+Changes from v6:
+
+* Dropped the cpu hotplug patch, as it was solving part of problem
+addressed by Viresh patch:
+
+dbcb634 cpufreq: Notify governors when cpus are hot-[un]plugged
+
+but was behaving erratically when both patches were applied together.
+
+* In the initial patch, cleaned up cpufreq_governor_dbs and
+dbs_timer_{init,exit} to remove non necessary variables and special case
+initialization, as the additional data provided on that code was not
+necessary since v6.  The code is a bit cleaner now.
+
+Would you consider replacing my patches currently on your pm-cpufreq-next
+branch with this series?  There should not be any conflicts with existing
+patches.  Let me know if you prefer incremental patches instead.
+
+Thanks,
 Fabio
 
+Fabio Baltieri (3):
+  cpufreq: ondemand: call dbs_check_cpu only when necessary
+  cpufreq: conservative: call dbs_check_cpu only when necessary
+  cpufreq: ondemand: use all CPUs in update_sampling_rate
+
+Rickard Andersson (1):
+  cpufreq: handle SW coordinated CPUs
+
+ drivers/cpufreq/cpufreq_conservative.c | 46 ++++++++++++++++++++++---
+ drivers/cpufreq/cpufreq_governor.c     | 34 ++++++++++++++-----
+ drivers/cpufreq/cpufreq_governor.h     |  2 ++
+ drivers/cpufreq/cpufreq_ondemand.c     | 62 +++++++++++++++++++++++++++-------
+ 4 files changed, 119 insertions(+), 25 deletions(-)
+
 -- 
-Fabio Baltieri
+1.7.12.1
+
