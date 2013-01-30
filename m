@@ -1,49 +1,56 @@
-From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 17:57:39 +0100
-Message-ID: <20130130165739.GA21329@balto.lan>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 2/4] cpufreq: ondemand: call dbs_check_cpu only when
+	necessary
+Date: Wed, 30 Jan 2013 22:41:08 +0530
+Message-ID: <CAKohponMezzus0tRW+CdC7wLq1U1pRio5q=g6F845x7iveFCAA@mail.gmail.com>
 References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
- <1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
- <CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
- <20130130162225.GB30559@balto.lan>
- <CAKohpoms9AK+j+Au53cwbLn=ds0AsJn+ApUMgMxe2dVhC7McVw@mail.gmail.com>
+	<1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
+	<CAKohpok0iDffNM31W2r97Wtq4DR+TdPwYWTAdJH7AyLqHm0UPA@mail.gmail.com>
+	<20130130164614.GC30559@balto.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpoms9AK+j+Au53cwbLn=ds0AsJn+ApUMgMxe2dVhC7McVw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <20130130164614.GC30559-lYxsXyORJ9v/PtFMR13I2A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jan 30, 2013 at 10:21:03PM +0530, Viresh Kumar wrote:
-> > I'm not sure about the name through, I like mentioning sw coordination in it
-> > because that's the comment in the declaration:
-> >
-> >         cpumask_var_t           cpus;   /* CPUs requiring sw coordination */
-> >         cpumask_var_t           related_cpus; /* CPUs with any coordination */
-> >
-> > And those two are already confusing as a starting point.
-> 
-> I will fix these comments with a patch of mine.
+On 30 January 2013 22:16, Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> Isn't that how it works now?  The current cpu ktime is not checked
+> against its own, but against the "leader" cpu (dbs_info_local->cdbs.cpu),
+> that's why it's initialized only for the first.
+>
+> Maybe I should have used dbs_info_leader/dbs_info instead of
+> dbs_info_local/dbs_info.
 
-Great!
+This routine is called as wq handler. Which will recover dbs_info from work
+using container_of. Which would give dbs_info_local for the cpu j.
 
-> 
-> > Anyway, this sounds fine to me.  If you think this is useful I can send
-> > a patch, or feel free to include it in your patches if you plan to do
-> > further cleanup work on this code.
-> >
-> > /me tries to also keep that ->cpu field in mind.
-> 
-> You can make it part of your patchsets v8.
+Then we will execute below code.
 
-I'm not sending a v8 as Rafael already asked for incremental, but I'll
-send a patch with that soon.
++       /* use leader CPU's dbs_info */
++       dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info_local->cdbs.cpu);
 
-Thanks,
-Fabio
+dbs_info_local->cdbs.cpu was uninitialized for all cpus except policy->cpu.
+And so, might be initialized with 0 as its a global variable... But if you
+offline cpu 0 and online it back, then policy->cpu would be 1 and this logic,
+which worked by mistake will fail.
 
--- 
-Fabio Baltieri
++       mutex_lock(&dbs_info->cdbs.timer_mutex);
++
++       time_now = ktime_get();
++       delta_us = ktime_us_delta(time_now, dbs_info->cdbs.time_stamp);
+
+and so as this.
+
+Correct?
