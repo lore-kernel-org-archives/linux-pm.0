@@ -1,65 +1,126 @@
-From: "AnilKumar, Chimata" <anilkumar@ti.com>
-Subject: RE: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a
- platform_driver
-Date: Wed, 30 Jan 2013 07:10:20 +0000
-Message-ID: <331ABD5ECB02734CA317220B2BBEABC13EAF880F@DBDE01.ent.ti.com>
-References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
+Date: Wed, 30 Jan 2013 10:14:53 +0100
+Message-ID: <20130130091453.GA32315@balto.lan>
+References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
+ <1356620142-8680-2-git-send-email-fabio.baltieri@linaro.org>
+ <CAOh2x==SG32h-BbrnLN8gwiYNz7bS-REVcmXN67fdYPqFVmCiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:50975 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292Ab3A3HKb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 02:10:31 -0500
-In-Reply-To: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAOh2x==SG32h-BbrnLN8gwiYNz7bS-REVcmXN67fdYPqFVmCiA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Shawn Guo' <shawn.guo@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Tue, Jan 29, 2013 at 08:23:40, Shawn Guo wrote:
-> As multiplatform build is being adopted by more and more ARM platforms,
-> initcall function should be used very carefully.  For example, when
-> GENERIC_CPUFREQ_CPU0 is built in the kernel, cpu0_cpufreq_driver_init()
-> will be called on all the platforms to initialize cpufreq-cpu0 driver.
-> 
-> To eliminate this undesired the effect, the patch changes cpufreq-cpu0
-> driver to have it instantiated as a platform_driver.  Then it will only
-> run on platforms that create the platform_device "cpufreq-cpu0".
-> 
-> Along with the change, it also changes cpu_dev to be &pdev->dev,
-> so that managed functions can start working, and module build gets
-> supported too.
-> 
-> The existing users of cpufreq-cpu0 driver highbank and am33xx are also
-> updated accordingly to adapt the changes.
-> 
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> Cc: AnilKumar Ch <anilkumar@ti.com>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> Changes since v1:
->  * Migrate cpufreq-cpu0 users in the same patch
-> 
-> Rafael,
-> 
-> The patch is based on Mark's highbank-cpufreq series and Nishanth's
-> "PM / OPP : export symbol consolidation" sereis.
-> 
-> Mark, AnilKumar,
-> 
-> I only compile-tested it on highbank and omap2.  Please give it a test
-> no hardware to make sure cpufreq-cpu0 still works for you.  Thanks.
+Hello Viresh,
 
-Hi Shawn,
+On Wed, Jan 30, 2013 at 12:33:40PM +0530, Viresh Kumar wrote:
+> I am starting to follow cpufreq patches religiously now and so have to come
+> back to this old thread due to some crash we got :)
+> 
+> Its still not pushed upstream, so better to get it resolved before 3.9.
 
-I hope this is based on linux-omap/master, to test the driver I have
-to add some patches on top of this patch, because of recent changes.
-I will provide the test details once I am done.
+Definitely, that's what we have -next for!
 
-Thanks
-AnilKumar
+> On Thu, Dec 27, 2012 at 8:25 PM, Fabio Baltieri
+> <fabio.baltieri@linaro.org> wrote:
+> 
+> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> 
+> >  static inline void dbs_timer_init(struct dbs_data *dbs_data,
+> > -               struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
+> > +                                 struct cpu_dbs_common_info *cdbs,
+> > +                                 unsigned int sampling_rate,
+> > +                                 int cpu)
+> >  {
+> >         int delay = delay_for_sampling_rate(sampling_rate);
+> > +       struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
+> 
+> I couldn't understand the real need for this, as it should really give
+> back the same
+> pointer pointed out by: cdbs and hence no need of cpu in params too..
+> 
+> I may be wrong here :)
+
+You are actually right.  This comes from the first version of the patch
+(I basically rewrote it after the common code rafactoring), and cdbs was
+meant to be always the one for the master CPU while cpu should indicate
+the one being initialized.  Then the thing turned out as:
+
+A - I dropped the code specific for master cdbs here as it was already
+there on another code path following the rafactoring.
+B - I passed j_cdbs = dbs_data->get_cpu_cdbs(j) in the init cycle while
+it was really meant to be get_cpu_cdbs(cpu).
+
+> >
+> > -       INIT_DEFERRABLE_WORK(&cdbs->work, dbs_data->gov_dbs_timer);
+> > -       schedule_delayed_work_on(cdbs->cpu, &cdbs->work, delay);
+> > +       schedule_delayed_work_on(cpu, &cdbs_local->work, delay);
+> >  }
+> >
+> >  static inline void dbs_timer_exit(struct cpu_dbs_common_info *cdbs)
+> > @@ -217,6 +227,10 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+> >                         if (ignore_nice)
+> >                                 j_cdbs->prev_cpu_nice =
+> >                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> > +
+> > +                       mutex_init(&j_cdbs->timer_mutex);
+> > +                       INIT_DEFERRABLE_WORK(&j_cdbs->work,
+> > +                                            dbs_data->gov_dbs_timer);
+> >                 }
+> >
+> >                 /*
+> > @@ -275,15 +289,33 @@ second_time:
+> >                 }
+> >                 mutex_unlock(&dbs_data->mutex);
+> >
+> > -               mutex_init(&cpu_cdbs->timer_mutex);
+> > -               dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate);
+> > +               if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+> > +                       for_each_cpu(j, policy->cpus) {
+> > +                               struct cpu_dbs_common_info *j_cdbs;
+> > +
+> > +                               j_cdbs = dbs_data->get_cpu_cdbs(j);
+> > +                               dbs_timer_init(dbs_data, j_cdbs,
+> > +                                              *sampling_rate, j);
+> > +                       }
+> > +               } else {
+> > +                       dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate, cpu);
+> > +               }
+> 
+> do you really need this else part? In case of uniprocessor systems also, the if
+> block should be enough. Isn't it?
+
+Same reason, get_cpu_cdbs(j) was meant to be get_cpu_cdbs(cpu) but
+that's not used anymore in the last version of the patch, and the same
+for the last hunk.
+
+I'll send a patch to clean this up, thanks for spotting it!
+
+Fabio
+
+> >                 break;
+> >
+> >         case CPUFREQ_GOV_STOP:
+> >                 if (dbs_data->governor == GOV_CONSERVATIVE)
+> >                         cs_dbs_info->enable = 0;
+> >
+> > -               dbs_timer_exit(cpu_cdbs);
+> > +               if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+> > +                       for_each_cpu(j, policy->cpus) {
+> > +                               struct cpu_dbs_common_info *j_cdbs;
+> > +
+> > +                               j_cdbs = dbs_data->get_cpu_cdbs(j);
+> > +                               dbs_timer_exit(j_cdbs);
+> > +                       }
+> > +               } else {
+> > +                       dbs_timer_exit(cpu_cdbs);
+> > +               }
+> 
+> ditto.
+
+-- 
+Fabio Baltieri
