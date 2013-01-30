@@ -1,64 +1,58 @@
-From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: [PATCH] PM / Hibernate: remove duplicate disable_nonboot_cpus()
-Date: Tue, 29 Jan 2013 16:20:15 -0700
-Message-ID: <1359501615-16435-1-git-send-email-swarren@wwwdotorg.org>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] suspend: enable freeze timeout configuration through
+ sysctl
+Date: Tue, 29 Jan 2013 16:36:47 -0800
+Message-ID: <20130129163647.47ca83fa.akpm@linux-foundation.org>
+References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from avon.wwwdotorg.org ([70.85.31.133]:35212 "EHLO
-	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073Ab3A2XU0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jan 2013 18:20:26 -0500
+Received: from mail.linuxfoundation.org ([140.211.169.12]:51915 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467Ab3A3Agt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jan 2013 19:36:49 -0500
+In-Reply-To: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@nvidia.com>
+To: fli24 <fei.li@intel.com>
+Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com
 
-From: Stephen Warren <swarren@nvidia.com>
+On Tue, 29 Jan 2013 10:58:20 +0800
+fli24 <fei.li@intel.com> wrote:
 
-Within hibernate.c, hibernation_platform_enter() is only called from
-power_down(), which in turn is only called by hibernate() after having
-called hibernation_snapshot(), which in turn calls create_image() which
-in turn calls disable_nonboot_cpus().
+> At present, the timeout value for freezing tasks is fixed as 20s,
+> which is too long for handheld device usage, especially for mobile
+> phone.
+> 
+> In order to improve user experience, we enable freeze timeout
+> configuration through sysctl, so that we can tune the value easily
+> for concrete usage, such as smaller value for handheld device such
+> as mobile phone.
+> 
+> ...
+>
 
-Elsewhere, snapshot_ioctl() allows hibernation_snapshot() and
-hibernation_platform_enter() to be invoked via separate IOCTLs, but I
-assume the rule is that SNAPSHOT_CREATE_IMAGE must be executed before
-IOCTL SNAPSHOT_POWER_OFF, and hence the same ordering applies.
+The patch looks nice - it does everything right in places where things
+are frequently done wrongly.  Except..
 
-This means that disable_nonboot_cpus() must have been called already
-before hibernation_platform_enter() is entered, and hence the call there
-is redundant, so remove it.
+It forgot to document the sysctl.  Documentation/sysctl/kernel.txt, I
+guess.
 
-Signed-off-by: Stephen Warren <swarren@nvidia.com>
----
-Note: I have compile-tested this on x86-64, but have not attempted to test
-it in any way; I'm proposing this patch following code inspection.
----
- kernel/power/hibernate.c |    5 -----
- 1 file changed, 5 deletions(-)
+Is /proc/sys/kernel the most appropriate place for this?  Perhaps a
+PM-specific place would be better.  Maybe not.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index b26f5f1..4ddeacc 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -537,10 +537,6 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
--	if (error)
--		goto Platform_finish;
--
- 	local_irq_disable();
- 	syscore_suspend();
- 	if (pm_wakeup_pending()) {
-@@ -555,7 +551,6 @@ int hibernation_platform_enter(void)
-  Power_up:
- 	syscore_resume();
- 	local_irq_enable();
--	enable_nonboot_cpus();
- 
-  Platform_finish:
- 	hibernation_ops->finish();
--- 
-1.7.10.4
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
+>  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
+>  
+>  /*
+> + * Timeout for stopping processes
+> + */
+> +extern unsigned int sysctl_freeze_process_timeout_secs;
+
+I suggest the use of milliseconds here.  Someone might want a
+half-second timeout and it's pretty pointless to design the interface
+in a way which rules that out.
 
