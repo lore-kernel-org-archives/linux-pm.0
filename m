@@ -1,168 +1,168 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v8 4/4] sd: change to auto suspend mode
-Date: Wed, 30 Jan 2013 10:38:26 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1301301032460.1709-100000@iolanthe.rowland.org>
-References: <1359538494-2936-5-git-send-email-aaron.lu@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v7 2/4] cpufreq: ondemand: call dbs_check_cpu only when necessary
+Date: Wed, 30 Jan 2013 21:21:41 +0530
+Message-ID: <CAKohpok0iDffNM31W2r97Wtq4DR+TdPwYWTAdJH7AyLqHm0UPA@mail.gmail.com>
+References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
+	<1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:48247 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752703Ab3A3Pi1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 10:38:27 -0500
-In-Reply-To: <1359538494-2936-5-git-send-email-aaron.lu@intel.com>
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:38677 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755177Ab3A3Pvn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 10:51:43 -0500
+Received: by mail-oa0-f44.google.com with SMTP id n5so1830582oag.17
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 07:51:41 -0800 (PST)
+In-Reply-To: <1359550803-18577-3-git-send-email-fabio.baltieri@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
 
-On Wed, 30 Jan 2013, Aaron Lu wrote:
+On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
+> Modify ondemand timer to not resample CPU utilization if recently
+> sampled from another SW coordinated core.
+>
+> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
 
-> From: Lin Ming <ming.m.lin@intel.com>
-> 
-> Uses block layer runtime pm helper functions in
-> scsi_runtime_suspend/resume for devices that take advantage of it.
-> 
-> Remove scsi_autopm_* from sd open/release path and check_events path.
-> 
-> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+I might be wrong but i have some real concerns over this patch.
 
-A couple of very minor suggestions...
+This is what i believe is your idea:
+- because a cpu can sleep, create timer per cpu
+- then check load again only when no other cpu in policy->cpus has
+  checked load within sampling time interval.
 
-> --- a/drivers/scsi/scsi_pm.c
-> +++ b/drivers/scsi/scsi_pm.c
+Correct?
 
-> @@ -144,18 +144,44 @@ static int scsi_bus_restore(struct device *dev)
->  
->  #ifdef CONFIG_PM_RUNTIME
->  
-> +static int scsi_blk_runtime_suspend(struct device *dev)
-> +{
-> +	struct scsi_device *sdev = to_scsi_device(dev);
+> ---
+>  drivers/cpufreq/cpufreq_governor.c |  3 ++
+>  drivers/cpufreq/cpufreq_governor.h |  1 +
+>  drivers/cpufreq/cpufreq_ondemand.c | 58 +++++++++++++++++++++++++++++++-------
+>  3 files changed, 52 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 8393d6e..46f96a4 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -289,6 +289,9 @@ second_time:
+>                 }
+>                 mutex_unlock(&dbs_data->mutex);
+>
+> +               /* Initiate timer time stamp */
+> +               cpu_cdbs->time_stamp = ktime_get();
 
-For this routine and the other new ones, it may be slightly more
-efficient to pass both dev and sdev as arguments (this depends on how
-smart the compiler's optimizer is).  The caller already knows both of
-them, after all.
+We have updated time_stamp only for policy->cpu's cdbs.
 
-> +	int err;
-> +
-> +	err = blk_pre_runtime_suspend(sdev->request_queue);
-> +	if (err)
-> +		return err;
-> +	err = pm_generic_runtime_suspend(dev);
-> +	blk_post_runtime_suspend(sdev->request_queue, err);
-> +
-> +	return err;
-> +}
-> +
-> +static int scsi_dev_runtime_suspend(struct device *dev)
-> +{
-> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +	int err;
-> +
-> +	err = scsi_dev_type_suspend(dev, pm ? pm->runtime_suspend : NULL);
-> +	if (err == -EAGAIN)
-> +		pm_schedule_suspend(dev, jiffies_to_msecs(
-> +					round_jiffies_up_relative(HZ/10)));
-> +
-> +	return err;
-> +}
-> +
->  static int scsi_runtime_suspend(struct device *dev)
->  {
->  	int err = 0;
-> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
->  	dev_dbg(dev, "scsi_runtime_suspend\n");
->  	if (scsi_is_sdev_device(dev)) {
-> -		err = scsi_dev_type_suspend(dev,
-> -				pm ? pm->runtime_suspend : NULL);
-> -		if (err == -EAGAIN)
-> -			pm_schedule_suspend(dev, jiffies_to_msecs(
-> -				round_jiffies_up_relative(HZ/10)));
-> +		struct scsi_device *sdev = to_scsi_device(dev);
+>                 for_each_cpu(j, policy->cpus)
+>                         dbs_timer_init(dbs_data, j, *sampling_rate);
+>                 break;
 
-There should be a blank line between the declaration and the
-executable code.
-
-> +		if (sdev->request_queue->dev)
-> +			err = scsi_blk_runtime_suspend(dev);
-> +		else
-> +			err = scsi_dev_runtime_suspend(dev);
->  	}
->  
->  	/* Insert hooks here for targets, hosts, and transport classes */
-> @@ -163,14 +189,36 @@ static int scsi_runtime_suspend(struct device *dev)
->  	return err;
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 93bb56d..13ceb3c 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -216,23 +216,23 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>         }
 >  }
->  
-> +static int scsi_blk_runtime_resume(struct device *dev)
-> +{
-> +	struct scsi_device *sdev = to_scsi_device(dev);
-> +	int err;
-> +
-> +	blk_pre_runtime_resume(sdev->request_queue);
-> +	err = pm_generic_runtime_resume(dev);
-> +	blk_post_runtime_resume(sdev->request_queue, err);
-> +
-> +	return err;
-> +}
-> +
-> +static int scsi_dev_runtime_resume(struct device *dev)
-> +{
-> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-
-Blank line.
-
-> +	return scsi_dev_type_resume(dev, pm ? pm->runtime_resume : NULL);
-> +}
-> +
->  static int scsi_runtime_resume(struct device *dev)
+>
+> -static void od_dbs_timer(struct work_struct *work)
+> +static void od_timer_update(struct od_cpu_dbs_info_s *dbs_info, bool sample,
+> +                           struct delayed_work *dw)
 >  {
->  	int err = 0;
-> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->  
->  	dev_dbg(dev, "scsi_runtime_resume\n");
-> -	if (scsi_is_sdev_device(dev))
-> -		err = scsi_dev_type_resume(dev, pm ? pm->runtime_resume : NULL);
-> +	if (scsi_is_sdev_device(dev)) {
-> +		struct scsi_device *sdev = to_scsi_device(dev);
+> -       struct od_cpu_dbs_info_s *dbs_info =
+> -               container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
+>         unsigned int cpu = dbs_info->cdbs.cpu;
+>         int delay, sample_type = dbs_info->sample_type;
+>
+> -       mutex_lock(&dbs_info->cdbs.timer_mutex);
+> -
+>         /* Common NORMAL_SAMPLE setup */
+>         dbs_info->sample_type = OD_NORMAL_SAMPLE;
+>         if (sample_type == OD_SUB_SAMPLE) {
+>                 delay = dbs_info->freq_lo_jiffies;
+> -               __cpufreq_driver_target(dbs_info->cdbs.cur_policy,
+> -                       dbs_info->freq_lo, CPUFREQ_RELATION_H);
+> +               if (sample)
+> +                       __cpufreq_driver_target(dbs_info->cdbs.cur_policy,
+> +                                               dbs_info->freq_lo,
+> +                                               CPUFREQ_RELATION_H);
+>         } else {
+> -               dbs_check_cpu(&od_dbs_data, cpu);
+> +               if (sample)
+> +                       dbs_check_cpu(&od_dbs_data, cpu);
+>                 if (dbs_info->freq_lo) {
+>                         /* Setup timer for SUB_SAMPLE */
+>                         dbs_info->sample_type = OD_SUB_SAMPLE;
+> @@ -243,11 +243,49 @@ static void od_dbs_timer(struct work_struct *work)
+>                 }
+>         }
+>
+> -       schedule_delayed_work_on(smp_processor_id(), &dbs_info->cdbs.work,
+> -                       delay);
+> +       schedule_delayed_work_on(smp_processor_id(), dw, delay);
+> +}
 
-Blank line.
+All good until now.
 
-> +		if (sdev->request_queue->dev)
-> +			err = scsi_blk_runtime_resume(dev);
-> +		else
-> +			err = scsi_dev_runtime_resume(dev);
-> +	}
->  
->  	/* Insert hooks here for targets, hosts, and transport classes */
->  
-> @@ -185,10 +233,17 @@ static int scsi_runtime_idle(struct device *dev)
->  
->  	/* Insert hooks here for targets, hosts, and transport classes */
->  
-> -	if (scsi_is_sdev_device(dev))
-> -		err = pm_schedule_suspend(dev, 100);
-> -	else
-> +	if (scsi_is_sdev_device(dev)) {
-> +		struct scsi_device *sdev = to_scsi_device(dev);
+> +
+> +static void od_timer_coordinated(struct od_cpu_dbs_info_s *dbs_info_local,
+> +                                struct delayed_work *dw)
+> +{
+> +       struct od_cpu_dbs_info_s *dbs_info;
+> +       ktime_t time_now;
+> +       s64 delta_us;
+> +       bool sample = true;
+> +
 
-Blank line.
+--start--
 
-> +		if (sdev->request_queue->dev) {
-> +			pm_runtime_mark_last_busy(dev);
-> +			err = pm_runtime_autosuspend(dev);
-> +		} else {
-> +			err = pm_schedule_suspend(dev, 100);
-> +		}
-> +	} else {
->  		err = pm_runtime_suspend(dev);
-> +	}
->  	return err;
+> +       /* use leader CPU's dbs_info */
+> +       dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info_local->cdbs.cpu);
+> +       mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +
+> +       time_now = ktime_get();
+> +       delta_us = ktime_us_delta(time_now, dbs_info->cdbs.time_stamp);
+> +
+> +       /* Do nothing if we recently have sampled */
+> +       if (delta_us < (s64)(od_tuners.sampling_rate / 2))
+> +               sample = false;
+> +       else
+> +               dbs_info->cdbs.time_stamp = time_now;
+> +
+
+--end--
+
+Instead of two routines (this and the one below), we can have one and can
+put the above code in the if (coordinated cpus case). That will save some
+redundant code.
+
+Another issue that i see is: Current routine will be called from timer handler
+of every cpu and so above calculations will happen for every cpu. Here, you
+are taking the diff of last timestamp of cpu "x" with cpu "x" current timestamp,
+but what you should have really done is the diff b/w current timestamp with
+the timestamp of last change on any cpu in policy->cpus.
+
+Over that, timestamp for all cpu's isn't initialized early in the code
+at GOV_START.
+
+Am i correct?
+
+> +       od_timer_update(dbs_info, sample, dw);
+>         mutex_unlock(&dbs_info->cdbs.timer_mutex);
 >  }
-
-Alan Stern
-
+>
+> +static void od_dbs_timer(struct work_struct *work)
+> +{
+> +       struct delayed_work *dw = to_delayed_work(work);
+> +       struct od_cpu_dbs_info_s *dbs_info =
+> +               container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
+> +
+> +       if (dbs_sw_coordinated_cpus(&dbs_info->cdbs)) {
+> +               od_timer_coordinated(dbs_info, dw);
+> +       } else {
+> +               mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +               od_timer_update(dbs_info, true, dw);
+> +               mutex_unlock(&dbs_info->cdbs.timer_mutex);
+> +       }
+> +}
+> +
