@@ -1,58 +1,31 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] suspend: enable freeze timeout configuration through
- sysctl
-Date: Tue, 29 Jan 2013 16:36:47 -0800
-Message-ID: <20130129163647.47ca83fa.akpm@linux-foundation.org>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpufreq: Simplify cpufreq_add_dev()
+Date: Wed, 30 Jan 2013 07:41:44 +0530
+Message-ID: <CAKohpo=wTEXDH+hHanRP4CjxPKVJs-oZSLA6_04XzpMLvOEdmA@mail.gmail.com>
+References: <c7c9f237a91821661bfc0735e390358124953695.1359469932.git.viresh.kumar@linaro.org>
+	<1714110.knKZFeZSOf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:51915 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467Ab3A3Agt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Jan 2013 19:36:49 -0500
-In-Reply-To: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1714110.knKZFeZSOf@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: inderpal.singh@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: fli24 <fei.li@intel.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com
 
-On Tue, 29 Jan 2013 10:58:20 +0800
-fli24 <fei.li@intel.com> wrote:
-
-> At present, the timeout value for freezing tasks is fixed as 20s,
-> which is too long for handheld device usage, especially for mobile
-> phone.
-> 
-> In order to improve user experience, we enable freeze timeout
-> configuration through sysctl, so that we can tune the value easily
-> for concrete usage, such as smaller value for handheld device such
-> as mobile phone.
-> 
-> ...
+On 30 January 2013 03:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Please don't add my sign-offs in advance.  Yes, I have signed off a *previous*
+> version of that patch, but that doesn't apply to *this* version automatically.
 >
+> While you can do such things with Acked-by or Reviewed-by tags (that's not very
+> polite, but people usually don't mind), sign-off is a bit different, because
+> it is a *certificate* that this particular patch (and not some previous version
+> of it) has gone through my hands.
+>
+> I'm going to apply this, but please be more careful in the future.
 
-The patch looks nice - it does everything right in places where things
-are frequently done wrongly.  Except..
+Its not that i have added it, but forgot to remove it. :(
+I picked the patch from linux-next/master and forgot to remove your SOB.
 
-It forgot to document the sysctl.  Documentation/sysctl/kernel.txt, I
-guess.
-
-Is /proc/sys/kernel the most appropriate place for this?  Perhaps a
-PM-specific place would be better.  Maybe not.
-
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
->  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
->  
->  /*
-> + * Timeout for stopping processes
-> + */
-> +extern unsigned int sysctl_freeze_process_timeout_secs;
-
-I suggest the use of milliseconds here.  Someone might want a
-half-second timeout and it's pretty pointless to design the interface
-in a way which rules that out.
-
+--
+viresh
