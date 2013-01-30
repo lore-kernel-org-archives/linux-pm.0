@@ -1,61 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 22:21:03 +0530
-Message-ID: <CAKohpoms9AK+j+Au53cwbLn=ds0AsJn+ApUMgMxe2dVhC7McVw@mail.gmail.com>
+From: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 3/4] cpufreq: conservative: call dbs_check_cpu only
+	when necessary
+Date: Wed, 30 Jan 2013 17:53:21 +0100
+Message-ID: <20130130165321.GD30559@balto.lan>
 References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
-	<1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
-	<CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
-	<20130130162225.GB30559@balto.lan>
+	<1359550803-18577-4-git-send-email-fabio.baltieri@linaro.org>
+	<CAKohpompi7mzd+XmrUzJ4T=apzpmUcryHaBfQWUoO5G3+4y=_Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f180.google.com ([209.85.214.180]:60243 "EHLO
-	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754112Ab3A3QvE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 11:51:04 -0500
-Received: by mail-ob0-f180.google.com with SMTP id ef5so1794043obb.25
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 08:51:03 -0800 (PST)
-In-Reply-To: <20130130162225.GB30559@balto.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpompi7mzd+XmrUzJ4T=apzpmUcryHaBfQWUoO5G3+4y=_Q@mail.gmail.com>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
 
-On 30 January 2013 21:53, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> On Wed, Jan 30, 2013 at 08:32:38PM +0530, Viresh Kumar wrote:
+On Wed, Jan 30, 2013 at 09:23:22PM +0530, Viresh Kumar wrote:
+> On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> > Modify conservative timer to not resample CPU utilization if recently
+> > sampled from another SW coordinated core.
+> >
+> > Signed-off-by: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> 
+> We are again doing the same mistake which i fixed with:
+> 
+> commit 4471a34f9a1f2da220272e823bdb8e8fa83a7661
+> Author: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Date:   Fri Oct 26 00:47:42 2012 +0200
+> 
+>     cpufreq: governors: remove redundant code
 
->> I believe this routine should be rather present in cpufreq core code,
->> as their might
->> be other users of it. Its really not related to dbs or governors.
->>
->> My ideas about the name of routine then:
->> - policy_is_shared()
->> - or something better you have :)
->
-> So you are suggesting to rethink this function to be related to policy
-> rather than dbs... this may as well become an inline in cpufreq.h, as:
->
-> static inline bool policy_is_shared(struct cpufreq_policy *policy)
-> {
->         return cpumask_weight(policy->cpus) > 1;
-> }
+Can't argue with this, but the two had some subdle differences (namely
+th two dbs_info structures) and I opted to not mess up forcing some
+non-obvious common code.
 
-Perfect.
+Feel free to suggest a strategy.
 
-> I'm not sure about the name through, I like mentioning sw coordination in it
-> because that's the comment in the declaration:
->
->         cpumask_var_t           cpus;   /* CPUs requiring sw coordination */
->         cpumask_var_t           related_cpus; /* CPUs with any coordination */
->
-> And those two are already confusing as a starting point.
+Thanks,
+Fabio
 
-I will fix these comments with a patch of mine.
-
-> Anyway, this sounds fine to me.  If you think this is useful I can send
-> a patch, or feel free to include it in your patches if you plan to do
-> further cleanup work on this code.
->
-> /me tries to also keep that ->cpu field in mind.
-
-You can make it part of your patchsets v8.
+-- 
+Fabio Baltieri
