@@ -1,108 +1,74 @@
 From: Fabio Baltieri <fabio.baltieri@linaro.org>
-Subject: Re: [PATCH 2/5] cpufreq: star/stop cpufreq timers on cpu hotplug
-Date: Wed, 30 Jan 2013 11:44:32 +0100
-Message-ID: <20130130104432.GB32315@balto.lan>
+Subject: Re: [PATCH 1/5] cpufreq: handle SW coordinated CPUs
+Date: Wed, 30 Jan 2013 12:04:29 +0100
+Message-ID: <20130130110429.GC32315@balto.lan>
 References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
- <1356620142-8680-3-git-send-email-fabio.baltieri@linaro.org>
- <CAOh2x=mjNbSbGrirOOddE-Kitj7MqtDXiwb6rSo8UWQK4wzJvw@mail.gmail.com>
+ <1356620142-8680-2-git-send-email-fabio.baltieri@linaro.org>
+ <CAOh2x==SG32h-BbrnLN8gwiYNz7bS-REVcmXN67fdYPqFVmCiA@mail.gmail.com>
+ <20130130091453.GA32315@balto.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:64632 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754449Ab3A3Kon (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 05:44:43 -0500
-Received: by mail-wi0-f182.google.com with SMTP id hn14so1429270wib.15
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 02:44:42 -0800 (PST)
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAOh2x=mjNbSbGrirOOddE-Kitj7MqtDXiwb6rSo8UWQK4wzJvw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20130130091453.GA32315@balto.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, josephl@nvidia.com, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org
 
-Hi Viresh,
+On Wed, Jan 30, 2013 at 10:14:53AM +0100, Fabio Baltieri wrote:
+> Hello Viresh,
+> 
+> On Wed, Jan 30, 2013 at 12:33:40PM +0530, Viresh Kumar wrote:
+> > I am starting to follow cpufreq patches religiously now and so have to come
+> > back to this old thread due to some crash we got :)
+> > 
+> > Its still not pushed upstream, so better to get it resolved before 3.9.
+> 
+> Definitely, that's what we have -next for!
+> 
+> > On Thu, Dec 27, 2012 at 8:25 PM, Fabio Baltieri
+> > <fabio.baltieri@linaro.org> wrote:
+> > 
+> > > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> > 
+> > >  static inline void dbs_timer_init(struct dbs_data *dbs_data,
+> > > -               struct cpu_dbs_common_info *cdbs, unsigned int sampling_rate)
+> > > +                                 struct cpu_dbs_common_info *cdbs,
+> > > +                                 unsigned int sampling_rate,
+> > > +                                 int cpu)
+> > >  {
+> > >         int delay = delay_for_sampling_rate(sampling_rate);
+> > > +       struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
+> > 
+> > I couldn't understand the real need for this, as it should really give
+> > back the same
+> > pointer pointed out by: cdbs and hence no need of cpu in params too..
 
-On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
-> Hi Fabio,
-> 
-> Sorry for waking up very late :)
-> 
-> The reason why i am starting this thread again is due to problem
-> reported by Joseph,
-> with latest linux-next/master branch (which contains few big patches
-> from me :) ):
-> 
-> Reboot is giving following to him:
-> 
-> * Will now halt
-> [ 193.756068] Disabling non-boot CPUs...
-> [ 193.760088] BUG: scheduling while atomic: halt/780/0x00000002
-> [ 193.765845] Modules linked in: brcmfmac brcmutil
-> [ 193.770613] [<c0014990>] (unwind_backtrace+0x0/0xf8) from [<c0049510>]
-> (__schedule_bug+0x44/0x5c)
-> [ 193.779548] [<c0049510>] (__schedule_bug+0x44/0x5c) from [<c04fa320>]
-> (__schedule+0x688/0x6ec)
-> [ 193.788206] [<c04fa320>] (__schedule+0x688/0x6ec) from [<c04fa75c>]
-> (schedule_preempt_disabled+0x24/0x34)
-> [ 193.797811] [<c04fa75c>] (schedule_preempt_disabled+0x24/0x34) from
-> [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c)
-> [ 193.808367] [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c) from
-> [<c04f9354>] (mutex_lock+0xc/0x24)
-> [ 193.817554] [<c04f9354>] (mutex_lock+0xc/0x24) from [<c04f1cdc>]
-> (unregister_cpu_notifier+0xc/0x24)
-> [ 193.826640] [<c04f1cdc>] (unregister_cpu_notifier+0xc/0x24) from
-> [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614)
-> [ 193.836866] [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614) from
-> [<c033747c>] (__cpufreq_governor+0x58/0xc0)
-> [ 193.846737] [<c033747c>] (__cpufreq_governor+0x58/0xc0) from
-> [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
-> [ 193.857207] [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
-> from [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c)
-> [ 193.867850] [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c) from
-> [<c0044f4c>] (notifier_call_chain+0x44/0x84)
-> [ 193.877623] [<c0044f4c>] (notifier_call_chain+0x44/0x84) from
-> [<c0026e24>] (__cpu_notify+0x2c/0x48)
-> [ 193.886704] [<c0026e24>] (__cpu_notify+0x2c/0x48) from [<c04f1b08>]
-> (_cpu_down+0xb0/0x23c)
-> [ 193.895004] [<c04f1b08>] (_cpu_down+0xb0/0x23c) from [<c00270ec>]
-> (disable_nonboot_cpus+0x68/0x104)
-> [ 193.904089] [<c00270ec>] (disable_nonboot_cpus+0x68/0x104) from
-> [<c0034fbc>] (kernel_power_off+0x24/0x48)
-> [ 193.913688] [<c0034fbc>] (kernel_power_off+0x24/0x48) from
-> [<c0035810>] (sys_reboot+0x104/0x1e0)
-> [ 193.922517] [<c0035810>] (sys_reboot+0x104/0x1e0) from [<c000e520>]
-> (ret_fast_syscall+0x0/0x30)
-> 
-> 
-> And the crash log show this patch of yours somewhere :)
+Small sidenote, actually what I'm going to drop here i *cdbs, as I need
+cpu for schedule_delayed_work_on and can't use cdbs->cpu for that as
+it's the master's one.
 
-It looks like the two patches clashed togher quite badly... :-)
-
-On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
-[...]
-> First question: Is this patch still required? Because following patch
-> from me is
-> sending a STOP/START to governors on cpu hot-[un]plug ?
-> 
-> commit dbcb63407c095af73f3464767e00902cdee55e8b
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Sat Jan 12 05:14:39 2013 +0000
-> 
->     cpufreq: Notify governors when cpus are hot-[un]plugged
-> 
-> For me, the answer is NO.
-
-I confirm that your patch handles correctly the problem solved by this
-one so I agree on dropping mine.
-
-Rafael, this is screwing up a bit on bisection for cpu hotplug problems
-so I'm sending a v7 with the cleanup on first patch and this one
-dropped if you are ok with rebasing your pm-cpufreq-next.  Let me know
-if you prefer me to just send a revert + cleanup patch instead.
-
-Thanks,
 Fabio
+
+> > 
+> > I may be wrong here :)
+> 
+> You are actually right.  This comes from the first version of the patch
+> (I basically rewrote it after the common code rafactoring), and cdbs was
+> meant to be always the one for the master CPU while cpu should indicate
+> the one being initialized.  Then the thing turned out as:
+> 
+> A - I dropped the code specific for master cdbs here as it was already
+> there on another code path following the rafactoring.
+> B - I passed j_cdbs = dbs_data->get_cpu_cdbs(j) in the init cycle while
+> it was really meant to be get_cpu_cdbs(cpu).
+> 
+> > >
+> > > -       INIT_DEFERRABLE_WORK(&cdbs->work, dbs_data->gov_dbs_timer);
+> > > -       schedule_delayed_work_on(cdbs->cpu, &cdbs->work, delay);
+> > > +       schedule_delayed_work_on(cpu, &cdbs_local->work, delay);
+> > >  }
 
 -- 
 Fabio Baltieri
