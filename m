@@ -1,163 +1,108 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH v8 3/4] block: implement runtime pm strategy
-Date: Wed, 30 Jan 2013 17:34:53 +0800
-Message-ID: <1359538494-2936-4-git-send-email-aaron.lu@intel.com>
-References: <1359538494-2936-1-git-send-email-aaron.lu@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1359538494-2936-1-git-send-email-aaron.lu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Aaron Lu <aaron.lu@intel.com>, Shane Huang <shane.huang@amd.com>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH 2/5] cpufreq: star/stop cpufreq timers on cpu hotplug
+Date: Wed, 30 Jan 2013 11:44:32 +0100
+Message-ID: <20130130104432.GB32315@balto.lan>
+References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org>
+ <1356620142-8680-3-git-send-email-fabio.baltieri@linaro.org>
+ <CAOh2x=mjNbSbGrirOOddE-Kitj7MqtDXiwb6rSo8UWQK4wzJvw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:64632 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754449Ab3A3Kon (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 05:44:43 -0500
+Received: by mail-wi0-f182.google.com with SMTP id hn14so1429270wib.15
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 02:44:42 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAOh2x=mjNbSbGrirOOddE-Kitj7MqtDXiwb6rSo8UWQK4wzJvw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, josephl@nvidia.com, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org
 
-From: Lin Ming <ming.m.lin@intel.com>
+Hi Viresh,
 
-When a request is added:
-    If device is suspended or is suspending and the request is not a
-    PM request, resume the device.
+On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
+> Hi Fabio,
+> 
+> Sorry for waking up very late :)
+> 
+> The reason why i am starting this thread again is due to problem
+> reported by Joseph,
+> with latest linux-next/master branch (which contains few big patches
+> from me :) ):
+> 
+> Reboot is giving following to him:
+> 
+> * Will now halt
+> [ 193.756068] Disabling non-boot CPUs...
+> [ 193.760088] BUG: scheduling while atomic: halt/780/0x00000002
+> [ 193.765845] Modules linked in: brcmfmac brcmutil
+> [ 193.770613] [<c0014990>] (unwind_backtrace+0x0/0xf8) from [<c0049510>]
+> (__schedule_bug+0x44/0x5c)
+> [ 193.779548] [<c0049510>] (__schedule_bug+0x44/0x5c) from [<c04fa320>]
+> (__schedule+0x688/0x6ec)
+> [ 193.788206] [<c04fa320>] (__schedule+0x688/0x6ec) from [<c04fa75c>]
+> (schedule_preempt_disabled+0x24/0x34)
+> [ 193.797811] [<c04fa75c>] (schedule_preempt_disabled+0x24/0x34) from
+> [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c)
+> [ 193.808367] [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c) from
+> [<c04f9354>] (mutex_lock+0xc/0x24)
+> [ 193.817554] [<c04f9354>] (mutex_lock+0xc/0x24) from [<c04f1cdc>]
+> (unregister_cpu_notifier+0xc/0x24)
+> [ 193.826640] [<c04f1cdc>] (unregister_cpu_notifier+0xc/0x24) from
+> [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614)
+> [ 193.836866] [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614) from
+> [<c033747c>] (__cpufreq_governor+0x58/0xc0)
+> [ 193.846737] [<c033747c>] (__cpufreq_governor+0x58/0xc0) from
+> [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
+> [ 193.857207] [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
+> from [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c)
+> [ 193.867850] [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c) from
+> [<c0044f4c>] (notifier_call_chain+0x44/0x84)
+> [ 193.877623] [<c0044f4c>] (notifier_call_chain+0x44/0x84) from
+> [<c0026e24>] (__cpu_notify+0x2c/0x48)
+> [ 193.886704] [<c0026e24>] (__cpu_notify+0x2c/0x48) from [<c04f1b08>]
+> (_cpu_down+0xb0/0x23c)
+> [ 193.895004] [<c04f1b08>] (_cpu_down+0xb0/0x23c) from [<c00270ec>]
+> (disable_nonboot_cpus+0x68/0x104)
+> [ 193.904089] [<c00270ec>] (disable_nonboot_cpus+0x68/0x104) from
+> [<c0034fbc>] (kernel_power_off+0x24/0x48)
+> [ 193.913688] [<c0034fbc>] (kernel_power_off+0x24/0x48) from
+> [<c0035810>] (sys_reboot+0x104/0x1e0)
+> [ 193.922517] [<c0035810>] (sys_reboot+0x104/0x1e0) from [<c000e520>]
+> (ret_fast_syscall+0x0/0x30)
+> 
+> 
+> And the crash log show this patch of yours somewhere :)
 
-When the last request finishes:
-    Call pm_runtime_mark_last_busy().
+It looks like the two patches clashed togher quite badly... :-)
 
-When pick a request:
-    If device is resuming/suspending, then only PM request is allowed
-    to go.
+On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
+[...]
+> First question: Is this patch still required? Because following patch
+> from me is
+> sending a STOP/START to governors on cpu hot-[un]plug ?
+> 
+> commit dbcb63407c095af73f3464767e00902cdee55e8b
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Sat Jan 12 05:14:39 2013 +0000
+> 
+>     cpufreq: Notify governors when cpus are hot-[un]plugged
+> 
+> For me, the answer is NO.
 
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
- block/blk-core.c | 39 +++++++++++++++++++++++++++++++++++++++
- block/elevator.c | 26 ++++++++++++++++++++++++++
- 2 files changed, 65 insertions(+)
+I confirm that your patch handles correctly the problem solved by this
+one so I agree on dropping mine.
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 1ec09f6..82cf678 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1264,6 +1264,16 @@ void part_round_stats(int cpu, struct hd_struct *part)
- }
- EXPORT_SYMBOL_GPL(part_round_stats);
- 
-+#ifdef CONFIG_PM_RUNTIME
-+static void blk_pm_put_request(struct request *rq)
-+{
-+	if (rq->q->dev && !(rq->cmd_flags & REQ_PM) && !--rq->q->nr_pending)
-+		pm_runtime_mark_last_busy(rq->q->dev);
-+}
-+#else
-+static inline void blk_pm_put_request(struct request *rq) {}
-+#endif
-+
- /*
-  * queue lock must be held
-  */
-@@ -1274,6 +1284,8 @@ void __blk_put_request(struct request_queue *q, struct request *req)
- 	if (unlikely(--req->ref_count))
- 		return;
- 
-+	blk_pm_put_request(req);
-+
- 	elv_completed_request(q, req);
- 
- 	/* this is a bio leak */
-@@ -2051,6 +2063,28 @@ static void blk_account_io_done(struct request *req)
- 	}
- }
- 
-+#ifdef CONFIG_PM_RUNTIME
-+/*
-+ * Don't process normal requests when queue is suspended
-+ * or in the process of suspending/resuming
-+ */
-+static struct request *blk_pm_peek_request(struct request_queue *q,
-+					   struct request *rq)
-+{
-+	if (q->dev && (q->rpm_status == RPM_SUSPENDED ||
-+	    (q->rpm_status != RPM_ACTIVE && !(rq->cmd_flags & REQ_PM))))
-+		return NULL;
-+	else
-+		return rq;
-+}
-+#else
-+static inline struct request *blk_pm_peek_request(struct request_queue *q,
-+						  struct request *rq)
-+{
-+	return rq;
-+}
-+#endif
-+
- /**
-  * blk_peek_request - peek at the top of a request queue
-  * @q: request queue to peek at
-@@ -2073,6 +2107,11 @@ struct request *blk_peek_request(struct request_queue *q)
- 	int ret;
- 
- 	while ((rq = __elv_next_request(q)) != NULL) {
-+
-+		rq = blk_pm_peek_request(q, rq);
-+		if (!rq)
-+			break;
-+
- 		if (!(rq->cmd_flags & REQ_STARTED)) {
- 			/*
- 			 * This is the first time the device driver
-diff --git a/block/elevator.c b/block/elevator.c
-index 11683bb..29c5c7e 100644
---- a/block/elevator.c
-+++ b/block/elevator.c
-@@ -34,6 +34,7 @@
- #include <linux/blktrace_api.h>
- #include <linux/hash.h>
- #include <linux/uaccess.h>
-+#include <linux/pm_runtime.h>
- 
- #include <trace/events/block.h>
- 
-@@ -515,6 +516,27 @@ void elv_bio_merged(struct request_queue *q, struct request *rq,
- 		e->type->ops.elevator_bio_merged_fn(q, rq, bio);
- }
- 
-+#ifdef CONFIG_PM_RUNTIME
-+static void blk_pm_requeue_request(struct request *rq)
-+{
-+	if (rq->q->dev && !(rq->cmd_flags & REQ_PM))
-+		rq->q->nr_pending--;
-+}
-+
-+static void blk_pm_add_request(struct request_queue *q, struct request *rq)
-+{
-+	if (q->dev && !(rq->cmd_flags & REQ_PM) && q->nr_pending++ == 0 &&
-+	    (q->rpm_status == RPM_SUSPENDED || q->rpm_status == RPM_SUSPENDING))
-+		pm_request_resume(q->dev);
-+}
-+#else
-+static inline void blk_pm_requeue_request(struct request *rq) {}
-+static inline void blk_pm_add_request(struct request_queue *q,
-+				      struct request *rq)
-+{
-+}
-+#endif
-+
- void elv_requeue_request(struct request_queue *q, struct request *rq)
- {
- 	/*
-@@ -529,6 +551,8 @@ void elv_requeue_request(struct request_queue *q, struct request *rq)
- 
- 	rq->cmd_flags &= ~REQ_STARTED;
- 
-+	blk_pm_requeue_request(rq);
-+
- 	__elv_add_request(q, rq, ELEVATOR_INSERT_REQUEUE);
- }
- 
-@@ -551,6 +575,8 @@ void __elv_add_request(struct request_queue *q, struct request *rq, int where)
- {
- 	trace_block_rq_insert(q, rq);
- 
-+	blk_pm_add_request(q, rq);
-+
- 	rq->q = q;
- 
- 	if (rq->cmd_flags & REQ_SOFTBARRIER) {
+Rafael, this is screwing up a bit on bisection for cpu hotplug problems
+so I'm sending a v7 with the cleanup on first patch and this one
+dropped if you are ok with rebasing your pm-cpufreq-next.  Let me know
+if you prefer me to just send a revert + cleanup patch instead.
+
+Thanks,
+Fabio
+
 -- 
-1.8.1
+Fabio Baltieri
