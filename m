@@ -1,146 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2] suspend: enable freeze timeout configuration through sys
-Date: Wed, 30 Jan 2013 14:09:53 +0100
-Message-ID: <2335103.cho0vcBPUK@vostro.rjw.lan>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC> <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+Subject: Re: [PATCH 2/5] cpufreq: star/stop cpufreq timers on cpu hotplug
+Date: Wed, 30 Jan 2013 14:12:02 +0100
+Message-ID: <97137690.TI1kphbZjX@vostro.rjw.lan>
+References: <1356620142-8680-1-git-send-email-fabio.baltieri@linaro.org> <CAOh2x=mjNbSbGrirOOddE-Kitj7MqtDXiwb6rSo8UWQK4wzJvw@mail.gmail.com> <20130130104432.GB32315@balto.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:32838 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752382Ab3A3NDn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Jan 2013 08:03:43 -0500
-In-Reply-To: <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130130104432.GB32315@balto.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: Fabio Baltieri <fabio.baltieri@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, josephl@nvidia.com, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: fli24 <fei.li@intel.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com
 
-On Wednesday, January 30, 2013 02:23:39 PM fli24 wrote:
+On Wednesday, January 30, 2013 11:44:32 AM Fabio Baltieri wrote:
+> Hi Viresh,
 > 
-> At present, the timeout value for freezing tasks is fixed as 20s,
-> which is too long for handheld device usage, especially for mobile
-> phone.
+> On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
+> > Hi Fabio,
+> > 
+> > Sorry for waking up very late :)
+> > 
+> > The reason why i am starting this thread again is due to problem
+> > reported by Joseph,
+> > with latest linux-next/master branch (which contains few big patches
+> > from me :) ):
+> > 
+> > Reboot is giving following to him:
+> > 
+> > * Will now halt
+> > [ 193.756068] Disabling non-boot CPUs...
+> > [ 193.760088] BUG: scheduling while atomic: halt/780/0x00000002
+> > [ 193.765845] Modules linked in: brcmfmac brcmutil
+> > [ 193.770613] [<c0014990>] (unwind_backtrace+0x0/0xf8) from [<c0049510>]
+> > (__schedule_bug+0x44/0x5c)
+> > [ 193.779548] [<c0049510>] (__schedule_bug+0x44/0x5c) from [<c04fa320>]
+> > (__schedule+0x688/0x6ec)
+> > [ 193.788206] [<c04fa320>] (__schedule+0x688/0x6ec) from [<c04fa75c>]
+> > (schedule_preempt_disabled+0x24/0x34)
+> > [ 193.797811] [<c04fa75c>] (schedule_preempt_disabled+0x24/0x34) from
+> > [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c)
+> > [ 193.808367] [<c04f916c>] (__mutex_lock_slowpath+0x170/0x34c) from
+> > [<c04f9354>] (mutex_lock+0xc/0x24)
+> > [ 193.817554] [<c04f9354>] (mutex_lock+0xc/0x24) from [<c04f1cdc>]
+> > (unregister_cpu_notifier+0xc/0x24)
+> > [ 193.826640] [<c04f1cdc>] (unregister_cpu_notifier+0xc/0x24) from
+> > [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614)
+> > [ 193.836866] [<c033a8a4>] (cpufreq_governor_dbs+0x118/0x614) from
+> > [<c033747c>] (__cpufreq_governor+0x58/0xc0)
+> > [ 193.846737] [<c033747c>] (__cpufreq_governor+0x58/0xc0) from
+> > [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
+> > [ 193.857207] [<c0339104>] (__cpufreq_remove_dev.clone.7+0x58/0x320)
+> > from [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c)
+> > [ 193.867850] [<c04f7958>] (cpufreq_cpu_callback+0x8c/0x9c) from
+> > [<c0044f4c>] (notifier_call_chain+0x44/0x84)
+> > [ 193.877623] [<c0044f4c>] (notifier_call_chain+0x44/0x84) from
+> > [<c0026e24>] (__cpu_notify+0x2c/0x48)
+> > [ 193.886704] [<c0026e24>] (__cpu_notify+0x2c/0x48) from [<c04f1b08>]
+> > (_cpu_down+0xb0/0x23c)
+> > [ 193.895004] [<c04f1b08>] (_cpu_down+0xb0/0x23c) from [<c00270ec>]
+> > (disable_nonboot_cpus+0x68/0x104)
+> > [ 193.904089] [<c00270ec>] (disable_nonboot_cpus+0x68/0x104) from
+> > [<c0034fbc>] (kernel_power_off+0x24/0x48)
+> > [ 193.913688] [<c0034fbc>] (kernel_power_off+0x24/0x48) from
+> > [<c0035810>] (sys_reboot+0x104/0x1e0)
+> > [ 193.922517] [<c0035810>] (sys_reboot+0x104/0x1e0) from [<c000e520>]
+> > (ret_fast_syscall+0x0/0x30)
+> > 
+> > 
+> > And the crash log show this patch of yours somewhere :)
 > 
-> In order to improve user experience, we enable freeze timeout
-> configuration through sys, so that we can tune the value easily
-> for concrete usage, such as smaller value for handheld device such
-> as mobile phone.
+> It looks like the two patches clashed togher quite badly... :-)
+> 
+> On Wed, Jan 30, 2013 at 10:22:37AM +0530, Viresh Kumar wrote:
+> [...]
+> > First question: Is this patch still required? Because following patch
+> > from me is
+> > sending a STOP/START to governors on cpu hot-[un]plug ?
+> > 
+> > commit dbcb63407c095af73f3464767e00902cdee55e8b
+> > Author: Viresh Kumar <viresh.kumar@linaro.org>
+> > Date:   Sat Jan 12 05:14:39 2013 +0000
+> > 
+> >     cpufreq: Notify governors when cpus are hot-[un]plugged
+> > 
+> > For me, the answer is NO.
+> 
+> I confirm that your patch handles correctly the problem solved by this
+> one so I agree on dropping mine.
+> 
+> Rafael, this is screwing up a bit on bisection for cpu hotplug problems
+> so I'm sending a v7 with the cleanup on first patch and this one
+> dropped if you are ok with rebasing your pm-cpufreq-next.  Let me know
+> if you prefer me to just send a revert + cleanup patch instead.
 
-As I said, I'd like to know what's the exact problem you need to work around
-using this.
+I've dropped the $subject one already and please post an incremental fix on
+top of the first one in your series.
 
 Thanks,
 Rafael
 
 
-> Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-> Signed-off-by: Li Fei <fei.li@intel.com>
-> ---
->  Documentation/power/freezing-of-tasks.txt |    5 +++++
->  include/linux/freezer.h                   |    5 +++++
->  kernel/power/main.c                       |   27 +++++++++++++++++++++++++++
->  kernel/power/process.c                    |    4 ++--
->  4 files changed, 39 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
-> index 6ec291e..85894d8 100644
-> --- a/Documentation/power/freezing-of-tasks.txt
-> +++ b/Documentation/power/freezing-of-tasks.txt
-> @@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task, since it is anyway
->  only after the entire suspend/hibernation sequence is complete.
->  So, to summarize, use [un]lock_system_sleep() instead of directly using
->  mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
-> +
-> +V. Miscellaneous
-> +/sys/power/pm_freeze_timeout controls how long it will cost at most to freeze
-> +all user space processes or all freezable kernel threads, in unit of millisecond.
-> +The default value is 20000, with range of unsigned integer.
-> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> index e4238ce..5a24a33 100644
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
->  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
->  
->  /*
-> + * Timeout for stopping processes
-> + */
-> +extern unsigned int sys_freeze_process_timeout_msecs;
-> +
-> +/*
->   * Check if a process has been frozen
->   */
->  static inline bool frozen(struct task_struct *p)
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index 1c16f91..453ead1 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
->  
->  #endif /* CONFIG_PM_TRACE */
->  
-> +#ifdef CONFIG_FREEZER
-> +static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
-> +				      struct kobj_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
-> +}
-> +
-> +static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
-> +				       struct kobj_attribute *attr,
-> +				       const char *buf, size_t n)
-> +{
-> +	unsigned long val;
-> +
-> +	if (kstrtoul(buf, 10, &val))
-> +		return -EINVAL;
-> +
-> +	sys_freeze_process_timeout_msecs = val;
-> +	return n;
-> +}
-> +
-> +power_attr(pm_freeze_timeout);
-> +
-> +#endif	/* CONFIG_FREEZER*/
-> +
->  static struct attribute * g[] = {
->  	&state_attr.attr,
->  #ifdef CONFIG_PM_TRACE
-> @@ -576,6 +600,9 @@ static struct attribute * g[] = {
->  	&pm_print_times_attr.attr,
->  #endif
->  #endif
-> +#ifdef CONFIG_FREEZER
-> +	&pm_freeze_timeout_attr.attr,
-> +#endif
->  	NULL,
->  };
->  
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index d5a258b..ba45a26 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -21,7 +21,7 @@
->  /* 
->   * Timeout for stopping processes
->   */
-> -#define TIMEOUT	(20 * HZ)
-> +unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
->  
->  static int try_to_freeze_tasks(bool user_only)
->  {
-> @@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
->  
->  	do_gettimeofday(&start);
->  
-> -	end_time = jiffies + TIMEOUT;
-> +	end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs);
->  
->  	if (!user_only)
->  		freeze_workqueues_begin();
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
