@@ -1,50 +1,84 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 22:44 +0100
-Message-ID: <1691889.6OP5HVPKVS@vostro.rjw.lan>
-References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org> <CAKohpoms9AK+j+Au53cwbLn=ds0AsJn+ApUMgMxe2dVhC7McVw@mail.gmail.com> <20130130165739.GA21329@balto.lan>
+Subject: Re: [PATCH] PM / Hibernate: remove duplicate disable_nonboot_cpus()
+Date: Thu, 31 Jan 2013 00:43:29 +0100
+Message-ID: <2155192.doJbhSCOy2@vostro.rjw.lan>
+References: <1359501615-16435-1-git-send-email-swarren@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130130165739.GA21329@balto.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:34697 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756418Ab3A3XhS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Jan 2013 18:37:18 -0500
+In-Reply-To: <1359501615-16435-1-git-send-email-swarren@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@nvidia.com>
 
-On Wednesday, January 30, 2013 05:57:39 PM Fabio Baltieri wrote:
-> On Wed, Jan 30, 2013 at 10:21:03PM +0530, Viresh Kumar wrote:
-> > > I'm not sure about the name through, I like mentioning sw coordination in it
-> > > because that's the comment in the declaration:
-> > >
-> > >         cpumask_var_t           cpus;   /* CPUs requiring sw coordination */
-> > >         cpumask_var_t           related_cpus; /* CPUs with any coordination */
-> > >
-> > > And those two are already confusing as a starting point.
-> > 
-> > I will fix these comments with a patch of mine.
+On Tuesday, January 29, 2013 04:20:15 PM Stephen Warren wrote:
+> From: Stephen Warren <swarren@nvidia.com>
 > 
-> Great!
+> Within hibernate.c, hibernation_platform_enter() is only called from
+> power_down(), which in turn is only called by hibernate() after having
+> called hibernation_snapshot(), which in turn calls create_image() which
+> in turn calls disable_nonboot_cpus().
 > 
-> > 
-> > > Anyway, this sounds fine to me.  If you think this is useful I can send
-> > > a patch, or feel free to include it in your patches if you plan to do
-> > > further cleanup work on this code.
-> > >
-> > > /me tries to also keep that ->cpu field in mind.
-> > 
-> > You can make it part of your patchsets v8.
+> Elsewhere, snapshot_ioctl() allows hibernation_snapshot() and
+> hibernation_platform_enter() to be invoked via separate IOCTLs, but I
+> assume the rule is that SNAPSHOT_CREATE_IMAGE must be executed before
+> IOCTL SNAPSHOT_POWER_OFF, and hence the same ordering applies.
 > 
-> I'm not sending a v8 as Rafael already asked for incremental, but I'll
-> send a patch with that soon.
+> This means that disable_nonboot_cpus() must have been called already
+> before hibernation_platform_enter() is entered, and hence the call there
+> is redundant, so remove it.
 
-Yes, please.
+No, it isn't.  This is a different stage of hibernation and
+enable_nonboot_cpus() is called before.
+
+It works like this: First, before creating the image, the complete "freeze"
+sequence is carried out which includes disable_nonboot_cpus().  Then, the
+image is created and the complete "thaw" sequence is carried out which includes
+enable_nonboot_cpus().  Next, the image is saved and finally the memory taken
+up by it is freed and hibernation_platform_enter() is called.  Roughly.
 
 Thanks,
 Rafael
 
 
+> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+> ---
+> Note: I have compile-tested this on x86-64, but have not attempted to test
+> it in any way; I'm proposing this patch following code inspection.
+> ---
+>  kernel/power/hibernate.c |    5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index b26f5f1..4ddeacc 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -537,10 +537,6 @@ int hibernation_platform_enter(void)
+>  	if (error)
+>  		goto Platform_finish;
+>  
+> -	error = disable_nonboot_cpus();
+> -	if (error)
+> -		goto Platform_finish;
+> -
+>  	local_irq_disable();
+>  	syscore_suspend();
+>  	if (pm_wakeup_pending()) {
+> @@ -555,7 +551,6 @@ int hibernation_platform_enter(void)
+>   Power_up:
+>  	syscore_resume();
+>  	local_irq_enable();
+> -	enable_nonboot_cpus();
+>  
+>   Platform_finish:
+>  	hibernation_ops->finish();
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
