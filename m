@@ -1,38 +1,39 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 3/4] cpufreq: conservative: call dbs_check_cpu only
-	when necessary
-Date: Wed, 30 Jan 2013 22:42:29 +0530
-Message-ID: <CAKohpokzBsEQBAPSFTxcC52QmGxst1T-=pzk-E4+dgvyTsiM6g@mail.gmail.com>
-References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
-	<1359550803-18577-4-git-send-email-fabio.baltieri@linaro.org>
-	<CAKohpompi7mzd+XmrUzJ4T=apzpmUcryHaBfQWUoO5G3+4y=_Q@mail.gmail.com>
-	<20130130165321.GD30559@balto.lan>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: cpufreq: cpufreq_driver_lock is quite hot on 512p systems
+Date: Wed, 30 Jan 2013 12:07:32 -0600
+Message-ID: <20130130180731.GA9449@gulag1.americas.sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <20130130165321.GD30559-lYxsXyORJ9v/PtFMR13I2A@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Nicolas Pitre <nicolas.pitre-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: cpufreq-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 30 January 2013 22:23, Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On Wed, Jan 30, 2013 at 09:23:22PM +0530, Viresh Kumar wrote:
 
-> Can't argue with this, but the two had some subdle differences (namely
-> th two dbs_info structures) and I opted to not mess up forcing some
-> non-obvious common code.
->
-> Feel free to suggest a strategy.
+I am noticing the cpufreq_driver_lock is quite hot.
+Currently on an idle 512 system perf shows me most of the system time is 
+spent on this lock.
 
-Just check the patch i mentioned, go ahead with something similar. There
-is a lot of code in my original patch which removed redundancy to a big level.
+-  84.18%  [kernel]                 [k] _raw_spin_lock_irqsave
+   - _raw_spin_lock_irqsave
+      - 99.97% __cpufreq_cpu_get
+           cpufreq_cpu_get
+           __cpufreq_driver_getavg
+           dbs_check_cpu
+           od_dbs_timer
+           process_one_work
+           worker_thread
+           kthread
+           ret_from_fork
+ 
+The data this lock protects is used in a read mostly situation.
+While exprimenting I found turning the lock to a rwlock fixed the problem.
+It seems like this might be amenable to using the RCU.
+
+Any other ideas on how to properly resolve the issue?
+
+Thanks,
+Nate
+
