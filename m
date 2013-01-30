@@ -1,108 +1,77 @@
 From: "Li, Fei" <fei.li@intel.com>
 Subject: RE: [PATCH] suspend: enable freeze timeout configuration through
  sysctl
-Date: Wed, 30 Jan 2013 06:22:55 +0000
-Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F06B6@SHSMSX102.ccr.corp.intel.com>
+Date: Wed, 30 Jan 2013 06:23:11 +0000
+Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F06BF@SHSMSX102.ccr.corp.intel.com>
 References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <2146878.OLeVueUb0g@vostro.rjw.lan>
+ <20130129163647.47ca83fa.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30838 "EHLO mga09.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:18492 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752266Ab3A3GXF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Jan 2013 01:23:05 -0500
-In-Reply-To: <2146878.OLeVueUb0g@vostro.rjw.lan>
+	id S1753208Ab3A3GXT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 01:23:19 -0500
+In-Reply-To: <20130129163647.47ca83fa.akpm@linux-foundation.org>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-SGVsbG8gUmFmYWVsLA0KICAgVGhhbmtzIGZvciB5b3VyIGZlZWRiYWNrLCBhbmQgbXkgdW5kZXJz
-dGFuZGluZyBpcyBpbnRlcmxlYXZlZCBpbiB5b3VyIGVtYWlsIGFzIGJlbG93Lg0KDQpCZXN0IFJl
-Z2FyZHMsDQpMaSBGZWkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBS
-YWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0BzaXNrLnBsXQ0KPiBTZW50OiBUdWVzZGF5LCBK
-YW51YXJ5IDI5LCAyMDEzIDc6NDIgUE0NCj4gVG86IExpLCBGZWkNCj4gQ2M6IGFrcG1AbGludXgt
-Zm91bmRhdGlvbi5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4LXBt
-QHZnZXIua2VybmVsLm9yZzsgTGl1LCBDaHVhbnNoZW5nDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hd
-IHN1c3BlbmQ6IGVuYWJsZSBmcmVlemUgdGltZW91dCBjb25maWd1cmF0aW9uIHRocm91Z2ggc3lz
-Y3RsDQo+IA0KPiBPbiBUdWVzZGF5LCBKYW51YXJ5IDI5LCAyMDEzIDEwOjU4OjIwIEFNIGZsaTI0
-IHdyb3RlOg0KPiA+DQo+ID4gQXQgcHJlc2VudCwgdGhlIHRpbWVvdXQgdmFsdWUgZm9yIGZyZWV6
-aW5nIHRhc2tzIGlzIGZpeGVkIGFzIDIwcywNCj4gPiB3aGljaCBpcyB0b28gbG9uZyBmb3IgaGFu
-ZGhlbGQgZGV2aWNlIHVzYWdlLCBlc3BlY2lhbGx5IGZvciBtb2JpbGUNCj4gPiBwaG9uZS4NCj4g
-Pg0KPiA+IEluIG9yZGVyIHRvIGltcHJvdmUgdXNlciBleHBlcmllbmNlLCB3ZSBlbmFibGUgZnJl
-ZXplIHRpbWVvdXQNCj4gPiBjb25maWd1cmF0aW9uIHRocm91Z2ggc3lzY3RsLCBzbyB0aGF0IHdl
-IGNhbiB0dW5lIHRoZSB2YWx1ZSBlYXNpbHkNCj4gPiBmb3IgY29uY3JldGUgdXNhZ2UsIHN1Y2gg
-YXMgc21hbGxlciB2YWx1ZSBmb3IgaGFuZGhlbGQgZGV2aWNlIHN1Y2gNCj4gPiBhcyBtb2JpbGUg
-cGhvbmUuDQo+IA0KPiBXZWxsLCBJJ2QgYXJndWUgdGhhdCB5b3Ugc2hvdWxkbid0IHNlZSBmcmVl
-emUgcHJvYmxlbXMgb24gc3VjaCBzeXN0ZW1zLg0KPiBJZiB5b3UncmUgc2VlaW5nIHRoZW0sIGl0
-J3MgYmV0dGVyIHRvIGZpeCB0aGVtIHRoYW4gdG8gdHJ5IHRvIGhpZGUgdGhlbQ0KPiBmcm9tIHVz
-ZXJzICh0aGV5IGFyZSBwcm9ibGVtcyBhZnRlciBhbGwpLg0KW0xpLCBGZWldIA0KVGhhbmtzIGZv
-ciB5b3VyIG9waW5pb24uDQpJbmRlZWQsIEkgc2VlIHN1Y2ggZnJlZXplIHByb2JsZW1zIG9uIG1v
-YmlsZSBwaG9uZSBzeXN0ZW0gdXNpbmcgZnVzZSBmaWxlIHN5c3RlbS4NClRoZSBzY2VuYXJpbyBp
-cyBhcyBiZWxvdzoNClRocmVhZCBBIHdpdGggaV9tdXRleCBoZWxkIGlzIGZyb3plbiBkdXJpbmcg
-d2FpdGluZyBmb3IgZmVlZGJhY2sgZnJvbSBmdXNlIGRhZW1vbjsNClRocmVhZCBCIGlzIHRyeWlu
-ZyB0byBsb2NrIGlfbXV0ZXggYW5kIGNhbid0IGJlIGZyb3plbi4NCkluIHRoZSBjYXNlIGFib3Zl
-LCAyMHMgd2FpdGluZyBpcyBuZWVkbGVzcywgYXMgZnJlZXppbmcgd2lsbCBmYWlsIHVuYXZvaWRh
-Ymx5Lg0KDQpJIGFncmVlIHdpdGggeW91IHRoYXQgd2UnZCBiZXR0ZXIgZml4IHRoZW0gZnJvbSB0
-aGUgcm9vdCwgd2hpY2ggbWF5IG5lZWQgc29sdXRpb24gb2YgbG9uZyB0ZXJtLg0KSSBhbHNvIHNh
-dyBzb21lIHJlbGF0ZWQgZGlzY3Vzc2lvbiBvbiBMaW51eCBjb21tdW5pdHkgYXMgYmVsb3csIHdp
-dGhvdXQgZmluYWwgY29uY2x1c2lvbjoNCmh0dHA6Ly9saXN0cy5saW51eC1mb3VuZGF0aW9uLm9y
-Zy9waXBlcm1haWwvbGludXgtcG0vMjAwOC1PY3RvYmVyLzAxODc3NC5odG1sDQoNClNvIEkgdGhp
-bmsgaWYgd2UgY2FuIGVuYWJsZSBmcmVlemluZyB0aW1lb3V0IGNvbmZpZ3VyYXRpb24sIGl0IHdp
-bGwgaW1wcm92ZSBzdWNoIGlzc3VlLg0KDQo+IERvIHlvdSBoYXZlIGEgc3BlY2lmaWMgZXhhbXBs
-ZSBpbiB3aGljaCB0aGF0IG5ldyBrbm9iIHdpbGwgYmUgdXNlZnVsPw0KW0xpLCBGZWldIA0KQXMg
-dGhlIHNjZW5hcmlvIHN0YXRlZCBhYm92ZSwgaWYgd2UgY2FuIGNvbmZpZ3VyZSB0aGUgdmFsdWUg
-b2YgdGltZW91dCB0byAxMHMgb3Igb3RoZXIgc21hbGwgdmFsdWUsDQp0aGlzIHRpbWUgb2YgZnJl
-ZXppbmcgd2lsbCBiZSBhYm9ydGVkIGluIGVhcmxpZXIgdGltZSwgYW5kIGFmdGVyIGlfbXV0ZXgg
-aXMgcmVsZWFzZWQgZHVyaW5nIHRocmVhZCBBIHJlc3RhcnRpbmcsDQp0aGUgbmV4dCB0aW1lIG9m
-IHN1c3BlbmQvZnJlZXplIG1heSBzdWNjZWVkIGluIHJlbGF0aXZlbHkgZWFybGllciB0aW1lLg0K
-DQo+IFdoeSBkbyB5b3Ugd2FudCB0byBkbyB0aGF0IHRocm91Z2ggc3lzY3RsIGFuZCBub3Qgc3lz
-ZnM/DQpbTGksIEZlaV0gDQpUaGFua3MgZm9yIHlvdXIgc3VnZ2VzdGlvbiwgc3lzZnMgaXMgbW9y
-ZSBzdWl0YWJsZSwgYW5kIEknbGwgdXNlIHN5c2ZzIGluIHBhdGNoIFYyLg0KDQo+IFJhZmFlbA0K
-PiANCj4gDQo+ID4gU2lnbmVkLW9mZi1ieTogTGl1IENodWFuc2hlbmcgPGNodWFuc2hlbmcubGl1
-QGludGVsLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaSBGZWkgPGZlaS5saUBpbnRlbC5jb20+
-DQo+ID4gLS0tDQo+ID4gIGluY2x1ZGUvbGludXgvZnJlZXplci5oIHwgICAgNSArKysrKw0KPiA+
-ICBrZXJuZWwvcG93ZXIvcHJvY2Vzcy5jICB8ICAgIDQgKystLQ0KPiA+ICBrZXJuZWwvc3lzY3Rs
-LmMgICAgICAgICB8ICAgMTIgKysrKysrKysrKysrDQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMTkg
-aW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9pbmNs
-dWRlL2xpbnV4L2ZyZWV6ZXIuaCBiL2luY2x1ZGUvbGludXgvZnJlZXplci5oDQo+ID4gaW5kZXgg
-ZTQyMzhjZS4uZjM3YjNiZSAxMDA2NDQNCj4gPiAtLS0gYS9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIu
-aA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvZnJlZXplci5oDQo+ID4gQEAgLTEzLDYgKzEzLDEx
-IEBAIGV4dGVybiBib29sIHBtX2ZyZWV6aW5nOwkJLyogUE0gZnJlZXppbmcgaW4gZWZmZWN0DQo+
-ICovDQo+ID4gIGV4dGVybiBib29sIHBtX25vc2lnX2ZyZWV6aW5nOwkJLyogUE0gbm9zaWcgZnJl
-ZXppbmcgaW4gZWZmZWN0ICovDQo+ID4NCj4gPiAgLyoNCj4gPiArICogVGltZW91dCBmb3Igc3Rv
-cHBpbmcgcHJvY2Vzc2VzDQo+ID4gKyAqLw0KPiA+ICtleHRlcm4gdW5zaWduZWQgaW50IHN5c2N0
-bF9mcmVlemVfcHJvY2Vzc190aW1lb3V0X3NlY3M7DQo+ID4gKw0KPiA+ICsvKg0KPiA+ICAgKiBD
-aGVjayBpZiBhIHByb2Nlc3MgaGFzIGJlZW4gZnJvemVuDQo+ID4gICAqLw0KPiA+ICBzdGF0aWMg
-aW5saW5lIGJvb2wgZnJvemVuKHN0cnVjdCB0YXNrX3N0cnVjdCAqcCkNCj4gPiBkaWZmIC0tZ2l0
-IGEva2VybmVsL3Bvd2VyL3Byb2Nlc3MuYyBiL2tlcm5lbC9wb3dlci9wcm9jZXNzLmMNCj4gPiBp
-bmRleCBkNWEyNThiLi5mN2ViN2M5IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC9wb3dlci9wcm9j
-ZXNzLmMNCj4gPiArKysgYi9rZXJuZWwvcG93ZXIvcHJvY2Vzcy5jDQo+ID4gQEAgLTIxLDcgKzIx
-LDcgQEANCj4gPiAgLyoNCj4gPiAgICogVGltZW91dCBmb3Igc3RvcHBpbmcgcHJvY2Vzc2VzDQo+
-ID4gICAqLw0KPiA+IC0jZGVmaW5lIFRJTUVPVVQJKDIwICogSFopDQo+ID4gK3Vuc2lnbmVkIGlu
-dCBfX3JlYWRfbW9zdGx5IHN5c2N0bF9mcmVlemVfcHJvY2Vzc190aW1lb3V0X3NlY3MgPSAyMDsN
-Cj4gPg0KPiA+ICBzdGF0aWMgaW50IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCB1c2VyX29ubHkp
-DQo+ID4gIHsNCj4gPiBAQCAtMzYsNyArMzYsNyBAQCBzdGF0aWMgaW50IHRyeV90b19mcmVlemVf
-dGFza3MoYm9vbCB1c2VyX29ubHkpDQo+ID4NCj4gPiAgCWRvX2dldHRpbWVvZmRheSgmc3RhcnQp
-Ow0KPiA+DQo+ID4gLQllbmRfdGltZSA9IGppZmZpZXMgKyBUSU1FT1VUOw0KPiA+ICsJZW5kX3Rp
-bWUgPSBqaWZmaWVzICsgc3lzY3RsX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfc2VjcyAqIEhaOw0K
-PiA+DQo+ID4gIAlpZiAoIXVzZXJfb25seSkNCj4gPiAgCQlmcmVlemVfd29ya3F1ZXVlc19iZWdp
-bigpOw0KPiA+IGRpZmYgLS1naXQgYS9rZXJuZWwvc3lzY3RsLmMgYi9rZXJuZWwvc3lzY3RsLmMN
-Cj4gPiBpbmRleCBjODg4NzhkLi5mODhiY2I5IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC9zeXNj
-dGwuYw0KPiA+ICsrKyBiL2tlcm5lbC9zeXNjdGwuYw0KPiA+IEBAIC05MCw2ICs5MCw5IEBADQo+
-ID4gICNpbmNsdWRlIDxsaW51eC9ubWkuaD4NCj4gPiAgI2VuZGlmDQo+ID4NCj4gPiArI2lmZGVm
-IENPTkZJR19GUkVFWkVSDQo+ID4gKyNpbmNsdWRlIDxsaW51eC9mcmVlemVyLmg+DQo+ID4gKyNl
-bmRpZg0KPiA+DQo+ID4gICNpZiBkZWZpbmVkKENPTkZJR19TWVNDVEwpDQo+ID4NCj4gPiBAQCAt
-MTA0Nyw2ICsxMDUwLDE1IEBAIHN0YXRpYyBzdHJ1Y3QgY3RsX3RhYmxlIGtlcm5fdGFibGVbXSA9
-IHsNCj4gPiAgCQkucHJvY19oYW5kbGVyCT0gcHJvY19kb2ludHZlYywNCj4gPiAgCX0sDQo+ID4g
-ICNlbmRpZg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZSRUVaRVINCj4gPiArCXsNCj4gPiArCQkucHJv
-Y25hbWUJPSAiZnJlZXplX3Byb2Nlc3NfdGltZW91dF9zZWNzIiwNCj4gPiArCQkuZGF0YQkJPSAm
-c3lzY3RsX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfc2VjcywNCj4gPiArCQkubWF4bGVuCQk9IHNp
-emVvZih1bnNpZ25lZCBpbnQpLA0KPiA+ICsJCS5tb2RlCQk9IDA2NDQsDQo+ID4gKwkJLnByb2Nf
-aGFuZGxlcgk9IHByb2NfZG9pbnR2ZWMsDQo+ID4gKwl9LA0KPiA+ICsjZW5kaWYNCj4gPiAgCXsg
-fQ0KPiA+ICB9Ow0KPiA+DQo+ID4NCj4gLS0NCj4gSSBzcGVhayBvbmx5IGZvciBteXNlbGYuDQo+
-IFJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlci4N
-Cg==
+Hello Andrew,
+   Thanks for your feedback.
+   Your suggestion are all accepted, and will be updated in V2 as below:
+1> The newly added attribute will be /sys/power/pm_freeze_timeout;
+2> Documentation/power/freezing-of-tasks.txt will be updated to record such attribute;
+3> Unit of millisecond will be used for the attribute. 
+
+Best Regards,
+Li Fei
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Wednesday, January 30, 2013 8:37 AM
+To: Li, Fei
+Cc: rjw@sisk.pl; linux-kernel@vger.kernel.org; linux-pm@vger.kernel.org; Liu, Chuansheng
+Subject: Re: [PATCH] suspend: enable freeze timeout configuration through sysctl
+
+On Tue, 29 Jan 2013 10:58:20 +0800
+fli24 <fei.li@intel.com> wrote:
+
+> At present, the timeout value for freezing tasks is fixed as 20s,
+> which is too long for handheld device usage, especially for mobile
+> phone.
+> 
+> In order to improve user experience, we enable freeze timeout
+> configuration through sysctl, so that we can tune the value easily
+> for concrete usage, such as smaller value for handheld device such
+> as mobile phone.
+> 
+> ...
+>
+
+The patch looks nice - it does everything right in places where things
+are frequently done wrongly.  Except..
+
+It forgot to document the sysctl.  Documentation/sysctl/kernel.txt, I
+guess.
+
+Is /proc/sys/kernel the most appropriate place for this?  Perhaps a
+PM-specific place would be better.  Maybe not.
+
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
+>  extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
+>  
+>  /*
+> + * Timeout for stopping processes
+> + */
+> +extern unsigned int sysctl_freeze_process_timeout_secs;
+
+I suggest the use of milliseconds here.  Someone might want a
+half-second timeout and it's pretty pointless to design the interface
+in a way which rules that out.
+
