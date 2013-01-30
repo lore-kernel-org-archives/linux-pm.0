@@ -1,51 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] cpufreq: instantiate cpufreq-cpu0 as a platform_driver
-Date: Wed, 30 Jan 2013 14:57:48 +0100
-Message-ID: <1620717.9QAjdjU4WH@vostro.rjw.lan>
-References: <1359428020-21068-1-git-send-email-shawn.guo@linaro.org> <2871120.foIQeGmlHR@vostro.rjw.lan> <20130130134939.GE2757@S2101-09.ap.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130130134939.GE2757@S2101-09.ap.freescale.net>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: "AnilKumar, Chimata" <anilkumar@ti.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Tony Lindgren <tony@atomide.com>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH] cpufreq: governors: clean timer init and exit code
+Date: Wed, 30 Jan 2013 14:53:37 +0100
+Message-ID: <1359554017-28620-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f176.google.com ([209.85.215.176]:63815 "EHLO
+	mail-ea0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753676Ab3A3Nxz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 08:53:55 -0500
+Received: by mail-ea0-f176.google.com with SMTP id a13so724787eaa.21
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 05:53:53 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 
-On Wednesday, January 30, 2013 09:49:41 PM Shawn Guo wrote:
-> On Wed, Jan 30, 2013 at 02:40:35PM +0100, Rafael J. Wysocki wrote:
-> > > > Mark, AnilKumar,
-> > > > 
-> > > > I only compile-tested it on highbank and omap2.  Please give it a test
-> > > > no hardware to make sure cpufreq-cpu0 still works for you.  Thanks.
-> > > 
-> > > Hi Shawn,
-> > > 
-> > > I hope this is based on linux-omap/master, to test the driver I have
-> > > to add some patches on top of this patch, because of recent changes.
-> > > I will provide the test details once I am done.
-> > 
-> > Shawn, does it mean I need to wait with applying the patch or will OMAP2
-> > work as is?
-> > 
-> I would expect that omap2/am33xx should work as it is, but I do not
-> have hardware to confirm that.
-> 
-> Also as the patch touches a few files in arch/arm/mach-omap2, we may
-> need an ACK from Tony.
-> 
-> Actually, I prefer to move omap2 bits into a separate patch and have
-> it go via omap tree to avoid the possible conflict with cpufreq and
-> arm-soc tree.  What do you say?  If you agree, I will re-iterate the
-> patch to do so.
+Drop unused arguments from dbs_timer_init and clean dbs_timer_exit and
+cpufreq_governor_dbs to remove non necessary special cases.
 
-Yes, please do as you think is appropriate.
+Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+---
+
+Hello Rafael,
+
+that's the cleanup on top of "cpufreq: handle SW coordinated CPUs".
 
 Thanks,
-Rafael
+Fabio
 
+ drivers/cpufreq/cpufreq_governor.c | 43 ++++++++++++--------------------------
+ 1 file changed, 13 insertions(+), 30 deletions(-)
 
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index ee8b7ca..46f96a4 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -169,19 +169,19 @@ bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
+ }
+ EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
+ 
+-static inline void dbs_timer_init(struct dbs_data *dbs_data,
+-				  struct cpu_dbs_common_info *cdbs,
+-				  unsigned int sampling_rate,
+-				  int cpu)
++static inline void dbs_timer_init(struct dbs_data *dbs_data, int cpu,
++				  unsigned int sampling_rate)
+ {
+ 	int delay = delay_for_sampling_rate(sampling_rate);
+-	struct cpu_dbs_common_info *cdbs_local = dbs_data->get_cpu_cdbs(cpu);
++	struct cpu_dbs_common_info *cdbs = dbs_data->get_cpu_cdbs(cpu);
+ 
+-	schedule_delayed_work_on(cpu, &cdbs_local->work, delay);
++	schedule_delayed_work_on(cpu, &cdbs->work, delay);
+ }
+ 
+-static inline void dbs_timer_exit(struct cpu_dbs_common_info *cdbs)
++static inline void dbs_timer_exit(struct dbs_data *dbs_data, int cpu)
+ {
++	struct cpu_dbs_common_info *cdbs = dbs_data->get_cpu_cdbs(cpu);
++
+ 	cancel_delayed_work_sync(&cdbs->work);
+ }
+ 
+@@ -289,36 +289,19 @@ second_time:
+ 		}
+ 		mutex_unlock(&dbs_data->mutex);
+ 
+-		if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+-			/* Initiate timer time stamp */
+-			cpu_cdbs->time_stamp = ktime_get();
++		/* Initiate timer time stamp */
++		cpu_cdbs->time_stamp = ktime_get();
+ 
+-			for_each_cpu(j, policy->cpus) {
+-				struct cpu_dbs_common_info *j_cdbs;
+-
+-				j_cdbs = dbs_data->get_cpu_cdbs(j);
+-				dbs_timer_init(dbs_data, j_cdbs,
+-					       *sampling_rate, j);
+-			}
+-		} else {
+-			dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate, cpu);
+-		}
++		for_each_cpu(j, policy->cpus)
++			dbs_timer_init(dbs_data, j, *sampling_rate);
+ 		break;
+ 
+ 	case CPUFREQ_GOV_STOP:
+ 		if (dbs_data->governor == GOV_CONSERVATIVE)
+ 			cs_dbs_info->enable = 0;
+ 
+-		if (dbs_sw_coordinated_cpus(cpu_cdbs)) {
+-			for_each_cpu(j, policy->cpus) {
+-				struct cpu_dbs_common_info *j_cdbs;
+-
+-				j_cdbs = dbs_data->get_cpu_cdbs(j);
+-				dbs_timer_exit(j_cdbs);
+-			}
+-		} else {
+-			dbs_timer_exit(cpu_cdbs);
+-		}
++		for_each_cpu(j, policy->cpus)
++			dbs_timer_exit(dbs_data, j);
+ 
+ 		mutex_lock(&dbs_data->mutex);
+ 		mutex_destroy(&cpu_cdbs->timer_mutex);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.12.1
+
