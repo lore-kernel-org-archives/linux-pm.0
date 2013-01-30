@@ -1,110 +1,168 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 1/4] cpufreq: handle SW coordinated CPUs
-Date: Wed, 30 Jan 2013 20:32:38 +0530
-Message-ID: <CAKohponwQFFtC3MKh72Z0bqYksV_P6D07VivQUYjai1qPB_J9g@mail.gmail.com>
-References: <1359550803-18577-1-git-send-email-fabio.baltieri@linaro.org>
-	<1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v8 4/4] sd: change to auto suspend mode
+Date: Wed, 30 Jan 2013 10:38:26 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301301032460.1709-100000@iolanthe.rowland.org>
+References: <1359538494-2936-5-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359550803-18577-2-git-send-email-fabio.baltieri@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org, Rickard Andersson <rickard.andersson@stericsson.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:48247 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752703Ab3A3Pi1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 10:38:27 -0500
+In-Reply-To: <1359538494-2936-5-git-send-email-aaron.lu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-Hi Fabio,
+On Wed, 30 Jan 2013, Aaron Lu wrote:
 
-I know Rafael has asked you to send only the incremental patch, but i
-am interested in reviewing whole series again, as i haven't reviewed
-earlier stuff :)
+> From: Lin Ming <ming.m.lin@intel.com>
+> 
+> Uses block layer runtime pm helper functions in
+> scsi_runtime_suspend/resume for devices that take advantage of it.
+> 
+> Remove scsi_autopm_* from sd open/release path and check_events path.
+> 
+> Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
 
-I believe you are required to send patches to patches@linaro.org too :)
+A couple of very minor suggestions...
 
-On 30 January 2013 18:30, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> From: Rickard Andersson <rickard.andersson@stericsson.com>
->
-> This patch fixes a bug that occurred when we had load on a secondary CPU
-> and the primary CPU was sleeping. Only one sampling timer was spawned
-> and it was spawned as a deferred timer on the primary CPU, so when a
-> secondary CPU had a change in load this was not detected by the cpufreq
-> governor (both ondemand and conservative).
->
-> This patch make sure that deferred timers are run on all CPUs in the
-> case of software controlled CPUs that run on the same frequency.
+> --- a/drivers/scsi/scsi_pm.c
+> +++ b/drivers/scsi/scsi_pm.c
 
-Its really a good point. I wondered earlier why does interactive governor
-has per-cpu timer. BTW, you can check how interactive governor is handling
-this requirement. That might improve these drivers too.
-
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> +bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
+> @@ -144,18 +144,44 @@ static int scsi_bus_restore(struct device *dev)
+>  
+>  #ifdef CONFIG_PM_RUNTIME
+>  
+> +static int scsi_blk_runtime_suspend(struct device *dev)
 > +{
-> +       struct cpufreq_policy *policy = cdbs->cur_policy;
+> +	struct scsi_device *sdev = to_scsi_device(dev);
+
+For this routine and the other new ones, it may be slightly more
+efficient to pass both dev and sdev as arguments (this depends on how
+smart the compiler's optimizer is).  The caller already knows both of
+them, after all.
+
+> +	int err;
 > +
-> +       return cpumask_weight(policy->cpus) > 1;
+> +	err = blk_pre_runtime_suspend(sdev->request_queue);
+> +	if (err)
+> +		return err;
+> +	err = pm_generic_runtime_suspend(dev);
+> +	blk_post_runtime_suspend(sdev->request_queue, err);
+> +
+> +	return err;
 > +}
-> +EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
-
-I believe this routine should be rather present in cpufreq core code,
-as their might
-be other users of it. Its really not related to dbs or governors.
-
-My ideas about the name of routine then:
-- policy_is_shared()
-- or something better you have :)
-
-> @@ -217,6 +227,10 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->                         if (ignore_nice)
->                                 j_cdbs->prev_cpu_nice =
->                                         kcpustat_cpu(j).cpustat[CPUTIME_NICE];
 > +
-> +                       mutex_init(&j_cdbs->timer_mutex);
-> +                       INIT_DEFERRABLE_WORK(&j_cdbs->work,
-> +                                            dbs_data->gov_dbs_timer);
+> +static int scsi_dev_runtime_suspend(struct device *dev)
+> +{
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +	int err;
+> +
+> +	err = scsi_dev_type_suspend(dev, pm ? pm->runtime_suspend : NULL);
+> +	if (err == -EAGAIN)
+> +		pm_schedule_suspend(dev, jiffies_to_msecs(
+> +					round_jiffies_up_relative(HZ/10)));
+> +
+> +	return err;
+> +}
+> +
+>  static int scsi_runtime_suspend(struct device *dev)
+>  {
+>  	int err = 0;
+> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	dev_dbg(dev, "scsi_runtime_suspend\n");
+>  	if (scsi_is_sdev_device(dev)) {
+> -		err = scsi_dev_type_suspend(dev,
+> -				pm ? pm->runtime_suspend : NULL);
+> -		if (err == -EAGAIN)
+> -			pm_schedule_suspend(dev, jiffies_to_msecs(
+> -				round_jiffies_up_relative(HZ/10)));
+> +		struct scsi_device *sdev = to_scsi_device(dev);
 
-That doesn't look the right place for doing it. With this change we
-will initialize
-mutex and work for all cpus whenever cpufreq_governor_dbs(GOV_START) is
-called. We really want to do it just before second_time: label, which will do
-it only when this is called for the very first time or cpu.
+There should be a blank line between the declaration and the
+executable code.
 
-That's what i thought initially :)
+> +		if (sdev->request_queue->dev)
+> +			err = scsi_blk_runtime_suspend(dev);
+> +		else
+> +			err = scsi_dev_runtime_suspend(dev);
+>  	}
+>  
+>  	/* Insert hooks here for targets, hosts, and transport classes */
+> @@ -163,14 +189,36 @@ static int scsi_runtime_suspend(struct device *dev)
+>  	return err;
+>  }
+>  
+> +static int scsi_blk_runtime_resume(struct device *dev)
+> +{
+> +	struct scsi_device *sdev = to_scsi_device(dev);
+> +	int err;
+> +
+> +	blk_pre_runtime_resume(sdev->request_queue);
+> +	err = pm_generic_runtime_resume(dev);
+> +	blk_post_runtime_resume(sdev->request_queue, err);
+> +
+> +	return err;
+> +}
+> +
+> +static int scsi_dev_runtime_resume(struct device *dev)
+> +{
+> +	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
 
-Then i looked at my own work and realized something else :).. Now, because
-we stop/start governors on every cpu movement, this routine is called only once.
+Blank line.
 
-What you can do:
-- Create a single for_each_cpu() in GOV_START path
-- Get rid of dbs_data->enable routine as we don't need to store the
-number of calls
-  for GOV_START.
+> +	return scsi_dev_type_resume(dev, pm ? pm->runtime_resume : NULL);
+> +}
+> +
+>  static int scsi_runtime_resume(struct device *dev)
+>  {
+>  	int err = 0;
+> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+>  
+>  	dev_dbg(dev, "scsi_runtime_resume\n");
+> -	if (scsi_is_sdev_device(dev))
+> -		err = scsi_dev_type_resume(dev, pm ? pm->runtime_resume : NULL);
+> +	if (scsi_is_sdev_device(dev)) {
+> +		struct scsi_device *sdev = to_scsi_device(dev);
 
->                 }
->
->                 /*
-> @@ -275,15 +289,16 @@ second_time:
->                 }
->                 mutex_unlock(&dbs_data->mutex);
->
-> -               mutex_init(&cpu_cdbs->timer_mutex);
-> -               dbs_timer_init(dbs_data, cpu_cdbs, *sampling_rate);
-> +               for_each_cpu(j, policy->cpus)
-> +                       dbs_timer_init(dbs_data, j, *sampling_rate);
+Blank line.
 
-Keep this too in the same for_each_cpu() loop and hence get to older
-param types of dbs_timer_init(), i.e. don't pass cpu as we already have
-j_cdbs in our loop.
+> +		if (sdev->request_queue->dev)
+> +			err = scsi_blk_runtime_resume(dev);
+> +		else
+> +			err = scsi_dev_runtime_resume(dev);
+> +	}
+>  
+>  	/* Insert hooks here for targets, hosts, and transport classes */
+>  
+> @@ -185,10 +233,17 @@ static int scsi_runtime_idle(struct device *dev)
+>  
+>  	/* Insert hooks here for targets, hosts, and transport classes */
+>  
+> -	if (scsi_is_sdev_device(dev))
+> -		err = pm_schedule_suspend(dev, 100);
+> -	else
+> +	if (scsi_is_sdev_device(dev)) {
+> +		struct scsi_device *sdev = to_scsi_device(dev);
 
->                 break;
->
->         case CPUFREQ_GOV_STOP:
->                 if (dbs_data->governor == GOV_CONSERVATIVE)
->                         cs_dbs_info->enable = 0;
->
-> -               dbs_timer_exit(cpu_cdbs);
-> +               for_each_cpu(j, policy->cpus)
-> +                       dbs_timer_exit(dbs_data, j);
->
->                 mutex_lock(&dbs_data->mutex);
->                 mutex_destroy(&cpu_cdbs->timer_mutex);
+Blank line.
+
+> +		if (sdev->request_queue->dev) {
+> +			pm_runtime_mark_last_busy(dev);
+> +			err = pm_runtime_autosuspend(dev);
+> +		} else {
+> +			err = pm_schedule_suspend(dev, 100);
+> +		}
+> +	} else {
+>  		err = pm_runtime_suspend(dev);
+> +	}
+>  	return err;
+>  }
+
+Alan Stern
+
