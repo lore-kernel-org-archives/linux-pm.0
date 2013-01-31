@@ -1,50 +1,37 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: add imx6q-cpufreq driver
-Date: Thu, 31 Jan 2013 11:41:50 +0800
-Message-ID: <20130131034148.GB17607@S2101-09.ap.freescale.net>
-References: <1359214303-3319-1-git-send-email-shawn.guo@linaro.org>
- <20130129025652.GB11546@S2101-09.ap.freescale.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: exynos: Broadcast frequency change notifications
+ for all cores
+Date: Thu, 31 Jan 2013 09:50:37 +0530
+Message-ID: <CAOh2x==GeK4qM=kjy-tzhbEh4L9AmRXoG_0tUzov1SK+uRFxcw@mail.gmail.com>
+References: <1887364.fvxYYNb7Mm@amdc1227>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20130129025652.GB11546@S2101-09.ap.freescale.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Eric Nelson <eric.nelson@boundarydevices.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f180.google.com ([209.85.220.180]:38196 "EHLO
+	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756592Ab3AaEUi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:20:38 -0500
+In-Reply-To: <1887364.fvxYYNb7Mm@amdc1227>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On Tue, Jan 29, 2013 at 10:56:54AM +0800, Shawn Guo wrote:
-> On Sat, Jan 26, 2013 at 11:31:43PM +0800, Shawn Guo wrote:
-> > Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
-> > hardware specific frequency and voltage scaling requirements.
-> > 
-> > The driver supports module build and is instantiated by the platform
-> > device/driver mechanism, so that it will not be instantiated on other
-> > platforms, as IMX is built with multiplatform support.
-> > 
-> > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Rafael,
-> 
-> I think the patch needs to go via cpufreq tree, as it has dependency
-> on Nishanth's "PM / OPP : export symbol consolidation" series.
+On Tue, Nov 13, 2012 at 2:56 PM, Tomasz Figa <t.figa@samsung.com> wrote:
+> On Exynos SoCs all cores share the same frequency setting, so changing
+> frequency of one core will affect rest of cores.
+>
+> This patch modifies the exynos-cpufreq driver to inform cpufreq core
+> about this behavior and broadcast frequency change notifications for all
+> cores.
 
-Rafael,
+>         /* When the new frequency is lower than current frequency */
+>         if ((freqs.new < freqs.old) ||
+> @@ -235,6 +237,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>                 cpumask_copy(policy->related_cpus, cpu_possible_mask);
+>                 cpumask_copy(policy->cpus, cpu_online_mask);
+>         } else {
+> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+>                 cpumask_setall(policy->cpus);
 
-Please hold off this one.  I plan to send v5 to handle regulator
-latency through regulator API, since my colleague is pushing patches
-to take care of voltage ramping time in anatop regulator driver.
-
-Shawn
+I couldn't understand the use of this change. Can you please explain ?
