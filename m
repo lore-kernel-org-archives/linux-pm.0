@@ -1,45 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: governors: clean timer init and exit code
-Date: Thu, 31 Jan 2013 14:06:17 +0100
-Message-ID: <1560132.gKXbKl82oR@vostro.rjw.lan>
-References: <1359554017-28620-1-git-send-email-fabio.baltieri@linaro.org> <CAKohpomTNkEOrnyQWKJ8siajg67-fpe4EnYxiipgmN8STMSwAQ@mail.gmail.com> <20130131110613.GD30667@balto.lan>
+Subject: Re: [PATCH v4] cpufreq: add imx6q-cpufreq driver
+Date: Thu, 31 Jan 2013 14:21:59 +0100
+Message-ID: <4348376.DH7xx2jCYa@vostro.rjw.lan>
+References: <1359214303-3319-1-git-send-email-shawn.guo@linaro.org> <20130129025652.GB11546@S2101-09.ap.freescale.net> <20130131034148.GB17607@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:36106 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766Ab3AaNAF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Jan 2013 08:00:05 -0500
-In-Reply-To: <20130131110613.GD30667@balto.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130131034148.GB17607@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Eric Nelson <eric.nelson@boundarydevices.com>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
 
-On Thursday, January 31, 2013 12:06:13 PM Fabio Baltieri wrote:
-> On Thu, Jan 31, 2013 at 04:23:06PM +0530, Viresh Kumar wrote:
-> > On 30 January 2013 19:23, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> > > Drop unused arguments from dbs_timer_init and clean dbs_timer_exit and
-> > > cpufreq_governor_dbs to remove non necessary special cases.
-> > >
-> > > Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+On Thursday, January 31, 2013 11:41:50 AM Shawn Guo wrote:
+> On Tue, Jan 29, 2013 at 10:56:54AM +0800, Shawn Guo wrote:
+> > On Sat, Jan 26, 2013 at 11:31:43PM +0800, Shawn Guo wrote:
+> > > Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
+> > > hardware specific frequency and voltage scaling requirements.
+> > > 
+> > > The driver supports module build and is instantiated by the platform
+> > > device/driver mechanism, so that it will not be instantiated on other
+> > > platforms, as IMX is built with multiplatform support.
+> > > 
+> > > Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> > > Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
 > > 
-> > As discussed over IRC, you will fix following in few days:
-> > - Code redundancy within governors
-> > - Removing second_time: label and cdbs->enable field
-> > - Fixing params to timer init and exit to make them more efficient.
+> > Rafael,
+> > 
+> > I think the patch needs to go via cpufreq tree, as it has dependency
+> > on Nishanth's "PM / OPP : export symbol consolidation" series.
 > 
-> That's the plan, I'd leave it up to Rafael to decide if further cleanup
-> patches should be included in 3.9 merge window or skip to the following
-> one... I understand that we are starting to be late on the -rc and I
-> also prefer to focus on fixup.
+> Rafael,
+> 
+> Please hold off this one.  I plan to send v5 to handle regulator
+> latency through regulator API, since my colleague is pushing patches
+> to take care of voltage ramping time in anatop regulator driver.
 
-The deadline for 3.9 merge window patches is about 2 days before 3.8-rc7
-(assuming that there will be -rc7) and by that time they need to be in
-linux-next.  Whatever doesn't make it will have to go after 3.9-rc1 or be
-postponed until the 3.10 merge window.
+OK
 
 Thanks,
 Rafael
