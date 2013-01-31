@@ -1,68 +1,146 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: SPEAr: Notify all policy->cpus of frequency change
-Date: Thu, 31 Jan 2013 10:24:51 +0530
-Message-ID: <CAKohpo=w+fAv3k2M7MXFbss0u52jzXCRHdoTw8fKSbSaN2jrFA@mail.gmail.com>
-References: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
+From: fli24 <fei.li@intel.com>
+Subject: [PATCH V3] suspend: enable freeze timeout configuration through sys
+Date: Thu, 31 Jan 2013 12:55:32 +0800
+Message-ID: <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	 <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=bcaec54d476656c53004d48e6da8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f175.google.com ([209.85.214.175]:54923 "EHLO
-	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216Ab3AaEyw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:54:52 -0500
-Received: by mail-ob0-f175.google.com with SMTP id uz6so2458939obc.20
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 20:54:51 -0800 (PST)
-In-Reply-To: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
+Received: from mga11.intel.com ([192.55.52.93]:13809 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753504Ab3AaE5H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Jan 2013 23:57:07 -0500
+In-Reply-To: <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, spear-devel@list.st.com
+To: rjw@sisk.pl, akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, fei.li@intel.com
 
---bcaec54d476656c53004d48e6da8
-Content-Type: text/plain; charset=ISO-8859-1
 
-On 31 January 2013 10:23, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> SPEAr cpufreq driver supports dual core Cortex-A9 SoC's, where cpus share policy
-> structure. Whenever we update frequency of a cpu, we must notify all
-> policy->cpus.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+At present, the value of timeout for freezing is 20s, which is
+meaningless in case that one thread is frozen with mutex locked
+and another thread is trying to lock the mutex, as this time of
+freezing will fail unavoidably.
+And if there is no new wakeup event registered, the system will
+waste at most 20s for such meaningless trying of freezing.
 
-Find it attached too.
+With this patch, the value of timeout can be configured to smaller
+value, so such meaningless trying of freezing will be aborted in
+earlier time, and later freezing can be also triggered in earlier
+time. And more power will be saved.
+In normal case on mobile phone, it costs real little time to freeze
+processes. On some platform, it only costs about 20ms to freeze
+user space processes and 10ms to freeze kernel freezable threads.
 
---bcaec54d476656c53004d48e6da8
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-SPEAr-Notify-all-policy-cpus-of-frequency-ch.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-SPEAr-Notify-all-policy-cpus-of-frequency-ch.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hclfjs6f0
+Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
+Signed-off-by: Li Fei <fei.li@intel.com>
+---
+ Documentation/power/freezing-of-tasks.txt |    5 +++++
+ include/linux/freezer.h                   |    5 +++++
+ kernel/power/main.c                       |   27 +++++++++++++++++++++++++++
+ kernel/power/process.c                    |    4 ++--
+ 4 files changed, 39 insertions(+), 2 deletions(-)
 
-RnJvbSBkZGMxYmI0ZWQyNzg4MTlmZmM3ZmFjMjI5MTM0YzAxZTE3ZjAzNDc3IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZGRjMWJiNGVkMjc4ODE5ZmZjN2ZhYzIyOTEzNGMw
-MWUxN2YwMzQ3Ny4xMzU5NjA3OTgwLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAzMSBKYW4g
-MjAxMyAxMDoxNzozMiArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IFNQRUFyOiBOb3Rp
-ZnkgYWxsIHBvbGljeS0+Y3B1cyBvZiBmcmVxdWVuY3kgY2hhbmdlCgpTUEVBciBjcHVmcmVxIGRy
-aXZlciBzdXBwb3J0cyBkdWFsIGNvcmUgQ29ydGV4LUE5IFNvQydzLCB3aGVyZSBjcHVzIHNoYXJl
-IHBvbGljeQpzdHJ1Y3R1cmUuIFdoZW5ldmVyIHdlIHVwZGF0ZSBmcmVxdWVuY3kgb2YgYSBjcHUs
-IHdlIG11c3Qgbm90aWZ5IGFsbApwb2xpY3ktPmNwdXMuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2gg
-S3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9zcGVh
-ci1jcHVmcmVxLmMgfCA3ICsrKysrLS0KIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyks
-IDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3NwZWFyLWNwdWZy
-ZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9zcGVhci1jcHVmcmVxLmMKaW5kZXggNDU3NWNmZS4uNjNj
-NmE3ZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL3NwZWFyLWNwdWZyZXEuYworKysgYi9k
-cml2ZXJzL2NwdWZyZXEvc3BlYXItY3B1ZnJlcS5jCkBAIC0xNTcsNyArMTU3LDkgQEAgc3RhdGlj
-IGludCBzcGVhcl9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwK
-IAogCWZyZXFzLm5ldyA9IG5ld2ZyZXEgLyAxMDAwOwogCWZyZXFzLm5ldyAvPSBtdWx0OwotCWNw
-dWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BSRUNIQU5HRSk7CisKKwlm
-b3JfZWFjaF9jcHUoZnJlcXMuY3B1LCBwb2xpY3ktPmNwdXMpCisJCWNwdWZyZXFfbm90aWZ5X3Ry
-YW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BSRUNIQU5HRSk7CiAKIAlpZiAobXVsdCA9PSAyKQog
-CQlyZXQgPSBzcGVhcjEzNDBfc2V0X2NwdV9yYXRlKHNyY2NsaywgbmV3ZnJlcSk7CkBAIC0xNzAs
-NyArMTcyLDggQEAgc3RhdGljIGludCBzcGVhcl9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJl
-cV9wb2xpY3kgKnBvbGljeSwKIAkJZnJlcXMubmV3ID0gY2xrX2dldF9yYXRlKHNwZWFyX2NwdWZy
-ZXEuY2xrKSAvIDEwMDA7CiAJfQogCi0JY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmZnJlcXMs
-IENQVUZSRVFfUE9TVENIQU5HRSk7CisJZm9yX2VhY2hfY3B1KGZyZXFzLmNwdSwgcG9saWN5LT5j
-cHVzKQorCQljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hB
-TkdFKTsKIAlyZXR1cm4gcmV0OwogfQogCi0tIAoxLjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
---bcaec54d476656c53004d48e6da8--
+diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
+index 6ec291e..85894d8 100644
+--- a/Documentation/power/freezing-of-tasks.txt
++++ b/Documentation/power/freezing-of-tasks.txt
+@@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task, since it is anyway
+ only after the entire suspend/hibernation sequence is complete.
+ So, to summarize, use [un]lock_system_sleep() instead of directly using
+ mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
++
++V. Miscellaneous
++/sys/power/pm_freeze_timeout controls how long it will cost at most to freeze
++all user space processes or all freezable kernel threads, in unit of millisecond.
++The default value is 20000, with range of unsigned integer.
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index e4238ce..5a24a33 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
+ extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
+ 
+ /*
++ * Timeout for stopping processes
++ */
++extern unsigned int sys_freeze_process_timeout_msecs;
++
++/*
+  * Check if a process has been frozen
+  */
+ static inline bool frozen(struct task_struct *p)
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 1c16f91..453ead1 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
+ 
+ #endif /* CONFIG_PM_TRACE */
+ 
++#ifdef CONFIG_FREEZER
++static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
++				      struct kobj_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
++}
++
++static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
++				       struct kobj_attribute *attr,
++				       const char *buf, size_t n)
++{
++	unsigned long val;
++
++	if (kstrtoul(buf, 10, &val))
++		return -EINVAL;
++
++	sys_freeze_process_timeout_msecs = val;
++	return n;
++}
++
++power_attr(pm_freeze_timeout);
++
++#endif	/* CONFIG_FREEZER*/
++
+ static struct attribute * g[] = {
+ 	&state_attr.attr,
+ #ifdef CONFIG_PM_TRACE
+@@ -576,6 +600,9 @@ static struct attribute * g[] = {
+ 	&pm_print_times_attr.attr,
+ #endif
+ #endif
++#ifdef CONFIG_FREEZER
++	&pm_freeze_timeout_attr.attr,
++#endif
+ 	NULL,
+ };
+ 
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index d5a258b..ba45a26 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -21,7 +21,7 @@
+ /* 
+  * Timeout for stopping processes
+  */
+-#define TIMEOUT	(20 * HZ)
++unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
+ 
+ static int try_to_freeze_tasks(bool user_only)
+ {
+@@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
+ 
+ 	do_gettimeofday(&start);
+ 
+-	end_time = jiffies + TIMEOUT;
++	end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs);
+ 
+ 	if (!user_only)
+ 		freeze_workqueues_begin();
+-- 
+1.7.4.1
+
+
+
