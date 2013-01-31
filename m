@@ -1,126 +1,70 @@
-From: "Li, Fei" <fei.li@intel.com>
-Subject: RE: [PATCH V2] suspend: enable freeze timeout configuration through
- sys
-Date: Thu, 31 Jan 2013 05:00:23 +0000
-Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F0B3D@SHSMSX102.ccr.corp.intel.com>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <2335103.cho0vcBPUK@vostro.rjw.lan>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v8 2/4] block: add runtime pm helpers
+Date: Thu, 31 Jan 2013 13:35:35 +0800
+Message-ID: <20130131053535.GA14627@aaronlu.sh.intel.com>
+References: <1359538494-2936-3-git-send-email-aaron.lu@intel.com>
+ <Pine.LNX.4.44L0.1301301053210.1709-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:55443 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:5049 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744Ab3AaFAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Jan 2013 00:00:47 -0500
-In-Reply-To: <2335103.cho0vcBPUK@vostro.rjw.lan>
-Content-Language: en-US
+	id S1750941Ab3AaFep (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Jan 2013 00:34:45 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1301301053210.1709-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-SGVsbG8gUmFmYWVsLA0KICAgSSB1cGRhdGUgaXQgYXMgYmVsb3cgaW4gVjMsIGRvIHlvdSB0aGlu
-ayBpdCBtYWtlcyBzZW5zZT8NCg0KQXQgcHJlc2VudCwgdGhlIHZhbHVlIG9mIHRpbWVvdXQgZm9y
-IGZyZWV6aW5nIGlzIDIwcywgd2hpY2ggaXMNCm1lYW5pbmdsZXNzIGluIGNhc2UgdGhhdCBvbmUg
-dGhyZWFkIGlzIGZyb3plbiB3aXRoIG11dGV4IGxvY2tlZA0KYW5kIGFub3RoZXIgdGhyZWFkIGlz
-IHRyeWluZyB0byBsb2NrIHRoZSBtdXRleCwgYXMgdGhpcyB0aW1lIG9mDQpmcmVlemluZyB3aWxs
-IGZhaWwgdW5hdm9pZGFibHkuDQpBbmQgaWYgdGhlcmUgaXMgbm8gbmV3IHdha2V1cCBldmVudCBy
-ZWdpc3RlcmVkLCB0aGUgc3lzdGVtIHdpbGwNCndhc3RlIGF0IG1vc3QgMjBzIGZvciBzdWNoIG1l
-YW5pbmdsZXNzIHRyeWluZyBvZiBmcmVlemluZy4NCg0KV2l0aCB0aGlzIHBhdGNoLCB0aGUgdmFs
-dWUgb2YgdGltZW91dCBjYW4gYmUgY29uZmlndXJlZCB0byBzbWFsbGVyDQp2YWx1ZSwgc28gc3Vj
-aCBtZWFuaW5nbGVzcyB0cnlpbmcgb2YgZnJlZXppbmcgd2lsbCBiZSBhYm9ydGVkIGluDQplYXJs
-aWVyIHRpbWUsIGFuZCBsYXRlciBmcmVlemluZyBjYW4gYmUgYWxzbyB0cmlnZ2VyZWQgaW4gZWFy
-bGllcg0KdGltZS4gQW5kIG1vcmUgcG93ZXIgd2lsbCBiZSBzYXZlZC4NCkluIG5vcm1hbCBjYXNl
-IG9uIG1vYmlsZSBwaG9uZSwgaXQgY29zdHMgcmVhbCBsaXR0bGUgdGltZSB0byBmcmVlemUNCnBy
-b2Nlc3Nlcy4gT24gc29tZSBwbGF0Zm9ybSwgaXQgb25seSBjb3N0cyBhYm91dCAyMG1zIHRvIGZy
-ZWV6ZQ0KdXNlciBzcGFjZSBwcm9jZXNzZXMgYW5kIDEwbXMgdG8gZnJlZXplIGtlcm5lbCBmcmVl
-emFibGUgdGhyZWFkcy4NCg0KVGhhbmtzIGEgbG90IQ0KDQpCZXN0IFJlZ2FyZHMsDQpMaSBGZWkN
-ClRFTDogKzg2ICgwKTIxIDYxMTYgNTE0MA0KTW9iOiArODYgKDApMTM5IDE2OTYgNzQzNQ0KUGxh
-dGZvcm0gU3lzdGVtIEludGVncmF0aW9uIFNoYW5naGFpDQoNCg0KDQo+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHNpc2su
-cGxdDQo+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAzMCwgMjAxMyA5OjEwIFBNDQo+IFRvOiBM
-aSwgRmVpDQo+IENjOiBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOw0KPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExpdSwgQ2h1YW5zaGVu
-Zw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFYyXSBzdXNwZW5kOiBlbmFibGUgZnJlZXplIHRpbWVv
-dXQgY29uZmlndXJhdGlvbiB0aHJvdWdoDQo+IHN5cw0KPiANCj4gT24gV2VkbmVzZGF5LCBKYW51
-YXJ5IDMwLCAyMDEzIDAyOjIzOjM5IFBNIGZsaTI0IHdyb3RlOg0KPiA+DQo+ID4gQXQgcHJlc2Vu
-dCwgdGhlIHRpbWVvdXQgdmFsdWUgZm9yIGZyZWV6aW5nIHRhc2tzIGlzIGZpeGVkIGFzIDIwcywN
-Cj4gPiB3aGljaCBpcyB0b28gbG9uZyBmb3IgaGFuZGhlbGQgZGV2aWNlIHVzYWdlLCBlc3BlY2lh
-bGx5IGZvciBtb2JpbGUNCj4gPiBwaG9uZS4NCj4gPg0KPiA+IEluIG9yZGVyIHRvIGltcHJvdmUg
-dXNlciBleHBlcmllbmNlLCB3ZSBlbmFibGUgZnJlZXplIHRpbWVvdXQNCj4gPiBjb25maWd1cmF0
-aW9uIHRocm91Z2ggc3lzLCBzbyB0aGF0IHdlIGNhbiB0dW5lIHRoZSB2YWx1ZSBlYXNpbHkNCj4g
-PiBmb3IgY29uY3JldGUgdXNhZ2UsIHN1Y2ggYXMgc21hbGxlciB2YWx1ZSBmb3IgaGFuZGhlbGQg
-ZGV2aWNlIHN1Y2gNCj4gPiBhcyBtb2JpbGUgcGhvbmUuDQo+IA0KPiBBcyBJIHNhaWQsIEknZCBs
-aWtlIHRvIGtub3cgd2hhdCdzIHRoZSBleGFjdCBwcm9ibGVtIHlvdSBuZWVkIHRvIHdvcmsgYXJv
-dW5kDQo+IHVzaW5nIHRoaXMuDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KPiANCj4gDQo+ID4g
-U2lnbmVkLW9mZi1ieTogTGl1IENodWFuc2hlbmcgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4N
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBMaSBGZWkgPGZlaS5saUBpbnRlbC5jb20+DQo+ID4gLS0tDQo+
-ID4gIERvY3VtZW50YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFza3MudHh0IHwgICAgNSArKysr
-Kw0KPiA+ICBpbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaCAgICAgICAgICAgICAgICAgICB8ICAgIDUg
-KysrKysNCj4gPiAga2VybmVsL3Bvd2VyL21haW4uYyAgICAgICAgICAgICAgICAgICAgICAgfCAg
-IDI3DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ICBrZXJuZWwvcG93ZXIvcHJv
-Y2Vzcy5jICAgICAgICAgICAgICAgICAgICB8ICAgIDQgKystLQ0KPiA+ICA0IGZpbGVzIGNoYW5n
-ZWQsIDM5IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
-IGEvRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVlemluZy1vZi10YXNrcy50eHQNCj4gYi9Eb2N1bWVu
-dGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tzLnR4dA0KPiA+IGluZGV4IDZlYzI5MWUuLjg1
-ODk0ZDggMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVlemluZy1vZi10
-YXNrcy50eHQNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tz
-LnR4dA0KPiA+IEBAIC0yMjMsMyArMjIzLDggQEAgc2luY2UgdGhleSBhc2sgdGhlIGZyZWV6ZXIg
-dG8gc2tpcCBmcmVlemluZyB0aGlzIHRhc2ssDQo+IHNpbmNlIGl0IGlzIGFueXdheQ0KPiA+ICBv
-bmx5IGFmdGVyIHRoZSBlbnRpcmUgc3VzcGVuZC9oaWJlcm5hdGlvbiBzZXF1ZW5jZSBpcyBjb21w
-bGV0ZS4NCj4gPiAgU28sIHRvIHN1bW1hcml6ZSwgdXNlIFt1bl1sb2NrX3N5c3RlbV9zbGVlcCgp
-IGluc3RlYWQgb2YgZGlyZWN0bHkgdXNpbmcNCj4gPiAgbXV0ZXhfW3VuXWxvY2soJnBtX211dGV4
-KS4gVGhhdCB3b3VsZCBwcmV2ZW50IGZyZWV6aW5nIGZhaWx1cmVzLg0KPiA+ICsNCj4gPiArVi4g
-TWlzY2VsbGFuZW91cw0KPiA+ICsvc3lzL3Bvd2VyL3BtX2ZyZWV6ZV90aW1lb3V0IGNvbnRyb2xz
-IGhvdyBsb25nIGl0IHdpbGwgY29zdCBhdCBtb3N0IHRvDQo+IGZyZWV6ZQ0KPiA+ICthbGwgdXNl
-ciBzcGFjZSBwcm9jZXNzZXMgb3IgYWxsIGZyZWV6YWJsZSBrZXJuZWwgdGhyZWFkcywgaW4gdW5p
-dCBvZiBtaWxsaXNlY29uZC4NCj4gPiArVGhlIGRlZmF1bHQgdmFsdWUgaXMgMjAwMDAsIHdpdGgg
-cmFuZ2Ugb2YgdW5zaWduZWQgaW50ZWdlci4NCj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51
-eC9mcmVlemVyLmggYi9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+IGluZGV4IGU0MjM4Y2Uu
-LjVhMjRhMzMgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC9mcmVlemVyLmgNCj4gPiAr
-KysgYi9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+IEBAIC0xMyw2ICsxMywxMSBAQCBleHRl
-cm4gYm9vbCBwbV9mcmVlemluZzsJCS8qIFBNIGZyZWV6aW5nIGluIGVmZmVjdA0KPiAqLw0KPiA+
-ICBleHRlcm4gYm9vbCBwbV9ub3NpZ19mcmVlemluZzsJCS8qIFBNIG5vc2lnIGZyZWV6aW5nIGlu
-IGVmZmVjdCAqLw0KPiA+DQo+ID4gIC8qDQo+ID4gKyAqIFRpbWVvdXQgZm9yIHN0b3BwaW5nIHBy
-b2Nlc3Nlcw0KPiA+ICsgKi8NCj4gPiArZXh0ZXJuIHVuc2lnbmVkIGludCBzeXNfZnJlZXplX3By
-b2Nlc3NfdGltZW91dF9tc2VjczsNCj4gPiArDQo+ID4gKy8qDQo+ID4gICAqIENoZWNrIGlmIGEg
-cHJvY2VzcyBoYXMgYmVlbiBmcm96ZW4NCj4gPiAgICovDQo+ID4gIHN0YXRpYyBpbmxpbmUgYm9v
-bCBmcm96ZW4oc3RydWN0IHRhc2tfc3RydWN0ICpwKQ0KPiA+IGRpZmYgLS1naXQgYS9rZXJuZWwv
-cG93ZXIvbWFpbi5jIGIva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+IGluZGV4IDFjMTZmOTEuLjQ1
-M2VhZDEgMTAwNjQ0DQo+ID4gLS0tIGEva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+ICsrKyBiL2tl
-cm5lbC9wb3dlci9tYWluLmMNCj4gPiBAQCAtNTUzLDYgKzU1MywzMCBAQCBwb3dlcl9hdHRyKHBt
-X3RyYWNlX2Rldl9tYXRjaCk7DQo+ID4NCj4gPiAgI2VuZGlmIC8qIENPTkZJR19QTV9UUkFDRSAq
-Lw0KPiA+DQo+ID4gKyNpZmRlZiBDT05GSUdfRlJFRVpFUg0KPiA+ICtzdGF0aWMgc3NpemVfdCBw
-bV9mcmVlemVfdGltZW91dF9zaG93KHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KPiA+ICsJCQkJICAg
-ICAgc3RydWN0IGtvYmpfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpDQo+ID4gK3sNCj4gPiAr
-CXJldHVybiBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCBzeXNfZnJlZXplX3Byb2Nlc3NfdGltZW91dF9t
-c2Vjcyk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90IHBtX2ZyZWV6ZV90aW1l
-b3V0X3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KPiA+ICsJCQkJICAgICAgIHN0cnVjdCBr
-b2JqX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiArCQkJCSAgICAgICBjb25zdCBjaGFyICpidWYsIHNp
-emVfdCBuKQ0KPiA+ICt7DQo+ID4gKwl1bnNpZ25lZCBsb25nIHZhbDsNCj4gPiArDQo+ID4gKwlp
-ZiAoa3N0cnRvdWwoYnVmLCAxMCwgJnZhbCkpDQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4g
-Kw0KPiA+ICsJc3lzX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfbXNlY3MgPSB2YWw7DQo+ID4gKwly
-ZXR1cm4gbjsNCj4gPiArfQ0KPiA+ICsNCj4gPiArcG93ZXJfYXR0cihwbV9mcmVlemVfdGltZW91
-dCk7DQo+ID4gKw0KPiA+ICsjZW5kaWYJLyogQ09ORklHX0ZSRUVaRVIqLw0KPiA+ICsNCj4gPiAg
-c3RhdGljIHN0cnVjdCBhdHRyaWJ1dGUgKiBnW10gPSB7DQo+ID4gIAkmc3RhdGVfYXR0ci5hdHRy
-LA0KPiA+ICAjaWZkZWYgQ09ORklHX1BNX1RSQUNFDQo+ID4gQEAgLTU3Niw2ICs2MDAsOSBAQCBz
-dGF0aWMgc3RydWN0IGF0dHJpYnV0ZSAqIGdbXSA9IHsNCj4gPiAgCSZwbV9wcmludF90aW1lc19h
-dHRyLmF0dHIsDQo+ID4gICNlbmRpZg0KPiA+ICAjZW5kaWYNCj4gPiArI2lmZGVmIENPTkZJR19G
-UkVFWkVSDQo+ID4gKwkmcG1fZnJlZXplX3RpbWVvdXRfYXR0ci5hdHRyLA0KPiA+ICsjZW5kaWYN
-Cj4gPiAgCU5VTEwsDQo+ID4gIH07DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3Bvd2Vy
-L3Byb2Nlc3MuYyBiL2tlcm5lbC9wb3dlci9wcm9jZXNzLmMNCj4gPiBpbmRleCBkNWEyNThiLi5i
-YTQ1YTI2IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC9wb3dlci9wcm9jZXNzLmMNCj4gPiArKysg
-Yi9rZXJuZWwvcG93ZXIvcHJvY2Vzcy5jDQo+ID4gQEAgLTIxLDcgKzIxLDcgQEANCj4gPiAgLyoN
-Cj4gPiAgICogVGltZW91dCBmb3Igc3RvcHBpbmcgcHJvY2Vzc2VzDQo+ID4gICAqLw0KPiA+IC0j
-ZGVmaW5lIFRJTUVPVVQJKDIwICogSFopDQo+ID4gK3Vuc2lnbmVkIGludCBfX3JlYWRfbW9zdGx5
-IHN5c19mcmVlemVfcHJvY2Vzc190aW1lb3V0X21zZWNzID0gMjAwMDA7DQo+ID4NCj4gPiAgc3Rh
-dGljIGludCB0cnlfdG9fZnJlZXplX3Rhc2tzKGJvb2wgdXNlcl9vbmx5KQ0KPiA+ICB7DQo+ID4g
-QEAgLTM2LDcgKzM2LDcgQEAgc3RhdGljIGludCB0cnlfdG9fZnJlZXplX3Rhc2tzKGJvb2wgdXNl
-cl9vbmx5KQ0KPiA+DQo+ID4gIAlkb19nZXR0aW1lb2ZkYXkoJnN0YXJ0KTsNCj4gPg0KPiA+IC0J
-ZW5kX3RpbWUgPSBqaWZmaWVzICsgVElNRU9VVDsNCj4gPiArCWVuZF90aW1lID0gamlmZmllcyAr
-IG1zZWNzX3RvX2ppZmZpZXMoc3lzX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfbXNlY3MpOw0KPiA+
-DQo+ID4gIAlpZiAoIXVzZXJfb25seSkNCj4gPiAgCQlmcmVlemVfd29ya3F1ZXVlc19iZWdpbigp
-Ow0KPiA+DQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lz
-b2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
+On Wed, Jan 30, 2013 at 10:54:53AM -0500, Alan Stern wrote:
+> On Wed, 30 Jan 2013, Aaron Lu wrote:
+> 
+> > From: Lin Ming <ming.m.lin@intel.com>
+> > 
+> > Add runtime pm helper functions:
+> > 
+> > void blk_pm_runtime_init(struct request_queue *q, struct device *dev)
+> >   - Initialization function for drivers to call.
+> > 
+> > int blk_pre_runtime_suspend(struct request_queue *q)
+> >   - If any requests are in the queue, mark last busy and return -EBUSY.
+> >     Otherwise set q->rpm_status to RPM_SUSPENDING and return 0.
+> > 
+> > void blk_post_runtime_suspend(struct request_queue *q, int err)
+> >   - If the suspend succeeded then set q->rpm_status to RPM_SUSPENDED.
+> >     Otherwise set it to RPM_ACTIVE.
+> > 
+> > void blk_pre_runtime_resume(struct request_queue *q)
+> >   - Set q->rpm_status to RPM_RESUMING.
+> > 
+> > void blk_post_runtime_resume(struct request_queue *q, int err)
+> >   - If the resume succeeded then set q->rpm_status to RPM_ACTIVE
+> >     and call __blk_run_queue, then mark last busy and autosuspend.
+> >     Otherwise set q->rpm_status to RPM_SUSPENDED.
+> > 
+> > Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> > Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> 
+> > +void blk_pm_runtime_init(struct request_queue *q, struct device *dev)
+> > +{
+> > +	q->dev = dev;
+> > +	q->rpm_status = RPM_ACTIVE;
+> > +	pm_runtime_set_autosuspend_delay(q->dev, -1);
+> > +	pm_runtime_use_autosuspend(q->dev);
+> > +	pm_runtime_mark_last_busy(q->dev);
+> > +	pm_runtime_autosuspend(q->dev);
+> 
+> This last line is no longer needed.  It can't do anything useful, since 
+> autosuspends are disabled (the delay is -1).
+
+Right, thanks.
+And the mark_last_busy can probably be removed too, it didn't make much
+sense here and we can add "driver should call pm_runtime_mark_last_busy
+and pm_runtime_autosuspend in its runtime idle callback" to the kernel
+doc. What do you think?
+
+Thanks,
+Aaron
+
