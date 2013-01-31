@@ -1,147 +1,186 @@
-From: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v2] cpufreq: governors: implement generic policy_is_shared
-Date: Thu, 31 Jan 2013 10:44:40 +0100
-Message-ID: <1359625480-16688-1-git-send-email-fabio.baltieri@linaro.org>
-References: <CAOh2x==1ru3bddHnJOge=1rbpc6xwzKV5F5isJhAgwX_R=2TCw@mail.gmail.com>
+From: anish singh <anish198519851985@gmail.com>
+Subject: Re: [PATCH V3] suspend: enable freeze timeout configuration through sys
+Date: Thu, 31 Jan 2013 15:22:25 +0530
+Message-ID: <CAK7N6vpdmLv-G3q-m9nbWs1jV-s=k9c4gQ-wKOZsMGZrm4AhVw@mail.gmail.com>
+References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<510A1D5C.90705@jp.fujitsu.com>
+	<BEC9F67575FA1E429CA7CF5AE9BE36343F0D19@SHSMSX102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <CAOh2x==1ru3bddHnJOge=1rbpc6xwzKV5F5isJhAgwX_R=2TCw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <BEC9F67575FA1E429CA7CF5AE9BE36343F0D19@SHSMSX102.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Li, Fei" <fei.li@intel.com>
+Cc: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Implement a generic helper function policy_is_shared() to replace the
-current dbs_sw_coordinated_cpus() at cpufreq level, so that it can be
-used by code other than cpufreq governors.
+On Thu, Jan 31, 2013 at 2:43 PM, Li, Fei <fei.li@intel.com> wrote:
+>> -----Original Message-----
+>> From: Yasuaki Ishimatsu [mailto:isimatu.yasuaki@jp.fujitsu.com]
+>> Sent: Thursday, January 31, 2013 3:30 PM
+>> To: Li, Fei
+>> Cc: rjw@sisk.pl; akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
+>> linux-pm@vger.kernel.org; Liu, Chuansheng
+>> Subject: Re: [PATCH V3] suspend: enable freeze timeout configuration through
+>> sys
+>>
+>> 2013/01/31 13:55, fli24 wrote:
+>> >
+>> > At present, the value of timeout for freezing is 20s, which is
+>> > meaningless in case that one thread is frozen with mutex locked
+>> > and another thread is trying to lock the mutex, as this time of
+>> > freezing will fail unavoidably.
+>> > And if there is no new wakeup event registered, the system will
+>> > waste at most 20s for such meaningless trying of freezing.
+>> >
+>> > With this patch, the value of timeout can be configured to smaller
+>> > value, so such meaningless trying of freezing will be aborted in
+>> > earlier time, and later freezing can be also triggered in earlier
+>> > time. And more power will be saved.
+>> > In normal case on mobile phone, it costs real little time to freeze
+>> > processes. On some platform, it only costs about 20ms to freeze
+>> > user space processes and 10ms to freeze kernel freezable threads.
+>> >
+>> > Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
+>> > Signed-off-by: Li Fei <fei.li@intel.com>
+>> > ---
+>> >   Documentation/power/freezing-of-tasks.txt |    5 +++++
+>> >   include/linux/freezer.h                   |    5 +++++
+>> >   kernel/power/main.c                       |   27
+>> +++++++++++++++++++++++++++
+>> >   kernel/power/process.c                    |    4 ++--
+>> >   4 files changed, 39 insertions(+), 2 deletions(-)
+>> >
+>> > diff --git a/Documentation/power/freezing-of-tasks.txt
+>> b/Documentation/power/freezing-of-tasks.txt
+>> > index 6ec291e..85894d8 100644
+>> > --- a/Documentation/power/freezing-of-tasks.txt
+>> > +++ b/Documentation/power/freezing-of-tasks.txt
+>> > @@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task,
+>> since it is anyway
+>> >   only after the entire suspend/hibernation sequence is complete.
+>> >   So, to summarize, use [un]lock_system_sleep() instead of directly using
+>> >   mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
+>> > +
+>> > +V. Miscellaneous
+>> > +/sys/power/pm_freeze_timeout controls how long it will cost at most to
+>> freeze
+>> > +all user space processes or all freezable kernel threads, in unit of millisecond.
+>> > +The default value is 20000, with range of unsigned integer.
+>> > diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+>> > index e4238ce..5a24a33 100644
+>> > --- a/include/linux/freezer.h
+>> > +++ b/include/linux/freezer.h
+>> > @@ -13,6 +13,11 @@ extern bool pm_freezing;         /* PM freezing in effect
+>> */
+>> >   extern bool pm_nosig_freezing;            /* PM nosig freezing in effect */
+>> >
+>> >   /*
+>> > + * Timeout for stopping processes
+>> > + */
+>> > +extern unsigned int sys_freeze_process_timeout_msecs;
+>> > +
+>> > +/*
+>> >    * Check if a process has been frozen
+>> >    */
+>> >   static inline bool frozen(struct task_struct *p)
+>> > diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> > index 1c16f91..453ead1 100644
+>> > --- a/kernel/power/main.c
+>> > +++ b/kernel/power/main.c
+>> > @@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
+>> >
+>> >   #endif /* CONFIG_PM_TRACE */
+>> >
+>> > +#ifdef CONFIG_FREEZER
+>> > +static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
+>> > +                                 struct kobj_attribute *attr, char *buf)
+>> > +{
+>> > +   return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
+>> > +}
+>> > +
+>> > +static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
+>> > +                                  struct kobj_attribute *attr,
+>> > +                                  const char *buf, size_t n)
+>> > +{
+>> > +   unsigned long val;
+>> > +
+>> > +   if (kstrtoul(buf, 10, &val))
+>> > +           return -EINVAL;
+>> > +
+>> > +   sys_freeze_process_timeout_msecs = val;
+>> > +   return n;
+>> > +}
+>> > +
+>> > +power_attr(pm_freeze_timeout);
+>> > +
+>> > +#endif     /* CONFIG_FREEZER*/
+>> > +
+>> >   static struct attribute * g[] = {
+>> >     &state_attr.attr,
+>> >   #ifdef CONFIG_PM_TRACE
+>> > @@ -576,6 +600,9 @@ static struct attribute * g[] = {
+>> >     &pm_print_times_attr.attr,
+>> >   #endif
+>> >   #endif
+>> > +#ifdef CONFIG_FREEZER
+>> > +   &pm_freeze_timeout_attr.attr,
+>> > +#endif
+>> >     NULL,
+>> >   };
+>> >
+>> > diff --git a/kernel/power/process.c b/kernel/power/process.c
+>> > index d5a258b..ba45a26 100644
+>> > --- a/kernel/power/process.c
+>> > +++ b/kernel/power/process.c
+>> > @@ -21,7 +21,7 @@
+>> >   /*
+>> >    * Timeout for stopping processes
+>> >    */
+>>
+>> > -#define TIMEOUT    (20 * HZ)
+>> > +unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
+>>
+>> 20000 does not mean 20 seconds since we can select HZ other than 1000.
+>> So (20 * HZ) is better than 20000.
+>>
+> [Li, Fei]
+> Are you sure about this, (20*HZ) better than 20000, or you mean 20 * MSEC_PER_SEC?
+Yasuaki  mean HZ value will not always be 1000.The value of HZ differs for each
+ supported architecture. In fact, on some supported architectures,
+it even differs between machine types.
+When writing kernel code, never assume that HZ has any given value.
+Right now you are assuming that the delay will be always 20 seconds because of
+your assumption of HZ.
 
-Suggested-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
-
-Changes from v1:
-- replaced cpumask_weight in acpi-cpufreq.c and cpufreq_stats.c, through the
-  actual check is different the semantic should be the same.
-
-Fabio
-
- drivers/cpufreq/acpi-cpufreq.c         | 2 +-
- drivers/cpufreq/cpufreq_conservative.c | 2 +-
- drivers/cpufreq/cpufreq_governor.c     | 8 --------
- drivers/cpufreq/cpufreq_governor.h     | 1 -
- drivers/cpufreq/cpufreq_ondemand.c     | 2 +-
- drivers/cpufreq/cpufreq_stats.c        | 2 +-
- include/linux/cpufreq.h                | 5 +++++
- 7 files changed, 9 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 22f9b47..937bc28 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -734,7 +734,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- #ifdef CONFIG_SMP
- 	dmi_check_system(sw_any_bug_dmi_table);
--	if (bios_with_sw_any_bug && cpumask_weight(policy->cpus) == 1) {
-+	if (bios_with_sw_any_bug && !policy_is_shared(policy)) {
- 		policy->shared_type = CPUFREQ_SHARED_TYPE_ALL;
- 		cpumask_copy(policy->cpus, cpu_core_mask(cpu));
- 	}
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 5d8e894..653fb06 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -154,7 +154,7 @@ static void cs_dbs_timer(struct work_struct *work)
- 	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
- 			struct cs_cpu_dbs_info_s, cdbs.work.work);
- 
--	if (dbs_sw_coordinated_cpus(&dbs_info->cdbs)) {
-+	if (policy_is_shared(dbs_info->cdbs.cur_policy)) {
- 		cs_timer_coordinated(dbs_info, dw);
- 	} else {
- 		mutex_lock(&dbs_info->cdbs.timer_mutex);
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 46f96a4..67e235a 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -161,14 +161,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- }
- EXPORT_SYMBOL_GPL(dbs_check_cpu);
- 
--bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs)
--{
--	struct cpufreq_policy *policy = cdbs->cur_policy;
--
--	return cpumask_weight(policy->cpus) > 1;
--}
--EXPORT_SYMBOL_GPL(dbs_sw_coordinated_cpus);
--
- static inline void dbs_timer_init(struct dbs_data *dbs_data, int cpu,
- 				  unsigned int sampling_rate)
- {
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index aaf073d..b72e628 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -172,7 +172,6 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
- 
- u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
- void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
--bool dbs_sw_coordinated_cpus(struct cpu_dbs_common_info *cdbs);
- int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- 		struct cpufreq_policy *policy, unsigned int event);
- #endif /* _CPUFREQ_GOVERNER_H */
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 1017b90..5ae84ff 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -277,7 +277,7 @@ static void od_dbs_timer(struct work_struct *work)
- 	struct od_cpu_dbs_info_s *dbs_info =
- 		container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
- 
--	if (dbs_sw_coordinated_cpus(&dbs_info->cdbs)) {
-+	if (policy_is_shared(dbs_info->cdbs.cur_policy)) {
- 		od_timer_coordinated(dbs_info, dw);
- 	} else {
- 		mutex_lock(&dbs_info->cdbs.timer_mutex);
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index beef6b5..572124c 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -185,7 +185,7 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- static void cpufreq_stats_free_sysfs(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
--	if (policy && (cpumask_weight(policy->cpus) == 1)) {
-+	if (policy && !policy_is_shared(policy)) {
- 		pr_debug("%s: Free sysfs stat\n", __func__);
- 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
- 	}
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5fdc6c6..f106406 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -125,6 +125,11 @@ struct cpufreq_policy {
- #define CPUFREQ_SHARED_TYPE_ALL	 (2) /* All dependent CPUs should set freq */
- #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
- 
-+static inline bool policy_is_shared(struct cpufreq_policy *policy)
-+{
-+	return cpumask_weight(policy->cpus) > 1;
-+}
-+
- /******************** cpufreq transition notifiers *******************/
- 
- #define CPUFREQ_PRECHANGE	(0)
--- 
-1.7.12.1
+> In fact, the usage of such variable has been changed as below in the patch:
+>    end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs)
+> So I don't think it make sense to use msecs_to_jiffies(20*HZ).
+>
+> If needed, I think we can refine it to use 20* MSEC_PER_SEC instead of 20000.
+> How about your opinion?
+>
+> Thanks!
+> Best Regards,
+> Li Fei
+>
+>> Thanks,
+>> Yasuaki Ishimatsu
+>>
+>> >
+>> >   static int try_to_freeze_tasks(bool user_only)
+>> >   {
+>> > @@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
+>> >
+>> >     do_gettimeofday(&start);
+>> >
+>> > -   end_time = jiffies + TIMEOUT;
+>> > +   end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs);
+>> >
+>> >     if (!user_only)
+>> >             freeze_workqueues_begin();
+>> >
+>>
+>
