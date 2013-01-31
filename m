@@ -1,54 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: SPEAr: Notify all policy->cpus of frequency change
-Date: Thu, 31 Jan 2013 10:23:56 +0530
-Message-ID: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, spear-devel@list.st.com, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: SPEAr: Notify all policy->cpus of frequency change
+Date: Thu, 31 Jan 2013 10:24:51 +0530
+Message-ID: <CAKohpo=w+fAv3k2M7MXFbss0u52jzXCRHdoTw8fKSbSaN2jrFA@mail.gmail.com>
+References: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=bcaec54d476656c53004d48e6da8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f175.google.com ([209.85.214.175]:54923 "EHLO
+	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216Ab3AaEyw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:54:52 -0500
+Received: by mail-ob0-f175.google.com with SMTP id uz6so2458939obc.20
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 20:54:51 -0800 (PST)
+In-Reply-To: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, spear-devel@list.st.com
 
-SPEAr cpufreq driver supports dual core Cortex-A9 SoC's, where cpus share p=
-olicy
-structure. Whenever we update frequency of a cpu, we must notify all
-policy->cpus.
+--bcaec54d476656c53004d48e6da8
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/spear-cpufreq.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+On 31 January 2013 10:23, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> SPEAr cpufreq driver supports dual core Cortex-A9 SoC's, where cpus share policy
+> structure. Whenever we update frequency of a cpu, we must notify all
+> policy->cpus.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufre=
-q.c
-index 4575cfe..63c6a7f 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -157,7 +157,9 @@ static int spear_cpufreq_target(struct cpufreq_policy *=
-policy,
-=20
- =09freqs.new =3D newfreq / 1000;
- =09freqs.new /=3D mult;
--=09cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+=09for_each_cpu(freqs.cpu, policy->cpus)
-+=09=09cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-=20
- =09if (mult =3D=3D 2)
- =09=09ret =3D spear1340_set_cpu_rate(srcclk, newfreq);
-@@ -170,7 +172,8 @@ static int spear_cpufreq_target(struct cpufreq_policy *=
-policy,
- =09=09freqs.new =3D clk_get_rate(spear_cpufreq.clk) / 1000;
- =09}
-=20
--=09cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+=09for_each_cpu(freqs.cpu, policy->cpus)
-+=09=09cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
- =09return ret;
- }
-=20
---=20
-1.7.12.rc2.18.g61b472e
+Find it attached too.
 
+--bcaec54d476656c53004d48e6da8
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-SPEAr-Notify-all-policy-cpus-of-frequency-ch.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-SPEAr-Notify-all-policy-cpus-of-frequency-ch.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hclfjs6f0
 
+RnJvbSBkZGMxYmI0ZWQyNzg4MTlmZmM3ZmFjMjI5MTM0YzAxZTE3ZjAzNDc3IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZGRjMWJiNGVkMjc4ODE5ZmZjN2ZhYzIyOTEzNGMw
+MWUxN2YwMzQ3Ny4xMzU5NjA3OTgwLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAzMSBKYW4g
+MjAxMyAxMDoxNzozMiArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IFNQRUFyOiBOb3Rp
+ZnkgYWxsIHBvbGljeS0+Y3B1cyBvZiBmcmVxdWVuY3kgY2hhbmdlCgpTUEVBciBjcHVmcmVxIGRy
+aXZlciBzdXBwb3J0cyBkdWFsIGNvcmUgQ29ydGV4LUE5IFNvQydzLCB3aGVyZSBjcHVzIHNoYXJl
+IHBvbGljeQpzdHJ1Y3R1cmUuIFdoZW5ldmVyIHdlIHVwZGF0ZSBmcmVxdWVuY3kgb2YgYSBjcHUs
+IHdlIG11c3Qgbm90aWZ5IGFsbApwb2xpY3ktPmNwdXMuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2gg
+S3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9zcGVh
+ci1jcHVmcmVxLmMgfCA3ICsrKysrLS0KIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyks
+IDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3NwZWFyLWNwdWZy
+ZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9zcGVhci1jcHVmcmVxLmMKaW5kZXggNDU3NWNmZS4uNjNj
+NmE3ZiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL3NwZWFyLWNwdWZyZXEuYworKysgYi9k
+cml2ZXJzL2NwdWZyZXEvc3BlYXItY3B1ZnJlcS5jCkBAIC0xNTcsNyArMTU3LDkgQEAgc3RhdGlj
+IGludCBzcGVhcl9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwK
+IAogCWZyZXFzLm5ldyA9IG5ld2ZyZXEgLyAxMDAwOwogCWZyZXFzLm5ldyAvPSBtdWx0OwotCWNw
+dWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BSRUNIQU5HRSk7CisKKwlm
+b3JfZWFjaF9jcHUoZnJlcXMuY3B1LCBwb2xpY3ktPmNwdXMpCisJCWNwdWZyZXFfbm90aWZ5X3Ry
+YW5zaXRpb24oJmZyZXFzLCBDUFVGUkVRX1BSRUNIQU5HRSk7CiAKIAlpZiAobXVsdCA9PSAyKQog
+CQlyZXQgPSBzcGVhcjEzNDBfc2V0X2NwdV9yYXRlKHNyY2NsaywgbmV3ZnJlcSk7CkBAIC0xNzAs
+NyArMTcyLDggQEAgc3RhdGljIGludCBzcGVhcl9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJl
+cV9wb2xpY3kgKnBvbGljeSwKIAkJZnJlcXMubmV3ID0gY2xrX2dldF9yYXRlKHNwZWFyX2NwdWZy
+ZXEuY2xrKSAvIDEwMDA7CiAJfQogCi0JY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbigmZnJlcXMs
+IENQVUZSRVFfUE9TVENIQU5HRSk7CisJZm9yX2VhY2hfY3B1KGZyZXFzLmNwdSwgcG9saWN5LT5j
+cHVzKQorCQljcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKCZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hB
+TkdFKTsKIAlyZXR1cm4gcmV0OwogfQogCi0tIAoxLjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
+--bcaec54d476656c53004d48e6da8--
