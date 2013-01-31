@@ -1,27 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos: simplify .init() for setting policy->cpus
-Date: Thu, 31 Jan 2013 10:23:37 +0530
-Message-ID: <CAKohpo=eEnK8oJ1KEff=sBvyjZzdqmFKUgXe2+bhWAvyVVmzqg@mail.gmail.com>
-References: <f216e85846c302756d55cb6753863a66697f79a6.1359599087.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:37038 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216Ab3AaExi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:53:38 -0500
-Received: by mail-oa0-f42.google.com with SMTP id i18so2291598oag.15
-        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 20:53:38 -0800 (PST)
-In-Reply-To: <f216e85846c302756d55cb6753863a66697f79a6.1359599087.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH] cpufreq: SPEAr: Notify all policy->cpus of frequency change
+Date: Thu, 31 Jan 2013 10:23:56 +0530
+Message-ID: <ddc1bb4ed278819ffc7fac229134c01e17f03477.1359607980.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, spear-devel@list.st.com, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 31 January 2013 10:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> With the recent changes in cpufreq core, we just need to set mask of all
-> possible cpus into policy->cpus. Rest would be done by core.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+SPEAr cpufreq driver supports dual core Cortex-A9 SoC's, where cpus share p=
+olicy
+structure. Whenever we update frequency of a cpu, we must notify all
+policy->cpus.
 
-Oops! Sent the wrong patch again. Ignore this mail :)
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/spear-cpufreq.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufre=
+q.c
+index 4575cfe..63c6a7f 100644
+--- a/drivers/cpufreq/spear-cpufreq.c
++++ b/drivers/cpufreq/spear-cpufreq.c
+@@ -157,7 +157,9 @@ static int spear_cpufreq_target(struct cpufreq_policy *=
+policy,
+=20
+ =09freqs.new =3D newfreq / 1000;
+ =09freqs.new /=3D mult;
+-=09cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++=09for_each_cpu(freqs.cpu, policy->cpus)
++=09=09cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+=20
+ =09if (mult =3D=3D 2)
+ =09=09ret =3D spear1340_set_cpu_rate(srcclk, newfreq);
+@@ -170,7 +172,8 @@ static int spear_cpufreq_target(struct cpufreq_policy *=
+policy,
+ =09=09freqs.new =3D clk_get_rate(spear_cpufreq.clk) / 1000;
+ =09}
+=20
+-=09cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++=09for_each_cpu(freqs.cpu, policy->cpus)
++=09=09cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+ =09return ret;
+ }
+=20
+--=20
+1.7.12.rc2.18.g61b472e
+
+
