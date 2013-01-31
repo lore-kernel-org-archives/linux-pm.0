@@ -1,144 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos: Broadcast frequency change notifications
- for all cores
-Date: Thu, 31 Jan 2013 20:22:50 +0530
-Message-ID: <CAKohpombSKY-HMXovBAyZd5Ce8ZAEo2+yiwYL1G4=OEUJM1u5g@mail.gmail.com>
-References: <1887364.fvxYYNb7Mm@amdc1227>
-	<CAOh2x==GeK4qM=kjy-tzhbEh4L9AmRXoG_0tUzov1SK+uRFxcw@mail.gmail.com>
-	<1520677.WES295RohH@amdc1227>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
+Date: Thu, 31 Jan 2013 10:04:00 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
+References: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1520677.WES295RohH@amdc1227>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:51314 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753567Ab3AaPEB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jan 2013 10:04:01 -0500
+In-Reply-To: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Einon <mark.einon@gmail.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 31 January 2013 20:15, Tomasz Figa <t.figa@samsung.com> wrote:
-> On Thursday 31 of January 2013 09:50:37 Viresh Kumar wrote:
->> > +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
+On Wed, 30 Jan 2013, Mark Einon wrote:
 
->> I couldn't understand the use of this change. Can you please explain ?
->
-> All cores on Exynos SoCs share the same clock source, which means that
-> they all always run at the same frequency. So setting frequency on one
-> core sets the frequency on all cores and so it doesn't matter on which
-> core the frequency setting operation is done.
+> >> > >> This patch fixes the kernel warning generated when putting an MSI MS-1727
+> >> > >> GT740 laptop into suspend mode. The call sequence in this case calls
+> >> > >> free_irq() twice, once in pci_remove() and once then in pci_suspend().
+> >> > >
+> >> > > You mean /first/ in pci_suspend() and /then/ in pci_remove() on the
+> >> > > already suspended devices, right?
+> >> >
+> >> > Yes, I did. The call sequence is suspend then resume. My bad.
+> >
+> > Why does the pci_suspend routine call free_irq() at all?  As far as I
+> > know, it's not supposed to do that.  Won't the device continue to use
+> > the same IRQ after it is resumed?
+> 
+> This sounds reasonable to me - I think we could probably get rid of
+> the request_irq() call from resume, and use
+> disable_irq()/enable_irq()?
 
-Great, that's like most other platforms and for this you just need to set mask
-of all the possible cpus (online or offline) into policy->cpus
+Why mess around with IRQ settings at all?  Just have the suspend
+routine tell the controller to stop generating them.
 
-> As you can see in include/linux/cpufreq.h:
->
-> #define CPUFREQ_SHARED_TYPE_ANY  (3) /* Freq can be set from any dependent
-> CPU*/
->
-> which basically tells (together with rest of the patch) the cpufreq
-> subsystem about what I wrote earlier.
+Alan Stern
 
-I don't think so. Because i wasn't using it on my system and it was
-working well.
-Then i grepped it in kernel source
-
-viresh@blr-linut-001:$ git grep shared_type drivers/cpufreq/
-drivers/cpufreq/acpi-cpufreq.c: if (policy->shared_type !=
-CPUFREQ_SHARED_TYPE_ANY)
-drivers/cpufreq/acpi-cpufreq.c: policy->shared_type = perf->shared_type;
-drivers/cpufreq/acpi-cpufreq.c: if (policy->shared_type ==
-CPUFREQ_SHARED_TYPE_ALL ||
-drivers/cpufreq/acpi-cpufreq.c:     policy->shared_type ==
-CPUFREQ_SHARED_TYPE_ANY) {
-drivers/cpufreq/acpi-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_ALL;
-drivers/cpufreq/acpi-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_HW;
-drivers/cpufreq/cpufreq-cpu0.c: policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-drivers/cpufreq/db8500-cpufreq.c:       policy->shared_type =
-CPUFREQ_SHARED_TYPE_ALL;
-drivers/cpufreq/omap-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_ANY;
-drivers/cpufreq/speedstep-centrino.c:           if
-(policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-drivers/cpufreq/speedstep-centrino.c:           if
-(policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-
-I couldn't see any core file using this stuff other than acpi-cpufreq.c,
-which is for x86 only systems if i am not wrong.
-
-@Rafael: You view on this.. ? Actually i believe it was just used by many
-ARM drivers without knowing the real use of it and new drivers have just
-followed it.
-
-I can get a patch to fix it at all places if you agree.
-
-BTW, grep in full kernel source gave, which is again acpi only:
-
-viresh@blr-linut-001:$ git grep shared_type
-
-arch/arm/mach-tegra/cpu-tegra.c:        policy->shared_type =
-CPUFREQ_SHARED_TYPE_ALL;
-drivers/acpi/processor_perflib.c:
-pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
-drivers/acpi/processor_perflib.c:
-pr->performance->shared_type = CPUFREQ_SHARED_TYPE_HW;
-drivers/acpi/processor_perflib.c:
-pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-drivers/acpi/processor_perflib.c:
-match_pr->performance->shared_type =
-drivers/acpi/processor_perflib.c:
- pr->performance->shared_type;
-drivers/acpi/processor_perflib.c:
-pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
-drivers/acpi/processor_throttling.c:
-pthrottling->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
-drivers/acpi/processor_throttling.c:    pthrottling->shared_type =
-pdomain->coord_type;
-drivers/acpi/processor_throttling.c:
-pthrottling->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
-drivers/acpi/processor_throttling.c:    if (p_throttling->shared_type
-== DOMAIN_COORD_TYPE_SW_ANY) {
-drivers/acpi/processor_throttling.c:
-pthrottling->shared_type = DOMAIN_COORD_TYPE_SW_ALL;
-drivers/cpufreq/acpi-cpufreq.c: if (policy->shared_type !=
-CPUFREQ_SHARED_TYPE_ANY)
-drivers/cpufreq/acpi-cpufreq.c: policy->shared_type = perf->shared_type;
-drivers/cpufreq/acpi-cpufreq.c: if (policy->shared_type ==
-CPUFREQ_SHARED_TYPE_ALL ||
-drivers/cpufreq/acpi-cpufreq.c:     policy->shared_type ==
-CPUFREQ_SHARED_TYPE_ANY) {
-drivers/cpufreq/acpi-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_ALL;
-drivers/cpufreq/acpi-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_HW;
-drivers/cpufreq/cpufreq-cpu0.c: policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-drivers/cpufreq/db8500-cpufreq.c:       policy->shared_type =
-CPUFREQ_SHARED_TYPE_ALL;
-drivers/cpufreq/omap-cpufreq.c:         policy->shared_type =
-CPUFREQ_SHARED_TYPE_ANY;
-drivers/cpufreq/speedstep-centrino.c:           if
-(policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-drivers/cpufreq/speedstep-centrino.c:           if
-(policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-drivers/net/wireless/rtlwifi/rtl8192ce/hw.c:
-rtlpcipriv->bt_coexist.bt_radio_shared_type =
-drivers/net/wireless/rtlwifi/rtl8723ae/hw.c:
-pcipriv->bt_coexist.bt_radio_shared_type =
-drivers/net/wireless/rtlwifi/rtl8723ae/hw.c:
-pcipriv->bt_coexist.bt_radio_shared_type);
-drivers/net/wireless/rtlwifi/wifi.h:    u8 bt_radio_shared_type;
-drivers/xen/xen-acpi-processor.c:       dst->shared_type =
-_pr->performance->shared_type;
-drivers/xen/xen-acpi-processor.c:
-dst->shared_type = CPUFREQ_SHARED_TYPE_ALL;
-drivers/xen/xen-acpi-processor.c:
-dst->shared_type = CPUFREQ_SHARED_TYPE_HW;
-drivers/xen/xen-acpi-processor.c:
-dst->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-include/acpi/processor.h:       unsigned int shared_type;
-include/acpi/processor.h:       unsigned int shared_type;
-include/linux/cpufreq.h:        unsigned int            shared_type;
-/* ANY or ALL affected CPUs
-include/xen/interface/platform.h:       uint32_t shared_type;     /*
-coordination type of this processor */
-tools/perf/util/dwarf-aux.c:             tag == DW_TAG_shared_type);
