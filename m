@@ -1,59 +1,34 @@
-From: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] cpufreq: governors: Get rid of dbs_data->enable field
-Date: Thu, 31 Jan 2013 19:44:49 +0100
-Message-ID: <20130131184449.GA20164@balto.lan>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: governors: Remove code redundancy between
+ governors
+Date: Thu, 31 Jan 2013 19:50:04 +0100
+Message-ID: <20130131185004.GB20164@balto.lan>
 References: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar@linaro.org>
+ <118c59263751862b1750ed9f96639a4e70069e66.1359653181.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, Steve.Bannister-5wv7dgnIgG8@public.gmane.org
+In-Reply-To: <118c59263751862b1750ed9f96639a4e70069e66.1359653181.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 31, 2013 at 10:58:01PM +0530, Viresh Kumar wrote:
-> CPUFREQ_GOV_START/STOP are called only once for all policy->cpus and hence we
-> don't need to adapt cpufreq_governor_dbs() routine for multiple calls.
+On Thu, Jan 31, 2013 at 10:58:02PM +0530, Viresh Kumar wrote:
+> With the inclusion of following patches:
 > 
-> So, this patch removes dbs_data->enable field entirely. And rearrange code a
-> bit.
+> 9f4eb10 cpufreq: conservative: call dbs_check_cpu only when necessary
+> 772b4b1 cpufreq: ondemand: call dbs_check_cpu only when necessary
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> code redundancy is introduced again. Get rid of it.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> Hi Fabio,
-> 
-> I have fixed all the pending issues, but haven't checked these patches. Can you
-> please add your tested-by (obviously after testing them) ?
-> 
-> Compile tested only.
 
-Hello Viresh, thanks for getting this done... looks much cleaner now!
+Hi,
 
-I tested both patches on my ux500 setup (dual Cortex-A9) and it seems to
-run correctly on both CPU load changes and CPU hotplug, so:
-
-Tested-by: Fabio Baltieri <fabio.baltieri-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-As a sidenote, I noticed just now that since:
-
-bc92bea cpufreq: Notify governors when cpus are hot-[un]plugged
-
-governor's sampling_rate gets reset to default every time you hotplug a
-CPU (the one you read/write on
-/sys/devices/system/cpu/cpufreq/ondemand/sampling_rate).
-
-If you need further tests, I'll be back on Monday.
+Tested-by: Fabio Baltieri <fabio.baltieri@linaro.org>
 
 Thanks,
 Fabio
