@@ -1,29 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: governors: implement generic policy_is_shared
-Date: Thu, 31 Jan 2013 15:23:02 +0530
-Message-ID: <CAKohpom5L01eqpW_T+BkpmfR2DgfoP3b+wsAbrEZ9==_kekeyw@mail.gmail.com>
-References: <CAOh2x==1ru3bddHnJOge=1rbpc6xwzKV5F5isJhAgwX_R=2TCw@mail.gmail.com>
-	<1359625480-16688-1-git-send-email-fabio.baltieri@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1359625480-16688-1-git-send-email-fabio.baltieri@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: [PATCH] cpufreq: governors: fix misuse of cdbs.cpu
+Date: Thu, 31 Jan 2013 11:39:19 +0100
+Message-ID: <1359628759-15006-1-git-send-email-fabio.baltieri@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f52.google.com ([74.125.83.52]:35441 "EHLO
+	mail-ee0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954Ab3AaKje (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jan 2013 05:39:34 -0500
+Received: by mail-ee0-f52.google.com with SMTP id b15so1351070eek.11
+        for <linux-pm@vger.kernel.org>; Thu, 31 Jan 2013 02:39:33 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, linaro-dev@lists.linaro.org, linux-kernel@vger.kernel.org, Fabio Baltieri <fabio.baltieri@linaro.org>
 
-On 31 January 2013 15:14, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> Implement a generic helper function policy_is_shared() to replace the
-> current dbs_sw_coordinated_cpus() at cpufreq level, so that it can be
-> used by code other than cpufreq governors.
->
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
-> ---
->
-> Changes from v1:
-> - replaced cpumask_weight in acpi-cpufreq.c and cpufreq_stats.c, through the
->   actual check is different the semantic should be the same.
+Fix governors code to set all cpu's cdbs->cpu to the the actual cpu id
+and use cur_policy->cpu istead of cdbs->cpu to track current governor's
+leader cpu.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 5 +++--
+ drivers/cpufreq/cpufreq_governor.c     | 2 +-
+ drivers/cpufreq/cpufreq_ondemand.c     | 5 +++--
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 653fb06..c18a304 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -114,7 +114,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ static void cs_timer_update(struct cs_cpu_dbs_info_s *dbs_info, bool sample,
+ 			    struct delayed_work *dw)
+ {
+-	unsigned int cpu = dbs_info->cdbs.cpu;
++	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+ 	int delay = delay_for_sampling_rate(cs_tuners.sampling_rate);
+ 
+ 	if (sample)
+@@ -132,7 +132,8 @@ static void cs_timer_coordinated(struct cs_cpu_dbs_info_s *dbs_info_local,
+ 	bool sample = true;
+ 
+ 	/* use leader CPU's dbs_info */
+-	dbs_info = &per_cpu(cs_cpu_dbs_info, dbs_info_local->cdbs.cpu);
++	dbs_info = &per_cpu(cs_cpu_dbs_info,
++			    dbs_info_local->cdbs.cur_policy->cpu);
+ 	mutex_lock(&dbs_info->cdbs.timer_mutex);
+ 
+ 	time_now = ktime_get();
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 67e235a..46f1c78 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -208,11 +208,11 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ 		mutex_lock(&dbs_data->mutex);
+ 
+ 		dbs_data->enable++;
+-		cpu_cdbs->cpu = cpu;
+ 		for_each_cpu(j, policy->cpus) {
+ 			struct cpu_dbs_common_info *j_cdbs;
+ 			j_cdbs = dbs_data->get_cpu_cdbs(j);
+ 
++			j_cdbs->cpu = j;
+ 			j_cdbs->cur_policy = policy;
+ 			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j,
+ 					&j_cdbs->prev_cpu_wall);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 5ae84ff..75efd5e 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -219,7 +219,7 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+ static void od_timer_update(struct od_cpu_dbs_info_s *dbs_info, bool sample,
+ 			    struct delayed_work *dw)
+ {
+-	unsigned int cpu = dbs_info->cdbs.cpu;
++	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+ 	int delay, sample_type = dbs_info->sample_type;
+ 
+ 	/* Common NORMAL_SAMPLE setup */
+@@ -255,7 +255,8 @@ static void od_timer_coordinated(struct od_cpu_dbs_info_s *dbs_info_local,
+ 	bool sample = true;
+ 
+ 	/* use leader CPU's dbs_info */
+-	dbs_info = &per_cpu(od_cpu_dbs_info, dbs_info_local->cdbs.cpu);
++	dbs_info = &per_cpu(od_cpu_dbs_info,
++			    dbs_info_local->cdbs.cur_policy->cpu);
+ 	mutex_lock(&dbs_info->cdbs.timer_mutex);
+ 
+ 	time_now = ktime_get();
+-- 
+1.7.12.1
+
