@@ -1,146 +1,126 @@
-From: fli24 <fei.li@intel.com>
-Subject: [PATCH V3] suspend: enable freeze timeout configuration through sys
-Date: Thu, 31 Jan 2013 12:55:32 +0800
-Message-ID: <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+From: "Li, Fei" <fei.li@intel.com>
+Subject: RE: [PATCH V2] suspend: enable freeze timeout configuration through
+ sys
+Date: Thu, 31 Jan 2013 05:00:23 +0000
+Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F0B3D@SHSMSX102.ccr.corp.intel.com>
 References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	 <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <2335103.cho0vcBPUK@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:13809 "EHLO mga11.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:55443 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504Ab3AaE5H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Jan 2013 23:57:07 -0500
-In-Reply-To: <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	id S1750744Ab3AaFAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 31 Jan 2013 00:00:47 -0500
+In-Reply-To: <2335103.cho0vcBPUK@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, fei.li@intel.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-
-At present, the value of timeout for freezing is 20s, which is
-meaningless in case that one thread is frozen with mutex locked
-and another thread is trying to lock the mutex, as this time of
-freezing will fail unavoidably.
-And if there is no new wakeup event registered, the system will
-waste at most 20s for such meaningless trying of freezing.
-
-With this patch, the value of timeout can be configured to smaller
-value, so such meaningless trying of freezing will be aborted in
-earlier time, and later freezing can be also triggered in earlier
-time. And more power will be saved.
-In normal case on mobile phone, it costs real little time to freeze
-processes. On some platform, it only costs about 20ms to freeze
-user space processes and 10ms to freeze kernel freezable threads.
-
-Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-Signed-off-by: Li Fei <fei.li@intel.com>
----
- Documentation/power/freezing-of-tasks.txt |    5 +++++
- include/linux/freezer.h                   |    5 +++++
- kernel/power/main.c                       |   27 +++++++++++++++++++++++++++
- kernel/power/process.c                    |    4 ++--
- 4 files changed, 39 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
-index 6ec291e..85894d8 100644
---- a/Documentation/power/freezing-of-tasks.txt
-+++ b/Documentation/power/freezing-of-tasks.txt
-@@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task, since it is anyway
- only after the entire suspend/hibernation sequence is complete.
- So, to summarize, use [un]lock_system_sleep() instead of directly using
- mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
-+
-+V. Miscellaneous
-+/sys/power/pm_freeze_timeout controls how long it will cost at most to freeze
-+all user space processes or all freezable kernel threads, in unit of millisecond.
-+The default value is 20000, with range of unsigned integer.
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index e4238ce..5a24a33 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
- extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
- 
- /*
-+ * Timeout for stopping processes
-+ */
-+extern unsigned int sys_freeze_process_timeout_msecs;
-+
-+/*
-  * Check if a process has been frozen
-  */
- static inline bool frozen(struct task_struct *p)
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 1c16f91..453ead1 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
- 
- #endif /* CONFIG_PM_TRACE */
- 
-+#ifdef CONFIG_FREEZER
-+static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
-+				      struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
-+}
-+
-+static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
-+				       struct kobj_attribute *attr,
-+				       const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (kstrtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	sys_freeze_process_timeout_msecs = val;
-+	return n;
-+}
-+
-+power_attr(pm_freeze_timeout);
-+
-+#endif	/* CONFIG_FREEZER*/
-+
- static struct attribute * g[] = {
- 	&state_attr.attr,
- #ifdef CONFIG_PM_TRACE
-@@ -576,6 +600,9 @@ static struct attribute * g[] = {
- 	&pm_print_times_attr.attr,
- #endif
- #endif
-+#ifdef CONFIG_FREEZER
-+	&pm_freeze_timeout_attr.attr,
-+#endif
- 	NULL,
- };
- 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index d5a258b..ba45a26 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -21,7 +21,7 @@
- /* 
-  * Timeout for stopping processes
-  */
--#define TIMEOUT	(20 * HZ)
-+unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
- 
- static int try_to_freeze_tasks(bool user_only)
- {
-@@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
- 
- 	do_gettimeofday(&start);
- 
--	end_time = jiffies + TIMEOUT;
-+	end_time = jiffies + msecs_to_jiffies(sys_freeze_process_timeout_msecs);
- 
- 	if (!user_only)
- 		freeze_workqueues_begin();
--- 
-1.7.4.1
-
-
-
+SGVsbG8gUmFmYWVsLA0KICAgSSB1cGRhdGUgaXQgYXMgYmVsb3cgaW4gVjMsIGRvIHlvdSB0aGlu
+ayBpdCBtYWtlcyBzZW5zZT8NCg0KQXQgcHJlc2VudCwgdGhlIHZhbHVlIG9mIHRpbWVvdXQgZm9y
+IGZyZWV6aW5nIGlzIDIwcywgd2hpY2ggaXMNCm1lYW5pbmdsZXNzIGluIGNhc2UgdGhhdCBvbmUg
+dGhyZWFkIGlzIGZyb3plbiB3aXRoIG11dGV4IGxvY2tlZA0KYW5kIGFub3RoZXIgdGhyZWFkIGlz
+IHRyeWluZyB0byBsb2NrIHRoZSBtdXRleCwgYXMgdGhpcyB0aW1lIG9mDQpmcmVlemluZyB3aWxs
+IGZhaWwgdW5hdm9pZGFibHkuDQpBbmQgaWYgdGhlcmUgaXMgbm8gbmV3IHdha2V1cCBldmVudCBy
+ZWdpc3RlcmVkLCB0aGUgc3lzdGVtIHdpbGwNCndhc3RlIGF0IG1vc3QgMjBzIGZvciBzdWNoIG1l
+YW5pbmdsZXNzIHRyeWluZyBvZiBmcmVlemluZy4NCg0KV2l0aCB0aGlzIHBhdGNoLCB0aGUgdmFs
+dWUgb2YgdGltZW91dCBjYW4gYmUgY29uZmlndXJlZCB0byBzbWFsbGVyDQp2YWx1ZSwgc28gc3Vj
+aCBtZWFuaW5nbGVzcyB0cnlpbmcgb2YgZnJlZXppbmcgd2lsbCBiZSBhYm9ydGVkIGluDQplYXJs
+aWVyIHRpbWUsIGFuZCBsYXRlciBmcmVlemluZyBjYW4gYmUgYWxzbyB0cmlnZ2VyZWQgaW4gZWFy
+bGllcg0KdGltZS4gQW5kIG1vcmUgcG93ZXIgd2lsbCBiZSBzYXZlZC4NCkluIG5vcm1hbCBjYXNl
+IG9uIG1vYmlsZSBwaG9uZSwgaXQgY29zdHMgcmVhbCBsaXR0bGUgdGltZSB0byBmcmVlemUNCnBy
+b2Nlc3Nlcy4gT24gc29tZSBwbGF0Zm9ybSwgaXQgb25seSBjb3N0cyBhYm91dCAyMG1zIHRvIGZy
+ZWV6ZQ0KdXNlciBzcGFjZSBwcm9jZXNzZXMgYW5kIDEwbXMgdG8gZnJlZXplIGtlcm5lbCBmcmVl
+emFibGUgdGhyZWFkcy4NCg0KVGhhbmtzIGEgbG90IQ0KDQpCZXN0IFJlZ2FyZHMsDQpMaSBGZWkN
+ClRFTDogKzg2ICgwKTIxIDYxMTYgNTE0MA0KTW9iOiArODYgKDApMTM5IDE2OTYgNzQzNQ0KUGxh
+dGZvcm0gU3lzdGVtIEludGVncmF0aW9uIFNoYW5naGFpDQoNCg0KDQo+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHNpc2su
+cGxdDQo+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAzMCwgMjAxMyA5OjEwIFBNDQo+IFRvOiBM
+aSwgRmVpDQo+IENjOiBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnOyBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnOw0KPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExpdSwgQ2h1YW5zaGVu
+Zw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFYyXSBzdXNwZW5kOiBlbmFibGUgZnJlZXplIHRpbWVv
+dXQgY29uZmlndXJhdGlvbiB0aHJvdWdoDQo+IHN5cw0KPiANCj4gT24gV2VkbmVzZGF5LCBKYW51
+YXJ5IDMwLCAyMDEzIDAyOjIzOjM5IFBNIGZsaTI0IHdyb3RlOg0KPiA+DQo+ID4gQXQgcHJlc2Vu
+dCwgdGhlIHRpbWVvdXQgdmFsdWUgZm9yIGZyZWV6aW5nIHRhc2tzIGlzIGZpeGVkIGFzIDIwcywN
+Cj4gPiB3aGljaCBpcyB0b28gbG9uZyBmb3IgaGFuZGhlbGQgZGV2aWNlIHVzYWdlLCBlc3BlY2lh
+bGx5IGZvciBtb2JpbGUNCj4gPiBwaG9uZS4NCj4gPg0KPiA+IEluIG9yZGVyIHRvIGltcHJvdmUg
+dXNlciBleHBlcmllbmNlLCB3ZSBlbmFibGUgZnJlZXplIHRpbWVvdXQNCj4gPiBjb25maWd1cmF0
+aW9uIHRocm91Z2ggc3lzLCBzbyB0aGF0IHdlIGNhbiB0dW5lIHRoZSB2YWx1ZSBlYXNpbHkNCj4g
+PiBmb3IgY29uY3JldGUgdXNhZ2UsIHN1Y2ggYXMgc21hbGxlciB2YWx1ZSBmb3IgaGFuZGhlbGQg
+ZGV2aWNlIHN1Y2gNCj4gPiBhcyBtb2JpbGUgcGhvbmUuDQo+IA0KPiBBcyBJIHNhaWQsIEknZCBs
+aWtlIHRvIGtub3cgd2hhdCdzIHRoZSBleGFjdCBwcm9ibGVtIHlvdSBuZWVkIHRvIHdvcmsgYXJv
+dW5kDQo+IHVzaW5nIHRoaXMuDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KPiANCj4gDQo+ID4g
+U2lnbmVkLW9mZi1ieTogTGl1IENodWFuc2hlbmcgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4N
+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBMaSBGZWkgPGZlaS5saUBpbnRlbC5jb20+DQo+ID4gLS0tDQo+
+ID4gIERvY3VtZW50YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFza3MudHh0IHwgICAgNSArKysr
+Kw0KPiA+ICBpbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaCAgICAgICAgICAgICAgICAgICB8ICAgIDUg
+KysrKysNCj4gPiAga2VybmVsL3Bvd2VyL21haW4uYyAgICAgICAgICAgICAgICAgICAgICAgfCAg
+IDI3DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+ICBrZXJuZWwvcG93ZXIvcHJv
+Y2Vzcy5jICAgICAgICAgICAgICAgICAgICB8ICAgIDQgKystLQ0KPiA+ICA0IGZpbGVzIGNoYW5n
+ZWQsIDM5IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
+IGEvRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVlemluZy1vZi10YXNrcy50eHQNCj4gYi9Eb2N1bWVu
+dGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tzLnR4dA0KPiA+IGluZGV4IDZlYzI5MWUuLjg1
+ODk0ZDggMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVlemluZy1vZi10
+YXNrcy50eHQNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tz
+LnR4dA0KPiA+IEBAIC0yMjMsMyArMjIzLDggQEAgc2luY2UgdGhleSBhc2sgdGhlIGZyZWV6ZXIg
+dG8gc2tpcCBmcmVlemluZyB0aGlzIHRhc2ssDQo+IHNpbmNlIGl0IGlzIGFueXdheQ0KPiA+ICBv
+bmx5IGFmdGVyIHRoZSBlbnRpcmUgc3VzcGVuZC9oaWJlcm5hdGlvbiBzZXF1ZW5jZSBpcyBjb21w
+bGV0ZS4NCj4gPiAgU28sIHRvIHN1bW1hcml6ZSwgdXNlIFt1bl1sb2NrX3N5c3RlbV9zbGVlcCgp
+IGluc3RlYWQgb2YgZGlyZWN0bHkgdXNpbmcNCj4gPiAgbXV0ZXhfW3VuXWxvY2soJnBtX211dGV4
+KS4gVGhhdCB3b3VsZCBwcmV2ZW50IGZyZWV6aW5nIGZhaWx1cmVzLg0KPiA+ICsNCj4gPiArVi4g
+TWlzY2VsbGFuZW91cw0KPiA+ICsvc3lzL3Bvd2VyL3BtX2ZyZWV6ZV90aW1lb3V0IGNvbnRyb2xz
+IGhvdyBsb25nIGl0IHdpbGwgY29zdCBhdCBtb3N0IHRvDQo+IGZyZWV6ZQ0KPiA+ICthbGwgdXNl
+ciBzcGFjZSBwcm9jZXNzZXMgb3IgYWxsIGZyZWV6YWJsZSBrZXJuZWwgdGhyZWFkcywgaW4gdW5p
+dCBvZiBtaWxsaXNlY29uZC4NCj4gPiArVGhlIGRlZmF1bHQgdmFsdWUgaXMgMjAwMDAsIHdpdGgg
+cmFuZ2Ugb2YgdW5zaWduZWQgaW50ZWdlci4NCj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51
+eC9mcmVlemVyLmggYi9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+IGluZGV4IGU0MjM4Y2Uu
+LjVhMjRhMzMgMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC9mcmVlemVyLmgNCj4gPiAr
+KysgYi9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+IEBAIC0xMyw2ICsxMywxMSBAQCBleHRl
+cm4gYm9vbCBwbV9mcmVlemluZzsJCS8qIFBNIGZyZWV6aW5nIGluIGVmZmVjdA0KPiAqLw0KPiA+
+ICBleHRlcm4gYm9vbCBwbV9ub3NpZ19mcmVlemluZzsJCS8qIFBNIG5vc2lnIGZyZWV6aW5nIGlu
+IGVmZmVjdCAqLw0KPiA+DQo+ID4gIC8qDQo+ID4gKyAqIFRpbWVvdXQgZm9yIHN0b3BwaW5nIHBy
+b2Nlc3Nlcw0KPiA+ICsgKi8NCj4gPiArZXh0ZXJuIHVuc2lnbmVkIGludCBzeXNfZnJlZXplX3By
+b2Nlc3NfdGltZW91dF9tc2VjczsNCj4gPiArDQo+ID4gKy8qDQo+ID4gICAqIENoZWNrIGlmIGEg
+cHJvY2VzcyBoYXMgYmVlbiBmcm96ZW4NCj4gPiAgICovDQo+ID4gIHN0YXRpYyBpbmxpbmUgYm9v
+bCBmcm96ZW4oc3RydWN0IHRhc2tfc3RydWN0ICpwKQ0KPiA+IGRpZmYgLS1naXQgYS9rZXJuZWwv
+cG93ZXIvbWFpbi5jIGIva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+IGluZGV4IDFjMTZmOTEuLjQ1
+M2VhZDEgMTAwNjQ0DQo+ID4gLS0tIGEva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+ICsrKyBiL2tl
+cm5lbC9wb3dlci9tYWluLmMNCj4gPiBAQCAtNTUzLDYgKzU1MywzMCBAQCBwb3dlcl9hdHRyKHBt
+X3RyYWNlX2Rldl9tYXRjaCk7DQo+ID4NCj4gPiAgI2VuZGlmIC8qIENPTkZJR19QTV9UUkFDRSAq
+Lw0KPiA+DQo+ID4gKyNpZmRlZiBDT05GSUdfRlJFRVpFUg0KPiA+ICtzdGF0aWMgc3NpemVfdCBw
+bV9mcmVlemVfdGltZW91dF9zaG93KHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KPiA+ICsJCQkJICAg
+ICAgc3RydWN0IGtvYmpfYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYpDQo+ID4gK3sNCj4gPiAr
+CXJldHVybiBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCBzeXNfZnJlZXplX3Byb2Nlc3NfdGltZW91dF9t
+c2Vjcyk7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBzc2l6ZV90IHBtX2ZyZWV6ZV90aW1l
+b3V0X3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KPiA+ICsJCQkJICAgICAgIHN0cnVjdCBr
+b2JqX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiArCQkJCSAgICAgICBjb25zdCBjaGFyICpidWYsIHNp
+emVfdCBuKQ0KPiA+ICt7DQo+ID4gKwl1bnNpZ25lZCBsb25nIHZhbDsNCj4gPiArDQo+ID4gKwlp
+ZiAoa3N0cnRvdWwoYnVmLCAxMCwgJnZhbCkpDQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4g
+Kw0KPiA+ICsJc3lzX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfbXNlY3MgPSB2YWw7DQo+ID4gKwly
+ZXR1cm4gbjsNCj4gPiArfQ0KPiA+ICsNCj4gPiArcG93ZXJfYXR0cihwbV9mcmVlemVfdGltZW91
+dCk7DQo+ID4gKw0KPiA+ICsjZW5kaWYJLyogQ09ORklHX0ZSRUVaRVIqLw0KPiA+ICsNCj4gPiAg
+c3RhdGljIHN0cnVjdCBhdHRyaWJ1dGUgKiBnW10gPSB7DQo+ID4gIAkmc3RhdGVfYXR0ci5hdHRy
+LA0KPiA+ICAjaWZkZWYgQ09ORklHX1BNX1RSQUNFDQo+ID4gQEAgLTU3Niw2ICs2MDAsOSBAQCBz
+dGF0aWMgc3RydWN0IGF0dHJpYnV0ZSAqIGdbXSA9IHsNCj4gPiAgCSZwbV9wcmludF90aW1lc19h
+dHRyLmF0dHIsDQo+ID4gICNlbmRpZg0KPiA+ICAjZW5kaWYNCj4gPiArI2lmZGVmIENPTkZJR19G
+UkVFWkVSDQo+ID4gKwkmcG1fZnJlZXplX3RpbWVvdXRfYXR0ci5hdHRyLA0KPiA+ICsjZW5kaWYN
+Cj4gPiAgCU5VTEwsDQo+ID4gIH07DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3Bvd2Vy
+L3Byb2Nlc3MuYyBiL2tlcm5lbC9wb3dlci9wcm9jZXNzLmMNCj4gPiBpbmRleCBkNWEyNThiLi5i
+YTQ1YTI2IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC9wb3dlci9wcm9jZXNzLmMNCj4gPiArKysg
+Yi9rZXJuZWwvcG93ZXIvcHJvY2Vzcy5jDQo+ID4gQEAgLTIxLDcgKzIxLDcgQEANCj4gPiAgLyoN
+Cj4gPiAgICogVGltZW91dCBmb3Igc3RvcHBpbmcgcHJvY2Vzc2VzDQo+ID4gICAqLw0KPiA+IC0j
+ZGVmaW5lIFRJTUVPVVQJKDIwICogSFopDQo+ID4gK3Vuc2lnbmVkIGludCBfX3JlYWRfbW9zdGx5
+IHN5c19mcmVlemVfcHJvY2Vzc190aW1lb3V0X21zZWNzID0gMjAwMDA7DQo+ID4NCj4gPiAgc3Rh
+dGljIGludCB0cnlfdG9fZnJlZXplX3Rhc2tzKGJvb2wgdXNlcl9vbmx5KQ0KPiA+ICB7DQo+ID4g
+QEAgLTM2LDcgKzM2LDcgQEAgc3RhdGljIGludCB0cnlfdG9fZnJlZXplX3Rhc2tzKGJvb2wgdXNl
+cl9vbmx5KQ0KPiA+DQo+ID4gIAlkb19nZXR0aW1lb2ZkYXkoJnN0YXJ0KTsNCj4gPg0KPiA+IC0J
+ZW5kX3RpbWUgPSBqaWZmaWVzICsgVElNRU9VVDsNCj4gPiArCWVuZF90aW1lID0gamlmZmllcyAr
+IG1zZWNzX3RvX2ppZmZpZXMoc3lzX2ZyZWV6ZV9wcm9jZXNzX3RpbWVvdXRfbXNlY3MpOw0KPiA+
+DQo+ID4gIAlpZiAoIXVzZXJfb25seSkNCj4gPiAgCQlmcmVlemVfd29ya3F1ZXVlc19iZWdpbigp
+Ow0KPiA+DQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lz
+b2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
