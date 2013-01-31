@@ -1,170 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V3] suspend: enable freeze timeout configuration through sys
-Date: Thu, 31 Jan 2013 23:29:24 +0100
-Message-ID: <1503699.1Mx8Tt0bYE@vostro.rjw.lan>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC> <BEC9F67575FA1E429CA7CF5AE9BE36343F0D19@SHSMSX102.ccr.corp.intel.com> <CAK7N6vpdmLv-G3q-m9nbWs1jV-s=k9c4gQ-wKOZsMGZrm4AhVw@mail.gmail.com>
+From: Fabio Baltieri <fabio.baltieri@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: governors: Remove code redundancy between
+ governors
+Date: Thu, 31 Jan 2013 23:51:14 +0100
+Message-ID: <20130131225114.GA6433@balto.lan>
+References: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar@linaro.org>
+ <118c59263751862b1750ed9f96639a4e70069e66.1359653181.git.viresh.kumar@linaro.org>
+ <20130131185004.GB20164@balto.lan>
+ <1730121.raxo9SGZyf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:37251 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753583Ab3AaWXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Jan 2013 17:23:12 -0500
-In-Reply-To: <CAK7N6vpdmLv-G3q-m9nbWs1jV-s=k9c4gQ-wKOZsMGZrm4AhVw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1730121.raxo9SGZyf@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: anish singh <anish198519851985@gmail.com>, "Li, Fei" <fei.li@intel.com>
-Cc: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-On Thursday, January 31, 2013 03:22:25 PM anish singh wrote:
-> On Thu, Jan 31, 2013 at 2:43 PM, Li, Fei <fei.li@intel.com> wrote:
-> >> -----Original Message-----
-> >> From: Yasuaki Ishimatsu [mailto:isimatu.yasuaki@jp.fujitsu.com]
-> >> Sent: Thursday, January 31, 2013 3:30 PM
-> >> To: Li, Fei
-> >> Cc: rjw@sisk.pl; akpm@linux-foundation.org; linux-kernel@vger.kernel.org;
-> >> linux-pm@vger.kernel.org; Liu, Chuansheng
-> >> Subject: Re: [PATCH V3] suspend: enable freeze timeout configuration through
-> >> sys
-> >>
-> >> 2013/01/31 13:55, fli24 wrote:
-> >> >
-> >> > At present, the value of timeout for freezing is 20s, which is
-> >> > meaningless in case that one thread is frozen with mutex locked
-> >> > and another thread is trying to lock the mutex, as this time of
-> >> > freezing will fail unavoidably.
-> >> > And if there is no new wakeup event registered, the system will
-> >> > waste at most 20s for such meaningless trying of freezing.
-> >> >
-> >> > With this patch, the value of timeout can be configured to smaller
-> >> > value, so such meaningless trying of freezing will be aborted in
-> >> > earlier time, and later freezing can be also triggered in earlier
-> >> > time. And more power will be saved.
-> >> > In normal case on mobile phone, it costs real little time to freeze
-> >> > processes. On some platform, it only costs about 20ms to freeze
-> >> > user space processes and 10ms to freeze kernel freezable threads.
-> >> >
-> >> > Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-> >> > Signed-off-by: Li Fei <fei.li@intel.com>
-> >> > ---
-> >> >   Documentation/power/freezing-of-tasks.txt |    5 +++++
-> >> >   include/linux/freezer.h                   |    5 +++++
-> >> >   kernel/power/main.c                       |   27
-> >> +++++++++++++++++++++++++++
-> >> >   kernel/power/process.c                    |    4 ++--
-> >> >   4 files changed, 39 insertions(+), 2 deletions(-)
-> >> >
-> >> > diff --git a/Documentation/power/freezing-of-tasks.txt
-> >> b/Documentation/power/freezing-of-tasks.txt
-> >> > index 6ec291e..85894d8 100644
-> >> > --- a/Documentation/power/freezing-of-tasks.txt
-> >> > +++ b/Documentation/power/freezing-of-tasks.txt
-> >> > @@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task,
-> >> since it is anyway
-> >> >   only after the entire suspend/hibernation sequence is complete.
-> >> >   So, to summarize, use [un]lock_system_sleep() instead of directly using
-> >> >   mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
-> >> > +
-> >> > +V. Miscellaneous
-> >> > +/sys/power/pm_freeze_timeout controls how long it will cost at most to
-> >> freeze
-> >> > +all user space processes or all freezable kernel threads, in unit of millisecond.
-> >> > +The default value is 20000, with range of unsigned integer.
-> >> > diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> >> > index e4238ce..5a24a33 100644
-> >> > --- a/include/linux/freezer.h
-> >> > +++ b/include/linux/freezer.h
-> >> > @@ -13,6 +13,11 @@ extern bool pm_freezing;         /* PM freezing in effect
-> >> */
-> >> >   extern bool pm_nosig_freezing;            /* PM nosig freezing in effect */
-> >> >
-> >> >   /*
-> >> > + * Timeout for stopping processes
-> >> > + */
-> >> > +extern unsigned int sys_freeze_process_timeout_msecs;
-> >> > +
-> >> > +/*
-> >> >    * Check if a process has been frozen
-> >> >    */
-> >> >   static inline bool frozen(struct task_struct *p)
-> >> > diff --git a/kernel/power/main.c b/kernel/power/main.c
-> >> > index 1c16f91..453ead1 100644
-> >> > --- a/kernel/power/main.c
-> >> > +++ b/kernel/power/main.c
-> >> > @@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
-> >> >
-> >> >   #endif /* CONFIG_PM_TRACE */
-> >> >
-> >> > +#ifdef CONFIG_FREEZER
-> >> > +static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
-> >> > +                                 struct kobj_attribute *attr, char *buf)
-> >> > +{
-> >> > +   return sprintf(buf, "%u\n", sys_freeze_process_timeout_msecs);
-> >> > +}
-> >> > +
-> >> > +static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
-> >> > +                                  struct kobj_attribute *attr,
-> >> > +                                  const char *buf, size_t n)
-> >> > +{
-> >> > +   unsigned long val;
-> >> > +
-> >> > +   if (kstrtoul(buf, 10, &val))
-> >> > +           return -EINVAL;
-> >> > +
-> >> > +   sys_freeze_process_timeout_msecs = val;
-> >> > +   return n;
-> >> > +}
-> >> > +
-> >> > +power_attr(pm_freeze_timeout);
-> >> > +
-> >> > +#endif     /* CONFIG_FREEZER*/
-> >> > +
-> >> >   static struct attribute * g[] = {
-> >> >     &state_attr.attr,
-> >> >   #ifdef CONFIG_PM_TRACE
-> >> > @@ -576,6 +600,9 @@ static struct attribute * g[] = {
-> >> >     &pm_print_times_attr.attr,
-> >> >   #endif
-> >> >   #endif
-> >> > +#ifdef CONFIG_FREEZER
-> >> > +   &pm_freeze_timeout_attr.attr,
-> >> > +#endif
-> >> >     NULL,
-> >> >   };
-> >> >
-> >> > diff --git a/kernel/power/process.c b/kernel/power/process.c
-> >> > index d5a258b..ba45a26 100644
-> >> > --- a/kernel/power/process.c
-> >> > +++ b/kernel/power/process.c
-> >> > @@ -21,7 +21,7 @@
-> >> >   /*
-> >> >    * Timeout for stopping processes
-> >> >    */
-> >>
-> >> > -#define TIMEOUT    (20 * HZ)
-> >> > +unsigned int __read_mostly sys_freeze_process_timeout_msecs = 20000;
-> >>
-> >> 20000 does not mean 20 seconds since we can select HZ other than 1000.
-> >> So (20 * HZ) is better than 20000.
-> >>
-> > [Li, Fei]
-> > Are you sure about this, (20*HZ) better than 20000, or you mean 20 * MSEC_PER_SEC?
-> Yasuaki  mean HZ value will not always be 1000.The value of HZ differs for each
->  supported architecture. In fact, on some supported architectures,
-> it even differs between machine types.
-> When writing kernel code, never assume that HZ has any given value.
-> Right now you are assuming that the delay will be always 20 seconds because of
-> your assumption of HZ.
+Hello Rafael,
 
-That's correct, the initial value should be 20 * HZ (i.e. as before).
+On Thu, Jan 31, 2013 at 11:23:54PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, January 31, 2013 07:50:04 PM Fabio Baltieri wrote:
+> > On Thu, Jan 31, 2013 at 10:58:02PM +0530, Viresh Kumar wrote:
+> > > With the inclusion of following patches:
+> > > 
+> > > 9f4eb10 cpufreq: conservative: call dbs_check_cpu only when necessary
+> > > 772b4b1 cpufreq: ondemand: call dbs_check_cpu only when necessary
+> > > 
+> > > code redundancy is introduced again. Get rid of it.
+> > > 
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > 
+> > Hi,
+> > 
+> > Tested-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+> 
+> OK
+> 
+> Fabio, Viresh, Shawn,
+> 
+> This time I was *really* confused as to what patches I was supposed to take,
+> from whom and in what order, so I applied a number of them in the order given
+> by patchwork.  That worked well enough, because (almost) all of them applied
+> for me without conflicts.  That said I would appreciate it if you could look
+> into the bleeding-edge branch of my tree and see if there's anything missing
+> or something that shouldn't be there (cpufreq-wise).
 
-Besides, the name of the variable doesn't need to be _that_ long.
-What about freeze_timeout_msecs?
+Sorry for the confusion, your current bleeding-edge branch (eed52da)
+looks good to me.  I also did a quick build and run and it works fine on
+my setup.
 
-Rafael
-
+Many thanks,
+Fabio
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Fabio Baltieri
