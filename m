@@ -1,37 +1,27 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos: Broadcast frequency change notifications
- for all cores
-Date: Thu, 31 Jan 2013 09:50:37 +0530
-Message-ID: <CAOh2x==GeK4qM=kjy-tzhbEh4L9AmRXoG_0tUzov1SK+uRFxcw@mail.gmail.com>
-References: <1887364.fvxYYNb7Mm@amdc1227>
+Subject: Re: [PATCH] cpufreq: exynos: simplify .init() for setting policy->cpus
+Date: Thu, 31 Jan 2013 10:23:37 +0530
+Message-ID: <CAKohpo=eEnK8oJ1KEff=sBvyjZzdqmFKUgXe2+bhWAvyVVmzqg@mail.gmail.com>
+References: <f216e85846c302756d55cb6753863a66697f79a6.1359599087.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f180.google.com ([209.85.220.180]:38196 "EHLO
-	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592Ab3AaEUi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:20:38 -0500
-In-Reply-To: <1887364.fvxYYNb7Mm@amdc1227>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:37038 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216Ab3AaExi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Jan 2013 23:53:38 -0500
+Received: by mail-oa0-f42.google.com with SMTP id i18so2291598oag.15
+        for <linux-pm@vger.kernel.org>; Wed, 30 Jan 2013 20:53:38 -0800 (PST)
+In-Reply-To: <f216e85846c302756d55cb6753863a66697f79a6.1359599087.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, spear-devel@list.st.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Nov 13, 2012 at 2:56 PM, Tomasz Figa <t.figa@samsung.com> wrote:
-> On Exynos SoCs all cores share the same frequency setting, so changing
-> frequency of one core will affect rest of cores.
+On 31 January 2013 10:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> With the recent changes in cpufreq core, we just need to set mask of all
+> possible cpus into policy->cpus. Rest would be done by core.
 >
-> This patch modifies the exynos-cpufreq driver to inform cpufreq core
-> about this behavior and broadcast frequency change notifications for all
-> cores.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
->         /* When the new frequency is lower than current frequency */
->         if ((freqs.new < freqs.old) ||
-> @@ -235,6 +237,7 @@ static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 cpumask_copy(policy->related_cpus, cpu_possible_mask);
->                 cpumask_copy(policy->cpus, cpu_online_mask);
->         } else {
-> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
->                 cpumask_setall(policy->cpus);
-
-I couldn't understand the use of this change. Can you please explain ?
+Oops! Sent the wrong patch again. Ignore this mail :)
