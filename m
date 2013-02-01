@@ -1,125 +1,106 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: governors: Reset tunables only for cpufreq_unregister_governor()
-Date: Fri,  1 Feb 2013 11:12:58 +0530
-Message-ID: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36854 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752741Ab3BAFnJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 00:43:09 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: governors: Reset tunables only for cpufreq_unregister_governor()
+Date: Fri, 1 Feb 2013 11:14:03 +0530
+Message-ID: <CAKohpon8=u2vxNFG0dBJbfpEiu_6kfEQUJyjecw1TxuL6O8WvQ@mail.gmail.com>
+References: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary=f46d04478a8924dbed04d4a33b4d
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Currently, whenever governor->governor() is called for CPUFRREQ_GOV_START e=
-vent
-we reset few tunables of governor. Which isn't correct, as this routine is
-called for every cpu hot-[un]plugging event. We should actually be resettin=
-g
-these only when the governor module is removed and re-installed.
+--f46d04478a8924dbed04d4a33b4d
+Content-Type: text/plain; charset=ISO-8859-1
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c          |  4 ++++
- drivers/cpufreq/cpufreq_governor.c | 24 ++++++++++++++++--------
- include/linux/cpufreq.h            |  1 +
- 3 files changed, 21 insertions(+), 8 deletions(-)
+On 1 February 2013 11:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Currently, whenever governor->governor() is called for CPUFRREQ_GOV_START event
+> we reset few tunables of governor. Which isn't correct, as this routine is
+> called for every cpu hot-[un]plugging event. We should actually be resetting
+> these only when the governor module is removed and re-installed.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 8d521422..9656420 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1561,6 +1561,9 @@ static int __cpufreq_governor(struct cpufreq_policy *=
-policy,
- =09=09=09=09=09=09policy->cpu, event);
- =09ret =3D policy->governor->governor(policy, event);
-=20
-+=09if (!policy->governor->initialized && (event =3D=3D CPUFREQ_GOV_START))
-+=09=09policy->governor->initialized =3D 1;
-+
- =09/* we keep one module reference alive for
- =09=09=09each CPU governed by this CPU */
- =09if ((event !=3D CPUFREQ_GOV_START) || ret)
-@@ -1584,6 +1587,7 @@ int cpufreq_register_governor(struct cpufreq_governor=
- *governor)
-=20
- =09mutex_lock(&cpufreq_governor_mutex);
-=20
-+=09governor->initialized =3D 0;
- =09err =3D -EBUSY;
- =09if (__find_governor(governor->name) =3D=3D NULL) {
- =09=09err =3D 0;
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_g=
-overnor.c
-index 7aaa9b1..79795c4 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -254,11 +254,6 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- =09=09=09return rc;
- =09=09}
-=20
--=09=09/* policy latency is in nS. Convert it to uS first */
--=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
--=09=09if (latency =3D=3D 0)
--=09=09=09latency =3D 1;
--
- =09=09/*
- =09=09 * conservative does not implement micro like ondemand
- =09=09 * governor, thus we are bound to jiffes/HZ
-@@ -270,20 +265,33 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- =09=09=09cpufreq_register_notifier(cs_ops->notifier_block,
- =09=09=09=09=09CPUFREQ_TRANSITION_NOTIFIER);
-=20
--=09=09=09dbs_data->min_sampling_rate =3D MIN_SAMPLING_RATE_RATIO *
--=09=09=09=09jiffies_to_usecs(10);
-+=09=09=09if (!policy->governor->initialized)
-+=09=09=09=09dbs_data->min_sampling_rate =3D
-+=09=09=09=09=09MIN_SAMPLING_RATE_RATIO *
-+=09=09=09=09=09jiffies_to_usecs(10);
- =09=09} else {
- =09=09=09od_dbs_info->rate_mult =3D 1;
- =09=09=09od_dbs_info->sample_type =3D OD_NORMAL_SAMPLE;
- =09=09=09od_ops->powersave_bias_init_cpu(cpu);
--=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
-+
-+=09=09=09if (!policy->governor->initialized)
-+=09=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
- =09=09}
-=20
-+=09=09if (policy->governor->initialized)
-+=09=09=09goto unlock;
-+
-+=09=09/* policy latency is in nS. Convert it to uS first */
-+=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
-+=09=09if (latency =3D=3D 0)
-+=09=09=09latency =3D 1;
-+
- =09=09/* Bring kernel and HW constraints together */
- =09=09dbs_data->min_sampling_rate =3D max(dbs_data->min_sampling_rate,
- =09=09=09=09MIN_LATENCY_MULTIPLIER * latency);
- =09=09*sampling_rate =3D max(dbs_data->min_sampling_rate, latency *
- =09=09=09=09LATENCY_MULTIPLIER);
-+unlock:
- =09=09mutex_unlock(&dbs_data->mutex);
-=20
- =09=09/* Initiate timer time stamp */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index feb360c..6bf3f2d 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -183,6 +183,7 @@ static inline unsigned long cpufreq_scale(unsigned long=
- old, u_int div, u_int mu
-=20
- struct cpufreq_governor {
- =09char=09name[CPUFREQ_NAME_LEN];
-+=09int=09initialized;
- =09int=09(*governor)=09(struct cpufreq_policy *policy,
- =09=09=09=09 unsigned int event);
- =09ssize_t=09(*show_setspeed)=09(struct cpufreq_policy *policy,
---=20
-1.7.12.rc2.18.g61b472e
+ARM Mails are broken, please apply attached patch.
 
+--f46d04478a8924dbed04d4a33b4d
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-governors-Reset-tunables-only-for-cpufreq_un.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-governors-Reset-tunables-only-for-cpufreq_un.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hcmwqtp60
 
+RnJvbSBkOWRlOTQ1OTc1YWQyMDY0NjkzMjc1MzM1YjQwMjJjOGVmZDAxM2UzIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8ZDlkZTk0NTk3NWFkMjA2NDY5MzI3NTMzNWI0MDIy
+YzhlZmQwMTNlMy4xMzU5Njk3MzE1LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogRnJpLCAxIEZlYiAy
+MDEzIDEwOjM2OjIzICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogZ292ZXJub3JzOiBS
+ZXNldCB0dW5hYmxlcyBvbmx5IGZvcgogY3B1ZnJlcV91bnJlZ2lzdGVyX2dvdmVybm9yKCkKCkN1
+cnJlbnRseSwgd2hlbmV2ZXIgZ292ZXJub3ItPmdvdmVybm9yKCkgaXMgY2FsbGVkIGZvciBDUFVG
+UlJFUV9HT1ZfU1RBUlQgZXZlbnQKd2UgcmVzZXQgZmV3IHR1bmFibGVzIG9mIGdvdmVybm9yLiBX
+aGljaCBpc24ndCBjb3JyZWN0LCBhcyB0aGlzIHJvdXRpbmUgaXMKY2FsbGVkIGZvciBldmVyeSBj
+cHUgaG90LVt1bl1wbHVnZ2luZyBldmVudC4gV2Ugc2hvdWxkIGFjdHVhbGx5IGJlIHJlc2V0dGlu
+Zwp0aGVzZSBvbmx5IHdoZW4gdGhlIGdvdmVybm9yIG1vZHVsZSBpcyByZW1vdmVkIGFuZCByZS1p
+bnN0YWxsZWQuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
+cm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgICAgICAgICAgfCAgNCArKysr
+CiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jIHwgMjQgKysrKysrKysrKysrKysr
+Ky0tLS0tLS0tCiBpbmNsdWRlL2xpbnV4L2NwdWZyZXEuaCAgICAgICAgICAgIHwgIDEgKwogMyBm
+aWxlcyBjaGFuZ2VkLCAyMSBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5j
+CmluZGV4IDhkNTIxNDIyLi45NjU2NDIwIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvY3B1
+ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTE1NjEsNiArMTU2MSw5
+IEBAIHN0YXRpYyBpbnQgX19jcHVmcmVxX2dvdmVybm9yKHN0cnVjdCBjcHVmcmVxX3BvbGljeSAq
+cG9saWN5LAogCQkJCQkJcG9saWN5LT5jcHUsIGV2ZW50KTsKIAlyZXQgPSBwb2xpY3ktPmdvdmVy
+bm9yLT5nb3Zlcm5vcihwb2xpY3ksIGV2ZW50KTsKIAorCWlmICghcG9saWN5LT5nb3Zlcm5vci0+
+aW5pdGlhbGl6ZWQgJiYgKGV2ZW50ID09IENQVUZSRVFfR09WX1NUQVJUKSkKKwkJcG9saWN5LT5n
+b3Zlcm5vci0+aW5pdGlhbGl6ZWQgPSAxOworCiAJLyogd2Uga2VlcCBvbmUgbW9kdWxlIHJlZmVy
+ZW5jZSBhbGl2ZSBmb3IKIAkJCWVhY2ggQ1BVIGdvdmVybmVkIGJ5IHRoaXMgQ1BVICovCiAJaWYg
+KChldmVudCAhPSBDUFVGUkVRX0dPVl9TVEFSVCkgfHwgcmV0KQpAQCAtMTU4NCw2ICsxNTg3LDcg
+QEAgaW50IGNwdWZyZXFfcmVnaXN0ZXJfZ292ZXJub3Ioc3RydWN0IGNwdWZyZXFfZ292ZXJub3Ig
+KmdvdmVybm9yKQogCiAJbXV0ZXhfbG9jaygmY3B1ZnJlcV9nb3Zlcm5vcl9tdXRleCk7CiAKKwln
+b3Zlcm5vci0+aW5pdGlhbGl6ZWQgPSAwOwogCWVyciA9IC1FQlVTWTsKIAlpZiAoX19maW5kX2dv
+dmVybm9yKGdvdmVybm9yLT5uYW1lKSA9PSBOVUxMKSB7CiAJCWVyciA9IDA7CmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jIGIvZHJpdmVycy9jcHVmcmVxL2Nw
+dWZyZXFfZ292ZXJub3IuYwppbmRleCA3YWFhOWIxLi43OTc5NWM0IDEwMDY0NAotLS0gYS9kcml2
+ZXJzL2NwdWZyZXEvY3B1ZnJlcV9nb3Zlcm5vci5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVm
+cmVxX2dvdmVybm9yLmMKQEAgLTI1NCwxMSArMjU0LDYgQEAgaW50IGNwdWZyZXFfZ292ZXJub3Jf
+ZGJzKHN0cnVjdCBkYnNfZGF0YSAqZGJzX2RhdGEsCiAJCQlyZXR1cm4gcmM7CiAJCX0KIAotCQkv
+KiBwb2xpY3kgbGF0ZW5jeSBpcyBpbiBuUy4gQ29udmVydCBpdCB0byB1UyBmaXJzdCAqLwotCQls
+YXRlbmN5ID0gcG9saWN5LT5jcHVpbmZvLnRyYW5zaXRpb25fbGF0ZW5jeSAvIDEwMDA7Ci0JCWlm
+IChsYXRlbmN5ID09IDApCi0JCQlsYXRlbmN5ID0gMTsKLQogCQkvKgogCQkgKiBjb25zZXJ2YXRp
+dmUgZG9lcyBub3QgaW1wbGVtZW50IG1pY3JvIGxpa2Ugb25kZW1hbmQKIAkJICogZ292ZXJub3Is
+IHRodXMgd2UgYXJlIGJvdW5kIHRvIGppZmZlcy9IWgpAQCAtMjcwLDIwICsyNjUsMzMgQEAgaW50
+IGNwdWZyZXFfZ292ZXJub3JfZGJzKHN0cnVjdCBkYnNfZGF0YSAqZGJzX2RhdGEsCiAJCQljcHVm
+cmVxX3JlZ2lzdGVyX25vdGlmaWVyKGNzX29wcy0+bm90aWZpZXJfYmxvY2ssCiAJCQkJCUNQVUZS
+RVFfVFJBTlNJVElPTl9OT1RJRklFUik7CiAKLQkJCWRic19kYXRhLT5taW5fc2FtcGxpbmdfcmF0
+ZSA9IE1JTl9TQU1QTElOR19SQVRFX1JBVElPICoKLQkJCQlqaWZmaWVzX3RvX3VzZWNzKDEwKTsK
+KwkJCWlmICghcG9saWN5LT5nb3Zlcm5vci0+aW5pdGlhbGl6ZWQpCisJCQkJZGJzX2RhdGEtPm1p
+bl9zYW1wbGluZ19yYXRlID0KKwkJCQkJTUlOX1NBTVBMSU5HX1JBVEVfUkFUSU8gKgorCQkJCQlq
+aWZmaWVzX3RvX3VzZWNzKDEwKTsKIAkJfSBlbHNlIHsKIAkJCW9kX2Ric19pbmZvLT5yYXRlX211
+bHQgPSAxOwogCQkJb2RfZGJzX2luZm8tPnNhbXBsZV90eXBlID0gT0RfTk9STUFMX1NBTVBMRTsK
+IAkJCW9kX29wcy0+cG93ZXJzYXZlX2JpYXNfaW5pdF9jcHUoY3B1KTsKLQkJCW9kX3R1bmVycy0+
+aW9faXNfYnVzeSA9IG9kX29wcy0+aW9fYnVzeSgpOworCisJCQlpZiAoIXBvbGljeS0+Z292ZXJu
+b3ItPmluaXRpYWxpemVkKQorCQkJCW9kX3R1bmVycy0+aW9faXNfYnVzeSA9IG9kX29wcy0+aW9f
+YnVzeSgpOwogCQl9CiAKKwkJaWYgKHBvbGljeS0+Z292ZXJub3ItPmluaXRpYWxpemVkKQorCQkJ
+Z290byB1bmxvY2s7CisKKwkJLyogcG9saWN5IGxhdGVuY3kgaXMgaW4gblMuIENvbnZlcnQgaXQg
+dG8gdVMgZmlyc3QgKi8KKwkJbGF0ZW5jeSA9IHBvbGljeS0+Y3B1aW5mby50cmFuc2l0aW9uX2xh
+dGVuY3kgLyAxMDAwOworCQlpZiAobGF0ZW5jeSA9PSAwKQorCQkJbGF0ZW5jeSA9IDE7CisKIAkJ
+LyogQnJpbmcga2VybmVsIGFuZCBIVyBjb25zdHJhaW50cyB0b2dldGhlciAqLwogCQlkYnNfZGF0
+YS0+bWluX3NhbXBsaW5nX3JhdGUgPSBtYXgoZGJzX2RhdGEtPm1pbl9zYW1wbGluZ19yYXRlLAog
+CQkJCU1JTl9MQVRFTkNZX01VTFRJUExJRVIgKiBsYXRlbmN5KTsKIAkJKnNhbXBsaW5nX3JhdGUg
+PSBtYXgoZGJzX2RhdGEtPm1pbl9zYW1wbGluZ19yYXRlLCBsYXRlbmN5ICoKIAkJCQlMQVRFTkNZ
+X01VTFRJUExJRVIpOwordW5sb2NrOgogCQltdXRleF91bmxvY2soJmRic19kYXRhLT5tdXRleCk7
+CiAKIAkJLyogSW5pdGlhdGUgdGltZXIgdGltZSBzdGFtcCAqLwpkaWZmIC0tZ2l0IGEvaW5jbHVk
+ZS9saW51eC9jcHVmcmVxLmggYi9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAppbmRleCBmZWIzNjBj
+Li42YmYzZjJkIDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2NwdWZyZXEuaAorKysgYi9pbmNs
+dWRlL2xpbnV4L2NwdWZyZXEuaApAQCAtMTgzLDYgKzE4Myw3IEBAIHN0YXRpYyBpbmxpbmUgdW5z
+aWduZWQgbG9uZyBjcHVmcmVxX3NjYWxlKHVuc2lnbmVkIGxvbmcgb2xkLCB1X2ludCBkaXYsIHVf
+aW50IG11CiAKIHN0cnVjdCBjcHVmcmVxX2dvdmVybm9yIHsKIAljaGFyCW5hbWVbQ1BVRlJFUV9O
+QU1FX0xFTl07CisJaW50CWluaXRpYWxpemVkOwogCWludAkoKmdvdmVybm9yKQkoc3RydWN0IGNw
+dWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCQkJIHVuc2lnbmVkIGludCBldmVudCk7CiAJc3NpemVf
+dAkoKnNob3dfc2V0c3BlZWQpCShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKLS0gCjEu
+Ny4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
+--f46d04478a8924dbed04d4a33b4d--
