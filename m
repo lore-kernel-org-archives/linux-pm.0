@@ -1,68 +1,34 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH v8 4/4] sd: change to auto suspend mode
-Date: Fri, 1 Feb 2013 11:19:44 +0800
-Message-ID: <20130201031944.GA6960@aaronlu.sh.intel.com>
-References: <20130131054324.GB14627@aaronlu.sh.intel.com>
- <Pine.LNX.4.44L0.1301311010200.1876-100000@iolanthe.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: exynos: Broadcast frequency change notifications
+ for all cores
+Date: Fri, 1 Feb 2013 09:17:59 +0530
+Message-ID: <CAKohpo=5jPSaZMJOJTYpWiSBReRJrVayXhT7zQuFRYCR7S5hqg@mail.gmail.com>
+References: <1887364.fvxYYNb7Mm@amdc1227>
+	<1520678.Zm627xxIN3@amdc1227>
+	<CAKohpomEcrPa7UnZmtTouxN6JXxcaa7dBstMGUWjXGL0n1+=Ng@mail.gmail.com>
+	<1604688.EafV1ohaV9@amdc1227>
+	<CAKohpo=_cR7dk_V2+6bQwUMk-raa3ENAJqBCSe_mYfS+Ur8PnA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:2720 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752492Ab3BADSy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 31 Jan 2013 22:18:54 -0500
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1301311010200.1876-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=_cR7dk_V2+6bQwUMk-raa3ENAJqBCSe_mYfS+Ur8PnA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tomasz Figa <t.figa@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On Thu, Jan 31, 2013 at 10:13:05AM -0500, Alan Stern wrote:
-> On Thu, 31 Jan 2013, Aaron Lu wrote:
-> 
-> > > > +static int scsi_blk_runtime_suspend(struct device *dev)
-> > > > +{
-> > > > +	struct scsi_device *sdev = to_scsi_device(dev);
-> > > 
-> > > For this routine and the other new ones, it may be slightly more
-> > > efficient to pass both dev and sdev as arguments (this depends on how
-> > > smart the compiler's optimizer is).  The caller already knows both of
-> > > them, after all.
-> > 
-> > What about passing only scsi_device? When device is needed, I can use
-> > &sdev->sdev_gendev. Is this equally efficient?
-> 
-> I don't know...  The difference is very small in any case.  The 
-> routines will probably be inlined automatically.
+On 31 January 2013 21:42, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 31 January 2013 21:37, Tomasz Figa <t.figa@samsung.com> wrote:
+>> Hmm. Now as I think of it, there might be another confusing aspect:
+>>
+>> Could you explain what "sw coordination" and "any coordination" mean?
+>> I mean specifically cpufreq_policy.cpus and cpufreq_policy.related_cpus
+>> masks.
+>
+> Check this out:
+>
+> https://lkml.org/lkml/2013/1/30/587
 
-Indeed, I just checked the .s output of the three cases, they are all
-the same. So we just need to care about readability and less of code,
-passing only scsi_device seems to be the simplest, are you OK with this?
+You would really like to look and ack this one too:
 
-BTW, the compiler I used is gcc-4.7.2.
-
-> 
-> > > > +		if (sdev->request_queue->dev) {
-> > > > +			pm_runtime_mark_last_busy(dev);
-> > > > +			err = pm_runtime_autosuspend(dev);
-> > > > +		} else {
-> > > > +			err = pm_schedule_suspend(dev, 100);
-> > > > +		}
-> > > > +	} else {
-> > > >  		err = pm_runtime_suspend(dev);
-> > > > +	}
-> > > >  	return err;
-> > 
-> > Shall we ignore the return value for these pm_xxx_suspend functions?
-> > I mean we do not need to record the return value for them and return it,
-> > since pm core doesn't care the return value of idle callback.
-> 
-> Maybe it will care in a future kernel version.  You might as well store 
-> the return code and pass it back.
-
-OK.
-
-Thanks,
-Aaron
-
+https://lkml.org/lkml/2013/1/30/592
