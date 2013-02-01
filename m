@@ -1,85 +1,105 @@
-From: Peter Hurley <peter@hurleysoftware.com>
-Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
-Date: Fri, 01 Feb 2013 16:14:30 -0500
-Message-ID: <1359753270.22968.19.camel@thor.lan>
-References: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
-	 <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
-	 <CANK3SE25kcgSu2dwKtQKU6-wvryC4qNQJu_nj3NPJHQTTC0oXw@mail.gmail.com>
-	 <1359752988.22968.16.camel@thor.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/4] intel_idle: stop using driver_data for static flags
+Date: Fri, 01 Feb 2013 23:16:37 +0100
+Message-ID: <510C3EC5.3060709@linaro.org>
+References: <1359691896-23567-1-git-send-email-lenb@kernel.org> <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com> <510B8059.5040609@linaro.org> <510C0C22.4000801@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1359752988.22968.16.camel@thor.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Einon <mark.einon@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f177.google.com ([74.125.82.177]:57269 "EHLO
+	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757849Ab3BAWQi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 17:16:38 -0500
+Received: by mail-we0-f177.google.com with SMTP id d7so3327348wer.36
+        for <linux-pm@vger.kernel.org>; Fri, 01 Feb 2013 14:16:37 -0800 (PST)
+In-Reply-To: <510C0C22.4000801@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, 2013-02-01 at 16:09 -0500, Peter Hurley wrote:
-> On Fri, 2013-02-01 at 19:13 +0000, Mark Einon wrote:
-> > On 31 January 2013 15:04, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > On Wed, 30 Jan 2013, Mark Einon wrote:
-> > >
-> > >> >> > >> This patch fixes the kernel warning generated when putting an MSI MS-1727
-> > >> >> > >> GT740 laptop into suspend mode. The call sequence in this case calls
-> > >> >> > >> free_irq() twice, once in pci_remove() and once then in pci_suspend().
-> > >> >> > >
-> > >> >> > > You mean /first/ in pci_suspend() and /then/ in pci_remove() on the
-> > >> >> > > already suspended devices, right?
-> > >> >> >
-> > >> >> > Yes, I did. The call sequence is suspend then resume. My bad.
-> > >> >
-> > >> > Why does the pci_suspend routine call free_irq() at all?  As far as I
-> > >> > know, it's not supposed to do that.  Won't the device continue to use
-> > >> > the same IRQ after it is resumed?
-> > >>
-> > >> This sounds reasonable to me - I think we could probably get rid of
-> > >> the request_irq() call from resume, and use
-> > >> disable_irq()/enable_irq()?
-> > >
-> > > Why mess around with IRQ settings at all?  Just have the suspend
-> > > routine tell the controller to stop generating them.
-> > >
-> > > Alan Stern
-> > >
-> > 
-> > I looked into doing this; using context_stop() to stop the controller running.
-> > 
-> > However, removing the enable_irq() from pci_resume() involves not
-> > calling ohci_enable() (as it is also the fw_card_driver.enable
-> > function, and can't easily be modified). As this call involves a lot
-> > of register writes and I have no devices to test, I decided against
-> > it.
-> > 
-> > I'll send an updated patch for consideration that merely uses a bool
-> > to stop the irq being freed twice - crude, but it works without
-> > changing too much code.
+On 02/01/2013 07:40 PM, Len Brown wrote:
+> On 02/01/2013 03:44 AM, Daniel Lezcano wrote:
+>> On 02/01/2013 05:11 AM, Len Brown wrote:
+>>> From: Len Brown <len.brown@intel.com>
+>>>
+>>> The commit, 4202735e8ab6ecfb0381631a0d0b58fefe0bd4e2
+>>> (cpuidle: Split cpuidle_state structure and move per-cpu statistics=
+ fields)
+>>> observed that the MWAIT flags for Cn on every processor to date wer=
+e the
+>>> same, and created get_driver_data() to supply them.
+>>>
+>>> Unfortunately, that assumption is false, going forward.
+>>> So here we restore the MWAIT flags to the cpuidle_state table.
+>>> However, instead restoring the old "driver_data" field,
+>>> we put the flags into the existing "flags" field,
+>>> where they probalby should have lived all along.
+>>
+>> Removing the driver_data is a good thing but I am not sure it is the
+>> case by moving the MWAIT flags to the cpuidle_state's flags field. W=
+e
+>> are mixing arch specific flags with a generic code.
+>>
+>> This is prone to errors because new flags could appear for the cpuid=
+le
+>> core code and could collide with the arch specific flags.
+>>
+>> Wouldn't make sense to add a private field in the struct cpuidle_sta=
+te
+>> structure to let the driver/arch specific to store whatever is neede=
+d ?
+>>
+>> struct cpuidle_state {
+>>
+>> 	...
+>> 	unsigned long private;
+>> 	...
+>>
+>> }
+>=20
+> The top half of the flags are reserved for the driver,
+> as noted by the definition of CPUIDLE_DRIVER_FLAGS_MASK
+> with the generic flag definitions:
+>=20
+> #define CPUIDLE_FLAG_TIME_VALID (0x01) /* is residency time measurabl=
+e? */
+> #define CPUIDLE_FLAG_COUPLED    (0x02) /* state applies to multiple c=
+pus */
+>=20
+> #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
+>=20
+> intel_idle already uses a driver-specific flag:
+>=20
+> #define CPUIDLE_FLAG_TLB_FLUSHED        0x10000
+>=20
+> This patch just uses 4 more bits along with that one.
 
-Sorry that should read...
+Ok. In this case it would make sense to move this flag out of the
+generic core code to the intel_idle.c file ? and move the [dec/en]codin=
+g
+macro flags_2_MWAIT_EAX and MWAIT_EAX_2_flags (with a more appropriate
+name for a generic code) to the cpuidle.h file ?
 
-> Hi Mark,
-> 
-> I think what Alan means is that the suspend/resume code should just
-> mask/unmask interrupts at the OHCI controller, via the OHCI
-> IntEventClear/Set registers (naturally, saving the current mask and
-     ^^^^^^^^
-  IntMaskClear/Set
+  -- Daniel
 
-by clearing/setting masterIntEnable
 
-> restoring it on resume).
-> 
-> Of course, there's a lot more to do with an OHCI controller -- as you
-> note. Like stopping running DMA contexts :)  And restarting them on
-> resume.
-> 
-> I'd do it, but I'm buried to my eyeballs in tty right now -- not fun. I
-> can _eventually_ do this as I need to address problems with the FW643
-> anyway at some point, but it's going to be a little while.
-> 
-> In the meantime, I'm a little confused: you say you can't test this code
-> because you have no hardware; but then how'd you trip this bug?
-> 
-> Regards,
-> Peter Hurley
+
+> Sure, if we run out of space, we can add an additional field.
+> But I don't see an immediate need for it.
+>=20
+> thanks,
+> Len Brown
+> Intel Open Source Technology Center
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
