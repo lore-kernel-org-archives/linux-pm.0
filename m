@@ -1,77 +1,125 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/4] tools/power turbostat: support HSW
-Date: Thu, 31 Jan 2013 23:11:34 -0500
-Message-ID: <cdc0f0905ddbbfd269fc44fcfc4725eab9e09709.1359691799.git.len.brown@intel.com>
-References: <1359691896-23567-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: governors: Reset tunables only for cpufreq_unregister_governor()
+Date: Fri,  1 Feb 2013 11:12:58 +0530
+Message-ID: <d9de945975ad2064693275335b4022c8efd013e3.1359697315.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f182.google.com ([209.85.128.182]:43156 "EHLO
-	mail-ve0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283Ab3BAET5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jan 2013 23:19:57 -0500
-In-Reply-To: <1359691896-23567-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
-References: <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
+Received: from service87.mimecast.com ([91.220.42.44]:36854 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741Ab3BAFnJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 00:43:09 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, fabio.baltieri@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Len Brown <len.brown@intel.com>
+Currently, whenever governor->governor() is called for CPUFRREQ_GOV_START e=
+vent
+we reset few tunables of governor. Which isn't correct, as this routine is
+called for every cpu hot-[un]plugging event. We should actually be resettin=
+g
+these only when the governor module is removed and re-installed.
 
-This patch enables turbostat to run properly on the
-next-generation Intel(R) Microarchitecture, code named Haswell (HSW).
-
-HSW supports the BCLK and counters found in SNB.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- tools/power/x86/turbostat/turbostat.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq.c          |  4 ++++
+ drivers/cpufreq/cpufreq_governor.c | 24 ++++++++++++++++--------
+ include/linux/cpufreq.h            |  1 +
+ 3 files changed, 21 insertions(+), 8 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index ce6d460..b326878 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1397,6 +1397,9 @@ int has_nehalem_turbo_ratio_limit(unsigned int family, unsigned int model)
- 	case 0x2D:	/* SNB Xeon */
- 	case 0x3A:	/* IVB */
- 	case 0x3E:	/* IVB Xeon */
-+	case 0x3C:	/* HSW */
-+	case 0x3F:	/* HSW */
-+	case 0x45:	/* HSW */
- 		return 1;
- 	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
- 	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
-@@ -1488,6 +1491,9 @@ void rapl_probe(unsigned int family, unsigned int model)
- 	switch (model) {
- 	case 0x2A:
- 	case 0x3A:
-+	case 0x3C:	/* HSW */
-+	case 0x3F:	/* HSW */
-+	case 0x45:	/* HSW */
- 		do_rapl = RAPL_PKG | RAPL_CORES | RAPL_GFX;
- 		break;
- 	case 0x2D:
-@@ -1724,6 +1730,9 @@ int is_snb(unsigned int family, unsigned int model)
- 	case 0x2D:
- 	case 0x3A:	/* IVB */
- 	case 0x3E:	/* IVB Xeon */
-+	case 0x3C:	/* HSW */
-+	case 0x3F:	/* HSW */
-+	case 0x45:	/* HSW */
- 		return 1;
- 	}
- 	return 0;
-@@ -2248,7 +2257,7 @@ int main(int argc, char **argv)
- 	cmdline(argc, argv);
- 
- 	if (verbose)
--		fprintf(stderr, "turbostat v3.0 November 23, 2012"
-+		fprintf(stderr, "turbostat v3.1 January 8, 2013"
- 			" - Len Brown <lenb@kernel.org>\n");
- 
- 	turbostat_init();
--- 
-1.8.1.2.422.g08c0e7f
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8d521422..9656420 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1561,6 +1561,9 @@ static int __cpufreq_governor(struct cpufreq_policy *=
+policy,
+ =09=09=09=09=09=09policy->cpu, event);
+ =09ret =3D policy->governor->governor(policy, event);
+=20
++=09if (!policy->governor->initialized && (event =3D=3D CPUFREQ_GOV_START))
++=09=09policy->governor->initialized =3D 1;
++
+ =09/* we keep one module reference alive for
+ =09=09=09each CPU governed by this CPU */
+ =09if ((event !=3D CPUFREQ_GOV_START) || ret)
+@@ -1584,6 +1587,7 @@ int cpufreq_register_governor(struct cpufreq_governor=
+ *governor)
+=20
+ =09mutex_lock(&cpufreq_governor_mutex);
+=20
++=09governor->initialized =3D 0;
+ =09err =3D -EBUSY;
+ =09if (__find_governor(governor->name) =3D=3D NULL) {
+ =09=09err =3D 0;
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_g=
+overnor.c
+index 7aaa9b1..79795c4 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -254,11 +254,6 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ =09=09=09return rc;
+ =09=09}
+=20
+-=09=09/* policy latency is in nS. Convert it to uS first */
+-=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
+-=09=09if (latency =3D=3D 0)
+-=09=09=09latency =3D 1;
+-
+ =09=09/*
+ =09=09 * conservative does not implement micro like ondemand
+ =09=09 * governor, thus we are bound to jiffes/HZ
+@@ -270,20 +265,33 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
+ =09=09=09cpufreq_register_notifier(cs_ops->notifier_block,
+ =09=09=09=09=09CPUFREQ_TRANSITION_NOTIFIER);
+=20
+-=09=09=09dbs_data->min_sampling_rate =3D MIN_SAMPLING_RATE_RATIO *
+-=09=09=09=09jiffies_to_usecs(10);
++=09=09=09if (!policy->governor->initialized)
++=09=09=09=09dbs_data->min_sampling_rate =3D
++=09=09=09=09=09MIN_SAMPLING_RATE_RATIO *
++=09=09=09=09=09jiffies_to_usecs(10);
+ =09=09} else {
+ =09=09=09od_dbs_info->rate_mult =3D 1;
+ =09=09=09od_dbs_info->sample_type =3D OD_NORMAL_SAMPLE;
+ =09=09=09od_ops->powersave_bias_init_cpu(cpu);
+-=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
++
++=09=09=09if (!policy->governor->initialized)
++=09=09=09=09od_tuners->io_is_busy =3D od_ops->io_busy();
+ =09=09}
+=20
++=09=09if (policy->governor->initialized)
++=09=09=09goto unlock;
++
++=09=09/* policy latency is in nS. Convert it to uS first */
++=09=09latency =3D policy->cpuinfo.transition_latency / 1000;
++=09=09if (latency =3D=3D 0)
++=09=09=09latency =3D 1;
++
+ =09=09/* Bring kernel and HW constraints together */
+ =09=09dbs_data->min_sampling_rate =3D max(dbs_data->min_sampling_rate,
+ =09=09=09=09MIN_LATENCY_MULTIPLIER * latency);
+ =09=09*sampling_rate =3D max(dbs_data->min_sampling_rate, latency *
+ =09=09=09=09LATENCY_MULTIPLIER);
++unlock:
+ =09=09mutex_unlock(&dbs_data->mutex);
+=20
+ =09=09/* Initiate timer time stamp */
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index feb360c..6bf3f2d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -183,6 +183,7 @@ static inline unsigned long cpufreq_scale(unsigned long=
+ old, u_int div, u_int mu
+=20
+ struct cpufreq_governor {
+ =09char=09name[CPUFREQ_NAME_LEN];
++=09int=09initialized;
+ =09int=09(*governor)=09(struct cpufreq_policy *policy,
+ =09=09=09=09 unsigned int event);
+ =09ssize_t=09(*show_setspeed)=09(struct cpufreq_policy *policy,
+--=20
+1.7.12.rc2.18.g61b472e
+
 
