@@ -1,274 +1,72 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V2 1/2] thermal: sysfs: Add a new sysfs node emul_temp
- for thermal emulation
-Date: Fri, 01 Feb 2013 16:27:40 +0800
-Message-ID: <1359707260.2241.117.camel@rzhang1-mobl4>
-References: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH] Thermal: Fix to use read critical temperature when
+ required
+Date: Fri, 1 Feb 2013 08:43:29 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5927488E@BGSMSX101.gar.corp.intel.com>
+References: <1357690739-17009-1-git-send-email-amit.daniel@samsung.com>
+ <1359697446.2241.95.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:61305 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:14144 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639Ab3BAI1p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 1 Feb 2013 03:27:45 -0500
-In-Reply-To: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
+	id S1752639Ab3BAInf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Feb 2013 03:43:35 -0500
+In-Reply-To: <1359697446.2241.95.camel@rzhang1-mobl4>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
+To: "Zhang, Rui" <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Sun, 2013-01-27 at 19:28 -0800, Amit Daniel Kachhap wrote:
-> This patch adds support to set the emulated temperature method in
-> thermal zone (sensor). After setting this feature thermal zone may
-> report this temperature and not the actual temperature. The emulation
-> implementation may be based on sensor capability through platform
-> specific handler or pure software emulation if no platform handler defined.
-> 
-> This is useful in debugging different temperature threshold and its
-> associated cooling action. Critical threshold's cannot be emulated.
-> Writing 0 on this node should disable emulation.
-> 
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> ---
-> 
-> Changes in V2:
-> * Added config option for enabling emulation support.
-> * Added s/w emulation if no platform handler registered.
-> * skip the critical trip point emulation
-> 
-> This patchset is based on thermal maintainer next tree.
-> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next 
-> 
->  Documentation/thermal/sysfs-api.txt |   13 ++++++
->  drivers/thermal/Kconfig             |    8 +++
->  drivers/thermal/thermal_sys.c       |   82 ++++++++++++++++++++++++++++++-----
->  include/linux/thermal.h             |    2 +
->  4 files changed, 94 insertions(+), 11 deletions(-)
-> 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index 526d4b9..6859661 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
->  	.get_trip_type: get the type of certain trip point.
->  	.get_trip_temp: get the temperature above which the certain trip point
->  			will be fired.
-> +	.set_emul_temp: set the emulation temperature which helps in debugging
-> +			different threshold temperature points.
->  
->  1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
->  
-> @@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
->      |---trip_point_[0-*]_temp:	Trip point temperature
->      |---trip_point_[0-*]_type:	Trip point type
->      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-> +    |---emul_temp:		Emulated temperature set node
->  
->  Thermal cooling device sys I/F, created once it's registered:
->  /sys/class/thermal/cooling_device[0-*]:
-> @@ -252,6 +255,16 @@ passive
->  	Valid values: 0 (disabled) or greater than 1000
->  	RW, Optional
->  
-> +emul_temp
-> +	Interface to set the emulated temperature method in thermal zone
-> +	(sensor). After setting this temperature, the thermal zone may pass
-> +	this temperature to platform emulation function if registered or
-> +	cache it locally. This is useful in debugging different temperature
-> +	threshold and its associated cooling action. This is write only node
-> +	and writing 0 on this node should disable emulation.
-> +	Unit: millidegree Celsius
-> +	WO, Optional
-> +
->  *****************************
->  * Cooling device attributes *
->  *****************************
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index faf38c5..e4cf7fb 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -78,6 +78,14 @@ config CPU_THERMAL
->  	  and not the ACPI interface.
->  	  If you want this support, you should say Y here.
->  
-> +config THERMAL_EMULATION
-> +	bool "Thermal emulation mode support"
-> +	help
-> +	  Enable this option to make a emul_temp sysfs node in thermal zone
-> +	  directory to support temperature emulation. With emulation sysfs node,
-> +	  user can manually input temperature and test the different trip
-> +	  threshold behaviour for simulation purpose.
-> +
->  config SPEAR_THERMAL
->  	bool "SPEAr thermal sensor driver"
->  	depends on PLAT_SPEAR
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 0a1bf6b..59ba709 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -378,24 +378,57 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
->  	monitor_thermal_zone(tz);
->  }
->  
-> +static int thermal_zone_get_temp(struct thermal_zone_device *tz,
-> +				unsigned long *temp)
-> +{
-> +	int ret = 0, count;
-> +	unsigned long crit_temp = -1UL;
-> +	enum thermal_trip_type type;
-> +
-> +	mutex_lock(&tz->lock);
-> +
-> +	if (tz->ops->get_temp)
-> +		ret = tz->ops->get_temp(tz, temp);
-we do not need to do this check, .get_temp() should always be available.
-
-#ifdef CONFIG_THERMAL_EMUL
-> +	else
-> +		ret = -EPERM;
-> +
-> +	if (!tz->emul_temperature)
-> +		goto skip_emul;
-> +
-
-
-> +	for (count = 0; count < tz->trips; count++) {
-> +		ret = tz->ops->get_trip_type(tz, count, &type);
-> +		if (!ret && type == THERMAL_TRIP_CRITICAL) {
-> +			ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
-> +			break;
-> +		}
-> +	}
-> +
-> +	if (ret)
-> +		goto skip_emul;
-> +
-> +	if (*temp < crit_temp)
-> +		*temp = tz->emul_temperature;
-> +
-> +skip_emul:
-#endif
-
-or you can introduce get_emul_temp() instead.
-
-> +	mutex_unlock(&tz->lock);
-> +	return ret;
-> +}
-> +
->  static void update_temperature(struct thermal_zone_device *tz)
->  {
->  	long temp;
->  	int ret;
->  
-> -	mutex_lock(&tz->lock);
-> -
-> -	ret = tz->ops->get_temp(tz, &temp);
-> +	ret = thermal_zone_get_temp(tz, &temp);
->  	if (ret) {
->  		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
->  			 tz->id);
-> -		goto exit;
-> +		return;
->  	}
->  
-> +	mutex_lock(&tz->lock);
->  	tz->last_temperature = tz->temperature;
->  	tz->temperature = temp;
-> -
-> -exit:
->  	mutex_unlock(&tz->lock);
->  }
->  
-> @@ -438,10 +471,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
->  	long temperature;
->  	int ret;
->  
-> -	if (!tz->ops->get_temp)
-> -		return -EPERM;
-> -
-> -	ret = tz->ops->get_temp(tz, &temperature);
-> +	ret = thermal_zone_get_temp(tz, &temperature);
->  
->  	if (ret)
->  		return ret;
-> @@ -701,6 +731,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
->  	return sprintf(buf, "%s\n", tz->governor->name);
->  }
->  
-> +#ifdef CONFIG_THERMAL_EMULATION
-> +static ssize_t
-> +emul_temp_store(struct device *dev, struct device_attribute *attr,
-> +		     const char *buf, size_t count)
-> +{
-> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> +	int ret = 0;
-> +	unsigned long temperature;
-> +
-> +	if (kstrtoul(buf, 10, &temperature))
-> +		return -EINVAL;
-> +
-> +	if (!tz->ops->set_emul_temp) {
-> +		mutex_lock(&tz->lock);
-> +		tz->emul_temperature = temperature;
-> +		mutex_unlock(&tz->lock);
-> +	} else {
-> +		ret = tz->ops->set_emul_temp(tz, temperature);
-> +	}
-> +
-> +	return ret ? ret : count;
-> +}
-> +static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-> +#endif/*CONFIG_THERMAL_EMULATION*/
-> +
->  static DEVICE_ATTR(type, 0444, type_show, NULL);
->  static DEVICE_ATTR(temp, 0444, temp_show, NULL);
->  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-> @@ -843,7 +898,7 @@ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
->  				       temp_input);
->  	struct thermal_zone_device *tz = temp->tz;
->  
-> -	ret = tz->ops->get_temp(tz, &temperature);
-> +	ret = thermal_zone_get_temp(tz, &temperature);
->  
->  	if (ret)
->  		return ret;
-> @@ -1596,6 +1651,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->  			goto unregister;
->  	}
->  
-> +#ifdef CONFIG_THERMAL_EMULATION
-> +	result = device_create_file(&tz->device, &dev_attr_emul_temp);
-> +	if (result)
-> +		goto unregister;
-> +#endif
->  	/* Create policy attribute */
->  	result = device_create_file(&tz->device, &dev_attr_policy);
->  	if (result)
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 9b78f8c..f0bd7f9 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
->  	int (*set_trip_hyst) (struct thermal_zone_device *, int,
->  			      unsigned long);
->  	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
-> +	int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
->  	int (*get_trend) (struct thermal_zone_device *, int,
->  			  enum thermal_trend *);
->  	int (*notify) (struct thermal_zone_device *, int,
-> @@ -165,6 +166,7 @@ struct thermal_zone_device {
->  	int polling_delay;
->  	int temperature;
->  	int last_temperature;
-> +	int emul_temperature;
->  	int passive;
->  	unsigned int forced_passive;
->  	const struct thermal_zone_device_ops *ops;
-others look okay to me.
-
-thanks,
-rui
-
-
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6
+IEZyaWRheSwgRmVicnVhcnkgMDEsIDIwMTMgMTE6MTQgQU0NCj4gVG86IEFtaXQgRGFuaWVsIEth
+Y2hoYXANCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZzsgUiwgRHVyZ2Fkb3NzDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFRoZXJtYWw6
+IEZpeCB0byB1c2UgcmVhZCBjcml0aWNhbCB0ZW1wZXJhdHVyZSB3aGVuDQo+IHJlcXVpcmVkDQo+
+IA0KPiBPbiBUdWUsIDIwMTMtMDEtMDggYXQgMTY6MTggLTA4MDAsIEFtaXQgRGFuaWVsIEthY2ho
+YXAgd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBtb2RpZmllcyB0aGUgY29kZSB0byB1c2UgZ2V0X2Ny
+aXRfdGVtcCBpbnN0ZWFkIG9mDQo+ID4gdGhlIG5vcm1hbCBnZXRfdHJpcF90ZW1wIHdoZW4gY3Jp
+dGljYWwgdGhyZXNob2xkIHBvaW50IGlzIGNyb3NzZWQNCj4gPiBvciBxdWVyaWVkIGFib3V0Lg0K
+PiA+DQo+IA0KPiBpcyB0aGVyZSBhbnkgcHJvYmxlbSBpbiB0aGUgY3VycmVudCBjb2RlPw0KPiAN
+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBBbWl0IERhbmllbCBLYWNoaGFwIDxhbWl0LmRhbmllbEBzYW1z
+dW5nLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMgfCAg
+IDE1ICsrKysrKysrKysrKystLQ0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygr
+KSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwv
+dGhlcm1hbF9zeXMuYyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX3N5cy5jDQo+ID4gaW5kZXgg
+ZWNkZmM3ZC4uMGRjNjQwMyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1h
+bF9zeXMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX3N5cy5jDQo+ID4gQEAg
+LTM0NSw3ICszNDUsMTAgQEAgc3RhdGljIHZvaWQgaGFuZGxlX2NyaXRpY2FsX3RyaXBzKHN0cnVj
+dA0KPiB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwNCj4gPiAgew0KPiA+ICAJbG9uZyB0cmlwX3Rl
+bXA7DQo+ID4NCj4gPiAtCXR6LT5vcHMtPmdldF90cmlwX3RlbXAodHosIHRyaXAsICZ0cmlwX3Rl
+bXApOw0KPiA+ICsJaWYgKHR6LT5vcHMtPmdldF9jcml0X3RlbXApDQo+ID4gKwkJdHotPm9wcy0+
+Z2V0X2NyaXRfdGVtcCh0eiwgJnRyaXBfdGVtcCk7DQo+ID4gKwllbHNlDQo+ID4gKwkJdHotPm9w
+cy0+Z2V0X3RyaXBfdGVtcCh0eiwgdHJpcCwgJnRyaXBfdGVtcCk7DQo+ID4NCj4gaGFuZGxlX2Ny
+aXRpY2FsX3RyaXBzKCkgY2FuIGhhbmRsZSBib3RoIGFjdGl2ZSBhbmQgaG90IHRyaXAgcG9pbnRz
+Lg0KPiB0aGlzIGNoYW5nZSB3aWxsIGJyZWFrIEhPVCB0cmlwIHBvaW50Lg0KPiANCj4gPiAgCS8q
+IElmIHdlIGhhdmUgbm90IGNyb3NzZWQgdGhlIHRyaXBfdGVtcCwgd2UgZG8gbm90IGNhcmUuICov
+DQo+ID4gIAlpZiAodHotPnRlbXBlcmF0dXJlIDwgdHJpcF90ZW1wKQ0KPiA+IEBAIC01NTAsNiAr
+NTUzLDcgQEAgdHJpcF9wb2ludF90ZW1wX3Nob3coc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QN
+Cj4gZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiAgCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2
+aWNlICp0eiA9IHRvX3RoZXJtYWxfem9uZShkZXYpOw0KPiA+ICAJaW50IHRyaXAsIHJldDsNCj4g
+PiAgCWxvbmcgdGVtcGVyYXR1cmU7DQo+ID4gKwllbnVtIHRoZXJtYWxfdHJpcF90eXBlIHR5cGU7
+DQo+ID4NCj4gPiAgCWlmICghdHotPm9wcy0+Z2V0X3RyaXBfdGVtcCkNCj4gPiAgCQlyZXR1cm4g
+LUVQRVJNOw0KPiA+IEBAIC01NTcsNyArNTYxLDE0IEBAIHRyaXBfcG9pbnRfdGVtcF9zaG93KHN0
+cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0DQo+IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ID4g
+IAlpZiAoIXNzY2FuZihhdHRyLT5hdHRyLm5hbWUsICJ0cmlwX3BvaW50XyVkX3RlbXAiLCAmdHJp
+cCkpDQo+ID4gIAkJcmV0dXJuIC1FSU5WQUw7DQo+ID4NCj4gPiAtCXJldCA9IHR6LT5vcHMtPmdl
+dF90cmlwX3RlbXAodHosIHRyaXAsICZ0ZW1wZXJhdHVyZSk7DQo+ID4gKwlyZXQgPSB0ei0+b3Bz
+LT5nZXRfdHJpcF90eXBlKHR6LCB0cmlwLCAmdHlwZSk7DQo+ID4gKwlpZiAocmV0KQ0KPiA+ICsJ
+CXJldHVybiByZXQ7DQo+ID4gKw0KPiA+ICsJaWYgKHR5cGUgPT0gVEhFUk1BTF9UUklQX0NSSVRJ
+Q0FMICYmIHR6LT5vcHMtPmdldF9jcml0X3RlbXApDQo+ID4gKwkJcmV0ID0gdHotPm9wcy0+Z2V0
+X2NyaXRfdGVtcCh0eiwgJnRlbXBlcmF0dXJlKTsNCj4gPiArCWVsc2UNCj4gPiArCQlyZXQgPSB0
+ei0+b3BzLT5nZXRfdHJpcF90ZW1wKHR6LCB0cmlwLCAmdGVtcGVyYXR1cmUpOw0KPiA+DQo+IA0K
+PiB3aGF0J3MgdGhlIGJlbmVmaXQgb2YgdXNpbmcgLmdldF9jcml0X3RlbXAoKSBpbnN0ZWFkIG9m
+IC5nZXRfdHJpcF90ZW1wKCkNCj4gZm9yIENSSVRJQ0FMIHRyaXAgcG9pbnRzIGhlcmU/DQo+IC5n
+ZXRfdHJpcF9wb2ludCBjYW4gYWxzbyBnZXQgdGhlIGNyaXRpY2FsIHRyaXAgcG9pbnQgdGVtcGVy
+YXR1cmUuDQo+IA0KPiBpbnN0ZWFkLCBJIHRoaW5rIHdlIGNvdWxkIHJlbW92ZSAuZ2V0X2NyaXRf
+dGVtcCBjYWxsYmFjay4NCg0KSSBhZ3JlZSB3aXRoIHlvdSBSdWkgaGVyZSA6LSkNCg0KPiBmb3Ig
+aHdtb24gc3lzZnMsIHdlIGp1c3QgbmVlZCB0byB1c2UgZ2V0X3RyaXBfdHlwZSB0byBmaW5kIHRo
+ZSBjcml0aWNhbA0KPiB0cmlwIHBvaW50Lg0KDQpZZXMsIHRoaXMgc2hvdWxkIHdvcmsuDQoNClRo
+YW5rcywNCkR1cmdhDQo=
