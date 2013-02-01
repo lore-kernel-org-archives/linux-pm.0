@@ -1,147 +1,45 @@
-From: fli24 <fei.li@intel.com>
-Subject: [PATCH V4] suspend: enable freeze timeout configuration through sys
-Date: Fri, 01 Feb 2013 16:56:03 +0800
-Message-ID: <1359708963.7240.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	 <1359527019.26790.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	 <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 3/3] cpufreq: Remove unnecessary use of policy->shared_type
+Date: Fri, 1 Feb 2013 14:37:29 +0530
+Message-ID: <510B85D1.5070401@ti.com>
+References: <1bf82454ab1f16b13212548d7c9605067c8b7a0d.1359700705.git.viresh.kumar@linaro.org> <902bed453159832925df76e24806f3b919fdfc74.1359700706.git.viresh.kumar@linaro.org> <510B6510.6060608@ti.com> <CAKohponEsSrwLWbi4WJ19i8XkzEiL0De2ShLePBdygunmGEo5g@mail.gmail.com> <510B6FC5.8030309@ti.com> <CAKohpomxi91kXR+th2BbruKigmLPmrDQf1s_Mf11C3Bs53aB3A@mail.gmail.com> <510B8237.7030605@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30103 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751850Ab3BAI5v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 1 Feb 2013 03:57:51 -0500
-In-Reply-To: <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+Received: from devils.ext.ti.com ([198.47.26.153]:37947 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755931Ab3BAJG1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 04:06:27 -0500
+In-Reply-To: <510B8237.7030605@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, fei.li@intel.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, rjw@sisk.pl, Steve.Bannister@arm.com, Stephen Warren <swarren@nvidia.com>
 
+Viresh,
 
-At present, the value of timeout for freezing is 20s, which is
-meaningless in case that one thread is frozen with mutex locked
-and another thread is trying to lock the mutex, as this time of
-freezing will fail unavoidably.
-And if there is no new wakeup event registered, the system will
-waste at most 20s for such meaningless trying of freezing.
+On Friday 01 February 2013 02:22 PM, Santosh Shilimkar wrote:
+> On Friday 01 February 2013 01:32 PM, Viresh Kumar wrote:
+>> On 1 February 2013 13:03, Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> wrote:
+>>> I am not talking about just notifiers. This is for external users who
+>>> has subscribed for notifiers. The point is whether the core CPUFReq
+>>> gets updated without that flag for all affected CPU.
+>>
+>> Yes, its safe. Follow this thread, yesterday i explained this to
+>> Tomasz Figa:
+>>
+>> http://www.spinics.net/lists/arm-kernel/msg221629.html
+>>
+> That part was very clear to me Viresh. Anyway thanks for the link.
+>  From what I read so far, it might just work but I would want to
+> try it out before acking the approach.
+>
+You are correct. Sorry for oversight on your initial point about the
+usage of the flag. When I added that flag, I just went by the
+description thinking the cpufreq core booking and stat updates
+use the flag. Its not the case.
 
-With this patch, the value of timeout can be configured to smaller
-value, so such meaningless trying of freezing will be aborted in
-earlier time, and later freezing can be also triggered in earlier
-time. And more power will be saved.
-In normal case on mobile phone, it costs real little time to freeze
-processes. On some platform, it only costs about 20ms to freeze
-user space processes and 10ms to freeze kernel freezable threads.
-
-Signed-off-by: Liu Chuansheng <chuansheng.liu@intel.com>
-Signed-off-by: Li Fei <fei.li@intel.com>
----
- Documentation/power/freezing-of-tasks.txt |    5 +++++
- include/linux/freezer.h                   |    5 +++++
- kernel/power/main.c                       |   27 +++++++++++++++++++++++++++
- kernel/power/process.c                    |    4 ++--
- 4 files changed, 39 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/power/freezing-of-tasks.txt b/Documentation/power/freezing-of-tasks.txt
-index 6ec291e..85894d8 100644
---- a/Documentation/power/freezing-of-tasks.txt
-+++ b/Documentation/power/freezing-of-tasks.txt
-@@ -223,3 +223,8 @@ since they ask the freezer to skip freezing this task, since it is anyway
- only after the entire suspend/hibernation sequence is complete.
- So, to summarize, use [un]lock_system_sleep() instead of directly using
- mutex_[un]lock(&pm_mutex). That would prevent freezing failures.
-+
-+V. Miscellaneous
-+/sys/power/pm_freeze_timeout controls how long it will cost at most to freeze
-+all user space processes or all freezable kernel threads, in unit of millisecond.
-+The default value is 20000, with range of unsigned integer.
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index e4238ce..e70df40 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -13,6 +13,11 @@ extern bool pm_freezing;		/* PM freezing in effect */
- extern bool pm_nosig_freezing;		/* PM nosig freezing in effect */
- 
- /*
-+ * Timeout for stopping processes
-+ */
-+extern unsigned int freeze_timeout_msecs;
-+
-+/*
-  * Check if a process has been frozen
-  */
- static inline bool frozen(struct task_struct *p)
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 1c16f91..3e1c9da 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -553,6 +553,30 @@ power_attr(pm_trace_dev_match);
- 
- #endif /* CONFIG_PM_TRACE */
- 
-+#ifdef CONFIG_FREEZER
-+static ssize_t pm_freeze_timeout_show(struct kobject *kobj,
-+				      struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%u\n", freeze_timeout_msecs);
-+}
-+
-+static ssize_t pm_freeze_timeout_store(struct kobject *kobj,
-+				       struct kobj_attribute *attr,
-+				       const char *buf, size_t n)
-+{
-+	unsigned long val;
-+
-+	if (kstrtoul(buf, 10, &val))
-+		return -EINVAL;
-+
-+	freeze_timeout_msecs = val;
-+	return n;
-+}
-+
-+power_attr(pm_freeze_timeout);
-+
-+#endif	/* CONFIG_FREEZER*/
-+
- static struct attribute * g[] = {
- 	&state_attr.attr,
- #ifdef CONFIG_PM_TRACE
-@@ -576,6 +600,9 @@ static struct attribute * g[] = {
- 	&pm_print_times_attr.attr,
- #endif
- #endif
-+#ifdef CONFIG_FREEZER
-+	&pm_freeze_timeout_attr.attr,
-+#endif
- 	NULL,
- };
- 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index d5a258b..98088e0 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -21,7 +21,7 @@
- /* 
-  * Timeout for stopping processes
-  */
--#define TIMEOUT	(20 * HZ)
-+unsigned int __read_mostly freeze_timeout_msecs = 20 * MSEC_PER_SEC;
- 
- static int try_to_freeze_tasks(bool user_only)
- {
-@@ -36,7 +36,7 @@ static int try_to_freeze_tasks(bool user_only)
- 
- 	do_gettimeofday(&start);
- 
--	end_time = jiffies + TIMEOUT;
-+	end_time = jiffies + msecs_to_jiffies(freeze_timeout_msecs);
- 
- 	if (!user_only)
- 		freeze_workqueues_begin();
--- 
-1.7.4.1
-
-
-
+Thanks for the fix. For the patch,
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
