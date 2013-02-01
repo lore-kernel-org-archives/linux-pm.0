@@ -1,51 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] cpufreq: governors: Remove code redundancy between governors
-Date: Fri, 01 Feb 2013 23:32:30 +0100
-Message-ID: <41218306.bQmZmWoL7T@vostro.rjw.lan>
-References: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar@linaro.org> <CAKohpomdOzuXXGAr2r0LFULhr5AYLHWyhDON+9AKjMv9L6zkAg@mail.gmail.com> <CAKohponEPOO3vH3Kn8UChXEaNP36gDaDh-ym4Z9ZjcHbs418cQ@mail.gmail.com>
+From: Mark Einon <mark.einon@gmail.com>
+Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
+Date: Fri, 1 Feb 2013 23:00:14 +0000
+Message-ID: <CANK3SE2nsxLMUyANzsov4d86ow4v9NuzaZsS3XvjpQJOfYXYUQ@mail.gmail.com>
+References: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
+ <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
+ <CANK3SE25kcgSu2dwKtQKU6-wvryC4qNQJu_nj3NPJHQTTC0oXw@mail.gmail.com> <1359752988.22968.16.camel@thor.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohponEPOO3vH3Kn8UChXEaNP36gDaDh-ym4Z9ZjcHbs418cQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f170.google.com ([209.85.223.170]:60096 "EHLO
+	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757313Ab3BAXA3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 18:00:29 -0500
+In-Reply-To: <1359752988.22968.16.camel@thor.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Hurley <peter@hurleysoftware.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, February 01, 2013 08:08:42 AM Viresh Kumar wrote:
-> On 1 February 2013 08:01, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Really!! I see bleeding edge as df0e3f4 and i don't see the $(subject) patch
-> > in it :)
-> 
-> Well it might have been dropped by Rafael due to build error,
+On 1 February 2013 21:09, Peter Hurley <peter@hurleysoftware.com> wrote:
+> Hi Mark,
+>
+> I think what Alan means is that the suspend/resume code should just
+> mask/unmask interrupts at the OHCI controller, via the OHCI
+> IntEventClear/Set registers (naturally, saving the current mask and
+> restoring it on resume).
+>
+> Of course, there's a lot more to do with an OHCI controller -- as you
+> note. Like stopping running DMA contexts :)  And restarting them on
+> resume.
+>
+> I'd do it, but I'm buried to my eyeballs in tty right now -- not fun. I
+> can _eventually_ do this as I need to address problems with the FW643
+> anyway at some point, but it's going to be a little while.
 
-Precisely.
+Hi Peter,
 
-> which would be fixed by:
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> b/drivers/cpufreq/cpufreq_governor.c
-> index dc99472..7aaa9b1 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -194,6 +194,7 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
-> 
->         return true;
->  }
-> +EXPORT_SYMBOL_GPL(need_load_eval);
-> 
->  int cpufreq_governor_dbs(struct dbs_data *dbs_data,
->                 struct cpufreq_policy *policy, unsigned int event)
-> 
-> 
-> Original patch attached with this change.
+Ok, understood. I can certainly attempt a patch if I get time.
 
-OK, thanks!
+>
+> In the meantime, I'm a little confused: you say you can't test this code
+> because you have no hardware; but then how'd you trip this bug?
 
-Rafael
+I can test the code in that I have a firewire port on my laptop, but
+haven't got anything to plug into the port.
+I assume that any large changes I make are quite capable of breaking
+something there...
 
+Cheers,
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Mark
