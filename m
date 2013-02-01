@@ -1,72 +1,294 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH] Thermal: Fix to use read critical temperature when
- required
-Date: Fri, 1 Feb 2013 08:43:29 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5927488E@BGSMSX101.gar.corp.intel.com>
-References: <1357690739-17009-1-git-send-email-amit.daniel@samsung.com>
- <1359697446.2241.95.camel@rzhang1-mobl4>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/4] intel_idle: stop using driver_data for static flags
+Date: Fri, 01 Feb 2013 09:44:09 +0100
+Message-ID: <510B8059.5040609@linaro.org>
+References: <1359691896-23567-1-git-send-email-lenb@kernel.org> <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:14144 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639Ab3BAInf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 1 Feb 2013 03:43:35 -0500
-In-Reply-To: <1359697446.2241.95.camel@rzhang1-mobl4>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6
-IEZyaWRheSwgRmVicnVhcnkgMDEsIDIwMTMgMTE6MTQgQU0NCj4gVG86IEFtaXQgRGFuaWVsIEth
-Y2hoYXANCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIu
-a2VybmVsLm9yZzsgUiwgRHVyZ2Fkb3NzDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFRoZXJtYWw6
-IEZpeCB0byB1c2UgcmVhZCBjcml0aWNhbCB0ZW1wZXJhdHVyZSB3aGVuDQo+IHJlcXVpcmVkDQo+
-IA0KPiBPbiBUdWUsIDIwMTMtMDEtMDggYXQgMTY6MTggLTA4MDAsIEFtaXQgRGFuaWVsIEthY2ho
-YXAgd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBtb2RpZmllcyB0aGUgY29kZSB0byB1c2UgZ2V0X2Ny
-aXRfdGVtcCBpbnN0ZWFkIG9mDQo+ID4gdGhlIG5vcm1hbCBnZXRfdHJpcF90ZW1wIHdoZW4gY3Jp
-dGljYWwgdGhyZXNob2xkIHBvaW50IGlzIGNyb3NzZWQNCj4gPiBvciBxdWVyaWVkIGFib3V0Lg0K
-PiA+DQo+IA0KPiBpcyB0aGVyZSBhbnkgcHJvYmxlbSBpbiB0aGUgY3VycmVudCBjb2RlPw0KPiAN
-Cj4gPiBTaWduZWQtb2ZmLWJ5OiBBbWl0IERhbmllbCBLYWNoaGFwIDxhbWl0LmRhbmllbEBzYW1z
-dW5nLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMgfCAg
-IDE1ICsrKysrKysrKysrKystLQ0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygr
-KSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwv
-dGhlcm1hbF9zeXMuYyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX3N5cy5jDQo+ID4gaW5kZXgg
-ZWNkZmM3ZC4uMGRjNjQwMyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1h
-bF9zeXMuYw0KPiA+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX3N5cy5jDQo+ID4gQEAg
-LTM0NSw3ICszNDUsMTAgQEAgc3RhdGljIHZvaWQgaGFuZGxlX2NyaXRpY2FsX3RyaXBzKHN0cnVj
-dA0KPiB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwNCj4gPiAgew0KPiA+ICAJbG9uZyB0cmlwX3Rl
-bXA7DQo+ID4NCj4gPiAtCXR6LT5vcHMtPmdldF90cmlwX3RlbXAodHosIHRyaXAsICZ0cmlwX3Rl
-bXApOw0KPiA+ICsJaWYgKHR6LT5vcHMtPmdldF9jcml0X3RlbXApDQo+ID4gKwkJdHotPm9wcy0+
-Z2V0X2NyaXRfdGVtcCh0eiwgJnRyaXBfdGVtcCk7DQo+ID4gKwllbHNlDQo+ID4gKwkJdHotPm9w
-cy0+Z2V0X3RyaXBfdGVtcCh0eiwgdHJpcCwgJnRyaXBfdGVtcCk7DQo+ID4NCj4gaGFuZGxlX2Ny
-aXRpY2FsX3RyaXBzKCkgY2FuIGhhbmRsZSBib3RoIGFjdGl2ZSBhbmQgaG90IHRyaXAgcG9pbnRz
-Lg0KPiB0aGlzIGNoYW5nZSB3aWxsIGJyZWFrIEhPVCB0cmlwIHBvaW50Lg0KPiANCj4gPiAgCS8q
-IElmIHdlIGhhdmUgbm90IGNyb3NzZWQgdGhlIHRyaXBfdGVtcCwgd2UgZG8gbm90IGNhcmUuICov
-DQo+ID4gIAlpZiAodHotPnRlbXBlcmF0dXJlIDwgdHJpcF90ZW1wKQ0KPiA+IEBAIC01NTAsNiAr
-NTUzLDcgQEAgdHJpcF9wb2ludF90ZW1wX3Nob3coc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QN
-Cj4gZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwNCj4gPiAgCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2
-aWNlICp0eiA9IHRvX3RoZXJtYWxfem9uZShkZXYpOw0KPiA+ICAJaW50IHRyaXAsIHJldDsNCj4g
-PiAgCWxvbmcgdGVtcGVyYXR1cmU7DQo+ID4gKwllbnVtIHRoZXJtYWxfdHJpcF90eXBlIHR5cGU7
-DQo+ID4NCj4gPiAgCWlmICghdHotPm9wcy0+Z2V0X3RyaXBfdGVtcCkNCj4gPiAgCQlyZXR1cm4g
-LUVQRVJNOw0KPiA+IEBAIC01NTcsNyArNTYxLDE0IEBAIHRyaXBfcG9pbnRfdGVtcF9zaG93KHN0
-cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0DQo+IGRldmljZV9hdHRyaWJ1dGUgKmF0dHIsDQo+ID4g
-IAlpZiAoIXNzY2FuZihhdHRyLT5hdHRyLm5hbWUsICJ0cmlwX3BvaW50XyVkX3RlbXAiLCAmdHJp
-cCkpDQo+ID4gIAkJcmV0dXJuIC1FSU5WQUw7DQo+ID4NCj4gPiAtCXJldCA9IHR6LT5vcHMtPmdl
-dF90cmlwX3RlbXAodHosIHRyaXAsICZ0ZW1wZXJhdHVyZSk7DQo+ID4gKwlyZXQgPSB0ei0+b3Bz
-LT5nZXRfdHJpcF90eXBlKHR6LCB0cmlwLCAmdHlwZSk7DQo+ID4gKwlpZiAocmV0KQ0KPiA+ICsJ
-CXJldHVybiByZXQ7DQo+ID4gKw0KPiA+ICsJaWYgKHR5cGUgPT0gVEhFUk1BTF9UUklQX0NSSVRJ
-Q0FMICYmIHR6LT5vcHMtPmdldF9jcml0X3RlbXApDQo+ID4gKwkJcmV0ID0gdHotPm9wcy0+Z2V0
-X2NyaXRfdGVtcCh0eiwgJnRlbXBlcmF0dXJlKTsNCj4gPiArCWVsc2UNCj4gPiArCQlyZXQgPSB0
-ei0+b3BzLT5nZXRfdHJpcF90ZW1wKHR6LCB0cmlwLCAmdGVtcGVyYXR1cmUpOw0KPiA+DQo+IA0K
-PiB3aGF0J3MgdGhlIGJlbmVmaXQgb2YgdXNpbmcgLmdldF9jcml0X3RlbXAoKSBpbnN0ZWFkIG9m
-IC5nZXRfdHJpcF90ZW1wKCkNCj4gZm9yIENSSVRJQ0FMIHRyaXAgcG9pbnRzIGhlcmU/DQo+IC5n
-ZXRfdHJpcF9wb2ludCBjYW4gYWxzbyBnZXQgdGhlIGNyaXRpY2FsIHRyaXAgcG9pbnQgdGVtcGVy
-YXR1cmUuDQo+IA0KPiBpbnN0ZWFkLCBJIHRoaW5rIHdlIGNvdWxkIHJlbW92ZSAuZ2V0X2NyaXRf
-dGVtcCBjYWxsYmFjay4NCg0KSSBhZ3JlZSB3aXRoIHlvdSBSdWkgaGVyZSA6LSkNCg0KPiBmb3Ig
-aHdtb24gc3lzZnMsIHdlIGp1c3QgbmVlZCB0byB1c2UgZ2V0X3RyaXBfdHlwZSB0byBmaW5kIHRo
-ZSBjcml0aWNhbA0KPiB0cmlwIHBvaW50Lg0KDQpZZXMsIHRoaXMgc2hvdWxkIHdvcmsuDQoNClRo
-YW5rcywNCkR1cmdhDQo=
+On 02/01/2013 05:11 AM, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+>=20
+> The commit, 4202735e8ab6ecfb0381631a0d0b58fefe0bd4e2
+> (cpuidle: Split cpuidle_state structure and move per-cpu statistics f=
+ields)
+> observed that the MWAIT flags for Cn on every processor to date were =
+the
+> same, and created get_driver_data() to supply them.
+>=20
+> Unfortunately, that assumption is false, going forward.
+> So here we restore the MWAIT flags to the cpuidle_state table.
+> However, instead restoring the old "driver_data" field,
+> we put the flags into the existing "flags" field,
+> where they probalby should have lived all along.
+
+Removing the driver_data is a good thing but I am not sure it is the
+case by moving the MWAIT flags to the cpuidle_state's flags field. We
+are mixing arch specific flags with a generic code.
+
+This is prone to errors because new flags could appear for the cpuidle
+core code and could collide with the arch specific flags.
+
+Wouldn't make sense to add a private field in the struct cpuidle_state
+structure to let the driver/arch specific to store whatever is needed ?
+
+struct cpuidle_state {
+
+	...
+	unsigned long private;
+	...
+
+}
+
+
+> This patch does not change any operation.
+>=20
+> This patch removes 1 of the 3 users of cpuidle_state_usage.driver_dat=
+a.
+> Perhaps some day we'll get rid of the other 2.
+
++1 :)
+
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/idle/intel_idle.c | 75 ++++++++++++++++---------------------=
+----------
+>  1 file changed, 26 insertions(+), 49 deletions(-)
+>=20
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 2df9414..8331753 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -109,6 +109,16 @@ static struct cpuidle_state *cpuidle_state_table=
+;
+>  #define CPUIDLE_FLAG_TLB_FLUSHED	0x10000
+> =20
+>  /*
+> + * MWAIT takes an 8-bit "hint" in EAX "suggesting"
+> + * the C-state (top nibble) and sub-state (bottom nibble)
+> + * 0x00 means "MWAIT(C1)", 0x10 means "MWAIT(C2)" etc.
+> + *=20
+> + * We store the hint at the top of our "flags" for each state.
+> + */
+> +#define flags_2_MWAIT_EAX(flags) (((flags) >> 24) & 0xFF)
+> +#define MWAIT_EAX_2_flags(eax) ((eax & 0xFF) << 24)
+> +
+> +/*
+>   * States are indexed by the cstate number,
+>   * which is also the index into the MWAIT hint array.
+>   * Thus C0 is a dummy.
+> @@ -118,21 +128,21 @@ static struct cpuidle_state nehalem_cstates[MWA=
+IT_MAX_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C1 */
+>  		.name =3D "C1-NHM",
+>  		.desc =3D "MWAIT 0x00",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> +		.flags =3D MWAIT_EAX_2_flags(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>  		.exit_latency =3D 3,
+>  		.target_residency =3D 6,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C2 */
+>  		.name =3D "C3-NHM",
+>  		.desc =3D "MWAIT 0x10",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x10) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 20,
+>  		.target_residency =3D 80,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C3 */
+>  		.name =3D "C6-NHM",
+>  		.desc =3D "MWAIT 0x20",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x20) |CPUIDLE_FLAG_TIME_VALID | CPUI=
+DLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 200,
+>  		.target_residency =3D 800,
+>  		.enter =3D &intel_idle },
+> @@ -143,28 +153,28 @@ static struct cpuidle_state snb_cstates[MWAIT_M=
+AX_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C1 */
+>  		.name =3D "C1-SNB",
+>  		.desc =3D "MWAIT 0x00",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> +		.flags =3D MWAIT_EAX_2_flags(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>  		.exit_latency =3D 1,
+>  		.target_residency =3D 1,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C2 */
+>  		.name =3D "C3-SNB",
+>  		.desc =3D "MWAIT 0x10",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x10) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 80,
+>  		.target_residency =3D 211,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C3 */
+>  		.name =3D "C6-SNB",
+>  		.desc =3D "MWAIT 0x20",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x20) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 104,
+>  		.target_residency =3D 345,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C4 */
+>  		.name =3D "C7-SNB",
+>  		.desc =3D "MWAIT 0x30",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x30) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 109,
+>  		.target_residency =3D 345,
+>  		.enter =3D &intel_idle },
+> @@ -175,28 +185,28 @@ static struct cpuidle_state ivb_cstates[MWAIT_M=
+AX_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C1 */
+>  		.name =3D "C1-IVB",
+>  		.desc =3D "MWAIT 0x00",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> +		.flags =3D MWAIT_EAX_2_flags(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>  		.exit_latency =3D 1,
+>  		.target_residency =3D 1,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C2 */
+>  		.name =3D "C3-IVB",
+>  		.desc =3D "MWAIT 0x10",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x10) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 59,
+>  		.target_residency =3D 156,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C3 */
+>  		.name =3D "C6-IVB",
+>  		.desc =3D "MWAIT 0x20",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x20) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 80,
+>  		.target_residency =3D 300,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C4 */
+>  		.name =3D "C7-IVB",
+>  		.desc =3D "MWAIT 0x30",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x30) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 87,
+>  		.target_residency =3D 300,
+>  		.enter =3D &intel_idle },
+> @@ -207,14 +217,14 @@ static struct cpuidle_state atom_cstates[MWAIT_=
+MAX_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C1 */
+>  		.name =3D "C1-ATM",
+>  		.desc =3D "MWAIT 0x00",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> +		.flags =3D MWAIT_EAX_2_flags(0x00) | CPUIDLE_FLAG_TIME_VALID,
+>  		.exit_latency =3D 1,
+>  		.target_residency =3D 4,
+>  		.enter =3D &intel_idle },
+>  	{ /* MWAIT C2 */
+>  		.name =3D "C2-ATM",
+>  		.desc =3D "MWAIT 0x10",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID,
+> +		.flags =3D MWAIT_EAX_2_flags(0x10) | CPUIDLE_FLAG_TIME_VALID,
+>  		.exit_latency =3D 20,
+>  		.target_residency =3D 80,
+>  		.enter =3D &intel_idle },
+> @@ -222,7 +232,7 @@ static struct cpuidle_state atom_cstates[MWAIT_MA=
+X_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C4 */
+>  		.name =3D "C4-ATM",
+>  		.desc =3D "MWAIT 0x30",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x30) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 100,
+>  		.target_residency =3D 400,
+>  		.enter =3D &intel_idle },
+> @@ -230,41 +240,12 @@ static struct cpuidle_state atom_cstates[MWAIT_=
+MAX_NUM_CSTATES] =3D {
+>  	{ /* MWAIT C6 */
+>  		.name =3D "C6-ATM",
+>  		.desc =3D "MWAIT 0x52",
+> -		.flags =3D CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TLB_FLUSHED,
+> +		.flags =3D MWAIT_EAX_2_flags(0x52) | CPUIDLE_FLAG_TIME_VALID | CPU=
+IDLE_FLAG_TLB_FLUSHED,
+>  		.exit_latency =3D 140,
+>  		.target_residency =3D 560,
+>  		.enter =3D &intel_idle },
+>  };
+> =20
+> -static long get_driver_data(int cstate)
+> -{
+> -	int driver_data;
+> -	switch (cstate) {
+> -
+> -	case 1:	/* MWAIT C1 */
+> -		driver_data =3D 0x00;
+> -		break;
+> -	case 2:	/* MWAIT C2 */
+> -		driver_data =3D 0x10;
+> -		break;
+> -	case 3:	/* MWAIT C3 */
+> -		driver_data =3D 0x20;
+> -		break;
+> -	case 4:	/* MWAIT C4 */
+> -		driver_data =3D 0x30;
+> -		break;
+> -	case 5:	/* MWAIT C5 */
+> -		driver_data =3D 0x40;
+> -		break;
+> -	case 6:	/* MWAIT C6 */
+> -		driver_data =3D 0x52;
+> -		break;
+> -	default:
+> -		driver_data =3D 0x00;
+> -	}
+> -	return driver_data;
+> -}
+> -
+>  /**
+>   * intel_idle
+>   * @dev: cpuidle_device
+> @@ -278,8 +259,7 @@ static int intel_idle(struct cpuidle_device *dev,
+>  {
+>  	unsigned long ecx =3D 1; /* break on interrupt flag */
+>  	struct cpuidle_state *state =3D &drv->states[index];
+> -	struct cpuidle_state_usage *state_usage =3D &dev->states_usage[inde=
+x];
+> -	unsigned long eax =3D (unsigned long)cpuidle_get_statedata(state_us=
+age);
+> +	unsigned long eax =3D flags_2_MWAIT_EAX(state->flags);
+>  	unsigned int cstate;
+>  	int cpu =3D smp_processor_id();
+> =20
+> @@ -558,9 +538,6 @@ static int intel_idle_cpu_init(int cpu)
+>  		if (cpuidle_state_table[cstate].enter =3D=3D NULL)
+>  			continue;
+> =20
+> -		dev->states_usage[dev->state_count].driver_data =3D
+> -			(void *)get_driver_data(cstate);
+> -
+>  		dev->state_count +=3D 1;
+>  	}
+> =20
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
