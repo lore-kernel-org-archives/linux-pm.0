@@ -1,59 +1,60 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 0/4] davinci: cpuidle - some cleanups
-Date: Fri, 01 Feb 2013 13:49:50 -0500
-Message-ID: <510C0E4E.3010008@kernel.org>
-References: <1359726495-8024-1-git-send-email-daniel.lezcano@linaro.org>
+From: Mark Einon <mark.einon@gmail.com>
+Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
+Date: Fri, 1 Feb 2013 19:13:23 +0000
+Message-ID: <CANK3SE25kcgSu2dwKtQKU6-wvryC4qNQJu_nj3NPJHQTTC0oXw@mail.gmail.com>
+References: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
+ <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f42.google.com ([209.85.212.42]:58964 "EHLO
-	mail-vb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246Ab3BASt6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 13:49:58 -0500
-Received: by mail-vb0-f42.google.com with SMTP id ff1so2657828vbb.1
-        for <linux-pm@vger.kernel.org>; Fri, 01 Feb 2013 10:49:58 -0800 (PST)
-In-Reply-To: <1359726495-8024-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-ie0-f172.google.com ([209.85.223.172]:33383 "EHLO
+	mail-ie0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756319Ab3BATNi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 14:13:38 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: nsekhar@ti.com, khilman@ti.com, patches@linaro.org, linaro-dev@lists.linaro.org, davinci-linux-open-source@linux.davincidsp.com, linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 02/01/2013 08:48 AM, Daniel Lezcano wrote:
-> This patchset does some cleanup. It could have been folded in a single
-> patch but the review would have been less clean than splitting it into
-> small and trivial patches.
-> 
-> The main purpose of this patch is to remove the usage of the driver_data
-> field from the state_usage structure. Len Brown is doing this cleanup in
-> the intel_idle.c file. With this patchset, the processor_idle.c file will
-> be the last user of this field.
+On 31 January 2013 15:04, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Wed, 30 Jan 2013, Mark Einon wrote:
+>
+>> >> > >> This patch fixes the kernel warning generated when putting an MSI MS-1727
+>> >> > >> GT740 laptop into suspend mode. The call sequence in this case calls
+>> >> > >> free_irq() twice, once in pci_remove() and once then in pci_suspend().
+>> >> > >
+>> >> > > You mean /first/ in pci_suspend() and /then/ in pci_remove() on the
+>> >> > > already suspended devices, right?
+>> >> >
+>> >> > Yes, I did. The call sequence is suspend then resume. My bad.
+>> >
+>> > Why does the pci_suspend routine call free_irq() at all?  As far as I
+>> > know, it's not supposed to do that.  Won't the device continue to use
+>> > the same IRQ after it is resumed?
+>>
+>> This sounds reasonable to me - I think we could probably get rid of
+>> the request_irq() call from resume, and use
+>> disable_irq()/enable_irq()?
+>
+> Why mess around with IRQ settings at all?  Just have the suspend
+> routine tell the controller to stop generating them.
+>
+> Alan Stern
+>
 
-Daniel,
-Thanks for this cleanup.
-Hopefully we can hear from somebody with davinci HW who can test it?
+I looked into doing this; using context_stop() to stop the controller running.
 
-Looks like it is now up to me to address processor_idle.c and
-finish the job of expunging driver_data.
+However, removing the enable_irq() from pci_resume() involves not
+calling ohci_enable() (as it is also the fw_card_driver.enable
+function, and can't easily be modified). As this call involves a lot
+of register writes and I have no devices to test, I decided against
+it.
 
-thanks,
--Len Brown
+I'll send an updated patch for consideration that merely uses a bool
+to stop the irq being freed twice - crude, but it works without
+changing too much code.
 
-Intel Open Source Technology Center
+Cheers,
 
-
-> 
-> Also, the patchset simplify the code and makes it a bit more clear to read.
-> 
-> I don't have this hardware, the code is not tested.
-> 
-> Daniel Lezcano (4):
->   davinci: cpuidle - use global variable for ddr2 flag
->   davinci: cpuidle - move code to prevent forward declaration
->   davinci: cpuidle - remove the ops
->   davinci: cpuidle - remove useless initialization
-> 
->  arch/arm/mach-davinci/cpuidle.c |   84 ++++++++++++---------------------------
->  1 file changed, 25 insertions(+), 59 deletions(-)
-> 
-
+Mark
