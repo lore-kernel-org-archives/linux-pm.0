@@ -1,36 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: governors: Get rid of dbs_data->enable field
-Date: Fri, 1 Feb 2013 09:22:35 +0530
-Message-ID: <CAKohponyY1goyV_5U3f3ZFVuMqp2XsrAevNCvZ9Juoyg53LjnA@mail.gmail.com>
-References: <09a94ff044ff6a6f7a5d953c3b1f3102c1dc50cf.1359653181.git.viresh.kumar@linaro.org>
-	<20130131184449.GA20164@balto.lan>
+Subject: Re: [PATCH] cpufreq: governors: clean timer init and exit code
+Date: Fri, 1 Feb 2013 09:24:27 +0530
+Message-ID: <CAKohpomcu4pZf8pwxCkW5RcGWbeEN3NTCpYWyzPGaUt6noB80w@mail.gmail.com>
+References: <1359554017-28620-1-git-send-email-fabio.baltieri@linaro.org>
+	<CAKohpomTNkEOrnyQWKJ8siajg67-fpe4EnYxiipgmN8STMSwAQ@mail.gmail.com>
+	<20130131110613.GD30667@balto.lan>
+	<1560132.gKXbKl82oR@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130131184449.GA20164@balto.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Fabio Baltieri <fabio.baltieri@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:62336 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877Ab3BADy2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Jan 2013 22:54:28 -0500
+Received: by mail-ob0-f179.google.com with SMTP id un3so3653687obb.38
+        for <linux-pm@vger.kernel.org>; Thu, 31 Jan 2013 19:54:27 -0800 (PST)
+In-Reply-To: <1560132.gKXbKl82oR@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Fabio Baltieri <fabio.baltieri@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, swarren@wwwdotorg.org, linaro-dev@lists.linaro.org, Nicolas Pitre <nicolas.pitre@linaro.org>, mathieu.poirier@linaro.org, Joseph Lo <josephl@nvidia.com>, linux-kernel@vger.kernel.org
 
-On 1 February 2013 00:14, Fabio Baltieri <fabio.baltieri@linaro.org> wrote:
-> Hello Viresh, thanks for getting this done... looks much cleaner now!
->
-> I tested both patches on my ux500 setup (dual Cortex-A9) and it seems to
-> run correctly on both CPU load changes and CPU hotplug, so:
->
-> Tested-by: Fabio Baltieri <fabio.baltieri@linaro.org>
+On 31 January 2013 18:36, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, January 31, 2013 12:06:13 PM Fabio Baltieri wrote:
+>> On Thu, Jan 31, 2013 at 04:23:06PM +0530, Viresh Kumar wrote:
 
-Thanks.
+>> > As discussed over IRC, you will fix following in few days:
+>> > - Code redundancy within governors
+>> > - Removing second_time: label and cdbs->enable field
+>> > - Fixing params to timer init and exit to make them more efficient.
+>>
+>> That's the plan, I'd leave it up to Rafael to decide if further cleanup
+>> patches should be included in 3.9 merge window or skip to the following
+>> one... I understand that we are starting to be late on the -rc and I
+>> also prefer to focus on fixup.
+>
+> The deadline for 3.9 merge window patches is about 2 days before 3.8-rc7
+> (assuming that there will be -rc7) and by that time they need to be in
+> linux-next.  Whatever doesn't make it will have to go after 3.9-rc1 or be
+> postponed until the 3.10 merge window.
 
-> As a sidenote, I noticed just now that since:
->
-> bc92bea cpufreq: Notify governors when cpus are hot-[un]plugged
->
-> governor's sampling_rate gets reset to default every time you hotplug a
-> CPU (the one you read/write on
-> /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate).
->
-> If you need further tests, I'll be back on Monday.
-
-I will have a look.
+For everybody else, i have patched above in a different patchset.
