@@ -1,48 +1,73 @@
-From: Len Brown <lenb@kernel.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH 1/4] intel_idle: stop using driver_data for static flags
-Date: Fri, 01 Feb 2013 21:16:40 -0500
-Message-ID: <510C7708.4080707@kernel.org>
-References: <1359691896-23567-1-git-send-email-lenb@kernel.org> <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com> <510B8059.5040609@linaro.org> <510C0C22.4000801@kernel.org> <510C3EC5.3060709@linaro.org>
+Date: Sat, 02 Feb 2013 10:44:17 +0100
+Message-ID: <510CDFF1.80408@linaro.org>
+References: <1359691896-23567-1-git-send-email-lenb@kernel.org>
+	<9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
+	<510B8059.5040609@linaro.org> <510C0C22.4000801@kernel.org>
+	<510C3EC5.3060709@linaro.org> <510C7708.4080707@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f51.google.com ([209.85.212.51]:51149 "EHLO
-	mail-vb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756721Ab3BBCQn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 21:16:43 -0500
-In-Reply-To: <510C3EC5.3060709@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <510C7708.4080707-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Lists Linaro-dev <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
->> intel_idle already uses a driver-specific flag:
->>
->> #define CPUIDLE_FLAG_TLB_FLUSHED        0x10000
->>
->> This patch just uses 4 more bits along with that one.
-> 
-> Ok. In this case it would make sense to move this flag out of the
-> generic core code to the intel_idle.c file ?
-
-This flag is already local to intel_idle.c.
-If another architecture finds it useful,
-then yes, it would make sense to move it to the shared header.
-
-> and move the [dec/en]coding
-> macro flags_2_MWAIT_EAX and MWAIT_EAX_2_flags (with a more appropriate
-> name for a generic code) to the cpuidle.h file ?
-
-I think that a driver's private flag definitions
-should remain local to the driver.  It makes no sense
-to pollute the name space of other drivers for stuff
-that doesn't mean anything to them.  MWAIT is pretty
-specific to x86 -- and re-naming it to something 'generic'
-isn't going to make the code easier to read.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-
+T24gMDIvMDIvMjAxMyAwMzoxNiBBTSwgTGVuIEJyb3duIHdyb3RlOgo+IAo+Pj4gaW50ZWxfaWRs
+ZSBhbHJlYWR5IHVzZXMgYSBkcml2ZXItc3BlY2lmaWMgZmxhZzoKPj4+Cj4+PiAjZGVmaW5lIENQ
+VUlETEVfRkxBR19UTEJfRkxVU0hFRCAgICAgICAgMHgxMDAwMAo+Pj4KPj4+IFRoaXMgcGF0Y2gg
+anVzdCB1c2VzIDQgbW9yZSBiaXRzIGFsb25nIHdpdGggdGhhdCBvbmUuCj4+Cj4+IE9rLiBJbiB0
+aGlzIGNhc2UgaXQgd291bGQgbWFrZSBzZW5zZSB0byBtb3ZlIHRoaXMgZmxhZyBvdXQgb2YgdGhl
+Cj4+IGdlbmVyaWMgY29yZSBjb2RlIHRvIHRoZSBpbnRlbF9pZGxlLmMgZmlsZSA/Cj4gCj4gVGhp
+cyBmbGFnIGlzIGFscmVhZHkgbG9jYWwgdG8gaW50ZWxfaWRsZS5jLgo+IElmIGFub3RoZXIgYXJj
+aGl0ZWN0dXJlIGZpbmRzIGl0IHVzZWZ1bCwKPiB0aGVuIHllcywgaXQgd291bGQgbWFrZSBzZW5z
+ZSB0byBtb3ZlIGl0IHRvIHRoZSBzaGFyZWQgaGVhZGVyLgoKT2gsIHJpZ2h0LiBTb3JyeSBJIHB1
+enpsZWQgbXlzZWxmIHdpdGggdGhlIG5hbWUuIEkgd2FzIGNvbnZpbmNlZCBpdCB3YXMKaW4gdGhl
+IHNoYXJlZCBoZWFkZXIuCgo+PiBhbmQgbW92ZSB0aGUgW2RlYy9lbl1jb2RpbmcKPj4gbWFjcm8g
+ZmxhZ3NfMl9NV0FJVF9FQVggYW5kIE1XQUlUX0VBWF8yX2ZsYWdzICh3aXRoIGEgbW9yZSBhcHBy
+b3ByaWF0ZQo+PiBuYW1lIGZvciBhIGdlbmVyaWMgY29kZSkgdG8gdGhlIGNwdWlkbGUuaCBmaWxl
+ID8KPiAKPiBJIHRoaW5rIHRoYXQgYSBkcml2ZXIncyBwcml2YXRlIGZsYWcgZGVmaW5pdGlvbnMK
+PiBzaG91bGQgcmVtYWluIGxvY2FsIHRvIHRoZSBkcml2ZXIuICBJdCBtYWtlcyBubyBzZW5zZQo+
+IHRvIHBvbGx1dGUgdGhlIG5hbWUgc3BhY2Ugb2Ygb3RoZXIgZHJpdmVycyBmb3Igc3R1ZmYKPiB0
+aGF0IGRvZXNuJ3QgbWVhbiBhbnl0aGluZyB0byB0aGVtLiAgTVdBSVQgaXMgcHJldHR5Cj4gc3Bl
+Y2lmaWMgdG8geDg2IC0tIGFuZCByZS1uYW1pbmcgaXQgdG8gc29tZXRoaW5nICdnZW5lcmljJwo+
+IGlzbid0IGdvaW5nIHRvIG1ha2UgdGhlIGNvZGUgZWFzaWVyIHRvIHJlYWQuCgpPaywgbGV0IG1l
+IHJlcGhyYXNlIGl0IGJlY2F1c2UgSSB0aGluayBob3cgaXQgd2FzIHByZXNlbnRlZCB3YXMgbm90
+IGNsZWFyLgoKQXMgd2Ugd2FudCB0byB1c2UgdGhlIGhhbGYgb2YgdGhlIHN0YXRlIGZsYWdzIGZv
+ciBwcml2YXRlIHB1cnBvc2UsIEkKc3VnZ2VzdGVkIHRvIGFkZCB0aGUgZW5jb2RpbmcvZGVjb2Rp
+bmcgZnVuY3Rpb24gaW4gdGhlIHNoYXJlZCBoZWFkZXIgZmlsZS4KClRoZSBtd2FpdCBlYXggZmxh
+Z3MgYXJlIG5vdCBlbmNvZGVkIGFuZCB0aGUgQ1BVSURMRV9GTEFHX1RMQl9GTFVTSEVEIGlzCmVu
+Y29kZWQuCgpJIHN1Z2dlc3RlZCB0byB1bmlmeSBib3RoIGFuZCB0byB1c2UgYW4gZW5jb2Rpbmcg
+ZnVuY3Rpb24gZnJvbSB0aGUKc2hhcmVkIGhlYWRlciBmaWxlLgoKI2RlZmluZSBDUFVJRExFX1BS
+SVZBVEVfRkxBR1MoX2ZsYWdzXykgXAoJKChfZmxhZ3NfKSA8PCAxNikgJiBDUFVJRExFX0RSSVZF
+Ul9GTEFHU19NQVNLCgpGb3IgZXhhbXBsZToKCiNkZWZpbmUgRkxBR19UTEJfRkxVU0hFRCBDUFVJ
+RExFX1BSSVZBVEVfRkxBR1MoMHgxKQojZGVmaW5lIEZMQUdfTVdBSVRfQzEgICAgQ1BVSURMRV9Q
+UklWQVRFX0ZMQUdTKDB4MCkKI2RlZmluZSBGTEFHX01XQUlUX0MyICAgIENQVUlETEVfUFJJVkFU
+RV9GTEFHUygweDEwKQojZGVmaW5lIEZMQUdfTVdBSVRfQzMgICAgQ1BVSURMRV9QUklWQVRFX0ZM
+QUdTKDB4MjApCiNkZWZpbmUgRkxBR19NV0FJVF9DNCAgICBDUFVJRExFX1BSSVZBVEVfRkxBR1Mo
+MHgzMCkKI2RlZmluZSBGTEFHX01XQUlUX0M1ICAgIENQVUlETEVfUFJJVkFURV9GTEFHUygweDQw
+KQojZGVmaW5lIEZMQUdfTVdBSVRfQzYgICAgQ1BVSURMRV9QUklWQVRFX0ZMQUdTKDB4NTIpCgpB
+bmQgdGhlbjoKCi4uLgoKLmZsYWdzID0gRkxBR19UTEJfRkxVU0hFRCB8IEZMQUdfTVdBSVRfQzIg
+fCBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRAoKLi4uCgpCdXQgaW4gdGhlIGlkbGUgZnVuY3Rpb24s
+IHlvdSBuZWVkIHRvIHJldHJpZXZlIHRoZSAndmFsdWUnIG9mIHRoZSBFQVgKbm90IGEgZmxhZywg
+c28gdGhlcmUgaXMgdGhlIG5lZWQgZm9yIGFuIGV4dHJhIG1hY3JvIGNvbnZlcnNpb24gYW5kIG1h
+c2sKdGhlIFRMQiBmbGFnLgoKV2VsbCwgdGhpcyBpcyBhIGRldGFpbCwgc28gZmVlbCBmcmVlIHRv
+IGlnbm9yZSB0aGlzIHN1Z2dlc3Rpb24gOikKClRoYW5rcwogIC0tIERhbmllbAoKLS0gCiA8aHR0
+cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUg
+Zm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3Bh
+Z2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4g
+VHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGluYXJvLWRldiBt
+YWlsaW5nIGxpc3QKbGluYXJvLWRldkBsaXN0cy5saW5hcm8ub3JnCmh0dHA6Ly9saXN0cy5saW5h
+cm8ub3JnL21haWxtYW4vbGlzdGluZm8vbGluYXJvLWRldgo=
