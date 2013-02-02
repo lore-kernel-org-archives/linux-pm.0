@@ -1,73 +1,155 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/4] intel_idle: stop using driver_data for static flags
-Date: Sat, 02 Feb 2013 10:44:17 +0100
-Message-ID: <510CDFF1.80408@linaro.org>
-References: <1359691896-23567-1-git-send-email-lenb@kernel.org>
-	<9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com>
-	<510B8059.5040609@linaro.org> <510C0C22.4000801@kernel.org>
-	<510C3EC5.3060709@linaro.org> <510C7708.4080707@kernel.org>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 1/2] don't wait on disk to start on resume
+Date: Sat, 02 Feb 2013 18:45:26 +0800
+Message-ID: <510CEE46.80308@intel.com>
+References: <Pine.LNX.4.44L0.1302011026070.1752-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <510C7708.4080707-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
-List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
-	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
-Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Lists Linaro-dev <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:33618 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755810Ab3BBKoh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Feb 2013 05:44:37 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1302011026070.1752-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Derek Basehore <dbasehore@chromium.org>, James Bottomley <JBottomley@Parallels.com>, Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, SCSI development list <linux-scsi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-T24gMDIvMDIvMjAxMyAwMzoxNiBBTSwgTGVuIEJyb3duIHdyb3RlOgo+IAo+Pj4gaW50ZWxfaWRs
-ZSBhbHJlYWR5IHVzZXMgYSBkcml2ZXItc3BlY2lmaWMgZmxhZzoKPj4+Cj4+PiAjZGVmaW5lIENQ
-VUlETEVfRkxBR19UTEJfRkxVU0hFRCAgICAgICAgMHgxMDAwMAo+Pj4KPj4+IFRoaXMgcGF0Y2gg
-anVzdCB1c2VzIDQgbW9yZSBiaXRzIGFsb25nIHdpdGggdGhhdCBvbmUuCj4+Cj4+IE9rLiBJbiB0
-aGlzIGNhc2UgaXQgd291bGQgbWFrZSBzZW5zZSB0byBtb3ZlIHRoaXMgZmxhZyBvdXQgb2YgdGhl
-Cj4+IGdlbmVyaWMgY29yZSBjb2RlIHRvIHRoZSBpbnRlbF9pZGxlLmMgZmlsZSA/Cj4gCj4gVGhp
-cyBmbGFnIGlzIGFscmVhZHkgbG9jYWwgdG8gaW50ZWxfaWRsZS5jLgo+IElmIGFub3RoZXIgYXJj
-aGl0ZWN0dXJlIGZpbmRzIGl0IHVzZWZ1bCwKPiB0aGVuIHllcywgaXQgd291bGQgbWFrZSBzZW5z
-ZSB0byBtb3ZlIGl0IHRvIHRoZSBzaGFyZWQgaGVhZGVyLgoKT2gsIHJpZ2h0LiBTb3JyeSBJIHB1
-enpsZWQgbXlzZWxmIHdpdGggdGhlIG5hbWUuIEkgd2FzIGNvbnZpbmNlZCBpdCB3YXMKaW4gdGhl
-IHNoYXJlZCBoZWFkZXIuCgo+PiBhbmQgbW92ZSB0aGUgW2RlYy9lbl1jb2RpbmcKPj4gbWFjcm8g
-ZmxhZ3NfMl9NV0FJVF9FQVggYW5kIE1XQUlUX0VBWF8yX2ZsYWdzICh3aXRoIGEgbW9yZSBhcHBy
-b3ByaWF0ZQo+PiBuYW1lIGZvciBhIGdlbmVyaWMgY29kZSkgdG8gdGhlIGNwdWlkbGUuaCBmaWxl
-ID8KPiAKPiBJIHRoaW5rIHRoYXQgYSBkcml2ZXIncyBwcml2YXRlIGZsYWcgZGVmaW5pdGlvbnMK
-PiBzaG91bGQgcmVtYWluIGxvY2FsIHRvIHRoZSBkcml2ZXIuICBJdCBtYWtlcyBubyBzZW5zZQo+
-IHRvIHBvbGx1dGUgdGhlIG5hbWUgc3BhY2Ugb2Ygb3RoZXIgZHJpdmVycyBmb3Igc3R1ZmYKPiB0
-aGF0IGRvZXNuJ3QgbWVhbiBhbnl0aGluZyB0byB0aGVtLiAgTVdBSVQgaXMgcHJldHR5Cj4gc3Bl
-Y2lmaWMgdG8geDg2IC0tIGFuZCByZS1uYW1pbmcgaXQgdG8gc29tZXRoaW5nICdnZW5lcmljJwo+
-IGlzbid0IGdvaW5nIHRvIG1ha2UgdGhlIGNvZGUgZWFzaWVyIHRvIHJlYWQuCgpPaywgbGV0IG1l
-IHJlcGhyYXNlIGl0IGJlY2F1c2UgSSB0aGluayBob3cgaXQgd2FzIHByZXNlbnRlZCB3YXMgbm90
-IGNsZWFyLgoKQXMgd2Ugd2FudCB0byB1c2UgdGhlIGhhbGYgb2YgdGhlIHN0YXRlIGZsYWdzIGZv
-ciBwcml2YXRlIHB1cnBvc2UsIEkKc3VnZ2VzdGVkIHRvIGFkZCB0aGUgZW5jb2RpbmcvZGVjb2Rp
-bmcgZnVuY3Rpb24gaW4gdGhlIHNoYXJlZCBoZWFkZXIgZmlsZS4KClRoZSBtd2FpdCBlYXggZmxh
-Z3MgYXJlIG5vdCBlbmNvZGVkIGFuZCB0aGUgQ1BVSURMRV9GTEFHX1RMQl9GTFVTSEVEIGlzCmVu
-Y29kZWQuCgpJIHN1Z2dlc3RlZCB0byB1bmlmeSBib3RoIGFuZCB0byB1c2UgYW4gZW5jb2Rpbmcg
-ZnVuY3Rpb24gZnJvbSB0aGUKc2hhcmVkIGhlYWRlciBmaWxlLgoKI2RlZmluZSBDUFVJRExFX1BS
-SVZBVEVfRkxBR1MoX2ZsYWdzXykgXAoJKChfZmxhZ3NfKSA8PCAxNikgJiBDUFVJRExFX0RSSVZF
-Ul9GTEFHU19NQVNLCgpGb3IgZXhhbXBsZToKCiNkZWZpbmUgRkxBR19UTEJfRkxVU0hFRCBDUFVJ
-RExFX1BSSVZBVEVfRkxBR1MoMHgxKQojZGVmaW5lIEZMQUdfTVdBSVRfQzEgICAgQ1BVSURMRV9Q
-UklWQVRFX0ZMQUdTKDB4MCkKI2RlZmluZSBGTEFHX01XQUlUX0MyICAgIENQVUlETEVfUFJJVkFU
-RV9GTEFHUygweDEwKQojZGVmaW5lIEZMQUdfTVdBSVRfQzMgICAgQ1BVSURMRV9QUklWQVRFX0ZM
-QUdTKDB4MjApCiNkZWZpbmUgRkxBR19NV0FJVF9DNCAgICBDUFVJRExFX1BSSVZBVEVfRkxBR1Mo
-MHgzMCkKI2RlZmluZSBGTEFHX01XQUlUX0M1ICAgIENQVUlETEVfUFJJVkFURV9GTEFHUygweDQw
-KQojZGVmaW5lIEZMQUdfTVdBSVRfQzYgICAgQ1BVSURMRV9QUklWQVRFX0ZMQUdTKDB4NTIpCgpB
-bmQgdGhlbjoKCi4uLgoKLmZsYWdzID0gRkxBR19UTEJfRkxVU0hFRCB8IEZMQUdfTVdBSVRfQzIg
-fCBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRAoKLi4uCgpCdXQgaW4gdGhlIGlkbGUgZnVuY3Rpb24s
-IHlvdSBuZWVkIHRvIHJldHJpZXZlIHRoZSAndmFsdWUnIG9mIHRoZSBFQVgKbm90IGEgZmxhZywg
-c28gdGhlcmUgaXMgdGhlIG5lZWQgZm9yIGFuIGV4dHJhIG1hY3JvIGNvbnZlcnNpb24gYW5kIG1h
-c2sKdGhlIFRMQiBmbGFnLgoKV2VsbCwgdGhpcyBpcyBhIGRldGFpbCwgc28gZmVlbCBmcmVlIHRv
-IGlnbm9yZSB0aGlzIHN1Z2dlc3Rpb24gOikKClRoYW5rcwogIC0tIERhbmllbAoKLS0gCiA8aHR0
-cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUg
-Zm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3Bh
-Z2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4g
-VHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCgoKX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGluYXJvLWRldiBt
-YWlsaW5nIGxpc3QKbGluYXJvLWRldkBsaXN0cy5saW5hcm8ub3JnCmh0dHA6Ly9saXN0cy5saW5h
-cm8ub3JnL21haWxtYW4vbGlzdGluZm8vbGluYXJvLWRldgo=
+On 02/01/2013 11:28 PM, Alan Stern wrote:
+> On Fri, 1 Feb 2013, Aaron Lu wrote:
+> 
+>> Hi Derek,
+>>
+>> On 12/21/2012 12:35 PM, Derek Basehore wrote:
+>>> We no longer wait for the disk to spin up in sd_resume. It now enters the
+>>> request to spinup the disk into the elevator and returns.
+>>>
+>>> A function is scheduled under the scsi_sd_probe_domain to wait for the command
+>>> to spinup the disk to complete. This function then checks for errors and cleans
+>>> up after the sd resume function.
+>>>
+>>> This allows system resume to complete much faster on systems with an HDD since
+>>> spinning up the disk is a significant portion of resume time.
+>>
+>> An alternative way of possibly solving this problem from PM's point of
+>> view might be:
+>> 1 Set both ata port and scsi device's runtime status to RPM_SUSPENDED
+>>   in their system suspend callback;
+>> 2 On resume, do nothing in their system resume callback;
+>> 3 With request based runtime PM introduced here:
+>>   http://thread.gmane.org/gmane.linux.power-management.general/30405
+>>   When a request comes for the HDD after system resume, both the ata
+>>   port and the scsi device will be runtime resumed, which involves
+>>   re-initialize the ata link(in ata port's runtime resume callback) and
+>>   spin up the HDD(in sd's runtime resume callback).
+>>
+>> To make HDD un-affetcted by runtime PM during normal use, a large enough
+>> autosuspend_delay can be set for it.
+>>
+>> Just my 2 cents, I've not verified or tried in any way yet :-)
+> 
+> It's a good idea.  The problem is that it won't work if CONFIG_PM_SLEEP
+> is enabled but CONFIG_PM_RUNTIME isn't.
+
+Right, what a pity... thanks for the hint.
+
+But the code is really simple if we ignore this problem(with some proper
+modifications to scsi bus PM callbacks, see the delayed_resume branch if
+you are interested), so I'm tempted to post it here :-)
+
+ drivers/ata/libata-core.c | 22 +++++++++++-----------
+ drivers/scsi/scsi_pm.c    | 14 +++++++++++---
+ 2 files changed, 22 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 497adea..38000fc 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -5355,10 +5355,19 @@ static int ata_port_suspend_common(struct device *dev, pm_message_t mesg)
+ 
+ static int ata_port_suspend(struct device *dev)
+ {
++	int ret;
++
+ 	if (pm_runtime_suspended(dev))
+ 		return 0;
+ 
+-	return ata_port_suspend_common(dev, PMSG_SUSPEND);
++	ret = ata_port_suspend_common(dev, PMSG_SUSPEND);
++	if (!ret) {
++		__pm_runtime_disable(dev, false);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_enable(dev);
++	}
++
++	return ret;
+ }
+ 
+ static int ata_port_do_freeze(struct device *dev)
+@@ -5393,16 +5402,7 @@ static int ata_port_resume_common(struct device *dev, pm_message_t mesg)
+ 
+ static int ata_port_resume(struct device *dev)
+ {
+-	int rc;
+-
+-	rc = ata_port_resume_common(dev, PMSG_RESUME);
+-	if (!rc) {
+-		pm_runtime_disable(dev);
+-		pm_runtime_set_active(dev);
+-		pm_runtime_enable(dev);
+-	}
+-
+-	return rc;
++	return 0;
+ }
+ 
+ /*
+diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
+index d9956b6..d0b6997 100644
+--- a/drivers/scsi/scsi_pm.c
++++ b/drivers/scsi/scsi_pm.c
+@@ -127,13 +127,21 @@ static int scsi_bus_prepare(struct device *dev)
+ static int scsi_bus_suspend(struct device *dev)
+ {
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-	return scsi_bus_suspend_common(dev, pm ? pm->suspend : NULL);
++	int ret;
++
++	ret = scsi_bus_suspend_common(dev, pm ? pm->suspend : NULL);
++	if (!ret) {
++		__pm_runtime_disable(dev, false);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_enable(dev);
++	}
++
++	return ret;
+ }
+ 
+ static int scsi_bus_resume(struct device *dev)
+ {
+-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-	return scsi_bus_resume_common(dev, pm ? pm->resume : NULL);
++	return 0;
+ }
+ 
+ static int scsi_bus_freeze(struct device *dev)
+-- 
+1.8.1
+
+
+Below branch has all the code necessary to try this out:
+https://github.com/aaronlu/linux.git delayed_resume
+
+And you will have to enable runtime PM for both ata port and scsi device,
+it works for HDD and normal ODD(ZPODD needs some extra work), tested on
+my thinkpad R61i with a HDD and an ODD.
+
+But yeah, as Alan has said, this can't be a general solution.
+But someday it may be, when CONFIG_RUNTIME_PM and CONFIG_PM_SLEEP are
+regarded as base functions of the kernel and always compiled in :-)
+
+Sorry for the noise.
+
+-Aaron
