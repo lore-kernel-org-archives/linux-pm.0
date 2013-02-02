@@ -1,53 +1,40 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
-Date: Sat, 2 Feb 2013 10:16:00 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1302021010340.25931-100000@netrider.rowland.org>
-References: <20130202160103.0ce1fc43@stein>
+Date: Sat, 2 Feb 2013 10:21:08 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1302021016370.25931-100000@netrider.rowland.org>
+References: <20130202152403.3d6b6437@stein>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:47307 "HELO
+Received: from netrider.rowland.org ([192.131.102.5]:56924 "HELO
 	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757746Ab3BBPQB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Feb 2013 10:16:01 -0500
-In-Reply-To: <20130202160103.0ce1fc43@stein>
+	with SMTP id S1757563Ab3BBPVJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Feb 2013 10:21:09 -0500
+In-Reply-To: <20130202152403.3d6b6437@stein>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Mark Einon <mark.einon@gmail.com>, Peter Hurley <peter@hurleysoftware.com>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Mark Einon <mark.einon@gmail.com>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Hurley <peter@hurleysoftware.com>
 
 On Sat, 2 Feb 2013, Stefan Richter wrote:
 
-> On Feb 01 Mark Einon wrote:
-> > On 1 February 2013 21:09, Peter Hurley <peter@hurleysoftware.com> wrote:
-> > >>>> On Jan 29 Alan Stern wrote:
-> > >>>>> Why does the pci_suspend routine call free_irq() at all?  As far as I 
-> > >>>>> know, it's not supposed to do that.  Won't the device continue to use 
-> > >>>>> the same IRQ after it is resumed?
+> OK.  I, as a naive driver maintainer, expect a sequence like
+>    [suspend request] -> suspend() -> [if ret==0, suspended state] ->
+>    [resume request] -> resume() -> ...
+> but what apparently happens is
+>    [suspend request] -> suspend() -> [if ret==0, suspended state] ->
+>    [resume request] -> remove() -> ...
 > 
-> As far as I can tell, it happened to be done that way as a side effect of
-> how the probe() and resume() methods share code.  It has remained like
-> this since the initial implementation:
-> http://git.kernel.org/linus/2aef469a35a2
+> If you had an ExpressCard or CardBus controller, then it could of course
+> happen that the PC is suspended, then the controller card physically
+> removed, and then a resume been requested.  Question to all:  Would the
+> driver's resume() method be called on the MIA device be called, or would
+> the driver's remove() method be called in such a case?
 
-At one point, quite a few years ago, Linus complained about drivers the 
-release IRQs during suspend only to reacquire them during resume.  A 
-little refactoring should be able to separate out resource 
-acquisition/release (done only during probe and remove) from activation 
-and shutdown (also done during resume and suspend).
-
-> Still, at this point I would like to learn whether .suspend() followed
-> by .remove() is a valid order of sequence which drivers must support
-> before I prepare myself to get comfortable with a refactoring of
-> firewire-ohci's .probe()/.resume()/suspend()/remove().  Obviously, so far
-> my assumption was that a successful .suspend() can only ever be followed
-> by .resume().
-
-It depends on the subsystem.  Some subsystems do have suspend -> remove
-transitions and others don't.  In general, it's a good idea for drivers
-to be prepared for removal while the system is asleep.  Presumably any
-hot-unpluggable bus (which includes most of the important buses these
-days) would have to support it.
+It depends on the subsystem.  While processing a resume callback for a
+device (or for the device's parent), if the subsystem detects that the
+device has been removed then most likely it would skip calling the 
+driver's resume method and would call the remove method instead.
 
 Alan Stern
 
