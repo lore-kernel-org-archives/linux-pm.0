@@ -1,61 +1,303 @@
 From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v3 2/4] ARM: Kirkwood: Add support thermal sensor for 88F6282 and 88F6283
-Date: Sat,  2 Feb 2013 15:35:47 +0100
-Message-ID: <1359815749-27705-3-git-send-email-andrew@lunn.ch>
+Subject: [PATCH v3 3/4] Thermal: Dove: Add Themal sensor support for Dove.
+Date: Sat,  2 Feb 2013 15:35:48 +0100
+Message-ID: <1359815749-27705-4-git-send-email-andrew@lunn.ch>
 References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:48344 "EHLO londo.lunn.ch"
+Received: from londo.lunn.ch ([80.238.139.98]:48352 "EHLO londo.lunn.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756871Ab3BBOgV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 2 Feb 2013 09:36:21 -0500
+	id S1756871Ab3BBOgf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Feb 2013 09:36:35 -0500
 In-Reply-To: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jason Cooper <jason@lakedaemon.net>, rui.zhang@intel.com
-Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>
+Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+The Marvell Dove SoC has a thermal sensor. Add a driver using the
+thermal framework.
 
-Kirkwood 88F6282 and 88F6283 have a thermal sensor.
-This patch adds a DT node and enables the driver in the kernel config.
-
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 ---
- arch/arm/boot/dts/kirkwood-6282.dtsi |    6 ++++++
- arch/arm/configs/kirkwood_defconfig  |    2 ++
- 2 files changed, 8 insertions(+)
+ .../devicetree/bindings/thermal/dove-thermal.txt   |   18 ++
+ drivers/thermal/Kconfig                            |    7 +
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/dove_thermal.c                     |  211 ++++++++++++++++++++
+ 4 files changed, 237 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/dove-thermal.txt
+ create mode 100644 drivers/thermal/dove_thermal.c
 
-diff --git a/arch/arm/boot/dts/kirkwood-6282.dtsi b/arch/arm/boot/dts/kirkwood-6282.dtsi
-index 4ccea21..bd168b6 100644
---- a/arch/arm/boot/dts/kirkwood-6282.dtsi
-+++ b/arch/arm/boot/dts/kirkwood-6282.dtsi
-@@ -32,6 +32,12 @@
- 			};
- 		};
- 
-+		thermal@10078 {
-+			compatible = "marvell,kirkwood-thermal";
-+			reg = <0x10078 0x4>;
-+			status = "okay";
-+		};
+diff --git a/Documentation/devicetree/bindings/thermal/dove-thermal.txt b/Documentation/devicetree/bindings/thermal/dove-thermal.txt
+new file mode 100644
+index 0000000..6f47467
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/dove-thermal.txt
+@@ -0,0 +1,18 @@
++* Dove Thermal
 +
- 		i2c@11100 {
- 			compatible = "marvell,mv64xxx-i2c";
- 			reg = <0x11100 0x20>;
-diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-index 93f3794..3d8667f 100644
---- a/arch/arm/configs/kirkwood_defconfig
-+++ b/arch/arm/configs/kirkwood_defconfig
-@@ -118,6 +118,8 @@ CONFIG_SPI=y
- CONFIG_SPI_ORION=y
- CONFIG_GPIO_SYSFS=y
- # CONFIG_HWMON is not set
-+CONFIG_THERMAL=y
-+CONFIG_KIRKWOOD_THERMAL=y
- CONFIG_WATCHDOG=y
- CONFIG_ORION_WATCHDOG=y
- CONFIG_HID_DRAGONRISE=y
++This driver is for Dove SoCs which contain a thermal sensor.
++
++Required properties:
++- compatible : "marvell,dove-thermal"
++- reg : Address range of the thermal registers
++
++The reg properties should contain two ranges. The first is for the
++three Thermal Manager registers, while the second range contains the
++Thermal Diode Control Registers.
++
++Example:
++
++	thermal@10078 {
++		compatible = "marvell,dove-thermal";
++		reg = <0xd001c 0x0c>, <0xd005c 0x08>;
++	};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index e691500..cdc267e 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -108,6 +108,13 @@ config EXYNOS_THERMAL
+ 	  If you say yes here you get support for TMU (Thermal Management
+ 	  Unit) on SAMSUNG EXYNOS series of SoC.
+ 
++config DOVE_THERMAL
++	tristate "Temperature sensor on Marvell Dove SoCs"
++	depends on ARCH_DOVE
++	help
++	  Support for the Dove thermal sensor driver in the Linux thermal
++	  framework.
++
+ config DB8500_THERMAL
+ 	bool "DB8500 thermal management"
+ 	depends on ARCH_U8500
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 99026b2..5ed357e 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -17,5 +17,6 @@ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+ obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+ obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+ obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
++obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
+new file mode 100644
+index 0000000..3a92b55
+--- /dev/null
++++ b/drivers/thermal/dove_thermal.c
+@@ -0,0 +1,211 @@
++/*
++ * Dove thermal sensor driver
++ *
++ * Copyright (C) 2013 Andrew Lunn <andrew@lunn.ch>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ */
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define DOVE_THERMAL_TEMP_OFFSET	1
++#define DOVE_THERMAL_TEMP_MASK		0x1FF
++
++/* Dove Thermal Manager Control and Status Register */
++#define PMU_TM_DISABLE_OFFS		0
++#define PMU_TM_DISABLE_MASK		(0x1 << PMU_TM_DISABLE_OFFS)
++
++/* Dove Theraml Diode Control 0 Register */
++#define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
++#define PMU_TDC0_SEL_VCAL_OFFS		5
++#define PMU_TDC0_SEL_VCAL_MASK		(0x3 << PMU_TDC0_SEL_VCAL_OFFS)
++#define PMU_TDC0_REF_CAL_CNT_OFFS	11
++#define PMU_TDC0_REF_CAL_CNT_MASK	(0x1FF << PMU_TDC0_REF_CAL_CNT_OFFS)
++#define PMU_TDC0_AVG_NUM_OFFS		25
++#define PMU_TDC0_AVG_NUM_MASK		(0x7 << PMU_TDC0_AVG_NUM_OFFS)
++
++/* Dove Thermal Diode Control 1 Register */
++#define PMU_TEMP_DIOD_CTRL1_REG		0x04
++#define PMU_TDC1_TEMP_VALID_MASK	(0x1 << 10)
++
++/* Dove Thermal Sensor Dev Structure */
++struct dove_thermal_priv {
++	void __iomem *sensor;
++	void __iomem *control;
++};
++
++static int dove_init_sensor(const struct dove_thermal_priv *priv)
++{
++	u32 reg;
++	u32 i;
++
++	/* Configure the Diode Control Register #0 */
++	reg = readl_relaxed(priv->control);
++
++	/* Use average of 2 */
++	reg &= ~PMU_TDC0_AVG_NUM_MASK;
++	reg |= (0x1 << PMU_TDC0_AVG_NUM_OFFS);
++
++	/* Reference calibration value */
++	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
++	reg |= (0x0F1 << PMU_TDC0_REF_CAL_CNT_OFFS);
++
++	/* Set the high level reference for calibration */
++	reg &= ~PMU_TDC0_SEL_VCAL_MASK;
++	reg |= (0x2 << PMU_TDC0_SEL_VCAL_OFFS);
++	writel(reg, priv->control);
++
++	/* Reset the sensor */
++	reg = readl_relaxed(priv->control);
++	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
++	writel(reg, priv->control);
++
++	/* Enable the sensor */
++	reg = readl_relaxed(priv->sensor);
++	reg &= ~PMU_TM_DISABLE_MASK;
++	writel(reg, priv->sensor);
++
++	/* Poll the sensor for the first reading */
++	for (i = 0; i < 1000000; i++) {
++		reg = readl_relaxed(priv->sensor);
++		if (reg & DOVE_THERMAL_TEMP_MASK)
++			break;
++	}
++
++	if (i == 1000000)
++		return -EIO;
++
++	return 0;
++}
++
++static int dove_get_temp(struct thermal_zone_device *thermal,
++			  unsigned long *temp)
++{
++	unsigned long reg;
++	struct dove_thermal_priv *priv = thermal->devdata;
++
++	/* Valid check */
++	reg = readl_relaxed(priv->control + PMU_TEMP_DIOD_CTRL1_REG);
++	if ((reg & PMU_TDC1_TEMP_VALID_MASK) == 0x0) {
++		dev_err(&thermal->device,
++			"Temperature sensor reading not valid\n");
++		return -EIO;
++	}
++
++	/*
++	 * Calculate temperature. See Section 8.10.1 of 88AP510,
++	 * Documentation/arm/Marvell/README
++	 */
++	reg = readl_relaxed(priv->sensor);
++	reg = (reg >> DOVE_THERMAL_TEMP_OFFSET) & DOVE_THERMAL_TEMP_MASK;
++	*temp = ((2281638UL - (7298*reg)) / 10);
++
++	return 0;
++}
++
++static struct thermal_zone_device_ops ops = {
++	.get_temp = dove_get_temp,
++};
++
++static const struct of_device_id dove_thermal_id_table[] = {
++	{ .compatible = "marvell,dove-thermal" },
++	{}
++};
++
++static int dove_thermal_probe(struct platform_device *pdev)
++{
++	struct thermal_zone_device *thermal = NULL;
++	struct dove_thermal_priv *priv;
++	struct resource *res;
++	int ret;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "Failed to get platform resource\n");
++		return -ENODEV;
++	}
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		dev_err(&pdev->dev, "kzalloc fail\n");
++		return -ENOMEM;
++	}
++
++	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
++	if (!priv->sensor) {
++		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
++		return -EADDRNOTAVAIL;
++	}
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (!res) {
++		dev_err(&pdev->dev, "Failed to get platform resource\n");
++		return -ENODEV;
++	}
++	priv->control = devm_request_and_ioremap(&pdev->dev, res);
++	if (!priv->control) {
++		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
++		return -EADDRNOTAVAIL;
++	}
++
++	ret = dove_init_sensor(priv);
++	if (ret) {
++		dev_err(&pdev->dev, "Failed to initialize sensor\n");
++		return ret;
++	}
++
++	thermal = thermal_zone_device_register("dove_thermal", 0, 0,
++					       priv, &ops, NULL, 0, 0);
++	if (IS_ERR(thermal)) {
++		dev_err(&pdev->dev,
++			"Failed to register thermal zone device\n");
++		return PTR_ERR(thermal);
++	}
++
++	platform_set_drvdata(pdev, thermal);
++
++	return 0;
++}
++
++static int dove_thermal_exit(struct platform_device *pdev)
++{
++	struct thermal_zone_device *dove_thermal =
++		platform_get_drvdata(pdev);
++
++	thermal_zone_device_unregister(dove_thermal);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++MODULE_DEVICE_TABLE(of, dove_thermal_id_table);
++
++static struct platform_driver dove_thermal_driver = {
++	.probe = dove_thermal_probe,
++	.remove = dove_thermal_exit,
++	.driver = {
++		.name = "dove_thermal",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(dove_thermal_id_table),
++	},
++};
++
++module_platform_driver(dove_thermal_driver);
++
++MODULE_AUTHOR("Andrew Lunn <andrew@lunn.ch>");
++MODULE_DESCRIPTION("Dove thermal driver");
++MODULE_LICENSE("GPL");
 -- 
 1.7.10.4
 
