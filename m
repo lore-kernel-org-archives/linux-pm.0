@@ -1,52 +1,48 @@
-From: Mark Einon <mark.einon@gmail.com>
-Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
-Date: Fri, 1 Feb 2013 23:00:14 +0000
-Message-ID: <CANK3SE2nsxLMUyANzsov4d86ow4v9NuzaZsS3XvjpQJOfYXYUQ@mail.gmail.com>
-References: <CANK3SE09VqvshdLrV4xp2W8BHZqLmuz-pV9jQVj7tbk1JBX+9g@mail.gmail.com>
- <Pine.LNX.4.44L0.1301311002190.1876-100000@iolanthe.rowland.org>
- <CANK3SE25kcgSu2dwKtQKU6-wvryC4qNQJu_nj3NPJHQTTC0oXw@mail.gmail.com> <1359752988.22968.16.camel@thor.lan>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/4] intel_idle: stop using driver_data for static flags
+Date: Fri, 01 Feb 2013 21:16:40 -0500
+Message-ID: <510C7708.4080707@kernel.org>
+References: <1359691896-23567-1-git-send-email-lenb@kernel.org> <9a38405338d7464c852c4524465f84f8a2ac22fb.1359691799.git.len.brown@intel.com> <510B8059.5040609@linaro.org> <510C0C22.4000801@kernel.org> <510C3EC5.3060709@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f170.google.com ([209.85.223.170]:60096 "EHLO
-	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757313Ab3BAXA3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 18:00:29 -0500
-In-Reply-To: <1359752988.22968.16.camel@thor.lan>
+Received: from mail-vb0-f51.google.com ([209.85.212.51]:51149 "EHLO
+	mail-vb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756721Ab3BBCQn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Feb 2013 21:16:43 -0500
+In-Reply-To: <510C3EC5.3060709@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Hurley <peter@hurleysoftware.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Stefan Richter <stefanr@s5r6.in-berlin.de>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 1 February 2013 21:09, Peter Hurley <peter@hurleysoftware.com> wrote:
-> Hi Mark,
->
-> I think what Alan means is that the suspend/resume code should just
-> mask/unmask interrupts at the OHCI controller, via the OHCI
-> IntEventClear/Set registers (naturally, saving the current mask and
-> restoring it on resume).
->
-> Of course, there's a lot more to do with an OHCI controller -- as you
-> note. Like stopping running DMA contexts :)  And restarting them on
-> resume.
->
-> I'd do it, but I'm buried to my eyeballs in tty right now -- not fun. I
-> can _eventually_ do this as I need to address problems with the FW643
-> anyway at some point, but it's going to be a little while.
 
-Hi Peter,
+>> intel_idle already uses a driver-specific flag:
+>>
+>> #define CPUIDLE_FLAG_TLB_FLUSHED        0x10000
+>>
+>> This patch just uses 4 more bits along with that one.
+> 
+> Ok. In this case it would make sense to move this flag out of the
+> generic core code to the intel_idle.c file ?
 
-Ok, understood. I can certainly attempt a patch if I get time.
+This flag is already local to intel_idle.c.
+If another architecture finds it useful,
+then yes, it would make sense to move it to the shared header.
 
->
-> In the meantime, I'm a little confused: you say you can't test this code
-> because you have no hardware; but then how'd you trip this bug?
+> and move the [dec/en]coding
+> macro flags_2_MWAIT_EAX and MWAIT_EAX_2_flags (with a more appropriate
+> name for a generic code) to the cpuidle.h file ?
 
-I can test the code in that I have a firewire port on my laptop, but
-haven't got anything to plug into the port.
-I assume that any large changes I make are quite capable of breaking
-something there...
+I think that a driver's private flag definitions
+should remain local to the driver.  It makes no sense
+to pollute the name space of other drivers for stuff
+that doesn't mean anything to them.  MWAIT is pretty
+specific to x86 -- and re-naming it to something 'generic'
+isn't going to make the code easier to read.
 
-Cheers,
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-Mark
+
