@@ -1,57 +1,54 @@
 From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v3 4/4] Dove: Thermal: Add DT node and enable in defconfig
-Date: Sat,  2 Feb 2013 15:35:49 +0100
-Message-ID: <1359815749-27705-5-git-send-email-andrew@lunn.ch>
-References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
+Subject: [PATCH v3 0/4] Kirkwood and Dove Thermal drivers
+Date: Sat,  2 Feb 2013 15:35:45 +0100
+Message-ID: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:48333 "EHLO londo.lunn.ch"
+Received: from londo.lunn.ch ([80.238.139.98]:48332 "EHLO londo.lunn.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756871Ab3BBOgL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1755557Ab3BBOgL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Sat, 2 Feb 2013 09:36:11 -0500
-In-Reply-To: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jason Cooper <jason@lakedaemon.net>, rui.zhang@intel.com
 Cc: linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
 
-Add a device tree node to instantiate the dove thermal driver.
-Enable the driver and the thermal framework in dove_defconfig.
+This patchset adds thermal support for Kirkwood and Dove SoCs.
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
----
- arch/arm/boot/dts/dove.dtsi     |    5 +++++
- arch/arm/configs/dove_defconfig |    2 ++
- 2 files changed, 7 insertions(+)
+Changes since v2
+* More marvel -> marvell
+* Dove driver. Debugged by Sebastian Hesselbarth
 
-diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
-index 42eac1f..3584a00 100644
---- a/arch/arm/boot/dts/dove.dtsi
-+++ b/arch/arm/boot/dts/dove.dtsi
-@@ -50,6 +50,11 @@
- 			#clock-cells = <1>;
- 		};
- 
-+		thermal: thermal@d001c {
-+			compatible = "marvell,dove-thermal";
-+			reg = <0xd001c 0x0c>, <0xd005c 0x08>;
-+		};
-+
- 		uart0: serial@12000 {
- 			compatible = "ns16550a";
- 			reg = <0x12000 0x100>;
-diff --git a/arch/arm/configs/dove_defconfig b/arch/arm/configs/dove_defconfig
-index 0b7ee92..9713b5b 100644
---- a/arch/arm/configs/dove_defconfig
-+++ b/arch/arm/configs/dove_defconfig
-@@ -80,6 +80,8 @@ CONFIG_I2C_MV64XXX=y
- CONFIG_SPI=y
- CONFIG_SPI_ORION=y
- # CONFIG_HWMON is not set
-+CONFIG_THERMAL=y
-+CONFIG_DOVE_THERMAL=y
- CONFIG_USB=y
- CONFIG_USB_DEVICEFS=y
- CONFIG_USB_EHCI_HCD=y
+Changes since v1
+* Temperature Reading in milligrad
+* marvel -> marvell
+* generalized to Orion
+* Compatibility string marvell,kirkwood-thermal
+* Arithmetic using unsigned long
+
+Andrew Lunn (2):
+  Thermal: Dove: Add Themal sensor support for Dove.
+  Dove: Thermal: Add DT node and enable in defconfig
+
+Nobuhiro Iwamatsu (2):
+  thermal: Add support for the thermal sensor on Kirkwood SoCs
+  ARM: Kirkwood: Add support thermal sensor for 88F6282 and 88F6283
+
+ .../devicetree/bindings/thermal/dove-thermal.txt   |   18 ++
+ .../bindings/thermal/kirkwood-thermal.txt          |   15 ++
+ arch/arm/boot/dts/dove.dtsi                        |    5 +
+ arch/arm/boot/dts/kirkwood-6282.dtsi               |    6 +
+ arch/arm/configs/dove_defconfig                    |    2 +
+ arch/arm/configs/kirkwood_defconfig                |    2 +
+ drivers/thermal/Kconfig                            |   14 ++
+ drivers/thermal/Makefile                           |    2 +
+ drivers/thermal/dove_thermal.c                     |  211 ++++++++++++++++++++
+ drivers/thermal/kirkwood_thermal.c                 |  136 +++++++++++++
+ 10 files changed, 411 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/dove-thermal.txt
+ create mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
+ create mode 100644 drivers/thermal/dove_thermal.c
+ create mode 100644 drivers/thermal/kirkwood_thermal.c
+
 -- 
 1.7.10.4
 
