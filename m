@@ -1,64 +1,153 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] firewire: Fix ohci free_irq() warning
-Date: Sat, 2 Feb 2013 16:30:30 +0100
-Message-ID: <20130202163030.7dc47112@stein>
-References: <20130202160103.0ce1fc43@stein>
-	<Pine.LNX.4.44L0.1302021010340.25931-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: make VT switching to the suspend console optional v2
+Date: Sat, 02 Feb 2013 20:39:21 +0100
+Message-ID: <1933562.n2GhljaZKo@vostro.rjw.lan>
+References: <1359819248-3714-1-git-send-email-jbarnes@virtuousgeek.org> <1359819248-3714-2-git-send-email-jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53615 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757613Ab3BBPau (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Feb 2013 10:30:50 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1302021010340.25931-100000@netrider.rowland.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:48628 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758065Ab3BBTdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Feb 2013 14:33:08 -0500
+In-Reply-To: <1359819248-3714-2-git-send-email-jbarnes@virtuousgeek.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Mark Einon <mark.einon@gmail.com>, Peter Hurley <peter@hurleysoftware.com>, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On Feb 02 Alan Stern wrote:
-> On Sat, 2 Feb 2013, Stefan Richter wrote:
+On Saturday, February 02, 2013 04:34:08 PM Jesse Barnes wrote:
+> KMS drivers can potentially restore the display configuration without
+> userspace help.  Such drivers can can call a new funciton,
+> pm_vt_switch_required(false) if they support this feature.  In that
+> case, the PM layer won't VT switch to the suspend console at suspend
+> time and then back to the original VT on resume, but rather leave things
+> alone for a nicer looking suspend and resume sequence.
 > 
-> > On Feb 01 Mark Einon wrote:
-> > > On 1 February 2013 21:09, Peter Hurley <peter@hurleysoftware.com> wrote:
-> > > >>>> On Jan 29 Alan Stern wrote:
-> > > >>>>> Why does the pci_suspend routine call free_irq() at all?  As far as I 
-> > > >>>>> know, it's not supposed to do that.  Won't the device continue to use 
-> > > >>>>> the same IRQ after it is resumed?
-> > 
-> > As far as I can tell, it happened to be done that way as a side effect of
-> > how the probe() and resume() methods share code.  It has remained like
-> > this since the initial implementation:
-> > http://git.kernel.org/linus/2aef469a35a2
+> v2: make a function so we can handle multiple drivers (Alan)
 > 
-> At one point, quite a few years ago, Linus complained about drivers the 
-> release IRQs during suspend only to reacquire them during resume.  A 
-> little refactoring should be able to separate out resource 
-> acquisition/release (done only during probe and remove) from activation 
-> and shutdown (also done during resume and suspend).
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> ---
+>  include/linux/pm.h     |    2 ++
+>  kernel/power/console.c |   59 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 61 insertions(+)
 > 
-> > Still, at this point I would like to learn whether .suspend() followed
-> > by .remove() is a valid order of sequence which drivers must support
-> > before I prepare myself to get comfortable with a refactoring of
-> > firewire-ohci's .probe()/.resume()/suspend()/remove().  Obviously, so far
-> > my assumption was that a successful .suspend() can only ever be followed
-> > by .resume().
-> 
-> It depends on the subsystem.  Some subsystems do have suspend -> remove
-> transitions and others don't.  In general, it's a good idea for drivers
-> to be prepared for removal while the system is asleep.  Presumably any
-> hot-unpluggable bus (which includes most of the important buses these
-> days) would have to support it.
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 03d7bb1..5c2b131 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -35,6 +35,8 @@ extern void (*pm_idle)(void);
+>  extern void (*pm_power_off)(void);
+>  extern void (*pm_power_off_prepare)(void);
+>  
+> +extern void pm_vt_switch_required(bool required);
+> +
+>  /*
+>   * Device power management
+>   */
+> diff --git a/kernel/power/console.c b/kernel/power/console.c
+> index b1dc456..67c4de3 100644
+> --- a/kernel/power/console.c
+> +++ b/kernel/power/console.c
+> @@ -4,6 +4,7 @@
+>   * Originally from swsusp.
+>   */
+>  
+> +#include <linux/console.h>
+>  #include <linux/vt_kern.h>
+>  #include <linux/kbd_kern.h>
+>  #include <linux/vt.h>
+> @@ -14,8 +15,63 @@
+>  
+>  static int orig_fgconsole, orig_kmsg;
+>  
+> +DEFINE_SPINLOCK(vt_switch_lock);
+> +static int vt_switch_required = -1;
+> +
+> +/**
+> + * pm_vt_switch_required - indicate VT switch at suspend requirements
+> + * @required: if true, caller needs VT switch at suspend/resume time
+> + *
+> + * The different console drivers may or may not require VT switches across
+> + * suspend/resume, depending on how they handle restoring video state and
+> + * what may be running.
+> + *
+> + * Drivers can indicate support for switchless suspend/resume, which can
+> + * save time and flicker, by using this routine and passing 'false' as
+> + * the argument.  If any loaded driver needs VT switching, or the
+> + * no_console_suspend argument has been passed on the command line, VT
+> + * switches will occur.
+> + */
 
-OK, thank you.  In this case we are of course dealing with the pci
-subsystem (and with PCI/ CardBus/ PCI Express/ ExpressCard attached
-hardware).  Maybe I should have addressed my question to linux-pci
-instead of linux-pm; however, if this is the general expectation,
-then I too prefer firewire-ohci to be able to handle it even if the pci
-subsystem wouldn't require it presently (which now sounds unlikely).
+It seems to me that we'll need a separate counter for the number of registered
+drivers and do the switch if that number is equal to the number of drivers that
+have passed false to this thing.
+
+In which case we can simplify this slightly and introduce
+pm_vt_swtich_not_required(void) and then the only drivers that need to bother
+will be the ones known to not require the switch.
+
+Otherwise it will be kind of error prone I'm afraid.
+
+Thanks,
+Rafael
+
+
+> +void pm_vt_switch_required(bool required)
+> +{
+> +	spin_lock(&vt_switch_lock);
+> +	if (vt_switch_required == -1) {
+> +		/* First call, set up real value */
+> +		if (!required)
+> +			vt_switch_required = 0;
+> +		if (required)
+> +			vt_switch_required = 1;
+> +	} else {
+> +		/*
+> +		 * Subsequent caller, make sure we handle the case
+> +		 * where a driver binds, needs VT switch, but then unbinds
+> +		 * later and a switchless driver is present.
+> +		 */
+> +		if (!required && vt_switch_required > 0)
+> +			vt_switch_required--;
+> +		else if (required)
+> +			vt_switch_required++;
+> +	}
+> +	spin_unlock(&vt_switch_lock);
+> +}
+> +EXPORT_SYMBOL(pm_vt_switch_required);
+> +
+> +static bool pm_vt_switch(void)
+> +{
+> +	bool ret = true;
+> +
+> +	spin_lock(&vt_switch_lock);
+> +	if (!vt_switch_required && console_suspend_enabled)
+> +		ret = false;
+> +	spin_unlock(&vt_switch_lock);
+> +	return ret;
+> +}
+> +
+>  int pm_prepare_console(void)
+>  {
+> +	if (!pm_vt_switch())
+> +		return 0;
+> +
+>  	orig_fgconsole = vt_move_to_console(SUSPEND_CONSOLE, 1);
+>  	if (orig_fgconsole < 0)
+>  		return 1;
+> @@ -26,6 +82,9 @@ int pm_prepare_console(void)
+>  
+>  void pm_restore_console(void)
+>  {
+> +	if (!pm_vt_switch())
+> +		return;
+> +
+>  	if (orig_fgconsole >= 0) {
+>  		vt_move_to_console(orig_fgconsole, 0);
+>  		vt_kmsg_redirect(orig_kmsg);
+> 
 -- 
-Stefan Richter
--=====-===-= --=- ---=-
-http://arcgraph.de/sr/
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
