@@ -1,66 +1,63 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/4] davinci: cpuidle - some cleanups
-Date: Sun, 03 Feb 2013 13:22:43 +0100
-Message-ID: <510E5693.5000003@linaro.org>
-References: <1359726495-8024-1-git-send-email-daniel.lezcano@linaro.org> <510C0E4E.3010008@kernel.org> <510E4FEF.9040506@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: make VT switching to the suspend console optional v2
+Date: Sun, 03 Feb 2013 13:59:49 +0100
+Message-ID: <2642200.VLPEM056qV@vostro.rjw.lan>
+References: <1359819248-3714-1-git-send-email-jbarnes@virtuousgeek.org> <2424360.s1UolC1PMO@vostro.rjw.lan> <20130203095609.31867279@jbarnes-t420>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:54266 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492Ab3BCMWq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Feb 2013 07:22:46 -0500
-Received: by mail-we0-f174.google.com with SMTP id r6so4120220wey.19
-        for <linux-pm@vger.kernel.org>; Sun, 03 Feb 2013 04:22:45 -0800 (PST)
-In-Reply-To: <510E4FEF.9040506@ti.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:54730 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752151Ab3BCMxf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 3 Feb 2013 07:53:35 -0500
+In-Reply-To: <20130203095609.31867279@jbarnes-t420>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: Len Brown <lenb@kernel.org>, Kevin Hilman <khilman@deeprootsystems.com>, patches@linaro.org, linaro-dev@lists.linaro.org, davinci-linux-open-source@linux.davincidsp.com, linux-pm@vger.kernel.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/03/2013 12:54 PM, Sekhar Nori wrote:
-> On 2/2/2013 12:19 AM, Len Brown wrote:
->> On 02/01/2013 08:48 AM, Daniel Lezcano wrote:
->>> This patchset does some cleanup. It could have been folded in a sin=
-gle
->>> patch but the review would have been less clean than splitting it i=
-nto
->>> small and trivial patches.
->>>
->>> The main purpose of this patch is to remove the usage of the driver=
-_data
->>> field from the state_usage structure. Len Brown is doing this clean=
-up in
->>> the intel_idle.c file. With this patchset, the processor_idle.c fil=
-e will
->>> be the last user of this field.
->>
->> Daniel,
->> Thanks for this cleanup.
->> Hopefully we can hear from somebody with davinci HW who can test it?
->=20
-> Can someone forward the patches to
-> davinci-linux-open-source@linux.davincidsp.com? I can help verify.
+On Sunday, February 03, 2013 09:56:09 AM Jesse Barnes wrote:
+> On Sat, 02 Feb 2013 21:50:35 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > > + * Drivers can indicate support for switchless suspend/resume, which can
+> > > > + * save time and flicker, by using this routine and passing 'false' as
+> > > > + * the argument.  If any loaded driver needs VT switching, or the
+> > > > + * no_console_suspend argument has been passed on the command line, VT
+> > > > + * switches will occur.
+> > > > + */
+> > > 
+> > > It seems to me that we'll need a separate counter for the number of registered
+> > > drivers and do the switch if that number is equal to the number of drivers that
+> > > have passed false to this thing.
+> > > 
+> > > In which case we can simplify this slightly and introduce
+> > > pm_vt_swtich_not_required(void)
+> > 
+> > Sorry, that won't be sufficient.  Rather something like pm_vt_switch_get()
+> > (indicating "I'll do the switch, thanks") and pm_vt_switch_put() (indicating
+> > "now you need to do the switch yourself").
+> 
+> I thought of both of your approaches before posting this one, but each
+> have other problems.  And I found a bug in mine last night.
+> 
+> So I think I need a separate count of drivers that need the switch, and
+> ones that don't.  Then if either no driver has registered or if the
+> need_switch count is nonzero, we'll do the switch.  Otherwise, if the
+> dont_need_switch is nonzero, we can avoid the switch.  I think that'll
+> handle all the cases I outlined.
 
-I cc'ed this mailing list but I have not subscribed to it. The mailing
-list description says "moderated for non-subscribers" in the MAINTAINER=
-S
-file.
+Yes, it should cover them all I think.
 
-I assumed the moderator will accept the patchset.
+> My code as posted will fail if one driver needs a switch but then two
+> switch free drivers register.
 
-Shall I subscribe and resend ?
+I see.
 
-Thanks
-  -- Daniel
+Thanks,
+Rafael
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
