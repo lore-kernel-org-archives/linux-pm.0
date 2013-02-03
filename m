@@ -1,749 +1,282 @@
-From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Subject: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for Exynos5250
-Date: Sun, 3 Feb 2013 21:17:31 +0530
-Message-ID: <CAM4voakyRiC6nvNv63nK3H3T168MjP-JevbCuksoKbpT=HQqJw@mail.gmail.com>
-References: <1357733199-17206-4-git-send-email-a.kesavan@samsung.com>
-	<1358515490-7565-1-git-send-email-a.kesavan@samsung.com>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH V2 1/2] thermal: sysfs: Add a new sysfs node emul_temp for
+ thermal emulation
+Date: Sun, 3 Feb 2013 15:54:07 -0800
+Message-ID: <CADGdYn4j4PnPWnaj19fZRwe+EbXigHhxv_hSTqz0WjrcNYwy-A@mail.gmail.com>
+References: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
+	<1359707260.2241.117.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f169.google.com ([209.85.216.169]:39756 "EHLO
-	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937Ab3BCPrd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Feb 2013 10:47:33 -0500
-In-Reply-To: <1358515490-7565-1-git-send-email-a.kesavan@samsung.com>
+Received: from mail-ie0-f170.google.com ([209.85.223.170]:41033 "EHLO
+	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032Ab3BCXyI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Feb 2013 18:54:08 -0500
+In-Reply-To: <1359707260.2241.117.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com
-Cc: kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
 
-Hi Myungjoo,
-
-Any comments on this patch ?
-
-Abhilash
-
-On Fri, Jan 18, 2013 at 6:54 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
-> Exynos5-bus device devfreq driver monitors PPMU counters and
-> adjusts operating frequencies and voltages with OPP. ASV should
-> be used to provide appropriate voltages as per the speed group
-> of the SoC rather than using a constant 1.025V.
+On Fri, Feb 1, 2013 at 12:27 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Sun, 2013-01-27 at 19:28 -0800, Amit Daniel Kachhap wrote:
+>> This patch adds support to set the emulated temperature method in
+>> thermal zone (sensor). After setting this feature thermal zone may
+>> report this temperature and not the actual temperature. The emulation
+>> implementation may be based on sensor capability through platform
+>> specific handler or pure software emulation if no platform handler defined.
+>>
+>> This is useful in debugging different temperature threshold and its
+>> associated cooling action. Critical threshold's cannot be emulated.
+>> Writing 0 on this node should disable emulation.
+>>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> ---
+>>
+>> Changes in V2:
+>> * Added config option for enabling emulation support.
+>> * Added s/w emulation if no platform handler registered.
+>> * skip the critical trip point emulation
+>>
+>> This patchset is based on thermal maintainer next tree.
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+>>
+>>  Documentation/thermal/sysfs-api.txt |   13 ++++++
+>>  drivers/thermal/Kconfig             |    8 +++
+>>  drivers/thermal/thermal_sys.c       |   82 ++++++++++++++++++++++++++++++-----
+>>  include/linux/thermal.h             |    2 +
+>>  4 files changed, 94 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+>> index 526d4b9..6859661 100644
+>> --- a/Documentation/thermal/sysfs-api.txt
+>> +++ b/Documentation/thermal/sysfs-api.txt
+>> @@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
+>>       .get_trip_type: get the type of certain trip point.
+>>       .get_trip_temp: get the temperature above which the certain trip point
+>>                       will be fired.
+>> +     .set_emul_temp: set the emulation temperature which helps in debugging
+>> +                     different threshold temperature points.
+>>
+>>  1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+>>
+>> @@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
+>>      |---trip_point_[0-*]_temp:       Trip point temperature
+>>      |---trip_point_[0-*]_type:       Trip point type
+>>      |---trip_point_[0-*]_hyst:       Hysteresis value for this trip point
+>> +    |---emul_temp:           Emulated temperature set node
+>>
+>>  Thermal cooling device sys I/F, created once it's registered:
+>>  /sys/class/thermal/cooling_device[0-*]:
+>> @@ -252,6 +255,16 @@ passive
+>>       Valid values: 0 (disabled) or greater than 1000
+>>       RW, Optional
+>>
+>> +emul_temp
+>> +     Interface to set the emulated temperature method in thermal zone
+>> +     (sensor). After setting this temperature, the thermal zone may pass
+>> +     this temperature to platform emulation function if registered or
+>> +     cache it locally. This is useful in debugging different temperature
+>> +     threshold and its associated cooling action. This is write only node
+>> +     and writing 0 on this node should disable emulation.
+>> +     Unit: millidegree Celsius
+>> +     WO, Optional
+>> +
+>>  *****************************
+>>  * Cooling device attributes *
+>>  *****************************
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index faf38c5..e4cf7fb 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -78,6 +78,14 @@ config CPU_THERMAL
+>>         and not the ACPI interface.
+>>         If you want this support, you should say Y here.
+>>
+>> +config THERMAL_EMULATION
+>> +     bool "Thermal emulation mode support"
+>> +     help
+>> +       Enable this option to make a emul_temp sysfs node in thermal zone
+>> +       directory to support temperature emulation. With emulation sysfs node,
+>> +       user can manually input temperature and test the different trip
+>> +       threshold behaviour for simulation purpose.
+>> +
+>>  config SPEAR_THERMAL
+>>       bool "SPEAr thermal sensor driver"
+>>       depends on PLAT_SPEAR
+>> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+>> index 0a1bf6b..59ba709 100644
+>> --- a/drivers/thermal/thermal_sys.c
+>> +++ b/drivers/thermal/thermal_sys.c
+>> @@ -378,24 +378,57 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+>>       monitor_thermal_zone(tz);
+>>  }
+>>
+>> +static int thermal_zone_get_temp(struct thermal_zone_device *tz,
+>> +                             unsigned long *temp)
+>> +{
+>> +     int ret = 0, count;
+>> +     unsigned long crit_temp = -1UL;
+>> +     enum thermal_trip_type type;
+>> +
+>> +     mutex_lock(&tz->lock);
+>> +
+>> +     if (tz->ops->get_temp)
+>> +             ret = tz->ops->get_temp(tz, temp);
+> we do not need to do this check, .get_temp() should always be available.
 >
-> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> ---
-> Changes since RFC v1:
-> * Moved the Exynos5 PPMU driver to machine specific directory
-> * Migrated to the PM QOS framework
-> Changes since v2:
-> * Moved the PPMU driver to drivers/devfreq/exynos
-> * Fixed whitespace, commenting, empty lines in PPMU driver
-> Changes since v3:
-> * Removed the custom devfreq monitor and PPMU polling function
-> * Moved exynos5 PPMU access functions to the devfreq driver
+> #ifdef CONFIG_THERMAL_EMUL
+>> +     else
+>> +             ret = -EPERM;
+>> +
+>> +     if (!tz->emul_temperature)
+>> +             goto skip_emul;
+>> +
 >
->  drivers/devfreq/Kconfig              |   10 +
->  drivers/devfreq/Makefile             |    1 +
->  drivers/devfreq/exynos/Makefile      |    1 +
->  drivers/devfreq/exynos/exynos5_bus.c |  502 ++++++++++++++++++++++++++++++++++
->  drivers/devfreq/exynos/exynos_ppmu.c |   55 ++++
->  include/linux/exynos_ppmu.h          |   79 ++++++
->  6 files changed, 648 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
->  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
->  create mode 100644 include/linux/exynos_ppmu.h
 >
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 0f079be..1560d0d 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -78,4 +78,14 @@ config ARM_EXYNOS4_BUS_DEVFREQ
->           To operate with optimal voltages, ASV support is required
->           (CONFIG_EXYNOS_ASV).
+>> +     for (count = 0; count < tz->trips; count++) {
+>> +             ret = tz->ops->get_trip_type(tz, count, &type);
+>> +             if (!ret && type == THERMAL_TRIP_CRITICAL) {
+>> +                     ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
+>> +                     break;
+>> +             }
+>> +     }
+>> +
+>> +     if (ret)
+>> +             goto skip_emul;
+>> +
+>> +     if (*temp < crit_temp)
+>> +             *temp = tz->emul_temperature;
+>> +
+>> +skip_emul:
+> #endif
+Will re-send with this code in #ifdef
 >
-> +config ARM_EXYNOS5_BUS_DEVFREQ
-> +       bool "ARM Exynos5250 Bus DEVFREQ Driver"
-> +       depends on SOC_EXYNOS5250
-> +       select ARCH_HAS_OPP
-> +       select DEVFREQ_GOV_SIMPLE_ONDEMAND
-> +       help
-> +         This adds the DEVFREQ driver for Exynos5250 bus interface (vdd_int).
-> +         It reads PPMU counters of memory controllers and adjusts the
-> +         operating frequencies and voltages with OPP support.
-> +
->  endif # PM_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> index 3bc1fef..16138c9 100644
-> --- a/drivers/devfreq/Makefile
-> +++ b/drivers/devfreq/Makefile
-> @@ -6,3 +6,4 @@ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)     += governor_userspace.o
+> or you can introduce get_emul_temp() instead.
 >
->  # DEVFREQ Drivers
->  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)  += exynos/
-> +obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)  += exynos/
-> diff --git a/drivers/devfreq/exynos/Makefile b/drivers/devfreq/exynos/Makefile
-> index 1498823..bfaaf5b 100644
-> --- a/drivers/devfreq/exynos/Makefile
-> +++ b/drivers/devfreq/exynos/Makefile
-> @@ -1,2 +1,3 @@
->  # Exynos DEVFREQ Drivers
->  obj-$(CONFIG_ARM_EXYNOS4_BUS_DEVFREQ)  += exynos4_bus.o
-> +obj-$(CONFIG_ARM_EXYNOS5_BUS_DEVFREQ)  += exynos_ppmu.o exynos5_bus.o
-> diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
-> new file mode 100644
-> index 0000000..fbdcbaf
-> --- /dev/null
-> +++ b/drivers/devfreq/exynos/exynos5_bus.c
-> @@ -0,0 +1,502 @@
-> +/*
-> + * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-> + *             http://www.samsung.com/
-> + *
-> + * EXYNOS5 INT clock frequency scaling support using DEVFREQ framework
-> + * Based on work done by Jonghwan Choi <jhbird.choi@samsung.com>
-> + * Support for only EXYNOS5250 is present.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/devfreq.h>
-> +#include <linux/io.h>
-> +#include <linux/opp.h>
-> +#include <linux/slab.h>
-> +#include <linux/suspend.h>
-> +#include <linux/opp.h>
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_qos.h>
-> +#include <linux/regulator/consumer.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/exynos_ppmu.h>
-> +
-> +#define MAX_SAFEVOLT                   1100000 /* 1.10V */
-> +/* Assume that the bus is saturated if the utilization is 25% */
-> +#define INT_BUS_SATURATION_RATIO       25
-> +
-> +enum int_level_idx {
-> +       LV_0,
-> +       LV_1,
-> +       LV_2,
-> +       LV_3,
-> +       LV_4,
-> +       _LV_END
-> +};
-> +
-> +enum exynos_ppmu_list {
-> +       PPMU_RIGHT,
-> +       PPMU_END,
-> +};
-> +
-> +struct busfreq_data_int {
-> +       struct device *dev;
-> +       struct devfreq *devfreq;
-> +       struct regulator *vdd_int;
-> +       struct exynos_ppmu ppmu[PPMU_END];
-> +       unsigned long curr_freq;
-> +       bool disabled;
-> +
-> +       struct notifier_block pm_notifier;
-> +       struct mutex lock;
-> +       struct pm_qos_request int_req;
-> +       struct clk *int_clk;
-> +};
-> +
-> +struct int_bus_opp_table {
-> +       unsigned int idx;
-> +       unsigned long clk;
-> +       unsigned long volt;
-> +};
-> +
-> +static struct int_bus_opp_table exynos5_int_opp_table[] = {
-> +       {LV_0, 266000, 1025000},
-> +       {LV_1, 200000, 1025000},
-> +       {LV_2, 160000, 1025000},
-> +       {LV_3, 133000, 1025000},
-> +       {LV_4, 100000, 1025000},
-> +       {0, 0, 0},
-> +};
-> +
-> +static void busfreq_mon_reset(struct busfreq_data_int *data)
-> +{
-> +       unsigned int i;
-> +
-> +       for (i = PPMU_RIGHT; i < PPMU_END; i++) {
-> +               void __iomem *ppmu_base = data->ppmu[i].hw_base;
-> +
-> +               /* Reset the performance and cycle counters */
-> +               exynos_ppmu_reset(ppmu_base);
-> +
-> +               /* Setup count registers to monitor read/write transactions */
-> +               data->ppmu[i].event[PPMU_PMNCNT3] = RDWR_DATA_COUNT;
-> +               exynos_ppmu_setevent(ppmu_base, PPMU_PMNCNT3,
-> +                                       data->ppmu[i].event[PPMU_PMNCNT3]);
-> +
-> +               exynos_ppmu_start(ppmu_base);
-> +       }
-> +}
-> +
-> +static void exynos5_read_ppmu(struct busfreq_data_int *data)
-> +{
-> +       int i, j;
-> +
-> +       for (i = PPMU_RIGHT; i < PPMU_END; i++) {
-> +               void __iomem *ppmu_base = data->ppmu[i].hw_base;
-> +
-> +               exynos_ppmu_stop(ppmu_base);
-> +
-> +               /* Update local data from PPMU */
-> +               data->ppmu[i].ccnt = __raw_readl(ppmu_base + PPMU_CCNT);
-> +
-> +               for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
-> +                       if (data->ppmu[i].event[j] == 0)
-> +                               data->ppmu[i].count[j] = 0;
-> +                       else
-> +                               data->ppmu[i].count[j] =
-> +                                       exynos_ppmu_read(ppmu_base, j);
-> +               }
-> +       }
-> +
-> +       busfreq_mon_reset(data);
-> +}
-> +
-> +static int exynos5_int_setvolt(struct busfreq_data_int *data,
-> +                               unsigned long volt)
-> +{
-> +       return regulator_set_voltage(data->vdd_int, volt, MAX_SAFEVOLT);
-> +}
-> +
-> +static int exynos5_busfreq_int_target(struct device *dev, unsigned long *_freq,
-> +                             u32 flags)
-> +{
-> +       int err = 0;
-> +       struct platform_device *pdev = container_of(dev, struct platform_device,
-> +                                                   dev);
-> +       struct busfreq_data_int *data = platform_get_drvdata(pdev);
-> +       struct opp *opp;
-> +       unsigned long old_freq, freq;
-> +       unsigned long volt;
-> +
-> +       rcu_read_lock();
-> +       opp = devfreq_recommended_opp(dev, _freq, flags);
-> +       if (IS_ERR(opp)) {
-> +               rcu_read_unlock();
-> +               dev_err(dev, "%s: Invalid OPP.\n", __func__);
-> +               return PTR_ERR(opp);
-> +       }
-> +
-> +       freq = opp_get_freq(opp);
-> +       volt = opp_get_voltage(opp);
-> +       rcu_read_unlock();
-> +
-> +       old_freq = data->curr_freq;
-> +
-> +       if (old_freq == freq)
-> +               return 0;
-> +
-> +       dev_dbg(dev, "targetting %lukHz %luuV\n", freq, volt);
-> +
-> +       mutex_lock(&data->lock);
-> +
-> +       if (data->disabled)
-> +               goto out;
-> +
-> +       if (freq > exynos5_int_opp_table[0].clk)
-> +               pm_qos_update_request(&data->int_req, freq * 16 / 1000);
-> +       else
-> +               pm_qos_update_request(&data->int_req, -1);
-> +
-> +       if (old_freq < freq)
-> +               err = exynos5_int_setvolt(data, volt);
-> +       if (err)
-> +               goto out;
-> +
-> +       err = clk_set_rate(data->int_clk, freq * 1000);
-> +
-> +       if (err)
-> +               goto out;
-> +
-> +       if (old_freq > freq)
-> +               err = exynos5_int_setvolt(data, volt);
-> +       if (err)
-> +               goto out;
-> +
-> +       data->curr_freq = freq;
-> +out:
-> +       mutex_unlock(&data->lock);
-> +       return err;
-> +}
-> +
-> +static int exynos5_get_busier_dmc(struct busfreq_data_int *data)
-> +{
-> +       int i, j;
-> +       int busy = 0;
-> +       unsigned int temp = 0;
-> +
-> +       for (i = PPMU_RIGHT; i < PPMU_END; i++) {
-> +               for (j = PPMU_PMNCNT0; j < PPMU_PMNCNT_MAX; j++) {
-> +                       if (data->ppmu[i].count[j] > temp) {
-> +                               temp = data->ppmu[i].count[j];
-> +                               busy = i;
-> +                       }
-> +               }
-> +       }
-> +
-> +       return busy;
-> +}
-> +
-> +static int exynos5_int_get_dev_status(struct device *dev,
-> +                                     struct devfreq_dev_status *stat)
-> +{
-> +       struct platform_device *pdev = container_of(dev, struct platform_device,
-> +                                                   dev);
-> +       struct busfreq_data_int *data = platform_get_drvdata(pdev);
-> +       int busier_dmc;
-> +
-> +       exynos5_read_ppmu(data);
-> +       busier_dmc = exynos5_get_busier_dmc(data);
-> +
-> +       stat->current_frequency = data->curr_freq;
-> +
-> +       /* Number of cycles spent on memory access */
-> +       stat->busy_time = data->ppmu[busier_dmc].count[PPMU_PMNCNT3];
-> +       stat->busy_time *= 100 / INT_BUS_SATURATION_RATIO;
-> +       stat->total_time = data->ppmu[busier_dmc].ccnt;
-> +
-> +       return 0;
-> +}
-> +static void exynos5_int_exit(struct device *dev)
-> +{
-> +       struct platform_device *pdev = container_of(dev, struct platform_device,
-> +                                                   dev);
-> +       struct busfreq_data_int *data = platform_get_drvdata(pdev);
-> +
-> +       devfreq_unregister_opp_notifier(dev, data->devfreq);
-> +}
-> +
-> +static struct devfreq_dev_profile exynos5_devfreq_int_profile = {
-> +       .initial_freq           = 160000,
-> +       .polling_ms             = 100,
-> +       .target                 = exynos5_busfreq_int_target,
-> +       .get_dev_status         = exynos5_int_get_dev_status,
-> +       .exit                   = exynos5_int_exit,
-> +};
-> +
-> +static int exynos5250_init_int_tables(struct busfreq_data_int *data)
-> +{
-> +       int i, err = 0;
-> +
-> +       for (i = LV_0; i < _LV_END; i++) {
-> +               err = opp_add(data->dev, exynos5_int_opp_table[i].clk,
-> +                               exynos5_int_opp_table[i].volt);
-> +               if (err) {
-> +                       dev_err(data->dev, "Cannot add opp entries.\n");
-> +                       return err;
-> +               }
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int exynos5_busfreq_int_pm_notifier_event(struct notifier_block *this,
-> +               unsigned long event, void *ptr)
-> +{
-> +       struct busfreq_data_int *data = container_of(this,
-> +                                       struct busfreq_data_int, pm_notifier);
-> +       struct opp *opp;
-> +       unsigned long maxfreq = ULONG_MAX;
-> +       unsigned long freq;
-> +       unsigned long volt;
-> +       int err = 0;
-> +
-> +       switch (event) {
-> +       case PM_SUSPEND_PREPARE:
-> +               /* Set Fastest and Deactivate DVFS */
-> +               mutex_lock(&data->lock);
-> +
-> +               data->disabled = true;
-> +
-> +               rcu_read_lock();
-> +               opp = opp_find_freq_floor(data->dev, &maxfreq);
-> +               if (IS_ERR(opp)) {
-> +                       rcu_read_unlock();
-> +                       err = PTR_ERR(opp);
-> +                       goto unlock;
-> +               }
-> +               freq = opp_get_freq(opp);
-> +               volt = opp_get_voltage(opp);
-> +               rcu_read_unlock();
-> +
-> +               err = exynos5_int_setvolt(data, volt);
-> +               if (err)
-> +                       goto unlock;
-> +
-> +               err = clk_set_rate(data->int_clk, freq * 1000);
-> +
-> +               if (err)
-> +                       goto unlock;
-> +
-> +               data->curr_freq = freq;
-> +unlock:
-> +               mutex_unlock(&data->lock);
-> +               if (err)
-> +                       return NOTIFY_BAD;
-> +               return NOTIFY_OK;
-> +       case PM_POST_RESTORE:
-> +       case PM_POST_SUSPEND:
-> +               /* Reactivate */
-> +               mutex_lock(&data->lock);
-> +               data->disabled = false;
-> +               mutex_unlock(&data->lock);
-> +               return NOTIFY_OK;
-> +       }
-> +
-> +       return NOTIFY_DONE;
-> +}
-> +
-> +static __devinit int exynos5_busfreq_int_probe(struct platform_device *pdev)
-> +{
-> +       struct busfreq_data_int *data;
-> +       struct opp *opp;
-> +       struct device *dev = &pdev->dev;
-> +       struct device_node *np;
-> +       unsigned long initial_freq;
-> +       unsigned long initial_volt;
-> +       int err = 0;
-> +       int i;
-> +
-> +       data = devm_kzalloc(&pdev->dev, sizeof(struct busfreq_data_int),
-> +                               GFP_KERNEL);
-> +       if (data == NULL) {
-> +               dev_err(dev, "Cannot allocate memory.\n");
-> +               return -ENOMEM;
-> +       }
-> +
-> +       np = of_find_compatible_node(NULL, NULL, "samsung,exynos5250-ppmu");
-> +       if (np == NULL) {
-> +               pr_err("Unable to find PPMU node\n");
-> +               return -ENOENT;
-> +       }
-> +
-> +       for (i = PPMU_RIGHT; i < PPMU_END; i++) {
-> +               /* map PPMU memory region */
-> +               data->ppmu[i].hw_base = of_iomap(np, i);
-> +               if (data->ppmu[i].hw_base == NULL) {
-> +                       dev_err(&pdev->dev, "failed to map memory region\n");
-> +                       return -ENOMEM;
-> +               }
-> +       }
-> +       data->pm_notifier.notifier_call = exynos5_busfreq_int_pm_notifier_event;
-> +       data->dev = dev;
-> +       mutex_init(&data->lock);
-> +
-> +       err = exynos5250_init_int_tables(data);
-> +       if (err)
-> +               goto err_regulator;
-> +
-> +       data->vdd_int = regulator_get(dev, "vdd_int");
-> +       if (IS_ERR(data->vdd_int)) {
-> +               dev_err(dev, "Cannot get the regulator \"vdd_int\"\n");
-> +               err = PTR_ERR(data->vdd_int);
-> +               goto err_regulator;
-> +       }
-> +
-> +       data->int_clk = clk_get(dev, "int_clk");
-> +       if (IS_ERR(data->int_clk)) {
-> +               dev_err(dev, "Cannot get clock \"int_clk\"\n");
-> +               err = PTR_ERR(data->int_clk);
-> +               goto err_clock;
-> +       }
-> +
-> +       rcu_read_lock();
-> +       opp = opp_find_freq_floor(dev,
-> +                       &exynos5_devfreq_int_profile.initial_freq);
-> +       if (IS_ERR(opp)) {
-> +               rcu_read_unlock();
-> +               dev_err(dev, "Invalid initial frequency %lu kHz.\n",
-> +                      exynos5_devfreq_int_profile.initial_freq);
-> +               err = PTR_ERR(opp);
-> +               goto err_opp_add;
-> +       }
-> +       initial_freq = opp_get_freq(opp);
-> +       initial_volt = opp_get_voltage(opp);
-> +       rcu_read_unlock();
-> +       data->curr_freq = initial_freq;
-> +
-> +       err = clk_set_rate(data->int_clk, initial_freq * 1000);
-> +       if (err) {
-> +               dev_err(dev, "Failed to set initial frequency\n");
-> +               goto err_opp_add;
-> +       }
-> +
-> +       err = exynos5_int_setvolt(data, initial_volt);
-> +       if (err)
-> +               goto err_opp_add;
-> +
-> +       platform_set_drvdata(pdev, data);
-> +
-> +       busfreq_mon_reset(data);
-> +
-> +       data->devfreq = devfreq_add_device(dev, &exynos5_devfreq_int_profile,
-> +                                          "simple_ondemand", NULL);
-> +
-> +       if (IS_ERR(data->devfreq)) {
-> +               err = PTR_ERR(data->devfreq);
-> +               goto err_devfreq_add;
-> +       }
-> +
-> +       devfreq_register_opp_notifier(dev, data->devfreq);
-> +
-> +       err = register_pm_notifier(&data->pm_notifier);
-> +       if (err) {
-> +               dev_err(dev, "Failed to setup pm notifier\n");
-> +               goto err_devfreq_add;
-> +       }
-> +
-> +       /* TODO: Add a new QOS class for int/mif bus */
-> +       pm_qos_add_request(&data->int_req, PM_QOS_NETWORK_THROUGHPUT, -1);
-> +
-> +       return 0;
-> +
-> +err_devfreq_add:
-> +       devfreq_remove_device(data->devfreq);
-> +       platform_set_drvdata(pdev, NULL);
-> +err_opp_add:
-> +       clk_put(data->int_clk);
-> +err_clock:
-> +       regulator_put(data->vdd_int);
-> +err_regulator:
-> +       return err;
-> +}
-> +
-> +static __devexit int exynos5_busfreq_int_remove(struct platform_device *pdev)
-> +{
-> +       struct busfreq_data_int *data = platform_get_drvdata(pdev);
-> +
-> +       pm_qos_remove_request(&data->int_req);
-> +       unregister_pm_notifier(&data->pm_notifier);
-> +       devfreq_remove_device(data->devfreq);
-> +       regulator_put(data->vdd_int);
-> +       clk_put(data->int_clk);
-> +       platform_set_drvdata(pdev, NULL);
-> +
-> +       return 0;
-> +}
-> +
-> +static int exynos5_busfreq_int_resume(struct device *dev)
-> +{
-> +       struct platform_device *pdev = container_of(dev, struct platform_device,
-> +                                                   dev);
-> +       struct busfreq_data_int *data = platform_get_drvdata(pdev);
-> +
-> +       busfreq_mon_reset(data);
-> +       return 0;
-> +}
-> +
-> +static const struct dev_pm_ops exynos5_busfreq_int_pm = {
-> +       .resume = exynos5_busfreq_int_resume,
-> +};
-> +
-> +/* platform device pointer for exynos5 devfreq device. */
-> +static struct platform_device *exynos5_devfreq_pdev;
-> +
-> +static struct platform_driver exynos5_busfreq_int_driver = {
-> +       .probe          = exynos5_busfreq_int_probe,
-> +       .remove         = __devexit_p(exynos5_busfreq_int_remove),
-> +       .driver         = {
-> +               .name           = "exynos5-bus-int",
-> +               .owner          = THIS_MODULE,
-> +               .pm             = &exynos5_busfreq_int_pm,
-> +       },
-> +};
-> +
-> +static int __init exynos5_busfreq_int_init(void)
-> +{
-> +       int ret;
-> +
-> +       ret = platform_driver_register(&exynos5_busfreq_int_driver);
-> +       if (ret < 0)
-> +               goto out;
-> +
-> +       exynos5_devfreq_pdev =
-> +               platform_device_register_simple("exynos5-bus-int", -1, NULL, 0);
-> +       if (IS_ERR_OR_NULL(exynos5_devfreq_pdev)) {
-> +               ret = PTR_ERR(exynos5_devfreq_pdev);
-> +               goto out1;
-> +       }
-> +
-> +       return 0;
-> +out1:
-> +       platform_driver_unregister(&exynos5_busfreq_int_driver);
-> +out:
-> +       return ret;
-> +}
-> +late_initcall(exynos5_busfreq_int_init);
-> +
-> +static void __exit exynos5_busfreq_int_exit(void)
-> +{
-> +       platform_device_unregister(exynos5_devfreq_pdev);
-> +       platform_driver_unregister(&exynos5_busfreq_int_driver);
-> +}
-> +module_exit(exynos5_busfreq_int_exit);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_DESCRIPTION("EXYNOS5 busfreq driver with devfreq framework");
-> diff --git a/drivers/devfreq/exynos/exynos_ppmu.c b/drivers/devfreq/exynos/exynos_ppmu.c
-> new file mode 100644
-> index 0000000..d667825
-> --- /dev/null
-> +++ b/drivers/devfreq/exynos/exynos_ppmu.c
-> @@ -0,0 +1,55 @@
-> +/*
-> + * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-> + *             http://www.samsung.com/
-> + *
-> + * EXYNOS - PPMU support
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/types.h>
-> +#include <linux/io.h>
-> +#include <linux/exynos_ppmu.h>
-> +
-> +void exynos_ppmu_reset(void __iomem *ppmu_base)
-> +{
-> +       __raw_writel(PPMU_CYCLE_RESET | PPMU_COUNTER_RESET, ppmu_base);
-> +       __raw_writel(PPMU_ENABLE_CYCLE  |
-> +                    PPMU_ENABLE_COUNT0 |
-> +                    PPMU_ENABLE_COUNT1 |
-> +                    PPMU_ENABLE_COUNT2 |
-> +                    PPMU_ENABLE_COUNT3,
-> +                    ppmu_base + PPMU_CNTENS);
-> +}
-> +
-> +void exynos_ppmu_setevent(void __iomem *ppmu_base, unsigned int ch,
-> +                       unsigned int evt)
-> +{
-> +       __raw_writel(evt, ppmu_base + PPMU_BEVTSEL(ch));
-> +}
-> +
-> +void exynos_ppmu_start(void __iomem *ppmu_base)
-> +{
-> +       __raw_writel(PPMU_ENABLE, ppmu_base);
-> +}
-> +
-> +void exynos_ppmu_stop(void __iomem *ppmu_base)
-> +{
-> +       __raw_writel(PPMU_DISABLE, ppmu_base);
-> +}
-> +
-> +unsigned int exynos_ppmu_read(void __iomem *ppmu_base, unsigned int ch)
-> +{
-> +       unsigned int total;
-> +
-> +       if (ch == PPMU_PMNCNT3)
-> +               total = ((__raw_readl(ppmu_base + PMCNT_OFFSET(ch)) << 8) |
-> +                         __raw_readl(ppmu_base + PMCNT_OFFSET(ch + 1)));
-> +       else
-> +               total = __raw_readl(ppmu_base + PMCNT_OFFSET(ch));
-> +
-> +       return total;
-> +}
-> diff --git a/include/linux/exynos_ppmu.h b/include/linux/exynos_ppmu.h
-> new file mode 100644
-> index 0000000..b46d31b
-> --- /dev/null
-> +++ b/include/linux/exynos_ppmu.h
-> @@ -0,0 +1,79 @@
-> +/*
-> + * Copyright (c) 2012 Samsung Electronics Co., Ltd.
-> + *             http://www.samsung.com/
-> + *
-> + * EXYNOS PPMU header
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> +*/
-> +
-> +#ifndef __DEVFREQ_EXYNOS_PPMU_H
-> +#define __DEVFREQ_EXYNOS_PPMU_H __FILE__
-> +
-> +#include <linux/ktime.h>
-> +
-> +/* For PPMU Control */
-> +#define PPMU_ENABLE             BIT(0)
-> +#define PPMU_DISABLE            0x0
-> +#define PPMU_CYCLE_RESET        BIT(1)
-> +#define PPMU_COUNTER_RESET      BIT(2)
-> +
-> +#define PPMU_ENABLE_COUNT0      BIT(0)
-> +#define PPMU_ENABLE_COUNT1      BIT(1)
-> +#define PPMU_ENABLE_COUNT2      BIT(2)
-> +#define PPMU_ENABLE_COUNT3      BIT(3)
-> +#define PPMU_ENABLE_CYCLE       BIT(31)
-> +
-> +#define PPMU_CNTENS            0x10
-> +#define PPMU_FLAG              0x50
-> +#define PPMU_CCNT_OVERFLOW     BIT(31)
-> +#define PPMU_CCNT              0x100
-> +
-> +#define PPMU_PMCNT0            0x110
-> +#define PPMU_PMCNT_OFFSET      0x10
-> +#define PMCNT_OFFSET(x)                (PPMU_PMCNT0 + (PPMU_PMCNT_OFFSET * x))
-> +
-> +#define PPMU_BEVT0SEL          0x1000
-> +#define PPMU_BEVTSEL_OFFSET    0x100
-> +#define PPMU_BEVTSEL(x)                (PPMU_BEVT0SEL + (ch * PPMU_BEVTSEL_OFFSET))
-> +
-> +/* For Event Selection */
-> +#define RD_DATA_COUNT          0x5
-> +#define WR_DATA_COUNT          0x6
-> +#define RDWR_DATA_COUNT                0x7
-> +
-> +enum ppmu_counter {
-> +       PPMU_PMNCNT0,
-> +       PPMU_PMCCNT1,
-> +       PPMU_PMNCNT2,
-> +       PPMU_PMNCNT3,
-> +       PPMU_PMNCNT_MAX,
-> +};
-> +
-> +struct bus_opp_table {
-> +       unsigned int idx;
-> +       unsigned long clk;
-> +       unsigned long volt;
-> +};
-> +
-> +struct exynos_ppmu {
-> +       void __iomem *hw_base;
-> +       unsigned int ccnt;
-> +       unsigned int event[PPMU_PMNCNT_MAX];
-> +       unsigned int count[PPMU_PMNCNT_MAX];
-> +       unsigned long long ns;
-> +       ktime_t reset_time;
-> +       bool ccnt_overflow;
-> +       bool count_overflow[PPMU_PMNCNT_MAX];
-> +};
-> +
-> +void exynos_ppmu_reset(void __iomem *ppmu_base);
-> +void exynos_ppmu_setevent(void __iomem *ppmu_base, unsigned int ch,
-> +                       unsigned int evt);
-> +void exynos_ppmu_start(void __iomem *ppmu_base);
-> +void exynos_ppmu_stop(void __iomem *ppmu_base);
-> +unsigned int exynos_ppmu_read(void __iomem *ppmu_base, unsigned int ch);
-> +#endif /* __DEVFREQ_EXYNOS_PPMU_H */
-> +
+>> +     mutex_unlock(&tz->lock);
+>> +     return ret;
+>> +}
+>> +
+>>  static void update_temperature(struct thermal_zone_device *tz)
+>>  {
+>>       long temp;
+>>       int ret;
+>>
+>> -     mutex_lock(&tz->lock);
+>> -
+>> -     ret = tz->ops->get_temp(tz, &temp);
+>> +     ret = thermal_zone_get_temp(tz, &temp);
+>>       if (ret) {
+>>               dev_warn(&tz->device, "failed to read out thermal zone %d\n",
+>>                        tz->id);
+>> -             goto exit;
+>> +             return;
+>>       }
+>>
+>> +     mutex_lock(&tz->lock);
+>>       tz->last_temperature = tz->temperature;
+>>       tz->temperature = temp;
+>> -
+>> -exit:
+>>       mutex_unlock(&tz->lock);
+>>  }
+>>
+>> @@ -438,10 +471,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
+>>       long temperature;
+>>       int ret;
+>>
+>> -     if (!tz->ops->get_temp)
+>> -             return -EPERM;
+>> -
+>> -     ret = tz->ops->get_temp(tz, &temperature);
+>> +     ret = thermal_zone_get_temp(tz, &temperature);
+>>
+>>       if (ret)
+>>               return ret;
+>> @@ -701,6 +731,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+>>       return sprintf(buf, "%s\n", tz->governor->name);
+>>  }
+>>
+>> +#ifdef CONFIG_THERMAL_EMULATION
+>> +static ssize_t
+>> +emul_temp_store(struct device *dev, struct device_attribute *attr,
+>> +                  const char *buf, size_t count)
+>> +{
+>> +     struct thermal_zone_device *tz = to_thermal_zone(dev);
+>> +     int ret = 0;
+>> +     unsigned long temperature;
+>> +
+>> +     if (kstrtoul(buf, 10, &temperature))
+>> +             return -EINVAL;
+>> +
+>> +     if (!tz->ops->set_emul_temp) {
+>> +             mutex_lock(&tz->lock);
+>> +             tz->emul_temperature = temperature;
+>> +             mutex_unlock(&tz->lock);
+>> +     } else {
+>> +             ret = tz->ops->set_emul_temp(tz, temperature);
+>> +     }
+>> +
+>> +     return ret ? ret : count;
+>> +}
+>> +static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+>> +#endif/*CONFIG_THERMAL_EMULATION*/
+>> +
+>>  static DEVICE_ATTR(type, 0444, type_show, NULL);
+>>  static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+>>  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+>> @@ -843,7 +898,7 @@ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+>>                                      temp_input);
+>>       struct thermal_zone_device *tz = temp->tz;
+>>
+>> -     ret = tz->ops->get_temp(tz, &temperature);
+>> +     ret = thermal_zone_get_temp(tz, &temperature);
+>>
+>>       if (ret)
+>>               return ret;
+>> @@ -1596,6 +1651,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>>                       goto unregister;
+>>       }
+>>
+>> +#ifdef CONFIG_THERMAL_EMULATION
+>> +     result = device_create_file(&tz->device, &dev_attr_emul_temp);
+>> +     if (result)
+>> +             goto unregister;
+>> +#endif
+>>       /* Create policy attribute */
+>>       result = device_create_file(&tz->device, &dev_attr_policy);
+>>       if (result)
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index 9b78f8c..f0bd7f9 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
+>>       int (*set_trip_hyst) (struct thermal_zone_device *, int,
+>>                             unsigned long);
+>>       int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
+>> +     int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
+>>       int (*get_trend) (struct thermal_zone_device *, int,
+>>                         enum thermal_trend *);
+>>       int (*notify) (struct thermal_zone_device *, int,
+>> @@ -165,6 +166,7 @@ struct thermal_zone_device {
+>>       int polling_delay;
+>>       int temperature;
+>>       int last_temperature;
+>> +     int emul_temperature;
+>>       int passive;
+>>       unsigned int forced_passive;
+>>       const struct thermal_zone_device_ops *ops;
+> others look okay to me.
+Thanks.
+Amit
+>
+> thanks,
+> rui
+>
+>
 > --
-> 1.7.8.6
->
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
