@@ -1,168 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: make VT switching to the suspend
-	console optional v2
-Date: Sat, 02 Feb 2013 21:50:35 +0100
-Message-ID: <2424360.s1UolC1PMO@vostro.rjw.lan>
-References: <1359819248-3714-1-git-send-email-jbarnes@virtuousgeek.org>
-	<1359819248-3714-2-git-send-email-jbarnes@virtuousgeek.org>
-	<1933562.n2GhljaZKo@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org>
-In-Reply-To: <1933562.n2GhljaZKo@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
-	<mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
-	<mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Sender: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
-Errors-To: intel-gfx-bounces+gcfxdi-intel-gfx=m.gmane.org@lists.freedesktop.org
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 48/62] thermal: convert to idr_alloc()
+Date: Sat,  2 Feb 2013 17:20:49 -0800
+Message-ID: <1359854463-2538-49-git-send-email-tj@kernel.org>
+References: <1359854463-2538-1-git-send-email-tj@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1359854463-2538-1-git-send-email-tj@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, bfields@fieldses.org, skinsbursky@parallels.com, ebiederm@xmission.com, jmorris@namei.org, axboe@kernel.dk, Tejun Heo <tj@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, February 02, 2013 08:39:21 PM Rafael J. Wysocki wrote:
-> On Saturday, February 02, 2013 04:34:08 PM Jesse Barnes wrote:
-> > KMS drivers can potentially restore the display configuration without
-> > userspace help.  Such drivers can can call a new funciton,
-> > pm_vt_switch_required(false) if they support this feature.  In that
-> > case, the PM layer won't VT switch to the suspend console at suspend
-> > time and then back to the original VT on resume, but rather leave things
-> > alone for a nicer looking suspend and resume sequence.
-> > 
-> > v2: make a function so we can handle multiple drivers (Alan)
-> > 
-> > Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-> > ---
-> >  include/linux/pm.h     |    2 ++
-> >  kernel/power/console.c |   59 ++++++++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 61 insertions(+)
-> > 
-> > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > index 03d7bb1..5c2b131 100644
-> > --- a/include/linux/pm.h
-> > +++ b/include/linux/pm.h
-> > @@ -35,6 +35,8 @@ extern void (*pm_idle)(void);
-> >  extern void (*pm_power_off)(void);
-> >  extern void (*pm_power_off_prepare)(void);
-> >  
-> > +extern void pm_vt_switch_required(bool required);
-> > +
-> >  /*
-> >   * Device power management
-> >   */
-> > diff --git a/kernel/power/console.c b/kernel/power/console.c
-> > index b1dc456..67c4de3 100644
-> > --- a/kernel/power/console.c
-> > +++ b/kernel/power/console.c
-> > @@ -4,6 +4,7 @@
-> >   * Originally from swsusp.
-> >   */
-> >  
-> > +#include <linux/console.h>
-> >  #include <linux/vt_kern.h>
-> >  #include <linux/kbd_kern.h>
-> >  #include <linux/vt.h>
-> > @@ -14,8 +15,63 @@
-> >  
-> >  static int orig_fgconsole, orig_kmsg;
-> >  
-> > +DEFINE_SPINLOCK(vt_switch_lock);
-> > +static int vt_switch_required = -1;
-> > +
-> > +/**
-> > + * pm_vt_switch_required - indicate VT switch at suspend requirements
-> > + * @required: if true, caller needs VT switch at suspend/resume time
-> > + *
-> > + * The different console drivers may or may not require VT switches across
-> > + * suspend/resume, depending on how they handle restoring video state and
-> > + * what may be running.
-> > + *
-> > + * Drivers can indicate support for switchless suspend/resume, which can
-> > + * save time and flicker, by using this routine and passing 'false' as
-> > + * the argument.  If any loaded driver needs VT switching, or the
-> > + * no_console_suspend argument has been passed on the command line, VT
-> > + * switches will occur.
-> > + */
-> 
-> It seems to me that we'll need a separate counter for the number of registered
-> drivers and do the switch if that number is equal to the number of drivers that
-> have passed false to this thing.
-> 
-> In which case we can simplify this slightly and introduce
-> pm_vt_swtich_not_required(void)
+Convert to the much saner new idr interface.
 
-Sorry, that won't be sufficient.  Rather something like pm_vt_switch_get()
-(indicating "I'll do the switch, thanks") and pm_vt_switch_put() (indicating
-"now you need to do the switch yourself").
+Only compile tested.
 
-> and then the only drivers that need to bother
-> will be the ones known to not require the switch.
-> 
-> Otherwise it will be kind of error prone I'm afraid.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+---
+This patch depends on an earlier idr changes and I think it would be
+best to route these together through -mm.  Please holler if there's
+any objection.  Thanks.
 
-Thanks,
-Rafael
+ drivers/thermal/cpu_cooling.c | 17 +++++------------
+ drivers/thermal/thermal_sys.c | 17 +++++------------
+ 2 files changed, 10 insertions(+), 24 deletions(-)
 
-
-> > +void pm_vt_switch_required(bool required)
-> > +{
-> > +	spin_lock(&vt_switch_lock);
-> > +	if (vt_switch_required == -1) {
-> > +		/* First call, set up real value */
-> > +		if (!required)
-> > +			vt_switch_required = 0;
-> > +		if (required)
-> > +			vt_switch_required = 1;
-> > +	} else {
-> > +		/*
-> > +		 * Subsequent caller, make sure we handle the case
-> > +		 * where a driver binds, needs VT switch, but then unbinds
-> > +		 * later and a switchless driver is present.
-> > +		 */
-> > +		if (!required && vt_switch_required > 0)
-> > +			vt_switch_required--;
-> > +		else if (required)
-> > +			vt_switch_required++;
-> > +	}
-> > +	spin_unlock(&vt_switch_lock);
-> > +}
-> > +EXPORT_SYMBOL(pm_vt_switch_required);
-> > +
-> > +static bool pm_vt_switch(void)
-> > +{
-> > +	bool ret = true;
-> > +
-> > +	spin_lock(&vt_switch_lock);
-> > +	if (!vt_switch_required && console_suspend_enabled)
-> > +		ret = false;
-> > +	spin_unlock(&vt_switch_lock);
-> > +	return ret;
-> > +}
-> > +
-> >  int pm_prepare_console(void)
-> >  {
-> > +	if (!pm_vt_switch())
-> > +		return 0;
-> > +
-> >  	orig_fgconsole = vt_move_to_console(SUSPEND_CONSOLE, 1);
-> >  	if (orig_fgconsole < 0)
-> >  		return 1;
-> > @@ -26,6 +82,9 @@ int pm_prepare_console(void)
-> >  
-> >  void pm_restore_console(void)
-> >  {
-> > +	if (!pm_vt_switch())
-> > +		return;
-> > +
-> >  	if (orig_fgconsole >= 0) {
-> >  		vt_move_to_console(orig_fgconsole, 0);
-> >  		vt_kmsg_redirect(orig_kmsg);
-> > 
-> 
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 836828e..c33fa53 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -73,21 +73,14 @@ static struct cpufreq_cooling_device *notify_device;
+  */
+ static int get_idr(struct idr *idr, int *id)
+ {
+-	int err;
+-again:
+-	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
+-		return -ENOMEM;
++	int ret;
+ 
+ 	mutex_lock(&cooling_cpufreq_lock);
+-	err = idr_get_new(idr, NULL, id);
++	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
+ 	mutex_unlock(&cooling_cpufreq_lock);
+-
+-	if (unlikely(err == -EAGAIN))
+-		goto again;
+-	else if (unlikely(err))
+-		return err;
+-
+-	*id = *id & MAX_IDR_MASK;
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
+ 	return 0;
+ }
+ 
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 8c8ce80..84e95f3 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -132,23 +132,16 @@ EXPORT_SYMBOL_GPL(thermal_unregister_governor);
+ 
+ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+ {
+-	int err;
+-
+-again:
+-	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
+-		return -ENOMEM;
++	int ret;
+ 
+ 	if (lock)
+ 		mutex_lock(lock);
+-	err = idr_get_new(idr, NULL, id);
++	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
+ 	if (lock)
+ 		mutex_unlock(lock);
+-	if (unlikely(err == -EAGAIN))
+-		goto again;
+-	else if (unlikely(err))
+-		return err;
+-
+-	*id = *id & MAX_IDR_MASK;
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
+ 	return 0;
+ }
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.1
