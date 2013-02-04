@@ -1,102 +1,125 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 3/4][V2] davinci: cpuidle - remove the ops
-Date: Mon,  4 Feb 2013 13:01:43 +0100
-Message-ID: <1359979304-8715-4-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 2/4][V2] davinci: cpuidle - move code to prevent forward
+	declaration
+Date: Mon,  4 Feb 2013 13:01:42 +0100
+Message-ID: <1359979304-8715-3-git-send-email-daniel.lezcano@linaro.org>
 References: <1359979304-8715-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:52746 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755453Ab3BDMB5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 07:01:57 -0500
-Received: by mail-wi0-f181.google.com with SMTP id hm6so1507499wib.2
-        for <linux-pm@vger.kernel.org>; Mon, 04 Feb 2013 04:01:56 -0800 (PST)
-In-Reply-To: <1359979304-8715-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <1359979304-8715-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: khilman-1D3HCaltpLuhEniVeURVKkEOCMrvLtNR@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@deeprootsystems.com, nsekhar@ti.com
-Cc: patches@linaro.org, linaro-dev@lists.linaro.org, davinci-linux-open-source@linux.davincidsp.com, lenb@kernel.org, linux-pm@vger.kernel.org
 
-With one function handling the idle state and a single variable,
-the usage of the davinci_ops is overkill.
+The patch is mindless, it just moves the idle function below in the file
+in order to prevent forward declaration in the next patch.
 
-This patch removes these ops and simplify the code.
-
-Furthermore, the 'driver_data' field is no longer used, we have
-1 of the 3 remaining user of this field removed.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Sekhar Nori <nsekhar@ti.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>
 ---
- arch/arm/mach-davinci/cpuidle.c |   33 ++-------------------------------
- 1 file changed, 2 insertions(+), 31 deletions(-)
+ arch/arm/mach-davinci/cpuidle.c |   72 +++++++++++++++++++--------------------
+ 1 file changed, 36 insertions(+), 36 deletions(-)
 
 diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index 697febe..5e430bf 100644
+index 5fbd470..697febe 100644
 --- a/arch/arm/mach-davinci/cpuidle.c
 +++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -25,12 +25,6 @@
+@@ -31,42 +31,6 @@ struct davinci_ops {
+ 	u32 flags;
+ };
  
- #define DAVINCI_CPUIDLE_MAX_STATES	2
- 
--struct davinci_ops {
--	void (*enter) (void);
--	void (*exit) (void);
--	u32 flags;
--};
--
- static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
- static void __iomem *ddr2_reg_base;
- static bool ddr2_pdown;
-@@ -54,39 +48,17 @@ static void davinci_save_ddr_power(int enter, bool pdown)
- 	__raw_writel(val, ddr2_reg_base + DDR2_SDRCR_OFFSET);
- }
- 
--static void davinci_c2state_enter(void)
+-/* Actual code that puts the SoC in different idle states */
+-static int davinci_enter_idle(struct cpuidle_device *dev,
+-				struct cpuidle_driver *drv,
+-						int index)
 -{
--	davinci_save_ddr_power(1, ddr2_pdown);
--}
--
--static void davinci_c2state_exit(void)
--{
--	davinci_save_ddr_power(0, ddr2_pdown);
--}
--
--static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
--	[1] = {
--		.enter	= davinci_c2state_enter,
--		.exit	= davinci_c2state_exit,
--	},
--};
--
- /* Actual code that puts the SoC in different idle states */
- static int davinci_enter_idle(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv,
- 						int index)
- {
 -	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
 -	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
 -
 -	if (ops && ops->enter)
 -		ops->enter();
-+	davinci_save_ddr_power(1, ddr2_pdown);
- 
- 	index = cpuidle_wrap_enter(dev,	drv, index,
- 				arm_cpuidle_simple_enter);
- 
+-
+-	index = cpuidle_wrap_enter(dev,	drv, index,
+-				arm_cpuidle_simple_enter);
+-
 -	if (ops && ops->exit)
 -		ops->exit();
-+	davinci_save_ddr_power(0, ddr2_pdown);
+-
+-	return index;
+-}
+-
+-static struct cpuidle_driver davinci_idle_driver = {
+-	.name			= "cpuidle-davinci",
+-	.owner			= THIS_MODULE,
+-	.en_core_tk_irqen	= 1,
+-	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+-	.states[1]		= {
+-		.enter			= davinci_enter_idle,
+-		.exit_latency		= 10,
+-		.target_residency	= 100000,
+-		.flags			= CPUIDLE_FLAG_TIME_VALID,
+-		.name			= "DDR SR",
+-		.desc			= "WFI and DDR Self Refresh",
+-	},
+-	.state_count = DAVINCI_CPUIDLE_MAX_STATES,
+-};
+-
+ static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
+ static void __iomem *ddr2_reg_base;
+ static bool ddr2_pdown;
+@@ -107,6 +71,42 @@ static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
+ 	},
+ };
  
- 	return index;
- }
-@@ -123,7 +95,6 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
- 	ddr2_reg_base = pdata->ddr2_ctlr_base;
- 
- 	ddr2_pdown = pdata->ddr2_pdown;
--	cpuidle_set_statedata(&device->states_usage[1], &davinci_states[1]);
- 
- 	device->state_count = DAVINCI_CPUIDLE_MAX_STATES;
- 
++/* Actual code that puts the SoC in different idle states */
++static int davinci_enter_idle(struct cpuidle_device *dev,
++				struct cpuidle_driver *drv,
++						int index)
++{
++	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
++	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
++
++	if (ops && ops->enter)
++		ops->enter();
++
++	index = cpuidle_wrap_enter(dev,	drv, index,
++				arm_cpuidle_simple_enter);
++
++	if (ops && ops->exit)
++		ops->exit();
++
++	return index;
++}
++
++static struct cpuidle_driver davinci_idle_driver = {
++	.name			= "cpuidle-davinci",
++	.owner			= THIS_MODULE,
++	.en_core_tk_irqen	= 1,
++	.states[0]		= ARM_CPUIDLE_WFI_STATE,
++	.states[1]		= {
++		.enter			= davinci_enter_idle,
++		.exit_latency		= 10,
++		.target_residency	= 100000,
++		.flags			= CPUIDLE_FLAG_TIME_VALID,
++		.name			= "DDR SR",
++		.desc			= "WFI and DDR Self Refresh",
++	},
++	.state_count = DAVINCI_CPUIDLE_MAX_STATES,
++};
++
+ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+ {
+ 	int ret;
 -- 
 1.7.9.5
-
