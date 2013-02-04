@@ -1,14 +1,13 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 0/4] davinci: cpuidle - some cleanups
-Date: Mon, 04 Feb 2013 13:08:31 +0100
-Message-ID: <510FA4BF.7050001@linaro.org>
-References: <1359726495-8024-1-git-send-email-daniel.lezcano@linaro.org>
-	<510C0E4E.3010008@kernel.org>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Mon, 04 Feb 2013 13:17:04 +0100
+Message-ID: <5808458.pvV2iHpBWm@vostro.rjw.lan>
+References: <cover.1359976493.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
-In-Reply-To: <510C0E4E.3010008-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1359976493.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
 	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
 List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
@@ -18,28 +17,39 @@ List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
 	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
 Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
 Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
-To: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: davinci-linux-open-source-VycZQUHpC/PFrsHnngEfi1aTQe2KTcn/@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Steve.Bannister-5wv7dgnIgG8@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDIvMDEvMjAxMyAwNzo0OSBQTSwgTGVuIEJyb3duIHdyb3RlOgo+IE9uIDAyLzAxLzIwMTMg
-MDg6NDggQU0sIERhbmllbCBMZXpjYW5vIHdyb3RlOgo+PiBUaGlzIHBhdGNoc2V0IGRvZXMgc29t
-ZSBjbGVhbnVwLiBJdCBjb3VsZCBoYXZlIGJlZW4gZm9sZGVkIGluIGEgc2luZ2xlCj4+IHBhdGNo
-IGJ1dCB0aGUgcmV2aWV3IHdvdWxkIGhhdmUgYmVlbiBsZXNzIGNsZWFuIHRoYW4gc3BsaXR0aW5n
-IGl0IGludG8KPj4gc21hbGwgYW5kIHRyaXZpYWwgcGF0Y2hlcy4KPj4KPj4gVGhlIG1haW4gcHVy
-cG9zZSBvZiB0aGlzIHBhdGNoIGlzIHRvIHJlbW92ZSB0aGUgdXNhZ2Ugb2YgdGhlIGRyaXZlcl9k
-YXRhCj4+IGZpZWxkIGZyb20gdGhlIHN0YXRlX3VzYWdlIHN0cnVjdHVyZS4gTGVuIEJyb3duIGlz
-IGRvaW5nIHRoaXMgY2xlYW51cCBpbgo+PiB0aGUgaW50ZWxfaWRsZS5jIGZpbGUuIFdpdGggdGhp
-cyBwYXRjaHNldCwgdGhlIHByb2Nlc3Nvcl9pZGxlLmMgZmlsZSB3aWxsCj4+IGJlIHRoZSBsYXN0
-IHVzZXIgb2YgdGhpcyBmaWVsZC4KPiAKPiBEYW5pZWwsCj4gVGhhbmtzIGZvciB0aGlzIGNsZWFu
-dXAuCj4gSG9wZWZ1bGx5IHdlIGNhbiBoZWFyIGZyb20gc29tZWJvZHkgd2l0aCBkYXZpbmNpIEhX
-IHdobyBjYW4gdGVzdCBpdD8KPiAKPiBMb29rcyBsaWtlIGl0IGlzIG5vdyB1cCB0byBtZSB0byBh
-ZGRyZXNzIHByb2Nlc3Nvcl9pZGxlLmMgYW5kCj4gZmluaXNoIHRoZSBqb2Igb2YgZXhwdW5naW5n
-IGRyaXZlcl9kYXRhLgoKQXJlIHlvdSBvayBpZiBJIHRha2UgY2FyZSBvZiB0aGF0ID8KCiAgLS0g
-RGFuaWVsCgoKLS0gCiA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3Bl
-biBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCgpGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93
-d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfAo8aHR0cDovL3R3aXR0ZXIu
-Y29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8CjxodHRwOi8vd3d3LmxpbmFyby5vcmcvbGluYXJv
-LWJsb2cvPiBCbG9nCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KbGluYXJvLWRldiBtYWlsaW5nIGxpc3QKbGluYXJvLWRldkBsaXN0cy5saW5hcm8ub3Jn
-Cmh0dHA6Ly9saXN0cy5saW5hcm8ub3JnL21haWxtYW4vbGlzdGluZm8vbGluYXJvLWRldgo=
+On Monday, February 04, 2013 05:08:50 PM Viresh Kumar wrote:
+> Currently, there can't be multiple instances of single governor_type. If we have
+> a multi-package system, where we have multiple instances of struct policy (per
+> package), we can't have multiple instances of same governor. i.e. We can't have
+> multiple instances of ondemand governor for multiple packages.
+> 
+> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> governor-name/. Which again reflects that there can be only one instance of a
+> governor_type in the system.
+> 
+> This is a bottleneck for multicluster system, where we want different packages
+> to use same governor type, but with different tunables.
+> 
+> This patchset is inclined towards fixing this issue.
+> 
+> Viresh Kumar (4):
+>   cpufreq: Don't check cpu_online(policy->cpu)
+>   cpufreq: stats: Get rid of CPUFREQ_STATDEVICE_ATTR
+>   cpufreq: Add per policy governor-init/exit infrastructure
+>   cpufreq: governor: Implement per policy instances of governors
+
+Well, [1-2/4] are things I can take for v3.9 no problem.  The other two I'd
+wait for the next cycle to be honest.  We already have 30+ cpufreq patches
+scheduled for v3.9 and some of them quite subtle for that matter.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
