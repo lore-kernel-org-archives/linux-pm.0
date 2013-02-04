@@ -1,237 +1,411 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 1/4] thermal: Add support for the thermal sensor on
- Kirkwood SoCs
-Date: Mon, 04 Feb 2013 10:49:08 +0800
-Message-ID: <1359946148.2250.47.camel@rzhang1-mobl4>
-References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
-	 <1359815749-27705-2-git-send-email-andrew@lunn.ch>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH v5] cpufreq: add imx6q-cpufreq driver
+Date: Mon, 4 Feb 2013 10:51:42 +0800
+Message-ID: <1359946302-25953-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:3974 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521Ab3BDCtN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 3 Feb 2013 21:49:13 -0500
-In-Reply-To: <1359815749-27705-2-git-send-email-andrew@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
-On Sat, 2013-02-02 at 15:35 +0100, Andrew Lunn wrote:
-> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> 
-> This patch adds support for Kirkwood 88F6282 and 88F6283 thermal sensor.
-> 
-> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
->  .../bindings/thermal/kirkwood-thermal.txt          |   15 +++
->  drivers/thermal/Kconfig                            |    7 +
->  drivers/thermal/Makefile                           |    1 +
->  drivers/thermal/kirkwood_thermal.c                 |  136 ++++++++++++++++++++
->  4 files changed, 159 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
->  create mode 100644 drivers/thermal/kirkwood_thermal.c
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-> new file mode 100644
-> index 0000000..8c0f5eb
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-> @@ -0,0 +1,15 @@
-> +* Kirkwood Thermal
-> +
-> +This version is for Kirkwood 88F8262 & 88F6283 SoCs. Other kirkwoods
-> +don't contain a thermal sensor.
-> +
-> +Required properties:
-> +- compatible : "marvell,kirkwood-thermal"
-> +- reg : Address range of the thermal registers
-> +
-> +Example:
-> +
-> +	thermal@10078 {
-> +		compatible = "marvell,kirkwood-thermal";
-> +		reg = <0x10078 0x4>;
-> +	};
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index c2c77d1..e691500 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -93,6 +93,13 @@ config RCAR_THERMAL
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
->  	  thermal framework
->  
-> +config KIRKWOOD_THERMAL
-> +	tristate "Temperature sensor on Marvell Kirkwood SoCs"
-> +	depends on ARCH_KIRKWOOD
-> +	help
-> +	  Support for the Kirkwood thermal sensor driver into the Linux thermal
-> +	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
-> +
->  config EXYNOS_THERMAL
->  	tristate "Temperature sensor on Samsung EXYNOS"
->  	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index d8da683..99026b2 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -15,6 +15,7 @@ obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
->  # platform thermal drivers
->  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
->  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
-> +obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->  obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
->  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> new file mode 100644
-> index 0000000..000cfc9
-> --- /dev/null
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -0,0 +1,136 @@
-> +/*
-> + * Kirkwood thermal sensor driver
-> + *
-> + * Copyright (C) 2012 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/of.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/thermal.h>
-> +
-> +#define KIRKWOOD_THERMAL_VALID_OFFSET	9
-> +#define KIRKWOOD_THERMAL_VALID_MASK	0x1
-> +#define KIRKWOOD_THERMAL_TEMP_OFFSET	10
-> +#define KIRKWOOD_THERMAL_TEMP_MASK	0x1FF
-> +
-> +/* Kirkwood Thermal Sensor Dev Structure */
-> +struct kirkwood_thermal_priv {
-> +	void __iomem *sensor;
-> +};
-> +
-> +static int kirkwood_get_temp(struct thermal_zone_device *thermal,
-> +			  unsigned long *temp)
-> +{
-> +	unsigned long reg;
-> +	struct kirkwood_thermal_priv *priv = thermal->devdata;
-> +
-> +	reg = readl_relaxed(priv->sensor);
-> +
-> +	/* Valid check */
-> +	if (!(reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
-> +	    KIRKWOOD_THERMAL_VALID_MASK) {
-> +		dev_err(&thermal->device,
-> +			"Temperature sensor reading not valid\n");
-> +		return -EIO;
-> +	}
-> +
-> +	/*
-> +	 * Calculate temperature. See Section 8.10.1 of the 88AP510,
-> +	 * datasheet, which has the same sensor.
-> +	 * Documentation/arm/Marvell/README
-> +	 */
-> +	reg = (reg >> KIRKWOOD_THERMAL_TEMP_OFFSET) &
-> +		KIRKWOOD_THERMAL_TEMP_MASK;
-> +	*temp = ((2281638UL - (7298*reg)) / 10);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_zone_device_ops ops = {
-> +	.get_temp = kirkwood_get_temp,
-> +};
-> +
-> +static const struct of_device_id kirkwood_thermal_id_table[] = {
-> +	{ .compatible = "marvell,kirkwood-thermal" },
-> +	{}
-> +};
-> +
-you do not need #ifdef CONFIG_OF here?
+Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
+hardware specific frequency and voltage scaling requirements.
 
-thanks,
-rui
+The driver supports module build and is instantiated by the platform
+device/driver mechanism, so that it will not be instantiated on other
+platforms, as IMX is built with multiplatform support.
 
-> +static int kirkwood_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct thermal_zone_device *thermal = NULL;
-> +	struct kirkwood_thermal_priv *priv;
-> +	struct resource *res;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!res) {
-> +		dev_err(&pdev->dev, "Failed to get platform resource\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv) {
-> +		dev_err(&pdev->dev, "kzalloc fail\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-> +	if (!priv->sensor) {
-> +		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> +		return -EADDRNOTAVAIL;
-> +	}
-> +
-> +	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
-> +					       priv, &ops, NULL, 0, 0);
-> +	if (IS_ERR(thermal)) {
-> +		dev_err(&pdev->dev,
-> +			"Failed to register thermal zone device\n");
-> +		return PTR_ERR(thermal);
-> +	}
-> +
-> +	platform_set_drvdata(pdev, thermal);
-> +
-> +	return 0;
-> +}
-> +
-> +static int kirkwood_thermal_exit(struct platform_device *pdev)
-> +{
-> +	struct thermal_zone_device *kirkwood_thermal =
-> +		platform_get_drvdata(pdev);
-> +
-> +	thermal_zone_device_unregister(kirkwood_thermal);
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	return 0;
-> +}
-> +
-> +MODULE_DEVICE_TABLE(of, kirkwood_thermal_id_table);
-> +
-> +static struct platform_driver kirkwood_thermal_driver = {
-> +	.probe = kirkwood_thermal_probe,
-> +	.remove = kirkwood_thermal_exit,
-> +	.driver = {
-> +		.name = "kirkwood_thermal",
-> +		.owner = THIS_MODULE,
-> +		.of_match_table = of_match_ptr(kirkwood_thermal_id_table),
-> +	},
-> +};
-> +
-> +module_platform_driver(kirkwood_thermal_driver);
-> +
-> +MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu@nigauri.org>");
-> +MODULE_DESCRIPTION("kirkwood thermal driver");
-> +MODULE_LICENSE("GPL");
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Changes since v4:
+ * Use regulator API to handle voltage latency
+
+Rafael,
+
+I generated the patch against your bleeding-edge branch, so it should
+be applied cleanly.
+
+Shawn
+
+ drivers/cpufreq/Kconfig.arm     |    9 ++
+ drivers/cpufreq/Makefile        |    1 +
+ drivers/cpufreq/imx6q-cpufreq.c |  331 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 341 insertions(+)
+ create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index ffe55b8..c65226c 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
+ 	  This adds the CPUFreq driver for Samsung EXYNOS5250
+ 	  SoC.
+ 
++config ARM_IMX6Q_CPUFREQ
++	tristate "Freescale i.MX6Q cpufreq support"
++	depends on SOC_IMX6Q
++	depends on REGULATOR_ANATOP
++	help
++	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
++
++	  If in doubt, say N.
++
+ config ARM_SPEAR_CPUFREQ
+ 	bool "SPEAr CPUFreq support"
+ 	depends on PLAT_SPEAR
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index e2a5da7..93610b2 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -54,6 +54,7 @@ obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
++obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+new file mode 100644
+index 0000000..f73b245
+--- /dev/null
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -0,0 +1,331 @@
++/*
++ * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/clk.h>
++#include <linux/cpufreq.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/opp.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
++
++#define PU_SOC_VOLTAGE_NORMAL	1250000
++#define PU_SOC_VOLTAGE_HIGH	1275000
++#define FREQ_1P2_GHZ		1200000000
++
++static struct regulator *arm_reg;
++static struct regulator *pu_reg;
++static struct regulator *soc_reg;
++
++static struct clk *arm_clk;
++static struct clk *pll1_sys_clk;
++static struct clk *pll1_sw_clk;
++static struct clk *step_clk;
++static struct clk *pll2_pfd2_396m_clk;
++
++static struct device *cpu_dev;
++static struct cpufreq_frequency_table *freq_table;
++static unsigned int transition_latency;
++
++static int imx6q_verify_speed(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, freq_table);
++}
++
++static unsigned int imx6q_get_speed(unsigned int cpu)
++{
++	return clk_get_rate(arm_clk) / 1000;
++}
++
++static int imx6q_set_target(struct cpufreq_policy *policy,
++			    unsigned int target_freq, unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	struct opp *opp;
++	unsigned long freq_hz, volt, volt_old;
++	unsigned int index, cpu;
++	int ret;
++
++	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
++					     relation, &index);
++	if (ret) {
++		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
++			target_freq, ret);
++		return ret;
++	}
++
++	freqs.new = freq_table[index].frequency;
++	freq_hz = freqs.new * 1000;
++	freqs.old = clk_get_rate(arm_clk) / 1000;
++
++	if (freqs.old == freqs.new)
++		return 0;
++
++	for_each_online_cpu(cpu) {
++		freqs.cpu = cpu;
++		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++	}
++
++	rcu_read_lock();
++	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
++	if (IS_ERR(opp)) {
++		rcu_read_unlock();
++		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
++		return PTR_ERR(opp);
++	}
++
++	volt = opp_get_voltage(opp);
++	rcu_read_unlock();
++	volt_old = regulator_get_voltage(arm_reg);
++
++	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
++		freqs.old / 1000, volt_old / 1000,
++		freqs.new / 1000, volt / 1000);
++
++	/* scaling up?  scale voltage before frequency */
++	if (freqs.new > freqs.old) {
++		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
++		if (ret) {
++			dev_err(cpu_dev,
++				"failed to scale vddarm up: %d\n", ret);
++			return ret;
++		}
++
++		/*
++		 * Need to increase vddpu and vddsoc for safety
++		 * if we are about to run at 1.2 GHz.
++		 */
++		if (freqs.new == FREQ_1P2_GHZ / 1000) {
++			regulator_set_voltage_tol(pu_reg,
++					PU_SOC_VOLTAGE_HIGH, 0);
++			regulator_set_voltage_tol(soc_reg,
++					PU_SOC_VOLTAGE_HIGH, 0);
++		}
++	}
++
++	/*
++	 * The setpoints are selected per PLL/PDF frequencies, so we need to
++	 * reprogram PLL for frequency scaling.  The procedure of reprogramming
++	 * PLL1 is as below.
++	 *
++	 *  - Enable pll2_pfd2_396m_clk and reparent pll1_sw_clk to it
++	 *  - Disable pll1_sys_clk and reprogram it
++	 *  - Enable pll1_sys_clk and reparent pll1_sw_clk back to it
++	 *  - Disable pll2_pfd2_396m_clk
++	 */
++	clk_prepare_enable(pll2_pfd2_396m_clk);
++	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
++	clk_set_parent(pll1_sw_clk, step_clk);
++	clk_prepare_enable(pll1_sys_clk);
++	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
++		clk_disable_unprepare(pll1_sys_clk);
++		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
++		clk_prepare_enable(pll1_sys_clk);
++		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
++		clk_disable_unprepare(pll2_pfd2_396m_clk);
++	} else {
++		/*
++		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
++		 * to provide the frequency.
++		 */
++		clk_disable_unprepare(pll1_sys_clk);
++	}
++
++	/* Ensure the arm clock divider is what we expect */
++	ret = clk_set_rate(arm_clk, freqs.new * 1000);
++	if (ret) {
++		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
++		regulator_set_voltage_tol(arm_reg, volt_old, 0);
++		return ret;
++	}
++
++	/* scaling down?  scale voltage after frequency */
++	if (freqs.new < freqs.old) {
++		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
++		if (ret)
++			dev_warn(cpu_dev,
++				 "failed to scale vddarm down: %d\n", ret);
++
++		if (freqs.old == FREQ_1P2_GHZ / 1000) {
++			regulator_set_voltage_tol(pu_reg,
++					PU_SOC_VOLTAGE_NORMAL, 0);
++			regulator_set_voltage_tol(soc_reg,
++					PU_SOC_VOLTAGE_NORMAL, 0);
++		}
++	}
++
++	for_each_online_cpu(cpu) {
++		freqs.cpu = cpu;
++		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	}
++
++	return 0;
++}
++
++static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
++{
++	int ret;
++
++	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
++		return ret;
++	}
++
++	policy->cpuinfo.transition_latency = transition_latency;
++	policy->cur = clk_get_rate(arm_clk) / 1000;
++	cpumask_setall(policy->cpus);
++	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
++
++	return 0;
++}
++
++static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
++static struct freq_attr *imx6q_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver imx6q_cpufreq_driver = {
++	.verify = imx6q_verify_speed,
++	.target = imx6q_set_target,
++	.get = imx6q_get_speed,
++	.init = imx6q_cpufreq_init,
++	.exit = imx6q_cpufreq_exit,
++	.name = "imx6q-cpufreq",
++	.attr = imx6q_cpufreq_attr,
++};
++
++static int imx6q_cpufreq_probe(struct platform_device *pdev)
++{
++	struct device_node *np;
++	struct opp *opp;
++	unsigned long min_volt, max_volt;
++	int num, ret;
++
++	cpu_dev = &pdev->dev;
++
++	np = of_find_node_by_path("/cpus/cpu@0");
++	if (!np) {
++		dev_err(cpu_dev, "failed to find cpu0 node\n");
++		return -ENOENT;
++	}
++
++	cpu_dev->of_node = np;
++
++	arm_clk = devm_clk_get(cpu_dev, "arm");
++	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
++	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
++	step_clk = devm_clk_get(cpu_dev, "step");
++	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
++	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
++	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
++		dev_err(cpu_dev, "failed to get clocks\n");
++		ret = -ENOENT;
++		goto put_node;
++	}
++
++	arm_reg = devm_regulator_get(cpu_dev, "arm");
++	pu_reg = devm_regulator_get(cpu_dev, "pu");
++	soc_reg = devm_regulator_get(cpu_dev, "soc");
++	if (!arm_reg || !pu_reg || !soc_reg) {
++		dev_err(cpu_dev, "failed to get regulators\n");
++		ret = -ENOENT;
++		goto put_node;
++	}
++
++	/* We expect an OPP table supplied by platform */
++	num = opp_get_opp_count(cpu_dev);
++	if (num < 0) {
++		ret = num;
++		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
++		goto put_node;
++	}
++
++	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
++	if (ret) {
++		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
++		goto put_node;
++	}
++
++	if (of_property_read_u32(np, "clock-latency", &transition_latency))
++		transition_latency = CPUFREQ_ETERNAL;
++
++	/*
++	 * OPP is maintained in order of increasing frequency, and
++	 * freq_table initialised from OPP is therefore sorted in the
++	 * same order.
++	 */
++	rcu_read_lock();
++	opp = opp_find_freq_exact(cpu_dev,
++				  freq_table[0].frequency * 1000, true);
++	min_volt = opp_get_voltage(opp);
++	opp = opp_find_freq_exact(cpu_dev,
++				  freq_table[--num].frequency * 1000, true);
++	max_volt = opp_get_voltage(opp);
++	rcu_read_unlock();
++	ret = regulator_set_voltage_time(arm_reg, min_volt, max_volt);
++	if (ret > 0)
++		transition_latency += ret * 1000;
++
++	/* Count vddpu and vddsoc latency in for 1.2 GHz support */
++	if (freq_table[num].frequency == FREQ_1P2_GHZ / 1000) {
++		ret = regulator_set_voltage_time(pu_reg, PU_SOC_VOLTAGE_NORMAL,
++						 PU_SOC_VOLTAGE_HIGH);
++		if (ret > 0)
++			transition_latency += ret * 1000;
++		ret = regulator_set_voltage_time(soc_reg, PU_SOC_VOLTAGE_NORMAL,
++						 PU_SOC_VOLTAGE_HIGH);
++		if (ret > 0)
++			transition_latency += ret * 1000;
++	}
++
++	ret = cpufreq_register_driver(&imx6q_cpufreq_driver);
++	if (ret) {
++		dev_err(cpu_dev, "failed register driver: %d\n", ret);
++		goto free_freq_table;
++	}
++
++	of_node_put(np);
++	return 0;
++
++free_freq_table:
++	opp_free_cpufreq_table(cpu_dev, &freq_table);
++put_node:
++	of_node_put(np);
++	return ret;
++}
++
++static int imx6q_cpufreq_remove(struct platform_device *pdev)
++{
++	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
++	opp_free_cpufreq_table(cpu_dev, &freq_table);
++
++	return 0;
++}
++
++static struct platform_driver imx6q_cpufreq_platdrv = {
++	.driver = {
++		.name	= "imx6q-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= imx6q_cpufreq_probe,
++	.remove		= imx6q_cpufreq_remove,
++};
++module_platform_driver(imx6q_cpufreq_platdrv);
++
++MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
++MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
++MODULE_LICENSE("GPL");
+-- 
+1.7.9.5
 
 
