@@ -1,36 +1,50 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH 1/4] davinci: cpuidle - use global variable for ddr2 flag
-Date: Mon, 4 Feb 2013 15:18:33 +0530
-Message-ID: <510F83F1.7000706@ti.com>
-References: <1359726495-8024-1-git-send-email-daniel.lezcano@linaro.org> <1359726495-8024-2-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Mon,  4 Feb 2013 17:08:50 +0530
+Message-ID: <cover.1359976493.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:56064 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753903Ab3BDJsu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Feb 2013 04:48:50 -0500
-In-Reply-To: <1359726495-8024-2-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:35198 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525Ab3BDLjI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 06:39:08 -0500
+Received: by mail-pa0-f51.google.com with SMTP id hz1so2355315pad.24
+        for <linux-pm@vger.kernel.org>; Mon, 04 Feb 2013 03:39:07 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>, patches@linaro.org, linaro-dev@lists.linaro.org, davinci-linux-open-source@linux.davincidsp.com, lenb@kernel.org, linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 2/1/2013 7:18 PM, Daniel Lezcano wrote:
-> +static bool ddr2_pdown = false;
+Currently, there can't be multiple instances of single governor_type. If we have
+a multi-package system, where we have multiple instances of struct policy (per
+package), we can't have multiple instances of same governor. i.e. We can't have
+multiple instances of ondemand governor for multiple packages.
 
-checkpatch.pl warned against zero initialization of static variable
-here. Other than that the series looks good. I checked that both state0
-and state1 are entered on da850 evm. Making power measurements requires
-more elaborate setup so I left that out.
+Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+governor-name/. Which again reflects that there can be only one instance of a
+governor_type in the system.
 
-Target residency of state1 seems high and it is entered very
-infrequently. But that's not something introduced by this series. So for
-all the patches, you can add:
+This is a bottleneck for multicluster system, where we want different packages
+to use same governor type, but with different tunables.
 
-Acked-by: Sekhar Nori <nsekhar@ti.com>
+This patchset is inclined towards fixing this issue.
 
-Thanks,
-Sekhar
+Viresh Kumar (4):
+  cpufreq: Don't check cpu_online(policy->cpu)
+  cpufreq: stats: Get rid of CPUFREQ_STATDEVICE_ATTR
+  cpufreq: Add per policy governor-init/exit infrastructure
+  cpufreq: governor: Implement per policy instances of governors
+
+ drivers/cpufreq/cpufreq.c              |  41 ++++---
+ drivers/cpufreq/cpufreq_conservative.c | 142 +++++++++++++----------
+ drivers/cpufreq/cpufreq_governor.c     | 140 +++++++++++++---------
+ drivers/cpufreq/cpufreq_governor.h     |  42 ++++---
+ drivers/cpufreq/cpufreq_ondemand.c     | 205 +++++++++++++++++++--------------
+ drivers/cpufreq/cpufreq_stats.c        |  18 +--
+ drivers/cpufreq/cpufreq_userspace.c    |   2 -
+ drivers/cpufreq/freq_table.c           |   6 -
+ include/linux/cpufreq.h                |  26 +----
+ 9 files changed, 346 insertions(+), 276 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
 
