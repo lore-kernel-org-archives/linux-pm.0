@@ -1,117 +1,124 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCHv2 0/9] Thermal Framework Enhancements
-Date: Mon, 4 Feb 2013 06:37:27 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59275C20@BGSMSX101.gar.corp.intel.com>
-References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <510F49A2.4080701@nvidia.com>
+From: "myungjoo.ham" <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for
+ Exynos5250
+Date: Mon, 04 Feb 2013 15:41:04 +0900
+Message-ID: <006201ce02a2$9ae72480$d0b56d80$@samsung.com>
+References: <1357733199-17206-4-git-send-email-a.kesavan@samsung.com>
+ <1358515490-7565-1-git-send-email-a.kesavan@samsung.com>
+ <CAM4voakyRiC6nvNv63nK3H3T168MjP-JevbCuksoKbpT=HQqJw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <510F49A2.4080701@nvidia.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:19145 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751557Ab3BDGlH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 01:41:07 -0500
+In-reply-to: <CAM4voakyRiC6nvNv63nK3H3T168MjP-JevbCuksoKbpT=HQqJw@mail.gmail.com>
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kgene.kim@samsung.com
+Cc: kyungmin.park@samsung.com, rjw@sisk.pl, jhbird.choi@samsung.com
 
-Hi Wei,
-
+> 
+> 
 > -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Wei Ni
-> Sent: Monday, February 04, 2013 11:10 AM
-> To: R, Durgadoss
-> Cc: Zhang, Rui; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> eduardo.valentin@ti.com; hongbo.zhang@linaro.org
-> Subject: Re: [PATCHv2 0/9] Thermal Framework Enhancements
+> From: Abhilash Kesavan [mailto:kesavan.abhilash@gmail.com] 
+> Sent: Monday, February 04, 2013 12:48 AM
+> To: myungjoo.ham@samsung.com; linux-kernel@vger.kernel.org;
+linux-pm@vger.kernel.org; kgene.kim@samsung.com
+> Cc: kyungmin.park@samsung.com; rjw@sisk.pl; jhbird.choi@samsung.com
+> Subject: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver
+for Exynos5250
 > 
-> On 01/07/2013 03:13 PM, Durgadoss R wrote:
-> > This patch set is a v2 of the previous versions submitted here:
-> > [v1]:  https://lkml.org/lkml/2012/12/18/108
-> > [RFC]: https://patchwork.kernel.org/patch/1758921/
-> >
-> > This patch set is based on Rui's -thermal tree, and is
-> > tested on a Core-i5 and an Atom netbook.
-> >
-> > Changes Since v1:
-> >  * Removed kobject creation for thermal_trip and thermal_map
-> >    nodes as per Greg-KH's comments.
-> >  * Added ABI Documentation under 'testing'.
-> >  * Modified the GET_INDEX macro to be more linux-like, thanks
-> >    to Joe Perches.
-> >  * Added get_[sensor/cdev]_by_name APIs to thermal.h
+> Hi Myungjoo,
 > 
-> Hi, Durgadoss and Rui
-> Will these patches be merged to next branch? or will you send out next
-> version?
-
-Yes, I have to send the v3, with some small changes on the patch 5/9
-(map sysfs node..) and others won't have any changes.
-
-> I wish to use this new framework, could I send out patches for RFC based
-> on this serial patches?
-
-So, if your patch set does not need 5/9, you can send your RFC.
-
-Thanks,
-Durga
-
+> Any comments on this patch ?
 > 
-> Thanks.
-> Wei.
+> Abhilash
 > 
+
+
+Sorry for being late.
+
+One concern is that I cannot apply Patch 1/4 directly as the .dts file isn't
+available to me.
+Do you intend to apply that patch to another tree and apply the other three
+to devfreq tree?
+
+Another is the location of exynos_ppmu.h.
+Who is going to refer exynos_ppmu.h?
+If Exynos devfreq drivers are the only files to refer, wouldn't it be better
+located at drivers/devfreq/exynos/ ?
+
+Or do you intend to let someone else (drivers located not in
+drivers/devfreq) access exynos-ppmu?
+(If so, who's going to be? and that means we are going to have
+include/linux/devfreq/, I don't think it'd be appropriate to populate
+include/linux with device driver specific headers)
+
+
+
+And, there are errors (we do not have __devinit/__devexit anymore):
+
+  CC      drivers/devfreq/exynos/exynos5_bus.o
+drivers/devfreq/exynos/exynos5_bus.c:315:18: error: expected =, ,, ;, asm or
+__attribute__ before int
+drivers/devfreq/exynos/exynos5_bus.c:430:18: error: expected =, ,, ;, asm or
+__attribute__ before int
+drivers/devfreq/exynos/exynos5_bus.c:462:11: error:
+exynos5_busfreq_int_probe undeclared here (not in a function)
+drivers/devfreq/exynos/exynos5_bus.c:463:2: error: implicit declaration of
+function __devexit_p [-Werror=implicit-function-declaration]
+drivers/devfreq/exynos/exynos5_bus.c:463:24: error:
+exynos5_busfreq_int_remove undeclared here (not in a function)
+drivers/devfreq/exynos/exynos5_bus.c:235:35: warning:
+exynos5_devfreq_int_profile defined but not used [-Wunused-variable]
+drivers/devfreq/exynos/exynos5_bus.c:243:12: warning:
+exynos5250_init_int_tables defined but not used [-Wunused-function]
+drivers/devfreq/exynos/exynos5_bus.c:259:12: warning:
+exynos5_busfreq_int_pm_notifier_event defined but not used
+[-Wunused-function]
+cc1: some warnings being treated as errors
+
+
+
+Cheers,
+MyungJoo.
+
+
+> On Fri, Jan 18, 2013 at 6:54 PM, Abhilash Kesavan <a.kesavan@samsung.com>
+wrote:
+> > Exynos5-bus device devfreq driver monitors PPMU counters and adjusts 
+> > operating frequencies and voltages with OPP. ASV should be used to 
+> > provide appropriate voltages as per the speed group of the SoC rather 
+> > than using a constant 1.025V.
 > >
-> > This series contains 9 patches:
-> > Patch 1/9: Creates new sensor level APIs
-> > Patch 2/9: Creates new zone level APIs. The existing tzd structure is
-> >            kept as such for clarity and compatibility purposes.
-> > Patch 3/9: Creates functions to add/remove a cdev to/from a zone. The
-> >            existing tcd structure need not be modified.
-> > Patch 4/9: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
-> > 	   under /sys/class/thermal/zoneY/. This exposes various trip
-> >            points for sensorX present in zoneY.
-> > Patch 5/9: Adds mapX sysfs node. It is a compact representation
-> >            of the binding relationship between a sensor and a cdev,
-> >            within a zone.
-> > Patch 6/9: Creates Documentation for the new APIs. A new file is
-> >            created for clarity. Final goal is to merge with the existing
-> >            file or refactor the files, as whatever seems appropriate.
-> > Patch 7/9: Make PER ZONE values configurable through Kconfig
-> > Patch 8/9: Add ABI documentation for sysfs interfaces introduced in this
-> patch.
-> > Patch 9/9: A dummy driver that can be used for testing. This is not for
-> merge.
+> > Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
+> > Cc: Jonghwan Choi <jhbird.choi@samsung.com>
+> > Cc: Kukjin Kim <kgene.kim@samsung.com>
+> > ---
+> > Changes since RFC v1:
+> > * Moved the Exynos5 PPMU driver to machine specific directory
+> > * Migrated to the PM QOS framework
+> > Changes since v2:
+> > * Moved the PPMU driver to drivers/devfreq/exynos
+> > * Fixed whitespace, commenting, empty lines in PPMU driver Changes 
+> > since v3:
+> > * Removed the custom devfreq monitor and PPMU polling function
+> > * Moved exynos5 PPMU access functions to the devfreq driver
 > >
-> > Thanks to Greg-KH, Hongbo Zhang and Joe Perches for their comments on
-> v1.
+> >  drivers/devfreq/Kconfig              |   10 +
+> >  drivers/devfreq/Makefile             |    1 +
+> >  drivers/devfreq/exynos/Makefile      |    1 +
+> >  drivers/devfreq/exynos/exynos5_bus.c |  502
+++++++++++++++++++++++++++++++++++
+> >  drivers/devfreq/exynos/exynos_ppmu.c |   55 ++++
+> >  include/linux/exynos_ppmu.h          |   79 ++++++
+> >  6 files changed, 648 insertions(+), 0 deletions(-)  create mode 
+> > 100644 drivers/devfreq/exynos/exynos5_bus.c
+> >  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
+> >  create mode 100644 include/linux/exynos_ppmu.h
 > >
-> > Durgadoss R (9):
-> >   Thermal: Create sensor level APIs
-> >   Thermal: Create zone level APIs
-> >   Thermal: Add APIs to bind cdev to new zone structure
-> >   Thermal: Add trip point sysfs nodes for sensor
-> >   Thermal: Create 'mapX' sysfs node for a zone
-> >   Thermal: Add Documentation to new APIs
-> >   Thermal: Make PER_ZONE values configurable
-> >   Thermal: Add ABI Documentation for sysfs interfaces
-> >   Thermal: Dummy driver used for testing
-> >
-> >  Documentation/ABI/testing/sysfs-class-thermal |   93 +++
-> >  Documentation/thermal/sysfs-api2.txt          |  248 +++++++
-> >  drivers/thermal/Kconfig                       |   19 +
-> >  drivers/thermal/Makefile                      |    3 +
-> >  drivers/thermal/thermal_sys.c                 |  881
-> +++++++++++++++++++++++++
-> >  drivers/thermal/thermal_test.c                |  315 +++++++++
-> >  include/linux/thermal.h                       |  117 +++-
-> >  7 files changed, 1675 insertions(+), 1 deletion(-)
-> >  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
-> >  create mode 100644 Documentation/thermal/sysfs-api2.txt
-> >  create mode 100644 drivers/thermal/thermal_test.c
-> >
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
