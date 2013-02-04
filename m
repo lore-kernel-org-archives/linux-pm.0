@@ -1,129 +1,71 @@
-From: "Li, Fei" <fei.li@intel.com>
-Subject: RE: [PATCH V4] suspend: enable freeze timeout configuration through
- sys
-Date: Mon, 4 Feb 2013 03:08:13 +0000
-Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F154E@SHSMSX102.ccr.corp.intel.com>
-References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <1359708963.7240.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <1919836.fQMoKOYYSd@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 2/4] ARM: Kirkwood: Add support thermal sensor for
+ 88F6282 and 88F6283
+Date: Mon, 04 Feb 2013 11:14:53 +0800
+Message-ID: <1359947693.2250.50.camel@rzhang1-mobl4>
+References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
+	 <1359815749-27705-3-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:49283 "EHLO mga03.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:36877 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753757Ab3BDDIR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 3 Feb 2013 22:08:17 -0500
-In-Reply-To: <1919836.fQMoKOYYSd@vostro.rjw.lan>
-Content-Language: en-US
+	id S1753757Ab3BDDO6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 3 Feb 2013 22:14:58 -0500
+In-Reply-To: <1359815749-27705-3-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
-PiANCj4gT24gRnJpZGF5LCBGZWJydWFyeSAwMSwgMjAxMyAwNDo1NjowMyBQTSBmbGkyNCB3cm90
-ZToNCj4gDQo+IFRoZSBjb2RlIGxvb2tzIE9LLCBidXQgSSdtIHN0aWxsIGhhdmluZyBhIG1vcmUg
-ZnVuZGFtZW50YWwgcHJvYmxlbSB3aXRoIHRoaXMNCj4gY2hhbmdlLCBiZWNhdXNlIC0+DQo+IA0K
-PiA+IEF0IHByZXNlbnQsIHRoZSB2YWx1ZSBvZiB0aW1lb3V0IGZvciBmcmVlemluZyBpcyAyMHMs
-IHdoaWNoIGlzDQo+ID4gbWVhbmluZ2xlc3MgaW4gY2FzZSB0aGF0IG9uZSB0aHJlYWQgaXMgZnJv
-emVuIHdpdGggbXV0ZXggbG9ja2VkDQo+ID4gYW5kIGFub3RoZXIgdGhyZWFkIGlzIHRyeWluZyB0
-byBsb2NrIHRoZSBtdXRleCwgYXMgdGhpcyB0aW1lIG9mDQo+ID4gZnJlZXppbmcgd2lsbCBmYWls
-IHVuYXZvaWRhYmx5Lg0KPiANCj4gLT4gdGhlIHNpdHVhdGlvbiBkZXNjcmliZWQgYWJvdmUgc2hv
-dWxkbid0IGhhcHBlbiBhbmQgaWYgaXQgZG9lcywgdGhlbiB0aGVyZQ0KPiBpcyBhIGJ1ZyB0aGF0
-IG5lZWRzIHRvIGJlIGZpeGVkLg0KDQpZZXMsIHdlIGFncmVlIHdpdGggdGhhdCBpdCdzIGEgYnVn
-IHRoYXQgbmVlZHMgdG8gYmUgZml4ZWQsIGFuZCB3ZSBhcmUgYWxyZWFkeSBkb25lDQpmb3Igc29t
-ZSBjYXNlcy4gDQpEdXJpbmcgdGhlIHByb2Nlc3MsIHdlIHJlYWxpemUgdGhhdCB0dW5pbmcgdGhl
-IHRpbWVvdXQgdmFsdWUgdG8gc21hbGxlciB2YWx1ZSB3aWxsIGhlbHANCnRvIGV4cG9zZSBmcmVl
-emluZyBmYWlsdXJlIGZvciBzb21lIGNhc2VzLg0KDQo+IFRoZSBjaGFuZ2UgeW91J3JlIHByb3Bv
-c2luZyBzZWVtcyB0byBiZSB0YXJnZXRlZCBhdCBoaWRpbmcgdGhvc2UgYnVncyByYXRoZXINCj4g
-dGhhbiBhdCBmaXhpbmcgdGhlbS4gIEkgd29uZGVyIHdoeSB3ZSBzaG91bGQgaGlkZSB0aG9zZSBi
-dWdzIGluc3RlYWQgb2YgZml4aW5nDQo+IHRoZW0/DQo+IA0KPiBSYWZhZWwNCg0KV2UgdW5kZXJz
-dGFuZCB5b3VyIGNvbmNlcm4gYWJvdXQgaGlkaW5nIGJ1Z3MsIGFuZCB3ZSBhcmUgbm90IGdvaW5n
-IHRvIGRvIHRoaXMuDQpJbiBjb250cmFzdCwgc2V0dGluZyB0aW1lb3V0IHZhbHVlIHRvIHNtYWxs
-ZXIgdmFsdWUgbWVhbnMgbW9yZSBzdHJpY3QgdGhyZXNob2xkLCBhbmQNCml0IHdpbGwgZXhwb3Nl
-IHRoZSBwb3RlbnRpYWwgaXNzdWUgbW9yZSBxdWlja2x5IHdpdGggbW9yZSBjaGFuY2UuDQoNClRh
-a2luZyBkaXZlcnNpdHkgb2Ygc3lzdGVtIGludG8gY29uc2lkZXJhdGlvbiwgd2UgdGhpbmsgaXQn
-cyBzdWl0YWJsZSB0byBleHBvc2UgdGhlIGludGVyZmFjZQ0KdG8gc3VwcG9ydCBkaWZmZXJlbnQg
-Y29uZmlndXJhdGlvbiBvbiBkaWZmZXJlbnQgc3lzdGVtIGZvciBwdXJwb3NlIG9mIGRlYnVnZ2lu
-ZyBhbmQgDQpwZXJmb3JtYW5jZSB0dW5pbmcuDQoNCkRvIHlvdSB0aGluayBpdCBtYWtlIHNlbnNl
-IGZvciB5b3U/DQoNCkJlc3QgUmVnYXJkcywNCkxpIEZlaQ0KDQo+IA0KPiA+IEFuZCBpZiB0aGVy
-ZSBpcyBubyBuZXcgd2FrZXVwIGV2ZW50IHJlZ2lzdGVyZWQsIHRoZSBzeXN0ZW0gd2lsbA0KPiA+
-IHdhc3RlIGF0IG1vc3QgMjBzIGZvciBzdWNoIG1lYW5pbmdsZXNzIHRyeWluZyBvZiBmcmVlemlu
-Zy4NCj4gPg0KPiA+IFdpdGggdGhpcyBwYXRjaCwgdGhlIHZhbHVlIG9mIHRpbWVvdXQgY2FuIGJl
-IGNvbmZpZ3VyZWQgdG8gc21hbGxlcg0KPiA+IHZhbHVlLCBzbyBzdWNoIG1lYW5pbmdsZXNzIHRy
-eWluZyBvZiBmcmVlemluZyB3aWxsIGJlIGFib3J0ZWQgaW4NCj4gPiBlYXJsaWVyIHRpbWUsIGFu
-ZCBsYXRlciBmcmVlemluZyBjYW4gYmUgYWxzbyB0cmlnZ2VyZWQgaW4gZWFybGllcg0KPiA+IHRp
-bWUuIEFuZCBtb3JlIHBvd2VyIHdpbGwgYmUgc2F2ZWQuDQo+ID4gSW4gbm9ybWFsIGNhc2Ugb24g
-bW9iaWxlIHBob25lLCBpdCBjb3N0cyByZWFsIGxpdHRsZSB0aW1lIHRvIGZyZWV6ZQ0KPiA+IHBy
-b2Nlc3Nlcy4gT24gc29tZSBwbGF0Zm9ybSwgaXQgb25seSBjb3N0cyBhYm91dCAyMG1zIHRvIGZy
-ZWV6ZQ0KPiA+IHVzZXIgc3BhY2UgcHJvY2Vzc2VzIGFuZCAxMG1zIHRvIGZyZWV6ZSBrZXJuZWwg
-ZnJlZXphYmxlIHRocmVhZHMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaXUgQ2h1YW5zaGVu
-ZyA8Y2h1YW5zaGVuZy5saXVAaW50ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIEZlaSA8
-ZmVpLmxpQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVl
-emluZy1vZi10YXNrcy50eHQgfCAgICA1ICsrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvZnJlZXpl
-ci5oICAgICAgICAgICAgICAgICAgIHwgICAgNSArKysrKw0KPiA+ICBrZXJuZWwvcG93ZXIvbWFp
-bi5jICAgICAgICAgICAgICAgICAgICAgICB8ICAgMjcNCj4gKysrKysrKysrKysrKysrKysrKysr
-KysrKysrDQo+ID4gIGtlcm5lbC9wb3dlci9wcm9jZXNzLmMgICAgICAgICAgICAgICAgICAgIHwg
-ICAgNCArKy0tDQo+ID4gIDQgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKSwgMiBkZWxl
-dGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL3Bvd2VyL2ZyZWV6
-aW5nLW9mLXRhc2tzLnR4dA0KPiBiL0RvY3VtZW50YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFz
-a3MudHh0DQo+ID4gaW5kZXggNmVjMjkxZS4uODU4OTRkOCAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1
-bWVudGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tzLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50
-YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFza3MudHh0DQo+ID4gQEAgLTIyMywzICsyMjMsOCBA
-QCBzaW5jZSB0aGV5IGFzayB0aGUgZnJlZXplciB0byBza2lwIGZyZWV6aW5nIHRoaXMgdGFzaywN
-Cj4gc2luY2UgaXQgaXMgYW55d2F5DQo+ID4gIG9ubHkgYWZ0ZXIgdGhlIGVudGlyZSBzdXNwZW5k
-L2hpYmVybmF0aW9uIHNlcXVlbmNlIGlzIGNvbXBsZXRlLg0KPiA+ICBTbywgdG8gc3VtbWFyaXpl
-LCB1c2UgW3VuXWxvY2tfc3lzdGVtX3NsZWVwKCkgaW5zdGVhZCBvZiBkaXJlY3RseSB1c2luZw0K
-PiA+ICBtdXRleF9bdW5dbG9jaygmcG1fbXV0ZXgpLiBUaGF0IHdvdWxkIHByZXZlbnQgZnJlZXpp
-bmcgZmFpbHVyZXMuDQo+ID4gKw0KPiA+ICtWLiBNaXNjZWxsYW5lb3VzDQo+ID4gKy9zeXMvcG93
-ZXIvcG1fZnJlZXplX3RpbWVvdXQgY29udHJvbHMgaG93IGxvbmcgaXQgd2lsbCBjb3N0IGF0IG1v
-c3QgdG8NCj4gZnJlZXplDQo+ID4gK2FsbCB1c2VyIHNwYWNlIHByb2Nlc3NlcyBvciBhbGwgZnJl
-ZXphYmxlIGtlcm5lbCB0aHJlYWRzLCBpbiB1bml0IG9mIG1pbGxpc2Vjb25kLg0KPiA+ICtUaGUg
-ZGVmYXVsdCB2YWx1ZSBpcyAyMDAwMCwgd2l0aCByYW5nZSBvZiB1bnNpZ25lZCBpbnRlZ2VyLg0K
-PiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaCBiL2luY2x1ZGUvbGludXgv
-ZnJlZXplci5oDQo+ID4gaW5kZXggZTQyMzhjZS4uZTcwZGY0MCAxMDA2NDQNCj4gPiAtLS0gYS9p
-bmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvZnJlZXplci5o
-DQo+ID4gQEAgLTEzLDYgKzEzLDExIEBAIGV4dGVybiBib29sIHBtX2ZyZWV6aW5nOwkJLyogUE0g
-ZnJlZXppbmcgaW4gZWZmZWN0DQo+ICovDQo+ID4gIGV4dGVybiBib29sIHBtX25vc2lnX2ZyZWV6
-aW5nOwkJLyogUE0gbm9zaWcgZnJlZXppbmcgaW4gZWZmZWN0ICovDQo+ID4NCj4gPiAgLyoNCj4g
-PiArICogVGltZW91dCBmb3Igc3RvcHBpbmcgcHJvY2Vzc2VzDQo+ID4gKyAqLw0KPiA+ICtleHRl
-cm4gdW5zaWduZWQgaW50IGZyZWV6ZV90aW1lb3V0X21zZWNzOw0KPiA+ICsNCj4gPiArLyoNCj4g
-PiAgICogQ2hlY2sgaWYgYSBwcm9jZXNzIGhhcyBiZWVuIGZyb3plbg0KPiA+ICAgKi8NCj4gPiAg
-c3RhdGljIGlubGluZSBib29sIGZyb3plbihzdHJ1Y3QgdGFza19zdHJ1Y3QgKnApDQo+ID4gZGlm
-ZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9tYWluLmMgYi9rZXJuZWwvcG93ZXIvbWFpbi5jDQo+ID4g
-aW5kZXggMWMxNmY5MS4uM2UxYzlkYSAxMDA2NDQNCj4gPiAtLS0gYS9rZXJuZWwvcG93ZXIvbWFp
-bi5jDQo+ID4gKysrIGIva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+IEBAIC01NTMsNiArNTUzLDMw
-IEBAIHBvd2VyX2F0dHIocG1fdHJhY2VfZGV2X21hdGNoKTsNCj4gPg0KPiA+ICAjZW5kaWYgLyog
-Q09ORklHX1BNX1RSQUNFICovDQo+ID4NCj4gPiArI2lmZGVmIENPTkZJR19GUkVFWkVSDQo+ID4g
-K3N0YXRpYyBzc2l6ZV90IHBtX2ZyZWV6ZV90aW1lb3V0X3Nob3coc3RydWN0IGtvYmplY3QgKmtv
-YmosDQo+ID4gKwkJCQkgICAgICBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1
-ZikNCj4gPiArew0KPiA+ICsJcmV0dXJuIHNwcmludGYoYnVmLCAiJXVcbiIsIGZyZWV6ZV90aW1l
-b3V0X21zZWNzKTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHNzaXplX3QgcG1fZnJlZXpl
-X3RpbWVvdXRfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosDQo+ID4gKwkJCQkgICAgICAgc3Ry
-dWN0IGtvYmpfYXR0cmlidXRlICphdHRyLA0KPiA+ICsJCQkJICAgICAgIGNvbnN0IGNoYXIgKmJ1
-Ziwgc2l6ZV90IG4pDQo+ID4gK3sNCj4gPiArCXVuc2lnbmVkIGxvbmcgdmFsOw0KPiA+ICsNCj4g
-PiArCWlmIChrc3RydG91bChidWYsIDEwLCAmdmFsKSkNCj4gPiArCQlyZXR1cm4gLUVJTlZBTDsN
-Cj4gPiArDQo+ID4gKwlmcmVlemVfdGltZW91dF9tc2VjcyA9IHZhbDsNCj4gPiArCXJldHVybiBu
-Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtwb3dlcl9hdHRyKHBtX2ZyZWV6ZV90aW1lb3V0KTsNCj4g
-PiArDQo+ID4gKyNlbmRpZgkvKiBDT05GSUdfRlJFRVpFUiovDQo+ID4gKw0KPiA+ICBzdGF0aWMg
-c3RydWN0IGF0dHJpYnV0ZSAqIGdbXSA9IHsNCj4gPiAgCSZzdGF0ZV9hdHRyLmF0dHIsDQo+ID4g
-ICNpZmRlZiBDT05GSUdfUE1fVFJBQ0UNCj4gPiBAQCAtNTc2LDYgKzYwMCw5IEBAIHN0YXRpYyBz
-dHJ1Y3QgYXR0cmlidXRlICogZ1tdID0gew0KPiA+ICAJJnBtX3ByaW50X3RpbWVzX2F0dHIuYXR0
-ciwNCj4gPiAgI2VuZGlmDQo+ID4gICNlbmRpZg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZSRUVaRVIN
-Cj4gPiArCSZwbV9mcmVlemVfdGltZW91dF9hdHRyLmF0dHIsDQo+ID4gKyNlbmRpZg0KPiA+ICAJ
-TlVMTCwNCj4gPiAgfTsNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvcHJvY2Vz
-cy5jIGIva2VybmVsL3Bvd2VyL3Byb2Nlc3MuYw0KPiA+IGluZGV4IGQ1YTI1OGIuLjk4MDg4ZTAg
-MTAwNjQ0DQo+ID4gLS0tIGEva2VybmVsL3Bvd2VyL3Byb2Nlc3MuYw0KPiA+ICsrKyBiL2tlcm5l
-bC9wb3dlci9wcm9jZXNzLmMNCj4gPiBAQCAtMjEsNyArMjEsNyBAQA0KPiA+ICAvKg0KPiA+ICAg
-KiBUaW1lb3V0IGZvciBzdG9wcGluZyBwcm9jZXNzZXMNCj4gPiAgICovDQo+ID4gLSNkZWZpbmUg
-VElNRU9VVAkoMjAgKiBIWikNCj4gPiArdW5zaWduZWQgaW50IF9fcmVhZF9tb3N0bHkgZnJlZXpl
-X3RpbWVvdXRfbXNlY3MgPSAyMCAqIE1TRUNfUEVSX1NFQzsNCj4gPg0KPiA+ICBzdGF0aWMgaW50
-IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCB1c2VyX29ubHkpDQo+ID4gIHsNCj4gPiBAQCAtMzYs
-NyArMzYsNyBAQCBzdGF0aWMgaW50IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCB1c2VyX29ubHkp
-DQo+ID4NCj4gPiAgCWRvX2dldHRpbWVvZmRheSgmc3RhcnQpOw0KPiA+DQo+ID4gLQllbmRfdGlt
-ZSA9IGppZmZpZXMgKyBUSU1FT1VUOw0KPiA+ICsJZW5kX3RpbWUgPSBqaWZmaWVzICsgbXNlY3Nf
-dG9famlmZmllcyhmcmVlemVfdGltZW91dF9tc2Vjcyk7DQo+ID4NCj4gPiAgCWlmICghdXNlcl9v
-bmx5KQ0KPiA+ICAJCWZyZWV6ZV93b3JrcXVldWVzX2JlZ2luKCk7DQo+ID4NCj4gLS0NCj4gSSBz
-cGVhayBvbmx5IGZvciBteXNlbGYuDQo+IFJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNv
-dXJjZSBUZWNobm9sb2d5IENlbnRlci4NCg==
+On Sat, 2013-02-02 at 15:35 +0100, Andrew Lunn wrote:
+> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> 
+> Kirkwood 88F6282 and 88F6283 have a thermal sensor.
+> This patch adds a DT node and enables the driver in the kernel config.
+> 
+> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+
+I can take this one but I need ACK from ARM experts first.
+
+thanks,
+rui
+> ---
+>  arch/arm/boot/dts/kirkwood-6282.dtsi |    6 ++++++
+>  arch/arm/configs/kirkwood_defconfig  |    2 ++
+>  2 files changed, 8 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/kirkwood-6282.dtsi b/arch/arm/boot/dts/kirkwood-6282.dtsi
+> index 4ccea21..bd168b6 100644
+> --- a/arch/arm/boot/dts/kirkwood-6282.dtsi
+> +++ b/arch/arm/boot/dts/kirkwood-6282.dtsi
+> @@ -32,6 +32,12 @@
+>  			};
+>  		};
+>  
+> +		thermal@10078 {
+> +			compatible = "marvell,kirkwood-thermal";
+> +			reg = <0x10078 0x4>;
+> +			status = "okay";
+> +		};
+> +
+>  		i2c@11100 {
+>  			compatible = "marvell,mv64xxx-i2c";
+>  			reg = <0x11100 0x20>;
+> diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
+> index 93f3794..3d8667f 100644
+> --- a/arch/arm/configs/kirkwood_defconfig
+> +++ b/arch/arm/configs/kirkwood_defconfig
+> @@ -118,6 +118,8 @@ CONFIG_SPI=y
+>  CONFIG_SPI_ORION=y
+>  CONFIG_GPIO_SYSFS=y
+>  # CONFIG_HWMON is not set
+> +CONFIG_THERMAL=y
+> +CONFIG_KIRKWOOD_THERMAL=y
+>  CONFIG_WATCHDOG=y
+>  CONFIG_ORION_WATCHDOG=y
+>  CONFIG_HID_DRAGONRISE=y
+
+
