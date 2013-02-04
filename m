@@ -1,92 +1,71 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [PATCH 1/2] don't wait on disk to start on resume
-Date: Mon, 04 Feb 2013 16:04:57 +0800
-Message-ID: <510F6BA9.1050701@intel.com>
-References: <Pine.LNX.4.44L0.1302021003390.25931-100000@netrider.rowland.org> <510E025A.9000103@intel.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for
+ Exynos5250
+Date: Mon, 04 Feb 2013 08:19:13 +0000 (GMT)
+Message-ID: <17352980.268481359965953092.JavaMail.weblogic@epml13>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:31317 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825Ab3BDIEY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Feb 2013 03:04:24 -0500
-In-Reply-To: <510E025A.9000103@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?euc-kr?Q?=B1=E8=B1=B9=C1=F8?= <kgene.kim@samsung.com>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>, =?euc-kr?Q?=C3=D6=C1=BE=C8=AF?= <jhbird.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Derek Basehore <dbasehore@chromium.org>, James Bottomley <JBottomley@Parallels.com>, Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, SCSI development list <linux-scsi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On 02/03/2013 02:23 PM, Aaron Lu wrote:
-> No, the modification is actually for disk.
-> With v8 of block layer runtime PM, it is no longer the case runtime
-> suspend is the same as system suspend for hard disk that utilize block
-> layer runtime PM: we quiesce the device and run its suspend callback for
-> the device during system suspend but we didn't touch the queue's
-> rpm_status as we do in runtime_suspend callback. So I did some
-> modifications to scsi_pm.c to make runtime suspend and system suspend do
-> exactly the same thing for disk type scsi device, no matter if they are
-> using block layer runtime PM or not.
-> 
-> Probably I had better post code here, this is a replacement for the
-> patch 4 of v8 block layer runtime PM patchset(I omit the sd part, since
-> it is irrevelant), please kindly review, see if you like it :-)
-> 
-> diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
-> index 8f6b12c..d9956b6 100644
-> --- a/drivers/scsi/scsi_pm.c
-> +++ b/drivers/scsi/scsi_pm.c
-> @@ -16,17 +16,44 @@
->  
->  #include "scsi_priv.h"
->  
-> +static int sdev_blk_suspend(struct scsi_device *sdev)
-> +{
-> +	int err;
-> +
-> +	err = blk_pre_runtime_suspend(sdev->request_queue);
-> +	if (err)
-> +		return err;
-> +	err = pm_generic_runtime_suspend(&sdev->sdev_gendev);
-> +	blk_post_runtime_suspend(sdev->request_queue, err);
-> +
-> +	return err;
-> +}
-> +
->  static int scsi_dev_type_suspend(struct device *dev, int (*cb)(struct device *))
->  {
-> +	struct scsi_device *sdev = to_scsi_device(dev);
->  	int err;
->  
-> -	err = scsi_device_quiesce(to_scsi_device(dev));
-> +	err = scsi_device_quiesce(sdev);
->  	if (err == 0) {
-> -		if (cb) {
-> +		if (sdev->request_queue->dev)
-> +			err = sdev_blk_suspend(sdev);
-> +		else if (cb)
->  			err = cb(dev);
-> -			if (err)
-> -				scsi_device_resume(to_scsi_device(dev));
-> -		}
-> +
-> +		if (err)
-> +			scsi_device_resume(sdev);
->  	}
->  	dev_dbg(dev, "scsi suspend: %d\n", err);
->  	return err;
-
-I just realized that this will not work, as we can't request that there
-is no request pending in the device's request queue when doing system
-suspend. And if we can't request this, we will not be able to runtime
-resume the device due to nr_pending may not be zero when new request
-comes after system resumed, though this can be solved if we modify the
-runtime resume policy.
-
-During my test, I'm not doing any IO when suspend, so the nr_pending is
-zero and it worked...
-
-Please ignore my suggestion for this thread, sorry for the noise.
-
--Aaron
-
+PiBIaSwNCj4gDQo+ID4gU29ycnkgZm9yIGJlaW5nIGxhdGUuDQo+ID4NCj4gPiBPbmUgY29uY2Vy
+biBpcyB0aGF0IEkgY2Fubm90IGFwcGx5IFBhdGNoIDEvNCBkaXJlY3RseSBhcyB0aGUgLmR0cyBm
+aWxlIGlzbid0DQo+ID4gYXZhaWxhYmxlIHRvIG1lLg0KPiA+IERvIHlvdSBpbnRlbmQgdG8gYXBw
+bHkgdGhhdCBwYXRjaCB0byBhbm90aGVyIHRyZWUgYW5kIGFwcGx5IHRoZSBvdGhlciB0aHJlZQ0K
+PiA+IHRvIGRldmZyZXEgdHJlZT8NCj4gSSBoYXZlIGJlZW4gbWVyZ2luZyB0aGUgZGV2ZnJlcSB0
+cmVlIGludG8gS2dlbmUncyB0cmVlIGZvciBteSB0ZXN0aW5nLiBJIGFtIG5vdA0KPiBzdXJlIGhv
+dyB0aGlzIHNob3VsZCBnZXQgaW4sIGFueSBzdWdnZXN0aW9ucyA/DQoNCkknZCBzdWdnZXN0IHRv
+IHNlbmQgUGF0Y2ggMS80IHRvIEtnZW5lIGFuZCBnZXQgaXQgYXBwbGllZCBmaXJzdCBpZiB0aGF0
+IHBhdGNoIGlzIHByZWxpbWluYXJ5IHRvIHRoZSBvdGhlciBwYXRjaHNldC4gSWYgaXQgaXMgbm90
+LCB3ZSBjYW4gZ28gc2VwZXJhdGVkIGFuZCBpbmRlcGVuZGVudGx5Lg0KDQo+ID4NCj4gPiBBbm90
+aGVyIGlzIHRoZSBsb2NhdGlvbiBvZiBleHlub3NfcHBtdS5oLg0KPiA+IFdobyBpcyBnb2luZyB0
+byByZWZlciBleHlub3NfcHBtdS5oPw0KPiA+IElmIEV4eW5vcyBkZXZmcmVxIGRyaXZlcnMgYXJl
+IHRoZSBvbmx5IGZpbGVzIHRvIHJlZmVyLCB3b3VsZG4ndCBpdCBiZSBiZXR0ZXINCj4gPiBsb2Nh
+dGVkIGF0IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvID8NCj4gPg0KPiA+IE9yIGRvIHlvdSBpbnRl
+bmQgdG8gbGV0IHNvbWVvbmUgZWxzZSAoZHJpdmVycyBsb2NhdGVkIG5vdCBpbg0KPiA+IGRyaXZl
+cnMvZGV2ZnJlcSkgYWNjZXNzIGV4eW5vcy1wcG11Pw0KPiA+IChJZiBzbywgd2hvJ3MgZ29pbmcg
+dG8gYmU/IGFuZCB0aGF0IG1lYW5zIHdlIGFyZSBnb2luZyB0byBoYXZlDQo+ID4gaW5jbHVkZS9s
+aW51eC9kZXZmcmVxLywgSSBkb24ndCB0aGluayBpdCdkIGJlIGFwcHJvcHJpYXRlIHRvIHBvcHVs
+YXRlDQo+ID4gaW5jbHVkZS9saW51eCB3aXRoIGRldmljZSBkcml2ZXIgc3BlY2lmaWMgaGVhZGVy
+cykNCj4gSW4gYW4gZWFybGllciBjb21tZW50IG9uIHRoaXMgcGF0Y2ggT2xvZiBzdWdnZXN0ZWQg
+SSBwbGFjZSBpdCBpbg0KPiBpbmNsdWRlL2xpbnV4Ly4gSXQgaXMgZ29pbmcgdG8gYmUNCj4gdXNl
+ZCBvbmx5IGJ5IEV4eW5vcyBhbmQgSSB3aWxsIG1vdmUgaXQgaW50byBkcml2ZXJzL2RldmZyZXEv
+ZXh5bm9zIGFzDQo+IHBlciB5b3VyIHN1Z2dlc3Rpb24uDQoNCklmIGl0IGlzIHRvIGJlIHVzZWQg
+YnkgRXh5bm9zIG5vbi1kZXZmcmVxIGRyaXZlcnMgKGUuZy4sIEV4eW5vcyBBREMgZHJpdmVyIGlu
+IGRyaXZlcnMvaWlvLy4uLiksIGl0IHNob3VsZCBiZSBzdHRpbmcgb24gaW5jbHVkZS9saW51eC9k
+ZXZmcmVxLy4gSWYgaXQgaXMgdG8gYmUgdXNlZCBieSBFeHlub3MgZGV2ZnJlcSBkcml2ZXJzIG9u
+bHksIGl0J2QgYmUgYmV0dGVyIGxvY2F0ZWQgYXQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy8uIEl0
+IGFwcGVhcnMgdG8gYmUgc3RpbGwgY29tcGF0aWJsZSB3aXRoIE9sb2YncyBzdWdnZXN0aW9uOg0K
+DQoocXVvdGluZyBPbG9mKSAiTG9jYWwgZGVmaW5lcyB0aGF0IGFyZSB1c2VkIGluIGp1c3Qgb25l
+IEMgZmlsZSBjYW4gZWl0aGVyIGdvIGluIHRoYXQgZmlsZSwgb3IgaW4gYSBoZWFkZXIgZmlsZSB0
+aGF0IHNpdHMgbmV4dCB0byBpdCBpbnN0ZWFkIG9mIGluIHRoZSBzaGFyZWQgZGlyZWN0b3J5LiIN
+Cg0KDQoNCj4gPg0KPiA+DQo+ID4NCj4gPiBBbmQsIHRoZXJlIGFyZSBlcnJvcnMgKHdlIGRvIG5v
+dCBoYXZlIF9fZGV2aW5pdC9fX2RldmV4aXQgYW55bW9yZSk6DQo+ID4NCj4gPiAgIENDICAgICAg
+ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3M1X2J1cy5vDQo+ID4gZHJpdmVycy9kZXZmcmVx
+L2V4eW5vcy9leHlub3M1X2J1cy5jOjMxNToxODogZXJyb3I6IGV4cGVjdGVkID0sICwsIDssIGFz
+bSBvcg0KPiA+IF9fYXR0cmlidXRlX18gYmVmb3JlIGludA0KPiA+IGRyaXZlcnMvZGV2ZnJlcS9l
+eHlub3MvZXh5bm9zNV9idXMuYzo0MzA6MTg6IGVycm9yOiBleHBlY3RlZCA9LCAsLCA7LCBhc20g
+b3INCj4gPiBfX2F0dHJpYnV0ZV9fIGJlZm9yZSBpbnQNCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5
+bm9zL2V4eW5vczVfYnVzLmM6NDYyOjExOiBlcnJvcjoNCj4gPiBleHlub3M1X2J1c2ZyZXFfaW50
+X3Byb2JlIHVuZGVjbGFyZWQgaGVyZSAobm90IGluIGEgZnVuY3Rpb24pDQo+ID4gZHJpdmVycy9k
+ZXZmcmVxL2V4eW5vcy9leHlub3M1X2J1cy5jOjQ2MzoyOiBlcnJvcjogaW1wbGljaXQgZGVjbGFy
+YXRpb24gb2YNCj4gPiBmdW5jdGlvbiBfX2RldmV4aXRfcCBbLVdlcnJvcj1pbXBsaWNpdC1mdW5j
+dGlvbi1kZWNsYXJhdGlvbl0NCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVz
+LmM6NDYzOjI0OiBlcnJvcjoNCj4gPiBleHlub3M1X2J1c2ZyZXFfaW50X3JlbW92ZSB1bmRlY2xh
+cmVkIGhlcmUgKG5vdCBpbiBhIGZ1bmN0aW9uKQ0KPiA+IGRyaXZlcnMvZGV2ZnJlcS9leHlub3Mv
+ZXh5bm9zNV9idXMuYzoyMzU6MzU6IHdhcm5pbmc6DQo+ID4gZXh5bm9zNV9kZXZmcmVxX2ludF9w
+cm9maWxlIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3VudXNlZC12YXJpYWJsZV0NCj4gPiBkcml2
+ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmM6MjQzOjEyOiB3YXJuaW5nOg0KPiA+IGV4
+eW5vczUyNTBfaW5pdF9pbnRfdGFibGVzIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3VudXNlZC1m
+dW5jdGlvbl0NCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmM6MjU5OjEy
+OiB3YXJuaW5nOg0KPiA+IGV4eW5vczVfYnVzZnJlcV9pbnRfcG1fbm90aWZpZXJfZXZlbnQgZGVm
+aW5lZCBidXQgbm90IHVzZWQNCj4gPiBbLVd1bnVzZWQtZnVuY3Rpb25dDQo+ID4gY2MxOiBzb21l
+IHdhcm5pbmdzIGJlaW5nIHRyZWF0ZWQgYXMgZXJyb3JzDQo+IEkgd2lsbCBmaXggdGhlc2UgYW5k
+IHJlLXBvc3QuDQo+ID4NCj4gPg0KPiA+DQo+ID4gQ2hlZXJzLA0KPiA+IE15dW5nSm9vLg0KPiA+
+DQo+IEFiaGlsYXNoDQo+IA0K
