@@ -1,71 +1,63 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for
- Exynos5250
-Date: Mon, 04 Feb 2013 08:19:13 +0000 (GMT)
-Message-ID: <17352980.268481359965953092.JavaMail.weblogic@epml13>
-Reply-To: myungjoo.ham@samsung.com
+From: Abhilash Kesavan <kesavan.abhilash@gmail.com>
+Subject: Re: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver
+ for Exynos5250
+Date: Mon, 4 Feb 2013 14:01:13 +0530
+Message-ID: <CAM4voakFpXwG7ukO5p4=NKDQZc--rcLDPU8jGag_gB=4ZdvRAA@mail.gmail.com>
+References: <17352980.268481359965953092.JavaMail.weblogic@epml13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=euc-kr
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?euc-kr?Q?=B1=E8=B1=B9=C1=F8?= <kgene.kim@samsung.com>, =?euc-kr?Q?=B9=DA=B0=E6=B9=CE?= <kyungmin.park@samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>, =?euc-kr?Q?=C3=D6=C1=BE=C8=AF?= <jhbird.choi@samsung.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f182.google.com ([209.85.216.182]:51573 "EHLO
+	mail-qc0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753711Ab3BDIbO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 03:31:14 -0500
+In-Reply-To: <17352980.268481359965953092.JavaMail.weblogic@epml13>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?B?6rmA6rWt7KeE?= <kgene.kim@samsung.com>, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "rjw@sisk.pl" <rjw@sisk.pl>, =?UTF-8?B?7LWc7KKF7ZmY?= <jhbird.choi@samsung.com>
 
-PiBIaSwNCj4gDQo+ID4gU29ycnkgZm9yIGJlaW5nIGxhdGUuDQo+ID4NCj4gPiBPbmUgY29uY2Vy
-biBpcyB0aGF0IEkgY2Fubm90IGFwcGx5IFBhdGNoIDEvNCBkaXJlY3RseSBhcyB0aGUgLmR0cyBm
-aWxlIGlzbid0DQo+ID4gYXZhaWxhYmxlIHRvIG1lLg0KPiA+IERvIHlvdSBpbnRlbmQgdG8gYXBw
-bHkgdGhhdCBwYXRjaCB0byBhbm90aGVyIHRyZWUgYW5kIGFwcGx5IHRoZSBvdGhlciB0aHJlZQ0K
-PiA+IHRvIGRldmZyZXEgdHJlZT8NCj4gSSBoYXZlIGJlZW4gbWVyZ2luZyB0aGUgZGV2ZnJlcSB0
-cmVlIGludG8gS2dlbmUncyB0cmVlIGZvciBteSB0ZXN0aW5nLiBJIGFtIG5vdA0KPiBzdXJlIGhv
-dyB0aGlzIHNob3VsZCBnZXQgaW4sIGFueSBzdWdnZXN0aW9ucyA/DQoNCkknZCBzdWdnZXN0IHRv
-IHNlbmQgUGF0Y2ggMS80IHRvIEtnZW5lIGFuZCBnZXQgaXQgYXBwbGllZCBmaXJzdCBpZiB0aGF0
-IHBhdGNoIGlzIHByZWxpbWluYXJ5IHRvIHRoZSBvdGhlciBwYXRjaHNldC4gSWYgaXQgaXMgbm90
-LCB3ZSBjYW4gZ28gc2VwZXJhdGVkIGFuZCBpbmRlcGVuZGVudGx5Lg0KDQo+ID4NCj4gPiBBbm90
-aGVyIGlzIHRoZSBsb2NhdGlvbiBvZiBleHlub3NfcHBtdS5oLg0KPiA+IFdobyBpcyBnb2luZyB0
-byByZWZlciBleHlub3NfcHBtdS5oPw0KPiA+IElmIEV4eW5vcyBkZXZmcmVxIGRyaXZlcnMgYXJl
-IHRoZSBvbmx5IGZpbGVzIHRvIHJlZmVyLCB3b3VsZG4ndCBpdCBiZSBiZXR0ZXINCj4gPiBsb2Nh
-dGVkIGF0IGRyaXZlcnMvZGV2ZnJlcS9leHlub3MvID8NCj4gPg0KPiA+IE9yIGRvIHlvdSBpbnRl
-bmQgdG8gbGV0IHNvbWVvbmUgZWxzZSAoZHJpdmVycyBsb2NhdGVkIG5vdCBpbg0KPiA+IGRyaXZl
-cnMvZGV2ZnJlcSkgYWNjZXNzIGV4eW5vcy1wcG11Pw0KPiA+IChJZiBzbywgd2hvJ3MgZ29pbmcg
-dG8gYmU/IGFuZCB0aGF0IG1lYW5zIHdlIGFyZSBnb2luZyB0byBoYXZlDQo+ID4gaW5jbHVkZS9s
-aW51eC9kZXZmcmVxLywgSSBkb24ndCB0aGluayBpdCdkIGJlIGFwcHJvcHJpYXRlIHRvIHBvcHVs
-YXRlDQo+ID4gaW5jbHVkZS9saW51eCB3aXRoIGRldmljZSBkcml2ZXIgc3BlY2lmaWMgaGVhZGVy
-cykNCj4gSW4gYW4gZWFybGllciBjb21tZW50IG9uIHRoaXMgcGF0Y2ggT2xvZiBzdWdnZXN0ZWQg
-SSBwbGFjZSBpdCBpbg0KPiBpbmNsdWRlL2xpbnV4Ly4gSXQgaXMgZ29pbmcgdG8gYmUNCj4gdXNl
-ZCBvbmx5IGJ5IEV4eW5vcyBhbmQgSSB3aWxsIG1vdmUgaXQgaW50byBkcml2ZXJzL2RldmZyZXEv
-ZXh5bm9zIGFzDQo+IHBlciB5b3VyIHN1Z2dlc3Rpb24uDQoNCklmIGl0IGlzIHRvIGJlIHVzZWQg
-YnkgRXh5bm9zIG5vbi1kZXZmcmVxIGRyaXZlcnMgKGUuZy4sIEV4eW5vcyBBREMgZHJpdmVyIGlu
-IGRyaXZlcnMvaWlvLy4uLiksIGl0IHNob3VsZCBiZSBzdHRpbmcgb24gaW5jbHVkZS9saW51eC9k
-ZXZmcmVxLy4gSWYgaXQgaXMgdG8gYmUgdXNlZCBieSBFeHlub3MgZGV2ZnJlcSBkcml2ZXJzIG9u
-bHksIGl0J2QgYmUgYmV0dGVyIGxvY2F0ZWQgYXQgZHJpdmVycy9kZXZmcmVxL2V4eW5vcy8uIEl0
-IGFwcGVhcnMgdG8gYmUgc3RpbGwgY29tcGF0aWJsZSB3aXRoIE9sb2YncyBzdWdnZXN0aW9uOg0K
-DQoocXVvdGluZyBPbG9mKSAiTG9jYWwgZGVmaW5lcyB0aGF0IGFyZSB1c2VkIGluIGp1c3Qgb25l
-IEMgZmlsZSBjYW4gZWl0aGVyIGdvIGluIHRoYXQgZmlsZSwgb3IgaW4gYSBoZWFkZXIgZmlsZSB0
-aGF0IHNpdHMgbmV4dCB0byBpdCBpbnN0ZWFkIG9mIGluIHRoZSBzaGFyZWQgZGlyZWN0b3J5LiIN
-Cg0KDQoNCj4gPg0KPiA+DQo+ID4NCj4gPiBBbmQsIHRoZXJlIGFyZSBlcnJvcnMgKHdlIGRvIG5v
-dCBoYXZlIF9fZGV2aW5pdC9fX2RldmV4aXQgYW55bW9yZSk6DQo+ID4NCj4gPiAgIENDICAgICAg
-ZHJpdmVycy9kZXZmcmVxL2V4eW5vcy9leHlub3M1X2J1cy5vDQo+ID4gZHJpdmVycy9kZXZmcmVx
-L2V4eW5vcy9leHlub3M1X2J1cy5jOjMxNToxODogZXJyb3I6IGV4cGVjdGVkID0sICwsIDssIGFz
-bSBvcg0KPiA+IF9fYXR0cmlidXRlX18gYmVmb3JlIGludA0KPiA+IGRyaXZlcnMvZGV2ZnJlcS9l
-eHlub3MvZXh5bm9zNV9idXMuYzo0MzA6MTg6IGVycm9yOiBleHBlY3RlZCA9LCAsLCA7LCBhc20g
-b3INCj4gPiBfX2F0dHJpYnV0ZV9fIGJlZm9yZSBpbnQNCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5
-bm9zL2V4eW5vczVfYnVzLmM6NDYyOjExOiBlcnJvcjoNCj4gPiBleHlub3M1X2J1c2ZyZXFfaW50
-X3Byb2JlIHVuZGVjbGFyZWQgaGVyZSAobm90IGluIGEgZnVuY3Rpb24pDQo+ID4gZHJpdmVycy9k
-ZXZmcmVxL2V4eW5vcy9leHlub3M1X2J1cy5jOjQ2MzoyOiBlcnJvcjogaW1wbGljaXQgZGVjbGFy
-YXRpb24gb2YNCj4gPiBmdW5jdGlvbiBfX2RldmV4aXRfcCBbLVdlcnJvcj1pbXBsaWNpdC1mdW5j
-dGlvbi1kZWNsYXJhdGlvbl0NCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVz
-LmM6NDYzOjI0OiBlcnJvcjoNCj4gPiBleHlub3M1X2J1c2ZyZXFfaW50X3JlbW92ZSB1bmRlY2xh
-cmVkIGhlcmUgKG5vdCBpbiBhIGZ1bmN0aW9uKQ0KPiA+IGRyaXZlcnMvZGV2ZnJlcS9leHlub3Mv
-ZXh5bm9zNV9idXMuYzoyMzU6MzU6IHdhcm5pbmc6DQo+ID4gZXh5bm9zNV9kZXZmcmVxX2ludF9w
-cm9maWxlIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3VudXNlZC12YXJpYWJsZV0NCj4gPiBkcml2
-ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmM6MjQzOjEyOiB3YXJuaW5nOg0KPiA+IGV4
-eW5vczUyNTBfaW5pdF9pbnRfdGFibGVzIGRlZmluZWQgYnV0IG5vdCB1c2VkIFstV3VudXNlZC1m
-dW5jdGlvbl0NCj4gPiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vczVfYnVzLmM6MjU5OjEy
-OiB3YXJuaW5nOg0KPiA+IGV4eW5vczVfYnVzZnJlcV9pbnRfcG1fbm90aWZpZXJfZXZlbnQgZGVm
-aW5lZCBidXQgbm90IHVzZWQNCj4gPiBbLVd1bnVzZWQtZnVuY3Rpb25dDQo+ID4gY2MxOiBzb21l
-IHdhcm5pbmdzIGJlaW5nIHRyZWF0ZWQgYXMgZXJyb3JzDQo+IEkgd2lsbCBmaXggdGhlc2UgYW5k
-IHJlLXBvc3QuDQo+ID4NCj4gPg0KPiA+DQo+ID4gQ2hlZXJzLA0KPiA+IE15dW5nSm9vLg0KPiA+
-DQo+IEFiaGlsYXNoDQo+IA0K
+Hi,
+
+On Mon, Feb 4, 2013 at 1:49 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> Hi,
+>>
+>> > Sorry for being late.
+>> >
+>> > One concern is that I cannot apply Patch 1/4 directly as the .dts file isn't
+>> > available to me.
+>> > Do you intend to apply that patch to another tree and apply the other three
+>> > to devfreq tree?
+>> I have been merging the devfreq tree into Kgene's tree for my testing. I am not
+>> sure how this should get in, any suggestions ?
+>
+> I'd suggest to send Patch 1/4 to Kgene and get it applied first if that patch is preliminary to the other patchset. If it is not, we can go seperated and independently.
+Thanks for the suggestion. Kgene is a recipient on patches 1 and 2. I
+am hoping he'll pick it up soon. However, the devfreq patches are not
+dependent on them and can be applied independently.
+>
+>> >
+>> > Another is the location of exynos_ppmu.h.
+>> > Who is going to refer exynos_ppmu.h?
+>> > If Exynos devfreq drivers are the only files to refer, wouldn't it be better
+>> > located at drivers/devfreq/exynos/ ?
+>> >
+>> > Or do you intend to let someone else (drivers located not in
+>> > drivers/devfreq) access exynos-ppmu?
+>> > (If so, who's going to be? and that means we are going to have
+>> > include/linux/devfreq/, I don't think it'd be appropriate to populate
+>> > include/linux with device driver specific headers)
+>> In an earlier comment on this patch Olof suggested I place it in
+>> include/linux/. It is going to be
+>> used only by Exynos and I will move it into drivers/devfreq/exynos as
+>> per your suggestion.
+>
+> If it is to be used by Exynos non-devfreq drivers (e.g., Exynos ADC driver in drivers/iio/...), it should be stting on include/linux/devfreq/. If it is to be used by Exynos devfreq drivers only, it'd be better located at drivers/devfreq/exynos/. It appears to be still compatible with Olof's suggestion:
+>
+> (quoting Olof) "Local defines that are used in just one C file can either go in that file, or in a header file that sits next to it instead of in the shared directory."
+Understood, updated patch 4/4 in a bit.
+>
+>
+
+ Abhilash
