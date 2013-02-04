@@ -1,305 +1,413 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v4 3/4] Thermal: Dove: Add Themal sensor support for Dove.
-Date: Mon,  4 Feb 2013 20:19:19 +0100
-Message-ID: <1360005560-21945-4-git-send-email-andrew@lunn.ch>
-References: <1359946148.2250.47.camel@rzhang1-mobl4>
- <1360005560-21945-1-git-send-email-andrew@lunn.ch>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH] Thermal: fix iteration over CPU frequency list
+Date: Mon, 4 Feb 2013 11:49:11 -0800
+Message-ID: <CADGdYn4iw3X-+LrYgqYQgVpXiCUnBAK7x8VM2M9G5bLULV+3nQ@mail.gmail.com>
+References: <1359041045-24341-1-git-send-email-gu1@aeroxteam.fr>
+	<1359705569.2241.107.camel@rzhang1-mobl4>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:51679 "EHLO londo.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754967Ab3BDTT4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Feb 2013 14:19:56 -0500
-In-Reply-To: <1360005560-21945-1-git-send-email-andrew@lunn.ch>
+Received: from mail-ie0-f170.google.com ([209.85.223.170]:35529 "EHLO
+	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180Ab3BDTtM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 14:49:12 -0500
+In-Reply-To: <1359705569.2241.107.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jason@lakedaemon.net, rui.zhang@intel.com
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Gu1 <gu1@aeroxteam.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The Marvell Dove SoC has a thermal sensor. Add a driver using the
-thermal framework.
+On Thu, Jan 31, 2013 at 11:59 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Thu, 2013-01-24 at 16:24 +0100, Gu1 wrote:
+>> In different places in the Thermal code, the CPU frequency list is iterated
+>> in an incorrect way, leading to endless loops when the frequency list contains
+>> a CPUFREQ_TABLE_INVALID entry, which is the case by default in the the Exynos
+>> 4x12 cpufreq driver, for example.
+>>
+>> The frequency list is iterated with a while loop, and when a
+>> CPUFREQ_TABLE_INVALID entry is encountered, the continue; statement is used to
+>> skip it, but the index is not incremented, causing an endless loop.
+>>
+>> A similar bug was fixed by hongbo.zhang in commit:
+>>   Thermal: fix bug of counting cpu frequencies
+>>
+>> Signed-off-by: Gu1 <gu1@aeroxteam.fr>
+>> ---
+>>  drivers/thermal/cpu_cooling.c    | 8 +++-----
+>>  drivers/thermal/exynos_thermal.c | 9 +++++----
+>>  2 files changed, 8 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+>> index 836828e..51acd26 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -123,7 +123,7 @@ static int is_cpufreq_valid(int cpu)
+>>   */
+>>  static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>>  {
+>> -     int ret = 0, i = 0;
+>> +     int ret = 0, i;
+>>       unsigned long level_index;
+>>       bool descend = false;
+>>       struct cpufreq_frequency_table *table =
+>> @@ -131,7 +131,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>>       if (!table)
+>>               return ret;
+>>
+>> -     while (table[i].frequency != CPUFREQ_TABLE_END) {
+>> +     for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                       continue;
+>>
+>> @@ -145,7 +145,6 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>>               /*return if level matched and table in descending order*/
+>>               if (descend && i == level)
+>>                       return table[i].frequency;
+>> -             i++;
+>>       }
+>>       i--;
+>>
+>> @@ -154,13 +153,12 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>>       level_index = i - level;
+>>
+>>       /*Scan the table in reverse order and match the level*/
+>> -     while (i >= 0) {
+>> +     for (; i >= 0; i--) {
+>>               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                       continue;
+>>               /*return if level matched*/
+>>               if (i == level_index)
+>>                       return table[i].frequency;
+>> -             i--;
+>>       }
+>>       return ret;
+>>  }
+>
+> so the "level" parameter is the index in the frequency table, right?
+>
+>> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+>> index 224751e..fa9e1d7 100644
+>> --- a/drivers/thermal/exynos_thermal.c
+>> +++ b/drivers/thermal/exynos_thermal.c
+>> @@ -233,7 +233,8 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+>>
+>>  static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+>>  {
+>> -     int i = 0, ret = -EINVAL;
+>> +     int i, ret = -EINVAL;
+>> +     unsigned int count = 0;
+>>       struct cpufreq_frequency_table *table = NULL;
+>>  #ifdef CONFIG_CPU_FREQ
+>>       table = cpufreq_frequency_get_table(cpu);
+>> @@ -241,12 +242,12 @@ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+>>       if (!table)
+>>               return ret;
+>>
+>> -     while (table[i].frequency != CPUFREQ_TABLE_END) {
+>> +     for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                       continue;
+>>               if (table[i].frequency == freq)
+>> -                     return i;
+>> -             i++;
+>> +                     return count;
+>> +             count++;
+>>       }
+>>       return ret;
+>>  }
+>
+> but we ignore the invalid entry here.
+>
+> take the following cpufreq table for example, with your patch,
+> entry  frequency
+>  0     2.4G
+>  1     invalid
+>  2     2G
+>  3     invalid
+>  4     1.6G
+>  5     end
+>
+> in exynos_get_frequency_level(), freq 1.6G is translated to level 2,
+> because count is increased only twice, for entry 0 and entry 2, right?
 
-Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
----
- .../devicetree/bindings/thermal/dove-thermal.txt   |   18 ++
- drivers/thermal/Kconfig                            |    8 +
- drivers/thermal/Makefile                           |    1 +
- drivers/thermal/dove_thermal.c                     |  211 ++++++++++++++++++++
- 4 files changed, 238 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/dove-thermal.txt
- create mode 100644 drivers/thermal/dove_thermal.c
+Hi Rui,
 
-diff --git a/Documentation/devicetree/bindings/thermal/dove-thermal.txt b/Documentation/devicetree/bindings/thermal/dove-thermal.txt
-new file mode 100644
-index 0000000..6f47467
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/dove-thermal.txt
-@@ -0,0 +1,18 @@
-+* Dove Thermal
-+
-+This driver is for Dove SoCs which contain a thermal sensor.
-+
-+Required properties:
-+- compatible : "marvell,dove-thermal"
-+- reg : Address range of the thermal registers
-+
-+The reg properties should contain two ranges. The first is for the
-+three Thermal Manager registers, while the second range contains the
-+Thermal Diode Control Registers.
-+
-+Example:
-+
-+	thermal@10078 {
-+		compatible = "marvell,dove-thermal";
-+		reg = <0xd001c 0x0c>, <0xd005c 0x08>;
-+	};
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index ff34a0a..342fd81 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -109,6 +109,14 @@ config EXYNOS_THERMAL
- 	  If you say yes here you get support for TMU (Thermal Management
- 	  Unit) on SAMSUNG EXYNOS series of SoC.
- 
-+config DOVE_THERMAL
-+	tristate "Temperature sensor on Marvell Dove SoCs"
-+	depends on ARCH_DOVE
-+	depends on OF
-+	help
-+	  Support for the Dove thermal sensor driver in the Linux thermal
-+	  framework.
-+
- config DB8500_THERMAL
- 	bool "DB8500 thermal management"
- 	depends on ARCH_U8500
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 99026b2..5ed357e 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -17,5 +17,6 @@ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
- obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
- obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
- obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
-+obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-new file mode 100644
-index 0000000..3a92b55
---- /dev/null
-+++ b/drivers/thermal/dove_thermal.c
-@@ -0,0 +1,211 @@
-+/*
-+ * Dove thermal sensor driver
-+ *
-+ * Copyright (C) 2013 Andrew Lunn <andrew@lunn.ch>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+
-+#define DOVE_THERMAL_TEMP_OFFSET	1
-+#define DOVE_THERMAL_TEMP_MASK		0x1FF
-+
-+/* Dove Thermal Manager Control and Status Register */
-+#define PMU_TM_DISABLE_OFFS		0
-+#define PMU_TM_DISABLE_MASK		(0x1 << PMU_TM_DISABLE_OFFS)
-+
-+/* Dove Theraml Diode Control 0 Register */
-+#define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
-+#define PMU_TDC0_SEL_VCAL_OFFS		5
-+#define PMU_TDC0_SEL_VCAL_MASK		(0x3 << PMU_TDC0_SEL_VCAL_OFFS)
-+#define PMU_TDC0_REF_CAL_CNT_OFFS	11
-+#define PMU_TDC0_REF_CAL_CNT_MASK	(0x1FF << PMU_TDC0_REF_CAL_CNT_OFFS)
-+#define PMU_TDC0_AVG_NUM_OFFS		25
-+#define PMU_TDC0_AVG_NUM_MASK		(0x7 << PMU_TDC0_AVG_NUM_OFFS)
-+
-+/* Dove Thermal Diode Control 1 Register */
-+#define PMU_TEMP_DIOD_CTRL1_REG		0x04
-+#define PMU_TDC1_TEMP_VALID_MASK	(0x1 << 10)
-+
-+/* Dove Thermal Sensor Dev Structure */
-+struct dove_thermal_priv {
-+	void __iomem *sensor;
-+	void __iomem *control;
-+};
-+
-+static int dove_init_sensor(const struct dove_thermal_priv *priv)
-+{
-+	u32 reg;
-+	u32 i;
-+
-+	/* Configure the Diode Control Register #0 */
-+	reg = readl_relaxed(priv->control);
-+
-+	/* Use average of 2 */
-+	reg &= ~PMU_TDC0_AVG_NUM_MASK;
-+	reg |= (0x1 << PMU_TDC0_AVG_NUM_OFFS);
-+
-+	/* Reference calibration value */
-+	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
-+	reg |= (0x0F1 << PMU_TDC0_REF_CAL_CNT_OFFS);
-+
-+	/* Set the high level reference for calibration */
-+	reg &= ~PMU_TDC0_SEL_VCAL_MASK;
-+	reg |= (0x2 << PMU_TDC0_SEL_VCAL_OFFS);
-+	writel(reg, priv->control);
-+
-+	/* Reset the sensor */
-+	reg = readl_relaxed(priv->control);
-+	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
-+	writel(reg, priv->control);
-+
-+	/* Enable the sensor */
-+	reg = readl_relaxed(priv->sensor);
-+	reg &= ~PMU_TM_DISABLE_MASK;
-+	writel(reg, priv->sensor);
-+
-+	/* Poll the sensor for the first reading */
-+	for (i = 0; i < 1000000; i++) {
-+		reg = readl_relaxed(priv->sensor);
-+		if (reg & DOVE_THERMAL_TEMP_MASK)
-+			break;
-+	}
-+
-+	if (i == 1000000)
-+		return -EIO;
-+
-+	return 0;
-+}
-+
-+static int dove_get_temp(struct thermal_zone_device *thermal,
-+			  unsigned long *temp)
-+{
-+	unsigned long reg;
-+	struct dove_thermal_priv *priv = thermal->devdata;
-+
-+	/* Valid check */
-+	reg = readl_relaxed(priv->control + PMU_TEMP_DIOD_CTRL1_REG);
-+	if ((reg & PMU_TDC1_TEMP_VALID_MASK) == 0x0) {
-+		dev_err(&thermal->device,
-+			"Temperature sensor reading not valid\n");
-+		return -EIO;
-+	}
-+
-+	/*
-+	 * Calculate temperature. See Section 8.10.1 of 88AP510,
-+	 * Documentation/arm/Marvell/README
-+	 */
-+	reg = readl_relaxed(priv->sensor);
-+	reg = (reg >> DOVE_THERMAL_TEMP_OFFSET) & DOVE_THERMAL_TEMP_MASK;
-+	*temp = ((2281638UL - (7298*reg)) / 10);
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_device_ops ops = {
-+	.get_temp = dove_get_temp,
-+};
-+
-+static const struct of_device_id dove_thermal_id_table[] = {
-+	{ .compatible = "marvell,dove-thermal" },
-+	{}
-+};
-+
-+static int dove_thermal_probe(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *thermal = NULL;
-+	struct dove_thermal_priv *priv;
-+	struct resource *res;
-+	int ret;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(&pdev->dev, "Failed to get platform resource\n");
-+		return -ENODEV;
-+	}
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		dev_err(&pdev->dev, "kzalloc fail\n");
-+		return -ENOMEM;
-+	}
-+
-+	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-+	if (!priv->sensor) {
-+		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (!res) {
-+		dev_err(&pdev->dev, "Failed to get platform resource\n");
-+		return -ENODEV;
-+	}
-+	priv->control = devm_request_and_ioremap(&pdev->dev, res);
-+	if (!priv->control) {
-+		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	ret = dove_init_sensor(priv);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Failed to initialize sensor\n");
-+		return ret;
-+	}
-+
-+	thermal = thermal_zone_device_register("dove_thermal", 0, 0,
-+					       priv, &ops, NULL, 0, 0);
-+	if (IS_ERR(thermal)) {
-+		dev_err(&pdev->dev,
-+			"Failed to register thermal zone device\n");
-+		return PTR_ERR(thermal);
-+	}
-+
-+	platform_set_drvdata(pdev, thermal);
-+
-+	return 0;
-+}
-+
-+static int dove_thermal_exit(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *dove_thermal =
-+		platform_get_drvdata(pdev);
-+
-+	thermal_zone_device_unregister(dove_thermal);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+MODULE_DEVICE_TABLE(of, dove_thermal_id_table);
-+
-+static struct platform_driver dove_thermal_driver = {
-+	.probe = dove_thermal_probe,
-+	.remove = dove_thermal_exit,
-+	.driver = {
-+		.name = "dove_thermal",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_match_ptr(dove_thermal_id_table),
-+	},
-+};
-+
-+module_platform_driver(dove_thermal_driver);
-+
-+MODULE_AUTHOR("Andrew Lunn <andrew@lunn.ch>");
-+MODULE_DESCRIPTION("Dove thermal driver");
-+MODULE_LICENSE("GPL");
--- 
-1.7.10.4
+Gui fixes looks fine for infinite loop issue. After Gui's fixes 1.6G
+in translated to level 4 which is fine.
 
+Thanks,
+Amit Daniel
+
+>
+> but then, in get_cpu_frequency(), level 2 is translated to 2G HZ, which
+> I do not think is what we want.
+>
+> I think we are doing something wrong here, and here is a cleanup patch I made
+> to fix this issue, please review.
+>
+> From a868d68fdcd94a29ac9d3998283119a453decb4b Mon Sep 17 00:00:00 2001
+> From: Zhang Rui <rui.zhang@intel.com>
+> Date: Fri, 1 Feb 2013 15:41:47 +0800
+> Subject: [PATCH] Thermal cpu_cooling: fix inconsistent use of CPU frequency
+>  table
+>
+> there are three kinds of entries in CPU frequency table.
+> 1. invalid entry, its frequency is CPUFREQ_ENTRY_INVALID.
+> 2. duplicate entry, two entry may share the same frequency,
+>    And we should treat it as on valid entry.
+> 3. valid entry with a proper frequency.
+>
+> And when talking about cpufreq cooling device cooling state,
+> it should be the same thing, in both cpu_cooling.c and its users,
+> AKA, max_cooling_state of a cpufreq cooling device equals the
+> number of VALID entries (type #3 above) in CPU frequency table.
+> And when setting a cpufreq cooling device to state X, it means set
+> the cpufreq cooling device to Xth maximum frequency in the
+> cpufreq frequency table.
+>
+> This patch does a cleanup in both drivers/thermal/cpu_cooling.c
+> and drivers/thermal/exynos_thermal.c to make them be consistent
+> in using cpu level/cpufreq cooling state.
+>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/cpu_cooling.c    |  122 ++++++++++++++++++++++++--------------
+>  drivers/thermal/exynos_thermal.c |   17 +-----
+>  include/linux/cpu_cooling.h      |   12 ++++
+>  3 files changed, 91 insertions(+), 60 deletions(-)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 836828e..c16795b 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -116,6 +116,40 @@ static int is_cpufreq_valid(int cpu)
+>  }
+>
+>  /**
+> + * cpufreq_cooling_get_max_level - function to get max valid cpufreq levels
+> + * @cpu: cpu for which frequency is fetched.
+> + */
+> +int cpufreq_cooling_get_max_level(unsigned int cpu)
+> +{
+> +       int i, level;
+> +       unsigned int freq = CPUFREQ_ENTRY_INVALID;
+> +       struct cpufreq_frequency_table *table =
+> +                                       cpufreq_frequency_get_table(cpu);
+> +
+> +       if (!table)
+> +               return -EINVAL;
+> +
+> +       for (i = 0, level = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +               /* Invalid entry */
+> +               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+> +                       continue;
+> +
+> +               /* Duplicate entry */
+> +               if (freq == table[i].frequency)
+> +                       continue;
+> +
+> +               /* First valid entry */
+> +               if (freq == CPUFREQ_ENTRY_INVALID)
+> +                       freq = table[i].frequency;
+> +
+> +               level++;
+> +       }
+> +
+> +       return level;
+> +}
+> +EXPORT_SYMBOL(cpufreq_cooling_get_max_level);
+> +
+> +/**
+>   * get_cpu_frequency - get the absolute value of frequency from level.
+>   * @cpu: cpu for which frequency is fetched.
+>   * @level: level of frequency of the CPU
+> @@ -123,46 +157,58 @@ static int is_cpufreq_valid(int cpu)
+>   */
+>  static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>  {
+> -       int ret = 0, i = 0;
+> -       unsigned long level_index;
+> +       int i, count;
+> +       int max_level;
+> +       unsigned int freq = CPUFREQ_ENTRY_INVALID;
+>         bool descend = false;
+>         struct cpufreq_frequency_table *table =
+>                                         cpufreq_frequency_get_table(cpu);
+> -       if (!table)
+> -               return ret;
+>
+> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
+> +       max_level = cpufreq_cooling_get_max_level(cpu);
+> +
+> +       if (max_level < 0)
+> +               return max_level;
+> +
+> +       if (level > max_level)
+> +               return -EINVAL;
+> +
+> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>                         continue;
+>
+> -               /*check if table in ascending or descending order*/
+> -               if ((table[i + 1].frequency != CPUFREQ_TABLE_END) &&
+> -                       (table[i + 1].frequency < table[i].frequency)
+> -                       && !descend) {
+> -                       descend = true;
+> +               if (freq == CPUFREQ_ENTRY_INVALID)
+> +                       /* first valid entry */
+> +                       freq = table[i].frequency;
+> +               else if (freq == table[i].frequency)
+> +                       /* duplicate entry */
+> +                       continue;
+> +               else {
+> +                       /* two valid entries, check frequency order */
+> +                       descend = !!(freq > table[i].frequency);
+> +                       break;
+>                 }
+> -
+> -               /*return if level matched and table in descending order*/
+> -               if (descend && i == level)
+> -                       return table[i].frequency;
+> -               i++;
+>         }
+> -       i--;
+>
+> -       if (level > i || descend)
+> -               return ret;
+> -       level_index = i - level;
+> +       /* level equals "the index of valid entries" in cpufreq table */
+> +       level = descend ? level : max_level - level + 1;
+>
+> -       /*Scan the table in reverse order and match the level*/
+> -       while (i >= 0) {
+> +       freq = CPUFREQ_ENTRY_INVALID;
+> +       for (i = 0, count = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +               /* ignore invalid entry */
+>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>                         continue;
+> -               /*return if level matched*/
+> -               if (i == level_index)
+> +
+> +               if (freq == CPUFREQ_ENTRY_INVALID)
+> +                       /* first valid entry */
+> +                       freq = table[i].frequency;
+> +               else if (freq == table[i].frequency)
+> +                       /* ignore duplicate entry */
+> +                       continue;
+> +               count++;
+> +               if (level == count)
+>                         return table[i].frequency;
+> -               i--;
+>         }
+> -       return ret;
+> +       return -ENODEV;
+>  }
+>
+>  /**
+> @@ -244,29 +290,17 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>         struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>         struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
+>         unsigned int cpu;
+> -       struct cpufreq_frequency_table *table;
+> -       unsigned long count = 0;
+> -       int i = 0;
+> +       int max_level;
+>
+>         cpu = cpumask_any(maskPtr);
+> -       table = cpufreq_frequency_get_table(cpu);
+> -       if (!table) {
+> -               *state = 0;
+> -               return 0;
+> -       }
+> -
+> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
+> -               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+> -                       continue;
+> -               count++;
+> -       }
+>
+> -       if (count > 0) {
+> -               *state = --count;
+> -               return 0;
+> -       }
+> +       max_level = cpufreq_cooling_get_max_level(cpu);
+>
+> -       return -EINVAL;
+> +       if (max_level < 0)
+> +               return max_level;
+> +       else
+> +               *state = max_level;
+> +       return 0;
+>  }
+>
+>  /**
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index cd71e24..5ac2de1 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -241,22 +241,7 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+>
+>  static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+>  {
+> -       int i = 0, ret = -EINVAL;
+> -       struct cpufreq_frequency_table *table = NULL;
+> -#ifdef CONFIG_CPU_FREQ
+> -       table = cpufreq_frequency_get_table(cpu);
+> -#endif
+> -       if (!table)
+> -               return ret;
+> -
+> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
+> -               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+> -                       continue;
+> -               if (table[i].frequency == freq)
+> -                       return i;
+> -               i++;
+> -       }
+> -       return ret;
+> +       return cpufreq_cooling_get_max_level(cpu);
+This is not correct as it always gives the highest level.
+>  }
+>
+>  /* Bind callback functions for thermal zone */
+> diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+> index 40b4ef5..2de9319 100644
+> --- a/include/linux/cpu_cooling.h
+> +++ b/include/linux/cpu_cooling.h
+> @@ -42,6 +42,14 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+>   * @cdev: thermal cooling device pointer.
+>   */
+>  void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
+> +
+> +/**
+> + * cpufreq_cooling_get_max_level - function to get maxinum cooling state
+> + *                                of a cpufreq cooling device
+> + * @cpu: cpu of which frequency is fetched.
+> + */
+> +int cpufreq_cooling_get_max_level(unsigned int cpu);
+> +
+>  #else /* !CONFIG_CPU_THERMAL */
+>  static inline struct thermal_cooling_device *cpufreq_cooling_register(
+>         const struct cpumask *clip_cpus)
+> @@ -53,6 +61,10 @@ static inline void cpufreq_cooling_unregister(
+>  {
+>         return;
+>  }
+> +static inline int cpufreq_cooling_get_max_level(unsigned int cpu)
+> +{
+> +       return -ENODEV;
+> +}
+>  #endif /* CONFIG_CPU_THERMAL */
+>
+>  #endif /* __CPU_COOLING_H__ */
+> --
+> 1.7.9.5
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
