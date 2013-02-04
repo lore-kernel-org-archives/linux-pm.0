@@ -1,261 +1,237 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V3 1/2] thermal: sysfs: Add a new sysfs node emul_temp
- for thermal emulation
-Date: Mon, 04 Feb 2013 10:20:02 +0800
-Message-ID: <1359944402.2250.44.camel@rzhang1-mobl4>
-References: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
-	 <1359937815-29851-1-git-send-email-amit.daniel@samsung.com>
+Subject: Re: [PATCH v3 1/4] thermal: Add support for the thermal sensor on
+ Kirkwood SoCs
+Date: Mon, 04 Feb 2013 10:49:08 +0800
+Message-ID: <1359946148.2250.47.camel@rzhang1-mobl4>
+References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
+	 <1359815749-27705-2-git-send-email-andrew@lunn.ch>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1359937815-29851-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, kgene.kim@samsung.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:3974 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521Ab3BDCtN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 3 Feb 2013 21:49:13 -0500
+In-Reply-To: <1359815749-27705-2-git-send-email-andrew@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
-On Sun, 2013-02-03 at 16:30 -0800, Amit Daniel Kachhap wrote:
-> This patch adds support to set the emulated temperature method in
-> thermal zone (sensor). After setting this feature thermal zone may
-> report this temperature and not the actual temperature. The emulation
-> implementation may be based on sensor capability through platform
-> specific handler or pure software emulation if no platform handler defined.
+On Sat, 2013-02-02 at 15:35 +0100, Andrew Lunn wrote:
+> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 > 
-> This is useful in debugging different temperature threshold and its
-> associated cooling action. Critical threshold's cannot be emulated.
-> Writing 0 on this node should disable emulation.
+> This patch adds support for Kirkwood 88F6282 and 88F6283 thermal sensor.
 > 
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-
-applied to thermal -next.
+> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> ---
+>  .../bindings/thermal/kirkwood-thermal.txt          |   15 +++
+>  drivers/thermal/Kconfig                            |    7 +
+>  drivers/thermal/Makefile                           |    1 +
+>  drivers/thermal/kirkwood_thermal.c                 |  136 ++++++++++++++++++++
+>  4 files changed, 159 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
+>  create mode 100644 drivers/thermal/kirkwood_thermal.c
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
+> new file mode 100644
+> index 0000000..8c0f5eb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
+> @@ -0,0 +1,15 @@
+> +* Kirkwood Thermal
+> +
+> +This version is for Kirkwood 88F8262 & 88F6283 SoCs. Other kirkwoods
+> +don't contain a thermal sensor.
+> +
+> +Required properties:
+> +- compatible : "marvell,kirkwood-thermal"
+> +- reg : Address range of the thermal registers
+> +
+> +Example:
+> +
+> +	thermal@10078 {
+> +		compatible = "marvell,kirkwood-thermal";
+> +		reg = <0x10078 0x4>;
+> +	};
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index c2c77d1..e691500 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -93,6 +93,13 @@ config RCAR_THERMAL
+>  	  Enable this to plug the R-Car thermal sensor driver into the Linux
+>  	  thermal framework
+>  
+> +config KIRKWOOD_THERMAL
+> +	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+> +	depends on ARCH_KIRKWOOD
+> +	help
+> +	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+> +	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
+> +
+>  config EXYNOS_THERMAL
+>  	tristate "Temperature sensor on Samsung EXYNOS"
+>  	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index d8da683..99026b2 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -15,6 +15,7 @@ obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+>  # platform thermal drivers
+>  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+>  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+> +obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+>  obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+>  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> new file mode 100644
+> index 0000000..000cfc9
+> --- /dev/null
+> +++ b/drivers/thermal/kirkwood_thermal.c
+> @@ -0,0 +1,136 @@
+> +/*
+> + * Kirkwood thermal sensor driver
+> + *
+> + * Copyright (C) 2012 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/of.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/thermal.h>
+> +
+> +#define KIRKWOOD_THERMAL_VALID_OFFSET	9
+> +#define KIRKWOOD_THERMAL_VALID_MASK	0x1
+> +#define KIRKWOOD_THERMAL_TEMP_OFFSET	10
+> +#define KIRKWOOD_THERMAL_TEMP_MASK	0x1FF
+> +
+> +/* Kirkwood Thermal Sensor Dev Structure */
+> +struct kirkwood_thermal_priv {
+> +	void __iomem *sensor;
+> +};
+> +
+> +static int kirkwood_get_temp(struct thermal_zone_device *thermal,
+> +			  unsigned long *temp)
+> +{
+> +	unsigned long reg;
+> +	struct kirkwood_thermal_priv *priv = thermal->devdata;
+> +
+> +	reg = readl_relaxed(priv->sensor);
+> +
+> +	/* Valid check */
+> +	if (!(reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
+> +	    KIRKWOOD_THERMAL_VALID_MASK) {
+> +		dev_err(&thermal->device,
+> +			"Temperature sensor reading not valid\n");
+> +		return -EIO;
+> +	}
+> +
+> +	/*
+> +	 * Calculate temperature. See Section 8.10.1 of the 88AP510,
+> +	 * datasheet, which has the same sensor.
+> +	 * Documentation/arm/Marvell/README
+> +	 */
+> +	reg = (reg >> KIRKWOOD_THERMAL_TEMP_OFFSET) &
+> +		KIRKWOOD_THERMAL_TEMP_MASK;
+> +	*temp = ((2281638UL - (7298*reg)) / 10);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_device_ops ops = {
+> +	.get_temp = kirkwood_get_temp,
+> +};
+> +
+> +static const struct of_device_id kirkwood_thermal_id_table[] = {
+> +	{ .compatible = "marvell,kirkwood-thermal" },
+> +	{}
+> +};
+> +
+you do not need #ifdef CONFIG_OF here?
 
 thanks,
 rui
-> ---
-> Changes in V3:
-> * Removed the un-necessary get_temp pointer check.
-> * Added the read temp code in #ifdef EMULATION macros
-> 
-> Changes in V2:
-> * Added config option for enabling emulation support.
-> * Added s/w emulation if no platform handler registered.
-> * skip the critical trip point emulation
-> 
-> This patchset is based on thermal maintainer next tree.
-> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next 
-> 
->  Documentation/thermal/sysfs-api.txt |   13 ++++++
->  drivers/thermal/Kconfig             |    8 ++++
->  drivers/thermal/thermal_sys.c       |   79 ++++++++++++++++++++++++++++++-----
->  include/linux/thermal.h             |    2 +
->  4 files changed, 91 insertions(+), 11 deletions(-)
-> 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index 526d4b9..6859661 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
->  	.get_trip_type: get the type of certain trip point.
->  	.get_trip_temp: get the temperature above which the certain trip point
->  			will be fired.
-> +	.set_emul_temp: set the emulation temperature which helps in debugging
-> +			different threshold temperature points.
->  
->  1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
->  
-> @@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
->      |---trip_point_[0-*]_temp:	Trip point temperature
->      |---trip_point_[0-*]_type:	Trip point type
->      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-> +    |---emul_temp:		Emulated temperature set node
->  
->  Thermal cooling device sys I/F, created once it's registered:
->  /sys/class/thermal/cooling_device[0-*]:
-> @@ -252,6 +255,16 @@ passive
->  	Valid values: 0 (disabled) or greater than 1000
->  	RW, Optional
->  
-> +emul_temp
-> +	Interface to set the emulated temperature method in thermal zone
-> +	(sensor). After setting this temperature, the thermal zone may pass
-> +	this temperature to platform emulation function if registered or
-> +	cache it locally. This is useful in debugging different temperature
-> +	threshold and its associated cooling action. This is write only node
-> +	and writing 0 on this node should disable emulation.
-> +	Unit: millidegree Celsius
-> +	WO, Optional
-> +
->  *****************************
->  * Cooling device attributes *
->  *****************************
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index faf38c5..e4cf7fb 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -78,6 +78,14 @@ config CPU_THERMAL
->  	  and not the ACPI interface.
->  	  If you want this support, you should say Y here.
->  
-> +config THERMAL_EMULATION
-> +	bool "Thermal emulation mode support"
-> +	help
-> +	  Enable this option to make a emul_temp sysfs node in thermal zone
-> +	  directory to support temperature emulation. With emulation sysfs node,
-> +	  user can manually input temperature and test the different trip
-> +	  threshold behaviour for simulation purpose.
-> +
->  config SPEAR_THERMAL
->  	bool "SPEAr thermal sensor driver"
->  	depends on PLAT_SPEAR
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 0a1bf6b..0675687 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -378,24 +378,54 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
->  	monitor_thermal_zone(tz);
->  }
->  
-> +static int thermal_zone_get_temp(struct thermal_zone_device *tz,
-> +				unsigned long *temp)
+
+> +static int kirkwood_thermal_probe(struct platform_device *pdev)
 > +{
-> +	int ret = 0, count;
-> +	unsigned long crit_temp = -1UL;
-> +	enum thermal_trip_type type;
+> +	struct thermal_zone_device *thermal = NULL;
+> +	struct kirkwood_thermal_priv *priv;
+> +	struct resource *res;
 > +
-> +	mutex_lock(&tz->lock);
-> +
-> +	ret = tz->ops->get_temp(tz, temp);
-> +#ifdef CONFIG_THERMAL_EMULATION
-> +	if (!tz->emul_temperature)
-> +		goto skip_emul;
-> +
-> +	for (count = 0; count < tz->trips; count++) {
-> +		ret = tz->ops->get_trip_type(tz, count, &type);
-> +		if (!ret && type == THERMAL_TRIP_CRITICAL) {
-> +			ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
-> +			break;
-> +		}
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> +		return -ENODEV;
 > +	}
 > +
-> +	if (ret)
-> +		goto skip_emul;
-> +
-> +	if (*temp < crit_temp)
-> +		*temp = tz->emul_temperature;
-> +skip_emul:
-> +#endif
-> +	mutex_unlock(&tz->lock);
-> +	return ret;
-> +}
-> +
->  static void update_temperature(struct thermal_zone_device *tz)
->  {
->  	long temp;
->  	int ret;
->  
-> -	mutex_lock(&tz->lock);
-> -
-> -	ret = tz->ops->get_temp(tz, &temp);
-> +	ret = thermal_zone_get_temp(tz, &temp);
->  	if (ret) {
->  		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
->  			 tz->id);
-> -		goto exit;
-> +		return;
->  	}
->  
-> +	mutex_lock(&tz->lock);
->  	tz->last_temperature = tz->temperature;
->  	tz->temperature = temp;
-> -
-> -exit:
->  	mutex_unlock(&tz->lock);
->  }
->  
-> @@ -438,10 +468,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
->  	long temperature;
->  	int ret;
->  
-> -	if (!tz->ops->get_temp)
-> -		return -EPERM;
-> -
-> -	ret = tz->ops->get_temp(tz, &temperature);
-> +	ret = thermal_zone_get_temp(tz, &temperature);
->  
->  	if (ret)
->  		return ret;
-> @@ -701,6 +728,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
->  	return sprintf(buf, "%s\n", tz->governor->name);
->  }
->  
-> +#ifdef CONFIG_THERMAL_EMULATION
-> +static ssize_t
-> +emul_temp_store(struct device *dev, struct device_attribute *attr,
-> +		     const char *buf, size_t count)
-> +{
-> +	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> +	int ret = 0;
-> +	unsigned long temperature;
-> +
-> +	if (kstrtoul(buf, 10, &temperature))
-> +		return -EINVAL;
-> +
-> +	if (!tz->ops->set_emul_temp) {
-> +		mutex_lock(&tz->lock);
-> +		tz->emul_temperature = temperature;
-> +		mutex_unlock(&tz->lock);
-> +	} else {
-> +		ret = tz->ops->set_emul_temp(tz, temperature);
+> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv) {
+> +		dev_err(&pdev->dev, "kzalloc fail\n");
+> +		return -ENOMEM;
 > +	}
 > +
-> +	return ret ? ret : count;
-> +}
-> +static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-> +#endif/*CONFIG_THERMAL_EMULATION*/
+> +	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> +	if (!priv->sensor) {
+> +		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> +		return -EADDRNOTAVAIL;
+> +	}
 > +
->  static DEVICE_ATTR(type, 0444, type_show, NULL);
->  static DEVICE_ATTR(temp, 0444, temp_show, NULL);
->  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-> @@ -843,7 +895,7 @@ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
->  				       temp_input);
->  	struct thermal_zone_device *tz = temp->tz;
->  
-> -	ret = tz->ops->get_temp(tz, &temperature);
-> +	ret = thermal_zone_get_temp(tz, &temperature);
->  
->  	if (ret)
->  		return ret;
-> @@ -1596,6 +1648,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->  			goto unregister;
->  	}
->  
-> +#ifdef CONFIG_THERMAL_EMULATION
-> +	result = device_create_file(&tz->device, &dev_attr_emul_temp);
-> +	if (result)
-> +		goto unregister;
-> +#endif
->  	/* Create policy attribute */
->  	result = device_create_file(&tz->device, &dev_attr_policy);
->  	if (result)
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 9b78f8c..f0bd7f9 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
->  	int (*set_trip_hyst) (struct thermal_zone_device *, int,
->  			      unsigned long);
->  	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
-> +	int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
->  	int (*get_trend) (struct thermal_zone_device *, int,
->  			  enum thermal_trend *);
->  	int (*notify) (struct thermal_zone_device *, int,
-> @@ -165,6 +166,7 @@ struct thermal_zone_device {
->  	int polling_delay;
->  	int temperature;
->  	int last_temperature;
-> +	int emul_temperature;
->  	int passive;
->  	unsigned int forced_passive;
->  	const struct thermal_zone_device_ops *ops;
+> +	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+> +					       priv, &ops, NULL, 0, 0);
+> +	if (IS_ERR(thermal)) {
+> +		dev_err(&pdev->dev,
+> +			"Failed to register thermal zone device\n");
+> +		return PTR_ERR(thermal);
+> +	}
+> +
+> +	platform_set_drvdata(pdev, thermal);
+> +
+> +	return 0;
+> +}
+> +
+> +static int kirkwood_thermal_exit(struct platform_device *pdev)
+> +{
+> +	struct thermal_zone_device *kirkwood_thermal =
+> +		platform_get_drvdata(pdev);
+> +
+> +	thermal_zone_device_unregister(kirkwood_thermal);
+> +	platform_set_drvdata(pdev, NULL);
+> +
+> +	return 0;
+> +}
+> +
+> +MODULE_DEVICE_TABLE(of, kirkwood_thermal_id_table);
+> +
+> +static struct platform_driver kirkwood_thermal_driver = {
+> +	.probe = kirkwood_thermal_probe,
+> +	.remove = kirkwood_thermal_exit,
+> +	.driver = {
+> +		.name = "kirkwood_thermal",
+> +		.owner = THIS_MODULE,
+> +		.of_match_table = of_match_ptr(kirkwood_thermal_id_table),
+> +	},
+> +};
+> +
+> +module_platform_driver(kirkwood_thermal_driver);
+> +
+> +MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu@nigauri.org>");
+> +MODULE_DESCRIPTION("kirkwood thermal driver");
+> +MODULE_LICENSE("GPL");
+
+
