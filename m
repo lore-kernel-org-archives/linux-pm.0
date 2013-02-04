@@ -1,100 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Mon, 4 Feb 2013 19:51:33 +0530
-Message-ID: <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
-References: <cover.1359976493.git.viresh.kumar@linaro.org>
-	<5808458.pvV2iHpBWm@vostro.rjw.lan>
-	<CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
-	<20130204123221.GA22340@pd.tnic>
-	<CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
-	<20130204130403.GD13909@pd.tnic>
-	<CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
-	<20130204133648.GE13909@pd.tnic>
-	<CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
-	<20130204140908.GC15452@pd.tnic>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH 1/2] don't wait on disk to start on resume
+Date: Mon, 04 Feb 2013 22:27:44 +0800
+Message-ID: <510FC560.6020002@intel.com>
+References: <Pine.LNX.4.44L0.1302021003390.25931-100000@netrider.rowland.org> <510E025A.9000103@intel.com> <CAGAzgsqMhO9nppbooY5E2H5MXZ6VcCXR-P8S=nD7_7QJYrtmdw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f51.google.com ([209.85.219.51]:58664 "EHLO
-	mail-oa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229Ab3BDOVe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 09:21:34 -0500
-Received: by mail-oa0-f51.google.com with SMTP id h2so4474582oag.10
-        for <linux-pm@vger.kernel.org>; Mon, 04 Feb 2013 06:21:34 -0800 (PST)
-In-Reply-To: <20130204140908.GC15452@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGAzgsqMhO9nppbooY5E2H5MXZ6VcCXR-P8S=nD7_7QJYrtmdw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, James Bottomley <JBottomley@parallels.com>, Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On 4 February 2013 19:39, Borislav Petkov <bp@alien8.de> wrote:
-> On Mon, Feb 04, 2013 at 07:28:16PM +0530, Viresh Kumar wrote:
->> All files which are directly present in cpu/cpu*/cpufreq/ folder. I am
->> not talking about governor tunables but policy tunables. Things like
->> scaling_[min]max_freq are policy tunables.
+On 02/04/2013 08:07 AM, dbasehore . wrote:
+> On the topic that we do a fast return for both scsi and ata. Now I
+> don't remember everything about this (and correct me if I'm wrong)
+> since I figured this out a few months ago.
 >
-> No, on x86 those are the P-states frequencies. They're defined by the
-> hardware.
+> There are some dependencies that scsi has on the resume path of ata. I
+> think it's that before we can send the command to spin up the disk, we
+> need to wait for the ata host controller to come up. As Aaron Lu
+> pointed out, it takes seconds for the ata port to resume. On the hand,
 
-A question we need to answer: What is "policy"?
+I just did some more recording, the result is:
+host controller takes 1ms or less to resume;
+port reset takes the most time, almost the same as the whole port resume
+callback, 2-4 seconds;
+sd resume callback takes 16ms.
 
-For me, "policy" is the hardware policy for a group of cpus, defined by the
-hardware. We call them P-states. But these are strictly per policy (i.e. per
-cpu group sharing clock line).
+So for ata disks, the most time consuming part is in port's reset
+routine, which is executed in port's resume callback.
 
-So, if we have two packages with two cpus each, we will have two copies
-of these P-states and every other file/directory in cpu/cpu*/cpufreq.
-One common copy would be shared between cpu/cpu[0-1]/cpufreq
-directory and other one between cpu/cpu[2-3]/cpufreq.
-
->> Policies don't have a name associated with them and so
->> cpu/cpufreq/policies doesn't make any sense. Rather one policy is
->> related to multiple cpus and its tunables are linked in all the cpus
->> that belong to it, like scaling_[min]max_freq.
->
-> Then do the following:
->
-> cpu/cpufreq/policies/
-> |-> policy0
->     |-> min_freq
->     |-> max_freq
->     |-> affected_cpus
->     ...
-
-We correlate things with cpus rather than policies and so the current directory
-structure of cpu/cpu*/cpufreq/*** is the best suited ones.
-
-> or whatever needs to be a flexible interface for multi-policy cpufreq
-> support.
-
-The multi policy part is already well implemented, we are talking about governor
-per policy here.
-
-> Remember: once you do those, they're more or less cast in stone so take
-> your time and do the design right, do not hurry those.
-
-Yes, and that's why cpu/cpu*/cpufreq/ondemand/*** suits the best, with exactly
-the same logic that went for P-states or cpufreq-stats.
-
->> But then we will get governors tunables in cpu/cpu*/cpufreq/ instead
->> of cpu/cpufreq/ . Will that not break userspace for other systems?
->
-> What's wrong with having both? The cpu/cpufreq/ governor will set the
-> system-wide governor and the cpu/cpu*/cpufreq/ will add the different
-> policies.
-
-Hmm.. confused..
-Consider two systems:
-- A dual core system, with cores sharing clocks.
-- A dual cluster system (dual core per cluster), with separate clocks
-per cluster.
-
-Where will you keep governor directories for both of these configurations?
-
-We need to select only one... cpu/cpufreq doesn't suit the second case at all
-as we need to use ondemand governor for both the clusters but with separate
-tunables. And so a single cpu/cpufreq/ondemand directory wouldn't solve the
-issue.
-
---
-viresh
+-Aaron
