@@ -1,409 +1,115 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH v6] cpufreq: add imx6q-cpufreq driver
-Date: Mon, 4 Feb 2013 13:46:29 +0800
-Message-ID: <1359956789-17918-1-git-send-email-shawn.guo@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [Intel-gfx] [RFC PATCH 3/3] i915: ignore lid open event when
+ resuming
+Date: Mon, 04 Feb 2013 14:26:45 +0800
+Message-ID: <1359959205.2250.56.camel@rzhang1-mobl4>
+References: <1359300060-2967-1-git-send-email-rui.zhang@intel.com>
+	 <1359300060-2967-3-git-send-email-rui.zhang@intel.com>
+	 <CAKMK7uF4u-3XFogzdQQCBqA2Q61D1s3PhVF7BOT90d88TkqT0g@mail.gmail.com>
+	 <1359340583.2249.14.camel@rzhang1-mobl4>
+	 <CAKMK7uFWqtcnvkExz2_+0Vm+6pSREhRJ1szpHi2_CEmmHL6Nzg@mail.gmail.com>
+	 <1359367598.2089.18.camel@rzhang1-mobl4>
+	 <20130129101027.GJ14766@phenom.ffwll.local>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20130129101027.GJ14766@phenom.ffwll.local>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, intel-gfx@lists.freedesktop.org, rjw@sisk.pl, lenb@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
-hardware specific frequency and voltage scaling requirements.
+On Tue, 2013-01-29 at 11:10 +0100, Daniel Vetter wrote:
+> On Mon, Jan 28, 2013 at 06:06:38PM +0800, Zhang Rui wrote:
+> > On Mon, 2013-01-28 at 09:31 +0100, Daniel Vetter wrote:
+> > > On Mon, Jan 28, 2013 at 3:36 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+> > > >> Given that this essentially requires users to manually set this module
+> > > >> option to make stuff work I don't like this.
+> > > >>
+> > > > sorry, I do not understand.
+> > > > this patch just disables modeset_on_lid during suspend.
+> > > 
+> > > Pardon me, the misunderstanding is on my side - I've mixed up
+> > > dev_priv->modeset_on_lid with the corresponding module option.
+> > > 
+> > > Is my understanding correct that only with the new SCI pm state this
+> > > can happen, since that still allows acpi events to be processed (and
+> > > so our lid_notifier being called?
+> > > 
+> > yep.
+> > 
+> > > >> I see a few possible options:
+> > > >> - plug the races between all the different parts - I've never really
+> > > >> understood why acpi sends us events before the resume code has
+> > > >> completed ... If that's indeed intentional, we could delay the
+> > > >> handling a bit until at least the i915 resume code completed.
+> > > >
+> > > > IMO, the real question is that, during a suspend/resume cycle, if we
+> > > > need to take care of the lid open event or not.
+> > > > To me, the answer is no, because when resuming from STR, i915 is not
+> > > > aware of such an event, and the i915 resume code works well, right?
+> > > > so I do not think it is a problem to ignore the lid event for another
+> > > > lightweight suspend state, which is introduced in Patch 1/3 in this
+> > > > series.
+> > > >
+> > > >> - Judging from the diff context you're not on the latest 3.8-rc
+> > > >> codebase - we've applied a few fixes to this lid hack recently. Please
+> > > >> retest on a kernel with
+> > > >>
+> > > > the patch is based on 3.8.0-rc3, which already includes the commit
+> > > > below.
+> > > > And yes, the problem still exists.
+> > > 
+> > > Ok, I think I see the issue now. But I suspect that we need some
+> > > additional locking to make this solid, since currently
+> > > dev_priv->modeset_on_lid updates can race with our lid notifier
+> > > handler. Let me think about this a bit more.
+> > 
+> > hmm,
+> > with this patch, intel_lid_notify() will return immediately if
+> > modeset_on_lid is set to -1. So the only problem in my mind is that we
+> > got a lid open event during i915_suspend().
+> > 
+> > Say,
+> > lid is opened -> i915_lid_notify() is invoked (modeset_on_lid is 1 at
+> > this time) -> i915_suspend() set modeset_on_lid to -1, just before
+> > intel_modeset_setup_hw_state() being invoked in i915_lid_notify() ->
+> > intel_modeset_setup_hw_state() breaks the system.
+> > 
+> > but my first question would be is this (lid open on suspend) possible in
+> > real world?
+> > If the answer is yes, then my second question is that, this problem
+> > exists for STR as well because SCI is still valid at this time when
+> > suspending to memory, have we seen such issues for STR before?
+> > 
+> > Anyway, if the current code does not break STR, this patch should be
+> > enough for the new suspend state.
+> > what do you think?
+> 
+> I think I have two wishlist changes for your patch ;-)
+> 
+> - Convert dev_priv->modeset_on_lid to an enum, so that we have descriptive
+>   names instead of magic numbers.
+> 
+sure, will update in next version.
 
-The driver supports module build and is instantiated by the platform
-device/driver mechanism, so that it will not be instantiated on other
-platforms, as IMX is built with multiplatform support.
+> - I think we can close all races by adding a new lid_notifier mutex (I
+>   prefer a new lock instead of overloading an existing one with). If we
+>   hold that in the suspend/resume paths just for changing modeset_on_lid
+>   and also for the entire lid notifier callback (i.e. grab the lock before
+>   first looking at modest_on_lid, only drop it once the modeset fixup has
+>   been completed at the end of the function) we should be race-free in all
+>   cases.
+> 
+>   Also, I think we should move the modeset_on_lid updates in the
+>   suspend/resume paths to the very beginning/end.
+> 
+> Can you pls update your patch with these changes? Or do you see an
+> additional race we need to plug somewhere?
+> 
+yep. will send out V2 soon.
+thanks for your comments.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Changes since v5:
- * Update clock tranistion code to make keep use count correct
-
- drivers/cpufreq/Kconfig.arm     |    9 ++
- drivers/cpufreq/Makefile        |    1 +
- drivers/cpufreq/imx6q-cpufreq.c |  336 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 346 insertions(+)
- create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index ffe55b8..c65226c 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
- 	  This adds the CPUFreq driver for Samsung EXYNOS5250
- 	  SoC.
- 
-+config ARM_IMX6Q_CPUFREQ
-+	tristate "Freescale i.MX6Q cpufreq support"
-+	depends on SOC_IMX6Q
-+	depends on REGULATOR_ANATOP
-+	help
-+	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
-+
-+	  If in doubt, say N.
-+
- config ARM_SPEAR_CPUFREQ
- 	bool "SPEAr CPUFreq support"
- 	depends on PLAT_SPEAR
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index e2a5da7..93610b2 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -54,6 +54,7 @@ obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
-+obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- 
- ##################################################################################
- # PowerPC platform drivers
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-new file mode 100644
-index 0000000..d6b6ef3
---- /dev/null
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -0,0 +1,336 @@
-+/*
-+ * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/opp.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+
-+#define PU_SOC_VOLTAGE_NORMAL	1250000
-+#define PU_SOC_VOLTAGE_HIGH	1275000
-+#define FREQ_1P2_GHZ		1200000000
-+
-+static struct regulator *arm_reg;
-+static struct regulator *pu_reg;
-+static struct regulator *soc_reg;
-+
-+static struct clk *arm_clk;
-+static struct clk *pll1_sys_clk;
-+static struct clk *pll1_sw_clk;
-+static struct clk *step_clk;
-+static struct clk *pll2_pfd2_396m_clk;
-+
-+static struct device *cpu_dev;
-+static struct cpufreq_frequency_table *freq_table;
-+static unsigned int transition_latency;
-+
-+static int imx6q_verify_speed(struct cpufreq_policy *policy)
-+{
-+	return cpufreq_frequency_table_verify(policy, freq_table);
-+}
-+
-+static unsigned int imx6q_get_speed(unsigned int cpu)
-+{
-+	return clk_get_rate(arm_clk) / 1000;
-+}
-+
-+static int imx6q_set_target(struct cpufreq_policy *policy,
-+			    unsigned int target_freq, unsigned int relation)
-+{
-+	struct cpufreq_freqs freqs;
-+	struct opp *opp;
-+	unsigned long freq_hz, volt, volt_old;
-+	unsigned int index, cpu;
-+	int ret;
-+
-+	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
-+					     relation, &index);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
-+			target_freq, ret);
-+		return ret;
-+	}
-+
-+	freqs.new = freq_table[index].frequency;
-+	freq_hz = freqs.new * 1000;
-+	freqs.old = clk_get_rate(arm_clk) / 1000;
-+
-+	if (freqs.old == freqs.new)
-+		return 0;
-+
-+	for_each_online_cpu(cpu) {
-+		freqs.cpu = cpu;
-+		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	}
-+
-+	rcu_read_lock();
-+	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
-+	if (IS_ERR(opp)) {
-+		rcu_read_unlock();
-+		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
-+		return PTR_ERR(opp);
-+	}
-+
-+	volt = opp_get_voltage(opp);
-+	rcu_read_unlock();
-+	volt_old = regulator_get_voltage(arm_reg);
-+
-+	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
-+		freqs.old / 1000, volt_old / 1000,
-+		freqs.new / 1000, volt / 1000);
-+
-+	/* scaling up?  scale voltage before frequency */
-+	if (freqs.new > freqs.old) {
-+		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-+		if (ret) {
-+			dev_err(cpu_dev,
-+				"failed to scale vddarm up: %d\n", ret);
-+			return ret;
-+		}
-+
-+		/*
-+		 * Need to increase vddpu and vddsoc for safety
-+		 * if we are about to run at 1.2 GHz.
-+		 */
-+		if (freqs.new == FREQ_1P2_GHZ / 1000) {
-+			regulator_set_voltage_tol(pu_reg,
-+					PU_SOC_VOLTAGE_HIGH, 0);
-+			regulator_set_voltage_tol(soc_reg,
-+					PU_SOC_VOLTAGE_HIGH, 0);
-+		}
-+	}
-+
-+	/*
-+	 * The setpoints are selected per PLL/PDF frequencies, so we need to
-+	 * reprogram PLL for frequency scaling.  The procedure of reprogramming
-+	 * PLL1 is as below.
-+	 *
-+	 *  - Enable pll2_pfd2_396m_clk and reparent pll1_sw_clk to it
-+	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
-+	 *  - Disable pll2_pfd2_396m_clk
-+	 */
-+	clk_prepare_enable(pll2_pfd2_396m_clk);
-+	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
-+	clk_set_parent(pll1_sw_clk, step_clk);
-+	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
-+		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
-+		/*
-+		 * If we are leaving 396 MHz set-point, we need to enable
-+		 * pll1_sys_clk and disable pll2_pfd2_396m_clk to keep
-+		 * their use count correct.
-+		 */
-+		if (freqs.old * 1000 <= clk_get_rate(pll2_pfd2_396m_clk)) {
-+			clk_prepare_enable(pll1_sys_clk);
-+			clk_disable_unprepare(pll2_pfd2_396m_clk);
-+		}
-+		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-+		clk_disable_unprepare(pll2_pfd2_396m_clk);
-+	} else {
-+		/*
-+		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
-+		 * to provide the frequency.
-+		 */
-+		clk_disable_unprepare(pll1_sys_clk);
-+	}
-+
-+	/* Ensure the arm clock divider is what we expect */
-+	ret = clk_set_rate(arm_clk, freqs.new * 1000);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
-+		regulator_set_voltage_tol(arm_reg, volt_old, 0);
-+		return ret;
-+	}
-+
-+	/* scaling down?  scale voltage after frequency */
-+	if (freqs.new < freqs.old) {
-+		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-+		if (ret)
-+			dev_warn(cpu_dev,
-+				 "failed to scale vddarm down: %d\n", ret);
-+
-+		if (freqs.old == FREQ_1P2_GHZ / 1000) {
-+			regulator_set_voltage_tol(pu_reg,
-+					PU_SOC_VOLTAGE_NORMAL, 0);
-+			regulator_set_voltage_tol(soc_reg,
-+					PU_SOC_VOLTAGE_NORMAL, 0);
-+		}
-+	}
-+
-+	for_each_online_cpu(cpu) {
-+		freqs.cpu = cpu;
-+		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+
-+	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
-+		return ret;
-+	}
-+
-+	policy->cpuinfo.transition_latency = transition_latency;
-+	policy->cur = clk_get_rate(arm_clk) / 1000;
-+	cpumask_setall(policy->cpus);
-+	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
-+
-+	return 0;
-+}
-+
-+static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+	return 0;
-+}
-+
-+static struct freq_attr *imx6q_cpufreq_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver imx6q_cpufreq_driver = {
-+	.verify = imx6q_verify_speed,
-+	.target = imx6q_set_target,
-+	.get = imx6q_get_speed,
-+	.init = imx6q_cpufreq_init,
-+	.exit = imx6q_cpufreq_exit,
-+	.name = "imx6q-cpufreq",
-+	.attr = imx6q_cpufreq_attr,
-+};
-+
-+static int imx6q_cpufreq_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np;
-+	struct opp *opp;
-+	unsigned long min_volt, max_volt;
-+	int num, ret;
-+
-+	cpu_dev = &pdev->dev;
-+
-+	np = of_find_node_by_path("/cpus/cpu@0");
-+	if (!np) {
-+		dev_err(cpu_dev, "failed to find cpu0 node\n");
-+		return -ENOENT;
-+	}
-+
-+	cpu_dev->of_node = np;
-+
-+	arm_clk = devm_clk_get(cpu_dev, "arm");
-+	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-+	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-+	step_clk = devm_clk_get(cpu_dev, "step");
-+	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-+	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
-+	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
-+		dev_err(cpu_dev, "failed to get clocks\n");
-+		ret = -ENOENT;
-+		goto put_node;
-+	}
-+
-+	arm_reg = devm_regulator_get(cpu_dev, "arm");
-+	pu_reg = devm_regulator_get(cpu_dev, "pu");
-+	soc_reg = devm_regulator_get(cpu_dev, "soc");
-+	if (!arm_reg || !pu_reg || !soc_reg) {
-+		dev_err(cpu_dev, "failed to get regulators\n");
-+		ret = -ENOENT;
-+		goto put_node;
-+	}
-+
-+	/* We expect an OPP table supplied by platform */
-+	num = opp_get_opp_count(cpu_dev);
-+	if (num < 0) {
-+		ret = num;
-+		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-+		goto put_node;
-+	}
-+
-+	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-+		goto put_node;
-+	}
-+
-+	if (of_property_read_u32(np, "clock-latency", &transition_latency))
-+		transition_latency = CPUFREQ_ETERNAL;
-+
-+	/*
-+	 * OPP is maintained in order of increasing frequency, and
-+	 * freq_table initialised from OPP is therefore sorted in the
-+	 * same order.
-+	 */
-+	rcu_read_lock();
-+	opp = opp_find_freq_exact(cpu_dev,
-+				  freq_table[0].frequency * 1000, true);
-+	min_volt = opp_get_voltage(opp);
-+	opp = opp_find_freq_exact(cpu_dev,
-+				  freq_table[--num].frequency * 1000, true);
-+	max_volt = opp_get_voltage(opp);
-+	rcu_read_unlock();
-+	ret = regulator_set_voltage_time(arm_reg, min_volt, max_volt);
-+	if (ret > 0)
-+		transition_latency += ret * 1000;
-+
-+	/* Count vddpu and vddsoc latency in for 1.2 GHz support */
-+	if (freq_table[num].frequency == FREQ_1P2_GHZ / 1000) {
-+		ret = regulator_set_voltage_time(pu_reg, PU_SOC_VOLTAGE_NORMAL,
-+						 PU_SOC_VOLTAGE_HIGH);
-+		if (ret > 0)
-+			transition_latency += ret * 1000;
-+		ret = regulator_set_voltage_time(soc_reg, PU_SOC_VOLTAGE_NORMAL,
-+						 PU_SOC_VOLTAGE_HIGH);
-+		if (ret > 0)
-+			transition_latency += ret * 1000;
-+	}
-+
-+	ret = cpufreq_register_driver(&imx6q_cpufreq_driver);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-+		goto free_freq_table;
-+	}
-+
-+	of_node_put(np);
-+	return 0;
-+
-+free_freq_table:
-+	opp_free_cpufreq_table(cpu_dev, &freq_table);
-+put_node:
-+	of_node_put(np);
-+	return ret;
-+}
-+
-+static int imx6q_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
-+	opp_free_cpufreq_table(cpu_dev, &freq_table);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver imx6q_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "imx6q-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= imx6q_cpufreq_probe,
-+	.remove		= imx6q_cpufreq_remove,
-+};
-+module_platform_driver(imx6q_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
-+MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
-
+-rui
 
