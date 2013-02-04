@@ -1,257 +1,257 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH 1/2] don't wait on disk to start on resume
-Date: Sun, 3 Feb 2013 16:07:36 -0800
-Message-ID: <CAGAzgsqMhO9nppbooY5E2H5MXZ6VcCXR-P8S=nD7_7QJYrtmdw@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1302021003390.25931-100000@netrider.rowland.org>
-	<510E025A.9000103@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-ide-owner@vger.kernel.org>
-In-Reply-To: <510E025A.9000103@intel.com>
-Sender: linux-ide-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, James Bottomley <JBottomley@parallels.com>, Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH V3 1/2] thermal: sysfs: Add a new sysfs node emul_temp for thermal emulation
+Date: Sun,  3 Feb 2013 16:30:15 -0800
+Message-ID: <1359937815-29851-1-git-send-email-amit.daniel@samsung.com>
+References: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f41.google.com ([209.85.213.41]:50379 "EHLO
+	mail-yh0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753873Ab3BDAae (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Feb 2013 19:30:34 -0500
+In-Reply-To: <1359343700-30190-1-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
+Cc: jonghwa3.lee@samsung.com, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, kgene.kim@samsung.com
 
-On the topic that we do a fast return for both scsi and ata. Now I
-don't remember everything about this (and correct me if I'm wrong)
-since I figured this out a few months ago.
+This patch adds support to set the emulated temperature method in
+thermal zone (sensor). After setting this feature thermal zone may
+report this temperature and not the actual temperature. The emulation
+implementation may be based on sensor capability through platform
+specific handler or pure software emulation if no platform handler defined.
 
-There are some dependencies that scsi has on the resume path of ata. I
-think it's that before we can send the command to spin up the disk, we
-need to wait for the ata host controller to come up. As Aaron Lu
-pointed out, it takes seconds for the ata port to resume. On the hand,
-the resume for sd needs to wait for this to complete, so even if we
-return early for ata, but not the scsi disk, suddenly it will be the
-scsi disk that takes 2-5 seconds to resume.
+This is useful in debugging different temperature threshold and its
+associated cooling action. Critical threshold's cannot be emulated.
+Writing 0 on this node should disable emulation.
 
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+---
+Changes in V3:
+* Removed the un-necessary get_temp pointer check.
+* Added the read temp code in #ifdef EMULATION macros
 
+Changes in V2:
+* Added config option for enabling emulation support.
+* Added s/w emulation if no platform handler registered.
+* skip the critical trip point emulation
 
-On Sat, Feb 2, 2013 at 10:23 PM, Aaron Lu <aaron.lu@intel.com> wrote:
-> On 02/02/2013 11:09 PM, Alan Stern wrote:
->> On Sat, 2 Feb 2013, Aaron Lu wrote:
->>
->>>>> An alternative way of possibly solving this problem from PM's point of
->>>>> view might be:
->>>>> 1 Set both ata port and scsi device's runtime status to RPM_SUSPENDED
->>>>>   in their system suspend callback;
->>
->> By the way, what reason is there for doing this to the ATA port?  Does
->> the port take a long time to resume, in the same way that a disk can
->> take a few seconds to spin back up?
->
-> For SATA controllers that is in AHCI programming interface, the hard
-> drive will be spined up when the link is put to active state, so the
-> most time consuming part is in ata, not in scsi, as the below data
-> showed on my computer(hard disk is a HDD attached to a sata controller
-> in AHCI mode):
-> The ata port resume callback takes several seconds(2s-5s) to finish,
-> while sd_resume takes only 17ms...
->
-> I'm not sure about other programming interfaces.
->
->>
->>> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
->>> index 497adea..38000fc 100644
->>> --- a/drivers/ata/libata-core.c
->>> +++ b/drivers/ata/libata-core.c
->>> @@ -5355,10 +5355,19 @@ static int ata_port_suspend_common(struct device *dev, pm_message_t mesg)
->>>
->>>  static int ata_port_suspend(struct device *dev)
->>>  {
->>> +    int ret;
->>> +
->>>      if (pm_runtime_suspended(dev))
->>>              return 0;
->>>
->>> -    return ata_port_suspend_common(dev, PMSG_SUSPEND);
->>> +    ret = ata_port_suspend_common(dev, PMSG_SUSPEND);
->>> +    if (!ret) {
->>> +            __pm_runtime_disable(dev, false);
->>
->> Don't you mean pm_runtime_disable(dev)?
->
-> I don't think it is necessary to check_resume here, no?
->
->>
->>> +            pm_runtime_set_suspended(dev);
->>> +            pm_runtime_enable(dev);
->>> +    }
->>> +
->>> +    return ret;
->>>  }
->>>
->>>  static int ata_port_do_freeze(struct device *dev)
->>> @@ -5393,16 +5402,7 @@ static int ata_port_resume_common(struct device *dev, pm_message_t mesg)
->>>
->>>  static int ata_port_resume(struct device *dev)
->>>  {
->>> -    int rc;
->>> -
->>> -    rc = ata_port_resume_common(dev, PMSG_RESUME);
->>> -    if (!rc) {
->>> -            pm_runtime_disable(dev);
->>> -            pm_runtime_set_active(dev);
->>> -            pm_runtime_enable(dev);
->>> -    }
->>> -
->>> -    return rc;
->>> +    return 0;
->>>  }
->>>
->>>  /*
->>> diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
->>> index d9956b6..d0b6997 100644
->>> --- a/drivers/scsi/scsi_pm.c
->>> +++ b/drivers/scsi/scsi_pm.c
->>> @@ -127,13 +127,21 @@ static int scsi_bus_prepare(struct device *dev)
->>>  static int scsi_bus_suspend(struct device *dev)
->>>  {
->>>      const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->>> -    return scsi_bus_suspend_common(dev, pm ? pm->suspend : NULL);
->>> +    int ret;
->>> +
->>> +    ret = scsi_bus_suspend_common(dev, pm ? pm->suspend : NULL);
->>> +    if (!ret) {
->>> +            __pm_runtime_disable(dev, false);
->>> +            pm_runtime_set_suspended(dev);
->>> +            pm_runtime_enable(dev);
->>> +    }
->>> +
->>> +    return ret;
->>>  }
->>>
->>>  static int scsi_bus_resume(struct device *dev)
->>>  {
->>> -    const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
->>> -    return scsi_bus_resume_common(dev, pm ? pm->resume : NULL);
->>> +    return 0;
->>>  }
->>
->> This doesn't look like it would work very well with something like a CD
->> drive, which doesn't use block-layer runtime PM.
->
-> No problem, we have the in-kernel-event-poll to resume the CD.
-> And actually, during resume, some udisk program will also open the block
-> device to find something out, which will also resume the CD.
->
->> Is that what you meant when you talked about modifying the SCSI PM
->> callbacks?
->
-> No, the modification is actually for disk.
-> With v8 of block layer runtime PM, it is no longer the case runtime
-> suspend is the same as system suspend for hard disk that utilize block
-> layer runtime PM: we quiesce the device and run its suspend callback for
-> the device during system suspend but we didn't touch the queue's
-> rpm_status as we do in runtime_suspend callback. So I did some
-> modifications to scsi_pm.c to make runtime suspend and system suspend do
-> exactly the same thing for disk type scsi device, no matter if they are
-> using block layer runtime PM or not.
->
-> Probably I had better post code here, this is a replacement for the
-> patch 4 of v8 block layer runtime PM patchset(I omit the sd part, since
-> it is irrevelant), please kindly review, see if you like it :-)
->
-> diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
-> index 8f6b12c..d9956b6 100644
-> --- a/drivers/scsi/scsi_pm.c
-> +++ b/drivers/scsi/scsi_pm.c
-> @@ -16,17 +16,44 @@
->
->  #include "scsi_priv.h"
->
-> +static int sdev_blk_suspend(struct scsi_device *sdev)
-> +{
-> +       int err;
-> +
-> +       err = blk_pre_runtime_suspend(sdev->request_queue);
-> +       if (err)
-> +               return err;
-> +       err = pm_generic_runtime_suspend(&sdev->sdev_gendev);
-> +       blk_post_runtime_suspend(sdev->request_queue, err);
-> +
-> +       return err;
-> +}
-> +
-> +static int sdev_blk_resume(struct scsi_device *sdev)
-> +{
-> +       int err;
-> +
-> +       blk_pre_runtime_resume(sdev->request_queue);
-> +       err = pm_generic_runtime_resume(&sdev->sdev_gendev);
-> +       blk_post_runtime_resume(sdev->request_queue, err);
-> +
-> +       return err;
-> +}
-> +
->  static int scsi_dev_type_suspend(struct device *dev, int (*cb)(struct device *))
->  {
-> +       struct scsi_device *sdev = to_scsi_device(dev);
->         int err;
->
-> -       err = scsi_device_quiesce(to_scsi_device(dev));
-> +       err = scsi_device_quiesce(sdev);
->         if (err == 0) {
-> -               if (cb) {
-> +               if (sdev->request_queue->dev)
-> +                       err = sdev_blk_suspend(sdev);
-> +               else if (cb)
->                         err = cb(dev);
-> -                       if (err)
-> -                               scsi_device_resume(to_scsi_device(dev));
-> -               }
-> +
-> +               if (err)
-> +                       scsi_device_resume(sdev);
->         }
->         dev_dbg(dev, "scsi suspend: %d\n", err);
->         return err;
-> @@ -34,11 +61,14 @@ static int scsi_dev_type_suspend(struct device *dev, int (*cb)(struct device *))
->
->  static int scsi_dev_type_resume(struct device *dev, int (*cb)(struct device *))
->  {
-> +       struct scsi_device *sdev = to_scsi_device(dev);
->         int err = 0;
->
-> -       if (cb)
-> +       if (sdev->request_queue->dev)
-> +               err = sdev_blk_resume(sdev);
-> +       else if (cb)
->                 err = cb(dev);
-> -       scsi_device_resume(to_scsi_device(dev));
-> +       scsi_device_resume(sdev);
->         dev_dbg(dev, "scsi resume: %d\n", err);
->         return err;
->  }
-> @@ -185,10 +215,18 @@ static int scsi_runtime_idle(struct device *dev)
->
->         /* Insert hooks here for targets, hosts, and transport classes */
->
-> -       if (scsi_is_sdev_device(dev))
-> -               err = pm_schedule_suspend(dev, 100);
-> -       else
-> +       if (scsi_is_sdev_device(dev)) {
-> +               struct scsi_device *sdev = to_scsi_device(dev);
-> +
-> +               if (sdev->request_queue->dev) {
-> +                       pm_runtime_mark_last_busy(dev);
-> +                       err = pm_runtime_autosuspend(dev);
-> +               } else {
-> +                       err = pm_schedule_suspend(dev, 100);
-> +               }
-> +       } else {
->                 err = pm_runtime_suspend(dev);
-> +       }
->         return err;
->  }
->
-> --
-> 1.8.1
->
-> With this patch, the runtime suspend and system suspend for the device
-> is identical, so that we can safely return in system's suspend callback
-> when we found the device is already runtime suspended.
->
-> Thanks,
-> Aaron
->
+This patchset is based on thermal maintainer next tree.
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next 
+
+ Documentation/thermal/sysfs-api.txt |   13 ++++++
+ drivers/thermal/Kconfig             |    8 ++++
+ drivers/thermal/thermal_sys.c       |   79 ++++++++++++++++++++++++++++++-----
+ include/linux/thermal.h             |    2 +
+ 4 files changed, 91 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 526d4b9..6859661 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -55,6 +55,8 @@ temperature) and throttle appropriate devices.
+ 	.get_trip_type: get the type of certain trip point.
+ 	.get_trip_temp: get the temperature above which the certain trip point
+ 			will be fired.
++	.set_emul_temp: set the emulation temperature which helps in debugging
++			different threshold temperature points.
+ 
+ 1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 
+@@ -153,6 +155,7 @@ Thermal zone device sys I/F, created once it's registered:
+     |---trip_point_[0-*]_temp:	Trip point temperature
+     |---trip_point_[0-*]_type:	Trip point type
+     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
++    |---emul_temp:		Emulated temperature set node
+ 
+ Thermal cooling device sys I/F, created once it's registered:
+ /sys/class/thermal/cooling_device[0-*]:
+@@ -252,6 +255,16 @@ passive
+ 	Valid values: 0 (disabled) or greater than 1000
+ 	RW, Optional
+ 
++emul_temp
++	Interface to set the emulated temperature method in thermal zone
++	(sensor). After setting this temperature, the thermal zone may pass
++	this temperature to platform emulation function if registered or
++	cache it locally. This is useful in debugging different temperature
++	threshold and its associated cooling action. This is write only node
++	and writing 0 on this node should disable emulation.
++	Unit: millidegree Celsius
++	WO, Optional
++
+ *****************************
+ * Cooling device attributes *
+ *****************************
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index faf38c5..e4cf7fb 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -78,6 +78,14 @@ config CPU_THERMAL
+ 	  and not the ACPI interface.
+ 	  If you want this support, you should say Y here.
+ 
++config THERMAL_EMULATION
++	bool "Thermal emulation mode support"
++	help
++	  Enable this option to make a emul_temp sysfs node in thermal zone
++	  directory to support temperature emulation. With emulation sysfs node,
++	  user can manually input temperature and test the different trip
++	  threshold behaviour for simulation purpose.
++
+ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 0a1bf6b..0675687 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -378,24 +378,54 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ 	monitor_thermal_zone(tz);
+ }
+ 
++static int thermal_zone_get_temp(struct thermal_zone_device *tz,
++				unsigned long *temp)
++{
++	int ret = 0, count;
++	unsigned long crit_temp = -1UL;
++	enum thermal_trip_type type;
++
++	mutex_lock(&tz->lock);
++
++	ret = tz->ops->get_temp(tz, temp);
++#ifdef CONFIG_THERMAL_EMULATION
++	if (!tz->emul_temperature)
++		goto skip_emul;
++
++	for (count = 0; count < tz->trips; count++) {
++		ret = tz->ops->get_trip_type(tz, count, &type);
++		if (!ret && type == THERMAL_TRIP_CRITICAL) {
++			ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
++			break;
++		}
++	}
++
++	if (ret)
++		goto skip_emul;
++
++	if (*temp < crit_temp)
++		*temp = tz->emul_temperature;
++skip_emul:
++#endif
++	mutex_unlock(&tz->lock);
++	return ret;
++}
++
+ static void update_temperature(struct thermal_zone_device *tz)
+ {
+ 	long temp;
+ 	int ret;
+ 
+-	mutex_lock(&tz->lock);
+-
+-	ret = tz->ops->get_temp(tz, &temp);
++	ret = thermal_zone_get_temp(tz, &temp);
+ 	if (ret) {
+ 		dev_warn(&tz->device, "failed to read out thermal zone %d\n",
+ 			 tz->id);
+-		goto exit;
++		return;
+ 	}
+ 
++	mutex_lock(&tz->lock);
+ 	tz->last_temperature = tz->temperature;
+ 	tz->temperature = temp;
+-
+-exit:
+ 	mutex_unlock(&tz->lock);
+ }
+ 
+@@ -438,10 +468,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	long temperature;
+ 	int ret;
+ 
+-	if (!tz->ops->get_temp)
+-		return -EPERM;
+-
+-	ret = tz->ops->get_temp(tz, &temperature);
++	ret = thermal_zone_get_temp(tz, &temperature);
+ 
+ 	if (ret)
+ 		return ret;
+@@ -701,6 +728,31 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+ 	return sprintf(buf, "%s\n", tz->governor->name);
+ }
+ 
++#ifdef CONFIG_THERMAL_EMULATION
++static ssize_t
++emul_temp_store(struct device *dev, struct device_attribute *attr,
++		     const char *buf, size_t count)
++{
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	int ret = 0;
++	unsigned long temperature;
++
++	if (kstrtoul(buf, 10, &temperature))
++		return -EINVAL;
++
++	if (!tz->ops->set_emul_temp) {
++		mutex_lock(&tz->lock);
++		tz->emul_temperature = temperature;
++		mutex_unlock(&tz->lock);
++	} else {
++		ret = tz->ops->set_emul_temp(tz, temperature);
++	}
++
++	return ret ? ret : count;
++}
++static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
++#endif/*CONFIG_THERMAL_EMULATION*/
++
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+@@ -843,7 +895,7 @@ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 				       temp_input);
+ 	struct thermal_zone_device *tz = temp->tz;
+ 
+-	ret = tz->ops->get_temp(tz, &temperature);
++	ret = thermal_zone_get_temp(tz, &temperature);
+ 
+ 	if (ret)
+ 		return ret;
+@@ -1596,6 +1648,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 			goto unregister;
+ 	}
+ 
++#ifdef CONFIG_THERMAL_EMULATION
++	result = device_create_file(&tz->device, &dev_attr_emul_temp);
++	if (result)
++		goto unregister;
++#endif
+ 	/* Create policy attribute */
+ 	result = device_create_file(&tz->device, &dev_attr_policy);
+ 	if (result)
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 9b78f8c..f0bd7f9 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -123,6 +123,7 @@ struct thermal_zone_device_ops {
+ 	int (*set_trip_hyst) (struct thermal_zone_device *, int,
+ 			      unsigned long);
+ 	int (*get_crit_temp) (struct thermal_zone_device *, unsigned long *);
++	int (*set_emul_temp) (struct thermal_zone_device *, unsigned long);
+ 	int (*get_trend) (struct thermal_zone_device *, int,
+ 			  enum thermal_trend *);
+ 	int (*notify) (struct thermal_zone_device *, int,
+@@ -165,6 +166,7 @@ struct thermal_zone_device {
+ 	int polling_delay;
+ 	int temperature;
+ 	int last_temperature;
++	int emul_temperature;
+ 	int passive;
+ 	unsigned int forced_passive;
+ 	const struct thermal_zone_device_ops *ops;
+-- 
+1.7.5.4
+
