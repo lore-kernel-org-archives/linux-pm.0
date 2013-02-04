@@ -1,71 +1,36 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 2/4] ARM: Kirkwood: Add support thermal sensor for
- 88F6282 and 88F6283
-Date: Mon, 04 Feb 2013 11:14:53 +0800
-Message-ID: <1359947693.2250.50.camel@rzhang1-mobl4>
-References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
-	 <1359815749-27705-3-git-send-email-andrew@lunn.ch>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: [PATCH V4] suspend: enable freeze timeout configuration through
+ sys
+Date: Sun, 3 Feb 2013 22:15:55 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1302032213410.28934-100000@netrider.rowland.org>
+References: <BEC9F67575FA1E429CA7CF5AE9BE36343F154E@SHSMSX102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:36877 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753757Ab3BDDO6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 3 Feb 2013 22:14:58 -0500
-In-Reply-To: <1359815749-27705-3-git-send-email-andrew@lunn.ch>
+Received: from netrider.rowland.org ([192.131.102.5]:59290 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753759Ab3BDDP4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 3 Feb 2013 22:15:56 -0500
+In-Reply-To: <BEC9F67575FA1E429CA7CF5AE9BE36343F154E@SHSMSX102.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Jason Cooper <jason@lakedaemon.net>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+To: "Li, Fei" <fei.li@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-On Sat, 2013-02-02 at 15:35 +0100, Andrew Lunn wrote:
-> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+On Mon, 4 Feb 2013, Li, Fei wrote:
+
+> > -> the situation described above shouldn't happen and if it does, then there
+> > is a bug that needs to be fixed.
 > 
-> Kirkwood 88F6282 and 88F6283 have a thermal sensor.
-> This patch adds a DT node and enables the driver in the kernel config.
-> 
-> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
+> Yes, we agree with that it's a bug that needs to be fixed, and we are already done
+> for some cases. 
+> During the process, we realize that tuning the timeout value to smaller value will help
+> to expose freezing failure for some cases.
 
-I can take this one but I need ACK from ARM experts first.
+Besides, the underlying bug is well known (fuse filesystems hanging
+because the fuse daemon gets frozen before the process doing file I/O,
+or something like that) and so far nobody has a good idea of how to
+fix it.
 
-thanks,
-rui
-> ---
->  arch/arm/boot/dts/kirkwood-6282.dtsi |    6 ++++++
->  arch/arm/configs/kirkwood_defconfig  |    2 ++
->  2 files changed, 8 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/kirkwood-6282.dtsi b/arch/arm/boot/dts/kirkwood-6282.dtsi
-> index 4ccea21..bd168b6 100644
-> --- a/arch/arm/boot/dts/kirkwood-6282.dtsi
-> +++ b/arch/arm/boot/dts/kirkwood-6282.dtsi
-> @@ -32,6 +32,12 @@
->  			};
->  		};
->  
-> +		thermal@10078 {
-> +			compatible = "marvell,kirkwood-thermal";
-> +			reg = <0x10078 0x4>;
-> +			status = "okay";
-> +		};
-> +
->  		i2c@11100 {
->  			compatible = "marvell,mv64xxx-i2c";
->  			reg = <0x11100 0x20>;
-> diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-> index 93f3794..3d8667f 100644
-> --- a/arch/arm/configs/kirkwood_defconfig
-> +++ b/arch/arm/configs/kirkwood_defconfig
-> @@ -118,6 +118,8 @@ CONFIG_SPI=y
->  CONFIG_SPI_ORION=y
->  CONFIG_GPIO_SYSFS=y
->  # CONFIG_HWMON is not set
-> +CONFIG_THERMAL=y
-> +CONFIG_KIRKWOOD_THERMAL=y
->  CONFIG_WATCHDOG=y
->  CONFIG_ORION_WATCHDOG=y
->  CONFIG_HID_DRAGONRISE=y
-
+Alan Stern
 
