@@ -1,425 +1,129 @@
-From: Anson Huang <b20788@freescale.com>
-Subject: Re: [PATCH v5] cpufreq: add imx6q-cpufreq driver
-Date: Mon, 4 Feb 2013 11:06:22 -0500
-Message-ID: <20130204160622.GB5209@ubuntu>
-References: <1359946302-25953-1-git-send-email-shawn.guo@linaro.org>
+From: "Li, Fei" <fei.li@intel.com>
+Subject: RE: [PATCH V4] suspend: enable freeze timeout configuration through
+ sys
+Date: Mon, 4 Feb 2013 03:08:13 +0000
+Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE36343F154E@SHSMSX102.ccr.corp.intel.com>
+References: <1359428300.3211.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <1359608132.7918.2.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <1359708963.7240.3.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <1919836.fQMoKOYYSd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1359946302-25953-1-git-send-email-shawn.guo@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:49283 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753757Ab3BDDIR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 3 Feb 2013 22:08:17 -0500
+In-Reply-To: <1919836.fQMoKOYYSd@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-On Mon, Feb 04, 2013 at 10:51:42AM +0800, Shawn Guo wrote:
-> Add an imx6q-cpufreq driver for Freescale i.MX6Q SoC to handle the
-> hardware specific frequency and voltage scaling requirements.
-> 
-> The driver supports module build and is instantiated by the platform
-> device/driver mechanism, so that it will not be instantiated on other
-> platforms, as IMX is built with multiplatform support.
-> 
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Changes since v4:
->  * Use regulator API to handle voltage latency
-> 
-> Rafael,
-> 
-> I generated the patch against your bleeding-edge branch, so it should
-> be applied cleanly.
-> 
-> Shawn
-> 
->  drivers/cpufreq/Kconfig.arm     |    9 ++
->  drivers/cpufreq/Makefile        |    1 +
->  drivers/cpufreq/imx6q-cpufreq.c |  331 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 341 insertions(+)
->  create mode 100644 drivers/cpufreq/imx6q-cpufreq.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index ffe55b8..c65226c 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
->  	  This adds the CPUFreq driver for Samsung EXYNOS5250
->  	  SoC.
->  
-> +config ARM_IMX6Q_CPUFREQ
-> +	tristate "Freescale i.MX6Q cpufreq support"
-> +	depends on SOC_IMX6Q
-> +	depends on REGULATOR_ANATOP
-> +	help
-> +	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
-> +
-> +	  If in doubt, say N.
-> +
->  config ARM_SPEAR_CPUFREQ
->  	bool "SPEAr CPUFreq support"
->  	depends on PLAT_SPEAR
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index e2a5da7..93610b2 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -54,6 +54,7 @@ obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
->  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
-> +obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
->  
->  ##################################################################################
->  # PowerPC platform drivers
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> new file mode 100644
-> index 0000000..f73b245
-> --- /dev/null
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -0,0 +1,331 @@
-> +/*
-> + * Copyright (C) 2013 Freescale Semiconductor, Inc.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/delay.h>
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/opp.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regulator/consumer.h>
-> +
-> +#define PU_SOC_VOLTAGE_NORMAL	1250000
-> +#define PU_SOC_VOLTAGE_HIGH	1275000
-> +#define FREQ_1P2_GHZ		1200000000
-> +
-> +static struct regulator *arm_reg;
-> +static struct regulator *pu_reg;
-> +static struct regulator *soc_reg;
-> +
-> +static struct clk *arm_clk;
-> +static struct clk *pll1_sys_clk;
-> +static struct clk *pll1_sw_clk;
-> +static struct clk *step_clk;
-> +static struct clk *pll2_pfd2_396m_clk;
-> +
-> +static struct device *cpu_dev;
-> +static struct cpufreq_frequency_table *freq_table;
-> +static unsigned int transition_latency;
-> +
-> +static int imx6q_verify_speed(struct cpufreq_policy *policy)
-> +{
-> +	return cpufreq_frequency_table_verify(policy, freq_table);
-> +}
-> +
-> +static unsigned int imx6q_get_speed(unsigned int cpu)
-> +{
-> +	return clk_get_rate(arm_clk) / 1000;
-> +}
-> +
-> +static int imx6q_set_target(struct cpufreq_policy *policy,
-> +			    unsigned int target_freq, unsigned int relation)
-> +{
-> +	struct cpufreq_freqs freqs;
-> +	struct opp *opp;
-> +	unsigned long freq_hz, volt, volt_old;
-> +	unsigned int index, cpu;
-> +	int ret;
-> +
-> +	ret = cpufreq_frequency_table_target(policy, freq_table, target_freq,
-> +					     relation, &index);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed to match target frequency %d: %d\n",
-> +			target_freq, ret);
-> +		return ret;
-> +	}
-> +
-> +	freqs.new = freq_table[index].frequency;
-> +	freq_hz = freqs.new * 1000;
-> +	freqs.old = clk_get_rate(arm_clk) / 1000;
-> +
-> +	if (freqs.old == freqs.new)
-> +		return 0;
-> +
-> +	for_each_online_cpu(cpu) {
-> +		freqs.cpu = cpu;
-> +		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> +	}
-> +
-> +	rcu_read_lock();
-> +	opp = opp_find_freq_ceil(cpu_dev, &freq_hz);
-> +	if (IS_ERR(opp)) {
-> +		rcu_read_unlock();
-> +		dev_err(cpu_dev, "failed to find OPP for %ld\n", freq_hz);
-> +		return PTR_ERR(opp);
-> +	}
-> +
-> +	volt = opp_get_voltage(opp);
-> +	rcu_read_unlock();
-> +	volt_old = regulator_get_voltage(arm_reg);
-> +
-> +	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
-> +		freqs.old / 1000, volt_old / 1000,
-> +		freqs.new / 1000, volt / 1000);
-> +
-> +	/* scaling up?  scale voltage before frequency */
-> +	if (freqs.new > freqs.old) {
-> +		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-> +		if (ret) {
-> +			dev_err(cpu_dev,
-> +				"failed to scale vddarm up: %d\n", ret);
-> +			return ret;
-> +		}
-> +
-> +		/*
-> +		 * Need to increase vddpu and vddsoc for safety
-> +		 * if we are about to run at 1.2 GHz.
-> +		 */
-> +		if (freqs.new == FREQ_1P2_GHZ / 1000) {
-> +			regulator_set_voltage_tol(pu_reg,
-> +					PU_SOC_VOLTAGE_HIGH, 0);
-> +			regulator_set_voltage_tol(soc_reg,
-> +					PU_SOC_VOLTAGE_HIGH, 0);
-> +		}
-> +	}
-> +
-> +	/*
-> +	 * The setpoints are selected per PLL/PDF frequencies, so we need to
-> +	 * reprogram PLL for frequency scaling.  The procedure of reprogramming
-> +	 * PLL1 is as below.
-> +	 *
-> +	 *  - Enable pll2_pfd2_396m_clk and reparent pll1_sw_clk to it
-> +	 *  - Disable pll1_sys_clk and reprogram it
-> +	 *  - Enable pll1_sys_clk and reparent pll1_sw_clk back to it
-> +	 *  - Disable pll2_pfd2_396m_clk
-> +	 */
-> +	clk_prepare_enable(pll2_pfd2_396m_clk);
-> +	clk_set_parent(step_clk, pll2_pfd2_396m_clk);
-> +	clk_set_parent(pll1_sw_clk, step_clk);
-> +	clk_prepare_enable(pll1_sys_clk);
-> +	if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
-> +		clk_disable_unprepare(pll1_sys_clk);
-> +		clk_set_rate(pll1_sys_clk, freqs.new * 1000);
-> +		clk_prepare_enable(pll1_sys_clk);
-> +		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> +		clk_disable_unprepare(pll2_pfd2_396m_clk);
-> +	} else {
-> +		/*
-> +		 * Disable pll1_sys_clk if pll2_pfd2_396m_clk is sufficient
-> +		 * to provide the frequency.
-> +		 */
-> +		clk_disable_unprepare(pll1_sys_clk);
-> +	}
-Seems like we will get pll2_pfd2_396m_clk's use count mismatch? As every time cpu freq is changed, pll2_pfd2_396m_clk will be added at the beginning of this code piece, but only decreased when cpu freq > 396M, so everytime cpu freq changed to 396M, this pll2_pfd2_396m_clk will in increased?
-> +
-> +	/* Ensure the arm clock divider is what we expect */
-> +	ret = clk_set_rate(arm_clk, freqs.new * 1000);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
-> +		regulator_set_voltage_tol(arm_reg, volt_old, 0);
-> +		return ret;
-> +	}
-> +
-> +	/* scaling down?  scale voltage after frequency */
-> +	if (freqs.new < freqs.old) {
-> +		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
-> +		if (ret)
-> +			dev_warn(cpu_dev,
-> +				 "failed to scale vddarm down: %d\n", ret);
-> +
-> +		if (freqs.old == FREQ_1P2_GHZ / 1000) {
-> +			regulator_set_voltage_tol(pu_reg,
-> +					PU_SOC_VOLTAGE_NORMAL, 0);
-> +			regulator_set_voltage_tol(soc_reg,
-> +					PU_SOC_VOLTAGE_NORMAL, 0);
-> +		}
-> +	}
-> +
-> +	for_each_online_cpu(cpu) {
-> +		freqs.cpu = cpu;
-> +		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +	}
-> +
-Should we need to update the percpu loops_per_jiffy variable and global loops_per_jiffy? As the udelay and mdelay will rely on this global loops_per_jiffy? Or the latest kernel has handle it in other place such as cpufreq common driver? I remembered that common cpufreq driver only handle the noSMP case.
-Anson
-> +	return 0;
-> +}
-> +
-> +static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
-> +{
-> +	int ret;
-> +
-> +	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "invalid frequency table: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	policy->cpuinfo.transition_latency = transition_latency;
-> +	policy->cur = clk_get_rate(arm_clk) / 1000;
-> +	cpumask_setall(policy->cpus);
-> +	cpufreq_frequency_table_get_attr(freq_table, policy->cpu);
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
-> +{
-> +	cpufreq_frequency_table_put_attr(policy->cpu);
-> +	return 0;
-> +}
-> +
-> +static struct freq_attr *imx6q_cpufreq_attr[] = {
-> +	&cpufreq_freq_attr_scaling_available_freqs,
-> +	NULL,
-> +};
-> +
-> +static struct cpufreq_driver imx6q_cpufreq_driver = {
-> +	.verify = imx6q_verify_speed,
-> +	.target = imx6q_set_target,
-> +	.get = imx6q_get_speed,
-> +	.init = imx6q_cpufreq_init,
-> +	.exit = imx6q_cpufreq_exit,
-> +	.name = "imx6q-cpufreq",
-> +	.attr = imx6q_cpufreq_attr,
-> +};
-> +
-> +static int imx6q_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *np;
-> +	struct opp *opp;
-> +	unsigned long min_volt, max_volt;
-> +	int num, ret;
-> +
-> +	cpu_dev = &pdev->dev;
-> +
-> +	np = of_find_node_by_path("/cpus/cpu@0");
-> +	if (!np) {
-> +		dev_err(cpu_dev, "failed to find cpu0 node\n");
-> +		return -ENOENT;
-> +	}
-> +
-> +	cpu_dev->of_node = np;
-> +
-> +	arm_clk = devm_clk_get(cpu_dev, "arm");
-> +	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-> +	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-> +	step_clk = devm_clk_get(cpu_dev, "step");
-> +	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-> +	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
-> +	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
-> +		dev_err(cpu_dev, "failed to get clocks\n");
-> +		ret = -ENOENT;
-> +		goto put_node;
-> +	}
-> +
-> +	arm_reg = devm_regulator_get(cpu_dev, "arm");
-> +	pu_reg = devm_regulator_get(cpu_dev, "pu");
-> +	soc_reg = devm_regulator_get(cpu_dev, "soc");
-> +	if (!arm_reg || !pu_reg || !soc_reg) {
-> +		dev_err(cpu_dev, "failed to get regulators\n");
-> +		ret = -ENOENT;
-> +		goto put_node;
-> +	}
-> +
-> +	/* We expect an OPP table supplied by platform */
-> +	num = opp_get_opp_count(cpu_dev);
-> +	if (num < 0) {
-> +		ret = num;
-> +		dev_err(cpu_dev, "no OPP table is found: %d\n", ret);
-> +		goto put_node;
-> +	}
-> +
-> +	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> +		goto put_node;
-> +	}
-> +
-> +	if (of_property_read_u32(np, "clock-latency", &transition_latency))
-> +		transition_latency = CPUFREQ_ETERNAL;
-> +
-> +	/*
-> +	 * OPP is maintained in order of increasing frequency, and
-> +	 * freq_table initialised from OPP is therefore sorted in the
-> +	 * same order.
-> +	 */
-> +	rcu_read_lock();
-> +	opp = opp_find_freq_exact(cpu_dev,
-> +				  freq_table[0].frequency * 1000, true);
-> +	min_volt = opp_get_voltage(opp);
-> +	opp = opp_find_freq_exact(cpu_dev,
-> +				  freq_table[--num].frequency * 1000, true);
-> +	max_volt = opp_get_voltage(opp);
-> +	rcu_read_unlock();
-> +	ret = regulator_set_voltage_time(arm_reg, min_volt, max_volt);
-> +	if (ret > 0)
-> +		transition_latency += ret * 1000;
-> +
-> +	/* Count vddpu and vddsoc latency in for 1.2 GHz support */
-> +	if (freq_table[num].frequency == FREQ_1P2_GHZ / 1000) {
-> +		ret = regulator_set_voltage_time(pu_reg, PU_SOC_VOLTAGE_NORMAL,
-> +						 PU_SOC_VOLTAGE_HIGH);
-> +		if (ret > 0)
-> +			transition_latency += ret * 1000;
-> +		ret = regulator_set_voltage_time(soc_reg, PU_SOC_VOLTAGE_NORMAL,
-> +						 PU_SOC_VOLTAGE_HIGH);
-> +		if (ret > 0)
-> +			transition_latency += ret * 1000;
-> +	}
-> +
-> +	ret = cpufreq_register_driver(&imx6q_cpufreq_driver);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "failed register driver: %d\n", ret);
-> +		goto free_freq_table;
-> +	}
-> +
-> +	of_node_put(np);
-> +	return 0;
-> +
-> +free_freq_table:
-> +	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> +put_node:
-> +	of_node_put(np);
-> +	return ret;
-> +}
-> +
-> +static int imx6q_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	cpufreq_unregister_driver(&imx6q_cpufreq_driver);
-> +	opp_free_cpufreq_table(cpu_dev, &freq_table);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver imx6q_cpufreq_platdrv = {
-> +	.driver = {
-> +		.name	= "imx6q-cpufreq",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= imx6q_cpufreq_probe,
-> +	.remove		= imx6q_cpufreq_remove,
-> +};
-> +module_platform_driver(imx6q_cpufreq_platdrv);
-> +
-> +MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
-> +MODULE_DESCRIPTION("Freescale i.MX6Q cpufreq driver");
-> +MODULE_LICENSE("GPL");
-> -- 
-> 1.7.9.5
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
-
+PiANCj4gT24gRnJpZGF5LCBGZWJydWFyeSAwMSwgMjAxMyAwNDo1NjowMyBQTSBmbGkyNCB3cm90
+ZToNCj4gDQo+IFRoZSBjb2RlIGxvb2tzIE9LLCBidXQgSSdtIHN0aWxsIGhhdmluZyBhIG1vcmUg
+ZnVuZGFtZW50YWwgcHJvYmxlbSB3aXRoIHRoaXMNCj4gY2hhbmdlLCBiZWNhdXNlIC0+DQo+IA0K
+PiA+IEF0IHByZXNlbnQsIHRoZSB2YWx1ZSBvZiB0aW1lb3V0IGZvciBmcmVlemluZyBpcyAyMHMs
+IHdoaWNoIGlzDQo+ID4gbWVhbmluZ2xlc3MgaW4gY2FzZSB0aGF0IG9uZSB0aHJlYWQgaXMgZnJv
+emVuIHdpdGggbXV0ZXggbG9ja2VkDQo+ID4gYW5kIGFub3RoZXIgdGhyZWFkIGlzIHRyeWluZyB0
+byBsb2NrIHRoZSBtdXRleCwgYXMgdGhpcyB0aW1lIG9mDQo+ID4gZnJlZXppbmcgd2lsbCBmYWls
+IHVuYXZvaWRhYmx5Lg0KPiANCj4gLT4gdGhlIHNpdHVhdGlvbiBkZXNjcmliZWQgYWJvdmUgc2hv
+dWxkbid0IGhhcHBlbiBhbmQgaWYgaXQgZG9lcywgdGhlbiB0aGVyZQ0KPiBpcyBhIGJ1ZyB0aGF0
+IG5lZWRzIHRvIGJlIGZpeGVkLg0KDQpZZXMsIHdlIGFncmVlIHdpdGggdGhhdCBpdCdzIGEgYnVn
+IHRoYXQgbmVlZHMgdG8gYmUgZml4ZWQsIGFuZCB3ZSBhcmUgYWxyZWFkeSBkb25lDQpmb3Igc29t
+ZSBjYXNlcy4gDQpEdXJpbmcgdGhlIHByb2Nlc3MsIHdlIHJlYWxpemUgdGhhdCB0dW5pbmcgdGhl
+IHRpbWVvdXQgdmFsdWUgdG8gc21hbGxlciB2YWx1ZSB3aWxsIGhlbHANCnRvIGV4cG9zZSBmcmVl
+emluZyBmYWlsdXJlIGZvciBzb21lIGNhc2VzLg0KDQo+IFRoZSBjaGFuZ2UgeW91J3JlIHByb3Bv
+c2luZyBzZWVtcyB0byBiZSB0YXJnZXRlZCBhdCBoaWRpbmcgdGhvc2UgYnVncyByYXRoZXINCj4g
+dGhhbiBhdCBmaXhpbmcgdGhlbS4gIEkgd29uZGVyIHdoeSB3ZSBzaG91bGQgaGlkZSB0aG9zZSBi
+dWdzIGluc3RlYWQgb2YgZml4aW5nDQo+IHRoZW0/DQo+IA0KPiBSYWZhZWwNCg0KV2UgdW5kZXJz
+dGFuZCB5b3VyIGNvbmNlcm4gYWJvdXQgaGlkaW5nIGJ1Z3MsIGFuZCB3ZSBhcmUgbm90IGdvaW5n
+IHRvIGRvIHRoaXMuDQpJbiBjb250cmFzdCwgc2V0dGluZyB0aW1lb3V0IHZhbHVlIHRvIHNtYWxs
+ZXIgdmFsdWUgbWVhbnMgbW9yZSBzdHJpY3QgdGhyZXNob2xkLCBhbmQNCml0IHdpbGwgZXhwb3Nl
+IHRoZSBwb3RlbnRpYWwgaXNzdWUgbW9yZSBxdWlja2x5IHdpdGggbW9yZSBjaGFuY2UuDQoNClRh
+a2luZyBkaXZlcnNpdHkgb2Ygc3lzdGVtIGludG8gY29uc2lkZXJhdGlvbiwgd2UgdGhpbmsgaXQn
+cyBzdWl0YWJsZSB0byBleHBvc2UgdGhlIGludGVyZmFjZQ0KdG8gc3VwcG9ydCBkaWZmZXJlbnQg
+Y29uZmlndXJhdGlvbiBvbiBkaWZmZXJlbnQgc3lzdGVtIGZvciBwdXJwb3NlIG9mIGRlYnVnZ2lu
+ZyBhbmQgDQpwZXJmb3JtYW5jZSB0dW5pbmcuDQoNCkRvIHlvdSB0aGluayBpdCBtYWtlIHNlbnNl
+IGZvciB5b3U/DQoNCkJlc3QgUmVnYXJkcywNCkxpIEZlaQ0KDQo+IA0KPiA+IEFuZCBpZiB0aGVy
+ZSBpcyBubyBuZXcgd2FrZXVwIGV2ZW50IHJlZ2lzdGVyZWQsIHRoZSBzeXN0ZW0gd2lsbA0KPiA+
+IHdhc3RlIGF0IG1vc3QgMjBzIGZvciBzdWNoIG1lYW5pbmdsZXNzIHRyeWluZyBvZiBmcmVlemlu
+Zy4NCj4gPg0KPiA+IFdpdGggdGhpcyBwYXRjaCwgdGhlIHZhbHVlIG9mIHRpbWVvdXQgY2FuIGJl
+IGNvbmZpZ3VyZWQgdG8gc21hbGxlcg0KPiA+IHZhbHVlLCBzbyBzdWNoIG1lYW5pbmdsZXNzIHRy
+eWluZyBvZiBmcmVlemluZyB3aWxsIGJlIGFib3J0ZWQgaW4NCj4gPiBlYXJsaWVyIHRpbWUsIGFu
+ZCBsYXRlciBmcmVlemluZyBjYW4gYmUgYWxzbyB0cmlnZ2VyZWQgaW4gZWFybGllcg0KPiA+IHRp
+bWUuIEFuZCBtb3JlIHBvd2VyIHdpbGwgYmUgc2F2ZWQuDQo+ID4gSW4gbm9ybWFsIGNhc2Ugb24g
+bW9iaWxlIHBob25lLCBpdCBjb3N0cyByZWFsIGxpdHRsZSB0aW1lIHRvIGZyZWV6ZQ0KPiA+IHBy
+b2Nlc3Nlcy4gT24gc29tZSBwbGF0Zm9ybSwgaXQgb25seSBjb3N0cyBhYm91dCAyMG1zIHRvIGZy
+ZWV6ZQ0KPiA+IHVzZXIgc3BhY2UgcHJvY2Vzc2VzIGFuZCAxMG1zIHRvIGZyZWV6ZSBrZXJuZWwg
+ZnJlZXphYmxlIHRocmVhZHMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBMaXUgQ2h1YW5zaGVu
+ZyA8Y2h1YW5zaGVuZy5saXVAaW50ZWwuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIEZlaSA8
+ZmVpLmxpQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgRG9jdW1lbnRhdGlvbi9wb3dlci9mcmVl
+emluZy1vZi10YXNrcy50eHQgfCAgICA1ICsrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvZnJlZXpl
+ci5oICAgICAgICAgICAgICAgICAgIHwgICAgNSArKysrKw0KPiA+ICBrZXJuZWwvcG93ZXIvbWFp
+bi5jICAgICAgICAgICAgICAgICAgICAgICB8ICAgMjcNCj4gKysrKysrKysrKysrKysrKysrKysr
+KysrKysrDQo+ID4gIGtlcm5lbC9wb3dlci9wcm9jZXNzLmMgICAgICAgICAgICAgICAgICAgIHwg
+ICAgNCArKy0tDQo+ID4gIDQgZmlsZXMgY2hhbmdlZCwgMzkgaW5zZXJ0aW9ucygrKSwgMiBkZWxl
+dGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL3Bvd2VyL2ZyZWV6
+aW5nLW9mLXRhc2tzLnR4dA0KPiBiL0RvY3VtZW50YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFz
+a3MudHh0DQo+ID4gaW5kZXggNmVjMjkxZS4uODU4OTRkOCAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1
+bWVudGF0aW9uL3Bvd2VyL2ZyZWV6aW5nLW9mLXRhc2tzLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50
+YXRpb24vcG93ZXIvZnJlZXppbmctb2YtdGFza3MudHh0DQo+ID4gQEAgLTIyMywzICsyMjMsOCBA
+QCBzaW5jZSB0aGV5IGFzayB0aGUgZnJlZXplciB0byBza2lwIGZyZWV6aW5nIHRoaXMgdGFzaywN
+Cj4gc2luY2UgaXQgaXMgYW55d2F5DQo+ID4gIG9ubHkgYWZ0ZXIgdGhlIGVudGlyZSBzdXNwZW5k
+L2hpYmVybmF0aW9uIHNlcXVlbmNlIGlzIGNvbXBsZXRlLg0KPiA+ICBTbywgdG8gc3VtbWFyaXpl
+LCB1c2UgW3VuXWxvY2tfc3lzdGVtX3NsZWVwKCkgaW5zdGVhZCBvZiBkaXJlY3RseSB1c2luZw0K
+PiA+ICBtdXRleF9bdW5dbG9jaygmcG1fbXV0ZXgpLiBUaGF0IHdvdWxkIHByZXZlbnQgZnJlZXpp
+bmcgZmFpbHVyZXMuDQo+ID4gKw0KPiA+ICtWLiBNaXNjZWxsYW5lb3VzDQo+ID4gKy9zeXMvcG93
+ZXIvcG1fZnJlZXplX3RpbWVvdXQgY29udHJvbHMgaG93IGxvbmcgaXQgd2lsbCBjb3N0IGF0IG1v
+c3QgdG8NCj4gZnJlZXplDQo+ID4gK2FsbCB1c2VyIHNwYWNlIHByb2Nlc3NlcyBvciBhbGwgZnJl
+ZXphYmxlIGtlcm5lbCB0aHJlYWRzLCBpbiB1bml0IG9mIG1pbGxpc2Vjb25kLg0KPiA+ICtUaGUg
+ZGVmYXVsdCB2YWx1ZSBpcyAyMDAwMCwgd2l0aCByYW5nZSBvZiB1bnNpZ25lZCBpbnRlZ2VyLg0K
+PiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaCBiL2luY2x1ZGUvbGludXgv
+ZnJlZXplci5oDQo+ID4gaW5kZXggZTQyMzhjZS4uZTcwZGY0MCAxMDA2NDQNCj4gPiAtLS0gYS9p
+bmNsdWRlL2xpbnV4L2ZyZWV6ZXIuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvZnJlZXplci5o
+DQo+ID4gQEAgLTEzLDYgKzEzLDExIEBAIGV4dGVybiBib29sIHBtX2ZyZWV6aW5nOwkJLyogUE0g
+ZnJlZXppbmcgaW4gZWZmZWN0DQo+ICovDQo+ID4gIGV4dGVybiBib29sIHBtX25vc2lnX2ZyZWV6
+aW5nOwkJLyogUE0gbm9zaWcgZnJlZXppbmcgaW4gZWZmZWN0ICovDQo+ID4NCj4gPiAgLyoNCj4g
+PiArICogVGltZW91dCBmb3Igc3RvcHBpbmcgcHJvY2Vzc2VzDQo+ID4gKyAqLw0KPiA+ICtleHRl
+cm4gdW5zaWduZWQgaW50IGZyZWV6ZV90aW1lb3V0X21zZWNzOw0KPiA+ICsNCj4gPiArLyoNCj4g
+PiAgICogQ2hlY2sgaWYgYSBwcm9jZXNzIGhhcyBiZWVuIGZyb3plbg0KPiA+ICAgKi8NCj4gPiAg
+c3RhdGljIGlubGluZSBib29sIGZyb3plbihzdHJ1Y3QgdGFza19zdHJ1Y3QgKnApDQo+ID4gZGlm
+ZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9tYWluLmMgYi9rZXJuZWwvcG93ZXIvbWFpbi5jDQo+ID4g
+aW5kZXggMWMxNmY5MS4uM2UxYzlkYSAxMDA2NDQNCj4gPiAtLS0gYS9rZXJuZWwvcG93ZXIvbWFp
+bi5jDQo+ID4gKysrIGIva2VybmVsL3Bvd2VyL21haW4uYw0KPiA+IEBAIC01NTMsNiArNTUzLDMw
+IEBAIHBvd2VyX2F0dHIocG1fdHJhY2VfZGV2X21hdGNoKTsNCj4gPg0KPiA+ICAjZW5kaWYgLyog
+Q09ORklHX1BNX1RSQUNFICovDQo+ID4NCj4gPiArI2lmZGVmIENPTkZJR19GUkVFWkVSDQo+ID4g
+K3N0YXRpYyBzc2l6ZV90IHBtX2ZyZWV6ZV90aW1lb3V0X3Nob3coc3RydWN0IGtvYmplY3QgKmtv
+YmosDQo+ID4gKwkJCQkgICAgICBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKmJ1
+ZikNCj4gPiArew0KPiA+ICsJcmV0dXJuIHNwcmludGYoYnVmLCAiJXVcbiIsIGZyZWV6ZV90aW1l
+b3V0X21zZWNzKTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHNzaXplX3QgcG1fZnJlZXpl
+X3RpbWVvdXRfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosDQo+ID4gKwkJCQkgICAgICAgc3Ry
+dWN0IGtvYmpfYXR0cmlidXRlICphdHRyLA0KPiA+ICsJCQkJICAgICAgIGNvbnN0IGNoYXIgKmJ1
+Ziwgc2l6ZV90IG4pDQo+ID4gK3sNCj4gPiArCXVuc2lnbmVkIGxvbmcgdmFsOw0KPiA+ICsNCj4g
+PiArCWlmIChrc3RydG91bChidWYsIDEwLCAmdmFsKSkNCj4gPiArCQlyZXR1cm4gLUVJTlZBTDsN
+Cj4gPiArDQo+ID4gKwlmcmVlemVfdGltZW91dF9tc2VjcyA9IHZhbDsNCj4gPiArCXJldHVybiBu
+Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtwb3dlcl9hdHRyKHBtX2ZyZWV6ZV90aW1lb3V0KTsNCj4g
+PiArDQo+ID4gKyNlbmRpZgkvKiBDT05GSUdfRlJFRVpFUiovDQo+ID4gKw0KPiA+ICBzdGF0aWMg
+c3RydWN0IGF0dHJpYnV0ZSAqIGdbXSA9IHsNCj4gPiAgCSZzdGF0ZV9hdHRyLmF0dHIsDQo+ID4g
+ICNpZmRlZiBDT05GSUdfUE1fVFJBQ0UNCj4gPiBAQCAtNTc2LDYgKzYwMCw5IEBAIHN0YXRpYyBz
+dHJ1Y3QgYXR0cmlidXRlICogZ1tdID0gew0KPiA+ICAJJnBtX3ByaW50X3RpbWVzX2F0dHIuYXR0
+ciwNCj4gPiAgI2VuZGlmDQo+ID4gICNlbmRpZg0KPiA+ICsjaWZkZWYgQ09ORklHX0ZSRUVaRVIN
+Cj4gPiArCSZwbV9mcmVlemVfdGltZW91dF9hdHRyLmF0dHIsDQo+ID4gKyNlbmRpZg0KPiA+ICAJ
+TlVMTCwNCj4gPiAgfTsNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvcHJvY2Vz
+cy5jIGIva2VybmVsL3Bvd2VyL3Byb2Nlc3MuYw0KPiA+IGluZGV4IGQ1YTI1OGIuLjk4MDg4ZTAg
+MTAwNjQ0DQo+ID4gLS0tIGEva2VybmVsL3Bvd2VyL3Byb2Nlc3MuYw0KPiA+ICsrKyBiL2tlcm5l
+bC9wb3dlci9wcm9jZXNzLmMNCj4gPiBAQCAtMjEsNyArMjEsNyBAQA0KPiA+ICAvKg0KPiA+ICAg
+KiBUaW1lb3V0IGZvciBzdG9wcGluZyBwcm9jZXNzZXMNCj4gPiAgICovDQo+ID4gLSNkZWZpbmUg
+VElNRU9VVAkoMjAgKiBIWikNCj4gPiArdW5zaWduZWQgaW50IF9fcmVhZF9tb3N0bHkgZnJlZXpl
+X3RpbWVvdXRfbXNlY3MgPSAyMCAqIE1TRUNfUEVSX1NFQzsNCj4gPg0KPiA+ICBzdGF0aWMgaW50
+IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCB1c2VyX29ubHkpDQo+ID4gIHsNCj4gPiBAQCAtMzYs
+NyArMzYsNyBAQCBzdGF0aWMgaW50IHRyeV90b19mcmVlemVfdGFza3MoYm9vbCB1c2VyX29ubHkp
+DQo+ID4NCj4gPiAgCWRvX2dldHRpbWVvZmRheSgmc3RhcnQpOw0KPiA+DQo+ID4gLQllbmRfdGlt
+ZSA9IGppZmZpZXMgKyBUSU1FT1VUOw0KPiA+ICsJZW5kX3RpbWUgPSBqaWZmaWVzICsgbXNlY3Nf
+dG9famlmZmllcyhmcmVlemVfdGltZW91dF9tc2Vjcyk7DQo+ID4NCj4gPiAgCWlmICghdXNlcl9v
+bmx5KQ0KPiA+ICAJCWZyZWV6ZV93b3JrcXVldWVzX2JlZ2luKCk7DQo+ID4NCj4gLS0NCj4gSSBz
+cGVhayBvbmx5IGZvciBteXNlbGYuDQo+IFJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNv
+dXJjZSBUZWNobm9sb2d5IENlbnRlci4NCg==
