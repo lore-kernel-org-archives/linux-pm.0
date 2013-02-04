@@ -1,127 +1,206 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH] Thermal: fix iteration over CPU frequency list
-Date: Mon, 4 Feb 2013 11:51:48 -0800
-Message-ID: <CADGdYn5nceorbM1uoCDgBbcTY3y6r9m+MXUL=Ls1jT2h6gybHA@mail.gmail.com>
-References: <1359041045-24341-1-git-send-email-gu1@aeroxteam.fr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] PM: make VT switching to the suspend console optional v3
+Date: Mon, 04 Feb 2013 21:26:26 +0100
+Message-ID: <1452100.EKe1it2LWl@vostro.rjw.lan>
+References: <1359985042-2610-1-git-send-email-jbarnes@virtuousgeek.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f171.google.com ([209.85.223.171]:57543 "EHLO
-	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753311Ab3BDTvt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Feb 2013 14:51:49 -0500
-In-Reply-To: <1359041045-24341-1-git-send-email-gu1@aeroxteam.fr>
+Received: from hydra.sisk.pl ([212.160.235.94]:39302 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755033Ab3BDUUK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Feb 2013 15:20:10 -0500
+In-Reply-To: <1359985042-2610-1-git-send-email-jbarnes@virtuousgeek.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gu1 <gu1@aeroxteam.fr>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org
 
-On Thu, Jan 24, 2013 at 7:24 AM, Gu1 <gu1@aeroxteam.fr> wrote:
-> In different places in the Thermal code, the CPU frequency list is iterated
-> in an incorrect way, leading to endless loops when the frequency list contains
-> a CPUFREQ_TABLE_INVALID entry, which is the case by default in the the Exynos
-> 4x12 cpufreq driver, for example.
->
-> The frequency list is iterated with a while loop, and when a
-> CPUFREQ_TABLE_INVALID entry is encountered, the continue; statement is used to
-> skip it, but the index is not incremented, causing an endless loop.
->
-> A similar bug was fixed by hongbo.zhang in commit:
->   Thermal: fix bug of counting cpu frequencies
->
-> Signed-off-by: Gu1 <gu1@aeroxteam.fr>
-This changes looks fine.
+On Monday, February 04, 2013 01:37:20 PM Jesse Barnes wrote:
+> KMS drivers can potentially restore the display configuration without
+> userspace help.  Such drivers can can call a new funciton,
+> pm_vt_switch_required(false) if they support this feature.  In that
+> case, the PM layer won't VT switch to the suspend console at suspend
+> time and then back to the original VT on resume, but rather leave things
+> alone for a nicer looking suspend and resume sequence.
+> 
+> v2: make a function so we can handle multiple drivers (Alan)
+> v3: use a list to track device requests (Rafael)
+> 
+> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-Reviewed-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+for all [1-3/3].
 
 Thanks,
-Amit Daniel
+Rafael
+
 
 > ---
->  drivers/thermal/cpu_cooling.c    | 8 +++-----
->  drivers/thermal/exynos_thermal.c | 9 +++++----
->  2 files changed, 8 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 836828e..51acd26 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -123,7 +123,7 @@ static int is_cpufreq_valid(int cpu)
+>  include/linux/pm.h     |    4 ++
+>  kernel/power/console.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 119 insertions(+)
+> 
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 03d7bb1..98310eb 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -35,6 +35,10 @@ extern void (*pm_idle)(void);
+>  extern void (*pm_power_off)(void);
+>  extern void (*pm_power_off_prepare)(void);
+>  
+> +struct device; /* we have a circular dep with device.h */
+> +extern void pm_vt_switch_required(struct device *dev, bool required);
+> +extern void pm_vt_switch_unregister(struct device *dev);
+> +
+>  /*
+>   * Device power management
 >   */
->  static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+> diff --git a/kernel/power/console.c b/kernel/power/console.c
+> index b1dc456..4871ca9 100644
+> --- a/kernel/power/console.c
+> +++ b/kernel/power/console.c
+> @@ -4,6 +4,7 @@
+>   * Originally from swsusp.
+>   */
+>  
+> +#include <linux/console.h>
+>  #include <linux/vt_kern.h>
+>  #include <linux/kbd_kern.h>
+>  #include <linux/vt.h>
+> @@ -14,8 +15,119 @@
+>  
+>  static int orig_fgconsole, orig_kmsg;
+>  
+> +DEFINE_MUTEX(vt_switch_mutex);
+> +
+> +struct pm_vt_switch {
+> +	struct list_head head;
+> +	struct device *dev;
+> +	bool required;
+> +};
+> +
+> +LIST_HEAD(pm_vt_switch_list);
+> +
+> +
+> +/**
+> + * pm_vt_switch_required - indicate VT switch at suspend requirements
+> + * @dev: device
+> + * @required: if true, caller needs VT switch at suspend/resume time
+> + *
+> + * The different console drivers may or may not require VT switches across
+> + * suspend/resume, depending on how they handle restoring video state and
+> + * what may be running.
+> + *
+> + * Drivers can indicate support for switchless suspend/resume, which can
+> + * save time and flicker, by using this routine and passing 'false' as
+> + * the argument.  If any loaded driver needs VT switching, or the
+> + * no_console_suspend argument has been passed on the command line, VT
+> + * switches will occur.
+> + */
+> +void pm_vt_switch_required(struct device *dev, bool required)
+> +{
+> +	struct pm_vt_switch *entry, *tmp;
+> +
+> +	mutex_lock(&vt_switch_mutex);
+> +	list_for_each_entry(tmp, &pm_vt_switch_list, head) {
+> +		if (tmp->dev == dev) {
+> +			/* already registered, update requirement */
+> +			tmp->required = required;
+> +			goto out;
+> +		}
+> +	}
+> +
+> +	entry = kmalloc(sizeof(*entry), GFP_KERNEL);
+> +	if (!entry)
+> +		goto out;
+> +
+> +	entry->required = required;
+> +	entry->dev = dev;
+> +
+> +	list_add(&entry->head, &pm_vt_switch_list);
+> +out:
+> +	mutex_unlock(&vt_switch_mutex);
+> +}
+> +EXPORT_SYMBOL(pm_vt_switch_required);
+> +
+> +/**
+> + * pm_vt_switch_unregister - stop tracking a device's VT switching needs
+> + * @dev: device
+> + *
+> + * Remove @dev from the vt switch list.
+> + */
+> +void pm_vt_switch_unregister(struct device *dev)
+> +{
+> +	struct pm_vt_switch *tmp;
+> +
+> +	mutex_lock(&vt_switch_mutex);
+> +	list_for_each_entry(tmp, &pm_vt_switch_list, head) {
+> +		if (tmp->dev == dev) {
+> +			list_del(&tmp->head);
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&vt_switch_mutex);
+> +}
+> +
+> +/*
+> + * There are three cases when a VT switch on suspend/resume are required:
+> + *   1) no driver has indicated a requirement one way or another, so preserve
+> + *      the old behavior
+> + *   2) console suspend is disabled, we want to see debug messages across
+> + *      suspend/resume
+> + *   3) any registered driver indicates it needs a VT switch
+> + *
+> + * If none of these conditions is present, meaning we have at least one driver
+> + * that doesn't need the switch, and none that do, we can avoid it to make
+> + * resume look a little prettier (and suspend too, but that's usually hidden,
+> + * e.g. when closing the lid on a laptop).
+> + */
+> +static bool pm_vt_switch(void)
+> +{
+> +	struct pm_vt_switch *entry;
+> +	bool ret = true;
+> +
+> +	mutex_lock(&vt_switch_mutex);
+> +	if (list_empty(&pm_vt_switch_list))
+> +		goto out;
+> +
+> +	if (!console_suspend_enabled)
+> +		goto out;
+> +
+> +	list_for_each_entry(entry, &pm_vt_switch_list, head) {
+> +		if (entry->required)
+> +			goto out;
+> +	}
+> +
+> +	ret = false;
+> +out:
+> +	mutex_unlock(&vt_switch_mutex);
+> +	return ret;
+> +}
+> +
+>  int pm_prepare_console(void)
 >  {
-> -       int ret = 0, i = 0;
-> +       int ret = 0, i;
->         unsigned long level_index;
->         bool descend = false;
->         struct cpufreq_frequency_table *table =
-> @@ -131,7 +131,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
->         if (!table)
->                 return ret;
->
-> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
-> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->                         continue;
->
-> @@ -145,7 +145,6 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
->                 /*return if level matched and table in descending order*/
->                 if (descend && i == level)
->                         return table[i].frequency;
-> -               i++;
->         }
->         i--;
->
-> @@ -154,13 +153,12 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
->         level_index = i - level;
->
->         /*Scan the table in reverse order and match the level*/
-> -       while (i >= 0) {
-> +       for (; i >= 0; i--) {
->                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->                         continue;
->                 /*return if level matched*/
->                 if (i == level_index)
->                         return table[i].frequency;
-> -               i--;
->         }
->         return ret;
->  }
-> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-> index 224751e..fa9e1d7 100644
-> --- a/drivers/thermal/exynos_thermal.c
-> +++ b/drivers/thermal/exynos_thermal.c
-> @@ -233,7 +233,8 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
->
->  static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+> +	if (!pm_vt_switch())
+> +		return 0;
+> +
+>  	orig_fgconsole = vt_move_to_console(SUSPEND_CONSOLE, 1);
+>  	if (orig_fgconsole < 0)
+>  		return 1;
+> @@ -26,6 +138,9 @@ int pm_prepare_console(void)
+>  
+>  void pm_restore_console(void)
 >  {
-> -       int i = 0, ret = -EINVAL;
-> +       int i, ret = -EINVAL;
-> +       unsigned int count = 0;
->         struct cpufreq_frequency_table *table = NULL;
->  #ifdef CONFIG_CPU_FREQ
->         table = cpufreq_frequency_get_table(cpu);
-> @@ -241,12 +242,12 @@ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
->         if (!table)
->                 return ret;
->
-> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
-> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->                         continue;
->                 if (table[i].frequency == freq)
-> -                       return i;
-> -               i++;
-> +                       return count;
-> +               count++;
->         }
->         return ret;
->  }
-> --
-> 1.8.1.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +	if (!pm_vt_switch())
+> +		return;
+> +
+>  	if (orig_fgconsole >= 0) {
+>  		vt_move_to_console(orig_fgconsole, 0);
+>  		vt_kmsg_redirect(orig_kmsg);
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
