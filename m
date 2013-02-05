@@ -1,29 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: Convert the cpufreq_driver_lock to a rwlock
-Date: Tue, 5 Feb 2013 13:41:59 +0530
-Message-ID: <CAOh2x=kwADoQTv4jA9gcrVUyCP5HvA4FyZp7kfpB8nptgs+8UA@mail.gmail.com>
+Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Tue, 5 Feb 2013 13:58:20 +0530
+Message-ID: <CAOh2x=n+ASeLpGHexxDvPGrN6ia+bLnNUNCb-covGDoABVk_wQ@mail.gmail.com>
 References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
-	<1360017913-25667-2-git-send-email-nzimmer@sgi.com>
+	<2765418.Ft0GYkgNgL@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1360017913-25667-2-git-send-email-nzimmer@sgi.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:46507 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426Ab3BEI2W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 03:28:22 -0500
+In-Reply-To: <2765418.Ft0GYkgNgL@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, linaro-dev@lists.linaro.org
 
-On Tue, Feb 5, 2013 at 4:15 AM, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> This completely eliminates the contention I am seeing in __cpufreq_cpu_get.
-> It also nicely stages the lock to be replaced by the rcu.
+On Tue, Feb 5, 2013 at 6:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, February 04, 2013 04:45:11 PM Nathan Zimmer wrote:
+>> I am noticing the cpufreq_driver_lock is quite hot.
+>> On an idle 512 system perf shows me most of the system time is spent on this
+>> lock.  This is quite signifigant as top shows 5% of time in system time.
+>> My solution was to first convert the lock to a rwlock and then to the rcu.
+>>
+>>
+>> Nathan Zimmer (2):
+>>   cpufreq: Convert the cpufreq_driver_lock to a rwlock
+>>   cpufreq: Convert the cpufreq_driver_lock to use the rcu
+>>
+>>  drivers/cpufreq/cpufreq.c | 139 ++++++++++++++++++++++++++--------------------
+>>  1 file changed, 79 insertions(+), 60 deletions(-)
 >
-> CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 44 ++++++++++++++++++++++----------------------
->  1 file changed, 22 insertions(+), 22 deletions(-)
+> I like these changes.
+>
+> Viresh, anyone, any comments?
 
-You have rebased it against an old version of this file. Please rebase it on
-latest Rafael's linux-next branch.
+Hi Nathan/Rafael,
 
-The patch looks good otherwise.
+Even i liked the basic idea behind the patchset, but didn't like the way it
+is divided into patches. For me, it is highly discouraged to undo something
+that you added in the same patchset. And you did exactly the same thing.
+
+Patch 2 is revert of 1 + rcu stuff.
+
+So, i would expect a single patch, i.e. merge of both patches + rebased
+on latest stuff.
+
+--
+viresh
