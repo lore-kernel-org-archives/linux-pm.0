@@ -1,341 +1,271 @@
-From: Durgadoss R <durgadoss.r@intel.com>
-Subject: [PATCH 2/8] Thermal: Create zone level APIs
-Date: Tue,  5 Feb 2013 16:16:17 +0530
-Message-ID: <1360061183-14137-3-git-send-email-durgadoss.r@intel.com>
-References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com, Durgadoss R <durgadoss.r@intel.com>
+From: Mark Einon <mark.einon@gmail.com>
+Subject: [PATCH v3] firewire: Fix ohci free_irq() warning
+Date: Tue,  5 Feb 2013 10:58:46 +0000
+Message-ID: <1360061927-3359-1-git-send-email-mark.einon@gmail.com>
+References: <1359748245-3674-1-git-send-email-mark.einon@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux1394-devel-bounces@lists.sourceforge.net>
+In-Reply-To: <1359748245-3674-1-git-send-email-mark.einon@gmail.com>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=linux1394-devel>
+List-Post: <mailto:linux1394-devel@lists.sourceforge.net>
+List-Help: <mailto:linux1394-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: linux1394-devel-bounces@lists.sourceforge.net
+To: stefanr@s5r6.in-berlin.de
+Cc: Mark Einon <mark.einon@gmail.com>, linux1394-devel@lists.sourceforge.net, stern@rowland.harvard.edu, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds a new thermal_zone structure to
-thermal.h. Also, adds zone level APIs to the thermal
-framework.
+This patch fixes the kernel warning below, generated when putting an
+MSI MS-1727 GT740 laptop into suspend mode. The call sequence in this
+case calls free_irq() twice, once in pci_suspend() and once then in
+pci_remove().
 
-A thermal zone is a hot spot on the platform, which
-can have one or more sensors and cooling devices attached
-to it. These sensors can be mapped to a set of cooling
-devices, which when throttled, can help to bring down
-the temperature of the hot spot.
+The fix breaks up the ohci_enable() call into four separate calls -
+ohci_enable_regs(), ohci_create_irq(), ohci_enable_irq() and
+ohci_enable_run(). The original call sequence of ohci_enable() is replaced
+by the four calls, but the ohci_enable() called from pci_resume() is
+replaced by three of the calls, missing out ohci_create_irq().
 
-Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+Finally, a new call, ohci_disable_irq(), replaces the free_irq() in
+pci_suspend() which sets the irq mask to zero.
+
+[  262.299486] WARNING: at /build/buildd/linux-3.5.0/kernel/irq/manage.c:1198 __free_irq+0xa3/0x1e0()
+[  262.299487] Hardware name: MS-1727
+[  262.299488] Trying to free already-free IRQ 16
+[  262.299488] Modules linked in: ip6table_filter ip6_tables ebtable_nat ebtables xt_state ipt_REJECT xt_CHECKSUM iptable_mangle xt_tcpudp iptable_filter snd_hda_codec_hdmi ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables x_tables bridge stp llc joydev arc4 parport_pc ppdev coretemp kvm_intel snd_hda_codec_realtek kvm microcode snd_seq_midi snd_rawmidi psmouse snd_seq_midi_event serio_raw nvidia(PO) i7core_edac snd_seq edac_core snd_hda_intel iwlwifi snd_hda_codec jmb38x_ms snd_hwdep mac80211 snd_pcm lpc_ich memstick snd_seq_device cfg80211 snd_timer snd soundcore snd_page_alloc ir_lirc_codec lirc_dev ir_mce_kbd_decoder ir_sanyo_decoder ir_sony_decoder ir_jvc_decoder ir_rc6_decoder ir_rc5_decoder ir_nec_decoder rfcomm bnep rc_rc6_mce mxm_wmi ene_ir 
+ rc_core bluetooth wmi video acpiphp mac_hid lp parport binfmt_misc hid_generic usbhid hid firewire_ohci sdhci_pci r8169 firewire_core sdhci crc_itu_t
+[  262.299537] Pid: 4, comm: kworker/0:0 Tainted: P           O 3.5.0-22-generic #34-Ubuntu
+[  262.299538] Call Trace:
+[  262.299540]  [<ffffffff81051c1f>] warn_slowpath_common+0x7f/0xc0
+[  262.299545]  [<ffffffff81051d16>] warn_slowpath_fmt+0x46/0x50
+[  262.299548]  [<ffffffff8103fa39>] ? default_spin_lock_flags+0x9/0x10
+[  262.299551]  [<ffffffff810df6b3>] __free_irq+0xa3/0x1e0
+[  262.299554]  [<ffffffff810df844>] free_irq+0x54/0xc0
+[  262.299558]  [<ffffffffa005a27e>] pci_remove+0x6e/0x210 [firewire_ohci]
+[  262.299564]  [<ffffffff8135ae7f>] pci_device_remove+0x3f/0x110
+[  262.299569]  [<ffffffff8141fdbc>] __device_release_driver+0x7c/0xe0
+[  262.299573]  [<ffffffff8141fe4c>] device_release_driver+0x2c/0x40
+[  262.299576]  [<ffffffff8141f5f1>] bus_remove_device+0xe1/0x120
+[  262.299578]  [<ffffffff8141cd1a>] device_del+0x12a/0x1c0
+[  262.299581]  [<ffffffff8141cdc6>] device_unregister+0x16/0x30
+[  262.299583]  [<ffffffff81354784>] pci_stop_bus_device+0x94/0xa0
+[  262.299588]  [<ffffffffa0091c67>] acpiphp_disable_slot+0xb7/0x1a0 [acpiphp]
+[  262.299594]  [<ffffffffa0090716>] ? get_slot_status+0x46/0xc0 [acpiphp]
+[  262.299599]  [<ffffffffa0091d7d>] acpiphp_check_bridge.isra.15+0x2d/0xf0 [acpiphp]
+[  262.299604]  [<ffffffffa0092442>] _handle_hotplug_event_bridge+0x372/0x4d0 [acpiphp]
+[  262.299608]  [<ffffffff81390f8c>] ? acpi_os_execute_deferred+0x2f/0x34
+[  262.299612]  [<ffffffff8116e22d>] ? kfree+0xed/0x110
+[  262.299617]  [<ffffffff8107086a>] process_one_work+0x12a/0x420
+[  262.299620]  [<ffffffffa00920d0>] ? _handle_hotplug_event_func+0x1d0/0x1d0 [acpiphp]
+[  262.299625]  [<ffffffff8107141e>] worker_thread+0x12e/0x2f0
+[  262.299627]  [<ffffffff810712f0>] ? manage_workers.isra.26+0x200/0x200
+[  262.299629]  [<ffffffff81075f13>] kthread+0x93/0xa0
+[  262.299632]  [<ffffffff8168d024>] kernel_thread_helper+0x4/0x10
+[  262.299636]  [<ffffffff81075e80>] ? kthread_freezable_should_stop+0x70/0x70
+[  262.299639]  [<ffffffff8168d020>] ? gs_change+0x13/0x13
+[  262.299641] ---[ end trace 3f830890e076911f ]---
+
+Signed-off-by: Mark Einon <mark.einon@gmail.com>
 ---
- drivers/thermal/thermal_sys.c |  196 +++++++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h       |   22 +++++
- 2 files changed, 218 insertions(+)
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index cb94497..838d4fb 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -43,19 +43,46 @@ MODULE_DESCRIPTION("Generic thermal management sysfs support");
- MODULE_LICENSE("GPL");
- 
- static DEFINE_IDR(thermal_tz_idr);
-+static DEFINE_IDR(thermal_zone_idr);
- static DEFINE_IDR(thermal_cdev_idr);
- static DEFINE_IDR(thermal_sensor_idr);
- static DEFINE_MUTEX(thermal_idr_lock);
- 
- static LIST_HEAD(thermal_tz_list);
- static LIST_HEAD(thermal_sensor_list);
-+static LIST_HEAD(thermal_zone_list);
- static LIST_HEAD(thermal_cdev_list);
- static LIST_HEAD(thermal_governor_list);
- 
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(sensor_list_lock);
-+static DEFINE_MUTEX(zone_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+#define for_each_thermal_sensor(pos) \
-+	list_for_each_entry(pos, &thermal_sensor_list, node)
-+
-+#define for_each_thermal_zone(pos) \
-+	list_for_each_entry(pos, &thermal_zone_list, node)
-+
-+#define GET_INDEX(tz, ptr, type)			\
-+({							\
-+	int i, ret = -EINVAL;				\
-+	do {						\
-+		if (!tz || !ptr)			\
-+			break;				\
-+		mutex_lock(&type##_list_lock);		\
-+		for (i = 0; i < tz->type##_indx; i++) {	\
-+			if (tz->type##s[i] == ptr) {	\
-+				ret = i;		\
-+				break;			\
-+			}				\
-+		}					\
-+		mutex_unlock(&type##_list_lock);	\
-+	} while (0);					\
-+	ret;						\
-+})
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
-@@ -421,15 +448,44 @@ static void thermal_zone_device_check(struct work_struct *work)
- 	thermal_zone_device_update(tz);
+Note - This patch has only been tested with a firewire controller, and
+not subsequently with any devices plugged into the controller.
+
+ drivers/firewire/ohci.c |  134 ++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 91 insertions(+), 43 deletions(-)
+
+diff --git a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
+index 45912e6..56814b8 100644
+--- a/drivers/firewire/ohci.c
++++ b/drivers/firewire/ohci.c
+@@ -2242,12 +2242,69 @@ static int probe_tsb41ba3d(struct fw_ohci *ohci)
+ 	return 1;
  }
  
-+static void remove_sensor_from_zone(struct thermal_zone *tz,
-+				struct thermal_sensor *ts)
-+{
-+	int j, indx;
-+
-+	indx = GET_INDEX(tz, ts, sensor);
-+	if (indx < 0)
-+		return;
-+
-+	sysfs_remove_link(&tz->device.kobj, kobject_name(&ts->device.kobj));
-+
-+	/* Shift the entries in the tz->sensors array */
-+	for (j = indx; j < MAX_SENSORS_PER_ZONE - 1; j++)
-+		tz->sensors[j] = tz->sensors[j + 1];
-+
-+	tz->sensor_indx--;
-+}
-+
- /* sys I/F for thermal zone */
- 
- #define to_thermal_zone(_dev) \
- 	container_of(_dev, struct thermal_zone_device, device)
- 
-+#define to_zone(_dev) \
-+	container_of(_dev, struct thermal_zone, device)
-+
- #define to_thermal_sensor(_dev) \
- 	container_of(_dev, struct thermal_sensor, device)
- 
- static ssize_t
-+zone_name_show(struct device *dev, struct device_attribute *attr, char *buf)
-+{
-+	struct thermal_zone *tz = to_zone(dev);
-+
-+	return sprintf(buf, "%s\n", tz->name);
-+}
-+
-+static ssize_t
- sensor_name_show(struct device *dev, struct device_attribute *attr, char *buf)
+-static int ohci_enable(struct fw_card *card,
+-		       const __be32 *config_rom, size_t length)
++static int ohci_create_irq(struct fw_card *card)
  {
- 	struct thermal_sensor *ts = to_thermal_sensor(dev);
-@@ -811,6 +867,8 @@ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(sensor_name, 0444, sensor_name_show, NULL);
- static DEVICE_ATTR(temp_input, 0444, sensor_temp_show, NULL);
- 
-+static DEVICE_ATTR(zone_name, 0444, zone_name_show, NULL);
+ 	struct fw_ohci *ohci = fw_ohci(card);
+ 	struct pci_dev *dev = to_pci_dev(card->device);
+-	u32 lps, version, irqs;
 +
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
-@@ -1656,6 +1714,136 @@ static int enable_sensor_thresholds(struct thermal_sensor *ts, int count)
++	if (!(ohci->quirks & QUIRK_NO_MSI))
++		pci_enable_msi(dev);
++	if (request_irq(dev->irq, irq_handler,
++			pci_dev_msi_enabled(dev) ? 0 : IRQF_SHARED,
++			ohci_driver_name, ohci)) {
++		dev_err(card->device, "failed to allocate interrupt %d\n",
++			dev->irq);
++		pci_disable_msi(dev);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++static void ohci_disable_irq(struct fw_ohci *ohci)
++{
++	reg_write(ohci, OHCI1394_IntMaskSet, 0);
++
++	reg_write(ohci, OHCI1394_HCControlSet,
++		  ~(OHCI1394_HCControl_linkEnable &
++		  OHCI1394_HCControl_BIBimageValid));
++
++	reg_write(ohci, OHCI1394_LinkControlSet,
++		  ~(OHCI1394_LinkControl_rcvSelfID &
++		  OHCI1394_LinkControl_rcvPhyPkt));
++}
++
++static void ohci_enable_irq(struct fw_ohci *ohci)
++{
++	int irqs = OHCI1394_reqTxComplete | OHCI1394_respTxComplete |
++		   OHCI1394_RQPkt | OHCI1394_RSPkt |
++		   OHCI1394_isochTx | OHCI1394_isochRx |
++		   OHCI1394_postedWriteErr |
++		   OHCI1394_selfIDComplete |
++		   OHCI1394_regAccessFail |
++		   OHCI1394_cycleInconsistent |
++		   OHCI1394_unrecoverableError |
++		   OHCI1394_cycleTooLong |
++		   OHCI1394_masterIntEnable;
++
++	if (param_debug & OHCI_PARAM_DEBUG_BUSRESETS)
++		irqs |= OHCI1394_busReset;
++	reg_write(ohci, OHCI1394_IntMaskSet, irqs);
++
++	reg_write(ohci, OHCI1394_HCControlSet,
++		  OHCI1394_HCControl_linkEnable |
++		  OHCI1394_HCControl_BIBimageValid);
++
++	reg_write(ohci, OHCI1394_LinkControlSet,
++		  OHCI1394_LinkControl_rcvSelfID |
++		  OHCI1394_LinkControl_rcvPhyPkt);
++}
++
++static int ohci_enable_regs(struct fw_card *card,
++			    const __be32 *config_rom, size_t length)
++{
++	struct fw_ohci *ohci = fw_ohci(card);
++	u32 lps, version;
+ 	int i, ret;
+ 
+ 	if (software_reset(ohci)) {
+@@ -2382,53 +2439,41 @@ static int ohci_enable(struct fw_card *card,
+ 
+ 	reg_write(ohci, OHCI1394_AsReqFilterHiSet, 0x80000000);
+ 
+-	if (!(ohci->quirks & QUIRK_NO_MSI))
+-		pci_enable_msi(dev);
+-	if (request_irq(dev->irq, irq_handler,
+-			pci_dev_msi_enabled(dev) ? 0 : IRQF_SHARED,
+-			ohci_driver_name, ohci)) {
+-		dev_err(card->device, "failed to allocate interrupt %d\n",
+-			dev->irq);
+-		pci_disable_msi(dev);
++	return 0;
++}
++
++static void ohci_enable_run(struct fw_ohci *ohci)
++{
++	ar_context_run(&ohci->ar_request_ctx);
++	ar_context_run(&ohci->ar_response_ctx);
+ 
++	flush_writes(ohci);
++
++	/* We are ready to go, reset bus to finish initialization. */
++	fw_schedule_bus_reset(&ohci->card, false, true);
++}
++
++static int ohci_enable(struct fw_card *card,
++		       const __be32 *config_rom, size_t length)
++{
++	struct fw_ohci *ohci = fw_ohci(card);
++	int ret;
++
++	ohci_enable_regs(card, config_rom, length);
++
++	ret = ohci_create_irq(card);
++	if (ret) {
+ 		if (config_rom) {
+ 			dma_free_coherent(ohci->card.device, CONFIG_ROM_SIZE,
+ 					  ohci->next_config_rom,
+ 					  ohci->next_config_rom_bus);
+ 			ohci->next_config_rom = NULL;
+ 		}
+-		return -EIO;
++		return ret;
+ 	}
+ 
+-	irqs =	OHCI1394_reqTxComplete | OHCI1394_respTxComplete |
+-		OHCI1394_RQPkt | OHCI1394_RSPkt |
+-		OHCI1394_isochTx | OHCI1394_isochRx |
+-		OHCI1394_postedWriteErr |
+-		OHCI1394_selfIDComplete |
+-		OHCI1394_regAccessFail |
+-		OHCI1394_cycleInconsistent |
+-		OHCI1394_unrecoverableError |
+-		OHCI1394_cycleTooLong |
+-		OHCI1394_masterIntEnable;
+-	if (param_debug & OHCI_PARAM_DEBUG_BUSRESETS)
+-		irqs |= OHCI1394_busReset;
+-	reg_write(ohci, OHCI1394_IntMaskSet, irqs);
+-
+-	reg_write(ohci, OHCI1394_HCControlSet,
+-		  OHCI1394_HCControl_linkEnable |
+-		  OHCI1394_HCControl_BIBimageValid);
+-
+-	reg_write(ohci, OHCI1394_LinkControlSet,
+-		  OHCI1394_LinkControl_rcvSelfID |
+-		  OHCI1394_LinkControl_rcvPhyPkt);
+-
+-	ar_context_run(&ohci->ar_request_ctx);
+-	ar_context_run(&ohci->ar_response_ctx);
+-
+-	flush_writes(ohci);
+-
+-	/* We are ready to go, reset bus to finish initialization. */
+-	fw_schedule_bus_reset(&ohci->card, false, true);
++	ohci_enable_irq(ohci);
++	ohci_enable_run(ohci);
+ 
  	return 0;
  }
+@@ -3766,7 +3811,7 @@ static int pci_suspend(struct pci_dev *dev, pm_message_t state)
+ 	int err;
  
-+struct thermal_zone *create_thermal_zone(const char *name, void *devdata)
-+{
-+	struct thermal_zone *tz;
-+	int ret;
-+
-+	if (!name || (name && strlen(name) >= THERMAL_NAME_LENGTH))
-+		return ERR_PTR(-EINVAL);
-+
-+	tz = kzalloc(sizeof(*tz), GFP_KERNEL);
-+	if (!tz)
-+		return ERR_PTR(-ENOMEM);
-+
-+	idr_init(&tz->idr);
-+	ret = get_idr(&thermal_zone_idr, &thermal_idr_lock, &tz->id);
-+	if (ret)
-+		goto exit_free;
-+
-+	strcpy(tz->name, name);
-+	tz->devdata = devdata;
-+	tz->device.class = &thermal_class;
-+
-+	dev_set_name(&tz->device, "zone%d", tz->id);
-+	ret = device_register(&tz->device);
-+	if (ret)
-+		goto exit_idr;
-+
-+	ret = device_create_file(&tz->device, &dev_attr_zone_name);
-+	if (ret)
-+		goto exit_unregister;
-+
-+	/* Add this zone to the global list of thermal zones */
-+	mutex_lock(&zone_list_lock);
-+	list_add_tail(&tz->node, &thermal_zone_list);
-+	mutex_unlock(&zone_list_lock);
-+	return tz;
-+
-+exit_unregister:
-+	device_unregister(&tz->device);
-+exit_idr:
-+	release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
-+exit_free:
-+	kfree(tz);
-+	return ERR_PTR(ret);
-+}
-+EXPORT_SYMBOL(create_thermal_zone);
-+
-+void remove_thermal_zone(struct thermal_zone *tz)
-+{
-+	struct thermal_zone *pos, *next;
-+	bool found = false;
-+
-+	if (!tz)
-+		return;
-+
-+	mutex_lock(&zone_list_lock);
-+
-+	list_for_each_entry_safe(pos, next, &thermal_zone_list, node) {
-+		if (pos == tz) {
-+			list_del(&tz->node);
-+			found = true;
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		goto exit;
-+
-+	device_remove_file(&tz->device, &dev_attr_zone_name);
-+
-+	release_idr(&thermal_zone_idr, &thermal_idr_lock, tz->id);
-+	idr_destroy(&tz->idr);
-+
-+	device_unregister(&tz->device);
-+	kfree(tz);
-+exit:
-+	mutex_unlock(&zone_list_lock);
-+	return;
-+}
-+EXPORT_SYMBOL(remove_thermal_zone);
-+
-+struct thermal_sensor *get_sensor_by_name(const char *name)
-+{
-+	struct thermal_sensor *pos;
-+	struct thermal_sensor *ts = NULL;
-+
-+	mutex_lock(&sensor_list_lock);
-+	for_each_thermal_sensor(pos) {
-+		if (!strnicmp(pos->name, name, THERMAL_NAME_LENGTH)) {
-+			ts = pos;
-+			break;
-+		}
-+	}
-+	mutex_unlock(&sensor_list_lock);
-+	return ts;
-+}
-+EXPORT_SYMBOL(get_sensor_by_name);
-+
-+int add_sensor_to_zone(struct thermal_zone *tz, struct thermal_sensor *ts)
-+{
-+	int ret;
-+
-+	if (!tz || !ts)
-+		return -EINVAL;
-+
-+	mutex_lock(&zone_list_lock);
-+
-+	/* Ensure we are not adding the same sensor again!! */
-+	ret = GET_INDEX(tz, ts, sensor);
-+	if (ret >= 0) {
-+		ret = -EEXIST;
-+		goto exit_zone;
-+	}
-+
-+	mutex_lock(&sensor_list_lock);
-+
-+	ret = sysfs_create_link(&tz->device.kobj, &ts->device.kobj,
-+				kobject_name(&ts->device.kobj));
-+	if (ret)
-+		goto exit_sensor;
-+
-+	tz->sensors[tz->sensor_indx++] = ts;
-+
-+exit_sensor:
-+	mutex_unlock(&sensor_list_lock);
-+exit_zone:
-+	mutex_unlock(&zone_list_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL(add_sensor_to_zone);
-+
- /**
-  * thermal_sensor_register - register a new thermal sensor
-  * @name:	name of the thermal sensor
-@@ -1732,6 +1920,7 @@ EXPORT_SYMBOL(thermal_sensor_register);
- void thermal_sensor_unregister(struct thermal_sensor *ts)
- {
- 	int i;
-+	struct thermal_zone *tz;
- 	struct thermal_sensor *pos, *next;
- 	bool found = false;
+ 	software_reset(ohci);
+-	free_irq(dev->irq, ohci);
++	ohci_disable_irq(ohci);
+ 	pci_disable_msi(dev);
+ 	err = pci_save_state(dev);
+ 	if (err) {
+@@ -3802,10 +3847,13 @@ static int pci_resume(struct pci_dev *dev)
+ 		reg_write(ohci, OHCI1394_GUIDHi, (u32)(ohci->card.guid >> 32));
+ 	}
  
-@@ -1751,6 +1940,13 @@ void thermal_sensor_unregister(struct thermal_sensor *ts)
- 	if (!found)
- 		return;
+-	err = ohci_enable(&ohci->card, NULL, 0);
++	err = ohci_enable_regs(&ohci->card, NULL, 0);
+ 	if (err)
+ 		return err;
  
-+	mutex_lock(&zone_list_lock);
++	ohci_enable_irq(ohci);
++	ohci_enable_run(ohci);
 +
-+	for_each_thermal_zone(tz)
-+		remove_sensor_from_zone(tz, ts);
-+
-+	mutex_unlock(&zone_list_lock);
-+
- 	for (i = 0; i < ts->thresholds; i++) {
- 		device_remove_file(&ts->device, &ts->thresh_attrs[i].attr);
- 		if (ts->ops->get_hyst) {
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5470dae..2194519 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -55,6 +55,8 @@
- #define DEFAULT_THERMAL_GOVERNOR       "user_space"
- #endif
+ 	ohci_resume_iso_dma(ohci);
  
-+#define MAX_SENSORS_PER_ZONE		5
-+
- struct thermal_sensor;
- struct thermal_zone_device;
- struct thermal_cooling_device;
-@@ -202,6 +204,21 @@ struct thermal_zone_device {
- 	struct delayed_work poll_queue;
- };
- 
-+struct thermal_zone {
-+	char name[THERMAL_NAME_LENGTH];
-+	int id;
-+	void *devdata;
-+	struct thermal_zone *ops;
-+	struct thermal_governor *governor;
-+	struct idr idr;
-+	struct device device;
-+	struct list_head node;
-+
-+	/* Sensor level information */
-+	int sensor_indx; /* index into 'sensors' array */
-+	struct thermal_sensor *sensors[MAX_SENSORS_PER_ZONE];
-+};
-+
- /* Structure that holds thermal governor information */
- struct thermal_governor {
- 	char name[THERMAL_NAME_LENGTH];
-@@ -274,6 +291,11 @@ struct thermal_sensor *thermal_sensor_register(const char *, int,
- 				struct thermal_sensor_ops *, void *);
- void thermal_sensor_unregister(struct thermal_sensor *);
- 
-+struct thermal_zone *create_thermal_zone(const char *, void *);
-+void remove_thermal_zone(struct thermal_zone *);
-+int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
-+struct thermal_sensor *get_sensor_by_name(const char *);
-+
- #ifdef CONFIG_NET
- extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
- 						enum events event);
+ 	return 0;
 -- 
-1.7.9.5
+1.7.10.4
+
+
+------------------------------------------------------------------------------
+Free Next-Gen Firewall Hardware Offer
+Buy your Sophos next-gen firewall before the end March 2013 
+and get the hardware for free! Learn more.
+http://p.sf.net/sfu/sophos-d2d-feb
