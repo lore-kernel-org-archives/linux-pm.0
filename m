@@ -1,39 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
-Date: Tue, 05 Feb 2013 02:07:18 +0100
-Message-ID: <2765418.Ft0GYkgNgL@vostro.rjw.lan>
-References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
+Subject: Re: BUG in bleeding edge c560f3d
+Date: Tue, 05 Feb 2013 03:43:20 +0100
+Message-ID: <2585398.78DPBR35EF@vostro.rjw.lan>
+References: <511033EA.7090604@gmail.com> <3463348.tWNCISaOfi@vostro.rjw.lan> <51104CC7.8030800@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:41088 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751215Ab3BEBBB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Feb 2013 20:01:01 -0500
-In-Reply-To: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51104CC7.8030800@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nathan Zimmer <nzimmer@sgi.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
 
-On Monday, February 04, 2013 04:45:11 PM Nathan Zimmer wrote:
-> I am noticing the cpufreq_driver_lock is quite hot.
-> On an idle 512 system perf shows me most of the system time is spent on this
-> lock.  This is quite signifigant as top shows 5% of time in system time.
-> My solution was to first convert the lock to a rwlock and then to the rcu.
-> 
-> 
-> Nathan Zimmer (2):
->   cpufreq: Convert the cpufreq_driver_lock to a rwlock
->   cpufreq: Convert the cpufreq_driver_lock to use the rcu
-> 
->  drivers/cpufreq/cpufreq.c | 139 ++++++++++++++++++++++++++--------------------
->  1 file changed, 79 insertions(+), 60 deletions(-)
+On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
+> On 02/04/2013 04:09 PM, Rafael J. Wysocki wrote:
+> > On Monday, February 04, 2013 02:19:22 PM Dirk Brandewie wrote:
+> >> Hi All,
+> >>
+> >> There is a bug in the bleeding-edge branch. Using the ondemand governor
+> >> and acpi_cpufreq scaling driver the system hangs while trying to reboot or
+> >> trying to offline a cpu manually.  The last call where I have tracing turned
+> >> on is __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+> >>
+> >> [   38.138236] __cpufreq_remove_dev: cpufreq: __cpufreq_remove_dev:
+> >> unregistering CPU 1
+> >> [   38.146663] __cpufreq_governor: cpufreq: __cpufreq_governor for CPU 0, event 2
+> >> [   71.562262] ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+> >>
+> >>
+> >> It looks like the breakage comes from the removal of the sysfs files in the
+> >> incorrect order.  While rebasing my patches onto bleeding edge I found this
+> >> problem as well.  I have a couple of hack patches that workaround the issue
+> >> when using my driver if anyone would like to see them.
+> >
+> > There have been a few fixes since c560f3d, they are in linux-pm.git/linux-next
+> > now.  Can you please test that tree and see if the problem is still there?
+> >
+> Rebased a couple of hours ago testing now.  ATM it looks like it is related to
+> cpufreq_stats handling of the sysfs files
 
-I like these changes.
-
-Viresh, anyone, any comments?
+This looks like a problem with commit b8eed8a.  Viresh?
 
 Rafael
 
