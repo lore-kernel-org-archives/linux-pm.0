@@ -1,57 +1,57 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v5 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for Exynos5250
-Date: Tue, 5 Feb 2013 18:56:31 +0900
-Message-ID: <CAJ0PZbT5csFuLpxTTTXqCOApYsOKM4z8r-cTAL3w3vLmA8mKvw@mail.gmail.com>
-References: <1358515490-7565-1-git-send-email-a.kesavan@samsung.com>
-	<1359980088-20799-1-git-send-email-a.kesavan@samsung.com>
-Reply-To: myungjoo.ham@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Tue, 05 Feb 2013 11:03:13 +0100
+Message-ID: <3480441.gCEh0J5edK@vostro.rjw.lan>
+References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com> <2765418.Ft0GYkgNgL@vostro.rjw.lan> <CAOh2x=n+ASeLpGHexxDvPGrN6ia+bLnNUNCb-covGDoABVk_wQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f52.google.com ([209.85.215.52]:43076 "EHLO
-	mail-la0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092Ab3BEJ4d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 04:56:33 -0500
-In-Reply-To: <1359980088-20799-1-git-send-email-a.kesavan@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=n+ASeLpGHexxDvPGrN6ia+bLnNUNCb-covGDoABVk_wQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, linaro-dev@lists.linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Abhilash Kesavan <a.kesavan@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jonghwan Choi <jhbird.choi@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
 
-On Mon, Feb 4, 2013 at 9:14 PM, Abhilash Kesavan <a.kesavan@samsung.com> wrote:
-> Exynos5-bus device devfreq driver monitors PPMU counters and
-> adjusts operating frequencies and voltages with OPP. ASV should
-> be used to provide appropriate voltages as per the speed group
-> of the SoC rather than using a constant 1.025V.
+On Tuesday, February 05, 2013 01:58:20 PM Viresh Kumar wrote:
+> On Tue, Feb 5, 2013 at 6:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday, February 04, 2013 04:45:11 PM Nathan Zimmer wrote:
+> >> I am noticing the cpufreq_driver_lock is quite hot.
+> >> On an idle 512 system perf shows me most of the system time is spent on this
+> >> lock.  This is quite signifigant as top shows 5% of time in system time.
+> >> My solution was to first convert the lock to a rwlock and then to the rcu.
+> >>
+> >>
+> >> Nathan Zimmer (2):
+> >>   cpufreq: Convert the cpufreq_driver_lock to a rwlock
+> >>   cpufreq: Convert the cpufreq_driver_lock to use the rcu
+> >>
+> >>  drivers/cpufreq/cpufreq.c | 139 ++++++++++++++++++++++++++--------------------
+> >>  1 file changed, 79 insertions(+), 60 deletions(-)
+> >
+> > I like these changes.
+> >
+> > Viresh, anyone, any comments?
+> 
+> Hi Nathan/Rafael,
+> 
+> Even i liked the basic idea behind the patchset, but didn't like the way it
+> is divided into patches. For me, it is highly discouraged to undo something
+> that you added in the same patchset. And you did exactly the same thing.
+> 
+> Patch 2 is revert of 1 + rcu stuff.
+> 
+> So, i would expect a single patch, i.e. merge of both patches + rebased
+> on latest stuff.
 
-applied. thanks.
+I actually don't agree with that, becuase the Nathan's apprach shows the
+reasoning that leads to the RCU introduction quite clearly.  So if you
+don't have technical problems with the patchset, I'm going to take it as is.
 
+Thanks,
+Rafael
 
-
-ps. Devfreq patches are stacking up at devfreq's for-rafael branch and
-will be pull-requested for 3.9 soon.
-
-
-
->
-> Signed-off-by: Abhilash Kesavan <a.kesavan@samsung.com>
-> Cc: Jonghwan Choi <jhbird.choi@samsung.com>
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> ---
-> Changes since RFC v1:
-> * Moved the Exynos5 PPMU driver to machine specific directory
-> * Migrated to the PM QOS framework
-> Changes since v2:
-> * Moved the PPMU driver to drivers/devfreq/exynos
-> * Fixed whitespace, commenting, empty lines in PPMU driver
-> Changes since v3:
-> * Removed the custom devfreq monitor and PPMU polling function
-> * Moved exynos5 PPMU access functions to the devfreq driver
-> Changes since v4:
-> * Fixed compilation errors due to presence of devinit/devexit
-> * Moved exynos ppmu header to the drivers/devfreq/exynos directory
->
 
 -- 
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab, DMC Business, Samsung Electronics
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
