@@ -1,59 +1,43 @@
-From: Borislav Petkov <bp@alien8.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 10:15:32 +0100
-Message-ID: <20130205091532.GA4827@pd.tnic>
-References: <20130204130403.GD13909@pd.tnic>
- <CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
- <20130204133648.GE13909@pd.tnic>
- <CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
- <20130204140908.GC15452@pd.tnic>
- <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
- <20130204150511.GF13909@pd.tnic>
- <CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
- <20130204165057.GH13909@pd.tnic>
- <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
+Date: Tue, 5 Feb 2013 15:06:12 +0530
+Message-ID: <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
+References: <cover.1359976493.git.viresh.kumar@linaro.org>
+	<5808458.pvV2iHpBWm@vostro.rjw.lan>
+	<CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
+	<20130204123221.GA22340@pd.tnic>
+	<CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
+	<20130204130403.GD13909@pd.tnic>
+	<CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
+	<20130204133648.GE13909@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:43177 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754201Ab3BEJPf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Feb 2013 04:15:35 -0500
-Content-Disposition: inline
-In-Reply-To: <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:46197 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753930Ab3BEJgN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 04:36:13 -0500
+Received: by mail-ob0-f181.google.com with SMTP id ni5so7311723obc.26
+        for <linux-pm@vger.kernel.org>; Tue, 05 Feb 2013 01:36:12 -0800 (PST)
+In-Reply-To: <20130204133648.GE13909@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
+To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On Tue, Feb 05, 2013 at 12:50:31PM +0530, Viresh Kumar wrote:
-> > I think this is cleaner but whatever - I don't care that much. My
-> > only strong concern is that this thing should be a Kconfig option and
-> > optional for arches where it doesn't apply.
-> 
-> Your concern is: we don't want to fix userspace for existing platforms
-> where we have just a single cluster and so struct policy in the system.
+On 4 February 2013 19:06, Borislav Petkov <bp@alien8.de> wrote:
+> On Mon, Feb 04, 2013 at 06:55:25PM +0530, Viresh Kumar wrote:
 
-No, as I said so many times already and you're unwilling to understand
-it: multiple policies support in cpufreq should be optional and
-selectable in Kconfig so that systems which don't need that, don't
-have to see or use it. It is yet another feature which doesn't apply
-universally so we make such features optional. Like the rest of the
-gazillion things in the kernel already.
+>> Its not only for multicluster system, but a system where multiple cpus
+>> have separate clock control and hence multiple policy structures.
+>
+> What are those systems? Examples?
 
-The existing sysfs layout cannot be changed because you're breaking
-userspace and we don't do that. It is that simple.
+Qualcomm's ARM based "krait". Currently shipping in millions of Android
+phones.
 
-Concerning adding new sysfs entries, I told you to make it as easy as
-possible and as sensible as possible, dictated by the use cases. If you
-can't come up with some, then talk to the people who are going to use
-your design and ask them what makes sense the most.
+http://en.wikipedia.org/wiki/Krait_(CPU)
 
-*Then* write the code.
+Thanks Charles for pointing it out, I knew there is one :)
 
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
 --
+viresh
