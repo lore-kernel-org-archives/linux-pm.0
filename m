@@ -1,51 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
-Date: Tue, 5 Feb 2013 13:58:20 +0530
-Message-ID: <CAOh2x=n+ASeLpGHexxDvPGrN6ia+bLnNUNCb-covGDoABVk_wQ@mail.gmail.com>
-References: <1360017913-25667-1-git-send-email-nzimmer@sgi.com>
-	<2765418.Ft0GYkgNgL@vostro.rjw.lan>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Tue, 5 Feb 2013 10:15:32 +0100
+Message-ID: <20130205091532.GA4827@pd.tnic>
+References: <20130204130403.GD13909@pd.tnic>
+ <CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
+ <20130204133648.GE13909@pd.tnic>
+ <CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
+ <20130204140908.GC15452@pd.tnic>
+ <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
+ <20130204150511.GF13909@pd.tnic>
+ <CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
+ <20130204165057.GH13909@pd.tnic>
+ <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:46507 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426Ab3BEI2W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 03:28:22 -0500
-In-Reply-To: <2765418.Ft0GYkgNgL@vostro.rjw.lan>
+Received: from mail.skyhub.de ([78.46.96.112]:43177 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754201Ab3BEJPf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Feb 2013 04:15:35 -0500
+Content-Disposition: inline
+In-Reply-To: <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, linaro-dev@lists.linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 
-On Tue, Feb 5, 2013 at 6:37 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, February 04, 2013 04:45:11 PM Nathan Zimmer wrote:
->> I am noticing the cpufreq_driver_lock is quite hot.
->> On an idle 512 system perf shows me most of the system time is spent on this
->> lock.  This is quite signifigant as top shows 5% of time in system time.
->> My solution was to first convert the lock to a rwlock and then to the rcu.
->>
->>
->> Nathan Zimmer (2):
->>   cpufreq: Convert the cpufreq_driver_lock to a rwlock
->>   cpufreq: Convert the cpufreq_driver_lock to use the rcu
->>
->>  drivers/cpufreq/cpufreq.c | 139 ++++++++++++++++++++++++++--------------------
->>  1 file changed, 79 insertions(+), 60 deletions(-)
->
-> I like these changes.
->
-> Viresh, anyone, any comments?
+On Tue, Feb 05, 2013 at 12:50:31PM +0530, Viresh Kumar wrote:
+> > I think this is cleaner but whatever - I don't care that much. My
+> > only strong concern is that this thing should be a Kconfig option and
+> > optional for arches where it doesn't apply.
+> 
+> Your concern is: we don't want to fix userspace for existing platforms
+> where we have just a single cluster and so struct policy in the system.
 
-Hi Nathan/Rafael,
+No, as I said so many times already and you're unwilling to understand
+it: multiple policies support in cpufreq should be optional and
+selectable in Kconfig so that systems which don't need that, don't
+have to see or use it. It is yet another feature which doesn't apply
+universally so we make such features optional. Like the rest of the
+gazillion things in the kernel already.
 
-Even i liked the basic idea behind the patchset, but didn't like the way it
-is divided into patches. For me, it is highly discouraged to undo something
-that you added in the same patchset. And you did exactly the same thing.
+The existing sysfs layout cannot be changed because you're breaking
+userspace and we don't do that. It is that simple.
 
-Patch 2 is revert of 1 + rcu stuff.
+Concerning adding new sysfs entries, I told you to make it as easy as
+possible and as sensible as possible, dictated by the use cases. If you
+can't come up with some, then talk to the people who are going to use
+your design and ask them what makes sense the most.
 
-So, i would expect a single patch, i.e. merge of both patches + rebased
-on latest stuff.
+*Then* write the code.
 
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
 --
-viresh
