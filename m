@@ -1,43 +1,98 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 15:06:12 +0530
-Message-ID: <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
-References: <cover.1359976493.git.viresh.kumar@linaro.org>
-	<5808458.pvV2iHpBWm@vostro.rjw.lan>
-	<CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
-	<20130204123221.GA22340@pd.tnic>
-	<CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
-	<20130204130403.GD13909@pd.tnic>
-	<CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
-	<20130204133648.GE13909@pd.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:46197 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753930Ab3BEJgN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 04:36:13 -0500
-Received: by mail-ob0-f181.google.com with SMTP id ni5so7311723obc.26
-        for <linux-pm@vger.kernel.org>; Tue, 05 Feb 2013 01:36:12 -0800 (PST)
-In-Reply-To: <20130204133648.GE13909@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: add comments and Documentation
+Date: Tue, 05 Feb 2013 18:45:55 +0900
+Message-ID: <1360057555-10279-1-git-send-email-myungjoo.ham@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: rafael.j.wysocki@intel.com, rajagopal.venkat@linaro.org, nm@ti.com, a.kesavan@samsung.com, jonghwa3.lee@samsung.com, sangjung.woo@samsung.com, myungjoo.ham@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 
-On 4 February 2013 19:06, Borislav Petkov <bp@alien8.de> wrote:
-> On Mon, Feb 04, 2013 at 06:55:25PM +0530, Viresh Kumar wrote:
+- Added missing ABI documents
+- Added comments to clarify the objectives of functions
 
->> Its not only for multicluster system, but a system where multiple cpus
->> have separate clock control and hence multiple policy structures.
->
-> What are those systems? Examples?
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ Documentation/ABI/testing/sysfs-class-devfreq |   20 ++++++++++++++++++++
+ drivers/devfreq/devfreq.c                     |   10 ++++++++++
+ include/linux/devfreq.h                       |    2 ++
+ 3 files changed, 32 insertions(+), 0 deletions(-)
 
-Qualcomm's ARM based "krait". Currently shipping in millions of Android
-phones.
-
-http://en.wikipedia.org/wiki/Krait_(CPU)
-
-Thanks Charles for pointing it out, I knew there is one :)
-
---
-viresh
+diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
+index 0ba6ea2..ee39aca 100644
+--- a/Documentation/ABI/testing/sysfs-class-devfreq
++++ b/Documentation/ABI/testing/sysfs-class-devfreq
+@@ -78,3 +78,23 @@ Contact:	Nishanth Menon <nm@ti.com>
+ Description:
+ 		The /sys/class/devfreq/.../available_governors shows
+ 		currently available governors in the system.
++
++What:		/sys/class/devfreq/.../min_freq
++Date:		January 2013
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/class/devfreq/.../min_freq shows and stores
++		the minimum frequency requested by users. It is 0 if
++		the user does not care. min_freq overrides the
++		frequency requested by governors.
++
++What:		/sys/class/devfreq/.../max_freq
++Date:		January 2013
++Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
++Description:
++		The /sys/class/devfreq/.../max_freq shows and stores
++		the maximum frequency requested by users. It is 0 if
++		the user does not care. max_freq overrides the
++		frequency requested by governors and min_freq.
++		The max_freq overrides min_freq because max_freq may be
++		used to throttle devices to avoid overheating.
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index abfa14d..44c4079 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -527,6 +527,8 @@ EXPORT_SYMBOL(devfreq_add_device);
+ /**
+  * devfreq_remove_device() - Remove devfreq feature from a device.
+  * @devfreq:	the devfreq instance to be removed
++ *
++ * The opposite of devfreq_add_device().
+  */
+ int devfreq_remove_device(struct devfreq *devfreq)
+ {
+@@ -542,6 +544,10 @@ EXPORT_SYMBOL(devfreq_remove_device);
+ /**
+  * devfreq_suspend_device() - Suspend devfreq of a device.
+  * @devfreq: the devfreq instance to be suspended
++ *
++ * This function is intended to be called by the pm callbacks
++ * (e.g., runtime_suspend, suspend) of the device driver that
++ * holds the devfreq.
+  */
+ int devfreq_suspend_device(struct devfreq *devfreq)
+ {
+@@ -559,6 +565,10 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+ /**
+  * devfreq_resume_device() - Resume devfreq of a device.
+  * @devfreq: the devfreq instance to be resumed
++ *
++ * This function is intended to be called by the pm callbacks
++ * (e.g., runtime_resume, resume) of the device driver that
++ * holds the devfreq.
+  */
+ int devfreq_resume_device(struct devfreq *devfreq)
+ {
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index e83ef39..04ad61d 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -181,6 +181,8 @@ extern struct devfreq *devfreq_add_device(struct device *dev,
+ 				  const char *governor_name,
+ 				  void *data);
+ extern int devfreq_remove_device(struct devfreq *devfreq);
++
++/* Supposed to be called by PM_SLEEP/PM_RUNTIME callbacks */
+ extern int devfreq_suspend_device(struct devfreq *devfreq);
+ extern int devfreq_resume_device(struct devfreq *devfreq);
+ 
+-- 
+1.7.5.4
