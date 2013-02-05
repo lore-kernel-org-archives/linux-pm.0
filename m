@@ -1,10 +1,8 @@
-From: Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
-Subject: RE: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 18:38:07 +0000
-Message-ID: <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
-References: <cover.1359976493.git.viresh.kumar@linaro.org>
- <5808458.pvV2iHpBWm@vostro.rjw.lan>
- <CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Tue, 5 Feb 2013 19:44:38 +0100
+Message-ID: <20130205184438.GL4827@pd.tnic>
+References: <CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
  <20130204123221.GA22340@pd.tnic>
  <CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
  <20130204130403.GD13909@pd.tnic>
@@ -13,53 +11,31 @@ References: <cover.1359976493.git.viresh.kumar@linaro.org>
  <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
  <80D6EFE2711DED4189C7C8F0430BFEA86D23D6A80E@BUNGLE.Emea.Arm.com>
  <20130205113950.GG4827@pd.tnic>
+ <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:36692 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755556Ab3BESiN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 13:38:13 -0500
-In-Reply-To: <20130205113950.GG4827@pd.tnic>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset=utf-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, Robin Randhawa <Robin.Randhawa@ARM.com>, Steve Bannister <Steve.Bannister@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Pg0KPiBPbiBUdWUsIEZlYiAwNSwgMjAxMyBhdCAxMToyOTowNEFNICswMDAwLCBDaGFybGVzIEdh
-cmNpYS1Ub2JpbiB3cm90ZToNCj4gPiBBY3R1YWxseSBzaG9vdGluZyBteXNlbGYgaW4gdGhlIGZv
-b3QgaGVyZSwgS3JhaXQgaXMgbm90IHN1Y2ggYSBncmVhdA0KPiA+IGV4YW1wbGUgYmVjYXVzZSBh
-bHRob3VnaCB5b3UgY2FuIHVzZSBkaWZmZXJlbmNlIGJldHdlZW4gZnJlcXVlbmNpZXMNCj4gPiB5
-b3UgYXJlIGxlc3MgbGlrZWx5IHRvIHVzZSBkaWZmZXJlbnQgdHVuYWJsZXMgKG5vdCBpbmNvbmNl
-aXZhYmxlDQo+ID4gYnV0IHVubGlrZWx5KS4gVGhlIGJlc3QgZXhhbXBsZXMgc3lzdGVtcyBhcmUg
-bXVsdGkgY2x1c3RlciBhbmQNCj4gPiBoZXJldGVyb2dlbmVvdXMgc3lzdGVtcywgbGlrZSB0aGUg
-cmVjZW50bHkgYW5ub3VuY2VkIFNhbXN1bmcgRXh5bm9zIDUNCj4gPiBvY3RhIGh0dHA6Ly9lbi53
-aWtpcGVkaWEub3JnL3dpa2kvRXh5bm9zXyhzeXN0ZW1fb25fY2hpcCkuIFdlIHdpbGwgc2VlDQo+
-ID4gbW9yZSBzeXN0ZW1zIGxpa2UgdGhpcyBhcHBlYXJpbmcsIHNwb3J0aW5nIGxvdyBwb3dlciBj
-b3JlcyBjb21iaW5lZA0KPiA+IHdpdGggaGlnaCBwZXJmb3JtYW5jZSBvbmVzLCBhbGwgcnVubmlu
-ZyBhdCB0aGUgc2FtZSB0aW1lLiBJIGFwcHJlY2lhdGUNCj4gPiB0aGlzIGlzIGFsbCB2ZXJ5IG5l
-dywgYnV0IG1vcmUgd2lsbCBjb21lLCBhbmQgdGhlIHJlcXVpcmVtZW50IHRvIGhhdmUNCj4gPiBk
-aWZmZXJlbnQgdHVuYWJsZXMgcGVyIGNsdXN0ZXIgaXMgdmVyeSByZWFsLiBJbiBBUk0gb24gb3Vy
-IG93biBtdWx0aQ0KPiA+IGNsdXN0ZXIgdGVzdCBjaGlwLCB1c2luZyBhbiBleHBlcmltZW50YWwg
-dmVyc2lvbiBvZiB0aGlzIGFwcHJvYWNoLCB3ZQ0KPiA+IGhhdmUgc2VlbiBnb29kIGltcHJvdmVt
-ZW50cyBpbiBwb3dlciBjb25zdW1wdGlvbiB3aXRob3V0IGNvbXByb21pc2luZw0KPiA+IHBlcmZv
-cm1hbmNlLg0KPg0KPiBPaywgdGhhbmtzIGZvciBnaXZpbmcgdGhpcyBpbnNpZ2h0LCB0aGlzIGlz
-IHVzZWZ1bC4NCj4NCj4gUXVlc3Rpb246IGRvIHlvdSBuZWVkIHRoZSBncmFudWxhcml0eSBvZiB0
-aGF0IGNvbnRyb2wgdG8gYmUgcGVyIGNwdQ0KPiAod2l0aCB0aGF0IEkgbWVhbiB3aGF0IGxpbnV4
-IHVuZGVyc3RhbmRzIHVuZGVyICJjcHUsIiBpLmUuIGxvZ2ljYWwgb3INCj4gcGh5c2ljYWwgY29y
-ZSkgb3IgZG9lcyBvbmUgZ292ZXJub3Igc3VmZmljZSBwZXIgYSBzZXQgb2YgY29yZXMsIG9yIGFz
-DQo+IHlvdSBjYWxsIGl0LCBhIGNsdXN0ZXI/DQo+DQoNCkxhdGVyLiBXaGF0ZXZlciB5b3UnZCBs
-aWtlIHRvIGNhbGwgaXQsIGJ1dCBlc3NlbnRpYWxseSBhIHNldCBvZiBjcHVzLCBhcyBsaW51eCB1
-bmRlcnN0YW5kcyB0aGVtLCB0aGF0IGFyZSBsb2dpY2FsbHkgcmVsYXRlZCBieSB0aGUgZmFjdCB0
-aGF0IHlvdSdkIGxpa2UgdG8gYmUgYWJsZSB0byB1c2UgdGhlIHNhbWUgdHVuaW5nIHBvbGljeSBh
-bmQgc2FtZSBnb3Zlcm5vciBhY3Jvc3MgYWxsIG9mIHRoZW0uDQoNCkNoZWVycw0KDQpDaGFybGVz
-DQoNCihhcG9sb2dpZXMgYWdhaW4gZm9yIGFubm95aW5nIGFkZGVuZHVtcyB0byBmb2xsb3cpDQoN
-Cg0KLS0gSU1QT1JUQU5UIE5PVElDRTogVGhlIGNvbnRlbnRzIG9mIHRoaXMgZW1haWwgYW5kIGFu
-eSBhdHRhY2htZW50cyBhcmUgY29uZmlkZW50aWFsIGFuZCBtYXkgYWxzbyBiZSBwcml2aWxlZ2Vk
-LiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQgcmVjaXBpZW50LCBwbGVhc2Ugbm90aWZ5IHRo
-ZSBzZW5kZXIgaW1tZWRpYXRlbHkgYW5kIGRvIG5vdCBkaXNjbG9zZSB0aGUgY29udGVudHMgdG8g
-YW55IG90aGVyIHBlcnNvbiwgdXNlIGl0IGZvciBhbnkgcHVycG9zZSwgb3Igc3RvcmUgb3IgY29w
-eSB0aGUgaW5mb3JtYXRpb24gaW4gYW55IG1lZGl1bS4gIFRoYW5rIHlvdS4NCg==
+On Tue, Feb 05, 2013 at 06:38:07PM +0000, Charles Garcia-Tobin wrote:
+> Later. Whatever you'd like to call it, but essentially a set of cpus,
+> as linux understands them, that are logically related by the fact that
+> you'd like to be able to use the same tuning policy and same governor
+> across all of them.
 
+Right, policy will be applied to the whole set, yes, but can you imagine
+that per-core settings could also make sense at some point?
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
