@@ -1,137 +1,185 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 11:27:21 +0100
-Message-ID: <20130205102721.GB4827@pd.tnic>
-References: <20130204133648.GE13909@pd.tnic>
- <CAKohpo=aLnhM0Op_32ohWZK5eG5nT7iK0OktBe+8ygOQW7zUqQ@mail.gmail.com>
- <20130204140908.GC15452@pd.tnic>
- <CAKohpokowK6ybYd8aDUdfFYsnzoc5VAKsuPSkfxoDqJ3k+FwGA@mail.gmail.com>
- <20130204150511.GF13909@pd.tnic>
- <CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
- <20130204165057.GH13909@pd.tnic>
- <CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
- <20130205091532.GA4827@pd.tnic>
- <CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
+From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Subject: Re: [PATCH 1/3] PM / devfreq: set min/max freq limit from freq table
+Date: Tue, 5 Feb 2013 16:12:58 +0530
+Message-ID: <CA+Z25wW8ZRCsrXbiLLiJPgtgWVWcXgXarHRQo_NCHyJ8fvx8ww@mail.gmail.com>
+References: <1357624239-13938-1-git-send-email-rajagopal.venkat@linaro.org>
+	<CAJ0PZbTAOdQrUjefOpc2MDam1hHLjSEDLHw3VrP+9=OAbgQ8ug@mail.gmail.com>
+	<CA+Z25wVnFMkXvSOvetipBEFkZgSKe2Qjn1wYf-x5i7skGQ-XSA@mail.gmail.com>
+	<CAJ0PZbT9SEphLvnguhjho=OuoEE4KkQZfz2s4YrsoKwv=VbvEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
+In-Reply-To: <CAJ0PZbT9SEphLvnguhjho=OuoEE4KkQZfz2s4YrsoKwv=VbvEg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: kyungmin.park@samsung.com, mturquette@linaro.org, rjw@sisk.pl, patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 05, 2013 at 03:17:21PM +0530, Viresh Kumar wrote:
-> > multiple policies support in cpufreq should be optional and
-> > selectable in Kconfig so that systems which don't need that, don't
-> > have to see or use it. It is yet another feature which doesn't apply
-> > universally so we make such features optional. Like the rest of the
-> > gazillion things in the kernel already.
-> 
-> I understand what Kconfig options are for, but i am not able to understand
-> what's the benefit of this option here.
-
-Are you kidding me? You're simply not reading what I'm saying to you:
-"... should be optional and selectable in Kconfig so that systems which
-don't need that, don't have to see or use it." Because on those systems
-it doesn't apply.
-
-How about we add an x86-specific extension which is a big wad of code
-and is needlessly run on ARM just because it is easier?
-
-That's why we do config options, so that code which doesn't apply on a
-specific system, doesn't run on it.
-
-Goddammit, how hard is to understand that??!
-
-> For example: for single image solutions we need to keep it enabled.
-
-So keep it enabled!
-
-> And so, would need some sort of logic in cpufreq core & platform
-> driver to decide where to create the governors directory.
+On 5 February 2013 12:21, MyungJoo Ham <myungjoo.ham@gmail.com> wrote:
+> On Tue, Jan 15, 2013 at 8:21 PM, Rajagopal Venkat
+> <rajagopal.venkat@linaro.org> wrote:
+>> On 14 January 2013 20:06, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>>> On Tue, Jan 8, 2013 at 2:50 PM, Rajagopal Venkat
+>>> <rajagopal.venkat@linaro.org> wrote:
+>>>> Set devfreq device min and max frequency limits when device
+>>>> is added to devfreq, provided frequency table is supplied.
+>>>> This helps governors to suggest target frequency with in
+>>>> limits.
+>>>>
+>>>> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+>>>
+>>> Could you please elaborate the benefit of the patch?
+>>>
+>>
+>> When freq table is supplied, it's unreasonable to suggest the target frequency
+>> which is - target_freq < min_freq and target_freq > max_freq. It avoids
+>> unnecessary checks at devfreq drivers.
 >
-> The code without Kconfig option would be as simple as:
+> Is it a safety barrier against userspace processes or devfreq governors?
+> Users are allowed to enter min_freq and max_freq via sysfs interfaces anyway.
+> Also, as mentioned earlier, users are allowed to enter 0 in order to
+> "disengage" the min/max_freq.
 
-> 
-> platform_driver:
-> init(struct cpufreq_policy *policy)
-> {
-> ..
->     policy->have_multiple_policies = true;
-> ..
-> }
-> 
-> cpufreq-core:
-> 
-> add_dev()
-> {
->     if (policy->have_multiple_policies)
->         create-folder-in-cpu/cpu*/cpufreq;
->     else
->         create-folder-in-cpu/cpufreq;
+It doesn't interfere with userspace updates to min_freq/max_freq. The
+min/max limits from freq table are assigned only during the device
+devfreq init, which can be overwritten by userspace.
 
-Yes, this is how it could be done.
+> If we need "hardware-specific" min/max value, we'd need another sysfs
+> interfaces and values (i.e., scaling_min/max_freq vs
+> cpuinfo_min/max_freq).
 
-And this is what I mean by making it optional:
+In my opinion, min_freq and max_freq itself represents the devfreq
+device freq limits. Additional sysfs interfaces may not be required.
 
-You go and abstract away the "create-folder-in-cpu/cpu*/cpufreq"
-functionality. If this is a function called
-add_additional_sysfs_entries(), for example, it should do nothing when
-CONFIG_CPUFREQ_MULTIPLE_POLICIES is disabled. Otherwise, it will do your
-dance:
+>
+> Besides, if you are able to provide "freq_table", it means that you
+> are able to provide OPP for the device.
+> Then, you can use OPP APIs to avoid unnecessary checks at devfreq
+> driver (even you can use the devfreq helper functions)
 
-#ifdef CONFIG_CPUFREQ_MULTIPLE_POLICIES
-static int add_additional_sysfs_entries(...)
-{
+That's my intention as well. If driver is able to provide freq_table,
+based on the load, let devfreq core suggest only the supported opps
+(not just the limits, but for all intermediate opps). In which case,
+devfreq core must mandate drivers to add OPP table(instead of passing
+freq array) before registering with devfreq.
 
-	do all stuff required for multiple policies
+>
+>>
+>>> The devfreq device drivers are required to choose proper frequencies
+>>> anyway regardless which values the governors may give (hopefully by
+>>> choosing the closest value that can support the required performance).
+>>>
+>>
+>> Yes. but then each driver needs to have conditional checks for choosing
+>> closet value even though freq table is provided.
+>
+> Even with this min/max-freq, when governors suggests some values
+> between min/max, each driver needs to have checks unless it uses OPP.
 
-}
-#else /* CONFIG_CPUFREQ_MULTIPLE_POLICIES */
-static int add_additional_sysfs_entries(...)
-{
-	return 0;
-}
-#endif /* CONFIG_CPUFREQ_MULTIPLE_POLICIES */
+With above proposal, devfreq should suggest only supported opps.
 
-and all the rest of the stuff which is needed for multiple system
-policies, should be abstracted that way, more functions added, whatever.
-If it is starting to become more, you can create your own compilation
-unit. And so on and so on... the kernel is full of examples how to do
-stuff like that.
+>
+>>
+>>> Besides, the min/max values are to be set by userspace. Users may
+>>> enter 0 in order to express that they do not want to limit the
+>>> behaviors of governors.
+>
+> Because of this, this patch will create discrepency from/to userspace
+> interfaces.
 
-> And so, platforms like Krait or big.LITTLE can set it to true from their
-> cpufreq-drivers. And this wouldn't break any of the current platforms.
-> 
-> > The existing sysfs layout cannot be changed because you're breaking
-> > userspace and we don't do that. It is that simple.
-> 
-> That's fine. I understood it already. :)
+As said above, there is no conflict of interest between userspace and
+this patch.
 
-Not really, you obviously didn't.
+In summary, I propose making OPP table mandatory for all devfreq
+drivers, to enable devfreq core to suggest only supported opps. Any
+thoughts?
 
-> The problem i see is:
-> - both governor tunables, cpufreq-stats & policy tunables (P-states) have the
-> same requirement. They are all per policy or clock-domain, instead of per cpu.
-> - I want to keep all of these at the same place, as they should be
-> present in the
-> same hierarchy.
-> - If we move everything to cpu/cpufreq/policy-names/ then also we would break
-> existing userspace stuff for stats and P-states.
-> - If we move everything to cpu/cpu*/cpufreq/ then also we would break
-> existing userspace stuff for governors.
+>
+>
+>
+>
+> Cheers,
+> MyungJoo.
+>
+>>>
+>>>
+>>> Cheers,
+>>> MyungJoo.
+>>>
+>>>> ---
+>>>>  drivers/devfreq/devfreq.c |   24 ++++++++++++++++++++++++
+>>>>  1 file changed, 24 insertions(+)
+>>>>
+>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>> index a8f0173..5782c9b 100644
+>>>> --- a/drivers/devfreq/devfreq.c
+>>>> +++ b/drivers/devfreq/devfreq.c
+>>>> @@ -69,6 +69,29 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+>>>>  }
+>>>>
+>>>>  /**
+>>>> + * devfreq_set_freq_limits() - Set min and max frequency from freq_table
+>>>> + * @devfreq:   the devfreq instance
+>>>> + */
+>>>> +static void devfreq_set_freq_limits(struct devfreq *devfreq)
+>>>> +{
+>>>> +       int idx;
+>>>> +       unsigned long min = ~0, max = 0;
+>>>> +
+>>>> +       if (!devfreq->profile->freq_table)
+>>>> +               return;
+>>>> +
+>>>> +       for (idx = 0; idx < devfreq->profile->max_state; idx++) {
+>>>> +               if (min > devfreq->profile->freq_table[idx])
+>>>> +                       min = devfreq->profile->freq_table[idx];
+>>>> +               if (max < devfreq->profile->freq_table[idx])
+>>>> +                       max = devfreq->profile->freq_table[idx];
+>>>> +       }
+>>>> +
+>>>> +       devfreq->min_freq = min;
+>>>> +       devfreq->max_freq = max;
+>>>> +}
+>>>> +
+>>>> +/**
+>>>>   * devfreq_get_freq_level() - Lookup freq_table for the frequency
+>>>>   * @devfreq:   the devfreq instance
+>>>>   * @freq:      the target frequency
+>>>> @@ -476,6 +499,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>>                                                 devfreq->profile->max_state,
+>>>>                                                 GFP_KERNEL);
+>>>>         devfreq->last_stat_updated = jiffies;
+>>>> +       devfreq_set_freq_limits(devfreq);
+>>>>
+>>>>         dev_set_name(&devfreq->dev, dev_name(dev));
+>>>>         err = device_register(&devfreq->dev);
+>>>> --
+>>>> 1.7.10.4
+>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+>>>
+>>>
+>>> --
+>>> MyungJoo Ham, Ph.D.
+>>> Mobile Software Platform Lab, DMC Business, Samsung Electronics
+>>
+>>
+>>
+>> --
+>> Regards,
+>> Rajagopal
+>
+>
+>
+> --
+> MyungJoo Ham, Ph.D.
+> System S/W Lab, S/W Center, Samsung Electronics
 
-No, you're not allowed to change existing sysfs layout. FULLSTOP.
 
-Simply add the new stuff to cpu/cpu*/cpufreq/ with code which
-is enabled when CONFIG_CPUFREQ_MULTIPLE_POLICIES is set. If
-CONFIG_CPUFREQ_MULTIPLE_POLICIES is not enabled, nothing changes.
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Regards,
+Rajagopal
