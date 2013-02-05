@@ -1,41 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 16:56:03 +0530
-Message-ID: <CAKohpomUsDr0YJmOxjymcAAJnfOxKfzxGL4iHuif1qCAvy0OYA@mail.gmail.com>
-References: <20130204150511.GF13909@pd.tnic>
-	<CAKohpokt0xtsj1eQDMw6JgvQVp4rgFyU-vUrtuuF+0jjOVNHRQ@mail.gmail.com>
-	<20130204165057.GH13909@pd.tnic>
-	<CAOh2x==fyfYwz+eXmPhBJTE+_q_fHyx2drXrM789XvCfEqPBUQ@mail.gmail.com>
-	<20130205091532.GA4827@pd.tnic>
-	<CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
-	<20130205102721.GB4827@pd.tnic>
-	<CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
-	<20130205110407.GC4827@pd.tnic>
-	<CAKohponiiVO_P2EDDTUHeoo7j3FG-ELtP8oLwfdEQ3HkgOS77g@mail.gmail.com>
-	<20130205111918.GD4827@pd.tnic>
+From: Charles Garcia-Tobin <Charles.Garcia-Tobin-5wv7dgnIgG8@public.gmane.org>
+Subject: RE: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
+Date: Tue, 5 Feb 2013 11:29:04 +0000
+Message-ID: <80D6EFE2711DED4189C7C8F0430BFEA86D23D6A80E@BUNGLE.Emea.Arm.com>
+References: <cover.1359976493.git.viresh.kumar@linaro.org>
+	<5808458.pvV2iHpBWm@vostro.rjw.lan>
+	<CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
+	<20130204123221.GA22340@pd.tnic>
+	<CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
+	<20130204130403.GD13909@pd.tnic>
+	<CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
+	<20130204133648.GE13909@pd.tnic>
+	<CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130205111918.GD4827@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Borislav Petkov <bp-Gina5bIWoIWzQB+pC5nmwQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, "cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Robin Randhawa <Robin.Randhawa-GjmBC470yow@public.gmane.org>, Steve Bannister <Steve.Bannister-5wv7dgnIgG8@public.gmane.org>, Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 5 February 2013 16:49, Borislav Petkov <bp@alien8.de> wrote:
-> On Tue, Feb 05, 2013 at 04:42:23PM +0530, Viresh Kumar wrote:
->> Tricky part is the name of this routine: add_additional_sysfs_entries().
 >
-> Now you're just being silly - this is just an example how to do it. If
-> you want me to do it for ya, you need to send me your monthly salary.
+> Qualcomm's ARM based "krait". Currently shipping in millions of Android
+> phones.
+>
+> http://en.wikipedia.org/wiki/Krait_(CPU)
+>
+> Thanks Charles for pointing it out, I knew there is one :)
+>
+> --
+> viresh
 
-Haha... I don't want you to do it. I don't want such routine to be exposed
-to cpufreq drivers as this belongs to the core code.
+> On 4 February 2013 19:06, Borislav Petkov <bp-Gina5bIWoIWzQB+pC5nmwQ@public.gmane.org> wrote:
+> > On Mon, Feb 04, 2013 at 06:55:25PM +0530, Viresh Kumar wrote:
+>
+> >> Its not only for multicluster system, but a system where multiple cpus
+> >> have separate clock control and hence multiple policy structures.
+> >
+> > What are those systems? Examples?
+>
+> Qualcomm's ARM based "krait". Currently shipping in millions of Android
+> phones.
+>
+> http://en.wikipedia.org/wiki/Krait_(CPU)
+>
+> Thanks Charles for pointing it out, I knew there is one :)
+>
+> --
+> viresh
 
-Just some kind of indication from platform driver is required about
-how/where it wants its governor directory to be present.
-And the variable suits more here.
+Actually shooting myself in the foot here, Krait is not such a great example because although you can use difference between frequencies you are less likely to use different tunables (not inconceivable but unlikely). The best examples systems are multi cluster and hereterogeneous systems, like the recently announced Samsung Exynos 5 octa http://en.wikipedia.org/wiki/Exynos_(system_on_chip). We will see more systems like this appearing, sporting low power cores combined with high performance ones, all running at the same time. I appreciate this is all very new, but more will come, and the requirement to have different tunables per cluster is very real. In ARM on our own multi cluster test chip, using an experimental version of this approach, we have seen good improvements in power consumpti
+ on without compromising performance.
 
-Lets discuss it more on the next patch i send :)
+(Apologies ahead for any bit my mail server appends, not much I can do about it)
 
---
-viresh
+-- IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
