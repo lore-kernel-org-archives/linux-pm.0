@@ -1,40 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 19:25:44 +0530
-Message-ID: <CAKohpomdH_s4xMtUo8-hSBEYqRVTEo5eCUG=vH4K5WckUi2KiQ@mail.gmail.com>
-References: <20130205091532.GA4827@pd.tnic>
-	<CAKohpo=6q+Bcgq0Re=3SXM6zwub5N=vJBO=sTeEgZZ9byFK7=g@mail.gmail.com>
-	<20130205102721.GB4827@pd.tnic>
-	<CAKohpo=_Qq-_Aqy7nZD+f28-B7DY8ioQ5fe8bYKTe64A0RXeGw@mail.gmail.com>
-	<20130205110407.GC4827@pd.tnic>
-	<CAKohponiiVO_P2EDDTUHeoo7j3FG-ELtP8oLwfdEQ3HkgOS77g@mail.gmail.com>
-	<20130205111918.GD4827@pd.tnic>
-	<CAKohpomUsDr0YJmOxjymcAAJnfOxKfzxGL4iHuif1qCAvy0OYA@mail.gmail.com>
-	<20130205113242.GF4827@pd.tnic>
-	<CAKohpo=ABkc3ku=YrS7=Df_65s3OPg+eAa80gCEkiK4dNc+x4g@mail.gmail.com>
-	<20130205132241.GH4827@pd.tnic>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/3] PM: make VT switching to the suspend console
+ optional v3
+Date: Tue, 5 Feb 2013 13:55:44 +0000
+Message-ID: <20130205135544.6adab270@jbarnes-t420>
+References: <1359985042-2610-1-git-send-email-jbarnes@virtuousgeek.org>
+	<1452100.EKe1it2LWl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f170.google.com ([209.85.214.170]:40996 "EHLO
-	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018Ab3BENzq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 08:55:46 -0500
-Received: by mail-ob0-f170.google.com with SMTP id wc20so157092obb.15
-        for <linux-pm@vger.kernel.org>; Tue, 05 Feb 2013 05:55:46 -0800 (PST)
-In-Reply-To: <20130205132241.GH4827@pd.tnic>
+Received: from oproxy11-pub.bluehost.com ([173.254.64.10]:50591 "HELO
+	oproxy11-pub.bluehost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754785Ab3BEN4H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 08:56:07 -0500
+In-Reply-To: <1452100.EKe1it2LWl@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org
 
-On 5 February 2013 18:52, Borislav Petkov <bp@alien8.de> wrote:
-> On Tue, Feb 05, 2013 at 05:54:57PM +0530, Viresh Kumar wrote:q
->> This indication isn't enough. On a single image solution, we need to
->> identify the system which needs support for multiple policies and i
->> still feel we need that variable type indication :)
->
-> If the image is going to run also on systems which support only a
-> single policy, then I guess you can make it a bool, stuff it in struct
-> cpufreq_policy and ifdef around it.
+On Mon, 04 Feb 2013 21:26:26 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-That's what i proposed initially.
+> On Monday, February 04, 2013 01:37:20 PM Jesse Barnes wrote:
+> > KMS drivers can potentially restore the display configuration without
+> > userspace help.  Such drivers can can call a new funciton,
+> > pm_vt_switch_required(false) if they support this feature.  In that
+> > case, the PM layer won't VT switch to the suspend console at suspend
+> > time and then back to the original VT on resume, but rather leave things
+> > alone for a nicer looking suspend and resume sequence.
+> > 
+> > v2: make a function so we can handle multiple drivers (Alan)
+> > v3: use a list to track device requests (Rafael)
+> > 
+> > Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> for all [1-3/3].
+
+Any chance for an r-b on the PM one at least?  Then Daniel could
+probably push this through drm-intel-next.
+
+Thanks,
+Jesse
