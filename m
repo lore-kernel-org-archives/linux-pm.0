@@ -1,41 +1,75 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Tue, 5 Feb 2013 19:44:38 +0100
-Message-ID: <20130205184438.GL4827@pd.tnic>
-References: <CAKohpok7RiJ_HKGi3r0vU26kNEtFKq==pMMoshT6Z2yy9ghemA@mail.gmail.com>
- <20130204123221.GA22340@pd.tnic>
- <CAKohpomcrtV3i9fL4zV6Mt0uDza-9pHTOsqTe2=C1t6mE6cpCQ@mail.gmail.com>
- <20130204130403.GD13909@pd.tnic>
- <CAKohpokuFC5gnTFcD3+RH3p5XaW8vBtyfq+Kej=d2J8tERdmoQ@mail.gmail.com>
- <20130204133648.GE13909@pd.tnic>
- <CAKohpokejWugM+wP5xcqp0F9AggLxuEf9Ox5fDViMxJh1c+kEw@mail.gmail.com>
- <80D6EFE2711DED4189C7C8F0430BFEA86D23D6A80E@BUNGLE.Emea.Arm.com>
- <20130205113950.GG4827@pd.tnic>
- <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: BUG in bleeding edge c560f3d
+Date: Tue, 05 Feb 2013 10:45:03 -0800
+Message-ID: <5111532F.1060606@gmail.com>
+References: <511033EA.7090604@gmail.com> <3463348.tWNCISaOfi@vostro.rjw.lan> <51104CC7.8030800@gmail.com> <2585398.78DPBR35EF@vostro.rjw.lan> <CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com> <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <80D6EFE2711DED4189C7C8F0430BFEA86D23DFF1B1@BUNGLE.Emea.Arm.com>
+In-Reply-To: <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-dev@lists.linaro.org" <linaro-dev@lists.linaro.org>, Robin Randhawa <Robin.Randhawa@ARM.com>, Steve Bannister <Steve.Bannister@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Feb 05, 2013 at 06:38:07PM +0000, Charles Garcia-Tobin wrote:
-> Later. Whatever you'd like to call it, but essentially a set of cpus,
-> as linux understands them, that are logically related by the fact that
-> you'd like to be able to use the same tuning policy and same governor
-> across all of them.
+On 02/04/2013 11:08 PM, Viresh Kumar wrote:
+> @Dirk: Please give this one a try. Atleast on my system with various
+> configurations, i
+> couldn't see any different this patch has made, but is more logical to me.
+>
 
-Right, policy will be applied to the whole set, yes, but can you imagine
-that per-core settings could also make sense at some point?
+Tested works fine with and without my driver present.
 
-Thanks.
+I added it to my patch set with my Tested-by tag it seems gmail decided
+to swallow it :-(
 
--- 
-Regards/Gruss,
-    Boris.
+Please feel to add my Tested-by:
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+--Dirk
+> commit 9bdd6d47403e696d05953870019e791806f8d6bf
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Tue Feb 5 12:28:18 2013 +0530
+>
+>      cpufreq: Don't remove sysfs link for policy->cpu
+>
+>      "cpufreq" directory in policy->cpu is never created using
+> sysfs_create_link(),
+>      but using kobject_init_and_add(). And so we shouldn't call
+> sysfs_remove_link()
+>      for policy->cpu(). sysfs stuff for policy->cpu is automatically
+> removed when we
+>      call kobject_put() for dying policy.
+>
+>      Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>   drivers/cpufreq/cpufreq.c | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 7aacfbf..9567451 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1047,7 +1047,9 @@ static int __cpufreq_remove_dev(struct device
+> *dev, struct subsys_interface *sif
+>          cpus = cpumask_weight(data->cpus);
+>          cpumask_clear_cpu(cpu, data->cpus);
+>
+> -       if (unlikely((cpu == data->cpu) && (cpus > 1))) {
+> +       if (cpu != data->cpu) {
+> +               sysfs_remove_link(&dev->kobj, "cpufreq");
+> +       } else if (cpus > 1) {
+>                  /* first sibling now owns the new sysfs dir */
+>                  cpu_dev = get_cpu_device(cpumask_first(data->cpus));
+>                  sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+> @@ -1072,7 +1074,6 @@ static int __cpufreq_remove_dev(struct device
+> *dev, struct subsys_interface *sif
+>          pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
+>          cpufreq_cpu_put(data);
+>          unlock_policy_rwsem_write(cpu);
+> -       sysfs_remove_link(&dev->kobj, "cpufreq");
+>
+>          /* If cpu is last user of policy, free policy */
+>          if (cpus == 1) {
+>
+
