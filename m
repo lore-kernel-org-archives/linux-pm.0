@@ -1,141 +1,132 @@
 From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PATCH 3/3] PM / devfreq: account suspend/resume for stats
-Date: Tue, 5 Feb 2013 15:29:27 +0900
-Message-ID: <CAJ0PZbRuc4o4+-c9uaQL4QO-Urwm_kd_me_uXsAUWz6Lw2WMLw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] PM / devfreq: set min/max freq limit from freq table
+Date: Tue, 5 Feb 2013 15:51:51 +0900
+Message-ID: <CAJ0PZbT9SEphLvnguhjho=OuoEE4KkQZfz2s4YrsoKwv=VbvEg@mail.gmail.com>
 References: <1357624239-13938-1-git-send-email-rajagopal.venkat@linaro.org>
-	<1357624239-13938-3-git-send-email-rajagopal.venkat@linaro.org>
-	<CAJ0PZbSowAauHJgRS6eLHA3Tsy-fCJ4KBEBMo=c0QpqLZjjXrw@mail.gmail.com>
-	<CA+Z25wXWUxDBpsZHDoZwoLHVYHb=qN6D7yyLkGDdXMybv+8W8Q@mail.gmail.com>
+	<CAJ0PZbTAOdQrUjefOpc2MDam1hHLjSEDLHw3VrP+9=OAbgQ8ug@mail.gmail.com>
+	<CA+Z25wVnFMkXvSOvetipBEFkZgSKe2Qjn1wYf-x5i7skGQ-XSA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f43.google.com ([209.85.215.43]:38340 "EHLO
-	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238Ab3BEG33 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 01:29:29 -0500
-In-Reply-To: <CA+Z25wXWUxDBpsZHDoZwoLHVYHb=qN6D7yyLkGDdXMybv+8W8Q@mail.gmail.com>
+Received: from mail-lb0-f178.google.com ([209.85.217.178]:34071 "EHLO
+	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937Ab3BEGvx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Feb 2013 01:51:53 -0500
+In-Reply-To: <CA+Z25wVnFMkXvSOvetipBEFkZgSKe2Qjn1wYf-x5i7skGQ-XSA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Cc: jonghwa3.lee@samsung.com, kyungmin.park@samsung.com, mturquette@linaro.org, rjw@sisk.pl, patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: kyungmin.park@samsung.com, mturquette@linaro.org, rjw@sisk.pl, patches@linaro.org, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jan 15, 2013 at 8:46 PM, Rajagopal Venkat
+On Tue, Jan 15, 2013 at 8:21 PM, Rajagopal Venkat
 <rajagopal.venkat@linaro.org> wrote:
-> On 14 January 2013 20:18, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> On 14 January 2013 20:06, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
 >> On Tue, Jan 8, 2013 at 2:50 PM, Rajagopal Venkat
 >> <rajagopal.venkat@linaro.org> wrote:
->>> devfreq stats is not taking device suspend and resume into
->>> account. Fix it.
+>>> Set devfreq device min and max frequency limits when device
+>>> is added to devfreq, provided frequency table is supplied.
+>>> This helps governors to suggest target frequency with in
+>>> limits.
 >>>
 >>> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
 >>
->> With monitor_suspend(), we are suspending the DVFS mechanism of a
->> device, not the device itself.
->>
->> Thus, the device may keep its frequency running and we may assume that
->> the frequency is constant as the DVFS mechanism is in suspend.
->>
->> Why do you want to stop the statistics as well?
+>> Could you please elaborate the benefit of the patch?
 >>
 >
-> There seems to be misunderstanding of devfreq_monitor_suspend() and
-> devfreq_monitor_resume() apis usage.
->
-> Typically devfreq_monitor_suspend() would be called to suspend the device
-> devfreq when device is entering idle state by powering off(clocks and voltage).
-> When device itself is off, it's incorrect to allow stats to continue.
+> When freq table is supplied, it's unreasonable to suggest the target frequency
+> which is - target_freq < min_freq and target_freq > max_freq. It avoids
+> unnecessary checks at devfreq drivers.
 
-Ah.. yes... you're right. It is meant to be called by suspend of
-pm-sleep or pm-suspend.
-This will be applied soon.
+Is it a safety barrier against userspace processes or devfreq governors?
+Users are allowed to enter min_freq and max_freq via sysfs interfaces anyway.
+Also, as mentioned earlier, users are allowed to enter 0 in order to
+"disengage" the min/max_freq.
+If we need "hardware-specific" min/max value, we'd need another sysfs
+interfaces and values (i.e., scaling_min/max_freq vs
+cpuinfo_min/max_freq).
 
-
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-
->
->>
->>
->> Again, as in the other patch, this is about the semantics of the
->> "devfreq statistics".
->>
->> It does not seem to be a problem of which is correct and which is not,
->> but it seems to be a problem of which is more convenient.
->>
->> Could you please give me some cases where your semantics is more helpful?
->
-> When gpu is powered off, gpu devfreq should be suspended and hence the stats.
-
-
+Besides, if you are able to provide "freq_table", it means that you
+are able to provide OPP for the device.
+Then, you can use OPP APIs to avoid unnecessary checks at devfreq
+driver (even you can use the devfreq helper functions)
 
 >
+>> The devfreq device drivers are required to choose proper frequencies
+>> anyway regardless which values the governors may give (hopefully by
+>> choosing the closest value that can support the required performance).
 >>
->>
->>
->> I've been using the stat feature like this:
->>
->> # cat stat; run benchmark; cat stat
->> and look at the differences with any ops done during "run benchmark".
->>
+>
+> Yes. but then each driver needs to have conditional checks for choosing
+> closet value even though freq table is provided.
+
+Even with this min/max-freq, when governors suggests some values
+between min/max, each driver needs to have checks unless it uses OPP.
+
+>
+>> Besides, the min/max values are to be set by userspace. Users may
+>> enter 0 in order to express that they do not want to limit the
+>> behaviors of governors.
+
+Because of this, this patch will create discrepency from/to userspace
+interfaces.
+
+
+
+
+Cheers,
+MyungJoo.
+
 >>
 >>
 >> Cheers,
 >> MyungJoo.
 >>
 >>> ---
->>>  drivers/devfreq/devfreq.c |   15 ++++++++++++---
->>>  1 file changed, 12 insertions(+), 3 deletions(-)
+>>>  drivers/devfreq/devfreq.c |   24 ++++++++++++++++++++++++
+>>>  1 file changed, 24 insertions(+)
 >>>
 >>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>> index 2843a22..4c50235 100644
+>>> index a8f0173..5782c9b 100644
 >>> --- a/drivers/devfreq/devfreq.c
 >>> +++ b/drivers/devfreq/devfreq.c
->>> @@ -297,6 +297,7 @@ void devfreq_monitor_suspend(struct devfreq *devfreq)
->>>                 return;
->>>         }
->>>
->>> +       devfreq_update_status(devfreq, devfreq->previous_freq);
->>>         devfreq->stop_polling = true;
->>>         mutex_unlock(&devfreq->lock);
->>>         cancel_delayed_work_sync(&devfreq->work);
->>> @@ -313,6 +314,8 @@ EXPORT_SYMBOL(devfreq_monitor_suspend);
->>>   */
->>>  void devfreq_monitor_resume(struct devfreq *devfreq)
->>>  {
->>> +       unsigned long freq;
->>> +
->>>         mutex_lock(&devfreq->lock);
->>>         if (!devfreq->stop_polling)
->>>                 goto out;
->>> @@ -321,8 +324,14 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
->>>                         devfreq->profile->polling_ms)
->>>                 queue_delayed_work(devfreq_wq, &devfreq->work,
->>>                         msecs_to_jiffies(devfreq->profile->polling_ms));
->>> +
->>> +       devfreq->last_stat_updated = jiffies;
->>>         devfreq->stop_polling = false;
->>>
->>> +       if (devfreq->profile->get_cur_freq &&
->>> +               !devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
->>> +               devfreq->previous_freq = freq;
->>> +
->>>  out:
->>>         mutex_unlock(&devfreq->lock);
+>>> @@ -69,6 +69,29 @@ static struct devfreq *find_device_devfreq(struct device *dev)
 >>>  }
->>> @@ -931,11 +940,11 @@ static ssize_t show_trans_table(struct device *dev, struct device_attribute *att
->>>  {
->>>         struct devfreq *devfreq = to_devfreq(dev);
->>>         ssize_t len;
->>> -       int i, j, err;
->>> +       int i, j;
->>>         unsigned int max_state = devfreq->profile->max_state;
 >>>
->>> -       err = devfreq_update_status(devfreq, devfreq->previous_freq);
->>> -       if (err)
->>> +       if (!devfreq->stop_polling &&
->>> +                       devfreq_update_status(devfreq, devfreq->previous_freq))
->>>                 return 0;
+>>>  /**
+>>> + * devfreq_set_freq_limits() - Set min and max frequency from freq_table
+>>> + * @devfreq:   the devfreq instance
+>>> + */
+>>> +static void devfreq_set_freq_limits(struct devfreq *devfreq)
+>>> +{
+>>> +       int idx;
+>>> +       unsigned long min = ~0, max = 0;
+>>> +
+>>> +       if (!devfreq->profile->freq_table)
+>>> +               return;
+>>> +
+>>> +       for (idx = 0; idx < devfreq->profile->max_state; idx++) {
+>>> +               if (min > devfreq->profile->freq_table[idx])
+>>> +                       min = devfreq->profile->freq_table[idx];
+>>> +               if (max < devfreq->profile->freq_table[idx])
+>>> +                       max = devfreq->profile->freq_table[idx];
+>>> +       }
+>>> +
+>>> +       devfreq->min_freq = min;
+>>> +       devfreq->max_freq = max;
+>>> +}
+>>> +
+>>> +/**
+>>>   * devfreq_get_freq_level() - Lookup freq_table for the frequency
+>>>   * @devfreq:   the devfreq instance
+>>>   * @freq:      the target frequency
+>>> @@ -476,6 +499,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>>                                                 devfreq->profile->max_state,
+>>>                                                 GFP_KERNEL);
+>>>         devfreq->last_stat_updated = jiffies;
+>>> +       devfreq_set_freq_limits(devfreq);
 >>>
->>>         len = sprintf(buf, "   From  :   To\n");
+>>>         dev_set_name(&devfreq->dev, dev_name(dev));
+>>>         err = device_register(&devfreq->dev);
 >>> --
 >>> 1.7.10.4
 >>>
