@@ -1,17 +1,21 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: BUG in bleeding edge c560f3d
-Date: Tue, 05 Feb 2013 03:43:20 +0100
-Message-ID: <2585398.78DPBR35EF@vostro.rjw.lan>
+Date: Tue, 05 Feb 2013 03:47:47 +0100
+Message-ID: <3437549.QBBqFrgfpG@vostro.rjw.lan>
 References: <511033EA.7090604@gmail.com> <3463348.tWNCISaOfi@vostro.rjw.lan> <51104CC7.8030800@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:41661 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641Ab3BECl3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Feb 2013 21:41:29 -0500
 In-Reply-To: <51104CC7.8030800@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
 On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
 > On 02/04/2013 04:09 PM, Rafael J. Wysocki wrote:
@@ -40,7 +44,7 @@ On Monday, February 04, 2013 04:05:27 PM Dirk Brandewie wrote:
 > Rebased a couple of hours ago testing now.  ATM it looks like it is related to
 > cpufreq_stats handling of the sysfs files
 
-This looks like a problem with commit b8eed8a.  Viresh?
+Can you reproduce it without your patches?
 
 Rafael
 
