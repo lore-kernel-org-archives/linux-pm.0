@@ -1,75 +1,90 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: BUG in bleeding edge c560f3d
-Date: Tue, 05 Feb 2013 10:45:03 -0800
-Message-ID: <5111532F.1060606@gmail.com>
-References: <511033EA.7090604@gmail.com> <3463348.tWNCISaOfi@vostro.rjw.lan> <51104CC7.8030800@gmail.com> <2585398.78DPBR35EF@vostro.rjw.lan> <CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com> <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH] cpufreq: ondemand: Replace down_differential tuner with adj_up_threshold
+Date: Tue, 05 Feb 2013 23:04:31 +0200
+Message-ID: <511173DF.8060308@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/04/2013 11:08 PM, Viresh Kumar wrote:
-> @Dirk: Please give this one a try. Atleast on my system with various
-> configurations, i
-> couldn't see any different this patch has made, but is more logical to me.
->
+In order to avoid the calculation of up_threshold - down_differential
+every time that the frequency must be decreased, we replace the
+down_differential tuner with the adj_up_threshold which keeps the
+difference across multiple checks.
 
-Tested works fine with and without my driver present.
+Update the adj_up_threshold only when the up_theshold is also updated.
 
-I added it to my patch set with my Tested-by tag it seems gmail decided
-to swallow it :-(
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq_governor.h |  2 +-
+ drivers/cpufreq/cpufreq_ondemand.c | 16 ++++++++++------
+ 2 files changed, 11 insertions(+), 7 deletions(-)
 
-Please feel to add my Tested-by:
-
---Dirk
-> commit 9bdd6d47403e696d05953870019e791806f8d6bf
-> Author: Viresh Kumar <viresh.kumar@linaro.org>
-> Date:   Tue Feb 5 12:28:18 2013 +0530
->
->      cpufreq: Don't remove sysfs link for policy->cpu
->
->      "cpufreq" directory in policy->cpu is never created using
-> sysfs_create_link(),
->      but using kobject_init_and_add(). And so we shouldn't call
-> sysfs_remove_link()
->      for policy->cpu(). sysfs stuff for policy->cpu is automatically
-> removed when we
->      call kobject_put() for dying policy.
->
->      Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/cpufreq/cpufreq.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 7aacfbf..9567451 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1047,7 +1047,9 @@ static int __cpufreq_remove_dev(struct device
-> *dev, struct subsys_interface *sif
->          cpus = cpumask_weight(data->cpus);
->          cpumask_clear_cpu(cpu, data->cpus);
->
-> -       if (unlikely((cpu == data->cpu) && (cpus > 1))) {
-> +       if (cpu != data->cpu) {
-> +               sysfs_remove_link(&dev->kobj, "cpufreq");
-> +       } else if (cpus > 1) {
->                  /* first sibling now owns the new sysfs dir */
->                  cpu_dev = get_cpu_device(cpumask_first(data->cpus));
->                  sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
-> @@ -1072,7 +1074,6 @@ static int __cpufreq_remove_dev(struct device
-> *dev, struct subsys_interface *sif
->          pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
->          cpufreq_cpu_put(data);
->          unlock_policy_rwsem_write(cpu);
-> -       sysfs_remove_link(&dev->kobj, "cpufreq");
->
->          /* If cpu is last user of policy, free policy */
->          if (cpus == 1) {
->
-
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index f661654..4250944 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -108,7 +108,7 @@ struct od_dbs_tuners {
+ 	unsigned int sampling_rate;
+ 	unsigned int sampling_down_factor;
+ 	unsigned int up_threshold;
+-	unsigned int down_differential;
++	unsigned int adj_up_threshold;
+ 	unsigned int powersave_bias;
+ 	unsigned int io_is_busy;
+ };
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 7731f7c..2cc76ad 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -47,7 +47,8 @@ static struct cpufreq_governor cpufreq_gov_ondemand;
+ static struct od_dbs_tuners od_tuners = {
+ 	.up_threshold = DEF_FREQUENCY_UP_THRESHOLD,
+ 	.sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
+-	.down_differential = DEF_FREQUENCY_DOWN_DIFFERENTIAL,
++	.adj_up_threshold = DEF_FREQUENCY_UP_THRESHOLD -
++			    DEF_FREQUENCY_DOWN_DIFFERENTIAL,
+ 	.ignore_nice = 0,
+ 	.powersave_bias = 0,
+ };
+@@ -192,11 +193,9 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+ 	 * support the current CPU usage without triggering the up policy. To be
+ 	 * safe, we focus 10 points under the threshold.
+ 	 */
+-	if (load_freq < (od_tuners.up_threshold - od_tuners.down_differential) *
+-			policy->cur) {
++	if (load_freq < od_tuners.adj_up_threshold * policy->cur) {
+ 		unsigned int freq_next;
+-		freq_next = load_freq / (od_tuners.up_threshold -
+-				od_tuners.down_differential);
++		freq_next = load_freq / od_tuners.adj_up_threshold;
+ 
+ 		/* No longer fully busy, reset rate_mult */
+ 		dbs_info->rate_mult = 1;
+@@ -351,6 +350,10 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
+ 			input < MIN_FREQUENCY_UP_THRESHOLD) {
+ 		return -EINVAL;
+ 	}
++	/* Calculate the new adj_up_threshold */
++	od_tuners.adj_up_threshold += input;
++	od_tuners.adj_up_threshold -= od_tuners.up_threshold;
++
+ 	od_tuners.up_threshold = input;
+ 	return count;
+ }
+@@ -507,7 +510,8 @@ static int __init cpufreq_gov_dbs_init(void)
+ 	if (idle_time != -1ULL) {
+ 		/* Idle micro accounting is supported. Use finer thresholds */
+ 		od_tuners.up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+-		od_tuners.down_differential = MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
++		od_tuners.adj_up_threshold = MICRO_FREQUENCY_UP_THRESHOLD -
++					     MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
+ 		/*
+ 		 * In nohz/micro accounting case we set the minimum frequency
+ 		 * not depending on HZ, but fixed (very low). The deferred
+-- 
+1.8.1
