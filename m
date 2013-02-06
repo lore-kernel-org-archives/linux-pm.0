@@ -1,46 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] CPUFreq: Implement per policy instances of governors
-Date: Wed, 06 Feb 2013 11:38:40 +0100
-Message-ID: <1713890.Dj4ufUrfMM@vostro.rjw.lan>
-References: <cover.1359976493.git.viresh.kumar@linaro.org> <CAP245DUMnSMSoXo2JoMu1CgNROQ2YT7kd7e9svWoZ_EG2QLi+Q@mail.gmail.com> <CAKohpo=T+YJxkxyWJQ_SdsFHcY_Xv-SXy_mZNLe7a3CtDF-7gw@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: ondemand: Replace down_differential tuner with adj_up_threshold
+Date: Wed, 06 Feb 2013 13:58:37 +0100
+Message-ID: <2305264.MrLQGjTkB4@vostro.rjw.lan>
+References: <511173DF.8060308@semaphore.gr> <CAOh2x=ksAibntsfGm51r+JiQOAhHYYmHF1o=_H97fSKqGcq_mQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=T+YJxkxyWJQ_SdsFHcY_Xv-SXy_mZNLe7a3CtDF-7gw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Borislav Petkov <bp@alien8.de>, Steve Bannister <Steve.Bannister@arm.com>, Lists linaro-dev <linaro-dev@lists.linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:51742 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286Ab3BFMwT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Feb 2013 07:52:19 -0500
+In-Reply-To: <CAOh2x=ksAibntsfGm51r+JiQOAhHYYmHF1o=_H97fSKqGcq_mQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, February 06, 2013 03:45:58 PM Viresh Kumar wrote:
-> On 6 February 2013 15:38, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> > On Wed, Feb 6, 2013 at 3:28 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> I have pushed the complete patchset here:
-> >>
-> >> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-updates
-> >>
+On Wednesday, February 06, 2013 11:05:45 AM Viresh Kumar wrote:
+> On Wed, Feb 6, 2013 at 2:34 AM, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> > In order to avoid the calculation of up_threshold - down_differential
+> > every time that the frequency must be decreased, we replace the
+> > down_differential tuner with the adj_up_threshold which keeps the
+> > difference across multiple checks.
 > >
-> > Viresh, perhaps you should ask Stephen Rothwell to pull in your tree
-> > to get some more testing before Rafael pulls it in for 3.10?
+> > Update the adj_up_threshold only when the up_theshold is also updated.
+> >
+> > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> > ---
+> >  drivers/cpufreq/cpufreq_governor.h |  2 +-
+> >  drivers/cpufreq/cpufreq_ondemand.c | 16 ++++++++++------
+> >  2 files changed, 11 insertions(+), 7 deletions(-)
 > 
-> Its has been made clear by Rafael that these patches wouldn't make it for
-> 3.9 (though i wanted them to :) ), and so once the merge window is over
-> Rafael might pull them in and so they would reach Stephen's linux-next too...
+> Makes sense.
 > 
-> I am not sure if sending a cpufreq pull request directly to Stephen is
-> preferred.
-> @Rafael: ??
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-You may do that, if you want, but that's slightly confusing.
+Thanks, applied to bleeding-edge.
 
-Also the policy is that material which is not going to be included into v3.9
-shouldn't be in linux-next before v3.9-rc1.
-
-Moreover, for build testing it is sufficient to put it into a branch somewhere
-at git.kernel.org (as you have already noticed :-)).
-
-Thanks,
 Rafael
 
 
