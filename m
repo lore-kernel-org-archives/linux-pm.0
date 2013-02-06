@@ -1,77 +1,76 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] cpufreq: sleeping function called from invalid context at kernel/workqueue.c:2811
-Date: Wed, 06 Feb 2013 22:11:25 +0100
-Message-ID: <1543919.ZBNJa64WB5@vostro.rjw.lan>
-References: <20130206202513.GA5626@thinkpad.lan>
+Subject: Re: next-20130206 cpufreq - WARN in sysfs_add_one
+Date: Wed, 06 Feb 2013 22:24:39 +0100
+Message-ID: <17233164.aBDzy1OViI@vostro.rjw.lan>
+References: <9180.1360172675@turing-police.cc.vt.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130206202513.GA5626@thinkpad.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: Artem Savkov <artem.savkov@gmail.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:54030 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757956Ab3BFVST (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Feb 2013 16:18:19 -0500
+In-Reply-To: <9180.1360172675@turing-police.cc.vt.edu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, February 07, 2013 12:25:13 AM Artem Savkov wrote:
-> I get the following BUG on suspend using systemd-sleep(this doesn't
-> happen with pm-suspend). This seems to be introduced by some of the
-> Viresh's patches.
+On Wednesday, February 06, 2013 12:44:35 PM Valdis Kletnieks wrote:
+> Seen in dmesg.  next-20130128 was OK. Haven't done a bisect, but can
+> do so if the offender isn't obvious...
 
-Which branch from which day?
+I suppose this is 73bf0fc "cpufreq: Don't remove sysfs link for policy->cpu".
+
+Can you test the linux-pm.git/pm-cpufreq branch alone, please, and see
+if that's this one (top-most commit)?
+
+Even if it is, it is a bug fix, so we'll need one fix more on top of it,
+but can you please confirm?
 
 Rafael
 
 
-> [   94.908046] Disabling non-boot CPUs ...
-> [   94.908416] BUG: sleeping function called from invalid context at kernel/workqueue.c:2811
-> [   94.908419] in_atomic(): 1, irqs_disabled(): 1, pid: 4038, name: systemd-sleep
-> [   94.908421] 7 locks held by systemd-sleep/4038:
-> [   94.908439]  #0:  (&buffer->mutex){......}, at: [<c11908e9>] sysfs_write_file+0x29/0x100
-> [   94.908448]  #1:  (s_active#179){......}, at: [<c119094d>] sysfs_write_file+0x8d/0x100
-> [   94.908459]  #2:  (pm_mutex){......}, at: [<c107f990>] pm_suspend+0x40/0x1e0
-> [   94.908469]  #3:  (cpu_add_remove_lock){......}, at: [<c103ab04>] cpu_maps_update_begin+0x14/0x20
-> [   94.908476]  #4:  (cpu_hotplug.lock){......}, at: [<c103a9e2>] cpu_hotplug_begin+0x22/0x50
-> [   94.908487]  #5:  (&per_cpu(cpu_policy_rwsem, cpu)){......}, at: [<c14bfbfd>] lock_policy_rwsem_write+0x3d/0x70
-> [   94.908495]  #6:  (cpufreq_driver_lock){......}, at: [<c14bfe06>] __cpufreq_remove_dev.isra.10+0x26/0x270
-> [   94.908500] Pid: 4038, comm: systemd-sleep Not tainted 3.8.0-rc6-next-20130205+ #200
-> [   94.908501] Call Trace:
-> [   94.908511]  [<c1067ce0>] __might_sleep+0xe0/0x100
-> [   94.908518]  [<c1050f3f>] flush_work+0x5f/0x230
-> [   94.908523]  [<c1050ee0>] ? insert_work+0x50/0x50
-> [   94.908528]  [<c1046277>] ? del_timer+0x47/0x70
-> [   94.908533]  [<c1046277>] ? del_timer+0x47/0x70
-> [   94.908538]  [<c1052b08>] ? try_to_grab_pending+0xa8/0x120
-> [   94.908543]  [<c1053b49>] __cancel_work_timer+0x59/0x80
-> [   94.908548]  [<c1053b82>] cancel_delayed_work_sync+0x12/0x20
-> [   94.908555]  [<c14c32ed>] cpufreq_governor_dbs+0x2cd/0x490
-> [   94.908561]  [<c14c26c6>] od_cpufreq_governor_dbs+0x16/0x20
-> [   94.908565]  [<c14bfd21>] __cpufreq_governor+0x41/0x100
-> [   94.908570]  [<c14bfe06>] ? __cpufreq_remove_dev.isra.10+0x26/0x270
-> [   94.908575]  [<c14bfe36>] __cpufreq_remove_dev.isra.10+0x56/0x270
-> [   94.908580]  [<c14bfbfd>] ? lock_policy_rwsem_write+0x3d/0x70
-> [   94.908589]  [<c1686c20>] cpufreq_cpu_callback+0x50/0x65
-> [   94.908596]  [<c16966c7>] notifier_call_chain+0x47/0x90
-> [   94.908606]  [<c1060fee>] __raw_notifier_call_chain+0x1e/0x30
-> [   94.908610]  [<c103a974>] __cpu_notify+0x24/0x50
-> [   94.908615]  [<c167bf7d>] _cpu_down+0x6d/0x250
-> [   94.908621]  [<c103ac7c>] disable_nonboot_cpus+0x6c/0xf0
-> [   94.908625]  [<c107f815>] suspend_devices_and_enter+0x175/0x2b0
-> [   94.908629]  [<c107fb27>] pm_suspend+0x1d7/0x1e0
-> [   94.908633]  [<c107ebed>] state_store+0x5d/0xb0
-> [   94.908638]  [<c107eb90>] ? pm_trace_dev_match_show+0x20/0x20
-> [   94.908644]  [<c12c074b>] kobj_attr_store+0x1b/0x30
-> [   94.908650]  [<c1190963>] sysfs_write_file+0xa3/0x100
-> [   94.908655]  [<c11908c0>] ? sysfs_open_file+0x1f0/0x1f0
-> [   94.908662]  [<c112dc28>] vfs_write+0x88/0x140
-> [   94.908667]  [<c11908c0>] ? sysfs_open_file+0x1f0/0x1f0
-> [   94.908672]  [<c112def7>] sys_write+0x47/0x90
-> [   94.908679]  [<c169a0fa>] sysenter_do_call+0x12/0x2d
-> [   94.911067] smpboot: CPU 1 is now offline
-> [   94.915585] smpboot: CPU 2 is now offline
-> [   94.917500] smpboot: CPU 3 is now offline
-> 
-> 
+> [    2.567662] netconsole: network logging started
+> [    2.581661] ------------[ cut here ]------------
+> [    2.581670] WARNING: at fs/sysfs/dir.c:536 sysfs_add_one+0x91/0xa5()
+> [    2.581673] Hardware name: Latitude E6500
+> [    2.581676] sysfs: cannot create duplicate filename '/devices/system/cpu/cpufreq/ondemand'
+> [    2.581678] Modules linked in:
+> [    2.581684] Pid: 1, comm: swapper/0 Tainted: G        W    3.8.0-rc6-next-20130206 #57
+> [    2.581687] Call Trace:
+> [    2.581693]  [<ffffffff811713d6>] ? sysfs_add_one+0x91/0xa5
+> [    2.581700]  [<ffffffff8102ecdc>] warn_slowpath_common+0x7c/0x96
+> [    2.581706]  [<ffffffff8102ed3d>] warn_slowpath_fmt+0x47/0x49
+> [    2.581711]  [<ffffffff811713d6>] sysfs_add_one+0x91/0xa5
+> [    2.581716]  [<ffffffff81171521>] create_dir+0x6b/0xa4
+> [    2.581721]  [<ffffffff81171787>] sysfs_create_subdir+0x17/0x19
+> [    2.581727]  [<ffffffff81172e76>] internal_create_group+0xd4/0x1df
+> [    2.581732]  [<ffffffff81172f8f>] sysfs_create_group+0xe/0x10
+> [    2.581739]  [<ffffffff813e033a>] cpufreq_governor_dbs+0x209/0x475
+> [    2.581744]  [<ffffffff813df187>] od_cpufreq_governor_dbs+0x15/0x17
+> [    2.581750]  [<ffffffff813dd6ab>] __cpufreq_governor+0x61/0xb5
+> [    2.581755]  [<ffffffff813dd803>] __cpufreq_set_policy+0x104/0x140
+> [    2.581761]  [<ffffffff81609303>] cpufreq_add_dev_interface+0x217/0x261
+> [    2.581767]  [<ffffffff813de5ed>] ? cpufreq_update_policy+0x133/0x133
+> [    2.581773]  [<ffffffff813dddc9>] cpufreq_add_dev+0x222/0x2d7
+> [    2.581780]  [<ffffffff812dc7da>] subsys_interface_register+0xa3/0xd7
+> [    2.581786]  [<ffffffff8160e6c9>] ? _raw_spin_unlock_irqrestore+0x72/0x80
+> [    2.581792]  [<ffffffff813dd1ae>] cpufreq_register_driver+0x9c/0x13b
+> [    2.581799]  [<ffffffff81d778ed>] ? cpufreq_gov_dbs_init+0x2c/0x2c
+> [    2.581805]  [<ffffffff81d77968>] acpi_cpufreq_init+0x7b/0x185
+> [    2.581811]  [<ffffffff8100023a>] do_one_initcall+0x7a/0x130
+> [    2.581817]  [<ffffffff81d4ddfb>] kernel_init_freeable+0x15e/0x1df
+> [    2.581822]  [<ffffffff81d4d6f2>] ? do_early_param+0x88/0x88
+> [    2.581828]  [<ffffffff815f9568>] ? rest_init+0x12c/0x12c
+> [    2.581833]  [<ffffffff815f9571>] kernel_init+0x9/0xd1
+> [    2.581839]  [<ffffffff81614bec>] ret_from_fork+0x7c/0xb0
+> [    2.581844]  [<ffffffff815f9568>] ? rest_init+0x12c/0x12c
+> [    2.581847] ---[ end trace a0eea8e0db3a3905 ]---
+> [    2.585909] ALSA device list:
+> [    2.585913]   #0: HDA Intel at 0xf6fdc000 irq 48
+> [    2.590781] Freeing unused kernel memory: 852k freed
 > 
 -- 
 I speak only for myself.
