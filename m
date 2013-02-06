@@ -1,51 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
-Date: Wed, 06 Feb 2013 14:00:30 +0100
-Message-ID: <4413377.ZEeF7Y7rnE@vostro.rjw.lan>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com> <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with
+ kernel threads
+Date: Wed, 6 Feb 2013 15:59:08 +0100
+Message-ID: <CAJfpegvvF=u9mtZJwcdDZZD0Qwuw-dJSY-KpN2eT2Kw6fPfyZg@mail.gmail.com>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<CAOw_e7bgPLMzvTGczFH+npo+usrSOkHHRrpAGc-3GndVH0uuFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAOw_e7bgPLMzvTGczFH+npo+usrSOkHHRrpAGc-3GndVH0uuFw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: hanwen@xs4all.nl
+Cc: Li Fei <fei.li@intel.com>, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, February 06, 2013 02:21:11 PM Viresh Kumar wrote:
-> On 6 February 2013 08:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 6 February 2013 07:34, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> >> In general rwlocks are discourged so we are moving it to use the rcu instead.
-> >>
-> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> >> ---
-> >>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
-> >>  1 file changed, 96 insertions(+), 77 deletions(-)
-> >
-> > bleeding-edge got updated again and this patch would have conflicts :)
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Rafael,
-> 
-> I have applied them over bleeding-edge after resolving few conflicts.
-> Please pick them up from:
-> 
-> Branch: for-rafael
-> Repo: git://git.linaro.org/people/vireshk/linux.git
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-rafael
+On Wed, Feb 6, 2013 at 10:56 AM, Han-Wen Nienhuys <hanwenn@gmail.com> wrote:
+> On Wed, Feb 6, 2013 at 2:11 AM, Li Fei <fei.li@intel.com> wrote:
+>>
+>> There is well known issue that freezing will fail in case that fuse
+>> daemon is frozen firstly with some requests not handled, as the fuse
+>> usage task is waiting for the response from fuse daemon and can't be
+>> frozen.
+>>
+>> To solve the issue above, make fuse daemon frozen after all all user
+>> space processes frozen and during the kernel threads frozen phase.
+>> PF_FREEZE_DAEMON flag is added to indicate that the current thread is
+>> the fuse daemon, set on connection, and clear on disconnection.
+>> It works as all fuse requests are handled during user space processes
+>> frozen, there will no further fuse request, and it's safe to continue
+>> to freeze fuse daemon together with kernel freezable tasks.
+>
+> Will this work correctly if one FUSE daemon is opening files in from
+> another FUSE filesystem?
 
-That's really helpful, thanks a lot!
+As long as only non-fuse-daemon processes are generating the requests
+(i.e. fuse daemons don't spontaneously generate new requests) it
+should work.
 
-Both applied to bleeding-edge.
+I think more problematic is that userspace processes tend to
+communicate with each other, sometimes in a non-trivial way.  For
+example gethostbyname(3) will turn to nscd(8) for name service cache
+results.  So a fuse daemon that might call gethostbyname() should mark
+nscd with PF_FREEZE_DAEMON but that requires careful audit (or nscd
+might mark itself PF_FREEZE_DAEMON for that reason).
+
+And that's just an example of a most basic C library function.  There
+are many more such hidden interactions that can trip up this scheme.
 
 Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Miklos
