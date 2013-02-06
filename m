@@ -1,44 +1,45 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 1/5] Thermal: fix a wrong comment
-Date: Wed,  6 Feb 2013 12:30:02 +0800
-Message-ID: <1360125006-25018-2-git-send-email-rui.zhang@intel.com>
-References: <1360125006-25018-1-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH 0/5] Thermal: cpu cooling fix
+Date: Wed,  6 Feb 2013 12:30:01 +0800
+Message-ID: <1360125006-25018-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga02.intel.com ([134.134.136.20]:19511 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756944Ab3BFEaN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Feb 2013 23:30:13 -0500
-In-Reply-To: <1360125006-25018-1-git-send-email-rui.zhang@intel.com>
+	id S1755365Ab3BFEaL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Feb 2013 23:30:11 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: amit.daniel@samsung.com, gu1@aeroxteam.fr, hongbo.zhang@linaro.org, Zhang Rui <rui.zhang@intel.com>
 
-"level" parameter of get_cpu_frequency equals cooling state
-of cpu cooling device, and it starts from 0.
+the per_cpu cpufreq_frequency_table contains all the frequency entries
+which are reported by platform code.
+But this table is not clean enough because it may contain invalid,
+duplicate entries, and it may be in either descending or asceding order.
 
-Fix the misleading comment.
+converting between cpu frequency and cooling state using this table
+in cpufreq cooling code is painful as each cooling state of
+cpu cooling device must have a valid and unique frequency.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/cpu_cooling.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+thus cpu cooling table is introduced in this patch set.
+CPU cooling table is a table that
+1. each entry represents a cpu cooling state,
+   aka, a different cpu frequency.
+2. no invalid entry in this table
+3. no duplicate entry in this table
+4. the frequency of all the entries are in descending order, aka,
+   table[0] equals maximum frequency and cooling state 0.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 836828e..455c77a 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -118,8 +118,8 @@ static int is_cpufreq_valid(int cpu)
- /**
-  * get_cpu_frequency - get the absolute value of frequency from level.
-  * @cpu: cpu for which frequency is fetched.
-- * @level: level of frequency of the CPU
-- *	e.g level=1 --> 1st MAX FREQ, LEVEL=2 ---> 2nd MAX FREQ, .... etc
-+ * @level: level of frequency, equals cooling state of cpu cooling device
-+ *	e.g level=0 --> 1st MAX FREQ, level=1 ---> 2nd MAX FREQ, .... etc
-  */
- static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- {
--- 
-1.7.9.5
+And this is the table we are using inside cpufreq cooling generic code.
 
+Besides, all the cpufreq cooling users, e.g. exynos, should touch
+neither per_cpu cpufreq_frequency_table nor the cpu cooling table.
+it should invoke cpufreq cooling API to do cooling_state/frequency
+transition.
+
+I just run build test here. It would be great that some of you
+can test it on exynos.
+any comments?
+
+thanks,
+rui
