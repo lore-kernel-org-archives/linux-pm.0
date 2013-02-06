@@ -1,43 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: ondemand: Replace down_differential tuner with adj_up_threshold
-Date: Wed, 06 Feb 2013 13:58:37 +0100
-Message-ID: <2305264.MrLQGjTkB4@vostro.rjw.lan>
-References: <511173DF.8060308@semaphore.gr> <CAOh2x=ksAibntsfGm51r+JiQOAhHYYmHF1o=_H97fSKqGcq_mQ@mail.gmail.com>
+Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
+Date: Wed, 06 Feb 2013 14:00:30 +0100
+Message-ID: <4413377.ZEeF7Y7rnE@vostro.rjw.lan>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <CAKohpo=3qnhtVOniYWPJQLSkAnhMkYj8_yvHR+QE46Pzdi=WhA@mail.gmail.com> <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51742 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286Ab3BFMwT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 6 Feb 2013 07:52:19 -0500
-In-Reply-To: <CAOh2x=ksAibntsfGm51r+JiQOAhHYYmHF1o=_H97fSKqGcq_mQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=JQX4N4UoR_APD9J-JXJY0uv2kJwqiL4uNmpqmCUscTA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Nathan Zimmer <nzimmer@sgi.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, February 06, 2013 11:05:45 AM Viresh Kumar wrote:
-> On Wed, Feb 6, 2013 at 2:34 AM, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> > In order to avoid the calculation of up_threshold - down_differential
-> > every time that the frequency must be decreased, we replace the
-> > down_differential tuner with the adj_up_threshold which keeps the
-> > difference across multiple checks.
+On Wednesday, February 06, 2013 02:21:11 PM Viresh Kumar wrote:
+> On 6 February 2013 08:22, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 6 February 2013 07:34, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> >> In general rwlocks are discourged so we are moving it to use the rcu instead.
+> >>
+> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> >> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> >> ---
+> >>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
+> >>  1 file changed, 96 insertions(+), 77 deletions(-)
 > >
-> > Update the adj_up_threshold only when the up_theshold is also updated.
+> > bleeding-edge got updated again and this patch would have conflicts :)
 > >
-> > Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> > ---
-> >  drivers/cpufreq/cpufreq_governor.h |  2 +-
-> >  drivers/cpufreq/cpufreq_ondemand.c | 16 ++++++++++------
-> >  2 files changed, 11 insertions(+), 7 deletions(-)
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Makes sense.
+> Rafael,
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> I have applied them over bleeding-edge after resolving few conflicts.
+> Please pick them up from:
+> 
+> Branch: for-rafael
+> Repo: git://git.linaro.org/people/vireshk/linux.git
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-rafael
 
-Thanks, applied to bleeding-edge.
+That's really helpful, thanks a lot!
 
+Both applied to bleeding-edge.
+
+Thanks,
 Rafael
 
 
