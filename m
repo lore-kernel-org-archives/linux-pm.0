@@ -1,51 +1,49 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with
- kernel threads
-Date: Wed, 6 Feb 2013 15:59:08 +0100
-Message-ID: <CAJfpegvvF=u9mtZJwcdDZZD0Qwuw-dJSY-KpN2eT2Kw6fPfyZg@mail.gmail.com>
-References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	<CAOw_e7bgPLMzvTGczFH+npo+usrSOkHHRrpAGc-3GndVH0uuFw@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v9 4/4] sd: change to auto suspend mode
+Date: Wed, 6 Feb 2013 10:51:19 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1302061048180.1893-100000@iolanthe.rowland.org>
+References: <5111BBA1.4010200@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOw_e7bgPLMzvTGczFH+npo+usrSOkHHRrpAGc-3GndVH0uuFw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: hanwen@xs4all.nl
-Cc: Li Fei <fei.li@intel.com>, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:41213 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754896Ab3BFPvU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Feb 2013 10:51:20 -0500
+In-Reply-To: <5111BBA1.4010200@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 
-On Wed, Feb 6, 2013 at 10:56 AM, Han-Wen Nienhuys <hanwenn@gmail.com> wrote:
-> On Wed, Feb 6, 2013 at 2:11 AM, Li Fei <fei.li@intel.com> wrote:
->>
->> There is well known issue that freezing will fail in case that fuse
->> daemon is frozen firstly with some requests not handled, as the fuse
->> usage task is waiting for the response from fuse daemon and can't be
->> frozen.
->>
->> To solve the issue above, make fuse daemon frozen after all all user
->> space processes frozen and during the kernel threads frozen phase.
->> PF_FREEZE_DAEMON flag is added to indicate that the current thread is
->> the fuse daemon, set on connection, and clear on disconnection.
->> It works as all fuse requests are handled during user space processes
->> frozen, there will no further fuse request, and it's safe to continue
->> to freeze fuse daemon together with kernel freezable tasks.
->
-> Will this work correctly if one FUSE daemon is opening files in from
-> another FUSE filesystem?
+On Wed, 6 Feb 2013, Aaron Lu wrote:
 
-As long as only non-fuse-daemon processes are generating the requests
-(i.e. fuse daemons don't spontaneously generate new requests) it
-should work.
+> > The "if (err == -EAGAIN)" test and the call to pm_schedule_suspend seem
+> > to have been dropped since v8 of this series.  It looks like they ought
+> > to be moved into sdev_runtime_suspend.
+> 
+> I thought they were no longer needed...
 
-I think more problematic is that userspace processes tend to
-communicate with each other, sometimes in a non-trivial way.  For
-example gethostbyname(3) will turn to nscd(8) for name service cache
-results.  So a fuse daemon that might call gethostbyname() should mark
-nscd with PF_FREEZE_DAEMON but that requires careful audit (or nscd
-might mark itself PF_FREEZE_DAEMON for that reason).
+You did not mention this in the patch description.
 
-And that's just an example of a most basic C library function.  There
-are many more such hidden interactions that can trip up this scheme.
+> For sd, we have request based rutime PM and the PM core will always try
+> to autosuspend the device with the timer; and for sr, the poll will
+> trigger suspend constantly.
 
-Thanks,
-Miklos
+What if the poll has been disabled?
+
+> And for both, we don't return -EAGAIN anyway.
+> So I suppose that code is not necessary?
+
+You could replace it with WARN_ON(err == -EAGAIN).  That way if some 
+SCSI driver does return -EAGAIN in the future, people will know 
+something is wrong.
+
+> BTW, I'll be on vocation till 02/17, and I don't have access to the
+> internet in my hometown, but please feel free to drop any comments and
+> I'll check them when I get back.
+
+I'm going on vacation next week too.  Enjoy your trip.
+
+Alan Stern
+
