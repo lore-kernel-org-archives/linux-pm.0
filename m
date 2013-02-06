@@ -1,48 +1,90 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Wed,  6 Feb 2013 11:39:22 -0800
-Message-ID: <1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
-References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ye0-f178.google.com ([209.85.213.178]:43538 "EHLO
-	mail-ye0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755031Ab3BFTjr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Feb 2013 14:39:47 -0500
-In-Reply-To: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 64/77] thermal: convert to idr_alloc()
+Date: Wed,  6 Feb 2013 11:40:36 -0800
+Message-ID: <1360179649-22465-65-git-send-email-tj@kernel.org>
+References: <1360179649-22465-1-git-send-email-tj@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1360179649-22465-1-git-send-email-tj@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
 
-Add cpufreq controller device node for Exynos5440 SoC for passing
-parameters like controller base address, interrupt and cpufreq
-table.
+Convert to the much saner new idr interface.
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Only compile tested.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
 ---
- arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/thermal/cpu_cooling.c | 17 +++++------------
+ drivers/thermal/thermal_sys.c | 17 +++++------------
+ 2 files changed, 10 insertions(+), 24 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-index 024269d..b20b517 100644
---- a/arch/arm/boot/dts/exynos5440.dtsi
-+++ b/arch/arm/boot/dts/exynos5440.dtsi
-@@ -63,6 +63,15 @@
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 836828e..c33fa53 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -73,21 +73,14 @@ static struct cpufreq_cooling_device *notify_device;
+  */
+ static int get_idr(struct idr *idr, int *id)
+ {
+-	int err;
+-again:
+-	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
+-		return -ENOMEM;
++	int ret;
  
- 	};
+ 	mutex_lock(&cooling_cpufreq_lock);
+-	err = idr_get_new(idr, NULL, id);
++	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
+ 	mutex_unlock(&cooling_cpufreq_lock);
+-
+-	if (unlikely(err == -EAGAIN))
+-		goto again;
+-	else if (unlikely(err))
+-		return err;
+-
+-	*id = *id & MAX_IDR_MASK;
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
+ 	return 0;
+ }
  
-+	cpufreq@160000 {
-+		compatible = "samsung,exynos5440-cpufreq";
-+		reg = <0x160000 0x1000>;
-+		interrupts = <0 57 0>;
-+		cpufreq_tbl = <	1200000 1025000
-+				1000000 975000
-+				800000  925000 >;
-+	};
-+
- 	serial@B0000 {
- 		compatible = "samsung,exynos4210-uart";
- 		reg = <0xB0000 0x1000>;
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 0a1bf6b..0767193 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -131,23 +131,16 @@ EXPORT_SYMBOL_GPL(thermal_unregister_governor);
+ 
+ static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+ {
+-	int err;
+-
+-again:
+-	if (unlikely(idr_pre_get(idr, GFP_KERNEL) == 0))
+-		return -ENOMEM;
++	int ret;
+ 
+ 	if (lock)
+ 		mutex_lock(lock);
+-	err = idr_get_new(idr, NULL, id);
++	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
+ 	if (lock)
+ 		mutex_unlock(lock);
+-	if (unlikely(err == -EAGAIN))
+-		goto again;
+-	else if (unlikely(err))
+-		return err;
+-
+-	*id = *id & MAX_IDR_MASK;
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
+ 	return 0;
+ }
+ 
 -- 
-1.7.10.4
-
+1.8.1
