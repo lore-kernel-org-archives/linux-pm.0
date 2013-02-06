@@ -1,226 +1,57 @@
 From: Andrew Lunn <andrew@lunn.ch>
-Subject: [PATCH v5 1/4] thermal: Add support for the thermal sensor on Kirkwood SoCs
-Date: Wed,  6 Feb 2013 07:35:24 +0100
-Message-ID: <1360132527-22860-2-git-send-email-andrew@lunn.ch>
+Subject: [PATCH v5 4/4] Dove: Thermal: Add DT node and enable in defconfig
+Date: Wed,  6 Feb 2013 07:35:27 +0100
+Message-ID: <1360132527-22860-5-git-send-email-andrew@lunn.ch>
 References: <1360132527-22860-1-git-send-email-andrew@lunn.ch>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:52977 "EHLO londo.lunn.ch"
+Received: from londo.lunn.ch ([80.238.139.98]:52993 "EHLO londo.lunn.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751719Ab3BFGfw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 6 Feb 2013 01:35:52 -0500
+	id S1751719Ab3BFGgA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Feb 2013 01:36:00 -0500
 In-Reply-To: <1360132527-22860-1-git-send-email-andrew@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jason Cooper <jason@lakedaemon.net>, rui.zhang@intel.com
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
 
-From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+Add a device tree node to instantiate the dove thermal driver.
+Enable the driver and the thermal framework in dove_defconfig.
 
-This patch adds support for Kirkwood 88F6282 and 88F6283 thermal sensor.
-
-Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 Signed-off-by: Andrew Lunn <andrew@lunn.ch>
 ---
- .../bindings/thermal/kirkwood-thermal.txt          |   15 +++
- drivers/thermal/Kconfig                            |    8 ++
- drivers/thermal/Makefile                           |    1 +
- drivers/thermal/kirkwood_thermal.c                 |  134 ++++++++++++++++++++
- 4 files changed, 158 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
- create mode 100644 drivers/thermal/kirkwood_thermal.c
+ arch/arm/boot/dts/dove.dtsi     |    5 +++++
+ arch/arm/configs/dove_defconfig |    2 ++
+ 2 files changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-new file mode 100644
-index 0000000..8c0f5eb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
-@@ -0,0 +1,15 @@
-+* Kirkwood Thermal
-+
-+This version is for Kirkwood 88F8262 & 88F6283 SoCs. Other kirkwoods
-+don't contain a thermal sensor.
-+
-+Required properties:
-+- compatible : "marvell,kirkwood-thermal"
-+- reg : Address range of the thermal registers
-+
-+Example:
-+
-+	thermal@10078 {
-+		compatible = "marvell,kirkwood-thermal";
-+		reg = <0x10078 0x4>;
-+	};
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c2c77d1..ff34a0a 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -93,6 +93,14 @@ config RCAR_THERMAL
- 	  Enable this to plug the R-Car thermal sensor driver into the Linux
- 	  thermal framework
+diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+index 42eac1f..3584a00 100644
+--- a/arch/arm/boot/dts/dove.dtsi
++++ b/arch/arm/boot/dts/dove.dtsi
+@@ -50,6 +50,11 @@
+ 			#clock-cells = <1>;
+ 		};
  
-+config KIRKWOOD_THERMAL
-+	tristate "Temperature sensor on Marvell Kirkwood SoCs"
-+	depends on ARCH_KIRKWOOD
-+	depends on OF
-+	help
-+	  Support for the Kirkwood thermal sensor driver into the Linux thermal
-+	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
++		thermal: thermal@d001c {
++			compatible = "marvell,dove-thermal";
++			reg = <0xd001c 0x0c>, <0xd005c 0x08>;
++		};
 +
- config EXYNOS_THERMAL
- 	tristate "Temperature sensor on Samsung EXYNOS"
- 	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index d8da683..99026b2 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -15,6 +15,7 @@ obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
- # platform thermal drivers
- obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
- obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
-+obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
- obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-new file mode 100644
-index 0000000..65cb4f0
---- /dev/null
-+++ b/drivers/thermal/kirkwood_thermal.c
-@@ -0,0 +1,134 @@
-+/*
-+ * Kirkwood thermal sensor driver
-+ *
-+ * Copyright (C) 2012 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+
-+#define KIRKWOOD_THERMAL_VALID_OFFSET	9
-+#define KIRKWOOD_THERMAL_VALID_MASK	0x1
-+#define KIRKWOOD_THERMAL_TEMP_OFFSET	10
-+#define KIRKWOOD_THERMAL_TEMP_MASK	0x1FF
-+
-+/* Kirkwood Thermal Sensor Dev Structure */
-+struct kirkwood_thermal_priv {
-+	void __iomem *sensor;
-+};
-+
-+static int kirkwood_get_temp(struct thermal_zone_device *thermal,
-+			  unsigned long *temp)
-+{
-+	unsigned long reg;
-+	struct kirkwood_thermal_priv *priv = thermal->devdata;
-+
-+	reg = readl_relaxed(priv->sensor);
-+
-+	/* Valid check */
-+	if (!(reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
-+	    KIRKWOOD_THERMAL_VALID_MASK) {
-+		dev_err(&thermal->device,
-+			"Temperature sensor reading not valid\n");
-+		return -EIO;
-+	}
-+
-+	/*
-+	 * Calculate temperature. See Section 8.10.1 of the 88AP510,
-+	 * datasheet, which has the same sensor.
-+	 * Documentation/arm/Marvell/README
-+	 */
-+	reg = (reg >> KIRKWOOD_THERMAL_TEMP_OFFSET) &
-+		KIRKWOOD_THERMAL_TEMP_MASK;
-+	*temp = ((2281638UL - (7298*reg)) / 10);
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_device_ops ops = {
-+	.get_temp = kirkwood_get_temp,
-+};
-+
-+static const struct of_device_id kirkwood_thermal_id_table[] = {
-+	{ .compatible = "marvell,kirkwood-thermal" },
-+	{}
-+};
-+
-+static int kirkwood_thermal_probe(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *thermal = NULL;
-+	struct kirkwood_thermal_priv *priv;
-+	struct resource *res;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(&pdev->dev, "Failed to get platform resource\n");
-+		return -ENODEV;
-+	}
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-+	if (!priv->sensor) {
-+		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-+		return -EADDRNOTAVAIL;
-+	}
-+
-+	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
-+					       priv, &ops, NULL, 0, 0);
-+	if (IS_ERR(thermal)) {
-+		dev_err(&pdev->dev,
-+			"Failed to register thermal zone device\n");
-+		return PTR_ERR(thermal);
-+	}
-+
-+	platform_set_drvdata(pdev, thermal);
-+
-+	return 0;
-+}
-+
-+static int kirkwood_thermal_exit(struct platform_device *pdev)
-+{
-+	struct thermal_zone_device *kirkwood_thermal =
-+		platform_get_drvdata(pdev);
-+
-+	thermal_zone_device_unregister(kirkwood_thermal);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+MODULE_DEVICE_TABLE(of, kirkwood_thermal_id_table);
-+
-+static struct platform_driver kirkwood_thermal_driver = {
-+	.probe = kirkwood_thermal_probe,
-+	.remove = kirkwood_thermal_exit,
-+	.driver = {
-+		.name = "kirkwood_thermal",
-+		.owner = THIS_MODULE,
-+		.of_match_table = of_match_ptr(kirkwood_thermal_id_table),
-+	},
-+};
-+
-+module_platform_driver(kirkwood_thermal_driver);
-+
-+MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu@nigauri.org>");
-+MODULE_DESCRIPTION("kirkwood thermal driver");
-+MODULE_LICENSE("GPL");
+ 		uart0: serial@12000 {
+ 			compatible = "ns16550a";
+ 			reg = <0x12000 0x100>;
+diff --git a/arch/arm/configs/dove_defconfig b/arch/arm/configs/dove_defconfig
+index 0b7ee92..9713b5b 100644
+--- a/arch/arm/configs/dove_defconfig
++++ b/arch/arm/configs/dove_defconfig
+@@ -80,6 +80,8 @@ CONFIG_I2C_MV64XXX=y
+ CONFIG_SPI=y
+ CONFIG_SPI_ORION=y
+ # CONFIG_HWMON is not set
++CONFIG_THERMAL=y
++CONFIG_DOVE_THERMAL=y
+ CONFIG_USB=y
+ CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_EHCI_HCD=y
 -- 
 1.7.10.4
 
