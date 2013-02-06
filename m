@@ -1,32 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: BUG in bleeding edge c560f3d
-Date: Wed, 6 Feb 2013 07:04:08 +0530
-Message-ID: <CAKohpo=oo+vJLqsQMK9-4=V5Or94hSdNo3aZPQbY-bdvni2K6w@mail.gmail.com>
-References: <511033EA.7090604@gmail.com>
-	<3463348.tWNCISaOfi@vostro.rjw.lan>
-	<51104CC7.8030800@gmail.com>
-	<2585398.78DPBR35EF@vostro.rjw.lan>
-	<CAKohpo=-A+VTxsrMQk5SthHZLywrO-E3EHQnSs3_jG593cJzUw@mail.gmail.com>
-	<CAKohpomDLWFP5tTnhTidOOrkEhW_z5Ht_MzbbnzDaq-i+-1aEg@mail.gmail.com>
-	<5111532F.1060606@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5111532F.1060606@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: [PATCH v2 linux-next 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Tue,  5 Feb 2013 20:04:48 -0600
+Message-ID: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relay1.sgi.com ([192.48.179.29]:35802 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754258Ab3BFCFX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Feb 2013 21:05:23 -0500
+In-Reply-To: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: viresh.kumar@linaro.org, rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>
 
-On 6 February 2013 00:15, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> On 02/04/2013 11:08 PM, Viresh Kumar wrote:
->>
->> @Dirk: Please give this one a try. Atleast on my system with various
->> configurations, i
->> couldn't see any different this patch has made, but is more logical to me.
->>
->
-> Tested works fine with and without my driver present.
+I am noticing the cpufreq_driver_lock is quite hot.
+On an idle 512 system perf shows me most of the system time is spent on this
+lock.  This is quite significant as top shows 5% of time in system time.
+My solution was to first convert the lock to a rwlock and then to the rcu.
 
-Wow!! I was shooting in the dark without knowing where the right target is
-and luckily i found the target :)
+v2: Rebase to linux-next
+
+Nathan Zimmer (2):
+  cpufreq: Convert the cpufreq_driver_lock to a rwlock
+  cpufreq: Convert the cpufreq_driver_lock to use the rcu
+
+ drivers/cpufreq/cpufreq.c | 150 +++++++++++++++++++++++++---------------------
+ 1 file changed, 83 insertions(+), 67 deletions(-)
+
+-- 
+1.8.0.1
+
