@@ -1,36 +1,54 @@
-From: Inderpal Singh <inderpal.singh@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Thu, 7 Feb 2013 16:58:34 +0530
-Message-ID: <CAG17yqQtvg4aL7tV6b5GmrdhjwvT4k+iCyStRykkHFOmP21Q9g@mail.gmail.com>
-References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
-	<1360179562-19950-2-git-send-email-amit.daniel@samsung.com>
-	<CAG17yqSh3bk8C9YSXtEsh4F5AJttwbVjFY0tdoy6=SZX5qibkQ@mail.gmail.com>
-	<CAOh2x=n+-PenMYNf9iZG0SeS4ENYdh0aKFWVZtLqWVHDUYhaMw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Thu, 07 Feb 2013 14:05:34 +0100
+Message-ID: <2158181.aoVXdpLJe2@vostro.rjw.lan>
+References: <cover.1360232293.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=n+-PenMYNf9iZG0SeS4ENYdh0aKFWVZtLqWVHDUYhaMw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1360232293.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, dirk.brandewie@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On 7 February 2013 16:49, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On Thu, Feb 7, 2013 at 10:39 AM, Inderpal Singh
-> <inderpal.singh@linaro.org> wrote:
->>> +#define DRIVER_NAME            "exynos5440_dvfs"
->
->>> +static struct cpufreq_driver exynos_driver = {
->>> +       .name           = DRIVER_NAME,
->>> +};
->>> +
->>
->> Since this driver is only for exynos5440, having the same names as
->> common exynos-cpufreq is misleading.
->
-> Where is it same?
+On Thursday, February 07, 2013 03:57:42 PM Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> This is another unplanned patchset for all the platforms that i broke. :)
+> 
+> Okay, there are two important fixes (1 & 4) and two general cleanups (2 & 3). I
+> hope most of the issues would be resolved by these and we would be able to push
+> clean cpufreq core into 3.9.
+> 
+> I have pushed them in my for-rafael branch at:
+> 
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-rafael
+> 
+> @Artem & Valdis: Please test them and reply with your Tested-by's (in case they
+> work :) ).
+> 
+> Viresh Kumar (4):
+>   cpufreq: governors: Fix WARN_ON() for multi-policy platforms
+>   cpufreq: Remove unused HOTPLUG_CPU code
+>   cpufreq: Create a macro for unlock_policy_rwsem{read,write}
+>   cpufreq: Fix locking issues
+> 
+>  drivers/cpufreq/cpufreq.c          | 126 ++++++++++++++++++-------------------
+>  drivers/cpufreq/cpufreq_governor.c |  32 ++++++----
+>  2 files changed, 79 insertions(+), 79 deletions(-)
 
-I meant hooks names (verify/get/target and init)
+I think they all make sense, so applied to linux-next.
+
+I would prefer not to make any more changes to cpufreq before v3.9 from now on,
+except for fixes and maybe the Drik's patchset that I kind of scheduled for
+merging into bleeding-edge later today.
 
 Thanks,
-Inder
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
