@@ -1,162 +1,122 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH 2/5] Thermal: Introduce cpu cooling table
-Date: Thu, 7 Feb 2013 15:18:41 -0800
-Message-ID: <CADGdYn70n+izsp21JXzsTJt+04TuEdH5GRL4KV-GZ6U0+Ozcnw@mail.gmail.com>
-References: <CADGdYn6ehM36k1O3O6mXnHRJBy42N5iACnbOB+bwjPx+RAqQTw@mail.gmail.com>
-	<CADGdYn6ztQ99vOGiHRGirQTx1-Zgk4-xLGwiwGV=JtVLTFOXbg@mail.gmail.com>
-	<1360205598.2982.109.camel@rzhang1-mobl4>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
+Date: Fri, 08 Feb 2013 00:29:36 +0100
+Message-ID: <16615226.2vj4EkkIZJ@vostro.rjw.lan>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <1360116290-23849-1-git-send-email-nzimmer@sgi.com> <1360116290-23849-3-git-send-email-nzimmer@sgi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f180.google.com ([209.85.210.180]:63752 "EHLO
-	mail-ia0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759492Ab3BGXSl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Feb 2013 18:18:41 -0500
-Received: by mail-ia0-f180.google.com with SMTP id f27so3486354iae.25
-        for <linux-pm@vger.kernel.org>; Thu, 07 Feb 2013 15:18:41 -0800 (PST)
-In-Reply-To: <1360205598.2982.109.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1360116290-23849-3-git-send-email-nzimmer@sgi.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nathan Zimmer <nzimmer@sgi.com>
+Cc: viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, Gu1 <gu1@aeroxteam.fr>, Hongbo Zhang <hongbo.zhang@linaro.org>
 
-On Wed, Feb 6, 2013 at 6:53 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Wed, 2013-02-06 at 17:56 -0800, amit daniel kachhap wrote:
->> Hi Rui,
->>
->> I tested this code and after 2 changes it started working.
-Oh sorry I didn't explained it . Actually I replied the problems to
-their corresponding patches.
->>
-> which two changes?
->
->> Also calling memory allocation for getting cpufreq table is quite
->> expensive and might also fail.
->> Storing the frequency again in a new
->> table can be avoided
->
-> you mean it is not worth creating a cpu cooling table?
->
-> do you mean this memory allocation is quite expensive for SOC?
-> Sorry I do not have too much experience on SOC.
->
->>  and only required frequency or level can be
->> returned.
->>
-> Sorry, I do not understand.
-> But it is true that we do not have to allocate a new table to get the
-> level/frequency.
+On Tuesday, February 05, 2013 08:04:50 PM Nathan Zimmer wrote:
+> In general rwlocks are discourged so we are moving it to use the rcu instead.
+> 
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 173 +++++++++++++++++++++++++---------------------
+>  1 file changed, 96 insertions(+), 77 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index ef25244..a04ceb9 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -39,13 +39,13 @@
+>   * level driver of CPUFreq support, and its spinlock. This lock
+>   * also protects the cpufreq_cpu_data array.
+>   */
+> -static struct cpufreq_driver *cpufreq_driver;
+> +static struct cpufreq_driver __rcu *cpufreq_driver;
+>  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+>  #ifdef CONFIG_HOTPLUG_CPU
+>  /* This one keeps track of the previously set governor of a removed CPU */
+>  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
+>  #endif
+> -static DEFINE_RWLOCK(cpufreq_driver_lock);
+> +static DEFINE_SPINLOCK(cpufreq_driver_lock);
+>  
+>  /*
+>   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
+> @@ -143,21 +143,20 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
+>  static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+>  {
+>  	struct cpufreq_policy *data;
+> -	unsigned long flags;
+> +	struct cpufreq_driver *driver;
+>  
+>  	if (cpu >= nr_cpu_ids)
+>  		goto err_out;
+>  
+>  	/* get the cpufreq driver */
+> -	read_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+> -	if (!cpufreq_driver)
+> +	rcu_read_lock();
+> +	driver = rcu_dereference(cpufreq_driver);
+> +	if (!driver)
+>  		goto err_out_unlock;
+>  
+> -	if (!try_module_get(cpufreq_driver->owner))
+> +	if (!try_module_get(driver->owner))
+>  		goto err_out_unlock;
+>  
+> -
+>  	/* get the CPU */
+>  	data = per_cpu(cpufreq_cpu_data, cpu);
+>  
+> @@ -167,13 +166,13 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
+>  	if (!sysfs && !kobject_get(&data->kobj))
+>  		goto err_out_put_module;
+>  
+> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	rcu_read_unlock();
+>  	return data;
+>  
+>  err_out_put_module:
+> -	module_put(cpufreq_driver->owner);
+> +	module_put(driver->owner);
+>  err_out_unlock:
+> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	rcu_read_unlock();
+>  err_out:
+>  	return NULL;
+>  }
+> @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+>  {
+>  	if (!sysfs)
+>  		kobject_put(&data->kobj);
+> -	module_put(cpufreq_driver->owner);
+> +	module_put(rcu_dereference(cpufreq_driver)->owner);
+>  }
+>  
+>  void cpufreq_cpu_put(struct cpufreq_policy *data)
+> @@ -267,13 +266,16 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+>  void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
+>  {
+>  	struct cpufreq_policy *policy;
+> +	struct cpufreq_driver *driver;
+>  
+>  	BUG_ON(irqs_disabled());
+>  
+>  	if (cpufreq_disabled())
+>  		return;
+>  
+> -	freqs->flags = cpufreq_driver->flags;
+> +	driver = rcu_dereference(cpufreq_driver);
 
-I meant the same that it is unnecessary to allocate the cpufreq table
-and then free them.
+Pardon me for not asking that question earlier, but what sense does it make
+to use rcu_dereference() outside of an rcu_read_lock()/rcu_read_unlock()
+scope?  Here and in the other places?
 
-Thanks.
-Amit Daniel
-> I just want to make the cooling state <-> frequency transition clear and
-> consistent for cpufreq cooling.
-> I can work out another version without memory allocation, if that's what
-> you want.
+Rafael
 
->
-> thanks,
-> rui
->> Thanks,
->> Amit Daniel
->>
->> On Wed, Feb 6, 2013 at 5:46 PM, amit kachhap <amit.kachhap@gmail.com> wrote:
->> > CPU cooling table is a cleaned cpufreq_frequency_table that
->> > 1. each entry represents a cooling state,
->> >    aka, each entry has a different frequency.
->> > 2. does not have invalid entry.
->> > 3. does not have duplicate entry.
->> > 4. the frequencies of all the entries are in descending order.
->> >
->> > we should use this table inside thermal layer and thermal drivers.
->> >
->> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->> > ---
->> >  drivers/thermal/cpu_cooling.c |   63 +++++++++++++++++++++++++++++++++++++++++
->> >  1 file changed, 63 insertions(+)
->> >
->> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> > index 455c77a..08f12c7 100644
->> > --- a/drivers/thermal/cpu_cooling.c
->> > +++ b/drivers/thermal/cpu_cooling.c
->> > @@ -115,6 +115,69 @@ static int is_cpufreq_valid(int cpu)
->> >         return !cpufreq_get_policy(&policy, cpu);
->> >  }
->> >
->> > +/*
->> > + * get the cleaned cpufreq_frequency_table that
->> > + * 1) does not have invalid entries
->> > + * 2) does not have duplicate entries
->> > + * 3) the frequency of the entries are in descending order
->> > + */
->> > +static struct cpufreq_frequency_table *
->> > +get_cpu_cooling_table(unsigned int cpu)
->> > +{
->> > +       int i = 0;
->> > +       int level;
->> > +       struct cpufreq_frequency_table *old, *new;
->> > +       unsigned int freq = CPUFREQ_ENTRY_INVALID;
->> > +       int descend = -1;
->> > +
->> > +       old = cpufreq_frequency_get_table(cpu);
->> > +       if (!old)
->> > +               return ERR_PTR(-EINVAL);
->> > +
->> > +       while (old[i].frequency != CPUFREQ_TABLE_END)
->> > +               i++;
->> > +
->> > +       i++; /* one more entry for CPUFREQ_TABLE_END */
->> > +
->> > +       new = kzalloc(i * sizeof(struct cpufreq_frequency_table), GFP_KERNEL);
->> > +       if (!new)
->> > +               return ERR_PTR(-ENOMEM);
->> > +
->> > +       for (i = 0, level = 0; old[i].frequency != CPUFREQ_TABLE_END; i++) {
->> > +               /* ignore invalid entry */
->> > +               if (old[i].frequency == CPUFREQ_ENTRY_INVALID)
->> > +                       continue;
->> > +
->> > +               /* ignore duplicate entry */
->> > +               if (freq == old[i].frequency)
->> > +                       continue;
->> > +
->> > +               /* found an valid entry */
->> > +               new[level].frequency = old[i].frequency;
->> > +
->> > +               if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
->> > +                       descend = !!(freq > old[i].frequency);
->> > +
->> > +               /* freq always equals the last valid frequency */
->> > +               freq = new[level].frequency;
->> > +
->> > +               level++;
->> > +       }
->> > +       new[level].frequency = CPUFREQ_ENTRY_INVALID;
->> > +
->> > +       /* convert to decending if in ascending order */
->> > +       if (!descend) {
->> > +               for(i = 0; i < (level - i - 1); i++) {
->> > +                       int j = level - i - 1;
->> > +                       freq = new[i].frequency;
->> > +                       new[i].frequency = new[j].frequency;
->> > +                       new[j].frequency = freq;
->> > +               }
->> > +       }
->> > +
->> > +       return new;
->> > +}
->> > +
->> >  /**
->> >   * get_cpu_frequency - get the absolute value of frequency from level.
->> >   * @cpu: cpu for which frequency is fetched.
->> > --
->> > 1.7.9.5
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
