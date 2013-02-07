@@ -1,50 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Thu,  7 Feb 2013 15:57:42 +0530
-Message-ID: <cover.1360232293.git.viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:52463 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755741Ab3BGK17 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Feb 2013 05:27:59 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 3/4] cpufreq: Create a macro for unlock_policy_rwsem{read,
+	write}
+Date: Thu,  7 Feb 2013 15:57:45 +0530
+Message-ID: <7b681ffe08aa44d93a81297c1fb6f7702c9c9b2b.1360232293.git.viresh.kumar@linaro.org>
+References: <cover.1360232293.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+In-Reply-To: <cover.1360232293.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1360232293.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1360232293.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+List-Unsubscribe: <http://lists.linaro.org/mailman/options/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linaro.org/pipermail/linaro-dev>
+List-Post: <mailto:linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>
+List-Help: <mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.linaro.org/mailman/listinfo/linaro-dev>,
+	<mailto:linaro-dev-request-cunTk1MwBs8s++Sfvej+rw@public.gmane.org?subject=subscribe>
+Sender: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+Errors-To: linaro-dev-bounces-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org, valdis.kletnieks-PjAqaU27lzQ@public.gmane.org, artem.savkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: Steve.Bannister-5wv7dgnIgG8@public.gmane.org, linaro-dev-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, valdis.kletnieks@vt.edu, artem.savkov@gmail.com
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Rafael,
+On the lines of macro: lock_policy_rwsem, we can create another macro for
+unlock_policy_rwsem. Lets do it.
 
-This is another unplanned patchset for all the platforms that i broke. :)
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ drivers/cpufreq/cpufreq.c | 24 +++++++++---------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
-Okay, there are two important fixes (1 & 4) and two general cleanups (2 & 3=
-). I
-hope most of the issues would be resolved by these and we would be able to =
-push
-clean cpufreq core into 3.9.
-
-I have pushed them in my for-rafael branch at:
-
-http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
-refs/heads/for-rafael
-
-@Artem & Valdis: Please test them and reply with your Tested-by's (in case =
-they
-work :) ).
-
-Viresh Kumar (4):
-  cpufreq: governors: Fix WARN_ON() for multi-policy platforms
-  cpufreq: Remove unused HOTPLUG_CPU code
-  cpufreq: Create a macro for unlock_policy_rwsem{read,write}
-  cpufreq: Fix locking issues
-
- drivers/cpufreq/cpufreq.c          | 126 ++++++++++++++++++---------------=
-----
- drivers/cpufreq/cpufreq_governor.c |  32 ++++++----
- 2 files changed, 79 insertions(+), 79 deletions(-)
-
---=20
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 795b0e8..c46aed4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -70,8 +70,7 @@ static DEFINE_PER_CPU(int, cpufreq_policy_cpu);
+ static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
+ 
+ #define lock_policy_rwsem(mode, cpu)					\
+-static int lock_policy_rwsem_##mode					\
+-(int cpu)								\
++static int lock_policy_rwsem_##mode(int cpu)				\
+ {									\
+ 	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);		\
+ 	BUG_ON(policy_cpu == -1);					\
+@@ -81,23 +80,18 @@ static int lock_policy_rwsem_##mode					\
+ }
+ 
+ lock_policy_rwsem(read, cpu);
+-
+ lock_policy_rwsem(write, cpu);
+ 
+-static void unlock_policy_rwsem_read(int cpu)
+-{
+-	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);
+-	BUG_ON(policy_cpu == -1);
+-	up_read(&per_cpu(cpu_policy_rwsem, policy_cpu));
+-}
+-
+-static void unlock_policy_rwsem_write(int cpu)
+-{
+-	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);
+-	BUG_ON(policy_cpu == -1);
+-	up_write(&per_cpu(cpu_policy_rwsem, policy_cpu));
++#define unlock_policy_rwsem(mode, cpu)					\
++static void unlock_policy_rwsem_##mode(int cpu)				\
++{									\
++	int policy_cpu = per_cpu(cpufreq_policy_cpu, cpu);		\
++	BUG_ON(policy_cpu == -1);					\
++	up_##mode(&per_cpu(cpu_policy_rwsem, policy_cpu));		\
+ }
+ 
++unlock_policy_rwsem(read, cpu);
++unlock_policy_rwsem(write, cpu);
+ 
+ /* internal prototypes */
+ static int __cpufreq_governor(struct cpufreq_policy *policy,
+-- 
 1.7.12.rc2.18.g61b472e
-
-
