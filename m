@@ -1,30 +1,35 @@
 From: amit kachhap <amit.kachhap@gmail.com>
 Subject: Re: [PATCH 2/3] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Thu, 7 Feb 2013 10:39:12 -0800
-Message-ID: <CADGdYn6xDgm36AKQhrvHp0D918AUOZo8s1oLY=oaYdFBc3LBvA@mail.gmail.com>
+Date: Thu, 7 Feb 2013 11:08:20 -0800
+Message-ID: <CADGdYn7+U1fvFdHkAikoH9P-owF0ZKk6ZSgrPfY+16S3vO=S3A@mail.gmail.com>
 References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
 	<1360179562-19950-2-git-send-email-amit.daniel@samsung.com>
-	<CAG17yqSh3bk8C9YSXtEsh4F5AJttwbVjFY0tdoy6=SZX5qibkQ@mail.gmail.com>
+	<CAOh2x=kYM8n8XipvQ0-3H5f=B2TwAeFSa0DP=hy+SWQvPXJh6Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAG17yqSh3bk8C9YSXtEsh4F5AJttwbVjFY0tdoy6=SZX5qibkQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Inderpal Singh <inderpal.singh@linaro.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=kYM8n8XipvQ0-3H5f=B2TwAeFSa0DP=hy+SWQvPXJh6Q@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Inder,
+Hi Viresh,
 
-Thanks for the review,
-On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
-<inderpal.singh@linaro.org> wrote:
-> On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+Thanks for the detailed review. Will try to handle them in the next version,
+
+On Thu, Feb 7, 2013 at 3:17 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On Thu, Feb 7, 2013 at 1:09 AM, Amit Daniel Kachhap
+> <amit.daniel@samsung.com> wrote:
 >> This patch adds dvfs support for exynos5440 SOC. The nature of exynos5440
 >> clock controller is different from previous exynos controllers so not using
 >> the common exynos cpufreq framework. Also, the device tree parsing is added
 >> to get different parameters like frequency, voltage etc.
->>
+>
+> Some information about platform cpu configuration would be helpful.. cpus, type,
+> clock lines for cpus - shared/separate?
+Ok.
+>
 >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 >> ---
 >>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   24 ++
@@ -50,6 +55,12 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +Required properties:
 >> +- interrupts: Interrupt to know the completion of cpu frequency change.
 >> +- cpufreq_tbl: Table of frequencies and voltage CPU could be transitioned into,
+>
+> This has to be "operating-points" as in cpufreq-cpu0 driver.
+Yes I will check if opp table is beneficial. In my case it is just one
+time parsing of cpufreq table and those values(freq, volt) are not
+used later so did not use opp libraries.
+>
 >> +       in the decreasing order. Frequency should be in KHZ units and voltage
 >> +       should be in microvolts.
 >> +
@@ -65,37 +76,7 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +                               1000000 975000
 >> +                               800000  925000 >;
 >> +       };
->> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->> index a0b3661..554756f 100644
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
->> @@ -77,6 +77,14 @@ config ARM_EXYNOS5250_CPUFREQ
->>           This adds the CPUFreq driver for Samsung EXYNOS5250
->>           SoC.
->>
->> +config ARM_EXYNOS5440_CPUFREQ
->> +       def_bool SOC_EXYNOS5440
->> +       help
->> +         This adds the CPUFreq driver for Samsung EXYNOS5440
->> +         SoC. The nature of exynos5440 clock controller is
->> +         different than previous exynos controllers so not using
->> +         the common exynos framework.
->> +
->>  config ARM_SPEAR_CPUFREQ
->>         bool "SPEAr CPUFreq support"
->>         depends on PLAT_SPEAR
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index fadc4d4..5159ba4 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -50,6 +50,7 @@ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)      += exynos-cpufreq.o
->>  obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
->>  obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
->>  obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
->> +obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
->>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)     += omap-cpufreq.o
->>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
->>
+>
 >> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
 >> new file mode 100644
 >> index 0000000..41d39e2
@@ -267,6 +248,10 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +        __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
 >> +
 >> +       /*Set initial perfromance index*/
+>
+> performance.
+yes
+>
 >> +       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
 >> +               if (freq_table[i].frequency == dvfs_info->cur_frequency)
 >> +                       break;
@@ -329,6 +314,10 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +        * old_index with cpufreq_frequency_table_target(). Thus, ignore
 >> +        * policy and get the index from the raw freqeuncy table.
 >> +        */
+>
+> What? Why ?
+Invalid comment, ignore it.
+>
 >> +       for (old_index = 0;
 >> +               freq_table[old_index].frequency != CPUFREQ_TABLE_END;
 >> +               old_index++)
@@ -336,6 +325,10 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +                       break;
 >> +
 >> +       if (freq_table[old_index].frequency == CPUFREQ_TABLE_END) {
+>
+> How can this be true?
+This is error scenario
+>
 >> +               ret = -EINVAL;
 >> +               goto out;
 >> +       }
@@ -362,6 +355,18 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +       }
 >> +out:
 >> +       mutex_unlock(&cpufreq_lock);
+>
+> That's something new and interesting. So you are just configuring your
+> controller
+> for a new dvfs point and get back to work. Then you would get an
+> interrupt sometime
+> and work is queued and everybody notified.
+>
+> @Rafael: You expect any issue with this technique ?
+>
+Yes you understood it correctly. So in this method  prechange and
+postchange notifiers are called in a separate context. I guess it
+should be fine.
 >> +       return ret;
 >> +}
 >> +
@@ -413,16 +418,16 @@ On Wed, Feb 6, 2013 at 9:09 PM, Inderpal Singh
 >> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
 >> +{
 >> +       policy->cur = policy->min = policy->max = dvfs_info->cur_frequency;
+>
+> you don't have to fill min and max. its done by core when you call
+> cpufreq_frequency_table_cpuinfo().
+Ok.
+>
 >> +
 >> +       cpufreq_frequency_table_get_attr(dvfs_info->freq_table, policy->cpu);
 >> +
 >> +       /* set the transition latency value */
 >> +       policy->cpuinfo.transition_latency = DEF_TRANS_LATENCY;
->
-> transition_latency can be provided through DT.
-Yes I also thought but all previous exynos cpufreq driver uses the
-same constant value so didn't create dt node.
->
 >> +
 >> +       /*
 >> +        * EXYNOS5440 multi-core processors has 4 cores
@@ -430,6 +435,9 @@ same constant value so didn't create dt node.
 >> +        * Each cpu is bound to the same speed.
 >> +        * So the affected cpu is all of the cpus.
 >> +        */
+>
+> Good. I understood it now :)
+>
 >> +       if (num_online_cpus() == 1) {
 >> +               cpumask_copy(policy->related_cpus, cpu_possible_mask);
 >> +               cpumask_copy(policy->cpus, cpu_online_mask);
@@ -437,7 +445,14 @@ same constant value so didn't create dt node.
 >> +               policy->shared_type = CPUFREQ_SHARED_TYPE_ANY;
 >> +               cpumask_setall(policy->cpus);
 >> +       }
->> +
+>
+> Replace everything between "Good" and this line with:
+>
+> cpumask_setall(policy->cpus);
+>
+> http://www.spinics.net/lists/cpufreq/msg04091.html
+Right. good suggestion
+>
 >> +       return cpufreq_frequency_table_cpuinfo(policy, dvfs_info->freq_table);
 >> +}
 >> +
@@ -450,17 +465,17 @@ same constant value so didn't create dt node.
 >> +       .name           = DRIVER_NAME,
 >> +};
 >> +
->
-> Since this driver is only for exynos5440, having the same names as
-> common exynos-cpufreq is misleading.
-Yes your suggestion is good but the names like exynos5440_* looks very long.
->
 >> +static int __init exynos_cpufreq_init(void)
 >> +{
 >> +       int ret = -EINVAL, len, i;
 >> +       struct device_node *np;
 >> +       struct cpufreq_frequency_table *freq_tbl = exynos_freq_table;
 >> +       unsigned int *volt_tbl = exynos_volt_table;
+>
+> why do we need duplicate names for global variables here? remove exynos_
+> from globals and that would be enough (in case you don't want long names).
+Ok
+>
 >> +       const struct property *prop;
 >> +       const __be32 *val;
 >> +
@@ -469,6 +484,13 @@ Yes your suggestion is good but the names like exynos5440_* looks very long.
 >> +               return -ENODEV;
 >> +
 >> +       dvfs_info = kzalloc(sizeof(struct exynos_dvfs_data), GFP_KERNEL);
+>
+> sizeof(*dvfs_info) ?? why don't make it static too, as you have other
+> stuff too.. ?
+> The better option for single image solution to allocate everything
+> dynamically, so that
+> unused drivers don't occupy any space.
+>
 >> +       if (!dvfs_info) {
 >> +               of_node_put(np);
 >> +               return -ENOMEM;
@@ -501,6 +523,31 @@ Yes your suggestion is good but the names like exynos5440_* looks very long.
 >> +       val = prop->value;
 >> +
 >> +       if ((len == 0) || (len / 2 > CPUFREQ_LEVEL_END)) {
+>
+> I really didn't like this limit you have put at the number of dvfs
+> points. Better
+> would be to use:
+>
+>         ret = of_init_opp_table(cpu_dev);
+>         if (ret) {
+>                 pr_err("failed to init OPP table: %d\n", ret);
+>                 goto out_put_node;
+>         }
+>
+>         ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
+>         if (ret) {
+>                 pr_err("failed to init cpufreq table: %d\n", ret);
+>                 goto out_put_node;
+>         }
+>
+> as used in cpufreq-cpu0 driver. Also please have a closer look at this driver,
+> you may not your driver at all :)
+Yes I thought of this but there are some different things needed in
+this driver like
+*) prechange and postchange out of context call.
+*) some controller initialisations after parsing the cpufreq table.
+*) no explicit set voltage call
+>
 >> +               pr_err("Invalid cpufreq table\n");
 >> +               ret = -ENODEV;
 >> +               goto err_irq_parse;
@@ -514,23 +561,14 @@ Yes your suggestion is good but the names like exynos5440_* looks very long.
 >> +
 >> +       freq_tbl[i].index = i;
 >> +       freq_tbl[i].frequency = CPUFREQ_TABLE_END;
->
-> How about using OPP library to allocate and setup freqtable ? It will
-> clean up this code and you wont have to have a statically allocated
-> exynos_freq_table.
-
-Ok I will check for this.
-
-Thanks,
-Amit
->
-> Thanks,
-> Inder
->
 >> +
 >> +       dvfs_info->freq_table = freq_tbl;
 >> +
 >> +       dvfs_info->cpu_clk = clk_get(NULL, "armclk");
+>
+> devm_clk_get() ?
+Ok
+>
 >> +       if (IS_ERR(dvfs_info->cpu_clk)) {
 >> +               pr_err("Failed to get cpu clock\n");
 >> +               ret = PTR_ERR(dvfs_info->cpu_clk);
@@ -539,6 +577,10 @@ Amit
 >> +
 >> +       INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
 >> +       if (request_irq(dvfs_info->irq, exynos_cpufreq_irq,
+>
+> devm_ ??
+Ok.
+>
 >> +                               IRQF_TRIGGER_NONE, DRIVER_NAME, dvfs_info)) {
 >> +               pr_err("Failed to register IRQ\n");
 >> +               ret = -ENODEV;
@@ -546,6 +588,10 @@ Amit
 >> +       }
 >> +
 >> +       dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk) / 1000;
+>
+> what if clk_get_rate fails ? or returns zero.
+Ok.
+>
 >> +       init_div_table();
 >> +       exynos_enable_dvfs();
 >> +
@@ -556,6 +602,13 @@ Amit
 >> +
 >> +       of_node_put(np);
 >> +       dvfs_info->dvfs_init = true;
+>
+> why do you need this ?
+This is added to synchronize the interrupts.
+
+Thanks,
+Amit Daniel
+>
 >> +       pr_info("exynos5440 DVFS initialised.\n");
 >> +
 >> +       return 0;
@@ -577,7 +630,7 @@ Amit
 >> 1.7.10.4
 >>
 >> --
->> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 >> the body of a message to majordomo@vger.kernel.org
 >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > --
