@@ -1,91 +1,50 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with
- kernel threads
-Date: Thu, 7 Feb 2013 10:59:19 +0100
-Message-ID: <CAJfpegv1-Db+0DxZ8QUQv9BJiEBG3-8a2YaOVMbkb=Y7m+3DTw@mail.gmail.com>
-References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	<CAJfpegvJD75ahBViUqAwVTBLuF5yrxOcVvzYHmcsTgwxX+7Oqg@mail.gmail.com>
-	<20130207084144.GB6168@frosties>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130207084144.GB6168@frosties>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: Li Fei <fei.li@intel.com>, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Thu,  7 Feb 2013 15:57:42 +0530
+Message-ID: <cover.1360232293.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:52463 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755741Ab3BGK17 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Feb 2013 05:27:59 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl, valdis.kletnieks@vt.edu, artem.savkov@gmail.com
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-[CC list restored]
+Hi Rafael,
 
-On Thu, Feb 7, 2013 at 9:41 AM, Goswin von Brederlow <goswin-v-b@web.de> wrote:
-> On Wed, Feb 06, 2013 at 10:27:40AM +0100, Miklos Szeredi wrote:
->> On Wed, Feb 6, 2013 at 2:11 AM, Li Fei <fei.li@intel.com> wrote:
->> >
->> > There is well known issue that freezing will fail in case that fuse
->> > daemon is frozen firstly with some requests not handled, as the fuse
->> > usage task is waiting for the response from fuse daemon and can't be
->> > frozen.
->> >
->> > To solve the issue above, make fuse daemon frozen after all all user
->> > space processes frozen and during the kernel threads frozen phase.
->> > PF_FREEZE_DAEMON flag is added to indicate that the current thread is
->> > the fuse daemon,
->>
->> Okay and how do you know which thread, process or processes belong to
->> the "fuse daemon"?
->
-> Maybe I'm talking about the wrong thing but isn't any process having
-> /dev/fuse open "the fuse daemon"? And that doesn't even cover cases
-> where one thread reads requests from the kernel and hands them to
-> worker threads (that do not have /dev/fuse themself). Or the fuse
-> request might need mysql to finish a request.
->
-> I believe figuring out what processes handle fuse requests is a lost
-> proposition.
+This is another unplanned patchset for all the platforms that i broke. :)
 
-Pretty much.
+Okay, there are two important fixes (1 & 4) and two general cleanups (2 & 3=
+). I
+hope most of the issues would be resolved by these and we would be able to =
+push
+clean cpufreq core into 3.9.
 
->
->
-> Secondly how does freezing the daemon second garanty that it has
-> replied to all pending requests? Or how is leaving it thawed the right
-> decision?
->
-> Instead the kernel side of fuse should be half frozen and stop sending
-> out new requests. Then it should wait for all pending requests to
-> complete. Then and only then can userspace processes be frozen safely.
+I have pushed them in my for-rafael branch at:
 
-The problem with that is one fuse filesystem might be calling into
-another.  Say two fuse filesystems are mounted at /mnt/A and /mnt/B,
-Process X starts a read request on /mnt/A. This is handled by process
-A, which in turn starts a read request on /mnt/B, which is handled by
-B.  If we freeze the system at the moment when A starts handling the
-request but hasn't yet sent the request to B then things wil be stuck
-and the freezing will fail.
+http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
+refs/heads/for-rafael
 
-So the order should be:  Freeze the "topmost" fuse filesystems (A in
-the example) first and if all pending requests are completed then
-freeze the next ones in the hierarchy, etc...  This would work if this
-dependency between filesystems were known.  But it's not and again it
-looks like an impossible task.
+@Artem & Valdis: Please test them and reply with your Tested-by's (in case =
+they
+work :) ).
 
-The only way to *reliably* freeze fuse filesystems is to let it freeze
-even if there are outstanding requests.  But that's the hardest to
-implement, because then it needs to allow freezing of tasks waiting on
-i_mutex, for example, which is currently not possible.  But this is
-the only way I see that would not have unsolvable corner cases that
-prop up at the worst moment.
+Viresh Kumar (4):
+  cpufreq: governors: Fix WARN_ON() for multi-policy platforms
+  cpufreq: Remove unused HOTPLUG_CPU code
+  cpufreq: Create a macro for unlock_policy_rwsem{read,write}
+  cpufreq: Fix locking issues
 
-And yes, it would be prudent to  wait some time for pending requests
-to finish before freezing.  But it's not a requirement, things
-*should* work without that: suspending a machine is just like a very
-long pause by the CPU, as long as no hardware is involved.  And with
-fuse filesystems there is no hardware involved directly by definition.
+ drivers/cpufreq/cpufreq.c          | 126 ++++++++++++++++++---------------=
+----
+ drivers/cpufreq/cpufreq_governor.c |  32 ++++++----
+ 2 files changed, 79 insertions(+), 79 deletions(-)
 
-But I'm open to ideas and at this stage I think even patches that
-improve the situation for the majority of the cases would be
-acceptable, since this is turning out to be a major problem for a lot
-of people.
+--=20
+1.7.12.rc2.18.g61b472e
 
-Thanks,
-Miklos
+
