@@ -1,97 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] cpufreq: sleeping function called from invalid context at kernel/workqueue.c:2811
-Date: Thu, 07 Feb 2013 01:41:57 +0100
-Message-ID: <1873989.qC1mdEKIl9@vostro.rjw.lan>
-References: <20130206202513.GA5626@thinkpad.lan> <1543919.ZBNJa64WB5@vostro.rjw.lan>
+From: Valdis.Kletnieks@vt.edu
+Subject: Re: next-20130206 cpufreq - WARN in sysfs_add_one
+Date: Wed, 06 Feb 2013 19:55:58 -0500
+Message-ID: <30908.1360198558@turing-police.cc.vt.edu>
+References: <9180.1360172675@turing-police.cc.vt.edu>
+            <17233164.aBDzy1OViI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; boundary="==_Exmh_1360198558_2167P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1543919.ZBNJa64WB5@vostro.rjw.lan>
+In-Reply-To: Your message of "Wed, 06 Feb 2013 22:24:39 +0100."
+             <17233164.aBDzy1OViI@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Artem Savkov <artem.savkov@gmail.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, February 06, 2013 10:11:25 PM Rafael J. Wysocki wrote:
-> On Thursday, February 07, 2013 12:25:13 AM Artem Savkov wrote:
-> > I get the following BUG on suspend using systemd-sleep(this doesn't
-> > happen with pm-suspend). This seems to be introduced by some of the
-> > Viresh's patches.
-> 
-> Which branch from which day?
+--==_Exmh_1360198558_2167P
+Content-Type: text/plain; charset=us-ascii
 
-OK, I've reproduced it and the appended patch fixes it for me.  Can you please
-try it and report back?
+On Wed, 06 Feb 2013 22:24:39 +0100, "Rafael J. Wysocki" said:
+> On Wednesday, February 06, 2013 12:44:35 PM Valdis Kletnieks wrote:
+> > Seen in dmesg.  next-20130128 was OK. Haven't done a bisect, but can
+> > do so if the offender isn't obvious...
+>
+> I suppose this is 73bf0fc "cpufreq: Don't remove sysfs link for policy->cpu".
+>
+> Can you test the linux-pm.git/pm-cpufreq branch alone, please, and see
+> if that's this one (top-most commit)?
 
-Rafael
+Color me mystified.  I can't find that commit by either number or
+the description:
 
+[/usr/src/linux-next] git log | egrep -i 'cpufreq.*remove.*link'
+[/usr/src/linux-next] git log | grep -i 73bf0fc
+[/usr/src/linux-next]
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpufreq: Move sysfs_remove_link() from under a spinlock
-
-Commit 73bf0fc "cpufreq: Don't remove sysfs link for policy->cpu"
-attempted to fix a bug in __cpufreq_remove_dev() by avoiding to
-remove the link to the "cpufreq" directory for policy->cpu, but it
-rearranged the code in such a way that sysfs_remove_link() ended up
-under a spinlock, which caused complaints about sleeping in atomic
-context to be emitted into the kernel log during system suspend.
-
-To fix this, revert commit 73bf0fc partially and move the
-sysfs_remove_link() in question to a separate block executed for
-cpus > 1 outside of the spinlock.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
-
-Index: test/drivers/cpufreq/cpufreq.c
-===================================================================
---- test.orig/drivers/cpufreq/cpufreq.c
-+++ test/drivers/cpufreq/cpufreq.c
-@@ -1058,9 +1058,7 @@ static int __cpufreq_remove_dev(struct d
- 	cpus = cpumask_weight(data->cpus);
- 	cpumask_clear_cpu(cpu, data->cpus);
- 
--	if (cpu != data->cpu) {
--		sysfs_remove_link(&dev->kobj, "cpufreq");
--	} else if (cpus > 1) {
-+	if (unlikely(cpu == data->cpu && cpus > 1)) {
- 		/* first sibling now owns the new sysfs dir */
- 		cpu_dev = get_cpu_device(cpumask_first(data->cpus));
- 		sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
-@@ -1085,9 +1083,14 @@ static int __cpufreq_remove_dev(struct d
- 	pr_debug("%s: removing link, cpu: %d\n", __func__, cpu);
- 	cpufreq_cpu_put(data);
- 	unlock_policy_rwsem_write(cpu);
--
--	/* If cpu is last user of policy, free policy */
--	if (cpus == 1) {
-+	if (cpus > 1) {
-+		sysfs_remove_link(&dev->kobj, "cpufreq");
-+		if (cpufreq_driver->target) {
-+			__cpufreq_governor(data, CPUFREQ_GOV_START);
-+			__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
-+		}
-+	} else {
-+		/* If cpu is the last user of policy, free policy */
- 		lock_policy_rwsem_write(cpu);
- 		kobj = &data->kobj;
- 		cmp = &data->kobj_unregister;
-@@ -1110,9 +1113,6 @@ static int __cpufreq_remove_dev(struct d
- 		free_cpumask_var(data->related_cpus);
- 		free_cpumask_var(data->cpus);
- 		kfree(data);
--	} else if (cpufreq_driver->target) {
--		__cpufreq_governor(data, CPUFREQ_GOV_START);
--		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
- 	}
- 
- 	return 0;
+Was that a very recent commit that may have gotten pushed too late
+for the next-20130206 merge?
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
+
+
+
+
+--==_Exmh_1360198558_2167P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.13 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iQIVAwUBURL7ngdmEQWDXROgAQITTg/9EvAJblZcE9YXSZ03+bP2NmEGIR+xFICF
+RC3l0oe6ss70WxjrxjltP1LGnoi22cJD5dUPZC66W9RQu7AlA4J5A6Oi2Jcicper
+b9HItqrwItHUjAXnnXg45qKnG4WcrMEbSM7cG1ieOuGnBUdBq6ZKxlFnvEOc8ZtD
+1IASH/zavTMHHeY1lWShVj8wQ2yWUvGUcKTwz9pD7/D7LVpo5Zo29gp1bBKWmy0R
+CrYGcYpdbkkx+5i94VXLJNMY0njaZgGdbRFvBoRR3vOrmgehyaGSMtMoTCgYb18m
+ymTzS/I/x4S/WsZ5tlbdfKgzwSds8JQh5xH2uCb6Ib2YXPAuzNA04TwxT4ta/M+B
+7smFJndcKmPB2CklVT2AoqH7kpfHiFb6xqe8RkmaWQ5LXRTPHZh+jpfcKHDBmj0j
+g6Sy4PR+WeAgpBh/+IR/0iT2Jip2fmw8HOcTfCQF/uPuNEN2q4fVZDFRA0tBrt6e
+sAdW1gCoiJnLln3dK271iJNr/a8WLmW/EuW2B/WvvHKhmfoBqBb29/cIL6LpGp3F
+O7p6mQFv5RsWGOmfVHcUj2OjKFyFFIdwf1hNbivtoYbQvwUyhMl4P3lk1OPQVbqP
+jpJnDnEShdoAvGC45S2Q9KFrx9Tzv02moiMkbuhlNzEHjXFtlJ7Vg4nFtObtbZYu
+VuXhKi5SLtw=
+=6gKn
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1360198558_2167P--
+
