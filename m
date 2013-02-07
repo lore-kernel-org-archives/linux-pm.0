@@ -1,152 +1,128 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: next-20130206 cpufreq - WARN in sysfs_add_one
-Date: Thu, 7 Feb 2013 13:11:52 +0530
-Message-ID: <CAOh2x=mjTX3hM0uxJh9qk=9OUWqZaAjAV57r2H4AgH+ZjY+eCg@mail.gmail.com>
-References: <9180.1360172675@turing-police.cc.vt.edu>
-	<17233164.aBDzy1OViI@vostro.rjw.lan>
+From: Hongbo Zhang <hongbo.zhang@linaro.org>
+Subject: Re: [PATCH 2/5] Thermal: Introduce cpu cooling table
+Date: Thu, 7 Feb 2013 17:36:35 +0800
+Message-ID: <CAJLyvQwgKLt+oy=h1WsCPx+RvJX_w8J+ogEr=OTg0HSYvpbcVA@mail.gmail.com>
+References: <1360125006-25018-1-git-send-email-rui.zhang@intel.com>
+	<1360125006-25018-3-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <17233164.aBDzy1OViI@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f51.google.com ([74.125.83.51]:59509 "EHLO
+	mail-ee0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756843Ab3BGJgg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Feb 2013 04:36:36 -0500
+Received: by mail-ee0-f51.google.com with SMTP id d17so1217857eek.24
+        for <linux-pm@vger.kernel.org>; Thu, 07 Feb 2013 01:36:35 -0800 (PST)
+In-Reply-To: <1360125006-25018-3-git-send-email-rui.zhang@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, amit.daniel@samsung.com, gu1@aeroxteam.fr
 
-On Thu, Feb 7, 2013 at 2:54 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday, February 06, 2013 12:44:35 PM Valdis Kletnieks wrote:
->> Seen in dmesg.  next-20130128 was OK. Haven't done a bisect, but can
->> do so if the offender isn't obvious...
+On 6 February 2013 12:30, Zhang Rui <rui.zhang@intel.com> wrote:
+> CPU cooling table is a cleaned cpufreq_frequency_table that
+> 1. each entry represents a cooling state,
+>    aka, each entry has a different frequency.
+> 2. does not have invalid entry.
+> 3. does not have duplicate entry.
+> 4. the frequencies of all the entries are in descending order.
 >
-> I suppose this is 73bf0fc "cpufreq: Don't remove sysfs link for policy->cpu".
+This is a good idea, but we should consider more details, one tough
+issue is invalid frequencies:
+1. some freq is invalid while freq table is creating, but after that
+the invalid freq becomes valid, we will miss cooling states.
+2. vice versa, all the freq is valid while freq table is creating, but
+become invalid later, thus some cooling state isn't valid either,
+should we consider such case?
 
-Not really. :)
+In fact, these should be considered even if this patch isn't sent out.
 
-Hi Valdis,
+(We are assuming that all the CPU cores run at same freq and should be
+adjust freq simultaneously, if no affinity between CPU cores, it will
+be more complicated -- this seems not proper to be discussed in this
+patch)
 
-First of all i want to confirm something about your system. I am sure it is a
-multi-policy system (or multi cluster system). i.e. there are more than one
-clock line for different cpus ? And so multiple struct policy exist
-simultaneously.
-
-Because this crash can only come on those.
-
-Anyway, i have tested and pushed a fix here:
-
-http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-valdis
-
-Please test it.
-
-For others, the patch is:
-
-commit 007dda326f1b1415846671d7fcfbd520f4f16151
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Thu Feb 7 12:51:27 2013 +0530
-
-    cpufreq: governors: Fix WARN_ON() for multi-policy platforms
-
-    On multi-policy systems there is a single instance of governor for both the
-    policies (if same governor is chosen for both policies). With the
-code update
-    from following patches:
-
-    8eeed09 cpufreq: governors: Get rid of dbs_data->enable field
-    b394058 cpufreq: governors: Reset tunables only for
-cpufreq_unregister_governor()
-
-    We are creating/removing sysfs directory of governor for for every call to
-    GOV_START and STOP. This would fail for multi-policy system as there is a
-    per-policy call to START/STOP.
-
-    This patch reuses the governor->initialized variable to detect
-total users of
-    governor.
-
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c          |  6 ++++--
- drivers/cpufreq/cpufreq_governor.c | 32 +++++++++++++++++++-------------
- 2 files changed, 23 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index ccc598a..3b941a1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1567,8 +1567,10 @@ static int __cpufreq_governor(struct
-cpufreq_policy *policy,
-                                                policy->cpu, event);
-        ret = policy->governor->governor(policy, event);
-
--       if (!policy->governor->initialized && (event == CPUFREQ_GOV_START))
--               policy->governor->initialized = 1;
-+       if (event == CPUFREQ_GOV_START)
-+               policy->governor->initialized++;
-+       else if (event == CPUFREQ_GOV_STOP)
-+               policy->governor->initialized--;
-
-        /* we keep one module reference alive for
-                        each CPU governed by this CPU */
-diff --git a/drivers/cpufreq/cpufreq_governor.c
-b/drivers/cpufreq/cpufreq_governor.c
-index e4a306c..5a76086 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -247,11 +247,13 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
-                                             dbs_data->gov_dbs_timer);
-                }
-
--               rc = sysfs_create_group(cpufreq_global_kobject,
--                               dbs_data->attr_group);
--               if (rc) {
--                       mutex_unlock(&dbs_data->mutex);
--                       return rc;
-+               if (!policy->governor->initialized) {
-+                       rc = sysfs_create_group(cpufreq_global_kobject,
-+                                       dbs_data->attr_group);
-+                       if (rc) {
-+                               mutex_unlock(&dbs_data->mutex);
-+                               return rc;
-+                       }
-                }
-
-                /*
-@@ -262,13 +264,15 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
-                        cs_dbs_info->down_skip = 0;
-                        cs_dbs_info->enable = 1;
-                        cs_dbs_info->requested_freq = policy->cur;
--                       cpufreq_register_notifier(cs_ops->notifier_block,
--                                       CPUFREQ_TRANSITION_NOTIFIER);
-
--                       if (!policy->governor->initialized)
-+                       if (!policy->governor->initialized) {
-+
-cpufreq_register_notifier(cs_ops->notifier_block,
-+                                               CPUFREQ_TRANSITION_NOTIFIER);
-+
-                                dbs_data->min_sampling_rate =
-                                        MIN_SAMPLING_RATE_RATIO *
-                                        jiffies_to_usecs(10);
-+                       }
-                } else {
-                        od_dbs_info->rate_mult = 1;
-                        od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-@@ -311,11 +315,13 @@ unlock:
-                mutex_lock(&dbs_data->mutex);
-                mutex_destroy(&cpu_cdbs->timer_mutex);
-
--               sysfs_remove_group(cpufreq_global_kobject,
--                               dbs_data->attr_group);
--               if (dbs_data->governor == GOV_CONSERVATIVE)
--                       cpufreq_unregister_notifier(cs_ops->notifier_block,
--                                       CPUFREQ_TRANSITION_NOTIFIER);
-+               if (policy->governor->initialized == 1) {
-+                       sysfs_remove_group(cpufreq_global_kobject,
-+                                       dbs_data->attr_group);
-+                       if (dbs_data->governor == GOV_CONSERVATIVE)
-+
-cpufreq_unregister_notifier(cs_ops->notifier_block,
-+                                               CPUFREQ_TRANSITION_NOTIFIER);
-+               }
-                mutex_unlock(&dbs_data->mutex);
-
-                break;
+> we should use this table inside thermal layer and thermal drivers.
+>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/cpu_cooling.c |   63 +++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+>
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 455c77a..08f12c7 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -115,6 +115,69 @@ static int is_cpufreq_valid(int cpu)
+>         return !cpufreq_get_policy(&policy, cpu);
+>  }
+>
+> +/*
+> + * get the cleaned cpufreq_frequency_table that
+> + * 1) does not have invalid entries
+> + * 2) does not have duplicate entries
+> + * 3) the frequency of the entries are in descending order
+> + */
+> +static struct cpufreq_frequency_table *
+> +get_cpu_cooling_table(unsigned int cpu)
+> +{
+> +       int i = 0;
+> +       int level;
+> +       struct cpufreq_frequency_table *old, *new;
+> +       unsigned int freq = CPUFREQ_ENTRY_INVALID;
+> +       int descend = -1;
+> +
+> +       old = cpufreq_frequency_get_table(cpu);
+> +       if (!old)
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       while (old[i].frequency != CPUFREQ_TABLE_END)
+> +               i++;
+> +
+> +       i++; /* one more entry for CPUFREQ_TABLE_END */
+> +
+> +       new = kzalloc(i * sizeof(struct cpufreq_frequency_table), GFP_KERNEL);
+> +       if (!new)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       for (i = 0, level = 0; old[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +               /* ignore invalid entry */
+> +               if (old[i].frequency == CPUFREQ_ENTRY_INVALID)
+> +                       continue;
+> +
+> +               /* ignore duplicate entry */
+> +               if (freq == old[i].frequency)
+> +                       continue;
+> +
+> +               /* found an valid entry */
+> +               new[level].frequency = old[i].frequency;
+> +
+> +               if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
+> +                       descend = !!(freq > old[i].frequency);
+> +
+> +               /* freq always equals the last valid frequency */
+> +               freq = new[level].frequency;
+> +
+> +               level++;
+> +       }
+> +       new[level].frequency = CPUFREQ_ENTRY_INVALID;
+> +
+> +       /* convert to decending if in ascending order */
+> +       if (!descend) {
+> +               for(i = 0; i < (level - i - 1); i++) {
+> +                       int j = level - i - 1;
+> +                       freq = new[i].frequency;
+> +                       new[i].frequency = new[j].frequency;
+> +                       new[j].frequency = freq;
+> +               }
+> +       }
+> +
+> +       return new;
+> +}
+> +
+>  /**
+>   * get_cpu_frequency - get the absolute value of frequency from level.
+>   * @cpu: cpu for which frequency is fetched.
+> --
+> 1.7.9.5
+>
