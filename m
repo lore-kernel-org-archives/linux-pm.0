@@ -1,34 +1,57 @@
-From: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-Date: Thu, 07 Feb 2013 14:44:27 +1030
-Message-ID: <87haloiwv0.fsf@rustcorp.com.au>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <510FBC01.2030405@linux.vnet.ibm.com>
+From: Inderpal Singh <inderpal.singh@linaro.org>
+Subject: Re: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
+Date: Thu, 7 Feb 2013 10:19:16 +0530
+Message-ID: <CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
+References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
+	<1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <510FBC01.2030405@linux.vnet.ibm.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, mingo@kernel.org
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, walken@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
-> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
+On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+> Add cpufreq controller device node for Exynos5440 SoC for passing
+> parameters like controller base address, interrupt and cpufreq
+> table.
 >
-> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
+>  1 file changed, 9 insertions(+)
 >
->       8                 17.04                          7.73
+> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+> index 024269d..b20b517 100644
+> --- a/arch/arm/boot/dts/exynos5440.dtsi
+> +++ b/arch/arm/boot/dts/exynos5440.dtsi
+> @@ -63,6 +63,15 @@
 >
->      16                 18.05                          6.44
+>         };
 >
->      32                 17.31                          7.39
->
->      64                 32.40                          9.28
->
->     128                 98.23                          7.35
+> +       cpufreq@160000 {
+> +               compatible = "samsung,exynos5440-cpufreq";
+> +               reg = <0x160000 0x1000>;
+> +               interrupts = <0 57 0>;
+> +               cpufreq_tbl = < 1200000 1025000
+> +                               1000000 975000
+> +                               800000  925000 >;
+> +       };
+> +
 
-Nice!  I wonder how the ARM guys feel with their quad-cpu systems...
+I think cpufreq_tbl should be part of the cpu node as it's the
+property of the cpu.
+Please refer cpufreq-cpu0 and spear-cpufreq.
 
-Thanks!
-Rusty.
+>         serial@B0000 {
+>                 compatible = "samsung,exynos4210-uart";
+>                 reg = <0xB0000 0x1000>;
+> --
+> 1.7.10.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
