@@ -1,30 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: exynos: simplify .init() for setting policy->cpus
-Date: Thu, 7 Feb 2013 10:48:05 +0530
-Message-ID: <CAKohpokJn5892Vt-M+5zNoe3Ebc5cOm-K7c1FzK7x2Ws=ysYmQ@mail.gmail.com>
-References: <f216e85846c302756d55cb6753863a66697f79a6.1359599087.git.viresh.kumar@linaro.org>
-	<CAKohpo=aWbJ9a9vKep1aGYTXr=5asYPCri1BPCww-3GxEo8F=w@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+Date: Thu, 07 Feb 2013 11:41:34 +0530
+Message-ID: <51134596.4080106@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=aWbJ9a9vKep1aGYTXr=5asYPCri1BPCww-3GxEo8F=w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl, jc.lee@samsung.com, Inderpal Singh <inderpal.singh@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, kgene.kim@samsung.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <87haloiwv0.fsf@rustcorp.com.au>
+Sender: linux-doc-owner@vger.kernel.org
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, wangyun@linux.vnet.ibm.com, netdev@vger.kernel.org, namhyung@kernel.org, akpm@linux-foundation.org, walken@google.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 4 February 2013 17:52, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 31 January 2013 07:56, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> With the recent changes in cpufreq core, we just need to set mask of all
->> possible cpus into policy->cpus. Rest would be done by core.
+On 02/07/2013 09:44 AM, Rusty Russell wrote:
+> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
+>> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
+>>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
 >>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/cpufreq/exynos-cpufreq.c | 14 +-------------
->>  1 file changed, 1 insertion(+), 13 deletions(-)
->
-> Hi Rafael,
->
-> Are you picking up this patch ?
+>> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
+>>
+>>       8                 17.04                          7.73
+>>
+>>      16                 18.05                          6.44
+>>
+>>      32                 17.31                          7.39
+>>
+>>      64                 32.40                          9.28
+>>
+>>     128                 98.23                          7.35
+> 
+> Nice!
 
-Ping!!
+Thank you :-)
+
+>  I wonder how the ARM guys feel with their quad-cpu systems...
+> 
+
+That would be definitely interesting to know :-)
+
+Regards,
+Srivatsa S. Bhat
+
