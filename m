@@ -1,44 +1,44 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-Date: Thu, 07 Feb 2013 11:41:34 +0530
-Message-ID: <51134596.4080106@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
+From: Artem Savkov <artem.savkov@gmail.com>
+Subject: Re: [BUG] cpufreq: sleeping function called from invalid context at
+ kernel/workqueue.c:2811
+Date: Thu, 7 Feb 2013 10:27:44 +0400
+Message-ID: <20130207062743.GA4388@thinkpad.lan>
+References: <20130206202513.GA5626@thinkpad.lan>
+ <1543919.ZBNJa64WB5@vostro.rjw.lan>
+ <1873989.qC1mdEKIl9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <87haloiwv0.fsf@rustcorp.com.au>
-Sender: linux-doc-owner@vger.kernel.org
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, fweisbec@gmail.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, wangyun@linux.vnet.ibm.com, netdev@vger.kernel.org, namhyung@kernel.org, akpm@linux-foundation.org, walken@google.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f41.google.com ([209.85.215.41]:46632 "EHLO
+	mail-la0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928Ab3BGG1u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Feb 2013 01:27:50 -0500
+Content-Disposition: inline
+In-Reply-To: <1873989.qC1mdEKIl9@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 02/07/2013 09:44 AM, Rusty Russell wrote:
-> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
->>
->> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
->>
->>       8                 17.04                          7.73
->>
->>      16                 18.05                          6.44
->>
->>      32                 17.31                          7.39
->>
->>      64                 32.40                          9.28
->>
->>     128                 98.23                          7.35
-> 
-> Nice!
+On Thu, Feb 07, 2013 at 01:41:57AM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, February 06, 2013 10:11:25 PM Rafael J. Wysocki wrote:
+> > On Thursday, February 07, 2013 12:25:13 AM Artem Savkov wrote:
+> > > I get the following BUG on suspend using systemd-sleep(this doesn't
+> > > happen with pm-suspend). This seems to be introduced by some of the
+> > > Viresh's patches.
+> > 
+> > Which branch from which day?
 
-Thank you :-)
+The log is from linux-next-20130205, still reproducible on -20130206
 
->  I wonder how the ARM guys feel with their quad-cpu systems...
-> 
+> OK, I've reproduced it and the appended patch fixes it for me.  Can you please
+> try it and report back?
 
-That would be definitely interesting to know :-)
+I've tried the patch and the bug is still reproducible. I might be wrong
+but it seems that the bug happens on first __cpufreq_remove_dev
+call(CPU1) on __cpufreq_governor(data, CPUFREQ_GOV_STOP) call (line
+~1050) but changes in your patch are all below that call.
 
-Regards,
-Srivatsa S. Bhat
-
+-- 
+Kind regards,
+Artem
