@@ -1,220 +1,142 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH V2 1/2] Thermal: cpufreq cooling: fix parsing per_cpu cpufreq_frequency_table
-Date: Fri,  8 Feb 2013 15:12:08 +0800
-Message-ID: <1360307529-5454-2-git-send-email-rui.zhang@intel.com>
+Subject: [PATCH V2 2/2] Thermal: exynos: fix cooling state translation
+Date: Fri,  8 Feb 2013 15:12:09 +0800
+Message-ID: <1360307529-5454-3-git-send-email-rui.zhang@intel.com>
 References: <1360307529-5454-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga03.intel.com ([143.182.124.21]:3172 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759945Ab3BHHMQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Feb 2013 02:12:16 -0500
+	id S1759945Ab3BHHMR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Feb 2013 02:12:17 -0500
 In-Reply-To: <1360307529-5454-1-git-send-email-rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: amit.daniel@samsung.com, gu1@aeroxteam.fr, hongbo.zhang@linaro.org, Zhang Rui <rui.zhang@intel.com>
 
-cpufreq cooling uses different frequencies as different cooling states.
-
-But the per_cpu cpufreq_frequency_table may contain duplicate,
-invalid entries, and it may be in either ascending or descending order.
-And currently, code for parsing the per_cpu cpufreq_frequency_table
-is used in several places and inconsistent.
-
-Now introduce new code to
-1. get the maximum cooling states
-2. translate cooling state to cpu frequency
-3. translate cpu frequency to cooling state
-in one place,
-with the correct logic of handling per_cpu cpufreq_frequency_table.
-
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/cpu_cooling.c |  143 +++++++++++++++++++++++++++--------------
- 1 file changed, 93 insertions(+), 50 deletions(-)
+ drivers/thermal/cpu_cooling.c    |   13 ++++++++++++-
+ drivers/thermal/exynos_thermal.c |   24 ++----------------------
+ include/linux/cpu_cooling.h      |    7 +++++++
+ include/linux/thermal.h          |    5 ++++-
+ 4 files changed, 25 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 455c77a..0d50496 100644
+index 0d50496..a3e4aeb 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -115,54 +115,109 @@ static int is_cpufreq_valid(int cpu)
- 	return !cpufreq_get_policy(&policy, cpu);
+@@ -168,7 +168,7 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 
+ 	/* get max level */
+ 	if (property == GET_MAXL) {
+-		*output = (unsigned int)level;
++		*output = (unsigned int)max_level;
+ 		return 0;
+ 	}
+ 
+@@ -203,6 +203,17 @@ static int get_property(unsigned int cpu, unsigned long input,
+ 	return -EINVAL;
  }
  
--/**
-- * get_cpu_frequency - get the absolute value of frequency from level.
-- * @cpu: cpu for which frequency is fetched.
-- * @level: level of frequency, equals cooling state of cpu cooling device
-- *	e.g level=0 --> 1st MAX FREQ, level=1 ---> 2nd MAX FREQ, .... etc
-- */
--static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
-+enum cpufreq_cooling_property {
-+	GET_LEVEL,
-+	GET_FREQ,
-+	GET_MAXL,
-+};
++unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
++{
++	unsigned int val;
 +
-+/*
-+ * this is the common function to
-+ * 1. get maximum cpu cooling states
-+ * 2. translate frequency to cooling state
-+ * 3. translate cooling state to frequency
-+ * Note that the code may be not in good shape
-+ * but it is written in this way in order to:
-+ * a) reduce duplicate code as most of the code can be shared.
-+ * b) make sure the logic is consistent when translating between
-+ *    cooling states and frequencies.
-+*/
-+static int get_property(unsigned int cpu, unsigned long input,
-+	unsigned int* output, enum cpufreq_cooling_property property)
- {
--	int ret = 0, i = 0;
--	unsigned long level_index;
--	bool descend = false;
-+	int i, j;
-+	unsigned long max_level = 0, level;
-+	unsigned int freq = CPUFREQ_ENTRY_INVALID;
-+	int descend = -1;
- 	struct cpufreq_frequency_table *table =
- 					cpufreq_frequency_get_table(cpu);
-+	
-+	if (!output)
-+		return -EINVAL;
-+
- 	if (!table)
--		return ret;
-+		return -EINVAL;
- 
--	while (table[i].frequency != CPUFREQ_TABLE_END) {
-+	
-+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-+		/* ignore invalid entries */
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 
--		/*check if table in ascending or descending order*/
--		if ((table[i + 1].frequency != CPUFREQ_TABLE_END) &&
--			(table[i + 1].frequency < table[i].frequency)
--			&& !descend) {
--			descend = true;
--		}
-+		/* ignore duplicate entry */
-+		if (freq == table[i].frequency)
-+			continue;
-+
-+		/* get the frequency order */
-+		if (freq != CPUFREQ_ENTRY_INVALID && descend != -1)
-+			descend = !!(freq > table[i].frequency);
- 
--		/*return if level matched and table in descending order*/
--		if (descend && i == level)
--			return table[i].frequency;
--		i++;
-+		freq = table[i].frequency;
-+		max_level++;
-+	}
-+
-+	/* get max level */
-+	if (property == GET_MAXL) {
-+		*output = (unsigned int)level;
-+		return 0;
- 	}
--	i--;
- 
--	if (level > i || descend)
--		return ret;
--	level_index = i - level;
-+	if (property == GET_FREQ)
-+		level = descend ? input : (max_level - input -1);
- 
--	/*Scan the table in reverse order and match the level*/
--	while (i >= 0) {
-+
-+	for (i = 0, j = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-+		/* ignore invalid entry */
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
--		/*return if level matched*/
--		if (i == level_index)
--			return table[i].frequency;
--		i--;
-+
-+		/* ignore duplicate entry */
-+		if (freq == table[i].frequency)
-+			continue;
-+
-+		/* now we have a valid frequency entry */
-+		freq = table[i].frequency;
-+
-+		if (property == GET_LEVEL && (unsigned int)input == freq) {
-+			/* get level by frequency */
-+			*output = descend ? j : (max_level - j - 1);
-+			return 0;
-+		}
-+		if (property == GET_FREQ && level == j) {
-+			/* get frequency by level */
-+			*output = freq;
-+			return 0;
-+		}
-+		j++;
- 	}
--	return ret;
-+	return -EINVAL;
++	if (get_property(cpu, (unsigned long)freq, &val, GET_LEVEL))
++		return THERMAL_CSTATE_INVALID;
++	return (unsigned long)val;
 +}
 +
-+/**
-+ * get_cpu_frequency - get the absolute value of frequency from level.
-+ * @cpu: cpu for which frequency is fetched.
-+ * @level: level of frequency, equals cooling state of cpu cooling device
-+ *	e.g level=0 --> 1st MAX FREQ, level=1 ---> 2nd MAX FREQ, .... etc
-+ */
-+static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
-+{
-+	int ret = 0;
-+	unsigned int freq;
++EXPORT_SYMBOL(cpufreq_cooling_get_level);
 +
-+	ret = get_property(cpu, level, &freq, GET_FREQ);
-+	if (ret)
-+		return freq;
-+	return 0;
+ /**
+  * get_cpu_frequency - get the absolute value of frequency from level.
+  * @cpu: cpu for which frequency is fetched.
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index cd71e24..509c950 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -239,26 +239,6 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+ 	return ret;
  }
  
- /**
-@@ -244,29 +299,17 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
- 	unsigned int cpu;
--	struct cpufreq_frequency_table *table;
- 	unsigned long count = 0;
--	int i = 0;
-+	int ret;
- 
- 	cpu = cpumask_any(maskPtr);
+-static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+-{
+-	int i = 0, ret = -EINVAL;
+-	struct cpufreq_frequency_table *table = NULL;
+-#ifdef CONFIG_CPU_FREQ
 -	table = cpufreq_frequency_get_table(cpu);
--	if (!table) {
--		*state = 0;
--		return 0;
--	}
- 
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
+-#endif
+-	if (!table)
+-		return ret;
+-
+-	while (table[i].frequency != CPUFREQ_TABLE_END) {
 -		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
 -			continue;
--		count++;
+-		if (table[i].frequency == freq)
+-			return i;
+-		i++;
 -	}
-+	ret = get_property(cpu, 0, (unsigned int *)&count, GET_MAXL);
- 
--	if (count > 0) {
--		*state = --count;
--		return 0;
--	}
-+	if (count > 0)
-+		*state = count;
- 
--	return -EINVAL;
-+	return ret;
+-	return ret;
+-}
+-
+ /* Bind callback functions for thermal zone */
+ static int exynos_bind(struct thermal_zone_device *thermal,
+ 			struct thermal_cooling_device *cdev)
+@@ -285,8 +265,8 @@ static int exynos_bind(struct thermal_zone_device *thermal,
+ 	/* Bind the thermal zone to the cpufreq cooling device */
+ 	for (i = 0; i < tab_size; i++) {
+ 		clip_data = (struct freq_clip_table *)&(tab_ptr[i]);
+-		level = exynos_get_frequency_level(0, clip_data->freq_clip_max);
+-		if (level < 0)
++		level = cpufreq_cooling_get_level(0, clip_data->freq_clip_max);
++		if (level == THERMAL_CSTATE_INVALID)
+ 			return 0;
+ 		switch (GET_ZONE(i)) {
+ 		case MONITOR_ZONE:
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index 40b4ef5..bc479b1 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -42,6 +42,8 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+  * @cdev: thermal cooling device pointer.
+  */
+ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev);
++
++unsigned long cpufreq_cooling_get_level(unsigned int, unsigned int);
+ #else /* !CONFIG_CPU_THERMAL */
+ static inline struct thermal_cooling_device *cpufreq_cooling_register(
+ 	const struct cpumask *clip_cpus)
+@@ -53,6 +55,11 @@ static inline void cpufreq_cooling_unregister(
+ {
+ 	return;
  }
++static inline unsigned long cpufreq_cooling_get_level(unsigned int,
++						 unsigned int)
++{
++	return THERMAL_CSTATE_INVALID;
++}
+ #endif	/* CONFIG_CPU_THERMAL */
  
- /**
+ #endif /* __CPU_COOLING_H__ */
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f0bd7f9..5a3b428 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -33,8 +33,11 @@
+ #define THERMAL_MAX_TRIPS	12
+ #define THERMAL_NAME_LENGTH	20
+ 
++/* invalid cooling state */
++#define THERMAL_CSTATE_INVALID -1UL
++
+ /* No upper/lower limit requirement */
+-#define THERMAL_NO_LIMIT	-1UL
++#define THERMAL_NO_LIMIT	THERMAL_CSTATE_INVALID
+ 
+ /* Unit conversion macros */
+ #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
 -- 
 1.7.9.5
 
