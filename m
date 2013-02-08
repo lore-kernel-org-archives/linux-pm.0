@@ -1,89 +1,74 @@
-From: Inderpal Singh <inderpal.singh@linaro.org>
-Subject: Re: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Fri, 8 Feb 2013 22:19:09 +0530
-Message-ID: <CAG17yqQBjuc9t2iXg0sjTMo=pbXcjkwuP0uRFu=YR=58+AmEmA@mail.gmail.com>
-References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
-	<1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
-	<CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
-	<CADGdYn44okjQHQo-W9Y-pFFHzO9-3HL-ZB36aVvfzMRp098ZtA@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH 1/2] cpufreq: ondemand: Fix typos in comments
+Date: Fri, 08 Feb 2013 19:24:18 +0200
+Message-ID: <511534C2.3020103@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:45564 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946657Ab3BHQtL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Feb 2013 11:49:11 -0500
-Received: by mail-wi0-f169.google.com with SMTP id l13so1192687wie.0
-        for <linux-pm@vger.kernel.org>; Fri, 08 Feb 2013 08:49:09 -0800 (PST)
-In-Reply-To: <CADGdYn44okjQHQo-W9Y-pFFHzO9-3HL-ZB36aVvfzMRp098ZtA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: amit kachhap <amit.kachhap@gmail.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
 
-On 8 February 2013 00:03, amit kachhap <amit.kachhap@gmail.com> wrote:
-> On Wed, Feb 6, 2013 at 8:49 PM, Inderpal Singh
-> <inderpal.singh@linaro.org> wrote:
->> On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
->>> Add cpufreq controller device node for Exynos5440 SoC for passing
->>> parameters like controller base address, interrupt and cpufreq
->>> table.
->>>
->>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>> ---
->>>  arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
->>>  1 file changed, 9 insertions(+)
->>>
->>> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
->>> index 024269d..b20b517 100644
->>> --- a/arch/arm/boot/dts/exynos5440.dtsi
->>> +++ b/arch/arm/boot/dts/exynos5440.dtsi
->>> @@ -63,6 +63,15 @@
->>>
->>>         };
->>>
->>> +       cpufreq@160000 {
->>> +               compatible = "samsung,exynos5440-cpufreq";
->>> +               reg = <0x160000 0x1000>;
->>> +               interrupts = <0 57 0>;
->>> +               cpufreq_tbl = < 1200000 1025000
->>> +                               1000000 975000
->>> +                               800000  925000 >;
->>> +       };
->>> +
->>
->> I think cpufreq_tbl should be part of the cpu node as it's the
->> property of the cpu.
->> Please refer cpufreq-cpu0 and spear-cpufreq.
->
-> http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/15364.
-> In this thread same discussion followed. I am not sure what is the
-> correct way but looks like Kukjin concluded this with a timer node
-> separate from the CPU code.
->
+Fix some typos in comments.
 
-I am only talking about cpufreq_tbl and its nothing but operating
-points for the cpus. It seems its agreed upon to add operating-points
-to cpu node as being done by all other platforms like imx6q, am33xx,
-cpufreq-cpu0 and spear.
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq_ondemand.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Thanks,
-Inder
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 09b27ae..f3eb26c 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -26,7 +26,7 @@
+ 
+ #include "cpufreq_governor.h"
+ 
+-/* On-demand governor macors */
++/* On-demand governor macros */
+ #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
+@@ -66,7 +66,7 @@ static void ondemand_powersave_bias_init_cpu(int cpu)
+  * efficient idling at a higher frequency/voltage is.
+  * Pavel Machek says this is not so for various generations of AMD and old
+  * Intel systems.
+- * Mike Chan (androidlcom) calis this is also not true for ARM.
++ * Mike Chan (android.com) claims this is also not true for ARM.
+  * Because of this, whitelist specific known (series) of CPUs by default, and
+  * leave all others up to the user.
+  */
+@@ -74,7 +74,7 @@ static int should_io_be_busy(void)
+ {
+ #if defined(CONFIG_X86)
+ 	/*
+-	 * For Intel, Core 2 (model 15) andl later have an efficient idle.
++	 * For Intel, Core 2 (model 15) and later have an efficient idle.
+ 	 */
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL &&
+ 			boot_cpu_data.x86 == 6 &&
+@@ -159,8 +159,8 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+ 
+ /*
+  * Every sampling_rate, we check, if current idle time is less than 20%
+- * (default), then we try to increase frequency Every sampling_rate, we look for
+- * a the lowest frequency which can sustain the load while keeping idle time
++ * (default), then we try to increase frequency. Every sampling_rate, we look
++ * for the lowest frequency which can sustain the load while keeping idle time
+  * over 30%. If such a frequency exist, we try to decrease to this frequency.
+  *
+  * Any frequency increase takes it to the maximum frequency. Frequency reduction
+@@ -267,7 +267,7 @@ static ssize_t show_sampling_rate_min(struct kobject *kobj,
+  * update_sampling_rate - update sampling rate effective immediately if needed.
+  * @new_rate: new sampling rate
+  *
+- * If new rate is smaller than the old, simply updaing
++ * If new rate is smaller than the old, simply updating
+  * dbs_tuners_int.sampling_rate might not be appropriate. For example, if the
+  * original sampling_rate was 1 second and the requested new sampling rate is 10
+  * ms because the user needs immediate reaction from ondemand governor, but not
+-- 
+1.8.1.2
 
-> Thanks,
-> Amit Daniel
->>
->>>         serial@B0000 {
->>>                 compatible = "samsung,exynos4210-uart";
->>>                 reg = <0xB0000 0x1000>;
->>> --
->>> 1.7.10.4
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
