@@ -1,148 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Fri, 8 Feb 2013 10:39:13 +0530
-Message-ID: <CAKohpony25Ct94QyCOEmoNVS6Xc5O8=0Cnc6NxLxTP5Y-E1XJg@mail.gmail.com>
+Date: Fri, 8 Feb 2013 11:02:01 +0530
+Message-ID: <CAKohpokNg5KdTjR3JqMVZSw0=Rkqk+YMf5XpAimaXBRFsbFtiQ@mail.gmail.com>
 References: <cover.1360232293.git.viresh.kumar@linaro.org>
-	<2158181.aoVXdpLJe2@vostro.rjw.lan>
-	<CAKohponLrVG+ubf5Ok+7AvoWKRF16YLqUEWAU6hH7-H_R=r0Ow@mail.gmail.com>
-	<1947746.IyFppZQEx8@vostro.rjw.lan>
+	<2896238.eRV3G7kyl2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=e89a8f923d0a70b79c04d52f8f0b
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:45591 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237Ab3BHFJO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Feb 2013 00:09:14 -0500
-Received: by mail-ob0-f177.google.com with SMTP id wc18so3476469obb.8
-        for <linux-pm@vger.kernel.org>; Thu, 07 Feb 2013 21:09:13 -0800 (PST)
-In-Reply-To: <1947746.IyFppZQEx8@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, dirk.brandewie@gmail.com
-
---e89a8f923d0a70b79c04d52f8f0b
 Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <2896238.eRV3G7kyl2@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-On 8 February 2013 04:37, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> BTW, there still are locking problems in linux-next.  Why do we need
-> to take cpufreq_driver_lock() around driver->init() in cpufreq_add_dev(),
-> in particular?
+On 8 February 2013 05:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> I should have done that before, sorry about it.
 
-I thought a bit more and realized there is no such limitation on
-cpufreq_driver->ops about calling routines which can sleep. And thus
-we shoudln't
-have locks around any of these. I have got a patch for it, that i
-would fold-back into
-the original patch that introduced locking fixes (attached too for testing):
+np
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Fri, 8 Feb 2013 10:35:31 +0530
-Subject: [PATCH] cpufreq: Remove unnecessary locking
+> Can you please rework this series on top of linux-pm.git/pm-cpufreq and
+> try to avoid introducing new issues this time?
 
-I have placed some locks intentionally around calls to driver->ops (init/exit),
-which look to be wrong as these calls can call routines that potentially sleep.
+Sorry for this. I didn't got any such issues on my system and i tried to think
+as widely as possible. But still just a human with some mistakes :)
 
-Lets remove these locks.
+> If this works, we'll rebase all of the other new material on top of it,
+> if possible.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+To make your life a bit easy, i have got all cpufreq patches, that you & me
+have got for 3.9, rebased over pm-cpufreq and these are:
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 5d8a422..04aab05 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -795,10 +795,8 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+f3843e0 cpufreq: exynos: simplify .init() for setting policy->cpus
+7ea6658 cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs
+6002fd0 cpufreq/x86: Add P-state driver for sandy bridge.
+bcfe254 cpufreq_stats: do not remove sysfs files if frequency table is
+not present
+6c82b96 cpufreq: Do not track governor name for scaling drivers with
+internal governors.
+2a6df07 cpufreq: Only call cpufreq_out_of_sync() for driver that
+implement cpufreq_driver.target()
+0893112 cpufreq: Retrieve current frequency from scaling drivers with
+internal governors
+e034e73 cpufreq: Fix locking issues
+003da79 cpufreq: Create a macro for unlock_policy_rwsem{read,write}
+0092c75 cpufreq: Remove unused HOTPLUG_CPU code
+34d5833 cpufreq: governors: Fix WARN_ON() for multi-policy platforms
+e1ee7c8 cpufreq: Convert the cpufreq_driver_lock to use RCU
+e076b60 cpufreq: Convert the cpufreq_driver_lock to a rwlock
+6d919f9 cpufreq: ondemand: Replace down_differential tuner with adj_up_threshold
+80dd878 cpufreq / stats: Get rid of CPUFREQ_STATDEVICE_ATTR
+a7e183d cpufreq: Don't check cpu_online(policy->cpu)
+9db0116 cpufreq: add imx6q-cpufreq driver
 
- 	if (ret) {
- 		pr_debug("setting policy failed\n");
--		spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 		if (driver->exit)
- 			driver->exit(policy);
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	}
- 	return ret;
 
-@@ -920,17 +918,14 @@ static int cpufreq_add_dev(struct device *dev,
-struct subsys_interface *sif)
- 	init_completion(&policy->kobj_unregister);
- 	INIT_WORK(&policy->update, handle_update);
+I have pushed them in for-rafael branch in my repo. Look carefully at
+the first two patches,
+they were not present in your latest repo.
 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	/* call driver. From then on the cpufreq must be able
- 	 * to accept all calls to ->verify and ->setpolicy for this CPU
- 	 */
- 	ret = driver->init(policy);
- 	if (ret) {
- 		pr_debug("initialization failed\n");
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 		goto err_set_policy_cpu;
- 	}
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+This was the exynos patch i was talking about:
 
- 	/* related cpus should atleast have policy->cpus */
- 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-@@ -1100,10 +1095,8 @@ static int __cpufreq_remove_dev(struct device
-*dev, struct subsys_interface *sif
- 		wait_for_completion(cmp);
- 		pr_debug("wait complete\n");
+f3843e0 cpufreq: exynos: simplify .init() for setting policy->cpus
 
--		spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 		if (driver->exit)
- 			driver->exit(data);
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+I don't know if you dropped this one or what ?
 
- 		free_cpumask_var(data->related_cpus);
- 		free_cpumask_var(data->cpus);
-
---e89a8f923d0a70b79c04d52f8f0b
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-Remove-unnecessary-locking.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-Remove-unnecessary-locking.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hcwvl4im0
-
-RnJvbSA1NjRkZjM3YjVkYjUxMTgyZTVlNmU3ODk2OWY0MGEyYTcxMTU5YjljIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NTY0ZGYzN2I1ZGI1MTE4MmU1ZTZlNzg5NjlmNDBh
-MmE3MTE1OWI5Yy4xMzYwMzAwMTI2LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogRnJpLCA4IEZlYiAy
-MDEzIDEwOjM1OjMxICswNTMwClN1YmplY3Q6IFtQQVRDSF0gY3B1ZnJlcTogUmVtb3ZlIHVubmVj
-ZXNzYXJ5IGxvY2tpbmcKCkkgaGF2ZSBwbGFjZWQgc29tZSBsb2NrcyBpbnRlbnRpb25hbGx5IGFy
-b3VuZCBjYWxscyB0byBkcml2ZXItPm9wcyAoaW5pdC9leGl0KSwKd2hpY2ggbG9vayB0byBiZSB3
-cm9uZyBhcyB0aGVzZSBjYWxscyBjYW4gY2FsbCByb3V0aW5lcyB0aGF0IHBvdGVudGlhbGx5IHNs
-ZWVwLgoKTGV0cyByZW1vdmUgdGhlc2UgbG9ja3MuCgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3Vt
-YXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgotLS0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVx
-LmMgfCA3IC0tLS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCA3IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdp
-dCBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5j
-CmluZGV4IDVkOGE0MjIuLjA0YWFiMDUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9jcHVm
-cmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYwpAQCAtNzk1LDEwICs3OTUsOCBA
-QCBzdGF0aWMgaW50IGNwdWZyZXFfYWRkX2Rldl9pbnRlcmZhY2UodW5zaWduZWQgaW50IGNwdSwK
-IAogCWlmIChyZXQpIHsKIAkJcHJfZGVidWcoInNldHRpbmcgcG9saWN5IGZhaWxlZFxuIik7Ci0J
-CXNwaW5fbG9ja19pcnFzYXZlKCZjcHVmcmVxX2RyaXZlcl9sb2NrLCBmbGFncyk7CiAJCWlmIChk
-cml2ZXItPmV4aXQpCiAJCQlkcml2ZXItPmV4aXQocG9saWN5KTsKLQkJc3Bpbl91bmxvY2tfaXJx
-cmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCX0KIAlyZXR1cm4gcmV0Owog
-CkBAIC05MjAsMTcgKzkxOCwxNCBAQCBzdGF0aWMgaW50IGNwdWZyZXFfYWRkX2RldihzdHJ1Y3Qg
-ZGV2aWNlICpkZXYsIHN0cnVjdCBzdWJzeXNfaW50ZXJmYWNlICpzaWYpCiAJaW5pdF9jb21wbGV0
-aW9uKCZwb2xpY3ktPmtvYmpfdW5yZWdpc3Rlcik7CiAJSU5JVF9XT1JLKCZwb2xpY3ktPnVwZGF0
-ZSwgaGFuZGxlX3VwZGF0ZSk7CiAKLQlzcGluX2xvY2tfaXJxc2F2ZSgmY3B1ZnJlcV9kcml2ZXJf
-bG9jaywgZmxhZ3MpOwogCS8qIGNhbGwgZHJpdmVyLiBGcm9tIHRoZW4gb24gdGhlIGNwdWZyZXEg
-bXVzdCBiZSBhYmxlCiAJICogdG8gYWNjZXB0IGFsbCBjYWxscyB0byAtPnZlcmlmeSBhbmQgLT5z
-ZXRwb2xpY3kgZm9yIHRoaXMgQ1BVCiAJICovCiAJcmV0ID0gZHJpdmVyLT5pbml0KHBvbGljeSk7
-CiAJaWYgKHJldCkgewogCQlwcl9kZWJ1ZygiaW5pdGlhbGl6YXRpb24gZmFpbGVkXG4iKTsKLQkJ
-c3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCQln
-b3RvIGVycl9zZXRfcG9saWN5X2NwdTsKIAl9Ci0Jc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmY3B1
-ZnJlcV9kcml2ZXJfbG9jaywgZmxhZ3MpOwogCiAJLyogcmVsYXRlZCBjcHVzIHNob3VsZCBhdGxl
-YXN0IGhhdmUgcG9saWN5LT5jcHVzICovCiAJY3B1bWFza19vcihwb2xpY3ktPnJlbGF0ZWRfY3B1
-cywgcG9saWN5LT5yZWxhdGVkX2NwdXMsIHBvbGljeS0+Y3B1cyk7CkBAIC0xMTAwLDEwICsxMDk1
-LDggQEAgc3RhdGljIGludCBfX2NwdWZyZXFfcmVtb3ZlX2RldihzdHJ1Y3QgZGV2aWNlICpkZXYs
-IHN0cnVjdCBzdWJzeXNfaW50ZXJmYWNlICpzaWYKIAkJd2FpdF9mb3JfY29tcGxldGlvbihjbXAp
-OwogCQlwcl9kZWJ1Zygid2FpdCBjb21wbGV0ZVxuIik7CiAKLQkJc3Bpbl9sb2NrX2lycXNhdmUo
-JmNwdWZyZXFfZHJpdmVyX2xvY2ssIGZsYWdzKTsKIAkJaWYgKGRyaXZlci0+ZXhpdCkKIAkJCWRy
-aXZlci0+ZXhpdChkYXRhKTsKLQkJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmY3B1ZnJlcV9kcml2
-ZXJfbG9jaywgZmxhZ3MpOwogCiAJCWZyZWVfY3B1bWFza192YXIoZGF0YS0+cmVsYXRlZF9jcHVz
-KTsKIAkJZnJlZV9jcHVtYXNrX3ZhcihkYXRhLT5jcHVzKTsKLS0gCjEuNy4xMi5yYzIuMTguZzYx
-YjQ3MmUKCg==
---e89a8f923d0a70b79c04d52f8f0b--
+7ea6658 cpufreq: kirkwood: Add a cpufreq driver for Marvell Kirkwood SoCs
