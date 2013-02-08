@@ -1,52 +1,93 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 2/4] ARM: Kirkwood: Add support thermal sensor for
- 88F6282 and 88F6283
-Date: Fri, 08 Feb 2013 15:31:25 +0800
-Message-ID: <1360308685.2242.16.camel@rzhang1-mobl4>
-References: <1359815749-27705-1-git-send-email-andrew@lunn.ch>
-	 <1359815749-27705-3-git-send-email-andrew@lunn.ch>
-	 <1359947693.2250.50.camel@rzhang1-mobl4>
-	 <20130204141943.GL14746@titan.lakedaemon.net>
+Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
+Date: Fri, 08 Feb 2013 15:53:17 +0800
+Message-ID: <1360309997.2242.23.camel@rzhang1-mobl4>
+References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:46518 "EHLO mga03.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:43320 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759935Ab3BHHbi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Feb 2013 02:31:38 -0500
-In-Reply-To: <20130204141943.GL14746@titan.lakedaemon.net>
+	id S1752826Ab3BHHxV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Feb 2013 02:53:21 -0500
+In-Reply-To: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jason Cooper <jason@lakedaemon.net>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com
 
-Hi, Jason,
+Hi, Durga,
 
-On Mon, 2013-02-04 at 09:19 -0500, Jason Cooper wrote:
-> On Mon, Feb 04, 2013 at 11:14:53AM +0800, Zhang Rui wrote:
-> > On Sat, 2013-02-02 at 15:35 +0100, Andrew Lunn wrote:
-> > > From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> > > 
-> > > Kirkwood 88F6282 and 88F6283 have a thermal sensor.
-> > > This patch adds a DT node and enables the driver in the kernel config.
-> > > 
-> > > Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> > > Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> > 
-> > I can take this one but I need ACK from ARM experts first.
-> 
-> If you don't mind, I prefer to take patches 2 and 4.  If you could take
-> 1 and 3 and let me know what tree/branch you place them in, then I'll
-> depend on them when I push them up.
-> 
-great.
-patch 1/4, 3/4 in V5 have been applied to thermal tree -next branch.
-git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
-
-but I'll put all the 3.9 candidates in thermal -release branch before
-next merge window opened. does this still work for you?
+thanks for your continuous effort on this.
+comment in line.
 
 thanks,
 rui
+
+On Tue, 2013-02-05 at 16:16 +0530, Durgadoss R wrote:
+> This patch set is a v3 of the previous versions submitted here:
+> [v2]: http://lwn.net/Articles/531720/
+> [v1]: https://lkml.org/lkml/2012/12/18/108 
+> [RFC]:https://patchwork.kernel.org/patch/1758921/
+> 
+> This patch set is based on Rui's -next tree, and is
+> tested on a Core-i5 and an Atom netbook.
+> 
+> Changes since v2:
+>  * Reworked the map sysfs attributes in patch [5/8]
+>  * Dropped configuration for maximum sensors and
+>    cooling devices, through Kconfig.
+>  * Added __remove_trip_attr method
+>  * Renamed __clean_map_entry to __remove_map_entry
+>    for consistency in naming.
+> Changes Since v1:
+>  * Removed kobject creation for thermal_trip and thermal_map
+>    nodes as per Greg-KH's comments.
+>  * Added ABI Documentation under 'testing'.
+>  * Modified the GET_INDEX macro to be more linux-like, thanks
+>    to Joe Perches.
+>  * Added get_[sensor/cdev]_by_name APIs to thermal.h
+> 
+> This series contains 8 patches:
+> Patch 1/8: Creates new sensor level APIs
+> Patch 2/8: Creates new zone level APIs. The existing tzd structure is
+>            kept as such for clarity and compatibility purposes.
+> Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
+>            existing tcd structure need not be modified.
+> Patch 4/8: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
+> 	   under /sys/class/thermal/zoneY/. This exposes various trip
+>            points for sensorX present in zoneY.
+> Patch 5/8: Adds mapY_* sysfs node. These attributes represent
+>            the binding relationship between a sensor and a cdev,
+>            within a zone.
+> Patch 6/8: Creates Documentation for the new APIs. A new file is
+>            created for clarity. Final goal is to merge with the existing
+>            file or refactor the files, as whatever seems appropriate.
+> Patch 7/8: Add ABI documentation for sysfs interfaces introduced in this patch.
+> Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
+> 
+> Durgadoss R (8):
+>   Thermal: Create sensor level APIs
+>   Thermal: Create zone level APIs
+>   Thermal: Add APIs to bind cdev to new zone structure
+>   Thermal: Add trip point sysfs nodes for sensor
+>   Thermal: Create Thermal map sysfs attributes for a zone
+>   Thermal: Add Documentation to new APIs
+>   Thermal: Add ABI Documentation for sysfs interfaces
+>   Thermal: Dummy driver used for testing
+> 
+>  Documentation/ABI/testing/sysfs-class-thermal |  137 ++++
+>  Documentation/thermal/sysfs-api2.txt          |  247 ++++++
+>  drivers/thermal/Kconfig                       |    5 +
+>  drivers/thermal/Makefile                      |    2 +
+>  drivers/thermal/thermal_sys.c                 |  994 +++++++++++++++++++++++++
+>  drivers/thermal/thermal_test.c                |  324 ++++++++
+>  include/linux/thermal.h                       |  123 ++-
+>  7 files changed, 1831 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
+>  create mode 100644 Documentation/thermal/sysfs-api2.txt
+>  create mode 100644 drivers/thermal/thermal_test.c
+> 
+
 
