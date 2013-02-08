@@ -1,101 +1,89 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCHv3 0/8] Thermal Framework Enhancements
-Date: Fri, 08 Feb 2013 17:35:39 +0800
-Message-ID: <1360316139.2242.65.camel@rzhang1-mobl4>
+Subject: RE: [PATCH 2/8] Thermal: Create zone level APIs
+Date: Fri, 08 Feb 2013 17:54:07 +0800
+Message-ID: <1360317247.2242.80.camel@rzhang1-mobl4>
 References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
+	 <1360061183-14137-3-git-send-email-durgadoss.r@intel.com>
+	 <1360311092.2242.28.camel@rzhang1-mobl4>
+	 <4D68720C2E767A4AA6A8796D42C8EB5927AAB1@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:53816 "EHLO mga01.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:18244 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146Ab3BHJfo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Feb 2013 04:35:44 -0500
-In-Reply-To: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
+	id S1760030Ab3BHJyM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Feb 2013 04:54:12 -0500
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB5927AAB1@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-On Tue, 2013-02-05 at 16:16 +0530, Durgadoss R wrote:
-> This patch set is a v3 of the previous versions submitted here:
-> [v2]: http://lwn.net/Articles/531720/
-> [v1]: https://lkml.org/lkml/2012/12/18/108 
-> [RFC]:https://patchwork.kernel.org/patch/1758921/
+On Fri, 2013-02-08 at 01:54 -0700, R, Durgadoss wrote:
+> Hi Rui,
 > 
-> This patch set is based on Rui's -next tree, and is
-> tested on a Core-i5 and an Atom netbook.
+> > -----Original Message-----
+> > From: Zhang, Rui
+> > Sent: Friday, February 08, 2013 1:42 PM
+> > To: R, Durgadoss
+> > Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > eduardo.valentin@ti.com; hongbo.zhang@linaro.org; wni@nvidia.com
+> > Subject: Re: [PATCH 2/8] Thermal: Create zone level APIs
+> > 
+> > On Tue, 2013-02-05 at 16:16 +0530, Durgadoss R wrote:
+> > > This patch adds a new thermal_zone structure to
+> > > thermal.h. Also, adds zone level APIs to the thermal
+> > > framework.
+> > >
 > 
-> Changes since v2:
->  * Reworked the map sysfs attributes in patch [5/8]
->  * Dropped configuration for maximum sensors and
->    cooling devices, through Kconfig.
->  * Added __remove_trip_attr method
->  * Renamed __clean_map_entry to __remove_map_entry
->    for consistency in naming.
-> Changes Since v1:
->  * Removed kobject creation for thermal_trip and thermal_map
->    nodes as per Greg-KH's comments.
->  * Added ABI Documentation under 'testing'.
->  * Modified the GET_INDEX macro to be more linux-like, thanks
->    to Joe Perches.
->  * Added get_[sensor/cdev]_by_name APIs to thermal.h
+> [snip.]
 > 
-> This series contains 8 patches:
-> Patch 1/8: Creates new sensor level APIs
-> Patch 2/8: Creates new zone level APIs. The existing tzd structure is
->            kept as such for clarity and compatibility purposes.
-> Patch 3/8: Creates functions to add/remove a cdev to/from a zone. The
->            existing tcd structure need not be modified.
-> Patch 4/8: Adds sensorX_trip_[active/passive/hot/critical] sysfs nodes,
-> 	   under /sys/class/thermal/zoneY/. This exposes various trip
->            points for sensorX present in zoneY.
-> Patch 5/8: Adds mapY_* sysfs node. These attributes represent
->            the binding relationship between a sensor and a cdev,
->            within a zone.
-> Patch 6/8: Creates Documentation for the new APIs. A new file is
->            created for clarity. Final goal is to merge with the existing
->            file or refactor the files, as whatever seems appropriate.
-> Patch 7/8: Add ABI documentation for sysfs interfaces introduced in this patch.
-> Patch 8/8: A dummy driver that can be used for testing. This is not for merge.
+> > > +
+> > > +struct thermal_sensor *get_sensor_by_name(const char *name)
+> > > +{
+> > > +	struct thermal_sensor *pos;
+> > > +	struct thermal_sensor *ts = NULL;
+> > > +
+> > > +	mutex_lock(&sensor_list_lock);
+> > > +	for_each_thermal_sensor(pos) {
+> > > +		if (!strnicmp(pos->name, name, THERMAL_NAME_LENGTH))
+> > {
+> > > +			ts = pos;
+> > > +			break;
+> > 
+> > this function depends on the assumption that all the sensor names are
+> > unique.
+> > thus I prefer to go through all the list and return -EINVAL if duplicate
+> > names found, because in this case, the pointer returned may be not the
+> > sensor we want to get.
 > 
-Generally, this patch set looks good to me.
-But My suggestion would be:
-1. introduce a new config option for the new framework.
-2. If your patches are target for 3.9, you still need to introduce a
-   wrapper so that platform thermal drivers can be redirect
-   to either the new framework or the old one via the Kconfig option.
-   (All the current platform thermal drivers should be zones with single
-   sensor). And with this wrapper, users should be able to
-   switching between the new ABI and old ABI via kernel config option,
-   without touching the platform thermal driver code in 3.9 kernel.
-3. in next release, make the old framework optional, and make the new
-   framework set by default.
-4. in next next release, remove the old framework.
+> Yes, I agree with you. But I prefer having this check in the register API
+> itself, which then will not allow duplicates.
+> 
+No, I do not think so.
+
+Unique cdev/sensor name is not a hard rule for generic thermal layer,
+and will not be.
+Because any cooling device driver does not have the technology that if
+its name is platform unique or not.
+
+Say, your platform thermal driver wants to use FAN cooling device, what
+if another FAN cooling device has been registered before the FAN your
+platform thermal driver wants to use get registered?
+If the platform thermal driver wants to use get_cdev/sensor_by_name(),
+it has already made the assumption that all the cooling devices have
+unique names. Thus duplicate names are a big issue, we should abort the
+platform thermal driver, rather than aborting the cooling device driver
+with duplicate names.
+
+> The reason being, we use this get* API (comparatively) a lot more than
+> the register APIs.
+
+why?
+why can not invoke get_sensor/cdev_by_name once and cache the pointer in
+the platform thermal driver?
 
 thanks,
 rui
-> Durgadoss R (8):
->   Thermal: Create sensor level APIs
->   Thermal: Create zone level APIs
->   Thermal: Add APIs to bind cdev to new zone structure
->   Thermal: Add trip point sysfs nodes for sensor
->   Thermal: Create Thermal map sysfs attributes for a zone
->   Thermal: Add Documentation to new APIs
->   Thermal: Add ABI Documentation for sysfs interfaces
->   Thermal: Dummy driver used for testing
-> 
->  Documentation/ABI/testing/sysfs-class-thermal |  137 ++++
->  Documentation/thermal/sysfs-api2.txt          |  247 ++++++
->  drivers/thermal/Kconfig                       |    5 +
->  drivers/thermal/Makefile                      |    2 +
->  drivers/thermal/thermal_sys.c                 |  994 +++++++++++++++++++++++++
->  drivers/thermal/thermal_test.c                |  324 ++++++++
->  include/linux/thermal.h                       |  123 ++-
->  7 files changed, 1831 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/ABI/testing/sysfs-class-thermal
->  create mode 100644 Documentation/thermal/sysfs-api2.txt
->  create mode 100644 drivers/thermal/thermal_test.c
-> 
-
 
