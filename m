@@ -1,56 +1,194 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/8] Thermal: Create sensor level APIs
-Date: Fri, 8 Feb 2013 08:26:53 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5927AA18@BGSMSX101.gar.corp.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 3/8] Thermal: Add APIs to bind cdev to new zone structure
+Date: Fri, 08 Feb 2013 16:28:47 +0800
+Message-ID: <1360312127.2242.38.camel@rzhang1-mobl4>
 References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
-	 <1360061183-14137-2-git-send-email-durgadoss.r@intel.com>
- <1360310031.2242.24.camel@rzhang1-mobl4>
+	 <1360061183-14137-4-git-send-email-durgadoss.r@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:61912 "EHLO mga11.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:55447 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759790Ab3BHI06 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Feb 2013 03:26:58 -0500
-In-Reply-To: <1360310031.2242.24.camel@rzhang1-mobl4>
-Content-Language: en-US
+	id S1759842Ab3BHI2v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Feb 2013 03:28:51 -0500
+In-Reply-To: <1360061183-14137-4-git-send-email-durgadoss.r@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
+To: Durgadoss R <durgadoss.r@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com
 
-SGkgUnVpLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFpoYW5nLCBS
-dWkNCj4gU2VudDogRnJpZGF5LCBGZWJydWFyeSAwOCwgMjAxMyAxOjI0IFBNDQo+IFRvOiBSLCBE
-dXJnYWRvc3MNCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsNCj4gZWR1YXJkby52YWxlbnRpbkB0aS5jb207IGhvbmdiby56aGFuZ0Bs
-aW5hcm8ub3JnOyB3bmlAbnZpZGlhLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvOF0gVGhl
-cm1hbDogQ3JlYXRlIHNlbnNvciBsZXZlbCBBUElzDQo+IA0KPiBPbiBUdWUsIDIwMTMtMDItMDUg
-YXQgMTY6MTYgKzA1MzAsIER1cmdhZG9zcyBSIHdyb3RlOg0KPiA+IFRoaXMgcGF0Y2ggY3JlYXRl
-cyBzZW5zb3IgbGV2ZWwgQVBJcywgaW4gdGhlDQo+ID4gZ2VuZXJpYyB0aGVybWFsIGZyYW1ld29y
-ay4NCg0KW3NuaXAuXQ0KDQo+ID4gKw0KPiA+ICBzdGF0aWMgc3NpemVfdA0KPiA+ICB0eXBlX3No
-b3coc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwgY2hh
-ciAqYnVmKQ0KPiA+ICB7DQo+ID4gQEAgLTcwNyw2ICs4MDcsMTAgQEAgc3RhdGljIERFVklDRV9B
-VFRSKG1vZGUsIDA2NDQsIG1vZGVfc2hvdywNCj4gbW9kZV9zdG9yZSk7DQo+ID4gIHN0YXRpYyBE
-RVZJQ0VfQVRUUihwYXNzaXZlLCBTX0lSVUdPIHwgU19JV1VTUiwgcGFzc2l2ZV9zaG93LA0KPiBw
-YXNzaXZlX3N0b3JlKTsNCj4gPiAgc3RhdGljIERFVklDRV9BVFRSKHBvbGljeSwgU19JUlVHTyB8
-IFNfSVdVU1IsIHBvbGljeV9zaG93LA0KPiBwb2xpY3lfc3RvcmUpOw0KPiA+DQo+ID4gKy8qIFRo
-ZXJtYWwgc2Vuc29yIGF0dHJpYnV0ZXMgKi8NCj4gPiArc3RhdGljIERFVklDRV9BVFRSKHNlbnNv
-cl9uYW1lLCAwNDQ0LCBzZW5zb3JfbmFtZV9zaG93LCBOVUxMKTsNCj4gPiArc3RhdGljIERFVklD
-RV9BVFRSKHRlbXBfaW5wdXQsIDA0NDQsIHNlbnNvcl90ZW1wX3Nob3csIE5VTEwpOw0KPiA+ICsN
-Cj4gPiAgLyogc3lzIEkvRiBmb3IgY29vbGluZyBkZXZpY2UgKi8NCj4gPiAgI2RlZmluZSB0b19j
-b29saW5nX2RldmljZShfZGV2KQlcDQo+ID4gIAljb250YWluZXJfb2YoX2Rldiwgc3RydWN0IHRo
-ZXJtYWxfY29vbGluZ19kZXZpY2UsIGRldmljZSkNCj4gPiBAQCAtMTQ5Myw2ICsxNTk3LDE4MiBA
-QCBzdGF0aWMgdm9pZCByZW1vdmVfdHJpcF9hdHRycyhzdHJ1Y3QNCj4gdGhlcm1hbF96b25lX2Rl
-dmljZSAqdHopDQo+ID4gIH0NCj4gPg0KPiA+ICAvKioNCj4gPiArICogZW5hYmxlX3NlbnNvcl90
-aHJlc2hvbGRzIC0gY3JlYXRlIHN5c2ZzIG5vZGVzIGZvciB0aHJlc2hvbGRYDQo+IA0KPiB0aGlz
-IGlzIGEgbGl0dGxlIGNvbmZ1c2luZy4NCj4gSSdkIHByZWZlcg0KPiB0aGVybWFsX3NlbnNvcl9z
-eXNmc19hZGQoKSBhbmQgY3JlYXRlIHNlbnNvcl9uYW1lIGFuZCB0ZW1wX2lucHV0DQo+IGF0dHJp
-YnV0ZSBpbiB0aGlzIGZ1bmN0aW9uIGFzIHdlbGwsIGFuZCB0aGVybWFsX3NlbnNvcl9zeXNmc19y
-ZW1vdmUoKQ0KPiB0byByZW1vdmUgdGhlIHN5c2ZzIEkvRi4NCj4gQW5kIGZ1cnRoZXIgbW9yZSwg
-d2UgY2FuIGRvIHRoaXMgZm9yIHRoZXJtYWwgem9uZXMgYW5kIGNvb2xpbmcgZGV2aWNlcy4NCg0K
-SSBhZ3JlZSwgYW5kIHdlIHdpbGwgY2hhbmdlIHRoaXMuDQpTaW5jZSB0aGlzIGludm9sdmVzIGNo
-YW5nZSBmb3IgYWxsIHN0YW5kYXJkIEFQSXMsIEkgdGhpbmsgaXQgaXMgYmV0dGVyIHRvIHN1Ym1p
-dA0KYSBzZXBhcmF0ZSBwYXRjaCB0byBkbyB0aGlzLiBXaGF0IGRvIHlvdSB0aGluayA/DQoNCj4g
-DQo+IG90aGVycyBsb29rIG9rYXkgdG8gbWUuDQoNClRoYW5rIHlvdSA6LSkNCg0KPiANCj4gdGhh
-bmtzLA0KPiBydWkNCg0K
+On Tue, 2013-02-05 at 16:16 +0530, Durgadoss R wrote:
+> This patch creates new APIs to add/remove a
+> cdev to/from a zone. This patch does not change
+> the old cooling device implementation.
+> 
+> Signed-off-by: Durgadoss R <durgadoss.r@intel.com>
+> ---
+>  drivers/thermal/thermal_sys.c |   80 +++++++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h       |    9 +++++
+>  2 files changed, 89 insertions(+)
+> 
+> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> index 838d4fb..bf703b1 100644
+> --- a/drivers/thermal/thermal_sys.c
+> +++ b/drivers/thermal/thermal_sys.c
+> @@ -57,6 +57,7 @@ static LIST_HEAD(thermal_governor_list);
+>  static DEFINE_MUTEX(thermal_list_lock);
+>  static DEFINE_MUTEX(sensor_list_lock);
+>  static DEFINE_MUTEX(zone_list_lock);
+> +static DEFINE_MUTEX(cdev_list_lock);
+>  static DEFINE_MUTEX(thermal_governor_lock);
+>  
+>  #define for_each_thermal_sensor(pos) \
+> @@ -83,6 +84,9 @@ static DEFINE_MUTEX(thermal_governor_lock);
+>  	ret;						\
+>  })
+>  
+> +#define for_each_cdev(pos) \
+> +	list_for_each_entry(pos, &thermal_cdev_list, node)
+> +
+>  static struct thermal_governor *__find_governor(const char *name)
+>  {
+>  	struct thermal_governor *pos;
+> @@ -466,6 +470,24 @@ static void remove_sensor_from_zone(struct thermal_zone *tz,
+>  	tz->sensor_indx--;
+>  }
+>  
+> +static void remove_cdev_from_zone(struct thermal_zone *tz,
+> +				struct thermal_cooling_device *cdev)
+> +{
+> +	int j, indx;
+> +
+> +	indx = GET_INDEX(tz, cdev, cdev);
+> +	if (indx < 0)
+> +		return;
+> +
+> +	sysfs_remove_link(&tz->device.kobj, kobject_name(&cdev->device.kobj));
+> +
+> +	/* Shift the entries in the tz->cdevs array */
+> +	for (j = indx; j < MAX_CDEVS_PER_ZONE - 1; j++)
+> +		tz->cdevs[j] = tz->cdevs[j + 1];
+> +
+> +	tz->cdev_indx--;
+> +}
+> +
+>  /* sys I/F for thermal zone */
+>  
+>  #define to_thermal_zone(_dev) \
+> @@ -1462,6 +1484,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+>  	int i;
+>  	const struct thermal_zone_params *tzp;
+>  	struct thermal_zone_device *tz;
+> +	struct thermal_zone *tmp_tz;
+>  	struct thermal_cooling_device *pos = NULL;
+>  
+>  	if (!cdev)
+> @@ -1499,6 +1522,13 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+>  
+>  	mutex_unlock(&thermal_list_lock);
+>  
+> +	mutex_lock(&zone_list_lock);
+> +
+> +	for_each_thermal_zone(tmp_tz)
+> +		remove_cdev_from_zone(tmp_tz, cdev);
+> +
+> +	mutex_unlock(&zone_list_lock);
+> +
+>  	if (cdev->type[0])
+>  		device_remove_file(&cdev->device, &dev_attr_cdev_type);
+>  	device_remove_file(&cdev->device, &dev_attr_max_state);
+> @@ -1794,6 +1824,23 @@ exit:
+>  }
+>  EXPORT_SYMBOL(remove_thermal_zone);
+>  
+> +struct thermal_cooling_device *get_cdev_by_name(const char *name)
+> +{
+> +	struct thermal_cooling_device *pos;
+> +	struct thermal_cooling_device *cdev = NULL;
+> +
+> +	mutex_lock(&cdev_list_lock);
+> +	for_each_cdev(pos) {
+> +		if (!strnicmp(pos->type, name, THERMAL_NAME_LENGTH)) {
+> +			cdev = pos;
+> +			break;
+the same comments as the Patch 2/8.
+
+> +		}
+> +	}
+> +	mutex_unlock(&cdev_list_lock);
+> +	return cdev;
+> +}
+> +EXPORT_SYMBOL(get_cdev_by_name);
+> +
+>  struct thermal_sensor *get_sensor_by_name(const char *name)
+>  {
+>  	struct thermal_sensor *pos;
+> @@ -1844,6 +1891,39 @@ exit_zone:
+>  }
+>  EXPORT_SYMBOL(add_sensor_to_zone);
+>  
+> +int add_cdev_to_zone(struct thermal_zone *tz,
+> +			struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	if (!tz || !cdev)
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&zone_list_lock);
+> +
+> +	/* Ensure we are not adding the same cdev again!! */
+> +	ret = GET_INDEX(tz, cdev, cdev);
+> +	if (ret >= 0) {
+> +		ret = -EEXIST;
+> +		goto exit_zone;
+> +	}
+> +
+> +	mutex_lock(&cdev_list_lock);
+> +	ret = sysfs_create_link(&tz->device.kobj, &cdev->device.kobj,
+> +				kobject_name(&cdev->device.kobj));
+> +	if (ret)
+> +		goto exit_cdev;
+> +
+> +	tz->cdevs[tz->cdev_indx++] = cdev;
+> +
+> +exit_cdev:
+> +	mutex_unlock(&cdev_list_lock);
+> +exit_zone:
+> +	mutex_unlock(&zone_list_lock);
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL(add_cdev_to_zone);
+> +
+Hmmm,
+I'd prefer to see the code organized in this way:
+/* thermal zone APIs/
+thermal_zone_device_register()
+thermal_zone_device_unregister()
+add_thermal_zone()
+remove_thermal_zone()
+
+/* sensor APIs */
+thermal_sensor_register()
+thermal_sensor_unregister()
+add_sensor_to_zone()
+remove_sensor_from_zone()
+
+/* cdev APIs */
+thermal_cooling_device_register()
+thermal_cooling_device_unregister()
+add_cdev_to_zone()
+remove_cdev_from_zone()
+
+/* helper APIs */
+get_sensor_by_name()
+get_cdev_by_name()
+
+but if this makes your rebase MUCH more difficult, I think we can
+generate an incremental cleanup patch instead.
+
+thanks,
+rui
+
+
