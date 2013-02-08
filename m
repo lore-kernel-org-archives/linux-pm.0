@@ -1,75 +1,56 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 2/8] Thermal: Create zone level APIs
-Date: Fri, 8 Feb 2013 10:27:41 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB5927AC1F@BGSMSX101.gar.corp.intel.com>
-References: <1360061183-14137-1-git-send-email-durgadoss.r@intel.com>
-	 <1360061183-14137-3-git-send-email-durgadoss.r@intel.com>
-	 <1360311092.2242.28.camel@rzhang1-mobl4>
-	 <4D68720C2E767A4AA6A8796D42C8EB5927AAB1@BGSMSX101.gar.corp.intel.com>
- <1360317247.2242.80.camel@rzhang1-mobl4>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
+Date: Fri, 08 Feb 2013 13:32:39 +0100
+Message-ID: <2130803.VQA31hf2jE@vostro.rjw.lan>
+References: <cover.1360232293.git.viresh.kumar@linaro.org> <2896238.eRV3G7kyl2@vostro.rjw.lan> <CAKohpomrLAQiP58+OVBrm3jb8rd5DK3z+7_kyB_MsKM7UyyWRw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:34397 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106Ab3BHK17 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 Feb 2013 05:27:59 -0500
-In-Reply-To: <1360317247.2242.80.camel@rzhang1-mobl4>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomrLAQiP58+OVBrm3jb8rd5DK3z+7_kyB_MsKM7UyyWRw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eduardo.valentin@ti.com" <eduardo.valentin@ti.com>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "wni@nvidia.com" <wni@nvidia.com>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6
-IEZyaWRheSwgRmVicnVhcnkgMDgsIDIwMTMgMzoyNCBQTQ0KPiBUbzogUiwgRHVyZ2Fkb3NzDQo+
-IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5v
-cmc7DQo+IGVkdWFyZG8udmFsZW50aW5AdGkuY29tOyBob25nYm8uemhhbmdAbGluYXJvLm9yZzsg
-d25pQG52aWRpYS5jb20NCj4gU3ViamVjdDogUkU6IFtQQVRDSCAyLzhdIFRoZXJtYWw6IENyZWF0
-ZSB6b25lIGxldmVsIEFQSXMNCj4gDQo+IE9uIEZyaSwgMjAxMy0wMi0wOCBhdCAwMTo1NCAtMDcw
-MCwgUiwgRHVyZ2Fkb3NzIHdyb3RlOg0KPiA+IEhpIFJ1aSwNCj4gPg0KPiA+ID4gLS0tLS1Pcmln
-aW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFpoYW5nLCBSdWkNCj4gPiA+IFNlbnQ6IEZy
-aWRheSwgRmVicnVhcnkgMDgsIDIwMTMgMTo0MiBQTQ0KPiA+ID4gVG86IFIsIER1cmdhZG9zcw0K
-PiA+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2Vy
-bmVsLm9yZzsNCj4gPiA+IGVkdWFyZG8udmFsZW50aW5AdGkuY29tOyBob25nYm8uemhhbmdAbGlu
-YXJvLm9yZzsgd25pQG52aWRpYS5jb20NCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi84XSBU
-aGVybWFsOiBDcmVhdGUgem9uZSBsZXZlbCBBUElzDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDEz
-LTAyLTA1IGF0IDE2OjE2ICswNTMwLCBEdXJnYWRvc3MgUiB3cm90ZToNCj4gPiA+ID4gVGhpcyBw
-YXRjaCBhZGRzIGEgbmV3IHRoZXJtYWxfem9uZSBzdHJ1Y3R1cmUgdG8NCj4gPiA+ID4gdGhlcm1h
-bC5oLiBBbHNvLCBhZGRzIHpvbmUgbGV2ZWwgQVBJcyB0byB0aGUgdGhlcm1hbA0KPiA+ID4gPiBm
-cmFtZXdvcmsuDQo+ID4gPiA+DQo+ID4NCj4gPiBbc25pcC5dDQo+ID4NCj4gPiA+ID4gKw0KPiA+
-ID4gPiArc3RydWN0IHRoZXJtYWxfc2Vuc29yICpnZXRfc2Vuc29yX2J5X25hbWUoY29uc3QgY2hh
-ciAqbmFtZSkNCj4gPiA+ID4gK3sNCj4gPiA+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9zZW5zb3IgKnBv
-czsNCj4gPiA+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9zZW5zb3IgKnRzID0gTlVMTDsNCj4gPiA+ID4g
-Kw0KPiA+ID4gPiArCW11dGV4X2xvY2soJnNlbnNvcl9saXN0X2xvY2spOw0KPiA+ID4gPiArCWZv
-cl9lYWNoX3RoZXJtYWxfc2Vuc29yKHBvcykgew0KPiA+ID4gPiArCQlpZiAoIXN0cm5pY21wKHBv
-cy0+bmFtZSwgbmFtZSwgVEhFUk1BTF9OQU1FX0xFTkdUSCkpDQo+ID4gPiB7DQo+ID4gPiA+ICsJ
-CQl0cyA9IHBvczsNCj4gPiA+ID4gKwkJCWJyZWFrOw0KPiA+ID4NCj4gPiA+IHRoaXMgZnVuY3Rp
-b24gZGVwZW5kcyBvbiB0aGUgYXNzdW1wdGlvbiB0aGF0IGFsbCB0aGUgc2Vuc29yIG5hbWVzIGFy
-ZQ0KPiA+ID4gdW5pcXVlLg0KPiA+ID4gdGh1cyBJIHByZWZlciB0byBnbyB0aHJvdWdoIGFsbCB0
-aGUgbGlzdCBhbmQgcmV0dXJuIC1FSU5WQUwgaWYgZHVwbGljYXRlDQo+ID4gPiBuYW1lcyBmb3Vu
-ZCwgYmVjYXVzZSBpbiB0aGlzIGNhc2UsIHRoZSBwb2ludGVyIHJldHVybmVkIG1heSBiZSBub3Qg
-dGhlDQo+ID4gPiBzZW5zb3Igd2Ugd2FudCB0byBnZXQuDQo+ID4NCj4gPiBZZXMsIEkgYWdyZWUg
-d2l0aCB5b3UuIEJ1dCBJIHByZWZlciBoYXZpbmcgdGhpcyBjaGVjayBpbiB0aGUgcmVnaXN0ZXIg
-QVBJDQo+ID4gaXRzZWxmLCB3aGljaCB0aGVuIHdpbGwgbm90IGFsbG93IGR1cGxpY2F0ZXMuDQo+
-ID4NCj4gTm8sIEkgZG8gbm90IHRoaW5rIHNvLg0KPiANCj4gVW5pcXVlIGNkZXYvc2Vuc29yIG5h
-bWUgaXMgbm90IGEgaGFyZCBydWxlIGZvciBnZW5lcmljIHRoZXJtYWwgbGF5ZXIsDQo+IGFuZCB3
-aWxsIG5vdCBiZS4NCj4gQmVjYXVzZSBhbnkgY29vbGluZyBkZXZpY2UgZHJpdmVyIGRvZXMgbm90
-IGhhdmUgdGhlIHRlY2hub2xvZ3kgdGhhdCBpZg0KPiBpdHMgbmFtZSBpcyBwbGF0Zm9ybSB1bmlx
-dWUgb3Igbm90Lg0KPiANCj4gU2F5LCB5b3VyIHBsYXRmb3JtIHRoZXJtYWwgZHJpdmVyIHdhbnRz
-IHRvIHVzZSBGQU4gY29vbGluZyBkZXZpY2UsIHdoYXQNCj4gaWYgYW5vdGhlciBGQU4gY29vbGlu
-ZyBkZXZpY2UgaGFzIGJlZW4gcmVnaXN0ZXJlZCBiZWZvcmUgdGhlIEZBTiB5b3VyDQo+IHBsYXRm
-b3JtIHRoZXJtYWwgZHJpdmVyIHdhbnRzIHRvIHVzZSBnZXQgcmVnaXN0ZXJlZD8NCj4gSWYgdGhl
-IHBsYXRmb3JtIHRoZXJtYWwgZHJpdmVyIHdhbnRzIHRvIHVzZSBnZXRfY2Rldi9zZW5zb3JfYnlf
-bmFtZSgpLA0KPiBpdCBoYXMgYWxyZWFkeSBtYWRlIHRoZSBhc3N1bXB0aW9uIHRoYXQgYWxsIHRo
-ZSBjb29saW5nIGRldmljZXMgaGF2ZQ0KPiB1bmlxdWUgbmFtZXMuIFRodXMgZHVwbGljYXRlIG5h
-bWVzIGFyZSBhIGJpZyBpc3N1ZSwgd2Ugc2hvdWxkIGFib3J0IHRoZQ0KPiBwbGF0Zm9ybSB0aGVy
-bWFsIGRyaXZlciwgcmF0aGVyIHRoYW4gYWJvcnRpbmcgdGhlIGNvb2xpbmcgZGV2aWNlIGRyaXZl
-cg0KPiB3aXRoIGR1cGxpY2F0ZSBuYW1lcy4NCj4gDQo+ID4gVGhlIHJlYXNvbiBiZWluZywgd2Ug
-dXNlIHRoaXMgZ2V0KiBBUEkgKGNvbXBhcmF0aXZlbHkpIGEgbG90IG1vcmUgdGhhbg0KPiA+IHRo
-ZSByZWdpc3RlciBBUElzLg0KPiANCj4gd2h5Pw0KPiB3aHkgY2FuIG5vdCBpbnZva2UgZ2V0X3Nl
-bnNvci9jZGV2X2J5X25hbWUgb25jZSBhbmQgY2FjaGUgdGhlIHBvaW50ZXINCj4gaW4NCj4gdGhl
-IHBsYXRmb3JtIHRoZXJtYWwgZHJpdmVyPw0KDQpPa2F5LCBJIGRpZCBub3QgdGhpbmsgb2YgdGhp
-cyBjYWNoaW5nIHBhcnQgLi4NClRoZW4sIEkgYW0gZmluZSB3aXRoIHRoaXMgY2hhbmdlLiBXaWxs
-IGZpeCBpdCBpbiBuZXh0IHZlcnNpb24uDQoNClRoYW5rcywNCkR1cmdhDQo=
+On Friday, February 08, 2013 08:20:55 AM Viresh Kumar wrote:
+> On 8 February 2013 05:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > I should have done that before, sorry about it.
+> >
+> > Can you please rework this series on top of linux-pm.git/pm-cpufreq and
+> > try to avoid introducing new issues this time?
+> 
+> Even i want to do that, but when i fetch your repo i don't see all applied
+> patches in this branch.
+
+The top-most commit in that branch is
+
+commit 73bf0fc2b03d1f4fdada0ec430dc20bfb089cfd5
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Tue Feb 5 22:21:14 2013 +0100
+
+    cpufreq: Don't remove sysfs link for policy->cpu
+
+because that's when the locking problems were first reported and I stopped
+putting new commits into that branch.  And since the locking problems were
+introduced by b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" I want them
+to be fixed on top of pm-cpufreq rather than on top of more new stuff that
+very well may introduce *more* problems.
+
+So as I said, please rework the fixes on top of linux-pm.git/pm-cpufreq.
+
+Moreover, I'd very much prefer it if you fixed the problems introduced by
+b8eed8a "cpufreq: Simplify __cpufreq_remove_dev()" separately and *then* any
+other locking problems you're seeing in the code, although people are not
+reporting them.
+
+You seem to have a clear picture of how the code should work now, so that
+won't be a big trouble I guess.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
