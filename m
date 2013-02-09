@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 08/16] ACPI / idle: pass the cpuidle_device parameter
-Date: Fri,  8 Feb 2013 20:08:12 -0500
-Message-ID: <6ef0f086beafb3c7d81cd3de81d886d105ea25b2.1360371180.git.len.brown@intel.com>
+Subject: [PATCH 05/16] davinci: cpuidle - remove useless initialization
+Date: Fri,  8 Feb 2013 20:08:09 -0500
+Message-ID: <748f11772154b58426c856b7d90538a9b60ae29a.1360371180.git.len.brown@intel.com>
 References: <1360372100-28482-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,65 +15,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The cpuidle_device is retrieved in the function by using directly
-the global variable. But the caller of this function already have
-this device and it can be passed as a parameter. That is one small
-step to encapsulate the code more.
+The device->state_count is initialized in the cpuidle_register_device
+function.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/acpi/processor_idle.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/arm/mach-davinci/cpuidle.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 82626e9..6837065 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -928,13 +928,14 @@ struct cpuidle_driver acpi_idle_driver = {
-  * device i.e. per-cpu data
-  *
-  * @pr: the ACPI processor
-+ * @dev : the cpuidle device
-  */
--static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr)
-+static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
-+					   struct cpuidle_device *dev)
- {
- 	int i, count = CPUIDLE_DRIVER_STATE_START;
- 	struct acpi_processor_cx *cx;
- 	struct cpuidle_state_usage *state_usage;
--	struct cpuidle_device *dev = per_cpu(acpi_cpuidle_device, pr->id);
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index 5e430bf..5ac9e93 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -96,8 +96,6 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
  
- 	if (!pr->flags.power_setup_done)
- 		return -EINVAL;
-@@ -1089,7 +1090,7 @@ int acpi_processor_hotplug(struct acpi_processor *pr)
- 	cpuidle_disable_device(dev);
- 	acpi_processor_get_power_info(pr);
- 	if (pr->flags.power) {
--		acpi_processor_setup_cpuidle_cx(pr);
-+		acpi_processor_setup_cpuidle_cx(pr, dev);
- 		ret = cpuidle_enable_device(dev);
- 	}
- 	cpuidle_resume_and_unlock();
-@@ -1147,8 +1148,8 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr)
- 				continue;
- 			acpi_processor_get_power_info(_pr);
- 			if (_pr->flags.power) {
--				acpi_processor_setup_cpuidle_cx(_pr);
- 				dev = per_cpu(acpi_cpuidle_device, cpu);
-+				acpi_processor_setup_cpuidle_cx(_pr, dev);
- 				cpuidle_enable_device(dev);
- 			}
- 		}
-@@ -1217,7 +1218,7 @@ int __cpuinit acpi_processor_power_init(struct acpi_processor *pr)
- 			return -ENOMEM;
- 		per_cpu(acpi_cpuidle_device, pr->id) = dev;
+ 	ddr2_pdown = pdata->ddr2_pdown;
  
--		acpi_processor_setup_cpuidle_cx(pr);
-+		acpi_processor_setup_cpuidle_cx(pr, dev);
- 
- 		/* Register per-cpu cpuidle_device. Cpuidle driver
- 		 * must already be registered before registering device
+-	device->state_count = DAVINCI_CPUIDLE_MAX_STATES;
+-
+ 	ret = cpuidle_register_driver(&davinci_idle_driver);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to register driver\n");
 -- 
 1.8.1.3.535.ga923c31
