@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 05/16] davinci: cpuidle - remove useless initialization
-Date: Fri,  8 Feb 2013 20:08:09 -0500
-Message-ID: <748f11772154b58426c856b7d90538a9b60ae29a.1360371180.git.len.brown@intel.com>
+Subject: [PATCH 07/16] ACPI / idle : remove pointless headers
+Date: Fri,  8 Feb 2013 20:08:11 -0500
+Message-ID: <e2668fb53ffd3e01c3116f65a9047a25e4c66399.1360371180.git.len.brown@intel.com>
 References: <1360372100-28482-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,28 +15,51 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The device->state_count is initialized in the cpuidle_register_device
-function.
+These different headers are not needed.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/arm/mach-davinci/cpuidle.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/acpi/processor_idle.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index 5e430bf..5ac9e93 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -96,8 +96,6 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 5cb5f24..82626e9 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -28,19 +28,12 @@
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
  
- 	ddr2_pdown = pdata->ddr2_pdown;
+-#include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/cpufreq.h>
+-#include <linux/slab.h>
+ #include <linux/acpi.h>
+ #include <linux/dmi.h>
+-#include <linux/moduleparam.h>
+-#include <linux/sched.h>	/* need_resched() */
+-#include <linux/pm_qos.h>
++#include <linux/sched.h>       /* need_resched() */
+ #include <linux/clockchips.h>
+ #include <linux/cpuidle.h>
+-#include <linux/irqflags.h>
  
--	device->state_count = DAVINCI_CPUIDLE_MAX_STATES;
+ /*
+  * Include the apic definitions for x86 to have the APIC timer related defines
+@@ -52,12 +45,8 @@
+ #include <asm/apic.h>
+ #endif
+ 
+-#include <asm/io.h>
+-#include <asm/uaccess.h>
 -
- 	ret = cpuidle_register_driver(&davinci_idle_driver);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to register driver\n");
+ #include <acpi/acpi_bus.h>
+ #include <acpi/processor.h>
+-#include <asm/processor.h>
+ 
+ #define PREFIX "ACPI: "
+ 
 -- 
 1.8.1.3.535.ga923c31
