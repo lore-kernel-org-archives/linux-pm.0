@@ -1,57 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Sat, 09 Feb 2013 12:44:23 +0100
-Message-ID: <4156001.9630YezyCK@vostro.rjw.lan>
-References: <cover.1360232293.git.viresh.kumar@linaro.org> <51159391.2020002@gmail.com> <CAKohpomSSKRmhmmYk5dn4d84yk9qSs0U-9S=W=CT0yjjzJJ3=g@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with
+ kernel threads
+Date: Sat, 9 Feb 2013 18:49:10 +0100
+Message-ID: <20130209174910.GA28370@amd.pavel.ucw.cz>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <CAJfpegvJD75ahBViUqAwVTBLuF5yrxOcVvzYHmcsTgwxX+7Oqg@mail.gmail.com>
+ <20130207084144.GB6168@frosties>
+ <CAJfpegv1-Db+0DxZ8QUQv9BJiEBG3-8a2YaOVMbkb=Y7m+3DTw@mail.gmail.com>
+ <20130208141123.GA29460@frosties>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomSSKRmhmmYk5dn4d84yk9qSs0U-9S=W=CT0yjjzJJ3=g@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36183 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932401Ab3BIRtN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Feb 2013 12:49:13 -0500
+Content-Disposition: inline
+In-Reply-To: <20130208141123.GA29460@frosties>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Goswin von Brederlow <goswin-v-b@web.de>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Li Fei <fei.li@intel.com>, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-On Saturday, February 09, 2013 07:40:26 AM Viresh Kumar wrote:
-> On 9 February 2013 05:38, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
-> > On 02/08/2013 03:56 PM, Rafael J. Wysocki wrote:
-> >>
-> >> On Friday, February 08, 2013 09:02:37 PM Rafael J. Wysocki wrote:
-> >>>
-> >>> On Friday, February 08, 2013 08:06:52 PM Viresh Kumar wrote:
-> >>>>
-> >>>> On 8 February 2013 18:02, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>>>
-> >>>>> So as I said, please rework the fixes on top of
-> >>>>> linux-pm.git/pm-cpufreq.
-> >>>>
-> >>>>
-> >>>> I already did. Please check for-rafael branch
-> >>>
-> >>>
-> >>> Cool.  This is the one I'm supposed to apply, then?
-> >>
-> >>
-> >> OK, applied to bleeding-edge.  Hopefully it will be build-tested over the
-> >> weekend and I can move it to linux-next.
-> >>
-> >> I dropped the rwlock/RCU patches from Nathan, though, because I had some
-> >> doubts about the correctness of the RCU one and the rwlock one alone would
-> >> conflict with your further changes.
+Hi!
+
+> > The only way to *reliably* freeze fuse filesystems is to let it freeze
+> > even if there are outstanding requests.  But that's the hardest to
+> > implement, because then it needs to allow freezing of tasks waiting on
+> > i_mutex, for example, which is currently not possible.  But this is
+> > the only way I see that would not have unsolvable corner cases that
+> > prop up at the worst moment.
+> > 
+> > And yes, it would be prudent to  wait some time for pending requests
+> > to finish before freezing.  But it's not a requirement, things
+> > *should* work without that: suspending a machine is just like a very
+> > long pause by the CPU, as long as no hardware is involved.  And with
+> > fuse filesystems there is no hardware involved directly by definition.
+> > 
+> > But I'm open to ideas and at this stage I think even patches that
+> > improve the situation for the majority of the cases would be
+> > acceptable, since this is turning out to be a major problem for a lot
+> > of people.
 > 
-> As soon as i read Rafael's mail, i realized Dirk's patch might be broken
-> and immediately i saw your mail :)
-> 
-> @Rafael: Sorry for not reviewing Nathan's patch well. I didn't knew much about
-> RCU then. I am going through its lwn articles now ;)
+> For shutdown in userspace there is the sendsigs.omit.d/ to avoid the
+> problem of halting/killing processes of the fuse filesystems (or other
+> services) prematurely. I guess something similar needs to be done for
+> freeze. The fuse filesystem has to tell the kernel what is up.
 
-No biggie, I overlooked that myself first time.
+Would it be feasible to create some kind of fuse-stop-script.sh, and
+run it before suspend (from userspace)? It should be pretty similar to
+sendsigs.omit.d/ mechanism AFAICT.
 
-Thanks,
-Rafael
+I'm sorry, freezer is not too suitable for fuse.
 
-
+(BTW: for suspend, we may be able to improve it so that it is possible
+to remove freezer from it. For hibernation, it would be very hard.)
+									Pavel
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
