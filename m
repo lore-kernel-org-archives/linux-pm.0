@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 03/16] davinci: cpuidle - move code to prevent forward declaration
-Date: Fri,  8 Feb 2013 20:08:07 -0500
-Message-ID: <8d60143a2367616a9d4f7c11656ade8521eb1874.1360371180.git.len.brown@intel.com>
+Subject: [PATCH 06/16] ACPI / idle: remove unused definition
+Date: Fri,  8 Feb 2013 20:08:10 -0500
+Message-ID: <41cdb0efc42ed3c10f56e0740db28eff086af62b.1360371180.git.len.brown@intel.com>
 References: <1360372100-28482-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,105 +15,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The patch is mindless, it just moves the idle function below in the file
-in order to prevent forward declaration in the next patch.
+The different definitions are not used anywhere in the code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/arm/mach-davinci/cpuidle.c | 72 ++++++++++++++++++++---------------------
- 1 file changed, 36 insertions(+), 36 deletions(-)
+ drivers/acpi/processor_idle.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index 5fbd470..697febe 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -31,42 +31,6 @@ struct davinci_ops {
- 	u32 flags;
- };
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index ed9a1cc..5cb5f24 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -64,10 +64,6 @@
+ #define ACPI_PROCESSOR_CLASS            "processor"
+ #define _COMPONENT              ACPI_PROCESSOR_COMPONENT
+ ACPI_MODULE_NAME("processor_idle");
+-#define PM_TIMER_TICK_NS		(1000000000ULL/PM_TIMER_FREQUENCY)
+-#define C2_OVERHEAD			1	/* 1us */
+-#define C3_OVERHEAD			1	/* 1us */
+-#define PM_TIMER_TICKS_TO_US(p)		(((p) * 1000)/(PM_TIMER_FREQUENCY/1000))
  
--/* Actual code that puts the SoC in different idle states */
--static int davinci_enter_idle(struct cpuidle_device *dev,
--				struct cpuidle_driver *drv,
--						int index)
--{
--	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
--	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
--
--	if (ops && ops->enter)
--		ops->enter();
--
--	index = cpuidle_wrap_enter(dev,	drv, index,
--				arm_cpuidle_simple_enter);
--
--	if (ops && ops->exit)
--		ops->exit();
--
--	return index;
--}
--
--static struct cpuidle_driver davinci_idle_driver = {
--	.name			= "cpuidle-davinci",
--	.owner			= THIS_MODULE,
--	.en_core_tk_irqen	= 1,
--	.states[0]		= ARM_CPUIDLE_WFI_STATE,
--	.states[1]		= {
--		.enter			= davinci_enter_idle,
--		.exit_latency		= 10,
--		.target_residency	= 100000,
--		.flags			= CPUIDLE_FLAG_TIME_VALID,
--		.name			= "DDR SR",
--		.desc			= "WFI and DDR Self Refresh",
--	},
--	.state_count = DAVINCI_CPUIDLE_MAX_STATES,
--};
--
- static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
- static void __iomem *ddr2_reg_base;
- static bool ddr2_pdown;
-@@ -107,6 +71,42 @@ static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
- 	},
- };
- 
-+/* Actual code that puts the SoC in different idle states */
-+static int davinci_enter_idle(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+						int index)
-+{
-+	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
-+	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
-+
-+	if (ops && ops->enter)
-+		ops->enter();
-+
-+	index = cpuidle_wrap_enter(dev,	drv, index,
-+				arm_cpuidle_simple_enter);
-+
-+	if (ops && ops->exit)
-+		ops->exit();
-+
-+	return index;
-+}
-+
-+static struct cpuidle_driver davinci_idle_driver = {
-+	.name			= "cpuidle-davinci",
-+	.owner			= THIS_MODULE,
-+	.en_core_tk_irqen	= 1,
-+	.states[0]		= ARM_CPUIDLE_WFI_STATE,
-+	.states[1]		= {
-+		.enter			= davinci_enter_idle,
-+		.exit_latency		= 10,
-+		.target_residency	= 100000,
-+		.flags			= CPUIDLE_FLAG_TIME_VALID,
-+		.name			= "DDR SR",
-+		.desc			= "WFI and DDR Self Refresh",
-+	},
-+	.state_count = DAVINCI_CPUIDLE_MAX_STATES,
-+};
-+
- static int __init davinci_cpuidle_probe(struct platform_device *pdev)
- {
- 	int ret;
+ static unsigned int max_cstate __read_mostly = ACPI_PROCESSOR_MAX_POWER;
+ module_param(max_cstate, uint, 0000);
 -- 
 1.8.1.3.535.ga923c31
