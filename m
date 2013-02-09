@@ -1,75 +1,49 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 14/45] rcu, CPU hotplug: Fix comment referring to
- stop_machine()
-Date: Fri, 8 Feb 2013 16:14:39 -0800
-Message-ID: <20130209001439.GQ2666@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073630.13822.99359.stgit@srivatsabhat.in.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20130122073630.13822.99359.stgit@srivatsabhat.in.ibm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+From: Len Brown <lenb@kernel.org>
+Subject: idle patches queued for Linux-3.9
+Date: Fri,  8 Feb 2013 20:08:04 -0500
+Message-ID: <1360372100-28482-1-git-send-email-lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vb0-f52.google.com ([209.85.212.52]:57092 "EHLO
+	mail-vb0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758593Ab3BIBI3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Feb 2013 20:08:29 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-On Tue, Jan 22, 2013 at 01:06:34PM +0530, Srivatsa S. Bhat wrote:
-> Don't refer to stop_machine() in the CPU hotplug path, since we are going
-> to get rid of it. Also, move the comment referring to callback adoption
-> to the CPU_DEAD case, because that's where it happens now.
-> 
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+The following is my idle patch queue for Linux-3.9.
 
-Ouch!  That comment is indeed obsolete and must die.
+As noted below, some patches are unchanged since last seen
+on the list, some are re-freshed, and some are new.
 
-I queued this to -rcu with your Signed-off-by.  However, I omitted
-the added comment, as it is imcomplete -- it is easy to look at
-rcu_cleanup_dead_cpu() to see what it does.
+Please let me know if you see troubles with any of them.
 
-							Thanx, Paul
+thanks,
+Len Brown, Intel Open Source Technology Center
 
-> ---
-> 
->  kernel/rcutree.c |    9 ++++-----
->  1 file changed, 4 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index e441b77..ac94474 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -2827,11 +2827,6 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
->  		break;
->  	case CPU_DYING:
->  	case CPU_DYING_FROZEN:
-> -		/*
-> -		 * The whole machine is "stopped" except this CPU, so we can
-> -		 * touch any data without introducing corruption. We send the
-> -		 * dying CPU's callbacks to an arbitrarily chosen online CPU.
-> -		 */
->  		for_each_rcu_flavor(rsp)
->  			rcu_cleanup_dying_cpu(rsp);
->  		rcu_cleanup_after_idle(cpu);
-> @@ -2840,6 +2835,10 @@ static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
->  	case CPU_DEAD_FROZEN:
->  	case CPU_UP_CANCELED:
->  	case CPU_UP_CANCELED_FROZEN:
-> +		/*
-> +		 * We send the dead CPU's callbacks to an arbitrarily chosen
-> +		 * online CPU.
-> +		 */
->  		for_each_rcu_flavor(rsp)
->  			rcu_cleanup_dead_cpu(cpu, rsp);
->  		break;
-> 
+[PATCH 01/16] intel_idle: stop using driver_data for static flags
+[PATCH 02/16] Replace the flag by a simple global boolean in the
+[PATCH 03/16] davinci: cpuidle - move code to prevent forward
+[PATCH 04/16] davinci: cpuidle - remove the ops
+[PATCH 05/16] davinci: cpuidle - remove useless initialization
+[PATCH 06/16] ACPI / idle: remove unused definition
+[PATCH 07/16] ACPI / idle : remove pointless headers
+[PATCH 08/16] ACPI / idle: pass the cpuidle_device parameter
+[PATCH 09/16] ACPI / idle: remove usage of the statedata
+	Unchanged since most recent on list.
+
+[PATCH 10/16] cpuidle: remove vestage definition of statedata
+	New
+
+[PATCH 11/16] intel_idle: support Haswell
+	Refreshed
+
+[PATCH 12/16] tools/power turbostat: support Haswell
+[PATCH 13/16] tools/power turbostat: decode MSR_IA32_POWER_CTL
+	Unchanged
+
+[PATCH 14/16] intel_idle: remove use and definition of MWAIT_MAX_CSTATE
+[PATCH 15/16] intel_idle: remove assumption of one C-state per MWAIT
+[PATCH 16/16] intel_idle: export both C1 and C1E
+	New
