@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 10/16] cpuidle: remove vestage definition of cpuidle_state_usage.driver_data
-Date: Fri,  8 Feb 2013 20:08:14 -0500
-Message-ID: <fe265459a3bbcfada267f181f00b83fb02f6d5cb.1360371180.git.len.brown@intel.com>
+Subject: [PATCH 02/16] Replace the flag by a simple global boolean in the cpuidle.c. That will allow to cleanup the rest of the code right after, because the ops won't make sense.
+Date: Fri,  8 Feb 2013 20:08:06 -0500
+Message-ID: <5af4a21c6efd270a334202fb1fc4a347ea4624e3.1360371180.git.len.brown@intel.com>
 References: <1360372100-28482-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,57 +10,92 @@ In-Reply-To: <b1beab48f6148d50fee4a56d741cc3168fe1b995.1360371180.git.len.brown@
 References: <b1beab48f6148d50fee4a56d741cc3168fe1b995.1360371180.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-This field is no longer used.
-
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- include/linux/cpuidle.h | 22 ----------------------
- 1 file changed, 22 deletions(-)
+ arch/arm/mach-davinci/cpuidle.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 24cd1037..480c14d 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -32,8 +32,6 @@ struct cpuidle_driver;
-  ****************************/
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index 9107691..5fbd470 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -26,8 +26,8 @@
+ #define DAVINCI_CPUIDLE_MAX_STATES	2
  
- struct cpuidle_state_usage {
--	void		*driver_data;
--
- 	unsigned long long	disable;
- 	unsigned long long	usage;
- 	unsigned long long	time; /* in US */
-@@ -62,26 +60,6 @@ struct cpuidle_state {
+ struct davinci_ops {
+-	void (*enter) (u32 flags);
+-	void (*exit) (u32 flags);
++	void (*enter) (void);
++	void (*exit) (void);
+ 	u32 flags;
+ };
  
- #define CPUIDLE_DRIVER_FLAGS_MASK (0xFFFF0000)
+@@ -40,20 +40,17 @@ static int davinci_enter_idle(struct cpuidle_device *dev,
+ 	struct davinci_ops *ops = cpuidle_get_statedata(state_usage);
  
--/**
-- * cpuidle_get_statedata - retrieves private driver state data
-- * @st_usage: the state usage statistics
-- */
--static inline void *cpuidle_get_statedata(struct cpuidle_state_usage *st_usage)
--{
--	return st_usage->driver_data;
--}
+ 	if (ops && ops->enter)
+-		ops->enter(ops->flags);
++		ops->enter();
+ 
+ 	index = cpuidle_wrap_enter(dev,	drv, index,
+ 				arm_cpuidle_simple_enter);
+ 
+ 	if (ops && ops->exit)
+-		ops->exit(ops->flags);
++		ops->exit();
+ 
+ 	return index;
+ }
+ 
+-/* fields in davinci_ops.flags */
+-#define DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN	BIT(0)
 -
--/**
-- * cpuidle_set_statedata - stores private driver state data
-- * @st_usage: the state usage statistics
-- * @data: the private data
-- */
--static inline void
--cpuidle_set_statedata(struct cpuidle_state_usage *st_usage, void *data)
--{
--	st_usage->driver_data = data;
--}
--
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
+ static struct cpuidle_driver davinci_idle_driver = {
+ 	.name			= "cpuidle-davinci",
+ 	.owner			= THIS_MODULE,
+@@ -72,6 +69,7 @@ static struct cpuidle_driver davinci_idle_driver = {
+ 
+ static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
+ static void __iomem *ddr2_reg_base;
++static bool ddr2_pdown;
+ 
+ static void davinci_save_ddr_power(int enter, bool pdown)
+ {
+@@ -92,14 +90,14 @@ static void davinci_save_ddr_power(int enter, bool pdown)
+ 	__raw_writel(val, ddr2_reg_base + DDR2_SDRCR_OFFSET);
+ }
+ 
+-static void davinci_c2state_enter(u32 flags)
++static void davinci_c2state_enter(void)
+ {
+-	davinci_save_ddr_power(1, !!(flags & DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN));
++	davinci_save_ddr_power(1, ddr2_pdown);
+ }
+ 
+-static void davinci_c2state_exit(u32 flags)
++static void davinci_c2state_exit(void)
+ {
+-	davinci_save_ddr_power(0, !!(flags & DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN));
++	davinci_save_ddr_power(0, ddr2_pdown);
+ }
+ 
+ static struct davinci_ops davinci_states[DAVINCI_CPUIDLE_MAX_STATES] = {
+@@ -124,8 +122,7 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+ 
+ 	ddr2_reg_base = pdata->ddr2_ctlr_base;
+ 
+-	if (pdata->ddr2_pdown)
+-		davinci_states[1].flags |= DAVINCI_CPUIDLE_FLAGS_DDR2_PWDN;
++	ddr2_pdown = pdata->ddr2_pdown;
+ 	cpuidle_set_statedata(&device->states_usage[1], &davinci_states[1]);
+ 
+ 	device->state_count = DAVINCI_CPUIDLE_MAX_STATES;
 -- 
 1.8.1.3.535.ga923c31
