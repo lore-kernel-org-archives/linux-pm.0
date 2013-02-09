@@ -1,71 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/4] CPUFreq Fixes for 3.9
-Date: Sat, 09 Feb 2013 01:21:53 +0100
-Message-ID: <2798090.LbSjbE5OCO@vostro.rjw.lan>
-References: <cover.1360232293.git.viresh.kumar@linaro.org> <2792362.JXCag4GJsR@vostro.rjw.lan> <51159391.2020002@gmail.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 45/45] Documentation/cpu-hotplug: Remove references to
+ stop_machine()
+Date: Fri, 8 Feb 2013 16:16:49 -0800
+Message-ID: <20130209001649.GS2666@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122074543.13822.44724.stgit@srivatsabhat.in.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51159391.2020002@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, valdis.kletnieks@vt.edu, artem.savkov@gmail.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-dev@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20130122074543.13822.44724.stgit@srivatsabhat.in.ibm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, February 08, 2013 04:08:49 PM Dirk Brandewie wrote:
-> On 02/08/2013 03:56 PM, Rafael J. Wysocki wrote:
-> > On Friday, February 08, 2013 09:02:37 PM Rafael J. Wysocki wrote:
-> >> On Friday, February 08, 2013 08:06:52 PM Viresh Kumar wrote:
-> >>> On 8 February 2013 18:02, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>>> So as I said, please rework the fixes on top of linux-pm.git/pm-cpufreq.
-> >>>
-> >>> I already did. Please check for-rafael branch
-> >>
-> >> Cool.  This is the one I'm supposed to apply, then?
-> >
-> > OK, applied to bleeding-edge.  Hopefully it will be build-tested over the
-> > weekend and I can move it to linux-next.
-> >
-> > I dropped the rwlock/RCU patches from Nathan, though, because I had some
-> > doubts about the correctness of the RCU one and the rwlock one alone would
-> > conflict with your further changes.
+On Tue, Jan 22, 2013 at 01:15:48PM +0530, Srivatsa S. Bhat wrote:
+> Since stop_machine() is no longer used in the CPU offline path, we cannot
+> disable CPU hotplug using preempt_disable()/local_irq_disable() etc. We
+> need to use the newly introduced get/put_online_cpus_atomic() APIs.
+> Reflect this in the documentation.
 > 
-> One piece of fallout from dropping Nathan patches I had rebased mine on top of 
-> them.
+> Cc: Rob Landley <rob@landley.net>
+> Cc: linux-doc@vger.kernel.org
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> ---
 > 
-> This fixes the breakage do you want me to spin my patches or send this separately?:
-
-No need to, I'll try to fix that in my tree.
-
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 0ebdf8c..a008b8e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1024,7 +1024,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct
->                  __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>  Documentation/cpu-hotplug.txt |   17 +++++++++++------
+>  1 file changed, 11 insertions(+), 6 deletions(-)
 > 
->   #ifdef CONFIG_HOTPLUG_CPU
-> -       if (!driver->setpolicy)
-> +       if (!cpufreq_driver->setpolicy)
->                  strncpy(per_cpu(cpufreq_cpu_governor, cpu),
->                          data->governor->name, CPUFREQ_NAME_LEN);
->   #endif
-> @@ -1771,7 +1771,7 @@ int cpufreq_update_policy(unsigned int cpu)
->                          pr_debug("Driver did not initialize current freq");
->                          data->cur = policy.cur;
->                  } else {
-> -                       if (data->cur != policy.cur && driver->target)
-> +                       if (data->cur != policy.cur && cpufreq_driver->target)
->                                  cpufreq_out_of_sync(cpu, data->cur,
->                                                                  policy.cur);
->                  }
+> diff --git a/Documentation/cpu-hotplug.txt b/Documentation/cpu-hotplug.txt
+> index 9f40135..7f907ec 100644
+> --- a/Documentation/cpu-hotplug.txt
+> +++ b/Documentation/cpu-hotplug.txt
+> @@ -113,13 +113,15 @@ Never use anything other than cpumask_t to represent bitmap of CPUs.
+>  	#include <linux/cpu.h>
+>  	get_online_cpus() and put_online_cpus():
 > 
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> -The above calls are used to inhibit cpu hotplug operations. While the
+> +The above calls are used to inhibit cpu hotplug operations, when invoked from
+> +non-atomic context (because the above functions can sleep). While the
+>  cpu_hotplug.refcount is non zero, the cpu_online_mask will not change.
+> -If you merely need to avoid cpus going away, you could also use
+> -preempt_disable() and preempt_enable() for those sections.
+> -Just remember the critical section cannot call any
+> -function that can sleep or schedule this process away. The preempt_disable()
+> -will work as long as stop_machine_run() is used to take a cpu down.
+> +
+> +However, if you are executing in atomic context (ie., you can't afford to
+> +sleep), and you merely need to avoid cpus going offline, you can use
+> +get_online_cpus_atomic() and put_online_cpus_atomic() for those sections.
+> +Just remember the critical section cannot call any function that can sleep or
+> +schedule this process away.
+> 
+>  CPU Hotplug - Frequently Asked Questions.
+> 
+> @@ -360,6 +362,9 @@ A: There are two ways.  If your code can be run in interrupt context, use
+>  		return err;
+>  	}
+> 
+> +   If my_func_on_cpu() itself cannot block, use get/put_online_cpus_atomic()
+> +   instead of get/put_online_cpus() to prevent CPUs from going offline.
+> +
+>  Q: How do we determine how many CPUs are available for hotplug.
+>  A: There is no clear spec defined way from ACPI that can give us that
+>     information today. Based on some input from Natalie of Unisys,
+> 
