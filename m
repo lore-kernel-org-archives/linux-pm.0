@@ -1,108 +1,73 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 10/16] m32r idle: delete pm_idle, and other dead idle code
-Date: Sun, 10 Feb 2013 00:58:17 -0500
-Message-ID: <50145c48954ee5626107dd1aa4c2ed95dd1bc2b6.1360475150.git.len.brown@intel.com>
+Subject: [PATCH 06/16] ARM idle: delete pm_idle
+Date: Sun, 10 Feb 2013 00:58:13 -0500
+Message-ID: <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com>
 References: <1360475903-30007-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1360475903-30007-1-git-send-email-lenb@kernel.org>
 In-Reply-To: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
 References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: linux-arm-kernel-bounces@lists.infradead.org
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-m32r@ml.linux-m32r.org
+Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-All paths on m32r lead to cpu_relax().
-So delete the dead code and simply call cpu_relax() directly.
+pm_idle() on ARM was a synonym for default_idle(),
+so simply invoke default_idle() directly.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: linux-m32r@ml.linux-m32r.org
+Cc: linux-arm-kernel@lists.infradead.org
 ---
- arch/m32r/kernel/process.c | 51 ++--------------------------------------------
- 1 file changed, 2 insertions(+), 49 deletions(-)
+ arch/arm/kernel/process.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/arch/m32r/kernel/process.c b/arch/m32r/kernel/process.c
-index 765d0f5..bde899e 100644
---- a/arch/m32r/kernel/process.c
-+++ b/arch/m32r/kernel/process.c
-@@ -44,36 +44,10 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
- 	return tsk->thread.lr;
+diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+index c6dec5f..047d3e4 100644
+--- a/arch/arm/kernel/process.c
++++ b/arch/arm/kernel/process.c
+@@ -172,14 +172,9 @@ static void default_idle(void)
+ 	local_irq_enable();
  }
  
--/*
-- * Powermanagement idle function, if any..
-- */
--static void (*pm_idle)(void) = NULL;
+-void (*pm_idle)(void) = default_idle;
+-EXPORT_SYMBOL(pm_idle);
 -
- void (*pm_power_off)(void) = NULL;
- EXPORT_SYMBOL(pm_power_off);
- 
  /*
-- * We use this is we don't have any better
-- * idle routine..
-- */
--static void default_idle(void)
--{
--	/* M32R_FIXME: Please use "cpu_sleep" mode.  */
--	cpu_relax();
--}
--
--/*
-- * On SMP it's slightly faster (but much more power-consuming!)
-- * to poll the ->work.need_resched flag instead of waiting for the
-- * cross-CPU IPI to arrive. Use this option with caution.
-- */
--static void poll_idle (void)
--{
--	/* M32R_FIXME */
--	cpu_relax();
--}
--
--/*
-  * The idle thread. There's no useful work to be
-  * done, so just try to conserve power and have a
-  * low exit latency (ie sit in a loop waiting for
-@@ -84,14 +58,8 @@ void cpu_idle (void)
- 	/* endless idle loop with no priority at all */
- 	while (1) {
- 		rcu_idle_enter();
--		while (!need_resched()) {
--			void (*idle)(void) = pm_idle;
--
--			if (!idle)
--				idle = default_idle;
--
--			idle();
--		}
-+		while (!need_resched())
-+			cpu_relax();
- 		rcu_idle_exit();
- 		schedule_preempt_disabled();
- 	}
-@@ -120,21 +88,6 @@ void machine_power_off(void)
- 	/* M32R_FIXME */
- }
- 
--static int __init idle_setup (char *str)
--{
--	if (!strncmp(str, "poll", 4)) {
--		printk("using poll in idle threads.\n");
--		pm_idle = poll_idle;
--	} else if (!strncmp(str, "sleep", 4)) {
--		printk("using sleep in idle threads.\n");
--		pm_idle = default_idle;
--	}
--
--	return 1;
--}
--
--__setup("idle=", idle_setup);
--
- void show_regs(struct pt_regs * regs)
+- * The idle thread, has rather strange semantics for calling pm_idle,
+- * but this is what x86 does and we need to do the same, so that
+- * things like cpuidle get called in the same way.  The only difference
+- * is that we always respect 'hlt_counter' to prevent low power idle.
++ * The idle thread.
++ * We always respect 'hlt_counter' to prevent low power idle.
+  */
+ void cpu_idle(void)
  {
- 	printk("\n");
+@@ -210,10 +205,10 @@ void cpu_idle(void)
+ 			} else if (!need_resched()) {
+ 				stop_critical_timings();
+ 				if (cpuidle_idle_call())
+-					pm_idle();
++					default_idle();
+ 				start_critical_timings();
+ 				/*
+-				 * pm_idle functions must always
++				 * default_idle functions must always
+ 				 * return with IRQs enabled.
+ 				 */
+ 				WARN_ON(irqs_disabled());
 -- 
 1.8.1.3.535.ga923c31
