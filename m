@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 11/16] microblaze idle: delete pm_idle
-Date: Sun, 10 Feb 2013 00:58:18 -0500
-Message-ID: <fe98b401efe3034c1684b8625ac266601c3b4ad1.1360475150.git.len.brown@intel.com>
+Subject: [PATCH 05/16] blackfin idle: delete pm_idle
+Date: Sun, 10 Feb 2013 00:58:12 -0500
+Message-ID: <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com>
 References: <1360475903-30007-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,39 +10,43 @@ In-Reply-To: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@
 References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, microblaze-uclinux@itee.uq.edu.au
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, uclinux-dist-devel@blackfin.uclinux.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-pm_idle on microblaze served no purpose.
+pm_idle is dead code on blackfin.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: microblaze-uclinux@itee.uq.edu.au
+Cc: uclinux-dist-devel@blackfin.uclinux.org
 ---
- arch/microblaze/kernel/process.c | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/blackfin/kernel/process.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-index a5b74f7..6ff2dcf 100644
---- a/arch/microblaze/kernel/process.c
-+++ b/arch/microblaze/kernel/process.c
-@@ -41,7 +41,6 @@ void show_regs(struct pt_regs *regs)
- 				regs->msr, regs->ear, regs->esr, regs->fsr);
- }
+diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
+index 3e16ad9..8061426 100644
+--- a/arch/blackfin/kernel/process.c
++++ b/arch/blackfin/kernel/process.c
+@@ -39,12 +39,6 @@ int nr_l1stack_tasks;
+ void *l1_stack_base;
+ unsigned long l1_stack_len;
  
--void (*pm_idle)(void);
+-/*
+- * Powermanagement idle function, if any..
+- */
+-void (*pm_idle)(void) = NULL;
+-EXPORT_SYMBOL(pm_idle);
+-
  void (*pm_power_off)(void) = NULL;
  EXPORT_SYMBOL(pm_power_off);
  
-@@ -98,8 +97,6 @@ void cpu_idle(void)
- 
+@@ -81,7 +75,6 @@ void cpu_idle(void)
+ {
  	/* endless idle loop with no priority at all */
  	while (1) {
 -		void (*idle)(void) = pm_idle;
--
- 		if (!idle)
- 			idle = default_idle;
  
+ #ifdef CONFIG_HOTPLUG_CPU
+ 		if (cpu_is_offline(smp_processor_id()))
 -- 
 1.8.1.3.535.ga923c31
