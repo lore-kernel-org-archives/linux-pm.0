@@ -1,172 +1,79 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] x86 idle: remove 32-bit-only "no-hlt" parameter, hlt_works_ok flag
-Date: Sun, 10 Feb 2013 03:10:29 -0500
-Message-ID: <c1647586af985fefe95a36e4924493f950ffe5e6.1360483568.git.len.brown@intel.com>
-References: <1360483829-16349-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH]
+ fuse: make fuse daemon frozen along with kernel threads]
+Date: Sun, 10 Feb 2013 11:33:45 +0100
+Message-ID: <20130210103344.GA8888@amd.pavel.ucw.cz>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <20130208141123.GA29460@frosties>
+ <20130209174910.GA28370@amd.pavel.ucw.cz>
+ <1595169.zvx3Wi6SMv@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f178.google.com ([209.85.220.178]:61387 "EHLO
-	mail-vc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340Ab3BJIKl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Feb 2013 03:10:41 -0500
-In-Reply-To: <1360483829-16349-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <69fb3676df3329a7142803bb3502fa59dc0db2e3.1360483568.git.len.brown@intel.com>
-References: <69fb3676df3329a7142803bb3502fa59dc0db2e3.1360483568.git.len.brown@intel.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40376 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826Ab3BJKdr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Feb 2013 05:33:47 -0500
+Content-Disposition: inline
+In-Reply-To: <1595169.zvx3Wi6SMv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, Miklos Szeredi <miklos@szeredi.hu>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-From: Len Brown <len.brown@intel.com>
+Hi!
 
-Remove 32-bit x86 a cmdline param "no-hlt",
-and the cpuinfo_x86.hlt_works_ok that it sets.
+> > > For shutdown in userspace there is the sendsigs.omit.d/ to avoid the
+> > > problem of halting/killing processes of the fuse filesystems (or other
+> > > services) prematurely. I guess something similar needs to be done for
+> > > freeze. The fuse filesystem has to tell the kernel what is up.
+> > 
+> > Would it be feasible to create some kind of fuse-stop-script.sh, and
+> > run it before suspend (from userspace)? It should be pretty similar to
+> > sendsigs.omit.d/ mechanism AFAICT.
+> > 
+> > I'm sorry, freezer is not too suitable for fuse.
+> > 
+> > (BTW: for suspend, we may be able to improve it so that it is possible
+> > to remove freezer from it. For hibernation, it would be very hard.)
+> 
+> Well, this is so incorrect that it's not even funny. :-(
+> 
+> The whole memory shrinking we do for hibernation is now done by allocating
+> memory, so the freezer is not necessary for *that* and there's *zero*
+> difference between suspend and hibernation with respect to why the freezer is
+> used.
 
-If a user wants to avoid HLT, then "idle=poll"
-is much more useful, as it avoids invocation of HLT
-in idle, while "no-hlt" failed to do so.
+Funny. Freezer was put there so that hibernation image was safe to
+write out. You need disk subsystems in workable state for hibernation.
 
-Indeed, hlt_works_ok was consulted in only 2 places.
+> And *the* reason why it's used is that intercepting all of the possible ways
+> user space could interfere with the suspend process without the freezer is
+> simply totally impractical.  System calls (including ioctls and
+> fctls),
 
-First, in /proc/cpuinfo where "hlt_bug yes"
-would be printed if and only if the user booted
-the system with "no-hlt" -- as there was no other code
-to set that flag.
+It is a lot of work, agreed. But runtime power management is already
+moving in that direction. And I could imagine introducing "big suspend
+lock" to be grabbed pretty much everywhere.
 
-Second, it was consulted in stop_this_cpu(), which is invoked
-by native_machine_halt()/reboot_interrupt()/smp_stop_nmi_callback() --
-all cases where the machine is being shutdown/reset.
-The flag was not consulted in the more frequently invoked
-play_dead()/hlt_play_dead() used in processor offline and suspend.
+(And IIRC n900 pretty much suspends when idle.)
 
-Since Linux-3.0 there has been a run-time notice upon "no-hlt" invocations
-indicating that it would be removed in 2012.
+> sysfs accesses, /proc accesses, debugfs, to name a few, and mmap (I wonder how
+> you would handle *that* alone).  And I'm sure there's more I didn't
+> even
 
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: x86@kernel.org
----
- Documentation/kernel-parameters.txt |  4 ----
- arch/x86/include/asm/processor.h    | 10 ----------
- arch/x86/kernel/cpu/bugs.c          |  9 ---------
- arch/x86/kernel/cpu/proc.c          |  2 --
- arch/x86/kernel/process.c           |  6 ++----
- arch/x86/xen/setup.c                |  3 ---
- 6 files changed, 2 insertions(+), 32 deletions(-)
+mmap... what is problem with mmap? For suspend, memory is powered, so
+you can permit people changing it.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 3b0cd1e..109ee45 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1881,10 +1881,6 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			wfi(ARM) instruction doesn't work correctly and not to
- 			use it. This is also useful when using JTAG debugger.
- 
--	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
--			instruction doesn't work correctly and not to
--			use it.
--
- 	no_file_caps	Tells the kernel not to honor file capabilities.  The
- 			only way then for a file to be executed with privilege
- 			is to be setuid root or executed by root.
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 8a28fea..b9e7d27 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -89,7 +89,6 @@ struct cpuinfo_x86 {
- 	char			wp_works_ok;	/* It doesn't on 386's */
- 
- 	/* Problems on some 486Dx4's and old 386's: */
--	char			hlt_works_ok;
- 	char			hard_math;
- 	char			rfu;
- 	char			fdiv_bug;
-@@ -165,15 +164,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- 
- extern const struct seq_operations cpuinfo_op;
- 
--static inline int hlt_works(int cpu)
--{
--#ifdef CONFIG_X86_32
--	return cpu_data(cpu).hlt_works_ok;
--#else
--	return 1;
--#endif
--}
--
- #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
- 
- extern void cpu_detect(struct cpuinfo_x86 *c);
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 92dfec9..2488be6 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -17,15 +17,6 @@
- #include <asm/paravirt.h>
- #include <asm/alternative.h>
- 
--static int __init no_halt(char *s)
--{
--	WARN_ONCE(1, "\"no-hlt\" is deprecated, please use \"idle=poll\"\n");
--	boot_cpu_data.hlt_works_ok = 0;
--	return 1;
--}
--
--__setup("no-hlt", no_halt);
--
- static int __init no_387(char *s)
- {
- 	boot_cpu_data.hard_math = 0;
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 3286a92..e280253 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -28,7 +28,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- {
- 	seq_printf(m,
- 		   "fdiv_bug\t: %s\n"
--		   "hlt_bug\t\t: %s\n"
- 		   "f00f_bug\t: %s\n"
- 		   "coma_bug\t: %s\n"
- 		   "fpu\t\t: %s\n"
-@@ -36,7 +35,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "cpuid level\t: %d\n"
- 		   "wp\t\t: %s\n",
- 		   c->fdiv_bug ? "yes" : "no",
--		   c->hlt_works_ok ? "no" : "yes",
- 		   c->f00f_bug ? "yes" : "no",
- 		   c->coma_bug ? "yes" : "no",
- 		   c->hard_math ? "yes" : "no",
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index cd5a4c9..aef852e 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -415,10 +415,8 @@ void stop_this_cpu(void *dummy)
- 	set_cpu_online(smp_processor_id(), false);
- 	disable_local_APIC();
- 
--	for (;;) {
--		if (hlt_works(smp_processor_id()))
--			halt();
--	}
-+	for (;;)
-+		halt();
- }
- 
- /*
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 2b73b5c..94eac5c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -556,9 +556,6 @@ void __init xen_arch_setup(void)
- 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
- 
- 	/* Set up idle, making sure it calls safe_halt() pvop */
--#ifdef CONFIG_X86_32
--	boot_cpu_data.hlt_works_ok = 1;
--#endif
- 	disable_cpuidle();
- 	disable_cpufreq();
- 	WARN_ON(xen_set_default_idle());
+> So please don't tell people that something is doable while it practically
+> realisticly isn't.
+
+I can imagine doing that for suspend, and believe we are moving in
+that direction with runtime suspend. For hibernation, we need to write
+image the image to the disk (which is the important difference, not
+memory shrinking), and "big suspend lock" would interfere with
+that. I can not imagine reasonable solution for that.
+									Pavel
 -- 
-1.8.1.3.535.ga923c31
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
