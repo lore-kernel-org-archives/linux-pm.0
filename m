@@ -1,211 +1,104 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2 v2] x86 idle: remove 32-bit-only "no-hlt" parameter, hlt_works_ok
- flag
-Date: Sun, 10 Feb 2013 16:37:27 -0500
-Message-ID: <51181317.1080905@kernel.org>
-References: <1360483829-16349-1-git-send-email-lenb@kernel.org> <c1647586af985fefe95a36e4924493f950ffe5e6.1360483568.git.len.brown@intel.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Sun, 10 Feb 2013 14:13:57 -0800
+Message-ID: <20130210221357.GN2666@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
+ <20130208231017.GK2666@linux.vnet.ibm.com>
+ <20130210180607.GA1375@redhat.com>
+ <5117F403.1050300@linux.vnet.ibm.com>
+ <20130210195042.GA6236@redhat.com>
+ <5117FE74.4020000@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f180.google.com ([209.85.220.180]:59790 "EHLO
-	mail-vc0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786Ab3BJVha (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Feb 2013 16:37:30 -0500
-In-Reply-To: <c1647586af985fefe95a36e4924493f950ffe5e6.1360483568.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5117FE74.4020000@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Mon, Feb 11, 2013 at 01:39:24AM +0530, Srivatsa S. Bhat wrote:
+> On 02/11/2013 01:20 AM, Oleg Nesterov wrote:
+> > On 02/11, Srivatsa S. Bhat wrote:
+> >>
+> >> On 02/10/2013 11:36 PM, Oleg Nesterov wrote:
+> >>>>> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
+> >>>>> +{
+> >>>>> +   unsigned int cpu;
+> >>>>> +
+> >>>>> +   drop_writer_signal(pcpu_rwlock, smp_processor_id());
+> >>>>
+> >>>> Why do we drop ourselves twice?  More to the point, why is it important to
+> >>>> drop ourselves first?
+> >>>
+> >>> And don't we need mb() _before_ we clear ->writer_signal ?
+> >>>
+> >>
+> >> Oh, right! Or, how about moving announce_writer_inactive() to _after_
+> >> write_unlock()?
+> > 
+> > Not sure this will help... but, either way it seems we have another
+> > problem...
+> > 
+> > percpu_rwlock tries to be "generic". This means we should "ignore" its
+> > usage in hotplug, and _write_lock should not race with _write_unlock.
+> > 
+> 
+> Yes, good point!
+> 
+> > IOW. Suppose that _write_unlock clears ->writer_signal. We need to ensure
+> > that this can't race with another write which wants to set this flag.
+> > Perhaps it should be counter as well, and it should be protected by
+> > the same ->global_rwlock, but _write_lock() should drop it before
+> > sync_all_readers() and then take it again?
+> 
+> Hmm, or we could just add an extra mb() like you suggested, and keep it
+> simple...
+> 
+> > 
+> >>>>> +static inline void sync_reader(struct percpu_rwlock *pcpu_rwlock,
+> >>>>> +			       unsigned int cpu)
+> >>>>> +{
+> >>>>> +	smp_rmb(); /* Paired with smp_[w]mb() in percpu_read_[un]lock() */
+> >>>>
+> >>>> As I understand it, the purpose of this memory barrier is to ensure
+> >>>> that the stores in drop_writer_signal() happen before the reads from
+> >>>> ->reader_refcnt in reader_uses_percpu_refcnt(), thus preventing the
+> >>>> race between a new reader attempting to use the fastpath and this writer
+> >>>> acquiring the lock.  Unless I am confused, this must be smp_mb() rather
+> >>>> than smp_rmb().
+> >>>
+> >>> And note that before sync_reader() we call announce_writer_active() which
+> >>> already adds mb() before sync_all_readers/sync_reader, so this rmb() looks
+> >>> unneeded.
+> >>>
+> >>
+> >> My intention was to help the writer see the ->reader_refcnt drop to zero
+> >> ASAP; hence I used smp_wmb() at reader and smp_rmb() here at the writer.
+> > 
+> > Hmm, interesting... Not sure, but can't really comment. However I can
+> > answer your next question:
+> 
+> Paul told me in another mail that I was expecting too much out of memory
+> barriers, like increasing the speed of electrons and what not ;-)
+> [ It would have been cool though, if it had such magical powers :P ]
 
-Remove 32-bit x86 a cmdline param "no-hlt",
-and the cpuinfo_x86.hlt_works_ok that it sets.
+"But because you have used the special mb_tachyonic instruction, the
+speed of light is 600,000 km/s for the next five clock cycles"...  ;-)
 
-If a user wants to avoid HLT, then "idle=poll"
-is much more useful, as it avoids invocation of HLT
-in idle, while "no-hlt" failed to do so.
+							Thanx, Paul
 
-Indeed, hlt_works_ok was consulted in only 3 places.
-
-First, in /proc/cpuinfo where "hlt_bug yes"
-would be printed if and only if the user booted
-the system with "no-hlt" -- as there was no other code
-to set that flag.
-
-Second, check_hlt() would not invoke halt() if "no-hlt"
-were on the cmdline.
-
-Third, it was consulted in stop_this_cpu(), which is invoked
-by native_machine_halt()/reboot_interrupt()/smp_stop_nmi_callback() --
-all cases where the machine is being shutdown/reset.
-The flag was not consulted in the more frequently invoked
-play_dead()/hlt_play_dead() used in processor offline and suspend.
-
-Since Linux-3.0 there has been a run-time notice upon "no-hlt" invocations
-indicating that it would be removed in 2012.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: x86@kernel.org
----
-v2: remove also check_hlt()
----
- Documentation/kernel-parameters.txt |  4 ----
- arch/x86/include/asm/processor.h    | 10 ----------
- arch/x86/kernel/cpu/bugs.c          | 27 ---------------------------
- arch/x86/kernel/cpu/proc.c          |  2 --
- arch/x86/kernel/process.c           |  6 ++----
- arch/x86/xen/setup.c                |  3 ---
- 6 files changed, 2 insertions(+), 50 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 3b0cd1e..109ee45 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1881,10 +1881,6 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			wfi(ARM) instruction doesn't work correctly and not to
- 			use it. This is also useful when using JTAG debugger.
- 
--	no-hlt		[BUGS=X86-32] Tells the kernel that the hlt
--			instruction doesn't work correctly and not to
--			use it.
--
- 	no_file_caps	Tells the kernel not to honor file capabilities.  The
- 			only way then for a file to be executed with privilege
- 			is to be setuid root or executed by root.
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 8a28fea..b9e7d27 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -89,7 +89,6 @@ struct cpuinfo_x86 {
- 	char			wp_works_ok;	/* It doesn't on 386's */
- 
- 	/* Problems on some 486Dx4's and old 386's: */
--	char			hlt_works_ok;
- 	char			hard_math;
- 	char			rfu;
- 	char			fdiv_bug;
-@@ -165,15 +164,6 @@ DECLARE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- 
- extern const struct seq_operations cpuinfo_op;
- 
--static inline int hlt_works(int cpu)
--{
--#ifdef CONFIG_X86_32
--	return cpu_data(cpu).hlt_works_ok;
--#else
--	return 1;
--#endif
--}
--
- #define cache_line_size()	(boot_cpu_data.x86_cache_alignment)
- 
- extern void cpu_detect(struct cpuinfo_x86 *c);
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 92dfec9..af6455e 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -17,15 +17,6 @@
- #include <asm/paravirt.h>
- #include <asm/alternative.h>
- 
--static int __init no_halt(char *s)
--{
--	WARN_ONCE(1, "\"no-hlt\" is deprecated, please use \"idle=poll\"\n");
--	boot_cpu_data.hlt_works_ok = 0;
--	return 1;
--}
--
--__setup("no-hlt", no_halt);
--
- static int __init no_387(char *s)
- {
- 	boot_cpu_data.hard_math = 0;
-@@ -89,23 +80,6 @@ static void __init check_fpu(void)
- 		pr_warn("Hmm, FPU with FDIV bug\n");
- }
- 
--static void __init check_hlt(void)
--{
--	if (boot_cpu_data.x86 >= 5 || paravirt_enabled())
--		return;
--
--	pr_info("Checking 'hlt' instruction... ");
--	if (!boot_cpu_data.hlt_works_ok) {
--		pr_cont("disabled\n");
--		return;
--	}
--	halt();
--	halt();
--	halt();
--	halt();
--	pr_cont("OK\n");
--}
--
- /*
-  * Check whether we are able to run this kernel safely on SMP.
-  *
-@@ -129,7 +103,6 @@ void __init check_bugs(void)
- 	print_cpu_info(&boot_cpu_data);
- #endif
- 	check_config();
--	check_hlt();
- 	init_utsname()->machine[1] =
- 		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
- 	alternative_instructions();
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 3286a92..e280253 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -28,7 +28,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- {
- 	seq_printf(m,
- 		   "fdiv_bug\t: %s\n"
--		   "hlt_bug\t\t: %s\n"
- 		   "f00f_bug\t: %s\n"
- 		   "coma_bug\t: %s\n"
- 		   "fpu\t\t: %s\n"
-@@ -36,7 +35,6 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "cpuid level\t: %d\n"
- 		   "wp\t\t: %s\n",
- 		   c->fdiv_bug ? "yes" : "no",
--		   c->hlt_works_ok ? "no" : "yes",
- 		   c->f00f_bug ? "yes" : "no",
- 		   c->coma_bug ? "yes" : "no",
- 		   c->hard_math ? "yes" : "no",
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index cd5a4c9..aef852e 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -415,10 +415,8 @@ void stop_this_cpu(void *dummy)
- 	set_cpu_online(smp_processor_id(), false);
- 	disable_local_APIC();
- 
--	for (;;) {
--		if (hlt_works(smp_processor_id()))
--			halt();
--	}
-+	for (;;)
-+		halt();
- }
- 
- /*
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 2b73b5c..94eac5c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -556,9 +556,6 @@ void __init xen_arch_setup(void)
- 	       COMMAND_LINE_SIZE : MAX_GUEST_CMDLINE);
- 
- 	/* Set up idle, making sure it calls safe_halt() pvop */
--#ifdef CONFIG_X86_32
--	boot_cpu_data.hlt_works_ok = 1;
--#endif
- 	disable_cpuidle();
- 	disable_cpufreq();
- 	WARN_ON(xen_set_default_idle());
--- 
-1.8.1.3.535.ga923c31
-
-
+> >> Please correct me if my understanding of memory barriers is wrong here..
+> > 
+> > Who? Me??? No we have paulmck for that ;)
+> >
+> 
+> Haha ;-)
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
