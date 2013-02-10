@@ -1,76 +1,197 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 03/16] sh idle: rename global pm_idle to static sh_idle
-Date: Sun, 10 Feb 2013 00:58:10 -0500
-Message-ID: <298823d45d644cb8aab67e59f0be0ebeeaf42039.1360475150.git.len.brown@intel.com>
+Subject: [PATCH 01/16] APM idle: register apm_cpu_idle via cpuidle
+Date: Sun, 10 Feb 2013 00:58:08 -0500
+Message-ID: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
 References: <1360475903-30007-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f175.google.com ([209.85.220.175]:57863 "EHLO
-	mail-vc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712Ab3BJF6f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Feb 2013 00:58:35 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1360475903-30007-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
-References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-sh@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Jiri Kosina <jkosina@suse.cz>
+List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-SH idle code could use some simplification.
-This patch enables that by guaranteeing
-that "sh_idle" is local, and thus architecture specific.
+Update APM to register its local idle routine with cpuidle.
+
+This allows us to stop exporting pm_idle to modules on x86.
+
+The Kconfig sub-option, APM_CPU_IDLE, now depends on on CPU_IDLE.
+
+Compile-tested only.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: linux-sh@vger.kernel.org
+Cc: Jiri Kosina <jkosina@suse.cz>
 ---
- arch/sh/kernel/idle.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/Kconfig          |  1 +
+ arch/x86/kernel/apm_32.c  | 58 +++++++++++++++++++++++++++++------------------
+ arch/x86/kernel/process.c |  3 ---
+ 3 files changed, 37 insertions(+), 25 deletions(-)
 
-diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
-index 0c91016..3d5a1b3 100644
---- a/arch/sh/kernel/idle.c
-+++ b/arch/sh/kernel/idle.c
-@@ -22,7 +22,7 @@
- #include <asm/smp.h>
- #include <asm/bl_bit.h>
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 225543b..1b63586 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1912,6 +1912,7 @@ config APM_DO_ENABLE
+ 	  this feature.
  
--void (*pm_idle)(void);
-+static void (*sh_idle)(void);
+ config APM_CPU_IDLE
++	depends on CPU_IDLE
+ 	bool "Make CPU Idle calls when idle"
+ 	---help---
+ 	  Enable calls to APM CPU Idle/CPU Busy inside the kernel's idle loop.
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index d65464e..18a3cc3 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -232,6 +232,7 @@
+ #include <linux/acpi.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/i8253.h>
++#include <linux/cpuidle.h>
  
- static int hlt_counter;
+ #include <asm/uaccess.h>
+ #include <asm/desc.h>
+@@ -360,13 +361,37 @@ struct apm_user {
+  * idle percentage above which bios idle calls are done
+  */
+ #ifdef CONFIG_APM_CPU_IDLE
+-#warning deprecated CONFIG_APM_CPU_IDLE will be deleted in 2012
+ #define DEFAULT_IDLE_THRESHOLD	95
+ #else
+ #define DEFAULT_IDLE_THRESHOLD	100
+ #endif
+ #define DEFAULT_IDLE_PERIOD	(100 / 3)
  
-@@ -103,9 +103,9 @@ void cpu_idle(void)
- 			/* Don't trace irqs off for idle */
- 			stop_critical_timings();
- 			if (cpuidle_idle_call())
--				pm_idle();
-+				sh_idle();
- 			/*
--			 * Sanity check to ensure that pm_idle() returns
-+			 * Sanity check to ensure that sh_idle() returns
- 			 * with IRQs enabled
- 			 */
- 			WARN_ON(irqs_disabled());
-@@ -123,13 +123,13 @@ void __init select_idle_routine(void)
- 	/*
- 	 * If a platform has set its own idle routine, leave it alone.
- 	 */
--	if (pm_idle)
-+	if (sh_idle)
- 		return;
++static int apm_cpu_idle(struct cpuidle_device *dev,
++			struct cpuidle_driver *drv, int index);
++
++static struct cpuidle_driver apm_idle_driver = {
++	.name = "apm_idle",
++	.owner = THIS_MODULE,
++	.en_core_tk_irqen = 1,
++	.states = {
++		{ /* entry 0 is for polling */ },
++		{ /* entry 1 is for APM idle */
++			.name = "APM",
++			.desc = "APM idle",
++			.flags = CPUIDLE_FLAG_TIME_VALID,
++			.exit_latency = 250,	/* WAG */
++			.target_residency = 500,	/* WAG */
++			.enter = &apm_cpu_idle
++		},
++	},
++};
++
++static struct cpuidle_device apm_cpuidle_device = {
++	.state_count = 2,
++};
++
++
+ /*
+  * Local variables
+  */
+@@ -377,7 +402,6 @@ static struct {
+ static int clock_slowed;
+ static int idle_threshold __read_mostly = DEFAULT_IDLE_THRESHOLD;
+ static int idle_period __read_mostly = DEFAULT_IDLE_PERIOD;
+-static int set_pm_idle;
+ static int suspends_pending;
+ static int standbys_pending;
+ static int ignore_sys_suspend;
+@@ -884,8 +908,6 @@ static void apm_do_busy(void)
+ #define IDLE_CALC_LIMIT	(HZ * 100)
+ #define IDLE_LEAKY_MAX	16
  
- 	if (hlt_works())
--		pm_idle = default_idle;
-+		sh_idle = default_idle;
- 	else
--		pm_idle = poll_idle;
-+		sh_idle = poll_idle;
+-static void (*original_pm_idle)(void) __read_mostly;
+-
+ /**
+  * apm_cpu_idle		-	cpu idling for APM capable Linux
+  *
+@@ -894,7 +916,8 @@ static void (*original_pm_idle)(void) __read_mostly;
+  * Furthermore it calls the system default idle routine.
+  */
+ 
+-static void apm_cpu_idle(void)
++static int apm_cpu_idle(struct cpuidle_device *dev,
++	struct cpuidle_driver *drv, int index)
+ {
+ 	static int use_apm_idle; /* = 0 */
+ 	static unsigned int last_jiffies; /* = 0 */
+@@ -904,7 +927,6 @@ static void apm_cpu_idle(void)
+ 	unsigned int jiffies_since_last_check = jiffies - last_jiffies;
+ 	unsigned int bucket;
+ 
+-	WARN_ONCE(1, "deprecated apm_cpu_idle will be deleted in 2012");
+ recalc:
+ 	if (jiffies_since_last_check > IDLE_CALC_LIMIT) {
+ 		use_apm_idle = 0;
+@@ -950,10 +972,7 @@ recalc:
+ 				break;
+ 			}
+ 		}
+-		if (original_pm_idle)
+-			original_pm_idle();
+-		else
+-			default_idle();
++		default_idle();
+ 		local_irq_disable();
+ 		jiffies_since_last_check = jiffies - last_jiffies;
+ 		if (jiffies_since_last_check > idle_period)
+@@ -964,6 +983,7 @@ recalc:
+ 		apm_do_busy();
+ 
+ 	local_irq_enable();
++	return index;
  }
  
- void stop_this_cpu(void *unused)
+ /**
+@@ -2381,9 +2401,9 @@ static int __init apm_init(void)
+ 	if (HZ != 100)
+ 		idle_period = (idle_period * HZ) / 100;
+ 	if (idle_threshold < 100) {
+-		original_pm_idle = pm_idle;
+-		pm_idle  = apm_cpu_idle;
+-		set_pm_idle = 1;
++		if (!cpuidle_register_driver(&apm_idle_driver))
++			if (cpuidle_register_device(&apm_cpuidle_device))
++				cpuidle_unregister_driver(&apm_idle_driver);
+ 	}
+ 
+ 	return 0;
+@@ -2393,15 +2413,9 @@ static void __exit apm_exit(void)
+ {
+ 	int error;
+ 
+-	if (set_pm_idle) {
+-		pm_idle = original_pm_idle;
+-		/*
+-		 * We are about to unload the current idle thread pm callback
+-		 * (pm_idle), Wait for all processors to update cached/local
+-		 * copies of pm_idle before proceeding.
+-		 */
+-		kick_all_cpus_sync();
+-	}
++	cpuidle_unregister_device(&apm_cpuidle_device);
++	cpuidle_unregister_driver(&apm_idle_driver);
++
+ 	if (((apm_info.bios.flags & APM_BIOS_DISENGAGED) == 0)
+ 	    && (apm_info.connection_version > 0x0100)) {
+ 		error = apm_engage_power_management(APM_DEVICE_ALL, 0);
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 2ed787f..f571a6e 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -272,9 +272,6 @@ EXPORT_SYMBOL(boot_option_idle_override);
+  * Powermanagement idle function, if any..
+  */
+ void (*pm_idle)(void);
+-#ifdef CONFIG_APM_MODULE
+-EXPORT_SYMBOL(pm_idle);
+-#endif
+ 
+ #ifndef CONFIG_SMP
+ static inline void play_dead(void)
 -- 
 1.8.1.3.535.ga923c31
-
