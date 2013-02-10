@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 16/16] xen idle: make xen-specific macro xen-specific
-Date: Sun, 10 Feb 2013 00:58:23 -0500
-Message-ID: <fd112767551c1dc5f15e1db92830d51af186edcf.1360475150.git.len.brown@intel.com>
+Subject: [PATCH 10/16] m32r idle: delete pm_idle, and other dead idle code
+Date: Sun, 10 Feb 2013 00:58:17 -0500
+Message-ID: <50145c48954ee5626107dd1aa4c2ed95dd1bc2b6.1360475150.git.len.brown@intel.com>
 References: <1360475903-30007-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -10,76 +10,99 @@ In-Reply-To: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@
 References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, xen-devel@lists.xensource.com
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-m32r@ml.linux-m32r.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-This macro is only invoked by Xen,
-so make its definition specific to Xen.
-
-> set_pm_idle_to_default()
-< xen_set_default_idle()
+All paths on m32r lead to cpu_relax().
+So delete the dead code and simply call cpu_relax() directly.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: xen-devel@lists.xensource.com
+Cc: linux-m32r@ml.linux-m32r.org
 ---
- arch/x86/include/asm/processor.h | 6 +++++-
- arch/x86/kernel/process.c        | 4 +++-
- arch/x86/xen/setup.c             | 2 +-
- 3 files changed, 9 insertions(+), 3 deletions(-)
+ arch/m32r/kernel/process.c | 51 ++--------------------------------------------
+ 1 file changed, 2 insertions(+), 49 deletions(-)
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 888184b..c2f7f47 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -998,7 +998,11 @@ extern unsigned long arch_align_stack(unsigned long sp);
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
- 
- void default_idle(void);
--bool set_pm_idle_to_default(void);
-+#ifdef	CONFIG_XEN
-+bool xen_set_default_idle(void);
-+#else
-+#define xen_set_default_idle 0
-+#endif
- 
- void stop_this_cpu(void *dummy);
- 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index ceb05db..b86de21 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -390,7 +390,8 @@ void default_idle(void)
- EXPORT_SYMBOL(default_idle);
- #endif
- 
--bool set_pm_idle_to_default(void)
-+#ifdef CONFIG_XEN
-+bool xen_set_default_idle(void)
- {
- 	bool ret = !!x86_idle;
- 
-@@ -398,6 +399,7 @@ bool set_pm_idle_to_default(void)
- 
- 	return ret;
+diff --git a/arch/m32r/kernel/process.c b/arch/m32r/kernel/process.c
+index 765d0f5..bde899e 100644
+--- a/arch/m32r/kernel/process.c
++++ b/arch/m32r/kernel/process.c
+@@ -44,36 +44,10 @@ unsigned long thread_saved_pc(struct task_struct *tsk)
+ 	return tsk->thread.lr;
  }
-+#endif
- void stop_this_cpu(void *dummy)
+ 
+-/*
+- * Powermanagement idle function, if any..
+- */
+-static void (*pm_idle)(void) = NULL;
+-
+ void (*pm_power_off)(void) = NULL;
+ EXPORT_SYMBOL(pm_power_off);
+ 
+ /*
+- * We use this is we don't have any better
+- * idle routine..
+- */
+-static void default_idle(void)
+-{
+-	/* M32R_FIXME: Please use "cpu_sleep" mode.  */
+-	cpu_relax();
+-}
+-
+-/*
+- * On SMP it's slightly faster (but much more power-consuming!)
+- * to poll the ->work.need_resched flag instead of waiting for the
+- * cross-CPU IPI to arrive. Use this option with caution.
+- */
+-static void poll_idle (void)
+-{
+-	/* M32R_FIXME */
+-	cpu_relax();
+-}
+-
+-/*
+  * The idle thread. There's no useful work to be
+  * done, so just try to conserve power and have a
+  * low exit latency (ie sit in a loop waiting for
+@@ -84,14 +58,8 @@ void cpu_idle (void)
+ 	/* endless idle loop with no priority at all */
+ 	while (1) {
+ 		rcu_idle_enter();
+-		while (!need_resched()) {
+-			void (*idle)(void) = pm_idle;
+-
+-			if (!idle)
+-				idle = default_idle;
+-
+-			idle();
+-		}
++		while (!need_resched())
++			cpu_relax();
+ 		rcu_idle_exit();
+ 		schedule_preempt_disabled();
+ 	}
+@@ -120,21 +88,6 @@ void machine_power_off(void)
+ 	/* M32R_FIXME */
+ }
+ 
+-static int __init idle_setup (char *str)
+-{
+-	if (!strncmp(str, "poll", 4)) {
+-		printk("using poll in idle threads.\n");
+-		pm_idle = poll_idle;
+-	} else if (!strncmp(str, "sleep", 4)) {
+-		printk("using sleep in idle threads.\n");
+-		pm_idle = default_idle;
+-	}
+-
+-	return 1;
+-}
+-
+-__setup("idle=", idle_setup);
+-
+ void show_regs(struct pt_regs * regs)
  {
- 	local_irq_disable();
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 8971a26..2b73b5c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -561,7 +561,7 @@ void __init xen_arch_setup(void)
- #endif
- 	disable_cpuidle();
- 	disable_cpufreq();
--	WARN_ON(set_pm_idle_to_default());
-+	WARN_ON(xen_set_default_idle());
- 	fiddle_vdso();
- #ifdef CONFIG_NUMA
- 	numa_off = 1;
+ 	printk("\n");
 -- 
 1.8.1.3.535.ga923c31
