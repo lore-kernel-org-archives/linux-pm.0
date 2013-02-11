@@ -1,54 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: 64bit divide in intel_pstate_calc_busy()
-Date: Mon, 11 Feb 2013 20:42:41 +0100
-Message-ID: <1987087.S730EjTqbJ@vostro.rjw.lan>
-References: <1360610648-6952-1-git-send-email-artem.savkov@gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 06/16] ARM idle: delete pm_idle
+Date: Mon, 11 Feb 2013 17:42:55 -0500
+Message-ID: <511973EF.8080007@kernel.org>
+References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com> <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com> <20130211160229.GB5676@MacBook-Pro.local> <20130211161125.GM17833@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:37258 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758281Ab3BKTgQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Feb 2013 14:36:16 -0500
-In-Reply-To: <1360610648-6952-1-git-send-email-artem.savkov@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130211161125.GM17833@n2100.arm.linux.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Artem Savkov <artem.savkov@gmail.com>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, February 11, 2013 11:24:08 PM Artem Savkov wrote:
-> intel_pstate.c won't compile on i686 because of a linking error:
-> drivers/cpufreq/intel_pstate.c:459: undefined reference to `__udivdi3'
+On 02/11/2013 11:11 AM, Russell King - ARM Linux wrote:
+> On Mon, Feb 11, 2013 at 04:02:30PM +0000, Catalin Marinas wrote:
+>> On Sun, Feb 10, 2013 at 05:58:13AM +0000, Len Brown wrote:
+>>> pm_idle() on ARM was a synonym for default_idle(),
+>>> so simply invoke default_idle() directly.
+>>
+>> The clean-up looks fine as we already have an arm_pm_idle but longer
+>> term I was thinking about having a common declaration similar to
+>> pm_power_off that code under drivers/power/(reset/) can override (and
+>> such driver may be shared by multiple architectures). OTOH, if you get
+>> rid of the generic linux/pm.h declaration architectures can use a common
+>> pm_idle name and type (though I think having it in the common header
+>> would be better). For ARM this would mean s/arm_pm_idle/pm_idle/ on top
+>> if your patch.
 > 
-> Signed-off-by: Artem Savkov <artem.savkov@gmail.com>
+> pm_idle() was that common declaration - but it had the side effect that
+> it was defined to be called with interrupts disabled, but return with
+> interrupts enabled.
 
-I've just applied an equivalent patch from Dirk.
+Yeah, I expect that grew out of the x86 idiom "STI;HLT",
+which dictated default_idle(), which in-turn dictated pm_idle().
+x86's MWAIT instruction now has more flexibility WRT interrupts,
+but the cast was already set...
 
-Thanks,
-Rafael
+Please let me know if you Ack the patch as is,
+or would like it changed.
 
+thanks,
+-Len Brown, Intel Open Source Technology Center
 
-> ---
->  drivers/cpufreq/intel_pstate.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> arm_pm_idle() "fixed" that weirdness such that it's now expected to
+> return with IRQs in the same state that it was called.
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 86ad482..dc43208 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -456,7 +456,9 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
->  	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
->  	sample->freq = cpu->pstate.turbo_pstate * core_pct * 1000;
->  
-> -	sample->core_pct_busy = sample->pstate_pct_busy * core_pct / 100;
-> +	sample->core_pct_busy = div64_u64(
-> +					sample->pstate_pct_busy * core_pct,
-> +					100);
->  }
->  
->  static inline void intel_pstate_sample(struct cpudata *cpu)
+> pm_power_off() is a cross-arch hook already.
 > 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
