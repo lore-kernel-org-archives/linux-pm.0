@@ -1,40 +1,40 @@
-From: Artem Savkov <artem.savkov@gmail.com>
-Subject: [PATCH] cpufreq: 64bit divide in intel_pstate_calc_busy()
-Date: Mon, 11 Feb 2013 23:24:08 +0400
-Message-ID: <1360610648-6952-1-git-send-email-artem.savkov@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:49022 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758568Ab3BKTYO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 14:24:14 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
+Date: Mon, 11 Feb 2013 20:36:17 +0100
+Message-ID: <1953281.cgEiiBGo0f@vostro.rjw.lan>
+References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <16615226.2vj4EkkIZJ@vostro.rjw.lan> <74F10842A85F514CA8D8C487E74474BB2D30DC9E@P-EXMB1-DC21.corp.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <74F10842A85F514CA8D8C487E74474BB2D30DC9E@P-EXMB1-DC21.corp.sgi.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Nathan Zimmer <nzimmer@sgi.com>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Artem Savkov <artem.savkov@gmail.com>
 
-intel_pstate.c won't compile on i686 because of a linking error:
-drivers/cpufreq/intel_pstate.c:459: undefined reference to `__udivdi3'
+On Monday, February 11, 2013 05:13:30 PM Nathan Zimmer wrote:
+> There are some spots that I need to give a much deeper review, cpufreq_register_driver for example.
+> 
+> But I believe 
+> > @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
+> >  {
+> >       if (!sysfs)
+> >               kobject_put(&data->kobj);
+> > -     module_put(cpufreq_driver->owner);
+> > +     module_put(rcu_dereference(cpufreq_driver)->owner);
+> >  }
+> would be ok.  In the documentation whatisRCU.txt they give a very similar example.
 
-Signed-off-by: Artem Savkov <artem.savkov@gmail.com>
----
- drivers/cpufreq/intel_pstate.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Well, the very same document states the following:
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 86ad482..dc43208 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -456,7 +456,9 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu,
- 	core_pct = div64_u64(sample->aperf * 100, sample->mperf);
- 	sample->freq = cpu->pstate.turbo_pstate * core_pct * 1000;
- 
--	sample->core_pct_busy = sample->pstate_pct_busy * core_pct / 100;
-+	sample->core_pct_busy = div64_u64(
-+					sample->pstate_pct_busy * core_pct,
-+					100);
- }
- 
- static inline void intel_pstate_sample(struct cpudata *cpu)
+        Note that the value returned by rcu_dereference() is valid
+        only within the enclosing RCU read-side critical section.
+
+Thanks,
+Rafael
+
+
 -- 
-1.8.1.1
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
