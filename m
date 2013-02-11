@@ -1,99 +1,84 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: RE: cpufreq.c:1779 suspicious rcu_dereference_check() usage!
-Date: Mon, 11 Feb 2013 14:09:05 +0000
-Message-ID: <74F10842A85F514CA8D8C487E74474BB2D30D1D9@P-EXMB1-DC21.corp.sgi.com>
-References: <20130208020522.GD5224@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH] cpufreq: dereference cpufreq_driver after check
+Date: Mon, 11 Feb 2013 16:37:39 +0200
+Message-ID: <1360593460-1575-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130208020522.GD5224@localhost>
-Content-Language: en-US
 Sender: cpufreq-owner@vger.kernel.org
-To: Fengguang Wu <fengguang.wu@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Could you send me the config used?
+Commit e1ee7c86 ("cpufreq: Convert the cpufreq_driver_lock to use RCU")
+introduces an RCU storage for cpufreq_driver. On Intel Medfield board we are
+getting a warning during kernel boot.
 
-________________________________________
-From: Fengguang Wu [fengguang.wu@intel.com]
-Sent: Thursday, February 07, 2013 8:05 PM
-To: fengguang.wu@intel.com; Viresh Kumar
-Cc: Nathan Zimmer; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
-Subject: cpufreq.c:1779 suspicious rcu_dereference_check() usage!
+[    6.074511] ===============================
+[    6.078634] [ INFO: suspicious RCU usage. ]
+[    6.082930] 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058 Not tainted
+[    6.089748] -------------------------------
+[    6.093926] drivers/cpufreq/cpufreq.c:1766 suspicious rcu_dereference_check() usage!
+[    6.101651]
+[    6.101651] other info that might help us debug this:
+[    6.101651]
+[    6.109659]
+[    6.109659] rcu_scheduler_active = 1, debug_locks = 0
+[    6.116215] no locks held by swapper/0/1.
+[    6.120167]
+[    6.120167] stack backtrace:
+[    6.124516] Pid: 1, comm: swapper/0 Not tainted 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058
+[    6.133470] Call Trace:
+[    6.135917]  [<c1067669>] lockdep_rcu_suspicious+0xd4/0xdd
+[    6.141390]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
+[    6.146604]  [<c1344879>] cpufreq_update_policy+0x71/0x1d7
+[    6.152081]  [<c1069d2f>] ? __lock_acquire+0xca4/0xcd4
+[    6.157210]  [<c1067ef0>] ? mark_lock+0x1f/0x209
+[    6.161820]  [<c1068137>] ? mark_held_locks+0x5d/0x7d
+[    6.166862]  [<c150c209>] ? __mutex_lock_common+0x2e0/0x344
+[    6.172425]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
+[    6.178425]  [<c150c3ae>] ? __mutex_unlock_slowpath+0xe6/0x100
+[    6.184250]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
+[    6.190248]  [<c10682f7>] ? trace_hardirqs_on+0xb/0xd
+[    6.195291]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
+[    6.200506]  [<c150c3d0>] ? mutex_unlock+0x8/0xa
+[    6.205114]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
+[    6.210331]  [<c181d68a>] cpufreq_stats_init+0x48/0xbd
+[    6.215461]  [<c181d68a>] ? cpufreq_stats_init+0x48/0xbd
+[    6.220763]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
+[    6.225981]  [<c1001085>] do_one_initcall+0x6c/0x10b
+[    6.230938]  [<c17faa52>] ? kernel_init_freeable+0xf3/0x18e
+[    6.236501]  [<c17faa68>] kernel_init_freeable+0x109/0x18e
+[    6.241978]  [<c14fa2b4>] kernel_init+0x8/0xb4
+[    6.246412]  [<c150e937>] ret_from_kernel_thread+0x1b/0x28
+[    6.251889]  [<c14fa2ac>] ? rest_init+0x108/0x108
 
-Greetings,
+The patch moves dereferencing part after policy check.
 
-I got the below oops and the first bad commit is
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-commit 9d55504e3e713c03c5260302497a72cc10f87149
-Author: Nathan Zimmer <nzimmer@sgi.com>
-Date:   Tue Feb 5 20:04:50 2013 -0600
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 79511ab..7d84b205 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1763,13 +1763,15 @@ int cpufreq_update_policy(unsigned int cpu)
+ 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
+ 	struct cpufreq_policy policy;
+ 	int ret;
+-	struct cpufreq_driver *driver = rcu_dereference(cpufreq_driver);
++	struct cpufreq_driver *driver;
+ 
+ 	if (!data) {
+ 		ret = -ENODEV;
+ 		goto no_policy;
+ 	}
+ 
++	driver = rcu_dereference(cpufreq_driver);
++
+ 	if (unlikely(lock_policy_rwsem_write(cpu))) {
+ 		ret = -EINVAL;
+ 		goto fail;
+-- 
+1.7.10.4
 
-    cpufreq: Convert the cpufreq_driver_lock to use the rcu
-
-    In general rwlocks are discourged so we are moving it to use the rcu instead.
-
-    Cc: Viresh Kumar <viresh.kumar@linaro.org>
-    Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-    Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-
-[    1.572224]
-[    1.572419] ===============================
-[    1.572933] [ INFO: suspicious RCU usage. ]
-[    1.573464] 3.8.0-rc6-00407-gfe1080a #40 Not tainted
-[    1.574059] -------------------------------
-[    1.574559] /c/kernel-tests/src/stable/drivers/cpufreq/cpufreq.c:1779 suspicious rcu_dereference_check() usage!
-[    1.575759]
-[    1.575759] other info that might help us debug this:
-[    1.575759]
-[    1.576720]
-[    1.576720] rcu_scheduler_active = 1, debug_locks = 0
-[    1.577498] no locks held by swapper/0/1.
-[    1.577982]
-[    1.577982] stack backtrace:
-[    1.578533] Pid: 1, comm: swapper/0 Not tainted 3.8.0-rc6-00407-gfe1080a #40
-[    1.579373] Call Trace:
-[    1.579712]  [<ffffffff8109d4ed>] lockdep_rcu_suspicious+0xfd/0x130
-[    1.580472]  [<ffffffff81339528>] cpufreq_update_policy+0x168/0x1b0
-[    1.581233]  [<ffffffff81027bb8>] ? kvm_clock_read+0x38/0x50
-[    1.581934]  [<ffffffff8100aae9>] ? sched_clock+0x9/0x10
-[    1.582584]  [<ffffffff81080925>] ? sched_clock_local+0x25/0xa0
-[    1.583297]  [<ffffffff81080ad8>] ? sched_clock_cpu+0xa8/0x120
-[    1.584004]  [<ffffffff813beec3>] ? mutex_lock_nested+0x2a3/0x380
-[    1.584739]  [<ffffffff8109ae3d>] ? trace_hardirqs_off+0xd/0x10
-[    1.585444]  [<ffffffff81080d0f>] ? local_clock+0x6f/0x80
-[    1.586104]  [<ffffffff813bfc03>] ? __mutex_unlock_slowpath+0xd3/0x170
-[    1.586893]  [<ffffffff8183da07>] ? cpufreq_core_init+0xc1/0xc1
-[    1.587603]  [<ffffffff8109acdd>] ? trace_hardirqs_on_caller+0x10d/0x1a0
-[    1.588421]  [<ffffffff8109ad7d>] ? trace_hardirqs_on+0xd/0x10
-[    1.589132]  [<ffffffff813bfca9>] ? mutex_unlock+0x9/0x10
-[    1.589792]  [<ffffffff81051b20>] ? cpu_maps_update_done+0x10/0x20
-[    1.590534]  [<ffffffff8183da07>] ? cpufreq_core_init+0xc1/0xc1
-[    1.591252]  [<ffffffff8183da66>] cpufreq_stats_init+0x5f/0xe5
-[    1.591970]  [<ffffffff81812c91>] do_one_initcall+0x7a/0x139
-[    1.592660]  [<ffffffff81812e53>] kernel_init_freeable+0x103/0x18d
-[    1.593393]  [<ffffffff81812566>] ? do_early_param+0x8c/0x8c
-[    1.594086]  [<ffffffff813a8a00>] ? rest_init+0x150/0x150
-[    1.594736]  [<ffffffff813a8a09>] kernel_init+0x9/0xe0
-[    1.595389]  [<ffffffff813c353c>] ret_from_fork+0x7c/0xb0
-[    1.596056]  [<ffffffff813a8a00>] ? rest_init+0x150/0x150
-[    1.596707] cpuidle: using governor ladder
-[    1.597202] cpuidle: using governor menu
-
-git bisect start fe1080a91b378aa68f16b377e048e9ae7bf9aa2d 1589a3e7777631ff56dd58cd7dcdf275185e62b5 --
-git bisect good 4b794a03dc679a3ae545f683e47a6ef5e5e21d33  #    10  2013-02-06 20:22:16  Merge branch 'acpi-assorted' into linux-next
-git bisect  bad 39391e788192294c9fe58cd47ec7eb8ef5091b79  #     0  2013-02-06 20:37:42  Merge remote-tracking branch 'vireshk/cpufreq-updates' into devel-hive-x86_64-2013-02-06-17-16
-git bisect good 16a44f82674ddd8d5b5b2527979ac22a25c55c50  #    10  2013-02-06 20:54:28  cpufreq: TEGRA: Set policy->cpus from driver->init()
-git bisect good 6d50036dbaae080a1fb9376d4c4600b53b058d21  #    10  2013-02-06 21:24:44  Merge branch 'acpi-cleanup-next' into linux-next
-git bisect good 85ada2c52ecce7963c0858eedead2063b9f18e75  #    10  2013-02-06 21:55:07  Merge branch 'pm-tools-next' into bleeding-edge
-git bisect  bad e62536d7877396c59e9eb5c52b470db6dbaf8ea1  #     0  2013-02-06 22:10:06  cpufreq: Add per policy governor-init/exit infrastructure
-git bisect  bad 9d55504e3e713c03c5260302497a72cc10f87149  #     0  2013-02-06 22:11:52  cpufreq: Convert the cpufreq_driver_lock to use the rcu
-git bisect good 1184c024165b1e8de45f6fc9eb0cde336c2fa1f5  #    10  2013-02-06 22:29:14  cpufreq: Convert the cpufreq_driver_lock to a rwlock
-git bisect good 1184c024165b1e8de45f6fc9eb0cde336c2fa1f5  #    30  2013-02-06 23:14:39  cpufreq: Convert the cpufreq_driver_lock to a rwlock
-git bisect good 164708bec016c6ceb76a2bb2e29b086bf0ad4e37  #    30  2013-02-06 23:59:52  Add linux-next specific files for 20130204
-
-Thanks,
-Fengguang
