@@ -1,112 +1,39 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: dereference cpufreq_driver after check
-Date: Mon, 11 Feb 2013 17:29:54 +0200
-Message-ID: <1360596594.14581.19.camel@smile>
-References: <1360593460-1575-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <CAKohpom30wqCnxdf-Bp1NvaD1ZyOiNqrupvdxg2xnwcviyM8XA@mail.gmail.com>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH 06/16] ARM idle: delete pm_idle
+Date: Mon, 11 Feb 2013 16:02:30 +0000
+Message-ID: <20130211160229.GB5676@MacBook-Pro.local>
+References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
+ <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:34054 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756758Ab3BKPaR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 10:30:17 -0500
-In-Reply-To: <CAKohpom30wqCnxdf-Bp1NvaD1ZyOiNqrupvdxg2xnwcviyM8XA@mail.gmail.com>
+Received: from cam-admin0.cambridge.arm.com ([217.140.96.50]:53410 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757658Ab3BKQCo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 11:02:44 -0500
+Content-Disposition: inline
+In-Reply-To: <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>, Fengguang Wu <fengguang.wu@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, 2013-02-11 at 20:43 +0530, Viresh Kumar wrote: 
-> On 11 February 2013 20:07, Andy Shevchenko
-> <andriy.shevchenko@linux.intel.com> wrote:
-> > Commit e1ee7c86 ("cpufreq: Convert the cpufreq_driver_lock to use RCU")
-> > introduces an RCU storage for cpufreq_driver. On Intel Medfield board we are
-> > getting a warning during kernel boot.
-> >
-> > [    6.074511] ===============================
-> > [    6.078634] [ INFO: suspicious RCU usage. ]
-> > [    6.082930] 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058 Not tainted
-> > [    6.089748] -------------------------------
-> > [    6.093926] drivers/cpufreq/cpufreq.c:1766 suspicious rcu_dereference_check() usage!
-> > [    6.101651]
-> > [    6.101651] other info that might help us debug this:
-> > [    6.101651]
-> > [    6.109659]
-> > [    6.109659] rcu_scheduler_active = 1, debug_locks = 0
-> > [    6.116215] no locks held by swapper/0/1.
-> > [    6.120167]
-> > [    6.120167] stack backtrace:
-> > [    6.124516] Pid: 1, comm: swapper/0 Not tainted 3.8.0-rc6-next-20130208-00036-g83eb4b6-dirty #1058
-> > [    6.133470] Call Trace:
-> > [    6.135917]  [<c1067669>] lockdep_rcu_suspicious+0xd4/0xdd
-> > [    6.141390]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.146604]  [<c1344879>] cpufreq_update_policy+0x71/0x1d7
-> > [    6.152081]  [<c1069d2f>] ? __lock_acquire+0xca4/0xcd4
-> > [    6.157210]  [<c1067ef0>] ? mark_lock+0x1f/0x209
-> > [    6.161820]  [<c1068137>] ? mark_held_locks+0x5d/0x7d
-> > [    6.166862]  [<c150c209>] ? __mutex_lock_common+0x2e0/0x344
-> > [    6.172425]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
-> > [    6.178425]  [<c150c3ae>] ? __mutex_unlock_slowpath+0xe6/0x100
-> > [    6.184250]  [<c106825c>] ? trace_hardirqs_on_caller+0x105/0x195
-> > [    6.190248]  [<c10682f7>] ? trace_hardirqs_on+0xb/0xd
-> > [    6.195291]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.200506]  [<c150c3d0>] ? mutex_unlock+0x8/0xa
-> > [    6.205114]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.210331]  [<c181d68a>] cpufreq_stats_init+0x48/0xbd
-> > [    6.215461]  [<c181d68a>] ? cpufreq_stats_init+0x48/0xbd
-> > [    6.220763]  [<c181d642>] ? cpufreq_core_init+0x8e/0x8e
-> > [    6.225981]  [<c1001085>] do_one_initcall+0x6c/0x10b
-> > [    6.230938]  [<c17faa52>] ? kernel_init_freeable+0xf3/0x18e
-> > [    6.236501]  [<c17faa68>] kernel_init_freeable+0x109/0x18e
-> > [    6.241978]  [<c14fa2b4>] kernel_init+0x8/0xb4
-> > [    6.246412]  [<c150e937>] ret_from_kernel_thread+0x1b/0x28
-> > [    6.251889]  [<c14fa2ac>] ? rest_init+0x108/0x108
-> >
-> > The patch moves dereferencing part after policy check.
-> >
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 79511ab..7d84b205 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1763,13 +1763,15 @@ int cpufreq_update_policy(unsigned int cpu)
-> >         struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
-> >         struct cpufreq_policy policy;
-> >         int ret;
-> > -       struct cpufreq_driver *driver = rcu_dereference(cpufreq_driver);
-> > +       struct cpufreq_driver *driver;
-> >
-> >         if (!data) {
-> >                 ret = -ENODEV;
-> >                 goto no_policy;
-> >         }
-> >
-> > +       driver = rcu_dereference(cpufreq_driver);
-> > +
-> 
-> Hi Andy,
-> 
-> I don't quite understand why this warning came at the first place and how it
-> got fixed :(
+On Sun, Feb 10, 2013 at 05:58:13AM +0000, Len Brown wrote:
+> pm_idle() on ARM was a synonym for default_idle(),
+> so simply invoke default_idle() directly.
 
-I didn't do deep investigation, I think the cpufreq policy is not
-defined for Intel Medfield on that stage during boot. However, it sounds
-strange, and probably David Woodhouse or someone who knows this area
-better could explain that.
+The clean-up looks fine as we already have an arm_pm_idle but longer
+term I was thinking about having a common declaration similar to
+pm_power_off that code under drivers/power/(reset/) can override (and
+such driver may be shared by multiple architectures). OTOH, if you get
+rid of the generic linux/pm.h declaration architectures can use a common
+pm_idle name and type (though I think having it in the common header
+would be better). For ARM this would mean s/arm_pm_idle/pm_idle/ on top
+if your patch.
 
-> Another thing, rcu patch is already dropped by Rafael for 3.9 and isn't there in
-> linux-next.
+Do you have any plans with pm_power_off as well?
 
-Just rebased against recent linux-next. Indeed, there is no such thingy
-anymore.
-
+Thanks.
 
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+Catalin
