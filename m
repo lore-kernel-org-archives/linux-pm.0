@@ -1,50 +1,79 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 06/16] ARM idle: delete pm_idle
-Date: Mon, 11 Feb 2013 17:42:55 -0500
-Message-ID: <511973EF.8080007@kernel.org>
-References: <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com> <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com> <20130211160229.GB5676@MacBook-Pro.local> <20130211161125.GM17833@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH 01/16] APM idle: register apm_cpu_idle via cpuidle
+Date: Mon, 11 Feb 2013 17:50:37 -0500
+Message-ID: <511975BD.60103@kernel.org>
+References: <1360475903-30007-1-git-send-email-lenb@kernel.org> <2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com> <5118B776.6090604@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130211161125.GM17833@n2100.arm.linux.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f170.google.com ([209.85.128.170]:40182 "EHLO
+	mail-ve0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756875Ab3BKWum (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 17:50:42 -0500
+In-Reply-To: <5118B776.6090604@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Jiri Kosina <jkosina@suse.cz>
 
-On 02/11/2013 11:11 AM, Russell King - ARM Linux wrote:
-> On Mon, Feb 11, 2013 at 04:02:30PM +0000, Catalin Marinas wrote:
->> On Sun, Feb 10, 2013 at 05:58:13AM +0000, Len Brown wrote:
->>> pm_idle() on ARM was a synonym for default_idle(),
->>> so simply invoke default_idle() directly.
+On 02/11/2013 04:18 AM, Daniel Lezcano wrote:
+> On 02/10/2013 06:58 AM, Len Brown wrote:
+>> From: Len Brown <len.brown@intel.com>
 >>
->> The clean-up looks fine as we already have an arm_pm_idle but longer
->> term I was thinking about having a common declaration similar to
->> pm_power_off that code under drivers/power/(reset/) can override (and
->> such driver may be shared by multiple architectures). OTOH, if you get
->> rid of the generic linux/pm.h declaration architectures can use a common
->> pm_idle name and type (though I think having it in the common header
->> would be better). For ARM this would mean s/arm_pm_idle/pm_idle/ on top
->> if your patch.
+>> Update APM to register its local idle routine with cpuidle.
+>>
+>> This allows us to stop exporting pm_idle to modules on x86.
+>>
+>> The Kconfig sub-option, APM_CPU_IDLE, now depends on on CPU_IDLE.
+>>
+>> Compile-tested only.
+>>
+>> Signed-off-by: Len Brown <len.brown@intel.com>
+>> Cc: Jiri Kosina <jkosina@suse.cz>
+>> ---
 > 
-> pm_idle() was that common declaration - but it had the side effect that
-> it was defined to be called with interrupts disabled, but return with
-> interrupts enabled.
 
-Yeah, I expect that grew out of the x86 idiom "STI;HLT",
-which dictated default_idle(), which in-turn dictated pm_idle().
-x86's MWAIT instruction now has more flexibility WRT interrupts,
-but the cast was already set...
+>> +static struct cpuidle_device apm_cpuidle_device = {
+>> +	.state_count = 2,
+>> +};
+> 
+> This will make the cpuidle_register_driver to fail because the
+> state_count field of the cpuidle_driver is zero, no ?
+> 
+> static struct cpuidle_driver apm_idle_driver = {
+> 	.name = "apm_idle",
+> 	...
+> 	.states = {
+> 	...
+> 	},
+> 	.state_count = 2,
+> }
 
-Please let me know if you Ack the patch as is,
-or would like it changed.
+yup, good catch.
+
+>> -static void apm_cpu_idle(void)
+>> +static int apm_cpu_idle(struct cpuidle_device *dev,
+>> +	struct cpuidle_driver *drv, int index)
+>>  {
+>>  	static int use_apm_idle; /* = 0 */
+>>  	static unsigned int last_jiffies; /* = 0 */
+...
+>> @@ -964,6 +983,7 @@ recalc:
+>>  		apm_do_busy();
+>>  
+>>  	local_irq_enable();
+> 
+>            ^^^^^^^^
+> 
+> As the 'en_core_tk_irqen' flag has been enabled in the driver, the
+> caller of this function will call 'local_irq_enable'. We can remove the
+> this line no ?
+
+yup, this line is no longer necessary.
+
+v2 on the way -- hoping somebody with an APM box can test it.
 
 thanks,
 -Len Brown, Intel Open Source Technology Center
 
-> arm_pm_idle() "fixed" that weirdness such that it's now expected to
-> return with IRQs in the same state that it was called.
-> 
-> pm_power_off() is a cross-arch hook already.
-> 
