@@ -1,95 +1,99 @@
-From: Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH]
- fuse: make fuse daemon frozen along with kernel threads]
-Date: Mon, 11 Feb 2013 14:59:56 +0100
-Message-ID: <CAJfpegt2B3n-QNK_W7O2H0JVfS=4jcUOzV_+w8ELPq19RJPewQ@mail.gmail.com>
-References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-	<2964781.rPUOipNRNb@vostro.rjw.lan>
-	<CAJfpegtNUr+AJXZcKmLEGBYqu20DVFwzg-OvOk_nS3fBS3wd=Q@mail.gmail.com>
-	<1660768.prnx6s70rD@vostro.rjw.lan>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: RE: cpufreq.c:1779 suspicious rcu_dereference_check() usage!
+Date: Mon, 11 Feb 2013 14:09:05 +0000
+Message-ID: <74F10842A85F514CA8D8C487E74474BB2D30D1D9@P-EXMB1-DC21.corp.sgi.com>
+References: <20130208020522.GD5224@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f45.google.com ([209.85.215.45]:51993 "EHLO
-	mail-la0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756466Ab3BKN76 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 08:59:58 -0500
-Received: by mail-la0-f45.google.com with SMTP id er20so5730954lab.4
-        for <linux-pm@vger.kernel.org>; Mon, 11 Feb 2013 05:59:57 -0800 (PST)
-In-Reply-To: <1660768.prnx6s70rD@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130208020522.GD5224@localhost>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Fengguang Wu <fengguang.wu@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-On Mon, Feb 11, 2013 at 1:08 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, February 11, 2013 11:11:40 AM Miklos Szeredi wrote:
->> On Mon, Feb 11, 2013 at 12:31 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > On Sunday, February 10, 2013 07:55:05 PM Pavel Machek wrote:
->>
->> >> Well, from freezer you need:
->> >>
->> >> 1) user process frozen.
->> >>
->> >> 2) essential locks _not_ held so that block devices are still functional.
->> >>
->> >> > > > mmap... what is problem with mmap? For suspend, memory is powered, so
->> >> > > > you can permit people changing it.
->> >> > >
->> >> > > Suppose mmap is used to make the registers of some device available to user
->> >> > > space.  Yes, that can happen.
->> >>
->> >> "Don't do it, then". Yes, can happen, but hopefully is not too common
->> >> these days. [And... freezer doing 1) but not 2) would be enough to
->> >> handle that. Freezer doing 1) but not 2) would also be simpler...]
->> >
->> > Again, I'm not sure what you mean.
->> >
->> > Are you trying to say that it would be OK to freeze user space tasks in
->> > the D state?
->>
->> I think that's what Pavel is saying.   Processes in D state sleeping
->> on non-device mutexes _are_ actually OK to freeze.  And that would
->> nicely solve the fuse freeze problem.
->
-> That's potentially deeadlock-prone, because a task waiting for mutex X may
-> very well be holding mutex Y, so if there's another task waiting for mutex Y,
-> it needs to be frozen at the same time.
->
->> The only little detail is how do we implement that...
->
-> This means the only way I can see would be to hack the mutex code so that the
-> try_to_freeze() was called for user space tasks after the
-> sched_preempt_enable_no_resched() before schedule().
->
-> That shouldn't be a big deal performance-wise, because we are in the slow
-> path anyway then.  I'm not sure if Peter Z will like it, though.
->
-> Moreover, a task waiting for a mutex may be holding a semaphore or be
-> participating in some other mutual-exclusion mechanism, so we'd need to
-> address them all.  Plus, as noted by Pavel, freezing those things would make
-> it difficult to save hibernation images to us.
+Could you send me the config used?
 
-Well, as a first step I could cook up a patch that adds a flag to the
-mutex indicating that it's freezable.  Fuse would mark its mutexes
-(and the mutexes that VFS uses on its behalf) as freezable.  That way
-we don't interfere with hibernation, except if hibernation uses fuse
-but that's a very special case.
+________________________________________
+From: Fengguang Wu [fengguang.wu@intel.com]
+Sent: Thursday, February 07, 2013 8:05 PM
+To: fengguang.wu@intel.com; Viresh Kumar
+Cc: Nathan Zimmer; cpufreq@vger.kernel.org; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: cpufreq.c:1779 suspicious rcu_dereference_check() usage!
 
->
-> What about having a "freeze me after all of my children" flag that will be
-> inherited from parents?  Would that help the fuse case?
+Greetings,
 
+I got the below oops and the first bad commit is
 
-With kernel filesystems there's a clear distinction between tasks that
-may originate filesystem requests (userspace processes) and those that
-serve these requests (kernel threads).  So its possible to freeze the
-originators first and the servers afterwards.
+commit 9d55504e3e713c03c5260302497a72cc10f87149
+Author: Nathan Zimmer <nzimmer@sgi.com>
+Date:   Tue Feb 5 20:04:50 2013 -0600
 
-With fuse there's no such difference.  Even if it were known which
-processes are servers and which are originators (it is not known in
-the general case) then there would be a problem that some processes
-are servers AND originators at the same time.
+    cpufreq: Convert the cpufreq_driver_lock to use the rcu
+
+    In general rwlocks are discourged so we are moving it to use the rcu instead.
+
+    Cc: Viresh Kumar <viresh.kumar@linaro.org>
+    Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+
+[    1.572224]
+[    1.572419] ===============================
+[    1.572933] [ INFO: suspicious RCU usage. ]
+[    1.573464] 3.8.0-rc6-00407-gfe1080a #40 Not tainted
+[    1.574059] -------------------------------
+[    1.574559] /c/kernel-tests/src/stable/drivers/cpufreq/cpufreq.c:1779 suspicious rcu_dereference_check() usage!
+[    1.575759]
+[    1.575759] other info that might help us debug this:
+[    1.575759]
+[    1.576720]
+[    1.576720] rcu_scheduler_active = 1, debug_locks = 0
+[    1.577498] no locks held by swapper/0/1.
+[    1.577982]
+[    1.577982] stack backtrace:
+[    1.578533] Pid: 1, comm: swapper/0 Not tainted 3.8.0-rc6-00407-gfe1080a #40
+[    1.579373] Call Trace:
+[    1.579712]  [<ffffffff8109d4ed>] lockdep_rcu_suspicious+0xfd/0x130
+[    1.580472]  [<ffffffff81339528>] cpufreq_update_policy+0x168/0x1b0
+[    1.581233]  [<ffffffff81027bb8>] ? kvm_clock_read+0x38/0x50
+[    1.581934]  [<ffffffff8100aae9>] ? sched_clock+0x9/0x10
+[    1.582584]  [<ffffffff81080925>] ? sched_clock_local+0x25/0xa0
+[    1.583297]  [<ffffffff81080ad8>] ? sched_clock_cpu+0xa8/0x120
+[    1.584004]  [<ffffffff813beec3>] ? mutex_lock_nested+0x2a3/0x380
+[    1.584739]  [<ffffffff8109ae3d>] ? trace_hardirqs_off+0xd/0x10
+[    1.585444]  [<ffffffff81080d0f>] ? local_clock+0x6f/0x80
+[    1.586104]  [<ffffffff813bfc03>] ? __mutex_unlock_slowpath+0xd3/0x170
+[    1.586893]  [<ffffffff8183da07>] ? cpufreq_core_init+0xc1/0xc1
+[    1.587603]  [<ffffffff8109acdd>] ? trace_hardirqs_on_caller+0x10d/0x1a0
+[    1.588421]  [<ffffffff8109ad7d>] ? trace_hardirqs_on+0xd/0x10
+[    1.589132]  [<ffffffff813bfca9>] ? mutex_unlock+0x9/0x10
+[    1.589792]  [<ffffffff81051b20>] ? cpu_maps_update_done+0x10/0x20
+[    1.590534]  [<ffffffff8183da07>] ? cpufreq_core_init+0xc1/0xc1
+[    1.591252]  [<ffffffff8183da66>] cpufreq_stats_init+0x5f/0xe5
+[    1.591970]  [<ffffffff81812c91>] do_one_initcall+0x7a/0x139
+[    1.592660]  [<ffffffff81812e53>] kernel_init_freeable+0x103/0x18d
+[    1.593393]  [<ffffffff81812566>] ? do_early_param+0x8c/0x8c
+[    1.594086]  [<ffffffff813a8a00>] ? rest_init+0x150/0x150
+[    1.594736]  [<ffffffff813a8a09>] kernel_init+0x9/0xe0
+[    1.595389]  [<ffffffff813c353c>] ret_from_fork+0x7c/0xb0
+[    1.596056]  [<ffffffff813a8a00>] ? rest_init+0x150/0x150
+[    1.596707] cpuidle: using governor ladder
+[    1.597202] cpuidle: using governor menu
+
+git bisect start fe1080a91b378aa68f16b377e048e9ae7bf9aa2d 1589a3e7777631ff56dd58cd7dcdf275185e62b5 --
+git bisect good 4b794a03dc679a3ae545f683e47a6ef5e5e21d33  #    10  2013-02-06 20:22:16  Merge branch 'acpi-assorted' into linux-next
+git bisect  bad 39391e788192294c9fe58cd47ec7eb8ef5091b79  #     0  2013-02-06 20:37:42  Merge remote-tracking branch 'vireshk/cpufreq-updates' into devel-hive-x86_64-2013-02-06-17-16
+git bisect good 16a44f82674ddd8d5b5b2527979ac22a25c55c50  #    10  2013-02-06 20:54:28  cpufreq: TEGRA: Set policy->cpus from driver->init()
+git bisect good 6d50036dbaae080a1fb9376d4c4600b53b058d21  #    10  2013-02-06 21:24:44  Merge branch 'acpi-cleanup-next' into linux-next
+git bisect good 85ada2c52ecce7963c0858eedead2063b9f18e75  #    10  2013-02-06 21:55:07  Merge branch 'pm-tools-next' into bleeding-edge
+git bisect  bad e62536d7877396c59e9eb5c52b470db6dbaf8ea1  #     0  2013-02-06 22:10:06  cpufreq: Add per policy governor-init/exit infrastructure
+git bisect  bad 9d55504e3e713c03c5260302497a72cc10f87149  #     0  2013-02-06 22:11:52  cpufreq: Convert the cpufreq_driver_lock to use the rcu
+git bisect good 1184c024165b1e8de45f6fc9eb0cde336c2fa1f5  #    10  2013-02-06 22:29:14  cpufreq: Convert the cpufreq_driver_lock to a rwlock
+git bisect good 1184c024165b1e8de45f6fc9eb0cde336c2fa1f5  #    30  2013-02-06 23:14:39  cpufreq: Convert the cpufreq_driver_lock to a rwlock
+git bisect good 164708bec016c6ceb76a2bb2e29b086bf0ad4e37  #    30  2013-02-06 23:59:52  Add linux-next specific files for 20130204
 
 Thanks,
-Miklos
+Fengguang
