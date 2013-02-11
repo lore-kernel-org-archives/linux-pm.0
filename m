@@ -1,104 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] cpufreq: governor: Implement per policy instances of governors
-Date: Mon, 11 Feb 2013 10:09:49 +0530
-Message-ID: <CAKohponaBym8mw-s4qecq-QxoZfmDy9r4hsRids_7hVGBwTz7Q@mail.gmail.com>
-References: <cover.1359976493.git.viresh.kumar@linaro.org>
-	<b16436f3b3eba648500a287d552efbbf48bcc9bb.1359976493.git.viresh.kumar@linaro.org>
-	<51180DA7.8040203@gmail.com>
-	<CAKohpo=Rk-P_yhvu8WHmpy7UcYqhg4-Y0ragqNMBXgJAB_w4mQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=Rk-P_yhvu8WHmpy7UcYqhg4-Y0ragqNMBXgJAB_w4mQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linaro-dev@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: [PATCH V2 0/4] CPUFreq: Implement per policy instances of governors
+Date: Mon, 11 Feb 2013 13:19:59 +0530
+Message-ID: <cover.1360568193.git.viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from service87.mimecast.com ([91.220.42.44]:40564 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696Ab3BKHuX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 02:50:23 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 11 February 2013 09:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 11 February 2013 02:44, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
->> dbs_data->tuners is never freed, which means there is a memory leak
->> across CPUFREQ_GOV_POLICY_INIT and CPUFREQ_GOV_POLICY_EXIT events.
->>
->> The same goes for the ondemand governor.
->
-> Thanks for pointing out. Would be fixed in next version.
+This is targetted for 3.10-rc1 or linux-next just after the merge window.
 
-Adding following to the original patch:
+All patches are pushed here for others to apply:
+http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
+refs/heads/cpufreq-updates-3.10
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c
-b/drivers/cpufreq/cpufreq_conservative.c
-index 6b13f9f..5d03577 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -329,6 +329,11 @@ static int cs_init(struct dbs_data *dbs_data)
-        return 0;
- }
+Currently, there can't be multiple instances of single governor_type. If we=
+ have
+a multi-package system, where we have multiple instances of struct policy (=
+per
+package), we can't have multiple instances of same governor. i.e. We can't =
+have
+multiple instances of ondemand governor for multiple packages.
 
-+static void cs_exit(struct dbs_data *dbs_data)
-+{
-+       kfree(dbs_data->tuners);
-+}
-+
- define_get_cpu_dbs_routines(cs_cpu_dbs_info);
+Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+governor-name/. Which again reflects that there can be only one instance of=
+ a
+governor_type in the system.
 
- static struct notifier_block cs_cpufreq_notifier_block = {
-@@ -348,6 +353,7 @@ static struct common_dbs_data cs_dbs_cdata = {
-        .gov_check_cpu = cs_check_cpu,
-        .gov_ops = &cs_ops,
-        .init = cs_init,
-+       .exit = cs_exit,
- };
+This is a bottleneck for multicluster system, where we want different packa=
+ges
+to use same governor type, but with different tunables.
 
- static int cs_cpufreq_governor_dbs(struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/cpufreq_governor.c
-b/drivers/cpufreq/cpufreq_governor.c
-index 925f5b3..7722505 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -255,6 +255,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-                                        latency * LATENCY_MULTIPLIER));
-                return 0;
-        case CPUFREQ_GOV_POLICY_EXIT:
-+               cdata->exit(dbs_data);
-                kfree(dbs_data);
-                policy->governor_data = NULL;
-                return 0;
-diff --git a/drivers/cpufreq/cpufreq_governor.h
-b/drivers/cpufreq/cpufreq_governor.h
-index 8bd8df6..6301790 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -139,6 +139,7 @@ struct common_dbs_data {
-        void (*gov_dbs_timer)(struct work_struct *work);
-        void (*gov_check_cpu)(int cpu, unsigned int load);
-        int (*init)(struct dbs_data *dbs_data);
-+       void (*exit)(struct dbs_data *dbs_data);
+This patchset is inclined towards fixing this issue. Now we will create
+governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have mult=
+iple
+struct policy alive at any moment. For others the interface is kept same:
+cpu/cpufreq/<gov>.
 
-        /* Governor specific ops, see below */
-        void *gov_ops;
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c
-b/drivers/cpufreq/cpufreq_ondemand.c
-index 5eda540..f2539e0 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -525,6 +525,11 @@ static int od_init(struct dbs_data *dbs_data)
-        return 0;
- }
+V1->V2:
+- Few patches from V1 are already picked up by Rafael for 3.9-rc1
+- Last two patches are new
+- Added dbs_data->exit() routines to free up memory used for struct tuners.
 
-+static void od_exit(struct dbs_data *dbs_data)
-+{
-+       kfree(dbs_data->tuners);
-+}
-+
- define_get_cpu_dbs_routines(od_cpu_dbs_info);
+@Rafael: I don't really want to have following patch: "cpufreq: Add Kconfig
+option to enable/disable have_multiple_policies" and added it because of co=
+mment
+from Borislov against which nobody else replied :)
 
- static struct od_ops od_ops = {
-@@ -542,6 +547,7 @@ static struct common_dbs_data od_dbs_cdata = {
-        .gov_check_cpu = od_check_cpu,
-        .gov_ops = &od_ops,
-        .init = od_init,
-+       .exit = od_exit,
- };
+I still want to have your opinion on the same.
 
- static int od_cpufreq_governor_dbs(struct cpufreq_policy *policy,
+Viresh Kumar (4):
+  cpufreq: Add per policy governor-init/exit infrastructure
+  cpufreq: governor: Implement per policy instances of governors
+  cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+  cpufreq: Get rid of "struct global_attr"
+
+ drivers/cpufreq/Kconfig                |   3 +
+ drivers/cpufreq/acpi-cpufreq.c         |   9 +-
+ drivers/cpufreq/cpufreq.c              |  27 +++--
+ drivers/cpufreq/cpufreq_conservative.c | 148 +++++++++++++---------
+ drivers/cpufreq/cpufreq_governor.c     | 159 ++++++++++++++----------
+ drivers/cpufreq/cpufreq_governor.h     |  43 +++++--
+ drivers/cpufreq/cpufreq_ondemand.c     | 216 +++++++++++++++++++----------=
+----
+ drivers/cpufreq/intel_pstate.c         |  30 ++---
+ include/linux/cpufreq.h                |  44 ++++---
+ 9 files changed, 402 insertions(+), 277 deletions(-)
+
+--=20
+1.7.12.rc2.18.g61b472e
+
+
