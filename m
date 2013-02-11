@@ -1,151 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 14/16] intel_idle: remove use and definition of MWAIT_MAX_NUM_CSTATES
-Date: Mon, 11 Feb 2013 09:53:02 +0100
-Message-ID: <5118B16E.6010709@linaro.org>
-References: <1360372100-28482-1-git-send-email-lenb@kernel.org> <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [cpufreq] WARNING: at kernel/lockdep.c:2739 lockdep_trace_alloc()
+Date: Mon, 11 Feb 2013 14:40:39 +0530
+Message-ID: <CAKohpo=WRgdBUfzKrs7yeNDCgT6w+j7GPFr8QfbPOShdGgEd1w@mail.gmail.com>
+References: <20130211085220.GA10857@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:64256 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754164Ab3BKIxB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 03:53:01 -0500
-Received: by mail-wi0-f169.google.com with SMTP id l13so2958076wie.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 Feb 2013 00:52:59 -0800 (PST)
-In-Reply-To: <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:37124 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754307Ab3BKJKk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 04:10:40 -0500
+Received: by mail-ob0-f174.google.com with SMTP id 16so5877569obc.33
+        for <linux-pm@vger.kernel.org>; Mon, 11 Feb 2013 01:10:40 -0800 (PST)
+In-Reply-To: <20130211085220.GA10857@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Fengguang Wu <fengguang.wu@intel.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 02/09/2013 02:08 AM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
->=20
-> Cosmetic only.
->=20
-> Replace use of MWAIT_MAX_NUM_CSTATES with CPUIDLE_STATE_MAX.
-> They are both 8, so this patch has no functional change.
->=20
-> The reason to change is that intel_idle will soon be able
-> to export more than the 8 "major" states supported by MWAIT.
-> When we hit that limit, it is important to know
-> where the limit comes from.
+On 11 February 2013 14:22, Fengguang Wu <fengguang.wu@intel.com> wrote:
+> Greetings,
 
-Does it mean CPUIDLE_STATE_MAX may increase in a near future ?
+Hi Fengguang,
 
+> I got the below oops and the first bad commit is
+>
+> commit 50f6802f8dccb7bbad29010e57973d46b7e7a07e
+> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> Date:   Thu Feb 7 10:55:00 2013 +0530
 
+There is something really wrong. This problem was earlier reported
+and was fixed immediately. And shouldn't be there with linux-next
+branch of Rafael.
 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/include/asm/mwait.h |  1 -
->  drivers/idle/intel_idle.c    | 16 ++++++++--------
->  2 files changed, 8 insertions(+), 9 deletions(-)
->=20
-> diff --git a/arch/x86/include/asm/mwait.h b/arch/x86/include/asm/mwai=
-t.h
-> index bcdff99..3f44732 100644
-> --- a/arch/x86/include/asm/mwait.h
-> +++ b/arch/x86/include/asm/mwait.h
-> @@ -4,7 +4,6 @@
->  #define MWAIT_SUBSTATE_MASK		0xf
->  #define MWAIT_CSTATE_MASK		0xf
->  #define MWAIT_SUBSTATE_SIZE		4
-> -#define MWAIT_MAX_NUM_CSTATES		8
-> =20
->  #define CPUID_MWAIT_LEAF		5
->  #define CPUID5_ECX_EXTENSIONS_SUPPORTED 0x1
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index fa71477..c949a6f 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -74,7 +74,7 @@ static struct cpuidle_driver intel_idle_driver =3D =
-{
->  	.en_core_tk_irqen =3D 1,
->  };
->  /* intel_idle.max_cstate=3D0 disables driver */
-> -static int max_cstate =3D MWAIT_MAX_NUM_CSTATES - 1;
-> +static int max_cstate =3D CPUIDLE_STATE_MAX - 1;
-> =20
->  static unsigned int mwait_substates;
-> =20
-> @@ -123,7 +123,7 @@ static struct cpuidle_state *cpuidle_state_table;
->   * which is also the index into the MWAIT hint array.
->   * Thus C0 is a dummy.
->   */
-> -static struct cpuidle_state nehalem_cstates[MWAIT_MAX_NUM_CSTATES] =3D=
- {
-> +static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] =3D {
->  	{ /* MWAIT C0 */ },
->  	{ /* MWAIT C1 */
->  		.name =3D "C1-NHM",
-> @@ -148,7 +148,7 @@ static struct cpuidle_state nehalem_cstates[MWAIT=
-_MAX_NUM_CSTATES] =3D {
->  		.enter =3D &intel_idle },
->  };
-> =20
-> -static struct cpuidle_state snb_cstates[MWAIT_MAX_NUM_CSTATES] =3D {
-> +static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] =3D {
->  	{ /* MWAIT C0 */ },
->  	{ /* MWAIT C1 */
->  		.name =3D "C1-SNB",
-> @@ -180,7 +180,7 @@ static struct cpuidle_state snb_cstates[MWAIT_MAX=
-_NUM_CSTATES] =3D {
->  		.enter =3D &intel_idle },
->  };
-> =20
-> -static struct cpuidle_state ivb_cstates[MWAIT_MAX_NUM_CSTATES] =3D {
-> +static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] =3D {
->  	{ /* MWAIT C0 */ },
->  	{ /* MWAIT C1 */
->  		.name =3D "C1-IVB",
-> @@ -212,7 +212,7 @@ static struct cpuidle_state ivb_cstates[MWAIT_MAX=
-_NUM_CSTATES] =3D {
->  		.enter =3D &intel_idle },
->  };
-> =20
-> -static struct cpuidle_state hsw_cstates[MWAIT_MAX_NUM_CSTATES] =3D {
-> +static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] =3D {
->  	{ /* MWAIT C0 */ },
->  	{ /* MWAIT C1 */
->  		.name =3D "C1-HSW",
-> @@ -244,7 +244,7 @@ static struct cpuidle_state hsw_cstates[MWAIT_MAX=
-_NUM_CSTATES] =3D {
->  		.enter =3D &intel_idle },
->  };
-> =20
-> -static struct cpuidle_state atom_cstates[MWAIT_MAX_NUM_CSTATES] =3D =
-{
-> +static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] =3D {
->  	{ /* MWAIT C0 */ },
->  	{ /* MWAIT C1 */
->  		.name =3D "C1-ATM",
-> @@ -503,7 +503,7 @@ static int intel_idle_cpuidle_driver_init(void)
-> =20
->  	drv->state_count =3D 1;
-> =20
-> -	for (cstate =3D 1; cstate < MWAIT_MAX_NUM_CSTATES; ++cstate) {
-> +	for (cstate =3D 1; cstate < CPUIDLE_STATE_MAX; ++cstate) {
->  		int num_substates;
-> =20
->  		if (cstate > max_cstate) {
-> @@ -560,7 +560,7 @@ static int intel_idle_cpu_init(int cpu)
-> =20
->  	dev->state_count =3D 1;
-> =20
-> -	for (cstate =3D 1; cstate < MWAIT_MAX_NUM_CSTATES; ++cstate) {
-> +	for (cstate =3D 1; cstate < CPUIDLE_STATE_MAX; ++cstate) {
->  		int num_substates;
-> =20
->  		if (cstate > max_cstate) {
->=20
+What tree are you working on ?
+
+Even in linux-next/master i see above commit as:
+
+commit 2eaa3e2df185997e92596ab14a2a67dde3876d2e
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Thu Feb 7 10:55:00 2013 +0530
+
+    cpufreq: Fix locking issues
+
+    cpufreq core uses two locks:
+    - cpufreq_driver_lock: General lock for driver and cpufreq_cpu_data array.
+    - cpu_policy_rwsemfix locking: per CPU reader-writer semaphore
+designed to cure
+      all cpufreq/hotplug/workqueue/etc related lock issues.
+
+    These locks were not used properly and are placed against their principle
+    (present before their definition) at various places. This patch is
+an attempt to
+    fix their use.
+
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 72
+++++++++++++++++++++++++++++++++++++++----------------------------------
+ 1 file changed, 38 insertions(+), 34 deletions(-)
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Which would certainly fix your problem.
