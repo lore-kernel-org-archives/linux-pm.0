@@ -1,97 +1,75 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
-Date: Mon, 11 Feb 2013 12:58:45 +0100
-Message-ID: <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
-	<510FBC01.2030405@linux.vnet.ibm.com>
-	<87haloiwv0.fsf@rustcorp.com.au>
-	<51134596.4080106@linux.vnet.ibm.com>
-	<20130208154113.GV17833@n2100.arm.linux.org.uk>
-	<51152B81.2050501@linux.vnet.ibm.com>
-	<51153F72.1060005@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with kernel threads]
+Date: Mon, 11 Feb 2013 13:08:56 +0100
+Message-ID: <1660768.prnx6s70rD@vostro.rjw.lan>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC> <2964781.rPUOipNRNb@vostro.rjw.lan> <CAJfpegtNUr+AJXZcKmLEGBYqu20DVFwzg-OvOk_nS3fBS3wd=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <51153F72.1060005@linux.vnet.ibm.com>
-Sender: netdev-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:37119 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755967Ab3BKMCb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Feb 2013 07:02:31 -0500
+In-Reply-To: <CAJfpegtNUr+AJXZcKmLEGBYqu20DVFwzg-OvOk_nS3fBS3wd=Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-Hi Srivatsa,
+On Monday, February 11, 2013 11:11:40 AM Miklos Szeredi wrote:
+> On Mon, Feb 11, 2013 at 12:31 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Sunday, February 10, 2013 07:55:05 PM Pavel Machek wrote:
+> 
+> >> Well, from freezer you need:
+> >>
+> >> 1) user process frozen.
+> >>
+> >> 2) essential locks _not_ held so that block devices are still functional.
+> >>
+> >> > > > mmap... what is problem with mmap? For suspend, memory is powered, so
+> >> > > > you can permit people changing it.
+> >> > >
+> >> > > Suppose mmap is used to make the registers of some device available to user
+> >> > > space.  Yes, that can happen.
+> >>
+> >> "Don't do it, then". Yes, can happen, but hopefully is not too common
+> >> these days. [And... freezer doing 1) but not 2) would be enough to
+> >> handle that. Freezer doing 1) but not 2) would also be simpler...]
+> >
+> > Again, I'm not sure what you mean.
+> >
+> > Are you trying to say that it would be OK to freeze user space tasks in
+> > the D state?
+> 
+> I think that's what Pavel is saying.   Processes in D state sleeping
+> on non-device mutexes _are_ actually OK to freeze.  And that would
+> nicely solve the fuse freeze problem.
 
-I can try to run some of our stress tests on your patches. Have you
-got a git tree that i can pull ?
+That's potentially deeadlock-prone, because a task waiting for mutex X may
+very well be holding mutex Y, so if there's another task waiting for mutex Y,
+it needs to be frozen at the same time.
 
-Regards,
-Vincent
+> The only little detail is how do we implement that...
 
-On 8 February 2013 19:09, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> On 02/08/2013 10:14 PM, Srivatsa S. Bhat wrote:
->> On 02/08/2013 09:11 PM, Russell King - ARM Linux wrote:
->>> On Thu, Feb 07, 2013 at 11:41:34AM +0530, Srivatsa S. Bhat wrote:
->>>> On 02/07/2013 09:44 AM, Rusty Russell wrote:
->>>>> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->>>>>> On 01/22/2013 01:03 PM, Srivatsa S. Bhat wrote:
->>>>>>                  Avg. latency of 1 CPU offline (ms) [stop-cpu/stop-m/c latency]
->>>>>>
->>>>>> # online CPUs    Mainline (with stop-m/c)       This patchset (no stop-m/c)
->>>>>>
->>>>>>       8                 17.04                          7.73
->>>>>>
->>>>>>      16                 18.05                          6.44
->>>>>>
->>>>>>      32                 17.31                          7.39
->>>>>>
->>>>>>      64                 32.40                          9.28
->>>>>>
->>>>>>     128                 98.23                          7.35
->>>>>
->>>>> Nice!
->>>>
->>>> Thank you :-)
->>>>
->>>>>  I wonder how the ARM guys feel with their quad-cpu systems...
->>>>>
->>>>
->>>> That would be definitely interesting to know :-)
->>>
->>> That depends what exactly you'd like tested (and how) and whether you'd
->>> like it to be a test-chip based quad core, or an OMAP dual-core SoC.
->>>
->>
->> The effect of stop_machine() doesn't really depend on the CPU architecture
->> used underneath or the platform. It depends only on the _number_ of
->> _logical_ CPUs used.
->>
->> And stop_machine() has 2 noticeable drawbacks:
->> 1. It makes the hotplug operation itself slow
->> 2. and it causes disruptions to the workloads running on the other
->> CPUs by hijacking the entire machine for significant amounts of time.
->>
->> In my experiments (mentioned above), I tried to measure how my patchset
->> improves (reduces) the duration of hotplug (CPU offline) itself. Which is
->> also slightly indicative of the impact it has on the rest of the system.
->>
->> But what would be nice to test, is a setup where the workloads running on
->> the rest of the system are latency-sensitive, and measure the impact of
->> CPU offline on them, with this patchset applied. That would tell us how
->> far is this useful in making CPU hotplug less disruptive on the system.
->>
->> Of course, it would be nice to also see whether we observe any reduction
->> in hotplug duration itself (point 1 above) on ARM platforms with lot
->> of CPUs. [This could potentially speed up suspend/resume, which is used
->> rather heavily on ARM platforms].
->>
->> The benefits from this patchset over mainline (both in terms of points
->> 1 and 2 above) is expected to increase, with increasing number of CPUs in
->> the system.
->>
->
-> Adding Vincent to CC, who had previously evaluated the performance and
-> latency implications of CPU hotplug on ARM platforms, IIRC.
->
-> Regards,
-> Srivatsa S. Bhat
->
+This means the only way I can see would be to hack the mutex code so that the
+try_to_freeze() was called for user space tasks after the
+sched_preempt_enable_no_resched() before schedule().
+
+That shouldn't be a big deal performance-wise, because we are in the slow
+path anyway then.  I'm not sure if Peter Z will like it, though.
+
+Moreover, a task waiting for a mutex may be holding a semaphore or be
+participating in some other mutual-exclusion mechanism, so we'd need to
+address them all.  Plus, as noted by Pavel, freezing those things would make
+it difficult to save hibernation images to us.
+
+What about having a "freeze me after all of my children" flag that will be
+inherited from parents?  Would that help the fuse case?
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
