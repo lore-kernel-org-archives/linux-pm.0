@@ -1,60 +1,68 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Date: Tue, 12 Feb 2013 08:15:30 -0800
-Message-ID: <20130212161530.GA9929@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130208231017.GK2666@linux.vnet.ibm.com>
- <20130210180607.GA1375@redhat.com>
- <20130210195417.GK2666@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Len Brown <lenb@kernel.org>
+Subject: Should SPARC use cpuidle? (was: linux-next: build failure after merge
+ of the final tree (acpi tree related))
+Date: Tue, 12 Feb 2013 13:01:31 -0500
+Message-ID: <511A837B.8020804@kernel.org>
+References: <20130211183409.7519b73ca320baeac5ec886f@canb.auug.org.au> <51197D8B.6010407@kernel.org> <20130212173505.GA2155@merkur.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130210195417.GK2666@linux.vnet.ibm.com>
+In-Reply-To: <20130212173505.GA2155@merkur.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Feb 10, 2013 at 11:54:17AM -0800, Paul E. McKenney wrote:
-> On Sun, Feb 10, 2013 at 07:06:07PM +0100, Oleg Nesterov wrote:
-> > On 02/08, Paul E. McKenney wrote:
+On 02/12/2013 12:35 PM, Sam Ravnborg wrote:
+>>> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>>> ---
+>>>  arch/sparc/include/asm/processor.h | 2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/arch/sparc/include/asm/processor.h b/arch/sparc/include/asm/processor.h
+>>> index 34baa35..622cfa5 100644
+>>> --- a/arch/sparc/include/asm/processor.h
+>>> +++ b/arch/sparc/include/asm/processor.h
+>>> @@ -7,6 +7,8 @@
+>>>  #endif
+>>>  
+>>>  #define nop() 		__asm__ __volatile__ ("nop")
+>>> +#ifndef __ASSEMBLY__
+>>>  extern void (*sparc_idle)(void);
+>>> +#endif
+>>>  
+>>>  #endif
+>>>
+>>
+>> Thank you Stephen!
+>>
+>> The last time I compiled a sparc kernel was in 1993:-)
+>>
+>> I've added your fix and Dave's Ack to this patch,
+>> and updated it in my next branch.
 > 
-> [ . . . ]
+> Hi Len.
 > 
-> > > > +static inline void sync_reader(struct percpu_rwlock *pcpu_rwlock,
-> > > > +			       unsigned int cpu)
-> > > > +{
-> > > > +	smp_rmb(); /* Paired with smp_[w]mb() in percpu_read_[un]lock() */
-> > >
-> > > As I understand it, the purpose of this memory barrier is to ensure
-> > > that the stores in drop_writer_signal() happen before the reads from
-> > > ->reader_refcnt in reader_uses_percpu_refcnt(), thus preventing the
-> > > race between a new reader attempting to use the fastpath and this writer
-> > > acquiring the lock.  Unless I am confused, this must be smp_mb() rather
-> > > than smp_rmb().
-> > 
-> > And note that before sync_reader() we call announce_writer_active() which
-> > already adds mb() before sync_all_readers/sync_reader, so this rmb() looks
-> > unneeded.
-> > 
-> > But, at the same time, could you confirm that we do not need another mb()
-> > after sync_all_readers() in percpu_write_lock() ? I mean, without mb(),
-> > can't this reader_uses_percpu_refcnt() LOAD leak into the critical section
-> > protected by ->global_rwlock? Then this LOAD can be re-ordered with other
-> > memory operations done by the writer.
-> 
-> As soon as I get the rest of the way through Thomas's patchset.  ;-)
+> Can you please move the definition of sparc_idle to processor_32.h
+> It is sparc32 specific - and then we do not need the __ASSEMBLY__ guards
+> as the sparc32 variant are not used from assembler.
 
-There is a memory barrier associated with write_lock(), but it is
-only required to keep the critical section inside the lock -- and is
-permitted to allow stuff outside of the lock to be reordered into the
-critical section.  So I believe we do indeed need an smp_mb() between
-sync_all_readers() and write_lock() in percpu_write_lock().
+sure, let me know if attached works.
 
-Good eyes, Oleg!
+> Do you btw. have any hints how I can convert to the cpu_idle thing you hinted?
 
-							Thanx, Paul
+If you have exactly 1 idle state, then cpuidle isn't that interesting,
+except, perhaps the standard residency counters.  If you have multiple
+states to choose from, cpuidle becomes more valuable.
+
+There are lots of cpuidle users now, including x86's intel_idle,
+processor_idle, and the entire ARM tree.
+
+In my tree right now is a patch to convert APM to cpuidle --
+though as nobody has tested it yet I can't guarantee it is correct.
+
+patches/issues related to idle should to to linux-pm@vger.kernel.org (on cc)
+
+thanks,
+-Len
