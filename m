@@ -1,42 +1,32 @@
-From: Richard Guy Briggs <rbriggs@redhat.com>
-Subject: [PATCH] thermal: return an error on failure to register thermal class
-Date: Tue, 12 Feb 2013 14:39:44 -0500
-Message-ID: <1360697984-19960-1-git-send-email-rbriggs@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:43424 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933274Ab3BLTk2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Feb 2013 14:40:28 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Should SPARC use cpuidle? (was: linux-next: build failure
+	after merge of the final tree (acpi tree related))
+Date: Tue, 12 Feb 2013 20:42:32 +0100
+Message-ID: <20130212194232.GA15705@merkur.ravnborg.org>
+References: <20130211183409.7519b73ca320baeac5ec886f@canb.auug.org.au> <51197D8B.6010407@kernel.org> <20130212173505.GA2155@merkur.ravnborg.org> <511A837B.8020804@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-next-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <511A837B.8020804@kernel.org>
+Sender: linux-next-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Len Brown <len.brown@intel.com>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Richard Guy Briggs <rbriggs@redhat.com>
 
-The return code from the registration of the thermal class is used to
-unallocate resources, but this failure isn't passed back to the caller of
-thermal_init.  Return this failure back to the caller.
+> 
+> > Do you btw. have any hints how I can convert to the cpu_idle thing you hinted?
+> 
+> If you have exactly 1 idle state, then cpuidle isn't that interesting,
+> except, perhaps the standard residency counters.  If you have multiple
+> states to choose from, cpuidle becomes more valuable.
+> 
+> There are lots of cpuidle users now, including x86's intel_idle,
+> processor_idle, and the entire ARM tree.
 
-This bug was introduced in changeset 4cb18728 which overwrote the return code
-when the variable was re-used to catch the return code of the registration of
-the genetlink thermal socket family.
+I think LEON has only a single power-down state.
+The APC stuff I know nothing about :-(
 
-Signed-off-by: Richard Guy Briggs <rbriggs@redhat.com>
----
- drivers/thermal/thermal_sys.c | 1 +
- 1 file changed, 1 insertion(+)
+So for now I think I will let it be as it is then.
 
-diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 8c8ce80..bfbf9fb 100644
---- a/drivers/thermal/thermal_sys.c
-+++ b/drivers/thermal/thermal_sys.c
-@@ -1807,6 +1807,7 @@ static int __init thermal_init(void)
- 		idr_destroy(&thermal_cdev_idr);
- 		mutex_destroy(&thermal_idr_lock);
- 		mutex_destroy(&thermal_list_lock);
-+		return result;
- 	}
- 	result = genetlink_init();
- 	return result;
--- 
-1.8.0.2
-
+	Sam
