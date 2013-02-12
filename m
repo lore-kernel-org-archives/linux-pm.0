@@ -1,37 +1,49 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 06/16] ARM idle: delete pm_idle
-Date: Tue, 12 Feb 2013 14:04:37 -0800
-Message-ID: <87pq05i3yi.fsf@linaro.org>
-References: <1360475903-30007-1-git-send-email-lenb@kernel.org>
-	<2b219d07e0f287c2c713f5465fc8646158fa986e.1360475150.git.len.brown@intel.com>
-	<9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 14/16] intel_idle: remove use and definition of MWAIT_MAX_NUM_CSTATES
+Date: Tue, 12 Feb 2013 23:43:52 +0100
+Message-ID: <511AC5A8.4030509@linaro.org>
+References: <1360372100-28482-1-git-send-email-lenb@kernel.org> <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com> <5118B16E.6010709@linaro.org> <511982C6.7080505@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9838a4aeee256adeaef90efe56df2c9988206982.1360475150.git.len.brown@intel.com>
-	(Len Brown's message of "Sun, 10 Feb 2013 00:58:13 -0500")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:41244 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677Ab3BLWnu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Feb 2013 17:43:50 -0500
+Received: by mail-wi0-f181.google.com with SMTP id hm6so733595wib.8
+        for <linux-pm@vger.kernel.org>; Tue, 12 Feb 2013 14:43:49 -0800 (PST)
+In-Reply-To: <511982C6.7080505@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-Len Brown <lenb@kernel.org> writes:
+On 02/12/2013 12:46 AM, Len Brown wrote:
+> On 02/11/2013 03:53 AM, Daniel Lezcano wrote:
+>> On 02/09/2013 02:08 AM, Len Brown wrote:
+>=20
+>>> The reason to change is that intel_idle will soon be able
+>>> to export more than the 8 "major" states supported by MWAIT.
+>>> When we hit that limit, it is important to know
+>>> where the limit comes from.
+>>
+>> Does it mean CPUIDLE_STATE_MAX may increase in a near future ?
+>=20
+> Yes, perhaps to 10.
+> Let me know if you anticipate issues with doing that.
 
-> From: Len Brown <len.brown@intel.com>
->
-> pm_idle() on ARM was a synonym for default_idle(),
-> so simply invoke default_idle() directly.
->
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: linux-arm-kernel@lists.infradead.org
+No, I don't see any issue so far. Maybe the array state is increasing
+more and more, so for most architecture it is a waste of memory, but
+anyway ...
 
-Looks good to me.
 
-Tested this patch along with 15/16 (removes global declaration) on an
-ARM platform (TI OMAP3) with and without CPUidle, and things continue to
-work as expected:
 
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
-Tested-by: Kevin Hilman <khilman@linaro.org>
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-Kevin
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
