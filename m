@@ -1,98 +1,55 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
-Date: Mon, 11 Feb 2013 17:12:18 -0800
-Message-ID: <CADGdYn6+yW2_pFG+mHf8F5eBgEA-2_8iQXdkJhxqp-4Eq1fGeg@mail.gmail.com>
-References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
-	<1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
-	<CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
-	<CADGdYn44okjQHQo-W9Y-pFFHzO9-3HL-ZB36aVvfzMRp098ZtA@mail.gmail.com>
-	<CAG17yqQBjuc9t2iXg0sjTMo=pbXcjkwuP0uRFu=YR=58+AmEmA@mail.gmail.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+Date: Tue, 12 Feb 2013 09:28:53 +0530
+Message-ID: <5119BDFD.1000909@linux.vnet.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au> <51134596.4080106@linux.vnet.ibm.com> <20130208154113.GV17833@n2100.arm.linux.org.uk> <51152B81.2050501@linux.vnet.ibm.com> <51153F72.1060005@linux.vnet.ibm.com> <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com> <5118E2CD.90401@linux.vnet.ibm.com> <20130211190852.GA5695@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAG17yqQBjuc9t2iXg0sjTMo=pbXcjkwuP0uRFu=YR=58+AmEmA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Inderpal Singh <inderpal.singh@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <20130211190852.GA5695@linux.vnet.ibm.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: paulmck@linux.vnet.ibm.com
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 8, 2013 at 8:49 AM, Inderpal Singh
-<inderpal.singh@linaro.org> wrote:
-> On 8 February 2013 00:03, amit kachhap <amit.kachhap@gmail.com> wrote:
->> On Wed, Feb 6, 2013 at 8:49 PM, Inderpal Singh
->> <inderpal.singh@linaro.org> wrote:
->>> On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
->>>> Add cpufreq controller device node for Exynos5440 SoC for passing
->>>> parameters like controller base address, interrupt and cpufreq
->>>> table.
+On 02/12/2013 12:38 AM, Paul E. McKenney wrote:
+> On Mon, Feb 11, 2013 at 05:53:41PM +0530, Srivatsa S. Bhat wrote:
+>> On 02/11/2013 05:28 PM, Vincent Guittot wrote:
+>>> On 8 February 2013 19:09, Srivatsa S. Bhat
+>>> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> 
+> [ . . . ]
+> 
+>>>> Adding Vincent to CC, who had previously evaluated the performance and
+>>>> latency implications of CPU hotplug on ARM platforms, IIRC.
 >>>>
->>>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>> ---
->>>>  arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
->>>>  1 file changed, 9 insertions(+)
->>>>
->>>> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
->>>> index 024269d..b20b517 100644
->>>> --- a/arch/arm/boot/dts/exynos5440.dtsi
->>>> +++ b/arch/arm/boot/dts/exynos5440.dtsi
->>>> @@ -63,6 +63,15 @@
->>>>
->>>>         };
->>>>
->>>> +       cpufreq@160000 {
->>>> +               compatible = "samsung,exynos5440-cpufreq";
->>>> +               reg = <0x160000 0x1000>;
->>>> +               interrupts = <0 57 0>;
->>>> +               cpufreq_tbl = < 1200000 1025000
->>>> +                               1000000 975000
->>>> +                               800000  925000 >;
->>>> +       };
->>>> +
 >>>
->>> I think cpufreq_tbl should be part of the cpu node as it's the
->>> property of the cpu.
->>> Please refer cpufreq-cpu0 and spear-cpufreq.
->>
->> http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/15364.
->> In this thread same discussion followed. I am not sure what is the
->> correct way but looks like Kukjin concluded this with a timer node
->> separate from the CPU code.
->>
->
-> I am only talking about cpufreq_tbl and its nothing but operating
-> points for the cpus. It seems its agreed upon to add operating-points
-> to cpu node as being done by all other platforms like imx6q, am33xx,
-> cpufreq-cpu0 and spear.
-
-Even timer, GIC, cpufreq tbl, pmu etc are all cpu properties. But the
-problem is whether to put them in cpu0 or repeat same information in
-all cpu nodes as it is common to all cpu's  and not just cpu0. So as
-Kukjin kim has put the timer node outside the cpu node so i also
-followed the same convention.
-
-Mr Kim,
-Any issue in this approach?
-
-Thanks,
-Amit Daniel
->
-> Thanks,
-> Inder
->
->> Thanks,
->> Amit Daniel
+>>> Hi Srivatsa,
 >>>
->>>>         serial@B0000 {
->>>>                 compatible = "samsung,exynos4210-uart";
->>>>                 reg = <0xB0000 0x1000>;
->>>> --
->>>> 1.7.10.4
->>>>
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> I can try to run some of our stress tests on your patches.
+>>
+>> Great!
+>>
+>>> Have you
+>>> got a git tree that i can pull ?
+>>>
+>>
+>> Unfortunately, no, none at the moment..  :-(
+> 
+> You do need to create an externally visible git tree.
+
+Ok, I'll do that soon.
+
+>  In the meantime,
+> I have added your series at rcu/bhat.2013.01.21a on -rcu:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+> 
+> This should appear soon on a kernel.org mirror near you.  ;-)
+>
+
+Thank you very much, Paul! :-)
+
+Regards,
+Srivatsa S. Bhat
