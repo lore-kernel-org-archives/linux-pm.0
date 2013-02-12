@@ -1,35 +1,98 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 14/16] intel_idle: remove use and definition of MWAIT_MAX_NUM_CSTATES
-Date: Mon, 11 Feb 2013 18:46:14 -0500
-Message-ID: <511982C6.7080505@kernel.org>
-References: <1360372100-28482-1-git-send-email-lenb@kernel.org> <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com> <5118B16E.6010709@linaro.org>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH 3/3] dts: Add cpufreq controller node for Exynos5440 SoC
+Date: Mon, 11 Feb 2013 17:12:18 -0800
+Message-ID: <CADGdYn6+yW2_pFG+mHf8F5eBgEA-2_8iQXdkJhxqp-4Eq1fGeg@mail.gmail.com>
+References: <1360179562-19950-1-git-send-email-amit.daniel@samsung.com>
+	<1360179562-19950-3-git-send-email-amit.daniel@samsung.com>
+	<CAG17yqTSxjoTDcGg+6rt+gnDyJBO7j3MBP_g5B=vYZqa1qaD+g@mail.gmail.com>
+	<CADGdYn44okjQHQo-W9Y-pFFHzO9-3HL-ZB36aVvfzMRp098ZtA@mail.gmail.com>
+	<CAG17yqQBjuc9t2iXg0sjTMo=pbXcjkwuP0uRFu=YR=58+AmEmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f171.google.com ([209.85.220.171]:36829 "EHLO
-	mail-vc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932675Ab3BKXqR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Feb 2013 18:46:17 -0500
-In-Reply-To: <5118B16E.6010709@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAG17yqQBjuc9t2iXg0sjTMo=pbXcjkwuP0uRFu=YR=58+AmEmA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Inderpal Singh <inderpal.singh@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On 02/11/2013 03:53 AM, Daniel Lezcano wrote:
-> On 02/09/2013 02:08 AM, Len Brown wrote:
+On Fri, Feb 8, 2013 at 8:49 AM, Inderpal Singh
+<inderpal.singh@linaro.org> wrote:
+> On 8 February 2013 00:03, amit kachhap <amit.kachhap@gmail.com> wrote:
+>> On Wed, Feb 6, 2013 at 8:49 PM, Inderpal Singh
+>> <inderpal.singh@linaro.org> wrote:
+>>> On 7 February 2013 01:09, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+>>>> Add cpufreq controller device node for Exynos5440 SoC for passing
+>>>> parameters like controller base address, interrupt and cpufreq
+>>>> table.
+>>>>
+>>>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>>> ---
+>>>>  arch/arm/boot/dts/exynos5440.dtsi |    9 +++++++++
+>>>>  1 file changed, 9 insertions(+)
+>>>>
+>>>> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+>>>> index 024269d..b20b517 100644
+>>>> --- a/arch/arm/boot/dts/exynos5440.dtsi
+>>>> +++ b/arch/arm/boot/dts/exynos5440.dtsi
+>>>> @@ -63,6 +63,15 @@
+>>>>
+>>>>         };
+>>>>
+>>>> +       cpufreq@160000 {
+>>>> +               compatible = "samsung,exynos5440-cpufreq";
+>>>> +               reg = <0x160000 0x1000>;
+>>>> +               interrupts = <0 57 0>;
+>>>> +               cpufreq_tbl = < 1200000 1025000
+>>>> +                               1000000 975000
+>>>> +                               800000  925000 >;
+>>>> +       };
+>>>> +
+>>>
+>>> I think cpufreq_tbl should be part of the cpu node as it's the
+>>> property of the cpu.
+>>> Please refer cpufreq-cpu0 and spear-cpufreq.
+>>
+>> http://permalink.gmane.org/gmane.linux.kernel.samsung-soc/15364.
+>> In this thread same discussion followed. I am not sure what is the
+>> correct way but looks like Kukjin concluded this with a timer node
+>> separate from the CPU code.
+>>
+>
+> I am only talking about cpufreq_tbl and its nothing but operating
+> points for the cpus. It seems its agreed upon to add operating-points
+> to cpu node as being done by all other platforms like imx6q, am33xx,
+> cpufreq-cpu0 and spear.
 
->> The reason to change is that intel_idle will soon be able
->> to export more than the 8 "major" states supported by MWAIT.
->> When we hit that limit, it is important to know
->> where the limit comes from.
-> 
-> Does it mean CPUIDLE_STATE_MAX may increase in a near future ?
+Even timer, GIC, cpufreq tbl, pmu etc are all cpu properties. But the
+problem is whether to put them in cpu0 or repeat same information in
+all cpu nodes as it is common to all cpu's  and not just cpu0. So as
+Kukjin kim has put the timer node outside the cpu node so i also
+followed the same convention.
 
-Yes, perhaps to 10.
-Let me know if you anticipate issues with doing that.
+Mr Kim,
+Any issue in this approach?
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
+Thanks,
+Amit Daniel
+>
+> Thanks,
+> Inder
+>
+>> Thanks,
+>> Amit Daniel
+>>>
+>>>>         serial@B0000 {
+>>>>                 compatible = "samsung,exynos4210-uart";
+>>>>                 reg = <0xB0000 0x1000>;
+>>>> --
+>>>> 1.7.10.4
+>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
