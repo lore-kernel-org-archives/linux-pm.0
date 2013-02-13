@@ -1,32 +1,23 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel]
- [PATCH] fuse: make fuse daemon frozen along with kernel threads]
-Date: Wed, 13 Feb 2013 21:16:09 +0100
-Message-ID: <20130213201609.GA4296@amd.pavel.ucw.cz>
-References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
- <2964781.rPUOipNRNb@vostro.rjw.lan>
- <CAJfpegtNUr+AJXZcKmLEGBYqu20DVFwzg-OvOk_nS3fBS3wd=Q@mail.gmail.com>
- <1660768.prnx6s70rD@vostro.rjw.lan>
- <CAJfpegt2B3n-QNK_W7O2H0JVfS=4jcUOzV_+w8ELPq19RJPewQ@mail.gmail.com>
- <20130212104608.GA24042@amd.pavel.ucw.cz>
- <CAJfpegvdVfEFTU5haMMi94PD1iZ1XyCRjg0O9vDjDg1yyaM-yA@mail.gmail.com>
- <CAJfpegvV0zQ5Lftx=ELP0MAH1-7oY5HfT-CSYEaFUWJLmXoD7A@mail.gmail.com>
- <CAJfpegsFThkzv3uF60AMXO7Y-yEzU_20HeGyPra0O8Vk5OqCGQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with kernel threads]
+Date: Wed, 13 Feb 2013 22:21:11 +0100
+Message-ID: <24327774.p6haZy6gvA@vostro.rjw.lan>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC> <CAJfpegvV0zQ5Lftx=ELP0MAH1-7oY5HfT-CSYEaFUWJLmXoD7A@mail.gmail.com> <CAJfpegsFThkzv3uF60AMXO7Y-yEzU_20HeGyPra0O8Vk5OqCGQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37820 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821Ab3BMUQM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Feb 2013 15:16:12 -0500
-Content-Disposition: inline
+Received: from hydra.sisk.pl ([212.160.235.94]:38011 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752042Ab3BMVOo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Feb 2013 16:14:44 -0500
 In-Reply-To: <CAJfpegsFThkzv3uF60AMXO7Y-yEzU_20HeGyPra0O8Vk5OqCGQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
+Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-On Wed 2013-02-13 18:34:16, Miklos Szeredi wrote:
+On Wednesday, February 13, 2013 06:34:16 PM Miklos Szeredi wrote:
 > On Tue, Feb 12, 2013 at 2:17 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
 > > On Tue, Feb 12, 2013 at 2:13 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
 > >> On Tue, Feb 12, 2013 at 11:46 AM, Pavel Machek <pavel@ucw.cz> wrote:
@@ -36,32 +27,33 @@ On Wed 2013-02-13 18:34:16, Miklos Szeredi wrote:
 > 
 > Well, I thought this can be constrained to locks directly related to
 > the fuse filesystem itself, but it can't...  The reason is page
-
-And it looked so easy and nice...
-
 > faults.  Pretty much everyone and their brother uses get_user_pages*,
 > holding various locks (mmap_sem for sure but others as well).  A fuse
 > filesystem frozen during a page read will block those.
-
-Is it even valid for get_user_pages to be used on FUSE?
-
-What happens if fused tries to do some operation (it is userspace, it
-can do lot of operations) that needs one of those locks?
-
-It seems to me that fused will want to do operations hibernation would
-want to do, at the very least (reading/writing block devices). Thus,
-if it does not deadlock with fused, it should not deadlock with
-hibernation, either...
-
-[Or am i mistaken and FUSE's get_user_pages* needs FUSE locks but does
-not wait for fused to finish the operation?]
-
+> 
 > Separating those parts of the kernel that can be frozen from those
 > that can't looks increasingly difficult.
+> 
+> So I think the PF_FREEZE_DAEMON idea (the patch from Li Fei that
+> started this thread) may still be our best bet at handling this
+> situation.  The idea being that pure "originator" processes (ones that
+> take no part in serving filesystem syscalls) can be frozen up-front.
+> Then the "fuse daemon" (or "server") processes are hopefully in a
+> quiescent state and can be frozen without difficulty.
+> 
+> Unfortunately it needs help from userspace: the kernel can't easily
+> guess which processes are part of a "fuse daemon" and which aren't.
+> Fortunately we have a standard library (libfuse) that can tell it to
+> the kernel for the vast majority of cases.
 
-:-(.
+So basically the idea would be to introduce something like PF_FREEZE_LATE
+for user space processes that need to be frozen after all of the other
+(non-PF_FREEZE_LATE) user space processes have been frozen and hack fuse
+to use that flag?
 
-									Pavel
+Rafael
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
