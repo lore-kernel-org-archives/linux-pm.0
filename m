@@ -1,81 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 linux-next 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
-Date: Wed, 13 Feb 2013 14:20:35 +0100
-Message-ID: <1651157.ApO0q9O4LF@vostro.rjw.lan>
-References: <74F10842A85F514CA8D8C487E74474BB2D2F925E@P-EXMB1-DC21.corp.sgi.com> <1953281.cgEiiBGo0f@vostro.rjw.lan> <20130212155954.GP2666@linux.vnet.ibm.com>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH]
+ fuse: make fuse daemon frozen along with kernel threads]
+Date: Wed, 13 Feb 2013 18:34:16 +0100
+Message-ID: <CAJfpegsFThkzv3uF60AMXO7Y-yEzU_20HeGyPra0O8Vk5OqCGQ@mail.gmail.com>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<2964781.rPUOipNRNb@vostro.rjw.lan>
+	<CAJfpegtNUr+AJXZcKmLEGBYqu20DVFwzg-OvOk_nS3fBS3wd=Q@mail.gmail.com>
+	<1660768.prnx6s70rD@vostro.rjw.lan>
+	<CAJfpegt2B3n-QNK_W7O2H0JVfS=4jcUOzV_+w8ELPq19RJPewQ@mail.gmail.com>
+	<20130212104608.GA24042@amd.pavel.ucw.cz>
+	<CAJfpegvdVfEFTU5haMMi94PD1iZ1XyCRjg0O9vDjDg1yyaM-yA@mail.gmail.com>
+	<CAJfpegvV0zQ5Lftx=ELP0MAH1-7oY5HfT-CSYEaFUWJLmXoD7A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:37904 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757373Ab3BMNOJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Feb 2013 08:14:09 -0500
-In-Reply-To: <20130212155954.GP2666@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJfpegvV0zQ5Lftx=ELP0MAH1-7oY5HfT-CSYEaFUWJLmXoD7A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Nathan Zimmer <nzimmer@sgi.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>
 
-On Tuesday, February 12, 2013 07:59:54 AM Paul E. McKenney wrote:
-> On Mon, Feb 11, 2013 at 08:36:17PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, February 11, 2013 05:13:30 PM Nathan Zimmer wrote:
-> > > There are some spots that I need to give a much deeper review, cpufreq_register_driver for example.
-> > > 
-> > > But I believe 
-> > > > @@ -196,7 +195,7 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
-> > > >  {
-> > > >       if (!sysfs)
-> > > >               kobject_put(&data->kobj);
-> > > > -     module_put(cpufreq_driver->owner);
-> > > > +     module_put(rcu_dereference(cpufreq_driver)->owner);
-> > > >  }
-> > > would be ok.  In the documentation whatisRCU.txt they give a very similar example.
-> > 
-> > Well, the very same document states the following:
-> > 
-> >         Note that the value returned by rcu_dereference() is valid
-> >         only within the enclosing RCU read-side critical section.
-> 
-> Ah, there is a code sample in that document showing a bug.  I added
-> comments to the code sample making it clear even to someone skimming
-> the document that the code is buggy.
-> 
-> 							Thanx, Paul
-> ------------------------------------------------------------------------
-> 
-> rcu: Make bugginess of code sample more evident
-> 
-> One of the code samples in whatisRCU.txt shows a bug, but someone scanning
-> the document quickly might mistake it for a valid use of RCU.  Add some
-> screaming comments to help keep speed-readers on track.
-> 
-> Reported-by: Nathan Zimmer <nzimmer@sgi.com>
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+On Tue, Feb 12, 2013 at 2:17 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> On Tue, Feb 12, 2013 at 2:13 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+>> On Tue, Feb 12, 2013 at 11:46 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>>> (After all, with FUSE, filesystem clients are just doing IPC. In ideal
+>>> world, that would be freezeable and killable with -9).
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Well, I thought this can be constrained to locks directly related to
+the fuse filesystem itself, but it can't...  The reason is page
+faults.  Pretty much everyone and their brother uses get_user_pages*,
+holding various locks (mmap_sem for sure but others as well).  A fuse
+filesystem frozen during a page read will block those.
 
-> diff --git a/Documentation/RCU/whatisRCU.txt b/Documentation/RCU/whatisRCU.txt
-> index 0cc7820..10df0b8 100644
-> --- a/Documentation/RCU/whatisRCU.txt
-> +++ b/Documentation/RCU/whatisRCU.txt
-> @@ -265,9 +265,9 @@ rcu_dereference()
->  		rcu_read_lock();
->  		p = rcu_dereference(head.next);
->  		rcu_read_unlock();
-> -		x = p->address;
-> +		x = p->address;	/* BUG!!! */
->  		rcu_read_lock();
-> -		y = p->data;
-> +		y = p->data;	/* BUG!!! */
->  		rcu_read_unlock();
->  
->  	Holding a reference from one RCU read-side critical section
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Separating those parts of the kernel that can be frozen from those
+that can't looks increasingly difficult.
+
+So I think the PF_FREEZE_DAEMON idea (the patch from Li Fei that
+started this thread) may still be our best bet at handling this
+situation.  The idea being that pure "originator" processes (ones that
+take no part in serving filesystem syscalls) can be frozen up-front.
+Then the "fuse daemon" (or "server") processes are hopefully in a
+quiescent state and can be frozen without difficulty.
+
+Unfortunately it needs help from userspace: the kernel can't easily
+guess which processes are part of a "fuse daemon" and which aren't.
+Fortunately we have a standard library (libfuse) that can tell it to
+the kernel for the vast majority of cases.
+
+Thanks,
+Miklos
