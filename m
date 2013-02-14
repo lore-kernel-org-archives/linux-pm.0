@@ -1,60 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH] fuse: make fuse daemon frozen along with kernel threads]
-Date: Thu, 14 Feb 2013 13:11:01 +0100
-Message-ID: <2891124.QXsiBPuYKW@vostro.rjw.lan>
-References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC> <24327774.p6haZy6gvA@vostro.rjw.lan> <CAJfpegtUOCTNR-uzrFBcFY3K8to2+y3hvJx=vuBYS7emzU-SRA@mail.gmail.com>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH]
+ fuse: make fuse daemon frozen along with kernel threads]
+Date: Thu, 14 Feb 2013 14:09:50 +0100
+Message-ID: <CAJfpeguV5X1pwb-E7vzVtK4n0Q6Mu6A4XKnS5-tWn4Q7MtzgZg@mail.gmail.com>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+	<24327774.p6haZy6gvA@vostro.rjw.lan>
+	<CAJfpegtUOCTNR-uzrFBcFY3K8to2+y3hvJx=vuBYS7emzU-SRA@mail.gmail.com>
+	<2891124.QXsiBPuYKW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:38090 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757453Ab3BNMEe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Feb 2013 07:04:34 -0500
-In-Reply-To: <CAJfpegtUOCTNR-uzrFBcFY3K8to2+y3hvJx=vuBYS7emzU-SRA@mail.gmail.com>
+Received: from mail-lb0-f169.google.com ([209.85.217.169]:33264 "EHLO
+	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934270Ab3BNNJx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Feb 2013 08:09:53 -0500
+Received: by mail-lb0-f169.google.com with SMTP id m4so1771951lbo.28
+        for <linux-pm@vger.kernel.org>; Thu, 14 Feb 2013 05:09:51 -0800 (PST)
+In-Reply-To: <2891124.QXsiBPuYKW@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Miklos Szeredi <miklos@szeredi.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>, Li Fei <fei.li@intel.com>, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, biao.wang@intel.com, linux-pm@vger.kernel.org, fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-On Thursday, February 14, 2013 11:41:16 AM Miklos Szeredi wrote:
-> On Wed, Feb 13, 2013 at 10:21 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, February 13, 2013 06:34:16 PM Miklos Szeredi wrote:
-> 
-> >>
-> >> So I think the PF_FREEZE_DAEMON idea (the patch from Li Fei that
-> >> started this thread) may still be our best bet at handling this
-> >> situation.  The idea being that pure "originator" processes (ones that
-> >> take no part in serving filesystem syscalls) can be frozen up-front.
-> >> Then the "fuse daemon" (or "server") processes are hopefully in a
-> >> quiescent state and can be frozen without difficulty.
-> >>
-> >> Unfortunately it needs help from userspace: the kernel can't easily
-> >> guess which processes are part of a "fuse daemon" and which aren't.
-> >> Fortunately we have a standard library (libfuse) that can tell it to
-> >> the kernel for the vast majority of cases.
-> >
-> > So basically the idea would be to introduce something like PF_FREEZE_LATE
-> > for user space processes that need to be frozen after all of the other
-> > (non-PF_FREEZE_LATE) user space processes have been frozen and hack fuse
-> > to use that flag?
-> 
-> Yes.
-> 
-> It is essentially the same mechanism that is used to delay the
-> freezing of kernel threads after userspace tasks have been frozen.
-> Except it's a lot more difficult to determine which userspace tasks
-> need to be suspended late and which aren't.
+On Thu, Feb 14, 2013 at 1:11 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, February 14, 2013 11:41:16 AM Miklos Szeredi wrote:
 
-Well, I suppose that information is available to user space.
+>>
+>> It is essentially the same mechanism that is used to delay the
+>> freezing of kernel threads after userspace tasks have been frozen.
+>> Except it's a lot more difficult to determine which userspace tasks
+>> need to be suspended late and which aren't.
+>
+> Well, I suppose that information is available to user space.
+>
+> Do we need an interface for a process to mark itself as PF_FREEZE_LATE or
+> do we need an interface for one process to mark another process as
+> PF_FREEZE_LATE, or both?
 
-Do we need an interface for a process to mark itself as PF_FREEZE_LATE or
-do we need an interface for one process to mark another process as
-PF_FREEZE_LATE, or both?
+As a first step marking self with PF_FREEZE_LATE and inheriting this
+flag across fork/clone would work for most cases, I think.
 
-Rafael
+Marking an unrelated process would have all sorts of issues: Who has
+permission to do this?  Won't it be misused to "fix" random freezer
+issues.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Miklos
