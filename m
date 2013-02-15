@@ -1,112 +1,115 @@
-From: Alex Courbot <acourbot@nvidia.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn-yOkvZcmFvRU@public.gmane.org>
 Subject: Re: usb_wwan_write() called while device still being resumed
-Date: Fri, 15 Feb 2013 17:23:59 +0900
-Message-ID: <511DF09F.3070401@nvidia.com>
+Date: Fri, 15 Feb 2013 12:05:08 +0100
+Message-ID: <87r4khu9az.fsf@nemi.mork.no>
 References: <511CBCE8.9070204@nvidia.com> <87ehgivlmg.fsf@nemi.mork.no>
+	<511DF09F.3070401@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate04.nvidia.com ([216.228.121.35]:15245 "EHLO
-	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671Ab3BOIYE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Feb 2013 03:24:04 -0500
-In-Reply-To: <87ehgivlmg.fsf@nemi.mork.no>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <511DF09F.3070401-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> (Alex Courbot's message of "Fri, 15
+	Feb 2013 17:23:59 +0900")
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm@vger.kernel.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel@vger.kernel.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
-Cc: USB list <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
 
-Hi Bj=C3=B8rn, thanks for the reply!
+Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> writes:
 
-On 02/15/2013 02:41 AM, Bj=C3=B8rn Mork wrote:
-> I believe the usb_autopm_get_interface_async() failing is OK in this
-> case, but that should not cause the modem to stop working.
->
-> Wonder if this patch solves the problem? :
->
-> From: =3D?UTF-8?q?Bj=3DC3=3DB8rn=3D20Mork?=3D <bjorn@mork.no>
-> Date: Thu, 14 Feb 2013 18:34:48 +0100
-> Subject: [PATCH] USB: usb_wwan: clear port busy state on error
-> MIME-Version: 1.0
-> Content-Type: text/plain; charset=3DUTF-8
-> Content-Transfer-Encoding: 8bit
->
-> Reported-by: Alex Courbot <acourbot@nvidia.com>
-> Signed-off-by: Bj=C3=B8rn Mork <bjorn@mork.no>
-> ---
->   drivers/usb/serial/usb_wwan.c |    4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
+> Unfortunately it does not, and fails the same way. On the other hand,
+> I do not see the issue when doing the following:
 >
 > diff --git a/drivers/usb/serial/usb_wwan.c b/drivers/usb/serial/usb_w=
 wan.c
-> index 01c94aa..44e106d 100644
+> index e4fad5e..1490029 100644
 > --- a/drivers/usb/serial/usb_wwan.c
 > +++ b/drivers/usb/serial/usb_wwan.c
-> @@ -230,8 +230,10 @@ int usb_wwan_write(struct tty_struct *tty, struc=
-t usb_serial_port *port,
->   			usb_pipeendpoint(this_urb->pipe), i);
+> @@ -238,8 +238,6 @@ int usb_wwan_write(struct tty_struct *tty, struct
+> usb_serial_port *port,
+>                     usb_pipeendpoint(this_urb->pipe), i);
 >
->   		err =3D usb_autopm_get_interface_async(port->serial->interface);
-> -		if (err < 0)
-> +		if (err < 0) {
-> +			clear_bit(i, &portdata->out_busy);
->   			break;
-> +		}
+>                 err =3D
+> usb_autopm_get_interface_async(port->serial->interface);
+> -               if (err < 0)
+> -                       break;
 >
->   		/* send the data */
->   		memcpy(this_urb->transfer_buffer, buf, todo);
+>                 /* send the data */
+>                 memcpy(this_urb->transfer_buffer, buf, todo);
 >
+> After doing this I don't see this issue anymore. It looks wrong
+> though. But it seems to work despite the obvious unbalance in autopm
+> calls that results.
+>
+> If I understand you correctly, usb_wwan_write() failing here is not a
+> problem in itself, and the ack should just be sent again later?
 
-Unfortunately it does not, and fails the same way. On the other hand, I=
-=20
-do not see the issue when doing the following:
+That was what I thought looking (obviously too) briefly through this.
 
-diff --git a/drivers/usb/serial/usb_wwan.c b/drivers/usb/serial/usb_wwa=
-n.c
-index e4fad5e..1490029 100644
---- a/drivers/usb/serial/usb_wwan.c
-+++ b/drivers/usb/serial/usb_wwan.c
-@@ -238,8 +238,6 @@ int usb_wwan_write(struct tty_struct *tty, struct=20
-usb_serial_port *port,
-                     usb_pipeendpoint(this_urb->pipe), i);
+Most errors from usb_autopm_get_interface_async will be translated to
+EIO before being returned by serial_write.  I believe the userspace
+application should deal with that.  But maybe it just gives up?  Should
+we return EAGAIN or something instead?
 
-                 err =3D=20
-usb_autopm_get_interface_async(port->serial->interface);
--               if (err < 0)
--                       break;
+I don't know.  I am pretty clueless about these things...
 
-                 /* send the data */
-                 memcpy(this_urb->transfer_buffer, buf, todo);
+But looking again, trying to guess why it works fine if you just ignore
+the error. I believe that is because you then end up hitting this until
+the interface is fully resumed:
 
-After doing this I don't see this issue anymore. It looks wrong though.=
-=20
-But it seems to work despite the obvious unbalance in autopm calls that=
-=20
-results.
+		if (intfdata->suspended) {
+			usb_anchor_urb(this_urb, &portdata->delayed);
+			spin_unlock_irqrestore(&intfdata->susp_lock, flags);
+                }
 
-If I understand you correctly, usb_wwan_write() failing here is not a=20
-problem in itself, and the ack should just be sent again later?
+>> that should not cause the modem to stop working.
+>
+> Actually it might also be that the network stack ends up in a bad
+> state and remains stuck in it. I don't think the modem by itself is
+> affected. All I observe is that no network traffic takes place after
+> this. I'm not familiar enough with networking to make any stronger
+> assumption.
 
- > that should not cause the modem to stop working.
+> FWIW, when usb_autopm_get_interface_async() returns -EACCES, the powe=
+r
+> parameters of port->serial->interface->dev are as follows:
+>
+> disable_depth =3D 1
+> is_suspended =3D 1
+> runtime_status =3D 2 (RPM_SUSPENDED)
 
-Actually it might also be that the network stack ends up in a bad state=
-=20
-and remains stuck in it. I don't think the modem by itself is affected.=
-=20
-All I observe is that no network traffic takes place after this. I'm no=
-t=20
-familiar enough with networking to make any stronger assumption.
+Yes, that makes pm_runtime_get() return -EACCES.
 
-=46WIW, when usb_autopm_get_interface_async() returns -EACCES, the powe=
-r=20
-parameters of port->serial->interface->dev are as follows:
+I am way out of my league here, but I wonder if pm_runtime_get()
+shouldn't return -EINPROGRESS instead if there is a queued resume
+request or an ongoing resume, regardless of disable_depth?
 
-disable_depth =3D 1
-is_suspended =3D 1
-runtime_status =3D 2 (RPM_SUSPENDED)
+Maybe something like the completely untested:
 
-Thanks,
-Alex.
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.=
+c
+index 3148b10..38e19ba 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -512,6 +512,9 @@ static int rpm_resume(struct device *dev, int rpmfl=
+ags)
+ 	else if (dev->power.disable_depth =3D=3D 1 && dev->power.is_suspended
+ 	    && dev->power.runtime_status =3D=3D RPM_ACTIVE)
+ 		retval =3D 1;
++	else if (rpmflags & RPM_ASYNC && dev->power.request_pending &&
++		 dev->power.request =3D=3D RPM_REQ_RESUME)
++		retval =3D -EINPROGRESS;
+ 	else if (dev->power.disable_depth > 0)
+ 		retval =3D -EACCES;
+ 	if (retval)
+---
+usb_autopm_get_interface_async() will interprete EINPROGRESS as success=
+,
+so that would prevent this problem.
 
+
+Bj=C3=B8rn
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
