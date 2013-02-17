@@ -1,43 +1,72 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH v5 2/4] ARM: Kirkwood: Add support thermal sensor for
- 88F6282 and 88F6283
-Date: Sat, 16 Feb 2013 14:10:38 -0500
-Message-ID: <20130216191038.GF23237@titan.lakedaemon.net>
-References: <1360132527-22860-1-git-send-email-andrew@lunn.ch>
- <1360132527-22860-3-git-send-email-andrew@lunn.ch>
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH v3] firewire: Fix ohci free_irq() warning
+Date: Sun, 17 Feb 2013 09:41:00 +0100
+Message-ID: <20130217094100.7a5d17e3@stein>
+References: <1359748245-3674-1-git-send-email-mark.einon@gmail.com>
+	<1360061927-3359-1-git-send-email-mark.einon@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-04-ewr.mailhop.org ([204.13.248.74]:54799 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755121Ab3BQBJw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Feb 2013 20:09:52 -0500
-Content-Disposition: inline
-In-Reply-To: <1360132527-22860-3-git-send-email-andrew@lunn.ch>
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49964 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752522Ab3BQIlT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Feb 2013 03:41:19 -0500
+In-Reply-To: <1360061927-3359-1-git-send-email-mark.einon@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: rui.zhang@intel.com, Sebastian Hesselbarth <sebastian.hesselbarth@googlemail.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Mark Einon <mark.einon@gmail.com>
+Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, stern@rowland.harvard.edu
 
-On Wed, Feb 06, 2013 at 07:35:25AM +0100, Andrew Lunn wrote:
-> From: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+On Feb 05 Mark Einon wrote:
+> This patch fixes the kernel warning below, generated when putting an
+> MSI MS-1727 GT740 laptop into suspend mode. The call sequence in this
+> case calls free_irq() twice, once in pci_suspend() and once then in
+> pci_remove().
 > 
-> Kirkwood 88F6282 and 88F6283 have a thermal sensor.
-> This patch adds a DT node and enables the driver in the kernel config.
+> The fix breaks up the ohci_enable() call into four separate calls -
+> ohci_enable_regs(), ohci_create_irq(), ohci_enable_irq() and
+> ohci_enable_run(). The original call sequence of ohci_enable() is replaced
+> by the four calls, but the ohci_enable() called from pci_resume() is
+> replaced by three of the calls, missing out ohci_create_irq().
 > 
-> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> Signed-off-by: Andrew Lunn <andrew@lunn.ch>
-> ---
->  arch/arm/boot/dts/kirkwood-6282.dtsi |    6 ++++++
->  arch/arm/configs/kirkwood_defconfig  |    2 ++
->  2 files changed, 8 insertions(+)
+> Finally, a new call, ohci_disable_irq(), replaces the free_irq() in
+> pci_suspend() which sets the irq mask to zero.
+[...]
 
-Patches 2 and 4 of this series applied to mvebu/dt_deps with a
-dependency on thermal/next up to:
+Hi,
+I haven't forgotten about this patch; just didn't fully check it yet
+because I still wanted to look whether there is a more minimalistic
+way.  Perhaps I'll post something in the next days.
 
-74ffa64 Thermal: Dove: Add Themal sensor support for Dove.
-7060aa3 thermal: Add support for the thermal sensor on Kirkwood SoCs
+> @@ -3766,7 +3811,7 @@ static int pci_suspend(struct pci_dev *dev, pm_message_t state)
+>  	int err;
+>  
+>  	software_reset(ohci);
+> -	free_irq(dev->irq, ohci);
+> +	ohci_disable_irq(ohci);
+>  	pci_disable_msi(dev);
+>  	err = pci_save_state(dev);
+>  	if (err) {
+> @@ -3802,10 +3847,13 @@ static int pci_resume(struct pci_dev *dev)
+>  		reg_write(ohci, OHCI1394_GUIDHi, (u32)(ohci->card.guid >> 32));
+>  	}
+>  
+> -	err = ohci_enable(&ohci->card, NULL, 0);
+> +	err = ohci_enable_regs(&ohci->card, NULL, 0);
+>  	if (err)
+>  		return err;
+>  
+> +	ohci_enable_irq(ohci);
+> +	ohci_enable_run(ohci);
+> +
+>  	ohci_resume_iso_dma(ohci);
+>  
+>  	return 0;
 
-thx,
-
-Jason.
+Looks like pci_{en,dis}able_msi are now unbalanced.  I suppose we better
+place them immediately around {request,free}_irq.
+-- 
+Stefan Richter
+-=====-===-= --=- =---=
+http://arcgraph.de/sr/
