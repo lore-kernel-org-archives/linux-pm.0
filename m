@@ -1,72 +1,115 @@
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH v3] firewire: Fix ohci free_irq() warning
-Date: Sun, 17 Feb 2013 09:41:00 +0100
-Message-ID: <20130217094100.7a5d17e3@stein>
-References: <1359748245-3674-1-git-send-email-mark.einon@gmail.com>
-	<1360061927-3359-1-git-send-email-mark.einon@gmail.com>
+From: Alex Courbot <acourbot@nvidia.com>
+Subject: Re: usb_wwan_write() called while device still being resumed
+Date: Sun, 17 Feb 2013 20:31:52 +0900
+Message-ID: <5120BFA8.2000506@nvidia.com>
+References: <511CBCE8.9070204@nvidia.com> <87ehgivlmg.fsf@nemi.mork.no> <511DF09F.3070401@nvidia.com> <87r4khu9az.fsf@nemi.mork.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49964 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752522Ab3BQIlT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Feb 2013 03:41:19 -0500
-In-Reply-To: <1360061927-3359-1-git-send-email-mark.einon@gmail.com>
+Received: from hqemgate03.nvidia.com ([216.228.121.140]:2704 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754164Ab3BQL3N convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Feb 2013 06:29:13 -0500
+In-Reply-To: <87r4khu9az.fsf@nemi.mork.no>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Einon <mark.einon@gmail.com>
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, stern@rowland.harvard.edu
+To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
+Cc: USB list <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
 
-On Feb 05 Mark Einon wrote:
-> This patch fixes the kernel warning below, generated when putting an
-> MSI MS-1727 GT740 laptop into suspend mode. The call sequence in this
-> case calls free_irq() twice, once in pci_suspend() and once then in
-> pci_remove().
-> 
-> The fix breaks up the ohci_enable() call into four separate calls -
-> ohci_enable_regs(), ohci_create_irq(), ohci_enable_irq() and
-> ohci_enable_run(). The original call sequence of ohci_enable() is replaced
-> by the four calls, but the ohci_enable() called from pci_resume() is
-> replaced by three of the calls, missing out ohci_create_irq().
-> 
-> Finally, a new call, ohci_disable_irq(), replaces the free_irq() in
-> pci_suspend() which sets the irq mask to zero.
-[...]
+On 02/15/2013 08:05 PM, Bj=C3=B8rn Mork wrote:
+> Alex Courbot <acourbot@nvidia.com> writes:
+>
+>> Unfortunately it does not, and fails the same way. On the other hand=
+,
+>> I do not see the issue when doing the following:
+>>
+>> diff --git a/drivers/usb/serial/usb_wwan.c b/drivers/usb/serial/usb_=
+wwan.c
+>> index e4fad5e..1490029 100644
+>> --- a/drivers/usb/serial/usb_wwan.c
+>> +++ b/drivers/usb/serial/usb_wwan.c
+>> @@ -238,8 +238,6 @@ int usb_wwan_write(struct tty_struct *tty, struc=
+t
+>> usb_serial_port *port,
+>>                      usb_pipeendpoint(this_urb->pipe), i);
+>>
+>>                  err =3D
+>> usb_autopm_get_interface_async(port->serial->interface);
+>> -               if (err < 0)
+>> -                       break;
+>>
+>>                  /* send the data */
+>>                  memcpy(this_urb->transfer_buffer, buf, todo);
+>>
+>> After doing this I don't see this issue anymore. It looks wrong
+>> though. But it seems to work despite the obvious unbalance in autopm
+>> calls that results.
+>>
+>> If I understand you correctly, usb_wwan_write() failing here is not =
+a
+>> problem in itself, and the ack should just be sent again later?
+>
+> That was what I thought looking (obviously too) briefly through this.
+>
+> Most errors from usb_autopm_get_interface_async will be translated to
+> EIO before being returned by serial_write.  I believe the userspace
+> application should deal with that.  But maybe it just gives up?  Shou=
+ld
+> we return EAGAIN or something instead?
+>
+> I don't know.  I am pretty clueless about these things...
 
-Hi,
-I haven't forgotten about this patch; just didn't fully check it yet
-because I still wanted to look whether there is a more minimalistic
-way.  Perhaps I'll post something in the next days.
+Obviously not as much as I am. :) Checking what userspace is doing coul=
+d=20
+indeed be another trail.
 
-> @@ -3766,7 +3811,7 @@ static int pci_suspend(struct pci_dev *dev, pm_message_t state)
->  	int err;
->  
->  	software_reset(ohci);
-> -	free_irq(dev->irq, ohci);
-> +	ohci_disable_irq(ohci);
->  	pci_disable_msi(dev);
->  	err = pci_save_state(dev);
->  	if (err) {
-> @@ -3802,10 +3847,13 @@ static int pci_resume(struct pci_dev *dev)
->  		reg_write(ohci, OHCI1394_GUIDHi, (u32)(ohci->card.guid >> 32));
->  	}
->  
-> -	err = ohci_enable(&ohci->card, NULL, 0);
-> +	err = ohci_enable_regs(&ohci->card, NULL, 0);
->  	if (err)
->  		return err;
->  
-> +	ohci_enable_irq(ohci);
-> +	ohci_enable_run(ohci);
-> +
->  	ohci_resume_iso_dma(ohci);
->  
->  	return 0;
+> But looking again, trying to guess why it works fine if you just igno=
+re
+> the error. I believe that is because you then end up hitting this unt=
+il
+> the interface is fully resumed:
+>
+> 		if (intfdata->suspended) {
+> 			usb_anchor_urb(this_urb, &portdata->delayed);
+> 			spin_unlock_irqrestore(&intfdata->susp_lock, flags);
+>                  }
 
-Looks like pci_{en,dis}able_msi are now unbalanced.  I suppose we better
-place them immediately around {request,free}_irq.
--- 
-Stefan Richter
--=====-===-= --=- =---=
-http://arcgraph.de/sr/
+Yes, this seems to be exactly what is happening.
+
+> I am way out of my league here, but I wonder if pm_runtime_get()
+> shouldn't return -EINPROGRESS instead if there is a queued resume
+> request or an ongoing resume, regardless of disable_depth?
+>
+> Maybe something like the completely untested:
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtim=
+e.c
+> index 3148b10..38e19ba 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -512,6 +512,9 @@ static int rpm_resume(struct device *dev, int rpm=
+flags)
+>   	else if (dev->power.disable_depth =3D=3D 1 && dev->power.is_suspen=
+ded
+>   	    && dev->power.runtime_status =3D=3D RPM_ACTIVE)
+>   		retval =3D 1;
+> +	else if (rpmflags & RPM_ASYNC && dev->power.request_pending &&
+> +		 dev->power.request =3D=3D RPM_REQ_RESUME)
+> +		retval =3D -EINPROGRESS;
+>   	else if (dev->power.disable_depth > 0)
+>   		retval =3D -EACCES;
+>   	if (retval)
+> ---
+> usb_autopm_get_interface_async() will interprete EINPROGRESS as succe=
+ss,
+> so that would prevent this problem.
+
+That sounds sensefull indeed. If the interface is soon to be resumed,=20
+there should be no reason for usb_autopm_get_interface_async() to fail.=
+=20
+Let's give this a try and bring the idea to the PM people if it works.
+
+In any case thanks a lot for the help, it is extremely useful.
+Alex.
