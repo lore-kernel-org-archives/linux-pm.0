@@ -1,58 +1,120 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [RFC PATCH 0/9] Support for tegra30 thermal.
-Date: Mon, 18 Feb 2013 19:30:22 +0800
-Message-ID: <1361187031-3679-1-git-send-email-wni@nvidia.com>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [RFC PATCH 5/9] Thermal: Support using dt node to get sensor
+Date: Mon, 18 Feb 2013 19:30:27 +0800
+Message-ID: <1361187031-3679-6-git-send-email-wni@nvidia.com>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:2558 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978Ab3BRLbZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 06:31:25 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1361187031-3679-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org
+Cc: devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TZX6JHB/w77yyCwEArCW2h5@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: durgadoss.r@intel.com, rui.zhang@intel.com, MLongnecker@nvidia.com, khali@linux-fr.org
-Cc: devicetree-discuss@lists.ozlabs.org, linux-tegra@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.orgrs.org, linux-arm-kernel@lists.infradead.org, Wei Ni <wni@nvidia.com>
 
-This patch series is to add tegra30 thermal driver.
-It use new linux thermal framework, which is developing by Durgadoss.
+Add functions to support using dt node with args to get sensor.
 
-Note:
-1. my series are based on the patches:
-http://thread.gmane.org/gmane.linux.power-management.general/30692 ,
-which come from Durgadoss.
-And the tree is Rui's -next tree.
+Signed-off-by: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ drivers/thermal/thermal_sys.c |   30 ++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |    9 +++++++++
+ 2 files changed, 39 insertions(+)
 
-Next steps:
-1. enhance the tegra30 thermal driver, something like handling the irq, setting
-the sensor limit value.
-2. seprate codes to create a new files which is for cooling device, something
-like tegra3_cooling.c. it will handle dvfs.
-
-Wei Ni (9):
-  ARM: dt: t30 cardhu: add dt entry for lm90
-  hwmon: (lm90) split set&show temp as common codes
-  hwmon: (lm90) add support to handle irq
-  hwmon: (lm90) use macros for the indexes of temp8 and temp11
-  Thermal: Support using dt node to get sensor
-  hwmon: (lm90) Register to the thermal framework
-  thermal: tegra30: add tegra30 thermal driver
-  ARM: dt: t30 cardhu: add dt entry for thermal driver
-  ARM: tegra: defconfig: enable thermal framework
-
- .../devicetree/bindings/thermal/tegra3-thermal.txt |   41 ++
- arch/arm/boot/dts/tegra30-cardhu.dtsi              |   27 +
- arch/arm/configs/tegra_defconfig                   |    2 +
- drivers/hwmon/lm90.c                               |  514 +++++++++++++++-----
- drivers/thermal/Kconfig                            |    9 +
- drivers/thermal/Makefile                           |    1 +
- drivers/thermal/tegra3_thermal.c                   |  289 +++++++++++
- drivers/thermal/thermal_sys.c                      |   30 ++
- include/linux/thermal.h                            |    9 +
- 9 files changed, 812 insertions(+), 110 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/tegra3-thermal.txt
- create mode 100644 drivers/thermal/tegra3_thermal.c
-
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index e284b67..b5bedab 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -2183,6 +2183,28 @@ struct thermal_sensor *get_sensor_by_name(const char *name)
+ }
+ EXPORT_SYMBOL(get_sensor_by_name);
+ 
++struct thermal_sensor *get_sensor_by_node(struct node_args *np_args)
++{
++	struct thermal_sensor *pos;
++	struct thermal_sensor *ts = NULL;
++	struct node_args *args;
++
++	mutex_lock(&sensor_list_lock);
++	for_each_thermal_sensor(pos) {
++		args = &pos->np_args;
++		if (args->np) {
++			if ((args->np == np_args->np) &&
++			   (args->index == np_args->index)) {
++				ts = pos;
++				break;
++			}
++		}
++	}
++	mutex_unlock(&sensor_list_lock);
++	return ts;
++}
++EXPORT_SYMBOL(get_sensor_by_node);
++
+ static int create_map_attrs(struct thermal_zone *tz, int indx)
+ {
+ 	int ret, i;
+@@ -2368,6 +2390,7 @@ EXPORT_SYMBOL(add_sensor_trip_info);
+  * @devdata:	private device data
+  */
+ struct thermal_sensor *thermal_sensor_register(const char *name, int count,
++			struct node_args *np_args,
+ 			struct thermal_sensor_ops *ops, void *devdata)
+ {
+ 	struct thermal_sensor *ts;
+@@ -2412,6 +2435,13 @@ struct thermal_sensor *thermal_sensor_register(const char *name, int count,
+ 			goto exit_temp;
+ 	}
+ 
++	if (np_args) {
++		ts->np_args.np = np_args->np;
++		ts->np_args.index = np_args->index;
++	} else {
++		ts->np_args.np = NULL;
++	}
++
+ 	/* Add this sensor to the global list of sensors */
+ 	mutex_lock(&sensor_list_lock);
+ 	list_add_tail(&ts->node, &thermal_sensor_list);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 4389599..b560ffa 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -113,6 +113,12 @@ enum {
+ };
+ #define THERMAL_GENL_CMD_MAX (__THERMAL_GENL_CMD_MAX - 1)
+ 
++/* support to parse node with args to get sensor or cooling device */
++struct node_args {
++	struct device_node *np;
++	int index;
++};
++
+ struct thermal_zone_device_ops {
+ 	int (*bind) (struct thermal_zone_device *,
+ 		     struct thermal_cooling_device *);
+@@ -223,6 +229,7 @@ struct thermal_sensor {
+ 	void *devdata;
+ 	struct idr idr;
+ 	struct device device;
++	struct node_args np_args;
+ 	struct list_head node;
+ 	struct thermal_sensor_ops *ops;
+ 	struct thermal_attr *thresh_attrs;
+@@ -350,6 +357,7 @@ int thermal_register_governor(struct thermal_governor *);
+ void thermal_unregister_governor(struct thermal_governor *);
+ 
+ struct thermal_sensor *thermal_sensor_register(const char *, int,
++				struct node_args *,
+ 				struct thermal_sensor_ops *, void *);
+ void thermal_sensor_unregister(struct thermal_sensor *);
+ 
+@@ -357,6 +365,7 @@ struct thermal_zone *create_thermal_zone(const char *, void *);
+ void remove_thermal_zone(struct thermal_zone *);
+ int add_sensor_to_zone(struct thermal_zone *, struct thermal_sensor *);
+ struct thermal_sensor *get_sensor_by_name(const char *);
++struct thermal_sensor *get_sensor_by_node(struct node_args *);
+ 
+ int add_cdev_to_zone(struct thermal_zone *, struct thermal_cooling_device *);
+ struct thermal_cooling_device *get_cdev_by_name(const char *);
 -- 
 1.7.9.5
-
