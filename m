@@ -1,34 +1,55 @@
-From: Matthew Longnecker <MLongnecker@nvidia.com>
-Subject: RE: [RFC PATCH 2/9] hwmon: (lm90) split set&show temp as common
- codes
-Date: Mon, 18 Feb 2013 14:29:23 -0800
-Message-ID: <1B93E76B0D8B0E4E8BDD54060BBDE81975FB926ACC@HQMAIL03.nvidia.com>
-References: <1361187031-3679-1-git-send-email-wni@nvidia.com>
- <1361187031-3679-3-git-send-email-wni@nvidia.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: SYSFS "errors"
+Date: Mon, 18 Feb 2013 23:44:05 +0100
+Message-ID: <20130218224405.GB21493@pd.tnic>
+References: <20130218171334.GA31329@kroah.com>
+ <20130218172700.GH2663@arwen.pp.htv.fi>
+ <20130218174916.GA2070@kroah.com>
+ <20130218184633.GC10755@arwen.pp.htv.fi>
+ <20130218164638.7cb53baa@redhat.com>
+ <20130218200542.GB20137@arwen.pp.htv.fi>
+ <20130218184742.5a4c3c06@redhat.com>
+ <20130218215434.GB16794@kroah.com>
+ <20130218221306.GA21493@pd.tnic>
+ <20130218222618.GA21818@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:1977 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756801Ab3BRW3k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 17:29:40 -0500
-In-Reply-To: <1361187031-3679-3-git-send-email-wni@nvidia.com>
-Content-Language: en-US
+Received: from mail.skyhub.de ([78.46.96.112]:36926 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757432Ab3BRWoI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Feb 2013 17:44:08 -0500
+Content-Disposition: inline
+In-Reply-To: <20130218222618.GA21818@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "khali@linux-fr.org" <khali@linux-fr.org>
-Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.orgrs.org" <linux-kernel@vger.kernel.orgrs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Wei Ni <wni@nvidia.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, balbi@ti.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, JBottomley@parallels.com, linux-scsi@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-Wei,
+On Mon, Feb 18, 2013 at 02:26:18PM -0800, Greg KH wrote:
+> I don't know, it depends on if userspace can handle this properly or
+> not. What tools rely on this sysfs file? WHat happens when they get a
+> non-number in the file?
 
-This set of patches seems to include 3 logical subsets
-1) lm90 changes
-2) dt support in drivers/thermal
-3) tegra30 support in drivers/thermal
+I'm not aware of any, frankly speaking.
 
-Would it make sense to split this into 3 separate sets of changes?
+If there are any, those tools should be able to handle the -ENODEV
+they get. Now, if this gets changed this way, the read would succeed
+but they'll have to parse the returned value and see that it is not an
+integer.
 
--Matt Longnecker
+So I don't know either.
 
-nvpublic
+But my gut feeling says to stay concervative and not touch this code -
+we don't know what uses it and how much we would break by "fixing" it.
+The current situation is not that big of a deal IMVHO and I'd be willing
+to accept the small inconcistency versus possibly breaking userspace.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
