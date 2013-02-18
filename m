@@ -1,34 +1,46 @@
-From: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH v2] APM idle: register apm_cpu_idle via cpuidle
-Date: Mon, 18 Feb 2013 14:30:34 +0100 (CET)
-Message-ID: <alpine.LNX.2.00.1302181429570.17024@pobox.suse.cz>
-References: <5118B776.6090604@linaro.org> <1360623789-12247-1-git-send-email-lenb@kernel.org> <17242de27db147c4f828d6089016e1f485c038fb.1360623445.git.len.brown@intel.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH v5 00/45] CPU hotplug: stop_machine()-free CPU hotplug
+Date: Mon, 18 Feb 2013 10:30:22 -0500
+Message-ID: <1361201422.23152.154.camel@gandalf.local.home>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+	 <510FBC01.2030405@linux.vnet.ibm.com> <87haloiwv0.fsf@rustcorp.com.au>
+	 <51134596.4080106@linux.vnet.ibm.com>
+	 <20130208154113.GV17833@n2100.arm.linux.org.uk>
+	 <51152B81.2050501@linux.vnet.ibm.com> <51153F72.1060005@linux.vnet.ibm.com>
+	 <CAKfTPtCe+cD7LLkb+D6pqG1SwG2V08ws=4XO3ttHEHV2qgmqPg@mail.gmail.com>
+	 <5118E2CD.90401@linux.vnet.ibm.com>
+	 <20130211190852.GA5695@linux.vnet.ibm.com>
+	 <5119BDFD.1000909@linux.vnet.ibm.com>
+	 <CAKfTPtAo2hQTfBKTVUuLKgsGJ2ZLD0UTR3fH9UFuJwyFt4n__w@mail.gmail.com>
+	 <511E8F3C.2010406@linux.vnet.ibm.com>
+	 <CAKfTPtD=2jn1AVjuhVP1ot7_8x9-W4==hNGZET5N9tRE7gtyMw@mail.gmail.com>
+	 <512203B3.7090002@linux.vnet.ibm.com> <512207A6.4000402@linux.vnet.ibm.com>
+	 <CAKfTPtA1aTseD6Gntkf_zbCEbfZzt3P2-P1un6iF5_1TdVLjRQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <17242de27db147c4f828d6089016e1f485c038fb.1360623445.git.len.brown@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <CAKfTPtA1aTseD6Gntkf_zbCEbfZzt3P2-P1un6iF5_1TdVLjRQ@mail.gmail.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org, linux-arch@vger.kernel.org, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Feb 2013, Len Brown wrote:
+On Mon, 2013-02-18 at 11:58 +0100, Vincent Guittot wrote:
 
-> From: Len Brown <len.brown@intel.com>
+> My tests have been done without cpuidle because i have some issues
+> with function tracer and cpuidle
 > 
-> Update APM to register its local idle routine with cpuidle.
+> But the cpu hotplug and cpuidle work well when I run the tests without
+> enabling the function tracer
 > 
-> This allows us to stop exporting pm_idle to modules on x86.
-> 
-> The Kconfig sub-option, APM_CPU_IDLE, now depends on on CPU_IDLE.
-> 
-> Compile-tested only.
 
-I will test it on APM hardware and report back to you.
+I know suspend and resume has issues with function tracing (because it
+makes things like calling smp_processor_id() crash the system), but I'm
+unaware of issues with hotplug itself. Could be some of the same issues.
 
-Do you then want me to take it through my tree, or are you going to push 
-the whole patchset as a whole?
+Can you give me more details, I'll try to investigate it.
 
--- 
-Jiri Kosina
-SUSE Labs
+Thanks,
+
+-- Steve
