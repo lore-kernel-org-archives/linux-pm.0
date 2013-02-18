@@ -1,149 +1,94 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Date: Mon, 18 Feb 2013 21:51:50 +0530
-Message-ID: <5122551E.1080703@linux.vnet.ibm.com>
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com> <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH 05/16] blackfin idle: delete pm_idle
+Date: Mon, 18 Feb 2013 17:28:19 +0100
+Message-ID: <512256A3.6050100@metafoo.de>
+References: <1360475903-30007-1-git-send-email-lenb@kernel.org> <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:60352 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754715Ab3BRQX5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 11:23:57 -0500
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Mon, 18 Feb 2013 21:50:48 +0530
-In-Reply-To: <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, uclinux-dist-devel@blackfin.uclinux.org
 List-Id: linux-pm@vger.kernel.org
-To: Michel Lespinasse <walken@google.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-Hi Michel,
+On 02/10/2013 06:58 AM, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+>=20
+> pm_idle is dead code on blackfin.
+>=20
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: uclinux-dist-devel@blackfin.uclinux.org
+> ---
+>  arch/blackfin/kernel/process.c | 7 -------
+>  1 file changed, 7 deletions(-)
+>=20
+> diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/pr=
+ocess.c
+> index 3e16ad9..8061426 100644
+> --- a/arch/blackfin/kernel/process.c
+> +++ b/arch/blackfin/kernel/process.c
+> @@ -39,12 +39,6 @@ int nr_l1stack_tasks;
+>  void *l1_stack_base;
+>  unsigned long l1_stack_len;
+> =20
+> -/*
+> - * Powermanagement idle function, if any..
+> - */
+> -void (*pm_idle)(void) =3D NULL;
+> -EXPORT_SYMBOL(pm_idle);
+> -
+>  void (*pm_power_off)(void) =3D NULL;
+>  EXPORT_SYMBOL(pm_power_off);
+> =20
+> @@ -81,7 +75,6 @@ void cpu_idle(void)
+>  {
+>  	/* endless idle loop with no priority at all */
+>  	while (1) {
+> -		void (*idle)(void) =3D pm_idle;
 
-On 02/18/2013 09:15 PM, Michel Lespinasse wrote:
-> Hi Srivasta,
-> 
-> I admit not having followed in detail the threads about the previous
-> iteration, so some of my comments may have been discussed already
-> before - apologies if that is the case.
-> 
-> On Mon, Feb 18, 2013 at 8:38 PM, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Reader-writer locks and per-cpu counters are recursive, so they can be
->> used in a nested fashion in the reader-path, which makes per-CPU rwlocks also
->> recursive. Also, this design of switching the synchronization scheme ensures
->> that you can safely nest and use these locks in a very flexible manner.
-> 
-> I like the general idea of switching between per-cpu and global
-> rwlocks as needed; however I dislike unfair locks, and especially
-> unfair recursive rwlocks.
-> 
-> If you look at rwlock_t, the main reason we haven't been able to
-> implement reader/writer fairness there is because tasklist_lock makes
-> use of the recursive nature of the rwlock_t read side. I'm worried
-> about introducing more lock usages that would make use of the same
-> property for your proposed lock.
-> 
-> I am fine with your proposal not implementing reader/writer fairness
-> from day 1, but I am worried about your proposal having a recursive
-> reader side. Or, to put it another way: if your proposal didn't have a
-> recursive reader side, and rwlock_t could somehow be changed to
-> implement reader/writer fairness, then this property could
-> automatically propagate into your proposed rwlock; but if anyone makes
-> use of the recursive nature of your proposal then implementing
-> reader/writer fairness later won't be as easy.
->
+Hi,
 
-Actually, we don't want reader/writer fairness in this particular case.
-We want deadlock safety - and in this particular case, this is guaranteed
-by the unfair nature of rwlocks today.
+This results in the following error:
 
-I understand that you want to make rwlocks fair. So, I am thinking of
-going ahead with Tejun's proposal - implementing our own unfair locking
-scheme inside percpu-rwlocks using atomic ops or something like that, and
-being completely independent of rwlock_t. That way, you can easily go
-ahead with making rwlocks fair without fear of breaking CPU hotplug.
-However I would much prefer making that change to percpu-rwlocks as a
-separate patchset, after this patchset goes in, so that we can also see
-how well this unfair logic performs in practice.
+arch/blackfin/kernel/process.c: In function =91cpu_idle=92:
+arch/blackfin/kernel/process.c:83: error: =91idle=92 undeclared (first =
+use in
+this function)
+arch/blackfin/kernel/process.c:83: error: (Each undeclared identifier i=
+s
+reported only once
+arch/blackfin/kernel/process.c:83: error: for each function it appears =
+in.)
+arch/blackfin/kernel/process.c:88: error: implicit declaration of funct=
+ion
+=91idle=92
 
-And regarding recursive reader side,... the way I see it, having a
-recursive reader side is a primary requirement in this case. The reason is
-that the existing reader side (with stop_machine) uses preempt_disable(),
-which is recursive. So our replacement also has to be recursive.
- 
-> I see that the very next change in this series is talking about
-> acquiring the read side from interrupts, so it does look like you're
-> planning to make use of the recursive nature of the read side.
 
-Yes.. I don't think we can avoid that. Moreover, since we _want_ unfair
-reader/writer semantics to allow flexible locking rules and guarantee
-deadlock-safety, having a recursive reader side is not even an issue, IMHO.
+This change on top of your patch, fixes it.
 
-> I kinda
-> wish you didn't, as this is exactly replicating the design of
-> tasklist_lock which is IMO problematic. Your prior proposal of
-> disabling interrupts during the read side had other disadvantages, but
-> I think it was nice that it didn't rely on having a recursive read
-> side.
-> 
+diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/proc=
+ess.c
+index 8061426..9782c03 100644
+--- a/arch/blackfin/kernel/process.c
++++ b/arch/blackfin/kernel/process.c
+@@ -80,12 +80,10 @@ void cpu_idle(void)
+ 		if (cpu_is_offline(smp_processor_id()))
+ 			cpu_die();
+ #endif
+-		if (!idle)
+-			idle =3D default_idle;
+ 		tick_nohz_idle_enter();
+ 		rcu_idle_enter();
+ 		while (!need_resched())
+-			idle();
++			default_idle();
+ 		rcu_idle_exit();
+ 		tick_nohz_idle_exit();
+ 		preempt_enable_no_resched();
 
-We can have readers from non-interrupt contexts too, which depend on the
-recursive property...
 
->> +#define reader_yet_to_switch(pcpu_rwlock, cpu)                             \
->> +       (ACCESS_ONCE(per_cpu_ptr((pcpu_rwlock)->rw_state, cpu)->reader_refcnt))
->> +
->> +#define reader_percpu_nesting_depth(pcpu_rwlock)                 \
->> +       (__this_cpu_read((pcpu_rwlock)->rw_state->reader_refcnt))
->> +
->> +#define reader_uses_percpu_refcnt(pcpu_rwlock)                         \
->> +                               reader_percpu_nesting_depth(pcpu_rwlock)
->> +
->> +#define reader_nested_percpu(pcpu_rwlock)                              \
->> +                       (reader_percpu_nesting_depth(pcpu_rwlock) > 1)
->> +
->> +#define writer_active(pcpu_rwlock)                                     \
->> +       (__this_cpu_read((pcpu_rwlock)->rw_state->writer_signal))
-> 
-> I'm personally not a fan of such one-line shorthand functions - I
-> think they tend to make the code harder to read instead of easier, as
-> one constantly has to refer to them to understand what's actually
-> going on.
-> 
+Otherwise the patch seems to work fine.
 
-I got rid of most of the helper functions in this version. But I would rather
-prefer retaining the above ones, because they are unwieldy and long. And IMHO
-the short-hand names are pretty descriptive, so you might not actually need
-to keep referring to their implementations all the time.
-
->>  void percpu_write_lock(struct percpu_rwlock *pcpu_rwlock)
->>  {
->> +       unsigned int cpu;
->> +
->> +       /*
->> +        * Tell all readers that a writer is becoming active, so that they
->> +        * start switching over to the global rwlock.
->> +        */
->> +       for_each_possible_cpu(cpu)
->> +               per_cpu_ptr(pcpu_rwlock->rw_state, cpu)->writer_signal = true;
-> 
-> I don't see anything preventing a race with the corresponding code in
-> percpu_write_unlock() that sets writer_signal back to false. Did I
-> miss something here ? It seems to me we don't have any guarantee that
-> all writer signals will be set to true at the end of the loop...
-> 
-
-Ah, thanks for pointing that out! IIRC Oleg had pointed this issue in the last
-version, but back then, I hadn't fully understood what he meant. Your
-explanation made it clear. I'll work on fixing this.
-
-Thanks a lot for your review Michel!
-
-Regards,
-Srivatsa S. Bhat
-
+- Lars
