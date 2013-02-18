@@ -1,34 +1,48 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Greg KH <gregkh@linuxfoundation.org>
 Subject: Re: SYSFS "errors"
-Date: Mon, 18 Feb 2013 16:48:06 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1302181644260.6790-100000@netrider.rowland.org>
-References: <20130218184633.GC10755@arwen.pp.htv.fi>
+Date: Mon, 18 Feb 2013 13:54:34 -0800
+Message-ID: <20130218215434.GB16794@kroah.com>
+References: <20130218153316.GA2663@arwen.pp.htv.fi>
+ <20130218155012.GA30974@kroah.com>
+ <20130218155215.GB2663@arwen.pp.htv.fi>
+ <20130218171334.GA31329@kroah.com>
+ <20130218172700.GH2663@arwen.pp.htv.fi>
+ <20130218174916.GA2070@kroah.com>
+ <20130218184633.GC10755@arwen.pp.htv.fi>
+ <20130218164638.7cb53baa@redhat.com>
+ <20130218200542.GB20137@arwen.pp.htv.fi>
+ <20130218184742.5a4c3c06@redhat.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130218184633.GC10755@arwen.pp.htv.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, JBottomley@parallels.com, linux-scsi@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f46.google.com ([209.85.210.46]:46292 "EHLO
+	mail-da0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756581Ab3BRVyi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 16:54:38 -0500
+Received: by mail-da0-f46.google.com with SMTP id p5so2659625dak.33
+        for <linux-pm@vger.kernel.org>; Mon, 18 Feb 2013 13:54:37 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20130218184742.5a4c3c06@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: balbi@ti.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, JBottomley@parallels.com, linux-scsi@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-On Mon, 18 Feb 2013, Felipe Balbi wrote:
-
-> Hi, On Mon, Feb 18, 2013 at 09:49:16AM -0800, Greg KH wrote:
-> > > Input/output error - /sys/devices/cpu/power/autosuspend_delay_ms
-> > 
-> > The issue with this file is, if the power.use_autosuspend flag is not
-> > set for the device, then it can't be read or written to.  This flag
-> > changes dynamically with the system state
-> > (__pm_runtime_use_autosuspend() can change it), so we can't just not
-> > show the file if the flag is not set properly, sorry.
-> > 
-> > So the "error" is correct here, as is the 0644 file value.
+On Mon, Feb 18, 2013 at 06:47:42PM -0300, Mauro Carvalho Chehab wrote:
+> In the past, the sysfs node creation was done using the raw sysfs support.
+> Doing dynamic creation with the old code were much more complex. I guess
+> that's the reason why the code was written this way. Now that the code 
+> uses struct device, it shouldn't be hard to change the code to only 
+> create this attribute if the device has support for scrub rate setting.
 > 
-> hmm... we could create the file at pm_runtime_enable() time and remove
-> it on pm_runtime_disable() time, no ? Addin Rafael to Cc
+> Yet, that would change the userspace API. I'm not sure what
+> applications would rely on the current behavior. So, changing it
+> would require some investigation in order to avoid regressions.
 
-In theory this could be done, although the times would be when runtime 
-autosuspend is turned on or off, not when pm_runtime_enable is called.
+Because sysfs is "one value per file" the lack of a file showing up
+shouldn't cause any userspace tools any problems, that is why we did
+things this way.
 
-Alan Stern
+But, of course, userspace programmers do know how to mess things up...
+
+greg k-h
