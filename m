@@ -1,75 +1,63 @@
-From: Alex Courbot <acourbot@nvidia.com>
-Subject: Re: usb_wwan_write() called while device still being resumed
-Date: Mon, 18 Feb 2013 12:20:26 +0900
-Message-ID: <51219DFA.6070902@nvidia.com>
-References: <511CBCE8.9070204@nvidia.com> <87ehgivlmg.fsf@nemi.mork.no> <511DF09F.3070401@nvidia.com> <87r4khu9az.fsf@nemi.mork.no>
+From: Len Brown <lenb@kernel.org>
+Subject: cpuidle sizes (Re: [PATCH 14/16] intel_idle: remove use and definition
+ of MWAIT_MAX_NUM_CSTATES)
+Date: Mon, 18 Feb 2013 00:00:53 -0500
+Message-ID: <5121B585.10703@kernel.org>
+References: <1360372100-28482-1-git-send-email-lenb@kernel.org> <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com> <5118B16E.6010709@linaro.org> <511982C6.7080505@kernel.org> <511AC5A8.4030509@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87r4khu9az.fsf@nemi.mork.no>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
-Cc: USB list <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alexandre Courbot <gnurou@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f174.google.com ([209.85.128.174]:60983 "EHLO
+	mail-ve0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695Ab3BRFA7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 00:00:59 -0500
+In-Reply-To: <511AC5A8.4030509@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On 02/15/2013 08:05 PM, Bj=C3=B8rn Mork wrote:
-> Maybe something like the completely untested:
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtim=
-e.c
-> index 3148b10..38e19ba 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -512,6 +512,9 @@ static int rpm_resume(struct device *dev, int rpm=
-flags)
->   	else if (dev->power.disable_depth =3D=3D 1 && dev->power.is_suspen=
-ded
->   	    && dev->power.runtime_status =3D=3D RPM_ACTIVE)
->   		retval =3D 1;
-> +	else if (rpmflags & RPM_ASYNC && dev->power.request_pending &&
-> +		 dev->power.request =3D=3D RPM_REQ_RESUME)
-> +		retval =3D -EINPROGRESS;
->   	else if (dev->power.disable_depth > 0)
->   		retval =3D -EACCES;
->   	if (retval)
+On 02/12/2013 05:43 PM, Daniel Lezcano wrote:
+> On 02/12/2013 12:46 AM, Len Brown wrote:
+>> On 02/11/2013 03:53 AM, Daniel Lezcano wrote:
+>>> On 02/09/2013 02:08 AM, Len Brown wrote:
+>>
+>>>> The reason to change is that intel_idle will soon be able
+>>>> to export more than the 8 "major" states supported by MWAIT.
+>>>> When we hit that limit, it is important to know
+>>>> where the limit comes from.
+>>>
+>>> Does it mean CPUIDLE_STATE_MAX may increase in a near future ?
+>>
+>> Yes, perhaps to 10.
+>> Let me know if you anticipate issues with doing that.
+> 
+> No, I don't see any issue so far. Maybe the array state is increasing
+> more and more, so for most architecture it is a waste of memory, but
+> anyway ...
 
-Second thought: not sure this will work since power.request_pending and=
-=20
-power.request are set to these values later in the same rpm_resume()=20
-function. However, the three lines before yours caught my attention.=20
-They are not in my 3.1 source tree and the conditions are very close=20
-from the ones I am seeing when the issue happens: disable_depth =3D=3D =
-1,=20
-is_suspended =3D=3D 1. Only runtime_status is not equal to RPM_ACTIVE.
+aking a quick look at data structure sizes...
 
-Nonetheless, I have looked at the patch that introduced these=20
-(http://pastebin.com/PmHUjiAE ) and it details a problem that is very=20
-similar to mine. It also mentions a workaround to be implemented in the=
-=20
-driver by saving the suspend status into a variable that is checked whe=
-n=20
-pm_runtime_get() return -EACCES. This variable already exists in=20
-usb_wwan, actually it is the very variable that is checked a bit later=20
-in that other chunk of code you mentioned:
+struct cpuidle_device{} is allocated per cpu --
+so if we have a lot of cpus, that gets multiplied out.
+But it doesn't grow much with growing CPUIDLE_STATE_MAX:
 
-spin_lock_irqsave(&intfdata->susp_lock, flags);
-if (intfdata->suspended) {
-	usb_anchor_urb(this_urb, &portdata->delayed);
-	spin_unlock_irqrestore(&intfdata->susp_lock, flags);
-} else {
+cpuidle_state_usage states_usage[CPUIDLE_STATE_MAX];
+	we just shrunk to 24 bytes from 32 bytes/entry.
+	(and 240 < 256, so we're still shrinking:-)
 
-So it looks like this code is here for exactly that purpose. However in=
-=20
-my current condition I do not see how this block could be run since=20
-runtime PM is disabled when intfdata->suspended is set to true.
+plus it contains cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
+	which is a set of pointers per cpu - so with 8-byte
+	pointers, that would be 64->80 bytes/cpu.
 
-I will try implementing the workaround suggested (checking if=20
-intfdata->suspended is set when -EACCES is returned and go on if it is=20
-the case) and see if it works (and I bet it will). In the upstream=20
-kernel the issue seems to have been addressed already, so this might=20
-just be a source-out-of-date issue.
+The other sizes that vary with CPUIDLE_STATE_MAX
+seem to be static allocations per driver --
+and so they don't grow much.  Did I miss something?
 
-Thanks,
-Alex.
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+ps. I can easily offer an arch-specific CPUIDLE_STATE_MAX over-ride
+if you want to squeeze bytes per-arch.
+
