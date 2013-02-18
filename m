@@ -1,63 +1,65 @@
-From: Len Brown <lenb@kernel.org>
-Subject: cpuidle sizes (Re: [PATCH 14/16] intel_idle: remove use and definition
- of MWAIT_MAX_NUM_CSTATES)
-Date: Mon, 18 Feb 2013 00:00:53 -0500
-Message-ID: <5121B585.10703@kernel.org>
-References: <1360372100-28482-1-git-send-email-lenb@kernel.org> <137ecc779c80138723677209730738d76262e810.1360371180.git.len.brown@intel.com> <5118B16E.6010709@linaro.org> <511982C6.7080505@kernel.org> <511AC5A8.4030509@linaro.org>
+From: "Li, Fei" <fei.li@intel.com>
+Subject: RE: Getting rid of freezer for suspend [was Re: [fuse-devel]
+ [PATCH] fuse: make fuse daemon frozen along with kernel threads]
+Date: Mon, 18 Feb 2013 06:26:34 +0000
+Message-ID: <BEC9F67575FA1E429CA7CF5AE9BE3634400F30@SHSMSX102.ccr.corp.intel.com>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <2891124.QXsiBPuYKW@vostro.rjw.lan>
+ <CAJfpeguV5X1pwb-E7vzVtK4n0Q6Mu6A4XKnS5-tWn4Q7MtzgZg@mail.gmail.com>
+ <6332427.iqPUMjtDaQ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f174.google.com ([209.85.128.174]:60983 "EHLO
-	mail-ve0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695Ab3BRFA7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 00:00:59 -0500
-In-Reply-To: <511AC5A8.4030509@linaro.org>
+Received: from mga02.intel.com ([134.134.136.20]:30494 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136Ab3BRG0k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Feb 2013 01:26:40 -0500
+In-Reply-To: <6332427.iqPUMjtDaQ@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Miklos Szeredi <miklos@szeredi.hu>
+Cc: Pavel Machek <pavel@ucw.cz>, Goswin von Brederlow <goswin-v-b@web.de>, "Brown, Len" <len.brown@intel.com>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "Wang, Biao" <biao.wang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "fuse-devel@lists.sourceforge.net" <fuse-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-On 02/12/2013 05:43 PM, Daniel Lezcano wrote:
-> On 02/12/2013 12:46 AM, Len Brown wrote:
->> On 02/11/2013 03:53 AM, Daniel Lezcano wrote:
->>> On 02/09/2013 02:08 AM, Len Brown wrote:
->>
->>>> The reason to change is that intel_idle will soon be able
->>>> to export more than the 8 "major" states supported by MWAIT.
->>>> When we hit that limit, it is important to know
->>>> where the limit comes from.
->>>
->>> Does it mean CPUIDLE_STATE_MAX may increase in a near future ?
->>
->> Yes, perhaps to 10.
->> Let me know if you anticipate issues with doing that.
-> 
-> No, I don't see any issue so far. Maybe the array state is increasing
-> more and more, so for most architecture it is a waste of memory, but
-> anyway ...
-
-aking a quick look at data structure sizes...
-
-struct cpuidle_device{} is allocated per cpu --
-so if we have a lot of cpus, that gets multiplied out.
-But it doesn't grow much with growing CPUIDLE_STATE_MAX:
-
-cpuidle_state_usage states_usage[CPUIDLE_STATE_MAX];
-	we just shrunk to 24 bytes from 32 bytes/entry.
-	(and 240 < 256, so we're still shrinking:-)
-
-plus it contains cpuidle_state_kobj *kobjs[CPUIDLE_STATE_MAX];
-	which is a set of pointers per cpu - so with 8-byte
-	pointers, that would be 64->80 bytes/cpu.
-
-The other sizes that vary with CPUIDLE_STATE_MAX
-seem to be static allocations per driver --
-and so they don't grow much.  Did I miss something?
-
-thanks,
-Len Brown, Intel Open Source Technology Center
-
-ps. I can easily offer an arch-specific CPUIDLE_STATE_MAX over-ride
-if you want to squeeze bytes per-arch.
-
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
+IFttYWlsdG86cmp3QHNpc2sucGxdDQo+IFNlbnQ6IEZyaWRheSwgRmVicnVhcnkgMTUsIDIwMTMg
+MTozOCBBTQ0KPiBUbzogTWlrbG9zIFN6ZXJlZGkNCj4gQ2M6IFBhdmVsIE1hY2hlazsgR29zd2lu
+IHZvbiBCcmVkZXJsb3c7IExpLCBGZWk7IEJyb3duLCBMZW47DQo+IG1pbmdvQHJlZGhhdC5jb207
+IHBldGVyekBpbmZyYWRlYWQub3JnOyBXYW5nLCBCaWFvOw0KPiBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmc7IGZ1c2UtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Ow0KPiBsaW51eC1rZXJuZWxA
+dmdlci5rZXJuZWwub3JnOyBMaXUsIENodWFuc2hlbmcNCj4gU3ViamVjdDogUmU6IEdldHRpbmcg
+cmlkIG9mIGZyZWV6ZXIgZm9yIHN1c3BlbmQgW3dhcyBSZTogW2Z1c2UtZGV2ZWxdIFtQQVRDSF0g
+ZnVzZToNCj4gbWFrZSBmdXNlIGRhZW1vbiBmcm96ZW4gYWxvbmcgd2l0aCBrZXJuZWwgdGhyZWFk
+c10NCj4gDQo+IE9uIFRodXJzZGF5LCBGZWJydWFyeSAxNCwgMjAxMyAwMjowOTo1MCBQTSBNaWts
+b3MgU3plcmVkaSB3cm90ZToNCj4gPiBPbiBUaHUsIEZlYiAxNCwgMjAxMyBhdCAxOjExIFBNLCBS
+YWZhZWwgSi4gV3lzb2NraSA8cmp3QHNpc2sucGw+IHdyb3RlOg0KPiA+ID4gT24gVGh1cnNkYXks
+IEZlYnJ1YXJ5IDE0LCAyMDEzIDExOjQxOjE2IEFNIE1pa2xvcyBTemVyZWRpIHdyb3RlOg0KPiA+
+DQo+ID4gPj4NCj4gPiA+PiBJdCBpcyBlc3NlbnRpYWxseSB0aGUgc2FtZSBtZWNoYW5pc20gdGhh
+dCBpcyB1c2VkIHRvIGRlbGF5IHRoZQ0KPiA+ID4+IGZyZWV6aW5nIG9mIGtlcm5lbCB0aHJlYWRz
+IGFmdGVyIHVzZXJzcGFjZSB0YXNrcyBoYXZlIGJlZW4gZnJvemVuLg0KPiA+ID4+IEV4Y2VwdCBp
+dCdzIGEgbG90IG1vcmUgZGlmZmljdWx0IHRvIGRldGVybWluZSB3aGljaCB1c2Vyc3BhY2UgdGFz
+a3MNCj4gPiA+PiBuZWVkIHRvIGJlIHN1c3BlbmRlZCBsYXRlIGFuZCB3aGljaCBhcmVuJ3QuDQo+
+ID4gPg0KPiA+ID4gV2VsbCwgSSBzdXBwb3NlIHRoYXQgaW5mb3JtYXRpb24gaXMgYXZhaWxhYmxl
+IHRvIHVzZXIgc3BhY2UuDQo+ID4gPg0KPiA+ID4gRG8gd2UgbmVlZCBhbiBpbnRlcmZhY2UgZm9y
+IGEgcHJvY2VzcyB0byBtYXJrIGl0c2VsZiBhcyBQRl9GUkVFWkVfTEFURSBvcg0KPiA+ID4gZG8g
+d2UgbmVlZCBhbiBpbnRlcmZhY2UgZm9yIG9uZSBwcm9jZXNzIHRvIG1hcmsgYW5vdGhlciBwcm9j
+ZXNzIGFzDQo+ID4gPiBQRl9GUkVFWkVfTEFURSwgb3IgYm90aD8NCj4gPg0KPiA+IEFzIGEgZmly
+c3Qgc3RlcCBtYXJraW5nIHNlbGYgd2l0aCBQRl9GUkVFWkVfTEFURSBhbmQgaW5oZXJpdGluZyB0
+aGlzDQo+ID4gZmxhZyBhY3Jvc3MgZm9yay9jbG9uZSB3b3VsZCB3b3JrIGZvciBtb3N0IGNhc2Vz
+LCBJIHRoaW5rLg0KPiANCj4gT0ssIHNvIHdlIGNhbiBqdXN0IGhhdmUgYSBzd2l0Y2ggZm9yIHRo
+YXQgaW4gL3Byb2MgSSBzdXBwb3NlLg0KDQpUaGFua3MgZm9yIGZlZWRiYWNrIGFuZCBzdWdnZXN0
+aW9uLg0KDQpXZSBoYXZlIGV2ZXIgdHJpZWQgc2ltaWxhciBpZGVhLCBleHBvc2UgaW50ZXJmYWNl
+IC9zeXMvcG93ZXIvcG1fZnJlZXplX2RhZW1vbiwNCnVzZXJzcGFjZSB0YXNrcyB3cml0ZSAxIHRv
+IHRoaXMgYXR0cmlidXRlIHRvIG1ha2UgaXRzZWxmIHRvIGJlIGZyb3plbiBhdCB0aGUgc2FtZSB0
+aW1lDQp3aXRoIGtlcm5lbCB0YXNrcywgYW5kIGl0IHdvcmtlZCBpbiBvdXIgZXhwZXJpbWVudC4N
+Cg0KRG8geW91IHRoaW5rIGl0J3Mgc3VpdGFibGUgYW5kIGVub3VnaCB0byB1c2Ugc3VjaCBhdHRy
+aWJ1dGUgL3N5cy9wb3dlci9wbV9mcmVlemVfbGF0ZSwgDQpvciBvdGhlciBtb3JlIHN1aXRhYmxl
+IHBsYWNlIHVuZGVyIC9wcm9jIHN1Z2dlc3RlZD8NCklmIG5lZWRlZCwgSSBjYW4gcHJlcGFyZSB0
+aGUgcGF0Y2guDQoNCkJlc3QgUmVnYXJkcywNCkxpIEZlaQ0KDQo+ID4gTWFya2luZyBhbiB1bnJl
+bGF0ZWQgcHJvY2VzcyB3b3VsZCBoYXZlIGFsbCBzb3J0cyBvZiBpc3N1ZXM6IFdobyBoYXMNCj4g
+PiBwZXJtaXNzaW9uIHRvIGRvIHRoaXM/ICBXb24ndCBpdCBiZSBtaXN1c2VkIHRvICJmaXgiIHJh
+bmRvbSBmcmVlemVyDQo+ID4gaXNzdWVzLg0KPiANCj4gWWVzLCB0aGF0J3Mgd2h5IEkgd2FzIGFz
+a2luZy4NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQo+IA0KPiANCj4gLS0NCj4gSSBzcGVhayBv
+bmx5IGZvciBteXNlbGYuDQo+IFJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBU
+ZWNobm9sb2d5IENlbnRlci4NCg==
