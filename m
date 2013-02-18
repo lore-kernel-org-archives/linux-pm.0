@@ -1,35 +1,34 @@
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: Re: [PATCH v6 33/46] cris/smp: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Date: Mon, 18 Feb 2013 14:07:12 +0100
-Message-ID: <20130218130712.GO23529@axis.com>
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
- <20130218124254.26245.4577.stgit@srivatsabhat.in.ibm.com>
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH v2] APM idle: register apm_cpu_idle via cpuidle
+Date: Mon, 18 Feb 2013 14:30:34 +0100 (CET)
+Message-ID: <alpine.LNX.2.00.1302181429570.17024@pobox.suse.cz>
+References: <5118B776.6090604@linaro.org> <1360623789-12247-1-git-send-email-lenb@kernel.org> <17242de27db147c4f828d6089016e1f485c038fb.1360623445.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130218124254.26245.4577.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, walken@google.com, vincent.guittot@linaro.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <17242de27db147c4f828d6089016e1f485c038fb.1360623445.git.len.brown@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 18, 2013 at 06:12:54PM +0530, Srivatsa S. Bhat wrote:
-> Once stop_machine() is gone from the CPU offline path, we won't be able to
-> depend on preempt_disable() or local_irq_disable() to prevent CPUs from
-> going offline from under us.
+On Mon, 11 Feb 2013, Len Brown wrote:
+
+> From: Len Brown <len.brown@intel.com>
 > 
-> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
-> while invoking from atomic context.
+> Update APM to register its local idle routine with cpuidle.
 > 
-> Cc: Mikael Starvik <starvik@axis.com>
+> This allows us to stop exporting pm_idle to modules on x86.
+> 
+> The Kconfig sub-option, APM_CPU_IDLE, now depends on on CPU_IDLE.
+> 
+> Compile-tested only.
 
-> Cc: linux-cris-kernel@axis.com
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+I will test it on APM hardware and report back to you.
 
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Do you then want me to take it through my tree, or are you going to push 
+the whole patchset as a whole?
 
-/^JN - Jesper Nilsson
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Jiri Kosina
+SUSE Labs
