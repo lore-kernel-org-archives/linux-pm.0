@@ -1,94 +1,37 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH 05/16] blackfin idle: delete pm_idle
-Date: Mon, 18 Feb 2013 17:28:19 +0100
-Message-ID: <512256A3.6050100@metafoo.de>
-References: <1360475903-30007-1-git-send-email-lenb@kernel.org> <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com>
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Mon, 18 Feb 2013 11:31:27 -0500
+Message-ID: <1361205087.23152.159.camel@gandalf.local.home>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+	 <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+	 <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+	 <5122551E.1080703@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:25782 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753954Ab3BRQbb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 11:31:31 -0500
+In-Reply-To: <5122551E.1080703@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Michel Lespinasse <walken@google.com>, tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On 02/10/2013 06:58 AM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
->=20
-> pm_idle is dead code on blackfin.
->=20
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: uclinux-dist-devel@blackfin.uclinux.org
-> ---
->  arch/blackfin/kernel/process.c | 7 -------
->  1 file changed, 7 deletions(-)
->=20
-> diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/pr=
-ocess.c
-> index 3e16ad9..8061426 100644
-> --- a/arch/blackfin/kernel/process.c
-> +++ b/arch/blackfin/kernel/process.c
-> @@ -39,12 +39,6 @@ int nr_l1stack_tasks;
->  void *l1_stack_base;
->  unsigned long l1_stack_len;
-> =20
-> -/*
-> - * Powermanagement idle function, if any..
-> - */
-> -void (*pm_idle)(void) =3D NULL;
-> -EXPORT_SYMBOL(pm_idle);
-> -
->  void (*pm_power_off)(void) =3D NULL;
->  EXPORT_SYMBOL(pm_power_off);
-> =20
-> @@ -81,7 +75,6 @@ void cpu_idle(void)
->  {
->  	/* endless idle loop with no priority at all */
->  	while (1) {
-> -		void (*idle)(void) =3D pm_idle;
+On Mon, 2013-02-18 at 21:51 +0530, Srivatsa S. Bhat wrote:
+> Hi Michel,
 
-Hi,
+> Yes.. I don't think we can avoid that. Moreover, since we _want_ unfair
+> reader/writer semantics to allow flexible locking rules and guarantee
+> deadlock-safety, having a recursive reader side is not even an issue, IMHO.
 
-This results in the following error:
+Recursive unfair reader lock may guarantee deadlock-safety, but
+remember, it adds a higher probability of live-locking the write_lock.
+Which is another argument to keep this separate to cpu hotplug only.
 
-arch/blackfin/kernel/process.c: In function =91cpu_idle=92:
-arch/blackfin/kernel/process.c:83: error: =91idle=92 undeclared (first =
-use in
-this function)
-arch/blackfin/kernel/process.c:83: error: (Each undeclared identifier i=
-s
-reported only once
-arch/blackfin/kernel/process.c:83: error: for each function it appears =
-in.)
-arch/blackfin/kernel/process.c:88: error: implicit declaration of funct=
-ion
-=91idle=92
+-- Steve
 
 
-This change on top of your patch, fixes it.
-
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/proc=
-ess.c
-index 8061426..9782c03 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -80,12 +80,10 @@ void cpu_idle(void)
- 		if (cpu_is_offline(smp_processor_id()))
- 			cpu_die();
- #endif
--		if (!idle)
--			idle =3D default_idle;
- 		tick_nohz_idle_enter();
- 		rcu_idle_enter();
- 		while (!need_resched())
--			idle();
-+			default_idle();
- 		rcu_idle_exit();
- 		tick_nohz_idle_exit();
- 		preempt_enable_no_resched();
-
-
-Otherwise the patch seems to work fine.
-
-- Lars
