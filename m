@@ -1,221 +1,359 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [RFC PATCH 2/9] hwmon: (lm90) split set&show temp as common codes
-Date: Mon, 18 Feb 2013 19:30:24 +0800
-Message-ID: <1361187031-3679-3-git-send-email-wni@nvidia.com>
+Subject: [RFC PATCH 7/9] thermal: tegra30: add tegra30 thermal driver
+Date: Mon, 18 Feb 2013 19:30:29 +0800
+Message-ID: <1361187031-3679-8-git-send-email-wni@nvidia.com>
 References: <1361187031-3679-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:2563 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472Ab3BRLbZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 06:31:25 -0500
+Received: from hqemgate04.nvidia.com ([216.228.121.35]:10689 "EHLO
+	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193Ab3BRLb2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Feb 2013 06:31:28 -0500
 In-Reply-To: <1361187031-3679-1-git-send-email-wni@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: durgadoss.r@intel.com, rui.zhang@intel.com, MLongnecker@nvidia.com, khali@linux-fr.org
 Cc: devicetree-discuss@lists.ozlabs.org, linux-tegra@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.orgrs.org, linux-arm-kernel@lists.infradead.org, Wei Ni <wni@nvidia.com>
 
-Split set&show temp codes as common functions, so we can use it directly when
-implement linux thermal framework.
+dd Tegra30 thermal driver support. It create thermal zone with thermal
+sensors and cooling device to participate in the linux thermal management.
 
 Signed-off-by: Wei Ni <wni@nvidia.com>
 ---
- drivers/hwmon/lm90.c |  117 +++++++++++++++++++++++++++++++-------------------
- 1 file changed, 72 insertions(+), 45 deletions(-)
+ drivers/thermal/Kconfig          |    9 ++
+ drivers/thermal/Makefile         |    1 +
+ drivers/thermal/tegra3_thermal.c |  289 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 299 insertions(+)
+ create mode 100644 drivers/thermal/tegra3_thermal.c
 
-diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
-index 863412a..caf01b0 100644
---- a/drivers/hwmon/lm90.c
-+++ b/drivers/hwmon/lm90.c
-@@ -702,29 +702,35 @@ static u16 temp_to_u16_adt7461(struct lm90_data *data, long val)
-  * Sysfs stuff
-  */
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index eadef5b..2403681 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -141,6 +141,15 @@ config INTEL_POWERCLAMP
+ 	  enforce idle time which results in more package C-state residency. The
+ 	  user interface is exposed via generic thermal framework.
  
--static ssize_t show_temp8(struct device *dev, struct device_attribute *devattr,
--			  char *buf)
-+static void _show_temp8(struct device *dev, int index, int *temp)
- {
--	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
- 	struct lm90_data *data = lm90_update_device(dev);
--	int temp;
++config TEGRA30_THERMAL
++	tristate "Tegra30 thermal driver"
++	depends on ARCH_TEGRA
++	help
++	  Select this to enable the Tegra30 thermal driver. Adds Tegra30 thermal
++	  implementation according to the thermal management framework. Create
++	  thermal zone with thermal sensors and cooling device to participate
++	  in the linux thermal management.
++
+ config THERMAL_TEST
+ 	tristate "test driver"
+ 	help
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index ee0f687..de0b411 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -19,6 +19,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
++obj-$(CONFIG_TEGRA30_THERMAL)	+= tegra3_thermal.o
  
- 	if (data->kind == adt7461)
--		temp = temp_from_u8_adt7461(data, data->temp8[attr->index]);
-+		*temp = temp_from_u8_adt7461(data, data->temp8[index]);
- 	else if (data->kind == max6646)
--		temp = temp_from_u8(data->temp8[attr->index]);
-+		*temp = temp_from_u8(data->temp8[index]);
- 	else
--		temp = temp_from_s8(data->temp8[attr->index]);
-+		*temp = temp_from_s8(data->temp8[index]);
- 
- 	/* +16 degrees offset for temp2 for the LM99 */
--	if (data->kind == lm99 && attr->index == 3)
--		temp += 16000;
-+	if (data->kind == lm99 && index == 3)
-+		*temp += 16000;
+ # dummy driver for testing
+ obj-$(CONFIG_THERMAL_TEST)	+= thermal_test.o
+diff --git a/drivers/thermal/tegra3_thermal.c b/drivers/thermal/tegra3_thermal.c
+new file mode 100644
+index 0000000..384168f
+--- /dev/null
++++ b/drivers/thermal/tegra3_thermal.c
+@@ -0,0 +1,289 @@
++/*
++ * Tegra thermal driver.
++ *
++ * Copyright (C) 2010-2013 NVIDIA Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/err.h>
++#include <linux/debugfs.h>
++#include <linux/of.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define MAX_THROT_TABLE_SIZE    (64)
++
++struct throttle_table {
++	unsigned int cpu_freq;
++	int core_cap_level;
++};
++
++struct balanced_throttle {
++	struct thermal_cooling_device *cdev;
++	struct list_head node;
++	int is_throttling;
++	int throttle_count;
++	int throttle_index;
++	int throt_tab_size;
++	struct throttle_table throt_tab[MAX_THROT_TABLE_SIZE + 1];
++};
++
++struct tegra_thermal_data {
++	struct thermal_zone *tz;
++	struct node_args np_args;
++	int passive_delay;
++	struct balanced_throttle tj_throttle;
++	struct thermal_trip_point trip_ext;
++};
++
++static DEFINE_MUTEX(cpu_throttle_lock);
++
++static int tegra_throttle_get_max_state(struct thermal_cooling_device *cdev,
++				unsigned long *max_state)
++{
++	struct balanced_throttle *bthrot = cdev->devdata;
++
++	*max_state = bthrot->throt_tab_size;
++
++	return 0;
++}
++
++static int
++tegra_throttle_get_cur_state(struct thermal_cooling_device *cdev,
++				unsigned long *cur_state)
++{
++	struct balanced_throttle *bthrot = cdev->devdata;
++
++	mutex_lock(&cpu_throttle_lock);
++	*cur_state = bthrot->is_throttling ?
++			(bthrot->throt_tab_size - bthrot->throttle_index) :
++			0;
++	mutex_unlock(&cpu_throttle_lock);
++
++	return 0;
++}
++
++static int
++tegra_throttle_set_cur_state(struct thermal_cooling_device *cdev,
++				unsigned long cur_state)
++{
++	struct balanced_throttle *bthrot = cdev->devdata;
++	int index;
++
++	mutex_lock(&cpu_throttle_lock);
++
++	/* TODO: we will handle the dvfs here */
++
++	bthrot->throttle_index = bthrot->throt_tab_size - cur_state;
++	index = bthrot->throttle_index;
++
++	mutex_unlock(&cpu_throttle_lock);
++
++	return 0;
++}
++
++static struct thermal_cooling_device_ops tegra_throttle_cooling_ops = {
++	.get_max_state = tegra_throttle_get_max_state,
++	.get_cur_state = tegra_throttle_get_cur_state,
++	.set_cur_state = tegra_throttle_set_cur_state,
++};
++
++struct thermal_cooling_device *balanced_throttle_register(
++		struct balanced_throttle *bthrot, char *type)
++{
++	bthrot->cdev = thermal_cooling_device_register(type, bthrot,
++						&tegra_throttle_cooling_ops);
++
++	if (IS_ERR(bthrot->cdev)) {
++		bthrot->cdev = NULL;
++		return ERR_PTR(-ENODEV);
++	}
++
++	return bthrot->cdev;
++}
++
++static struct tegra_thermal_data * __devinit thermal_tegra_dt_parse_pdata(
++						struct platform_device *pdev)
++{
++	struct tegra_thermal_data *tdata;
++	struct device_node *np = pdev->dev.of_node;
++	struct of_phandle_args args;
++	u32 val;
++	int ret;
++
++	if (!np)
++		return NULL;
++
++	tdata = devm_kzalloc(&pdev->dev, sizeof(*tdata), GFP_KERNEL);
++	if (!tdata) {
++		dev_err(&pdev->dev, "Can't allocate platform data\n");
++		return NULL;
++	}
++	memset(tdata, 0, sizeof(*tdata));
++
++	ret = of_parse_phandle_with_args(np, "sensors", "#sensor-cells", 0,
++					&args);
++	if (ret) {
++		dev_err(&pdev->dev, "Can't get sensor.\n");
++		return NULL;
++	}
++	tdata->np_args.np = args.np;
++	tdata->np_args.index = args.args[0];
++
++	ret = of_property_read_u32(np, "passive-delay", &val);
++	if (!ret)
++		tdata->passive_delay = val;
++
++	ret = of_property_read_u32(np, "num-passive-trips", &val);
++	if (!ret)
++		tdata->trip_ext.num_passive_trips = val;
++
++	if (tdata->trip_ext.num_passive_trips) {
++		tdata->trip_ext.passive_trips = devm_kzalloc(&pdev->dev,
++						sizeof(int) * val, GFP_KERNEL);
++
++		of_property_read_u32_array(np, "passive-trips",
++				(u32 *)(tdata->trip_ext.passive_trips),
++				tdata->trip_ext.num_passive_trips);
++	}
++
++	ret = of_property_read_u32(np, "num-active-trips", &val);
++	if (!ret)
++		tdata->trip_ext.num_active_trips = val;
++
++	if (tdata->trip_ext.num_active_trips) {
++		tdata->trip_ext.active_trips = devm_kzalloc(&pdev->dev,
++						sizeof(int) * val, GFP_KERNEL);
++
++		of_property_read_u32_array(np, "active-trips",
++				(u32 *)(tdata->trip_ext.active_trips),
++				tdata->trip_ext.num_active_trips);
++	}
++
++	ret = of_property_read_u32(np, "throt-tab-size", &val);
++	if (!ret)
++		tdata->tj_throttle.throt_tab_size = val;
++
++	of_property_read_u32_array(np, "throt-tab",
++				(u32 *)(&tdata->tj_throttle.throt_tab),
++				tdata->tj_throttle.throt_tab_size * 2);
++
++	return tdata;
++}
++
++static int tegra30_thermal_probe(struct platform_device *pdev)
++{
++	struct tegra_thermal_data *pdata = pdev->dev.platform_data;
++	struct thermal_zone *tz;
++	struct thermal_sensor *ts;
++	static struct thermal_cooling_device *cdev;
++	int ret;
++
++	pdata = thermal_tegra_dt_parse_pdata(pdev);
++	if (!pdata) {
++		dev_err(&pdev->dev, "Get platform data failed.\n");
++		return -EINVAL;
++	}
++
++	/* Create a thermal zone */
++	tz = create_thermal_zone("tz_tegra", NULL);
++	if (!tz) {
++		dev_err(&pdev->dev, "Create thermal_zone failed.\n");
++		return -EINVAL;
++	}
++
++	pdata->tz = tz;
++
++	/* Register cooling device */
++	cdev = balanced_throttle_register(&pdata->tj_throttle, "cdev_throttle");
++	if (!cdev) {
++		dev_err(&pdev->dev, "Register cooling device failed.\n");
++		goto exit_remove_thermal_zone;
++	}
++
++	/* Get sensor */
++	ts = get_sensor_by_node(&pdata->np_args);
++	if (!ts) {
++		dev_err(&pdev->dev, "get_sensor_by_node failed.\n");
++		goto exit_unregister_cooling;
++	}
++
++	ret = add_sensor_to_zone(pdata->tz, ts);
++	if (ret) {
++		dev_err(&pdev->dev, "add_sensor_to_zone failed.\n");
++		goto exit_unregister_cooling;
++	}
++
++	ret = add_cdev_to_zone(pdata->tz, cdev);
++	if (ret) {
++		dev_err(&pdev->dev, "add_cdev_to_zone failed.\n");
++		goto exit_unregister_cooling;
++	}
++
++	ret = add_sensor_trip_info(pdata->tz, ts, &pdata->trip_ext);
++	if (ret) {
++		dev_err(&pdev->dev, "add_sensor_trip_info failed.\n");
++		goto exit_unregister_cooling;
++	}
++
++	return 0;
++
++exit_unregister_cooling:
++	thermal_cooling_device_unregister(cdev);
++exit_remove_thermal_zone:
++	remove_thermal_zone(pdata->tz);
++	return -EINVAL;
 +
 +}
 +
-+static ssize_t show_temp8(struct device *dev, struct device_attribute *devattr,
-+			  char *buf)
++static int tegra30_thermal_remove(struct platform_device *pdev)
 +{
-+	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
-+	int temp;
++	struct tegra_thermal_data *pdata = pdev->dev.platform_data;
++	int i;
 +
-+	_show_temp8(dev, attr->index, &temp);
- 
- 	return sprintf(buf, "%d\n", temp);
- }
- 
--static ssize_t set_temp8(struct device *dev, struct device_attribute *devattr,
--			 const char *buf, size_t count)
-+static void _set_temp8(struct device *dev, int index, long val)
- {
- 	static const u8 reg[8] = {
- 		LM90_REG_W_LOCAL_LOW,
-@@ -737,60 +743,73 @@ static ssize_t set_temp8(struct device *dev, struct device_attribute *devattr,
- 		MAX6659_REG_W_REMOTE_EMERG,
- 	};
- 
--	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct lm90_data *data = i2c_get_clientdata(client);
--	int nr = attr->index;
--	long val;
--	int err;
--
--	err = kstrtol(buf, 10, &val);
--	if (err < 0)
--		return err;
- 
- 	/* +16 degrees offset for temp2 for the LM99 */
--	if (data->kind == lm99 && attr->index == 3)
-+	if (data->kind == lm99 && index == 3)
- 		val -= 16000;
- 
- 	mutex_lock(&data->update_lock);
- 	if (data->kind == adt7461)
--		data->temp8[nr] = temp_to_u8_adt7461(data, val);
-+		data->temp8[index] = temp_to_u8_adt7461(data, val);
- 	else if (data->kind == max6646)
--		data->temp8[nr] = temp_to_u8(val);
-+		data->temp8[index] = temp_to_u8(val);
- 	else
--		data->temp8[nr] = temp_to_s8(val);
-+		data->temp8[index] = temp_to_s8(val);
- 
--	lm90_select_remote_channel(client, data, nr >= 6);
--	i2c_smbus_write_byte_data(client, reg[nr], data->temp8[nr]);
-+	lm90_select_remote_channel(client, data, index >= 6);
-+	i2c_smbus_write_byte_data(client, reg[index], data->temp8[index]);
- 	lm90_select_remote_channel(client, data, 0);
- 
- 	mutex_unlock(&data->update_lock);
++	for (i = 0; i < MAX_CDEVS_PER_ZONE; i++) {
++		if (pdata->tz->cdevs[i])
++			thermal_cooling_device_unregister(pdata->tz->cdevs[i]);
++		else
++			break;
++	}
++
++	remove_thermal_zone(pdata->tz);
++
++	return 0;
 +}
 +
-+static ssize_t set_temp8(struct device *dev, struct device_attribute *devattr,
-+			 const char *buf, size_t count)
-+{
-+	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
-+	int index = attr->index;
-+	long val;
-+	int err;
++static const struct of_device_id tegra30_thermal_id_table[] = {
++	{ .compatible = "nvidia,tegra30-thermal" },
++	{}
++};
++MODULE_DEVICE_TABLE(of, tegra30_thermal_id_table);
 +
-+	err = kstrtol(buf, 10, &val);
-+	if (err < 0)
-+		return err;
++static struct platform_driver tegra3_thermal_driver = {
++	.probe = tegra30_thermal_probe,
++	.remove = tegra30_thermal_remove,
++	.driver = {
++		.name = "tegra_thermal",
++		.owner = THIS_MODULE,
++		.of_match_table = of_match_ptr(tegra30_thermal_id_table),
++	},
++};
++module_platform_driver(tegra3_thermal_driver);
 +
-+	_set_temp8(dev, index, val);
-+
- 	return count;
- }
- 
--static ssize_t show_temp11(struct device *dev, struct device_attribute *devattr,
--			   char *buf)
-+static void _show_temp11(struct device *dev, int index, int *temp)
- {
--	struct sensor_device_attribute_2 *attr = to_sensor_dev_attr_2(devattr);
- 	struct lm90_data *data = lm90_update_device(dev);
--	int temp;
- 
- 	if (data->kind == adt7461)
--		temp = temp_from_u16_adt7461(data, data->temp11[attr->index]);
-+		*temp = temp_from_u16_adt7461(data, data->temp11[index]);
- 	else if (data->kind == max6646)
--		temp = temp_from_u16(data->temp11[attr->index]);
-+		*temp = temp_from_u16(data->temp11[index]);
- 	else
--		temp = temp_from_s16(data->temp11[attr->index]);
-+		*temp = temp_from_s16(data->temp11[index]);
- 
- 	/* +16 degrees offset for temp2 for the LM99 */
--	if (data->kind == lm99 &&  attr->index <= 2)
--		temp += 16000;
-+	if (data->kind == lm99 &&  index <= 2)
-+		*temp += 16000;
-+}
-+
-+static ssize_t show_temp11(struct device *dev, struct device_attribute *devattr,
-+			   char *buf)
-+{
-+	struct sensor_device_attribute_2 *attr = to_sensor_dev_attr_2(devattr);
-+	int temp;
-+
-+	_show_temp11(dev, attr->index, &temp);
- 
- 	return sprintf(buf, "%d\n", temp);
- }
- 
--static ssize_t set_temp11(struct device *dev, struct device_attribute *devattr,
--			  const char *buf, size_t count)
-+static void _set_temp11(struct device *dev, int nr, int index, long val)
- {
- 	struct {
- 		u8 high;
-@@ -804,17 +823,8 @@ static ssize_t set_temp11(struct device *dev, struct device_attribute *devattr,
- 		{ LM90_REG_W_REMOTE_HIGHH, LM90_REG_W_REMOTE_HIGHL, 1 }
- 	};
- 
--	struct sensor_device_attribute_2 *attr = to_sensor_dev_attr_2(devattr);
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct lm90_data *data = i2c_get_clientdata(client);
--	int nr = attr->nr;
--	int index = attr->index;
--	long val;
--	int err;
--
--	err = kstrtol(buf, 10, &val);
--	if (err < 0)
--		return err;
- 
- 	/* +16 degrees offset for temp2 for the LM99 */
- 	if (data->kind == lm99 && index <= 2)
-@@ -839,6 +849,23 @@ static ssize_t set_temp11(struct device *dev, struct device_attribute *devattr,
- 	lm90_select_remote_channel(client, data, 0);
- 
- 	mutex_unlock(&data->update_lock);
-+}
-+
-+static ssize_t set_temp11(struct device *dev, struct device_attribute *devattr,
-+			  const char *buf, size_t count)
-+{
-+	struct sensor_device_attribute_2 *attr = to_sensor_dev_attr_2(devattr);
-+	int nr = attr->nr;
-+	int index = attr->index;
-+	long val;
-+	int err;
-+
-+	err = kstrtol(buf, 10, &val);
-+	if (err < 0)
-+		return err;
-+
-+	_set_temp11(dev, nr, index, val);
-+
- 	return count;
- }
- 
++MODULE_AUTHOR("Wei Ni <wni@nvidia.com>");
++MODULE_DESCRIPTION("Tegra30 thermal throttle driver");
++MODULE_LICENSE("GPL v2");
 -- 
 1.7.9.5
 
