@@ -1,36 +1,83 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [RFC PATCH 8/9] ARM: dt: t30 cardhu: add dt entry for thermal
- driver
-Date: Tue, 19 Feb 2013 17:56:14 +0800
-Message-ID: <51234C3E.6090001@nvidia.com>
-References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-9-git-send-email-wni@nvidia.com> <5122F4C1.9050108@nvidia.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline
+ from atomic context
+Date: Tue, 19 Feb 2013 15:25:47 +0530
+Message-ID: <51234C23.2030909@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com> <CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com> <51225A36.40600@linux.vnet.ibm.com> <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com> <51227810.6090009@linux.vnet.ibm.com> <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate03.nvidia.com ([216.228.121.140]:1846 "EHLO
-	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755700Ab3BSJ4h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 04:56:37 -0500
-In-Reply-To: <5122F4C1.9050108@nvidia.com>
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:48235 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758194Ab3BSJ6F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 04:58:05 -0500
+Received: from /spool/local
+	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 19 Feb 2013 19:52:25 +1000
+In-Reply-To: <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Courbot <acourbot@nvidia.com>
-Cc: "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "khali@linux-fr.org" <khali@linux-fr.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Michel Lespinasse <walken@google.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On 02/19/2013 11:42 AM, Alex Courbot wrote:
-> On 02/18/2013 08:30 PM, Wei Ni wrote:
->> diff --git a/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt b/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt
->> new file mode 100644
+On 02/19/2013 03:10 PM, Michel Lespinasse wrote:
+> On Tue, Feb 19, 2013 at 2:50 AM, Srivatsa S. Bhat
+> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+>> But, the whole intention behind removing the parts depending on the
+>> recursive property of rwlocks would be to make it easier to make rwlocks
+>> fair (going forward) right? Then, that won't work for CPU hotplug, because,
+>> just like we have a legitimate reason to have recursive
+>> get_online_cpus_atomic(), we also have a legitimate reason to have
+>> unfairness in locking (i.e., for deadlock-safety). So we simply can't
+>> afford to make the locking fair - we'll end up in too many deadlock
+>> possibilities, as hinted in the changelog of patch 1.
 > 
-> This should go with the previous patch (which introduces the driver) 
-> instead of this one. Bindings should be documented with their driver.
-
-Ok, I will change it.
-
-Wei.
-
+> Grumpf - I hadn't realized that making the underlying rwlock fair
+> would break your hotplug use case. But you are right, it would. Oh
+> well :/
 > 
-> Alex.
+
+Yeah :-/
+
+>> So the only long-term solution I can think of is to decouple
+>> percpu-rwlocks and rwlock_t (like what Tejun suggested) by implementing
+>> our own unfair locking scheme inside. What do you think?
 > 
+> I have no idea how hard would it be to change get_online_cpus_atomic()
+> call sites so that the hotplug rwlock read side has a defined order vs
+> other locks (thus making sure the situation you describe in patch 1
+> doesn't happen). I agree we shouldn't base our short term plans around
+> that, but maybe that's doable in the long term ???
+>
+
+I think it should be possible in the longer term. I'm expecting it to be
+*much much* harder to audit and convert (requiring a lot of subsystem
+knowledge of each subsystem that we are touching), than the simpler
+tree-wide conversion that I did in this patchset... but I don't think it
+is impossible.
+ 
+> Otherwise, I think we should add some big-fat-warning that percpu
+> rwlocks don't have reader/writer fairness, that the hotplug use case
+> actually depends on the unfairness / would break if the rwlock was
+> made fair, and that any new uses of percpu rwlocks should be very
+> carefully considered because of the reader/writer fairness issues.
+
+In fact, when I started out, I actually contained all the new locking code
+inside CPU hotplug itself, and didn't even expose it as a generic percpu
+rwlock in some of the previous versions of this patchset... :-)
+
+But now that we already have a generic locking scheme exposed, we could
+add a warning against using it without due consideration.
+
+> Maybe even give percpu rwlocks a less generic sounding name, given how
+> constrained they are by the hotplug use case.
+ 
+I wouldn't go that far... ;-) Unfairness is not a show-stopper right?
+IMHO, the warning/documentation should suffice for anybody wanting to
+try out this locking scheme for other use-cases.
+
+Regards,
+Srivatsa S. Bhat
 
