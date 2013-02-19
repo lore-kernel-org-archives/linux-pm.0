@@ -1,34 +1,57 @@
-From: "David Laight" <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline from atomic context
-Date: Tue, 19 Feb 2013 10:42:53 -0000
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7154@saturn3.aculab.com>
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com> <CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com> <51225A36.40600@linux.vnet.ibm.com> <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com> <51227810.6090009@linux.vnet.ibm.com> <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com> <51234C23.2030909@linux.vnet.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Getting rid of freezer for suspend [was Re: [fuse-devel] [PATCH]
+ fuse: make fuse daemon frozen along with kernel threads]
+Date: Tue, 19 Feb 2013 11:46:33 +0100
+Message-ID: <20130219104633.GA23279@xo-6d-61-c0.localdomain>
+References: <1360113112.17267.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <6332427.iqPUMjtDaQ@vostro.rjw.lan>
+ <BEC9F67575FA1E429CA7CF5AE9BE3634400F30@SHSMSX102.ccr.corp.intel.com>
+ <3321530.AgvEeduuPx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-arch-owner@vger.kernel.org>
-Content-class: urn:content-classes:message
-In-Reply-To: <51234C23.2030909@linux.vnet.ibm.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Michel Lespinasse <walken@google.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45567 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932339Ab3BSKqk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 05:46:40 -0500
+Content-Disposition: inline
+In-Reply-To: <3321530.AgvEeduuPx@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Li, Fei" <fei.li@intel.com>, Miklos Szeredi <miklos@szeredi.hu>, Goswin von Brederlow <goswin-v-b@web.de>, "Brown, Len" <len.brown@intel.com>, "mingo@redhat.com" <mingo@redhat.com>, "peterz@infradead.org" <peterz@infradead.org>, "Wang, Biao" <biao.wang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "fuse-devel@lists.sourceforge.net" <fuse-devel@lists.sourceforge.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Liu, Chuansheng" <chuansheng.liu@intel.com>
 
-> I wouldn't go that far... ;-) Unfairness is not a show-stopper right?
-> IMHO, the warning/documentation should suffice for anybody wanting to
-> try out this locking scheme for other use-cases.
+Hi!
 
-I presume that by 'fairness' you mean 'write preference'?
+> > > > > Well, I suppose that information is available to user space.
+> > > > >
+> > > > > Do we need an interface for a process to mark itself as PF_FREEZE_LATE or
+> > > > > do we need an interface for one process to mark another process as
+> > > > > PF_FREEZE_LATE, or both?
+> > > >
+> > > > As a first step marking self with PF_FREEZE_LATE and inheriting this
+> > > > flag across fork/clone would work for most cases, I think.
+> > > 
+> > > OK, so we can just have a switch for that in /proc I suppose.
+> > 
+> > Thanks for feedback and suggestion.
+> > 
+> > We have ever tried similar idea, expose interface /sys/power/pm_freeze_daemon,
+> > userspace tasks write 1 to this attribute to make itself to be frozen at the same time
+> > with kernel tasks, and it worked in our experiment.
+> > 
+> > Do you think it's suitable and enough to use such attribute /sys/power/pm_freeze_late, 
+> > or other more suitable place under /proc suggested?
+> 
+> I think it should be inder /proc, because that's where controls related to
+> process behavior are located.  E.g. /proc/PID/freeze_late or something like
+> that.
 
-I'd not sure how difficult it would be, but maybe have two functions
-for acquiring the lock for read, one blocks if there is a writer
-waiting, the other doesn't.
+freeze_priority?
 
-That way you can change the individual call sites separately.
-
-The other place I can imagine a per-cpu rwlock being used
-is to allow a driver to disable 'sleep' or software controlled
-hardware removal while it performs a sequence of operations.
-
-	David
+I _hope_ we will not need more than three priorities, (user, fused, kernel), but 
+I hoped not no need more than two before, so...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
