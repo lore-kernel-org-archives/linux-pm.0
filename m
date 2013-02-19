@@ -1,35 +1,40 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [RFC PATCH 1/9] ARM: dt: t30 cardhu: add dt entry for lm90
-Date: Tue, 19 Feb 2013 15:48:35 -0700
-Message-ID: <51240143.3010205@wwwdotorg.org>
-References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-2-git-send-email-wni@nvidia.com> <5122F162.9030103@nvidia.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [RFC PATCH 2/9] hwmon: (lm90) split set&show temp as common codes
+Date: Tue, 19 Feb 2013 15:56:49 -0700
+Message-ID: <51240331.7080604@wwwdotorg.org>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-3-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5122F162.9030103-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org" <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TZX6JHB/w77yyCwEArCW2h5@public.gmane.org" <linux-kernel-u79uwXL29TZX6JHB/w77yyCwEArCW2h5@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:58932 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933463Ab3BSW4w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 17:56:52 -0500
+In-Reply-To: <1361187031-3679-3-git-send-email-wni@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>
+Cc: durgadoss.r@intel.com, rui.zhang@intel.com, MLongnecker@nvidia.com, khali@linux-fr.org, devicetree-discuss@lists.ozlabs.org, linux-tegra@vger.kernel.org, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.orgrs.org, linux-arm-kernel@lists.infradead.org
 
-On 02/18/2013 08:28 PM, Alex Courbot wrote:
-> On 02/18/2013 08:30 PM, Wei Ni wrote:
->> Enable thermal sensor lm90 in the dts file.
-> 
-> Acked-by: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> 
-> Btw, shouldn't this patch come last, after all the changes you did to
-> lm90? If you keep the current order, you will need to ensure that the
-> device performs as expected on Cardhu for each of the remaining patches
-> of the series. It is probably safer to just move this one at the end to
-> avoid trouble.
+On 02/18/2013 04:30 AM, Wei Ni wrote:
+> Split set&show temp codes as common functions, so we can use it directly when
+> implement linux thermal framework.
 
-Hmm. This patch on its own seems simple enough, and so I should really
-just apply it as soon as 3.9-rc1 is out.
+> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
 
-Note that we (and probably others) have many device trees for boards
-besides Cardhu that instantiate the LM90 driver. The driver has to
-continue to work perfectly for all the patches in the series. Not
-enabling the driver on Cardhu isn't enough to allow patches in the
-middle of the series to break the already-working driver.
+> -static ssize_t show_temp8(struct device *dev, struct device_attribute *devattr,
+> -			  char *buf)
+> +static void _show_temp8(struct device *dev, int index, int *temp)
+
+This function now seems to be "get" not "show". If you rename it to e.g.
+"get_temp8", then you won't need to use an _ in the function name. If
+that name causes conflicts with later patches, perhaps "read_temp8".
+
+> -static ssize_t set_temp8(struct device *dev, struct device_attribute *devattr,
+> -			 const char *buf, size_t count)
+> +static void _set_temp8(struct device *dev, int index, long val)
+
+Similarly, perhaps "write_temp8"?
+
+Similar comments for the rest of the patch.
