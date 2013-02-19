@@ -1,61 +1,35 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 29/45] x86/xen: Use get/put_online_cpus_atomic() to
- prevent CPU offline
-Date: Tue, 19 Feb 2013 23:59:22 +0530
-Message-ID: <5123C482.5070704@linux.vnet.ibm.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com> <20130122074046.13822.61950.stgit@srivatsabhat.in.ibm.com> <20130219181038.GB18244@phenom.dumpdata.com>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [RFC PATCH 1/9] ARM: dt: t30 cardhu: add dt entry for lm90
+Date: Tue, 19 Feb 2013 15:48:35 -0700
+Message-ID: <51240143.3010205@wwwdotorg.org>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-2-git-send-email-wni@nvidia.com> <5122F162.9030103@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20130219181038.GB18244@phenom.dumpdata.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Konrad Rzeszutek Wilk <konrad@kernel.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5122F162.9030103-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org" <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TZX6JHB/w77yyCwEArCW2h5@public.gmane.org" <linux-kernel-u79uwXL29TZX6JHB/w77yyCwEArCW2h5@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02/19/2013 11:40 PM, Konrad Rzeszutek Wilk wrote:
-> On Tue, Jan 22, 2013 at 01:10:51PM +0530, Srivatsa S. Bhat wrote:
->> Once stop_machine() is gone from the CPU offline path, we won't be able to
->> depend on preempt_disable() or local_irq_disable() to prevent CPUs from
->> going offline from under us.
->>
->> Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
->> while invoking from atomic context.
->>
->> Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+On 02/18/2013 08:28 PM, Alex Courbot wrote:
+> On 02/18/2013 08:30 PM, Wei Ni wrote:
+>> Enable thermal sensor lm90 in the dts file.
 > 
-> Weird. I see this in the patch but I don't see it in the header?
-
-Meaning, you didn't get this email at all?
-
-> Did you
-> explicitly suppress the CC part?
+> Acked-by: Alexandre Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > 
+> Btw, shouldn't this patch come last, after all the changes you did to
+> lm90? If you keep the current order, you will need to ensure that the
+> device performs as expected on Cardhu for each of the remaining patches
+> of the series. It is probably safer to just move this one at the end to
+> avoid trouble.
 
-No.. I sent the entire patchset to a set of email ids and in addition to
-that I CC'ed individual patches to the respective maintainers/lists (the
-CC: list in the changelog). I used the --auto knob from stgit to do that.
+Hmm. This patch on its own seems simple enough, and so I should really
+just apply it as soon as 3.9-rc1 is out.
 
-> 
-> Anyhow, the patch looks sane enough, thought I need to to run it through
-> a test framework just to be on a sure side.
->
-
-Sure, thank you. But you might want to test the v6 that I sent out
-yesterday instead of v5. Oh, wait a min, you didn't get the v6 mail also?
-
-Here it is, for your reference:
-http://marc.info/?l=linux-kernel&m=136119260122255&w=2
-
-Regards,
-Srivatsa S. Bhat
-
->> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
->> Cc: "H. Peter Anvin" <hpa@zytor.com>
->> Cc: x86@kernel.org
->> Cc: xen-devel@lists.xensource.com
->> Cc: virtualization@lists.linux-foundation.org
->> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
->> ---
-
+Note that we (and probably others) have many device trees for boards
+besides Cardhu that instantiate the LM90 driver. The driver has to
+continue to work perfectly for all the patches in the series. Not
+enabling the driver on Cardhu isn't enough to allow patches in the
+middle of the series to break the already-working driver.
