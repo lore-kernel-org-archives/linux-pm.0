@@ -1,325 +1,61 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: Re: [RFC PATCH 6/9] hwmon: (lm90) Register to the thermal framework
-Date: Tue, 19 Feb 2013 18:58:40 +0800
-Message-ID: <51235AE0.8010808@nvidia.com>
-References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-7-git-send-email-wni@nvidia.com> <51230C24.5090707@nvidia.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline
+ from atomic context
+Date: Tue, 19 Feb 2013 16:28:30 +0530
+Message-ID: <51235AD6.9040407@linux.vnet.ibm.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com> <CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com> <51225A36.40600@linux.vnet.ibm.com> <CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com> <51227810.6090009@linux.vnet.ibm.com> <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com> <51234C23.2030909@linux.vnet.ibm.com> <AE90C24D6B3A694183C094C60CF0A2F6026B7154@saturn3.aculab.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate04.nvidia.com ([216.228.121.35]:13916 "EHLO
-	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757937Ab3BSK7B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 05:59:01 -0500
-In-Reply-To: <51230C24.5090707@nvidia.com>
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:56075 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932715Ab3BSLAw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 06:00:52 -0500
+Received: from /spool/local
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 19 Feb 2013 16:27:42 +0530
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B7154@saturn3.aculab.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Courbot <acourbot@nvidia.com>
-Cc: "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "khali@linux-fr.org" <khali@linux-fr.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Cc: Michel Lespinasse <walken@google.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 
-On 02/19/2013 01:22 PM, Alex Courbot wrote:
-> On 02/18/2013 08:30 PM, Wei Ni wrote:
->> Register the remote sensor to the thermal framework.
->> It can support to show the temperature and read/write threshold.
->>
->> Signed-off-by: Wei Ni <wni@nvidia.com>
->> ---
->>   arch/arm/boot/dts/tegra30-cardhu.dtsi |    1 +
->>   drivers/hwmon/lm90.c                  |  182 ++++++++++++++++++++++++++++++++-
->>   2 files changed, 182 insertions(+), 1 deletion(-)
+On 02/19/2013 04:12 PM, David Laight wrote:
+>> I wouldn't go that far... ;-) Unfairness is not a show-stopper right?
+>> IMHO, the warning/documentation should suffice for anybody wanting to
+>> try out this locking scheme for other use-cases.
 > 
-> Making changes to a driver *and* a board file in the same patch? I think 
-> this should be separated, and the board file change preferably squashed 
-> with the first patch of this series, and moved right after this one.
+> I presume that by 'fairness' you mean 'write preference'?
 > 
->>
->> diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
->> index 15ad1ad..3f6ab89 100644
->> --- a/arch/arm/boot/dts/tegra30-cardhu.dtsi
->> +++ b/arch/arm/boot/dts/tegra30-cardhu.dtsi
->> @@ -279,6 +279,7 @@
->>   			reg = <0x4c>;
->>   			interrupt-parent = <&gpio>;
->>   			interrupts = <226 0x08>; /* gpio PCC2 */
->> +			#sensor-cells = <1>;
->>   		};
->>   	};
->>
->> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
->> index de5a476..0abdedc 100644
->> --- a/drivers/hwmon/lm90.c
->> +++ b/drivers/hwmon/lm90.c
->> @@ -91,6 +91,7 @@
->>   #include <linux/sysfs.h>
->>   #include <linux/interrupt.h>
->>   #include <linux/of_irq.h>
->> +#include <linux/thermal.h>
->>
->>   /*
->>    * Addresses to scan
->> @@ -182,6 +183,15 @@ enum chips { lm90, adm1032, lm99, lm86, max6657, max6659, adt7461, max6680,
->>   #define LM90_HAVE_BROKEN_ALERT	(1 << 7) /* Broken alert		*/
->>
->>   /*
->> + * Thermal framework
->> + */
->> +enum lm90_thresholds {
->> +	LM90_LOW_THRESHOLDS = 0,	/* threshold 0: low limits */
->> +	LM90_HIGH_THRESHOLDS,		/* threshold 1: high limits */
->> +	LM90_NUM_THRESHOLDS
->> +};
->> +
->> +/*
->>    * Driver data (common to all clients)
->>    */
->>
->> @@ -377,6 +387,9 @@ struct lm90_data {
->>   	s16 temp11[TEMP11_REG_NUM];
->>   	u8 temp_hyst;
->>   	u16 alarms; /* bitvector (upper 8 bits for max6695/96) */
->> +
->> +	struct thermal_sensor *ts_remote;
->> +	struct thermal_sensor *ts_local;
->>   };
->>
->>   /*
->> @@ -1493,12 +1506,151 @@ static irqreturn_t lm90_irq(int irq, void *dev_id)
->>   	return IRQ_HANDLED;
->>   }
->>
->> +static int lm90_read_remote_temp(struct thermal_sensor *ts, long *temp)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +
->> +	_show_temp11(dev, TEMP11_REMOTE_TEMP, (int *)temp);
-> 
-> As Guenter pointed, this might break. Since you introduced _show_temp11 
-> in a previous patch, you should revise it to take a long * as third 
-> argument (or even better, return a long). Or if you cannot do that for 
-> some reason, use a temporary int and affect temp properly (*temp = 
-> temp_int).
 
-yes, the pointer will cause problems here.
-I will follow Guenter suggestion to return the value simply for
-_show_temp11 and _show_temp8
+Yep.
 
+> I'd not sure how difficult it would be, but maybe have two functions
+> for acquiring the lock for read, one blocks if there is a writer
+> waiting, the other doesn't.
 > 
->> +
->> +	return 0;
->> +}
->> +
->> +static int lm90_read_remote_threshold(struct thermal_sensor *ts, int th_index,
->> +					long *val)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +	int index;
->> +
->> +	switch (th_index) {
->> +	case LM90_LOW_THRESHOLDS:
->> +		/* remote low limit */
->> +		index = TEMP11_REMOTE_LOW;
->> +		break;
->> +	case LM90_HIGH_THRESHOLDS:
->> +		/* remote high limit */
->> +		index = TEMP11_REMOTE_HIGH;
->> +		break;
->> +	default:
->> +		dev_err(dev, "read remote threshold failed.\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	_show_temp11(dev, index, (int *)val);
->> +
->> +	return 0;
->> +}
->> +
->> +static int lm90_write_remote_threshold(struct thermal_sensor *ts, int th_index,
->> +					long val)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +	int nr, index;
->> +
->> +	switch (th_index) {
->> +	case LM90_LOW_THRESHOLDS:
->> +		/* remote low limit */
->> +		nr = NR_CHAN_0_REMOTE_LOW;
->> +		index = TEMP11_REMOTE_LOW;
->> +		break;
->> +	case LM90_HIGH_THRESHOLDS:
->> +		/* remote high limit */
->> +		nr = NR_CHAN_0_REMOTE_HIGH;
->> +		index = TEMP11_REMOTE_HIGH;
->> +		break;
->> +	default:
->> +		dev_err(dev, "write remote threshold failed.\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	_set_temp11(dev, nr, index, val);
->> +
->> +	return 0;
->> +}
->> +
->> +static struct thermal_sensor_ops remote_ops = {
->> +	.get_temp = lm90_read_remote_temp,
->> +	.get_threshold = lm90_read_remote_threshold,
->> +	.set_threshold = lm90_write_remote_threshold,
->> +};
->> +
->> +static int lm90_read_local_temp(struct thermal_sensor *ts, long *temp)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +
->> +	_show_temp11(dev, TEMP11_LOCAL_TEMP, (int *)temp);
->> +
->> +	return 0;
->> +}
->> +
->> +static int lm90_read_local_threshold(struct thermal_sensor *ts, int th_index,
->> +					long *val)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +	int index;
->> +
->> +	switch (th_index) {
->> +	case LM90_LOW_THRESHOLDS:
->> +		/* local low limit */
->> +		index = TEMP8_LOCAL_LOW;
->> +		break;
->> +	case LM90_HIGH_THRESHOLDS:
->> +		/* local high limit */
->> +		index = TEMP8_LOCAL_HIGH;
->> +		break;
-> 
-> I think the comments are unneeded here, the macro name should be 
-> explicit enough.
+> That way you can change the individual call sites separately.
+>
 
-OK.
+Right, we could probably use that method to change the call sites in
+multiple stages, in the future.
+ 
+> The other place I can imagine a per-cpu rwlock being used
+> is to allow a driver to disable 'sleep' or software controlled
+> hardware removal while it performs a sequence of operations.
+> 
 
-> 
->> +	default:
->> +		dev_err(dev, "read local threshold failed.\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	_show_temp8(dev, index, (int *)val);
->> +
->> +	return 0;
->> +}
->> +
->> +static int lm90_write_local_threshold(struct thermal_sensor *ts, int th_index,
->> +					long val)
->> +{
->> +	struct i2c_client *client = ts->devdata;
->> +	struct device *dev = &client->dev;
->> +	int index;
->> +
->> +	switch (th_index) {
->> +	case LM90_LOW_THRESHOLDS:
->> +		/* local low limit */
->> +		index = TEMP8_LOCAL_LOW;
->> +		break;
->> +	case LM90_HIGH_THRESHOLDS:
->> +		/* local high limit */
->> +		index = TEMP8_LOCAL_HIGH;
->> +		break;
->> +	default:
->> +		dev_err(dev, "write local threshold failed.\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	_set_temp8(dev, index, val);
->> +
->> +	return 0;
->> +}
->> +
->> +static struct thermal_sensor_ops local_ops = {
->> +	.get_temp = lm90_read_local_temp,
->> +	.get_threshold = lm90_read_local_threshold,
->> +	.set_threshold = lm90_write_local_threshold,
->> +};
->> +
->>   static int lm90_probe(struct i2c_client *client,
->>   		      const struct i2c_device_id *id)
->>   {
->>   	struct device *dev = &client->dev;
->>   	struct i2c_adapter *adapter = to_i2c_adapter(dev->parent);
->>   	struct lm90_data *data;
->> +	struct node_args np_args;
->>   	int err;
->>
->>   	data = devm_kzalloc(&client->dev, sizeof(struct lm90_data), GFP_KERNEL);
->> @@ -1576,12 +1728,38 @@ static int lm90_probe(struct i2c_client *client,
->>   				       "lm90", data);
->>   		if (err < 0) {
->>   			dev_err(dev, "cannot request interrupt\n");
->> -			goto exit_remove_files;
->> +			goto exit_unregister_hwmon;
->>   		}
->>   	}
->>
->> +	np_args.np = dev->of_node;
->> +	np_args.index = 0;
->> +	data->ts_remote = thermal_sensor_register("lm90_remote",
->> +						LM90_NUM_THRESHOLDS,
->> +						&np_args,
->> +						&remote_ops, client);
->> +	if (IS_ERR(data->ts_remote)) {
->> +		dev_err(dev, "cannot register sensor to thermal framework\n");
->> +		err = -EINVAL;
-> 
-> When don't you return the error code provided by 
-> thermal_sensor_register, e.g. err = PTR_ERR(data->ts_remote) ?
+BTW, per-cpu rwlocks use spinlocks underneath, so they can be used only
+in atomic contexts (you can't sleep holding this lock). So that would
+probably make it less attractive or useless to "heavy-weight" usecases
+like the latter one you mentioned. They probably need to use per-cpu
+rw-semaphore or some such, which allows sleeping. I'm not very certain
+of the exact usecases you are talking about, but I just wanted to
+point out that percpu-rwlocks might not be applicable to many scenarios.
+..(which might be a good thing, considering its unfair property today).
 
-I didn't consider it, I will change it.
-
-> 
->> +		goto exit_unregister_hwmon;
->> +	}
->> +
->> +	np_args.index = 1;
->> +	data->ts_local = thermal_sensor_register("lm90_local",
->> +						LM90_NUM_THRESHOLDS,
->> +						&np_args,
->> +						&local_ops, client);
->> +
->> +	if (IS_ERR(data->ts_local)) {
->> +		dev_err(dev, "cannot register sensor to thermal framework\n");
->> +		err = -EINVAL;
-> 
-> Same thing here.
-> 
->> +		goto exit_unregister_hwmon;
->> +	}
->> +
->>   	return 0;
->>
->> +exit_unregister_hwmon:
->> +	hwmon_device_unregister(data->hwmon_dev);
->>   exit_remove_files:
->>   	lm90_remove_files(client, data);
->>   exit_restore:
->> @@ -1594,6 +1772,8 @@ static int lm90_remove(struct i2c_client *client)
->>   	struct lm90_data *data = i2c_get_clientdata(client);
->>
->>   	free_irq(client->irq, data);
->> +	thermal_sensor_unregister(data->ts_remote);
->> +	thermal_sensor_unregister(data->ts_local);
-> 
-> Ideally you would unregister your sensors in the reverse order they have 
-> been registered, but I'm being picky here.
-
-Yes, it's better in reverse order.
-I really appreciate you reviewing my patches so carefully :)
-
-Wei.
-
-> 
-> Alex.
-> 
+Regards,
+Srivatsa S. Bhat
 
