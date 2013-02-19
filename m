@@ -1,46 +1,111 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 8/9] Thermal: Add ABI Documentation for sysfs interfaces
-Date: Tue, 19 Feb 2013 10:10:05 +0100
-Message-ID: <20130219091005.GA17219@xo-6d-61-c0.localdomain>
-References: <1357542806-20449-1-git-send-email-durgadoss.r@intel.com>
- <1357542806-20449-9-git-send-email-durgadoss.r@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: [PATCH] vt: add init_hide parameter to suppress boot output
+Date: Tue, 19 Feb 2013 11:38:10 +0200
+Message-ID: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56505 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757774Ab3BSJKM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 04:10:12 -0500
-Content-Disposition: inline
-In-Reply-To: <1357542806-20449-9-git-send-email-durgadoss.r@intel.com>
+Received: from mga03.intel.com ([143.182.124.21]:8469 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756669Ab3BSJgz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Feb 2013 04:36:55 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Durgadoss R <durgadoss.r@intel.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com, hongbo.zhang@linaro.org, wni@nvidia.com
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andy Ross <andy.ross@windriver.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 
-On Mon 2013-01-07 12:43:25, Durgadoss R wrote:
-> This patch adds Documentation for ABI's introduced
-> for thermal subsystem (under /sys/class/thermal/).
+From: Andy Ross <andy.ross@windriver.com>
 
-So... we have deciCelsius and deciKelvin in ACPI (IIRC) and miliCelsius here.
+When vt.init_hide=1 is set, suppress output on newly created consoles
+until an affirmative switched to that console.  This prevents boot
+output from displaying (and clobbering splash screens, etc...) without
+disabling the console entirely.
 
-Perhaps using deciCelsius to be consistent with ACPI would be nice?
+Signed-off-by: Andy Ross <andy.ross@windriver.com>
+Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+---
+ drivers/tty/vt/vt.c            |    7 +++++++
+ include/linux/console_struct.h |    3 ++-
+ include/linux/vt.h             |    2 ++
+ kernel/power/console.c         |    2 --
+ 4 files changed, 11 insertions(+), 3 deletions(-)
 
-What do lm_sensors use?
-									Pavel
-> index 0000000..d1a450e
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-class-thermal
-> @@ -0,0 +1,93 @@
-> +What:		/sys/class/thermal/sensorX/temp
-> +Date:		January 2013
-> +KernelVersion:	3.8
-> +Contact:	Linux PM Mailing list <linux-pm@vger.kernel.org>
-> +Description:
-> +		Exposes 'temperature' of a thermal sensor in mC
-> +Users:		Kernel/User space thermal governors
-> +
-
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 8fd8968..3966ff5 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -165,6 +165,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
+ static int cur_default = CUR_DEFAULT;
+ module_param(cur_default, int, S_IRUGO | S_IWUSR);
+ 
++static int init_hide;
++module_param(init_hide, int, S_IRUGO);
++
+ /*
+  * ignore_poke: don't unblank the screen when things are typed.  This is
+  * mainly for the privacy of braille terminal users.
+@@ -734,6 +737,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
+ 	__module_get(vc->vc_sw->owner);
+ 	vc->vc_num = num;
+ 	vc->vc_display_fg = &master_display_fg;
++	vc->vc_hidden = init_hide;
+ 	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
+ 	vc->vc_uni_pagedir = 0;
+ 	vc->vc_hi_font_mask = 0;
+@@ -2336,6 +2340,9 @@ static void console_callback(struct work_struct *ignored)
+ 	if (want_console >= 0) {
+ 		if (want_console != fg_console &&
+ 		    vc_cons_allocated(want_console)) {
++			if(want_console != SUSPEND_CONSOLE &&
++			   fg_console != SUSPEND_CONSOLE)
++				vc_cons[want_console].d->vc_hidden = 0;
+ 			hide_cursor(vc_cons[fg_console].d);
+ 			change_console(vc_cons[want_console].d);
+ 			/* we only changed when the console had already
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index 7f0c329..817db0e 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -91,6 +91,7 @@ struct vc_data {
+ 	unsigned int	vc_can_do_color	: 1;
+ 	unsigned int	vc_report_mouse : 2;
+ 	unsigned char	vc_utf		: 1;	/* Unicode UTF-8 encoding */
++	unsigned int    vc_hidden	: 1;    /* Set by vt.init_hide=1 */
+ 	unsigned char	vc_utf_count;
+ 		 int	vc_utf_char;
+ 	unsigned int	vc_tab_stop[8];		/* Tab stops. 256 columns. */
+@@ -134,6 +135,6 @@ extern void vc_SAK(struct work_struct *work);
+ 
+ #define CUR_DEFAULT CUR_UNDERLINE
+ 
+-#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
++#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp && !conp->vc_hidden)
+ 
+ #endif /* _LINUX_CONSOLE_STRUCT_H */
+diff --git a/include/linux/vt.h b/include/linux/vt.h
+index b186e04..0dc3e89 100644
+--- a/include/linux/vt.h
++++ b/include/linux/vt.h
+@@ -11,6 +11,8 @@
+ #define VT_UPDATE		0x0004 /* A bigger update occurred */
+ #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
+ 
++#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
++
+ #ifdef CONFIG_VT_CONSOLE
+ 
+ extern int vt_kmsg_redirect(int new);
+diff --git a/kernel/power/console.c b/kernel/power/console.c
+index b1dc456..b74bdb8 100644
+--- a/kernel/power/console.c
++++ b/kernel/power/console.c
+@@ -10,8 +10,6 @@
+ #include <linux/module.h>
+ #include "power.h"
+ 
+-#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
+-
+ static int orig_fgconsole, orig_kmsg;
+ 
+ int pm_prepare_console(void)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.10.4
+
