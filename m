@@ -1,85 +1,54 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: SYSFS "errors"
-Date: Tue, 19 Feb 2013 12:11:21 +0200
-Message-ID: <20130219101121.GJ23197@arwen.pp.htv.fi>
-References: <20130218174916.GA2070@kroah.com>
- <20130218184633.GC10755@arwen.pp.htv.fi>
- <20130218164638.7cb53baa@redhat.com>
- <20130218200542.GB20137@arwen.pp.htv.fi>
- <20130218184742.5a4c3c06@redhat.com>
- <20130218215434.GB16794@kroah.com>
- <20130218221306.GA21493@pd.tnic>
- <20130218222618.GA21818@kroah.com>
- <20130218224405.GB21493@pd.tnic>
- <20130219070310.2cadad7a@redhat.com>
-Reply-To: <balbi@ti.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] vt: add init_hide parameter to suppress boot output
+Date: Tue, 19 Feb 2013 11:14:37 +0100
+Message-ID: <20130219101437.GA3396@xo-6d-61-c0.localdomain>
+References: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PEkEgRdBLZYkpbX2"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:32998 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932306Ab3BSKMG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 05:12:06 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39935 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758262Ab3BSKOp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 05:14:45 -0500
 Content-Disposition: inline
-In-Reply-To: <20130219070310.2cadad7a@redhat.com>
+In-Reply-To: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>, Greg KH <gregkh@linuxfoundation.org>, balbi@ti.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, JBottomley@parallels.com, linux-scsi@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andy Ross <andy.ross@windriver.com>
 
---PEkEgRdBLZYkpbX2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-Hi,
+> --- a/drivers/tty/vt/vt.c
+> +++ b/drivers/tty/vt/vt.c
+> @@ -165,6 +165,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
+>  static int cur_default = CUR_DEFAULT;
+>  module_param(cur_default, int, S_IRUGO | S_IWUSR);
+>  
+> +static int init_hide;
+> +module_param(init_hide, int, S_IRUGO);
+> +
+>  /*
+>   * ignore_poke: don't unblank the screen when things are typed.  This is
+>   * mainly for the privacy of braille terminal users.
+> @@ -734,6 +737,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
+>  	__module_get(vc->vc_sw->owner);
+>  	vc->vc_num = num;
+>  	vc->vc_display_fg = &master_display_fg;
+> +	vc->vc_hidden = init_hide;
+>  	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
+>  	vc->vc_uni_pagedir = 0;
+>  	vc->vc_hi_font_mask = 0;
+> @@ -2336,6 +2340,9 @@ static void console_callback(struct work_struct *ignored)
+>  	if (want_console >= 0) {
+>  		if (want_console != fg_console &&
+>  		    vc_cons_allocated(want_console)) {
+> +			if(want_console != SUSPEND_CONSOLE &&
 
-On Tue, Feb 19, 2013 at 07:03:10AM -0300, Mauro Carvalho Chehab wrote:
-> > But my gut feeling says to stay concervative and not touch this code -
-> > we don't know what uses it and how much we would break by "fixing" it.
-> > The current situation is not that big of a deal IMVHO and I'd be willing
-> > to accept the small inconcistency versus possibly breaking userspace.
->=20
-> I remember I saw some discussions about it in the past at bluesmoke ML,
-> saying that -ENODEV is the expected behavior when this is not supported.
->=20
-> Changing from -ENODEV to "N/A" will break anything that would be relying
-> on the previous behavior. So, I think that such change will for sure break
-> userspace.
->=20
-> If we're willing to change it, not creating the "sdram_scrub_rate" sysfs=
-=20
-> node is less likely to affect userspace.
+"if (", please.
 
-yeah, I agree with this. Guess we shouldn't be creating files which
-aren't supported by the underlying HW and having a read() return -ENODEV
-is quite weird IMO since that's actually 'breaking' read() interface
-although that's up to interpretations.
-
---=20
-balbi
-
---PEkEgRdBLZYkpbX2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRI0/JAAoJEIaOsuA1yqREB/4P/jd/dGVZSoGjV7FrsOEuG/O9
-FyWi0VRov4gOmyTomCL28e3qlKLOyPcnmgsMaj+5OVkIu0BqSrsh76zs9a67ONka
-GX/Wsq7uNo+GH2/5ECKO72QGQIbOFN4c9Lpb1NgYuZWX4dKESwLSOojxsxw4a4NZ
-mlBUtIUhXuuLVQnXX7GcQ/2fs0SOodYJXTBPzxMb/lMqeP3svIJRy+tUxV93VyZp
-ZiZyuYdY5qeflo8vtA5AZMOIqLrhcsG/4vLvioGxkX93p9uwG8fP+NlFlIkVyWgC
-THDidjApsB21hFXnoAEid4tWD+MD5iaJ76k2CAI0aM39AxiEkmJ38FiEKKppWPEj
-rf6o6VQeB55ppuPbIW1qoEj1MTYyx7kTGFmgqpur3kpbYpZJlFrulQOQblsGge8v
-MNNq0WInhW4RIaxz2kpjcnrou2q4DC7Aq4HkL0RdfEPC/d2uHomxX+2dzxSRAVfY
-A7o4t8X3vxydRyujwSQIqcdFTnL/C5I2+5ZdMA2fC0yhVbY/d/KqPhKrs7qNtABX
-x1iBGTRYALtF23dbxKQDg2HSv6lOH2+9Okkmh36ZDqePd6ftKZeX57u2YmojQXXv
-24d5NAXKD3iAz2fgNTszF6kkw62PpPhjXgcUZ3jW+DXFEECHw1jIAEDeFzvJIDn8
-DghQDgawKtAmpImLlpur
-=ZlSk
------END PGP SIGNATURE-----
-
---PEkEgRdBLZYkpbX2--
+Otherwise looks ok.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
