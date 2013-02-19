@@ -1,54 +1,52 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH] vt: add init_hide parameter to suppress boot output
-Date: Tue, 19 Feb 2013 13:31:41 +0100
-Message-ID: <512370AD.6040901@suse.cz>
-References: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: SYSFS "errors"
+Date: Tue, 19 Feb 2013 13:35:02 +0100
+Message-ID: <20130219123502.GD26623@pd.tnic>
+References: <20130218184742.5a4c3c06@redhat.com>
+ <20130218215434.GB16794@kroah.com>
+ <20130218221306.GA21493@pd.tnic>
+ <20130218222618.GA21818@kroah.com>
+ <20130218224405.GB21493@pd.tnic>
+ <20130219070310.2cadad7a@redhat.com>
+ <20130219101121.GJ23197@arwen.pp.htv.fi>
+ <20130219081149.46972f56@redhat.com>
+ <20130219114345.GA26623@pd.tnic>
+ <20130219091610.2b746a30@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f52.google.com ([74.125.83.52]:42326 "EHLO
-	mail-ee0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754510Ab3BSMbq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 07:31:46 -0500
-In-Reply-To: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
+Received: from mail.skyhub.de ([78.46.96.112]:36348 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932711Ab3BSMfG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Feb 2013 07:35:06 -0500
+Content-Disposition: inline
+In-Reply-To: <20130219091610.2b746a30@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andy Ross <andy.ross@windriver.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: balbi@ti.com, Greg KH <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, JBottomley@parallels.com, linux-scsi@vger.kernel.org, davem@davemloft.net, netdev@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org
 
-On 02/19/2013 10:38 AM, Kirill A. Shutemov wrote:
-> From: Andy Ross <andy.ross@windriver.com>
-> 
-> When vt.init_hide=1 is set, suppress output on newly created consoles
-> until an affirmative switched to that console.  This prevents boot
-> output from displaying (and clobbering splash screens, etc...) without
-> disabling the console entirely.
-> 
-> Signed-off-by: Andy Ross <andy.ross@windriver.com>
-> Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> ---
->  drivers/tty/vt/vt.c            |    7 +++++++
->  include/linux/console_struct.h |    3 ++-
->  include/linux/vt.h             |    2 ++
->  kernel/power/console.c         |    2 --
->  4 files changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-> index 8fd8968..3966ff5 100644
-> --- a/drivers/tty/vt/vt.c
-> +++ b/drivers/tty/vt/vt.c
-> @@ -165,6 +165,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
->  static int cur_default = CUR_DEFAULT;
->  module_param(cur_default, int, S_IRUGO | S_IWUSR);
->  
-> +static int init_hide;
-> +module_param(init_hide, int, S_IRUGO);
+On Tue, Feb 19, 2013 at 09:16:10AM -0300, Mauro Carvalho Chehab wrote:
+> I'm not sure if is there a way to pass fs permissions to something similar
+> to device_create_file().
 
-So this should actually be a bool, right? Could you change that
-appropriately?
+struct device_attribute.attr.mode? I.e., second arg.
 
-thanks,
+> On both cases, an error will happen at open:
+> 	- if file doesn't exist (this approach), it will return -ENOENT;
+> 	- if file is opened with wrong permissions, open will return -EPERM.
+> 
+> However, if the file is not created, readdir() won't show the file.
+
+Right, and in that case userspace which *assumes* it is always created -
+like it is now - will fail when accessing it.
+
+If simply you adjust the attributes accordingly but *always* create the
+file and it has the correct permissions, everyone is happy. Right?
+
 -- 
-js
-suse labs
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
