@@ -1,111 +1,62 @@
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: [PATCH] vt: add init_hide parameter to suppress boot output
-Date: Tue, 19 Feb 2013 11:38:10 +0200
-Message-ID: <1361266690-19382-1-git-send-email-kirill.shutemov@linux.intel.com>
+From: Michel Lespinasse <walken@google.com>
+Subject: Re: [PATCH v6 08/46] CPU hotplug: Provide APIs to prevent CPU offline
+ from atomic context
+Date: Tue, 19 Feb 2013 17:40:50 +0800
+Message-ID: <CANN689E-98zK69pGeojbm30n3sswQYVBvhk3i3OzqvbeqSrSrg@mail.gmail.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+	<20130218123920.26245.56709.stgit@srivatsabhat.in.ibm.com>
+	<CANN689HhVxDv+3Bn9UAxOMzj0egTvVp_c7oAmQ2nnQ8Xjn_aMA@mail.gmail.com>
+	<51225A36.40600@linux.vnet.ibm.com>
+	<CANN689FJPLfz06MFRJ9T+BuToejAzjYP_yrw_H4iGi1Kb3p2-g@mail.gmail.com>
+	<51227810.6090009@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:8469 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756669Ab3BSJgz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Feb 2013 04:36:55 -0500
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:55478 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758557Ab3BSJkv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Feb 2013 04:40:51 -0500
+Received: by mail-ie0-f175.google.com with SMTP id c12so8283490ieb.34
+        for <linux-pm@vger.kernel.org>; Tue, 19 Feb 2013 01:40:50 -0800 (PST)
+In-Reply-To: <51227810.6090009@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Andy Ross <andy.ross@windriver.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-From: Andy Ross <andy.ross@windriver.com>
+On Tue, Feb 19, 2013 at 2:50 AM, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> But, the whole intention behind removing the parts depending on the
+> recursive property of rwlocks would be to make it easier to make rwlocks
+> fair (going forward) right? Then, that won't work for CPU hotplug, because,
+> just like we have a legitimate reason to have recursive
+> get_online_cpus_atomic(), we also have a legitimate reason to have
+> unfairness in locking (i.e., for deadlock-safety). So we simply can't
+> afford to make the locking fair - we'll end up in too many deadlock
+> possibilities, as hinted in the changelog of patch 1.
 
-When vt.init_hide=1 is set, suppress output on newly created consoles
-until an affirmative switched to that console.  This prevents boot
-output from displaying (and clobbering splash screens, etc...) without
-disabling the console entirely.
+Grumpf - I hadn't realized that making the underlying rwlock fair
+would break your hotplug use case. But you are right, it would. Oh
+well :/
 
-Signed-off-by: Andy Ross <andy.ross@windriver.com>
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
- drivers/tty/vt/vt.c            |    7 +++++++
- include/linux/console_struct.h |    3 ++-
- include/linux/vt.h             |    2 ++
- kernel/power/console.c         |    2 --
- 4 files changed, 11 insertions(+), 3 deletions(-)
+> So the only long-term solution I can think of is to decouple
+> percpu-rwlocks and rwlock_t (like what Tejun suggested) by implementing
+> our own unfair locking scheme inside. What do you think?
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8fd8968..3966ff5 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -165,6 +165,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
- static int cur_default = CUR_DEFAULT;
- module_param(cur_default, int, S_IRUGO | S_IWUSR);
- 
-+static int init_hide;
-+module_param(init_hide, int, S_IRUGO);
-+
- /*
-  * ignore_poke: don't unblank the screen when things are typed.  This is
-  * mainly for the privacy of braille terminal users.
-@@ -734,6 +737,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
- 	__module_get(vc->vc_sw->owner);
- 	vc->vc_num = num;
- 	vc->vc_display_fg = &master_display_fg;
-+	vc->vc_hidden = init_hide;
- 	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
- 	vc->vc_uni_pagedir = 0;
- 	vc->vc_hi_font_mask = 0;
-@@ -2336,6 +2340,9 @@ static void console_callback(struct work_struct *ignored)
- 	if (want_console >= 0) {
- 		if (want_console != fg_console &&
- 		    vc_cons_allocated(want_console)) {
-+			if(want_console != SUSPEND_CONSOLE &&
-+			   fg_console != SUSPEND_CONSOLE)
-+				vc_cons[want_console].d->vc_hidden = 0;
- 			hide_cursor(vc_cons[fg_console].d);
- 			change_console(vc_cons[want_console].d);
- 			/* we only changed when the console had already
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index 7f0c329..817db0e 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -91,6 +91,7 @@ struct vc_data {
- 	unsigned int	vc_can_do_color	: 1;
- 	unsigned int	vc_report_mouse : 2;
- 	unsigned char	vc_utf		: 1;	/* Unicode UTF-8 encoding */
-+	unsigned int    vc_hidden	: 1;    /* Set by vt.init_hide=1 */
- 	unsigned char	vc_utf_count;
- 		 int	vc_utf_char;
- 	unsigned int	vc_tab_stop[8];		/* Tab stops. 256 columns. */
-@@ -134,6 +135,6 @@ extern void vc_SAK(struct work_struct *work);
- 
- #define CUR_DEFAULT CUR_UNDERLINE
- 
--#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
-+#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp && !conp->vc_hidden)
- 
- #endif /* _LINUX_CONSOLE_STRUCT_H */
-diff --git a/include/linux/vt.h b/include/linux/vt.h
-index b186e04..0dc3e89 100644
---- a/include/linux/vt.h
-+++ b/include/linux/vt.h
-@@ -11,6 +11,8 @@
- #define VT_UPDATE		0x0004 /* A bigger update occurred */
- #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
- 
-+#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
-+
- #ifdef CONFIG_VT_CONSOLE
- 
- extern int vt_kmsg_redirect(int new);
-diff --git a/kernel/power/console.c b/kernel/power/console.c
-index b1dc456..b74bdb8 100644
---- a/kernel/power/console.c
-+++ b/kernel/power/console.c
-@@ -10,8 +10,6 @@
- #include <linux/module.h>
- #include "power.h"
- 
--#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
--
- static int orig_fgconsole, orig_kmsg;
- 
- int pm_prepare_console(void)
+I have no idea how hard would it be to change get_online_cpus_atomic()
+call sites so that the hotplug rwlock read side has a defined order vs
+other locks (thus making sure the situation you describe in patch 1
+doesn't happen). I agree we shouldn't base our short term plans around
+that, but maybe that's doable in the long term ???
+
+Otherwise, I think we should add some big-fat-warning that percpu
+rwlocks don't have reader/writer fairness, that the hotplug use case
+actually depends on the unfairness / would break if the rwlock was
+made fair, and that any new uses of percpu rwlocks should be very
+carefully considered because of the reader/writer fairness issues.
+Maybe even give percpu rwlocks a less generic sounding name, given how
+constrained they are by the hotplug use case.
+
 -- 
-1.7.10.4
-
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
