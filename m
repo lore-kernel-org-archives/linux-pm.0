@@ -1,85 +1,71 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
-Date: Wed, 20 Feb 2013 23:18:28 +0100
-Message-ID: <20130220221828.GB23856@xo-6d-61-c0.localdomain>
-References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com>
- <20130220014512.GC31018@kroah.com>
- <51244B35.8090006@windriver.com>
- <20130220044506.GA2728@kroah.com>
- <5124FFD7.8070708@windriver.com>
- <20130220205737.GB6597@xo-6d-61-c0.localdomain>
- <51254959.1020309@windriver.com>
+Subject: Re: [PATCH] freezer: configure user space process frozen along with
+ kernel threads
+Date: Wed, 20 Feb 2013 23:39:01 +0100
+Message-ID: <20130220223901.GD23856@xo-6d-61-c0.localdomain>
+References: <1361326525.9753.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+ <878v6jjdoq.fsf@xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53594 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57120 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080Ab3BTWSq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 17:18:46 -0500
+	with ESMTP id S1751716Ab3BTWjM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 17:39:12 -0500
 Content-Disposition: inline
-In-Reply-To: <51254959.1020309@windriver.com>
+In-Reply-To: <878v6jjdoq.fsf@xmission.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Ross <andy.ross@windriver.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Li Fei <fei.li@intel.com>, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk, gorcunov@openvz.org, rientjes@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, biao.wang@intel.com
 
-On Wed 2013-02-20 14:08:25, Andy Ross wrote:
-> On 02/20/2013 12:57 PM, Pavel Machek wrote:
-> >I'm sure something creative can be done with fake init that shuts
-> >the console up then execs previous init. No need to add more kernel
-> >knobs, I'd say.
+On Wed 2013-02-20 05:51:49, Eric W. Biederman wrote:
+> Li Fei <fei.li@intel.com> writes:
 > 
-> Fair enough, but some last words:
+> > There is well known issue that freezing will fail in case that fuse
+> > daemon is frozen firstly with some requests not handled, as the fuse
+> > usage task is waiting for the response from fuse daemon and can't be
+> > frozen. To solve the issue as above, make fuse daemon frozen after
+> > all user space processes frozen and during the kernel threads frozen
+> > phase.
+> >
+> > After discussion, at present it's generally agreed that:
+> > 1) It's only the fuse daemon itself know definitely that it needs
+> > and can be frozen together with kernel threads;
+> > 2) It's helpful to expose interface that user space processes can
+> > use to configure user space processes to be frozen together with
+> > kernel threads.
+> > More information can be found on https://lkml.org/lkml/2013/2/18/174.
+> >
+> > To support the requirement above, attribute /proc/<PID>/freeze_late
+> > is added, writing 1 to it will make the process to be frozen together
+> > with kernel threads, and writing 0 to it will make the process to be
+> > frozen together with user space processes.
 > 
-> That's argument is the "it's about logging" hypothesis again.  Even if
-> it were possible to completely shut up console output (something
-> that's awfully hard in the general case when running on PC hardware,
-> and IMHO from a developer's perspective not even a good thing), that's
+> There are no permission checks on this interface at all which
+> potentially could make freeze late loose all meaning.  Certainly
+> operating without permission checks needs some justification.
+> 
+> Then I have the question how does this scale.  Which processes are ok to
+> have the freeze late bit set?
+> 
+> But even more than that fuse is setup to allow unprivileged mounts and
+> mostly untrusted processes to act as filesystems, whith a nice kernel
+> wrapper.  Now we are going to trust those filesystems with the ability
+> to stop the kernel from freezing?
+> 
+> That seems inherently wrong.
 
-Is it really so hard? ... ... ... I'll comment below.
+Well, agreed...
 
-> not the whole problem.  The framebuffer console initialization does a
-> buffer clear and mode set, and that clobbers anything the bootloader
-> might have left on the screen prematurely, before userspace is ready
-> to throw up its own splash.  Splash screens may be a silly
-> requirement, but they're still a requirement.
+It would be cool to treat fuse as a kind of IPC, and have rule that all
+processes waiting for fuse need to be in S state (or at least freezeable/killable).
 
-Ok. "quiet" option already leaves the display as is, including tests on it -
-at least in VGA text mode case. Would it make sense to behave the same on
-framebuffers you care about?
+Unfortunately fuse does support mmap, and the way VFS is done, putting
+tasks waiting for fuse in S state is not easy.
 
-That patch could be quite accepteble, AFAICT. It does not add a new interface,
-just makes framebuffers behave similar way to legacy vga.
-
-And now... how to shut off the logging.
-
-/sbin/init:
-chvt 99
-cat /share/splash > /dev/fb0
-exec /sbin/init
-
-...here you go. No flickering, no distro messages on the screen. You have
-to display your splash from /sbin/init, but that should not be bad. Hmm?
-
-> And the suspend console problem is likewise at work: ideally you'd
-> like to know, for example, that the panel backlight is off before
-> suspending.  But what happens in practice is that the kernel does a VT
-> switch to/from console 63 and the backlight wakes up (I'm not going to
-> pretend I have this bit completely figured out, but the problem is/was
-> real and this patch fixed it by suppressing the console visibility).
-
-I believe someone is already fixing this for suspend. rjw would know more.
-Lets treat it as separate problem?
-
-> But at the same time: all that other stuff doesn't quite meet the
-> requirements (which in this case are basically "nothing happens
-> visually between bootloader handoff and the surfaceflinger splash").
-> What you get with that is something like what you get with desktop
-> distros: you "mostly" never see the console, except when you do.
-
-I don't know what surfaceflinger splash is; if you can display it from
-init (as above) or very soon after that you should be fine.
-								Pavel
---
+We could use help in that area...
+									Pavel
+-- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
