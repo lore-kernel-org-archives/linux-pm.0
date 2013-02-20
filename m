@@ -1,89 +1,48 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH 05/16] blackfin idle: delete pm_idle
-Date: Wed, 20 Feb 2013 21:21:16 +0100
-Message-ID: <5125303C.3080507@metafoo.de>
-References: <1360475903-30007-1-git-send-email-lenb@kernel.org> <1656351.lki82jZfSs@vostro.rjw.lan> <512529C2.4050909@metafoo.de> <1759773.UdmLmFNAfS@vostro.rjw.lan>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: [PATCH] freezer: configure user space process frozen along with kernel threads
+Date: Wed, 20 Feb 2013 12:28:12 -0800
+Message-ID: <87obfeivc3.fsf@xmission.com>
+References: <Pine.LNX.4.44L0.1302201021210.1671-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1759773.UdmLmFNAfS@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from out03.mta.xmission.com ([166.70.13.233]:42329 "EHLO
+	out03.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934793Ab3BTU2l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 15:28:41 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1302201021210.1671-100000@iolanthe.rowland.org>
+	(Alan Stern's message of "Wed, 20 Feb 2013 10:24:12 -0500 (EST)")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Li Fei <fei.li@intel.com>, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk, gorcunov@openvz.org, rientjes@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, biao.wang@intel.com
 
-On 02/20/2013 08:59 PM, Rafael J. Wysocki wrote:
-> On Wednesday, February 20, 2013 08:53:38 PM Lars-Peter Clausen wrote:
->> On 02/20/2013 08:52 PM, Rafael J. Wysocki wrote:
->>> On Monday, February 18, 2013 05:28:19 PM Lars-Peter Clausen wrote:
->>>> On 02/10/2013 06:58 AM, Len Brown wrote:
->>>>> From: Len Brown <len.brown@intel.com>
->>>>>
->>>>> pm_idle is dead code on blackfin.
->>>>>
->>>>> Signed-off-by: Len Brown <len.brown@intel.com>
->>>>> Cc: uclinux-dist-devel@blackfin.uclinux.org
->>>>> ---
->>>>>  arch/blackfin/kernel/process.c | 7 -------
->>>>>  1 file changed, 7 deletions(-)
->>>>>
->>>>> diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kerne=
-l/process.c
->>>>> index 3e16ad9..8061426 100644
->>>>> --- a/arch/blackfin/kernel/process.c
->>>>> +++ b/arch/blackfin/kernel/process.c
->>>>> @@ -39,12 +39,6 @@ int nr_l1stack_tasks;
->>>>>  void *l1_stack_base;
->>>>>  unsigned long l1_stack_len;
->>>>> =20
->>>>> -/*
->>>>> - * Powermanagement idle function, if any..
->>>>> - */
->>>>> -void (*pm_idle)(void) =3D NULL;
->>>>> -EXPORT_SYMBOL(pm_idle);
->>>>> -
->>>>>  void (*pm_power_off)(void) =3D NULL;
->>>>>  EXPORT_SYMBOL(pm_power_off);
->>>>> =20
->>>>> @@ -81,7 +75,6 @@ void cpu_idle(void)
->>>>>  {
->>>>>  	/* endless idle loop with no priority at all */
->>>>>  	while (1) {
->>>>> -		void (*idle)(void) =3D pm_idle;
->>>>
->>>> Hi,
->>>>
->>>> This results in the following error:
->>>>
->>>> arch/blackfin/kernel/process.c: In function =E2=80=98cpu_idle=E2=80=
-=99:
->>>> arch/blackfin/kernel/process.c:83: error: =E2=80=98idle=E2=80=99 u=
-ndeclared (first use in
->>>> this function)
->>>> arch/blackfin/kernel/process.c:83: error: (Each undeclared identif=
-ier is
->>>> reported only once
->>>> arch/blackfin/kernel/process.c:83: error: for each function it app=
-ears in.)
->>>> arch/blackfin/kernel/process.c:88: error: implicit declaration of =
-function
->>>> =E2=80=98idle=E2=80=99
->>>>
->>>>
->>>> This change on top of your patch, fixes it.
->>>
->>> Lars, I need your sign-off for the patch below.  May I add it?
->>>
->>> Rafael
->>
->> Sure, I didn't realize the patches had already been merged, otherwis=
-e I'd have
->> sent a proper patch.
->=20
-> Please do now, if you can.  Sorry for the trouble.
->=20
+Alan Stern <stern@rowland.harvard.edu> writes:
 
-I can send it tomorrow morning, it's on my machine at work.
+> On Wed, 20 Feb 2013, Eric W. Biederman wrote:
+>
+>> Why can't the fuse filesystem freeze when there are requests pending?
+>
+> It _can_ freeze (that is, the fuse daemon can).  The problem is that
+> tasks _using_ the fuse filsystem can't if the daemon doesn't respond. 
 
-- Lars
+Which is what I meant when I said that the fuse filesystem couldn't
+freeze.
+ 
+> These tasks are stuck in uninterruptible wait states deep in the
+> filesystem layer, probably holding important locks.  They can't be
+> frozen until the outstanding requests complete.
+
+Why is it that processes that can be preempted can't be frozen?
+
+At most I would suggest that processes be frozen in reverse priority
+order.  Which unless there is a priority inversion should solve this
+problem without an additional proc file.
+
+Adding a userspace interface that doesn't come close to doing the right
+thing automatically and that is brittle and will likely fail in ways
+even stranger and harder to track ways than fuse is failing today seems
+like totally the wrong direction to go.  Not adding any permission
+checks to the proc files just compounds the problem.
+
+Eric
