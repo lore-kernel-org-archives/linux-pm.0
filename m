@@ -1,49 +1,29 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v2] APM idle: register apm_cpu_idle via cpuidle
-Date: Wed, 20 Feb 2013 12:48:33 -0500
-Message-ID: <51250C71.6080109@kernel.org>
-References: <5118B776.6090604@linaro.org> <1360623789-12247-1-git-send-email-lenb@kernel.org> <17242de27db147c4f828d6089016e1f485c038fb.1360623445.git.len.brown@intel.com> <alpine.LNX.2.00.1302181429570.17024@pobox.suse.cz>
+Subject: Re: [PATCH 05/16] blackfin idle: delete pm_idle
+Date: Wed, 20 Feb 2013 12:53:13 -0500
+Message-ID: <51250D89.9020401@kernel.org>
+References: <1360475903-30007-1-git-send-email-lenb@kernel.org> <8408629d64626937a5202751703dae7f41941f7a.1360475150.git.len.brown@intel.com> <512256A3.6050100@metafoo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1302181429570.17024@pobox.suse.cz>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qe0-f48.google.com ([209.85.128.48]:47859 "EHLO
+	mail-qe0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759055Ab3BTRxR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 12:53:17 -0500
+In-Reply-To: <512256A3.6050100@metafoo.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, uclinux-dist-devel@blackfin.uclinux.org
 
-On 02/18/2013 08:30 AM, Jiri Kosina wrote:
-> On Mon, 11 Feb 2013, Len Brown wrote:
-> 
->> From: Len Brown <len.brown@intel.com>
->>
->> Update APM to register its local idle routine with cpuidle.
->>
->> This allows us to stop exporting pm_idle to modules on x86.
->>
->> The Kconfig sub-option, APM_CPU_IDLE, now depends on on CPU_IDLE.
->>
->> Compile-tested only.
-> 
-> I will test it on APM hardware and report back to you.
-> 
-> Do you then want me to take it through my tree, or are you going to push 
-> the whole patchset as a whole?
 
-Rafael took my series as a whole into his PM tree
-and it is currently staged for a 3.9 pull.
-But if I broke your APM box, I'm standing by
-ready to fix it during the release.
+> Otherwise the patch seems to work fine.
 
-Please get back to me with the test results:
+Thanks for testing Lars!
+Sorry about breaking the build w/ my slopyness --
+will get that patched up.
 
-dmesg | grep idle
-grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*
-
-would tell us if it is working or not.
-
-thanks!
--Len Brown, Intel Open Source Technology Center
-
+cheers,
+Len Brown, Intel Open Source Technology Center
 
