@@ -1,39 +1,49 @@
-From: Cyrill Gorcunov <gorcunov@openvz.org>
-Subject: Re: [PATCH] freezer: configure user space process frozen along with
- kernel threads
-Date: Wed, 20 Feb 2013 13:05:07 +0400
-Message-ID: <20130220090507.GV20312@moon>
-References: <1361326525.9753.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 3/9] hwmon: (lm90) add support to handle irq
+Date: Wed, 20 Feb 2013 18:27:29 +0800
+Message-ID: <5124A511.1060508@nvidia.com>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-4-git-send-email-wni@nvidia.com> <512403F5.5010005@wwwdotorg.org> <5124429B.2000404@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f49.google.com ([209.85.215.49]:55541 "EHLO
-	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278Ab3BTJFL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 04:05:11 -0500
-Content-Disposition: inline
-In-Reply-To: <1361326525.9753.1.camel@fli24-HP-Compaq-8100-Elite-CMT-PC>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5124429B.2000404-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alex Courbot <acourbot-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org" <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Li Fei <fei.li@intel.com>
-Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk, ebiederm@xmission.com, rientjes@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, biao.wang@intel.com
 
-On Wed, Feb 20, 2013 at 10:15:25AM +0800, Li Fei wrote:
->  
-> +#ifdef CONFIG_FREEZER
-> +
-> +static ssize_t freeze_late_read(struct file *file, char __user *buf,
-> +					size_t count, loff_t *ppos)
-> +{
-> +	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-> +	char buffer[PROC_NUMBUF];
-> +	int freeze_late;
-> +	size_t len;
-> +	if (!task)
-> +		return -ESRCH;
-> +	freeze_late = (task->flags & PF_FREEZER_LATE) ? 1 : 0;
-> +	len = snprintf(buffer, sizeof(buffer), "%d\n", freeze_late);
-> +	return simple_read_from_buffer(buf, count, ppos, buffer, len);
-> +}
+On 02/20/2013 11:27 AM, Alex Courbot wrote:
+> On 02/20/2013 08:00 AM, Stephen Warren wrote:
+>> On 02/18/2013 04:30 AM, Wei Ni wrote:
+>>> Add support to handle irq. When the temperature touch the limit value, the
+>>> driver can handle the interrupt.
+>>
+>>> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
+>>
+>>> +static void lm90_irq_work(struct work_struct *work)
+>> ...
+>>> +	enable_irq(client->irq);
+>>> +}
+>>> +
+>>> +static irqreturn_t lm90_irq(int irq, void *dev_id)
+>>> +{
+>>> +	struct lm90_data *data = dev_id;
+>>> +
+>>> +	disable_irq_nosync(irq);
+>>
+>> I think IRQF_ONESHOT would enable you to remove the manual
+>> enable/disable_irq calls.
+> 
+> Oh, right. Using a threaded IRQ with IRQF_ONESHOT would make that happen 
+> transparently. Wasn't aware of that, thanks.
 
-Don't you need put_task_struct() once you grabbed it?
+Oh, yes, I will use it in my next version.
+
+Thanks.
+Wei.
+
+> 
+> Alex.
+> 
+> 
