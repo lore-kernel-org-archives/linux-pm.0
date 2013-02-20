@@ -1,56 +1,52 @@
-From: Andy Ross <andy.ross@windriver.com>
-Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
-Date: Wed, 20 Feb 2013 08:54:47 -0800
-Message-ID: <5124FFD7.8070708@windriver.com>
-References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com> <20130220014512.GC31018@kroah.com> <51244B35.8090006@windriver.com> <20130220044506.GA2728@kroah.com>
+From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Subject: Re: [RFC PATCH 8/9] ARM: dt: t30 cardhu: add dt entry for thermal
+ driver
+Date: Wed, 20 Feb 2013 10:18:37 -0700
+Message-ID: <5125056D.7060608@wwwdotorg.org>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-9-git-send-email-wni@nvidia.com> <51240A95.9070007@wwwdotorg.org> <5124B934.3020900@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from li44-10.members.linode.com ([72.14.181.10]:59143 "EHLO
-	plausible.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758726Ab3BTQyu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Feb 2013 11:54:50 -0500
-In-Reply-To: <20130220044506.GA2728@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5124B934.3020900-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Matthew Longnecker <MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org" <khali-PUYAD+kWke1g9hUCZPvPmw@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 02/19/2013 08:45 PM, Greg Kroah-Hartman wrote:
- > On Tue, Feb 19, 2013 at 08:04:05PM -0800, Andy Ross wrote:
- > > There's a (sort of) similar commonly-used option, vga=current, which
- > > prevents a mode switch for the special case of VGA/vesa.  But that
- > > doesn't work with the framebuffer console.
- >
- > Why not?  Can't you fix that?
+On 02/20/2013 04:53 AM, Wei Ni wrote:
+> On 02/20/2013 07:28 AM, Stephen Warren wrote:
+>> On 02/18/2013 04:30 AM, Wei Ni wrote:
+>>> Enable thermal driver in the dts file.
+>>> Set sensor as lm90 remote sensor, and set throttle data.
+>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt b/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt
 
-I'd argue that's what this is.  If you were going to design a "shut up
-the console" feature from scratch, would you choose to do it in one
-particular display driver or would you do it in the device-independent
-console code by forcing the already-existing "visible" flag to false?
+>> Also, what units are used for all these properties?
+> 
+> they use "int".
+> And according to our downstream dvfs driver, the throttle table use
+> "unsigned long".
 
- > > But the specific application here (Android's surfaceflinger) isn't set
- > > up for that, and it's a non-trivial API (and even doing it "right"
- > > involves racing against other users at startup).
- >
- > How could there be any other users at startup, you "own" the system
- > here, there should not be anyone to race with.
+int and unsigned long are types, not units. Units means degrees C vs.
+degrees F vs. degrees K, or Hz vs. KHz vs. MHz, etc.
 
-Tell that to the display hardware. :)
+>> Judging by the example below, this property is a list of tuples. The
+>> meaning of each field in the tuple needs to be explained.
+>>
+>> What happens when the CPU/SoC needs to be throttled? Must some clock or
+>> voltage be lowered/limited? If so, you need properties that indicate
+>> which clock/voltage/... needs to be acted upon.
+> 
+> This table which will be used by our DVFS driver, although it didn't be
+> upstreamed yet. The table set clock frequency limited value with
+> different cooling state. When the temperature touch the different
+> limited value, we will set difficult cooling state, find the limited
+> freq from this table and pass to the dvfs driver.
+> I think may be this table should be set for cooling device node. This
+> table is only for our tegra dvfs, so I think we can parse this table in
+> the tegra3_cooling.c, which will be the new driver for cooling device.
 
-Seriously, every Linux box with a display (to first approximation,
-obviously I didn't test them all while writing this message) spits
-something to the screen between the moment where the bootloader hands
-off control and the display driver is initialized.  Most of them
-glitch a little at suspend time because of the console switch there.
-I just reproduced both of these effects with a Fedora 18 live image.
-
-This fixes almost all of that (vga=current is still required because
-some early logging somewhere seems to write to the screen by banging
-registers directly and not using the console), and it does it in a way
-that works without having to modify existing userspace or (try to)
-remove the framebuffer console entirely.
-
-Andy
-
+Note that I expect the answers to these questions (pretty much all the
+questions I asked in response to your patch) to be included in the DT
+binding documentation, not just in email.
