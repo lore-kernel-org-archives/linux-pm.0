@@ -1,64 +1,136 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: Re: [RFC PATCH 6/9] hwmon: (lm90) Register to the thermal framework
-Date: Wed, 20 Feb 2013 18:40:25 +0800
-Message-ID: <5124A819.7040400@nvidia.com>
-References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-7-git-send-email-wni@nvidia.com> <5124082E.604@wwwdotorg.org>
+Subject: Re: [RFC PATCH 8/9] ARM: dt: t30 cardhu: add dt entry for thermal
+ driver
+Date: Wed, 20 Feb 2013 19:53:24 +0800
+Message-ID: <5124B934.3020900@nvidia.com>
+References: <1361187031-3679-1-git-send-email-wni@nvidia.com> <1361187031-3679-9-git-send-email-wni@nvidia.com> <51240A95.9070007@wwwdotorg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate04.nvidia.com ([216.228.121.35]:16269 "EHLO
-	hqemgate04.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759171Ab3BTKke (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 05:40:34 -0500
-In-Reply-To: <5124082E.604@wwwdotorg.org>
+Received: from hqemgate03.nvidia.com ([216.228.121.140]:8717 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934842Ab3BTLxm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 06:53:42 -0500
+In-Reply-To: <51240A95.9070007@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>
 Cc: "durgadoss.r@intel.com" <durgadoss.r@intel.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Matthew Longnecker <MLongnecker@nvidia.com>, "khali@linux-fr.org" <khali@linux-fr.org>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 02/20/2013 07:18 AM, Stephen Warren wrote:
+On 02/20/2013 07:28 AM, Stephen Warren wrote:
 > On 02/18/2013 04:30 AM, Wei Ni wrote:
->> Register the remote sensor to the thermal framework.
->> It can support to show the temperature and read/write threshold.
+>> Enable thermal driver in the dts file.
+>> Set sensor as lm90 remote sensor, and set throttle data.
 > 
->>  arch/arm/boot/dts/tegra30-cardhu.dtsi |    1 +
->>  drivers/hwmon/lm90.c                  |  182 ++++++++++++++++++++++++++++++++-
+>> diff --git a/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt b/Documentation/devicetree/bindings/thermal/tegra3-thermal.txt
 > 
-> There shouldn't be any need to edit both those files in the same patch.
-> This patch is making multiple separate logical changes, which should be
-> separate patches.
-
-I will follow Matthew's suggestion to split this serial patch into 3
-separate sets.
-
-> 
->> diff --git a/arch/arm/boot/dts/tegra30-cardhu.dtsi b/arch/arm/boot/dts/tegra30-cardhu.dtsi
-> 
->> +			#sensor-cells = <1>;
-> 
-> Again, in order to allow that, you need some documentation in
-> Documentation/devicetree/bindings/. Related to that, you need to Cc the
-> devicetree maintainers on at least the patches that add that documentation.
+> The DT documentation should be either a separate patch before the one
+> which implements it in the driver, or part of the driver patch. It
+> shouldn't be part of the patch which instantiates the binding in the
+> board DT file.
 
 Ok, I will do it.
 
 > 
->> diff --git a/drivers/hwmon/lm90.c b/drivers/hwmon/lm90.c
+>> +* Nvidia Tegra30 Thermal
 > 
->> @@ -1576,12 +1728,38 @@ static int lm90_probe(struct i2c_client *client,
-> ...
->> +	np_args.np = dev->of_node;
->> +	np_args.index = 0;
+> NVIDIA is all capitals.
+
+Got it.
+
 > 
-> As I mentioned before, that'd be better replaced by an explicit of_xlate
-> function.
+> It seems like a word is missing: Thermal Management? Control/Zone?
 
-Yes, I will try to use this func.
+It's better to use "NVIDIA Tegra30 Thermal Zone".
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+>> +** Thermal node properties:
+>> +
+>> +- compatible : "nvidia,tegra30-thermal";
+>> +- sensors: the sensor device node which we want to use in the thermal zone,
+>> +  the arguments is the index of the sensor in sensor device node;
+> 
+> The arguments should be defined by the DT binding documentation for that
+> referenced device, not by the referencing device.
+> 
+> DT properties that are custom defined for this binding should include
+> the vendor prefix in their name. So, that'd be "nvidia,sensors". This
+> may apply less if a "sensors" becomes a more generic standard, but it
+> surely applies to all the other properties below.
+
+So these properties should be introduced in the DT binding documentation
+of the thermal framework.
+
+> 
+>> +- passive-delay: passive delay;
+> 
+> What does this mean?
+
+This is used for the thermal framework. As you said, this should be
+introduced with the framework.
+
+> 
+>> +- num-passive-trips : number of passive trip points, this is required, set
+>> +  it 0 if none, if greater than 0, the following properties must be defined;
+>> +- passive-trips : temperature of passive trip points;
+> 
+> Presumably "num-passive-trips" can be calculated simply by counting the
+> number of entries in "passive-trips"?
+
+Oh, yes, I can remove it.
+
+> 
+> Please describe what passive and active trips are; someone who just
+> reads this binding document (perhaps in conjunction with some HW
+> documentation and/or other binding documentation) should be able to fill
+> in this binding without other knowledge.
+
+Durgadoss's patches introduced these value in the framework
+documentation, but he didn't touch the DT. So I will add it.
+
+> 
+>> +- num-active-trips: number of active trip points, this is required, set
+>> +  it 0 if none, if greater than 0, the following properties must be defined;
+>> +- active-trips: temperature of active trip points;
+> 
+> Both comments above apply here too.
+> 
+>> +- throt-tab-size: size of the throttle table, it's the max cooling state.
+>> +- throt-tab: throttle table. the cooling state will be defined according to
+>> +  this table.
+> 
+> Both comments above apply here too.
+> 
+> Also, what units are used for all these properties?
+
+they use "int".
+And according to our downstream dvfs driver, the throttle table use
+"unsigned long".
+
+> 
+> Judging by the example below, this property is a list of tuples. The
+> meaning of each field in the tuple needs to be explained.
+> 
+> What happens when the CPU/SoC needs to be throttled? Must some clock or
+> voltage be lowered/limited? If so, you need properties that indicate
+> which clock/voltage/... needs to be acted upon.
+
+This table which will be used by our DVFS driver, although it didn't be
+upstreamed yet. The table set clock frequency limited value with
+different cooling state. When the temperature touch the different
+limited value, we will set difficult cooling state, find the limited
+freq from this table and pass to the dvfs driver.
+I think may be this table should be set for cooling device node. This
+table is only for our tegra dvfs, so I think we can parse this table in
+the tegra3_cooling.c, which will be the new driver for cooling device.
+
+> 
+>> +Usually these properties are separated in board related dts files.
+> 
+> That's not really relevant.
+
+Ok.
+
 > 
 
