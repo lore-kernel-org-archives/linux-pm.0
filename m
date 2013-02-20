@@ -1,61 +1,58 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] freezer: configure user space process frozen along with
- kernel threads
-Date: Wed, 20 Feb 2013 16:58:03 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1302201652460.1671-100000@iolanthe.rowland.org>
-References: <87zjyyekh8.fsf@xmission.com>
+From: Andy Ross <andy.ross@windriver.com>
+Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
+Date: Wed, 20 Feb 2013 14:08:25 -0800
+Message-ID: <51254959.1020309@windriver.com>
+References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com> <20130220014512.GC31018@kroah.com> <51244B35.8090006@windriver.com> <20130220044506.GA2728@kroah.com> <5124FFD7.8070708@windriver.com> <20130220205737.GB6597@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:35153 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751129Ab3BTV6F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 16:58:05 -0500
-In-Reply-To: <87zjyyekh8.fsf@xmission.com>
+Received: from li44-10.members.linode.com ([72.14.181.10]:49358 "EHLO
+	plausible.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751241Ab3BTWI3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Feb 2013 17:08:29 -0500
+In-Reply-To: <20130220205737.GB6597@xo-6d-61-c0.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Li Fei <fei.li@intel.com>, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, mingo@redhat.com, peterz@infradead.org, akpm@linux-foundation.org, viro@zeniv.linux.org.uk, gorcunov@openvz.org, rientjes@google.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, chuansheng.liu@intel.com, biao.wang@intel.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 20 Feb 2013, Eric W. Biederman wrote:
+On 02/20/2013 12:57 PM, Pavel Machek wrote:
+> I'm sure something creative can be done with fake init that shuts
+> the console up then execs previous init. No need to add more kernel
+> knobs, I'd say.
 
-> > Oh, okay.  But it's no different from any other filesystem in that
-> > respect.  Processes generally can't be frozen while they are waiting
-> > for filesystem I/O to complete.  In many cases they can't receive 
-> > signals either (they are in an uninterruptible wait state).
-> 
-> Ick.  So the process freezer and all network filesystems has problems?
-> Especially nfs?
+Fair enough, but some last words:
 
-I don't know any of the details.  On the other hand, it is not exactly 
-hot, up-to-the-minute news to learn that NFS has problems...
+That's argument is the "it's about logging" hypothesis again.  Even if
+it were possible to completely shut up console output (something
+that's awfully hard in the general case when running on PC hardware,
+and IMHO from a developer's perspective not even a good thing), that's
+not the whole problem.  The framebuffer console initialization does a
+buffer clear and mode set, and that clobbers anything the bootloader
+might have left on the screen prematurely, before userspace is ready
+to throw up its own splash.  Splash screens may be a silly
+requirement, but they're still a requirement.
 
-> > There's a big difference between preemption and freezing: Preemption
-> > is involuntary whereas freezing is voluntary.  It's like the difference
-> > between preemptive and cooperative multitasking.
-> 
-> I hadn't realized freezing was voluntary.  That certainly seems like a
-> pain.
+And the suspend console problem is likewise at work: ideally you'd
+like to know, for example, that the panel backlight is off before
+suspending.  But what happens in practice is that the kernel does a VT
+switch to/from console 63 and the backlight wakes up (I'm not going to
+pretend I have this bit completely figured out, but the problem is/was
+real and this patch fixed it by suppressing the console visibility).
 
-More precisely, it's voluntary when processes are running in kernel 
-mode.  When they're in user mode there is no problem; they get sent a 
-signal and then go into the freezer when they switch to kernel mode to 
-process the signal.
+Now, the point that an in-kernel console is "going away" and thus not
+worth augmenting with new APIs is valid.  And this is a small patch
+that's unlikely to be difficult to maintain in a custom tree.  And as
+we all agree there are other mechanisms that can be used here (even if
+AFAICT they don't completely solve the problem), and indeed I'd love
+to get surfaceflinger working with VT_ACTIVATE et. al. if I get a
+chance.  So I'm not going to cry if this isn't worth mainline.
 
-> >> At most I would suggest that processes be frozen in reverse priority
-> >> order.  Which unless there is a priority inversion should solve this
-> >> problem without an additional proc file.
-> >
-> > Do fuse daemons (and the processes they rely upon) run with elevated 
-> > priority?
-> 
-> I don't know if the daemons are of an elevated scheduling priority today
-> but if they aren't it is as easy to require an elevated scheduling
-> priority as it is to require a magic freezer priority.  Furthermore if
-> they don't run at an elevated priority there is the possibility of
-> priority inversion.
+But at the same time: all that other stuff doesn't quite meet the
+requirements (which in this case are basically "nothing happens
+visually between bootloader handoff and the surfaceflinger splash").
+What you get with that is something like what you get with desktop
+distros: you "mostly" never see the console, except when you do.
 
-This seems like a reasonable thing to try out.
-
-Alan Stern
-
+Andy
