@@ -1,134 +1,77 @@
-From: Andy Ross <andy.ross@windriver.com>
-Subject: Re: [PATCH v3] vt: add init_hide parameter to suppress boot output
-Date: Wed, 20 Feb 2013 09:57:26 -0800
-Message-ID: <51250E86.1050908@windriver.com>
-References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com> <20130220014512.GC31018@kroah.com> <51244B35.8090006@windriver.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
+Date: Wed, 20 Feb 2013 10:12:58 -0800
+Message-ID: <20130220181258.GC6679@kroah.com>
+References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com>
+ <20130220014512.GC31018@kroah.com>
+ <51244B35.8090006@windriver.com>
+ <20130220044506.GA2728@kroah.com>
+ <5124FFD7.8070708@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from li44-10.members.linode.com ([72.14.181.10]:54821 "EHLO
-	plausible.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934346Ab3BTR5a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 20 Feb 2013 12:57:30 -0500
-In-Reply-To: <51244B35.8090006@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5124FFD7.8070708@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Ross <andy.ross@windriver.com>
 Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-When vt.init_hide is set, suppress output on newly created consoles
-until an affirmative switch to that console.  This prevents boot
-output from displaying (and clobbering splash screens, etc...) without
-disabling the console entirely.
+On Wed, Feb 20, 2013 at 08:54:47AM -0800, Andy Ross wrote:
+> On 02/19/2013 08:45 PM, Greg Kroah-Hartman wrote:
+> > On Tue, Feb 19, 2013 at 08:04:05PM -0800, Andy Ross wrote:
+> > > There's a (sort of) similar commonly-used option, vga=current, which
+> > > prevents a mode switch for the special case of VGA/vesa.  But that
+> > > doesn't work with the framebuffer console.
+> >
+> > Why not?  Can't you fix that?
+> 
+> I'd argue that's what this is.  If you were going to design a "shut up
+> the console" feature from scratch, would you choose to do it in one
+> particular display driver or would you do it in the device-independent
+> console code by forcing the already-existing "visible" flag to false?
 
-Signed-off-by: Andy Ross <andy.ross@windriver.com>
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
-  Documentation/kernel-parameters.txt | 8 ++++++++
-  drivers/tty/vt/vt.c                 | 7 +++++++
-  include/linux/console_struct.h      | 3 ++-
-  include/linux/vt.h                  | 2 ++
-  kernel/power/console.c              | 2 --
-  5 files changed, 19 insertions(+), 3 deletions(-)
+I don't know.  All I do know is that by adding yet-another-userspace
+option, we will have to support it for 20+ years.  And I'm _really_
+hesitant to do so, especially for a subsystem that, if all goes well, we
+will be able to just entirely disable soon.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 6c72381..56bd2be 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -3149,6 +3149,14 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
-  			            them quite hard to use for exploits but
-  			            might break your system.
+> > > But the specific application here (Android's surfaceflinger) isn't set
+> > > up for that, and it's a non-trivial API (and even doing it "right"
+> > > involves racing against other users at startup).
+> >
+> > How could there be any other users at startup, you "own" the system
+> > here, there should not be anyone to race with.
+> 
+> Tell that to the display hardware. :)
 
-+	vt.init_hide=	[VT] Hide initial console
-+			Format: <bool> (0 = visible (default), 1 = invisible)
-+			When set, the console will be invisible initially.
-+			This prevents mode switches, buffer clears, and screen
-+			display from the console code during boot.  Switching
-+			to a console device at runtime using the VT_ACTIVATE
-+			ioctl will make its contents visible.
-+
-  	vt.cur_default=	[VT] Default cursor shape.
-  			Format: 0xCCBBAA, where AA, BB, and CC are the same as
-  			the parameters of the <Esc>[?A;B;Cc escape sequence;
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8fd8968..c68322c 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -165,6 +165,9 @@ module_param(global_cursor_default, int, S_IRUGO | S_IWUSR);
-  static int cur_default = CUR_DEFAULT;
-  module_param(cur_default, int, S_IRUGO | S_IWUSR);
+On Android you own that as well, so there this isn't an excuse :)
 
-+static bool init_hide;
-+module_param(init_hide, bool, S_IRUGO);
-+
-  /*
-   * ignore_poke: don't unblank the screen when things are typed.  This is
-   * mainly for the privacy of braille terminal users.
-@@ -734,6 +737,7 @@ static void visual_init(struct vc_data *vc, int num, int init)
-  	__module_get(vc->vc_sw->owner);
-  	vc->vc_num = num;
-  	vc->vc_display_fg = &master_display_fg;
-+	vc->vc_hidden = init_hide;
-  	vc->vc_uni_pagedir_loc = &vc->vc_uni_pagedir;
-  	vc->vc_uni_pagedir = 0;
-  	vc->vc_hi_font_mask = 0;
-@@ -2336,6 +2340,9 @@ static void console_callback(struct work_struct *ignored)
-  	if (want_console >= 0) {
-  		if (want_console != fg_console &&
-  		    vc_cons_allocated(want_console)) {
-+			if (want_console != SUSPEND_CONSOLE &&
-+					fg_console != SUSPEND_CONSOLE)
-+				vc_cons[want_console].d->vc_hidden = 0;
-  			hide_cursor(vc_cons[fg_console].d);
-  			change_console(vc_cons[want_console].d);
-  			/* we only changed when the console had already
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index 7f0c329..fc96691 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -91,6 +91,7 @@ struct vc_data {
-  	unsigned int	vc_can_do_color	: 1;
-  	unsigned int	vc_report_mouse : 2;
-  	unsigned char	vc_utf		: 1;	/* Unicode UTF-8 encoding */
-+	unsigned int    vc_hidden	: 1;    /* Set by vt.init_hide */
-  	unsigned char	vc_utf_count;
-  		 int	vc_utf_char;
-  	unsigned int	vc_tab_stop[8];		/* Tab stops. 256 columns. */
-@@ -134,6 +135,6 @@ extern void vc_SAK(struct work_struct *work);
+> Seriously, every Linux box with a display (to first approximation,
+> obviously I didn't test them all while writing this message) spits
+> something to the screen between the moment where the bootloader hands
+> off control and the display driver is initialized.  Most of them
+> glitch a little at suspend time because of the console switch there.
+> I just reproduced both of these effects with a Fedora 18 live image.
 
-  #define CUR_DEFAULT CUR_UNDERLINE
+That's Fedora's issue, not Android's.
 
--#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
-+#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp && !conp->vc_hidden)
+And it's really a DRM issue, and as mentioned above, one that people are
+already working on resolving by just getting rid of this whole layer
+entirely.  So adding new options to it are something that I really don't
+want to do, especially as we already have working prototypes that don't
+have this problem.
 
-  #endif /* _LINUX_CONSOLE_STRUCT_H */
-diff --git a/include/linux/vt.h b/include/linux/vt.h
-index b186e04..0dc3e89 100644
---- a/include/linux/vt.h
-+++ b/include/linux/vt.h
-@@ -11,6 +11,8 @@
-  #define VT_UPDATE		0x0004 /* A bigger update occurred */
-  #define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
+> This fixes almost all of that (vga=current is still required because
+> some early logging somewhere seems to write to the screen by banging
+> registers directly and not using the console), and it does it in a way
+> that works without having to modify existing userspace or (try to)
+> remove the framebuffer console entirely.
 
-+#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
-+
-  #ifdef CONFIG_VT_CONSOLE
+Then fix that early logging code, don't paper over it by doing something
+like this please.  Or just remove the framebuffer entirely, it's not
+needed, no one will miss it...
 
-  extern int vt_kmsg_redirect(int new);
-diff --git a/kernel/power/console.c b/kernel/power/console.c
-index b1dc456..b74bdb8 100644
---- a/kernel/power/console.c
-+++ b/kernel/power/console.c
-@@ -10,8 +10,6 @@
-  #include <linux/module.h>
-  #include "power.h"
+thanks,
 
--#define SUSPEND_CONSOLE	(MAX_NR_CONSOLES-1)
--
-  static int orig_fgconsole, orig_kmsg;
-
-  int pm_prepare_console(void)
--- 
-1.7.11.7
-
+greg k-h
