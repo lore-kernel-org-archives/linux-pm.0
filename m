@@ -1,85 +1,224 @@
-From: Andy Ross <andy.ross@windriver.com>
-Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
-Date: Thu, 21 Feb 2013 09:01:07 -0800
-Message-ID: <512652D3.2060101@windriver.com>
-References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com> <20130220014512.GC31018@kroah.com> <51244B35.8090006@windriver.com> <20130220044506.GA2728@kroah.com> <5124FFD7.8070708@windriver.com> <20130220205737.GB6597@xo-6d-61-c0.localdomain> <51254959.1020309@windriver.com> <20130221011242.GB4961@kroah.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Thu, 21 Feb 2013 19:39:18 +0200
+Message-ID: <51265BC6.8030601@semaphore.gr>
+References: <51253715.7080600@semaphore.gr> <CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com> <512605A1.8090106@semaphore.gr> <CAOh2x=m82jKMf+xgg+fjnCUHLpCQ_NgYqw4auyAidokt_z=uOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130221011242.GB4961@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=m82jKMf+xgg+fjnCUHLpCQ_NgYqw4auyAidokt_z=uOw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I know I said the last words were my last, but this message and
-Pavel's gave me some vain hope that I might be able to win this one on
-the merits, so I'm trying again just to make the situation clear:
+Hi,
 
-On 02/20/2013 05:12 PM, Greg Kroah-Hartman wrote:
-> I don't see why this is even needed for surfaceflinger systems, as
-> again, you have full control over the hardware and system so you
-> don't even need a framebuffer console at all.
+On 02/21/2013 05:33 PM, Viresh Kumar wrote:
+> Hi Again,
+> 
+> int boost_freq = 0;
+> 
+>         if (od_tuners->early_demand) {
+>                 if (load_freq > dbs_info->prev_load_freq && (load_freq
+> - dbs_info->prev_load_freq >
+>                     od_tuners->grad_up_threshold * policy->cur)) {
+>                     boost_freq = 1;
+>                 }
+> 
+>                 dbs_info->prev_load_freq = load_freq;
+>         }
+> 
+>          /* Check for frequency increase */
+>          if (boost_freq || (load_freq > od_tuners->up_threshold * policy->cur)) {
+>                   increase-freq;
+> 
+> 
+> This would get rid of duplicate calls to increase_freq() and also
+> avoid changing its
+> prototype.
+> 
 
-The application here is Android on PC hardware (see 01.org, which is
-carrying this patch at the moment), so sadly we don't.  And we want
-the framebuffer console anyway; having a console is a good thing.
+Thanks again. Following V3 with your suggestion.
 
-> if you look most distros have already solved this issue for you,
-> [...]  My systems don't drop down to the framebuffer when
-> suspending, I think you need to look at using a better distro
+Regards,
+Stratos
 
-That's sorta, kinda, completely incorrect. :)
+-----------------------8<--------------------------------------------
+Instead of checking only the absolute value of CPU load_freq to increase
+frequency, we detect forthcoming CPU load rise and increase frequency
+earlier.
 
-Just to be sure, I tried again (on my Sony Vaio Z 1311 and an Acer
-X700 table, both Ivy Bridge boxes with i915 graphics) with live iso's
-for Fedora 18, openSUSE 12.2, and Ubuntu 12.10:
+Every sampling rate, we calculate the gradient of load_freq. If it is
+too steep we assume that the load most probably will go over
+up_threshold in next iteration(s) and we increase frequency immediately.
 
-+ Every one of them includes the framebuffer console
+New tuners are introduced:
+- early_demand: to enable this functionality (disabled by default).
+- grad_up_threshold: over this gradient of load we will increase
+frequency immediately.
 
-+ Every one of them displays at least some console content at boot
-   (Ubuntu gets the cookie here for showing only a blinking cursor and
-   no actual text).
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ drivers/cpufreq/cpufreq_governor.c |  1 +
+ drivers/cpufreq/cpufreq_governor.h |  3 ++
+ drivers/cpufreq/cpufreq_ondemand.c | 59 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 62 insertions(+), 1 deletion(-)
 
-+ Every one of them displays console content at suspend time (openSUSE
-   gets a lemon here for multiple lines of spam, Ubuntu again almost
-   gets a pass here because all they have is a cursor unless you have
-   manually Alt-Fn'd to a console to put something in the buffer).
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 7722505..e737aa9 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -322,6 +322,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		} else {
+ 			od_dbs_info->rate_mult = 1;
+ 			od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
++			od_dbs_info->prev_load_freq = 0;
+ 			od_ops->powersave_bias_init_cpu(cpu);
+ 		}
+ 
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 6301790..3a703b9 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -96,6 +96,7 @@ struct od_cpu_dbs_info_s {
+ 	unsigned int freq_hi_jiffies;
+ 	unsigned int rate_mult;
+ 	unsigned int sample_type:1;
++	unsigned int prev_load_freq;
+ };
+ 
+ struct cs_cpu_dbs_info_s {
+@@ -114,6 +115,8 @@ struct od_dbs_tuners {
+ 	unsigned int adj_up_threshold;
+ 	unsigned int powersave_bias;
+ 	unsigned int io_is_busy;
++	unsigned int grad_up_threshold;
++	unsigned int early_demand;
+ };
+ 
+ struct cs_dbs_tuners {
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index c5fd794..fa4b21e 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -31,6 +31,7 @@
+ #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+ #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
++#define DEF_GRAD_UP_THRESHOLD			(50)
+ #define MAX_SAMPLING_DOWN_FACTOR		(100000)
+ #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
+ #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+@@ -168,11 +169,26 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+ 	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+ 	struct dbs_data *dbs_data = policy->governor_data;
+ 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
++	int boost_freq = 0;
+ 
+ 	dbs_info->freq_lo = 0;
+ 
++	/*
++	 * Calculate the gradient of load_freq. If it is too steep we assume
++	 * that the load will go over up_threshold in next iteration(s) and
++	 * we increase the frequency immediately
++	 */
++	if (od_tuners->early_demand) {
++		if (load_freq > dbs_info->prev_load_freq &&
++		   (load_freq - dbs_info->prev_load_freq >
++		    od_tuners->grad_up_threshold * policy->cur))
++			boost_freq = 1;
++
++		dbs_info->prev_load_freq = load_freq;
++	}
++
+ 	/* Check for frequency increase */
+-	if (load_freq > od_tuners->up_threshold * policy->cur) {
++	if (boost_freq || (load_freq > od_tuners->up_threshold * policy->cur)) {
+ 		/* If switching to max speed, apply sampling_down_factor */
+ 		if (policy->cur < policy->max)
+ 			dbs_info->rate_mult =
+@@ -445,12 +461,47 @@ static ssize_t store_powersave_bias(struct cpufreq_policy *policy,
+ 	return count;
+ }
+ 
++static ssize_t store_grad_up_threshold(struct cpufreq_policy *policy,
++		const char *buf, size_t count)
++{
++	struct dbs_data *dbs_data = policy->governor_data;
++	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
++	unsigned int input;
++	int ret;
++	ret = sscanf(buf, "%u", &input);
++
++	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
++			input < MIN_FREQUENCY_UP_THRESHOLD) {
++		return -EINVAL;
++	}
++
++	od_tuners->grad_up_threshold = input;
++	return count;
++}
++
++static ssize_t store_early_demand(struct cpufreq_policy *policy,
++		const char *buf, size_t count)
++{
++	struct dbs_data *dbs_data = policy->governor_data;
++	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
++	unsigned int input;
++	int ret;
++
++	ret = sscanf(buf, "%u", &input);
++	if (ret != 1)
++		return -EINVAL;
++	od_tuners->early_demand = !!input;
++	return count;
++}
++
+ show_one(od, sampling_rate, sampling_rate);
+ show_one(od, io_is_busy, io_is_busy);
+ show_one(od, up_threshold, up_threshold);
+ show_one(od, sampling_down_factor, sampling_down_factor);
+ show_one(od, ignore_nice, ignore_nice);
+ show_one(od, powersave_bias, powersave_bias);
++show_one(od, grad_up_threshold, grad_up_threshold);
++show_one(od, early_demand, early_demand);
+ declare_show_sampling_rate_min();
+ 
+ cpufreq_freq_attr_rw(sampling_rate);
+@@ -459,6 +510,8 @@ cpufreq_freq_attr_rw(up_threshold);
+ cpufreq_freq_attr_rw(sampling_down_factor);
+ cpufreq_freq_attr_rw(ignore_nice);
+ cpufreq_freq_attr_rw(powersave_bias);
++cpufreq_freq_attr_rw(grad_up_threshold);
++cpufreq_freq_attr_rw(early_demand);
+ cpufreq_freq_attr_ro(sampling_rate_min);
+ 
+ static struct attribute *dbs_attributes[] = {
+@@ -469,6 +522,8 @@ static struct attribute *dbs_attributes[] = {
+ 	&ignore_nice.attr,
+ 	&powersave_bias.attr,
+ 	&io_is_busy.attr,
++	&grad_up_threshold.attr,
++	&early_demand.attr,
+ 	NULL
+ };
+ 
+@@ -516,9 +571,11 @@ static int od_init(struct dbs_data *dbs_data)
+ 	}
+ 
+ 	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
++	tuners->grad_up_threshold = DEF_GRAD_UP_THRESHOLD;
+ 	tuners->ignore_nice = 0;
+ 	tuners->powersave_bias = 0;
+ 	tuners->io_is_busy = should_io_be_busy();
++	tuners->early_demand = 0;
+ 
+ 	dbs_data->tuners = tuners;
+ 	mutex_init(&dbs_data->mutex);
+-- 
+1.8.1.2
 
-+ Every one of them shows console content during shutdown.
 
-It's not like these are ugly, awful glitches.  It's just quick flashes
-of text, and I frankly wouldn't care.  But honestly: the level of
-support right now for glitch-free boot and suspend (in the presence of
-the framebuffer console) just isn't at the level of spit and polish
-demanded by consumer devices.
-
-I *assure* you, that if this were as simple as "do what the distros
-do" that this patch wouldn't exist. (Seriously: probably half my job
-right now consists of picking up an integration glitch and asking "Why
-doesn't this happen on Fedora?").  It's a real problem, and has to be
-solved with code.
-
-So let me make the case for this particular solution one last time:
-
-1. The framebuffer console is useful and we don't want to disable it.
-
-2. Console *output* is useful.  That junk is helpful sometimes, and in
-    any case auditing logging for a whole system is terribly difficult.
-    IMHO the correct solution to "I don't want users to see this
-    internal detail" is not "no one should ever see this internal
-    detail".
-
-3. Console output on the *screen* is the thing that's undesirable, and
-    even then only if the user hasn't requested it.
-
-4. There's already a predicate in the console subsystem
-    (CON_IS_VISIBLE()) which does exactly what we want.  All this does
-    is allow it to be forced false even for the default consoles at
-    boot.  But if the user wants to see the output, she just changes to
-    a console and it's right there for her (though right now
-    surfaceflinger will still fight for the display because it doesn't
-    speak the VT_ACTIVATE protocol, but that's a separate bug).
-
-Andy
