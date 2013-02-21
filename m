@@ -1,85 +1,81 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] PM / OPP: fix condition for empty of_init_opp_table()
-Date: Thu, 21 Feb 2013 08:59:02 -0600
-Message-ID: <20130221145902.GA22712@kahuna>
-References: <1361444685-1034-1-git-send-email-shawn.guo@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Thu, 21 Feb 2013 21:03:44 +0530
+Message-ID: <CAOh2x=m82jKMf+xgg+fjnCUHLpCQ_NgYqw4auyAidokt_z=uOw@mail.gmail.com>
+References: <51253715.7080600@semaphore.gr>
+	<CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com>
+	<512605A1.8090106@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:45833 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753482Ab3BUO7L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Feb 2013 09:59:11 -0500
-Content-Disposition: inline
-In-Reply-To: <1361444685-1034-1-git-send-email-shawn.guo@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <512605A1.8090106@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 
-On 19:04-20130221, Shawn Guo wrote:
-> randconfig build reports the following error which is caused by that
-> CONFIG_PM_OPP is unset.
->=20
-Minor: caused by CONFIG_PM_OPP not being set?
->   CC      arch/arm/mach-imx/mach-imx6q.o
-> arch/arm/mach-imx/mach-imx6q.c: In function =E2=80=98imx6q_opp_init=E2=
-=80=99:
-> arch/arm/mach-imx/mach-imx6q.c:248:2: error: implicit declaration of =
-function =E2=80=98of_init_opp_table=E2=80=99 [-Werror=3Dimplicit-functi=
-on-declaration]
-thanks for catching this.
->=20
-> Fix the error by giving a more correct condition for empty
-> of_init_opp_table() implementation.
->=20
-> Reported-by: Rob Herring <robherring2@gmail.com>
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> ---
->  include/linux/opp.h |   18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
->=20
-> diff --git a/include/linux/opp.h b/include/linux/opp.h
-> index 214e0eb..3aca2b8 100644
-> --- a/include/linux/opp.h
-> +++ b/include/linux/opp.h
-> @@ -47,15 +47,6 @@ int opp_enable(struct device *dev, unsigned long f=
-req);
->  int opp_disable(struct device *dev, unsigned long freq);
-> =20
->  struct srcu_notifier_head *opp_get_notifier(struct device *dev);
-> -
-> -#ifdef CONFIG_OF
-> -int of_init_opp_table(struct device *dev);
-> -#else
-> -static inline int of_init_opp_table(struct device *dev)
-> -{
-> -	return -EINVAL;
-> -}
-> -#endif /* CONFIG_OF */
->  #else
->  static inline unsigned long opp_get_voltage(struct opp *opp)
->  {
-> @@ -112,6 +103,15 @@ static inline struct srcu_notifier_head *opp_get=
-_notifier(struct device *dev)
->  }
->  #endif		/* CONFIG_PM_OPP */
-> =20
-> +#if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
-> +int of_init_opp_table(struct device *dev);
-> +#else
-> +static inline int of_init_opp_table(struct device *dev)
-> +{
-> +	return -EINVAL;
-> +}
-> +#endif
+Hi Again,
+
+On Thu, Feb 21, 2013 at 5:01 PM, Stratos Karafotis
+<stratosk@semaphore.gr> wrote:
+
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -168,16 +174,29 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+>         struct dbs_data *dbs_data = policy->governor_data;
+>         struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+> +       unsigned int prev_load_freq;
+>
+>         dbs_info->freq_lo = 0;
+>
+> +       /*
+> +        * Calculate the gradient of load_freq. If it is too steep we assume
+> +        * that the load will go over up_threshold in next iteration(s) and
+> +        * we increase the frequency immediately
+> +        */
+> +       if (od_tuners->early_demand) {
+> +               prev_load_freq = dbs_info->prev_load_freq;
+> +               dbs_info->prev_load_freq = load_freq;
 > +
->  #if defined(CONFIG_CPU_FREQ) && defined(CONFIG_PM_OPP)
->  int opp_init_cpufreq_table(struct device *dev,
->  			    struct cpufreq_frequency_table **table);
+> +               if (load_freq > prev_load_freq && (load_freq - prev_load_freq >
+> +                   od_tuners->grad_up_threshold * policy->cur)) {
+> +                       dbs_freq_increase(dbs_info, policy, policy->max);
+> +                       return;
+> +               }
+> +       }
+> +
+>         /* Check for frequency increase */
+>         if (load_freq > od_tuners->up_threshold * policy->cur) {
+> -               /* If switching to max speed, apply sampling_down_factor */
+> -               if (policy->cur < policy->max)
+> -                       dbs_info->rate_mult =
+> -                               od_tuners->sampling_down_factor;
+> -               dbs_freq_increase(policy, policy->max);
+> +               dbs_freq_increase(dbs_info, policy, policy->max);
+>                 return;
+>         }
 
-Acked-by: Nishanth Menon <nm@ti.com>
---=20
-Regards,
-Nishanth Menon
+Not really against your implementation, but this is what i thought of how
+it should look like (initially when i reviewed your V1)
+
+int boost_freq = 0;
+
+       if (od_tuners->early_demand) {
+               if (load_freq > dbs_info->prev_load_freq && (load_freq
+- dbs_info->prev_load_freq >
+                   od_tuners->grad_up_threshold * policy->cur)) {
+                   boost_freq = 1;
+               }
+
+               dbs_info->prev_load_freq = load_freq;
+       }
+
+        /* Check for frequency increase */
+        if (boost_freq || (load_freq > od_tuners->up_threshold * policy->cur)) {
+                 increase-freq;
+
+
+This would get rid of duplicate calls to increase_freq() and also
+avoid changing its
+prototype.
