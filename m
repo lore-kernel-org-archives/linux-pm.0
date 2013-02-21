@@ -1,205 +1,76 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: [PATCH v3 1/2] cpufreq: Convert the cpufreq_driver_lock to a rwlock
-Date: Wed, 20 Feb 2013 17:56:22 -0600
-Message-ID: <1361404583-5557-2-git-send-email-nzimmer@sgi.com>
-References: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
- <1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
+Date: Wed, 20 Feb 2013 17:12:42 -0800
+Message-ID: <20130221011242.GB4961@kroah.com>
+References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com>
+ <20130220014512.GC31018@kroah.com>
+ <51244B35.8090006@windriver.com>
+ <20130220044506.GA2728@kroah.com>
+ <5124FFD7.8070708@windriver.com>
+ <20130220205737.GB6597@xo-6d-61-c0.localdomain>
+ <51254959.1020309@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:52173 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573Ab3BUBOZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Feb 2013 20:14:25 -0500
+Received: by mail-pa0-f51.google.com with SMTP id hz1so4377311pad.10
+        for <linux-pm@vger.kernel.org>; Wed, 20 Feb 2013 17:14:24 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <51254959.1020309@windriver.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Ross <andy.ross@windriver.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This eliminates the contention I am seeing in __cpufreq_cpu_get.
-It also nicely stages the lock to be replaced by the rcu.
+On Wed, Feb 20, 2013 at 02:08:25PM -0800, Andy Ross wrote:
+> On 02/20/2013 12:57 PM, Pavel Machek wrote:
+> >I'm sure something creative can be done with fake init that shuts
+> >the console up then execs previous init. No need to add more kernel
+> >knobs, I'd say.
+> 
+> Fair enough, but some last words:
+> 
+> That's argument is the "it's about logging" hypothesis again.  Even if
+> it were possible to completely shut up console output (something
+> that's awfully hard in the general case when running on PC hardware,
+> and IMHO from a developer's perspective not even a good thing), that's
+> not the whole problem.  The framebuffer console initialization does a
+> buffer clear and mode set, and that clobbers anything the bootloader
+> might have left on the screen prematurely, before userspace is ready
+> to throw up its own splash.  Splash screens may be a silly
+> requirement, but they're still a requirement.
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
----
- drivers/cpufreq/cpufreq.c | 52 +++++++++++++++++++++++------------------------
- 1 file changed, 26 insertions(+), 26 deletions(-)
+Yes, they are a requirement in some situations, and if you look most
+distros have already solved this issue for you, by not using a
+framebuffer at all.  Why not just do the same thing in your Android
+system as you do have full control over the hardware and the boot
+process.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b02824d..c5996fe 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -45,7 +45,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- /* This one keeps track of the previously set governor of a removed CPU */
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
--static DEFINE_SPINLOCK(cpufreq_driver_lock);
-+static DEFINE_RWLOCK(cpufreq_driver_lock);
- 
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -137,7 +137,7 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	if (!cpufreq_driver)
- 		goto err_out_unlock;
-@@ -155,13 +155,13 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- 	if (!sysfs && !kobject_get(&data->kobj))
- 		goto err_out_put_module;
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	return data;
- 
- err_out_put_module:
- 	module_put(cpufreq_driver->owner);
- err_out_unlock:
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- err_out:
- 	return NULL;
- }
-@@ -266,9 +266,9 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 	policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	switch (state) {
- 
-@@ -765,12 +765,12 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 			goto err_out_kobj_put;
- 	}
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus) {
- 		per_cpu(cpufreq_cpu_data, j) = policy;
- 		per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
- 	}
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = cpufreq_add_dev_symlink(cpu, policy);
- 	if (ret)
-@@ -813,12 +813,12 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 
- 	lock_policy_rwsem_write(sibling);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	cpumask_set_cpu(cpu, policy->cpus);
- 	per_cpu(cpufreq_policy_cpu, cpu) = policy->cpu;
- 	per_cpu(cpufreq_cpu_data, cpu) = policy;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	unlock_policy_rwsem_write(sibling);
- 
-@@ -871,15 +871,15 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_online_cpu(sibling) {
- 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
- 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 			return cpufreq_add_policy_cpu(cpu, sibling, dev);
- 		}
- 	}
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
- #endif
- 
-@@ -952,10 +952,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	return 0;
- 
- err_out_unregister:
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_put(&policy->kobj);
- 	wait_for_completion(&policy->kobj_unregister);
-@@ -1008,12 +1008,12 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	data = per_cpu(cpufreq_cpu_data, cpu);
- 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
- 
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	if (!data) {
- 		pr_debug("%s: No cpu_data found\n", __func__);
-@@ -1047,9 +1047,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 			WARN_ON(lock_policy_rwsem_write(cpu));
- 			cpumask_set_cpu(cpu, data->cpus);
- 
--			spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+			write_lock_irqsave(&cpufreq_driver_lock, flags);
- 			per_cpu(cpufreq_cpu_data, cpu) = data;
--			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 			unlock_policy_rwsem_write(cpu);
- 
-@@ -1848,13 +1848,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	if (driver_data->setpolicy)
- 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	if (cpufreq_driver) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 		return -EBUSY;
- 	}
- 	cpufreq_driver = driver_data;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
-@@ -1886,9 +1886,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- err_if_unreg:
- 	subsys_interface_unregister(&cpufreq_interface);
- err_null_driver:
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_driver);
-@@ -1914,9 +1914,9 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	subsys_interface_unregister(&cpufreq_interface);
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
- 
--	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
--	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	return 0;
- }
--- 
-1.8.1.2
+> And the suspend console problem is likewise at work: ideally you'd
+> like to know, for example, that the panel backlight is off before
+> suspending.  But what happens in practice is that the kernel does a VT
+> switch to/from console 63 and the backlight wakes up (I'm not going to
+> pretend I have this bit completely figured out, but the problem is/was
+> real and this patch fixed it by suppressing the console visibility).
+
+My systems don't drop down to the framebuffer when suspending, I think
+you need to look at using a better distro :)
+
+> Now, the point that an in-kernel console is "going away" and thus not
+> worth augmenting with new APIs is valid.  And this is a small patch
+> that's unlikely to be difficult to maintain in a custom tree.  And as
+> we all agree there are other mechanisms that can be used here (even if
+> AFAICT they don't completely solve the problem), and indeed I'd love
+> to get surfaceflinger working with VT_ACTIVATE et. al. if I get a
+> chance.  So I'm not going to cry if this isn't worth mainline.
+
+I don't see why this is even needed for surfaceflinger systems, as
+again, you have full control over the hardware and system so you don't
+even need a framebuffer console at all.
+
+thanks,
+
+greg k-h
