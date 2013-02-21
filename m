@@ -1,104 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 2/2] cpufreq: Convert the cpufreq_driver_lock to use
- the rcu
-Date: Thu, 21 Feb 2013 11:20:26 +0530
-Message-ID: <CAKohponMWRPspZF=tPN6MXoxkcjw7CK_sLnSdsKe+EDoiADvGA@mail.gmail.com>
-References: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
-	<1361404583-5557-1-git-send-email-nzimmer@sgi.com>
-	<1361404583-5557-3-git-send-email-nzimmer@sgi.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH v10 0/4] block layer runtime pm
+Date: Thu, 21 Feb 2013 17:19:34 +0800
+Message-ID: <20130221091934.GA8612@aaronlu.sh.intel.com>
+References: <1361340717-8991-1-git-send-email-aaron.lu@intel.com>
+ <Pine.LNX.4.44L0.1302201042400.1671-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f175.google.com ([209.85.216.175]:43717 "EHLO
-	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751040Ab3BUFu1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Feb 2013 00:50:27 -0500
-Received: by mail-qc0-f175.google.com with SMTP id j3so3448821qcs.34
-        for <linux-pm@vger.kernel.org>; Wed, 20 Feb 2013 21:50:26 -0800 (PST)
-In-Reply-To: <1361404583-5557-3-git-send-email-nzimmer@sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1302201042400.1671-100000@iolanthe.rowland.org>
+Sender: linux-ide-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>
 List-Id: linux-pm@vger.kernel.org
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 21 February 2013 05:26, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> In general rwlocks are discourged so we are moving it to use the rcu instead.
-> This does require a bit of care since the cpufreq_driver_lock protects both
-> the cpufreq_driver and the cpufreq_cpu_data array.
-> Also since many of the function pointers on cpufreq_driver may sleep when
-> called we have to grab them under the rcu_read_lock but call them after
-> rcu_read_unlock();
+On Wed, Feb 20, 2013 at 10:43:50AM -0500, Alan Stern wrote:
+> On Wed, 20 Feb 2013, Aaron Lu wrote:
+> 
+> > In August 2010, Jens and Alan discussed about "Runtime PM and the block
+> > layer". http://marc.info/?t=128259108400001&r=1&w=2
+> > And then Alan has given a detailed implementation guide:
+> > http://marc.info/?l=linux-scsi&m=133727953625963&w=2
+> 
+> > v10:
+> > - Add link of Alan Stern's ideas on block layer runtime PM to patch 2
+> >   and 3's changelog;
+> > - Add back code to schdule device suspend if scsi driver return -EBUSY.
+> 
+> This all looks okay now.  You can add
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> 
+> to each of the patches.
 
-Even i have started reading rcu documentation now :)
+Great, thanks a lot for your kind help.
 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 312 +++++++++++++++++++++++++++++++++-------------
->  1 file changed, 224 insertions(+), 88 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+Hi James,
+Can I have your ack for patch 1 and 4?
 
-> @@ -255,20 +258,21 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
->  void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
->  {
->         struct cpufreq_policy *policy;
-> -       unsigned long flags;
-> +       u8 flags;
+And Jens,
+Do you have any comments for this series?
 
-I think you can get rid of flags.
+Thanks,
+Aaron
 
->         BUG_ON(irqs_disabled());
->
->         if (cpufreq_disabled())
->                 return;
->
-> -       freqs->flags = cpufreq_driver->flags;
->         pr_debug("notification %u of frequency transition to %u kHz\n",
->                 state, freqs->new);
->
-> -       read_lock_irqsave(&cpufreq_driver_lock, flags);
-> +       rcu_read_lock();
-> +       flags = rcu_dereference(cpufreq_driver)->flags;
-
-use freq->flags here ...
-
->         policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
-> -       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       rcu_read_unlock();
-> +       freqs->flags = flags;
->
->         switch (state) {
->
-> @@ -277,7 +281,7 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
->                  * which is not equal to what the cpufreq core thinks is
->                  * "old frequency".
->                  */
-> -               if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-> +               if (!(flags & CPUFREQ_CONST_LOOPS)) {
-
-and here.
-
->                         if ((policy) && (policy->cpu == freqs->cpu) &&
->                             (policy->cur) && (policy->cur != freqs->old)) {
->                                 pr_debug("Warning: CPU frequency is"
-
-
-> @@ -742,35 +773,39 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
-
-> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +       spin_lock_irqsave(&cpufreq_driver_lock, flags);
->         for_each_cpu(j, policy->cpus) {
->                 per_cpu(cpufreq_cpu_data, j) = policy;
->                 per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
->         }
-> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> +       synchronize_rcu();
-
-I don't think (but i can be wrong too :) ), that we need a synchronize_rcu()
-here. We need it only at places where we have updated the cpufreq_driver
-pointer.
-
-As we aren't doing any rcu specific read/update for cpufreq_cpu_data.
