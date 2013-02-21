@@ -1,120 +1,104 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH linux-next] cpufreq: ondemand: Calculate gradient of CPU
- load to early increase frequency
-Date: Thu, 21 Feb 2013 10:29:16 +0530
-Message-ID: <CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com>
-References: <51253715.7080600@semaphore.gr>
+Subject: Re: [PATCH v3 2/2] cpufreq: Convert the cpufreq_driver_lock to use
+ the rcu
+Date: Thu, 21 Feb 2013 11:20:26 +0530
+Message-ID: <CAKohponMWRPspZF=tPN6MXoxkcjw7CK_sLnSdsKe+EDoiADvGA@mail.gmail.com>
+References: <1360116290-23849-1-git-send-email-nzimmer@sgi.com>
+	<1361404583-5557-1-git-send-email-nzimmer@sgi.com>
+	<1361404583-5557-3-git-send-email-nzimmer@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51253715.7080600@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qc0-f175.google.com ([209.85.216.175]:43717 "EHLO
+	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040Ab3BUFu1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Feb 2013 00:50:27 -0500
+Received: by mail-qc0-f175.google.com with SMTP id j3so3448821qcs.34
+        for <linux-pm@vger.kernel.org>; Wed, 20 Feb 2013 21:50:26 -0800 (PST)
+In-Reply-To: <1361404583-5557-3-git-send-email-nzimmer@sgi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nathan Zimmer <nzimmer@sgi.com>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Stratos,
+On 21 February 2013 05:26, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> In general rwlocks are discourged so we are moving it to use the rcu instead.
+> This does require a bit of care since the cpufreq_driver_lock protects both
+> the cpufreq_driver and the cpufreq_cpu_data array.
+> Also since many of the function pointers on cpufreq_driver may sleep when
+> called we have to grab them under the rcu_read_lock but call them after
+> rcu_read_unlock();
 
-On Thu, Feb 21, 2013 at 2:20 AM, Stratos Karafotis
-<stratosk@semaphore.gr> wrote:
-> Instead of checking only the absolute value of CPU load_freq to increase
-> frequency, we detect forthcoming CPU load rise and increase frequency
-> earlier.
+Even i have started reading rcu documentation now :)
+
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 312 +++++++++++++++++++++++++++++++++-------------
+>  1 file changed, 224 insertions(+), 88 deletions(-)
 >
-> Every sampling rate, we calculate the gradient of load_freq.
-> If it is too steep we assume that the load most probably will
-> go over up_threshold in next iteration(s). We reduce up_threshold
-> by early_differential to achieve frequency increase in the current
-> iteration.
->
-> A new tuner early_demand is introduced to enable this functionality
-> (disabled by default). Also we use new tuners to control early demand:
->
->         - early_differential: controls the final up_threshold
->         - grad_up_threshold: over this gradient of load we will decrease
->                 up_threshold by early_differential.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 
-Sorry for this but i already have a patchset which has changed these files
-to some extent. Can you please rebase over them? Actually my patchset
-is already accepted, its just that rafael didn't wanted to have them for 3.9.
-
-http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-for-3.10
-
-Back to your patch:
-
-Following is what i understood about this patch:
-- The only case where this code will come into picture is when load is
-below up_threshold.
-- And we see a steep rise in the load from previous request..
-
-i.e. (with the default values)
-
-UP_THRESHOLD                           (80)
-GRAD_UP_THESHOLD                  (50)
-EARLY_DIFFERENTIAL                 (45)
-
-If the load was 10 previously and it went to 80 > load >= 60, we will
-make up_threshold as 80-45 = 35. Which is lower than grad_up_threshold :)
-
-Isn't it strange?
-
-So, probably you just don't need this tunable: early_differential.
-Rather just increase the frequency without doing this calculation:
-
-if (load_freq > od_tuners.up_threshold * policy->cur) {
-
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index f3eb26c..458806f 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -30,6 +30,8 @@
->  #define DEF_FREQUENCY_DOWN_DIFFERENTIAL                (10)
->  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
->  #define DEF_SAMPLING_DOWN_FACTOR               (1)
-> +#define DEF_GRAD_UP_THESHOLD                   (50)
-
-s/THESHOLD/THRESHOLD
-
-> @@ -170,11 +175,29 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+> @@ -255,20 +258,21 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
+>  void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
 >  {
->         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> +       unsigned int up_threshold = od_tuners.up_threshold;
-> +       unsigned int grad;
+>         struct cpufreq_policy *policy;
+> -       unsigned long flags;
+> +       u8 flags;
+
+I think you can get rid of flags.
+
+>         BUG_ON(irqs_disabled());
 >
->         dbs_info->freq_lo = 0;
+>         if (cpufreq_disabled())
+>                 return;
 >
-> +       /*
-> +        * Calculate the gradient of load_freq. If it is too steep we assume
-> +        * that the load will go over up_threshold in next iteration(s). We
-> +        * reduce up_threshold by early_differential to achieve frequency
-> +        * increase earlier
-> +        */
-> +       if (od_tuners.early_demand) {
-> +               if (load_freq > dbs_info->prev_load_freq) {
+> -       freqs->flags = cpufreq_driver->flags;
+>         pr_debug("notification %u of frequency transition to %u kHz\n",
+>                 state, freqs->new);
+>
+> -       read_lock_irqsave(&cpufreq_driver_lock, flags);
+> +       rcu_read_lock();
+> +       flags = rcu_dereference(cpufreq_driver)->flags;
 
-&& (load_freq < od_tuners.up_threshold * policy->cur) ??
+use freq->flags here ...
 
-> +                       grad = load_freq - dbs_info->prev_load_freq;
-> +
-> +                       if (grad > od_tuners.grad_up_threshold * policy->cur)
-> +                               up_threshold -= od_tuners.early_differential;
-> +               }
-> +               dbs_info->prev_load_freq = load_freq;
-> +       }
-> +
->         /* Check for frequency increase */
-> -       if (load_freq > od_tuners.up_threshold * policy->cur) {
-> +       if (load_freq > up_threshold * policy->cur) {
->                 /* If switching to max speed, apply sampling_down_factor */
->                 if (policy->cur < policy->max)
->                         dbs_info->rate_mult =
-> @@ -438,12 +461,26 @@ static ssize_t store_powersave_bias(struct kobject *a, struct attribute *b,
->         return count;
->  }
+>         policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
+> -       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +       rcu_read_unlock();
+> +       freqs->flags = flags;
+>
+>         switch (state) {
+>
+> @@ -277,7 +281,7 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
+>                  * which is not equal to what the cpufreq core thinks is
+>                  * "old frequency".
+>                  */
+> -               if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+> +               if (!(flags & CPUFREQ_CONST_LOOPS)) {
 
-> +show_one(od, early_demand, early_demand);
+and here.
 
-What about making other two tunables rw?
+>                         if ((policy) && (policy->cpu == freqs->cpu) &&
+>                             (policy->cur) && (policy->cur != freqs->old)) {
+>                                 pr_debug("Warning: CPU frequency is"
+
+
+> @@ -742,35 +773,39 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
+
+> -       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +       spin_lock_irqsave(&cpufreq_driver_lock, flags);
+>         for_each_cpu(j, policy->cpus) {
+>                 per_cpu(cpufreq_cpu_data, j) = policy;
+>                 per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
+>         }
+> -       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +       spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +       synchronize_rcu();
+
+I don't think (but i can be wrong too :) ), that we need a synchronize_rcu()
+here. We need it only at places where we have updated the cpufreq_driver
+pointer.
+
+As we aren't doing any rcu specific read/update for cpufreq_cpu_data.
