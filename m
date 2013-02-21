@@ -1,81 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Thu, 21 Feb 2013 21:03:44 +0530
-Message-ID: <CAOh2x=m82jKMf+xgg+fjnCUHLpCQ_NgYqw4auyAidokt_z=uOw@mail.gmail.com>
-References: <51253715.7080600@semaphore.gr>
-	<CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com>
-	<512605A1.8090106@semaphore.gr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] blackfin idle: Fix compile error
+Date: Thu, 21 Feb 2013 17:24:05 +0100
+Message-ID: <4371891.o6DvZ68ieT@vostro.rjw.lan>
+References: <1449748.lzaK5NRLYV@vostro.rjw.lan> <1361440603-7209-1-git-send-email-lars@metafoo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <512605A1.8090106@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:40877 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752773Ab3BUQR3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Feb 2013 11:17:29 -0500
+In-Reply-To: <1361440603-7209-1-git-send-email-lars@metafoo.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
 
-Hi Again,
+On Thursday, February 21, 2013 10:56:43 AM Lars-Peter Clausen wrote:
+> Commit 26bab0c ("blackfin idle: delete pm_idle") introduced the follo=
+wing
+> compile error:
+> 	arch/blackfin/kernel/process.c: In function =E2=80=98cpu_idle=E2=80=99=
+:
+> 	arch/blackfin/kernel/process.c:83: error: =E2=80=98idle=E2=80=99 und=
+eclared (first use in this function)
+> 	arch/blackfin/kernel/process.c:83: error: (Each undeclared identifie=
+r is reported only once
+> 	arch/blackfin/kernel/process.c:83: error: for each function it appea=
+rs in.)
+> 	arch/blackfin/kernel/process.c:88: error: implicit declaration of fu=
+nction =E2=80=98idle=E2=80=99
+>=20
+> This patch fixes it.
+>=20
+> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 
-On Thu, Feb 21, 2013 at 5:01 PM, Stratos Karafotis
-<stratosk@semaphore.gr> wrote:
+Applied to linux-pm.git/linux-next, I'm going to push it to Linus later=
+ this
+week.
 
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -168,16 +174,29 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
->         struct dbs_data *dbs_data = policy->governor_data;
->         struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> +       unsigned int prev_load_freq;
->
->         dbs_info->freq_lo = 0;
->
-> +       /*
-> +        * Calculate the gradient of load_freq. If it is too steep we assume
-> +        * that the load will go over up_threshold in next iteration(s) and
-> +        * we increase the frequency immediately
-> +        */
-> +       if (od_tuners->early_demand) {
-> +               prev_load_freq = dbs_info->prev_load_freq;
-> +               dbs_info->prev_load_freq = load_freq;
-> +
-> +               if (load_freq > prev_load_freq && (load_freq - prev_load_freq >
-> +                   od_tuners->grad_up_threshold * policy->cur)) {
-> +                       dbs_freq_increase(dbs_info, policy, policy->max);
-> +                       return;
-> +               }
-> +       }
-> +
->         /* Check for frequency increase */
->         if (load_freq > od_tuners->up_threshold * policy->cur) {
-> -               /* If switching to max speed, apply sampling_down_factor */
-> -               if (policy->cur < policy->max)
-> -                       dbs_info->rate_mult =
-> -                               od_tuners->sampling_down_factor;
-> -               dbs_freq_increase(policy, policy->max);
-> +               dbs_freq_increase(dbs_info, policy, policy->max);
->                 return;
->         }
-
-Not really against your implementation, but this is what i thought of how
-it should look like (initially when i reviewed your V1)
-
-int boost_freq = 0;
-
-       if (od_tuners->early_demand) {
-               if (load_freq > dbs_info->prev_load_freq && (load_freq
-- dbs_info->prev_load_freq >
-                   od_tuners->grad_up_threshold * policy->cur)) {
-                   boost_freq = 1;
-               }
-
-               dbs_info->prev_load_freq = load_freq;
-       }
-
-        /* Check for frequency increase */
-        if (boost_freq || (load_freq > od_tuners->up_threshold * policy->cur)) {
-                 increase-freq;
+Thanks,
+Rafael
 
 
-This would get rid of duplicate calls to increase_freq() and also
-avoid changing its
-prototype.
+> ---
+>  arch/blackfin/kernel/process.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>=20
+> diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/pr=
+ocess.c
+> index 8061426..9782c03 100644
+> --- a/arch/blackfin/kernel/process.c
+> +++ b/arch/blackfin/kernel/process.c
+> @@ -80,12 +80,10 @@ void cpu_idle(void)
+>  		if (cpu_is_offline(smp_processor_id()))
+>  			cpu_die();
+>  #endif
+> -		if (!idle)
+> -			idle =3D default_idle;
+>  		tick_nohz_idle_enter();
+>  		rcu_idle_enter();
+>  		while (!need_resched())
+> -			idle();
+> +			default_idle();
+>  		rcu_idle_exit();
+>  		tick_nohz_idle_exit();
+>  		preempt_enable_no_resched();
+>=20
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
