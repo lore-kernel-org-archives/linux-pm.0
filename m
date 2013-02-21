@@ -1,67 +1,132 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 1/2] time : pass broadcast device parameter
-Date: Thu, 21 Feb 2013 23:01:22 +0100
-Message-ID: <1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org>
-References: <5123C299.3080005@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5123C299.3080005@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, fweisbec@gmail.com, john.stultz@linaro.org, linaro-kernel@lists.linaro.org
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V2 1/4] cpufreq: Add per policy governor-init/exit infrastructure
+Date: Fri, 22 Feb 2013 00:35:56 +0100
+Message-ID: <3793606.bilcxohA80@vostro.rjw.lan>
+References: <cover.1360568193.git.viresh.kumar@linaro.org> <ece24bb874ad1834fc43b83f053b2560db8c25d3.1360568193.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <ece24bb874ad1834fc43b83f053b2560db8c25d3.1360568193.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com
 List-Id: linux-pm@vger.kernel.org
 
-The broadcast timer could be passed as parameter to the function
-instead of using again tick_broadcast_device.evtdev which was
-previously used in the caller function.
+On Monday, February 11, 2013 01:20:00 PM Viresh Kumar wrote:
+> Currently, there can't be multiple instances of single governor_type. If we have
+> a multi-package system, where we have multiple instances of struct policy (per
+> package), we can't have multiple instances of same governor. i.e. We can't have
+> multiple instances of ondemand governor for multiple packages.
+> 
+> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> governor-name/. Which again reflects that there can be only one instance of a
+> governor_type in the system.
+> 
+> This is a bottleneck for multicluster system, where we want different packages
+> to use same governor type, but with different tunables.
+> 
+> This patch is inclined towards providing this infrastructure. Because we are
+> required to allocate governor's resources dynamically now, we must do it at
+> policy creation and end. And so got CPUFREQ_GOV_POLICY_INIT/EXIT.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- kernel/time/tick-broadcast.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Are those new events NOPs now?
 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index f113755..baf9b0e7 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -370,10 +370,9 @@ struct cpumask *tick_get_broadcast_oneshot_mask(void)
- 	return to_cpumask(tick_broadcast_oneshot_mask);
- }
- 
--static int tick_broadcast_set_event(ktime_t expires, int force)
-+static int tick_broadcast_set_event(struct clock_event_device *bc,
-+				    ktime_t expires, int force)
- {
--	struct clock_event_device *bc = tick_broadcast_device.evtdev;
--
- 	if (bc->mode != CLOCK_EVT_MODE_ONESHOT)
- 		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
- 
-@@ -443,7 +442,7 @@ again:
- 		 * Rearm the broadcast device. If event expired,
- 		 * repeat the above
- 		 */
--		if (tick_broadcast_set_event(next_event, 0))
-+		if (tick_broadcast_set_event(dev, next_event, 0))
- 			goto again;
- 	}
- 	raw_spin_unlock(&tick_broadcast_lock);
-@@ -486,7 +485,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 			cpumask_set_cpu(cpu, tick_get_broadcast_oneshot_mask());
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
- 			if (dev->next_event.tv64 < bc->next_event.tv64)
--				tick_broadcast_set_event(dev->next_event, 1);
-+				tick_broadcast_set_event(bc, dev->next_event, 1);
- 		}
- 	} else {
- 		if (cpumask_test_cpu(cpu, tick_get_broadcast_oneshot_mask())) {
-@@ -555,7 +554,7 @@ void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- 			clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
- 			tick_broadcast_init_next_event(to_cpumask(tmpmask),
- 						       tick_next_period);
--			tick_broadcast_set_event(tick_next_period, 1);
-+			tick_broadcast_set_event(bc, tick_next_period, 1);
- 		} else
- 			bc->next_event.tv64 = KTIME_MAX;
- 	} else {
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 21 ++++++++++++++++++---
+>  include/linux/cpufreq.h   |  9 ++++++---
+>  2 files changed, 24 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 04aab05..40f7083 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1081,6 +1081,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>  
+>  	/* If cpu is last user of policy, free policy */
+>  	if (cpus == 1) {
+> +		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> +
+>  		lock_policy_rwsem_read(cpu);
+>  		kobj = &data->kobj;
+>  		cmp = &data->kobj_unregister;
+> @@ -1669,7 +1671,7 @@ EXPORT_SYMBOL(cpufreq_get_policy);
+>  static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  				struct cpufreq_policy *policy)
+>  {
+> -	int ret = 0;
+> +	int ret = 0, failed = 1;
+>  	struct cpufreq_driver *driver = rcu_dereference(cpufreq_driver);
+>  
+>  	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
+> @@ -1724,18 +1726,31 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
+>  			pr_debug("governor switch\n");
+>  
+>  			/* end old governor */
+> -			if (data->governor)
+> +			if (data->governor) {
+>  				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+> +				__cpufreq_governor(data,
+> +						CPUFREQ_GOV_POLICY_EXIT);
+> +			}
+>  
+>  			/* start new governor */
+>  			data->governor = policy->governor;
+> -			if (__cpufreq_governor(data, CPUFREQ_GOV_START)) {
+> +			if (!__cpufreq_governor(data, CPUFREQ_GOV_POLICY_INIT)) {
+> +				if (!__cpufreq_governor(data, CPUFREQ_GOV_START))
+> +					failed = 0;
+> +				else
+> +					__cpufreq_governor(data,
+> +							CPUFREQ_GOV_POLICY_EXIT);
+> +			}
+> +
+> +			if (failed) {
+>  				/* new governor failed, so re-start old one */
+>  				pr_debug("starting governor %s failed\n",
+>  							data->governor->name);
+>  				if (old_gov) {
+>  					data->governor = old_gov;
+>  					__cpufreq_governor(data,
+> +							CPUFREQ_GOV_POLICY_INIT);
+> +					__cpufreq_governor(data,
+>  							   CPUFREQ_GOV_START);
+>  				}
+>  				ret = -EINVAL;
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index a22944c..3b822ce 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -106,6 +106,7 @@ struct cpufreq_policy {
+>  					 * governors are used */
+>  	unsigned int		policy; /* see above */
+>  	struct cpufreq_governor	*governor; /* see below */
+> +	void			*governor_data;
+>  
+>  	struct work_struct	update; /* if update_policy() needs to be
+>  					 * called, but you're in IRQ context */
+> @@ -178,9 +179,11 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div, u_int mu
+>   *                          CPUFREQ GOVERNORS                        *
+>   *********************************************************************/
+>  
+> -#define CPUFREQ_GOV_START  1
+> -#define CPUFREQ_GOV_STOP   2
+> -#define CPUFREQ_GOV_LIMITS 3
+> +#define CPUFREQ_GOV_START	1
+> +#define CPUFREQ_GOV_STOP	2
+> +#define CPUFREQ_GOV_LIMITS	3
+> +#define CPUFREQ_GOV_POLICY_INIT	4
+> +#define CPUFREQ_GOV_POLICY_EXIT	4
+
+Why don't you use different values here?
+
+If you need only one value, one #define should be sufficient.
+
+Thanks,
+Rafael
+
+
 -- 
-1.7.9.5
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
