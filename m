@@ -1,67 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] microblaze idle: Fix compile error
-Date: Thu, 21 Feb 2013 17:25:17 +0100
-Message-ID: <5556573.chQEm97ICB@vostro.rjw.lan>
-References: <fe98b401efe3034c1684b8625ac266601c3b4ad1.1360475150.git.len.brown@intel.com> <1361441731-19900-1-git-send-email-lars@metafoo.de>
+From: Andy Ross <andy.ross@windriver.com>
+Subject: Re: [PATCH v2] vt: add init_hide parameter to suppress boot output
+Date: Thu, 21 Feb 2013 09:01:07 -0800
+Message-ID: <512652D3.2060101@windriver.com>
+References: <1361289224-10678-1-git-send-email-kirill.shutemov@linux.intel.com> <20130220014512.GC31018@kroah.com> <51244B35.8090006@windriver.com> <20130220044506.GA2728@kroah.com> <5124FFD7.8070708@windriver.com> <20130220205737.GB6597@xo-6d-61-c0.localdomain> <51254959.1020309@windriver.com> <20130221011242.GB4961@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40885 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753508Ab3BUQSi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Feb 2013 11:18:38 -0500
-In-Reply-To: <1361441731-19900-1-git-send-email-lars@metafoo.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130221011242.GB4961@kroah.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Jiri Slaby <jslaby@suse.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
 
-On Thursday, February 21, 2013 11:15:31 AM Lars-Peter Clausen wrote:
-> Commit def8203 ("microblaze idle: delete pm_idle") introduced the following
-> compile error:
-> 
-> 	arch/microblaze/kernel/process.c: In function 'cpu_idle':
-> 	arch/microblaze/kernel/process.c:100: error: 'idle' undeclared (first use in this function)
-> 	arch/microblaze/kernel/process.c:100: error: (Each undeclared identifier is reported only once
-> 	arch/microblaze/kernel/process.c:100: error: for each function it appears in.)
-> 	arch/microblaze/kernel/process.c:106: error: implicit declaration of function 'idle'
-> 
-> This patch fixes it.
-> 
-> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+I know I said the last words were my last, but this message and
+Pavel's gave me some vain hope that I might be able to win this one on
+the merits, so I'm trying again just to make the situation clear:
 
-Applied to linux-pm.git/linux-next, I'm going to push it to Linus later this
-week.
+On 02/20/2013 05:12 PM, Greg Kroah-Hartman wrote:
+> I don't see why this is even needed for surfaceflinger systems, as
+> again, you have full control over the hardware and system so you
+> don't even need a framebuffer console at all.
 
-Thanks,
-Rafael
+The application here is Android on PC hardware (see 01.org, which is
+carrying this patch at the moment), so sadly we don't.  And we want
+the framebuffer console anyway; having a console is a good thing.
 
+> if you look most distros have already solved this issue for you,
+> [...]  My systems don't drop down to the framebuffer when
+> suspending, I think you need to look at using a better distro
 
-> ---
->  arch/microblaze/kernel/process.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/arch/microblaze/kernel/process.c b/arch/microblaze/kernel/process.c
-> index 6ff2dcf..08f8734 100644
-> --- a/arch/microblaze/kernel/process.c
-> +++ b/arch/microblaze/kernel/process.c
-> @@ -97,13 +97,10 @@ void cpu_idle(void)
->  
->  	/* endless idle loop with no priority at all */
->  	while (1) {
-> -		if (!idle)
-> -			idle = default_idle;
-> -
->  		tick_nohz_idle_enter();
->  		rcu_idle_enter();
->  		while (!need_resched())
-> -			idle();
-> +			default_idle();
->  		rcu_idle_exit();
->  		tick_nohz_idle_exit();
->  
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+That's sorta, kinda, completely incorrect. :)
+
+Just to be sure, I tried again (on my Sony Vaio Z 1311 and an Acer
+X700 table, both Ivy Bridge boxes with i915 graphics) with live iso's
+for Fedora 18, openSUSE 12.2, and Ubuntu 12.10:
+
++ Every one of them includes the framebuffer console
+
++ Every one of them displays at least some console content at boot
+   (Ubuntu gets the cookie here for showing only a blinking cursor and
+   no actual text).
+
++ Every one of them displays console content at suspend time (openSUSE
+   gets a lemon here for multiple lines of spam, Ubuntu again almost
+   gets a pass here because all they have is a cursor unless you have
+   manually Alt-Fn'd to a console to put something in the buffer).
+
++ Every one of them shows console content during shutdown.
+
+It's not like these are ugly, awful glitches.  It's just quick flashes
+of text, and I frankly wouldn't care.  But honestly: the level of
+support right now for glitch-free boot and suspend (in the presence of
+the framebuffer console) just isn't at the level of spit and polish
+demanded by consumer devices.
+
+I *assure* you, that if this were as simple as "do what the distros
+do" that this patch wouldn't exist. (Seriously: probably half my job
+right now consists of picking up an integration glitch and asking "Why
+doesn't this happen on Fedora?").  It's a real problem, and has to be
+solved with code.
+
+So let me make the case for this particular solution one last time:
+
+1. The framebuffer console is useful and we don't want to disable it.
+
+2. Console *output* is useful.  That junk is helpful sometimes, and in
+    any case auditing logging for a whole system is terribly difficult.
+    IMHO the correct solution to "I don't want users to see this
+    internal detail" is not "no one should ever see this internal
+    detail".
+
+3. Console output on the *screen* is the thing that's undesirable, and
+    even then only if the user hasn't requested it.
+
+4. There's already a predicate in the console subsystem
+    (CON_IS_VISIBLE()) which does exactly what we want.  All this does
+    is allow it to be forced false even for the default consoles at
+    boot.  But if the user wants to see the output, she just changes to
+    a console and it's right there for her (though right now
+    surfaceflinger will still fight for the display because it doesn't
+    speak the VT_ACTIVATE protocol, but that's a separate bug).
+
+Andy
