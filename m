@@ -1,65 +1,76 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next v2] thermal: rcar: fix missing unlock on error in rcar_thermal_update_temp()
-Date: Fri, 22 Feb 2013 21:22:39 +0800
-Message-ID: <CAPgLHd8z1nXC1KiyFDReqayrceZCz_tzPUzWjgxjv5hjyFqdJA@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] x86/mm changes for v3.9-rc1
+Date: Fri, 22 Feb 2013 08:22:30 -0800
+Message-ID: <CA+55aFy=tW2X4O-qKLh_YQjSFX7aBaBme4uy8kxawn1koKdt-g@mail.gmail.com>
+References: <201302220034.r1M0Y6O8008311@terminus.zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f44.google.com ([209.85.214.44]:43227 "EHLO
-	mail-bk0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756700Ab3BVNWl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Feb 2013 08:22:41 -0500
-Received: by mail-bk0-f44.google.com with SMTP id j4so284756bkw.17
-        for <linux-pm@vger.kernel.org>; Fri, 22 Feb 2013 05:22:39 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+In-Reply-To: <201302220034.r1M0Y6O8008311@terminus.zytor.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: "H. Peter Anvin" <hpa@linux.intel.com>
+Cc: linux-mips <linux-mips@linux-mips.org>, Jeremy Fitzhardinge <jeremy@goop.org>, "H. J. Lu" <hjl.tools@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Joe Millenbach <jmillenbach@gmail.com>, virtualization <virtualization@lists.linux-foundation.org>, Gokul Caushik <caushik1@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Christoph Lameter <cl@linux.com>, Ingo Molnar <mingo@kernel.org>, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andrea Arcangeli <aarcange@redhat.com>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>, "Xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Joerg Roedel <joro@8bytes.org>, Stefano Stabellini <stefano.stab>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, kuninori.morimoto.gx@renesas.com
-Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Thu, Feb 21, 2013 at 4:34 PM, H. Peter Anvin <hpa@linux.intel.com> wrote:
+>
+> This is a huge set of several partly interrelated (and concurrently
+> developed) changes, which is why the branch history is messier than
+> one would like.
+>
+> The *really* big items are two humonguous patchsets mostly developed
+> by Yinghai Lu at my request, which completely revamps the way we
+> create initial page tables.
 
-Add the missing unlock before return from function rcar_thermal_update_temp()
-in the error handling case.
+Ugh. So I've tried to walk through this, and it's painful. If this
+results in problems, we're going to be *so* screwed. Is it bisectable?
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/thermal/rcar_thermal.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+I also don't understand how "early_idt_handler" could *possibly* work.
+In particular, it seems to rely on the trap number being set up in the
+stack frame:
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 909bb4b..321a98d 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -145,6 +145,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
- 	struct device *dev = rcar_priv_to_dev(priv);
- 	int i;
- 	int ctemp, old, new;
-+	int ret = -EINVAL;
- 
- 	mutex_lock(&priv->lock);
- 
-@@ -174,7 +175,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
- 
- 	if (!ctemp) {
- 		dev_err(dev, "thermal sensor was broken\n");
--		return -EINVAL;
-+		goto err_out_unlock;
- 	}
- 
- 	/*
-@@ -192,10 +193,10 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
- 	dev_dbg(dev, "thermal%d  %d -> %d\n", priv->id, priv->ctemp, ctemp);
- 
- 	priv->ctemp = ctemp;
--
-+	ret = 0;
-+err_out_unlock:
- 	mutex_unlock(&priv->lock);
--
--	return 0;
-+	return ret;
- }
- 
- static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
+        cmpl $14,72(%rsp)       # Page fault?
 
+but that's not even *true*. Why? Because we export both the
+early_idt_handlers[] array (that sets up the trap number and makes the
+stack frame be reliable) and the single early_idt_handler function
+(that relies on the trap number and the reliable stack frame), AND
+AFAIK WE USE THE LATTER!
 
+See x86_64_start_kernel():
+
+        for (i = 0; i < NUM_EXCEPTION_VECTORS; i++) {
+#ifdef CONFIG_EARLY_PRINTK
+                set_intr_gate(i, &early_idt_handlers[i]);
+#else
+                set_intr_gate(i, early_idt_handler);
+#endif
+        }
+
+so unless you have CONFIG_EARLY_PRINTK, the interrupt gate will point
+to that raw early_idt_handler function that doesn't *work* on its own,
+afaik.
+
+Btw, it's not just the page fault index testing that is wrong. The whole
+
+        cmpl $__KERNEL_CS,96(%rsp)
+        jne 11f
+
+also relies on the stack frame being set up the same way for all
+exceptions - which again is only true if we ran through the
+early_idt_handlers[] prologue that added the extra stack entry.
+
+How does this even work for me? I don't have EARLY_PRINTK enabled.
+
+What am I missing?
+
+                Linus
