@@ -1,72 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 4/4] cpufreq: Get rid of "struct global_attr"
-Date: Fri, 22 Feb 2013 08:02:21 +0530
-Message-ID: <CAKohpokVj33ySMHPHs+a-dgq9fxuuRo_uLZzy=8cs4JFjQVnDw@mail.gmail.com>
+Subject: Re: [PATCH V2 3/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+Date: Fri, 22 Feb 2013 08:14:30 +0530
+Message-ID: <CAKohponsBt8Pa-uXHJPjy6zBt0DNVJL7=zqZWXJZ-bR1to2WBg@mail.gmail.com>
 References: <cover.1360568193.git.viresh.kumar@linaro.org>
-	<31684733.Z4gjoGKC1g@vostro.rjw.lan>
-	<CAKohponQ0MVwbTpM-6MasewMQ7MWcL-3nFjf2d7DpAZbWKsNqw@mail.gmail.com>
-	<10415300.xy5iOWqAMD@vostro.rjw.lan>
+	<2852709.b79tkCt2uQ@vostro.rjw.lan>
+	<CAKohpompwGaJziPcrwqH2pUgpiOPa1is_z0506+hO06FXQ8MFA@mail.gmail.com>
+	<3793635.ht6rIgi6nV@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:41237 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757419Ab3BVCcW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Feb 2013 21:32:22 -0500
-Received: by mail-ob0-f179.google.com with SMTP id un3so170853obb.38
-        for <linux-pm@vger.kernel.org>; Thu, 21 Feb 2013 18:32:21 -0800 (PST)
-In-Reply-To: <10415300.xy5iOWqAMD@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3793635.ht6rIgi6nV@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com, Borislav Petkov <bp@alien8.de>
+List-Id: linux-pm@vger.kernel.org
 
-On 22 February 2013 08:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, February 22, 2013 07:47:44 AM Viresh Kumar wrote:
->> On 22 February 2013 05:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > Why did you change all of the lines of this macro instead of changing just the
->> > one line you needed to change?
->>
->> I didn't like the indentation used within the macro. So did it.
+On 22 February 2013 07:59, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Friday, February 22, 2013 07:44:23 AM Viresh Kumar wrote:
+
+>> If you don't like this one then we can add another entry
+>> into struct policy like: gov_sysfs_parent.
 >
-> In general, things like that are for separate cleanup patches.  If you mix
-> functional changes with cleanups, poeple get confused and it's difficult to see
-> what's needed and what's "optional".
+> I don't know.  This is going to look kind of ugly this way or another I think.
 >
-> I know it's tempting to fix stuff like that along with doing functional
-> changes and I do that sometimes.  Not very often, though, and with care.
+> Maybe I'll figure out something ...
 
-Even i give similar comments sometimes but forget these while writing my
-patches :)
+Another simple way of doing this is, leave this patch and here is why i say so.
 
-Anyway, fixup:
+struct policy is allocated dynamically with kzalloc and so every field is zero
+including have_multiple_policies. And only the platforms needing this feature
+would make it 1 and all remaining ones would stay unchanged.
 
-commit b1bbb99467d56140cf3a8a2b70e61b456aa46e48
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Fri Feb 22 07:59:20 2013 +0530
+This variable would waste just "4" bytes for platforms that don't need this
+feature.
 
-    fixup! cpufreq: Get rid of "struct global_attr"
----
- drivers/cpufreq/intel_pstate.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+About performance: This if/else is called only on policy creation or
+destruction.
+For platforms that doesn't have multiple policies and thus all cpus share the
+same policy struct, the destruction might never happen unless we rmmod/insmod
+cpufreq driver, because policy destruction would only happen when all the cpus
+are removed :)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e795134..49846b9 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -273,12 +273,12 @@ static void intel_pstate_debug_expose_params(void)
- /************************** debugfs end ************************/
+So it will execute only once at boot time when we initialize policy struct.
 
- /************************** sysfs begin ************************/
--#define show_one(file_name, object)                            \
--static ssize_t show_##file_name                                        \
--(struct cpufreq_policy *policy, char *buf)                     \
--{                                                              \
--       return sprintf(buf, "%u\n", limits.object);             \
--}
-+#define show_one(file_name, object)                                    \
-+       static ssize_t show_##file_name                                 \
-+       (struct cpufreq_policy *policy, char *buf)                      \
-+       {                                                               \
-+               return sprintf(buf, "%u\n", limits.object);             \
-+       }
+Is this patch worth keeping then?
+
+--
+viresh
