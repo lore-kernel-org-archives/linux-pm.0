@@ -1,49 +1,65 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH -next] imx6q-cpufreq: fix return value check in
- imx6q_cpufreq_probe()
-Date: Fri, 22 Feb 2013 20:53:31 +0800
-Message-ID: <20130222125329.GA18065@S2101-09.ap.freescale.net>
-References: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH -next v2] thermal: rcar: fix missing unlock on error in rcar_thermal_update_temp()
+Date: Fri, 22 Feb 2013 21:22:39 +0800
+Message-ID: <CAPgLHd8z1nXC1KiyFDReqayrceZCz_tzPUzWjgxjv5hjyFqdJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: rjw@sisk.pl, yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f44.google.com ([209.85.214.44]:43227 "EHLO
+	mail-bk0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756700Ab3BVNWl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Feb 2013 08:22:41 -0500
+Received: by mail-bk0-f44.google.com with SMTP id j4so284756bkw.17
+        for <linux-pm@vger.kernel.org>; Fri, 22 Feb 2013 05:22:39 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, kuninori.morimoto.gx@renesas.com
+Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
-On Fri, Feb 22, 2013 at 12:39:30PM +0800, Wei Yongjun wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> 
-> In case of error, the function devm_regulator_get() returns
-> ERR_PTR() and never returns NULL. The NULL test in the return
-> value check should be replaced with IS_ERR().
-> 
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Thanks for the fixing.
+Add the missing unlock before return from function rcar_thermal_update_temp()
+in the error handling case.
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/thermal/rcar_thermal.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index d6b6ef3..54e336d 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -245,7 +245,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	arm_reg = devm_regulator_get(cpu_dev, "arm");
->  	pu_reg = devm_regulator_get(cpu_dev, "pu");
->  	soc_reg = devm_regulator_get(cpu_dev, "soc");
-> -	if (!arm_reg || !pu_reg || !soc_reg) {
-> +	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
->  		dev_err(cpu_dev, "failed to get regulators\n");
->  		ret = -ENOENT;
->  		goto put_node;
-> 
-> 
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 909bb4b..321a98d 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -145,6 +145,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
+ 	struct device *dev = rcar_priv_to_dev(priv);
+ 	int i;
+ 	int ctemp, old, new;
++	int ret = -EINVAL;
+ 
+ 	mutex_lock(&priv->lock);
+ 
+@@ -174,7 +175,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
+ 
+ 	if (!ctemp) {
+ 		dev_err(dev, "thermal sensor was broken\n");
+-		return -EINVAL;
++		goto err_out_unlock;
+ 	}
+ 
+ 	/*
+@@ -192,10 +193,10 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
+ 	dev_dbg(dev, "thermal%d  %d -> %d\n", priv->id, priv->ctemp, ctemp);
+ 
+ 	priv->ctemp = ctemp;
+-
++	ret = 0;
++err_out_unlock:
+ 	mutex_unlock(&priv->lock);
+-
+-	return 0;
++	return ret;
+ }
+ 
+ static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
+
 
