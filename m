@@ -1,42 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Fri, 22 Feb 2013 07:26:48 +0530
-Message-ID: <CAKohpokKCrvMYWQCRWccDJHbBNO7km5-vP=d3TwhDyU7HGX-YA@mail.gmail.com>
-References: <51253715.7080600@semaphore.gr>
-	<CAOh2x=mD4DbEH245xsceS1wyhmrRPpB2LeJ9Mh+WGHUA+bZprA@mail.gmail.com>
-	<512605A1.8090106@semaphore.gr>
-	<CAOh2x=m82jKMf+xgg+fjnCUHLpCQ_NgYqw4auyAidokt_z=uOw@mail.gmail.com>
-	<51265BC6.8030601@semaphore.gr>
+Subject: Re: [PATCH V2 1/4] cpufreq: Add per policy governor-init/exit infrastructure
+Date: Fri, 22 Feb 2013 07:38:12 +0530
+Message-ID: <CAKohpom8HiBEXE54BL72s-nWaeXzSRTrp7=MQKrJcon17T9tXQ@mail.gmail.com>
+References: <cover.1360568193.git.viresh.kumar@linaro.org>
+	<ece24bb874ad1834fc43b83f053b2560db8c25d3.1360568193.git.viresh.kumar@linaro.org>
+	<3793606.bilcxohA80@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51265BC6.8030601@semaphore.gr>
+In-Reply-To: <3793606.bilcxohA80@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-dev@lists.linaro.org, francescolavra.fl@gmail.com, toddpoynor@google.com
 List-Id: linux-pm@vger.kernel.org
 
-On 21 February 2013 23:09, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Thanks again. Following V3 with your suggestion.
->
-> Regards,
-> Stratos
->
-> -----------------------8<--------------------------------------------
-> Instead of checking only the absolute value of CPU load_freq to increase
-> frequency, we detect forthcoming CPU load rise and increase frequency
-> earlier.
->
-> Every sampling rate, we calculate the gradient of load_freq. If it is
-> too steep we assume that the load most probably will go over
-> up_threshold in next iteration(s) and we increase frequency immediately.
->
-> New tuners are introduced:
-> - early_demand: to enable this functionality (disabled by default).
-> - grad_up_threshold: over this gradient of load we will increase
-> frequency immediately.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+On 22 February 2013 05:05, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday, February 11, 2013 01:20:00 PM Viresh Kumar wrote:
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> This patch is inclined towards providing this infrastructure. Because we are
+>> required to allocate governor's resources dynamically now, we must do it at
+>> policy creation and end. And so got CPUFREQ_GOV_POLICY_INIT/EXIT.
+>
+> Are those new events NOPs now?
+
+No. These are used atleast for ondemand & conservative.
+
+>> +#define CPUFREQ_GOV_POLICY_INIT      4
+>> +#define CPUFREQ_GOV_POLICY_EXIT      4
+>
+> Why don't you use different values here?
+>
+> If you need only one value, one #define should be sufficient.
+
+Naah, something happened... I got fixed this locally but couldn't
+get that into the commit somehow. EXIT should have 5 here.
