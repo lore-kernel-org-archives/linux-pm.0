@@ -1,58 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of CPU load to early increase frequency
-Date: Fri, 22 Feb 2013 13:47:56 +0100
-Message-ID: <50459058.dux53WNMZ2@vostro.rjw.lan>
-References: <51253715.7080600@semaphore.gr> <CAKohpokKCrvMYWQCRWccDJHbBNO7km5-vP=d3TwhDyU7HGX-YA@mail.gmail.com> <CAOh2x==cjXGqm0+y_-_Zqc1W5f9Gny7gc=CbR=JRJxXOmg4iWA@mail.gmail.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH -next] imx6q-cpufreq: fix return value check in
+ imx6q_cpufreq_probe()
+Date: Fri, 22 Feb 2013 20:53:31 +0800
+Message-ID: <20130222125329.GA18065@S2101-09.ap.freescale.net>
+References: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:41420 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757238Ab3BVMlR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Feb 2013 07:41:17 -0500
-In-Reply-To: <CAOh2x==cjXGqm0+y_-_Zqc1W5f9Gny7gc=CbR=JRJxXOmg4iWA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: rjw@sisk.pl, yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, February 22, 2013 11:27:09 AM Viresh Kumar wrote:
-> On Fri, Feb 22, 2013 at 7:26 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 21 February 2013 23:09, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+On Fri, Feb 22, 2013 at 12:39:30PM +0800, Wei Yongjun wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 > 
-> >> Instead of checking only the absolute value of CPU load_freq to increase
-> >> frequency, we detect forthcoming CPU load rise and increase frequency
-> >> earlier.
-> >>
-> >> Every sampling rate, we calculate the gradient of load_freq. If it is
-> >> too steep we assume that the load most probably will go over
-> >> up_threshold in next iteration(s) and we increase frequency immediately.
-> >>
-> >> New tuners are introduced:
-> >> - early_demand: to enable this functionality (disabled by default).
-> >> - grad_up_threshold: over this gradient of load we will increase
-> >> frequency immediately.
-> >>
-> >> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> In case of error, the function devm_regulator_get() returns
+> ERR_PTR() and never returns NULL. The NULL test in the return
+> value check should be replaced with IS_ERR().
 > 
-> Rafael,
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+
+Thanks for the fixing.
+
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> I applied it here with my Ack over my patches, for getting a run by
-> "kbuild test robot".
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index d6b6ef3..54e336d 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -245,7 +245,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>  	arm_reg = devm_regulator_get(cpu_dev, "arm");
+>  	pu_reg = devm_regulator_get(cpu_dev, "pu");
+>  	soc_reg = devm_regulator_get(cpu_dev, "soc");
+> -	if (!arm_reg || !pu_reg || !soc_reg) {
+> +	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
+>  		dev_err(cpu_dev, "failed to get regulators\n");
+>  		ret = -ENOENT;
+>  		goto put_node;
 > 
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-for-3.10
+> 
 
-Thanks, but I'm still not entirely sure about the have_multiple_policies stuff
-(yes, I saw your arguments) and the v3.10 merge window is still two months
-away.  IOW, please slow down a bit.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
