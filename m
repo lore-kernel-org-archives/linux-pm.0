@@ -1,38 +1,42 @@
 From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next] imx6q-cpufreq: fix return value check in imx6q_cpufreq_probe()
-Date: Fri, 22 Feb 2013 12:39:30 +0800
-Message-ID: <CAPgLHd_sbN0i_6Lqh+-2o9rZx_CG3=czZJV3N6oAuSKrjkttbw@mail.gmail.com>
+Subject: [PATCH -next] thermal: rcar: fix missing unlock on error in rcar_thermal_update_temp()
+Date: Fri, 22 Feb 2013 12:50:42 +0800
+Message-ID: <CAPgLHd_a8ujLyz_v+zRq00HAfKYibFd=Dq7dZfP9nCcGP=PC2Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl, shawn.guo@linaro.org
-Cc: yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f42.google.com ([209.85.214.42]:39437 "EHLO
+	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754965Ab3BVEun (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Feb 2013 23:50:43 -0500
+Received: by mail-bk0-f42.google.com with SMTP id jk7so113451bkc.15
+        for <linux-pm@vger.kernel.org>; Thu, 21 Feb 2013 20:50:42 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, grant.likely@secretlab.ca, rob.herring@calxeda.com, kuninori.morimoto.gx@renesas.com
+Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
 From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-In case of error, the function devm_regulator_get() returns
-ERR_PTR() and never returns NULL. The NULL test in the return
-value check should be replaced with IS_ERR().
+Add the missing unlock before return from function rcar_thermal_update_temp()
+in the error handling case.
 
 Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- drivers/cpufreq/imx6q-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/rcar_thermal.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index d6b6ef3..54e336d 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -245,7 +245,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	arm_reg = devm_regulator_get(cpu_dev, "arm");
- 	pu_reg = devm_regulator_get(cpu_dev, "pu");
- 	soc_reg = devm_regulator_get(cpu_dev, "soc");
--	if (!arm_reg || !pu_reg || !soc_reg) {
-+	if (IS_ERR(arm_reg) || IS_ERR(pu_reg) || IS_ERR(soc_reg)) {
- 		dev_err(cpu_dev, "failed to get regulators\n");
- 		ret = -ENOENT;
- 		goto put_node;
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 909bb4b..fe694be 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -174,6 +174,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
+ 
+ 	if (!ctemp) {
+ 		dev_err(dev, "thermal sensor was broken\n");
++		mutex_unlock(&priv->lock);
+ 		return -EINVAL;
+ 	}
+ 
 
 
