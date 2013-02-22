@@ -1,779 +1,100 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: [PATCH v4 2/2] cpufreq: Convert the cpufreq_driver_lock to use the rcu
-Date: Fri, 22 Feb 2013 10:24:35 -0600
-Message-ID: <1361550275-5716-3-git-send-email-nzimmer@sgi.com>
-References: <51265E0F.6090209@sgi.com>
- <1361550275-5716-1-git-send-email-nzimmer@sgi.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relay3.sgi.com ([192.48.152.1]:50013 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757553Ab3BVQYm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Feb 2013 11:24:42 -0500
-In-Reply-To: <1361550275-5716-1-git-send-email-nzimmer@sgi.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [GIT PULL] x86/mm changes for v3.9-rc1
+Date: Fri, 22 Feb 2013 11:55:31 -0500
+Message-ID: <20130222165531.GA29308@phenom.dumpdata.com>
+References: <201302220034.r1M0Y6O8008311@terminus.zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <201302220034.r1M0Y6O8008311@terminus.zytor.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: "H. Peter Anvin" <hpa@linux.intel.com>
+Cc: linux-mips@linux-mips.org, Jeremy Fitzhardinge <jeremy@goop.org>, "H. J. Lu" <hjl.tools@gmail.com>, Frederic Weisbecker <fweisbec@gmail.com>, Joe Millenbach <jmillenbach@gmail.com>, virtualization@lists.linux-foundation.org, Gokul Caushik <caushik1@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org, Christoph Lameter <cl@linux.com>, Ingo Molnar <mingo@kernel.org>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andrea Arcangeli <aarcange@redhat.com>, Lee Schermerhorn <Lee.Schermerhorn@hp.com>, xen-devel@lists.xensource.com, Russell King <linux@arm.linux.org.uk>, Len Brown <len.brown@intel.com>, Joerg Roedel <joro@8bytes.org>, linux-pm@vger.kernel.org, Hugh Dickins <hughd@google.com>, Yasuaki Ishimatsu <isimatu.yasuaki@j>
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nathan Zimmer <nzimmer@sgi.com>
 
-In general rwlocks are discourged so we are moving it to use the rcu instead.
-This does require a bit of care since the cpufreq_driver_lock protects both
-the cpufreq_driver and the cpufreq_cpu_data array.
-Also since many of the function pointers on cpufreq_driver may sleep when
-called we have to grab them under the rcu_read_lock but call them after
-rcu_read_unlock();
+On Thu, Feb 21, 2013 at 04:34:06PM -0800, H. Peter Anvin wrote:
+> Hi Linus,
+> 
+> This is a huge set of several partly interrelated (and concurrently
+> developed) changes, which is why the branch history is messier than
+> one would like.
+> 
+> The *really* big items are two humonguous patchsets mostly developed
+> by Yinghai Lu at my request, which completely revamps the way we
+> create initial page tables.  In particular, rather than estimating how
+> much memory we will need for page tables and then build them into that
+> memory -- a calculation that has shown to be incredibly fragile -- we
+> now build them (on 64 bits) with the aid of a "pseudo-linear mode" --
+> a #PF handler which creates temporary page tables on demand.
+> 
+> This has several advantages:
+> 
+> 1. It makes it much easier to support things that need access to
+>    data very early (a followon patchset uses this to load microcode
+>    way early in the kernel startup).
+> 
+> 2. It allows the kernel and all the kernel data objects to be invoked
+>    from above the 4 GB limit.  This allows kdump to work on very large
+>    systems.
+> 
+> 3. It greatly reduces the difference between Xen and native (Xen's
+>    equivalent of the #PF handler are the temporary page tables created
+>    by the domain builder), eliminating a bunch of fragile hooks.
+> 
+> The patch series also gets us a bit closer to W^X.
+> 
+> Additional work in this pull is the 64-bit get_user() work which you
+> were also involved with, and a bunch of cleanups/speedups to
+> __phys_addr()/__pa().
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
----
- drivers/cpufreq/cpufreq.c | 305 +++++++++++++++++++++++++++++++++-------------
- 1 file changed, 217 insertions(+), 88 deletions(-)
+Looking at figuring out which of the patches in the branch did this, but
+with this merge I am getting a crash with a very simple PV guest (booted with
+one 1G):
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c5996fe..c0e90f3 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -39,13 +39,13 @@
-  * level driver of CPUFreq support, and its spinlock. This lock
-  * also protects the cpufreq_cpu_data array.
-  */
--static struct cpufreq_driver *cpufreq_driver;
-+static struct cpufreq_driver __rcu *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- #ifdef CONFIG_HOTPLUG_CPU
- /* This one keeps track of the previously set governor of a removed CPU */
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
--static DEFINE_RWLOCK(cpufreq_driver_lock);
-+static DEFINE_SPINLOCK(cpufreq_driver_lock);
- 
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -131,18 +131,19 @@ static DEFINE_MUTEX(cpufreq_governor_mutex);
- static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- {
- 	struct cpufreq_policy *data;
--	unsigned long flags;
-+	struct cpufreq_driver *driver;
- 
- 	if (cpu >= nr_cpu_ids)
- 		goto err_out;
- 
- 	/* get the cpufreq driver */
--	read_lock_irqsave(&cpufreq_driver_lock, flags);
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
- 
--	if (!cpufreq_driver)
-+	if (!driver)
- 		goto err_out_unlock;
- 
--	if (!try_module_get(cpufreq_driver->owner))
-+	if (!try_module_get(driver->owner))
- 		goto err_out_unlock;
- 
- 
-@@ -155,13 +156,13 @@ static struct cpufreq_policy *__cpufreq_cpu_get(unsigned int cpu, bool sysfs)
- 	if (!sysfs && !kobject_get(&data->kobj))
- 		goto err_out_put_module;
- 
--	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	rcu_read_unlock();
- 	return data;
- 
- err_out_put_module:
--	module_put(cpufreq_driver->owner);
-+	module_put(driver->owner);
- err_out_unlock:
--	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	rcu_read_unlock();
- err_out:
- 	return NULL;
- }
-@@ -184,7 +185,9 @@ static void __cpufreq_cpu_put(struct cpufreq_policy *data, bool sysfs)
- {
- 	if (!sysfs)
- 		kobject_put(&data->kobj);
--	module_put(cpufreq_driver->owner);
-+	rcu_read_lock();
-+	module_put(rcu_dereference(cpufreq_driver)->owner);
-+	rcu_read_unlock();
- }
- 
- void cpufreq_cpu_put(struct cpufreq_policy *data)
-@@ -255,20 +258,19 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
- void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- {
- 	struct cpufreq_policy *policy;
--	unsigned long flags;
- 
- 	BUG_ON(irqs_disabled());
- 
- 	if (cpufreq_disabled())
- 		return;
- 
--	freqs->flags = cpufreq_driver->flags;
- 	pr_debug("notification %u of frequency transition to %u kHz\n",
- 		state, freqs->new);
- 
--	read_lock_irqsave(&cpufreq_driver_lock, flags);
-+	rcu_read_lock();
-+	freqs->flags = rcu_dereference(cpufreq_driver)->flags;
- 	policy = per_cpu(cpufreq_cpu_data, freqs->cpu);
--	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	rcu_read_unlock();
- 
- 	switch (state) {
- 
-@@ -277,7 +279,7 @@ void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state)
- 		 * which is not equal to what the cpufreq core thinks is
- 		 * "old frequency".
- 		 */
--		if (!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-+		if (!(freqs->flags & CPUFREQ_CONST_LOOPS)) {
- 			if ((policy) && (policy->cpu == freqs->cpu) &&
- 			    (policy->cur) && (policy->cur != freqs->old)) {
- 				pr_debug("Warning: CPU frequency is"
-@@ -329,11 +331,23 @@ static int cpufreq_parse_governor(char *str_governor, unsigned int *policy,
- 				struct cpufreq_governor **governor)
- {
- 	int err = -EINVAL;
--
--	if (!cpufreq_driver)
-+	struct cpufreq_driver *driver;
-+	int (*setpolicy)(struct cpufreq_policy *policy);
-+	int (*target)(struct cpufreq_policy *policy,
-+		      unsigned int target_freq,
-+		      unsigned int relation);
-+
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	if (!driver) {
-+		rcu_read_unlock();
- 		goto out;
-+	}
-+	setpolicy = driver->setpolicy;
-+	target = driver->target;
-+	rcu_read_unlock();
- 
--	if (cpufreq_driver->setpolicy) {
-+	if (setpolicy) {
- 		if (!strnicmp(str_governor, "performance", CPUFREQ_NAME_LEN)) {
- 			*policy = CPUFREQ_POLICY_PERFORMANCE;
- 			err = 0;
-@@ -342,7 +356,7 @@ static int cpufreq_parse_governor(char *str_governor, unsigned int *policy,
- 			*policy = CPUFREQ_POLICY_POWERSAVE;
- 			err = 0;
- 		}
--	} else if (cpufreq_driver->target) {
-+	} else if (target) {
- 		struct cpufreq_governor *t;
- 
- 		mutex_lock(&cpufreq_governor_mutex);
-@@ -493,7 +507,11 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
-  */
- static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *buf)
- {
--	return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", cpufreq_driver->name);
-+	char *name;
-+	rcu_read_lock();
-+	name = rcu_dereference(cpufreq_driver)->name;
-+	rcu_read_unlock();
-+	return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", name);
- }
- 
- /**
-@@ -505,10 +523,13 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
- 	ssize_t i = 0;
- 	struct cpufreq_governor *t;
- 
--	if (!cpufreq_driver->target) {
-+	rcu_read_lock();
-+	if (!rcu_dereference(cpufreq_driver)->target) {
-+		rcu_read_unlock();
- 		i += sprintf(buf, "performance powersave");
- 		goto out;
- 	}
-+	rcu_read_unlock();
- 
- 	list_for_each_entry(t, &cpufreq_governor_list, governor_list) {
- 		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
-@@ -587,8 +608,14 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
- {
- 	unsigned int limit;
- 	int ret;
--	if (cpufreq_driver->bios_limit) {
--		ret = cpufreq_driver->bios_limit(policy->cpu, &limit);
-+	int (*bios_limit)(int cpu, unsigned int *limit);
-+
-+	rcu_read_lock();
-+	bios_limit = rcu_dereference(cpufreq_driver)->bios_limit;
-+	rcu_read_unlock();
-+
-+	if (bios_limit) {
-+		ret = bios_limit(policy->cpu, &limit);
- 		if (!ret)
- 			return sprintf(buf, "%u\n", limit);
- 	}
-@@ -730,6 +757,8 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 				     struct device *dev)
- {
- 	struct cpufreq_policy new_policy;
-+	struct cpufreq_driver *driver;
-+	int (*exit)(struct cpufreq_policy *policy);
- 	struct freq_attr **drv_attr;
- 	unsigned long flags;
- 	int ret = 0;
-@@ -742,35 +771,38 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 		return ret;
- 
- 	/* set up files for this cpu device */
--	drv_attr = cpufreq_driver->attr;
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	drv_attr = driver->attr;
- 	while ((drv_attr) && (*drv_attr)) {
- 		ret = sysfs_create_file(&policy->kobj, &((*drv_attr)->attr));
- 		if (ret)
- 			goto err_out_kobj_put;
- 		drv_attr++;
- 	}
--	if (cpufreq_driver->get) {
-+	if (driver->get) {
- 		ret = sysfs_create_file(&policy->kobj, &cpuinfo_cur_freq.attr);
- 		if (ret)
- 			goto err_out_kobj_put;
- 	}
--	if (cpufreq_driver->target) {
-+	if (driver->target) {
- 		ret = sysfs_create_file(&policy->kobj, &scaling_cur_freq.attr);
- 		if (ret)
- 			goto err_out_kobj_put;
- 	}
--	if (cpufreq_driver->bios_limit) {
-+	if (driver->bios_limit) {
- 		ret = sysfs_create_file(&policy->kobj, &bios_limit.attr);
- 		if (ret)
- 			goto err_out_kobj_put;
- 	}
-+	rcu_read_unlock();
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus) {
- 		per_cpu(cpufreq_cpu_data, j) = policy;
- 		per_cpu(cpufreq_policy_cpu, j) = policy->cpu;
- 	}
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = cpufreq_add_dev_symlink(cpu, policy);
- 	if (ret)
-@@ -787,8 +819,11 @@ static int cpufreq_add_dev_interface(unsigned int cpu,
- 
- 	if (ret) {
- 		pr_debug("setting policy failed\n");
--		if (cpufreq_driver->exit)
--			cpufreq_driver->exit(policy);
-+		rcu_read_lock();
-+		exit = rcu_dereference(cpufreq_driver)->exit;
-+		rcu_read_unlock();
-+		if (exit)
-+			exit(policy);
- 	}
- 	return ret;
- 
-@@ -813,12 +848,12 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
- 
- 	lock_policy_rwsem_write(sibling);
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	cpumask_set_cpu(cpu, policy->cpus);
- 	per_cpu(cpufreq_policy_cpu, cpu) = policy->cpu;
- 	per_cpu(cpufreq_cpu_data, cpu) = policy;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	unlock_policy_rwsem_write(sibling);
- 
-@@ -849,6 +884,10 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	unsigned int j, cpu = dev->id;
- 	int ret = -ENOMEM;
- 	struct cpufreq_policy *policy;
-+	struct cpufreq_driver *driver;
-+	int (*init)(struct cpufreq_policy *policy);
-+	struct module *owner;
-+
- 	unsigned long flags;
- #ifdef CONFIG_HOTPLUG_CPU
- 	struct cpufreq_governor *gov;
-@@ -869,21 +908,24 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		return 0;
- 	}
- 
-+	rcu_read_lock();
- #ifdef CONFIG_HOTPLUG_CPU
- 	/* Check if this cpu was hot-unplugged earlier and has siblings */
--	read_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_online_cpu(sibling) {
- 		struct cpufreq_policy *cp = per_cpu(cpufreq_cpu_data, sibling);
- 		if (cp && cpumask_test_cpu(cpu, cp->related_cpus)) {
--			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			rcu_read_unlock();
- 			return cpufreq_add_policy_cpu(cpu, sibling, dev);
- 		}
- 	}
--	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
- #endif
-+	driver = rcu_dereference(cpufreq_driver);
-+	init = driver->init;
-+	owner = driver->owner;
-+	rcu_read_unlock();
- 
--	if (!try_module_get(cpufreq_driver->owner)) {
-+	if (!try_module_get(owner)) {
- 		ret = -EINVAL;
- 		goto module_out;
- 	}
-@@ -911,7 +953,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	/* call driver. From then on the cpufreq must be able
- 	 * to accept all calls to ->verify and ->setpolicy for this CPU
- 	 */
--	ret = cpufreq_driver->init(policy);
-+	ret = init(policy);
- 	if (ret) {
- 		pr_debug("initialization failed\n");
- 		goto err_set_policy_cpu;
-@@ -946,16 +988,16 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		goto err_out_unregister;
- 
- 	kobject_uevent(&policy->kobj, KOBJ_ADD);
--	module_put(cpufreq_driver->owner);
-+	module_put(owner);
- 	pr_debug("initialization complete\n");
- 
- 	return 0;
- 
- err_out_unregister:
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 	for_each_cpu(j, policy->cpus)
- 		per_cpu(cpufreq_cpu_data, j) = NULL;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	kobject_put(&policy->kobj);
- 	wait_for_completion(&policy->kobj_unregister);
-@@ -968,7 +1010,7 @@ err_free_cpumask:
- err_free_policy:
- 	kfree(policy);
- nomem_out:
--	module_put(cpufreq_driver->owner);
-+	module_put(owner);
- module_out:
- 	return ret;
- }
-@@ -1002,29 +1044,45 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 	unsigned int cpu = dev->id, ret, cpus;
- 	unsigned long flags;
- 	struct cpufreq_policy *data;
-+	struct cpufreq_driver *driver;
-+	int (*target)(struct cpufreq_policy *policy,
-+		       unsigned int target_freq,
-+		       unsigned int relation);
-+	int (*exit)(struct cpufreq_policy *policy);
-+#ifdef CONFIG_HOTPLUG_CPU
-+	int (*setpolicy)(struct cpufreq_policy *policy);
-+#endif
- 	struct kobject *kobj;
- 	struct completion *cmp;
- 	struct device *cpu_dev;
- 
- 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 
- 	data = per_cpu(cpufreq_cpu_data, cpu);
- 	per_cpu(cpufreq_cpu_data, cpu) = NULL;
--
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	if (!data) {
- 		pr_debug("%s: No cpu_data found\n", __func__);
- 		return -EINVAL;
- 	}
- 
--	if (cpufreq_driver->target)
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	target = driver->target;
-+	exit = driver->exit;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	setpolicy = driver->setpolicy;
-+#endif
-+	rcu_read_unlock();
-+
-+	if (target)
- 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
- 
- #ifdef CONFIG_HOTPLUG_CPU
--	if (!cpufreq_driver->setpolicy)
-+	if (!setpolicy)
- 		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
- 			data->governor->name, CPUFREQ_NAME_LEN);
- #endif
-@@ -1047,9 +1105,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 			WARN_ON(lock_policy_rwsem_write(cpu));
- 			cpumask_set_cpu(cpu, data->cpus);
- 
--			write_lock_irqsave(&cpufreq_driver_lock, flags);
-+			spin_lock_irqsave(&cpufreq_driver_lock, flags);
- 			per_cpu(cpufreq_cpu_data, cpu) = data;
--			write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+			spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 			unlock_policy_rwsem_write(cpu);
- 
-@@ -1084,13 +1142,13 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
- 		wait_for_completion(cmp);
- 		pr_debug("wait complete\n");
- 
--		if (cpufreq_driver->exit)
--			cpufreq_driver->exit(data);
-+		if (exit)
-+			exit(data);
- 
- 		free_cpumask_var(data->related_cpus);
- 		free_cpumask_var(data->cpus);
- 		kfree(data);
--	} else if (cpufreq_driver->target) {
-+	} else if (target) {
- 		__cpufreq_governor(data, CPUFREQ_GOV_START);
- 		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
- 	}
-@@ -1157,10 +1215,18 @@ static void cpufreq_out_of_sync(unsigned int cpu, unsigned int old_freq,
- unsigned int cpufreq_quick_get(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
-+	struct cpufreq_driver *driver;
-+	unsigned int (*get)(unsigned int cpu);
- 	unsigned int ret_freq = 0;
- 
--	if (cpufreq_driver && cpufreq_driver->setpolicy && cpufreq_driver->get)
--		return cpufreq_driver->get(cpu);
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	if (driver && driver->setpolicy && driver->get) {
-+		get = driver->get;
-+		rcu_read_unlock();
-+		return get(cpu);
-+	}
-+	rcu_read_unlock();
- 
- 	policy = cpufreq_cpu_get(cpu);
- 	if (policy) {
-@@ -1197,14 +1263,23 @@ static unsigned int __cpufreq_get(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
- 	unsigned int ret_freq = 0;
-+	struct cpufreq_driver *driver;
-+	unsigned int (*get)(unsigned int cpu);
-+	u8 flags;
- 
--	if (!cpufreq_driver->get)
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	get = driver->get;
-+	flags = driver->flags;
-+	rcu_read_unlock();
-+
-+	if (!get)
- 		return ret_freq;
- 
--	ret_freq = cpufreq_driver->get(cpu);
-+	ret_freq = get(cpu);
- 
- 	if (ret_freq && policy->cur &&
--		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
-+		!(flags & CPUFREQ_CONST_LOOPS)) {
- 		/* verify no discrepancy between actual and
- 					saved value exists */
- 		if (unlikely(ret_freq != policy->cur)) {
-@@ -1261,6 +1336,7 @@ static struct subsys_interface cpufreq_interface = {
- static int cpufreq_bp_suspend(void)
- {
- 	int ret = 0;
-+	int (*suspend)(struct cpufreq_policy *policy);
- 
- 	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
-@@ -1272,8 +1348,11 @@ static int cpufreq_bp_suspend(void)
- 	if (!cpu_policy)
- 		return 0;
- 
--	if (cpufreq_driver->suspend) {
--		ret = cpufreq_driver->suspend(cpu_policy);
-+	rcu_read_lock();
-+	suspend = rcu_dereference(cpufreq_driver)->suspend;
-+	rcu_read_unlock();
-+	if (suspend) {
-+		ret = suspend(cpu_policy);
- 		if (ret)
- 			printk(KERN_ERR "cpufreq: suspend failed in ->suspend "
- 					"step on CPU %u\n", cpu_policy->cpu);
-@@ -1299,6 +1378,7 @@ static int cpufreq_bp_suspend(void)
- static void cpufreq_bp_resume(void)
- {
- 	int ret = 0;
-+	int (*resume)(struct cpufreq_policy *policy);
- 
- 	int cpu = smp_processor_id();
- 	struct cpufreq_policy *cpu_policy;
-@@ -1310,8 +1390,11 @@ static void cpufreq_bp_resume(void)
- 	if (!cpu_policy)
- 		return;
- 
--	if (cpufreq_driver->resume) {
--		ret = cpufreq_driver->resume(cpu_policy);
-+	rcu_read_lock();
-+	resume = rcu_dereference(cpufreq_driver)->resume;
-+	rcu_read_unlock();
-+	if (resume) {
-+		ret = resume(cpu_policy);
- 		if (ret) {
- 			printk(KERN_ERR "cpufreq: resume failed in ->resume "
- 					"step on CPU %u\n", cpu_policy->cpu);
-@@ -1338,10 +1421,16 @@ static struct syscore_ops cpufreq_syscore_ops = {
-  */
- const char *cpufreq_get_current_driver(void)
- {
--	if (cpufreq_driver)
--		return cpufreq_driver->name;
-+	char *name = NULL;
-+	struct cpufreq_driver *driver;
- 
--	return NULL;
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	if (driver)
-+		name = driver->name;
-+	rcu_read_unlock();
-+
-+	return name;
- }
- EXPORT_SYMBOL_GPL(cpufreq_get_current_driver);
- 
-@@ -1435,6 +1524,9 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- {
- 	int retval = -EINVAL;
- 	unsigned int old_target_freq = target_freq;
-+	int (*target)(struct cpufreq_policy *policy,
-+		      unsigned int target_freq,
-+		      unsigned int relation);
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
-@@ -1451,8 +1543,11 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 	if (target_freq == policy->cur)
- 		return 0;
- 
--	if (cpufreq_driver->target)
--		retval = cpufreq_driver->target(policy, target_freq, relation);
-+	rcu_read_lock();
-+	target = rcu_dereference(cpufreq_driver)->target;
-+	rcu_read_unlock();
-+	if (target)
-+		retval = target(policy, target_freq, relation);
- 
- 	return retval;
- }
-@@ -1485,18 +1580,24 @@ EXPORT_SYMBOL_GPL(cpufreq_driver_target);
- int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
- {
- 	int ret = 0;
-+	unsigned int (*getavg)(struct cpufreq_policy *policy,
-+			       unsigned int cpu);
- 
- 	if (cpufreq_disabled())
- 		return ret;
- 
--	if (!cpufreq_driver->getavg)
-+	rcu_read_lock();
-+	getavg = rcu_dereference(cpufreq_driver)->getavg;
-+	rcu_read_unlock();
-+
-+	if (!getavg)
- 		return 0;
- 
- 	policy = cpufreq_cpu_get(policy->cpu);
- 	if (!policy)
- 		return -EINVAL;
- 
--	ret = cpufreq_driver->getavg(policy, cpu);
-+	ret = getavg(policy, cpu);
- 
- 	cpufreq_cpu_put(policy);
- 	return ret;
-@@ -1652,6 +1753,9 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 				struct cpufreq_policy *policy)
- {
- 	int ret = 0;
-+	struct cpufreq_driver *driver;
-+	int (*verify)(struct cpufreq_policy *policy);
-+	int (*setpolicy)(struct cpufreq_policy *policy);
- 
- 	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
- 		policy->min, policy->max);
-@@ -1664,8 +1768,14 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 		goto error_out;
- 	}
- 
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	verify = driver->verify;
-+	setpolicy = driver->setpolicy;
-+	rcu_read_unlock();
-+
- 	/* verify the cpu speed can be set within this limit */
--	ret = cpufreq_driver->verify(policy);
-+	ret = verify(policy);
- 	if (ret)
- 		goto error_out;
- 
-@@ -1679,7 +1789,7 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 
- 	/* verify the cpu speed can be set within this limit,
- 	   which might be different to the first one */
--	ret = cpufreq_driver->verify(policy);
-+	ret = verify(policy);
- 	if (ret)
- 		goto error_out;
- 
-@@ -1693,10 +1803,10 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
- 	pr_debug("new min and max freqs are %u - %u kHz\n",
- 					data->min, data->max);
- 
--	if (cpufreq_driver->setpolicy) {
-+	if (setpolicy) {
- 		data->policy = policy->policy;
- 		pr_debug("setting range\n");
--		ret = cpufreq_driver->setpolicy(policy);
-+		ret = setpolicy(policy);
- 	} else {
- 		if (policy->governor != data->governor) {
- 			/* save old, working values */
-@@ -1743,6 +1853,11 @@ int cpufreq_update_policy(unsigned int cpu)
- {
- 	struct cpufreq_policy *data = cpufreq_cpu_get(cpu);
- 	struct cpufreq_policy policy;
-+	struct cpufreq_driver *driver;
-+	unsigned int (*get)(unsigned int cpu);
-+	int (*target)(struct cpufreq_policy *policy,
-+		      unsigned int target_freq,
-+		      unsigned int relation);
- 	int ret;
- 
- 	if (!data) {
-@@ -1762,15 +1877,21 @@ int cpufreq_update_policy(unsigned int cpu)
- 	policy.policy = data->user_policy.policy;
- 	policy.governor = data->user_policy.governor;
- 
-+	rcu_read_lock();
-+	driver = rcu_dereference(cpufreq_driver);
-+	get = driver->get;
-+	target = driver->target;
-+	rcu_read_unlock();
-+
- 	/* BIOS might change freq behind our back
- 	  -> ask driver for current freq and notify governors about a change */
--	if (cpufreq_driver->get) {
--		policy.cur = cpufreq_driver->get(cpu);
-+	if (get) {
-+		policy.cur = get(cpu);
- 		if (!data->cur) {
- 			pr_debug("Driver did not initialize current freq");
- 			data->cur = policy.cur;
- 		} else {
--			if (data->cur != policy.cur && cpufreq_driver->target)
-+			if (data->cur != policy.cur && target)
- 				cpufreq_out_of_sync(cpu, data->cur,
- 								policy.cur);
- 		}
-@@ -1848,19 +1969,20 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	if (driver_data->setpolicy)
- 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	if (cpufreq_driver) {
--		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	if (rcu_access_pointer(cpufreq_driver)) {
-+		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 		return -EBUSY;
- 	}
--	cpufreq_driver = driver_data;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	rcu_assign_pointer(cpufreq_driver, driver_data);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	synchronize_rcu();
- 
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
- 		goto err_null_driver;
- 
--	if (!(cpufreq_driver->flags & CPUFREQ_STICKY)) {
-+	if (!(driver_data->flags & CPUFREQ_STICKY)) {
- 		int i;
- 		ret = -ENODEV;
- 
-@@ -1886,9 +2008,10 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- err_if_unreg:
- 	subsys_interface_unregister(&cpufreq_interface);
- err_null_driver:
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_driver = NULL;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	rcu_assign_pointer(cpufreq_driver, NULL);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	synchronize_rcu();
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_driver);
-@@ -1905,8 +2028,13 @@ EXPORT_SYMBOL_GPL(cpufreq_register_driver);
- int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- {
- 	unsigned long flags;
-+	struct cpufreq_driver *old_driver;
-+
-+	rcu_read_lock();
-+	old_driver = rcu_access_pointer(cpufreq_driver);
-+	rcu_read_unlock();
- 
--	if (!cpufreq_driver || (driver != cpufreq_driver))
-+	if (!old_driver || (driver != old_driver))
- 		return -EINVAL;
- 
- 	pr_debug("unregistering driver %s\n", driver->name);
-@@ -1914,9 +2042,10 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	subsys_interface_unregister(&cpufreq_interface);
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_driver = NULL;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	spin_lock_irqsave(&cpufreq_driver_lock, flags);
-+	rcu_assign_pointer(cpufreq_driver, NULL);
-+	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	synchronize_rcu();
- 
- 	return 0;
- }
--- 
-1.8.1.2
+Call Trace:
+  [<ffffffff8103feba>] xen_get_user_pgd+0x5a  <--
+  [<ffffffff8103feba>] xen_get_user_pgd+0x5a 
+  [<ffffffff81042d27>] xen_write_cr3+0x77 
+  [<ffffffff81ad2d21>] init_mem_mapping+0x1f9 
+  [<ffffffff81ac293f>] setup_arch+0x742 
+  [<ffffffff81666d71>] printk+0x48 
+  [<ffffffff81abcd62>] start_kernel+0x90 
+  [<ffffffff8109416b>] __add_preferred_console.clone.1+0x9b 
+  [<ffffffff81abc5f7>] x86_64_start_reservations+0x2a 
+  [<ffffffff81abf0c7>] xen_start_kernel+0x564 
 
+And the hypervisor says:
+(XEN) d7:v0: unhandled page fault (ec=0000)
+(XEN) Pagetable walk from ffffea000005b2d0:
+(XEN)  L4[0x1d4] = 0000000000000000 ffffffffffffffff
+(XEN) domain_crash_sync called from entry.S
+(XEN) Domain 7 (vcpu#0) crashed on cpu#3:
+(XEN) ----[ Xen-4.2.0  x86_64  debug=n  Not tainted ]----
+(XEN) CPU:    3
+(XEN) RIP:    e033:[<ffffffff8103feba>]
+(XEN) RFLAGS: 0000000000000206   EM: 1   CONTEXT: pv guest
+(XEN) rax: ffffea0000000000   rbx: 0000000001a0c000   rcx: 0000000080000000
+(XEN) rdx: 000000000005b2a0   rsi: 0000000001a0c000   rdi: 0000000000000000
+(XEN) rbp: ffffffff81a01dd8   rsp: ffffffff81a01d90   r8:  0000000000000000
+(XEN) r9:  0000000010000001   r10: 0000000000000000   r11: 0000000000000000
+(XEN) r12: 0000000000000000   r13: 0000001000000000   r14: 0000000000000000
+(XEN) r15: 0000000000100000   cr0: 000000008005003b   cr4: 00000000000406f0
+(XEN) cr3: 0000000411165000   cr2: ffffea000005b2d0
+(XEN) ds: 0000   es: 0000   fs: 0000   gs: 0000   ss: e02b   cs: e033
+(XEN) Guest stack trace from rsp=ffffffff81a01d90:
+(XEN)    0000000080000000 0000000000000000 0000000000000000 ffffffff8103feba
+(XEN)    000000010000e030 0000000000010006 ffffffff81a01dd8 000000000000e02b
+
+
+What is bizzare is that I do recall testing this (and Stefano also did it).
+So I am not sure what has altered.
