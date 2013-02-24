@@ -1,45 +1,81 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Bisected] 3.7-rc1 can't resume
-Date: Sat, 23 Feb 2013 13:54:19 -0800
-Message-ID: <51293A8B.5060107@zytor.com>
-References: <20130218155439.GA902@onny> <cfd96a3d-5834-4687-b9de-9f044f43b588@email.android.com> <20130223131856.GA682@onny>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc1
+Date: Sun, 24 Feb 2013 15:29:25 +0100
+Message-ID: <1663657.ypAtqGpGAq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from terminus.zytor.com ([198.137.202.10]:42965 "EHLO mail.zytor.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759258Ab3BWVzr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 23 Feb 2013 16:55:47 -0500
-In-Reply-To: <20130223131856.GA682@onny>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Fabio Baltieri <fabio.baltieri@linaro.org>, Dave Jones <davej@redhat.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonas Heinrich <onny@project-insanity.org>
-Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 02/23/2013 05:18 AM, Jonas Heinrich wrote:
-> Hi,
-> thank you for your replay and the effort you invest in helping me out
-> with this problem.
-> Today, I further debuged the problem and reverted this part of your commit
-> (without understanding the actual code):
->
+Hi Linus,
 
-Hi, that commit is indeed buggy, but it has already been fixed; commit
-1396adc3c2bdc556d4cdd1cf107aa0b6d59fbb1e contains the fix.
+Please pull from the git repository at
 
-So to bisect anything between 73201dbec64aebf6b0dca855b523f437972dc7bb 
-and 1396adc3c2bdc556d4cdd1cf107aa0b6d59fbb1e in a meaningful way you 
-will have to apply 1396adc3c2bdc556d4cdd1cf107aa0b6d59fbb1e on top.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-fixes-3.9-rc1
 
-If 73201dbec64aebf6b0dca855b523f437972dc7b with 
-1396adc3c2bdc556d4cdd1cf107aa0b6d59fbb1e on top fails whereas the 
-previous one does, then that is very interesting and something we can 
-work with.
+to receive ACPI and power management fixes for v3.9-rc1 with top-most commit
+4383822020c54c21eb2eb939a3233b44a51e8ca0
 
-	-hpa
+  Merge branch 'acpi-pm' into fixes
+
+on top of commit a0b1c42951dd06ec83cc1bc2c9788131d9fefcd8
+
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next
+
+The changes below fix problems introduced by the new ACPI and PM
+commits merged earlier and one older build issue.
+
+Included are:
+
+- Fixes for blackfin and microblaze build problems introduced by the
+  removal of global pm_idle.  From Lars-Peter Clausen.
+
+- OPP core build fix from Shawn Guo.
+
+- Error condition check fix for the new imx6q-cpufreq driver from
+  Wei Yongjun.
+
+- Fix for an AER driver crash related to the lack of APEI
+  initialization for acpi=off.  From yours truly.
+
+- Fix for the USB breakage on Thinkpad T430 related to ACPI power
+  resources and PCI wakeup reported by Dave and Fabio (you know
+  about this one).
+
+Thanks!
+
+---------------
+
+Lars-Peter Clausen (2):
+      blackfin idle: Fix compile error
+      microblaze idle: Fix compile error
+
+Rafael J. Wysocki (2):
+      ACPI / APEI: Fix crash in apei_hest_parse() for acpi=off
+      ACPI / PM: Take unusual configurations of power resources into account
+
+Shawn Guo (1):
+      PM / OPP: fix condition for empty of_init_opp_table()
+
+Wei Yongjun (1):
+      imx6q-cpufreq: fix return value check in imx6q_cpufreq_probe()
+
+---------------
+
+ arch/blackfin/kernel/process.c   |    4 +-
+ arch/microblaze/kernel/process.c |    5 +--
+ drivers/acpi/apei/hest.c         |    5 +--
+ drivers/acpi/internal.h          |    2 +-
+ drivers/acpi/power.c             |  112 +++++++++++++++++++++++++++++++++++-----------
+ drivers/acpi/scan.c              |    9 +++-
+ drivers/cpufreq/imx6q-cpufreq.c  |    2 +-
+ include/linux/opp.h              |   18 ++++----
+ 8 files changed, 107 insertions(+), 50 deletions(-)
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
