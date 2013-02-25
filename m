@@ -1,50 +1,147 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH v2] cpufreq: highbank: do not initialize array with a loop
-Date: Mon, 25 Feb 2013 07:53:47 -0600
-Message-ID: <512B6CEB.1030203@calxeda.com>
-References: <1361725277-5125-1-git-send-email-emilio@elopez.com.ar>
- <1361790465-21760-1-git-send-email-emilio@elopez.com.ar>
+From: Lai Jiangshan <eag0628@gmail.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Mon, 25 Feb 2013 23:53:22 +0800
+Message-ID: <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com>
+	<20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com>
+	<CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com>
+	<5122551E.1080703@linux.vnet.ibm.com>
+	<51226B46.9080707@linux.vnet.ibm.com>
+	<CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com>
+	<51226F91.7000108@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1361790465-21760-1-git-send-email-emilio@elopez.com.ar>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.infradead.org
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?UTF-8?B?RW1pbGlvIEzDs3Bleg==?= <emilio@elopez.com.ar>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "shawn.guo@linaro.org" <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <51226F91.7000108@linux.vnet.ibm.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Michel Lespinasse <walken@google.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDIvMjUvMjAxMyAwNTowNyBBTSwgRW1pbGlvIEzDs3BleiB3cm90ZToKPiBBcyB1bmluaXRp
-YWxpemVkIGFycmF5IG1lbWJlcnMgd2lsbCBiZSBpbml0aWFsaXplZCB0byB6ZXJvLCB3ZSBjYW4K
-PiBhdm9pZCB1c2luZyBhIGZvciBsb29wIGJ5IHNldHRpbmcgYSB2YWx1ZSB0byBpdC4KPiAKPiBT
-aWduZWQtb2ZmLWJ5OiBFbWlsaW8gTMOzcGV6IDxlbWlsaW9AZWxvcGV6LmNvbS5hcj4KPiAtLS0K
-PiAKPiBOb3RlIHRoYXQgSSBkb24ndCBvd24gYW55IGRldmljZSB1c2luZyB0aGlzIGRyaXZlciwg
-aXQgaGFzIG9ubHkgYmVlbiBjb21waWxlCj4gdGVzdGVkLCBidXQgaXQgc2hvdWxkbid0IGNhdXNl
-IGFueSBpc3N1ZXMuCj4gCj4gQ2hhbmdlcyB2MSAtPiB2MjoKPiAgICogTW92ZSBmcmVxIC8gMTAw
-MDAwMCB0byB0aGUgYXJyYXkgZGVmaW5pdGlvbiBhcyBzdWdnZXN0ZWQgYnkgVmlyZXNoIEt1bWFy
-Cj4gCj4gIGRyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMgfCA4ICstLS0tLS0tCj4g
-IDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgNyBkZWxldGlvbnMoLSkKPiAKPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2hpZ2hiYW5rLWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1
-ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMKPiBpbmRleCA2NmUzYTcxLi5iNjFiNWEzIDEwMDY0NAo+
-IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9oaWdoYmFuay1jcHVmcmVxLmMKPiArKysgYi9kcml2ZXJz
-L2NwdWZyZXEvaGlnaGJhbmstY3B1ZnJlcS5jCj4gQEAgLTI4LDEzICsyOCw3IEBACj4gIAo+ICBz
-dGF0aWMgaW50IGhiX3ZvbHRhZ2VfY2hhbmdlKHVuc2lnbmVkIGludCBmcmVxKQo+ICB7Cj4gLQlp
-bnQgaTsKPiAtCXUzMiBtc2dbSEJfQ1BVRlJFUV9JUENfTEVOXTsKPiAtCj4gLQltc2dbMF0gPSBI
-Ql9DUFVGUkVRX0NIQU5HRV9OT1RFOwo+IC0JbXNnWzFdID0gZnJlcSAvIDEwMDAwMDA7Cj4gLQlm
-b3IgKGkgPSAyOyBpIDwgSEJfQ1BVRlJFUV9JUENfTEVOOyBpKyspCj4gLQkJbXNnW2ldID0gMDsK
-PiArCXUzMiBtc2dbSEJfQ1BVRlJFUV9JUENfTEVOXSA9IHtIQl9DUFVGUkVRX0NIQU5HRV9OT1RF
-LCBmcmVxIC8gMTAwMDAwMH07Cj4gIAo+ICAJcmV0dXJuIHBsMzIwX2lwY190cmFuc21pdChtc2cp
-Owo+ICB9Cj4gClRoYW5rcyBmb3IgdGhlIGltcHJvdmVtZW50LgoKQWNrZWQtQnk6IE1hcmsgTGFu
-Z3Nkb3JmIDxtYXJrLmxhbmdzZG9yZkBjYWx4ZWRhLmNvbT4KCi0tTWFyayBMYW5nc2RvcmYKQ2Fs
-eGVkYSwgSW5jLgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5p
-bmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8v
-bGludXgtYXJtLWtlcm5lbAo=
+Hi, Srivatsa,
+
+The target of the whole patchset is nice for me.
+A question: How did you find out the such usages of
+"preempt_disable()" and convert them? did all are converted?
+
+And I think the lock is too complex and reinvent the wheel, why don't
+you reuse the lglock?
+I wrote an untested draft here.
+
+Thanks,
+Lai
+
+PS: Some HA tools(I'm writing one) which takes checkpoints of
+virtual-machines frequently, I guess this patchset can speedup the
+tools.
+
+>From 01db542693a1b7fc6f9ece45d57cb529d9be5b66 Mon Sep 17 00:00:00 2001
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Date: Mon, 25 Feb 2013 23:14:27 +0800
+Subject: [PATCH] lglock: add read-preference local-global rwlock
+
+locality via lglock(trylock)
+read-preference read-write-lock via fallback rwlock_t
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+ include/linux/lglock.h |   31 +++++++++++++++++++++++++++++++
+ kernel/lglock.c        |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 76 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/lglock.h b/include/linux/lglock.h
+index 0d24e93..30fe887 100644
+--- a/include/linux/lglock.h
++++ b/include/linux/lglock.h
+@@ -67,4 +67,35 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
+ void lg_global_lock(struct lglock *lg);
+ void lg_global_unlock(struct lglock *lg);
+
++struct lgrwlock {
++	unsigned long __percpu *fallback_reader_refcnt;
++	struct lglock lglock;
++	rwlock_t fallback_rwlock;
++};
++
++#define DEFINE_LGRWLOCK(name)						\
++	static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)		\
++	= __ARCH_SPIN_LOCK_UNLOCKED;					\
++	static DEFINE_PER_CPU(unsigned long, name ## _refcnt);		\
++	struct lgrwlock name = {					\
++		.fallback_reader_refcnt = &name ## _refcnt,		\
++		.lglock = { .lock = &name ## _lock } }
++
++#define DEFINE_STATIC_LGRWLOCK(name)					\
++	static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)		\
++	= __ARCH_SPIN_LOCK_UNLOCKED;					\
++	static DEFINE_PER_CPU(unsigned long, name ## _refcnt);		\
++	static struct lgrwlock name = {					\
++		.fallback_reader_refcnt = &name ## _refcnt,		\
++		.lglock = { .lock = &name ## _lock } }
++
++static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
++{
++	lg_lock_init(&lgrw->lglock, name);
++}
++
++void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
++void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
++void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
++void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
+ #endif
+diff --git a/kernel/lglock.c b/kernel/lglock.c
+index 6535a66..463543a 100644
+--- a/kernel/lglock.c
++++ b/kernel/lglock.c
+@@ -87,3 +87,48 @@ void lg_global_unlock(struct lglock *lg)
+ 	preempt_enable();
+ }
+ EXPORT_SYMBOL(lg_global_unlock);
++
++void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
++{
++	struct lglock *lg = &lgrw->lglock;
++
++	preempt_disable();
++	if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
++		if (likely(arch_spin_trylock(this_cpu_ptr(lg->lock)))) {
++			rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
++			return;
++		}
++		read_lock(&lgrw->fallback_rwlock);
++	}
++
++	__this_cpu_inc(*lgrw->fallback_reader_refcnt);
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_lock);
++
++void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
++{
++	if (likely(!__this_cpu_read(*lgrw->fallback_reader_refcnt))) {
++		lg_local_unlock(&lgrw->lglock);
++		return;
++	}
++
++	if (!__this_cpu_dec_return(*lgrw->fallback_reader_refcnt))
++		read_unlock(&lgrw->fallback_rwlock);
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
++
++void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
++{
++	lg_global_lock(&lgrw->lglock);
++	write_lock(&lgrw->fallback_rwlock);
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_lock);
++
++void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
++{
++	write_unlock(&lgrw->fallback_rwlock);
++	lg_global_unlock(&lgrw->lglock);
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
+-- 
+1.7.7.6
