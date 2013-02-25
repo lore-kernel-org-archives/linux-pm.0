@@ -1,49 +1,60 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 00/46] CPU hotplug: stop_machine()-free CPU hotplug
-Date: Tue, 26 Feb 2013 03:15:05 +0530
-Message-ID: <512BDB61.1010204@linux.vnet.ibm.com>
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <87mwuxfatp.fsf@rustcorp.com.au>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2][RFC] time : set broadcast irq affinity
+Date: Mon, 25 Feb 2013 23:50:23 +0100
+Message-ID: <512BEAAF.1070500@linaro.org>
+References: <5123C299.3080005@linaro.org> <1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org> <1361484083-5906-2-git-send-email-daniel.lezcano@linaro.org> <20130222095530.377fd218@chromoly>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:40248 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322Ab3BYVrT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Feb 2013 16:47:19 -0500
-Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 26 Feb 2013 03:15:18 +0530
-In-Reply-To: <87mwuxfatp.fsf@rustcorp.com.au>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:33701 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932380Ab3BYWuY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Feb 2013 17:50:24 -0500
+Received: by mail-wg0-f48.google.com with SMTP id 16so2909891wgi.27
+        for <linux-pm@vger.kernel.org>; Mon, 25 Feb 2013 14:50:23 -0800 (PST)
+In-Reply-To: <20130222095530.377fd218@chromoly>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, rjw@sisk.pl, sbw@mit.edu, fweisbec@gmail.com, linux@arm.linux.org.uk, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, walken@google.com, vincent.guittot@linaro.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, fweisbec@gmail.com, john.stultz@linaro.org, linaro-kernel@lists.linaro.org
 
-On 02/22/2013 06:01 AM, Rusty Russell wrote:
-> "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> writes:
->> Hi,
->>
->> This patchset removes CPU hotplug's dependence on stop_machine() from the CPU
->> offline path and provides an alternative (set of APIs) to preempt_disable() to
->> prevent CPUs from going offline, which can be invoked from atomic context.
->> The motivation behind the removal of stop_machine() is to avoid its ill-effects
->> and thus improve the design of CPU hotplug. (More description regarding this
->> is available in the patches).
-> 
-> If you're doing a v7, please put your benchmark results somewhere!
-> 
+On 02/22/2013 06:55 PM, Jacob Pan wrote:
+> On Thu, 21 Feb 2013 23:01:23 +0100
+> Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>=20
+>> +/*
+>> + * Set broadcast interrupt affinity
+>> + */
+>> +static void tick_broadcast_set_affinity(struct clock_event_device
+>> *bc, int cpu) +{
+>> +	struct cpumask cpumask;
+>> +
+>> +	if (!(bc->features & CLOCK_EVT_FEAT_DYNIRQ))
+>> +		return;
+>> +
+>> +	cpumask_clear(&cpumask);
+>> +	cpumask_set_cpu(cpu, &cpumask);
+>> +	irq_set_affinity(bc->irq, &cpumask);
+> would it be more efficient to keep track of the current bc->irq affin=
+ity
+> via cpumask then set it only if it is different?
 
-Oh, I forgot to put them in v6! Thanks for reminding :-)
-And yes, I'll have to do a v7 to incorporate changes (if any) to the new code
-that went in during this merge window.
+Do you mean a cpumask static variable ? and something like:
 
-> The obvious place is in the 44/46.
->
+if (!cpumask_test_cpu(cpu, &affinitymask)) {
+	cpumask_set_cpu(cpu, &affinitymask);
+	irq_set_affinity(bc->irq, &affinitymask)
+}
 
-Ok, will add it there. Thank you!
- 
-Regards,
-Srivatsa S. Bhat
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
