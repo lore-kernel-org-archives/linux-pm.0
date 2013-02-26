@@ -1,101 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] time : pass broadcast device parameter
-Date: Tue, 26 Feb 2013 17:44:28 +0530
-Message-ID: <CAKohpong=ioMvnWErKQ1gEcG71f5et26EDJFtbsE1SOr=TN_tQ@mail.gmail.com>
-References: <5123C299.3080005@linaro.org>
-	<1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org>
-	<CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
-	<512C9D20.8020309@linaro.org>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
+Date: Tue, 26 Feb 2013 13:24:57 +0100
+Message-ID: <1457024.oessUW7SMx@skinner.arch.suse.de>
+References: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org> <1993068.XZh8f6yGqe@skinner.arch.suse.de> <CAKohpomt+7YtD5s+XJ5-boCu_atCB0kHhuifWOGVwy7DqnBLPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=e89a8fb205e46cb7bd04d69f992a
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <512C9D20.8020309@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, fweisbec@gmail.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomt+7YtD5s+XJ5-boCu_atCB0kHhuifWOGVwy7DqnBLPA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
---e89a8fb205e46cb7bd04d69f992a
-Content-Type: text/plain; charset=ISO-8859-1
+On Tuesday, February 26, 2013 04:20:07 PM Viresh Kumar wrote:
+> On 26 February 2013 16:14, Thomas Renninger <trenn@suse.de> wrote:
+> > Redefining MIN_LATENCY_MULTIPLIER shouldn't hurt that much, but this looks
+> > like a workaround.
+> > It only modifies the minimal sampling rate that userspace can set.
+> 
+> Yes.
+> 
+> > You would still need to set something from userspace to get the perfect
+> > sampling rate for this platform.
+> 
+> Yes. We still need to fix sampling rate from userspace.
+> 
+> > I wonder where the cpufreq driver does get the 1ms latency from?
+> > Is this value valid?
+> > The driver should return the correct latency, then there is no need for
+> > workarounds like this.
+> 
+> I am talking about ARM Vexpress TC2 (Test Chip) big LITTLE SoC here. Its
+> not a production type SoC and freq change is a bit slow here. Its really
+> around 1 ms :)
+> 
+> But the real systems may not have this big of latency.
+> 
+> Anyway, how do you come to 100 value in your initial patch. What motivated
+> you to fix it there?
+Iirc there were two things:
+   - max latency does not make any sense at all and it got reverted
+   - min latency makes some sense -> prevent a system to get unresponsive
+     due to too small sampling rate forced by userspace.
+     I reduced the min_sampling rate calculation to better be able to test
+     best sampling rate values by trying them out.
 
-On 26 February 2013 17:01, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> Oh, by the way, could send me the patch to set the flag to the timer
-> device ? I will include it to the patchset.
+But I agree, that it should not harm to lower the MIN_LATENCY_MULTIPLIER.
+In fact it doesn't change anything as long as userspace does not override
+the sample factor and the system should still not stall (this is what the 
+min_sampling_rate tries to prevent).
 
-Sure. Find it attached too as gmail may break it.
+So from what you describe above:
+This patch makes sense, especially to test and debug some early HW where
+latency values might be big (or bogus). Then the developer can still enforce
+lower polling rates, but they can still not be that low that userspace is able 
+to stall the system.
 
-commit 14422c760bb5b2485867f3efb7842d296081ad86
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Fri Feb 22 12:42:39 2013 +0530
+No objections from my side if this patch helps you to get further.
 
-    ARM/timer-sp: Set dynamic irq affinity
-
-    When a cpu goes to a deep idle state where its local timer is shutdown, it
-    notifies the time frame work to use the broadcast timer instead.
-
-    Unfortunately, the broadcast device could wake up any CPU,
-including an idle one
-    which is not concerned by the wake up at all.
-
-    This implies, in the worst case, an idle CPU will wake up to send an IPI to
-    another idle cpu.
-
-    This patch fixes this for ARM platforms using timer-sp, by setting
-    CLOCK_EVT_FEAT_DYNIRQ feature.
-
-    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- arch/arm/common/timer-sp.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/common/timer-sp.c b/arch/arm/common/timer-sp.c
-index 9d2d3ba..ae3c0f9 100644
---- a/arch/arm/common/timer-sp.c
-+++ b/arch/arm/common/timer-sp.c
-@@ -158,7 +158,8 @@ static int sp804_set_next_event(unsigned long next,
- }
-
- static struct clock_event_device sp804_clockevent = {
--       .features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
-+       .features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT |
-+               CLOCK_EVT_FEAT_DYNIRQ,
-        .set_mode       = sp804_set_mode,
-        .set_next_event = sp804_set_next_event,
-        .rating         = 300,
-
---e89a8fb205e46cb7bd04d69f992a
-Content-Type: application/octet-stream;
-	name="0001-ARM-timer-sp-Set-dynamic-irq-affinity.patch"
-Content-Disposition: attachment;
-	filename="0001-ARM-timer-sp-Set-dynamic-irq-affinity.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hdn0p8ko0
-
-RnJvbSAxNDQyMmM3NjBiYjViMjQ4NTg2N2YzZWZiNzg0MmQyOTYwODFhZDg2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MTQ0MjJjNzYwYmI1YjI0ODU4NjdmM2VmYjc4NDJk
-Mjk2MDgxYWQ4Ni4xMzYxODgwODI3LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogRnJpLCAyMiBGZWIg
-MjAxMyAxMjo0MjozOSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIEFSTS90aW1lci1zcDogU2V0IGR5
-bmFtaWMgaXJxIGFmZmluaXR5CgpXaGVuIGEgY3B1IGdvZXMgdG8gYSBkZWVwIGlkbGUgc3RhdGUg
-d2hlcmUgaXRzIGxvY2FsIHRpbWVyIGlzIHNodXRkb3duLCBpdApub3RpZmllcyB0aGUgdGltZSBm
-cmFtZSB3b3JrIHRvIHVzZSB0aGUgYnJvYWRjYXN0IHRpbWVyIGluc3RlYWQuCgpVbmZvcnR1bmF0
-ZWx5LCB0aGUgYnJvYWRjYXN0IGRldmljZSBjb3VsZCB3YWtlIHVwIGFueSBDUFUsIGluY2x1ZGlu
-ZyBhbiBpZGxlIG9uZQp3aGljaCBpcyBub3QgY29uY2VybmVkIGJ5IHRoZSB3YWtlIHVwIGF0IGFs
-bC4KClRoaXMgaW1wbGllcywgaW4gdGhlIHdvcnN0IGNhc2UsIGFuIGlkbGUgQ1BVIHdpbGwgd2Fr
-ZSB1cCB0byBzZW5kIGFuIElQSSB0bwphbm90aGVyIGlkbGUgY3B1LgoKVGhpcyBwYXRjaCBmaXhl
-cyB0aGlzIGZvciBBUk0gcGxhdGZvcm1zIHVzaW5nIHRpbWVyLXNwLCBieSBzZXR0aW5nCkNMT0NL
-X0VWVF9GRUFUX0RZTklSUSBmZWF0dXJlLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2
-aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBhcmNoL2FybS9jb21tb24vdGltZXItc3AuYyB8
-IDMgKystCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pCgpk
-aWZmIC0tZ2l0IGEvYXJjaC9hcm0vY29tbW9uL3RpbWVyLXNwLmMgYi9hcmNoL2FybS9jb21tb24v
-dGltZXItc3AuYwppbmRleCA5ZDJkM2JhLi5hZTNjMGY5IDEwMDY0NAotLS0gYS9hcmNoL2FybS9j
-b21tb24vdGltZXItc3AuYworKysgYi9hcmNoL2FybS9jb21tb24vdGltZXItc3AuYwpAQCAtMTU4
-LDcgKzE1OCw4IEBAIHN0YXRpYyBpbnQgc3A4MDRfc2V0X25leHRfZXZlbnQodW5zaWduZWQgbG9u
-ZyBuZXh0LAogfQogCiBzdGF0aWMgc3RydWN0IGNsb2NrX2V2ZW50X2RldmljZSBzcDgwNF9jbG9j
-a2V2ZW50ID0gewotCS5mZWF0dXJlcyAgICAgICA9IENMT0NLX0VWVF9GRUFUX1BFUklPRElDIHwg
-Q0xPQ0tfRVZUX0ZFQVRfT05FU0hPVCwKKwkuZmVhdHVyZXMgICAgICAgPSBDTE9DS19FVlRfRkVB
-VF9QRVJJT0RJQyB8IENMT0NLX0VWVF9GRUFUX09ORVNIT1QgfAorCQlDTE9DS19FVlRfRkVBVF9E
-WU5JUlEsCiAJLnNldF9tb2RlCT0gc3A4MDRfc2V0X21vZGUsCiAJLnNldF9uZXh0X2V2ZW50CT0g
-c3A4MDRfc2V0X25leHRfZXZlbnQsCiAJLnJhdGluZwkJPSAzMDAsCi0tIAoxLjcuMTIucmMyLjE4
-Lmc2MWI0NzJlCgo=
---e89a8fb205e46cb7bd04d69f992a--
+   Thomas
