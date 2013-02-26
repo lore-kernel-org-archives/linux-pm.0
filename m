@@ -1,35 +1,28 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
-Date: Mon, 25 Feb 2013 21:31:45 -0800
-Message-ID: <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
-References: <1663657.ypAtqGpGAq@vostro.rjw.lan>
-	<1781256.mPQbtiUPYR@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] time : pass broadcast device parameter
+Date: Tue, 26 Feb 2013 14:15:33 +0530
+Message-ID: <CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
+References: <5123C299.3080005@linaro.org>
+	<1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1781256.mPQbtiUPYR@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Fabio Baltieri <fabio.baltieri@linaro.org>, Dave Jones <davej@redhat.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, fweisbec@gmail.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 25, 2013 at 7:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On 22 February 2013 03:31, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+> The broadcast timer could be passed as parameter to the function
+> instead of using again tick_broadcast_device.evtdev which was
+> previously used in the caller function.
 >
-> I wonder if this went unnoticed or there's anything wrong with it or it just
-> needs to wait for some more time?
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Just going through things slowly. It's merged in my tree now.
+I know you are going for another round with this patchset and was just
+trying v1.
 
-Oh, and a request: _please_ don't use unknown TLA's like OPP. This has
-become a huge problem, to the point that we have a
-"Documentation/power/opp.txt" file THAT NEVER CLEARLY STATES WHAT THE
-F*CK OPP ACTUALLY MEANS! What nice "documentation".
+I did my tests on ARM Vexpress - TC2, big.LITTLE Arch.
 
-Ok, I can look up things like this and find that it is "Operating
-Performance Points". At least in this context. But no, it's not some
-kind of generic standard, and no, it's not something people should be
-expected to know in general. Please stop doing "explanations" of
-things that use TLA's like this. And people shouldn't have to even
-wonder.
-
-                   Linus
+Tested-by: Viresh Kumar <viresh.kumar@linaro.org>
