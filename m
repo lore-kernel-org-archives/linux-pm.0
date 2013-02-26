@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 1/4] time : pass broadcast parameter
-Date: Tue, 26 Feb 2013 23:17:24 +0100
-Message-ID: <1361917047-29230-2-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 3/4] ARM: nomadik: add dynamic irq flag to the timer
+Date: Tue, 26 Feb 2013 23:17:26 +0100
+Message-ID: <1361917047-29230-4-git-send-email-daniel.lezcano@linaro.org>
 References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
@@ -10,58 +10,26 @@ To: john.stultz@linaro.org, tglx@linutronix.de
 Cc: viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-The broadcast timer could be passed as parameter to the function
-instead of using again tick_broadcast_device.evtdev which was
-previously used in the caller function.
+Add the dynamic irq affinity feature to the timer clock device.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- kernel/time/tick-broadcast.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/clocksource/nomadik-mtu.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index 2fb8cb8..6197ac0 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -406,10 +406,9 @@ struct cpumask *tick_get_broadcast_oneshot_mask(void)
- 	return to_cpumask(tick_broadcast_oneshot_mask);
- }
+diff --git a/drivers/clocksource/nomadik-mtu.c b/drivers/clocksource/nomadik-mtu.c
+index 7cbcaa0..73dc540 100644
+--- a/drivers/clocksource/nomadik-mtu.c
++++ b/drivers/clocksource/nomadik-mtu.c
+@@ -136,7 +136,8 @@ static void nmdk_clkevt_mode(enum clock_event_mode mode,
  
--static int tick_broadcast_set_event(ktime_t expires, int force)
-+static int tick_broadcast_set_event(struct clock_event_device *bc,
-+				    ktime_t expires, int force)
- {
--	struct clock_event_device *bc = tick_broadcast_device.evtdev;
--
- 	if (bc->mode != CLOCK_EVT_MODE_ONESHOT)
- 		clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
- 
-@@ -479,7 +478,7 @@ again:
- 		 * Rearm the broadcast device. If event expired,
- 		 * repeat the above
- 		 */
--		if (tick_broadcast_set_event(next_event, 0))
-+		if (tick_broadcast_set_event(dev, next_event, 0))
- 			goto again;
- 	}
- 	raw_spin_unlock(&tick_broadcast_lock);
-@@ -522,7 +521,7 @@ void tick_broadcast_oneshot_control(unsigned long reason)
- 			cpumask_set_cpu(cpu, tick_get_broadcast_oneshot_mask());
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
- 			if (dev->next_event.tv64 < bc->next_event.tv64)
--				tick_broadcast_set_event(dev->next_event, 1);
-+				tick_broadcast_set_event(bc, dev->next_event, 1);
- 		}
- 	} else {
- 		if (cpumask_test_cpu(cpu, tick_get_broadcast_oneshot_mask())) {
-@@ -591,7 +590,7 @@ void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
- 			clockevents_set_mode(bc, CLOCK_EVT_MODE_ONESHOT);
- 			tick_broadcast_init_next_event(to_cpumask(tmpmask),
- 						       tick_next_period);
--			tick_broadcast_set_event(tick_next_period, 1);
-+			tick_broadcast_set_event(bc, tick_next_period, 1);
- 		} else
- 			bc->next_event.tv64 = KTIME_MAX;
- 	} else {
+ static struct clock_event_device nmdk_clkevt = {
+ 	.name		= "mtu_1",
+-	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
++	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC |
++	                  CLOCK_EVT_FEAT_DYNIRQ,
+ 	.rating		= 200,
+ 	.set_mode	= nmdk_clkevt_mode,
+ 	.set_next_event	= nmdk_clkevt_next,
 -- 
 1.7.9.5
