@@ -1,93 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
-Date: Tue, 26 Feb 2013 04:17:08 +0100
-Message-ID: <1781256.mPQbtiUPYR@vostro.rjw.lan>
+Date: Mon, 25 Feb 2013 21:31:45 -0800
+Message-ID: <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
 References: <1663657.ypAtqGpGAq@vostro.rjw.lan>
+	<1781256.mPQbtiUPYR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1663657.ypAtqGpGAq@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Fabio Baltieri <fabio.baltieri@linaro.org>, Dave Jones <davej@redhat.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1781256.mPQbtiUPYR@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Fabio Baltieri <fabio.baltieri@linaro.org>, Dave Jones <davej@redhat.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Mon, Feb 25, 2013 at 7:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> I wonder if this went unnoticed or there's anything wrong with it or it just
+> needs to wait for some more time?
 
-I wonder if this went unnoticed or there's anything wrong with it or it just
-needs to wait for some more time?
+Just going through things slowly. It's merged in my tree now.
 
-Rafael
+Oh, and a request: _please_ don't use unknown TLA's like OPP. This has
+become a huge problem, to the point that we have a
+"Documentation/power/opp.txt" file THAT NEVER CLEARLY STATES WHAT THE
+F*CK OPP ACTUALLY MEANS! What nice "documentation".
 
+Ok, I can look up things like this and find that it is "Operating
+Performance Points". At least in this context. But no, it's not some
+kind of generic standard, and no, it's not something people should be
+expected to know in general. Please stop doing "explanations" of
+things that use TLA's like this. And people shouldn't have to even
+wonder.
 
-On Sunday, February 24, 2013 03:29:25 PM Rafael J. Wysocki wrote:
-> Hi Linus,
-> 
-> Please pull from the git repository at
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-fixes-3.9-rc1
-> 
-> to receive ACPI and power management fixes for v3.9-rc1 with top-most commit
-> 4383822020c54c21eb2eb939a3233b44a51e8ca0
-> 
->   Merge branch 'acpi-pm' into fixes
-> 
-> on top of commit a0b1c42951dd06ec83cc1bc2c9788131d9fefcd8
-> 
->   Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next
-> 
-> The changes below fix problems introduced by the new ACPI and PM
-> commits merged earlier and one older build issue.
-> 
-> Included are:
-> 
-> - Fixes for blackfin and microblaze build problems introduced by the
->   removal of global pm_idle.  From Lars-Peter Clausen.
-> 
-> - OPP core build fix from Shawn Guo.
-> 
-> - Error condition check fix for the new imx6q-cpufreq driver from
->   Wei Yongjun.
-> 
-> - Fix for an AER driver crash related to the lack of APEI
->   initialization for acpi=off.  From yours truly.
-> 
-> - Fix for the USB breakage on Thinkpad T430 related to ACPI power
->   resources and PCI wakeup reported by Dave and Fabio (you know
->   about this one).
-> 
-> Thanks!
-> 
-> ---------------
-> 
-> Lars-Peter Clausen (2):
->       blackfin idle: Fix compile error
->       microblaze idle: Fix compile error
-> 
-> Rafael J. Wysocki (2):
->       ACPI / APEI: Fix crash in apei_hest_parse() for acpi=off
->       ACPI / PM: Take unusual configurations of power resources into account
-> 
-> Shawn Guo (1):
->       PM / OPP: fix condition for empty of_init_opp_table()
-> 
-> Wei Yongjun (1):
->       imx6q-cpufreq: fix return value check in imx6q_cpufreq_probe()
-> 
-> ---------------
-> 
->  arch/blackfin/kernel/process.c   |    4 +-
->  arch/microblaze/kernel/process.c |    5 +--
->  drivers/acpi/apei/hest.c         |    5 +--
->  drivers/acpi/internal.h          |    2 +-
->  drivers/acpi/power.c             |  112 +++++++++++++++++++++++++++++++++++-----------
->  drivers/acpi/scan.c              |    9 +++-
->  drivers/cpufreq/imx6q-cpufreq.c  |    2 +-
->  include/linux/opp.h              |   18 ++++----
->  8 files changed, 107 insertions(+), 50 deletions(-)
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+                   Linus
