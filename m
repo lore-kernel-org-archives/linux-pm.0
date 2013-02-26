@@ -1,99 +1,95 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v4 6/8] ARM i.MX5: Add System Reset Controller (SRC) support for i.MX51 and i.MX53
-Date: Tue, 26 Feb 2013 12:39:32 +0100
-Message-ID: <1361878774-6382-7-git-send-email-p.zabel@pengutronix.de>
+Subject: [PATCH v4 5/8] staging: drm/imx: Use SRC to reset IPU
+Date: Tue, 26 Feb 2013 12:39:31 +0100
+Message-ID: <1361878774-6382-6-git-send-email-p.zabel@pengutronix.de>
 References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54348 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54353 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756051Ab3BZLkF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:40:05 -0500
+	with ESMTP id S1756273Ab3BZLkG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:40:06 -0500
 In-Reply-To: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
 
-The SRC in i.MX51 and i.MX53 is similar to the one in i.MX6q minus
-the IPU2 reset line and multi core CPU reset/enable bits.
+Request the System Reset Controller to reset the IPU if
+specified via device tree phandle.
 
 Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 Reviewed-by: Stephen Warren <swarren@nvidia.com>
 ---
- arch/arm/boot/dts/imx6qdl.dtsi |    2 +-
- arch/arm/mach-imx/Kconfig      |    2 ++
- arch/arm/mach-imx/mm-imx5.c    |    2 ++
- arch/arm/mach-imx/src.c        |    4 +++-
- 4 files changed, 8 insertions(+), 2 deletions(-)
+ .../devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt    |    3 +++
+ drivers/staging/imx-drm/ipu-v3/ipu-common.c                |   12 +++++++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 3e21e92..fb71499 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -513,7 +513,7 @@
- 			};
+diff --git a/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt b/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
+index 07654f0..f769857 100644
+--- a/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
++++ b/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
+@@ -8,6 +8,8 @@ Required properties:
+ - interrupts: Should contain sync interrupt and error interrupt,
+   in this order.
+ - #crtc-cells: 1, See below
++- resets: phandle pointing to the system reset controller and
++          reset line index, see reset/fsl,imx-src.txt for details
  
- 			src: src@020d8000 {
--				compatible = "fsl,imx6q-src";
-+				compatible = "fsl,imx6q-src", "fsl,imx51-src";
- 				reg = <0x020d8000 0x4000>;
- 				interrupts = <0 91 0x04 0 96 0x04>;
- 				#reset-cells = <1>;
-diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
-index 5052e31..857c1fb 100644
---- a/arch/arm/mach-imx/Kconfig
-+++ b/arch/arm/mach-imx/Kconfig
-@@ -166,6 +166,7 @@ config	SOC_IMX51
- 	bool
- 	select ARCH_MX5
- 	select ARCH_MX51
-+	select HAVE_IMX_SRC
- 	select PINCTRL
- 	select PINCTRL_IMX51
- 	select SOC_IMX5
-@@ -793,6 +794,7 @@ config	SOC_IMX53
- 	select ARCH_MX5
- 	select ARCH_MX53
- 	select HAVE_CAN_FLEXCAN if CAN
-+	select HAVE_IMX_SRC
- 	select IMX_HAVE_PLATFORM_IMX2_WDT
- 	select PINCTRL
- 	select PINCTRL_IMX53
-diff --git a/arch/arm/mach-imx/mm-imx5.c b/arch/arm/mach-imx/mm-imx5.c
-index cf34994..b7c4e70 100644
---- a/arch/arm/mach-imx/mm-imx5.c
-+++ b/arch/arm/mach-imx/mm-imx5.c
-@@ -84,6 +84,7 @@ void __init imx51_init_early(void)
- 	mxc_set_cpu_type(MXC_CPU_MX51);
- 	mxc_iomux_v3_init(MX51_IO_ADDRESS(MX51_IOMUXC_BASE_ADDR));
- 	mxc_arch_reset_init(MX51_IO_ADDRESS(MX51_WDOG1_BASE_ADDR));
-+	imx_src_init();
+ example:
+ 
+@@ -16,6 +18,7 @@ ipu: ipu@18000000 {
+ 	compatible = "fsl,imx53-ipu";
+ 	reg = <0x18000000 0x080000000>;
+ 	interrupts = <11 10>;
++	resets = <&src 2>;
+ };
+ 
+ Parallel display support
+diff --git a/drivers/staging/imx-drm/ipu-v3/ipu-common.c b/drivers/staging/imx-drm/ipu-v3/ipu-common.c
+index 366f259..04b8320 100644
+--- a/drivers/staging/imx-drm/ipu-v3/ipu-common.c
++++ b/drivers/staging/imx-drm/ipu-v3/ipu-common.c
+@@ -16,6 +16,7 @@
+ #include <linux/export.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
++#include <linux/reset.h>
+ #include <linux/platform_device.h>
+ #include <linux/err.h>
+ #include <linux/spinlock.h>
+@@ -660,7 +661,7 @@ int ipu_idmac_disable_channel(struct ipuv3_channel *channel)
  }
+ EXPORT_SYMBOL_GPL(ipu_idmac_disable_channel);
  
- void __init imx53_init_early(void)
-@@ -91,6 +92,7 @@ void __init imx53_init_early(void)
- 	mxc_set_cpu_type(MXC_CPU_MX53);
- 	mxc_iomux_v3_init(MX53_IO_ADDRESS(MX53_IOMUXC_BASE_ADDR));
- 	mxc_arch_reset_init(MX53_IO_ADDRESS(MX53_WDOG1_BASE_ADDR));
-+	imx_src_init();
- }
+-static int ipu_reset(struct ipu_soc *ipu)
++static int ipu_memory_reset(struct ipu_soc *ipu)
+ {
+ 	unsigned long timeout;
  
- void __init mx51_init_irq(void)
-diff --git a/arch/arm/mach-imx/src.c b/arch/arm/mach-imx/src.c
-index b50eee0..bc4d2c7 100644
---- a/arch/arm/mach-imx/src.c
-+++ b/arch/arm/mach-imx/src.c
-@@ -121,7 +121,9 @@ void __init imx_src_init(void)
- 	struct device_node *np;
- 	u32 val;
+@@ -1104,7 +1105,12 @@ static int ipu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto out_failed_irq;
  
--	np = of_find_compatible_node(NULL, NULL, "fsl,imx6q-src");
-+	np = of_find_compatible_node(NULL, NULL, "fsl,imx51-src");
-+	if (!np)
-+		return;
- 	src_base = of_iomap(np, 0);
- 	WARN_ON(!src_base);
+-	ret = ipu_reset(ipu);
++	ret = device_reset(&pdev->dev);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to reset: %d\n", ret);
++		goto out_failed_reset;
++	}
++	ret = ipu_memory_reset(ipu);
+ 	if (ret)
+ 		goto out_failed_reset;
  
+@@ -1130,8 +1136,8 @@ static int ipu_probe(struct platform_device *pdev)
+ failed_add_clients:
+ 	ipu_submodules_exit(ipu);
+ failed_submodules_init:
+-	ipu_irq_exit(ipu);
+ out_failed_reset:
++	ipu_irq_exit(ipu);
+ out_failed_irq:
+ 	clk_disable_unprepare(ipu->clk);
+ failed_clk_get:
 -- 
 1.7.10.4
 
