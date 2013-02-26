@@ -1,52 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] time : pass broadcast device parameter
-Date: Tue, 26 Feb 2013 12:31:44 +0100
-Message-ID: <512C9D20.8020309@linaro.org>
-References: <5123C299.3080005@linaro.org> <1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org> <CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: [PATCH v4 0/8] Reset controller API to reset IP modules on i.MX5 and i.MX6
+Date: Tue, 26 Feb 2013 12:39:26 +0100
+Message-ID: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f41.google.com ([74.125.83.41]:54428 "EHLO
-	mail-ee0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754090Ab3BZLbo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:31:44 -0500
-Received: by mail-ee0-f41.google.com with SMTP id c13so2272984eek.28
-        for <linux-pm@vger.kernel.org>; Tue, 26 Feb 2013 03:31:43 -0800 (PST)
-In-Reply-To: <CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54299 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755863Ab3BZLj6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:39:58 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, fweisbec@gmail.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 
-On 02/26/2013 09:45 AM, Viresh Kumar wrote:
-> On 22 February 2013 03:31, Daniel Lezcano <daniel.lezcano@linaro.org>=
- wrote:
->> The broadcast timer could be passed as parameter to the function
->> instead of using again tick_broadcast_device.evtdev which was
->> previously used in the caller function.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> I know you are going for another round with this patchset and was jus=
-t
-> trying v1.
->=20
-> I did my tests on ARM Vexpress - TC2, big.LITTLE Arch.
->=20
-> Tested-by: Viresh Kumar <viresh.kumar@linaro.org>
+[Added Len, Pavel, Rafael, and linux-pm to Cc, as there might be some
+ need for integration with the PM runtime infrastructure?]
 
-Oh, by the way, could send me the patch to set the flag to the timer
-device ? I will include it to the patchset.
+The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
+reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
 
-Thanks
-  -- Daniel
+The following patches add a simple API for devices to request being reset
+by separate reset controller hardware and implements the reset signal
+device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
+the i.MX SRC contains self-deasserting reset registers, so I've included
+both ops to manually assert/deassert a reset line, as well as a "reset"
+operation that is supposed to assert the reset line and wait for it to
+deassert.
+Also included is a GPIO reset controller driver that can handle reset
+lines of external ICs connected to GPIOs.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+The i.MX SRC is enhanced to provide a reset controller and the IPU driver
+is made to request being reset by calling the device_reset(&pdev->dev)
+convenience wrapper during probing.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+I'm not sure how integration with the PM runtime should look like, since
+there are quite different use cases for pulling a reset line. (Does the
+device need to be reset once, or to be reset every time it comes out of
+suspend? Or maybe the reset is just needed when the device gets stuck).
+
+Changes since v3:
+ - Addressed Stephen's concerns, adding id translation
+   functionality and the missing devm_put_reset_controller
+   to the core,
+ - switched the gpio-reset driver's reset-delays property to
+   microseconds and added an optional initially-in-reset property,
+ - and reworked the gpio-reset probe function to better handle
+   requested GPIOs returning -EPROBE_DEFER.
+
+regards
+Philipp
+
+---
+ .../devicetree/bindings/reset/fsl,imx-src.txt      |   49 ++++
+ .../devicetree/bindings/reset/gpio-reset.txt       |   37 +++
+ Documentation/devicetree/bindings/reset/reset.txt  |   75 +++++
+ .../bindings/staging/imx-drm/fsl-imx-drm.txt       |    3 +
+ arch/arm/boot/dts/imx51.dtsi                       |    7 +
+ arch/arm/boot/dts/imx53.dtsi                       |    7 +
+ arch/arm/boot/dts/imx6q.dtsi                       |    1 +
+ arch/arm/boot/dts/imx6qdl.dtsi                     |    4 +-
+ arch/arm/mach-imx/Kconfig                          |    3 +
+ arch/arm/mach-imx/mm-imx5.c                        |    2 +
+ arch/arm/mach-imx/src.c                            |   69 ++++-
+ drivers/Kconfig                                    |    2 +
+ drivers/Makefile                                   |    3 +
+ drivers/reset/Kconfig                              |   26 ++
+ drivers/reset/Makefile                             |    2 +
+ drivers/reset/core.c                               |  298 ++++++++++++++++++++
+ drivers/reset/gpio-reset.c                         |  208 ++++++++++++++
+ drivers/staging/imx-drm/ipu-v3/ipu-common.c        |   12 +-
+ include/linux/reset-controller.h                   |   51 ++++
+ include/linux/reset.h                              |   17 ++
+ 20 files changed, 871 insertions(+), 5 deletions(-)
 
