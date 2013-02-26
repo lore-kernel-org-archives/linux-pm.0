@@ -1,46 +1,50 @@
-From: Tejun Heo <tj@kernel.org>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
-Date: Tue, 26 Feb 2013 08:37:12 -0800
-Message-ID: <20130226163712.GA30433@htj.dyndns.org>
+Date: Tue, 26 Feb 2013 08:47:30 -0800
+Message-ID: <CA+55aFyFRbMX9G_0Mv0nUZgw9mHAPzE0zCw5mCSbGG_r1diFHg@mail.gmail.com>
 References: <1663657.ypAtqGpGAq@vostro.rjw.lan>
- <1781256.mPQbtiUPYR@vostro.rjw.lan>
- <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
- <2223198.XmyRLgb3Gv@vostro.rjw.lan>
- <20130226161049.GA9303@kahuna>
- <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com>
- <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
+	<1781256.mPQbtiUPYR@vostro.rjw.lan>
+	<CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
+	<2223198.XmyRLgb3Gv@vostro.rjw.lan>
+	<20130226161049.GA9303@kahuna>
+	<CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com>
+	<CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
+	<20130226163712.GA30433@htj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nishanth Menon <nm@ti.com>, Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f173.google.com ([209.85.128.173]:39295 "EHLO
+	mail-ve0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759154Ab3BZQrc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 11:47:32 -0500
+In-Reply-To: <20130226163712.GA30433@htj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, Aaron Lu <aaron.lu@intel.com>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Feb 26, 2013 at 08:28:56AM -0800, Linus Torvalds wrote:
-> > Aaron, Tejun, Jeff, can I ask you to also not use specialized TLA's
-> > without explaining them? Especially in help text and "documentation",
-> > it's very unhelpful to have TLA's that aren't common.
-> >
-> > We don't have to explain *all* TLA's, since there's a lot that really
-> > are rather widespread. But there's a big difference between something
-> > like CPU or TLB that have been in generic literature for decades, wrt
-> > OPP and ODD that are specialized terms used inside a very particular
-> > group and haven't been around for very long either.
+On Tue, Feb 26, 2013 at 8:37 AM, Tejun Heo <tj@kernel.org> wrote:
+>
+> One interesting bit, for me (and possibly Aaron too), ODD is much more
+> closer to an everyday term.  For some reason, at least in Korea, ODD
+> is a popular term.  For exmple, the likes of newegg would use it along
+> with CPU, SSD or VGA to label product categories
 
-Aye aye, captain.
+Just checked newegg in the US. If you look for "ODD" here, you get a
+very odd response.
 
-One interesting bit, for me (and possibly Aaron too), ODD is much more
-closer to an everyday term.  For some reason, at least in Korea, ODD
-is a popular term.  For exmple, the likes of newegg would use it along
-with CPU, SSD or VGA to label product categories, so that probably is
-why ODD never registered as something which needed explanation, and
-that we all are pretty familiar with ATA jargons.  Anyways, yeah, no
-ODDs without expansion nearby.
+For example,
 
-Thanks.
+  Fairly Odd Parents By Nickelodeon Bubble Bath 7 Oz
+  Model #: 692237016543
 
--- 
-tejun
+shows up fairly high. Not an actual optican disk drive in sight, but
+there are DVD's and "ODD bay"s there.
+
+Searching for "optical disk drive" works. But then I never see
+anything called "ODD" anywhere. I did find it in the "Technical
+Specifications" for one of the drives, though.
+
+Anyway, in the US it is definitely not a common term for normal people.
+
+                 Linus
