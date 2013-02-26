@@ -1,49 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: governor: Set MIN_LATENCY_MULTIPLIER to 20
-Date: Tue, 26 Feb 2013 16:20:07 +0530
-Message-ID: <CAKohpomt+7YtD5s+XJ5-boCu_atCB0kHhuifWOGVwy7DqnBLPA@mail.gmail.com>
-References: <472e2bac1fc4a2589651beddbfaf6da53500d12e.1361871582.git.viresh.kumar@linaro.org>
-	<1993068.XZh8f6yGqe@skinner.arch.suse.de>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] time : pass broadcast device parameter
+Date: Tue, 26 Feb 2013 12:30:28 +0100
+Message-ID: <512C9CD4.50808@linaro.org>
+References: <5123C299.3080005@linaro.org> <1361484083-5906-1-git-send-email-daniel.lezcano@linaro.org> <CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f43.google.com ([209.85.219.43]:49918 "EHLO
-	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562Ab3BZKuI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 05:50:08 -0500
-Received: by mail-oa0-f43.google.com with SMTP id l10so4809230oag.16
-        for <linux-pm@vger.kernel.org>; Tue, 26 Feb 2013 02:50:08 -0800 (PST)
-In-Reply-To: <1993068.XZh8f6yGqe@skinner.arch.suse.de>
+Received: from mail-ee0-f41.google.com ([74.125.83.41]:49960 "EHLO
+	mail-ee0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186Ab3BZLa3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:30:29 -0500
+Received: by mail-ee0-f41.google.com with SMTP id c13so2271760eek.28
+        for <linux-pm@vger.kernel.org>; Tue, 26 Feb 2013 03:30:28 -0800 (PST)
+In-Reply-To: <CAKohpomqooF6DzzzdUFByA0wDxQ3RuPne15a9Vy1sScKjZfeyA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, fweisbec@gmail.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 26 February 2013 16:14, Thomas Renninger <trenn@suse.de> wrote:
-> Redefining MIN_LATENCY_MULTIPLIER shouldn't hurt that much, but this looks
-> like a workaround.
-> It only modifies the minimal sampling rate that userspace can set.
+On 02/26/2013 09:45 AM, Viresh Kumar wrote:
+> On 22 February 2013 03:31, Daniel Lezcano <daniel.lezcano@linaro.org>=
+ wrote:
+>> The broadcast timer could be passed as parameter to the function
+>> instead of using again tick_broadcast_device.evtdev which was
+>> previously used in the caller function.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>=20
+> I know you are going for another round with this patchset and was jus=
+t
+> trying v1.
+>=20
+> I did my tests on ARM Vexpress - TC2, big.LITTLE Arch.
+>=20
+> Tested-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Yes.
+Thanks Viresh for testing.
 
-> You would still need to set something from userspace to get the perfect
-> sampling rate for this platform.
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-Yes. We still need to fix sampling rate from userspace.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-> I wonder where the cpufreq driver does get the 1ms latency from?
-> Is this value valid?
-> The driver should return the correct latency, then there is no need for
-> workarounds like this.
-
-I am talking about ARM Vexpress TC2 (Test Chip) big LITTLE SoC here. Its
-not a production type SoC and freq change is a bit slow here. Its really around
-1 ms :)
-
-But the real systems may not have this big of latency.
-
-Anyway, how do you come to 100 value in your initial patch. What motivated you
-to fix it there?
-
---
-viresh
