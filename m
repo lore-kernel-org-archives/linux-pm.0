@@ -1,65 +1,55 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Date: Tue, 26 Feb 2013 20:47:30 +0530
-Message-ID: <512CD20A.3020100@linux.vnet.ibm.com>
-References: <20130218123714.26245.61816.stgit@srivatsabhat.in.ibm.com> <20130218123856.26245.46705.stgit@srivatsabhat.in.ibm.com> <CANN689F9S7c1M8+cEpz3tsxGF34+NTRBLvxgPUOtbvav5u+RRA@mail.gmail.com> <5122551E.1080703@linux.vnet.ibm.com> <51226B46.9080707@linux.vnet.ibm.com> <CANN689FSxOz+0Cu7EG_yKD8ZE1OpT4kyT+ybLfXSqaifodJRpw@mail.gmail.com> <51226F91.7000108@linux.vnet.ibm.com> <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com> <512BBAD8.8010006@linux.vnet.ibm.com> <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
+Date: Tue, 26 Feb 2013 16:55:51 +0100
+Message-ID: <2223198.XmyRLgb3Gv@vostro.rjw.lan>
+References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <CACvQF53gcuEfgM=L8-mPTt4W3GFMte-w6eyO0iv2CobAN68SNw@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Lai Jiangshan <eag0628@gmail.com>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, Michel Lespinasse <walken@google.com>, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, Lai Jiangshan <laijs@cn.fujitsu.com>, netdev@vger.kernel.org, oleg@redhat.com, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:45244 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759651Ab3BZPtH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Feb 2013 10:49:07 -0500
+In-Reply-To: <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Nishanth Menon <nm@ti.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/26/2013 07:04 PM, Lai Jiangshan wrote:
-> On Tue, Feb 26, 2013 at 3:26 AM, Srivatsa S. Bhat
-> <srivatsa.bhat@linux.vnet.ibm.com> wrote:
->> Hi Lai,
->>
->> On 02/25/2013 09:23 PM, Lai Jiangshan wrote:
->>> Hi, Srivatsa,
->>>
->>> The target of the whole patchset is nice for me.
->>
->> Cool! Thanks :-)
->>
->>> A question: How did you find out the such usages of
->>> "preempt_disable()" and convert them? did all are converted?
->>>
->>
->> Well, I scanned through the source tree for usages which implicitly
->> disabled CPU offline and converted them over.
+On Monday, February 25, 2013 09:31:45 PM Linus Torvalds wrote:
+> On Mon, Feb 25, 2013 at 7:17 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >
+> > I wonder if this went unnoticed or there's anything wrong with it or it just
+> > needs to wait for some more time?
 > 
-> How do you scan? could you show the way you scan the source tree.
-> I can follow your instructions for double checking.
-> 
+> Just going through things slowly. It's merged in my tree now.
 
-Its nothing special. I grepped the source tree for anything dealing with
-cpu_online_mask or its derivatives and also for functions/constructs that
-rely on the cpumasks internally (eg: smp_call_function). Then I audited all
-such call-sites and converted them (if needed) accordingly.
+Thanks!
 
->> Its not limited to uses
->> of preempt_disable() alone - even spin_locks, rwlocks, local_irq_disable()
->> etc also help disable CPU offline. So I tried to dig out all such uses
->> and converted them. However, since the merge window is open, a lot of
->> new code is flowing into the tree. So I'll have to rescan the tree to
->> see if there are any more places to convert.
-> 
-> I remember some code has such assumption:
->     preempt_disable() (or something else)
->     //the code assume that the cpu_online_map can't be changed.
->     preempt_enable()
-> 
-> It is very hard to find out all such kinds of assumptions and fixes them.
-> (I notice your code mainly fixes code around send_xxxx())
-> 
+> Oh, and a request: _please_ don't use unknown TLA's like OPP.
 
-The conversion can be carried out using the method I mentioned above.
+Sure, sorry about that.
 
-Regards,
-Srivatsa S. Bhat
+> This has become a huge problem, to the point that we have a
+> "Documentation/power/opp.txt" file THAT NEVER CLEARLY STATES WHAT THE
+> F*CK OPP ACTUALLY MEANS! What nice "documentation".
 
+It says that in "Introduction", but it would be clearer if the title of the
+doc was something like "Operating Performance Points (OPP) Library".  Nishanth?
+
+> Ok, I can look up things like this and find that it is "Operating
+> Performance Points". At least in this context. But no, it's not some
+> kind of generic standard, and no, it's not something people should be
+> expected to know in general. Please stop doing "explanations" of
+> things that use TLA's like this. And people shouldn't have to even
+> wonder.
+
+I agree.
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
