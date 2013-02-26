@@ -1,48 +1,89 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 4/4] ARM: timer-sp: Set dynamic irq affinity
-Date: Tue, 26 Feb 2013 23:17:27 +0100
-Message-ID: <1361917047-29230-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: john.stultz@linaro.org, tglx@linutronix.de
-Cc: viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH] PM / OPP: improve introductory documentation
+Date: Tue, 26 Feb 2013 14:43:40 -0800
+Message-ID: <512D3A9C.5040801@infradead.org>
+References: <1361900231-10478-1-git-send-email-nm@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1361900231-10478-1-git-send-email-nm@ti.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+On 02/26/13 09:37, Nishanth Menon wrote:
+> Make Operating Performance Points (OPP) library introductory chapter
+> a little more reader-friendly. Split the chapter into two sections
+> and highlight the definition with an example.
+> 
+> Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+> based on v3.8 tag
+>  Documentation/power/opp.txt |   23 +++++++++++++++++++----
+>  1 file changed, 19 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
+> index 3035d00..b4f1870 100644
+> --- a/Documentation/power/opp.txt
+> +++ b/Documentation/power/opp.txt
+> @@ -1,6 +1,5 @@
+> -*=============*
+> -* OPP Library *
+> -*=============*
+> +Operating Performance Points (OPP) Library
+> +==========================================
+>  
+>  (C) 2009-2010 Nishanth Menon <nm@ti.com>, Texas Instruments Incorporated
+>  
+> @@ -16,15 +15,31 @@ Contents
+>  
+>  1. Introduction
+>  ===============
+> +1.1 What is an Operating Performance Point (OPP)?
+> +
+>  Complex SoCs of today consists of a multiple sub-modules working in conjunction.
+>  In an operational system executing varied use cases, not all modules in the SoC
+>  need to function at their highest performing frequency all the time. To
+>  facilitate this, sub-modules in a SoC are grouped into domains, allowing some
+>  domains to run at lower voltage and frequency while other domains are loaded
+> -more. The set of discrete tuples consisting of frequency and voltage pairs that
+> +more.
 
-When a cpu goes to a deep idle state where its local timer is shutdown, it
-notifies the time frame work to use the broadcast timer instead.
+huh???
 
-Unfortunately, the broadcast device could wake up any CPU, including an idle one
-which is not concerned by the wake up at all.
+> +
+> +The set of discrete tuples consisting of frequency and voltage pairs that
+>  the device will support per domain are called Operating Performance Points or
+>  OPPs.
+>  
+> +As an example:
+> +Let us consider an MPU device which supports the following:
+> +{300MHz at minimum voltage of 1V}, {800MHz at minimum voltage of 1.2V},
+> +{1GHz at minimum voltage of 1.3V}
+> +
+> +We can represent these as three OPPs as the following {Hz, uV} tuples:
+> +{300000000, 1000000}
+> +{600000000, 1200000}
+    800000000
 
-This implies, in the worst case, an idle CPU will wake up to send an IPI to
-another idle cpu.
+> +{100000000, 1300000}
+    1000000000 ??
 
-This patch fixes this for ARM platforms using timer-sp, by setting
-CLOCK_EVT_FEAT_DYNIRQ feature.
+> +
+> +1.2 Operating Performance Points Library
+> +
+>  OPP library provides a set of helper functions to organize and query the OPP
+>  information. The library is located in drivers/base/power/opp.c and the header
+>  is located in include/linux/opp.h. OPP library can be enabled by enabling
+> 
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/common/timer-sp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/common/timer-sp.c b/arch/arm/common/timer-sp.c
-index 9d2d3ba..ae3c0f9 100644
---- a/arch/arm/common/timer-sp.c
-+++ b/arch/arm/common/timer-sp.c
-@@ -158,7 +158,8 @@ static int sp804_set_next_event(unsigned long next,
- }
- 
- static struct clock_event_device sp804_clockevent = {
--	.features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
-+	.features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT |
-+		CLOCK_EVT_FEAT_DYNIRQ,
- 	.set_mode	= sp804_set_mode,
- 	.set_next_event	= sp804_set_next_event,
- 	.rating		= 300,
 -- 
-1.7.9.5
+~Randy
