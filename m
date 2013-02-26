@@ -1,74 +1,124 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v4 0/8] Reset controller API to reset IP modules on i.MX5 and i.MX6
-Date: Tue, 26 Feb 2013 12:39:26 +0100
-Message-ID: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
+Subject: [PATCH v4 1/8] dt: describe base reset signal binding
+Date: Tue, 26 Feb 2013 12:39:27 +0100
+Message-ID: <1361878774-6382-2-git-send-email-p.zabel@pengutronix.de>
+References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54299 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54300 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755863Ab3BZLj6 (ORCPT
+	with ESMTP id S1756051Ab3BZLj6 (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:39:58 -0500
+In-Reply-To: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>
 
-[Added Len, Pavel, Rafael, and linux-pm to Cc, as there might be some
- need for integration with the PM runtime infrastructure?]
+From: Stephen Warren <swarren@nvidia.com>
 
-The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
+This binding is intended to represent the hardware reset signals present
+internally in most IC (SoC, FPGA, ...) designs.
+It consists of a binding for a reset controller device (provider), and a
+pair of properties, "resets" and "reset-names", to link a device node
+(consumer) to its reset controller via phandle, similarly to the clock
+and interrupt bindings.
 
-The following patches add a simple API for devices to request being reset
-by separate reset controller hardware and implements the reset signal
-device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
-the i.MX SRC contains self-deasserting reset registers, so I've included
-both ops to manually assert/deassert a reset line, as well as a "reset"
-operation that is supposed to assert the reset line and wait for it to
-deassert.
-Also included is a GPIO reset controller driver that can handle reset
-lines of external ICs connected to GPIOs.
+The reset controller has all information necessary to reset the consumer
+device. That could be provided via device tree, or it could be implemented
+in hardware.
+The aim is to enable device drivers to request a framework API to issue a
+reset simply by providing their struct device pointer as the most common
+case.
 
-The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-is made to request being reset by calling the device_reset(&pdev->dev)
-convenience wrapper during probing.
-
-I'm not sure how integration with the PM runtime should look like, since
-there are quite different use cases for pulling a reset line. (Does the
-device need to be reset once, or to be reset every time it comes out of
-suspend? Or maybe the reset is just needed when the device gets stuck).
-
-Changes since v3:
- - Addressed Stephen's concerns, adding id translation
-   functionality and the missing devm_put_reset_controller
-   to the core,
- - switched the gpio-reset driver's reset-delays property to
-   microseconds and added an optional initially-in-reset property,
- - and reworked the gpio-reset probe function to better handle
-   requested GPIOs returning -EPROBE_DEFER.
-
-regards
-Philipp
-
+Signed-off-by: Stephen Warren <swarren@nvidia.com>
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
 ---
- .../devicetree/bindings/reset/fsl,imx-src.txt      |   49 ++++
- .../devicetree/bindings/reset/gpio-reset.txt       |   37 +++
- Documentation/devicetree/bindings/reset/reset.txt  |   75 +++++
- .../bindings/staging/imx-drm/fsl-imx-drm.txt       |    3 +
- arch/arm/boot/dts/imx51.dtsi                       |    7 +
- arch/arm/boot/dts/imx53.dtsi                       |    7 +
- arch/arm/boot/dts/imx6q.dtsi                       |    1 +
- arch/arm/boot/dts/imx6qdl.dtsi                     |    4 +-
- arch/arm/mach-imx/Kconfig                          |    3 +
- arch/arm/mach-imx/mm-imx5.c                        |    2 +
- arch/arm/mach-imx/src.c                            |   69 ++++-
- drivers/Kconfig                                    |    2 +
- drivers/Makefile                                   |    3 +
- drivers/reset/Kconfig                              |   26 ++
- drivers/reset/Makefile                             |    2 +
- drivers/reset/core.c                               |  298 ++++++++++++++++++++
- drivers/reset/gpio-reset.c                         |  208 ++++++++++++++
- drivers/staging/imx-drm/ipu-v3/ipu-common.c        |   12 +-
- include/linux/reset-controller.h                   |   51 ++++
- include/linux/reset.h                              |   17 ++
- 20 files changed, 871 insertions(+), 5 deletions(-)
+ Documentation/devicetree/bindings/reset/reset.txt |   75 +++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/reset/reset.txt
+
+diff --git a/Documentation/devicetree/bindings/reset/reset.txt b/Documentation/devicetree/bindings/reset/reset.txt
+new file mode 100644
+index 0000000..31db6ff
+--- /dev/null
++++ b/Documentation/devicetree/bindings/reset/reset.txt
+@@ -0,0 +1,75 @@
++= Reset Signal Device Tree Bindings =
++
++This binding is intended to represent the hardware reset signals present
++internally in most IC (SoC, FPGA, ...) designs. Reset signals for whole
++standalone chips are most likely better represented as GPIOs, although there
++are likely to be exceptions to this rule.
++
++Hardware blocks typically receive a reset signal. This signal is generated by
++a reset provider (e.g. power management or clock module) and received by a
++reset consumer (the module being reset, or a module managing when a sub-
++ordinate module is reset). This binding exists to represent the provider and
++consumer, and provide a way to couple the two together.
++
++A reset signal is represented by the phandle of the provider, plus a reset
++specifier - a list of DT cells that represents the reset signal within the
++provider. The length (number of cells) and semantics of the reset specifier
++are dictated by the binding of the reset provider, although common schemes
++are described below.
++
++A word on where to place reset signal consumers in device tree: It is possible
++in hardware for a reset signal to affect multiple logically separate HW blocks
++at once. In this case, it would be unwise to represent this reset signal in
++the DT node of each affected HW block, since if activated, an unrelated block
++may be reset. Instead, reset signals should be represented in the DT node
++where it makes most sense to control it; this may be a bus node if all
++children of the bus are affected by the reset signal, or an individual HW
++block node for dedicated reset signals. The intent of this binding is to give
++appropriate software access to the reset signals in order to manage the HW,
++rather than to slavishly enumerate the reset signal that affects each HW
++block.
++
++= Reset providers =
++
++Required properties:
++#reset-cells:	Number of cells in a reset specifier; Typically 0 for nodes
++		with a single reset output and 1 for nodes with multiple
++		reset outputs.
++
++For example:
++
++	rst: reset-controller {
++		#reset-cells = <1>;
++	};
++
++= Reset consumers =
++
++Required properties:
++resets:		List of phandle and reset specifier pairs, one pair
++		for each reset signal that affects the device, or that the
++		device manages. Note: if the reset provider specifies '0' for
++		#reset-cells, then only the phandle portion of the pair will
++		appear.
++
++Optional properties:
++reset-names:	List of reset signal name strings sorted in the same order as
++		the resets property. Consumers drivers will use reset-names to
++		match reset signal names with reset specifiers.
++
++For example:
++
++	device {
++		resets = <&rst 20>;
++		reset-names = "reset";
++	};
++
++This represents a device with a single reset signal named "reset".
++
++	bus {
++		resets = <&rst 10> <&rst 11> <&rst 12> <&rst 11>;
++		reset-names = "i2s1", "i2s2", "dma", "mixer";
++	};
++
++This represents a bus that controls the reset signal of each of four sub-
++ordinate devices. Consider for example a bus that fails to operate unless no
++child device has reset asserted.
+-- 
+1.7.10.4
 
