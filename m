@@ -1,124 +1,78 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v4 1/8] dt: describe base reset signal binding
-Date: Tue, 26 Feb 2013 12:39:27 +0100
-Message-ID: <1361878774-6382-2-git-send-email-p.zabel@pengutronix.de>
+Subject: [PATCH v4 7/8] ARM i.MX5: Add system reset controller (SRC) to i.MX51 and i.MX53 device tree
+Date: Tue, 26 Feb 2013 12:39:33 +0100
+Message-ID: <1361878774-6382-8-git-send-email-p.zabel@pengutronix.de>
 References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54300 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:54338 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756051Ab3BZLj6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:39:58 -0500
+	with ESMTP id S1756051Ab3BZLkC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Feb 2013 06:40:02 -0500
 In-Reply-To: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Stephen Warren <swarren@nvidia.com>, Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
 
-From: Stephen Warren <swarren@nvidia.com>
+Also, link SRC to IPU via phandle.
 
-This binding is intended to represent the hardware reset signals present
-internally in most IC (SoC, FPGA, ...) designs.
-It consists of a binding for a reset controller device (provider), and a
-pair of properties, "resets" and "reset-names", to link a device node
-(consumer) to its reset controller via phandle, similarly to the clock
-and interrupt bindings.
-
-The reset controller has all information necessary to reset the consumer
-device. That could be provided via device tree, or it could be implemented
-in hardware.
-The aim is to enable device drivers to request a framework API to issue a
-reset simply by providing their struct device pointer as the most common
-case.
-
-Signed-off-by: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
 ---
- Documentation/devicetree/bindings/reset/reset.txt |   75 +++++++++++++++++++++
- 1 file changed, 75 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/reset/reset.txt
+ arch/arm/boot/dts/imx51.dtsi |    7 +++++++
+ arch/arm/boot/dts/imx53.dtsi |    7 +++++++
+ 2 files changed, 14 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/reset/reset.txt b/Documentation/devicetree/bindings/reset/reset.txt
-new file mode 100644
-index 0000000..31db6ff
---- /dev/null
-+++ b/Documentation/devicetree/bindings/reset/reset.txt
-@@ -0,0 +1,75 @@
-+= Reset Signal Device Tree Bindings =
+diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
+index fcf035b..cfe4e92 100644
+--- a/arch/arm/boot/dts/imx51.dtsi
++++ b/arch/arm/boot/dts/imx51.dtsi
+@@ -67,6 +67,7 @@
+ 			compatible = "fsl,imx51-ipu";
+ 			reg = <0x40000000 0x20000000>;
+ 			interrupts = <11 10>;
++			resets = <&src 2>;
+ 		};
+ 
+ 		aips@70000000 { /* AIPS1 */
+@@ -501,6 +502,12 @@
+ 				status = "disabled";
+ 			};
+ 
++			src: src@73fd0000 {
++				compatible = "fsl,imx51-src";
++				reg = <0x73fd0000 0x4000>;
++				#reset-cells = <1>;
++			};
 +
-+This binding is intended to represent the hardware reset signals present
-+internally in most IC (SoC, FPGA, ...) designs. Reset signals for whole
-+standalone chips are most likely better represented as GPIOs, although there
-+are likely to be exceptions to this rule.
+ 			clks: ccm@73fd4000{
+ 				compatible = "fsl,imx51-ccm";
+ 				reg = <0x73fd4000 0x4000>;
+diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
+index d05aa21..9e1348d 100644
+--- a/arch/arm/boot/dts/imx53.dtsi
++++ b/arch/arm/boot/dts/imx53.dtsi
+@@ -72,6 +72,7 @@
+ 			compatible = "fsl,imx53-ipu";
+ 			reg = <0x18000000 0x080000000>;
+ 			interrupts = <11 10>;
++			resets = <&src 2>;
+ 		};
+ 
+ 		aips@50000000 { /* AIPS1 */
+@@ -558,6 +559,12 @@
+ 				status = "disabled";
+ 			};
+ 
++			src: src@53fd0000 {
++				compatible = "fsl,imx53-src", "fsl,imx51-src";
++				reg = <0x53fd0000 0x4000>;
++				#reset-cells = <1>;
++			};
 +
-+Hardware blocks typically receive a reset signal. This signal is generated by
-+a reset provider (e.g. power management or clock module) and received by a
-+reset consumer (the module being reset, or a module managing when a sub-
-+ordinate module is reset). This binding exists to represent the provider and
-+consumer, and provide a way to couple the two together.
-+
-+A reset signal is represented by the phandle of the provider, plus a reset
-+specifier - a list of DT cells that represents the reset signal within the
-+provider. The length (number of cells) and semantics of the reset specifier
-+are dictated by the binding of the reset provider, although common schemes
-+are described below.
-+
-+A word on where to place reset signal consumers in device tree: It is possible
-+in hardware for a reset signal to affect multiple logically separate HW blocks
-+at once. In this case, it would be unwise to represent this reset signal in
-+the DT node of each affected HW block, since if activated, an unrelated block
-+may be reset. Instead, reset signals should be represented in the DT node
-+where it makes most sense to control it; this may be a bus node if all
-+children of the bus are affected by the reset signal, or an individual HW
-+block node for dedicated reset signals. The intent of this binding is to give
-+appropriate software access to the reset signals in order to manage the HW,
-+rather than to slavishly enumerate the reset signal that affects each HW
-+block.
-+
-+= Reset providers =
-+
-+Required properties:
-+#reset-cells:	Number of cells in a reset specifier; Typically 0 for nodes
-+		with a single reset output and 1 for nodes with multiple
-+		reset outputs.
-+
-+For example:
-+
-+	rst: reset-controller {
-+		#reset-cells = <1>;
-+	};
-+
-+= Reset consumers =
-+
-+Required properties:
-+resets:		List of phandle and reset specifier pairs, one pair
-+		for each reset signal that affects the device, or that the
-+		device manages. Note: if the reset provider specifies '0' for
-+		#reset-cells, then only the phandle portion of the pair will
-+		appear.
-+
-+Optional properties:
-+reset-names:	List of reset signal name strings sorted in the same order as
-+		the resets property. Consumers drivers will use reset-names to
-+		match reset signal names with reset specifiers.
-+
-+For example:
-+
-+	device {
-+		resets = <&rst 20>;
-+		reset-names = "reset";
-+	};
-+
-+This represents a device with a single reset signal named "reset".
-+
-+	bus {
-+		resets = <&rst 10> <&rst 11> <&rst 12> <&rst 11>;
-+		reset-names = "i2s1", "i2s2", "dma", "mixer";
-+	};
-+
-+This represents a bus that controls the reset signal of each of four sub-
-+ordinate devices. Consider for example a bus that fails to operate unless no
-+child device has reset asserted.
+ 			clks: ccm@53fd4000{
+ 				compatible = "fsl,imx53-ccm";
+ 				reg = <0x53fd4000 0x4000>;
 -- 
 1.7.10.4
 
