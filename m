@@ -1,202 +1,46 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH linux-next] cpufreq: governors: Calculate iowait time only
- when necessary
-Date: Wed, 27 Feb 2013 19:44:09 +0200
-Message-ID: <512E45E9.5020801@semaphore.gr>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+	Per-CPU Reader-Writer Locks
+Date: Wed, 27 Feb 2013 20:25:51 +0100
+Message-ID: <20130227192551.GA8333@redhat.com>
+References: <51226F91.7000108@linux.vnet.ibm.com> <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com> <512BBAD8.8010006@linux.vnet.ibm.com> <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com> <512C7A38.8060906@linux.vnet.ibm.com> <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com> <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CANN689FuuEb9wpV43DkTtgv6syvBYL-LQxByWznyAq8dkrhzBw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CANN689FuuEb9wpV43DkTtgv6syvBYL-LQxByWznyAq8dkrhzBw@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Michel Lespinasse <walken@google.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently we always calculate the CPU iowait time and add it to idle time.
-If we are in ondemand and we use io_is_busy, we re-calculate iowait time
-and we subtract it from idle time.
+On 02/27, Michel Lespinasse wrote:
+>
+> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
+> +{
+> +       preempt_disable();
+> +
+> +       if (__this_cpu_read(*lgrw->local_refcnt) ||
+> +           arch_spin_trylock(this_cpu_ptr(lgrw->lglock->lock))) {
+> +               __this_cpu_inc(*lgrw->local_refcnt);
 
-With this patch iowait time is calculated only when necessary avoiding
-the double call to get_cpu_iowait_time_us. We use a parameter in
-function get_cpu_idle_time to distinguish when the iowait time will be
-added to idle time or not, without the need of keeping the prev_io_wait.
+Please look at __this_cpu_generic_to_op(). You need this_cpu_inc()
+to avoid the race with irs. The same for _read_unlock.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq_conservative.c |  2 +-
- drivers/cpufreq/cpufreq_governor.c     | 46 +++++++++++++---------------------
- drivers/cpufreq/cpufreq_governor.h     |  3 +--
- drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++++-
- 4 files changed, 29 insertions(+), 33 deletions(-)
+But otherwise I agree, looks like a clever and working idea to me.
+And simple!
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 4fd0006..dfe652c 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -242,7 +242,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
- 		struct cs_cpu_dbs_info_s *dbs_info;
- 		dbs_info = &per_cpu(cs_cpu_dbs_info, j);
- 		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
--						&dbs_info->cdbs.prev_cpu_wall);
-+					&dbs_info->cdbs.prev_cpu_wall, 0);
- 		if (cs_tuners.ignore_nice)
- 			dbs_info->cdbs.prev_cpu_nice =
- 				kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 5a76086..a322bda 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -50,13 +50,13 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- 	return cputime_to_usecs(idle_time);
- }
- 
--u64 get_cpu_idle_time(unsigned int cpu, u64 *wall)
-+u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
- {
- 	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
- 
- 	if (idle_time == -1ULL)
- 		return get_cpu_idle_time_jiffy(cpu, wall);
--	else
-+	else if (!io_busy)
- 		idle_time += get_cpu_iowait_time_us(cpu, wall);
- 
- 	return idle_time;
-@@ -83,13 +83,22 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- 	/* Get Absolute Load (in terms of freq for ondemand gov) */
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_common_info *j_cdbs;
--		u64 cur_wall_time, cur_idle_time, cur_iowait_time;
--		unsigned int idle_time, wall_time, iowait_time;
-+		u64 cur_wall_time, cur_idle_time;
-+		unsigned int idle_time, wall_time;
- 		unsigned int load;
-+		int io_busy = 0;
- 
- 		j_cdbs = dbs_data->get_cpu_cdbs(j);
- 
--		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time);
-+		/*
-+		 * For the purpose of ondemand, waiting for disk IO is
-+		 * an indication that you're performance critical, and
-+		 * not that the system is actually idle. So do not add
-+		 * the iowait time to the cpu idle time.
-+		 */
-+		if (dbs_data->governor == GOV_ONDEMAND)
-+			io_busy = od_tuners->io_is_busy;
-+		cur_idle_time = get_cpu_idle_time(j, &cur_wall_time, io_busy);
- 
- 		wall_time = (unsigned int)
- 			(cur_wall_time - j_cdbs->prev_cpu_wall);
-@@ -117,29 +126,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- 			idle_time += jiffies_to_usecs(cur_nice_jiffies);
- 		}
- 
--		if (dbs_data->governor == GOV_ONDEMAND) {
--			struct od_cpu_dbs_info_s *od_j_dbs_info =
--				dbs_data->get_cpu_dbs_info_s(cpu);
--
--			cur_iowait_time = get_cpu_iowait_time_us(j,
--					&cur_wall_time);
--			if (cur_iowait_time == -1ULL)
--				cur_iowait_time = 0;
--
--			iowait_time = (unsigned int) (cur_iowait_time -
--					od_j_dbs_info->prev_cpu_iowait);
--			od_j_dbs_info->prev_cpu_iowait = cur_iowait_time;
--
--			/*
--			 * For the purpose of ondemand, waiting for disk IO is
--			 * an indication that you're performance critical, and
--			 * not that the system is actually idle. So subtract the
--			 * iowait time from the cpu idle time.
--			 */
--			if (od_tuners->io_is_busy && idle_time >= iowait_time)
--				idle_time -= iowait_time;
--		}
--
- 		if (unlikely(!wall_time || wall_time < idle_time))
- 			continue;
- 
-@@ -207,6 +193,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	struct cpu_dbs_common_info *cpu_cdbs;
- 	unsigned int *sampling_rate, latency, ignore_nice, j, cpu = policy->cpu;
-+	int io_busy = 0;
- 	int rc;
- 
- 	cpu_cdbs = dbs_data->get_cpu_cdbs(cpu);
-@@ -221,6 +208,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- 		sampling_rate = &od_tuners->sampling_rate;
- 		ignore_nice = od_tuners->ignore_nice;
- 		od_ops = dbs_data->gov_ops;
-+		io_busy = od_tuners->io_is_busy;
- 	}
- 
- 	switch (event) {
-@@ -237,7 +225,7 @@ int cpufreq_governor_dbs(struct dbs_data *dbs_data,
- 			j_cdbs->cpu = j;
- 			j_cdbs->cur_policy = policy;
- 			j_cdbs->prev_cpu_idle = get_cpu_idle_time(j,
--					&j_cdbs->prev_cpu_wall);
-+					       &j_cdbs->prev_cpu_wall, io_busy);
- 			if (ignore_nice)
- 				j_cdbs->prev_cpu_nice =
- 					kcpustat_cpu(j).cpustat[CPUTIME_NICE];
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index d2ac911..534dfae 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -87,7 +87,6 @@ struct cpu_dbs_common_info {
- 
- struct od_cpu_dbs_info_s {
- 	struct cpu_dbs_common_info cdbs;
--	u64 prev_cpu_iowait;
- 	struct cpufreq_frequency_table *freq_table;
- 	unsigned int freq_lo;
- 	unsigned int freq_lo_jiffies;
-@@ -169,7 +168,7 @@ static inline int delay_for_sampling_rate(unsigned int sampling_rate)
- 	return delay;
- }
- 
--u64 get_cpu_idle_time(unsigned int cpu, u64 *wall);
-+u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
- void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
- bool need_load_eval(struct cpu_dbs_common_info *cdbs,
- 		unsigned int sampling_rate);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index f3eb26c..46be2c4 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -339,11 +339,20 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
- {
- 	unsigned int input;
- 	int ret;
-+	unsigned int j;
- 
- 	ret = sscanf(buf, "%u", &input);
- 	if (ret != 1)
- 		return -EINVAL;
- 	od_tuners.io_is_busy = !!input;
-+
-+	/* we need to re-evaluate prev_cpu_idle */
-+	for_each_online_cpu(j) {
-+		struct od_cpu_dbs_info_s *dbs_info;
-+		dbs_info = &per_cpu(od_cpu_dbs_info, j);
-+		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-+			&dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
-+	}
- 	return count;
- }
- 
-@@ -411,7 +420,7 @@ static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
- 		struct od_cpu_dbs_info_s *dbs_info;
- 		dbs_info = &per_cpu(od_cpu_dbs_info, j);
- 		dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
--						&dbs_info->cdbs.prev_cpu_wall);
-+			&dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
- 		if (od_tuners.ignore_nice)
- 			dbs_info->cdbs.prev_cpu_nice =
- 				kcpustat_cpu(j).cpustat[CPUTIME_NICE];
--- 
-1.8.1.2
+> There is an interesting case where lg_rwlock_local_read_lock could be
+> interrupted after getting the local lglock but before incrementing
+> local_refcnt to 1; if that happens any nested readers within that
+> interrupt will have to take the global rwlock read side. I think this
+> is perfectly acceptable
+
+Agreed.
+
+Or interrupt can do spin_trylock(percpu-lock) after we take the global
+->fallback_rwlock (if we race with write_lock + write_unlock), but I do
+not see any possible deadlock in this case.
+
+Oleg.
+
