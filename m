@@ -1,90 +1,46 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
-Date: Wed, 27 Feb 2013 10:24:09 +0800
-Message-ID: <512D6E49.4070201@intel.com>
-References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com> <2223198.XmyRLgb3Gv@vostro.rjw.lan> <20130226161049.GA9303@kahuna> <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com> <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 4/4] ARM: timer-sp: Set dynamic irq affinity
+Date: Wed, 27 Feb 2013 10:26:08 +0530
+Message-ID: <512D91E8.6050706@ti.com>
+References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <1361917047-29230-5-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:4103 "EHLO mga02.intel.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:36754 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759877Ab3B0CXL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Feb 2013 21:23:11 -0500
-In-Reply-To: <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
+	id S1758491Ab3B0EzE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Feb 2013 23:55:04 -0500
+In-Reply-To: <1361917047-29230-5-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nishanth Menon <nm@ti.com>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 
-On 02/27/2013 12:28 AM, Linus Torvalds wrote:
-> Ugh. Forgot to actually add the ODD people to the list...
-> 
->              Linus
-> 
-> On Tue, Feb 26, 2013 at 8:27 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
->> On Tue, Feb 26, 2013 at 8:10 AM, Nishanth Menon <nm@ti.com> wrote:
->>> On 16:55-20130226, Rafael J. Wysocki wrote:
->>>>
->>>> It says that in "Introduction", but it would be clearer if the title of the
->>>> doc was something like "Operating Performance Points (OPP) Library".  Nishanth?
->>>
->>> Yes indeed. Will the following help? I can post it as an official patch
->>> if the direction is proper
->>
->> Yes, this will definitely help. I didn't even find it in the
->> introduction (Rafael is correct that it is indeed there), because it's
->> hard to see when you don't know what to scan for and it's in a big
->> block of text.
->>
->> I am also happy to note that it is in the Kconfig help and single-line
->> description. Which wasn't true for the new SATA_ZPODD ("Zero Power
->> ODD" - what the heck is ODD?) which was another new entry I wondered
->> about.
+On Wednesday 27 February 2013 03:47 AM, Daniel Lezcano wrote:
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> When a cpu goes to a deep idle state where its local timer is shutdown, it
+> notifies the time frame work to use the broadcast timer instead.
+>
+> Unfortunately, the broadcast device could wake up any CPU, including an idle one
+> which is not concerned by the wake up at all.
+>
+Broad-cast device will only open the CPU for which the timer IRQ
+affined to. And infact with subject series the affinity also is
+updated for the CPU which owns the last timer expiry event.
 
-Sorry about this.
+> This implies, in the worst case, an idle CPU will wake up to send an IPI to
+> another idle cpu.
+>
+> This patch fixes this for ARM platforms using timer-sp, by setting
+> CLOCK_EVT_FEAT_DYNIRQ feature.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+What am I missing here ?
 
->>
->> It turns out that ODD is an odd TLA for "Optical Disk Drive". I'm sure
->> it makes perfect sense if you are a SATA person, but it sure doesn't
->> for any normal human being, even otherwise highly technical ones.
->>
->> Aaron, Tejun, Jeff, can I ask you to also not use specialized TLA's
->> without explaining them? Especially in help text and "documentation",
->> it's very unhelpful to have TLA's that aren't common.
-
-OK.
-I hope the following is better, if so, I'll send out a patch.
-
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index 9b58d32..b75efb0b 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -59,15 +59,16 @@ config ATA_ACPI
- 	  option libata.noacpi=1
- 
- config SATA_ZPODD
--	bool "SATA Zero Power ODD Support"
-+	bool "SATA Zero Power Optical Disc Drive(ZPODD) support"
- 	depends on ATA_ACPI
- 	default n
- 	help
--	  This option adds support for SATA ZPODD. It requires both
--	  ODD and the platform support, and if enabled, will automatically
--	  power on/off the ODD when certain condition is satisfied. This
--	  does not impact user's experience of the ODD, only power is saved
--	  when ODD is not in use(i.e. no disc inside).
-+	  This option adds support for SATA Zero Power Optical Disc
-+	  Drive(ZPODD). It requires both the ODD and the platform
-+	  support, and if enabled, will automatically power on/off the
-+	  ODD when certain condition is satisfied. This does not impact
-+	  end user's experience of the ODD, only power is saved when
-+	  the ODD is not in use(i.e. no disc inside).
- 
- 	  If unsure, say N.
- 
- 
-Thanks,
-Aaron
+Regards,
+Santosh
 
