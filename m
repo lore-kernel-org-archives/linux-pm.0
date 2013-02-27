@@ -1,160 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] thermal management updates for v3.9-rc1
-Date: Wed, 27 Feb 2013 20:24:52 +0800
-Message-ID: <1361967892.2313.18.camel@rzhang1-mobl4>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 1/3] workqueue: define mod_scheduled_delayed_work[_on]()
+ helpers
+Date: Wed, 27 Feb 2013 07:10:36 -0800
+Message-ID: <20130227151036.GC22383@htj.dyndns.org>
+References: <5249868a014d716eb38cc90e04ed0f6051e65fc3.1361964515.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:7618 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758955Ab3B0MZG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Feb 2013 07:25:06 -0500
+Received: from mail-pb0-f53.google.com ([209.85.160.53]:42216 "EHLO
+	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760111Ab3B0PKn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Feb 2013 10:10:43 -0500
+Content-Disposition: inline
+In-Reply-To: <5249868a014d716eb38cc90e04ed0f6051e65fc3.1361964515.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rickard.andersson@stericsson.com, fabio.baltieri@linaro.org
 
-Hi, Linus,
+On Wed, Feb 27, 2013 at 04:59:10PM +0530, Viresh Kumar wrote:
+>  int execute_in_process_context(work_func_t fn, struct execute_work *);
+> @@ -465,6 +466,11 @@ static inline long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
+>  long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg);
+>  #endif /* CONFIG_SMP */
+>  
+> +#define mod_scheduled_delayed_work_on(cpu, dwork, delay)	\
+> +	mod_delayed_work_on(cpu, system_wq, dwork, delay)
+> +#define mod_scheduled_delayed_work(dwork, delay)		\
+> +	mod_delayed_work(system_wq, dwork, delay)
 
+So, the intention is to just let people use system_wq.  We no longer
+have single system-wide workqueue and we don't wanna add different
+variants matching each system wq.  schedule_work() and friends were
+already there so I'm leaving those alone but I don't really want to
+add another set of rather meaningless wrappers.  Please just use
+system_wq with mode_delayed_work*().
 
-Please pull from the git repository at
+Thanks.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git release
-
-to receive thermal management updates for v3.9 with top-most commit
-f5b6d45f8cf688f51140fd21f1da3b90562762a9
-
-thermal: rcar: remove __devinitconst (2013-02-22 17:38:40 +0800)
-
-on top of commit 5f738967e89584f99c6a11c6bf09b16c50b6a03e
-
-  Merge tag 'pinctrl-fixes' of
-git://git./linux/kernel/git/linusw/linux-pinctrl
-
-Highlights:
-
-- introduction of Dove thermal sensor driver.
-
-- introduction of Kirkwood thermal sensor driver.
-
-- introduction of intel_powerclamp thermal cooling device driver.
-
-- add interrupt and DT support for rcar thermal driver.
-
-- add thermal emulation support which allows platform thermal driver to
-  do software/hardware emulation for thermal issues.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Amit Daniel Kachhap (3):
-      thermal: exynos: Miscellaneous fixes to support falling threshold
-interrupt
-      thermal: sysfs: Add a new sysfs node emul_temp for thermal
-emulation
-      thermal: exynos: Use the new thermal trend type for quick cooling
-action.
-
-Andrew Lunn (1):
-      Thermal: Dove: Add Themal sensor support for Dove.
-
-Arnd Bergmann (1):
-      thermal: rcar: remove __devinitconst
-
-Dan Carpenter (1):
-      PM: intel_powerclamp: off by one in start_power_clamp()
-
-Eduardo Valentin (4):
-      thermal: Use thermal zone device id in netlink messages
-      thermal: remove unnecessary include
-      thermal: cleanup: use dev_* helper functions
-      thermal: check for invalid trip setup when registering thermal
-device
-
-Jacob Pan (3):
-      tick: export nohz tick idle symbols for module use
-      x86/nmi: export local_touch_nmi() symbol for modules
-      PM: Introduce Intel PowerClamp Driver
-
-Jonghwa Lee (2):
-      Thermal: exynos: Add sysfs node supporting exynos's emulation
-mode.
-      Thermal: exynos: Add support for temperature falling interrupt.
-
-Julia Lawall (1):
-      drivers/thermal/spear_thermal.c: use devm_clk_get
-
-Kuninori Morimoto (9):
-      thermal: rcar: add .get_trip_type/temp and .notify support
-      thermal: rcar: use parenthesis on macro
-      thermal: rcar: enable CPCTL to use hardware TSC deciding
-      thermal: rcar: use mutex lock instead of spin lock
-      thermal: rcar: multi channel support
-      thermal: rcar: add read/write functions for common/priv data
-      thermal: rcar: add interrupt support
-      thermal: rcar: remove machine_power_off() from
-rcar_thermal_notify()
-      thermal: rcar: add Device Tree support
-
-Nobuhiro Iwamatsu (1):
-      thermal: Add support for the thermal sensor on Kirkwood SoCs
-
-Richard Guy Briggs (1):
-      thermal: return an error on failure to register thermal class
-
-Sachin Kamat (3):
-      thermal: exynos: Use of_match_ptr() macro
-      thermal: db8500: Use of_match_ptr() macro in db8500_thermal.c
-      thermal: db8500: Use of_match_ptr() macro in
-db8500_cpufreq_cooling.c
-
-Zhang Rui (6):
-      Introduce THERMAL_TREND_RAISE_FULL and THERMAL_TREND_DROP_FULL
-      Introduce THERMAL_TREND_RAISE/DROP_FULL support for step_wise
-governor
-      step_wise: Unify the code for both throttle and dethrottle
-      Thermal: fix a wrong comment
-      Thermal: fix a build warning when CONFIG_THERMAL_EMULATION cleared
-      Thermal: rename thermal governor Kconfig option to avoid generic
-naming
-
- .../devicetree/bindings/thermal/dove-thermal.txt   |   18 +
- .../bindings/thermal/kirkwood-thermal.txt          |   15 +
- .../devicetree/bindings/thermal/rcar-thermal.txt   |   29 +
- Documentation/thermal/exynos_thermal_emulation     |   53 ++
- Documentation/thermal/intel_powerclamp.txt         |  307 ++++++++
- Documentation/thermal/sysfs-api.txt                |   18 +-
- arch/x86/kernel/nmi.c                              |    1 +
- drivers/thermal/Kconfig                            |   55 +-
- drivers/thermal/Makefile                           |   10 +-
- drivers/thermal/cpu_cooling.c                      |    4 +-
- drivers/thermal/db8500_cpufreq_cooling.c           |    5 +-
- drivers/thermal/db8500_thermal.c                   |    4 +-
- drivers/thermal/dove_thermal.c                     |  209 ++++++
- drivers/thermal/exynos_thermal.c                   |  211 ++++--
- drivers/thermal/intel_powerclamp.c                 |  794
-++++++++++++++++++++
- drivers/thermal/kirkwood_thermal.c                 |  134 ++++
- drivers/thermal/rcar_thermal.c                     |  490 +++++++++---
- drivers/thermal/spear_thermal.c                    |    7 +-
- drivers/thermal/step_wise.c                        |  122 +--
- drivers/thermal/thermal_sys.c                      |  105 ++-
- include/linux/platform_data/exynos_thermal.h       |    3 +
- include/linux/thermal.h                            |   10 +-
- kernel/time/tick-sched.c                           |    2 +
- 23 files changed, 2337 insertions(+), 269 deletions(-)
- create mode 100644
-Documentation/devicetree/bindings/thermal/dove-thermal.txt
- create mode 100644
-Documentation/devicetree/bindings/thermal/kirkwood-thermal.txt
- create mode 100644
-Documentation/devicetree/bindings/thermal/rcar-thermal.txt
- create mode 100644 Documentation/thermal/exynos_thermal_emulation
- create mode 100644 Documentation/thermal/intel_powerclamp.txt
- create mode 100644 drivers/thermal/dove_thermal.c
- create mode 100644 drivers/thermal/intel_powerclamp.c
- create mode 100644 drivers/thermal/kirkwood_thermal.c
-
-
+-- 
+tejun
