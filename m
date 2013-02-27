@@ -1,95 +1,90 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH V2] PM / OPP: improve introductory documentation
-Date: Tue, 26 Feb 2013 16:45:05 -0800
-Message-ID: <512D5711.9040404@infradead.org>
-References: <[PATCH] PM / OPP: improve introductory documentation> <1361922782-24993-1-git-send-email-nm@ti.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [GIT PULL] ACPI and power management fixes for v3.9-rc1
+Date: Wed, 27 Feb 2013 10:24:09 +0800
+Message-ID: <512D6E49.4070201@intel.com>
+References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com> <2223198.XmyRLgb3Gv@vostro.rjw.lan> <20130226161049.GA9303@kahuna> <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com> <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1361922782-24993-1-git-send-email-nm@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:4103 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759877Ab3B0CXL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Feb 2013 21:23:11 -0500
+In-Reply-To: <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nishanth Menon <nm@ti.com>, Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 02/26/13 15:53, Nishanth Menon wrote:
-> Make Operating Performance Points (OPP) library introductory chapter
-> a little more reader-friendly. Split the chapter into two sections,
-> highlight the definition with an example and minor rewording to be
-> verbose.
+On 02/27/2013 12:28 AM, Linus Torvalds wrote:
+> Ugh. Forgot to actually add the ODD people to the list...
 > 
-> Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: Randy Dunlap <rdunlap@infradead.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-
-Reviewed-by: Randy Dunlap <rdunlap@infradead.org>
-
-Thanks.
-
-> ---
-> v2:
->    review updates from v1
+>              Linus
 > 
-> v1: https://patchwork.kernel.org/patch/2186921/
->  originally reported in thread http://marc.info/?t=135760248900003&r=1&w=2
-> 
->  Documentation/power/opp.txt |   25 ++++++++++++++++++++-----
->  1 file changed, 20 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/power/opp.txt b/Documentation/power/opp.txt
-> index 3035d00..425c51d 100644
-> --- a/Documentation/power/opp.txt
-> +++ b/Documentation/power/opp.txt
-> @@ -1,6 +1,5 @@
-> -*=============*
-> -* OPP Library *
-> -*=============*
-> +Operating Performance Points (OPP) Library
-> +==========================================
->  
->  (C) 2009-2010 Nishanth Menon <nm@ti.com>, Texas Instruments Incorporated
->  
-> @@ -16,15 +15,31 @@ Contents
->  
->  1. Introduction
->  ===============
-> +1.1 What is an Operating Performance Point (OPP)?
-> +
->  Complex SoCs of today consists of a multiple sub-modules working in conjunction.
->  In an operational system executing varied use cases, not all modules in the SoC
->  need to function at their highest performing frequency all the time. To
->  facilitate this, sub-modules in a SoC are grouped into domains, allowing some
-> -domains to run at lower voltage and frequency while other domains are loaded
-> -more. The set of discrete tuples consisting of frequency and voltage pairs that
-> +domains to run at lower voltage and frequency while other domains run at
-> +voltage/frequency pairs that are higher.
-> +
-> +The set of discrete tuples consisting of frequency and voltage pairs that
->  the device will support per domain are called Operating Performance Points or
->  OPPs.
->  
-> +As an example:
-> +Let us consider an MPU device which supports the following:
-> +{300MHz at minimum voltage of 1V}, {800MHz at minimum voltage of 1.2V},
-> +{1GHz at minimum voltage of 1.3V}
-> +
-> +We can represent these as three OPPs as the following {Hz, uV} tuples:
-> +{300000000, 1000000}
-> +{800000000, 1200000}
-> +{1000000000, 1300000}
-> +
-> +1.2 Operating Performance Points Library
-> +
->  OPP library provides a set of helper functions to organize and query the OPP
->  information. The library is located in drivers/base/power/opp.c and the header
->  is located in include/linux/opp.h. OPP library can be enabled by enabling
-> 
+> On Tue, Feb 26, 2013 at 8:27 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+>> On Tue, Feb 26, 2013 at 8:10 AM, Nishanth Menon <nm@ti.com> wrote:
+>>> On 16:55-20130226, Rafael J. Wysocki wrote:
+>>>>
+>>>> It says that in "Introduction", but it would be clearer if the title of the
+>>>> doc was something like "Operating Performance Points (OPP) Library".  Nishanth?
+>>>
+>>> Yes indeed. Will the following help? I can post it as an official patch
+>>> if the direction is proper
+>>
+>> Yes, this will definitely help. I didn't even find it in the
+>> introduction (Rafael is correct that it is indeed there), because it's
+>> hard to see when you don't know what to scan for and it's in a big
+>> block of text.
+>>
+>> I am also happy to note that it is in the Kconfig help and single-line
+>> description. Which wasn't true for the new SATA_ZPODD ("Zero Power
+>> ODD" - what the heck is ODD?) which was another new entry I wondered
+>> about.
 
+Sorry about this.
 
--- 
-~Randy
+>>
+>> It turns out that ODD is an odd TLA for "Optical Disk Drive". I'm sure
+>> it makes perfect sense if you are a SATA person, but it sure doesn't
+>> for any normal human being, even otherwise highly technical ones.
+>>
+>> Aaron, Tejun, Jeff, can I ask you to also not use specialized TLA's
+>> without explaining them? Especially in help text and "documentation",
+>> it's very unhelpful to have TLA's that aren't common.
+
+OK.
+I hope the following is better, if so, I'll send out a patch.
+
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 9b58d32..b75efb0b 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -59,15 +59,16 @@ config ATA_ACPI
+ 	  option libata.noacpi=1
+ 
+ config SATA_ZPODD
+-	bool "SATA Zero Power ODD Support"
++	bool "SATA Zero Power Optical Disc Drive(ZPODD) support"
+ 	depends on ATA_ACPI
+ 	default n
+ 	help
+-	  This option adds support for SATA ZPODD. It requires both
+-	  ODD and the platform support, and if enabled, will automatically
+-	  power on/off the ODD when certain condition is satisfied. This
+-	  does not impact user's experience of the ODD, only power is saved
+-	  when ODD is not in use(i.e. no disc inside).
++	  This option adds support for SATA Zero Power Optical Disc
++	  Drive(ZPODD). It requires both the ODD and the platform
++	  support, and if enabled, will automatically power on/off the
++	  ODD when certain condition is satisfied. This does not impact
++	  end user's experience of the ODD, only power is saved when
++	  the ODD is not in use(i.e. no disc inside).
+ 
+ 	  If unsure, say N.
+ 
+ 
+Thanks,
+Aaron
+
