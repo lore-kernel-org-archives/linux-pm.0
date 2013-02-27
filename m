@@ -1,80 +1,36 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: libata-acpi.c ata_acpi_register_power_resource copy and paste mistake ?
-Date: Fri, 01 Mar 2013 03:11:43 +0100
-Message-ID: <2508494.4AbRYXD1du@vostro.rjw.lan>
-References: <928867757.20130228174510@eikelenboom.it> <51300B8D.8030600@intel.com>
+From: "Wenzhou Ourvis" <info-noreply@ourvis.com>
+Subject: Re: Hello
+Date: Wed, 27 Feb 2013 05:35:23 -0500
+Message-ID: <20130227104122.51BCE4DAA108__21287.3184508227$1362106224$gmane$org@mail.swrs.ap.gov.in>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:48296 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223Ab3CACE4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Feb 2013 21:04:56 -0500
-In-Reply-To: <51300B8D.8030600@intel.com>
+Received: from mail.swrs.ap.gov.in ([110.234.138.54]:46349 "EHLO
+	mail.swrs.ap.gov.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985Ab3CACt5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Feb 2013 21:49:57 -0500
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>, Sander Eikelenboom <linux@eikelenboom.it>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>
+To: info-noreply@ourvis.com
 
-On Friday, March 01, 2013 09:59:41 AM Aaron Lu wrote:
-> +Rafael
-> 
-> commit bc9b6407bd6df3ab7189e5622816bbc11ae9d2d8
-> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Date:   Thu Jan 17 14:11:05 2013 +0100
-> 
->     ACPI / PM: Rework the handling of devices depending on power resources
-> 
-> -Aaron
-
-Thanks Aaron!
-
-> On 03/01/2013 12:45 AM, Sander Eikelenboom wrote:
-> > Hi Jeff,
-> > 
-> > During the last merge of ahci code (d9978ec5680059d727b39d6c706777c6973587f2), i saw this coming by:
-> > 
-> > 
-> > --- a/drivers/ata/libata-acpi.c
-> > +++ b/drivers/ata/libata-acpi.c
-> > @@ -1024,30 +1024,20 @@ static void ata_acpi_register_power_resource(struct ata_device *dev)
-> >  {
-> >         struct scsi_device *sdev = dev->sdev;
-> >         acpi_handle handle;
-> > -       struct device *device;
-> >  
-> >         handle = ata_dev_acpi_handle(dev);
-> > -       if (!handle)
-> > -               return;
-> > -
-> > -       device = &sdev->sdev_gendev;
-> > -
-> > -       acpi_power_resource_register_device(device, handle);
-> > +       if (handle)
-> > +               acpi_dev_pm_remove_dependent(handle, &sdev->sdev_gendev);
-> >  }
-> > 
-> > shouldn't:
-> > 
-> > acpi_dev_pm_remove_dependent(handle, &sdev->sdev_gendev);
-> > 
-> > be
-> > 
-> > acpi_dev_pm_add_dependent(handle, &sdev->sdev_gendev);
-> > 
-> > in the ata_acpi_register_power_resource function ?
-> > 
-> > (seems like a copy and paste mistake from the unregister function)
-
-Yes.  Sorry, my bad.
-
-If you can prepare a patch fixing this, please do that, or I'll do it tomorrow.
-
-Thanks,
-Rafael
+Dear E-mail User,
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+  This is to immediately inform you that your email address with Micros ID: IDJT-32238-EHI-676GI-8ED has won you 2,485,000.00 GBP and a brand new Range Rover SUV from the Wenzhou Ourvis yearly draw promo.
+
+Use the details below to login and fill in the claim form to immediately begin your claims.
+
+
+
+WEBSITE: www.wenzhourvis.cla.fr
+USERNAME: SI03JK78
+PASSWORD: XN043P
+
+
+Regards,
+Dr. Warren Payne,
+Wenzhou Ourvis Company.
+European Zonal Coordinator,
+United Kingdom.
