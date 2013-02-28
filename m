@@ -1,67 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH linux-next] cpufreq: governors: Calculate iowait time only
- when necessary
-Date: Thu, 28 Feb 2013 12:28:11 +0530
-Message-ID: <CAOh2x==vxM+qoebcUGNca50oeszwnqSfSzVPSEOyS6GKENudeg@mail.gmail.com>
-References: <512E45E9.5020801@semaphore.gr>
+From: Michel Lespinasse <walken@google.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Thu, 28 Feb 2013 19:34:31 +0800
+Message-ID: <CANN689EhqoQAKALR7WhT3YrQh3=VDA2Dq3QX1yLuYU_gZAo_Tg@mail.gmail.com>
+References: <51226F91.7000108@linux.vnet.ibm.com>
+	<CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com>
+	<512BBAD8.8010006@linux.vnet.ibm.com>
+	<CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
+	<512C7A38.8060906@linux.vnet.ibm.com>
+	<CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
+	<512CC509.1050000@linux.vnet.ibm.com>
+	<CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
+	<512D0D67.9010609@linux.vnet.ibm.com>
+	<CANN689FuuEb9wpV43DkTtgv6syvBYL-LQxByWznyAq8dkrhzBw@mail.gmail.com>
+	<20130227192551.GA8333@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f179.google.com ([74.125.82.179]:35000 "EHLO
-	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332Ab3B1G6O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Feb 2013 01:58:14 -0500
-In-Reply-To: <512E45E9.5020801@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arch-owner@vger.kernel.org>
+In-Reply-To: <20130227192551.GA8333@redhat.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Feb 27, 2013 at 11:14 PM, Stratos Karafotis
-<stratosk@semaphore.gr> wrote:
-> Currently we always calculate the CPU iowait time and add it to idle time.
-> If we are in ondemand and we use io_is_busy, we re-calculate iowait time
-> and we subtract it from idle time.
+On Thu, Feb 28, 2013 at 3:25 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> On 02/27, Michel Lespinasse wrote:
+>>
+>> +void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
+>> +{
+>> +       preempt_disable();
+>> +
+>> +       if (__this_cpu_read(*lgrw->local_refcnt) ||
+>> +           arch_spin_trylock(this_cpu_ptr(lgrw->lglock->lock))) {
+>> +               __this_cpu_inc(*lgrw->local_refcnt);
 >
-> With this patch iowait time is calculated only when necessary avoiding
-> the double call to get_cpu_iowait_time_us. We use a parameter in
-> function get_cpu_idle_time to distinguish when the iowait time will be
-> added to idle time or not, without the need of keeping the prev_io_wait.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |  2 +-
->  drivers/cpufreq/cpufreq_governor.c     | 46 +++++++++++++---------------------
->  drivers/cpufreq/cpufreq_governor.h     |  3 +--
->  drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++++-
->  4 files changed, 29 insertions(+), 33 deletions(-)
+> Please look at __this_cpu_generic_to_op(). You need this_cpu_inc()
+> to avoid the race with irs. The same for _read_unlock.
 
-I have really spent some 10-15 minutes reviewing this patch as initially it
-looked to me like something is missing here and calculations are going wrong.
+Hmmm, I was thinking that this was safe because while interrupts might
+modify local_refcnt to acquire a nested read lock, they are expected
+to release that lock as well which would set local_refcnt back to its
+original value ???
 
-But it was fine :)
-
-
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index f3eb26c..46be2c4 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -339,11 +339,20 @@ static ssize_t store_io_is_busy(struct kobject *a, struct attribute *b,
->  {
-
-> +       /* we need to re-evaluate prev_cpu_idle */
-> +       for_each_online_cpu(j) {
-> +               struct od_cpu_dbs_info_s *dbs_info;
-> +               dbs_info = &per_cpu(od_cpu_dbs_info, j);
-
-Probably squash above two lines and give a blank line after it.
-
-> +               dbs_info->cdbs.prev_cpu_idle = get_cpu_idle_time(j,
-> +                       &dbs_info->cdbs.prev_cpu_wall, od_tuners.io_is_busy);
-> +       }
->         return count;
->  }
-
-And after that add my:
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+-- 
+Michel "Walken" Lespinasse
+A program is never fully debugged until the last user dies.
