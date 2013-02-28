@@ -1,12 +1,14 @@
 From: Namhyung Kim <namhyung@kernel.org>
-Subject: [PATCH -next 1/3] cpufreq: Fix a typo in comment
-Date: Thu, 28 Feb 2013 14:38:00 +0900
-Message-ID: <1362029882-28993-1-git-send-email-namhyung@kernel.org>
+Subject: [PATCH -next 2/3] cpufreq: conservative: Break out earlier on the lowest frequency
+Date: Thu, 28 Feb 2013 14:38:01 +0900
+Message-ID: <1362029882-28993-2-git-send-email-namhyung@kernel.org>
+References: <1362029882-28993-1-git-send-email-namhyung@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from LGEMRELSE7Q.lge.com ([156.147.1.151]:60138 "EHLO
 	LGEMRELSE7Q.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839Ab3B1FiI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Feb 2013 00:38:08 -0500
+	with ESMTP id S1750856Ab3B1FiJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Feb 2013 00:38:09 -0500
+In-Reply-To: <1362029882-28993-1-git-send-email-namhyung@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -14,25 +16,44 @@ Cc: LKML <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.
 
 From: Namhyung Kim <namhyung.kim@lge.com>
 
+If we're on the lowest frequency, no need to calculate new freq.
+Break out even earlier in this case.
+
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Namhyung Kim <namhyung@kernel.org>
 ---
- drivers/cpufreq/cpufreq_governor.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq_conservative.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index d2ac91150600..46bde01eee62 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -64,7 +64,7 @@ static void *get_cpu_dbs_info_s(int cpu)				\
-  * dbs: used as a shortform for demand based switching It helps to keep variable
-  *	names smaller, simpler
-  * cdbs: common dbs
-- * on_*: On-demand governor
-+ * od_*: On-demand governor
-  * cs_*: Conservative governor
-  */
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 4fd0006b1291..dd2fd9094819 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -93,18 +93,18 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 	 * safe, we focus 10 points under the threshold.
+ 	 */
+ 	if (load < (cs_tuners.down_threshold - 10)) {
+-		freq_target = (cs_tuners.freq_step * policy->max) / 100;
+-
+-		dbs_info->requested_freq -= freq_target;
+-		if (dbs_info->requested_freq < policy->min)
+-			dbs_info->requested_freq = policy->min;
+-
+ 		/*
+ 		 * if we cannot reduce the frequency anymore, break out early
+ 		 */
+ 		if (policy->cur == policy->min)
+ 			return;
  
++		freq_target = (cs_tuners.freq_step * policy->max) / 100;
++
++		dbs_info->requested_freq -= freq_target;
++		if (dbs_info->requested_freq < policy->min)
++			dbs_info->requested_freq = policy->min;
++
+ 		__cpufreq_driver_target(policy, dbs_info->requested_freq,
+ 				CPUFREQ_RELATION_H);
+ 		return;
 -- 
 1.7.11.7
 
