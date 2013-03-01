@@ -1,59 +1,45 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Date: Sat, 02 Mar 2013 01:29:21 +0530
-Message-ID: <51310899.1090308@linux.vnet.ibm.com>
-References: <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com> <512BBAD8.8010006@linux.vnet.ibm.com> <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com> <512C7A38.8060906@linux.vnet.ibm.com> <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com> <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com> <512E7879.20109@linux.vnet.ibm.com> <20130301181054.GD2481@mtj.dyndns.org>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH v4 3/8] ARM i.MX6q: Add GPU, VPU, IPU, and OpenVG resets
+ to System Reset Controller (SRC)
+Date: Fri, 01 Mar 2013 13:05:38 -0700
+Message-ID: <51310A12.1040209@wwwdotorg.org>
+References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de> <1361878774-6382-4-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130301181054.GD2481@mtj.dyndns.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Lai Jiangshan <eag0628@gmail.com>, Michel Lespinasse <walken@google.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:45111 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752478Ab3CAUFn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Mar 2013 15:05:43 -0500
+In-Reply-To: <1361878774-6382-4-git-send-email-p.zabel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 
-Hi Tejun,
+On 02/26/2013 04:39 AM, Philipp Zabel wrote:
+> The SRC has auto-deasserting reset bits that control reset lines to
+> the GPU, VPU, IPU, and OpenVG IP modules. This patch adds a reset
+> controller that can be controlled by those devices using the
+> reset controller API.
 
-On 03/01/2013 11:40 PM, Tejun Heo wrote:
-> Hello, Srivatsa.
-> 
-> On Thu, Feb 28, 2013 at 02:49:53AM +0530, Srivatsa S. Bhat wrote:
->> Don't get me wrong - I'll whole-heartedly acknowledge and appreciate if
->> _your_ code is better than mine. I just don't like the idea of somebody
->> plagiarizing my ideas/code (or even others' ideas for that matter).
->> However, I sincerely apologize in advance if I misunderstood/misjudged your
->> intentions; I just wanted to voice my concerns out loud at this point,
->> considering the bad feeling I got by looking at your responses collectively.
-> 
-> Although I don't know Lai personally, from my experience working with
-> him past several months on workqueue, I strongly doubt he has dark
-> urterior intenions.  The biggest problem probably is that his
-> communication in English isn't very fluent yet and thus doesn't carry
-> the underlying intentions or tones very well and he tends to bombard
-> patches in quick succession without much explanation inbetween (during
-> 3.8 cycle, I was receiving several workqueue patchsets days apart
-> trying to solve the same problem with completely different approaches
-> way before the discussion on the previous postings reach any kind of
-> consensus).  A lot of that also probably comes from communication
-> problems.
-> 
-> Anyways, I really don't think he's trying to take claim of your work.
-> At least for now, you kinda need to speculate what he's trying to do
-> and then confirm that back to him, but once you get used to that part,
-> he's pretty nice to work with and I'm sure his communication will
-> improve in time (I think it has gotten a lot better than only some
-> months ago).
->
+> diff --git a/Documentation/devicetree/bindings/reset/fsl,imx-src.txt b/Documentation/devicetree/bindings/reset/fsl,imx-src.txt
 
-Thank you so much for helping clear the air, Tejun! I'm truly sorry again
-for having drawn the wrong conclusions based on gaps in our communication.
-It was a mistake on my part and I would like to request Lai to kindly
-forgive me. I'm looking forward to working with Lai effectively, going
-forward.
+> +Specifying reset lines connected to IP modules
+> +==============================================
+...
+> +example:
+> +
+> +        ipu1: ipu@02400000 {
+> +                resets = <&src 2>;
+> +        };
+> +        ipu2: ipu@02800000 {
+> +                resets = <&src 4>;
+> +        };
 
-Thank you!
+reset-names is mandatory in the documentation and implementation; you
+should probably add them to the example too.
 
-Regards,
-Srivatsa S. Bhat
+Nit: You could use BIT(x) instead of 1 << x in a few places in this
+file. But not a big deal.
