@@ -1,62 +1,39 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Subject: Re: [PATCH] [libata] Avoid specialized TLA's in ZPODD's Kconfig
-Date: Fri, 01 Mar 2013 17:10:55 +0400
-Message-ID: <5130A8DF.7080709@cogentembedded.com>
-References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com> <2223198.XmyRLgb3Gv@vostro.rjw.lan> <20130226161049.GA9303@kahuna> <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com> <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com> <20130226163712.GA30433@htj.dyndns.org> <CA+55aFyFRbMX9G_0Mv0nUZgw9mHAPzE0zCw5mCSbGG_r1diFHg@mail.gmail.com> <20130226165813.GB30433@htj.dyndns.org> <512CF809.8010102@pobox.com> <5130052E.9070403@intel.com>
+From: Rickard Andersson <rickard.andersson@stericsson.com>
+Subject: Re: [PATCH 3/4] ARM: nomadik: add dynamic irq flag to the timer
+Date: Fri, 1 Mar 2013 14:28:18 +0100
+Message-ID: <5130ACF2.6070005@stericsson.com>
+References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>	<1361917047-29230-4-git-send-email-daniel.lezcano@linaro.org>	<CACRpkda=i5cXSbYCyb0gH0OLKj7396qguup1nqgqn0m-S1x1wg@mail.gmail.com> <CAKfTPtA=7pTPrwFHr61WiffXGv2Ztmaiji5q_vJpPj9XgyeZMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5130052E.9070403@intel.com>
+In-Reply-To: <CAKfTPtA=7pTPrwFHr61WiffXGv2Ztmaiji5q_vJpPj9XgyeZMg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>, Linus WALLEIJ <linus.walleij@stericsson.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello.
-
-On 01-03-2013 5:32, Aaron Lu wrote:
-
-> ODD is not a common TLA for non-ATA people so they will get confused
-> by its meaning when they are configuring the kernel. This patch fixed
-> this problem by using ODD only after stating what it is.
-
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> ---
->   drivers/ata/Kconfig | 13 +++++++------
->   1 file changed, 7 insertions(+), 6 deletions(-)
-
-> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-> index 3e751b7..d7d210e 100644
-> --- a/drivers/ata/Kconfig
-> +++ b/drivers/ata/Kconfig
-> @@ -59,15 +59,16 @@ config ATA_ACPI
->   	  option libata.noacpi=1
+On 03/01/2013 09:56 AM, Vincent Guittot wrote:
+> On 1 March 2013 02:13, Linus Walleij<linus.walleij@linaro.org>  wrote:
+>> On Tue, Feb 26, 2013 at 11:17 PM, Daniel Lezcano
+>> <daniel.lezcano@linaro.org>  wrote:
+>>
+>>> Add the dynamic irq affinity feature to the timer clock device.
+>>>
+>>> Signed-off-by: Daniel Lezcano<daniel.lezcano@linaro.org>
+>> Looks reasonable to me, sadly I do not fully grasp the patch set,
+>> Vincent+Rickard can you have a look at this?
+> ux500 is able to trig the wake up on one CPU and let the other one in
+> WFI. This patch will minimize the spurious wake up of CPU0 when CPU1
+> is the target CPU of the broadcast timer. One main consequence is that
+> we will not uselessly execute all the deferrable and newly idle
+> activities on the CPU0 .
 >
->   config SATA_ZPODD
-> -	bool "SATA Zero Power ODD Support"
-> +	bool "SATA Zero Power Optical Disc Drive(ZPODD) support"
+> you can add my reviewed-by if you want
+>
+> Vincent
+>
+It looks ok to me as well.
 
-    Need a space before open paren.
-
->   	depends on ATA_ACPI
->   	default n
->   	help
-> -	  This option adds support for SATA ZPODD. It requires both
-> -	  ODD and the platform support, and if enabled, will automatically
-> -	  power on/off the ODD when certain condition is satisfied. This
-> -	  does not impact user's experience of the ODD, only power is saved
-> -	  when ODD is not in use(i.e. no disc inside).
-> +	  This option adds support for SATA Zero Power Optical Disc
-> +	  Drive(ZPODD). It requires both the ODD and the platform
-
-    Same here.
-
-> +	  support, and if enabled, will automatically power on/off the
-> +	  ODD when certain condition is satisfied. This does not impact
-> +	  end user's experience of the ODD, only power is saved when
-> +	  the ODD is not in use(i.e. no disc inside).
-
-   And here.
-
-MBR, Sergei
+BR
+Rickard
