@@ -1,53 +1,75 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v4 3/8] ARM i.MX6q: Add GPU, VPU, IPU, and OpenVG resets
- to System Reset Controller (SRC)
-Date: Fri, 01 Mar 2013 13:07:20 -0700
-Message-ID: <51310A78.1020104@wwwdotorg.org>
-References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
- <1361878774-6382-4-git-send-email-p.zabel@pengutronix.de>
- <51310A12.1040209@wwwdotorg.org>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
+Date: Sat, 02 Mar 2013 01:36:55 +0530
+Message-ID: <51310A5F.1070001@linux.vnet.ibm.com>
+References: <512BBAD8.8010006@linux.vnet.ibm.com> <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com> <512C7A38.8060906@linux.vnet.ibm.com> <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com> <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com> <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com> <20130301175349.GC2481@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <51310A12.1040209-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Fabio Estevam <fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130301175349.GC2481@mtj.dyndns.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Lai Jiangshan <eag0628@gmail.com>, Michel Lespinasse <walken@google.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On 03/01/2013 01:05 PM, Stephen Warren wrote:
-> On 02/26/2013 04:39 AM, Philipp Zabel wrote:
->> The SRC has auto-deasserting reset bits that control reset lines to
->> the GPU, VPU, IPU, and OpenVG IP modules. This patch adds a reset
->> controller that can be controlled by those devices using the
->> reset controller API.
+On 03/01/2013 11:23 PM, Tejun Heo wrote:
+> Hey, guys and Oleg (yes, I'm singling you out ;p because you're that
+> awesome.)
 > 
->> diff --git a/Documentation/devicetree/bindings/reset/fsl,imx-src.txt b/Documentation/devicetree/bindings/reset/fsl,imx-src.txt
+> On Sat, Mar 02, 2013 at 01:44:02AM +0800, Lai Jiangshan wrote:
+>> Performance:
+>> We only focus on the performance of the read site. this read site's fast path
+>> is just preempt_disable() + __this_cpu_read/inc() + arch_spin_trylock(),
+>> It has only one heavy memory operation. it will be expected fast.
+>>
+>> We test three locks.
+>> 1) traditional rwlock WITHOUT remote competition nor cache-bouncing.(opt-rwlock)
+>> 2) this lock(lgrwlock)
+>> 3) V6 percpu-rwlock by "Srivatsa S. Bhat". (percpu-rwlock)
+>>    (https://lkml.org/lkml/2013/2/18/186)
+>>
+>> 		nested=1(no nested)	nested=2	nested=4
+>> opt-rwlock	 517181			1009200		2010027
+>> lgrwlock	 452897			 700026		1201415
+>> percpu-rwlock	1192955			1451343		1951757
 > 
->> +Specifying reset lines connected to IP modules
->> +==============================================
-> ...
->> +example:
->> +
->> +        ipu1: ipu@02400000 {
->> +                resets = <&src 2>;
->> +        };
->> +        ipu2: ipu@02800000 {
->> +                resets = <&src 4>;
->> +        };
+> On the first glance, the numbers look pretty good and I kinda really
+> like the fact that if this works out we don't have to introduce yet
+> another percpu synchronization construct and get to reuse lglock.
 > 
-> reset-names is mandatory in the documentation and implementation; you
-> should probably add them to the example too.
+> So, Oleg, can you please see whether you can find holes in this one?
+> 
+> Srivatsa, I know you spent a lot of time on percpu_rwlock but as you
+> wrote before Lai's work can be seen as continuation of yours, and if
+> we get to extend what's already there instead of introducing something
+> completely new, there's no reason not to
 
-Oh, looking at the code further, I see reset-names is optional if the
-client node only has one reset defined. So ignore my comment above.
+Yep, I agree!
+
+> (and my apologies for not
+> noticing the possibility of extending lglock before).
+
+No problem at all! You gave so many invaluable suggestions to make this
+whole thing work in the first place! Now, if we can reuse the existing
+stuff and extend it to what we want, then its just even better! :-)
+
+>  So, if this can
+> work, it would be awesome if you guys can work together.
+
+Absolutely!
+
+>  Lai might
+> not be very good at communicating in english yet but he's really good
+> at spotting patterns in complex code and playing with them.
+>
+
+That sounds great! :-)
+
+I'll soon take a closer look at his code and the comparisons he posted,
+and work towards taking this effort forward.
+
+Thank you very much!
+
+Regards,
+Srivatsa S. Bhat
