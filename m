@@ -1,33 +1,53 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 3/4] ARM: nomadik: add dynamic irq flag to the timer
-Date: Fri, 1 Mar 2013 02:13:29 +0100
-Message-ID: <CACRpkda=i5cXSbYCyb0gH0OLKj7396qguup1nqgqn0m-S1x1wg@mail.gmail.com>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
-	<1361917047-29230-4-git-send-email-daniel.lezcano@linaro.org>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: [PATCH] [libata] Avoid specialized TLA's in ZPODD's Kconfig
+Date: Fri, 01 Mar 2013 09:32:30 +0800
+Message-ID: <5130052E.9070403@intel.com>
+References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com> <2223198.XmyRLgb3Gv@vostro.rjw.lan> <20130226161049.GA9303@kahuna> <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com> <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com> <20130226163712.GA30433@htj.dyndns.org> <CA+55aFyFRbMX9G_0Mv0nUZgw9mHAPzE0zCw5mCSbGG_r1diFHg@mail.gmail.com> <20130226165813.GB30433@htj.dyndns.org> <512CF809.8010102@pobox.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f176.google.com ([209.85.210.176]:59105 "EHLO
-	mail-ia0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078Ab3CABN3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Feb 2013 20:13:29 -0500
-Received: by mail-ia0-f176.google.com with SMTP id i18so2152896iac.21
-        for <linux-pm@vger.kernel.org>; Thu, 28 Feb 2013 17:13:29 -0800 (PST)
-In-Reply-To: <1361917047-29230-4-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <512CF809.8010102@pobox.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rickard ANDERSSON <rickard.andersson@stericsson.com>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, jacob.jun.pan@linux.intel.com, linus.walleij@stericsson.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, patches@linaro.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Feb 26, 2013 at 11:17 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
+ODD is not a common TLA for non-ATA people so they will get confused
+by its meaning when they are configuring the kernel. This patch fixed
+this problem by using ODD only after stating what it is.
 
-> Add the dynamic irq affinity feature to the timer clock device.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+---
+ drivers/ata/Kconfig | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Looks reasonable to me, sadly I do not fully grasp the patch set,
-Vincent+Rickard can you have a look at this?
-
-Yours,
-Linus Walleij
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index 3e751b7..d7d210e 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -59,15 +59,16 @@ config ATA_ACPI
+ 	  option libata.noacpi=1
+ 
+ config SATA_ZPODD
+-	bool "SATA Zero Power ODD Support"
++	bool "SATA Zero Power Optical Disc Drive(ZPODD) support"
+ 	depends on ATA_ACPI
+ 	default n
+ 	help
+-	  This option adds support for SATA ZPODD. It requires both
+-	  ODD and the platform support, and if enabled, will automatically
+-	  power on/off the ODD when certain condition is satisfied. This
+-	  does not impact user's experience of the ODD, only power is saved
+-	  when ODD is not in use(i.e. no disc inside).
++	  This option adds support for SATA Zero Power Optical Disc
++	  Drive(ZPODD). It requires both the ODD and the platform
++	  support, and if enabled, will automatically power on/off the
++	  ODD when certain condition is satisfied. This does not impact
++	  end user's experience of the ODD, only power is saved when
++	  the ODD is not in use(i.e. no disc inside).
+ 
+ 	  If unsure, say N.
+ 
+-- 
+1.8.1.2
