@@ -1,113 +1,59 @@
-From: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-Subject: Re: [PATCH v4 2/8] reset: Add reset controller API
-Date: Fri, 01 Mar 2013 13:00:56 -0700
-Message-ID: <513108F8.30902@wwwdotorg.org>
-References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
- <1361878774-6382-3-git-send-email-p.zabel@pengutronix.de>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 04/46] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Date: Sat, 02 Mar 2013 01:29:21 +0530
+Message-ID: <51310899.1090308@linux.vnet.ibm.com>
+References: <CACvQF53bdh4_BxF0y1fnTVR+T2OmRc0jmWQYftsvx92-fg-Lug@mail.gmail.com> <512BBAD8.8010006@linux.vnet.ibm.com> <CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com> <512C7A38.8060906@linux.vnet.ibm.com> <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com> <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com> <512E7879.20109@linux.vnet.ibm.com> <20130301181054.GD2481@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <1361878774-6382-3-git-send-email-p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Fabio Estevam <fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130301181054.GD2481@mtj.dyndns.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Lai Jiangshan <eag0628@gmail.com>, Michel Lespinasse <walken@google.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/26/2013 04:39 AM, Philipp Zabel wrote:
-> This adds a simple API for devices to request being reset
-> by separate reset controller hardware and implements the
-> reset signal device tree binding.
+Hi Tejun,
 
-> diff --git a/drivers/reset/core.c b/drivers/reset/core.c
+On 03/01/2013 11:40 PM, Tejun Heo wrote:
+> Hello, Srivatsa.
+> 
+> On Thu, Feb 28, 2013 at 02:49:53AM +0530, Srivatsa S. Bhat wrote:
+>> Don't get me wrong - I'll whole-heartedly acknowledge and appreciate if
+>> _your_ code is better than mine. I just don't like the idea of somebody
+>> plagiarizing my ideas/code (or even others' ideas for that matter).
+>> However, I sincerely apologize in advance if I misunderstood/misjudged your
+>> intentions; I just wanted to voice my concerns out loud at this point,
+>> considering the bad feeling I got by looking at your responses collectively.
+> 
+> Although I don't know Lai personally, from my experience working with
+> him past several months on workqueue, I strongly doubt he has dark
+> urterior intenions.  The biggest problem probably is that his
+> communication in English isn't very fluent yet and thus doesn't carry
+> the underlying intentions or tones very well and he tends to bombard
+> patches in quick succession without much explanation inbetween (during
+> 3.8 cycle, I was receiving several workqueue patchsets days apart
+> trying to solve the same problem with completely different approaches
+> way before the discussion on the previous postings reach any kind of
+> consensus).  A lot of that also probably comes from communication
+> problems.
+> 
+> Anyways, I really don't think he's trying to take claim of your work.
+> At least for now, you kinda need to speculate what he's trying to do
+> and then confirm that back to him, but once you get used to that part,
+> he's pretty nice to work with and I'm sure his communication will
+> improve in time (I think it has gotten a lot better than only some
+> months ago).
+>
 
-> +int of_reset_simple_xlate(struct reset_controller_dev *rcdev,
-> +			  const struct of_phandle_args *reset_spec, u32 *flags)
-> +{
-> +	if (WARN_ON(reset_spec->args_count < rcdev->of_reset_n_cells))
-> +		return -EINVAL;
+Thank you so much for helping clear the air, Tejun! I'm truly sorry again
+for having drawn the wrong conclusions based on gaps in our communication.
+It was a mistake on my part and I would like to request Lai to kindly
+forgive me. I'm looking forward to working with Lai effectively, going
+forward.
 
-Would != make more sense than < ?
+Thank you!
 
-> +
-> +	if (reset_spec->args[0] >= rcdev->nr_resets)
-> +		return -EINVAL;
-> +
-> +	if (flags)
-> +		*flags = reset_spec->args[1];
-
-if (flags)
-    if (reset_spec->args_count > 1)
-        *flags = reset_spec->args[1];
-    else
-        *flags = 0;
-
-?
-
-> +struct reset_control *reset_control_get(struct device *dev, const char *id)
-...
-> +	mutex_lock(&reset_controller_list_mutex);
-> +	rcdev = NULL;
-> +	list_for_each_entry(r, &reset_controller_list, list) {
-> +		if (args.np == r->of_node) {
-> +			rcdev = r;
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&reset_controller_list_mutex);
-
-At this point, rcdev could be removed from that list, and perhaps even
-start to point at free'd memory.
-
-> +	of_node_put(args.np);
-> +
-> +	if (!rcdev)
-> +		return ERR_PTR(-ENODEV);
-> +
-> +	rstc_id = rcdev->of_xlate(rcdev, &args, NULL);
-> +	if (rstc_id < 0)
-> +		return ERR_PTR(rstc_id);
-> +
-> +	try_module_get(rcdev->owner);
-
-What about error-handling here?
-
-I think you want to drop reset_controller_list_mutex only after the call
-to try_module_get()?
-
-> +static int devm_reset_control_match(struct device *dev, void *res, void *data)
-> +{
-> +	struct reset_control **rstc = res;
-> +	if (!rstc || !*rstc) {
-> +		WARN_ON(!rstc || !*rstc);
-
-I think you can if (WARN_ON(...)).
-
-I'm not sure if the error-checks are quite right though;
-reset_control_get always returns an error-pointer for errors, never
-NULL, so the pointer can't ever be NULL. If it somehow was (e.g. client
-usage error), then that NULL pointer would never match anything, so the
-error-check still wouldn't be useful.
-
-I'm not sure why this is a ** here; below in devm_reset_control_put()
-you pass a just a *; are you expected to pass &rstc there instead?
-
-> +void devm_reset_control_put(struct reset_control *rstc)
-> +{
-> +	int ret;
-> +
-> +	ret = devres_release(rstc->dev, devm_reset_control_release,
-> +			     devm_reset_control_match, rstc);
-> +	if (ret)
-> +		WARN_ON(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(devm_reset_control_put);
+Regards,
+Srivatsa S. Bhat
