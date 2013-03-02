@@ -1,48 +1,31 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 4/4][V2] ARM: timer-sp: Set dynamic irq affinity
-Date: Sat,  2 Mar 2013 11:10:13 +0100
-Message-ID: <1362219013-18173-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: john.stultz@linaro.org, tglx@linutronix.de
-Cc: viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
+From: swapnil <swapnil.tiwari1979@gmail.com>
+Subject: Re: [PATCH 2/2] PM / Runtime: Replace
+Date: Sat, 2 Mar 2013 11:39:43 +0000 (UTC)
+Message-ID: <loom.20130302T123529-697@post.gmane.org>
+References: <201106262257.10769.rjw@sisk.pl> <201106262258.50904.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from plane.gmane.org ([80.91.229.3]:46531 "EHLO plane.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559Ab3CBLov (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Mar 2013 06:44:51 -0500
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1UBksD-0003Un-4W
+	for linux-pm@vger.kernel.org; Sat, 02 Mar 2013 12:45:05 +0100
+Received: from 106.198.99.48 ([106.198.99.48])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Sat, 02 Mar 2013 12:45:05 +0100
+Received: from swapnil.tiwari1979 by 106.198.99.48 with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Sat, 02 Mar 2013 12:45:05 +0100
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
+let me know what triggers the pm core to call idle method where in the code this 
+is happening
 
-When a cpu goes to a deep idle state where its local timer is shutdown, it
-notifies the time frame work to use the broadcast timer instead.
-
-Unfortunately, the broadcast device could wake up any CPU, including an idle one
-which is not concerned by the wake up at all.
-
-This implies, in the worst case, an idle CPU will wake up to send an IPI to
-another idle cpu.
-
-This patch fixes this for ARM platforms using timer-sp, by setting
-CLOCK_EVT_FEAT_DYNIRQ feature.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/common/timer-sp.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/common/timer-sp.c b/arch/arm/common/timer-sp.c
-index 9d2d3ba..ae3c0f9 100644
---- a/arch/arm/common/timer-sp.c
-+++ b/arch/arm/common/timer-sp.c
-@@ -158,7 +158,8 @@ static int sp804_set_next_event(unsigned long next,
- }
- 
- static struct clock_event_device sp804_clockevent = {
--	.features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT,
-+	.features       = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_FEAT_ONESHOT |
-+		CLOCK_EVT_FEAT_DYNIRQ,
- 	.set_mode	= sp804_set_mode,
- 	.set_next_event	= sp804_set_next_event,
- 	.rating		= 300,
--- 
-1.7.9.5
