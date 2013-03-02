@@ -1,67 +1,370 @@
-From: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
-Date: Sat, 2 Mar 2013 20:13:17 +0800
-Message-ID: <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
-References: <512BBAD8.8010006@linux.vnet.ibm.com>
-	<CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>
-	<512C7A38.8060906@linux.vnet.ibm.com>
-	<CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
-	<512CC509.1050000@linux.vnet.ibm.com>
-	<CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
-	<512D0D67.9010609@linux.vnet.ibm.com>
-	<CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
-	<512E7879.20109@linux.vnet.ibm.com>
-	<5130E8E2.50206@cn.fujitsu.com>
-	<20130301182854.GA3631@redhat.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Update][PATCH 2/2] PM / QoS: Remove device PM QoS sysfs attributes at the right place
+Date: Sat, 02 Mar 2013 14:09:02 +0100
+Message-ID: <2185280.FMvYY46t7i@vostro.rjw.lan>
+References: <2252670.qpofTRSm2a@vostro.rjw.lan> <1544982.lMMvPjF71N@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <20130301182854.GA3631@redhat.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1544982.lMMvPjF71N@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Sasha Levin <sasha.levin@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 2, 2013 at 2:28 AM, Oleg Nesterov <oleg@redhat.com> wrote:
-> Lai, I didn't read this discussion except the code posted by Michel.
-> I'll try to read this patch carefully later, but I'd like to ask
-> a couple of questions.
->
-> This version looks more complex than Michel's, why? Just curious, I
-> am trying to understand what I missed. See
-> http://marc.info/?l=linux-kernel&m=136196350213593
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
->From what I can see, my version used local_refcnt to count how many
-reentrant locks are represented by the fastpath lglock spinlock; Lai's
-version uses it to count how many reentrant locks are represented by
-either the fastpath lglock spinlock or the global rwlock, with
-FALLBACK_BASE being a bit thrown in so we can remember which of these
-locks was acquired. My version would be slower if it needs to take the
-slow path in a reentrant way, but I'm not sure it matters either :)
+Device PM QoS sysfs attributes, if present during device removal,
+are removed from within device_pm_remove(), which is too late,
+since dpm_sysfs_remove() has already removed the whole attribute
+group they belonged to.  However, moving the removal of those
+attributes to dpm_sysfs_remove() alone is not sufficient, because
+in theory they still can be re-added right after being removed by it
+(the device's driver is still bound to it at that point).
 
-> Interrupt handler on CPU_1 does _read_lock() notices ->reader_refcnt != 0
-> and simply does this_cpu_inc(), so reader_refcnt == FALLBACK_BASE + 1.
->
-> Then irq does _read_unlock(), and
->
->> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
->> +{
->> +     switch (__this_cpu_dec_return(*lgrw->reader_refcnt)) {
->> +     case 0:
->> +             lg_local_unlock(&lgrw->lglock);
->> +             return;
->> +     case FALLBACK_BASE:
->> +             __this_cpu_sub(*lgrw->reader_refcnt, FALLBACK_BASE);
->> +             read_unlock(&lgrw->fallback_rwlock);
->
-> hits this case?
->
-> Doesn't look right, but most probably I missed something.
+For this reason, move the entire desctruction of device PM QoS
+constraints to dpm_sysfs_remove() and make it prevent any new
+constraints from being added after it has run.  Also, move the
+initialization of the power.qos field in struct device to
+device_pm_init_common() and drop the no longer needed
+dev_pm_qos_constraints_init().
 
-Good catch. I think this is easily fixed by setting reader_refcn
-directly to FALLBACK_BASE+1, instead of setting it to FALLBACK_BASE
-and then incrementing it to FALLBACK_BASE+1.
+Reported-by: Sasha Levin <sasha.levin@oracle.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
+This update removes dev_pm_qos_constraints_init(), which is not necessary
+any more (and device_pm_init_common() doesn't need to touch power.power_state)
+and adds the Reported-by tag as appropriate.
+
+Thanks,
+Rafael
+
+---
+ drivers/base/power/main.c  |    2 
+ drivers/base/power/power.h |    8 ---
+ drivers/base/power/qos.c   |  116 ++++++++++++++++++---------------------------
+ drivers/base/power/sysfs.c |    1 
+ 4 files changed, 51 insertions(+), 76 deletions(-)
+
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -99,7 +99,6 @@ void device_pm_add(struct device *dev)
+ 		dev_warn(dev, "parent %s should not be sleeping\n",
+ 			dev_name(dev->parent));
+ 	list_add_tail(&dev->power.entry, &dpm_list);
+-	dev_pm_qos_constraints_init(dev);
+ 	mutex_unlock(&dpm_list_mtx);
+ }
+ 
+@@ -113,7 +112,6 @@ void device_pm_remove(struct device *dev
+ 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
+ 	complete_all(&dev->power.completion);
+ 	mutex_lock(&dpm_list_mtx);
+-	dev_pm_qos_constraints_destroy(dev);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
+ 	device_wakeup_disable(dev);
+Index: linux-pm/drivers/base/power/qos.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/qos.c
++++ linux-pm/drivers/base/power/qos.c
+@@ -61,7 +61,7 @@ enum pm_qos_flags_status __dev_pm_qos_fl
+ 	struct pm_qos_flags *pqf;
+ 	s32 val;
+ 
+-	if (!qos)
++	if (IS_ERR_OR_NULL(qos))
+ 		return PM_QOS_FLAGS_UNDEFINED;
+ 
+ 	pqf = &qos->flags;
+@@ -101,7 +101,8 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_flags);
+  */
+ s32 __dev_pm_qos_read_value(struct device *dev)
+ {
+-	return dev->power.qos ? pm_qos_read_value(&dev->power.qos->latency) : 0;
++	return IS_ERR_OR_NULL(dev->power.qos) ?
++		0 : pm_qos_read_value(&dev->power.qos->latency);
+ }
+ 
+ /**
+@@ -198,20 +199,8 @@ static int dev_pm_qos_constraints_alloca
+ 	return 0;
+ }
+ 
+-/**
+- * dev_pm_qos_constraints_init - Initalize device's PM QoS constraints pointer.
+- * @dev: target device
+- *
+- * Called from the device PM subsystem during device insertion under
+- * device_pm_lock().
+- */
+-void dev_pm_qos_constraints_init(struct device *dev)
+-{
+-	mutex_lock(&dev_pm_qos_mtx);
+-	dev->power.qos = NULL;
+-	dev->power.power_state = PMSG_ON;
+-	mutex_unlock(&dev_pm_qos_mtx);
+-}
++static void __dev_pm_qos_hide_latency_limit(struct device *dev);
++static void __dev_pm_qos_hide_flags(struct device *dev);
+ 
+ /**
+  * dev_pm_qos_constraints_destroy
+@@ -226,16 +215,15 @@ void dev_pm_qos_constraints_destroy(stru
+ 	struct pm_qos_constraints *c;
+ 	struct pm_qos_flags *f;
+ 
++	mutex_lock(&dev_pm_qos_mtx);
++
+ 	/*
+ 	 * If the device's PM QoS resume latency limit or PM QoS flags have been
+ 	 * exposed to user space, they have to be hidden at this point.
+ 	 */
+-	dev_pm_qos_hide_latency_limit(dev);
+-	dev_pm_qos_hide_flags(dev);
+-
+-	mutex_lock(&dev_pm_qos_mtx);
++	__dev_pm_qos_hide_latency_limit(dev);
++	__dev_pm_qos_hide_flags(dev);
+ 
+-	dev->power.power_state = PMSG_INVALID;
+ 	qos = dev->power.qos;
+ 	if (!qos)
+ 		goto out;
+@@ -257,7 +245,7 @@ void dev_pm_qos_constraints_destroy(stru
+ 	}
+ 
+ 	spin_lock_irq(&dev->power.lock);
+-	dev->power.qos = NULL;
++	dev->power.qos = ERR_PTR(-ENODEV);
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+ 	kfree(c->notifiers);
+@@ -301,32 +289,19 @@ int dev_pm_qos_add_request(struct device
+ 		 "%s() called for already added request\n", __func__))
+ 		return -EINVAL;
+ 
+-	req->dev = dev;
+-
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (!dev->power.qos) {
+-		if (dev->power.power_state.event == PM_EVENT_INVALID) {
+-			/* The device has been removed from the system. */
+-			req->dev = NULL;
+-			ret = -ENODEV;
+-			goto out;
+-		} else {
+-			/*
+-			 * Allocate the constraints data on the first call to
+-			 * add_request, i.e. only if the data is not already
+-			 * allocated and if the device has not been removed.
+-			 */
+-			ret = dev_pm_qos_constraints_allocate(dev);
+-		}
+-	}
++	if (IS_ERR(dev->power.qos))
++		ret = -ENODEV;
++	else if (!dev->power.qos)
++		ret = dev_pm_qos_constraints_allocate(dev);
+ 
+ 	if (!ret) {
++		req->dev = dev;
+ 		req->type = type;
+ 		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
+ 	}
+ 
+- out:
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 
+ 	return ret;
+@@ -351,7 +326,7 @@ static int __dev_pm_qos_update_request(s
+ 		 "%s() called for unknown object\n", __func__))
+ 		return -EINVAL;
+ 
+-	if (!req->dev->power.qos)
++	if (IS_ERR_OR_NULL(req->dev->power.qos))
+ 		return -ENODEV;
+ 
+ 	switch(req->type) {
+@@ -402,7 +377,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_update_requ
+ 
+ static int __dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
+ {
+-	int ret = 0;
++	int ret;
+ 
+ 	if (!req) /*guard against callers passing in null */
+ 		return -EINVAL;
+@@ -411,13 +386,11 @@ static int __dev_pm_qos_remove_request(s
+ 		 "%s() called for unknown object\n", __func__))
+ 		return -EINVAL;
+ 
+-	if (req->dev->power.qos) {
+-		ret = apply_constraint(req, PM_QOS_REMOVE_REQ,
+-				       PM_QOS_DEFAULT_VALUE);
+-		memset(req, 0, sizeof(*req));
+-	} else {
+-		ret = -ENODEV;
+-	}
++	if (IS_ERR_OR_NULL(req->dev->power.qos))
++		return -ENODEV;
++
++	ret = apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
++	memset(req, 0, sizeof(*req));
+ 	return ret;
+ }
+ 
+@@ -466,9 +439,10 @@ int dev_pm_qos_add_notifier(struct devic
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (!dev->power.qos)
+-		ret = dev->power.power_state.event != PM_EVENT_INVALID ?
+-			dev_pm_qos_constraints_allocate(dev) : -ENODEV;
++	if (IS_ERR(dev->power.qos))
++		ret = -ENODEV;
++	else if (!dev->power.qos)
++		ret = dev_pm_qos_constraints_allocate(dev);
+ 
+ 	if (!ret)
+ 		ret = blocking_notifier_chain_register(
+@@ -497,7 +471,7 @@ int dev_pm_qos_remove_notifier(struct de
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+ 	/* Silently return if the constraints object is not present. */
+-	if (dev->power.qos)
++	if (!IS_ERR_OR_NULL(dev->power.qos))
+ 		retval = blocking_notifier_chain_unregister(
+ 				dev->power.qos->latency.notifiers,
+ 				notifier);
+@@ -608,7 +582,7 @@ int dev_pm_qos_expose_latency_limit(stru
+ 
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (!dev->power.qos)
++	if (IS_ERR_OR_NULL(dev->power.qos))
+ 		ret = -ENODEV;
+ 	else if (dev->power.qos->latency_req)
+ 		ret = -EEXIST;
+@@ -630,6 +604,14 @@ int dev_pm_qos_expose_latency_limit(stru
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_expose_latency_limit);
+ 
++static void __dev_pm_qos_hide_latency_limit(struct device *dev)
++{
++	if (!IS_ERR_OR_NULL(dev->power.qos) && dev->power.qos->latency_req) {
++		pm_qos_sysfs_remove_latency(dev);
++		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY);
++	}
++}
++
+ /**
+  * dev_pm_qos_hide_latency_limit - Hide PM QoS latency limit from user space.
+  * @dev: Device whose PM QoS latency limit is to be hidden from user space.
+@@ -637,12 +619,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_expose_late
+ void dev_pm_qos_hide_latency_limit(struct device *dev)
+ {
+ 	mutex_lock(&dev_pm_qos_mtx);
+-
+-	if (dev->power.qos && dev->power.qos->latency_req) {
+-		pm_qos_sysfs_remove_latency(dev);
+-		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY);
+-	}
+-
++	__dev_pm_qos_hide_latency_limit(dev);
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_hide_latency_limit);
+@@ -673,7 +650,7 @@ int dev_pm_qos_expose_flags(struct devic
+ 	pm_runtime_get_sync(dev);
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (!dev->power.qos)
++	if (IS_ERR_OR_NULL(dev->power.qos))
+ 		ret = -ENODEV;
+ 	else if (dev->power.qos->flags_req)
+ 		ret = -EEXIST;
+@@ -696,6 +673,14 @@ int dev_pm_qos_expose_flags(struct devic
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
+ 
++static void __dev_pm_qos_hide_flags(struct device *dev)
++{
++	if (!IS_ERR_OR_NULL(dev->power.qos) && dev->power.qos->flags_req) {
++		pm_qos_sysfs_remove_flags(dev);
++		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
++	}
++}
++
+ /**
+  * dev_pm_qos_hide_flags - Hide PM QoS flags of a device from user space.
+  * @dev: Device whose PM QoS flags are to be hidden from user space.
+@@ -704,12 +689,7 @@ void dev_pm_qos_hide_flags(struct device
+ {
+ 	pm_runtime_get_sync(dev);
+ 	mutex_lock(&dev_pm_qos_mtx);
+-
+-	if (dev->power.qos && dev->power.qos->flags_req) {
+-		pm_qos_sysfs_remove_flags(dev);
+-		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
+-	}
+-
++	__dev_pm_qos_hide_flags(dev);
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	pm_runtime_put(dev);
+ }
+@@ -729,7 +709,7 @@ int dev_pm_qos_update_flags(struct devic
+ 	pm_runtime_get_sync(dev);
+ 	mutex_lock(&dev_pm_qos_mtx);
+ 
+-	if (!dev->power.qos || !dev->power.qos->flags_req) {
++	if (IS_ERR_OR_NULL(dev->power.qos) || !dev->power.qos->flags_req) {
+ 		ret = -EINVAL;
+ 		goto out;
+ 	}
+Index: linux-pm/drivers/base/power/power.h
+===================================================================
+--- linux-pm.orig/drivers/base/power/power.h
++++ linux-pm/drivers/base/power/power.h
+@@ -4,7 +4,7 @@ static inline void device_pm_init_common
+ {
+ 	if (!dev->power.early_init) {
+ 		spin_lock_init(&dev->power.lock);
+-		dev->power.power_state = PMSG_INVALID;
++		dev->power.qos = NULL;
+ 		dev->power.early_init = true;
+ 	}
+ }
+@@ -56,14 +56,10 @@ extern void device_pm_move_last(struct d
+ 
+ static inline void device_pm_sleep_init(struct device *dev) {}
+ 
+-static inline void device_pm_add(struct device *dev)
+-{
+-	dev_pm_qos_constraints_init(dev);
+-}
++static inline void device_pm_add(struct device *dev) {}
+ 
+ static inline void device_pm_remove(struct device *dev)
+ {
+-	dev_pm_qos_constraints_destroy(dev);
+ 	pm_runtime_remove(dev);
+ }
+ 
+Index: linux-pm/drivers/base/power/sysfs.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/sysfs.c
++++ linux-pm/drivers/base/power/sysfs.c
+@@ -708,6 +708,7 @@ void rpm_sysfs_remove(struct device *dev
+ 
+ void dpm_sysfs_remove(struct device *dev)
+ {
++	dev_pm_qos_constraints_destroy(dev);
+ 	rpm_sysfs_remove(dev);
+ 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
+ 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
