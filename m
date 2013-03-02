@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2 3/4] arm: exynos: Enable OPP library support for exynos5440
-Date: Sat,  2 Mar 2013 15:04:13 +0530
-Message-ID: <1362216854-6633-3-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V2 4/4] dts: Add cpufreq controller node for Exynos5440 SoC
+Date: Sat,  2 Mar 2013 15:04:14 +0530
+Message-ID: <1362216854-6633-4-git-send-email-amit.daniel@samsung.com>
 References: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,30 +21,39 @@ To: linux-pm@vger.kernel.org
 Cc: kgene.kim@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The OPP library support is needed for exynos5440 cpu frequency
-dynamic scaling driver.
+Add cpufreq controller device node for Exynos5440 SoC for passing
+parameters like controller base address, interrupt and cpufreq
+table. This node is added inside cpu0 node as done in other cpufreq
+drivers.
 
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- arch/arm/mach-exynos/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/arm/boot/dts/exynos5440.dtsi |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 70f94c8..d5dde07 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -72,10 +72,12 @@ config SOC_EXYNOS5440
- 	bool "SAMSUNG EXYNOS5440"
- 	default y
- 	depends on ARCH_EXYNOS5
-+	select ARCH_HAS_OPP
- 	select ARM_ARCH_TIMER
- 	select AUTO_ZRELADDR
- 	select PINCTRL
- 	select PINCTRL_EXYNOS5440
-+	select PM_OPP
- 	help
- 	  Enable EXYNOS5440 SoC support
- 
+diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+index 5f3562a..fd0c811 100644
+--- a/arch/arm/boot/dts/exynos5440.dtsi
++++ b/arch/arm/boot/dts/exynos5440.dtsi
+@@ -31,6 +31,19 @@
+ 				interrupts = <1 13 0xf08>;
+ 				clock-frequency = <1000000>;
+ 			};
++
++			cpufreq@160000 {
++				compatible = "samsung,exynos5440-cpufreq";
++				reg = <0x160000 0x1000>;
++				interrupts = <0 57 0>;
++				operating-points = <
++					/* KHZ	  uV */
++					1200000 1025000
++					1000000 975000
++					800000  925000
++					>;
++				clocks = <&clock 2>;
++			};
+ 		};
+ 		cpu@1 {
+ 			compatible = "arm,cortex-a15";
 -- 
 1.7.1
