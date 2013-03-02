@@ -1,370 +1,289 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update][PATCH 2/2] PM / QoS: Remove device PM QoS sysfs attributes at the right place
-Date: Sat, 02 Mar 2013 14:09:02 +0100
-Message-ID: <2185280.FMvYY46t7i@vostro.rjw.lan>
-References: <2252670.qpofTRSm2a@vostro.rjw.lan> <1544982.lMMvPjF71N@vostro.rjw.lan>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: [PATCH V2] lglock: add read-preference local-global rwlock
+Date: Sat, 02 Mar 2013 21:14:52 +0800
+Message-ID: <5131FB4C.7070408@cn.fujitsu.com>
+References: <512BBAD8.8010006@linux.vnet.ibm.com>	<CACvQF51jCxk5jUqmhD=QBBtUsBkQWZzakacrKO4Gsk=w61rNwQ@mail.gmail.com>	<512C7A38.8060906@linux.vnet.ibm.com>	<CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>	<512CC509.1050000@linux.vnet.ibm.com>	<CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>	<512D0D67.9010609@linux.vnet.ibm.com>	<CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>	<512E7879.20109@linux.vnet.ibm.com>	<5130E8E2.50206@cn.fujitsu.com>	<20130301182854.GA3631@redhat.com>
+ <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1544982.lMMvPjF71N@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Sasha Levin <sasha.levin@oracle.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Michel Lespinasse <walken@google.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, vincent.guittot@linaro.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>From 345a7a75c314ff567be48983e0892bc69c4452e7 Mon Sep 17 00:00:00 2001
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Date: Sat, 2 Mar 2013 20:33:14 +0800
+Subject: [PATCH] lglock: add read-preference local-global rwlock
 
-Device PM QoS sysfs attributes, if present during device removal,
-are removed from within device_pm_remove(), which is too late,
-since dpm_sysfs_remove() has already removed the whole attribute
-group they belonged to.  However, moving the removal of those
-attributes to dpm_sysfs_remove() alone is not sufficient, because
-in theory they still can be re-added right after being removed by it
-(the device's driver is still bound to it at that point).
+Current lglock is not read-preference, so it can't be used on some cases
+which read-preference rwlock can do. Example, get_cpu_online_atomic().
 
-For this reason, move the entire desctruction of device PM QoS
-constraints to dpm_sysfs_remove() and make it prevent any new
-constraints from being added after it has run.  Also, move the
-initialization of the power.qos field in struct device to
-device_pm_init_common() and drop the no longer needed
-dev_pm_qos_constraints_init().
+Although we can use rwlock for these cases which needs read-preference.
+but it leads to unnecessary cache-line bouncing even when there are no
+writers present, which can slow down the system needlessly. It will be
+worse when we have a lot of CPUs, it is not scale.
 
-Reported-by: Sasha Levin <sasha.levin@oracle.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+So we look forward to lglock. lglock is read-write-lock based on percpu locks,
+but it is not read-preference due to its underlining percpu locks.
+
+But what if we convert the percpu locks of lglock to use percpu rwlocks:
+
+         CPU 0                                CPU 1
+         ------                               ------
+1.    spin_lock(&random_lock);             read_lock(my_rwlock of CPU 1);
+2.    read_lock(my_rwlock of CPU 0);       spin_lock(&random_lock);
+
+Writer:
+         CPU 2:
+         ------
+      for_each_online_cpu(cpu)
+        write_lock(my_rwlock of 'cpu');
+
+
+Consider what happens if the writer begins his operation in between steps 1
+and 2 at the reader side. It becomes evident that we end up in a (previously
+non-existent) deadlock due to a circular locking dependency between the 3
+entities, like this:
+
+
+(holds              Waiting for
+ random_lock) CPU 0 -------------> CPU 2  (holds my_rwlock of CPU 0
+                                               for write)
+               ^                   |
+               |                   |
+        Waiting|                   | Waiting
+          for  |                   |  for
+               |                   V
+                ------ CPU 1 <------
+
+                (holds my_rwlock of
+                 CPU 1 for read)
+
+
+So obviously this "straight-forward" way of implementing percpu rwlocks is
+deadlock-prone. So we can't implement read-preference local-global rwlock
+like this.
+
+
+The implement of this patch reuse current lglock as frontend to achieve
+local-read-lock, and reuse global fallback rwlock as backend to achieve
+read-preference, and use percpu reader counter to indicate 1) the depth
+of the nested reader lockes and 2) whether the outmost lock is percpu lock
+or fallback rwlock.
+
+The algorithm is simple, in the read site:
+If it is nested reader, just increase the counter
+If it is the outmost reader,
+	1) try to lock its cpu's lock of the frontend lglock.
+	   (reader count +=1 if success)
+	2) if the above step fails, read_lock(&fallback_rwlock).
+	   (reader count += FALLBACK_BASE + 1)
+
+Write site:
+Do the lg_global_lock() of the frontend lglock.
+And then write_lock(&fallback_rwlock).
+
+
+Prof:
+1) reader-writer exclusive:
+write-site must requires all percpu locks and fallback_rwlock.
+outmost read-site must requires one of these locks.
+
+2) read-preference:
+before write site lock finished acquired, read site at least
+wins at read_lock(&fallback_rwlock) due to rwlock is read-preference.
+
+3) read site functions are irqsafe(reentrance-safe)
+   (read site functions is not protected by disabled irq, but they are irqsafe)
+	If read site function is interrupted at any point and reenters read site
+again, reentranced read site will not be mislead by the first read site if the
+reader counter > 0, in this case, it means currently frontend(this cpu lock of
+lglock) or backend(fallback rwlock) lock is held, it is safe to act as
+nested reader.
+	if the reader counter=0, eentranced reader considers it is the
+outmost read site, and it always successes after the write side release the lock.
+(even the interrupted read-site has already hold the cpu lock of lglock
+or the fallback_rwlock).
+	And reentranced read site only calls arch_spin_trylock(), read_lock()
+and __this_cpu_op(), arch_spin_trylock(), read_lock() is already reentrance-safe.
+Although __this_cpu_op() is not reentrance-safe, but the value of the counter
+will be restored after the interrupted finished, so read site functions
+are still reentrance-safe.
+
+
+Performance:
+We only focus on the performance of the read site. this read site's fast path
+is just preempt_disable() + __this_cpu_read/inc() + arch_spin_trylock(),
+It has only one heavy memory operation. it will be expected fast.
+
+We test three locks.
+1) traditional rwlock WITHOUT remote competition nor cache-bouncing.(opt-rwlock)
+2) this lock(lgrwlock)
+3) V6 percpu-rwlock by "Srivatsa S. Bhat". (percpu-rwlock)
+   (https://lkml.org/lkml/2013/2/18/186)
+
+		nested=1(no nested)	nested=2	nested=4
+opt-rwlock	 517181			1009200		2010027
+lgrwlock	 452897			 700026		1201415
+percpu-rwlock	1192955			1451343		1951757
+
+The value is the time(nano-second) of 10000 times of the operations
+{
+	read-lock
+	[nested read-lock]...
+	[nested read-unlock]...
+	read-unlock
+}
+If the way of this test is wrong nor bad, please correct me,
+the code of test is here: https://gist.github.com/laijs/5066159
+(i5 760, 64bit)
+
+Changed from V1
+ fix a reentrance-bug which is cought by Oleg
+ don't touch lockdep for nested reader(needed by below change)
+ add two special APIs for cpuhotplug.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
+ include/linux/lglock.h |   38 ++++++++++++++++++++++++++
+ kernel/lglock.c        |   68 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 106 insertions(+), 0 deletions(-)
 
-This update removes dev_pm_qos_constraints_init(), which is not necessary
-any more (and device_pm_init_common() doesn't need to touch power.power_state)
-and adds the Reported-by tag as appropriate.
-
-Thanks,
-Rafael
-
----
- drivers/base/power/main.c  |    2 
- drivers/base/power/power.h |    8 ---
- drivers/base/power/qos.c   |  116 ++++++++++++++++++---------------------------
- drivers/base/power/sysfs.c |    1 
- 4 files changed, 51 insertions(+), 76 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -99,7 +99,6 @@ void device_pm_add(struct device *dev)
- 		dev_warn(dev, "parent %s should not be sleeping\n",
- 			dev_name(dev->parent));
- 	list_add_tail(&dev->power.entry, &dpm_list);
--	dev_pm_qos_constraints_init(dev);
- 	mutex_unlock(&dpm_list_mtx);
- }
+diff --git a/include/linux/lglock.h b/include/linux/lglock.h
+index 0d24e93..90bfe79 100644
+--- a/include/linux/lglock.h
++++ b/include/linux/lglock.h
+@@ -67,4 +67,42 @@ void lg_local_unlock_cpu(struct lglock *lg, int cpu);
+ void lg_global_lock(struct lglock *lg);
+ void lg_global_unlock(struct lglock *lg);
  
-@@ -113,7 +112,6 @@ void device_pm_remove(struct device *dev
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
- 	complete_all(&dev->power.completion);
- 	mutex_lock(&dpm_list_mtx);
--	dev_pm_qos_constraints_destroy(dev);
- 	list_del_init(&dev->power.entry);
- 	mutex_unlock(&dpm_list_mtx);
- 	device_wakeup_disable(dev);
-Index: linux-pm/drivers/base/power/qos.c
-===================================================================
---- linux-pm.orig/drivers/base/power/qos.c
-+++ linux-pm/drivers/base/power/qos.c
-@@ -61,7 +61,7 @@ enum pm_qos_flags_status __dev_pm_qos_fl
- 	struct pm_qos_flags *pqf;
- 	s32 val;
- 
--	if (!qos)
-+	if (IS_ERR_OR_NULL(qos))
- 		return PM_QOS_FLAGS_UNDEFINED;
- 
- 	pqf = &qos->flags;
-@@ -101,7 +101,8 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_flags);
-  */
- s32 __dev_pm_qos_read_value(struct device *dev)
- {
--	return dev->power.qos ? pm_qos_read_value(&dev->power.qos->latency) : 0;
-+	return IS_ERR_OR_NULL(dev->power.qos) ?
-+		0 : pm_qos_read_value(&dev->power.qos->latency);
- }
- 
- /**
-@@ -198,20 +199,8 @@ static int dev_pm_qos_constraints_alloca
- 	return 0;
- }
- 
--/**
-- * dev_pm_qos_constraints_init - Initalize device's PM QoS constraints pointer.
-- * @dev: target device
-- *
-- * Called from the device PM subsystem during device insertion under
-- * device_pm_lock().
-- */
--void dev_pm_qos_constraints_init(struct device *dev)
--{
--	mutex_lock(&dev_pm_qos_mtx);
--	dev->power.qos = NULL;
--	dev->power.power_state = PMSG_ON;
--	mutex_unlock(&dev_pm_qos_mtx);
--}
-+static void __dev_pm_qos_hide_latency_limit(struct device *dev);
-+static void __dev_pm_qos_hide_flags(struct device *dev);
- 
- /**
-  * dev_pm_qos_constraints_destroy
-@@ -226,16 +215,15 @@ void dev_pm_qos_constraints_destroy(stru
- 	struct pm_qos_constraints *c;
- 	struct pm_qos_flags *f;
- 
-+	mutex_lock(&dev_pm_qos_mtx);
++/* read-preference read-write-lock like rwlock but provides local-read-lock */
++struct lgrwlock {
++	unsigned long __percpu *reader_refcnt;
++	struct lglock lglock;
++	rwlock_t fallback_rwlock;
++};
 +
- 	/*
- 	 * If the device's PM QoS resume latency limit or PM QoS flags have been
- 	 * exposed to user space, they have to be hidden at this point.
- 	 */
--	dev_pm_qos_hide_latency_limit(dev);
--	dev_pm_qos_hide_flags(dev);
--
--	mutex_lock(&dev_pm_qos_mtx);
-+	__dev_pm_qos_hide_latency_limit(dev);
-+	__dev_pm_qos_hide_flags(dev);
- 
--	dev->power.power_state = PMSG_INVALID;
- 	qos = dev->power.qos;
- 	if (!qos)
- 		goto out;
-@@ -257,7 +245,7 @@ void dev_pm_qos_constraints_destroy(stru
- 	}
- 
- 	spin_lock_irq(&dev->power.lock);
--	dev->power.qos = NULL;
-+	dev->power.qos = ERR_PTR(-ENODEV);
- 	spin_unlock_irq(&dev->power.lock);
- 
- 	kfree(c->notifiers);
-@@ -301,32 +289,19 @@ int dev_pm_qos_add_request(struct device
- 		 "%s() called for already added request\n", __func__))
- 		return -EINVAL;
- 
--	req->dev = dev;
--
- 	mutex_lock(&dev_pm_qos_mtx);
- 
--	if (!dev->power.qos) {
--		if (dev->power.power_state.event == PM_EVENT_INVALID) {
--			/* The device has been removed from the system. */
--			req->dev = NULL;
--			ret = -ENODEV;
--			goto out;
--		} else {
--			/*
--			 * Allocate the constraints data on the first call to
--			 * add_request, i.e. only if the data is not already
--			 * allocated and if the device has not been removed.
--			 */
--			ret = dev_pm_qos_constraints_allocate(dev);
--		}
--	}
-+	if (IS_ERR(dev->power.qos))
-+		ret = -ENODEV;
-+	else if (!dev->power.qos)
-+		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	if (!ret) {
-+		req->dev = dev;
- 		req->type = type;
- 		ret = apply_constraint(req, PM_QOS_ADD_REQ, value);
- 	}
- 
-- out:
- 	mutex_unlock(&dev_pm_qos_mtx);
- 
- 	return ret;
-@@ -351,7 +326,7 @@ static int __dev_pm_qos_update_request(s
- 		 "%s() called for unknown object\n", __func__))
- 		return -EINVAL;
- 
--	if (!req->dev->power.qos)
-+	if (IS_ERR_OR_NULL(req->dev->power.qos))
- 		return -ENODEV;
- 
- 	switch(req->type) {
-@@ -402,7 +377,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_update_requ
- 
- static int __dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
- {
--	int ret = 0;
-+	int ret;
- 
- 	if (!req) /*guard against callers passing in null */
- 		return -EINVAL;
-@@ -411,13 +386,11 @@ static int __dev_pm_qos_remove_request(s
- 		 "%s() called for unknown object\n", __func__))
- 		return -EINVAL;
- 
--	if (req->dev->power.qos) {
--		ret = apply_constraint(req, PM_QOS_REMOVE_REQ,
--				       PM_QOS_DEFAULT_VALUE);
--		memset(req, 0, sizeof(*req));
--	} else {
--		ret = -ENODEV;
--	}
-+	if (IS_ERR_OR_NULL(req->dev->power.qos))
-+		return -ENODEV;
++#define __DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
++	static DEFINE_PER_CPU(arch_spinlock_t, name ## _lock)		\
++	= __ARCH_SPIN_LOCK_UNLOCKED;					\
++	static DEFINE_PER_CPU(unsigned long, name ## _refcnt);
 +
-+	ret = apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+	memset(req, 0, sizeof(*req));
- 	return ret;
- }
- 
-@@ -466,9 +439,10 @@ int dev_pm_qos_add_notifier(struct devic
- 
- 	mutex_lock(&dev_pm_qos_mtx);
- 
--	if (!dev->power.qos)
--		ret = dev->power.power_state.event != PM_EVENT_INVALID ?
--			dev_pm_qos_constraints_allocate(dev) : -ENODEV;
-+	if (IS_ERR(dev->power.qos))
-+		ret = -ENODEV;
-+	else if (!dev->power.qos)
-+		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	if (!ret)
- 		ret = blocking_notifier_chain_register(
-@@ -497,7 +471,7 @@ int dev_pm_qos_remove_notifier(struct de
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	/* Silently return if the constraints object is not present. */
--	if (dev->power.qos)
-+	if (!IS_ERR_OR_NULL(dev->power.qos))
- 		retval = blocking_notifier_chain_unregister(
- 				dev->power.qos->latency.notifiers,
- 				notifier);
-@@ -608,7 +582,7 @@ int dev_pm_qos_expose_latency_limit(stru
- 
- 	mutex_lock(&dev_pm_qos_mtx);
- 
--	if (!dev->power.qos)
-+	if (IS_ERR_OR_NULL(dev->power.qos))
- 		ret = -ENODEV;
- 	else if (dev->power.qos->latency_req)
- 		ret = -EEXIST;
-@@ -630,6 +604,14 @@ int dev_pm_qos_expose_latency_limit(stru
- }
- EXPORT_SYMBOL_GPL(dev_pm_qos_expose_latency_limit);
- 
-+static void __dev_pm_qos_hide_latency_limit(struct device *dev)
-+{
-+	if (!IS_ERR_OR_NULL(dev->power.qos) && dev->power.qos->latency_req) {
-+		pm_qos_sysfs_remove_latency(dev);
-+		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY);
++#define __LGRWLOCK_INIT(name)						\
++	{								\
++		.reader_refcnt = &name ## _refcnt,			\
++		.lglock = { .lock = &name ## _lock },			\
++		.fallback_rwlock = __RW_LOCK_UNLOCKED(name.fallback_rwlock)\
 +	}
++
++#define DEFINE_LGRWLOCK(name)						\
++	__DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
++	struct lgrwlock name = __LGRWLOCK_INIT(name)
++
++#define DEFINE_STATIC_LGRWLOCK(name)					\
++	__DEFINE_LGRWLOCK_PERCPU_DATA(name)				\
++	static struct lgrwlock name = __LGRWLOCK_INIT(name)
++
++static inline void lg_rwlock_init(struct lgrwlock *lgrw, char *name)
++{
++	lg_lock_init(&lgrw->lglock, name);
 +}
 +
- /**
-  * dev_pm_qos_hide_latency_limit - Hide PM QoS latency limit from user space.
-  * @dev: Device whose PM QoS latency limit is to be hidden from user space.
-@@ -637,12 +619,7 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_expose_late
- void dev_pm_qos_hide_latency_limit(struct device *dev)
- {
- 	mutex_lock(&dev_pm_qos_mtx);
--
--	if (dev->power.qos && dev->power.qos->latency_req) {
--		pm_qos_sysfs_remove_latency(dev);
--		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_LATENCY);
--	}
--
-+	__dev_pm_qos_hide_latency_limit(dev);
- 	mutex_unlock(&dev_pm_qos_mtx);
++void lg_rwlock_local_read_lock(struct lgrwlock *lgrw);
++void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw);
++void lg_rwlock_global_write_lock(struct lgrwlock *lgrw);
++void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw);
++void __lg_rwlock_global_read_write_lock(struct lgrwlock *lgrw);
++void __lg_rwlock_global_read_write_unlock(struct lgrwlock *lgrw);
+ #endif
+diff --git a/kernel/lglock.c b/kernel/lglock.c
+index 6535a66..52e9b2c 100644
+--- a/kernel/lglock.c
++++ b/kernel/lglock.c
+@@ -87,3 +87,71 @@ void lg_global_unlock(struct lglock *lg)
+ 	preempt_enable();
  }
- EXPORT_SYMBOL_GPL(dev_pm_qos_hide_latency_limit);
-@@ -673,7 +650,7 @@ int dev_pm_qos_expose_flags(struct devic
- 	pm_runtime_get_sync(dev);
- 	mutex_lock(&dev_pm_qos_mtx);
- 
--	if (!dev->power.qos)
-+	if (IS_ERR_OR_NULL(dev->power.qos))
- 		ret = -ENODEV;
- 	else if (dev->power.qos->flags_req)
- 		ret = -EEXIST;
-@@ -696,6 +673,14 @@ int dev_pm_qos_expose_flags(struct devic
- }
- EXPORT_SYMBOL_GPL(dev_pm_qos_expose_flags);
- 
-+static void __dev_pm_qos_hide_flags(struct device *dev)
+ EXPORT_SYMBOL(lg_global_unlock);
++
++#define FALLBACK_BASE	(1UL << 30)
++
++void lg_rwlock_local_read_lock(struct lgrwlock *lgrw)
 +{
-+	if (!IS_ERR_OR_NULL(dev->power.qos) && dev->power.qos->flags_req) {
-+		pm_qos_sysfs_remove_flags(dev);
-+		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
++	struct lglock *lg = &lgrw->lglock;
++
++	preempt_disable();
++	if (likely(!__this_cpu_read(*lgrw->reader_refcnt))) {
++		rwlock_acquire_read(&lg->lock_dep_map, 0, 0, _RET_IP_);
++		if (unlikely(!arch_spin_trylock(this_cpu_ptr(lg->lock)))) {
++			read_lock(&lgrw->fallback_rwlock);
++			__this_cpu_write(*lgrw->reader_refcnt, FALLBACK_BASE);
++			return;
++		}
 +	}
++
++	__this_cpu_inc(*lgrw->reader_refcnt);
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_lock);
++
++void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
++{
++	switch (__this_cpu_read(*lgrw->reader_refcnt)) {
++	case 1:
++		__this_cpu_write(*lgrw->reader_refcnt, 0);
++		lg_local_unlock(&lgrw->lglock);
++		return;
++	case FALLBACK_BASE:
++		__this_cpu_write(*lgrw->reader_refcnt, 0);
++		read_unlock(&lgrw->fallback_rwlock);
++		rwlock_release(&lg->lock_dep_map, 1, _RET_IP_);
++		break;
++	default:
++		__this_cpu_dec(*lgrw->reader_refcnt);
++		break;
++	}
++
++	preempt_enable();
++}
++EXPORT_SYMBOL(lg_rwlock_local_read_unlock);
++
++void lg_rwlock_global_write_lock(struct lgrwlock *lgrw)
++{
++	lg_global_lock(&lgrw->lglock);
++	write_lock(&lgrw->fallback_rwlock);
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_lock);
++
++void lg_rwlock_global_write_unlock(struct lgrwlock *lgrw)
++{
++	write_unlock(&lgrw->fallback_rwlock);
++	lg_global_unlock(&lgrw->lglock);
++}
++EXPORT_SYMBOL(lg_rwlock_global_write_unlock);
++
++/* special write-site APIs allolw nested reader in such write-site */
++void __lg_rwlock_global_read_write_lock(struct lgrwlock *lgrw)
++{
++	lg_rwlock_global_write_lock(lgrw);
++	__this_cpu_write(*lgrw->reader_refcnt, 1);
 +}
 +
- /**
-  * dev_pm_qos_hide_flags - Hide PM QoS flags of a device from user space.
-  * @dev: Device whose PM QoS flags are to be hidden from user space.
-@@ -704,12 +689,7 @@ void dev_pm_qos_hide_flags(struct device
- {
- 	pm_runtime_get_sync(dev);
- 	mutex_lock(&dev_pm_qos_mtx);
--
--	if (dev->power.qos && dev->power.qos->flags_req) {
--		pm_qos_sysfs_remove_flags(dev);
--		__dev_pm_qos_drop_user_request(dev, DEV_PM_QOS_FLAGS);
--	}
--
-+	__dev_pm_qos_hide_flags(dev);
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	pm_runtime_put(dev);
- }
-@@ -729,7 +709,7 @@ int dev_pm_qos_update_flags(struct devic
- 	pm_runtime_get_sync(dev);
- 	mutex_lock(&dev_pm_qos_mtx);
- 
--	if (!dev->power.qos || !dev->power.qos->flags_req) {
-+	if (IS_ERR_OR_NULL(dev->power.qos) || !dev->power.qos->flags_req) {
- 		ret = -EINVAL;
- 		goto out;
- 	}
-Index: linux-pm/drivers/base/power/power.h
-===================================================================
---- linux-pm.orig/drivers/base/power/power.h
-+++ linux-pm/drivers/base/power/power.h
-@@ -4,7 +4,7 @@ static inline void device_pm_init_common
- {
- 	if (!dev->power.early_init) {
- 		spin_lock_init(&dev->power.lock);
--		dev->power.power_state = PMSG_INVALID;
-+		dev->power.qos = NULL;
- 		dev->power.early_init = true;
- 	}
- }
-@@ -56,14 +56,10 @@ extern void device_pm_move_last(struct d
- 
- static inline void device_pm_sleep_init(struct device *dev) {}
- 
--static inline void device_pm_add(struct device *dev)
--{
--	dev_pm_qos_constraints_init(dev);
--}
-+static inline void device_pm_add(struct device *dev) {}
- 
- static inline void device_pm_remove(struct device *dev)
- {
--	dev_pm_qos_constraints_destroy(dev);
- 	pm_runtime_remove(dev);
- }
- 
-Index: linux-pm/drivers/base/power/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/base/power/sysfs.c
-+++ linux-pm/drivers/base/power/sysfs.c
-@@ -708,6 +708,7 @@ void rpm_sysfs_remove(struct device *dev
- 
- void dpm_sysfs_remove(struct device *dev)
- {
-+	dev_pm_qos_constraints_destroy(dev);
- 	rpm_sysfs_remove(dev);
- 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
- 	sysfs_remove_group(&dev->kobj, &pm_attr_group);
++void __lg_rwlock_global_read_write_unlock(struct lgrwlock *lgrw)
++{
++	__this_cpu_write(*lgrw->reader_refcnt, 0);
++	lg_rwlock_global_write_unlock(lgrw);
++}
+-- 
+1.7.7.6
