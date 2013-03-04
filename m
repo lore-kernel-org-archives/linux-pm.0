@@ -1,63 +1,99 @@
-From: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH V2] lglock: add read-preference local-global rwlock
-Date: Sun, 3 Mar 2013 18:40:56 +0100
-Message-ID: <20130303174056.GA30176@redhat.com>
-References: <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com> <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com> <20130301182854.GA3631@redhat.com> <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com> <5131FB4C.7070408@cn.fujitsu.com> <20130302172003.GC29769@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130302172003.GC29769@redhat.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Michel Lespinasse <walken@google.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+From: Illyas Mansoor <illyas.mansoor@intel.com>
+Subject: [PATCH] x86: fix idle notifier not being called in CONFIG_X86_32
+Date: Mon,  4 Mar 2013 11:11:13 +0530
+Message-ID: <1362375673-29287-1-git-send-email-illyas.mansoor@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:37438 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805Ab3CDFmI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Mar 2013 00:42:08 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
+Cc: X86 <x86@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Matthew Garrett <matthew.garrett@nebula.com>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Illyas Mansoor <illyas.mansoor@intel.com>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>, richard@nod.at, josh@joshtriplett.org, "Kumar P, Mahesh" <mahesh.kumar.p@intel.com>, "Sil, Dyut K" <dyut.k.sil@intel.com>
 
-On 03/02, Oleg Nesterov wrote:
->
-> On 03/02, Lai Jiangshan wrote:
-> >
-> > +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
-> > +{
-> > +	switch (__this_cpu_read(*lgrw->reader_refcnt)) {
-> > +	case 1:
-> > +		__this_cpu_write(*lgrw->reader_refcnt, 0);
-> > +		lg_local_unlock(&lgrw->lglock);
-> > +		return;
-> > +	case FALLBACK_BASE:
-> > +		__this_cpu_write(*lgrw->reader_refcnt, 0);
-> > +		read_unlock(&lgrw->fallback_rwlock);
-> > +		rwlock_release(&lg->lock_dep_map, 1, _RET_IP_);
->
-> I guess "case 1:" should do rwlock_release() too.
->
-> Otherwise, at first glance looks correct...
->
-> However, I still think that FALLBACK_BASE only adds the unnecessary
-> complications. But even if I am right this is subjective of course, please
-> feel free to ignore.
+Idle notifier not registered if CONFIG_X86_32 is defined,
+those callbacks are empty for X86_32 platform.
 
-Yes, but...
+ifdef CONFIG_X86_64
+ void enter_idle(void);
+ void exit_idle(void);
+else
+static inline void enter_idle(void) { }
+static inline void exit_idle(void) { }
+static inline void __exit_idle(void) { }
+endif
 
-> And btw, I am not sure about lg->lock_dep_map, perhaps we should use
-> fallback_rwlock->dep_map ?
->
-> We need rwlock_acquire_read() even in the fast-path, and this acquire_read
-> should be paired with rwlock_acquire() in _write_lock(), but it does
-> spin_acquire(lg->lock_dep_map). Yes, currently this is the same (afaics)
-> but perhaps fallback_rwlock->dep_map would be more clean.
+Make this work on X86_32 platforms by
+removing the restriction for X86_64
 
-Please ignore this part.
+Signed-off-by: Dyut Kumar Sil <dyut.k.sil@intel.com>
+Signed-off-by: Ashish K <ashish.k@intel.com>
+Signed-off-by: Illyas Mansoor <illyas.mansoor@intel.com>
+Reviewed-by: Cuesta, Fernand <fernand.cuesta@intel.com>
+Reviewed-by: Cuesta, Fernand <fernand.cuesta@intel.com>
+Reviewed-by: Kumar P, Mahesh <mahesh.kumar.p@intel.com>
+Tested-by: Cuesta, Fernand <fernand.cuesta@intel.com>
+---
+ arch/x86/include/asm/idle.h |    6 ------
+ arch/x86/kernel/process.c   |    4 ----
+ 2 files changed, 10 deletions(-)
 
-I missed that lg_rwlock_global_write_lock() relies on lg_global_lock(),
-and I just noticed that it does rwlock_acquire(lg->lock_dep_map).
-
-Hmm. But then I do not understand the lglock annotations. Obviously,
-rwlock_acquire_read() in lg_local_lock() can't even detect the simplest
-deadlock, say, lg_local_lock(LOCK) + lg_local_lock(LOCK). Not to mention
-spin_lock(X) + lg_local_lock(Y) vs lg_local_lock(Y) + spin_lock(X).
-
-OK, I understand that it is not easy to make these annotations correct...
-
-Oleg.
+diff --git a/arch/x86/include/asm/idle.h b/arch/x86/include/asm/idle.h
+index c5d1785..489ac46 100644
+--- a/arch/x86/include/asm/idle.h
++++ b/arch/x86/include/asm/idle.h
+@@ -8,14 +8,8 @@ struct notifier_block;
+ void idle_notifier_register(struct notifier_block *n);
+ void idle_notifier_unregister(struct notifier_block *n);
+ 
+-#ifdef CONFIG_X86_64
+ void enter_idle(void);
+ void exit_idle(void);
+-#else /* !CONFIG_X86_64 */
+-static inline void enter_idle(void) { }
+-static inline void exit_idle(void) { }
+-static inline void __exit_idle(void) { }
+-#endif /* CONFIG_X86_64 */
+ 
+ void amd_e400_remove_cpu(int cpu);
+ 
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 14ae100..043e553 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -38,7 +38,6 @@
+  */
+ DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
+ 
+-#ifdef CONFIG_X86_64
+ static DEFINE_PER_CPU(unsigned char, is_idle);
+ static ATOMIC_NOTIFIER_HEAD(idle_notifier);
+ 
+@@ -53,7 +52,6 @@ void idle_notifier_unregister(struct notifier_block *n)
+ 	atomic_notifier_chain_unregister(&idle_notifier, n);
+ }
+ EXPORT_SYMBOL_GPL(idle_notifier_unregister);
+-#endif
+ 
+ struct kmem_cache *task_xstate_cachep;
+ EXPORT_SYMBOL_GPL(task_xstate_cachep);
+@@ -277,7 +275,6 @@ static inline void play_dead(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_X86_64
+ void enter_idle(void)
+ {
+ 	this_cpu_write(is_idle, 1);
+@@ -299,7 +296,6 @@ void exit_idle(void)
+ 		return;
+ 	__exit_idle();
+ }
+-#endif
+ 
+ /*
+  * The idle thread. There's no useful work to be
+-- 
+1.7.9.5
 
