@@ -1,99 +1,64 @@
-From: Illyas Mansoor <illyas.mansoor@intel.com>
-Subject: [PATCH] x86: fix idle notifier not being called in CONFIG_X86_32
-Date: Mon,  4 Mar 2013 11:11:13 +0530
-Message-ID: <1362375673-29287-1-git-send-email-illyas.mansoor@intel.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/3] Thermal: dove: Convert to devm_ioremap_resource()
+Date: Mon,  4 Mar 2013 12:15:32 +0530
+Message-ID: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:37438 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805Ab3CDFmI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Mar 2013 00:42:08 -0500
+Received: from mail-da0-f50.google.com ([209.85.210.50]:64218 "EHLO
+	mail-da0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750727Ab3CDG4C (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 01:56:02 -0500
+Received: by mail-da0-f50.google.com with SMTP id h15so2363239dan.23
+        for <linux-pm@vger.kernel.org>; Sun, 03 Mar 2013 22:56:01 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>
-Cc: X86 <x86@kernel.org>, Len Brown <lenb@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Matthew Garrett <matthew.garrett@nebula.com>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Illyas Mansoor <illyas.mansoor@intel.com>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>, richard@nod.at, josh@joshtriplett.org, "Kumar P, Mahesh" <mahesh.kumar.p@intel.com>, "Sil, Dyut K" <dyut.k.sil@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, thierry.reding@avionic-design.de, sachin.kamat@linaro.org, Andrew Lunn <andrew@lunn.ch>
 
-Idle notifier not registered if CONFIG_X86_32 is defined,
-those callbacks are empty for X86_32 platform.
+Use the newly introduced devm_ioremap_resource() instead of
+devm_request_and_ioremap() which provides more consistent error handling.
 
-ifdef CONFIG_X86_64
- void enter_idle(void);
- void exit_idle(void);
-else
-static inline void enter_idle(void) { }
-static inline void exit_idle(void) { }
-static inline void __exit_idle(void) { }
-endif
+devm_ioremap_resource() provides its own error messages; so all explicit
+error messages can be removed from the failure code paths.
 
-Make this work on X86_32 platforms by
-removing the restriction for X86_64
-
-Signed-off-by: Dyut Kumar Sil <dyut.k.sil@intel.com>
-Signed-off-by: Ashish K <ashish.k@intel.com>
-Signed-off-by: Illyas Mansoor <illyas.mansoor@intel.com>
-Reviewed-by: Cuesta, Fernand <fernand.cuesta@intel.com>
-Reviewed-by: Cuesta, Fernand <fernand.cuesta@intel.com>
-Reviewed-by: Kumar P, Mahesh <mahesh.kumar.p@intel.com>
-Tested-by: Cuesta, Fernand <fernand.cuesta@intel.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Andrew Lunn <andrew@lunn.ch>
 ---
- arch/x86/include/asm/idle.h |    6 ------
- arch/x86/kernel/process.c   |    4 ----
- 2 files changed, 10 deletions(-)
+ drivers/thermal/dove_thermal.c |   16 ++++++----------
+ 1 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/idle.h b/arch/x86/include/asm/idle.h
-index c5d1785..489ac46 100644
---- a/arch/x86/include/asm/idle.h
-+++ b/arch/x86/include/asm/idle.h
-@@ -8,14 +8,8 @@ struct notifier_block;
- void idle_notifier_register(struct notifier_block *n);
- void idle_notifier_unregister(struct notifier_block *n);
+diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
+index 7b0bfa0..3078c40 100644
+--- a/drivers/thermal/dove_thermal.c
++++ b/drivers/thermal/dove_thermal.c
+@@ -143,22 +143,18 @@ static int dove_thermal_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
  
--#ifdef CONFIG_X86_64
- void enter_idle(void);
- void exit_idle(void);
--#else /* !CONFIG_X86_64 */
--static inline void enter_idle(void) { }
--static inline void exit_idle(void) { }
--static inline void __exit_idle(void) { }
--#endif /* CONFIG_X86_64 */
+-	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!priv->sensor) {
+-		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+-		return -EADDRNOTAVAIL;
+-	}
++	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->sensor))
++		return PTR_ERR(priv->sensor);
  
- void amd_e400_remove_cpu(int cpu);
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ 	if (!res) {
+ 		dev_err(&pdev->dev, "Failed to get platform resource\n");
+ 		return -ENODEV;
+ 	}
+-	priv->control = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!priv->control) {
+-		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+-		return -EADDRNOTAVAIL;
+-	}
++	priv->control = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->control))
++		return PTR_ERR(priv->control);
  
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 14ae100..043e553 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -38,7 +38,6 @@
-  */
- DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
- 
--#ifdef CONFIG_X86_64
- static DEFINE_PER_CPU(unsigned char, is_idle);
- static ATOMIC_NOTIFIER_HEAD(idle_notifier);
- 
-@@ -53,7 +52,6 @@ void idle_notifier_unregister(struct notifier_block *n)
- 	atomic_notifier_chain_unregister(&idle_notifier, n);
- }
- EXPORT_SYMBOL_GPL(idle_notifier_unregister);
--#endif
- 
- struct kmem_cache *task_xstate_cachep;
- EXPORT_SYMBOL_GPL(task_xstate_cachep);
-@@ -277,7 +275,6 @@ static inline void play_dead(void)
- }
- #endif
- 
--#ifdef CONFIG_X86_64
- void enter_idle(void)
- {
- 	this_cpu_write(is_idle, 1);
-@@ -299,7 +296,6 @@ void exit_idle(void)
- 		return;
- 	__exit_idle();
- }
--#endif
- 
- /*
-  * The idle thread. There's no useful work to be
+ 	ret = dove_init_sensor(priv);
+ 	if (ret) {
 -- 
-1.7.9.5
+1.7.4.1
 
