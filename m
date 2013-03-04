@@ -1,42 +1,56 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: how does serial driver suspend work
-Date: Mon, 4 Mar 2013 10:37:42 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1303041034060.1750-100000@iolanthe.rowland.org>
-References: <CANMsd03ckY9E_rAMPTivCSs5jkB-zarZZG4npA1hsK3aL5FCDA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Devendra Naga <devendra.aaru@gmail.com>
+Subject: [PATCH 1/2] thermal: rcar_thermal: propagate return value of thermal_zone_device_register
+Date: Mon,  4 Mar 2013 11:52:47 -0500
+Message-ID: <1362415968-2210-1-git-send-email-devendra.aaru@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:44962 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757973Ab3CDPho (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 10:37:44 -0500
-In-Reply-To: <CANMsd03ckY9E_rAMPTivCSs5jkB-zarZZG4npA1hsK3aL5FCDA@mail.gmail.com>
+Received: from mail-pb0-f50.google.com ([209.85.160.50]:33957 "EHLO
+	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756359Ab3CDQw7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 11:52:59 -0500
+Received: by mail-pb0-f50.google.com with SMTP id up1so3184442pbc.9
+        for <linux-pm@vger.kernel.org>; Mon, 04 Mar 2013 08:52:58 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ryan <ryanphilips19@googlemail.com>
-Cc: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc: Devendra Naga <devendra.aaru@gmail.com>
 
-On Mon, 4 Mar 2013, Ryan wrote:
+thermal_zone_device_register returns a value contained in the pointer itself
+use PTR_ERR to obtain the address and return it at the end.
 
-> Hello everyone,
-> 
-> Could anyone explain to me how does serial driver suspend work.
-> if i want to enable debug prints in suspend and resume functions. How
-> are they displayed on the console.
-> I could find a variable called "console_suspend_enabled". If this
-> variable is passed over the bootargs. Why does the kernel go to
-> suspend
-> without the serial driver not being suspend. Isnt all the drivers
-> required to go to suspend for the process to sleep.
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+---
+ drivers/thermal/rcar_thermal.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-If you put "no_console_suspend" on the kernel's boot command line, the 
-console device will not be suspended.  This is a debugging feature, 
-meant only for testing, not for normal use.  It's a big help for people 
-who want to debug problems in the suspend/resume code, because without 
-it there wouldn't be any way to see error messages during suspend.
-
-If you don't put "no_console_suspend" on the boot command line then the 
-console device will be suspended along with everything else.
-
-Alan Stern
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 28f0919..f1726c9 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -363,6 +363,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	struct resource *res, *irq;
+ 	int mres = 0;
+ 	int i;
++	int ret = -ENODEV;
+ 	int idle = IDLE_INTERVAL;
+ 
+ 	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
+@@ -441,6 +442,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 						idle);
+ 		if (IS_ERR(priv->zone)) {
+ 			dev_err(dev, "can't register thermal zone\n");
++			ret = PTR_ERR(priv->zone);
+ 			goto error_unregister;
+ 		}
+ 
+@@ -460,7 +462,7 @@ error_unregister:
+ 	rcar_thermal_for_each_priv(priv, common)
+ 		thermal_zone_device_unregister(priv->zone);
+ 
+-	return -ENODEV;
++	return ret;
+ }
+ 
+ static int rcar_thermal_remove(struct platform_device *pdev)
+-- 
+1.8.1.2
 
