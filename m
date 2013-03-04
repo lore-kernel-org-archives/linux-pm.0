@@ -1,209 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: governors: Avoid unnecessary per cpu timer interrupts
-Date: Mon,  4 Mar 2013 15:47:24 +0800
-Message-ID: <15bb56be43dd72924b734ea66775bb50bfe42fa5.1362382746.git.viresh.kumar@linaro.org>
-References: <cover.1362382746.git.viresh.kumar@linaro.org>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH v4 2/8] reset: Add reset controller API
+Date: Mon, 04 Mar 2013 09:33:27 +0100
+Message-ID: <1362386007.4988.34.camel@pizza.hi.pengutronix.de>
+References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
+	 <1361878774-6382-3-git-send-email-p.zabel@pengutronix.de>
+	 <513108F8.30902@wwwdotorg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:60974 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755335Ab3CDHrs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 02:47:48 -0500
-Received: by mail-pa0-f47.google.com with SMTP id bj3so3018313pad.20
-        for <linux-pm@vger.kernel.org>; Sun, 03 Mar 2013 23:47:48 -0800 (PST)
-In-Reply-To: <cover.1362382746.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1362382746.git.viresh.kumar@linaro.org>
-References: <cover.1362382746.git.viresh.kumar@linaro.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33708 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350Ab3CDIeB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 03:34:01 -0500
+In-Reply-To: <513108F8.30902@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rickard.andersson@stericsson.com, fabio.baltieri@linaro.org, tj@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: linux-arm-kernel@lists.infradead.org, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 
-Following patch has introduced per cpu timers or works for ondemand and
-conservative governors.
+Hi Stephen,
 
-	commit 2abfa876f1117b0ab45f191fb1f82c41b1cbc8fe
-	Author: Rickard Andersson <rickard.andersson@stericsson.com>
-	Date:   Thu Dec 27 14:55:38 2012 +0000
+Am Freitag, den 01.03.2013, 13:00 -0700 schrieb Stephen Warren:
+> On 02/26/2013 04:39 AM, Philipp Zabel wrote:
+> > This adds a simple API for devices to request being reset
+> > by separate reset controller hardware and implements the
+> > reset signal device tree binding.
+> 
+> > diff --git a/drivers/reset/core.c b/drivers/reset/core.c
+> 
+> > +int of_reset_simple_xlate(struct reset_controller_dev *rcdev,
+> > +			  const struct of_phandle_args *reset_spec, u32 *flags)
+> > +{
+> > +	if (WARN_ON(reset_spec->args_count < rcdev->of_reset_n_cells))
+> > +		return -EINVAL;
+> 
+> Would != make more sense than < ?
 
-	    cpufreq: handle SW coordinated CPUs
+I copied this from of_gpio_simple_xlate, because the parsing will work
+if args_count > of_reset_n_cells. In this case the device tree contains
+a #reset-cells larger than what the reset controller driver expects.
+Is this reason enough to assume the whole reset_spec is invalid?
 
-This causes additional unnecessary interrupts on all cpus when the load is
-recently evaluated by any other cpu. i.e. When load is recently evaluated by cpu
-x, we don't really need any other cpu to evaluate this load again for the next
-sampling_rate time.
+> > +
+> > +	if (reset_spec->args[0] >= rcdev->nr_resets)
+> > +		return -EINVAL;
+> > +
+> > +	if (flags)
+> > +		*flags = reset_spec->args[1];
+> 
+> if (flags)
+>     if (reset_spec->args_count > 1)
+>         *flags = reset_spec->args[1];
+>     else
+>         *flags = 0;
+> 
+> ?
 
-Some sort of code is present to avoid that but we are still getting timer
-interrupts for all cpus. A good way of avoiding this would be to modify delays
-for all cpus (policy->cpus) whenever any cpu has evaluated load.
+In gpiolib, of_get_named_gpio_flags clears the flags, so that the xlate
+implementations don't have to do it. The core doesn't use the flags, so
+this is not a problem. I don't see the need for
+of_get_named_reset_flags, since the reset consumer drivers shouldn't
+care for those. Maybe it would be better to remove the flags parameter
+from the xlate function altogether.
 
-This patch does this change and some related code cleanup.
+> > +struct reset_control *reset_control_get(struct device *dev, const char *id)
+> ...
+> > +	mutex_lock(&reset_controller_list_mutex);
+> > +	rcdev = NULL;
+> > +	list_for_each_entry(r, &reset_controller_list, list) {
+> > +		if (args.np == r->of_node) {
+> > +			rcdev = r;
+> > +			break;
+> > +		}
+> > +	}
+> > +	mutex_unlock(&reset_controller_list_mutex);
+> 
+> At this point, rcdev could be removed from that list, and perhaps even
+> start to point at free'd memory.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_conservative.c |  8 ++++---
- drivers/cpufreq/cpufreq_governor.c     | 39 ++++++++++++++++++++++++----------
- drivers/cpufreq/cpufreq_governor.h     |  2 ++
- drivers/cpufreq/cpufreq_ondemand.c     | 12 ++++++-----
- 4 files changed, 42 insertions(+), 19 deletions(-)
+I'll move the unlock down.
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index d86577f..77b60a7 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -107,7 +107,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 
- static void cs_dbs_timer(struct work_struct *work)
- {
--	struct delayed_work *dw = to_delayed_work(work);
- 	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
- 			struct cs_cpu_dbs_info_s, cdbs.work.work);
- 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
-@@ -116,12 +115,15 @@ static void cs_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
-+	bool modify_all = true;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
--	if (need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-+	if (!need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-+		modify_all = false;
-+	else
- 		dbs_check_cpu(dbs_data, cpu);
- 
--	schedule_delayed_work_on(smp_processor_id(), dw, delay);
-+	gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
- 	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
- }
- 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 7722505..f592f71 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -162,20 +162,38 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
- }
- EXPORT_SYMBOL_GPL(dbs_check_cpu);
- 
--static inline void dbs_timer_init(struct dbs_data *dbs_data, int cpu,
--				  unsigned int sampling_rate)
-+static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-+		unsigned int delay)
- {
--	int delay = delay_for_sampling_rate(sampling_rate);
- 	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
- 
--	schedule_delayed_work_on(cpu, &cdbs->work, delay);
-+	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
- }
- 
--static inline void dbs_timer_exit(struct dbs_data *dbs_data, int cpu)
-+void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-+		unsigned int delay, bool all_cpus)
- {
--	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-+	int i;
-+
-+	if (!all_cpus) {
-+		__gov_queue_work(smp_processor_id(), dbs_data, delay);
-+	} else {
-+		for_each_cpu(i, policy->cpus)
-+			__gov_queue_work(i, dbs_data, delay);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(gov_queue_work);
-+
-+static inline void gov_cancel_work(struct dbs_data *dbs_data,
-+		struct cpufreq_policy *policy)
-+{
-+	struct cpu_dbs_common_info *cdbs;
-+	int i;
- 
--	cancel_delayed_work_sync(&cdbs->work);
-+	for_each_cpu(i, policy->cpus) {
-+		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
-+		cancel_delayed_work_sync(&cdbs->work);
-+	}
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
-@@ -330,16 +348,15 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		/* Initiate timer time stamp */
- 		cpu_cdbs->time_stamp = ktime_get();
- 
--		for_each_cpu(j, policy->cpus)
--			dbs_timer_init(dbs_data, j, sampling_rate);
-+		gov_queue_work(dbs_data, policy,
-+				delay_for_sampling_rate(sampling_rate), true);
- 		break;
- 
- 	case CPUFREQ_GOV_STOP:
- 		if (dbs_data->cdata->governor == GOV_CONSERVATIVE)
- 			cs_dbs_info->enable = 0;
- 
--		for_each_cpu(j, policy->cpus)
--			dbs_timer_exit(dbs_data, j);
-+		gov_cancel_work(dbs_data, policy);
- 
- 		mutex_lock(&dbs_data->mutex);
- 		mutex_destroy(&cpu_cdbs->timer_mutex);
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 6301790..9e3d310 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -192,4 +192,6 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
- 		unsigned int sampling_rate);
- int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		struct common_dbs_data *cdata, unsigned int event);
-+void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-+		unsigned int delay, bool all_cpus);
- #endif /* _CPUFREQ_GOVERNER_H */
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index e76f4f8..04f81d8 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -216,7 +216,6 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
- 
- static void od_dbs_timer(struct work_struct *work)
- {
--	struct delayed_work *dw = to_delayed_work(work);
- 	struct od_cpu_dbs_info_s *dbs_info =
- 		container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
- 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
-@@ -225,10 +224,13 @@ static void od_dbs_timer(struct work_struct *work)
- 	struct dbs_data *dbs_data = dbs_info->cdbs.cur_policy->governor_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	int delay = 0, sample_type = core_dbs_info->sample_type;
-+	bool modify_all = true;
- 
- 	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
--	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate))
-+	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate)) {
-+		modify_all = false;
- 		goto max_delay;
-+	}
- 
- 	/* Common NORMAL_SAMPLE setup */
- 	core_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-@@ -250,7 +252,7 @@ max_delay:
- 		delay = delay_for_sampling_rate(od_tuners->sampling_rate
- 				* core_dbs_info->rate_mult);
- 
--	schedule_delayed_work_on(smp_processor_id(), dw, delay);
-+	gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy, delay, modify_all);
- 	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
- }
- 
-@@ -308,8 +310,8 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
- 			cancel_delayed_work_sync(&dbs_info->cdbs.work);
- 			mutex_lock(&dbs_info->cdbs.timer_mutex);
- 
--			schedule_delayed_work_on(cpu, &dbs_info->cdbs.work,
--					usecs_to_jiffies(new_rate));
-+			gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy,
-+					usecs_to_jiffies(new_rate), true);
- 
- 		}
- 		mutex_unlock(&dbs_info->cdbs.timer_mutex);
--- 
-1.7.12.rc2.18.g61b472e
+> > +	of_node_put(args.np);
+> > +
+> > +	if (!rcdev)
+> > +		return ERR_PTR(-ENODEV);
+> > +
+> > +	rstc_id = rcdev->of_xlate(rcdev, &args, NULL);
+> > +	if (rstc_id < 0)
+> > +		return ERR_PTR(rstc_id);
+> > +
+> > +	try_module_get(rcdev->owner);
+> 
+> What about error-handling here?
+>
+> I think you want to drop reset_controller_list_mutex only after the call
+> to try_module_get()?
+
+I will.
+
+> > +static int devm_reset_control_match(struct device *dev, void *res, void *data)
+> > +{
+> > +	struct reset_control **rstc = res;
+> > +	if (!rstc || !*rstc) {
+> > +		WARN_ON(!rstc || !*rstc);
+> 
+> I think you can if (WARN_ON(...)).
+
+Yes.
+
+> I'm not sure if the error-checks are quite right though;
+> reset_control_get always returns an error-pointer for errors, never
+> NULL, so the pointer can't ever be NULL. If it somehow was (e.g. client
+> usage error), then that NULL pointer would never match anything, so the
+> error-check still wouldn't be useful.
+
+The void *res parameter of dr_match_t is given the data field of struct
+devres (dr->data) when called by devres_release. A few subsystems do the
+same check, so I figured there could be other devres managed resources
+that could have dr->data == NULL. Looking at devres.c again, this
+doesn't really seem to be the case. I'll drop it.
+
+> I'm not sure why this is a ** here; below in devm_reset_control_put()
+> you pass a just a *; are you expected to pass &rstc there instead?
+
+dr->data is filled in and returned by devres_alloc in
+devm_reset_control_get and contains a struct reset_control **ptr.
+So that should be right, but ...
+
+reset_control_get right now always allocates a new struct reset_control,
+instead of keeping them around in a list and just returning a new
+reference for already existing reset_controls, which kind of defeats the
+purpose of the above. The idea was that drivers sharing a reset line
+should also use the same struct reset_control.
+
+thanks
+Philipp
 
