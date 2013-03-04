@@ -1,36 +1,30 @@
-From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH v2] [libata] Avoid specialized TLA's in ZPODD's Kconfig
-Date: Mon, 04 Mar 2013 17:14:55 -0500
-Message-ID: <51351CDF.6070003@pobox.com>
-References: <1663657.ypAtqGpGAq@vostro.rjw.lan> <1781256.mPQbtiUPYR@vostro.rjw.lan> <CA+55aFyzjN_wMH+2RCEA+aNLY0Z7fn4YU7VOtTALbgngn1+vCw@mail.gmail.com> <2223198.XmyRLgb3Gv@vostro.rjw.lan> <20130226161049.GA9303@kahuna> <CA+55aFy24fp+9zXiDmAgvsz6YvWQh2L0BAJ2hAhF7cNSdyMd8w@mail.gmail.com> <CA+55aFyu5woJsH2y3y=w4UFneOG8hKz_cLXgZQbJzn5asn8=hQ@mail.gmail.com> <20130226163712.GA30433@htj.dyndns.org> <CA+55aFyFRbMX9G_0Mv0nUZgw9mHAPzE0zCw5mCSbGG_r1diFHg@mail.gmail.com> <20130226165813.GB30433@htj.dyndns.org> <512CF809.8010102@pobox.com> <5130052E.9070403@intel.com> <5130A8DF.7080709@cogentembedded.com> <51318775.1060309@intel.com>
+From: =?ISO-8859-1?Q?=22Rodolfo_Garc=EDa_Pe=F1as_=28kix=29=22?=
+	<kix@kix.es>
+Subject: suspend-utils: support for UUID
+Date: Mon, 04 Mar 2013 23:37:01 +0100
+Message-ID: <5135220D.8080407@kix.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f170.google.com ([209.85.216.170]:42984 "EHLO
-	mail-qc0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643Ab3CDWXO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 17:23:14 -0500
-In-Reply-To: <51318775.1060309@intel.com>
+Received: from ks399202.kimsufi.com ([37.59.37.136]:60961 "EHLO
+	ks399202.kimsufi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758895Ab3CDWq3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 17:46:29 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Tejun Heo <tj@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 
-On 03/02/2013 12:00 AM, Aaron Lu wrote:
-> ODD is not a common TLA for non-ATA people so they will get confused
-> by its meaning when they are configuring the kernel. This patch fixed
-> this problem by using ODD only after stating what it is.
->
-> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-> ---
-> v2:
-> Add a space before open paren as suggested by Sergei Shtylyov.
->
->   drivers/ata/Kconfig | 13 +++++++------
->   1 file changed, 7 insertions(+), 6 deletions(-)
+Hi,
 
-applied
+what do you think about to implement UUID support for suspend-utils?
 
+Now, suspend-utils try to open the file specified in the configuration file:
 
+http://git.kernel.org/cgit/linux/kernel/git/rafael/suspend-utils.git/tree/suspend.c#n2417
 
+If the config file con
+-- 
+||// //\\// Rodolfo "kix" Garcia
+||\\// //\\ http://www.kix.es/
