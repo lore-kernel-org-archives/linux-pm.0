@@ -1,31 +1,31 @@
 From: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [PATCH 2/3] Thermal: rcar: Convert to devm_ioremap_resource()
-Date: Mon, 4 Mar 2013 08:06:29 +0100
-Message-ID: <20130304070629.GF16261@avionic-0098.mockup.avionic-design.de>
+Subject: Re: [PATCH 3/3] Thermal: kirkwood: Convert to devm_ioremap_resource()
+Date: Mon, 4 Mar 2013 08:06:56 +0100
+Message-ID: <20130304070656.GG16261@avionic-0098.mockup.avionic-design.de>
 References: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
- <1362379534-30662-2-git-send-email-sachin.kamat@linaro.org>
+ <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="O98KdSgI27dgYlM5"
+	protocol="application/pgp-signature"; boundary="ulDeV4rPMk/y39in"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.17.8]:62433 "EHLO
+Received: from moutng.kundenserver.de ([212.227.126.171]:55995 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750803Ab3CDHGj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 02:06:39 -0500
+	with ESMTP id S1752757Ab3CDHHB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 02:07:01 -0500
 Content-Disposition: inline
-In-Reply-To: <1362379534-30662-2-git-send-email-sachin.kamat@linaro.org>
+In-Reply-To: <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
 
---O98KdSgI27dgYlM5
+--ulDeV4rPMk/y39in
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 04, 2013 at 12:15:33PM +0530, Sachin Kamat wrote:
+On Mon, Mar 04, 2013 at 12:15:34PM +0530, Sachin Kamat wrote:
 > Use the newly introduced devm_ioremap_resource() instead of
 > devm_request_and_ioremap() which provides more consistent error handling.
 >=20
@@ -33,70 +33,54 @@ On Mon, Mar 04, 2013 at 12:15:33PM +0530, Sachin Kamat wrote:
 > error messages can be removed from the failure code paths.
 >=20
 > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 > ---
->  drivers/thermal/rcar_thermal.c |   16 ++++++----------
->  1 files changed, 6 insertions(+), 10 deletions(-)
+>  drivers/thermal/kirkwood_thermal.c |    8 +++-----
+>  1 files changed, 3 insertions(+), 5 deletions(-)
 >=20
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_therma=
-l.c
-> index 28f0919..b28990a 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -399,11 +399,9 @@ static int rcar_thermal_probe(struct platform_device=
- *pdev)
->  		/*
->  		 * rcar_has_irq_support() will be enabled
->  		 */
-> -		common->base =3D devm_request_and_ioremap(dev, res);
-> -		if (!common->base) {
-> -			dev_err(dev, "Unable to ioremap thermal register\n");
-> -			return -ENOMEM;
-> -		}
-> +		common->base =3D devm_ioremap_resource(dev, res);
-> +		if (IS_ERR(common->base))
-> +			return PTR_ERR(common->base);
+> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwoo=
+d_thermal.c
+> index 65cb4f0..e5500ed 100644
+> --- a/drivers/thermal/kirkwood_thermal.c
+> +++ b/drivers/thermal/kirkwood_thermal.c
+> @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_devi=
+ce *pdev)
+>  	if (!priv)
+>  		return -ENOMEM;
 > =20
->  		/* enable temperature comparation */
->  		rcar_thermal_common_write(common, ENR, 0x00030303);
-> @@ -422,11 +420,9 @@ static int rcar_thermal_probe(struct platform_device=
- *pdev)
->  			return -ENOMEM;
->  		}
+> -	priv->sensor =3D devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv->sensor) {
+> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> -		return -EADDRNOTAVAIL;
+> -	}
+> +	priv->sensor =3D devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->sensor))
+> +		return PTR_ERR(priv->sensor);
 > =20
-> -		priv->base =3D devm_request_and_ioremap(dev, res);
-> -		if (!priv->base) {
-> -			dev_err(dev, "Unable to ioremap priv register\n");
-> -			return -ENOMEM;
-> -		}
-> +		priv->base =3D devm_ioremap_resource(dev, res);
-> +		if (IS_ERR(priv->base))
-> +			return PTR_ERR(priv->base);
-> =20
->  		priv->common =3D common;
->  		priv->id =3D i;
+>  	thermal =3D thermal_zone_device_register("kirkwood_thermal", 0, 0,
+>  					       priv, &ops, NULL, 0, 0);
 
 Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
 
---O98KdSgI27dgYlM5
+--ulDeV4rPMk/y39in
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.19 (GNU/Linux)
 
-iQIcBAEBAgAGBQJRNEf1AAoJEN0jrNd/PrOhsNIQAJmFski4VULaXdPgBXj0FTA5
-n5dz08k+18rtSpe8nrsqWXL5uuYyhblDYLrwXz719wrSZIFdC5z732yaVLX57exf
-59YLDBliLMJkPy453hNwmfhyl8Xua+AFnVXUSZ8g/gM6eiV6G/5Zbct5X+VQpROZ
-SWzu385zLYaUzyGGG7IRCV7yCzHRR1Ad86L5X7Ur+Zz0RBTX8FWHOGhYXuiXXj0v
-5q1PkEg4W3AaaI/NZ8FMl0pPN9CU8fdu4nvp80zIZv4MV5uzrKrcp2hDg0uGCMKS
-v74zoBXpTf1/lq9cVy7ScM2R/DOzllbf9D5dkVqCQjP5P4ZZuehPn7cMHnBlot6A
-DJI35CVWbHPaCZdc3O14QMkTPBCTl6wkb1Sme6Ov4shyzv4bqi0QOtiL4Onx7eds
-MGefYzCQIAI5YiWKoSfo4htso3CCssNAMzY3wdH1Ujxd0B2N9bEugx+a+DoJx0Yn
-VO0lkChy7g6C2fMLcUftVY/J3St/ve0WK3njc4i80ge0zz8i7RizVn8FzSJYgczK
-ET4NZAlaYL5capptWzIpRy/n7DwABdVF9JIxQ1K4tSvTc9pMWvrF+Z23/TfZXHGF
-she65QBPvfxVKXnqn03ceroKkjrZ5HgP36Oji4Y4R6LzvKApXfDmpwUSzKtJW7mT
-V9f0L4si1moU1ZoDODAq
-=MuH+
+iQIcBAEBAgAGBQJRNEgQAAoJEN0jrNd/PrOhCDoP/3F57Eiqe1iXx3uiojS6eQ4l
+NmsH34tPxzMFObvaLTIzj7SAedHXY2Z20og74TbYH0TQXsSP/1+mAEoh4QJ22Kxs
+AYQ4nU99cQXoeiWB0nXBBKc3EcDHNIXFd/BoyQwv233FzbmONAMqNtelG+pHGXK1
++KiwWJVuooIPYT8SpmYHWuAL61LVGhiJ8qIE2P1blR5lee0aNCQA/DOF7dPBzWPK
+AKdnf2TLCiztGoNWkqXtzZB0xAzaZmQhwe4gY3wbptcL7YdSaaJESKqYZjitV28H
+xoHt0QZCFIVHTHFdqpPPCnSnbcC0QsTjZ9vqkrhLwl6J7xMHFg603lVigPTBjeGA
+RdYuIEdcCL6+xdtf19jYmvehLwLJgw+uyLqy9tqSndEGhsy4r3cGFgBwtHfOW+qK
+pV0DdT48rV5s6jVWYk34ToPPVMKNdV1luIA+O19QAUKKpen7hlUnHQf3jTKvS087
+C1BqnYU6DsvtXeW4j4Ierci6bZ9uanC/OCJlRNp0lAHS+XxK0GAZtFv+yxjbt3T+
+k23yVEaOy5zjWajhoGgJ2KwyzseEJb6zWxn/0GdQJWGMX5+iEBauTwmEm6H7SaXp
+v1StAOm5ZdevGhmFw1uLdCfQmtNsR+3ylNV3tniR92YG0nCaEpNRwRcFAKZuvgYn
+KA7m2JNdLtq13Px4dFgO
+=8Dpl
 -----END PGP SIGNATURE-----
 
---O98KdSgI27dgYlM5--
+--ulDeV4rPMk/y39in--
