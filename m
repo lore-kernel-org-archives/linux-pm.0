@@ -1,86 +1,66 @@
-From: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [PATCH 3/3] Thermal: kirkwood: Convert to devm_ioremap_resource()
-Date: Mon, 4 Mar 2013 08:06:56 +0100
-Message-ID: <20130304070656.GG16261@avionic-0098.mockup.avionic-design.de>
-References: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
- <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ulDeV4rPMk/y39in"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.126.171]:55995 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752757Ab3CDHHB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Mar 2013 02:07:01 -0500
-Content-Disposition: inline
-In-Reply-To: <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/4] CPUFreq: Implement per policy instances of governors
+Date: Mon,  4 Mar 2013 15:37:52 +0800
+Message-ID: <cover.1362381470.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
 
+This is targetted for 3.10-rc1 or linux-next just after the merge window.
 
---ulDeV4rPMk/y39in
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+All patches are pushed here for others to apply:
+http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-3.10
 
-On Mon, Mar 04, 2013 at 12:15:34PM +0530, Sachin Kamat wrote:
-> Use the newly introduced devm_ioremap_resource() instead of
-> devm_request_and_ioremap() which provides more consistent error handling.
->=20
-> devm_ioremap_resource() provides its own error messages; so all explicit
-> error messages can be removed from the failure code paths.
->=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-> ---
->  drivers/thermal/kirkwood_thermal.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwoo=
-d_thermal.c
-> index 65cb4f0..e5500ed 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_devi=
-ce *pdev)
->  	if (!priv)
->  		return -ENOMEM;
-> =20
-> -	priv->sensor =3D devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv->sensor) {
-> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv->sensor =3D devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->sensor))
-> +		return PTR_ERR(priv->sensor);
-> =20
->  	thermal =3D thermal_zone_device_register("kirkwood_thermal", 0, 0,
->  					       priv, &ops, NULL, 0, 0);
+Currently, there can't be multiple instances of single governor_type. If we have
+a multi-package system, where we have multiple instances of struct policy (per
+package), we can't have multiple instances of same governor. i.e. We can't have
+multiple instances of ondemand governor for multiple packages.
 
-Reviewed-by: Thierry Reding <thierry.reding@avionic-design.de>
+Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+governor-name/. Which again reflects that there can be only one instance of a
+governor_type in the system.
 
---ulDeV4rPMk/y39in
-Content-Type: application/pgp-signature
+This is a bottleneck for multicluster system, where we want different packages
+to use same governor type, but with different tunables.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+This patchset is inclined towards fixing this issue. Now we will create
+governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
+struct policy alive at any moment. For others the interface is kept same:
+cpu/cpufreq/<gov>.
 
-iQIcBAEBAgAGBQJRNEgQAAoJEN0jrNd/PrOhCDoP/3F57Eiqe1iXx3uiojS6eQ4l
-NmsH34tPxzMFObvaLTIzj7SAedHXY2Z20og74TbYH0TQXsSP/1+mAEoh4QJ22Kxs
-AYQ4nU99cQXoeiWB0nXBBKc3EcDHNIXFd/BoyQwv233FzbmONAMqNtelG+pHGXK1
-+KiwWJVuooIPYT8SpmYHWuAL61LVGhiJ8qIE2P1blR5lee0aNCQA/DOF7dPBzWPK
-AKdnf2TLCiztGoNWkqXtzZB0xAzaZmQhwe4gY3wbptcL7YdSaaJESKqYZjitV28H
-xoHt0QZCFIVHTHFdqpPPCnSnbcC0QsTjZ9vqkrhLwl6J7xMHFg603lVigPTBjeGA
-RdYuIEdcCL6+xdtf19jYmvehLwLJgw+uyLqy9tqSndEGhsy4r3cGFgBwtHfOW+qK
-pV0DdT48rV5s6jVWYk34ToPPVMKNdV1luIA+O19QAUKKpen7hlUnHQf3jTKvS087
-C1BqnYU6DsvtXeW4j4Ierci6bZ9uanC/OCJlRNp0lAHS+XxK0GAZtFv+yxjbt3T+
-k23yVEaOy5zjWajhoGgJ2KwyzseEJb6zWxn/0GdQJWGMX5+iEBauTwmEm6H7SaXp
-v1StAOm5ZdevGhmFw1uLdCfQmtNsR+3ylNV3tniR92YG0nCaEpNRwRcFAKZuvgYn
-KA7m2JNdLtq13Px4dFgO
-=8Dpl
------END PGP SIGNATURE-----
+@Rafael: Clearly, I don't want to have following patch: "cpufreq: Add Kconfig
+option to enable/disable have_multiple_policies" and added it because of comment
+from Borislov against which nobody else replied :)
 
---ulDeV4rPMk/y39in--
+So, please drop it if you agree over my comments with earlier version.
+
+V2->V3:
+- Fixed value of CPUFREQ_GOV_POLICY_EXIT in the correct patch
+- Drop indentation fixes from intel_pstate.c
+
+V1->V2:
+- Few patches from V1 are already picked up by Rafael for 3.9-rc1
+- Last two patches are new
+- Added dbs_data->exit() routines to free up memory used for struct tuners.
+
+Viresh Kumar (4):
+  cpufreq: Add per policy governor-init/exit infrastructure
+  cpufreq: governor: Implement per policy instances of governors
+  cpufreq: Get rid of "struct global_attr"
+  cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+
+ drivers/cpufreq/Kconfig                |   3 +
+ drivers/cpufreq/acpi-cpufreq.c         |   9 +-
+ drivers/cpufreq/cpufreq.c              |  27 +++--
+ drivers/cpufreq/cpufreq_conservative.c | 148 +++++++++++++---------
+ drivers/cpufreq/cpufreq_governor.c     | 159 ++++++++++++++----------
+ drivers/cpufreq/cpufreq_governor.h     |  43 +++++--
+ drivers/cpufreq/cpufreq_ondemand.c     | 216 +++++++++++++++++++--------------
+ drivers/cpufreq/intel_pstate.c         |  20 +--
+ include/linux/cpufreq.h                |  44 ++++---
+ 9 files changed, 397 insertions(+), 272 deletions(-)
+
+-- 
+1.7.12.rc2.18.g61b472e
