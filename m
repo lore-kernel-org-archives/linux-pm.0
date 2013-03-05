@@ -1,29 +1,86 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH linux-next] cpufreq: conservative: Fix sampling_down_factor
- functionality
-Date: Tue, 05 Mar 2013 22:37:33 +0200
-Message-ID: <5136578D.3040908@semaphore.gr>
-References: <51351CC3.4010301@semaphore.gr> <CAOh2x=m0KLbjGKvLvTH7-yQb4SU5-v=-r4Ba3LSZz=NvfvO6mg@mail.gmail.com> <51358117.9060902@semaphore.gr> <5135FD01.8060306@verisign.com> <5135FF50.4020001@verisign.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/4][V2] time : set broadcast irq affinity
+Date: Tue, 5 Mar 2013 21:40:09 +0100 (CET)
+Message-ID: <alpine.LFD.2.02.1303052135080.22263@ionos>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5135FF50.4020001@verisign.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: David C Niemi <dniemi@verisign.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:39046 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755276Ab3CEUkW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Mar 2013 15:40:22 -0500
+In-Reply-To: <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
 
-Hi David,
-On 03/05/2013 04:21 PM, David C Niemi wrote:
->
-> I should clarify -- I wrote the sampling_down_factor in the *ondemand* governor.  I chose the name of the parameter based on the vaguely similar parameter in the conservative governor, but the documentation that was referenced (about it only applying at top speed and the comment about skipping evaluation opportunities when it is active) was written by me in reference to the ondemand governor.  It could be that someone backported some of the ondemand sampling_down_factor's behavior to the conservative governor.
->
-> I'd like to ask -- what is the intended use of the conservative governor these days as differentiated from the ondemand governor?  At one time it seemed more oriented towards power savings, but the ondemand governor had picked up most or all of its power-saving features.
+On Sat, 2 Mar 2013, Daniel Lezcano wrote:
+> When a cpu goes to a deep idle state where its local timer is shutdown,
+> it notifies the time frame work to use the broadcast timer instead.
+> 
+> Unfortunately, the broadcast device could wake up any CPU, including an
+> idle one which is not concerned by the wake up at all.
+> 
+> This implies, in the worst case, an idle CPU will wake up to send an IPI
+> to another idle cpu.
+> 
+> This patch solves this by setting the irq affinity to the cpu concerned
+> by the nearest timer event, by this way, the CPU which is wake up is
+> guarantee to be the one concerned by the next event and we are safe with
+> unnecessary wakeup for another idle CPU.
+> 
+> As the irq affinity is not supported by all the archs, a flag is needed
+> to specify which clocksource can handle it : CLOCK_EVT_FEAT_DYNIRQ
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  include/linux/clockchips.h   |    5 +++++
+>  kernel/time/tick-broadcast.c |   40 +++++++++++++++++++++++++++++++++-------
+>  2 files changed, 38 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+> index 6634652..c93e2a6 100644
+> --- a/include/linux/clockchips.h
+> +++ b/include/linux/clockchips.h
+> @@ -55,6 +55,11 @@ enum clock_event_nofitiers {
+>  #define CLOCK_EVT_FEAT_C3STOP		0x000008
+>  #define CLOCK_EVT_FEAT_DUMMY		0x000010
+>  
+> +/*
+> + * Clock event device can set its irq affinity dynamically
+> + */
+> +#define CLOCK_EVT_FEAT_DYNIRQ		0x000020
+> +
+>  /**
+>   * struct clock_event_device - clock event device descriptor
+>   * @event_handler:	Assigned by the framework to be called by the low
+> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+> index 6197ac0..9ca8ff5 100644
+> --- a/kernel/time/tick-broadcast.c
+> +++ b/kernel/time/tick-broadcast.c
+> @@ -406,13 +406,37 @@ struct cpumask *tick_get_broadcast_oneshot_mask(void)
+>  	return to_cpumask(tick_broadcast_oneshot_mask);
+>  }
+>  
+> -static int tick_broadcast_set_event(struct clock_event_device *bc,
+> +/*
+> + * Set broadcast interrupt affinity
+> + */
+> +static void tick_broadcast_set_affinity(struct clock_event_device *bc,
+> +					const struct cpumask *cpumask)
+> +{
+> +	if (!(bc->features & CLOCK_EVT_FEAT_DYNIRQ))
+> +		return;
+> +
+> +	if (cpumask_equal(bc->cpumask, cpumask))
+> +		return;
+> +
+> +	bc->cpumask = cpumask;
 
-Thanks for the information.
-I would agree about the use of conservative, but I think that I'm not
-the right person to answer this question. :)
+This breaks with CONFIG_CPUMASK_OFFSTACK=y. cpumask_copy() is your friend!
 
-Regards,
-Stratos
+Thanks,
+
+	tglx
