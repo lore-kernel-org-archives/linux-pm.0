@@ -1,86 +1,75 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/4][V2] time : set broadcast irq affinity
-Date: Tue, 5 Mar 2013 21:40:09 +0100 (CET)
-Message-ID: <alpine.LFD.2.02.1303052135080.22263@ionos>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH 1/3 linux-next] cpufreq: conservative: Fix sampling_down_factor
+ functionality
+Date: Wed, 06 Mar 2013 00:06:29 +0200
+Message-ID: <51366C65.7070802@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:39046 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755276Ab3CEUkW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Mar 2013 15:40:22 -0500
-In-Reply-To: <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Rob Landley <rob@landley.net>
+Cc: linux-doc@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
 
-On Sat, 2 Mar 2013, Daniel Lezcano wrote:
-> When a cpu goes to a deep idle state where its local timer is shutdown,
-> it notifies the time frame work to use the broadcast timer instead.
-> 
-> Unfortunately, the broadcast device could wake up any CPU, including an
-> idle one which is not concerned by the wake up at all.
-> 
-> This implies, in the worst case, an idle CPU will wake up to send an IPI
-> to another idle cpu.
-> 
-> This patch solves this by setting the irq affinity to the cpu concerned
-> by the nearest timer event, by this way, the CPU which is wake up is
-> guarantee to be the one concerned by the next event and we are safe with
-> unnecessary wakeup for another idle CPU.
-> 
-> As the irq affinity is not supported by all the archs, a flag is needed
-> to specify which clocksource can handle it : CLOCK_EVT_FEAT_DYNIRQ
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  include/linux/clockchips.h   |    5 +++++
->  kernel/time/tick-broadcast.c |   40 +++++++++++++++++++++++++++++++++-------
->  2 files changed, 38 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-> index 6634652..c93e2a6 100644
-> --- a/include/linux/clockchips.h
-> +++ b/include/linux/clockchips.h
-> @@ -55,6 +55,11 @@ enum clock_event_nofitiers {
->  #define CLOCK_EVT_FEAT_C3STOP		0x000008
->  #define CLOCK_EVT_FEAT_DUMMY		0x000010
->  
-> +/*
-> + * Clock event device can set its irq affinity dynamically
-> + */
-> +#define CLOCK_EVT_FEAT_DYNIRQ		0x000020
-> +
->  /**
->   * struct clock_event_device - clock event device descriptor
->   * @event_handler:	Assigned by the framework to be called by the low
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-> index 6197ac0..9ca8ff5 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -406,13 +406,37 @@ struct cpumask *tick_get_broadcast_oneshot_mask(void)
->  	return to_cpumask(tick_broadcast_oneshot_mask);
->  }
->  
-> -static int tick_broadcast_set_event(struct clock_event_device *bc,
-> +/*
-> + * Set broadcast interrupt affinity
-> + */
-> +static void tick_broadcast_set_affinity(struct clock_event_device *bc,
-> +					const struct cpumask *cpumask)
-> +{
-> +	if (!(bc->features & CLOCK_EVT_FEAT_DYNIRQ))
-> +		return;
-> +
-> +	if (cpumask_equal(bc->cpumask, cpumask))
-> +		return;
-> +
-> +	bc->cpumask = cpumask;
+sampling_down_factor tunable is unused since commit
+8e677ce83bf41ba9c74e5b6d9ee60b07d4e5ed93 (4 years ago).
 
-This breaks with CONFIG_CPUMASK_OFFSTACK=y. cpumask_copy() is your friend!
+This patch restores the original functionality and documents the
+tunable.
 
-Thanks,
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ Documentation/cpu-freq/governors.txt   |  6 ++++++
+ drivers/cpufreq/cpufreq_conservative.c | 11 ++++++++---
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-	tglx
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
+index c7a2eb8..4dfed30 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -191,6 +191,12 @@ governor but for the opposite direction.  For example when set to its
+ default value of '20' it means that if the CPU usage needs to be below
+ 20% between samples to have the frequency decreased.
+ 
++sampling_down_factor: similar functionality as in "ondemand" governor.
++But in "conservative", it controls the rate at which the kernel makes
++a decision on when to decrease the frequency while running in any
++speed. Load for frequency increase is still evaluated every
++sampling rate.
++
+ 3. The Governor Interface in the CPUfreq Core
+ =============================================
+ 
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 4fd0006..1e3be56 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -44,9 +44,9 @@ static struct cs_dbs_tuners cs_tuners = {
+ 
+ /*
+  * Every sampling_rate, we check, if current idle time is less than 20%
+- * (default), then we try to increase frequency Every sampling_rate *
+- * sampling_down_factor, we check, if current idle time is more than 80%, then
+- * we try to decrease frequency
++ * (default), then we try to increase frequency. Every sampling_rate *
++ * sampling_down_factor, we check, if current idle time is more than 80%
++ * (default), then we try to decrease frequency
+  *
+  * Any frequency increase takes it to the maximum frequency. Frequency reduction
+  * happens at minimum steps of 5% (default) of maximum frequency
+@@ -87,6 +87,11 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ 		return;
+ 	}
+ 
++	/* if sampling_down_factor is active break out early */
++	if (++dbs_info->down_skip < cs_tuners.sampling_down_factor)
++		return;
++	dbs_info->down_skip = 0;
++
+ 	/*
+ 	 * The optimal frequency is the frequency that is the lowest that can
+ 	 * support the current CPU usage without triggering the up policy. To be
+-- 
+1.8.1.4
+
