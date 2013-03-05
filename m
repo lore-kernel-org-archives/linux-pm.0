@@ -1,255 +1,111 @@
 From: Aaron Lu <aaron.lu@intel.com>
-Subject: [PATCH v11 2/4] block: add runtime pm helpers
-Date: Tue,  5 Mar 2013 11:03:52 +0800
-Message-ID: <1362452634-12524-3-git-send-email-aaron.lu@intel.com>
-References: <1362452634-12524-1-git-send-email-aaron.lu@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1362452634-12524-1-git-send-email-aaron.lu@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Jens Axboe <axboe@kernel.dk>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Aaron Lu <aaron.lu@intel.com>, Shane Huang <shane.huang@amd.com>
+Subject: [PATCH] mmc: sdio: bind acpi with sdio function device
+Date: Tue,  5 Mar 2013 11:24:52 +0800
+Message-ID: <1362453892-13304-1-git-send-email-aaron.lu@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:60507 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759046Ab3CEDXr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Mar 2013 22:23:47 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chris Ball <cjb@laptop.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mmc@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Aaron Lu <aaron.lu@intel.com>
 
-From: Lin Ming <ming.m.lin@intel.com>
+ACPI spec 5 defined the _ADR encoding for sdio bus as:
+High word - slot number (0 based)
+Low word  - function number
 
-Add runtime pm helper functions:
+This patch adds support for binding sdio function device with acpi node,
+and if successful, involve acpi into its power management.
 
-void blk_pm_runtime_init(struct request_queue *q, struct device *dev)
-  - Initialization function for drivers to call.
-
-int blk_pre_runtime_suspend(struct request_queue *q)
-  - If any requests are in the queue, mark last busy and return -EBUSY.
-    Otherwise set q->rpm_status to RPM_SUSPENDING and return 0.
-
-void blk_post_runtime_suspend(struct request_queue *q, int err)
-  - If the suspend succeeded then set q->rpm_status to RPM_SUSPENDED.
-    Otherwise set it to RPM_ACTIVE and mark last busy.
-
-void blk_pre_runtime_resume(struct request_queue *q)
-  - Set q->rpm_status to RPM_RESUMING.
-
-void blk_post_runtime_resume(struct request_queue *q, int err)
-  - If the resume succeeded then set q->rpm_status to RPM_ACTIVE
-    and call __blk_run_queue, then mark last busy and autosuspend.
-    Otherwise set q->rpm_status to RPM_SUSPENDED.
-
-The idea and API is designed by Alan Stern and described here:
-http://marc.info/?l=linux-scsi&m=133727953625963&w=2
-
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
 Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
 ---
- block/blk-core.c       | 144 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |  27 ++++++++++
- 2 files changed, 171 insertions(+)
+ drivers/mmc/core/sdio_bus.c  | 20 +++++++++++++++++++-
+ drivers/mmc/host/sdhci-pci.c |  1 +
+ include/linux/mmc/host.h     |  2 ++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 074b758..123d240 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -30,6 +30,7 @@
- #include <linux/list_sort.h>
- #include <linux/delay.h>
- #include <linux/ratelimit.h>
-+#include <linux/pm_runtime.h>
+diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+index 5e57048..8d6bb18 100644
+--- a/drivers/mmc/core/sdio_bus.c
++++ b/drivers/mmc/core/sdio_bus.c
+@@ -16,6 +16,7 @@
+ #include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/pm_runtime.h>
++#include <linux/acpi.h>
  
- #define CREATE_TRACE_POINTS
- #include <trace/events/block.h>
-@@ -3045,6 +3046,149 @@ void blk_finish_plug(struct blk_plug *plug)
+ #include <linux/mmc/card.h>
+ #include <linux/mmc/host.h>
+@@ -299,6 +300,19 @@ struct sdio_func *sdio_alloc_func(struct mmc_card *card)
+ 	return func;
  }
- EXPORT_SYMBOL(blk_finish_plug);
  
-+#ifdef CONFIG_PM_RUNTIME
-+/**
-+ * blk_pm_runtime_init - Block layer runtime PM initialization routine
-+ * @q: the queue of the device
-+ * @dev: the device the queue belongs to
-+ *
-+ * Description:
-+ *    Initialize runtime-PM-related fields for @q and start auto suspend for
-+ *    @dev. Drivers that want to take advantage of request-based runtime PM
-+ *    should call this function after @dev has been initialized, and its
-+ *    request queue @q has been allocated, and runtime PM for it can not happen
-+ *    yet(either due to disabled/forbidden or its usage_count > 0). In most
-+ *    cases, driver should call this function before any I/O has taken place.
-+ *
-+ *    This function takes care of setting up using auto suspend for the device,
-+ *    the autosuspend delay is set to -1 to make runtime suspend impossible
-+ *    until an updated value is either set by user or by driver. Drivers do
-+ *    not need to touch other autosuspend settings.
-+ *
-+ *    The block layer runtime PM is request based, so only works for drivers
-+ *    that use request as their IO unit instead of those directly use bio's.
-+ */
-+void blk_pm_runtime_init(struct request_queue *q, struct device *dev)
++#ifdef CONFIG_ACPI
++static void sdio_acpi_set_handle(struct sdio_func *func)
 +{
-+	q->dev = dev;
-+	q->rpm_status = RPM_ACTIVE;
-+	pm_runtime_set_autosuspend_delay(q->dev, -1);
-+	pm_runtime_use_autosuspend(q->dev);
++	struct mmc_host *host = func->card->host;
++	u64 addr = (host->slotno << 16) | func->num;
++
++	ACPI_HANDLE_SET(&func->dev,
++			acpi_get_child(ACPI_HANDLE(host->parent), addr));
 +}
-+EXPORT_SYMBOL(blk_pm_runtime_init);
-+
-+/**
-+ * blk_pre_runtime_suspend - Pre runtime suspend check
-+ * @q: the queue of the device
-+ *
-+ * Description:
-+ *    This function will check if runtime suspend is allowed for the device
-+ *    by examining if there are any requests pending in the queue. If there
-+ *    are requests pending, the device can not be runtime suspended; otherwise,
-+ *    the queue's status will be updated to SUSPENDING and the driver can
-+ *    proceed to suspend the device.
-+ *
-+ *    For the not allowed case, we mark last busy for the device so that
-+ *    runtime PM core will try to autosuspend it some time later.
-+ *
-+ *    This function should be called near the start of the device's
-+ *    runtime_suspend callback.
-+ *
-+ * Return:
-+ *    0		- OK to runtime suspend the device
-+ *    -EBUSY	- Device should not be runtime suspended
-+ */
-+int blk_pre_runtime_suspend(struct request_queue *q)
-+{
-+	int ret = 0;
-+
-+	spin_lock_irq(q->queue_lock);
-+	if (q->nr_pending) {
-+		ret = -EBUSY;
-+		pm_runtime_mark_last_busy(q->dev);
-+	} else {
-+		q->rpm_status = RPM_SUSPENDING;
-+	}
-+	spin_unlock_irq(q->queue_lock);
-+	return ret;
-+}
-+EXPORT_SYMBOL(blk_pre_runtime_suspend);
-+
-+/**
-+ * blk_post_runtime_suspend - Post runtime suspend processing
-+ * @q: the queue of the device
-+ * @err: return value of the device's runtime_suspend function
-+ *
-+ * Description:
-+ *    Update the queue's runtime status according to the return value of the
-+ *    device's runtime suspend function and mark last busy for the device so
-+ *    that PM core will try to auto suspend the device at a later time.
-+ *
-+ *    This function should be called near the end of the device's
-+ *    runtime_suspend callback.
-+ */
-+void blk_post_runtime_suspend(struct request_queue *q, int err)
-+{
-+	spin_lock_irq(q->queue_lock);
-+	if (!err) {
-+		q->rpm_status = RPM_SUSPENDED;
-+	} else {
-+		q->rpm_status = RPM_ACTIVE;
-+		pm_runtime_mark_last_busy(q->dev);
-+	}
-+	spin_unlock_irq(q->queue_lock);
-+}
-+EXPORT_SYMBOL(blk_post_runtime_suspend);
-+
-+/**
-+ * blk_pre_runtime_resume - Pre runtime resume processing
-+ * @q: the queue of the device
-+ *
-+ * Description:
-+ *    Update the queue's runtime status to RESUMING in preparation for the
-+ *    runtime resume of the device.
-+ *
-+ *    This function should be called near the start of the device's
-+ *    runtime_resume callback.
-+ */
-+void blk_pre_runtime_resume(struct request_queue *q)
-+{
-+	spin_lock_irq(q->queue_lock);
-+	q->rpm_status = RPM_RESUMING;
-+	spin_unlock_irq(q->queue_lock);
-+}
-+EXPORT_SYMBOL(blk_pre_runtime_resume);
-+
-+/**
-+ * blk_post_runtime_resume - Post runtime resume processing
-+ * @q: the queue of the device
-+ * @err: return value of the device's runtime_resume function
-+ *
-+ * Description:
-+ *    Update the queue's runtime status according to the return value of the
-+ *    device's runtime_resume function. If it is successfully resumed, process
-+ *    the requests that are queued into the device's queue when it is resuming
-+ *    and then mark last busy and initiate autosuspend for it.
-+ *
-+ *    This function should be called near the end of the device's
-+ *    runtime_resume callback.
-+ */
-+void blk_post_runtime_resume(struct request_queue *q, int err)
-+{
-+	spin_lock_irq(q->queue_lock);
-+	if (!err) {
-+		q->rpm_status = RPM_ACTIVE;
-+		__blk_run_queue(q);
-+		pm_runtime_mark_last_busy(q->dev);
-+		pm_runtime_autosuspend(q->dev);
-+	} else {
-+		q->rpm_status = RPM_SUSPENDED;
-+	}
-+	spin_unlock_irq(q->queue_lock);
-+}
-+EXPORT_SYMBOL(blk_post_runtime_resume);
-+#endif
-+
- int __init blk_dev_init(void)
- {
- 	BUILD_BUG_ON(__REQ_NR_BITS > 8 *
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 78feda9..89d89c7 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -361,6 +361,12 @@ struct request_queue {
- 	 */
- 	struct kobject kobj;
- 
-+#ifdef CONFIG_PM_RUNTIME
-+	struct device		*dev;
-+	int			rpm_status;
-+	unsigned int		nr_pending;
-+#endif
-+
- 	/*
- 	 * queue settings
- 	 */
-@@ -961,6 +967,27 @@ struct request_queue *blk_alloc_queue_node(gfp_t, int);
- extern void blk_put_queue(struct request_queue *);
- 
- /*
-+ * block layer runtime pm functions
-+ */
-+#ifdef CONFIG_PM_RUNTIME
-+extern void blk_pm_runtime_init(struct request_queue *q, struct device *dev);
-+extern int blk_pre_runtime_suspend(struct request_queue *q);
-+extern void blk_post_runtime_suspend(struct request_queue *q, int err);
-+extern void blk_pre_runtime_resume(struct request_queue *q);
-+extern void blk_post_runtime_resume(struct request_queue *q, int err);
 +#else
-+static inline void blk_pm_runtime_init(struct request_queue *q,
-+	struct device *dev) {}
-+static inline int blk_pre_runtime_suspend(struct request_queue *q)
-+{
-+	return -ENOSYS;
-+}
-+static inline void blk_post_runtime_suspend(struct request_queue *q, int err) {}
-+static inline void blk_pre_runtime_resume(struct request_queue *q) {}
-+static inline void blk_post_runtime_resume(struct request_queue *q, int err) {}
++static inline void sdio_acpi_set_handle(struct sdio_func *func) {}
 +#endif
 +
-+/*
-  * blk_plug permits building a queue of related requests by holding the I/O
-  * fragments for a short period. This allows merging of sequential requests
-  * into single larger request. As the requests are moved from a per-task list to
+ /*
+  * Register a new SDIO function with the driver model.
+  */
+@@ -308,9 +322,12 @@ int sdio_add_func(struct sdio_func *func)
+ 
+ 	dev_set_name(&func->dev, "%s:%d", mmc_card_id(func->card), func->num);
+ 
++	sdio_acpi_set_handle(func);
+ 	ret = device_add(&func->dev);
+-	if (ret == 0)
++	if (ret == 0) {
+ 		sdio_func_set_present(func);
++		acpi_dev_pm_attach(&func->dev, false);
++	}
+ 
+ 	return ret;
+ }
+@@ -326,6 +343,7 @@ void sdio_remove_func(struct sdio_func *func)
+ 	if (!sdio_func_present(func))
+ 		return;
+ 
++	acpi_dev_pm_detach(&func->dev, false);
+ 	device_del(&func->dev);
+ 	put_device(&func->dev);
+ }
+diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
+index c7ccf30..3dee22d 100644
+--- a/drivers/mmc/host/sdhci-pci.c
++++ b/drivers/mmc/host/sdhci-pci.c
+@@ -1279,6 +1279,7 @@ static struct sdhci_pci_slot *sdhci_pci_probe_slot(
+ 	}
+ 
+ 	host->mmc->pm_caps = MMC_PM_KEEP_POWER | MMC_PM_WAKE_SDIO_IRQ;
++	host->mmc->slotno = slotno;
+ 
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+index d6f20cc..17d7148 100644
+--- a/include/linux/mmc/host.h
++++ b/include/linux/mmc/host.h
+@@ -361,6 +361,8 @@ struct mmc_host {
+ 
+ 	unsigned int		actual_clock;	/* Actual HC clock rate */
+ 
++	unsigned int		slotno;	/* used for sdio acpi binding */
++
+ 	unsigned long		private[0] ____cacheline_aligned;
+ };
+ 
 -- 
-1.8.1.4
+1.8.1.2
+
