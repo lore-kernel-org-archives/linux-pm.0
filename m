@@ -1,57 +1,86 @@
-From: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH] lglock: add read-preference local-global rwlock
-Date: Tue, 5 Mar 2013 08:32:14 -0800
-Message-ID: <CANN689EKsSZpq-oVPL3_y+ReT+vbz5wPbOs8iz8YzS_Wo-FboQ@mail.gmail.com>
-References: <512C7A38.8060906@linux.vnet.ibm.com>
-	<CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com>
-	<512CC509.1050000@linux.vnet.ibm.com>
-	<CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com>
-	<512D0D67.9010609@linux.vnet.ibm.com>
-	<CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com>
-	<512E7879.20109@linux.vnet.ibm.com>
-	<5130E8E2.50206@cn.fujitsu.com>
-	<20130301182854.GA3631@redhat.com>
-	<CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com>
-	<20130302170656.GB29769@redhat.com>
-	<51361540.3060603@cn.fujitsu.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver and
+ its DT glue
+Date: Wed, 6 Mar 2013 00:38:36 +0800
+Message-ID: <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
+References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
+	<20130305105251.GL17833@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <51361540.3060603@cn.fujitsu.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130305105251.GL17833@n2100.arm.linux.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 5, 2013 at 7:54 AM, Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
-> On 03/03/13 01:06, Oleg Nesterov wrote:
->> On 03/02, Michel Lespinasse wrote:
->>>
->>> My version would be slower if it needs to take the
->>> slow path in a reentrant way, but I'm not sure it matters either :)
->>
->> I'd say, this doesn't matter at all, simply because this can only happen
->> if we race with the active writer.
->>
+On 5 March 2013 18:52, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> On Tue, Mar 05, 2013 at 12:52:41PM +0800, Viresh Kumar wrote:
+>> +static void put_cluster_clk_and_freq_table(u32 cluster)
+>> +{
+>> +     if (!atomic_dec_return(&cluster_usage[cluster])) {
+>> +             clk_put(clk[cluster]);
+>> +             clk[cluster] = NULL;
 >
-> It can also happen when interrupted. (still very rarely)
+> What's the point in setting the clk to NULL?
+
+I couldn't find one and the same is true for freq_table[] too.
+
+>> +static int get_cluster_clk_and_freq_table(u32 cluster)
+>> +{
+>> +     char name[9] = "cluster";
+>> +     int count;
+>> +
+>> +     if (atomic_inc_return(&cluster_usage[cluster]) != 1)
+>> +             return 0;
+>> +
+>> +     freq_table[cluster] = arm_bL_ops->get_freq_tbl(cluster, &count);
+>> +     if (!freq_table[cluster])
+>> +             goto atomic_dec;
+>> +
+>> +     name[7] = cluster + '0';
+>> +     clk[cluster] = clk_get(NULL, name);
+>> +     if (!IS_ERR_OR_NULL(clk[cluster])) {
 >
-> arch_spin_trylock()
->         ------->interrupted,
->                 __this_cpu_read() returns 0.
->                 arch_spin_trylock() fails
->                 slowpath, any nested will be slowpath too.
->                 ...
->                 ..._read_unlock()
->         <-------interrupt
-> __this_cpu_inc()
-> ....
+> NAK.  Two reasons.
+>
+> 1. IS_ERR_OR_NULL.  You know about this, it's been on the list several
+>    times.
 
-Yes (and I think this is actually the most likely way for it to happen).
+AAHHHHHH .. How can i mess up with this concept.. I am really feeling bad now.
 
-We do need this to work correctly, but I don't expect we need it to be fast.
-(could be wrong, this is only my intuition)
+> 2. Maybe clk_get_sys() rather than clk_get() and use a sensible device
+>    name ("cpu-cluster.%u" maybe) rather than a connection name with a
+>    NULL device?
 
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
+That's a good comment (rather than pointing at some stupid mistake), I will
+probably keep the same name for the device as well.
+
+So how does below fix look to you?
+
+----------x-----------------x-----------------
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 0d6de0e..2486b9a 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -140,9 +140,7 @@ static void put_cluster_clk_and_freq_table(u32 cluster)
+ {
+        if (!atomic_dec_return(&cluster_usage[cluster])) {
+                clk_put(clk[cluster]);
+-               clk[cluster] = NULL;
+                arm_bL_ops->put_freq_tbl(cluster);
+-               freq_table[cluster] = NULL;
+                pr_debug("%s: cluster: %d\n", __func__, cluster);
+        }
+ }
+@@ -160,8 +158,8 @@ static int get_cluster_clk_and_freq_table(u32 cluster)
+                goto atomic_dec;
+
+        name[7] = cluster + '0';
+-       clk[cluster] = clk_get(NULL, name);
+-       if (!IS_ERR_OR_NULL(clk[cluster])) {
++       clk[cluster] = clk_get_sys(name, NULL);
++       if (!IS_ERR(clk[cluster])) {
+                pr_debug("%s: clk: %p & freq table: %p, cluster: %d\n",
+                                __func__, clk[cluster], freq_table[cluster],
+                                cluster);
