@@ -1,68 +1,72 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: [PATCH linux-next] cpufreq: conservative: Fix sampling_down_factor
- functionality
-Date: Tue, 05 Mar 2013 09:11:13 -0500
-Message-ID: <5135FD01.8060306@verisign.com>
-References: <51351CC3.4010301@semaphore.gr> <CAOh2x=m0KLbjGKvLvTH7-yQb4SU5-v=-r4Ba3LSZz=NvfvO6mg@mail.gmail.com> <51358117.9060902@semaphore.gr>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH V2] lglock: add read-preference local-global rwlock
+Date: Tue, 05 Mar 2013 23:27:13 +0800
+Message-ID: <51360ED1.3030104@cn.fujitsu.com>
+References: <CACvQF51RvhM8XNqu3-1OTQ=cZUZ=pAX+_zx0a29+W67N1X+BgQ@mail.gmail.com> <512CC509.1050000@linux.vnet.ibm.com> <CACvQF50UgiqPpDk3HCmV86zKSf6tPjqr0bZowfPEOJs0g0r0MQ@mail.gmail.com> <512D0D67.9010609@linux.vnet.ibm.com> <CACvQF53ph2ixdM-otzetjM5cR+2kcZj6sckOp3TnzzA_x-EZ8w@mail.gmail.com> <512E7879.20109@linux.vnet.ibm.com> <5130E8E2.50206@cn.fujitsu.com> <20130301182854.GA3631@redhat.com> <CANN689HEW=b5S93J27p+rBX-5m7jkW4FER=eHDCp7OgMaTWLPw@mail.gmail.com> <5131FB4C.7070408@cn.fujitsu.com> <20130302172003.GC29769@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51358117.9060902@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cn.fujitsu.com ([222.73.24.84]:64742 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754489Ab3CEPZK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Mar 2013 10:25:10 -0500
+In-Reply-To: <20130302172003.GC29769@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Michel Lespinasse <walken@google.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Lai Jiangshan <eag0628@gmail.com>, linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com, linux-kernel@vger.kernel.org, namhyung@kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org, rjw@sisk.pl, vincent.guittot@linaro.org, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 
-
-I am the author of sampling_down_factor.  I only intended it to have an effect if you are already attempting to achieve maximum performance (e.g. at the top available clock speed for the current infrastructure).  This is special because there is no possibility of going any faster so the only speed change you can think about is slowing down, which is typically much less urgent than speeding up.  So I did not see sampling_down_factor as being relevant at intermediate frequencies, though perhaps there could be something interesting but opposite to do at the minimum-power state too.
-
-In the applications this was originally intended for you were likely to either be idle and trying to save power (but be ready to ramp up quickly), or at max speed, and rarely in between.  sampling_down_factor made a dramatic improvement in performance, to the point there was no longer any reason to use the "performance" governor.
-
-I suspect the rationale for sampling_down_factor would apply to non-frequency-based governor/driver combos as well, like the p-state driver, though in that case you are not necessarily changing a literal clock speed and you also have additional opportunities like turbo/boost states to consider.  But in some applications, you may not want to use boost states that cannot be sustained when all cores are active, so there is more user/operator intent that must be communicated to the governor.
-
-DCN
-
-On 03/05/13 00:22, Stratos Karafotis wrote:
-> Hi Viresh,
->
-> On 03/05/2013 02:23 AM, Viresh Kumar wrote:> Interesting. Because it was removed earlier and no body complained :)
->> I got following from Documentation:
+On 03/03/13 01:20, Oleg Nesterov wrote:
+> On 03/02, Lai Jiangshan wrote:
 >>
->> sampling_down_factor: this parameter controls the rate at which the
->> kernel makes a decision on when to decrease the frequency while running
->> at top speed. When set to 1 (the default) decisions to reevaluate load
->> are made at the same interval regardless of current clock speed. But
->> when set to greater than 1 (e.g. 100) it acts as a multiplier for the
->> scheduling interval for reevaluating load when the CPU is at its top
->> speed due to high load. This improves performance by reducing the overhead
->> of load evaluation and helping the CPU stay at its top speed when truly
->> busy, rather than shifting back and forth in speed. This tunable has no
->> effect on behavior at lower speeds/lower CPU loads.
->>
->> And i believe we are supposed to check if we are at the top speed or not.
->> Over that i believe the code should be like:
->>
->> While setting speed to top speed, set the timer to delay * sampling_down_factor,
->> so that we actually don't reevaluate the load. What do you say?
->>
-> I had the same thoughts, but I saw the comments in the code:
->
-> /*
->  * Every sampling_rate, we check, if current idle time is less than 20%
->  * (default), then we try to increase frequency Every sampling_rate *
->  * sampling_down_factor, we check, if current idle time is more than 80%, then
->  * we try to decrease frequency
->  *
->
-> Also checking the code before the commit 8e677ce83bf41ba9c74e5b6d9ee60b07d4e5ed93 you may see that sampling down factor works in this way.
-> So, I decided to keep the original functionality (also down_skip was already there unused).
->
-> Regards,
-> Stratos
->
+>> +void lg_rwlock_local_read_unlock(struct lgrwlock *lgrw)
+>> +{
+>> +	switch (__this_cpu_read(*lgrw->reader_refcnt)) {
+>> +	case 1:
+>> +		__this_cpu_write(*lgrw->reader_refcnt, 0);
+>> +		lg_local_unlock(&lgrw->lglock);
+>> +		return;
+>> +	case FALLBACK_BASE:
+>> +		__this_cpu_write(*lgrw->reader_refcnt, 0);
+>> +		read_unlock(&lgrw->fallback_rwlock);
+>> +		rwlock_release(&lg->lock_dep_map, 1, _RET_IP_);
+> 
+> I guess "case 1:" should do rwlock_release() too.
+
+Already do it in "lg_local_unlock(&lgrw->lglock);" before it returns.
+(I like reuse old code)
+
+> 
+> Otherwise, at first glance looks correct...
+> 
+> However, I still think that FALLBACK_BASE only adds the unnecessary
+> complications. But even if I am right this is subjective of course, please
+> feel free to ignore.
+
+OK, I kill FALLBACK_BASE in later patch.
+
+> 
+> And btw, I am not sure about lg->lock_dep_map, perhaps we should use
+> fallback_rwlock->dep_map ?
+
+Use either one is OK.
+
+> 
+> We need rwlock_acquire_read() even in the fast-path, and this acquire_read
+> should be paired with rwlock_acquire() in _write_lock(), but it does
+> spin_acquire(lg->lock_dep_map). Yes, currently this is the same (afaics)
+> but perhaps fallback_rwlock->dep_map would be more clean.
+> 
+
+I can't tell which one is better. I try to use fallback_rwlock->dep_map later.
+
+> Oleg.
+> 
 > --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
