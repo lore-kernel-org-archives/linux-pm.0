@@ -1,107 +1,27 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline
- function to evaluate freq_target
-Date: Wed, 6 Mar 2013 23:58:24 +0800
-Message-ID: <CAKohponZrMyZkUBDAnMv=B+fVpqYdQ62bP2iQGsg1=uOKfyPdQ@mail.gmail.com>
-References: <51366C77.3080309@semaphore.gr>
-	<CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com>
-	<51374F8D.9040300@semaphore.gr>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+	and its DT glue
+Date: Wed, 6 Mar 2013 17:25:17 +0000
+Message-ID: <20130306172517.GT17833@n2100.arm.linux.org.uk>
+References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org> <20130305105251.GL17833@n2100.arm.linux.org.uk> <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:50016 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753262Ab3CFP6Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Mar 2013 10:58:25 -0500
-Received: by mail-oa0-f45.google.com with SMTP id o6so12582403oag.4
-        for <linux-pm@vger.kernel.org>; Wed, 06 Mar 2013 07:58:24 -0800 (PST)
-In-Reply-To: <51374F8D.9040300@semaphore.gr>
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55293 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750716Ab3CFRZf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Mar 2013 12:25:35 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 6 March 2013 22:15, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Use an inline function to evaluate freq_target to avoid duplicate code.
->
-> Also, define a macro for the default frequency step.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 27 +++++++++++++++------------
->  1 file changed, 15 insertions(+), 12 deletions(-)
+On Wed, Mar 06, 2013 at 12:38:36AM +0800, Viresh Kumar wrote:
+> So how does below fix look to you?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Much better, but I think you want a better device name than just "clusterN".
 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 08be431..3fb921d 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -28,6 +28,7 @@
->  /* Conservative governor macros */
->  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
->  #define DEF_FREQUENCY_DOWN_THRESHOLD           (20)
-> +#define DEF_FREQUENCY_STEP                     (5)
->  #define DEF_SAMPLING_DOWN_FACTOR               (1)
->  #define MAX_SAMPLING_DOWN_FACTOR               (10)
->
-> @@ -39,9 +40,20 @@ static struct cs_dbs_tuners cs_tuners = {
->         .down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD,
->         .sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR,
->         .ignore_nice = 0,
-> -       .freq_step = 5,
-> +       .freq_step = DEF_FREQUENCY_STEP,
->  };
->
-> +static inline unsigned int get_freq_target(struct cpufreq_policy *policy)
-> +{
-> +       unsigned int freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> +
-> +       /* max freq cannot be less than 100. But who knows... */
-> +       if (unlikely(freq_target == 0))
-> +               freq_target = DEF_FREQUENCY_STEP;
-> +
-> +       return freq_target;
-> +}
-> +
->  /*
->   * Every sampling_rate, we check, if current idle time is less than 20%
->   * (default), then we try to increase frequency. Every sampling_rate *
-> @@ -55,7 +67,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
->  {
->         struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> -       unsigned int freq_target;
->
->         /*
->          * break out if we 'cannot' reduce the speed as the user might
-> @@ -72,13 +83,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->                 if (dbs_info->requested_freq == policy->max)
->                         return;
->
-> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> -
-> -               /* max freq cannot be less than 100. But who knows.... */
-> -               if (unlikely(freq_target == 0))
-> -                       freq_target = 5;
-> -
-> -               dbs_info->requested_freq += freq_target;
-> +               dbs_info->requested_freq += get_freq_target(policy);
->                 if (dbs_info->requested_freq > policy->max)
->                         dbs_info->requested_freq = policy->max;
->
-> @@ -94,9 +99,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->
->         /* Check for frequency decrease */
->         if (load < cs_tuners.down_threshold) {
-> -               freq_target = (cs_tuners.freq_step * policy->max) / 100;
-> -
-> -               dbs_info->requested_freq -= freq_target;
-> +               dbs_info->requested_freq -= get_freq_target(policy);
->                 if (dbs_info->requested_freq < policy->min)
->                         dbs_info->requested_freq = policy->min;
->
-> --
-> 1.8.1.4
->
->
+Also, please get rid of that "default n" - n is the default default default
+default default default.... there's no need to specify it. :)
