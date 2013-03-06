@@ -1,134 +1,587 @@
-From: Mandeep Singh Baines <msb@chromium.org>
-Subject: Re: [lockdep] BUG: init/1242 still has locks held!
-Date: Tue, 5 Mar 2013 20:51:47 -0800
-Message-ID: <CACBanvrV+De0+78Dj3ckWVnaWEXEBzJG-Oy-E1HVY=6wmVWjiQ@mail.gmail.com>
-References: <20130303130207.GA28281@localhost>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH V2 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Wed, 6 Mar 2013 11:05:28 +0530
+Message-ID: <CADGdYn7RXks+Xvv__NeKu8o9ZsaEp15F6zDMtL158tFcKkxxEw@mail.gmail.com>
+References: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
+	<CAKohpomHoDSNVyc21VVif8BrDKyZ=fSeCnWCZjDHL+64Bo+dgg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:37935 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653Ab3CFEvs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Mar 2013 23:51:48 -0500
-Received: by mail-oa0-f48.google.com with SMTP id j1so12049283oag.21
-        for <linux-pm@vger.kernel.org>; Tue, 05 Mar 2013 20:51:48 -0800 (PST)
-In-Reply-To: <20130303130207.GA28281@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomHoDSNVyc21VVif8BrDKyZ=fSeCnWCZjDHL+64Bo+dgg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Fengguang Wu <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Sun, Mar 3, 2013 at 5:02 AM, Fengguang Wu <fengguang.wu@intel.com> wrote:
-> Greetings,
->
-> I got the below oops and the first bad commit is
->
-> commit 6aa9707099c4b25700940eb3d016f16c4434360d
-> Author: Mandeep Singh Baines <msb@chromium.org>
-> Date:   Wed Feb 27 17:03:18 2013 -0800
->
->     lockdep: check that no locks held at freeze time
->
->     We shouldn't try_to_freeze if locks are held.  Holding a lock can cause a
->     deadlock if the lock is later acquired in the suspend or hibernate path
->     (e.g.  by dpm).  Holding a lock can also cause a deadlock in the case of
->     cgroup_freezer if a lock is held inside a frozen cgroup that is later
->     acquired by a process outside that group.
->
->     [akpm@linux-foundation.org: export debug_check_no_locks_held]
->     Signed-off-by: Mandeep Singh Baines <msb@chromium.org>
->     Cc: Ben Chan <benchan@chromium.org>
->     Cc: Oleg Nesterov <oleg@redhat.com>
->     Cc: Tejun Heo <tj@kernel.org>
->     Cc: Rafael J. Wysocki <rjw@sisk.pl>
->     Cc: Ingo Molnar <mingo@redhat.com>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
->
+Hi Viresh,
 
-Hi,
+Again thanks for your review comments.
 
-Thanks for the bug report.
-
-This issue is being discussed here:
-
-http://lkml.org/lkml/2013/3/4/221
-
-Regards,
-Mandeep
-
-> [   71.089828]
-> [   71.090356] =====================================
-> [   71.091041] [ BUG: init/1242 still has locks held! ]
-> [   71.091987] 3.8.0-10734-ga7c1120 #1 Not tainted
-> [   71.093135] -------------------------------------
-> [   71.093884] 1 lock held by init/1242:
-> [   71.094437]  #0:  (&sig->cred_guard_mutex){+.+.+.}, at: [<ffffffff81123a13>] prepare_bprm_creds+0x2d/0x6b
-> [   71.097355]
-> [   71.097355] stack backtrace:
-> [   71.098125] Pid: 1242, comm: init Not tainted 3.8.0-10734-ga7c1120 #1
-> [   71.099011] Call Trace:
-> [   71.099621]  [<ffffffff8108628d>] debug_check_no_locks_held+0x8f/0x93
-> [   71.101004]  [<ffffffff818bbb1d>] rpc_wait_bit_killable+0x31/0x9f
-> [   71.101882]  [<ffffffff81911a18>] __wait_on_bit+0x48/0x7f
-> [   71.102635]  [<ffffffff81089b9b>] ? mark_held_locks+0xbe/0xea
-> [   71.103441]  [<ffffffff81911ac1>] out_of_line_wait_on_bit+0x72/0x7d
-> [   71.104755]  [<ffffffff818bbaec>] ? rpc_queue_empty+0x31/0x31
-> [   71.105582]  [<ffffffff818bcc67>] ? __rpc_execute+0x118/0x2b5
-> [   71.106397]  [<ffffffff810585cd>] ? autoremove_wake_function+0x3d/0x3d
-> [   71.107286]  [<ffffffff818bcc8b>] __rpc_execute+0x13c/0x2b5
-> [   71.108492]  [<ffffffff810581eb>] ? bit_waitqueue+0x1b/0x6e
-> [   71.109331]  [<ffffffff81058296>] ? wake_up_bit+0x25/0x2a
-> [   71.110116]  [<ffffffff818bceb8>] rpc_execute+0x6b/0x92
-> [   71.110876]  [<ffffffff818b61eb>] rpc_run_task+0x78/0x80
-> [   71.111627]  [<ffffffff818b6329>] rpc_call_sync+0x88/0x9e
-> [   71.112873]  [<ffffffff8124ad18>] nfs3_rpc_wrapper.constprop.9+0x36/0xc1
-> [   71.113814]  [<ffffffff8124b016>] nfs3_proc_access+0xb8/0x110
-> [   71.114613]  [<ffffffff8123a94f>] nfs_do_access+0x14d/0x1f9
-> [   71.115412]  [<ffffffff818be3d0>] ? generic_lookup_cred+0x15/0x17
-> [   71.116702]  [<ffffffff8123aabc>] nfs_permission+0xc1/0x12f
-> [   71.117505]  [<ffffffff81068b80>] ? local_clock+0x41/0x5a
-> [   71.118304]  [<ffffffff81127221>] __inode_permission+0x37/0x71
-> [   71.119125]  [<ffffffff811272a0>] inode_permission+0x45/0x47
-> [   71.119976]  [<ffffffff81129713>] may_open+0x88/0xeb
-> [   71.121096]  [<ffffffff81129f79>] do_last.isra.53+0x803/0x9d6
-> [   71.121990]  [<ffffffff8112a458>] path_openat.isra.54+0x30c/0x3ce
-> [   71.122834]  [<ffffffff81906809>] ? __slab_alloc.constprop.64+0x37c/0x3a9
-> [   71.123807]  [<ffffffff81162b18>] ? bm_status_write+0xef/0xef
-> [   71.127338]  [<ffffffff8112a826>] do_filp_open+0x38/0x86
-> [   71.128655]  [<ffffffff81115e3d>] ? __kmalloc_track_caller+0xa8/0x184
-> [   71.129620]  [<ffffffff8112252f>] ? bprm_change_interp+0x34/0x49
-> [   71.130507]  [<ffffffff8112273d>] open_exec+0x3d/0xde
-> [   71.131282]  [<ffffffff81162ca3>] load_script+0x18b/0x1c0
-> [   71.132520]  [<ffffffff81085206>] ? lock_release_holdtime.part.6+0x91/0x96
-> [   71.133554]  [<ffffffff8112227a>] ? search_binary_handler+0xf6/0x332
-> [   71.134485]  [<ffffffff81915179>] ? _raw_read_unlock+0x28/0x3b
-> [   71.135362]  [<ffffffff81122289>] search_binary_handler+0x105/0x332
-> [   71.136718]  [<ffffffff811221ae>] ? search_binary_handler+0x2a/0x332
-> [   71.137653]  [<ffffffff81123eee>] do_execve_common.isra.27+0x43c/0x56e
-> [   71.138597]  [<ffffffff81123bb6>] ? do_execve_common.isra.27+0x104/0x56e
-> [   71.139563]  [<ffffffff81124038>] do_execve+0x18/0x1a
-> [   71.140782]  [<ffffffff81124281>] sys_execve+0x3b/0x50
-> [   71.141574]  [<ffffffff8191d2c9>] stub_execve+0x69/0xa0
+On Tue, Mar 5, 2013 at 6:48 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 2 March 2013 15:04, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+>> This patch adds dvfs support for exynos5440 SOC. This soc has 4 cores and
+>> they run at same frequency. The nature of exynos5440 clock controller is
+>> different from previous exynos controllers so not using the common exynos
+>> cpufreq framework. The major difference being interrupt notfication for
+>> frequency change. Also, OPP library is used for device tree parsing to get
+>> different parameters like frequency, voltage etc. Since the opp library sorts
+>> the frequency table in ascending order so they are again re-arranged in
+>> descending order. This will have one-to-one mapping with the clock controller
+>> state management logic.
+>>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>> Changes in V2:
+>> * Added OPP library support to parse DT parameters.
+>> * Removed a hack to handle interrupts in bootup.
+>> * Added many review comments from Viresh and Inder.
 >
-> git bisect start a7c1120d2dcc83691bafa034d98f70285757e826 3298a3511f1e73255a8dc023efd909e569eea037 --
-> git bisect good 69086a78bdc973ec0b722be790b146e84ba8a8c4  #    30  2013-03-03 15:03:33  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs
-> git bisect good d895cb1af15c04c522a25c79cc429076987c089b  #    30  2013-03-03 15:32:27  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs
-> git bisect  bad 7307c00f335a4e986586b12334696098d2fc2bcd  #     0  2013-03-03 15:36:44  Merge tag 'late-omap' of git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc
-> git bisect  bad ee89f81252179dcbf6cd65bd48299f5e52292d88  #     0  2013-03-03 15:40:06  Merge branch 'for-3.9/core' of git://git.kernel.dk/linux-block
-> git bisect  bad b67bfe0d42cac56c512dd5da4b1b347a23f4b70a  #     0  2013-03-03 15:43:46  hlist: drop the node parameter from iterators
-> git bisect  bad 3b069c5d857a5f1b8cb6bb74c70d9446089f5077  #     0  2013-03-03 15:47:16  IB/core: convert to idr_alloc()
-> git bisect  bad fe88f2ee33731f0934e8fb26f762b6715e43ff6f  #     0  2013-03-03 15:50:03  kexec: prevent double free on image allocation failure
-> git bisect good 3e05ca20fb570b456bd9841b5ff489d865e8c563  #    30  2013-03-03 16:03:02  hfsplus: add functionality of manipulating by records in attributes tree
-> git bisect good e579d2c259be42b6f29458327e5153b22414b031  #    32  2013-03-03 16:17:47  coredump: remove redundant defines for dumpable states
-> git bisect  bad 80de7f7ae013b1e287059f39eaba2a12219681cf  #     0  2013-03-03 16:22:14  seq-file: use SEEK_ macros instead of hardcoded numbers
-> git bisect good c2c1b089b44b783bd50fae4bccaa6f367f92e492  #    30  2013-03-03 16:35:16  fs/proc/vmcore.c: put if tests in the top of the while loop to reduce duplication
-> git bisect  bad 80d26af89a7249aa5475467000322163c60cdd72  #     0  2013-03-03 16:38:48  coredump: use a freezable_schedule for the coredump_finish wait
-> git bisect  bad 6aa9707099c4b25700940eb3d016f16c4434360d  #     0  2013-03-03 16:40:38  lockdep: check that no locks held at freeze time
-> git bisect good c2c1b089b44b783bd50fae4bccaa6f367f92e492  #    90  2013-03-03 17:12:12  fs/proc/vmcore.c: put if tests in the top of the while loop to reduce duplication
-> git bisect  bad a7c1120d2dcc83691bafa034d98f70285757e826  #     0  2013-03-03 17:16:24  Merge tag 'ext4_for_linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4
-> git bisect good 49f1881cedf9d871c4a55e670b9397dd4b84faef  #    90  2013-03-03 17:47:58  Revert "lockdep: check that no locks held at freeze time"
-> git bisect  bad 106edea2fe051df65a1a6231e9ffa2876cc391cc  #     0  2013-03-03 17:53:48  Add linux-next specific files for 20130301
+> Added? Thanks :)
+typo error :)
+
 >
-> Thanks,
-> Fengguang
+>>
+>> All these patches are dependent on Thomas Abraham common clock patches.
+>> http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html
+>>
+>>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   32 ++
+>>  drivers/cpufreq/Kconfig.arm                        |    9 +
+>>  drivers/cpufreq/Makefile                           |    1 +
+>>  drivers/cpufreq/exynos5440-cpufreq.c               |  450 ++++++++++++++++++++
+>>  4 files changed, 492 insertions(+), 0 deletions(-)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
+>>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
+>> new file mode 100644
+>> index 0000000..caa3f8d
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
+>> @@ -0,0 +1,32 @@
+>> +
+>> +Exynos5440 cpufreq driver
+>> +-------------------
+>> +
+>> +Exynos5440 SoC cpufreq driver for CPU frequency scaling.
+>> +
+>> +Required properties:
+>> +- interrupts: Interrupt to know the completion of cpu frequency change.
+>> +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
+>> +       in the decreasing order. Frequency should be in KHZ units and voltage
+>> +       should be in microvolts.
+>> +- clocks: phandle of the clock from common clock binding. More description can
+>> +       be found in Documentation/devicetree/bindings/clock/clock-bindings.txt.
+>> +
+>> +Optional properties:
+>> +- clock-latency: Clock transition latency in microsecond.
+>> +
+>> +All the required listed above must be defined under node cpufreq.
+>> +
+>> +Example:
+>> +--------
+>> +       cpufreq@160000 {
+>> +               compatible = "samsung,exynos5440-cpufreq";
+>> +               reg = <0x160000 0x1000>;
+>> +               interrupts = <0 57 0>;
+>> +               operating-points = <
+>> +                               1000000 975000
+>> +                               800000  925000>;
+>> +               clocks = <&clock 2>;
+>> +               clock-latency = <100000>;
+>> +       };
+>> +
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 030ddf6..7ed9c4a 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -77,6 +77,15 @@ config ARM_EXYNOS5250_CPUFREQ
+>>           This adds the CPUFreq driver for Samsung EXYNOS5250
+>>           SoC.
+>>
+>> +config ARM_EXYNOS5440_CPUFREQ
+>> +       def_bool SOC_EXYNOS5440
+>> +       depends on HAVE_CLK && PM_OPP && OF
+>> +       help
+>> +         This adds the CPUFreq driver for Samsung EXYNOS5440
+>> +         SoC. The nature of exynos5440 clock controller is
+>> +         different than previous exynos controllers so not using
+>> +         the common exynos framework.
+>> +
+>>  config ARM_KIRKWOOD_CPUFREQ
+>>         def_bool ARCH_KIRKWOOD && OF
+>>         help
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index 863fd18..c841438 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -52,6 +52,7 @@ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)      += exynos-cpufreq.o
+>>  obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)   += exynos4210-cpufreq.o
+>>  obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
+>>  obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)   += exynos5250-cpufreq.o
+>> +obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
+>>  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)     += kirkwood-cpufreq.o
+>>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)    += omap-cpufreq.o
+>>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
+>> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+>> new file mode 100644
+>> index 0000000..2dc43b1
+>> --- /dev/null
+>> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+>> @@ -0,0 +1,450 @@
+>> +/*
+>> + * Copyright (c) 2013 Samsung Electronics Co., Ltd.
+>> + *             http://www.samsung.com
+>> + *
+>> + * Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> + *
+>> + * EXYNOS5440 - CPU frequency scaling support
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> +*/
+>
+> Add following here to get better prints from the driver:
+>
+> #define pr_fmt(fmt)     KBUILD_MODNAME ": " fmt
+ok will add.
+>
+>> +
+>> +#include <linux/clk.h>
+>> +#include <linux/cpu.h>
+>> +#include <linux/cpufreq.h>
+>> +#include <linux/err.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/io.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/of_irq.h>
+>
+> Probably include of.h instead of above two?
+No both are needed . actually these two .h are superset of of.h
+>
+>> +#include <linux/opp.h>
+>> +#include <linux/slab.h>
+>> +
+>
+>> +struct exynos_dvfs_data {
+>> +       void __iomem *base;
+>> +       struct resource *mem;
+>> +       int irq;
+>> +       struct clk *cpu_clk;
+>> +       unsigned int cur_frequency;
+>> +       unsigned int latency;
+>> +       struct cpufreq_frequency_table *freq_table;
+>> +       unsigned int freq_count;
+>> +       struct device *dev;
+>> +       struct work_struct irq_work;
+>> +};
+>> +
+>> +static struct exynos_dvfs_data *dvfs_info;
+>> +static DEFINE_MUTEX(cpufreq_lock);
+>> +static struct cpufreq_freqs freqs;
+>> +
+>> +static int init_div_table(void)
+>> +{
+>> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+>> +       unsigned int tmp, clk_div, ema_div, freq, volt_id;
+>> +       int i = 0;
+>> +       struct opp *opp;
+>> +
+>> +       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+>> +
+>> +               opp = opp_find_freq_exact(dvfs_info->dev,
+>> +                                       freq_tbl[i].frequency * 1000, true);
+>> +               if (IS_ERR(opp)) {
+>> +                       pr_err("failed to find valid OPP for %u KHZ\n",
+>> +                                       freq_tbl[i].frequency);
+>> +                       return PTR_ERR(opp);
+>> +               }
+>> +
+>> +               freq = freq_tbl[i].frequency / 1000; /*In MHZ*/
+>> +               clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
+>> +                                       << P0_7_CPUCLKDEV_SHIFT;
+>> +               clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
+>> +                                       << P0_7_ATBCLKDEV_SHIFT;
+>> +               clk_div |= ((freq / CPU_DBG_FREQ_MAX) & P0_7_CSCLKDEV_MASK)
+>> +                                       << P0_7_CSCLKDEV_SHIFT;
+>> +
+>> +               /*Calculate EMA*/
+>> +               volt_id = opp_get_voltage(opp);
+>> +               volt_id = (MAX_VOLTAGE - volt_id) / VOLTAGE_STEP;
+>> +               if (volt_id < PMIC_HIGH_VOLT) {
+>> +                       ema_div = (CPUEMA_HIGH << P0_7_CPUEMA_SHIFT) |
+>> +                               (L2EMA_HIGH << P0_7_L2EMA_SHIFT);
+>> +               } else if (volt_id > PMIC_LOW_VOLT) {
+>> +                       ema_div = (CPUEMA_LOW << P0_7_CPUEMA_SHIFT) |
+>> +                               (L2EMA_LOW << P0_7_L2EMA_SHIFT);
+>> +               } else {
+>> +                       ema_div = (CPUEMA_MID << P0_7_CPUEMA_SHIFT) |
+>> +                               (L2EMA_MID << P0_7_L2EMA_SHIFT);
+>> +               }
+>> +
+>> +               tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
+>> +                       | ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
+>> +
+>> +               __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
+>> +       }
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +void exynos_enable_dvfs(void)
+>> +{
+>> +       unsigned int tmp, i, cpu;
+>> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
+>> +       /*Disable DVFS*/
+>
+> Please give space after /* and before */ all over your driver.
+ok.
+>
+>> +       __raw_writel(0, dvfs_info->base + XMU_DVFS_CTRL);
+>> +
+>> +       /*Enable PSTATE Change Event*/
+>> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUEVTEN);
+>> +       tmp |= (1 << PSTATE_CHANGED_EVTEN_SHIFT);
+>> +        __raw_writel(tmp, dvfs_info->base + XMU_PMUEVTEN);
+>> +
+>> +       /Enable* PSTATE Change IRQ*/
+>> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQEN);
+>> +       tmp |= (1 << PSTATE_CHANGED_IRQEN_SHIFT);
+>> +        __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
+>> +
+>> +       /*Set initial performance index*/
+>> +       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
+>> +               if (freq_table[i].frequency == dvfs_info->cur_frequency)
+>> +                       break;
+>> +
+>> +       if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
+>> +               pr_crit("Boot up frequency not supported\n");
+>> +               /*Assign the highest frequency*/
+>> +               i = 0;
+>> +               dvfs_info->cur_frequency = freq_table[i].frequency;
+>> +       }
+>> +
+>> +       pr_info("Setting dvfs initial frequency = %u",
+>> +                                               dvfs_info->cur_frequency);
+>> +
+>> +       for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
+>> +               tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
+>> +               tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
+>> +               tmp |= (i << C0_3_PSTATE_NEW_SHIFT);
+>> +               __raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
+>> +       }
+>> +
+>> +       /*Enable DVFS*/
+>> +       __raw_writel(1 << XMU_DVFS_CTRL_EN_SHIFT,
+>> +                               dvfs_info->base + XMU_DVFS_CTRL);
+>> +}
+>> +
+>> +static int exynos_verify_speed(struct cpufreq_policy *policy)
+>> +{
+>> +       return cpufreq_frequency_table_verify(policy,
+>> +                                             dvfs_info->freq_table);
+>> +}
+>> +
+>> +static unsigned int exynos_getspeed(unsigned int cpu)
+>> +{
+>> +       return dvfs_info->cur_frequency;
+>> +}
+>> +
+>> +static int exynos_target(struct cpufreq_policy *policy,
+>> +                         unsigned int target_freq,
+>> +                         unsigned int relation)
+>> +{
+>> +       unsigned int index, tmp;
+>> +       int ret = 0, i;
+>> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
+>> +
+>> +       mutex_lock(&cpufreq_lock);
+>> +       freqs.old = dvfs_info->cur_frequency;
+>> +
+>> +       if (cpufreq_frequency_table_target(policy, freq_table,
+>> +                                          target_freq, relation, &index)) {
+>> +               ret = -EINVAL;
+>> +               goto out;
+>> +       }
+>> +
+>> +       freqs.new = freq_table[index].frequency;
+>> +       freqs.cpu = policy->cpu;
+>> +
+>> +       for_each_cpu(freqs.cpu, policy->cpus)
+>> +               cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>> +
+>> +       /*Set the target frequency in all C0_3_PSTATE register*/
+>> +       for_each_cpu(i, policy->cpus) {
+>> +               tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+>> +               tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
+>> +               tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
+>> +
+>> +               __raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+>> +       }
+>> +out:
+>> +       mutex_unlock(&cpufreq_lock);
+>> +       return ret;
+>> +}
+>> +
+>> +static void exynos_cpufreq_work(struct work_struct *work)
+>> +{
+>> +       unsigned int cur_pstate, index;
+>> +       struct cpufreq_policy *policy = cpufreq_cpu_get(0); /* boot CPU */
+>> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
+>> +
+>> +       if (policy == NULL)
+>> +               goto skip_work;
+>
+> How can that be true? And if it can be, you will miss POSTCHANGE notifications
+> too.
+This skip of POSTCHANGE notifications is needed in one case where
+bootup frequency does not match with any elements of cpufreq table and
+hence I simply assign the highest frequency. Also cpufreq driver is
+not registered at this point.
+>
+>> +       mutex_lock(&cpufreq_lock);
+>> +       freqs.old = dvfs_info->cur_frequency;
+>> +
+>> +       cur_pstate = __raw_readl(dvfs_info->base + XMU_P_STATUS);
+>> +       if (cur_pstate >> C0_3_PSTATE_VALID_SHIFT & 0x1)
+>> +               index = (cur_pstate >> C0_3_PSTATE_CURR_SHIFT) & P_VALUE_MASK;
+>> +       else
+>> +               index = (cur_pstate >> C0_3_PSTATE_NEW_SHIFT) & P_VALUE_MASK;
+>> +
+>> +       if (index < dvfs_info->freq_count) {
+>
+> What if index is greater than count? That's a problem, isn't it?
+yes will check this.
+>
+>> +               freqs.new = freq_table[index].frequency;
+>> +               for_each_cpu(freqs.cpu, policy->cpus)
+>> +                       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+>> +               dvfs_info->cur_frequency = freqs.new;
+>> +       }
+>> +
+>> +       cpufreq_cpu_put(policy);
+>> +       mutex_unlock(&cpufreq_lock);
+>> +skip_work:
+>> +       enable_irq(dvfs_info->irq);
+>> +}
+>> +
+>> +static irqreturn_t exynos_cpufreq_irq(int irq, void *id)
+>> +{
+>> +       unsigned int tmp;
+>> +
+>> +       tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQ);
+>> +       if (tmp >> PSTATE_CHANGED_SHIFT & 0x1) {
+>> +               __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQ);
+>> +               disable_irq_nosync(irq);
+>> +               schedule_work(&dvfs_info->irq_work);
+>> +       }
+>> +       return IRQ_HANDLED;
+>> +}
+>> +
+>> +static void exynos_sort_descend_freq_table(void)
+>> +{
+>> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
+>> +       int i = 0, index;
+>> +       unsigned int tmp_freq;
+>> +
+>> +       /*
+>> +        *Freq table is already in ascending order as it is created from
+>
+> You need space after * here too :)
+ok.
+>
+>> +        *OPP library, so just swap the elements to make it descending.
+>> +        */
+>> +       for (i = 0; i < dvfs_info->freq_count / 2; i++) {
+>> +               index = dvfs_info->freq_count - i - 1;
+>> +               tmp_freq = freq_tbl[i].frequency;
+>> +               freq_tbl[i].frequency = freq_tbl[index].frequency;
+>> +               freq_tbl[index].frequency = tmp_freq;
+>> +       }
+>> +}
+>> +
+>> +static int exynos_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>> +{
+>> +
+>> +       policy->cur = dvfs_info->cur_frequency;
+>> +       cpufreq_frequency_table_get_attr(dvfs_info->freq_table, policy->cpu);
+>> +
+>> +       /* set the transition latency value */
+>> +       policy->cpuinfo.transition_latency = dvfs_info->latency;
+>> +
+>> +       cpumask_setall(policy->cpus);
+>> +
+>> +       return cpufreq_frequency_table_cpuinfo(policy, dvfs_info->freq_table);
+>> +}
+>> +
+>> +static struct cpufreq_driver exynos_driver = {
+>> +       .flags          = CPUFREQ_STICKY,
+>> +       .verify         = exynos_verify_speed,
+>> +       .target         = exynos_target,
+>> +       .get            = exynos_getspeed,
+>> +       .init           = exynos_cpufreq_cpu_init,
+>> +       .name           = DRIVER_NAME,
+>> +};
+>> +
+>> +static int __init exynos_cpufreq_init(void)
+>
+> probably calling it probe might make more sense?
+Yes I just checked the recent changes in cpu0-cpufreq driver. probe
+makes more sense.
+>
+>> +{
+>> +       int ret = -EINVAL;
+>> +       struct device_node *np;
+>> +
+>> +       np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
+>> +       if (IS_ERR(np))
+>
+> !np ??
+ok.
+>
+>> +               return -ENODEV;
+>> +
+>> +       dvfs_info = kzalloc(sizeof(struct exynos_dvfs_data), GFP_KERNEL);
+>
+> sizeof(*dvfs_info) ??
+Isn't both same?
+>
+>> +       if (IS_ERR(dvfs_info)) {
+>
+> IS_ERR_OR_NULL? But i believe kzalloc only returns NULL to show error, so
+> you may end up using if(!dvfs_info)
+yes right.
+>
+>> +               ret = -ENOMEM;
+>> +               goto err_mem_data;
+>> +       }
+>> +
+>> +       dvfs_info->base = of_iomap(np, 0);
+>> +       if (IS_ERR(dvfs_info->base)) {
+>
+> same here too..
+ok
+>
+>> +               pr_err("No cpufreq memory map found\n");
+>> +               ret = -ENODEV;
+>> +               goto err_map;
+>> +       }
+>> +
+>> +       dvfs_info->irq = irq_of_parse_and_map(np, 0);
+>> +
+>
+> can remove blank line.
+>
+>> +       if (dvfs_info->irq == 0) {
+>> +               pr_err("No cpufreq irq found\n");
+>> +               ret = -ENODEV;
+>> +               goto err_irq_parse;
+>> +       }
+>> +
+>> +       dvfs_info->dev = get_cpu_device(0);
+>
+> What about using this dev instance to call devm_*** routines everywhere in init.
+ok, with probe changes all devm_ api's can be used.
+>
+>> +       if (IS_ERR(dvfs_info->dev)) {
+>> +               pr_err("failed to get cpu0 device\n");
+>> +               ret = -ENODEV;
+>> +               goto err_irq_parse;
+>> +       }
+>> +
+>> +       dvfs_info->dev->of_node = np;
+>
+> So you are setting cpufreq node as node of cpu, I don't know if this is a
+> good idea. In that case it would be better to create the cpu node instead
+> and put the table into it.
+yes right.
+>
+>> +       ret = of_init_opp_table(dvfs_info->dev);
+>> +       if (ret) {
+>> +               pr_err("failed to init OPP table: %d\n", ret);
+>> +               goto err_irq_parse;
+>> +       }
+>> +
+>> +       ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +       if (ret) {
+>> +               pr_err("failed to init cpufreq table: %d\n", ret);
+>> +               goto err_irq_parse;
+>> +       }
+>> +       dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
+>> +       exynos_sort_descend_freq_table();
+>> +
+>> +       if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
+>> +               dvfs_info->latency = DEF_TRANS_LATENCY;
+>> +
+>> +       dvfs_info->cpu_clk = of_clk_get(np, 0);
+>> +       if (IS_ERR(dvfs_info->cpu_clk)) {
+>> +               pr_err("Failed to get cpu clock\n");
+>> +               ret = PTR_ERR(dvfs_info->cpu_clk);
+>> +               goto err_clk_get;
+>> +       }
+>> +
+>> +       dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
+>> +       if (!dvfs_info->cur_frequency) {
+>> +               pr_err("Failed to get clock rate\n");
+>> +               ret = -EINVAL;
+>> +               goto err_clk_get_rate;
+>> +       }
+>> +       dvfs_info->cur_frequency /= 1000;
+>> +
+>> +       INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
+>> +       if (request_irq(dvfs_info->irq, exynos_cpufreq_irq,
+>> +                               IRQF_TRIGGER_NONE, DRIVER_NAME, dvfs_info)) {
+>> +               pr_err("Failed to register IRQ\n");
+>> +               ret = -ENODEV;
+>> +               goto err_clk_get_rate;
+>> +       }
+>> +
+>> +       ret = init_div_table();
+>> +       if (ret) {
+>> +               pr_err("Failed to initialise div table\n");
+>
+> s/initialise/initialize
+ok.
+
+Thanks,
+Amit D
+>
+>> +               goto err_div_table;
+>> +       }
+>> +
+>> +       exynos_enable_dvfs();
+>> +       ret = cpufreq_register_driver(&exynos_driver);
+>> +       if (ret) {
+>> +               pr_err("%s: failed to register cpufreq driver\n", __func__);
+>> +               goto err_div_table;
+>> +       }
+>> +
+>> +       of_node_put(np);
+>> +
+>> +       pr_info("exynos5440 DVFS initialised.\n");
+>> +
+>> +       return 0;
+>> +
+>> +err_div_table:
+>> +       free_irq(dvfs_info->irq, dvfs_info);
+>> +err_clk_get_rate:
+>> +       clk_put(dvfs_info->cpu_clk);
+>> +err_clk_get:
+>> +       opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +err_irq_parse:
+>> +       iounmap(dvfs_info->base);
+>> +err_map:
+>> +       kfree(dvfs_info);
+>> +err_mem_data:
+>> +       of_node_put(np);
+>> +       pr_err("%s: failed initialization\n", __func__);
+>> +       return ret;
+>> +}
+>> +late_initcall(exynos_cpufreq_init);
+>> --
+>> 1.7.1
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
