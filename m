@@ -1,45 +1,26 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Wed, 6 Mar 2013 14:21:53 +0800
-Message-ID: <CAKohpon6w6i0X4wJRE-FG8bfYMk2aMVCa6pOgbBwWPHy=Dttwg@mail.gmail.com>
-References: <1362216854-6633-1-git-send-email-amit.daniel@samsung.com>
-	<CAKohpomHoDSNVyc21VVif8BrDKyZ=fSeCnWCZjDHL+64Bo+dgg@mail.gmail.com>
-	<CADGdYn7RXks+Xvv__NeKu8o9ZsaEp15F6zDMtL158tFcKkxxEw@mail.gmail.com>
+Subject: Re: [PATCH linux-next] cpufreq: conservative: Fix sampling_down_factor
+ functionality
+Date: Wed, 6 Mar 2013 14:43:45 +0800
+Message-ID: <CAKohpo=LVj+1RSFSmKk1WUYZJDY_rNSYd8H=B1sBK3NObgd=wg@mail.gmail.com>
+References: <51351CC3.4010301@semaphore.gr>
+	<CAOh2x=m0KLbjGKvLvTH7-yQb4SU5-v=-r4Ba3LSZz=NvfvO6mg@mail.gmail.com>
+	<51358117.9060902@semaphore.gr>
+	<5135FD01.8060306@verisign.com>
+	<5135FF50.4020001@verisign.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn7RXks+Xvv__NeKu8o9ZsaEp15F6zDMtL158tFcKkxxEw@mail.gmail.com>
+In-Reply-To: <5135FF50.4020001@verisign.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: amit kachhap <amit.kachhap@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kgene.kim@samsung.com, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
+To: David C Niemi <dniemi@verisign.com>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 6 March 2013 13:35, amit kachhap <amit.kachhap@gmail.com> wrote:
-> On Tue, Mar 5, 2013 at 6:48 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On 5 March 2013 22:21, David C Niemi <dniemi@verisign.com> wrote:
+> I'd like to ask -- what is the intended use of the conservative governor these days as differentiated from the ondemand governor?  At one time it seemed more oriented towards power savings, but the ondemand governor had picked up most or all of its power-saving features.
 
->>> +static void exynos_cpufreq_work(struct work_struct *work)
->>> +{
->>> +       unsigned int cur_pstate, index;
->>> +       struct cpufreq_policy *policy = cpufreq_cpu_get(0); /* boot CPU */
->>> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
->>> +
->>> +       if (policy == NULL)
->>> +               goto skip_work;
->>
->> How can that be true? And if it can be, you will miss POSTCHANGE notifications
->> too.
-> This skip of POSTCHANGE notifications is needed in one case where
-> bootup frequency does not match with any elements of cpufreq table and
-> hence I simply assign the highest frequency. Also cpufreq driver is
-> not registered at this point.
-
-I will keep a variable for that then, otherwise its misleading... So keep a
-variable like cpufreq_enabled for it and set it to 1 as soon as this first
-interrupt is gone... keep it in unlikely() too.
-
->>> +       dvfs_info = kzalloc(sizeof(struct exynos_dvfs_data), GFP_KERNEL);
->>
->> sizeof(*dvfs_info) ??
-> Isn't both same?
-
-You need to read Documentation/CodingStyle.
+I believe the difference is still the same.. conservative is not as
+aggressive as
+ondemand now also, i don't know which people are using it though :)
