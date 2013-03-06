@@ -1,61 +1,31 @@
-From: =?UTF-8?q?Rodolfo=20Garc=C3=ADa=20Pe=C3=B1as=20=28kix=29?=
-	<kix@kix.es>
-Subject: [PATCH 0/3] suspend-utils UUID support and other small changes
-Date: Wed,  6 Mar 2013 22:51:47 +0100
-Message-ID: <1362606710-18089-1-git-send-email-kix@kix.es>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver and
+ its DT glue
+Date: Thu, 7 Mar 2013 07:09:47 +0800
+Message-ID: <CAKohpo=CZFsj5jQ37rSNtb0A7jX3iZcTqShYwXbGCB=PSjJgeA@mail.gmail.com>
+References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org>
+	<20130305105251.GL17833@n2100.arm.linux.org.uk>
+	<CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
+	<20130306172517.GT17833@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ks399202.kimsufi.com ([37.59.37.136]:36436 "EHLO
-	ks399202.kimsufi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757Ab3CFVwN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Mar 2013 16:52:13 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130306172517.GT17833@n2100.arm.linux.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "=?UTF-8?q? Rodolfo=20Garc=C3=ADa=20Pe=C3=B1as=20(kix) ?=" <kix@kix.es>
 
-=46rom: "Rodolfo Garc=C3=ADa Pe=C3=B1as (kix)" <kix@kix.es>
+On 7 March 2013 01:25, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> On Wed, Mar 06, 2013 at 12:38:36AM +0800, Viresh Kumar wrote:
+>> So how does below fix look to you?
+>
+> Much better, but I think you want a better device name than just "clusterN".
 
-Hi,
+I will try to find some other name, maybe cpu-cluster (as what you suggested
+initially).
 
-some patches for suspend-utils:
+> Also, please get rid of that "default n" - n is the default default default
+> default default default.... there's no need to specify it. :)
 
-The most interesting patch is 0001-UUID-support.patch, that includes su=
-pport for UUID device naming. With this patch is possible to configure =
-the suspend device in /etc/suspend.conf as /dev device or UUID:
-
-resume device =3D /dev/sda5
-or
-resume device =3D UUID=3D331291f8-9fe8-4c09-ad50-74cb99bea223
-
-The other two patches are small changes.
-
-0002-Typecasting-problem-in-vbetoo.c.patch: Is a typecasting to avoid c=
-ompiler warnings.
-0003-manpages-wrong-section-for-suspend.conf.patch: typos with the manp=
-age sections.
-
-Comments are welcome. Thanks for your work in the kernel side :-)
-
-Saludos,
-kix
-
-Rodolfo Garc=C3=ADa Pe=C3=B1as (kix) (3):
-  UUID support
-  Typecasting problem in vbetoo.c
-  manpages: wrong section for suspend.conf
-
- Makefile.am               |    2 ++
- configure.ac              |   11 +++++++++++
- manpages/s2disk.8         |    8 ++++----
- manpages/suspend-keygen.8 |    4 ++--
- manpages/swap-offset.8    |    2 +-
- suspend.c                 |   32 ++++++++++++++++++++++++++++++++
- vbetool/vbetool.c         |    8 ++++----
- 7 files changed, 56 insertions(+), 11 deletions(-)
-
---=20
-1.7.10.4
-
+Ok :)
