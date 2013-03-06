@@ -1,27 +1,53 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver
-	and its DT glue
-Date: Wed, 6 Mar 2013 17:25:17 +0000
-Message-ID: <20130306172517.GT17833@n2100.arm.linux.org.uk>
-References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org> <20130305105251.GL17833@n2100.arm.linux.org.uk> <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
+From: David C Niemi <dniemi@verisign.com>
+Subject: Re: [PATCH 2/3 linux-next] cpufreq: conservative: Fix the logic in
+ frequency decrease  checking
+Date: Wed, 06 Mar 2013 14:35:28 -0500
+Message-ID: <51379A80.2090200@verisign.com>
+References: <51366C70.3020406@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55293 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716Ab3CFRZf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Mar 2013 12:25:35 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKohponef2XNN2i8Dn7aBnzcdJeCmuGrmN3HjaBUZvBHkNSLKQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51366C70.3020406@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On Wed, Mar 06, 2013 at 12:38:36AM +0800, Viresh Kumar wrote:
-> So how does below fix look to you?
+The "10" sounds like an attempt to add some hysteresis to the up/down decisionmaking.  If you take it out, you should make sure you don't get into situations where you're continually switching rapidly between two frequencies.  (In the ondemand governor some care was also taken to avoid the cost of doing a CPU idleness evaluation counting towards the CPU looking busy enough to upshift; I am not familiar enough with Conservative to know whether that is a problem for it too).
 
-Much better, but I think you want a better device name than just "clusterN".
+DCN
 
-Also, please get rid of that "default n" - n is the default default default
-default default default.... there's no need to specify it. :)
+On 03/05/13 17:06, Stratos Karafotis wrote:
+> When we evaluate the CPU load for frequency decrease we have to compare
+> the load against down_threshold. There is no need to subtract 10 points
+> from down_threshold.
+>
+> Instead, we have to use the default down_threshold or user's selection
+> unmodified.
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 1e3be56..08be431 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -92,12 +92,8 @@ static void cs_check_cpu(int cpu, unsigned int load)
+>  		return;
+>  	dbs_info->down_skip = 0;
+>  
+> -	/*
+> -	 * The optimal frequency is the frequency that is the lowest that can
+> -	 * support the current CPU usage without triggering the up policy. To be
+> -	 * safe, we focus 10 points under the threshold.
+> -	 */
+> -	if (load < (cs_tuners.down_threshold - 10)) {
+> +	/* Check for frequency decrease */
+> +	if (load < cs_tuners.down_threshold) {
+>  		freq_target = (cs_tuners.freq_step * policy->max) / 100;
+>  
+>  		dbs_info->requested_freq -= freq_target;
+
