@@ -1,79 +1,134 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Thu, 7 Mar 2013 22:56:54 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1303072248560.20470@axis700.grange>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc2
+Date: Thu, 07 Mar 2013 23:12:51 +0100
+Message-ID: <1885118.tBgWHmWy46@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh
+Hi Linus,
 
-On Fri, 8 Mar 2013, Viresh Kumar wrote:
+Please pull from the git repository at
 
-> big LITTLE is ARM's new Architecture focussing power/performance needs of modern
-> world. More information about big LITTLE can be found here:
-> 
-> http://www.arm.com/products/processors/technologies/biglittleprocessing.php
-> http://lwn.net/Articles/481055/
-> 
-> In order to keep cpufreq support for all big LITTLE platforms simple/generic,
-> this patch tries to add a generic cpufreq driver layer for all big LITTLE
-> platforms.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+=
+acpi-3.9-rc2
 
-I like generic drivers :) cpufreq-cpu0 is yet another such generic 
-(cpufreq) driver. Now, comparing the functionality of the two:
+to receive ACPI and power management fixes for v3.9-rc2 with top-most c=
+ommit
+6bd51658fae374557b063155bd4465411acd12fc
 
-[snip]
+  Merge branch 'pm-fixes' into fixes
 
-> +/* Set clock frequency */
-> +static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
-> +		unsigned int target_freq, unsigned int relation)
-> +{
-> +	struct cpufreq_freqs freqs;
-> +	u32 cpu = policy->cpu, freq_tab_idx, cur_cluster;
-> +	int ret = 0;
-> +
-> +	cur_cluster = cpu_to_cluster(policy->cpu);
-> +
-> +	freqs.old = bL_cpufreq_get(policy->cpu);
-> +
-> +	/* Determine valid target frequency using freq_table */
-> +	cpufreq_frequency_table_target(policy, freq_table[cur_cluster],
-> +			target_freq, relation, &freq_tab_idx);
-> +	freqs.new = freq_table[cur_cluster][freq_tab_idx].frequency;
-> +
-> +	freqs.cpu = policy->cpu;
-> +
-> +	pr_debug("%s: cpu: %d, cluster: %d, oldfreq: %d, target freq: %d, new freq: %d\n",
-> +			__func__, cpu, cur_cluster, freqs.old, target_freq,
-> +			freqs.new);
-> +
-> +	if (freqs.old == freqs.new)
-> +		return 0;
-> +
-> +	for_each_cpu(freqs.cpu, policy->cpus)
-> +		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-> +
-> +	ret = clk_set_rate(clk[cur_cluster], freqs.new * 1000);
+on top of commit 6dbe51c251a327e012439c4772097a13df43c5b8
 
-we see, that this driver "only" switches CPU clock frequencies. Whereas 
-the cpufreq-cpu0 driver also manipulates a regulator (if available) 
-directly. I understand, power-saving is also an important consideration 
-for big.LITTLE systems. So, I presume, you plan to implement voltage 
-switching in cpufreq notifiers? Now, my question is: is this (notifier) 
-actually the preferred method and the cpufreq-cpu0 driver is doing it 
-"wrongly?"
+  Linux 3.9-rc1
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+Included are:
+
+- Two fixes for the new intel_pstate driver from Dirk Brandewie.
+
+- Fix for incorrect usage of the .find_bridge() callback from struct
+  acpi_bus_type in the USB core and subsequent removal of that
+  callback.  This couldn't be pushed earlier, because it depended
+  on material in the PCI and PM/ACPI trees, so it needed to wait for
+  them both to be merged.
+
+- ACPI processor driver cleanups from Chen Gang and Syam Sidhardhan.
+
+- ACPI initialization and error messages fix from Joe Perches.
+
+- Operating Performance Points documentation improvement from
+  Nishanth Menon.
+
+- Fixes for memory leaks and potential concurrency issues and sysfs
+  attributes leaks during device removal in the core device PM QoS
+  code.
+
+- Calxeda Highbank cpufreq driver simplification from Emilio L=C3=B3pez=
+=2E
+
+- cpufreq comment cleanup from Namhyung Kim.
+
+- Fix for a section mismatch in Calxeda Highbank interprocessor
+  communication code from Mark Langsdorf (this is not a PM fix
+  strictly speaking, but the code in question went in through the
+  PM tree).
+
+Thanks!
+
+
+---------------
+
+Chen Gang (1):
+      ACPI / porocessor: Beautify code, pr->id is u32 which is never < =
+0
+
+Dirk Brandewie (2):
+      cpufreq / intel_pstate: Fix intel_pstate_init() error path
+      cpufreq / intel_pstate: Do not load on VM that does not report ma=
+x P state.
+
+Emilio L=C3=B3pez (1):
+      cpufreq: highbank: do not initialize array with a loop
+
+Joe Perches (1):
+      ACPI / Sleep: Avoid interleaved message on errors
+
+Mark Langsdorf (1):
+      mailbox, pl320-ipc: remove __init from probe function
+
+Namhyung Kim (1):
+      cpufreq: Fix a typo in comment
+
+Nishanth Menon (1):
+      PM / OPP: improve introductory documentation
+
+Rafael J. Wysocki (4):
+      PM / QoS: Fix concurrency issues and memory leaks in device PM Qo=
+S
+      PM / QoS: Remove device PM QoS sysfs attributes at the right plac=
+e
+      ACPI / glue: Add .match() callback to struct acpi_bus_type
+      ACPI / glue: Drop .find_bridge() callback from struct acpi_bus_ty=
+pe
+
+Syam Sidhardhan (1):
+      ACPI / processor: Remove redundant NULL check before kfree
+
+---------------
+
+ Documentation/power/opp.txt        |   25 ++++-
+ drivers/acpi/glue.c                |   55 ++---------
+ drivers/acpi/processor_core.c      |    3 +-
+ drivers/acpi/processor_driver.c    |    2 +-
+ drivers/acpi/sleep.c               |   16 +++-
+ drivers/ata/libata-acpi.c          |    7 +-
+ drivers/base/power/main.c          |    2 -
+ drivers/base/power/power.h         |    8 +-
+ drivers/base/power/qos.c           |  217 +++++++++++++++++++++++++---=
+----------------
+ drivers/base/power/sysfs.c         |    1 +
+ drivers/cpufreq/cpufreq_governor.h |    2 +-
+ drivers/cpufreq/highbank-cpufreq.c |    8 +-
+ drivers/cpufreq/intel_pstate.c     |   42 +++------
+ drivers/mailbox/pl320-ipc.c        |    3 +-
+ drivers/pci/pci-acpi.c             |    8 +-
+ drivers/pnp/pnpacpi/core.c         |    8 +-
+ drivers/scsi/scsi_lib.c            |    7 +-
+ drivers/usb/core/usb-acpi.c        |    9 +-
+ include/acpi/acpi_bus.h            |    6 +-
+ 19 files changed, 215 insertions(+), 214 deletions(-)
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
