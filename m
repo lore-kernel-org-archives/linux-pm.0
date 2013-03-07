@@ -1,143 +1,62 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] intel_idle: set the state_tables array into __initdata
- to save mem
-Date: Thu, 07 Mar 2013 10:49:25 +0100
-Message-ID: <513862A5.7060600@linaro.org>
-References: <1362674529.31506.17.camel@cliu38-desktop-build>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+	and its DT glue
+Date: Thu, 7 Mar 2013 11:49:50 +0000
+Message-ID: <20130307114950.GF17833@n2100.arm.linux.org.uk>
+References: <f20e3c5e822c4bd28a3b71264d73143cc1f850b0.1362458878.git.viresh.kumar@linaro.org> <20130305105251.GL17833@n2100.arm.linux.org.uk> <CAKohpo=cBkHZnSa8ZsM=k7RRN+RZDXFUWDM82EXXBSQcM-8Vhw@mail.gmail.com> <20130307005119.GY17833@n2100.arm.linux.org.uk> <CAKohpok7aD-J-undUisxaOotbXWimPo46jqOH4ok04kg_hMWHA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:50395 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754990Ab3CGJta (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Mar 2013 04:49:30 -0500
-Received: by mail-pa0-f45.google.com with SMTP id kl14so343029pab.18
-        for <linux-pm@vger.kernel.org>; Thu, 07 Mar 2013 01:49:29 -0800 (PST)
-In-Reply-To: <1362674529.31506.17.camel@cliu38-desktop-build>
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56718 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932455Ab3CGLuI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Mar 2013 06:50:08 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKohpok7aD-J-undUisxaOotbXWimPo46jqOH4ok04kg_hMWHA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chuansheng Liu <chuansheng.liu@intel.com>
-Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 03/07/2013 05:42 PM, Chuansheng Liu wrote:
->=20
-> Currently, in intel_idle.c, there are 5 state_tables array, every
-> array size is sizeof(struct cpuidle_state) * CPUIDLE_STATE_MAX.
->=20
-> But after intel_idle_probe(), just only one array is useful.
->=20
-> Here we can just define one static state_table, and initialize it
-> in intel_idle_probe(), and set other data state_tables as __initdata.
->=20
-> It can save about 3K, which also benefits mobile devices.
->=20
-> Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
-> ---
->  drivers/idle/intel_idle.c |   19 ++++++++++++-------
->  1 files changed, 12 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 5d66750..0642bfe 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -99,7 +99,7 @@ static int intel_idle(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv, int index);
->  static int intel_idle_cpu_init(int cpu);
-> =20
-> -static struct cpuidle_state *cpuidle_state_table;
-> +static struct cpuidle_state cpuidle_state_table[CPUIDLE_STATE_MAX];
-> =20
->  /*
->   * Set this flag for states where the HW flushes the TLB for us
-> @@ -124,7 +124,7 @@ static struct cpuidle_state *cpuidle_state_table;
->   * which is also the index into the MWAIT hint array.
->   * Thus C0 is a dummy.
->   */
-> -static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] =3D {
-> +static struct cpuidle_state nehalem_cstates[CPUIDLE_STATE_MAX] __ini=
-tdata =3D {
->  	{
->  		.name =3D "C1-NHM",
->  		.desc =3D "MWAIT 0x00",
-> @@ -157,7 +157,7 @@ static struct cpuidle_state nehalem_cstates[CPUID=
-LE_STATE_MAX] =3D {
->  		.enter =3D NULL }
->  };
-> =20
-> -static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] =3D {
-> +static struct cpuidle_state snb_cstates[CPUIDLE_STATE_MAX] __initdat=
-a =3D {
->  	{
->  		.name =3D "C1-SNB",
->  		.desc =3D "MWAIT 0x00",
-> @@ -197,7 +197,7 @@ static struct cpuidle_state snb_cstates[CPUIDLE_S=
-TATE_MAX] =3D {
->  		.enter =3D NULL }
->  };
-> =20
-> -static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] =3D {
-> +static struct cpuidle_state ivb_cstates[CPUIDLE_STATE_MAX] __initdat=
-a =3D {
->  	{
->  		.name =3D "C1-IVB",
->  		.desc =3D "MWAIT 0x00",
-> @@ -237,7 +237,7 @@ static struct cpuidle_state ivb_cstates[CPUIDLE_S=
-TATE_MAX] =3D {
->  		.enter =3D NULL }
->  };
-> =20
-> -static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] =3D {
-> +static struct cpuidle_state hsw_cstates[CPUIDLE_STATE_MAX] __initdat=
-a =3D {
->  	{
->  		.name =3D "C1-HSW",
->  		.desc =3D "MWAIT 0x00",
-> @@ -277,7 +277,7 @@ static struct cpuidle_state hsw_cstates[CPUIDLE_S=
-TATE_MAX] =3D {
->  		.enter =3D NULL }
->  };
-> =20
-> -static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] =3D {
-> +static struct cpuidle_state atom_cstates[CPUIDLE_STATE_MAX] __initda=
-ta =3D {
->  	{
->  		.name =3D "C1E-ATM",
->  		.desc =3D "MWAIT 0x00",
-> @@ -504,7 +504,12 @@ static int intel_idle_probe(void)
->  	pr_debug(PREFIX "MWAIT substates: 0x%x\n", mwait_substates);
-> =20
->  	icpu =3D (const struct idle_cpu *)id->driver_data;
-> -	cpuidle_state_table =3D icpu->state_table;
-> +	/* Copy the icpu->state_table into cpuidle_state_table,
-> +	 * The pointing array by icpu->state_table is with __initdata,
-> +	 * which will be freed after kernel init ending.
-> +	 */
-> +	memcpy(cpuidle_state_table, icpu->state_table,
-> +			sizeof(cpuidle_state_table));
+On Thu, Mar 07, 2013 at 10:03:28AM +0800, Viresh Kumar wrote:
+> On 7 March 2013 08:51, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> > On Thu, Mar 07, 2013 at 08:32:37AM +0800, Viresh Kumar wrote:
+> >> On 5 March 2013 18:52, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> >> > On Tue, Mar 05, 2013 at 12:52:41PM +0800, Viresh Kumar wrote:
+> >> >> +     clk[cluster] = clk_get(NULL, name);
+> >> >> +     if (!IS_ERR_OR_NULL(clk[cluster])) {
+> >> >
+> >> > NAK.  Two reasons.
+> >> >
+> >> > 1. IS_ERR_OR_NULL.  You know about this, it's been on the list several
+> >> >    times.
+> >>
+> >> Hey, i had a second thought about this one and i have some other opinion
+> >> here. This is a cpufreq driver and we need clock support for sure here, we
+> >> can't work without it. And so here is the latest fixup:
+> >
+> > NAK.  You just don't understand.
+> 
+> Poor me!!
+> 
+> I still remember the huge discussions we had during "clk: Add non
+> CONFIG_HAVE_CLK routines" patchset.
+> 
+> For others: https://lkml.org/lkml/2012/4/24/389
+> 
+> Back to the discussion, I understand that clk_get() just returns a cookie and
+> NULL is not an error and so it shouldn't be treated specially. And that's what
+> we do with most of our drivers as all other clk routines (clk_get[set]_rate())
+> have safe guards against the NULL clk, and they wouldn't complain.
+> 
+> The special case we have in a cpufreq driver is, we can't work with
+> zero returned
+> from clk_get_rate()... That will make cpufreq driver work badly.
 
-The idea is good but it could be pushed a bit further.
+So how is this different from any other clock which may also return zero
+from its clk_get_rate() ?
 
-Instead of changing cpuidle_state_table to an array, change it to an
-initdata and the functions intel_idle_cpuidle_driver_init,
-intel_idle_probe to init functions.
-
-That would also be nice to get rid of a global variable to store the
-current cpu data and let the intel_idle_probe to return the pointer to
-the right table.
-
-
->  	if (boot_cpu_has(X86_FEATURE_ARAT))	/* Always Reliable APIC Timer *=
-/
->  		lapic_timer_reliable_states =3D LAPIC_TIMER_ALWAYS_RELIABLE;
->=20
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+If that's the condition you want to check for, call clk_get_rate() after
+a successful clk_get*() and check for the condition.  Don't go treating
+the cookie somehow specially.  You're *assuming* a behaviour that is
+inappropriate for the side of the interface you're working with.
