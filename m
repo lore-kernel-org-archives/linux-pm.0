@@ -1,71 +1,30 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Fri, 8 Mar 2013 07:11:28 +0100 (CET)
-Message-ID: <Pine.LNX.4.64.1303080706310.24111@axis700.grange>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
- <Pine.LNX.4.64.1303072248560.20470@axis700.grange>
- <CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/4][V2] time : set broadcast irq affinity
+Date: Fri, 8 Mar 2013 08:20:33 +0100 (CET)
+Message-ID: <alpine.LFD.2.02.1303080817230.22263@ionos>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.02.1303052135080.22263@ionos> <51370C09.5020301@linaro.org> <alpine.LFD.2.02.1303061047240.22263@ionos>
+ <51396B39.3090504@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from moutng.kundenserver.de ([212.227.17.8]:64972 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744Ab3CHGLu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 01:11:50 -0500
-In-Reply-To: <CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
+Received: from www.linutronix.de ([62.245.132.108]:52971 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752389Ab3CHHUl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 02:20:41 -0500
+In-Reply-To: <51396B39.3090504@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, LAK <linux-arm-kernel@lists.infradead.org>, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com, Arnd Bergmann <arnd@arndb.de>
 
-Hi Viresh
+On Fri, 8 Mar 2013, Daniel Lezcano wrote:
+> On 03/06/2013 10:48 AM, Thomas Gleixner wrote:
+> I was wondering if it would be possible to take the 3/4 and 4/4
+> otherwise the flag dependency will prevent to send those to the
+> maintainer's tree until they gain visibility on it.
 
-On Fri, 8 Mar 2013, Viresh Kumar wrote:
+I can take them with the ack of arm soc folks.
 
-> On 8 March 2013 05:56, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> > I like generic drivers :)
-> 
-> Me too :)
-> 
-> > cpufreq-cpu0 is yet another such generic
-> > (cpufreq) driver. Now, comparing the functionality of the two:
-> 
-> Great!!
-> 
-> > we see, that this driver "only" switches CPU clock frequencies. Whereas
-> > the cpufreq-cpu0 driver also manipulates a regulator (if available)
-> > directly. I understand, power-saving is also an important consideration
-> > for big.LITTLE systems. So, I presume, you plan to implement voltage
-> > switching in cpufreq notifiers?
-> 
-> So the platform on which we are currently testing these is ARM TC2 Soc
-> and this switching is done by the firmware instead. And so didn't went
-> for regulator hookups initially.. Obviously in future regulator hookups would
-> find some space in this driver but not required for now.
-> 
-> > Now, my question is: is this (notifier)
-> > actually the preferred method and the cpufreq-cpu0 driver is doing it
-> > "wrongly?"
-> 
-> What notifiers are you talking about? I believe using the regulator framework
-> is the right way of doing this. And that would be part of this code later on.
+Thanks,
 
-Also in your driver you're doing
-
-		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-		...
-		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-
-So, theoretically you could install such notifiers to adjust CPU voltages 
-(using regulators too). But adding regulator calls directly to the driver 
-would make it consistent with cpufreq-cpu0.c, so, if this doesn't violate 
-any concepts, I think, it would be good to add those when suitable systems 
-appear.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+	tglx
