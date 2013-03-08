@@ -1,109 +1,49 @@
-From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
-Subject: RE: [PATCH] intel_idle: set the state_tables array into __initdata
- to save mem
-Date: Fri, 8 Mar 2013 00:44:01 +0000
-Message-ID: <27240C0AC20F114CBF8149A2696CBE4A2534DF@SHSMSX101.ccr.corp.intel.com>
-References: <1362674529.31506.17.camel@cliu38-desktop-build>
- <513862A5.7060600@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+ and its DT glue
+Date: Fri, 8 Mar 2013 12:20:42 +0800
+Message-ID: <CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
+References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+	<Pine.LNX.4.64.1303072248560.20470@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:41102 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759872Ab3CHAoH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Mar 2013 19:44:07 -0500
-In-Reply-To: <513862A5.7060600@linaro.org>
-Content-Language: en-US
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:42786 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759621Ab3CHEUn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Mar 2013 23:20:43 -0500
+Received: by mail-ob0-f169.google.com with SMTP id ta14so993007obb.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 Mar 2013 20:20:42 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.64.1303072248560.20470@axis700.grange>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgTWFy
-Y2ggMDcsIDIwMTMgNTo0OSBQTQ0KPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+IENjOiBsZW5iQGtl
-cm5lbC5vcmc7IEJyb3duLCBMZW47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBpbnRlbF9pZGxl
-OiBzZXQgdGhlIHN0YXRlX3RhYmxlcyBhcnJheSBpbnRvIF9faW5pdGRhdGEgdG8NCj4gc2F2ZSBt
-ZW0NCj4gDQo+IE9uIDAzLzA3LzIwMTMgMDU6NDIgUE0sIENodWFuc2hlbmcgTGl1IHdyb3RlOg0K
-PiA+DQo+ID4gQ3VycmVudGx5LCBpbiBpbnRlbF9pZGxlLmMsIHRoZXJlIGFyZSA1IHN0YXRlX3Rh
-YmxlcyBhcnJheSwgZXZlcnkNCj4gPiBhcnJheSBzaXplIGlzIHNpemVvZihzdHJ1Y3QgY3B1aWRs
-ZV9zdGF0ZSkgKiBDUFVJRExFX1NUQVRFX01BWC4NCj4gPg0KPiA+IEJ1dCBhZnRlciBpbnRlbF9p
-ZGxlX3Byb2JlKCksIGp1c3Qgb25seSBvbmUgYXJyYXkgaXMgdXNlZnVsLg0KPiA+DQo+ID4gSGVy
-ZSB3ZSBjYW4ganVzdCBkZWZpbmUgb25lIHN0YXRpYyBzdGF0ZV90YWJsZSwgYW5kIGluaXRpYWxp
-emUgaXQNCj4gPiBpbiBpbnRlbF9pZGxlX3Byb2JlKCksIGFuZCBzZXQgb3RoZXIgZGF0YSBzdGF0
-ZV90YWJsZXMgYXMgX19pbml0ZGF0YS4NCj4gPg0KPiA+IEl0IGNhbiBzYXZlIGFib3V0IDNLLCB3
-aGljaCBhbHNvIGJlbmVmaXRzIG1vYmlsZSBkZXZpY2VzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogbGl1IGNodWFuc2hlbmcgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4g
-PiAgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUuYyB8ICAgMTkgKysrKysrKysrKysrLS0tLS0tLQ0K
-PiA+ICAxIGZpbGVzIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKyksIDcgZGVsZXRpb25zKC0pDQo+
-ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pZGxlL2ludGVsX2lkbGUuYyBiL2RyaXZlcnMv
-aWRsZS9pbnRlbF9pZGxlLmMNCj4gPiBpbmRleCA1ZDY2NzUwLi4wNjQyYmZlIDEwMDY0NA0KPiA+
-IC0tLSBhL2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMNCj4gPiArKysgYi9kcml2ZXJzL2lkbGUv
-aW50ZWxfaWRsZS5jDQo+ID4gQEAgLTk5LDcgKzk5LDcgQEAgc3RhdGljIGludCBpbnRlbF9pZGxl
-KHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LA0KPiA+ICAJCQlzdHJ1Y3QgY3B1aWRsZV9kcml2
-ZXIgKmRydiwgaW50IGluZGV4KTsNCj4gPiAgc3RhdGljIGludCBpbnRlbF9pZGxlX2NwdV9pbml0
-KGludCBjcHUpOw0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqY3B1aWRs
-ZV9zdGF0ZV90YWJsZTsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIGNwdWlkbGVf
-c3RhdGVfdGFibGVbQ1BVSURMRV9TVEFURV9NQVhdOw0KPiA+DQo+ID4gIC8qDQo+ID4gICAqIFNl
-dCB0aGlzIGZsYWcgZm9yIHN0YXRlcyB3aGVyZSB0aGUgSFcgZmx1c2hlcyB0aGUgVExCIGZvciB1
-cw0KPiA+IEBAIC0xMjQsNyArMTI0LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlICpj
-cHVpZGxlX3N0YXRlX3RhYmxlOw0KPiA+ICAgKiB3aGljaCBpcyBhbHNvIHRoZSBpbmRleCBpbnRv
-IHRoZSBNV0FJVCBoaW50IGFycmF5Lg0KPiA+ICAgKiBUaHVzIEMwIGlzIGEgZHVtbXkuDQo+ID4g
-ICAqLw0KPiA+IC1zdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUgbmVoYWxlbV9jc3RhdGVzW0NQ
-VUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIG5l
-aGFsZW1fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0NCj4gX19pbml0ZGF0YSA9IHsNCj4gPiAg
-CXsNCj4gPiAgCQkubmFtZSA9ICJDMS1OSE0iLA0KPiA+ICAJCS5kZXNjID0gIk1XQUlUIDB4MDAi
-LA0KPiA+IEBAIC0xNTcsNyArMTU3LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlDQo+
-IG5laGFsZW1fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gIAkJLmVudGVyID0g
-TlVMTCB9DQo+ID4gIH07DQo+ID4NCj4gPiAtc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIHNu
-Yl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVp
-ZGxlX3N0YXRlIHNuYl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSBfX2luaXRkYXRhID0gew0K
-PiA+ICAJew0KPiA+ICAJCS5uYW1lID0gIkMxLVNOQiIsDQo+ID4gIAkJLmRlc2MgPSAiTVdBSVQg
-MHgwMCIsDQo+ID4gQEAgLTE5Nyw3ICsxOTcsNyBAQCBzdGF0aWMgc3RydWN0IGNwdWlkbGVfc3Rh
-dGUNCj4gc25iX2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdID0gew0KPiA+ICAJCS5lbnRlciA9
-IE5VTEwgfQ0KPiA+ICB9Ow0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSBp
-dmJfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gK3N0YXRpYyBzdHJ1Y3QgY3B1
-aWRsZV9zdGF0ZSBpdmJfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gX19pbml0ZGF0YSA9IHsN
-Cj4gPiAgCXsNCj4gPiAgCQkubmFtZSA9ICJDMS1JVkIiLA0KPiA+ICAJCS5kZXNjID0gIk1XQUlU
-IDB4MDAiLA0KPiA+IEBAIC0yMzcsNyArMjM3LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0
-YXRlDQo+IGl2Yl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiAgCQkuZW50ZXIg
-PSBOVUxMIH0NCj4gPiAgfTsNCj4gPg0KPiA+IC1zdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUg
-aHN3X2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdID0gew0KPiA+ICtzdGF0aWMgc3RydWN0IGNw
-dWlkbGVfc3RhdGUgaHN3X2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdIF9faW5pdGRhdGEgPQ0K
-PiB7DQo+ID4gIAl7DQo+ID4gIAkJLm5hbWUgPSAiQzEtSFNXIiwNCj4gPiAgCQkuZGVzYyA9ICJN
-V0FJVCAweDAwIiwNCj4gPiBAQCAtMjc3LDcgKzI3Nyw3IEBAIHN0YXRpYyBzdHJ1Y3QgY3B1aWRs
-ZV9zdGF0ZQ0KPiBoc3dfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gIAkJLmVu
-dGVyID0gTlVMTCB9DQo+ID4gIH07DQo+ID4NCj4gPiAtc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0
-YXRlIGF0b21fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gK3N0YXRpYyBzdHJ1
-Y3QgY3B1aWRsZV9zdGF0ZSBhdG9tX2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdIF9faW5pdGRh
-dGENCj4gPSB7DQo+ID4gIAl7DQo+ID4gIAkJLm5hbWUgPSAiQzFFLUFUTSIsDQo+ID4gIAkJLmRl
-c2MgPSAiTVdBSVQgMHgwMCIsDQo+ID4gQEAgLTUwNCw3ICs1MDQsMTIgQEAgc3RhdGljIGludCBp
-bnRlbF9pZGxlX3Byb2JlKHZvaWQpDQo+ID4gIAlwcl9kZWJ1ZyhQUkVGSVggIk1XQUlUIHN1YnN0
-YXRlczogMHgleFxuIiwgbXdhaXRfc3Vic3RhdGVzKTsNCj4gPg0KPiA+ICAJaWNwdSA9IChjb25z
-dCBzdHJ1Y3QgaWRsZV9jcHUgKilpZC0+ZHJpdmVyX2RhdGE7DQo+ID4gLQljcHVpZGxlX3N0YXRl
-X3RhYmxlID0gaWNwdS0+c3RhdGVfdGFibGU7DQo+ID4gKwkvKiBDb3B5IHRoZSBpY3B1LT5zdGF0
-ZV90YWJsZSBpbnRvIGNwdWlkbGVfc3RhdGVfdGFibGUsDQo+ID4gKwkgKiBUaGUgcG9pbnRpbmcg
-YXJyYXkgYnkgaWNwdS0+c3RhdGVfdGFibGUgaXMgd2l0aCBfX2luaXRkYXRhLA0KPiA+ICsJICog
-d2hpY2ggd2lsbCBiZSBmcmVlZCBhZnRlciBrZXJuZWwgaW5pdCBlbmRpbmcuDQo+ID4gKwkgKi8N
-Cj4gPiArCW1lbWNweShjcHVpZGxlX3N0YXRlX3RhYmxlLCBpY3B1LT5zdGF0ZV90YWJsZSwNCj4g
-PiArCQkJc2l6ZW9mKGNwdWlkbGVfc3RhdGVfdGFibGUpKTsNCj4gDQo+IFRoZSBpZGVhIGlzIGdv
-b2QgYnV0IGl0IGNvdWxkIGJlIHB1c2hlZCBhIGJpdCBmdXJ0aGVyLg0KPiANCj4gSW5zdGVhZCBv
-ZiBjaGFuZ2luZyBjcHVpZGxlX3N0YXRlX3RhYmxlIHRvIGFuIGFycmF5LCBjaGFuZ2UgaXQgdG8g
-YW4NCj4gaW5pdGRhdGEgYW5kIHRoZSBmdW5jdGlvbnMgaW50ZWxfaWRsZV9jcHVpZGxlX2RyaXZl
-cl9pbml0LA0KPiBpbnRlbF9pZGxlX3Byb2JlIHRvIGluaXQgZnVuY3Rpb25zLg0KWW91IGFyZSBy
-aWdodC4gVGhlIGdsb2JhbCB2YXJpYWJsZSBpbnRlbF9pZGxlX2RyaXZlciB3aWxsIGhhcyB0aGUg
-Y29weSBvZiBjcHVpZGxlX3N0YXRlX3RhYmxlW10sDQp3aWxsIHVwZGF0ZSB0aGUgbmV3IHBhdGNo
-LiBUaGFua3MuDQoNCj4gDQo+IFRoYXQgd291bGQgYWxzbyBiZSBuaWNlIHRvIGdldCByaWQgb2Yg
-YSBnbG9iYWwgdmFyaWFibGUgdG8gc3RvcmUgdGhlDQo+IGN1cnJlbnQgY3B1IGRhdGEgYW5kIGxl
-dCB0aGUgaW50ZWxfaWRsZV9wcm9iZSB0byByZXR1cm4gdGhlIHBvaW50ZXIgdG8NCj4gdGhlIHJp
-Z2h0IHRhYmxlLg0KU291bmRzIHJlYXNvbmFibGUsIHdpbGwgaGF2ZSBhIHRyeSBhbHNvLiBUaGFu
-a3MgYWdhaW4uDQoNCj4gDQo+IA0KPiA+ICAJaWYgKGJvb3RfY3B1X2hhcyhYODZfRkVBVFVSRV9B
-UkFUKSkJLyogQWx3YXlzIFJlbGlhYmxlIEFQSUMgVGltZXIgKi8NCj4gPiAgCQlsYXBpY190aW1l
-cl9yZWxpYWJsZV9zdGF0ZXMgPSBMQVBJQ19USU1FUl9BTFdBWVNfUkVMSUFCTEU7DQo+ID4NCj4g
-DQo+IA0KPiAtLQ0KPiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9w
-ZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzogIDxo
-dHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwNCj4gPGh0dHA6
-Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfA0KPiA8aHR0cDovL3d3dy5saW5h
-cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZw0KDQo=
+On 8 March 2013 05:56, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> I like generic drivers :)
+
+Me too :)
+
+> cpufreq-cpu0 is yet another such generic
+> (cpufreq) driver. Now, comparing the functionality of the two:
+
+Great!!
+
+> we see, that this driver "only" switches CPU clock frequencies. Whereas
+> the cpufreq-cpu0 driver also manipulates a regulator (if available)
+> directly. I understand, power-saving is also an important consideration
+> for big.LITTLE systems. So, I presume, you plan to implement voltage
+> switching in cpufreq notifiers?
+
+So the platform on which we are currently testing these is ARM TC2 Soc
+and this switching is done by the firmware instead. And so didn't went
+for regulator hookups initially.. Obviously in future regulator hookups would
+find some space in this driver but not required for now.
+
+> Now, my question is: is this (notifier)
+> actually the preferred method and the cpufreq-cpu0 driver is doing it
+> "wrongly?"
+
+What notifiers are you talking about? I believe using the regulator framework
+is the right way of doing this. And that would be part of this code later on.
