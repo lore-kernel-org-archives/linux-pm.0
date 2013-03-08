@@ -1,134 +1,109 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc2
-Date: Thu, 07 Mar 2013 23:12:51 +0100
-Message-ID: <1885118.tBgWHmWy46@vostro.rjw.lan>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH] intel_idle: set the state_tables array into __initdata
+ to save mem
+Date: Fri, 8 Mar 2013 00:44:01 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A2534DF@SHSMSX101.ccr.corp.intel.com>
+References: <1362674529.31506.17.camel@cliu38-desktop-build>
+ <513862A5.7060600@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:41102 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759872Ab3CHAoH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Mar 2013 19:44:07 -0500
+In-Reply-To: <513862A5.7060600@linaro.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Linus,
-
-Please pull from the git repository at
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+=
-acpi-3.9-rc2
-
-to receive ACPI and power management fixes for v3.9-rc2 with top-most c=
-ommit
-6bd51658fae374557b063155bd4465411acd12fc
-
-  Merge branch 'pm-fixes' into fixes
-
-on top of commit 6dbe51c251a327e012439c4772097a13df43c5b8
-
-  Linux 3.9-rc1
-
-Included are:
-
-- Two fixes for the new intel_pstate driver from Dirk Brandewie.
-
-- Fix for incorrect usage of the .find_bridge() callback from struct
-  acpi_bus_type in the USB core and subsequent removal of that
-  callback.  This couldn't be pushed earlier, because it depended
-  on material in the PCI and PM/ACPI trees, so it needed to wait for
-  them both to be merged.
-
-- ACPI processor driver cleanups from Chen Gang and Syam Sidhardhan.
-
-- ACPI initialization and error messages fix from Joe Perches.
-
-- Operating Performance Points documentation improvement from
-  Nishanth Menon.
-
-- Fixes for memory leaks and potential concurrency issues and sysfs
-  attributes leaks during device removal in the core device PM QoS
-  code.
-
-- Calxeda Highbank cpufreq driver simplification from Emilio L=C3=B3pez=
-=2E
-
-- cpufreq comment cleanup from Namhyung Kim.
-
-- Fix for a section mismatch in Calxeda Highbank interprocessor
-  communication code from Mark Langsdorf (this is not a PM fix
-  strictly speaking, but the code in question went in through the
-  PM tree).
-
-Thanks!
-
-
----------------
-
-Chen Gang (1):
-      ACPI / porocessor: Beautify code, pr->id is u32 which is never < =
-0
-
-Dirk Brandewie (2):
-      cpufreq / intel_pstate: Fix intel_pstate_init() error path
-      cpufreq / intel_pstate: Do not load on VM that does not report ma=
-x P state.
-
-Emilio L=C3=B3pez (1):
-      cpufreq: highbank: do not initialize array with a loop
-
-Joe Perches (1):
-      ACPI / Sleep: Avoid interleaved message on errors
-
-Mark Langsdorf (1):
-      mailbox, pl320-ipc: remove __init from probe function
-
-Namhyung Kim (1):
-      cpufreq: Fix a typo in comment
-
-Nishanth Menon (1):
-      PM / OPP: improve introductory documentation
-
-Rafael J. Wysocki (4):
-      PM / QoS: Fix concurrency issues and memory leaks in device PM Qo=
-S
-      PM / QoS: Remove device PM QoS sysfs attributes at the right plac=
-e
-      ACPI / glue: Add .match() callback to struct acpi_bus_type
-      ACPI / glue: Drop .find_bridge() callback from struct acpi_bus_ty=
-pe
-
-Syam Sidhardhan (1):
-      ACPI / processor: Remove redundant NULL check before kfree
-
----------------
-
- Documentation/power/opp.txt        |   25 ++++-
- drivers/acpi/glue.c                |   55 ++---------
- drivers/acpi/processor_core.c      |    3 +-
- drivers/acpi/processor_driver.c    |    2 +-
- drivers/acpi/sleep.c               |   16 +++-
- drivers/ata/libata-acpi.c          |    7 +-
- drivers/base/power/main.c          |    2 -
- drivers/base/power/power.h         |    8 +-
- drivers/base/power/qos.c           |  217 +++++++++++++++++++++++++---=
-----------------
- drivers/base/power/sysfs.c         |    1 +
- drivers/cpufreq/cpufreq_governor.h |    2 +-
- drivers/cpufreq/highbank-cpufreq.c |    8 +-
- drivers/cpufreq/intel_pstate.c     |   42 +++------
- drivers/mailbox/pl320-ipc.c        |    3 +-
- drivers/pci/pci-acpi.c             |    8 +-
- drivers/pnp/pnpacpi/core.c         |    8 +-
- drivers/scsi/scsi_lib.c            |    7 +-
- drivers/usb/core/usb-acpi.c        |    9 +-
- include/acpi/acpi_bus.h            |    6 +-
- 19 files changed, 215 insertions(+), 214 deletions(-)
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgTWFy
+Y2ggMDcsIDIwMTMgNTo0OSBQTQ0KPiBUbzogTGl1LCBDaHVhbnNoZW5nDQo+IENjOiBsZW5iQGtl
+cm5lbC5vcmc7IEJyb3duLCBMZW47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gbGludXgt
+a2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBpbnRlbF9pZGxl
+OiBzZXQgdGhlIHN0YXRlX3RhYmxlcyBhcnJheSBpbnRvIF9faW5pdGRhdGEgdG8NCj4gc2F2ZSBt
+ZW0NCj4gDQo+IE9uIDAzLzA3LzIwMTMgMDU6NDIgUE0sIENodWFuc2hlbmcgTGl1IHdyb3RlOg0K
+PiA+DQo+ID4gQ3VycmVudGx5LCBpbiBpbnRlbF9pZGxlLmMsIHRoZXJlIGFyZSA1IHN0YXRlX3Rh
+YmxlcyBhcnJheSwgZXZlcnkNCj4gPiBhcnJheSBzaXplIGlzIHNpemVvZihzdHJ1Y3QgY3B1aWRs
+ZV9zdGF0ZSkgKiBDUFVJRExFX1NUQVRFX01BWC4NCj4gPg0KPiA+IEJ1dCBhZnRlciBpbnRlbF9p
+ZGxlX3Byb2JlKCksIGp1c3Qgb25seSBvbmUgYXJyYXkgaXMgdXNlZnVsLg0KPiA+DQo+ID4gSGVy
+ZSB3ZSBjYW4ganVzdCBkZWZpbmUgb25lIHN0YXRpYyBzdGF0ZV90YWJsZSwgYW5kIGluaXRpYWxp
+emUgaXQNCj4gPiBpbiBpbnRlbF9pZGxlX3Byb2JlKCksIGFuZCBzZXQgb3RoZXIgZGF0YSBzdGF0
+ZV90YWJsZXMgYXMgX19pbml0ZGF0YS4NCj4gPg0KPiA+IEl0IGNhbiBzYXZlIGFib3V0IDNLLCB3
+aGljaCBhbHNvIGJlbmVmaXRzIG1vYmlsZSBkZXZpY2VzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
+eTogbGl1IGNodWFuc2hlbmcgPGNodWFuc2hlbmcubGl1QGludGVsLmNvbT4NCj4gPiAtLS0NCj4g
+PiAgZHJpdmVycy9pZGxlL2ludGVsX2lkbGUuYyB8ICAgMTkgKysrKysrKysrKysrLS0tLS0tLQ0K
+PiA+ICAxIGZpbGVzIGNoYW5nZWQsIDEyIGluc2VydGlvbnMoKyksIDcgZGVsZXRpb25zKC0pDQo+
+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pZGxlL2ludGVsX2lkbGUuYyBiL2RyaXZlcnMv
+aWRsZS9pbnRlbF9pZGxlLmMNCj4gPiBpbmRleCA1ZDY2NzUwLi4wNjQyYmZlIDEwMDY0NA0KPiA+
+IC0tLSBhL2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMNCj4gPiArKysgYi9kcml2ZXJzL2lkbGUv
+aW50ZWxfaWRsZS5jDQo+ID4gQEAgLTk5LDcgKzk5LDcgQEAgc3RhdGljIGludCBpbnRlbF9pZGxl
+KHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LA0KPiA+ICAJCQlzdHJ1Y3QgY3B1aWRsZV9kcml2
+ZXIgKmRydiwgaW50IGluZGV4KTsNCj4gPiAgc3RhdGljIGludCBpbnRlbF9pZGxlX2NwdV9pbml0
+KGludCBjcHUpOw0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqY3B1aWRs
+ZV9zdGF0ZV90YWJsZTsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIGNwdWlkbGVf
+c3RhdGVfdGFibGVbQ1BVSURMRV9TVEFURV9NQVhdOw0KPiA+DQo+ID4gIC8qDQo+ID4gICAqIFNl
+dCB0aGlzIGZsYWcgZm9yIHN0YXRlcyB3aGVyZSB0aGUgSFcgZmx1c2hlcyB0aGUgVExCIGZvciB1
+cw0KPiA+IEBAIC0xMjQsNyArMTI0LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlICpj
+cHVpZGxlX3N0YXRlX3RhYmxlOw0KPiA+ICAgKiB3aGljaCBpcyBhbHNvIHRoZSBpbmRleCBpbnRv
+IHRoZSBNV0FJVCBoaW50IGFycmF5Lg0KPiA+ICAgKiBUaHVzIEMwIGlzIGEgZHVtbXkuDQo+ID4g
+ICAqLw0KPiA+IC1zdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUgbmVoYWxlbV9jc3RhdGVzW0NQ
+VUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIG5l
+aGFsZW1fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0NCj4gX19pbml0ZGF0YSA9IHsNCj4gPiAg
+CXsNCj4gPiAgCQkubmFtZSA9ICJDMS1OSE0iLA0KPiA+ICAJCS5kZXNjID0gIk1XQUlUIDB4MDAi
+LA0KPiA+IEBAIC0xNTcsNyArMTU3LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlDQo+
+IG5laGFsZW1fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gIAkJLmVudGVyID0g
+TlVMTCB9DQo+ID4gIH07DQo+ID4NCj4gPiAtc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlIHNu
+Yl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVp
+ZGxlX3N0YXRlIHNuYl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSBfX2luaXRkYXRhID0gew0K
+PiA+ICAJew0KPiA+ICAJCS5uYW1lID0gIkMxLVNOQiIsDQo+ID4gIAkJLmRlc2MgPSAiTVdBSVQg
+MHgwMCIsDQo+ID4gQEAgLTE5Nyw3ICsxOTcsNyBAQCBzdGF0aWMgc3RydWN0IGNwdWlkbGVfc3Rh
+dGUNCj4gc25iX2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdID0gew0KPiA+ICAJCS5lbnRlciA9
+IE5VTEwgfQ0KPiA+ICB9Ow0KPiA+DQo+ID4gLXN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSBp
+dmJfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gK3N0YXRpYyBzdHJ1Y3QgY3B1
+aWRsZV9zdGF0ZSBpdmJfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gX19pbml0ZGF0YSA9IHsN
+Cj4gPiAgCXsNCj4gPiAgCQkubmFtZSA9ICJDMS1JVkIiLA0KPiA+ICAJCS5kZXNjID0gIk1XQUlU
+IDB4MDAiLA0KPiA+IEBAIC0yMzcsNyArMjM3LDcgQEAgc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0
+YXRlDQo+IGl2Yl9jc3RhdGVzW0NQVUlETEVfU1RBVEVfTUFYXSA9IHsNCj4gPiAgCQkuZW50ZXIg
+PSBOVUxMIH0NCj4gPiAgfTsNCj4gPg0KPiA+IC1zdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUg
+aHN3X2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdID0gew0KPiA+ICtzdGF0aWMgc3RydWN0IGNw
+dWlkbGVfc3RhdGUgaHN3X2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdIF9faW5pdGRhdGEgPQ0K
+PiB7DQo+ID4gIAl7DQo+ID4gIAkJLm5hbWUgPSAiQzEtSFNXIiwNCj4gPiAgCQkuZGVzYyA9ICJN
+V0FJVCAweDAwIiwNCj4gPiBAQCAtMjc3LDcgKzI3Nyw3IEBAIHN0YXRpYyBzdHJ1Y3QgY3B1aWRs
+ZV9zdGF0ZQ0KPiBoc3dfY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gIAkJLmVu
+dGVyID0gTlVMTCB9DQo+ID4gIH07DQo+ID4NCj4gPiAtc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0
+YXRlIGF0b21fY3N0YXRlc1tDUFVJRExFX1NUQVRFX01BWF0gPSB7DQo+ID4gK3N0YXRpYyBzdHJ1
+Y3QgY3B1aWRsZV9zdGF0ZSBhdG9tX2NzdGF0ZXNbQ1BVSURMRV9TVEFURV9NQVhdIF9faW5pdGRh
+dGENCj4gPSB7DQo+ID4gIAl7DQo+ID4gIAkJLm5hbWUgPSAiQzFFLUFUTSIsDQo+ID4gIAkJLmRl
+c2MgPSAiTVdBSVQgMHgwMCIsDQo+ID4gQEAgLTUwNCw3ICs1MDQsMTIgQEAgc3RhdGljIGludCBp
+bnRlbF9pZGxlX3Byb2JlKHZvaWQpDQo+ID4gIAlwcl9kZWJ1ZyhQUkVGSVggIk1XQUlUIHN1YnN0
+YXRlczogMHgleFxuIiwgbXdhaXRfc3Vic3RhdGVzKTsNCj4gPg0KPiA+ICAJaWNwdSA9IChjb25z
+dCBzdHJ1Y3QgaWRsZV9jcHUgKilpZC0+ZHJpdmVyX2RhdGE7DQo+ID4gLQljcHVpZGxlX3N0YXRl
+X3RhYmxlID0gaWNwdS0+c3RhdGVfdGFibGU7DQo+ID4gKwkvKiBDb3B5IHRoZSBpY3B1LT5zdGF0
+ZV90YWJsZSBpbnRvIGNwdWlkbGVfc3RhdGVfdGFibGUsDQo+ID4gKwkgKiBUaGUgcG9pbnRpbmcg
+YXJyYXkgYnkgaWNwdS0+c3RhdGVfdGFibGUgaXMgd2l0aCBfX2luaXRkYXRhLA0KPiA+ICsJICog
+d2hpY2ggd2lsbCBiZSBmcmVlZCBhZnRlciBrZXJuZWwgaW5pdCBlbmRpbmcuDQo+ID4gKwkgKi8N
+Cj4gPiArCW1lbWNweShjcHVpZGxlX3N0YXRlX3RhYmxlLCBpY3B1LT5zdGF0ZV90YWJsZSwNCj4g
+PiArCQkJc2l6ZW9mKGNwdWlkbGVfc3RhdGVfdGFibGUpKTsNCj4gDQo+IFRoZSBpZGVhIGlzIGdv
+b2QgYnV0IGl0IGNvdWxkIGJlIHB1c2hlZCBhIGJpdCBmdXJ0aGVyLg0KPiANCj4gSW5zdGVhZCBv
+ZiBjaGFuZ2luZyBjcHVpZGxlX3N0YXRlX3RhYmxlIHRvIGFuIGFycmF5LCBjaGFuZ2UgaXQgdG8g
+YW4NCj4gaW5pdGRhdGEgYW5kIHRoZSBmdW5jdGlvbnMgaW50ZWxfaWRsZV9jcHVpZGxlX2RyaXZl
+cl9pbml0LA0KPiBpbnRlbF9pZGxlX3Byb2JlIHRvIGluaXQgZnVuY3Rpb25zLg0KWW91IGFyZSBy
+aWdodC4gVGhlIGdsb2JhbCB2YXJpYWJsZSBpbnRlbF9pZGxlX2RyaXZlciB3aWxsIGhhcyB0aGUg
+Y29weSBvZiBjcHVpZGxlX3N0YXRlX3RhYmxlW10sDQp3aWxsIHVwZGF0ZSB0aGUgbmV3IHBhdGNo
+LiBUaGFua3MuDQoNCj4gDQo+IFRoYXQgd291bGQgYWxzbyBiZSBuaWNlIHRvIGdldCByaWQgb2Yg
+YSBnbG9iYWwgdmFyaWFibGUgdG8gc3RvcmUgdGhlDQo+IGN1cnJlbnQgY3B1IGRhdGEgYW5kIGxl
+dCB0aGUgaW50ZWxfaWRsZV9wcm9iZSB0byByZXR1cm4gdGhlIHBvaW50ZXIgdG8NCj4gdGhlIHJp
+Z2h0IHRhYmxlLg0KU291bmRzIHJlYXNvbmFibGUsIHdpbGwgaGF2ZSBhIHRyeSBhbHNvLiBUaGFu
+a3MgYWdhaW4uDQoNCj4gDQo+IA0KPiA+ICAJaWYgKGJvb3RfY3B1X2hhcyhYODZfRkVBVFVSRV9B
+UkFUKSkJLyogQWx3YXlzIFJlbGlhYmxlIEFQSUMgVGltZXIgKi8NCj4gPiAgCQlsYXBpY190aW1l
+cl9yZWxpYWJsZV9zdGF0ZXMgPSBMQVBJQ19USU1FUl9BTFdBWVNfUkVMSUFCTEU7DQo+ID4NCj4g
+DQo+IA0KPiAtLQ0KPiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9w
+ZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzogIDxo
+dHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwNCj4gPGh0dHA6
+Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfA0KPiA8aHR0cDovL3d3dy5saW5h
+cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZw0KDQo=
