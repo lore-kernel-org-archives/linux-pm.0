@@ -1,49 +1,129 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Fri, 8 Mar 2013 12:20:42 +0800
-Message-ID: <CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
-	<Pine.LNX.4.64.1303072248560.20470@axis700.grange>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/4][V2] time : set broadcast irq affinity
+Date: Fri, 08 Mar 2013 05:38:17 +0100
+Message-ID: <51396B39.3090504@linaro.org>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.02.1303052135080.22263@ionos> <51370C09.5020301@linaro.org> <alpine.LFD.2.02.1303061047240.22263@ionos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:42786 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759621Ab3CHEUn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Mar 2013 23:20:43 -0500
-Received: by mail-ob0-f169.google.com with SMTP id ta14so993007obb.0
-        for <linux-pm@vger.kernel.org>; Thu, 07 Mar 2013 20:20:42 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.64.1303072248560.20470@axis700.grange>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.02.1303061047240.22263@ionos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: john.stultz@linaro.org, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
 List-Id: linux-pm@vger.kernel.org
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 
-On 8 March 2013 05:56, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> I like generic drivers :)
+On 03/06/2013 10:48 AM, Thomas Gleixner wrote:
+> On Wed, 6 Mar 2013, Daniel Lezcano wrote:
+>> On 03/05/2013 09:40 PM, Thomas Gleixner wrote:
+>>> On Sat, 2 Mar 2013, Daniel Lezcano wrote:
+>>>> When a cpu goes to a deep idle state where its local timer is shut=
+down,
+>>>> it notifies the time frame work to use the broadcast timer instead=
+=2E
+>>>>
+>>>> Unfortunately, the broadcast device could wake up any CPU, includi=
+ng an
+>>>> idle one which is not concerned by the wake up at all.
+>>>>
+>>>> This implies, in the worst case, an idle CPU will wake up to send =
+an IPI
+>>>> to another idle cpu.
+>>>>
+>>>> This patch solves this by setting the irq affinity to the cpu conc=
+erned
+>>>> by the nearest timer event, by this way, the CPU which is wake up =
+is
+>>>> guarantee to be the one concerned by the next event and we are saf=
+e with
+>>>> unnecessary wakeup for another idle CPU.
+>>>>
+>>>> As the irq affinity is not supported by all the archs, a flag is n=
+eeded
+>>>> to specify which clocksource can handle it : CLOCK_EVT_FEAT_DYNIRQ
+>>>>
+>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>> ---
+>>>>  include/linux/clockchips.h   |    5 +++++
+>>>>  kernel/time/tick-broadcast.c |   40 +++++++++++++++++++++++++++++=
+++++-------
+>>>>  2 files changed, 38 insertions(+), 7 deletions(-)
+>>>>
+>>>> diff --git a/include/linux/clockchips.h b/include/linux/clockchips=
+=2Eh
+>>>> index 6634652..c93e2a6 100644
+>>>> --- a/include/linux/clockchips.h
+>>>> +++ b/include/linux/clockchips.h
+>>>> @@ -55,6 +55,11 @@ enum clock_event_nofitiers {
+>>>>  #define CLOCK_EVT_FEAT_C3STOP		0x000008
+>>>>  #define CLOCK_EVT_FEAT_DUMMY		0x000010
+>>>> =20
+>>>> +/*
+>>>> + * Clock event device can set its irq affinity dynamically
+>>>> + */
+>>>> +#define CLOCK_EVT_FEAT_DYNIRQ		0x000020
+>>>> +
+>>>>  /**
+>>>>   * struct clock_event_device - clock event device descriptor
+>>>>   * @event_handler:	Assigned by the framework to be called by the =
+low
+>>>> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broad=
+cast.c
+>>>> index 6197ac0..9ca8ff5 100644
+>>>> --- a/kernel/time/tick-broadcast.c
+>>>> +++ b/kernel/time/tick-broadcast.c
+>>>> @@ -406,13 +406,37 @@ struct cpumask *tick_get_broadcast_oneshot_m=
+ask(void)
+>>>>  	return to_cpumask(tick_broadcast_oneshot_mask);
+>>>>  }
+>>>> =20
+>>>> -static int tick_broadcast_set_event(struct clock_event_device *bc=
+,
+>>>> +/*
+>>>> + * Set broadcast interrupt affinity
+>>>> + */
+>>>> +static void tick_broadcast_set_affinity(struct clock_event_device=
+ *bc,
+>>>> +					const struct cpumask *cpumask)
+>>>> +{
+>>>> +	if (!(bc->features & CLOCK_EVT_FEAT_DYNIRQ))
+>>>> +		return;
+>>>> +
+>>>> +	if (cpumask_equal(bc->cpumask, cpumask))
+>>>> +		return;
+>>>> +
+>>>> +	bc->cpumask =3D cpumask;
+>>>
+>>> This breaks with CONFIG_CPUMASK_OFFSTACK=3Dy. cpumask_copy() is you=
+r friend!
+>>
+>> This instruction copies the pointer, not the cpumask content.
+>>
+>> bc->cpumask is defined as a const struct cpumask * and is used to co=
+py a
+>> cpumask pointer not the content.
+>>
+>> The cpumask parameter is a pointer to a global cpumask provided by t=
+he
+>> cpumask_of macro.
+>>
+>> But to be in the safe side, I compiled tested with
+>> CONFIG_CPUMASK_OFFSTACK=3Dy without problem.
 
-Me too :)
 
-> cpufreq-cpu0 is yet another such generic
-> (cpufreq) driver. Now, comparing the functionality of the two:
+Hi Thomas,
 
-Great!!
+thanks for merging the patch 1 and 2.
 
-> we see, that this driver "only" switches CPU clock frequencies. Whereas
-> the cpufreq-cpu0 driver also manipulates a regulator (if available)
-> directly. I understand, power-saving is also an important consideration
-> for big.LITTLE systems. So, I presume, you plan to implement voltage
-> switching in cpufreq notifiers?
+I was wondering if it would be possible to take the 3/4 and 4/4
+otherwise the flag dependency will prevent to send those to the
+maintainer's tree until they gain visibility on it.
 
-So the platform on which we are currently testing these is ARM TC2 Soc
-and this switching is done by the firmware instead. And so didn't went
-for regulator hookups initially.. Obviously in future regulator hookups would
-find some space in this driver but not required for now.
 
-> Now, my question is: is this (notifier)
-> actually the preferred method and the cpufreq-cpu0 driver is doing it
-> "wrongly?"
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-What notifiers are you talking about? I believe using the regulator framework
-is the right way of doing this. And that would be part of this code later on.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
