@@ -1,30 +1,77 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/4][V2] time : set broadcast irq affinity
-Date: Fri, 8 Mar 2013 08:20:33 +0100 (CET)
-Message-ID: <alpine.LFD.2.02.1303080817230.22263@ionos>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.02.1303052135080.22263@ionos> <51370C09.5020301@linaro.org> <alpine.LFD.2.02.1303061047240.22263@ionos>
- <51396B39.3090504@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 3/4][V2] ARM: nomadik: add dynamic irq flag to the timer
+Date: Fri, 08 Mar 2013 16:17:29 +0100
+Message-ID: <513A0109.9060801@linaro.org>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed;
+ boundary="------------000300080406010204060003"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:52971 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389Ab3CHHUl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 02:20:41 -0500
-In-Reply-To: <51396B39.3090504@linaro.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:36623 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934138Ab3CHPRf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 10:17:35 -0500
+Received: by mail-pa0-f45.google.com with SMTP id kl14so1370305pab.18
+        for <linux-pm@vger.kernel.org>; Fri, 08 Mar 2013 07:17:35 -0800 (PST)
+In-Reply-To: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, LAK <linux-arm-kernel@lists.infradead.org>, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com, Arnd Bergmann <arnd@arndb.de>
+To: john.stultz@linaro.org, tglx@linutronix.de, linus.walleij@stericsson.com
+Cc: viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org
 
-On Fri, 8 Mar 2013, Daniel Lezcano wrote:
-> On 03/06/2013 10:48 AM, Thomas Gleixner wrote:
-> I was wondering if it would be possible to take the 3/4 and 4/4
-> otherwise the flag dependency will prevent to send those to the
-> maintainer's tree until they gain visibility on it.
+This is a multi-part message in MIME format.
+--------------000300080406010204060003
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I can take them with the ack of arm soc folks.
+> Add the dynamic irq affinity feature to the timer clock device.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Acked-by: Rickard Andersson <rickard.andersson@stericsson.com>
+> ---
 
-Thanks,
+Hi Linus,
 
-	tglx
+AFAIU, you are ok with this patch, Rickard acked it and Vincent reviewed it.
+
+Thomas agreed to merge it into its tree as I requested because we will
+need to wait for your tree to gain visibility to this new flag before
+submitting this patch, which can take awhile.
+
+Could you please ack it if it is ok for you ?
+
+Thanks
+  -- Daniel
+
+> 
+> 
+>  drivers/clocksource/nomadik-mtu.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/clocksource/nomadik-mtu.c b/drivers/clocksource/nomadik-mtu.c
+> index 7cbcaa0..73dc540 100644
+> --- a/drivers/clocksource/nomadik-mtu.c
+> +++ b/drivers/clocksource/nomadik-mtu.c
+> @@ -136,7 +136,8 @@ static void nmdk_clkevt_mode(enum clock_event_mode mode,
+>   static struct clock_event_device nmdk_clkevt = {
+>  	.name		= "mtu_1",
+> -	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
+> +	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC |
+> +	                  CLOCK_EVT_FEAT_DYNIRQ,
+>  	.rating		= 200,
+>  	.set_mode	= nmdk_clkevt_mode,
+>  	.set_next_event	= nmdk_clkevt_next,
+> -- 
+> 1.7.9.5
+
+
+--------------000300080406010204060003
+Content-Type: text/plain; charset=UTF-8;
+ name="Attached Message Part"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="Attached Message Part"
+
+
+--------------000300080406010204060003--
