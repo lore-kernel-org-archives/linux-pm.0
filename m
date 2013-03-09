@@ -1,58 +1,36 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/3] intel_idle: changing the continue to break in intel_idle_cpu_init()
-Date: Sat, 09 Mar 2013 04:01:06 +0100
-Message-ID: <513AA5F2.1000909@linaro.org>
-References: <1362674529.31506.17.camel@cliu38-desktop-build>  <1362754926.31506.42.camel@cliu38-desktop-build> <1362755024.31506.44.camel@cliu38-desktop-build>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+ and its DT glue
+Date: Sat, 9 Mar 2013 11:06:55 +0800
+Message-ID: <CAKohpomVitj=mMmT3Z_QPgxzDyXkKN6xYReyJxO1Nc3ei=zCww@mail.gmail.com>
+References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+	<Pine.LNX.4.64.1303072248560.20470@axis700.grange>
+	<CAKohpo=-_uzTi6QR4MnXPd5yAZFTcw-3ZZL-TAVY+drV-bDjNw@mail.gmail.com>
+	<Pine.LNX.4.64.1303080706310.24111@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1362755024.31506.44.camel@cliu38-desktop-build>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chuansheng Liu <chuansheng.liu@intel.com>
-Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.1303080706310.24111@axis700.grange>
+Sender: cpufreq-owner@vger.kernel.org
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 03/08/2013 04:03 PM, Chuansheng Liu wrote:
->=20
-> According to commit e022e7eb9, the .enter =3D=3D NULL is the last one=
- in
-> state_tables[].
->=20
-> So just like intel_idle_cpuidle_driver_init(), in case of .enter =3D=3D=
- NULL,
-> breaking the for(;;) loop directly.
->=20
-> Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
-> ---
+On 8 March 2013 14:11, Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> Also in your driver you're doing
+>
+>                 cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+>                 ...
+>                 cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+>
+> So, theoretically you could install such notifiers to adjust CPU voltages
+> (using regulators too). But adding regulator calls directly to the driver
+> would make it consistent with cpufreq-cpu0.c.
 
-Sounds good.
+Yes
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>  so, if this doesn't violate
+> any concepts, I think, it would be good to add those when suitable systems
+> appear.
 
->  drivers/idle/intel_idle.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 5d66750..17c9cf9 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -610,7 +610,7 @@ static int intel_idle_cpu_init(int cpu)
->  		int num_substates, mwait_hint, mwait_cstate, mwait_substate;
-> =20
->  		if (cpuidle_state_table[cstate].enter =3D=3D NULL)
-> -			continue;
-> +			break;
-> =20
->  		if (cstate + 1 > max_cstate) {
->  			printk(PREFIX "max_cstate %d reached\n", max_cstate);
->=20
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+That's what i thought :)
