@@ -1,43 +1,95 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/4][V2] ARM: nomadik: add dynamic irq flag to the
- timer
-Date: Fri, 8 Mar 2013 17:03:49 +0100 (CET)
-Message-ID: <alpine.LFD.2.02.1303081703160.22263@ionos>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <513A0109.9060801@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/3] intel_idle: Removing the redundant calculating for
+ dev->state_count
+Date: Sat, 09 Mar 2013 04:00:16 +0100
+Message-ID: <513AA5C0.2020604@linaro.org>
+References: <1362674529.31506.17.camel@cliu38-desktop-build>  <1362754926.31506.42.camel@cliu38-desktop-build> <1362755074.31506.45.camel@cliu38-desktop-build>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:55175 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759692Ab3CHQD6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 11:03:58 -0500
-In-Reply-To: <513A0109.9060801@linaro.org>
+Received: from mail-pb0-f45.google.com ([209.85.160.45]:33277 "EHLO
+	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760174Ab3CIDAV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Mar 2013 22:00:21 -0500
+Received: by mail-pb0-f45.google.com with SMTP id ro8so1839902pbb.32
+        for <linux-pm@vger.kernel.org>; Fri, 08 Mar 2013 19:00:20 -0800 (PST)
+In-Reply-To: <1362755074.31506.45.camel@cliu38-desktop-build>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, linus.walleij@stericsson.com, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org
+To: Chuansheng Liu <chuansheng.liu@intel.com>
+Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, 8 Mar 2013, Daniel Lezcano wrote:
+On 03/08/2013 04:04 PM, Chuansheng Liu wrote:
+>=20
+> In function intel_idle_cpu_init() and intel_idle_cpuidle_driver_init(=
+),
+> they are having the same for(;;) loop.
+>=20
+> Here in intel_idle_cpu_init(), the dev->state_count can be assigned b=
+y
+> drv->state_count directly.
+>=20
+> Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
+> ---
+>  drivers/idle/intel_idle.c |   30 ++----------------------------
+>  1 files changed, 2 insertions(+), 28 deletions(-)
+>=20
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 17c9cf9..503b401 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -599,38 +599,12 @@ static int intel_idle_cpuidle_driver_init(void)
+>   */
+>  static int intel_idle_cpu_init(int cpu)
+>  {
+> -	int cstate;
+>  	struct cpuidle_device *dev;
+> +	struct cpuidle_driver *drv =3D &intel_idle_driver;
+> =20
+>  	dev =3D per_cpu_ptr(intel_idle_cpuidle_devices, cpu);
+> =20
+> -	dev->state_count =3D 1;
+> -
+> -	for (cstate =3D 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
+> -		int num_substates, mwait_hint, mwait_cstate, mwait_substate;
+> -
+> -		if (cpuidle_state_table[cstate].enter =3D=3D NULL)
+> -			break;
+> -
+> -		if (cstate + 1 > max_cstate) {
+> -			printk(PREFIX "max_cstate %d reached\n", max_cstate);
+> -			break;
+> -		}
+> -
+> -		mwait_hint =3D flg2MWAIT(cpuidle_state_table[cstate].flags);
+> -		mwait_cstate =3D MWAIT_HINT2CSTATE(mwait_hint);
+> -		mwait_substate =3D MWAIT_HINT2SUBSTATE(mwait_hint);
+> -
+> -		/* does the state exist in CPUID.MWAIT? */
+> -		num_substates =3D (mwait_substates >> ((mwait_cstate + 1) * 4))
+> -					& MWAIT_SUBSTATE_MASK;
+> -
+> -		/* if sub-state in table is not enumerated by CPUID */
+> -		if ((mwait_substate + 1) > num_substates)
+> -			continue;
+> -
+> -		dev->state_count +=3D 1;
+> -	}
+> +	dev->state_count =3D drv->state_count;
 
-> > Add the dynamic irq affinity feature to the timer clock device.
-> > 
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
-> > Acked-by: Rickard Andersson <rickard.andersson@stericsson.com>
-> > ---
-> 
-> Hi Linus,
-> 
-> AFAIU, you are ok with this patch, Rickard acked it and Vincent reviewed it.
-> 
-> Thomas agreed to merge it into its tree as I requested because we will
-> need to wait for your tree to gain visibility to this new flag before
-> submitting this patch, which can take awhile.
-> 
-> Could you please ack it if it is ok for you ?
+The cpuidle_register_device function already does this initialization.
 
-I can provide a for-arm tree to pull as well. Either way fine with me.
+Probably you can get rid of this initialization and certainly factor ou=
+t
+a bit the code in this case.
 
-Thanks,
 
-	tglx
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
