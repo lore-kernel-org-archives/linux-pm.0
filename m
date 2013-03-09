@@ -1,117 +1,53 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH] thermal: db8500: Fix missing mutex_unlock() in probe error
- paths
-Date: Sat, 09 Mar 2013 15:31:34 +0800
-Message-ID: <1362814294.30718.1.camel@phoenix>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Sat, 9 Mar 2013 18:47:26 +0800
+Message-ID: <CAKohpokJafWjXj8hYT6tgYMGSqgnFCc3MZmNFco2tTeNkOWDmQ@mail.gmail.com>
+References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f173.google.com ([209.85.223.173]:58388 "EHLO
-	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754891Ab3CIHbp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Mar 2013 02:31:45 -0500
-Received: by mail-ie0-f173.google.com with SMTP id 9so2989895iec.32
-        for <linux-pm@vger.kernel.org>; Fri, 08 Mar 2013 23:31:44 -0800 (PST)
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:44114 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756520Ab3CIKr1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Mar 2013 05:47:27 -0500
+Received: by mail-ob0-f182.google.com with SMTP id va7so2001604obc.27
+        for <linux-pm@vger.kernel.org>; Sat, 09 Mar 2013 02:47:26 -0800 (PST)
+In-Reply-To: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Hongbo Zhang <hongbo.zhang@stericsson.com>, Viresh Kumar <viresh.kumar@linaro.org>, Francesco Lavra <francescolavra.fl@gmail.com>, linux-pm@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
 
-Fix missing mutex_unlock() in probe error paths.
+On 7 March 2013 12:13, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+> +struct exynos_dvfs_data {
+> +       void __iomem *base;
+> +       struct resource *mem;
+> +       int irq;
+> +       struct clk *cpu_clk;
+> +       unsigned int cur_frequency;
+> +       unsigned int latency;
+> +       struct cpufreq_frequency_table *freq_table;
+> +       unsigned int freq_count;
+> +       struct device *dev;
+> +       bool dvfs_enable;
 
-Also fix checking return value of thermal_zone_device_register().
-thermal_zone_device_register() returns ERR_PTR on error, thus use
-IS_ERR rather than IS_ERR_OR_NULL to check return value.
+s/enable/enabled?
 
-This patch also includes a few cleanup to remove unnecessary initialization
-for *pzone, *ptrips and ret variables.
+> +static int exynos_cpufreq_probe(struct platform_device *pdev)
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
----
- drivers/thermal/db8500_thermal.c |   25 +++++++++++++++----------
- 1 file changed, 15 insertions(+), 10 deletions(-)
+> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
+> +       if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
 
-diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-index 61ce60a..6344084 100644
---- a/drivers/thermal/db8500_thermal.c
-+++ b/drivers/thermal/db8500_thermal.c
-@@ -390,10 +390,10 @@ static inline struct db8500_thsens_platform_data*
- 
- static int db8500_thermal_probe(struct platform_device *pdev)
- {
--	struct db8500_thermal_zone *pzone = NULL;
--	struct db8500_thsens_platform_data *ptrips = NULL;
-+	struct db8500_thermal_zone *pzone;
-+	struct db8500_thsens_platform_data *ptrips;
- 	struct device_node *np = pdev->dev.of_node;
--	int low_irq, high_irq, ret = 0;
-+	int low_irq, high_irq, ret;
- 	unsigned long dft_low, dft_high;
- 
- 	if (np)
-@@ -419,7 +419,8 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 	low_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_LOW");
- 	if (low_irq < 0) {
- 		dev_err(&pdev->dev, "Get IRQ_HOTMON_LOW failed.\n");
--		return low_irq;
-+		ret = low_irq;
-+		goto out_unlock;
- 	}
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, low_irq, NULL,
-@@ -427,13 +428,14 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 		"dbx500_temp_low", pzone);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Failed to allocate temp low irq.\n");
--		return ret;
-+		goto out_unlock;
- 	}
- 
- 	high_irq = platform_get_irq_byname(pdev, "IRQ_HOTMON_HIGH");
- 	if (high_irq < 0) {
- 		dev_err(&pdev->dev, "Get IRQ_HOTMON_HIGH failed.\n");
--		return high_irq;
-+		ret = high_irq;
-+		goto out_unlock;
- 	}
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, high_irq, NULL,
-@@ -441,15 +443,16 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 		"dbx500_temp_high", pzone);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "Failed to allocate temp high irq.\n");
--		return ret;
-+		goto out_unlock;
- 	}
- 
- 	pzone->therm_dev = thermal_zone_device_register("db8500_thermal_zone",
- 		ptrips->num_trips, 0, pzone, &thdev_ops, NULL, 0, 0);
- 
--	if (IS_ERR_OR_NULL(pzone->therm_dev)) {
-+	if (IS_ERR(pzone->therm_dev)) {
- 		dev_err(&pdev->dev, "Register thermal zone device failed.\n");
--		return PTR_ERR(pzone->therm_dev);
-+		ret = PTR_ERR(pzone->therm_dev);
-+		goto out_unlock;
- 	}
- 	dev_info(&pdev->dev, "Thermal zone device registered.\n");
- 
-@@ -461,9 +464,11 @@ static int db8500_thermal_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, pzone);
- 	pzone->mode = THERMAL_DEVICE_ENABLED;
-+
-+out_unlock:
- 	mutex_unlock(&pzone->th_lock);
- 
--	return 0;
-+	return ret;
- }
- 
- static int db8500_thermal_remove(struct platform_device *pdev)
--- 
-1.7.9.5
+s/IS_ERR_OR_NULL/IS_ERR
 
+> +       if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
+> +                               IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
+> +               pr_err("Failed to register IRQ\n");
+> +               ret = -ENODEV;
 
+use the value returned from this function rather than creating your
+own.. true for all
+other calls too, unless they return NULL on error.
 
+> +}
