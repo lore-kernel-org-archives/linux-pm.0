@@ -1,60 +1,58 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Sun, 10 Mar 2013 16:58:19 +0100
-Message-ID: <513CAD9B.908@gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 0/4] time: dynamic irq affinity
+Date: Sun, 10 Mar 2013 23:03:56 +0530
+Message-ID: <513CC404.6000200@ti.com>
+References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:53461 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711Ab3CJRck (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 10 Mar 2013 13:32:40 -0400
+In-Reply-To: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 
-Hi,
-On 03/07/2013 06:14 PM, Viresh Kumar wrote:
-> big LITTLE is ARM's new Architecture focussing power/performance needs of modern
-> world. More information about big LITTLE can be found here:
+On Wednesday 27 February 2013 03:47 AM, Daniel Lezcano wrote:
+> When a cpu goes to a deep idle state where its local timer is shutdown,
+> it notifies the time framework to use the broadcast timer instead.
 > 
-> http://www.arm.com/products/processors/technologies/biglittleprocessing.php
-> http://lwn.net/Articles/481055/
+> Unfortunately, the broadcast device could wake up any CPU, including an
+> idle one which is not concerned by the wake up at all.
 > 
-> In order to keep cpufreq support for all big LITTLE platforms simple/generic,
-> this patch tries to add a generic cpufreq driver layer for all big LITTLE
-> platforms.
+> This implies, in the worst case, an idle CPU will wake up to send an IPI
+> to another idle cpu.
 > 
-> The driver is divided into two parts:
-> - Core driver: Generic and shared across all big LITTLE SoC's
-> - Glue drivers: Per platform drivers providing ops to the core driver
+> This patch solves this by setting the irq affinity to the cpu concerned
+> by the nearest timer event, by this way, the CPU which is wake up is
+> guarantee to be the one concerned by the next event and we are safe with
+> unnecessary wakeup for another idle CPU.
 > 
-> This patch adds in a generic glue driver which would extract information from
-> Device Tree.
+> As the irq affinity is not supported by all the archs, a flag is needed
+> to specify which clocksource can handle it.
 > 
-> Future SoC's can either reuse the DT glue or write their own depending on the
-> need.
+> Daniel Lezcano (3):
+>   time : pass broadcast parameter
+>   time : set broadcast irq affinity
+>   ARM: nomadik: add dynamic irq flag to the timer
 > 
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-[...]
-> +void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
-> +{
-> +	if (arm_bL_ops != ops) {
-> +		pr_info("%s: Registered with: %s, can't unregister, exiting\n",
-> +				__func__, arm_bL_ops->name);
-> +	}
+> Viresh Kumar (1):
+>   ARM: timer-sp: Set dynamic irq affinity
+> 
+Thanks Daniel for addressing the comments from earlier version. This
+version looks good to me.
 
-The code is not doing what the info message says.
+Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-> +
-> +	cpufreq_unregister_driver(&bL_cpufreq_driver);
-> +	pr_info("%s: Un-registered platform driver: %s\n", __func__,
-> +			arm_bL_ops->name);
-> +	arm_bL_ops = NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(bL_cpufreq_unregister);
+Regards,
+Santosh
+P.S: As I mentioned 'CLOCK_EVT_FEAT_DYNIRQ' optimization on
+OMAP at least I found risky because you might end up missing
+the asynchronous IPI wakeups because of the current SGI's
+implementation. This must be true for other ARM platforms
+as well.
 
---
-Francesco
