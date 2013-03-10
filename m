@@ -1,53 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Sat, 9 Mar 2013 18:47:26 +0800
-Message-ID: <CAKohpokJafWjXj8hYT6tgYMGSqgnFCc3MZmNFco2tTeNkOWDmQ@mail.gmail.com>
-References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+ and its DT glue
+Date: Sun, 10 Mar 2013 16:58:19 +0100
+Message-ID: <513CAD9B.908@gmail.com>
+References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:44114 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756520Ab3CIKr1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Mar 2013 05:47:27 -0500
-Received: by mail-ob0-f182.google.com with SMTP id va7so2001604obc.27
-        for <linux-pm@vger.kernel.org>; Sat, 09 Mar 2013 02:47:26 -0800 (PST)
-In-Reply-To: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, robin.randhawa@arm.com, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
 
-On 7 March 2013 12:13, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> +struct exynos_dvfs_data {
-> +       void __iomem *base;
-> +       struct resource *mem;
-> +       int irq;
-> +       struct clk *cpu_clk;
-> +       unsigned int cur_frequency;
-> +       unsigned int latency;
-> +       struct cpufreq_frequency_table *freq_table;
-> +       unsigned int freq_count;
-> +       struct device *dev;
-> +       bool dvfs_enable;
+Hi,
+On 03/07/2013 06:14 PM, Viresh Kumar wrote:
+> big LITTLE is ARM's new Architecture focussing power/performance needs of modern
+> world. More information about big LITTLE can be found here:
+> 
+> http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+> http://lwn.net/Articles/481055/
+> 
+> In order to keep cpufreq support for all big LITTLE platforms simple/generic,
+> this patch tries to add a generic cpufreq driver layer for all big LITTLE
+> platforms.
+> 
+> The driver is divided into two parts:
+> - Core driver: Generic and shared across all big LITTLE SoC's
+> - Glue drivers: Per platform drivers providing ops to the core driver
+> 
+> This patch adds in a generic glue driver which would extract information from
+> Device Tree.
+> 
+> Future SoC's can either reuse the DT glue or write their own depending on the
+> need.
+> 
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+[...]
+> +void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
+> +{
+> +	if (arm_bL_ops != ops) {
+> +		pr_info("%s: Registered with: %s, can't unregister, exiting\n",
+> +				__func__, arm_bL_ops->name);
+> +	}
 
-s/enable/enabled?
+The code is not doing what the info message says.
 
-> +static int exynos_cpufreq_probe(struct platform_device *pdev)
-
-> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
-> +       if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
-
-s/IS_ERR_OR_NULL/IS_ERR
-
-> +       if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
-> +                               IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
-> +               pr_err("Failed to register IRQ\n");
-> +               ret = -ENODEV;
-
-use the value returned from this function rather than creating your
-own.. true for all
-other calls too, unless they return NULL on error.
-
+> +
+> +	cpufreq_unregister_driver(&bL_cpufreq_driver);
+> +	pr_info("%s: Un-registered platform driver: %s\n", __func__,
+> +			arm_bL_ops->name);
+> +	arm_bL_ops = NULL;
 > +}
+> +EXPORT_SYMBOL_GPL(bL_cpufreq_unregister);
+
+--
+Francesco
