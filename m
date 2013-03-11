@@ -1,83 +1,100 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V3 4/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
-Date: Tue, 12 Mar 2013 00:38:57 +0100
-Message-ID: <1687194.MelaMkNoiM@vostro.rjw.lan>
-References: <cover.1362381470.git.viresh.kumar@linaro.org> <b3deff3c75a0ca1b687c92bf81061c3728346494.1362381470.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM: fix pm_test support for freeze state
+Date: Tue, 12 Mar 2013 00:58:20 +0100
+Message-ID: <4494336.ukGySZsUdo@vostro.rjw.lan>
+References: <1362720530.2734.4.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <b3deff3c75a0ca1b687c92bf81061c3728346494.1362381470.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:52998 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754377Ab3CKXvU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 19:51:20 -0400
+In-Reply-To: <1362720530.2734.4.camel@rzhang1-mobl4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-On Monday, March 04, 2013 03:37:56 PM Viresh Kumar wrote:
-> have_multiple_policies is required by platforms having multiple clock-domains
-> for cpus, i.e. supporting multiple policies for cpus. This patch adds in a
-> Kconfig option for enabling execution of this code.
+On Friday, March 08, 2013 01:28:50 PM Zhang Rui wrote:
+> From d6e5d4f4e8b9a8af79fa50d8e13b14c89d8a9264 Mon Sep 17 00:00:00 2001
+> From: Zhang Rui <rui.zhang@intel.com>
+> Date: Wed, 6 Mar 2013 21:22:21 +0800
+> Subject: [PATCH] PM: fix pm_test support for freeze state
 > 
-> Reported-by: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig | 3 +++
->  include/linux/cpufreq.h | 4 ++++
->  2 files changed, 7 insertions(+)
+> freeze state is a software suspend state that does not run into
+> low-level platform callbacks which may interact with BIOS.
+> And freeze state does not need to disable the processors.
+> Thus we should disable TEST_CPUS and TEST_CORE mode
+> when running pm_test for freeze state.
 > 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index cbcb21e..e6e6939 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -23,6 +23,9 @@ config CPU_FREQ_TABLE
->  config CPU_FREQ_GOV_COMMON
->  	bool
->  
-> +config CPU_FREQ_HAVE_MULTIPLE_POLICIES
-> +	bool
-> +
->  config CPU_FREQ_STAT
->  	tristate "CPU frequency translation statistics"
->  	select CPU_FREQ_TABLE
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 6e1abd2..a092fcb 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -107,11 +107,13 @@ struct cpufreq_policy {
->  	unsigned int		policy; /* see above */
->  	struct cpufreq_governor	*governor; /* see below */
->  	void			*governor_data;
-> +#ifdef CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES
->  	/* This should be set by init() of platforms having multiple
->  	 * clock-domains, i.e.  supporting multiple policies. With this sysfs
->  	 * directories of governor would be created in cpu/cpu<num>/cpufreq/
->  	 * directory */
->  	bool			have_multiple_policies;
-> +#endif
->  
->  	struct work_struct	update; /* if update_policy() needs to be
->  					 * called, but you're in IRQ context */
-> @@ -142,9 +144,11 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
->  static inline struct kobject *
->  get_governor_parent_kobj(struct cpufreq_policy *policy)
->  {
-> +#ifdef CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES
->  	if (policy->have_multiple_policies)
->  		return &policy->kobj;
->  	else
-> +#endif
->  		return cpufreq_global_kobject;
->  }
+> Fix the problem so that users will get a warning message and fail to
+> enter freeze state, when pm_test mode is set to TEST_CPUS/TEST_CORE.
+> 
+> Plus, change the code so that freeze_enter() is invoked after
+> suspend_test(TEST_PLATFORM) being invoked, then pm_test can be used to
+> check if freeze state is working well after all devices are suspended
+> and before processors are blocked.
 
-One more question before I apply it.
+Can you please do one change per patch?  The second change is not related
+to the first one and I don't think it is correct event.
 
-Is there any architecture/platform that will set
-CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES and keep have_multiple_policies unset
-at the same time?
-
+Thanks,
 Rafael
 
 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  kernel/power/suspend.c |   18 +++++++++++++-----
+>  1 file changed, 13 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index d4feda0..e29909a 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -76,8 +76,16 @@ EXPORT_SYMBOL_GPL(suspend_set_ops);
+>  
+>  bool valid_state(suspend_state_t state)
+>  {
+> -	if (state == PM_SUSPEND_FREEZE)
+> -		return true;
+> +	if (state == PM_SUSPEND_FREEZE) {
+> +		if (pm_test_level == TEST_NONE ||
+> +		    pm_test_level == TEST_FREEZER ||
+> +		    pm_test_level == TEST_DEVICES ||
+> +		    pm_test_level == TEST_PLATFORM)
+> +			return true;
+> +		printk(KERN_WARNING "Unsupported pm_test mode for freeze state,"
+> +			" please choose none/freezer/devices/platform.\n");
+> +		return false;
+> +	}
+>  	/*
+>  	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
+>  	 * support and need to be valid to the lowlevel
+> @@ -184,6 +192,9 @@ static int suspend_enter(suspend_state_t state, bool
+> *wakeup)
+>  			goto Platform_wake;
+>  	}
+>  
+> +	if (suspend_test(TEST_PLATFORM))
+> +		goto Platform_wake;
+> +
+>  	/*
+>  	 * PM_SUSPEND_FREEZE equals
+>  	 * frozen processes + suspended devices + idle processors.
+> @@ -195,9 +206,6 @@ static int suspend_enter(suspend_state_t state, bool
+> *wakeup)
+>  		goto Platform_wake;
+>  	}
+>  
+> -	if (suspend_test(TEST_PLATFORM))
+> -		goto Platform_wake;
+> -
+>  	error = disable_nonboot_cpus();
+>  	if (error || suspend_test(TEST_CPUS))
+>  		goto Enable_cpus;
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
