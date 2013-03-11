@@ -1,94 +1,82 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
-Date: Mon, 11 Mar 2013 08:56:09 +0100
-Message-ID: <20130311075609.GP30638@lunn.ch>
-References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 0/4] time: dynamic irq affinity
+Date: Mon, 11 Mar 2013 09:40:54 +0100
+Message-ID: <513D9896.2010304@linaro.org>
+References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com> <513CCF60.6060406@linaro.org> <513D4E79.5090307@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
-Cc: cpufreq@vger.kernel.org, rjw@sisk.pl, rui.zhang@intel.com, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <513D4E79.5090307@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Mar 11, 2013 at 09:35:19AM +0200, Silviu-Mihai Popescu wrote:
-> Convert all uses of devm_request_and_ioremap() to the newly introduced
-> devm_ioremap_resource() which provides more consistent error handling.
-> 
-> devm_ioremap_resource() provides its own error messages so all explicit
-> error messages can be removed from the failure code paths.
-> 
-> Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
-> ---
+On 03/11/2013 04:24 AM, Santosh Shilimkar wrote:
+> On Sunday 10 March 2013 11:52 PM, Daniel Lezcano wrote:
 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+[ ... ]
 
-    Thanks
-	  Andrew
+>> I don't think it is the case for all the ARM platforms, at least we
+>> tested it on vexpress TC2 and u8500, and the number of IPI were redu=
+ced
+>> very significantly increasing the idle time for cpu0. TC2 will need
+>> another optimization on another area for the idle wake up to gain re=
+al
+>> improvements.
+>>
+> You are missing my point. TC2 can be an exception since the SGI can w=
+akeup
+> CPUs even from low power states where local timer's are stalled. Is t=
+hat
+> the case with U8500 ?
+
+Well, the cpuidle driver is not going into a deep idle state to check
+this out.
+
+AFAICT this board has a specific firmware with the PRCMU (a device
+managing the power on the board) and it replaces the GIC when going to
+deep idle state, especially by reconnecting the GIC to the A9 cores
+automatically when an interrupt occurs.
+
+But definitively worth to check.
+
+>> I will test it on OMAP but with the coupled idle state, I am not sur=
+e of
+>> the behavior. Could elaborate a bit the specificity of OMAP ? I am n=
+ot
+>> sure to understand why I may miss some IPI wakeups.
+>>
+> I already mention the issue here [1]. You might not see any major iss=
+ues
+> because the missed asynchronous IPIs might eventually get executed wh=
+en
+> CPU's wakeup from deeper states because of idle wakeups. OMAP is no
+> different from idle wakeup optimisation and it will surely benefit an=
+d work.
+> The main reason I didn't pursue it because of not having solution for
+> [1] which as discussed in past is very much essential from kernel
+> functional correctness perspective. You might want to verify that by
+> adding a tracepoint on IPI's on other reasons except the timer wakeup=
+=2E
+
+Oh, ok. I didn't make the connection. I got the point now.
+
+If we can raise a fake hardware interrupt on the GIC (not sure that
+could be done), may be we can implement something similar to the
+broadcast timer mechanism to replace the IPI when the cores are not IPI
+wakeup capable.
 
 
->  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
->  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
->  drivers/thermal/kirkwood_thermal.c |    8 +++-----
->  3 files changed, 9 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-> index 0e83e3c..6052476 100644
-> --- a/drivers/cpufreq/kirkwood-cpufreq.c
-> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
-> @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
->  		dev_err(&pdev->dev, "Cannot get memory resource\n");
->  		return -ENODEV;
->  	}
-> -	priv.base = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv.base) {
-> -		dev_err(&pdev->dev, "Cannot ioremap\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv.base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv.base))
-> +		return PTR_ERR(priv.base);
->  
->  	np = of_find_node_by_path("/cpus/cpu@0");
->  	if (!np)
-> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-> index 670aa1e..53aad73 100644
-> --- a/drivers/cpuidle/cpuidle-kirkwood.c
-> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
-> @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
->  	if (res == NULL)
->  		return -EINVAL;
->  
-> -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!ddr_operation_base)
-> -		return -EADDRNOTAVAIL;
-> +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(ddr_operation_base))
-> +		return PTR_ERR(ddr_operation_base);
->  
->  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
->  	device->state_count = KIRKWOOD_MAX_STATES;
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> index 65cb4f0..e5500ed 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
->  	if (!priv)
->  		return -ENOMEM;
->  
-> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv->sensor) {
-> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->sensor))
-> +		return PTR_ERR(priv->sensor);
->  
->  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
->  					       priv, &ops, NULL, 0, 0);
-> -- 
-> 1.7.9.5
-> 
+> [1] https://lkml.org/lkml/2013/2/27/39
+>=20
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
