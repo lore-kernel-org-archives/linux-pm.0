@@ -1,76 +1,47 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/4] time: dynamic irq affinity
-Date: Mon, 11 Mar 2013 09:40:54 +0100
-Message-ID: <513D9896.2010304@linaro.org>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com> <513CCF60.6060406@linaro.org> <513D4E79.5090307@ti.com>
+Subject: Re: [PATCH 2/3 V2] intel_idle: Removing the redundant calculating
+ for dev->state_count
+Date: Mon, 11 Mar 2013 10:08:51 +0100
+Message-ID: <513D9F23.5050705@linaro.org>
+References: <1362674529.31506.17.camel@cliu38-desktop-build>  <1362754926.31506.42.camel@cliu38-desktop-build>  <1362755074.31506.45.camel@cliu38-desktop-build> <1362998657.31506.52.camel@cliu38-desktop-build>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <513D4E79.5090307@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f45.google.com ([209.85.214.45]:49674 "EHLO
+	mail-bk0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753212Ab3CKJIz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 05:08:55 -0400
+Received: by mail-bk0-f45.google.com with SMTP id i18so1558188bkv.18
+        for <linux-pm@vger.kernel.org>; Mon, 11 Mar 2013 02:08:54 -0700 (PDT)
+In-Reply-To: <1362998657.31506.52.camel@cliu38-desktop-build>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chuansheng Liu <chuansheng.liu@intel.com>
+Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 03/11/2013 04:24 AM, Santosh Shilimkar wrote:
-> On Sunday 10 March 2013 11:52 PM, Daniel Lezcano wrote:
-
-[ ... ]
-
->> I don't think it is the case for all the ARM platforms, at least we
->> tested it on vexpress TC2 and u8500, and the number of IPI were redu=
-ced
->> very significantly increasing the idle time for cpu0. TC2 will need
->> another optimization on another area for the idle wake up to gain re=
-al
->> improvements.
->>
-> You are missing my point. TC2 can be an exception since the SGI can w=
-akeup
-> CPUs even from low power states where local timer's are stalled. Is t=
-hat
-> the case with U8500 ?
-
-Well, the cpuidle driver is not going into a deep idle state to check
-this out.
-
-AFAICT this board has a specific firmware with the PRCMU (a device
-managing the power on the board) and it replaces the GIC when going to
-deep idle state, especially by reconnecting the GIC to the A9 cores
-automatically when an interrupt occurs.
-
-But definitively worth to check.
-
->> I will test it on OMAP but with the coupled idle state, I am not sur=
-e of
->> the behavior. Could elaborate a bit the specificity of OMAP ? I am n=
-ot
->> sure to understand why I may miss some IPI wakeups.
->>
-> I already mention the issue here [1]. You might not see any major iss=
-ues
-> because the missed asynchronous IPIs might eventually get executed wh=
-en
-> CPU's wakeup from deeper states because of idle wakeups. OMAP is no
-> different from idle wakeup optimisation and it will surely benefit an=
-d work.
-> The main reason I didn't pursue it because of not having solution for
-> [1] which as discussed in past is very much essential from kernel
-> functional correctness perspective. You might want to verify that by
-> adding a tracepoint on IPI's on other reasons except the timer wakeup=
-=2E
-
-Oh, ok. I didn't make the connection. I got the point now.
-
-If we can raise a fake hardware interrupt on the GIC (not sure that
-could be done), may be we can implement something similar to the
-broadcast timer mechanism to replace the IPI when the cores are not IPI
-wakeup capable.
-
-
-> [1] https://lkml.org/lkml/2013/2/27/39
+On 03/11/2013 11:44 AM, Chuansheng Liu wrote:
 >=20
+> In function intel_idle_cpu_init() and intel_idle_cpuidle_driver_init(=
+),
+> they are having the same for(;;) loop to count the ->state_count.
+>=20
+> Although intel_idle_cpu_init() can be called at runtime CPU HOTPLUG c=
+ase,
+> but max_cstate can not be changed at runtime.
+>=20
+> So the dev->state_count should be =3D=3D drv->state_count, in the fun=
+ction
+> cpuidle_register_device() has done the initialization.
+>=20
+> Here we can clean up these pieces of code.
+>=20
+> Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
+> ---
+
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+
 
 
 --=20
@@ -80,3 +51,4 @@ wakeup capable.
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
+
