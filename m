@@ -1,52 +1,74 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Mon, 11 Mar 2013 08:57:49 +0800
-Message-ID: <CAKohponV8MR=J8bbNFxGF9JXQB0uadv7iDcbW9D-qr2N53U_kQ@mail.gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
- <513CAD9B.908@gmail.com>
+From: "Liu, Chuansheng" <chuansheng.liu@intel.com>
+Subject: RE: [PATCH 2/3] intel_idle: Removing the redundant calculating for
+ dev->state_count
+Date: Mon, 11 Mar 2013 01:29:01 +0000
+Message-ID: <27240C0AC20F114CBF8149A2696CBE4A254DC5@SHSMSX101.ccr.corp.intel.com>
+References: <1362674529.31506.17.camel@cliu38-desktop-build>
+  <1362754926.31506.42.camel@cliu38-desktop-build>
+ <1362755074.31506.45.camel@cliu38-desktop-build>
+ <513AA5C0.2020604@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <513CAD9B.908-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Steve.Bannister-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Liviu.Dudau-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, robin.randhawa-5wv7dgnIgG8@public.gmane.org, mark.hambleton-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, charles.garcia-tobin-5wv7dgnIgG8@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:54524 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753360Ab3CKB3N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 10 Mar 2013 21:29:13 -0400
+In-Reply-To: <513AA5C0.2020604@linaro.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 10 March 2013 23:58, Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> On 03/07/2013 06:14 PM, Viresh Kumar wrote:
->> +void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
->> +{
->> +     if (arm_bL_ops != ops) {
->> +             pr_info("%s: Registered with: %s, can't unregister, exiting\n",
->> +                             __func__, arm_bL_ops->name);
->> +     }
->
-> The code is not doing what the info message says.
-
-Yes, following is the improvement:
-
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 8b8b07e..9d449cf 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -264,8 +264,9 @@ EXPORT_SYMBOL_GPL(bL_cpufreq_register);
- void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
- {
-        if (arm_bL_ops != ops) {
--               pr_info("%s: Registered with: %s, can't unregister, exiting\n",
-+               pr_err("%s: Registered with: %s, can't unregister, exiting\n",
-                                __func__, arm_bL_ops->name);
-+               return;
-        }
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
+W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBTYXR1cmRheSwgTWFy
+Y2ggMDksIDIwMTMgMTE6MDAgQU0NCj4gVG86IExpdSwgQ2h1YW5zaGVuZw0KPiBDYzogbGVuYkBr
+ZXJuZWwub3JnOyBCcm93biwgTGVuOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7DQo+IGxpbnV4
+LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzNdIGludGVs
+X2lkbGU6IFJlbW92aW5nIHRoZSByZWR1bmRhbnQgY2FsY3VsYXRpbmcgZm9yDQo+IGRldi0+c3Rh
+dGVfY291bnQNCj4gDQo+IE9uIDAzLzA4LzIwMTMgMDQ6MDQgUE0sIENodWFuc2hlbmcgTGl1IHdy
+b3RlOg0KPiA+DQo+ID4gSW4gZnVuY3Rpb24gaW50ZWxfaWRsZV9jcHVfaW5pdCgpIGFuZCBpbnRl
+bF9pZGxlX2NwdWlkbGVfZHJpdmVyX2luaXQoKSwNCj4gPiB0aGV5IGFyZSBoYXZpbmcgdGhlIHNh
+bWUgZm9yKDs7KSBsb29wLg0KPiA+DQo+ID4gSGVyZSBpbiBpbnRlbF9pZGxlX2NwdV9pbml0KCks
+IHRoZSBkZXYtPnN0YXRlX2NvdW50IGNhbiBiZSBhc3NpZ25lZCBieQ0KPiA+IGRydi0+c3RhdGVf
+Y291bnQgZGlyZWN0bHkuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBsaXUgY2h1YW5zaGVuZyA8
+Y2h1YW5zaGVuZy5saXVAaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL2lkbGUvaW50
+ZWxfaWRsZS5jIHwgICAzMCArKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiAgMSBm
+aWxlcyBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDI4IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaWRsZS9pbnRlbF9pZGxlLmMgYi9kcml2ZXJzL2lkbGUvaW50
+ZWxfaWRsZS5jDQo+ID4gaW5kZXggMTdjOWNmOS4uNTAzYjQwMSAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jDQo+ID4gKysrIGIvZHJpdmVycy9pZGxlL2ludGVsX2lk
+bGUuYw0KPiA+IEBAIC01OTksMzggKzU5OSwxMiBAQCBzdGF0aWMgaW50IGludGVsX2lkbGVfY3B1
+aWRsZV9kcml2ZXJfaW5pdCh2b2lkKQ0KPiA+ICAgKi8NCj4gPiAgc3RhdGljIGludCBpbnRlbF9p
+ZGxlX2NwdV9pbml0KGludCBjcHUpDQo+ID4gIHsNCj4gPiAtCWludCBjc3RhdGU7DQo+ID4gIAlz
+dHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldjsNCj4gPiArCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAq
+ZHJ2ID0gJmludGVsX2lkbGVfZHJpdmVyOw0KPiA+DQo+ID4gIAlkZXYgPSBwZXJfY3B1X3B0cihp
+bnRlbF9pZGxlX2NwdWlkbGVfZGV2aWNlcywgY3B1KTsNCj4gPg0KPiA+IC0JZGV2LT5zdGF0ZV9j
+b3VudCA9IDE7DQo+ID4gLQ0KPiA+IC0JZm9yIChjc3RhdGUgPSAwOyBjc3RhdGUgPCBDUFVJRExF
+X1NUQVRFX01BWDsgKytjc3RhdGUpIHsNCj4gPiAtCQlpbnQgbnVtX3N1YnN0YXRlcywgbXdhaXRf
+aGludCwgbXdhaXRfY3N0YXRlLCBtd2FpdF9zdWJzdGF0ZTsNCj4gPiAtDQo+ID4gLQkJaWYgKGNw
+dWlkbGVfc3RhdGVfdGFibGVbY3N0YXRlXS5lbnRlciA9PSBOVUxMKQ0KPiA+IC0JCQlicmVhazsN
+Cj4gPiAtDQo+ID4gLQkJaWYgKGNzdGF0ZSArIDEgPiBtYXhfY3N0YXRlKSB7DQo+ID4gLQkJCXBy
+aW50ayhQUkVGSVggIm1heF9jc3RhdGUgJWQgcmVhY2hlZFxuIiwgbWF4X2NzdGF0ZSk7DQo+ID4g
+LQkJCWJyZWFrOw0KPiA+IC0JCX0NCj4gPiAtDQo+ID4gLQkJbXdhaXRfaGludCA9IGZsZzJNV0FJ
+VChjcHVpZGxlX3N0YXRlX3RhYmxlW2NzdGF0ZV0uZmxhZ3MpOw0KPiA+IC0JCW13YWl0X2NzdGF0
+ZSA9IE1XQUlUX0hJTlQyQ1NUQVRFKG13YWl0X2hpbnQpOw0KPiA+IC0JCW13YWl0X3N1YnN0YXRl
+ID0gTVdBSVRfSElOVDJTVUJTVEFURShtd2FpdF9oaW50KTsNCj4gPiAtDQo+ID4gLQkJLyogZG9l
+cyB0aGUgc3RhdGUgZXhpc3QgaW4gQ1BVSUQuTVdBSVQ/ICovDQo+ID4gLQkJbnVtX3N1YnN0YXRl
+cyA9IChtd2FpdF9zdWJzdGF0ZXMgPj4gKChtd2FpdF9jc3RhdGUgKyAxKSAqIDQpKQ0KPiA+IC0J
+CQkJCSYgTVdBSVRfU1VCU1RBVEVfTUFTSzsNCj4gPiAtDQo+ID4gLQkJLyogaWYgc3ViLXN0YXRl
+IGluIHRhYmxlIGlzIG5vdCBlbnVtZXJhdGVkIGJ5IENQVUlEICovDQo+ID4gLQkJaWYgKChtd2Fp
+dF9zdWJzdGF0ZSArIDEpID4gbnVtX3N1YnN0YXRlcykNCj4gPiAtCQkJY29udGludWU7DQo+ID4g
+LQ0KPiA+IC0JCWRldi0+c3RhdGVfY291bnQgKz0gMTsNCj4gPiAtCX0NCj4gPiArCWRldi0+c3Rh
+dGVfY291bnQgPSBkcnYtPnN0YXRlX2NvdW50Ow0KPiANCj4gVGhlIGNwdWlkbGVfcmVnaXN0ZXJf
+ZGV2aWNlIGZ1bmN0aW9uIGFscmVhZHkgZG9lcyB0aGlzIGluaXRpYWxpemF0aW9uLg0KVGhhbmtz
+IHlvdXIgcmVtaW5kLCB3aWxsIHNlbmQgcGF0Y2ggVjIgdG8gcmVtb3ZlIGl0Lg0KDQo+IA0KPiBQ
+cm9iYWJseSB5b3UgY2FuIGdldCByaWQgb2YgdGhpcyBpbml0aWFsaXphdGlvbiBhbmQgY2VydGFp
+bmx5IGZhY3RvciBvdXQNCj4gYSBiaXQgdGhlIGNvZGUgaW4gdGhpcyBjYXNlLg0KPiANCj4gDQo+
+IC0tDQo+ICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIgT3BlbiBzb3Vy
+Y2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJvOiAgPGh0dHA6Ly93
+d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0KPiA8aHR0cDovL3R3aXR0
+ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8DQo+IDxodHRwOi8vd3d3LmxpbmFyby5vcmcv
+bGluYXJvLWJsb2cvPiBCbG9nDQoNCg==
