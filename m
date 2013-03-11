@@ -1,29 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
-Date: Mon, 11 Mar 2013 21:49:31 +0800
-Message-ID: <CAOh2x==ECHa4=5Xz+7B9KVJh_8FM1=QndoFkG-unR_8+4PeTWg@mail.gmail.com>
-References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] drivers: thermal: cpu_cooling: fix checkpatch warning
+Date: Mon, 11 Mar 2013 22:24:28 +0800
+Message-ID: <1363011868.2291.74.camel@rzhang1-mobl4>
+References: <1361886162-9387-1-git-send-email-laurent.navet@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f52.google.com ([74.125.82.52]:56993 "EHLO
-	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751821Ab3CKNtc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 09:49:32 -0400
-In-Reply-To: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:19229 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105Ab3CKOYd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 10:24:33 -0400
+In-Reply-To: <1361886162-9387-1-git-send-email-laurent.navet@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
-Cc: cpufreq@vger.kernel.org, rjw@sisk.pl, rui.zhang@intel.com, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Laurent Navet <laurent.navet@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Mar 11, 2013 at 3:35 PM, Silviu-Mihai Popescu
-<silviupopescu1990@gmail.com> wrote:
-> Convert all uses of devm_request_and_ioremap() to the newly introduced
-> devm_ioremap_resource() which provides more consistent error handling.
->
-> devm_ioremap_resource() provides its own error messages so all explicit
-> error messages can be removed from the failure code paths.
->
-> Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+On Tue, 2013-02-26 at 14:42 +0100, Laurent Navet wrote:
+> - WARNING: Avoid CamelCase: <maskPtr>
+> 
+> Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
+> ---
+>  drivers/thermal/cpu_cooling.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 836828e..47b7d32 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -175,8 +175,8 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+>  				unsigned long cooling_state)
+>  {
+>  	unsigned int cpuid, clip_freq;
+> -	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
+> -	unsigned int cpu = cpumask_any(maskPtr);
+> +	struct cpumask *mask = &cpufreq_device->allowed_cpus;
+> +	unsigned int cpu = cpumask_any(mask);
+>  
+> 
+>  	/* Check if the old cooling action is same as new cooling action */
+> @@ -191,7 +191,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+>  	cpufreq_device->cpufreq_val = clip_freq;
+>  	notify_device = cpufreq_device;
+>  
+> -	for_each_cpu(cpuid, maskPtr) {
+> +	for_each_cpu(cpuid, mask) {
+>  		if (is_cpufreq_valid(cpuid))
+>  			cpufreq_update_policy(cpuid);
+>  	}
+why not fix the code in cpufreq_get_max_state() as well, in one patch?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+thanks,
+rui
+
