@@ -1,88 +1,87 @@
-From: Chuansheng Liu <chuansheng.liu@intel.com>
-Subject: [PATCH 2/3 V2] intel_idle: Removing the redundant calculating for
- dev->state_count
-Date: Mon, 11 Mar 2013 18:44:17 +0800
-Message-ID: <1362998657.31506.52.camel@cliu38-desktop-build>
-References: <1362674529.31506.17.camel@cliu38-desktop-build>
-	 <1362754926.31506.42.camel@cliu38-desktop-build>
-	 <1362755074.31506.45.camel@cliu38-desktop-build>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 0/4] time: dynamic irq affinity
+Date: Mon, 11 Mar 2013 08:54:41 +0530
+Message-ID: <513D4E79.5090307@ti.com>
+References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com> <513CCF60.6060406@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:30245 "EHLO mga02.intel.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:43590 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753425Ab3CKBeA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 10 Mar 2013 21:34:00 -0400
-In-Reply-To: <1362755074.31506.45.camel@cliu38-desktop-build>
+	id S1753554Ab3CKDXa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 10 Mar 2013 23:23:30 -0400
+In-Reply-To: <513CCF60.6060406@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org, daniel.lezcano@linaro.org
-Cc: len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 
+On Sunday 10 March 2013 11:52 PM, Daniel Lezcano wrote:
+> On 03/10/2013 06:33 PM, Santosh Shilimkar wrote:
+>> On Wednesday 27 February 2013 03:47 AM, Daniel Lezcano wrote:
+>>> When a cpu goes to a deep idle state where its local timer is shutdown,
+>>> it notifies the time framework to use the broadcast timer instead.
+>>>
+>>> Unfortunately, the broadcast device could wake up any CPU, including an
+>>> idle one which is not concerned by the wake up at all.
+>>>
+>>> This implies, in the worst case, an idle CPU will wake up to send an IPI
+>>> to another idle cpu.
+>>>
+>>> This patch solves this by setting the irq affinity to the cpu concerned
+>>> by the nearest timer event, by this way, the CPU which is wake up is
+>>> guarantee to be the one concerned by the next event and we are safe with
+>>> unnecessary wakeup for another idle CPU.
+>>>
+>>> As the irq affinity is not supported by all the archs, a flag is needed
+>>> to specify which clocksource can handle it.
+>>>
+>>> Daniel Lezcano (3):
+>>>   time : pass broadcast parameter
+>>>   time : set broadcast irq affinity
+>>>   ARM: nomadik: add dynamic irq flag to the timer
+>>>
+>>> Viresh Kumar (1):
+>>>   ARM: timer-sp: Set dynamic irq affinity
+>>>
+>> Thanks Daniel for addressing the comments from earlier version. This
+>> version looks good to me.
+>>
+>> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>>
+>> Regards,
+>> Santosh
+>> P.S: As I mentioned 'CLOCK_EVT_FEAT_DYNIRQ' optimization on
+>> OMAP at least I found risky because you might end up missing
+>> the asynchronous IPI wakeups because of the current SGI's
+>> implementation. This must be true for other ARM platforms
+>> as well.
+> 
+> I don't think it is the case for all the ARM platforms, at least we
+> tested it on vexpress TC2 and u8500, and the number of IPI were reduced
+> very significantly increasing the idle time for cpu0. TC2 will need
+> another optimization on another area for the idle wake up to gain real
+> improvements.
+> 
+You are missing my point. TC2 can be an exception since the SGI can wakeup
+CPUs even from low power states where local timer's are stalled. Is that
+the case with U8500 ?
 
-In function intel_idle_cpu_init() and intel_idle_cpuidle_driver_init(),
-they are having the same for(;;) loop to count the ->state_count.
+> I will test it on OMAP but with the coupled idle state, I am not sure of
+> the behavior. Could elaborate a bit the specificity of OMAP ? I am not
+> sure to understand why I may miss some IPI wakeups.
+> 
+I already mention the issue here [1]. You might not see any major issues
+because the missed asynchronous IPIs might eventually get executed when
+CPU's wakeup from deeper states because of idle wakeups. OMAP is no
+different from idle wakeup optimisation and it will surely benefit and work.
+The main reason I didn't pursue it because of not having solution for
+[1] which as discussed in past is very much essential from kernel
+functional correctness perspective. You might want to verify that by
+adding a tracepoint on IPI's on other reasons except the timer wakeup.
 
-Although intel_idle_cpu_init() can be called at runtime CPU HOTPLUG case,
-but max_cstate can not be changed at runtime.
+Regards,
+Santosh
 
-So the dev->state_count should be == drv->state_count, in the function
-cpuidle_register_device() has done the initialization.
-
-Here we can clean up these pieces of code.
-
-Signed-off-by: liu chuansheng <chuansheng.liu@intel.com>
----
- drivers/idle/intel_idle.c |   29 -----------------------------
- 1 files changed, 0 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 17c9cf9..bb0ae0b 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -599,39 +599,10 @@ static int intel_idle_cpuidle_driver_init(void)
-  */
- static int intel_idle_cpu_init(int cpu)
- {
--	int cstate;
- 	struct cpuidle_device *dev;
- 
- 	dev = per_cpu_ptr(intel_idle_cpuidle_devices, cpu);
- 
--	dev->state_count = 1;
--
--	for (cstate = 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
--		int num_substates, mwait_hint, mwait_cstate, mwait_substate;
--
--		if (cpuidle_state_table[cstate].enter == NULL)
--			break;
--
--		if (cstate + 1 > max_cstate) {
--			printk(PREFIX "max_cstate %d reached\n", max_cstate);
--			break;
--		}
--
--		mwait_hint = flg2MWAIT(cpuidle_state_table[cstate].flags);
--		mwait_cstate = MWAIT_HINT2CSTATE(mwait_hint);
--		mwait_substate = MWAIT_HINT2SUBSTATE(mwait_hint);
--
--		/* does the state exist in CPUID.MWAIT? */
--		num_substates = (mwait_substates >> ((mwait_cstate + 1) * 4))
--					& MWAIT_SUBSTATE_MASK;
--
--		/* if sub-state in table is not enumerated by CPUID */
--		if ((mwait_substate + 1) > num_substates)
--			continue;
--
--		dev->state_count += 1;
--	}
--
- 	dev->cpu = cpu;
- 
- 	if (cpuidle_register_device(dev)) {
--- 
-1.7.0.4
-
-
-
+[1] https://lkml.org/lkml/2013/2/27/39
