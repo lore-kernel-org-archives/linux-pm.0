@@ -1,61 +1,80 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Mon, 11 Mar 2013 09:15:50 +0530
-Message-ID: <CADGdYn5hQUmYM5K=-tdsfACXKsJSb=AB+n3N8ATtzD=mFJikMw@mail.gmail.com>
-References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
-	<CAKohpokJafWjXj8hYT6tgYMGSqgnFCc3MZmNFco2tTeNkOWDmQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokJafWjXj8hYT6tgYMGSqgnFCc3MZmNFco2tTeNkOWDmQ@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>
+From: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+Subject: [PATCH] kirkwood: fix coccicheck warnings
+Date: Mon, 11 Mar 2013 09:35:19 +0200
+Message-ID: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: cpufreq@vger.kernel.org
+Cc: rjw@sisk.pl, rui.zhang@intel.com, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
+Convert all uses of devm_request_and_ioremap() to the newly introduced
+devm_ioremap_resource() which provides more consistent error handling.
 
-On Sat, Mar 9, 2013 at 4:17 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 7 March 2013 12:13, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
->> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
->> +struct exynos_dvfs_data {
->> +       void __iomem *base;
->> +       struct resource *mem;
->> +       int irq;
->> +       struct clk *cpu_clk;
->> +       unsigned int cur_frequency;
->> +       unsigned int latency;
->> +       struct cpufreq_frequency_table *freq_table;
->> +       unsigned int freq_count;
->> +       struct device *dev;
->> +       bool dvfs_enable;
->
-> s/enable/enabled?
-Ok
->
->> +static int exynos_cpufreq_probe(struct platform_device *pdev)
->
->> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
->> +       if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
->
-> s/IS_ERR_OR_NULL/IS_ERR
-Ok.
->
->> +       if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
->> +                               IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
->> +               pr_err("Failed to register IRQ\n");
->> +               ret = -ENODEV;
->
-> use the value returned from this function rather than creating your
-> own.. true for all
-> other calls too, unless they return NULL on error.
->
-Will integrate your suggestions in the next version.
+devm_ioremap_resource() provides its own error messages so all explicit
+error messages can be removed from the failure code paths.
 
-Thanks,
-Amit D
->> +}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+---
+ drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+ drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+ drivers/thermal/kirkwood_thermal.c |    8 +++-----
+ 3 files changed, 9 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+index 0e83e3c..6052476 100644
+--- a/drivers/cpufreq/kirkwood-cpufreq.c
++++ b/drivers/cpufreq/kirkwood-cpufreq.c
+@@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Cannot get memory resource\n");
+ 		return -ENODEV;
+ 	}
+-	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!priv.base) {
+-		dev_err(&pdev->dev, "Cannot ioremap\n");
+-		return -EADDRNOTAVAIL;
+-	}
++	priv.base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv.base))
++		return PTR_ERR(priv.base);
+ 
+ 	np = of_find_node_by_path("/cpus/cpu@0");
+ 	if (!np)
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index 670aa1e..53aad73 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+ 	if (res == NULL)
+ 		return -EINVAL;
+ 
+-	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!ddr_operation_base)
+-		return -EADDRNOTAVAIL;
++	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(ddr_operation_base))
++		return PTR_ERR(ddr_operation_base);
+ 
+ 	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+ 	device->state_count = KIRKWOOD_MAX_STATES;
+diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+index 65cb4f0..e5500ed 100644
+--- a/drivers/thermal/kirkwood_thermal.c
++++ b/drivers/thermal/kirkwood_thermal.c
+@@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+ 	if (!priv)
+ 		return -ENOMEM;
+ 
+-	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+-	if (!priv->sensor) {
+-		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+-		return -EADDRNOTAVAIL;
+-	}
++	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->sensor))
++		return PTR_ERR(priv->sensor);
+ 
+ 	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+ 					       priv, &ops, NULL, 0, 0);
+-- 
+1.7.9.5
