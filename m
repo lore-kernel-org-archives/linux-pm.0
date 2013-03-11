@@ -1,51 +1,98 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] thermal: exynos_thermal: return a proper error code
- while thermal_zone_device_register fail.
-Date: Mon, 11 Mar 2013 22:47:34 +0800
-Message-ID: <1363013254.2291.81.camel@rzhang1-mobl4>
-References: <1362415968-2210-1-git-send-email-devendra.aaru@gmail.com>
-	 <1362415968-2210-2-git-send-email-devendra.aaru@gmail.com>
+Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
+Date: Mon, 11 Mar 2013 22:55:00 +0800
+Message-ID: <1363013700.2291.83.camel@rzhang1-mobl4>
+References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:50387 "EHLO mga14.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:47072 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266Ab3CKOrj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 10:47:39 -0400
-In-Reply-To: <1362415968-2210-2-git-send-email-devendra.aaru@gmail.com>
+	id S1751093Ab3CKOzH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 10:55:07 -0400
+In-Reply-To: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Devendra Naga <devendra.aaru@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+Cc: cpufreq@vger.kernel.org, rjw@sisk.pl, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 2013-03-04 at 11:52 -0500, Devendra Naga wrote:
-> we are returning EINVAL while the thermal_zone_device_register function fail.
-> instead we can use the return value from the thermal_zone_device_register by
-> using PTR_ERR.
+On Mon, 2013-03-11 at 09:35 +0200, Silviu-Mihai Popescu wrote:
+> Convert all uses of devm_request_and_ioremap() to the newly introduced
+> devm_ioremap_resource() which provides more consistent error handling.
 > 
-> Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+> devm_ioremap_resource() provides its own error messages so all explicit
+> error messages can be removed from the failure code paths.
+> 
+> Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+> ---
+>  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+>  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+>  drivers/thermal/kirkwood_thermal.c |    8 +++-----
+>  3 files changed, 9 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> index 0e83e3c..6052476 100644
+> --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+>  		dev_err(&pdev->dev, "Cannot get memory resource\n");
+>  		return -ENODEV;
+>  	}
+> -	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv.base) {
+> -		dev_err(&pdev->dev, "Cannot ioremap\n");
+> -		return -EADDRNOTAVAIL;
+> -	}
+> +	priv.base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv.base))
+> +		return PTR_ERR(priv.base);
+>  
+>  	np = of_find_node_by_path("/cpus/cpu@0");
+>  	if (!np)
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 670aa1e..53aad73 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+>  	if (res == NULL)
+>  		return -EINVAL;
+>  
+> -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!ddr_operation_base)
+> -		return -EADDRNOTAVAIL;
+> +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(ddr_operation_base))
+> +		return PTR_ERR(ddr_operation_base);
+>  
+>  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+>  	device->state_count = KIRKWOOD_MAX_STATES;
+> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> index 65cb4f0..e5500ed 100644
+> --- a/drivers/thermal/kirkwood_thermal.c
+> +++ b/drivers/thermal/kirkwood_thermal.c
+> @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv->sensor) {
+> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> -		return -EADDRNOTAVAIL;
+> -	}
+> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->sensor))
+> +		return PTR_ERR(priv->sensor);
+>  
+>  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+>  					       priv, &ops, NULL, 0, 0);
 
-applied to thermal -next.
+there is already a fix for kirkwood_thermal.c at
+http://marc.info/?l=linux-pm&m=136238017027514&w=2
+and it has been applied to thermal -next.
+
+would you please refreshed the patch?
 
 thanks,
 rui
-> ---
->  drivers/thermal/exynos_thermal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-> index e04ebd8..46568c0 100644
-> --- a/drivers/thermal/exynos_thermal.c
-> +++ b/drivers/thermal/exynos_thermal.c
-> @@ -476,7 +476,7 @@ static int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
->  
->  	if (IS_ERR(th_zone->therm_dev)) {
->  		pr_err("Failed to register thermal zone device\n");
-> -		ret = -EINVAL;
-> +		ret = PTR_ERR(th_zone->therm_dev);
->  		goto err_unregister;
->  	}
->  	th_zone->mode = THERMAL_DEVICE_ENABLED;
-
 
