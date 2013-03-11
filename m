@@ -1,78 +1,46 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 2/2] cpufreq: cpufreq-cpu0: provide compatibility string for DT matchup
-Date: Mon, 11 Mar 2013 18:05:30 -0500
-Message-ID: <1363043130-30270-3-git-send-email-nm@ti.com>
-References: <1363043130-30270-1-git-send-email-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Tue, 12 Mar 2013 00:23:08 +0100
+Message-ID: <3505617.pgqBjPDzlA@vostro.rjw.lan>
+References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1363043130-30270-1-git-send-email-nm@ti.com>
+In-Reply-To: <1361550275-5716-1-git-send-email-nzimmer@sgi.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq <cpufreq@vger.kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Nathan Zimmer <nzimmer@sgi.com>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-commit 5553f9e (cpufreq: instantiate cpufreq-cpu0 as a platform_driver)
-now forces platform device to be registered for allowing cpufreq-cpu0
-to be used by SoCs. example: drivers/cpufreq/highbank-cpufreq.c
+On Friday, February 22, 2013 10:24:33 AM Nathan Zimmer wrote:
+> I am noticing the cpufreq_driver_lock is quite hot.
+> On an idle 512 system perf shows me most of the system time is spent on this
+> lock.  This is quite significant as top shows 5% of time in system time.
+> My solution was to first convert the lock to a rwlock and then to the rcu.
+> 
+> v2: Rebase
+> 
+> v3: Read the RCU documentation instead of skimming it.  Also I based on 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc1
+> I assumed that was what you would prefer Rafael.
+> 
+> v4: Removed an unnecessary syncronize_rcu().
+> 
+> 
+> Nathan Zimmer (2):
+>   cpufreq: Convert the cpufreq_driver_lock to a rwlock
+>   cpufreq: Convert the cpufreq_driver_lock to use the rcu
+> 
+>  drivers/cpufreq/cpufreq.c | 286 ++++++++++++++++++++++++++++++++++------------
+>  1 file changed, 211 insertions(+), 75 deletions(-)
 
-However, for SoCs that wish to link up using device tree, instead
-of platform device, provide compatibility string match:
-compatible = "cpufreq,cpu0";
+I'm going to take patch [1/2] for v3.10, but patch [2/2] still needs some
+work it seems.  Is that correct?  If so, are you going to send an update?
 
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Cc: linux-kernel@vger.kernel.org
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
+Rafael
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- .../devicetree/bindings/cpufreq/cpufreq-cpu0.txt   |    3 +++
- drivers/cpufreq/cpufreq-cpu0.c                     |    6 ++++++
- 2 files changed, 9 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-index f180963..a5699f0 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-@@ -10,6 +10,8 @@ under node /cpus/cpu@0.
- Required properties:
- - operating-points: Refer to Documentation/devicetree/bindings/power/opp.txt
-   for details
-+- compatible: if platform_device is *not* used, should be:
-+  "cpufreq,cpu0"
- 
- Optional properties:
- - clock-name: If the clock is not converted to device tree, then describe
-@@ -24,6 +26,7 @@ Examples:
- cpus {
- 	#address-cells = <1>;
- 	#size-cells = <0>;
-+	compatible = "cpufreq,cpu0";
- 
- 	cpu@0 {
- 		compatible = "arm,cortex-a9";
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 28223c9..a6f0a9b 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -277,9 +277,15 @@ static int cpu0_cpufreq_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static struct of_device_id of_cpu0_cpufreq_match[] = {
-+	{ .compatible = "cpufreq,cpu0", },
-+	{ /* end */ }
-+};
-+
- static struct platform_driver cpu0_cpufreq_platdrv = {
- 	.driver = {
- 		.name	= "cpufreq-cpu0",
-+		.of_match_table = of_cpu0_cpufreq_match,
- 		.owner	= THIS_MODULE,
- 	},
- 	.probe		= cpu0_cpufreq_probe,
 -- 
-1.7.9.5
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
