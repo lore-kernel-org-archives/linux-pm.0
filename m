@@ -1,87 +1,192 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 0/4] time: dynamic irq affinity
-Date: Mon, 11 Mar 2013 08:54:41 +0530
-Message-ID: <513D4E79.5090307@ti.com>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com> <513CCF60.6060406@linaro.org>
+From: amit kachhap <amit.kachhap@gmail.com>
+Subject: Re: [PATCH V3 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
+Date: Mon, 11 Mar 2013 09:13:24 +0530
+Message-ID: <CADGdYn7yqFYxz6OENhTfpkj2_1mUBdu-HM1U=AbDft=XPbTPfQ@mail.gmail.com>
+References: <1362629627-10012-1-git-send-email-amit.daniel@samsung.com>
+	<5138B200.7060906@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:43590 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753554Ab3CKDXa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 10 Mar 2013 23:23:30 -0400
-In-Reply-To: <513CCF60.6060406@linaro.org>
+Received: from mail-ia0-f182.google.com ([209.85.210.182]:65215 "EHLO
+	mail-ia0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753868Ab3CKDnY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Mar 2013 23:43:24 -0400
+In-Reply-To: <5138B200.7060906@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Sunday 10 March 2013 11:52 PM, Daniel Lezcano wrote:
-> On 03/10/2013 06:33 PM, Santosh Shilimkar wrote:
->> On Wednesday 27 February 2013 03:47 AM, Daniel Lezcano wrote:
->>> When a cpu goes to a deep idle state where its local timer is shutdown,
->>> it notifies the time framework to use the broadcast timer instead.
->>>
->>> Unfortunately, the broadcast device could wake up any CPU, including an
->>> idle one which is not concerned by the wake up at all.
->>>
->>> This implies, in the worst case, an idle CPU will wake up to send an IPI
->>> to another idle cpu.
->>>
->>> This patch solves this by setting the irq affinity to the cpu concerned
->>> by the nearest timer event, by this way, the CPU which is wake up is
->>> guarantee to be the one concerned by the next event and we are safe with
->>> unnecessary wakeup for another idle CPU.
->>>
->>> As the irq affinity is not supported by all the archs, a flag is needed
->>> to specify which clocksource can handle it.
->>>
->>> Daniel Lezcano (3):
->>>   time : pass broadcast parameter
->>>   time : set broadcast irq affinity
->>>   ARM: nomadik: add dynamic irq flag to the timer
->>>
->>> Viresh Kumar (1):
->>>   ARM: timer-sp: Set dynamic irq affinity
->>>
->> Thanks Daniel for addressing the comments from earlier version. This
->> version looks good to me.
->>
->> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->>
->> Regards,
->> Santosh
->> P.S: As I mentioned 'CLOCK_EVT_FEAT_DYNIRQ' optimization on
->> OMAP at least I found risky because you might end up missing
->> the asynchronous IPI wakeups because of the current SGI's
->> implementation. This must be true for other ARM platforms
->> as well.
-> 
-> I don't think it is the case for all the ARM platforms, at least we
-> tested it on vexpress TC2 and u8500, and the number of IPI were reduced
-> very significantly increasing the idle time for cpu0. TC2 will need
-> another optimization on another area for the idle wake up to gain real
-> improvements.
-> 
-You are missing my point. TC2 can be an exception since the SGI can wakeup
-CPUs even from low power states where local timer's are stalled. Is that
-the case with U8500 ?
+Hi Sylwester,
 
-> I will test it on OMAP but with the coupled idle state, I am not sure of
-> the behavior. Could elaborate a bit the specificity of OMAP ? I am not
-> sure to understand why I may miss some IPI wakeups.
-> 
-I already mention the issue here [1]. You might not see any major issues
-because the missed asynchronous IPIs might eventually get executed when
-CPU's wakeup from deeper states because of idle wakeups. OMAP is no
-different from idle wakeup optimisation and it will surely benefit and work.
-The main reason I didn't pursue it because of not having solution for
-[1] which as discussed in past is very much essential from kernel
-functional correctness perspective. You might want to verify that by
-adding a tracepoint on IPI's on other reasons except the timer wakeup.
+Thanks for the review. Will update with your suggestion in the next version,
 
-Regards,
-Santosh
+Thanks,
+Amit D
 
-[1] https://lkml.org/lkml/2013/2/27/39
+On Thu, Mar 7, 2013 at 8:58 PM, Sylwester Nawrocki
+<s.nawrocki@samsung.com> wrote:
+> On 03/07/2013 05:13 AM, Amit Daniel Kachhap wrote:
+>> +/* Register definations */
+>
+> s/definations/definitions
+ok
+>
+>> +#define XMU_DVFS_CTRL                0x0060
+>> +#define XMU_PMU_P0_7         0x0064
+>> +#define XMU_C0_3_PSTATE              0x0090
+>> +#define XMU_P_LIMIT          0x00A0
+>> +#define XMU_P_STATUS         0x00A4
+>> +#define XMU_PMUEVTEN         0x00D0
+>> +#define XMU_PMUIRQEN         0x00D4
+>> +#define XMU_PMUIRQ           0x00D8
+>
+> Keeping all hex numbers lower case might be a good idea.
+Ok
+>
+>> +
+>> +/* PMU mask and shift definations */
+>> +#define P_VALUE_MASK         0x7
+>> +
+>> +#define XMU_DVFS_CTRL_EN_SHIFT       0
+>> +
+>> +#define P0_7_CPUCLKDEV_SHIFT 21
+>> +#define P0_7_CPUCLKDEV_MASK  0x7
+>> +#define P0_7_ATBCLKDEV_SHIFT 18
+>> +#define P0_7_ATBCLKDEV_MASK  0x7
+>> +#define P0_7_CSCLKDEV_SHIFT  15
+>> +#define P0_7_CSCLKDEV_MASK   0x7
+>> +#define P0_7_CPUEMA_SHIFT    28
+>> +#define P0_7_CPUEMA_MASK     0xf
+>> +#define P0_7_L2EMA_SHIFT     24
+>> +#define P0_7_L2EMA_MASK      0xf
+> ...
+>> +static int exynos_cpufreq_probe(struct platform_device *pdev)
+>> +{
+>> +     int ret = -EINVAL;
+>> +     struct device_node *np;
+>> +     struct resource res;
+>> +
+>> +     np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
+>> +     if (!np)
+>> +             return -ENODEV;
+>> +
+>> +     dvfs_info = devm_kzalloc(&pdev->dev, sizeof(*dvfs_info), GFP_KERNEL);
+>> +     if (!dvfs_info) {
+>> +             ret = -ENOMEM;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     dvfs_info->dev = &pdev->dev;
+>> +     dvfs_info->dev->of_node = np;
+>> +
+>> +     ret = of_address_to_resource(np, 0, &res);
+>> +     if (ret)
+>> +             goto err_put_node;
+>> +
+>> +     dvfs_info->base = devm_ioremap(dvfs_info->dev, res.start,
+>
+> There is a devm_ioremap_resource() function that has been introduced
+> recently. It could simplify this code a bit and is preferred over
+> devm_ioremap().
+yes right. I somehow missed this api.
+>
+>> +                                     resource_size(&res));
+>> +     if (!dvfs_info->base) {
+>> +             pr_err("No cpufreq memory map found\n");
+>> +             ret = -ENODEV;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     dvfs_info->irq = irq_of_parse_and_map(np, 0);
+>> +     if (dvfs_info->irq == 0) {
+>> +             pr_err("No cpufreq irq found\n");
+>
+> Wouldn't dev_err() be more appropriate here ?
+Ok
+>
+>> +             ret = -ENODEV;
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     ret = of_init_opp_table(dvfs_info->dev);
+>> +     if (ret) {
+>> +             pr_err("failed to init OPP table: %d\n", ret);
+>> +             goto err_put_node;
+>> +     }
+>> +
+>> +     ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +     if (ret) {
+>> +             pr_err("failed to init cpufreq table: %d\n", ret);
+>> +             goto err_put_node;
+>> +     }
+>> +     dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
+>> +     exynos_sort_descend_freq_table();
+>> +
+>> +     if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
+>> +             dvfs_info->latency = DEF_TRANS_LATENCY;
+>> +
+>> +     dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
+>> +     if (IS_ERR_OR_NULL(dvfs_info->cpu_clk)) {
+>
+> devm_clk_get() return value needs to be checked with IS_ERR(),
+> not IS_ERR_OR_NULL().
+ok
+>
+>> +             pr_err("Failed to get cpu clock\n");
+>> +             ret = PTR_ERR(dvfs_info->cpu_clk);
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
+>> +     if (!dvfs_info->cur_frequency) {
+>> +             pr_err("Failed to get clock rate\n");
+>> +             ret = -EINVAL;
+>> +             goto err_free_table;
+>> +     }
+>> +     dvfs_info->cur_frequency /= 1000;
+>> +
+>> +     INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
+>> +     if (devm_request_irq(dvfs_info->dev, dvfs_info->irq, exynos_cpufreq_irq,
+>> +                             IRQF_TRIGGER_NONE, CPUFREQ_NAME, dvfs_info)) {
+>> +             pr_err("Failed to register IRQ\n");
+>> +             ret = -ENODEV;
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     ret = init_div_table();
+>> +     if (ret) {
+>> +             pr_err("Failed to initialise div table\n");
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     exynos_enable_dvfs();
+>> +     ret = cpufreq_register_driver(&exynos_driver);
+>> +     if (ret) {
+>> +             pr_err("%s: failed to register cpufreq driver\n", __func__);
+>> +             goto err_free_table;
+>> +     }
+>> +
+>> +     of_node_put(np);
+>> +     dvfs_info->dvfs_enable = true;
+>> +     pr_info("exynos5440 DVFS initialized.\n");
+>
+> dev_info() ?
+>
+>> +     return 0;
+>> +
+>> +err_free_table:
+>> +     opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
+>> +err_put_node:
+>> +     of_node_put(np);
+>> +     pr_err("%s: failed initialization\n", __func__);
+>
+> Is this really needed ? This failure will be logged by the driver core
+> anyway.
+>
+>> +     return ret;
+>> +
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
