@@ -1,60 +1,66 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 3/3] Thermal: kirkwood: Convert to
- devm_ioremap_resource()
-Date: Mon, 11 Mar 2013 22:35:50 +0800
-Message-ID: <1363012550.2291.77.camel@rzhang1-mobl4>
-References: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
-	 <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/2] thermal: rcar_thermal: propagate return value of
+ thermal_zone_device_register
+Date: Mon, 11 Mar 2013 22:47:09 +0800
+Message-ID: <1363013229.2291.80.camel@rzhang1-mobl4>
+References: <1362415968-2210-1-git-send-email-devendra.aaru@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:57978 "EHLO mga03.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:59311 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752686Ab3CKOf4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 10:35:56 -0400
-In-Reply-To: <1362379534-30662-3-git-send-email-sachin.kamat@linaro.org>
+	id S1751266Ab3CKOrb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 10:47:31 -0400
+In-Reply-To: <1362415968-2210-1-git-send-email-devendra.aaru@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, thierry.reding@avionic-design.de, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+To: Devendra Naga <devendra.aaru@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-On Mon, 2013-03-04 at 12:15 +0530, Sachin Kamat wrote:
-> Use the newly introduced devm_ioremap_resource() instead of
-> devm_request_and_ioremap() which provides more consistent error handling.
+On Mon, 2013-03-04 at 11:52 -0500, Devendra Naga wrote:
+> thermal_zone_device_register returns a value contained in the pointer itself
+> use PTR_ERR to obtain the address and return it at the end.
 > 
-> devm_ioremap_resource() provides its own error messages; so all explicit
-> error messages can be removed from the failure code paths.
-> 
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+> Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
 
-applied to thermal -next tree.
+Applied to thermal -next.
 
 thanks,
 rui
+
 > ---
->  drivers/thermal/kirkwood_thermal.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
+>  drivers/thermal/rcar_thermal.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> index 65cb4f0..e5500ed 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
->  	if (!priv)
->  		return -ENOMEM;
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 28f0919..f1726c9 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -363,6 +363,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  	struct resource *res, *irq;
+>  	int mres = 0;
+>  	int i;
+> +	int ret = -ENODEV;
+>  	int idle = IDLE_INTERVAL;
 >  
-> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv->sensor) {
-> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->sensor))
-> +		return PTR_ERR(priv->sensor);
+>  	common = devm_kzalloc(dev, sizeof(*common), GFP_KERNEL);
+> @@ -441,6 +442,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  						idle);
+>  		if (IS_ERR(priv->zone)) {
+>  			dev_err(dev, "can't register thermal zone\n");
+> +			ret = PTR_ERR(priv->zone);
+>  			goto error_unregister;
+>  		}
 >  
->  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
->  					       priv, &ops, NULL, 0, 0);
+> @@ -460,7 +462,7 @@ error_unregister:
+>  	rcar_thermal_for_each_priv(priv, common)
+>  		thermal_zone_device_unregister(priv->zone);
+>  
+> -	return -ENODEV;
+> +	return ret;
+>  }
+>  
+>  static int rcar_thermal_remove(struct platform_device *pdev)
 
 
