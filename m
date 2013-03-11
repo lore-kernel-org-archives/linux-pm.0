@@ -1,54 +1,101 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 0/4] time: dynamic irq affinity
-Date: Mon, 11 Mar 2013 15:59:21 +0530
-Message-ID: <513DB201.80503@ti.com>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com> <513CCF60.6060406@linaro.org> <513D4E79.5090307@ti.com> <513D9896.2010304@linaro.org> <513DA009.9080601@ti.com> <513DA3BD.4070003@stericsson.com>
+From: =?UTF-8?q?Rodolfo=20Garc=C3=ADa=20Pe=C3=B1as=20=28kix=29?=
+	<kix@kix.es>
+Subject: [PATCH 2/3] Support to disable KMS using config file
+Date: Mon, 11 Mar 2013 11:46:20 +0100
+Message-ID: <1362998781-4651-3-git-send-email-kix@kix.es>
+References: <1362998781-4651-1-git-send-email-kix@kix.es>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:52957 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752501Ab3CKK2A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 06:28:00 -0400
-In-Reply-To: <513DA3BD.4070003@stericsson.com>
+Received: from ks399202.kimsufi.com ([37.59.37.136]:49899 "EHLO
+	ks399202.kimsufi.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748Ab3CKKqk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 06:46:40 -0400
+In-Reply-To: <1362998781-4651-1-git-send-email-kix@kix.es>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Andersson <rickard.andersson@stericsson.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, Linus WALLEIJ <linus.walleij@stericsson.com>
+To: linux-pm@vger.kernel.org
+Cc: rjw@sisk.pl, "=?UTF-8?q? Rodolfo=20Garc=C3=ADa=20Pe=C3=B1as=20(kix) ?=" <kix@kix.es>
 
-On Monday 11 March 2013 02:58 PM, Rickard Andersson wrote:
-> On 03/11/2013 10:12 AM, Santosh Shilimkar wrote:
->> On Monday 11 March 2013 02:10 PM, Daniel Lezcano wrote:
->>> On 03/11/2013 04:24 AM, Santosh Shilimkar wrote:
->>>> On Sunday 10 March 2013 11:52 PM, Daniel Lezcano wrote:
->>> [ ... ]
->>>
->>>>> I don't think it is the case for all the ARM platforms, at least we
->>>>> tested it on vexpress TC2 and u8500, and the number of IPI were reduced
->>>>> very significantly increasing the idle time for cpu0. TC2 will need
->>>>> another optimization on another area for the idle wake up to gain real
->>>>> improvements.
->>>>>
->>>> You are missing my point. TC2 can be an exception since the SGI can wakeup
->>>> CPUs even from low power states where local timer's are stalled. Is that
->>>> the case with U8500 ?
->>> Well, the cpuidle driver is not going into a deep idle state to check
->>> this out.
->>>
->>> AFAICT this board has a specific firmware with the PRCMU (a device
->>> managing the power on the board) and it replaces the GIC when going to
->>> deep idle state, especially by reconnecting the GIC to the A9 cores
->>> automatically when an interrupt occurs.
->>>
->> But most likely it will be limited to peripheral interrupts. SGI's
->> are per-cpu irq's so you need to check that part.
->>
-> In the U8500 case, when the first CPU is woken up it will work ok for that CPU to send an IPI to the other CPU.
-> 
-Nice. So in your case, IPI's will always work as long as one of the CPU is
-active.
+=46rom: "Rodolfo Garc=C3=ADa Pe=C3=B1as (kix)" <kix@kix.es>
 
-Regards
-Santosh
+This patch adds support to disable the KMS via config file.
+
+The user can add "s2ram_disable_kms =3D y" to the configuration file
+to avoid the use of KMS.
+
+We need move up the call to read the config file for s2ram (get_s2ram_c=
+onfig())
+because the test for the "no_kms_flag" [line 90: "if (!no_kms_flag) {"]=
+=2E
+
+In s2ram.c, the function to read the config file search for s2ram_disab=
+le_kms" and assign the value to s2ram_disable_kms variable.
+
+Signed-off-by: Rodolfo Garc=C3=ADa Pe=C3=B1as (kix) <kix@kix.es>
+---
+ s2ram-main.c |    6 +++---
+ s2ram.c      |   11 ++++++++++-
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/s2ram-main.c b/s2ram-main.c
+index b430054..27d4823 100644
+--- a/s2ram-main.c
++++ b/s2ram-main.c
+@@ -84,6 +84,9 @@ int main(int argc, char *argv[])
+ 		}
+ 	}
+=20
++	/* Test if s2ram will use quirks from the configuration file */
++	ret =3D get_s2ram_config();
++
+ 	/* Check if the KMS support is disabled by user */
+ 	if (!no_kms_flag) {
+ 		/* KMS */
+@@ -96,9 +99,6 @@ int main(int argc, char *argv[])
+ 		printf("KMS disabled by user.\n");
+ 	}
+=20
+-	/* Test if s2ram will use quirks from the configuration file */
+-	ret =3D get_s2ram_config();
+-
+ 	if (ret) {
+ 		/* No configuration file, using quirks form database */
+ 		ret =3D s2ram_is_supported();
+diff --git a/s2ram.c b/s2ram.c
+index aa2a605..e04cae6 100644
+--- a/s2ram.c
++++ b/s2ram.c
+@@ -23,11 +23,16 @@
+ #include "s2ram.h"
+ #include "config_parser.h"
+=20
+-static char s2ram_force;
++static char s2ram_force, s2ram_disable_kms;
+ static char s2ram_quirks[MAX_STR_LEN];
+=20
+ static struct config_par s2ram_parameters[] =3D {
+ 	{
++		.name =3D "s2ram_disable_kms",
++		.fmt =3D "%c",
++		.ptr =3D &s2ram_disable_kms,
++	},
++	{
+ 		.name =3D "s2ram_force",
+ 		.fmt =3D "%c",
+ 		.ptr =3D &s2ram_force,
+@@ -110,6 +115,10 @@ int get_s2ram_config(void)
+ 			fprintf(stderr, "%s: Could not parse config file\n", ret_name);
+ 			return error;
+ 		}
++
++		if (s2ram_disable_kms =3D=3D 'y')
++			no_kms_flag =3D 1;
++
+ 		if (s2ram_force =3D=3D 'y') {
+ 			force =3D 1;
+=20
+--=20
+1.7.10.4
 
