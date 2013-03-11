@@ -1,93 +1,52 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/4] time: dynamic irq affinity
-Date: Sun, 10 Mar 2013 19:22:24 +0100
-Message-ID: <513CCF60.6060406@linaro.org>
-References: <1361917047-29230-1-git-send-email-daniel.lezcano@linaro.org> <513CC404.6000200@ti.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+ and its DT glue
+Date: Mon, 11 Mar 2013 08:57:49 +0800
+Message-ID: <CAKohponV8MR=J8bbNFxGF9JXQB0uadv7iDcbW9D-qr2N53U_kQ@mail.gmail.com>
+References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
+ <513CAD9B.908@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:39636 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090Ab3CJSW2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Mar 2013 14:22:28 -0400
-Received: by mail-we0-f169.google.com with SMTP id t11so2828478wey.0
-        for <linux-pm@vger.kernel.org>; Sun, 10 Mar 2013 11:22:27 -0700 (PDT)
-In-Reply-To: <513CC404.6000200@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <513CAD9B.908-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Steve.Bannister-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, Liviu.Dudau-5wv7dgnIgG8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, cpufreq-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, robin.randhawa-5wv7dgnIgG8@public.gmane.org, mark.hambleton-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, charles.garcia-tobin-5wv7dgnIgG8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linus.walleij@stericsson.com
 
-On 03/10/2013 06:33 PM, Santosh Shilimkar wrote:
-> On Wednesday 27 February 2013 03:47 AM, Daniel Lezcano wrote:
->> When a cpu goes to a deep idle state where its local timer is shutdo=
-wn,
->> it notifies the time framework to use the broadcast timer instead.
->>
->> Unfortunately, the broadcast device could wake up any CPU, including=
- an
->> idle one which is not concerned by the wake up at all.
->>
->> This implies, in the worst case, an idle CPU will wake up to send an=
- IPI
->> to another idle cpu.
->>
->> This patch solves this by setting the irq affinity to the cpu concer=
-ned
->> by the nearest timer event, by this way, the CPU which is wake up is
->> guarantee to be the one concerned by the next event and we are safe =
-with
->> unnecessary wakeup for another idle CPU.
->>
->> As the irq affinity is not supported by all the archs, a flag is nee=
-ded
->> to specify which clocksource can handle it.
->>
->> Daniel Lezcano (3):
->>   time : pass broadcast parameter
->>   time : set broadcast irq affinity
->>   ARM: nomadik: add dynamic irq flag to the timer
->>
->> Viresh Kumar (1):
->>   ARM: timer-sp: Set dynamic irq affinity
->>
-> Thanks Daniel for addressing the comments from earlier version. This
-> version looks good to me.
->=20
-> Reviewed-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
->=20
-> Regards,
-> Santosh
-> P.S: As I mentioned 'CLOCK_EVT_FEAT_DYNIRQ' optimization on
-> OMAP at least I found risky because you might end up missing
-> the asynchronous IPI wakeups because of the current SGI's
-> implementation. This must be true for other ARM platforms
-> as well.
+On 10 March 2013 23:58, Francesco Lavra <francescolavra.fl-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> On 03/07/2013 06:14 PM, Viresh Kumar wrote:
+>> +void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
+>> +{
+>> +     if (arm_bL_ops != ops) {
+>> +             pr_info("%s: Registered with: %s, can't unregister, exiting\n",
+>> +                             __func__, arm_bL_ops->name);
+>> +     }
+>
+> The code is not doing what the info message says.
 
-I don't think it is the case for all the ARM platforms, at least we
-tested it on vexpress TC2 and u8500, and the number of IPI were reduced
-very significantly increasing the idle time for cpu0. TC2 will need
-another optimization on another area for the idle wake up to gain real
-improvements.
+Yes, following is the improvement:
 
-I will test it on OMAP but with the coupled idle state, I am not sure o=
-f
-the behavior. Could elaborate a bit the specificity of OMAP ? I am not
-sure to understand why I may miss some IPI wakeups.
-
-Testing on more boards will be worth but not until we have correct
-cpuidle support, with deep idle states.
-
-Thanks
-  -- Daniel
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 8b8b07e..9d449cf 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -264,8 +264,9 @@ EXPORT_SYMBOL_GPL(bL_cpufreq_register);
+ void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
+ {
+        if (arm_bL_ops != ops) {
+-               pr_info("%s: Registered with: %s, can't unregister, exiting\n",
++               pr_err("%s: Registered with: %s, can't unregister, exiting\n",
+                                __func__, arm_bL_ops->name);
++               return;
+        }
