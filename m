@@ -1,56 +1,72 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] drivers: thermal: cpu_cooling: fix checkpatch warning
-Date: Mon, 11 Mar 2013 22:24:28 +0800
-Message-ID: <1363011868.2291.74.camel@rzhang1-mobl4>
-References: <1361886162-9387-1-git-send-email-laurent.navet@gmail.com>
+Subject: Re: [PATCH 1/3] Thermal: dove: Convert to devm_ioremap_resource()
+Date: Mon, 11 Mar 2013 22:35:10 +0800
+Message-ID: <1363012510.2291.75.camel@rzhang1-mobl4>
+References: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:19229 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:33522 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105Ab3CKOYd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 10:24:33 -0400
-In-Reply-To: <1361886162-9387-1-git-send-email-laurent.navet@gmail.com>
+	id S1751665Ab3CKOfP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 10:35:15 -0400
+In-Reply-To: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Navet <laurent.navet@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: linux-pm@vger.kernel.org, thierry.reding@avionic-design.de, Andrew Lunn <andrew@lunn.ch>
 
-On Tue, 2013-02-26 at 14:42 +0100, Laurent Navet wrote:
-> - WARNING: Avoid CamelCase: <maskPtr>
+On Mon, 2013-03-04 at 12:15 +0530, Sachin Kamat wrote:
+> Use the newly introduced devm_ioremap_resource() instead of
+> devm_request_and_ioremap() which provides more consistent error handling.
 > 
-> Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
-> ---
->  drivers/thermal/cpu_cooling.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+> devm_ioremap_resource() provides its own error messages; so all explicit
+> error messages can be removed from the failure code paths.
 > 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 836828e..47b7d32 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -175,8 +175,8 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
->  				unsigned long cooling_state)
->  {
->  	unsigned int cpuid, clip_freq;
-> -	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
-> -	unsigned int cpu = cpumask_any(maskPtr);
-> +	struct cpumask *mask = &cpufreq_device->allowed_cpus;
-> +	unsigned int cpu = cpumask_any(mask);
->  
-> 
->  	/* Check if the old cooling action is same as new cooling action */
-> @@ -191,7 +191,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
->  	cpufreq_device->cpufreq_val = clip_freq;
->  	notify_device = cpufreq_device;
->  
-> -	for_each_cpu(cpuid, maskPtr) {
-> +	for_each_cpu(cpuid, mask) {
->  		if (is_cpufreq_valid(cpuid))
->  			cpufreq_update_policy(cpuid);
->  	}
-why not fix the code in cpufreq_get_max_state() as well, in one patch?
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+
+applied to thermal -next tree.
 
 thanks,
 rui
+> ---
+>  drivers/thermal/dove_thermal.c |   16 ++++++----------
+>  1 files changed, 6 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
+> index 7b0bfa0..3078c40 100644
+> --- a/drivers/thermal/dove_thermal.c
+> +++ b/drivers/thermal/dove_thermal.c
+> @@ -143,22 +143,18 @@ static int dove_thermal_probe(struct platform_device *pdev)
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv->sensor) {
+> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> -		return -EADDRNOTAVAIL;
+> -	}
+> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->sensor))
+> +		return PTR_ERR(priv->sensor);
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+>  	if (!res) {
+>  		dev_err(&pdev->dev, "Failed to get platform resource\n");
+>  		return -ENODEV;
+>  	}
+> -	priv->control = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv->control) {
+> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> -		return -EADDRNOTAVAIL;
+> -	}
+> +	priv->control = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->control))
+> +		return PTR_ERR(priv->control);
+>  
+>  	ret = dove_init_sensor(priv);
+>  	if (ret) {
+
 
