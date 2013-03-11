@@ -1,49 +1,100 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 4/4][V2] ARM: timer-sp: Set dynamic irq affinity
-Date: Mon, 11 Mar 2013 16:22:55 +0000
-Message-ID: <20130311162255.GI4977@n2100.arm.linux.org.uk>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-5-git-send-email-daniel.lezcano@linaro.org> <513A03B7.7000004@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
+Date: Mon, 11 Mar 2013 18:03:24 +0100
+Message-ID: <9281321.Y04oYVrc0i@vostro.rjw.lan>
+References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com> <1363013700.2291.83.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60648 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753263Ab3CKQ32 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 12:29:28 -0400
-Content-Disposition: inline
-In-Reply-To: <513A03B7.7000004@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1363013700.2291.83.camel@rzhang1-mobl4>
+Sender: cpufreq-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>, cpufreq@vger.kernel.org, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
 
-On Fri, Mar 08, 2013 at 04:28:55PM +0100, Daniel Lezcano wrote:
-> On 03/02/2013 11:10 AM, Daniel Lezcano wrote:
-> > From: Viresh Kumar <viresh.kumar@linaro.org>
+On Monday, March 11, 2013 10:55:00 PM Zhang Rui wrote:
+> On Mon, 2013-03-11 at 09:35 +0200, Silviu-Mihai Popescu wrote:
+> > Convert all uses of devm_request_and_ioremap() to the newly introduced
+> > devm_ioremap_resource() which provides more consistent error handling.
 > > 
-> > When a cpu goes to a deep idle state where its local timer is shutdown, it
-> > notifies the time frame work to use the broadcast timer instead.
+> > devm_ioremap_resource() provides its own error messages so all explicit
+> > error messages can be removed from the failure code paths.
 > > 
-> > Unfortunately, the broadcast device could wake up any CPU, including an idle one
-> > which is not concerned by the wake up at all.
-> > 
-> > This implies, in the worst case, an idle CPU will wake up to send an IPI to
-> > another idle cpu.
-> > 
-> > This patch fixes this for ARM platforms using timer-sp, by setting
-> > CLOCK_EVT_FEAT_DYNIRQ feature.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
 > > ---
+> >  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+> >  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+> >  drivers/thermal/kirkwood_thermal.c |    8 +++-----
+> >  3 files changed, 9 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> > index 0e83e3c..6052476 100644
+> > --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> > +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> > @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+> >  		dev_err(&pdev->dev, "Cannot get memory resource\n");
+> >  		return -ENODEV;
+> >  	}
+> > -	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> > -	if (!priv.base) {
+> > -		dev_err(&pdev->dev, "Cannot ioremap\n");
+> > -		return -EADDRNOTAVAIL;
+> > -	}
+> > +	priv.base = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(priv.base))
+> > +		return PTR_ERR(priv.base);
+> >  
+> >  	np = of_find_node_by_path("/cpus/cpu@0");
+> >  	if (!np)
+> > diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> > index 670aa1e..53aad73 100644
+> > --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> > +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> > @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+> >  	if (res == NULL)
+> >  		return -EINVAL;
+> >  
+> > -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+> > -	if (!ddr_operation_base)
+> > -		return -EADDRNOTAVAIL;
+> > +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(ddr_operation_base))
+> > +		return PTR_ERR(ddr_operation_base);
+> >  
+> >  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+> >  	device->state_count = KIRKWOOD_MAX_STATES;
+> > diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> > index 65cb4f0..e5500ed 100644
+> > --- a/drivers/thermal/kirkwood_thermal.c
+> > +++ b/drivers/thermal/kirkwood_thermal.c
+> > @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+> >  	if (!priv)
+> >  		return -ENOMEM;
+> >  
+> > -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> > -	if (!priv->sensor) {
+> > -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> > -		return -EADDRNOTAVAIL;
+> > -	}
+> > +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> > +	if (IS_ERR(priv->sensor))
+> > +		return PTR_ERR(priv->sensor);
+> >  
+> >  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+> >  					       priv, &ops, NULL, 0, 0);
 > 
-> Hi Russell,
+> there is already a fix for kirkwood_thermal.c at
+> http://marc.info/?l=linux-pm&m=136238017027514&w=2
+> and it has been applied to thermal -next.
 > 
-> I asked Thomas if he could take this patch in its tree but it falls
-> under your umbrella. Thomas agreed to take it if you ack this patch.
-> 
-> Is this patch acceptable for you ?
+> would you please refreshed the patch?
 
-It's simple enough.
+Are you going to take that patch into your tree, then?
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
