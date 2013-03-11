@@ -1,21 +1,22 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/3] Thermal: dove: Convert to devm_ioremap_resource()
-Date: Mon, 11 Mar 2013 22:35:10 +0800
-Message-ID: <1363012510.2291.75.camel@rzhang1-mobl4>
+Subject: Re: [PATCH 2/3] Thermal: rcar: Convert to devm_ioremap_resource()
+Date: Mon, 11 Mar 2013 22:35:32 +0800
+Message-ID: <1363012532.2291.76.camel@rzhang1-mobl4>
 References: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
+	 <1362379534-30662-2-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:33522 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:26808 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751665Ab3CKOfP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 10:35:15 -0400
-In-Reply-To: <1362379534-30662-1-git-send-email-sachin.kamat@linaro.org>
+	id S1752686Ab3CKOf6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Mar 2013 10:35:58 -0400
+In-Reply-To: <1362379534-30662-2-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, thierry.reding@avionic-design.de, Andrew Lunn <andrew@lunn.ch>
+Cc: linux-pm@vger.kernel.org, thierry.reding@avionic-design.de, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
 On Mon, 2013-03-04 at 12:15 +0530, Sachin Kamat wrote:
 > Use the newly introduced devm_ioremap_resource() instead of
@@ -25,48 +26,49 @@ On Mon, 2013-03-04 at 12:15 +0530, Sachin Kamat wrote:
 > error messages can be removed from the failure code paths.
 > 
 > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
 applied to thermal -next tree.
 
 thanks,
 rui
 > ---
->  drivers/thermal/dove_thermal.c |   16 ++++++----------
+>  drivers/thermal/rcar_thermal.c |   16 ++++++----------
 >  1 files changed, 6 insertions(+), 10 deletions(-)
 > 
-> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-> index 7b0bfa0..3078c40 100644
-> --- a/drivers/thermal/dove_thermal.c
-> +++ b/drivers/thermal/dove_thermal.c
-> @@ -143,22 +143,18 @@ static int dove_thermal_probe(struct platform_device *pdev)
->  	if (!priv)
->  		return -ENOMEM;
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 28f0919..b28990a 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -399,11 +399,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		/*
+>  		 * rcar_has_irq_support() will be enabled
+>  		 */
+> -		common->base = devm_request_and_ioremap(dev, res);
+> -		if (!common->base) {
+> -			dev_err(dev, "Unable to ioremap thermal register\n");
+> -			return -ENOMEM;
+> -		}
+> +		common->base = devm_ioremap_resource(dev, res);
+> +		if (IS_ERR(common->base))
+> +			return PTR_ERR(common->base);
 >  
-> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv->sensor) {
-> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->sensor))
-> +		return PTR_ERR(priv->sensor);
+>  		/* enable temperature comparation */
+>  		rcar_thermal_common_write(common, ENR, 0x00030303);
+> @@ -422,11 +420,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  			return -ENOMEM;
+>  		}
 >  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
->  	if (!res) {
->  		dev_err(&pdev->dev, "Failed to get platform resource\n");
->  		return -ENODEV;
->  	}
-> -	priv->control = devm_request_and_ioremap(&pdev->dev, res);
-> -	if (!priv->control) {
-> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> -		return -EADDRNOTAVAIL;
-> -	}
-> +	priv->control = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(priv->control))
-> +		return PTR_ERR(priv->control);
+> -		priv->base = devm_request_and_ioremap(dev, res);
+> -		if (!priv->base) {
+> -			dev_err(dev, "Unable to ioremap priv register\n");
+> -			return -ENOMEM;
+> -		}
+> +		priv->base = devm_ioremap_resource(dev, res);
+> +		if (IS_ERR(priv->base))
+> +			return PTR_ERR(priv->base);
 >  
->  	ret = dove_init_sensor(priv);
->  	if (ret) {
+>  		priv->common = common;
+>  		priv->id = i;
 
 
