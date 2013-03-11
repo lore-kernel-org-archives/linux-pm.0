@@ -1,39 +1,49 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline function
- to evaluate freq_target
-Date: Mon, 11 Mar 2013 18:21:05 +0200
-Message-ID: <513E0471.6@semaphore.gr>
-References: <51366C77.3080309@semaphore.gr> <CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com> <51374F8D.9040300@semaphore.gr> <CAKohponZrMyZkUBDAnMv=B+fVpqYdQ62bP2iQGsg1=uOKfyPdQ@mail.gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 4/4][V2] ARM: timer-sp: Set dynamic irq affinity
+Date: Mon, 11 Mar 2013 16:22:55 +0000
+Message-ID: <20130311162255.GI4977@n2100.arm.linux.org.uk>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <1362219013-18173-5-git-send-email-daniel.lezcano@linaro.org> <513A03B7.7000004@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:37841 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753320Ab3CKQVJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 12:21:09 -0400
-In-Reply-To: <CAKohponZrMyZkUBDAnMv=B+fVpqYdQ62bP2iQGsg1=uOKfyPdQ@mail.gmail.com>
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60648 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263Ab3CKQ32 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Mar 2013 12:29:28 -0400
+Content-Disposition: inline
+In-Reply-To: <513A03B7.7000004@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: john.stultz@linaro.org, tglx@linutronix.de, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, linus.walleij@stericsson.com
 
-> On 6 March 2013 22:15, Stratos Karafotis <stratosk@semaphore.gr> wrote:
->> Use an inline function to evaluate freq_target to avoid duplicate code.
->>
->> Also, define a macro for the default frequency step.
->>
->> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
->> ---
->>   drivers/cpufreq/cpufreq_conservative.c | 27 +++++++++++++++------------
->>   1 file changed, 15 insertions(+), 12 deletions(-)
+On Fri, Mar 08, 2013 at 04:28:55PM +0100, Daniel Lezcano wrote:
+> On 03/02/2013 11:10 AM, Daniel Lezcano wrote:
+> > From: Viresh Kumar <viresh.kumar@linaro.org>
+> > 
+> > When a cpu goes to a deep idle state where its local timer is shutdown, it
+> > notifies the time frame work to use the broadcast timer instead.
+> > 
+> > Unfortunately, the broadcast device could wake up any CPU, including an idle one
+> > which is not concerned by the wake up at all.
+> > 
+> > This implies, in the worst case, an idle CPU will wake up to send an IPI to
+> > another idle cpu.
+> > 
+> > This patch fixes this for ARM platforms using timer-sp, by setting
+> > CLOCK_EVT_FEAT_DYNIRQ feature.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Hi Russell,
+> 
+> I asked Thomas if he could take this patch in its tree but it falls
+> under your umbrella. Thomas agreed to take it if you ack this patch.
+> 
+> Is this patch acceptable for you ?
 
-Hi Rafael,
+It's simple enough.
 
-Could you please let me know if this patchset is going to be 
-applied or not?
-
-Thank you in advance for your time,
-Stratos
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
