@@ -1,115 +1,107 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] PM: fix pm_test support for freeze state
-Date: Tue, 12 Mar 2013 08:03:15 +0800
-Message-ID: <1363046595.2291.95.camel@rzhang1-mobl4>
-References: <1362720530.2734.4.camel@rzhang1-mobl4>
-	 <4494336.ukGySZsUdo@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] kirkwood: fix coccicheck warnings
+Date: Tue, 12 Mar 2013 01:10:48 +0100
+Message-ID: <8172590.SMZGNxeycF@vostro.rjw.lan>
+References: <1362987319-6369-1-git-send-email-silviupopescu1990@gmail.com> <9281321.Y04oYVrc0i@vostro.rjw.lan> <1363046296.2291.91.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:63861 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754188Ab3CLADp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 20:03:45 -0400
-In-Reply-To: <4494336.ukGySZsUdo@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1363046296.2291.91.camel@rzhang1-mobl4>
+Sender: cpufreq-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>, cpufreq@vger.kernel.org, andrew@lunn.ch, jason@lakedaemon.net, rob.lee@linaro.org, len.brown@intel.com, khilman@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-On Tue, 2013-03-12 at 00:58 +0100, Rafael J. Wysocki wrote:
-> On Friday, March 08, 2013 01:28:50 PM Zhang Rui wrote:
-> > From d6e5d4f4e8b9a8af79fa50d8e13b14c89d8a9264 Mon Sep 17 00:00:00 2001
-> > From: Zhang Rui <rui.zhang@intel.com>
-> > Date: Wed, 6 Mar 2013 21:22:21 +0800
-> > Subject: [PATCH] PM: fix pm_test support for freeze state
+On Tuesday, March 12, 2013 07:58:16 AM Zhang Rui wrote:
+> On Mon, 2013-03-11 at 18:03 +0100, Rafael J. Wysocki wrote:
+> > On Monday, March 11, 2013 10:55:00 PM Zhang Rui wrote:
+> > > On Mon, 2013-03-11 at 09:35 +0200, Silviu-Mihai Popescu wrote:
+> > > > Convert all uses of devm_request_and_ioremap() to the newly introduced
+> > > > devm_ioremap_resource() which provides more consistent error handling.
+> > > > 
+> > > > devm_ioremap_resource() provides its own error messages so all explicit
+> > > > error messages can be removed from the failure code paths.
+> > > > 
+> > > > Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+> > > > ---
+> > > >  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+> > > >  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+> > > >  drivers/thermal/kirkwood_thermal.c |    8 +++-----
+> > > >  3 files changed, 9 insertions(+), 13 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
+> > > > index 0e83e3c..6052476 100644
+> > > > --- a/drivers/cpufreq/kirkwood-cpufreq.c
+> > > > +++ b/drivers/cpufreq/kirkwood-cpufreq.c
+> > > > @@ -175,11 +175,9 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
+> > > >  		dev_err(&pdev->dev, "Cannot get memory resource\n");
+> > > >  		return -ENODEV;
+> > > >  	}
+> > > > -	priv.base = devm_request_and_ioremap(&pdev->dev, res);
+> > > > -	if (!priv.base) {
+> > > > -		dev_err(&pdev->dev, "Cannot ioremap\n");
+> > > > -		return -EADDRNOTAVAIL;
+> > > > -	}
+> > > > +	priv.base = devm_ioremap_resource(&pdev->dev, res);
+> > > > +	if (IS_ERR(priv.base))
+> > > > +		return PTR_ERR(priv.base);
+> > > >  
+> > > >  	np = of_find_node_by_path("/cpus/cpu@0");
+> > > >  	if (!np)
+> > > > diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> > > > index 670aa1e..53aad73 100644
+> > > > --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> > > > +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> > > > @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+> > > >  	if (res == NULL)
+> > > >  		return -EINVAL;
+> > > >  
+> > > > -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+> > > > -	if (!ddr_operation_base)
+> > > > -		return -EADDRNOTAVAIL;
+> > > > +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+> > > > +	if (IS_ERR(ddr_operation_base))
+> > > > +		return PTR_ERR(ddr_operation_base);
+> > > >  
+> > > >  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+> > > >  	device->state_count = KIRKWOOD_MAX_STATES;
+> > > > diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> > > > index 65cb4f0..e5500ed 100644
+> > > > --- a/drivers/thermal/kirkwood_thermal.c
+> > > > +++ b/drivers/thermal/kirkwood_thermal.c
+> > > > @@ -85,11 +85,9 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+> > > >  	if (!priv)
+> > > >  		return -ENOMEM;
+> > > >  
+> > > > -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> > > > -	if (!priv->sensor) {
+> > > > -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> > > > -		return -EADDRNOTAVAIL;
+> > > > -	}
+> > > > +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> > > > +	if (IS_ERR(priv->sensor))
+> > > > +		return PTR_ERR(priv->sensor);
+> > > >  
+> > > >  	thermal = thermal_zone_device_register("kirkwood_thermal", 0, 0,
+> > > >  					       priv, &ops, NULL, 0, 0);
+> > > 
+> > > there is already a fix for kirkwood_thermal.c at
+> > > http://marc.info/?l=linux-pm&m=136238017027514&w=2
+> > > and it has been applied to thermal -next.
+> > > 
+> > > would you please refreshed the patch?
 > > 
-> > freeze state is a software suspend state that does not run into
-> > low-level platform callbacks which may interact with BIOS.
-> > And freeze state does not need to disable the processors.
-> > Thus we should disable TEST_CPUS and TEST_CORE mode
-> > when running pm_test for freeze state.
-> > 
-> > Fix the problem so that users will get a warning message and fail to
-> > enter freeze state, when pm_test mode is set to TEST_CPUS/TEST_CORE.
-> > 
-> > Plus, change the code so that freeze_enter() is invoked after
-> > suspend_test(TEST_PLATFORM) being invoked, then pm_test can be used to
-> > check if freeze state is working well after all devices are suspended
-> > and before processors are blocked.
+> > Are you going to take that patch into your tree, then?
 > 
-> Can you please do one change per patch? 
+> I'll take the one that fixes kirkwood_thermal.c. :)
 
-okay. will do that.
+OK
 
->  The second change is not related
-> to the first one
-
-right.
-
->  and I don't think it is correct event.
-> 
-hmmm,
-do you mean two changes in one patch is wrong or do you mean the code
-for the second change is wrong?
-
-thanks,
-rui
-> Thanks,
-> Rafael
-> 
-> 
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  kernel/power/suspend.c |   18 +++++++++++++-----
-> >  1 file changed, 13 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > index d4feda0..e29909a 100644
-> > --- a/kernel/power/suspend.c
-> > +++ b/kernel/power/suspend.c
-> > @@ -76,8 +76,16 @@ EXPORT_SYMBOL_GPL(suspend_set_ops);
-> >  
-> >  bool valid_state(suspend_state_t state)
-> >  {
-> > -	if (state == PM_SUSPEND_FREEZE)
-> > -		return true;
-> > +	if (state == PM_SUSPEND_FREEZE) {
-> > +		if (pm_test_level == TEST_NONE ||
-> > +		    pm_test_level == TEST_FREEZER ||
-> > +		    pm_test_level == TEST_DEVICES ||
-> > +		    pm_test_level == TEST_PLATFORM)
-> > +			return true;
-> > +		printk(KERN_WARNING "Unsupported pm_test mode for freeze state,"
-> > +			" please choose none/freezer/devices/platform.\n");
-> > +		return false;
-> > +	}
-> >  	/*
-> >  	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
-> >  	 * support and need to be valid to the lowlevel
-> > @@ -184,6 +192,9 @@ static int suspend_enter(suspend_state_t state, bool
-> > *wakeup)
-> >  			goto Platform_wake;
-> >  	}
-> >  
-> > +	if (suspend_test(TEST_PLATFORM))
-> > +		goto Platform_wake;
-> > +
-> >  	/*
-> >  	 * PM_SUSPEND_FREEZE equals
-> >  	 * frozen processes + suspended devices + idle processors.
-> > @@ -195,9 +206,6 @@ static int suspend_enter(suspend_state_t state, bool
-> > *wakeup)
-> >  		goto Platform_wake;
-> >  	}
-> >  
-> > -	if (suspend_test(TEST_PLATFORM))
-> > -		goto Platform_wake;
-> > -
-> >  	error = disable_nonboot_cpus();
-> >  	if (error || suspend_test(TEST_CPUS))
-> >  		goto Enable_cpus;
-> > 
+Thanks,
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
