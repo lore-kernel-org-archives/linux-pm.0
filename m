@@ -1,159 +1,52 @@
-From: "J, KEERTHY" <j-keerthy@ti.com>
-Subject: RE: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are
- not in DT yet.
-Date: Tue, 12 Mar 2013 15:17:20 +0000
-Message-ID: <DC88CAD03C0052499C1907B327FC63229BF816@DBDE01.ent.ti.com>
-References: <1363043130-30270-1-git-send-email-nm@ti.com>
- <1363043130-30270-2-git-send-email-nm@ti.com> <513EB704.8030907@ti.com>
- <513F3A88.5060903@ti.com> <20130312143535.GA21599@kahuna>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM/domains: add delayed power off capability
+Date: Tue, 12 Mar 2013 08:19:01 -0700
+Message-ID: <20130312151901.GA18438@kroah.com>
+References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
+ <20130312134913.GD3514@kroah.com>
+ <513F4208.4040207@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130312143535.GA21599@kahuna>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: "Menon, Nishanth" <nm@ti.com>, "Cousson, Benoit" <b-cousson@ti.com>
-Cc: "Shilimkar, Santosh" <santosh.shilimkar@ti.com>, cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f46.google.com ([209.85.160.46]:41335 "EHLO
+	mail-pb0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599Ab3CLPSQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Mar 2013 11:18:16 -0400
+Received: by mail-pb0-f46.google.com with SMTP id uo15so5066502pbc.5
+        for <linux-pm@vger.kernel.org>; Tue, 12 Mar 2013 08:18:16 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <513F4208.4040207@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mayuresh Kulkarni <mkulkarni@nvidia.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-Hi Nishanth,
-
-> -----Original Message-----
-> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
-> owner@vger.kernel.org] On Behalf Of Menon, Nishanth
-> Sent: Tuesday, March 12, 2013 8:06 PM
-> To: Cousson, Benoit
-> Cc: Shilimkar, Santosh; cpufreq; Rafael J. Wysocki; Shawn Guo; linux-
-> kernel@vger.kernel.org; linux-pm@vger.kernel.org; linux-
-> omap@vger.kernel.org
-> Subject: Re: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which
-> are not in DT yet.
-> 
-> On 15:24-20130312, Benoit Cousson wrote:
-> > Hi Guys,
+On Tue, Mar 12, 2013 at 08:26:08PM +0530, Mayuresh Kulkarni wrote:
+> On Tuesday 12 March 2013 07:19 PM, Greg KH wrote:
+> >On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
+> >>- this commit adds a capability to delay the powering off
+> >>of the domain
 > >
-> > On 03/12/2013 06:03 AM, Santosh Shilimkar wrote:
-> > > On Tuesday 12 March 2013 04:35 AM, Nishanth Menon wrote:
-> > >> On certain SoCs like variants of OMAP, the clock conversion to DT
-> > >> is not complete. In short, the ability to:
-> > >> cpus {
-> > >>     cpu@0 {
-> > >> 	clocks = <&cpuclk 0>;
-> > >>     };
-> > >>  };
-> > >> is not possible. However, the clock node is registered.
-> > >> Allow for clk names to be provided as string so as to be used when
-> needed.
-> > >> Example (for OMAP3630):
-> > >> cpus {
-> > >>     cpu@0 {
-> > >> 	clock-name = "cpufreq_ck";
-> > >>     };
-> > >>  };
-> > >>
-> > >> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> > >> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> > >> Cc: Shawn Guo <shawn.guo@linaro.org>
-> > >> Cc: linux-kernel@vger.kernel.org
-> > >> Cc: cpufreq@vger.kernel.org
-> > >> Cc: linux-pm@vger.kernel.org
-> > >> Cc: linux-omap@vger.kernel.org
-> > >>
-> > >> Signed-off-by: Nishanth Menon <nm@ti.com>
-> > >> ---
-> > > Seems a reasonable to me.
+> >Why?
 > >
-> > No, it is not...
-> >
-> > You cannot add a temp binding just because the OMAP support is not
-> > there, since the real binding already exist.
-> >
-> > You need to register properly a clock provider to be able to
-> reference
-> > it.
-> > If you do need a hacky temp code you could do it in OMAP code but not
-> > in the binding.
 > 
-> OK. My intent is to remove omap-cpufreq.c. So, I guess I could do
-> something like the following (not tested yet), but would that be the
-> right approach?
+> - As I mentioned below (sorry for mentioning below rather than at
+> start), powering off a domain means the context save needs to be
+> done && it needs to be restored during power on.
 
-Similar attempt was done for am33xx_clks in this by Shawn:
+<good stuff snipped>
 
-http://www.mail-archive.com/linux-omap@vger.kernel.org/msg84157.html
+All of this should be in the changelog section of the patch, please,
+when you resend this, add it there.
 
-> 
-> diff --git a/arch/arm/mach-omap2/cclock2420_data.c b/arch/arm/mach-
-> omap2/cclock2420_data.c
-> index 0f0a97c..c3017deb 100644
-> --- a/arch/arm/mach-omap2/cclock2420_data.c
-> +++ b/arch/arm/mach-omap2/cclock2420_data.c
-> @@ -1885,7 +1885,7 @@ static struct omap_clk omap2420_clks[] = {
->  	CLK(NULL,	"timer_32k_ck",	&func_32k_ck,	CK_242X),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_242X),
->  	CLK(NULL,	"timer_ext_ck",	&alt_ck,	CK_242X),
-> -	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_242X),
-> +	CLK(NULL,	"cpufreq-cpu0.0",	&virt_prcm_set,	CK_242X),
->  };
-> 
-> 
-> diff --git a/arch/arm/mach-omap2/cclock2430_data.c b/arch/arm/mach-
-> omap2/cclock2430_data.c
-> index aed8f74..7000ca4 100644
-> --- a/arch/arm/mach-omap2/cclock2430_data.c
-> +++ b/arch/arm/mach-omap2/cclock2430_data.c
-> @@ -2001,7 +2001,7 @@ static struct omap_clk omap2430_clks[] = {
->  	CLK(NULL,	"timer_32k_ck",  &func_32k_ck,   CK_243X),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_243X),
->  	CLK(NULL,	"timer_ext_ck",	&alt_ck,	CK_243X),
-> -	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_243X),
-> +	CLK(NULL,	"cpufreq-cpu0.0",	&virt_prcm_set,	CK_243X),
+> - The downstream kernel has a graphics-host (host1x) driver which
+> has a home grown power management framework called ACM
+> (auto-clock-management). We implement both delayed clock and power
+> partition off functionality in it.
 
-Device name and the clk_name should be interchanged right?
+We should wait for this driver to be submitted and accepted before
+we can add these new api hooks.  When is that going to happen?
 
-Something like this?
+thanks,
 
-CLK("cpufreq-cpu0.0",	 NULL,	&virt_prcm_set,	CK_243X),
-
-If yes the same should apply to all the instances.
-
->  };
-> 
->  static const char *enable_init_clks[] = { diff --git a/arch/arm/mach-
-> omap2/cclock3xxx_data.c b/arch/arm/mach-omap2/cclock3xxx_data.c
-> index 4579c3c..7a1dfde 100644
-> --- a/arch/arm/mach-omap2/cclock3xxx_data.c
-> +++ b/arch/arm/mach-omap2/cclock3xxx_data.c
-> @@ -3501,7 +3501,7 @@ static struct omap_clk omap3xxx_clks[] = {
->  	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
->  	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
-> -	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
-> +	CLK(NULL,	"cpufreq-cpu0.0",	&dpll1_ck,	CK_3XXX),
->  };
-> 
->  static const char *enable_init_clks[] = { diff --git a/arch/arm/mach-
-> omap2/cclock44xx_data.c b/arch/arm/mach-omap2/cclock44xx_data.c
-> index 3d58f33..5fad1da 100644
-> --- a/arch/arm/mach-omap2/cclock44xx_data.c
-> +++ b/arch/arm/mach-omap2/cclock44xx_data.c
-> @@ -1660,7 +1660,7 @@ static struct omap_clk omap44xx_clks[] = {
->  	CLK("4013a000.timer",	"timer_sys_ck",	&syc_clk_div_ck,
-> 	CK_443X),
->  	CLK("4013c000.timer",	"timer_sys_ck",	&syc_clk_div_ck,
-> 	CK_443X),
->  	CLK("4013e000.timer",	"timer_sys_ck",	&syc_clk_div_ck,
-> 	CK_443X),
-> -	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
-> +	CLK(NULL,	"cpufreq-cpu0.0",	&dpll_mpu_ck,	CK_443X),
->  };
-> 
->  int __init omap4xxx_clk_init(void)
-> --
-> Regards,
-> Nishanth Menon
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap"
-> in the body of a message to majordomo@vger.kernel.org More majordomo
-> info at  http://vger.kernel.org/majordomo-info.html
+greg k-h
