@@ -1,89 +1,45 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 1/2] cpuidle / kirkwood: remove redundant Kconfig option
-Date: Tue, 12 Mar 2013 07:22:35 -0400
-Message-ID: <20130312112235.GE12700@titan.lakedaemon.net>
-References: <1363080476-26555-1-git-send-email-daniel.lezcano@linaro.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 3/4][V2] ARM: nomadik: add dynamic irq flag to the timer
+Date: Tue, 12 Mar 2013 12:38:13 +0100
+Message-ID: <CACRpkdarxZN8wqFWsHi+N1VSRo_miyqFtA_FedA=0LceKrTAFA@mail.gmail.com>
+References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
+	<513A0109.9060801@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:58844 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752623Ab3CLLWn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Mar 2013 07:22:43 -0400
-Content-Disposition: inline
-In-Reply-To: <1363080476-26555-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-ie0-f174.google.com ([209.85.223.174]:56003 "EHLO
+	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932934Ab3CLLiO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Mar 2013 07:38:14 -0400
+Received: by mail-ie0-f174.google.com with SMTP id k10so6207820iea.33
+        for <linux-pm@vger.kernel.org>; Tue, 12 Mar 2013 04:38:14 -0700 (PDT)
+In-Reply-To: <513A0109.9060801@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+Cc: john.stultz@linaro.org, tglx@linutronix.de, linus.walleij@stericsson.com, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org
 
-On Tue, Mar 12, 2013 at 10:27:55AM +0100, Daniel Lezcano wrote:
-> When the CPU_IDLE and the ARCH_KIRKWOOD options are set it is
-> pointless to define a new option CPU_IDLE_KIRKWOOD because it
-> is redundant.
-> 
-> The Makefile drivers directory contains a condition to compile
-> the cpuidle drivers:
-> 
-> obj-$(CONFIG_CPU_IDLE)          += cpuidle/
-> 
-> Hence, if CPU_IDLE is not set we won't enter this directory.
-> 
-> This patch removes the useless Kconfig option and replaces the
-> condition in the Makefile by CONFIG_ARCH_KIRKWOOD.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/configs/kirkwood_defconfig |    1 -
->  drivers/cpuidle/Kconfig             |    6 ------
->  drivers/cpuidle/Makefile            |    2 +-
->  3 files changed, 1 insertion(+), 8 deletions(-)
+On Fri, Mar 8, 2013 at 4:17 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>> Add the dynamic irq affinity feature to the timer clock device.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
+>> Acked-by: Rickard Andersson <rickard.andersson@stericsson.com>
+>> ---
+>
+> Hi Linus,
+>
+> AFAIU, you are ok with this patch, Rickard acked it and Vincent reviewed it.
+>
+> Thomas agreed to merge it into its tree as I requested because we will
+> need to wait for your tree to gain visibility to this new flag before
+> submitting this patch, which can take awhile.
+>
+> Could you please ack it if it is ok for you ?
 
-Acked-by: Jason Cooper <jason@lakedaemon.net>
+Oh of course!
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-> 
-> diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-> index 13482ea..93f3794 100644
-> --- a/arch/arm/configs/kirkwood_defconfig
-> +++ b/arch/arm/configs/kirkwood_defconfig
-> @@ -56,7 +56,6 @@ CONFIG_AEABI=y
->  CONFIG_ZBOOT_ROM_TEXT=0x0
->  CONFIG_ZBOOT_ROM_BSS=0x0
->  CONFIG_CPU_IDLE=y
-> -CONFIG_CPU_IDLE_KIRKWOOD=y
->  CONFIG_NET=y
->  CONFIG_PACKET=y
->  CONFIG_UNIX=y
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index 071e2c3..c4cc27e 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -39,10 +39,4 @@ config CPU_IDLE_CALXEDA
->  	help
->  	  Select this to enable cpuidle on Calxeda processors.
->  
-> -config CPU_IDLE_KIRKWOOD
-> -	bool "CPU Idle Driver for Kirkwood processors"
-> -	depends on ARCH_KIRKWOOD
-> -	help
-> -	  Select this to enable cpuidle on Kirkwood processors.
-> -
->  endif
-> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-> index 24c6e7d..0d8bd55 100644
-> --- a/drivers/cpuidle/Makefile
-> +++ b/drivers/cpuidle/Makefile
-> @@ -6,4 +6,4 @@ obj-y += cpuidle.o driver.o governor.o sysfs.o governors/
->  obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
->  
->  obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
-> -obj-$(CONFIG_CPU_IDLE_KIRKWOOD) += cpuidle-kirkwood.o
-> +obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
-> -- 
-> 1.7.9.5
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Yours,
+Linus Walleij
