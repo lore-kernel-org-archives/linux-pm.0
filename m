@@ -1,39 +1,59 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 3/4] arm: exynos: Enable OPP library support for exynos5440
-Date: Tue, 12 Mar 2013 15:28:18 +0530
-Message-ID: <1363082299-10561-4-git-send-email-amit.daniel@samsung.com>
-References: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
+From: Laurent Navet <laurent.navet@gmail.com>
+Subject: [PATCH V2] drivers: thermal: cpu_cooling: fix checkpatch warning
+Date: Tue, 12 Mar 2013 11:47:50 +0100
+Message-ID: <1363085270-22886-1-git-send-email-laurent.navet@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Navet <laurent.navet@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The OPP library support is needed for exynos5440 cpu frequency
-dynamic scaling driver.
+- WARNING: Avoid CamelCase: <maskPtr>
 
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Signed-off-by: Laurent Navet <laurent.navet@gmail.com>
 ---
- arch/arm/mach-exynos/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/thermal/cpu_cooling.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 70f94c8..d5dde07 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -72,10 +72,12 @@ config SOC_EXYNOS5440
- 	bool "SAMSUNG EXYNOS5440"
- 	default y
- 	depends on ARCH_EXYNOS5
-+	select ARCH_HAS_OPP
- 	select ARM_ARCH_TIMER
- 	select AUTO_ZRELADDR
- 	select PINCTRL
- 	select PINCTRL_EXYNOS5440
-+	select PM_OPP
- 	help
- 	  Enable EXYNOS5440 SoC support
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 8dc44cb..be2e6b0 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -168,8 +168,8 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+ 				unsigned long cooling_state)
+ {
+ 	unsigned int cpuid, clip_freq;
+-	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
+-	unsigned int cpu = cpumask_any(maskPtr);
++	struct cpumask *mask = &cpufreq_device->allowed_cpus;
++	unsigned int cpu = cpumask_any(mask);
  
+ 
+ 	/* Check if the old cooling action is same as new cooling action */
+@@ -184,7 +184,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+ 	cpufreq_device->cpufreq_val = clip_freq;
+ 	notify_device = cpufreq_device;
+ 
+-	for_each_cpu(cpuid, maskPtr) {
++	for_each_cpu(cpuid, mask) {
+ 		if (is_cpufreq_valid(cpuid))
+ 			cpufreq_update_policy(cpuid);
+ 	}
+@@ -235,13 +235,13 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long *state)
+ {
+ 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+-	struct cpumask *maskPtr = &cpufreq_device->allowed_cpus;
++	struct cpumask *mask = &cpufreq_device->allowed_cpus;
+ 	unsigned int cpu;
+ 	struct cpufreq_frequency_table *table;
+ 	unsigned long count = 0;
+ 	int i = 0;
+ 
+-	cpu = cpumask_any(maskPtr);
++	cpu = cpumask_any(mask);
+ 	table = cpufreq_frequency_get_table(cpu);
+ 	if (!table) {
+ 		*state = 0;
 -- 
-1.7.1
+1.7.10.4
