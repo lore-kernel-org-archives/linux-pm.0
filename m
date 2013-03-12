@@ -1,45 +1,62 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 3/4][V2] ARM: nomadik: add dynamic irq flag to the timer
-Date: Tue, 12 Mar 2013 12:38:13 +0100
-Message-ID: <CACRpkdarxZN8wqFWsHi+N1VSRo_miyqFtA_FedA=0LceKrTAFA@mail.gmail.com>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org>
-	<513A0109.9060801@linaro.org>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM/domains: add delayed power off capability
+Date: Tue, 12 Mar 2013 06:49:13 -0700
+Message-ID: <20130312134913.GD3514@kroah.com>
+References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f174.google.com ([209.85.223.174]:56003 "EHLO
-	mail-ie0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932934Ab3CLLiO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Mar 2013 07:38:14 -0400
-Received: by mail-ie0-f174.google.com with SMTP id k10so6207820iea.33
-        for <linux-pm@vger.kernel.org>; Tue, 12 Mar 2013 04:38:14 -0700 (PDT)
-In-Reply-To: <513A0109.9060801@linaro.org>
+Received: from mail-ia0-f173.google.com ([209.85.210.173]:50695 "EHLO
+	mail-ia0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282Ab3CLNsX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Mar 2013 09:48:23 -0400
+Received: by mail-ia0-f173.google.com with SMTP id h37so4857256iak.18
+        for <linux-pm@vger.kernel.org>; Tue, 12 Mar 2013 06:48:22 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: john.stultz@linaro.org, tglx@linutronix.de, linus.walleij@stericsson.com, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org
+To: Mayuresh Kulkarni <mkulkarni@nvidia.com>
+Cc: linux-pm@vger.kernel.org, len.brown@intel.com, pavel@ucw.cz, rjw@sisk.pl, pdeschrijver@nvidia.com
 
-On Fri, Mar 8, 2013 at 4:17 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->> Add the dynamic irq affinity feature to the timer clock device.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
->> Acked-by: Rickard Andersson <rickard.andersson@stericsson.com>
->> ---
->
-> Hi Linus,
->
-> AFAIU, you are ok with this patch, Rickard acked it and Vincent reviewed it.
->
-> Thomas agreed to merge it into its tree as I requested because we will
-> need to wait for your tree to gain visibility to this new flag before
-> submitting this patch, which can take awhile.
->
-> Could you please ack it if it is ok for you ?
+On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
+> - this commit adds a capability to delay the powering off
+> of the domain
 
-Oh of course!
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Why?
 
-Yours,
-Linus Walleij
+> - callers can use pm_genpd_set_poweroff_delay to set the
+> power off delay for a domain
+
+Why?
+
+> - it expects the delay in milli-seconds
+
+Why?
+
+> - it also adds a pm_notifier per pm domain which cancels
+> the delayed power off work when system suspend is invoked
+
+Why?
+
+Come on, please tell us why something is needed and not what it does in
+a changelog comment.
+
+> Signed-off-by: Mayuresh Kulkarni <mkulkarni@nvidia.com>
+> ---
+> 
+> - The idea here is to avoid the powering off of a domain if use cases causes
+> it to turn on within specific time in coming future
+
+What use case?
+
+> - This seems to save power and better response by avoiding context save/restore
+> which are heavy operations in most of the cases
+
+Now these four lines are bit better, why are you hiding it down here?
+
+Who is going to use this code?  Where is those callers?  We don't add
+new infrastructure without in-kernel users, unless there is a very good
+reason.
+
+greg k-h
