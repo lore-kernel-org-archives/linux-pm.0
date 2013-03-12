@@ -1,69 +1,45 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH RESEND 2/2] PM: invalidate TEST_CPUS and TEST_CORE support
- for freeze state
-Date: Tue, 12 Mar 2013 09:21:49 +0800
-Message-ID: <1363051309.2291.101.camel@rzhang1-mobl4>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 1/2] cpufreq: cpufreq-cpu0: support for clock which are
+ not in DT yet.
+Date: Tue, 12 Mar 2013 10:33:00 +0530
+Message-ID: <513EB704.8030907@ti.com>
+References: <1363043130-30270-1-git-send-email-nm@ti.com> <1363043130-30270-2-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:16784 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754591Ab3CLBV4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 Mar 2013 21:21:56 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1363043130-30270-2-git-send-email-nm@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: cpufreq <cpufreq@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
->From 0777c83233875e2f84c21f76145058f513894abd Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Wed, 6 Mar 2013 21:22:21 +0800
-Subject: [PATCH RESEND 2/2] PM: invalidate TEST_CPUS and TEST_CORE support for
- freeze state
-
-freeze state is a software suspend state that does not run into
-low-level platform callbacks which may interact with BIOS.
-And freeze state does not need to disable the processors.
-
-But the current pm_test support misleads users because users
-can enter freeze state with pm_test set to TEST_CPUS/TEST_CORE,
-while this pm_test setting never takes actions.
-
-So, invalidate TEST_CPUS/TEST_CORE for freeze state in this patch.
-Then users will get an error instead, when trying to
-enter freeze state with pm_test mode set to TEST_CPUS/TEST_CORE.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- kernel/power/suspend.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 5eb30aa..e29909a 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -76,8 +76,16 @@ EXPORT_SYMBOL_GPL(suspend_set_ops);
- 
- bool valid_state(suspend_state_t state)
- {
--	if (state == PM_SUSPEND_FREEZE)
--		return true;
-+	if (state == PM_SUSPEND_FREEZE) {
-+		if (pm_test_level == TEST_NONE ||
-+		    pm_test_level == TEST_FREEZER ||
-+		    pm_test_level == TEST_DEVICES ||
-+		    pm_test_level == TEST_PLATFORM)
-+			return true;
-+		printk(KERN_WARNING "Unsupported pm_test mode for freeze state,"
-+			" please choose none/freezer/devices/platform.\n");
-+		return false;
-+	}
- 	/*
- 	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
- 	 * support and need to be valid to the lowlevel
--- 
-1.7.9.5
-
-
-
+On Tuesday 12 March 2013 04:35 AM, Nishanth Menon wrote:
+> On certain SoCs like variants of OMAP, the clock conversion to DT
+> is not complete. In short, the ability to:
+> cpus {
+>     cpu@0 {
+> 	clocks = <&cpuclk 0>;
+>     };
+>  };
+> is not possible. However, the clock node is registered.
+> Allow for clk names to be provided as string so as to be used when needed.
+> Example (for OMAP3630):
+> cpus {
+>     cpu@0 {
+> 	clock-name = "cpufreq_ck";
+>     };
+>  };
+> 
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: linux-kernel@vger.kernel.org
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> 
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+Seems a reasonable to me.
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
