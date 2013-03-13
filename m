@@ -1,51 +1,35 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: Re: [PATCH v4 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
-Date: Wed, 13 Mar 2013 15:50:41 -0500
-Message-ID: <5140E6A1.20107@sgi.com>
-References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com> <3505617.pgqBjPDzlA@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V3 4/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+Date: Wed, 13 Mar 2013 22:41:36 +0100
+Message-ID: <3174774.7AKCbYrzc6@vostro.rjw.lan>
+References: <cover.1362381470.git.viresh.kumar@linaro.org> <1687194.MelaMkNoiM@vostro.rjw.lan> <CAKohpompsA5bR6TauM7Wa6ciLxYYc7GdpN1NXdHF_WbP2ki=qA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3505617.pgqBjPDzlA@vostro.rjw.lan>
+In-Reply-To: <CAKohpompsA5bR6TauM7Wa6ciLxYYc7GdpN1NXdHF_WbP2ki=qA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 03/11/2013 06:23 PM, Rafael J. Wysocki wrote:
-> On Friday, February 22, 2013 10:24:33 AM Nathan Zimmer wrote:
->> I am noticing the cpufreq_driver_lock is quite hot.
->> On an idle 512 system perf shows me most of the system time is spent on this
->> lock.  This is quite significant as top shows 5% of time in system time.
->> My solution was to first convert the lock to a rwlock and then to the rcu.
->>
->> v2: Rebase
->>
->> v3: Read the RCU documentation instead of skimming it.  Also I based on
->> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc1
->> I assumed that was what you would prefer Rafael.
->>
->> v4: Removed an unnecessary syncronize_rcu().
->>
->>
->> Nathan Zimmer (2):
->>    cpufreq: Convert the cpufreq_driver_lock to a rwlock
->>    cpufreq: Convert the cpufreq_driver_lock to use the rcu
->>
->>   drivers/cpufreq/cpufreq.c | 286 ++++++++++++++++++++++++++++++++++------------
->>   1 file changed, 211 insertions(+), 75 deletions(-)
-> I'm going to take patch [1/2] for v3.10, but patch [2/2] still needs some
-> work it seems.  Is that correct?  If so, are you going to send an update?
->
-> Rafael
->
+On Tuesday, March 12, 2013 08:55:12 AM Viresh Kumar wrote:
+> On 12 March 2013 07:38, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > One more question before I apply it.
+> >
+> > Is there any architecture/platform that will set
+> > CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES and keep have_multiple_policies unset
+> > at the same time?
+> 
+> No, they are redundant. That's why i have been forcing to drop this patch.
 
-Viresh pointed out that cpufreq_cpu_data still needs a lock.
-This means placing a vanilla spinlock back into __cpufreq_cpu_get which 
-is what I need to avoid.  I haven't had the time I should to sort that out.
+I see.
+
+What about having the Kconfig option alone, however?
+
+Rafael
 
 
-Nate
-
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
