@@ -1,62 +1,51 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH] PM/domains: add delayed power off capability
-Date: Wed, 13 Mar 2013 12:27:02 -0700
-Message-ID: <87zjy7m77d.fsf@linaro.org>
-References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
-	<20130312134913.GD3514@kroah.com> <513F4208.4040207@nvidia.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v4 0/2] cpufreq: cpufreq_driver_lock is hot on large systems
+Date: Wed, 13 Mar 2013 15:50:41 -0500
+Message-ID: <5140E6A1.20107@sgi.com>
+References: <51265E0F.6090209@sgi.com> <1361550275-5716-1-git-send-email-nzimmer@sgi.com> <3505617.pgqBjPDzlA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f47.google.com ([209.85.210.47]:40141 "EHLO
-	mail-da0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933096Ab3CMT1H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Mar 2013 15:27:07 -0400
-Received: by mail-da0-f47.google.com with SMTP id s35so554488dak.20
-        for <linux-pm@vger.kernel.org>; Wed, 13 Mar 2013 12:27:06 -0700 (PDT)
-In-Reply-To: <513F4208.4040207@nvidia.com> (Mayuresh Kulkarni's message of
-	"Tue, 12 Mar 2013 20:26:08 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3505617.pgqBjPDzlA@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mayuresh Kulkarni <mkulkarni@nvidia.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, Peter De Schrijver <pdeschrijver@nvidia.com>
 
-Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
-
-> On Tuesday 12 March 2013 07:19 PM, Greg KH wrote:
->> On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
->>> - this commit adds a capability to delay the powering off
->>> of the domain
+On 03/11/2013 06:23 PM, Rafael J. Wysocki wrote:
+> On Friday, February 22, 2013 10:24:33 AM Nathan Zimmer wrote:
+>> I am noticing the cpufreq_driver_lock is quite hot.
+>> On an idle 512 system perf shows me most of the system time is spent on this
+>> lock.  This is quite significant as top shows 5% of time in system time.
+>> My solution was to first convert the lock to a rwlock and then to the rcu.
 >>
->> Why?
+>> v2: Rebase
 >>
+>> v3: Read the RCU documentation instead of skimming it.  Also I based on
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc1
+>> I assumed that was what you would prefer Rafael.
+>>
+>> v4: Removed an unnecessary syncronize_rcu().
+>>
+>>
+>> Nathan Zimmer (2):
+>>    cpufreq: Convert the cpufreq_driver_lock to a rwlock
+>>    cpufreq: Convert the cpufreq_driver_lock to use the rcu
+>>
+>>   drivers/cpufreq/cpufreq.c | 286 ++++++++++++++++++++++++++++++++++------------
+>>   1 file changed, 211 insertions(+), 75 deletions(-)
+> I'm going to take patch [1/2] for v3.10, but patch [2/2] still needs some
+> work it seems.  Is that correct?  If so, are you going to send an update?
 >
-> - As I mentioned below (sorry for mentioning below rather than at
-> start), powering off a domain means the context save needs to be done
-> && it needs to be restored during power on.
-> - It often observed that saving and restoring of context is expensive
-> in terms of power consumed as well as overall system response.
+> Rafael
+>
 
-Are you talking about per-device context save/restore?
+Viresh pointed out that cpufreq_cpu_data still needs a lock.
+This means placing a vanilla spinlock back into __cpufreq_cpu_get which 
+is what I need to avoid.  I haven't had the time I should to sort that out.
 
-Your drivers should be using runtime PM, which has an autosuspend
-timeout feature.  Using autosuspend on any device in the power domain
-will have the same effect as this proposed patch.  
 
-Using runtime PM to target specific devices that have expensive
-save/restore paths is also more understandable and maintainable IMO,
-because the "fix" is targetted.
+Nate
 
-If instead you're talking about CPU context/save restore, you should be
-coupling the powerdomain with CPUidle (genpd provides this for you) and
-having the C-state latency/threshold values set properly so CPUidle will
-not pick those states.
 
-If instead, you're talking about per-powerdomain QoS, the genpd code
-also provides pluggable governors based on per-device PM QoS that can be
-used for making decisions about whether or not to actually cut power.
-
-IOW, I'm not sure about exactly which problem you're trying to solve
-since it's not described very thoroughly, but I'm pretty sure one of the
-existing solutions should be used instead.
-
-Kevin
