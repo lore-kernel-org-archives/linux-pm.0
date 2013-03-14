@@ -1,95 +1,163 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
-Date: Thu, 14 Mar 2013 17:56:30 +0100
-Message-ID: <9974963.HlzZr59YuP@vostro.rjw.lan>
-References: <1361874441-370-1-git-send-email-myungjoo.ham@samsung.com> <CAJ0PZbTQ8O+yRVeV8wmDqSMKh2+4E8YRdXQSCQpCYEx5MVaoxA@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH 0/8] ARM: OMAP3+: Switch to use DT based cpu0-cpufreq driver
+Date: Thu, 14 Mar 2013 15:58:07 -0500
+Message-ID: <1363294695-658-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:42667 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932320Ab3CNQt2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 Mar 2013 12:49:28 -0400
-In-Reply-To: <CAJ0PZbTQ8O+yRVeV8wmDqSMKh2+4E8YRdXQSCQpCYEx5MVaoxA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@deeprootsystems.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@gmail.com>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, yongjun_wei@trendmicro.com.cn, nm@ti.com, rajagopal.venkat@linaro.org, a.kesavan@samsung.com, myungjoo.ham@samsung.com
 
-On Thursday, March 14, 2013 05:14:34 PM MyungJoo Ham wrote:
-> Sending again with sisk.pl address.
+The following series arose from trying to use BeagleBoard-XM (OMAP3 var=
+iant)
+for doing CPU DVFS using cpufreq-cpu0. This series will eventually resu=
+lt in
+migrating the cpufreq support only through device tree (part of the eff=
+ort
+to migrate away from non-DT configurations for OMAP). Unfortunately, as=
+ already
+known, we have a bunch of legacy code and mutually dependent device tre=
+e
+conversion that is pending.
+Key features pending:
+A) clock framework transition to DT - this should happen soon, so this =
+series hacks
+the clock node for the time being as suggested in review of original se=
+ries
+B) on processors that use voltage controller, voltage processor (VC/VP =
+hardware
+loop using I2C_SR path) - we have started work on transitioning them to=
+ regulator
+framework driven by DT.
+C) Adaptive Body Bias and SmartReflex AVS conversion to DT.
 
-Thanks.
+As a result of these pending features:
+- OMAP4 TWL6030 and TPS62361 which set voltage ONLY over I2C_SR have no=
+ regulators
+associated at the moment - fortunately, we boot at highest voltage, so =
+things still
+work.
+- Missing ABB and AVS implies that for few of the SoCs (3630, OMAP4), I=
+ have not added
+those OPPs in DT yet - this also needs alignment with iMX, AM series li=
+ke pending work,
+where certain OPPs need enabling based on efuse programmed bit sequence=
+s - since it
+is an add-on work, it is not addressed here.
 
-I'm travelling this week, but I'll pull next week.
+Note: Somewhere in the future, when we have regulators driven off CCF a=
+nd OMAP
+converted to CCF, we could remove the DT regulator requirements there a=
+s well.
 
-This is going to end up in 3.10 then, or do you have some urgent fixes for v3.9?
+Key benefit of the series is to allow all relevant TI platforms now to =
+use a single
+cpufreq driver and equivalent frameworks in addition be part of the tra=
+nsition to
+DT. As a result of this series, CPUFreq feature will not be available f=
+or non-DT
+boot systems.
 
-Rafael
+Original discussion thread which triggered this series:
+	http://marc.info/?l=3Dlinux-pm&m=3D136304313700602&w=3D2
+	https://patchwork.kernel.org/patch/2251841/
+	https://patchwork.kernel.org/patch/2251851/
 
+Test coverage:
+	test script: http://pastebin.com/MpCRY0SB
+Platforms verified:
+	beaglebone(rev A6a) - AM33xx compatible
+	beagleboard (rev C1D) - OMAP3430 compatible
+	omap3-beagle-xm -OMAP3630 compatible
+	Pandaboard -(OMAP4430 ES2.3) verified with omapconf
+	Pandaboard-ES -(OMAP4460 ES1.1) verified with omapconf
 
-> On Tue, Feb 26, 2013 at 7:27 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> > -----BEGIN PGP SIGNED MESSAGE-----
-> > Hash: SHA1
-> >
-> > The following changes since commit 19f949f52599ba7c3f67a5897ac6be14bfcb1200:
-> >
-> >   Linux 3.8 (2013-02-18 15:58:34 -0800)
-> >
-> > are available in the git repository at:
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
-> >
-> > Abhilash Kesavan (2):
-> >       PM / devfreq: Move exynos4 devfreq driver into a new sub-directory
-> >       PM / devfreq: Add Exynos5-bus devfreq driver for Exynos5250
-> >
-> > MyungJoo Ham (1):
-> >       PM / devfreq: add comments and Documentation
-> >
-> > Rajagopal Venkat (1):
-> >       PM / devfreq: account suspend/resume for stats
-> >
-> > Wei Yongjun (1):
-> >       PM / devfreq: fix missing unlock on error in exynos4_busfreq_pm_notifier_event()
-> >
-> >  Documentation/ABI/testing/sysfs-class-devfreq |   20 +
-> >  drivers/devfreq/Kconfig                       |   10 +
-> >  drivers/devfreq/Makefile                      |    3 +-
-> >  drivers/devfreq/devfreq.c                     |   25 ++-
-> >  drivers/devfreq/exynos/Makefile               |    3 +
-> >  drivers/devfreq/{ => exynos}/exynos4_bus.c    |    1 +
-> >  drivers/devfreq/exynos/exynos5_bus.c          |  503 +++++++++++++++++++++++++
-> >  drivers/devfreq/exynos/exynos_ppmu.c          |   56 +++
-> >  drivers/devfreq/exynos/exynos_ppmu.h          |   78 ++++
-> >  include/linux/devfreq.h                       |    2 +
-> >  10 files changed, 697 insertions(+), 4 deletions(-)
-> >  create mode 100644 drivers/devfreq/exynos/Makefile
-> >  rename drivers/devfreq/{ => exynos}/exynos4_bus.c (99%)
-> >  create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
-> >  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
-> >  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
-> > -----BEGIN PGP SIGNATURE-----
-> > Version: GnuPG v1.4.11 (GNU/Linux)
-> >
-> > iQIcBAEBAgAGBQJRLIzeAAoJEBOhurvWBoCKWroP/2bAUWTJ73XhbnJcDoVnr+gV
-> > 9ZaDjD0MGEjTN5iDpKdhXludvzcVEwqyX/JHBH58kXIPaWi6CZPaiST/6bQP7LHh
-> > SWgyyiTkVNGeHJi2eGgupUY8dsWCtub4vaJznPukgLR5ug/TZk1ltMzT56pBPsWu
-> > kwUl6XHvcwJtzgUjkydnEC97ruhobrgbDQFUJdmT6sJHFrHGWEAVudW+zVYoXN9z
-> > JQT+w6NXxr7DXLbT3SNDH6G722LJ/h8oyDB7wzNQOLJUcjv3+lEWYut0jYO0Lxfa
-> > V51strELYI1FooMuUsM0FCOBp7uftDVUdtA3pRMZKpAqzesFEv72ofE9V+E/Ehh0
-> > 84TJJefuvrSmstvVDH00m0SCcWoIUZ03g2kaUh4vG/CkyrcUF3LLXx1aUW8Bvnej
-> > SwZDOMsJb9AGADA2chL9m1QFgCpM5Tarc4xU8G6AV+j8NVC/8LO6YS2iGlDzI1Ry
-> > xTJFtngjnHdwlehepdU0HxrdYZ8fx+UYiRAs18XzQ0mCPL4XcNS8QbPB4dEfbpvE
-> > wYYUAe5kFjIuSaRqJBjIwaVfSeNj8gTwOTp+ewKhKKvQPq3c4i6FTLi+/vRIzOqg
-> > +VzcNkn+Fa54e1XxL4y6Bvca+hIpSgqzl9m4yZMOEG8uhTmscxLO+BRfAuGzu90I
-> > EFo9EJpdGXUl5dO5wAbf
-> > =Eh48
-> > -----END PGP SIGNATURE-----
-> 
-> 
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Series is based on v3.9-rc2 tag
+
+Also available at:
+	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cp=
+u0-omap-all-v1
+	git link: git://github.com/nmenon/linux-2.6-playground.git
+	branch: cpufreq-cpu0-omap-all-v1
+
+Nishanth Menon (8):
+  ARM: dts: OMAP34xx: move CPU OPP tables to device tree
+  ARM: dts: OMAP36xx: move CPU OPP tables to device tree
+  ARM: dts: OMAP3: use twl4030 vdd1 regulator for CPU
+  ARM: dts: OMAP443x: move CPU OPP tables to device tree
+  ARM: dts: omap4-panda: move generic sections to panda-common
+  ARM: dts: OMAP446x: move CPU OPP tables to device tree
+  ARM: OMAP3+: use cpu0-cpufreq driver
+  cpufreq: omap: remove omap-cpufreq
+
+ MAINTAINERS                               |    1 -
+ arch/arm/boot/dts/omap3-beagle-xm.dts     |    6 +
+ arch/arm/boot/dts/omap3-beagle.dts        |    6 +
+ arch/arm/boot/dts/omap3-evm.dts           |    6 +
+ arch/arm/boot/dts/omap3.dtsi              |   10 +
+ arch/arm/boot/dts/omap36xx.dtsi           |   12 ++
+ arch/arm/boot/dts/omap4-panda-a4.dts      |    5 +-
+ arch/arm/boot/dts/omap4-panda-common.dtsi |  205 ++++++++++++++++++++
+ arch/arm/boot/dts/omap4-panda-es.dts      |    5 +-
+ arch/arm/boot/dts/omap4-panda.dts         |  200 +-------------------
+ arch/arm/boot/dts/omap4.dtsi              |   10 +
+ arch/arm/boot/dts/omap446x.dtsi           |   27 +++
+ arch/arm/boot/dts/twl4030.dtsi            |    6 +
+ arch/arm/mach-omap2/board-generic.c       |    4 +
+ arch/arm/mach-omap2/cclock33xx_data.c     |    2 +-
+ arch/arm/mach-omap2/cclock3xxx_data.c     |    2 +-
+ arch/arm/mach-omap2/cclock44xx_data.c     |    2 +-
+ arch/arm/mach-omap2/opp3xxx_data.c        |   20 --
+ arch/arm/mach-omap2/opp4xxx_data.c        |   23 ---
+ drivers/cpufreq/Kconfig.arm               |    6 -
+ drivers/cpufreq/Makefile                  |    1 -
+ drivers/cpufreq/omap-cpufreq.c            |  291 ---------------------=
+--------
+ 22 files changed, 305 insertions(+), 545 deletions(-)
+ create mode 100644 arch/arm/boot/dts/omap4-panda-common.dtsi
+ create mode 100644 arch/arm/boot/dts/omap446x.dtsi
+ delete mode 100644 drivers/cpufreq/omap-cpufreq.c
+
+Size change information:
+add/remove: 0/0 grow/shrink: 3/5 up/down: 74/-291 (-217)
+function                                     old     new   delta
+omap_generic_init                             96     140     +44
+vermagic                                      49      64     +15
+linux_banner                                 130     145     +15
+kernel_config_data                         18333   18330      -3
+omap443x_opp_def_list                        144      80     -64
+omap36xx_opp_def_list                        160      96     -64
+omap446x_opp_def_list                        192     112     -80
+omap34xx_opp_def_list                        208     128     -80
+
+non-zero DTB size deltas(bytes):
+old	new	delta	 filename
+8068	8311	+243	omap3-beagle.dtb
+8647	8874	+227	omap3-beagle-xm.dtb
+7783	8026	+243	omap3-evm.dtb
+8000	8183	+183	omap3-tobi.dtb
+13646	13771	+125	omap4-panda-a4.dtb
+13646	13771	+125	omap4-panda.dtb
+13602	13719	+117	omap4-panda-es.dtb
+16256	16381	+125	omap4-sdp.dtb
+10889	11014	+125	omap4-var-som.dtb
+
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: linux-omap@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+
+Regards,
+Nishanth Menon
+--=20
+1.7.9.5
+
