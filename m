@@ -1,86 +1,59 @@
-From: MyungJoo Ham <myungjoo.ham@gmail.com>
-Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
-Date: Thu, 14 Mar 2013 17:14:34 +0900
-Message-ID: <CAJ0PZbTQ8O+yRVeV8wmDqSMKh2+4E8YRdXQSCQpCYEx5MVaoxA@mail.gmail.com>
-References: <1361874441-370-1-git-send-email-myungjoo.ham@samsung.com>
+From: Peter De Schrijver <pdeschrijver@nvidia.com>
+Subject: Re: [PATCH] PM/domains: add delayed power off capability
+Date: Thu, 14 Mar 2013 10:59:16 +0200
+Message-ID: <20130314085916.GC18519@tbergstrom-lnx.Nvidia.com>
+References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
+ <20130312134913.GD3514@kroah.com>
+ <513F4208.4040207@nvidia.com>
+ <87zjy7m77d.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:38263 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751853Ab3CNIOf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Mar 2013 04:14:35 -0400
-Received: by mail-wg0-f50.google.com with SMTP id es5so1803437wgb.29
-        for <linux-pm@vger.kernel.org>; Thu, 14 Mar 2013 01:14:34 -0700 (PDT)
-In-Reply-To: <1361874441-370-1-git-send-email-myungjoo.ham@samsung.com>
+Received: from hqemgate03.nvidia.com ([216.228.121.140]:17565 "EHLO
+	hqemgate03.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849Ab3CNI7W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Mar 2013 04:59:22 -0400
+Content-Disposition: inline
+In-Reply-To: <87zjy7m77d.fsf@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, yongjun_wei@trendmicro.com.cn, nm@ti.com, rajagopal.venkat@linaro.org, a.kesavan@samsung.com, myungjoo.ham@gmail.com, myungjoo.ham@samsung.com
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Mayuresh Kulkarni <mkulkarni@nvidia.com>, Greg KH <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>
 
-Sending again with sisk.pl address.
+On Wed, Mar 13, 2013 at 08:27:02PM +0100, Kevin Hilman wrote:
+> Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
+> 
+> > On Tuesday 12 March 2013 07:19 PM, Greg KH wrote:
+> >> On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
+> >>> - this commit adds a capability to delay the powering off
+> >>> of the domain
+> >>
+> >> Why?
+> >>
+> >
+> > - As I mentioned below (sorry for mentioning below rather than at
+> > start), powering off a domain means the context save needs to be done
+> > && it needs to be restored during power on.
+> > - It often observed that saving and restoring of context is expensive
+> > in terms of power consumed as well as overall system response.
+> 
+> Are you talking about per-device context save/restore?
+> 
+> Your drivers should be using runtime PM, which has an autosuspend
+> timeout feature.  Using autosuspend on any device in the power domain
+> will have the same effect as this proposed patch.  
+> 
+> Using runtime PM to target specific devices that have expensive
+> save/restore paths is also more understandable and maintainable IMO,
+> because the "fix" is targetted.
+> 
 
+No. The goal of this patch is to introduce something similar to autosuspend
+for turning off domains. Even if all peripherals in a domain are idle, you
+might not want to turn off the domain immediately, but wait a little in case
+a new request comes in. We are using this scheme today in our GPU driver and
+it works quite well, but that's done entirely without PM domains.
 
-On Tue, Feb 26, 2013 at 7:27 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> The following changes since commit 19f949f52599ba7c3f67a5897ac6be14bfcb1200:
->
->   Linux 3.8 (2013-02-18 15:58:34 -0800)
->
-> are available in the git repository at:
->   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
->
-> Abhilash Kesavan (2):
->       PM / devfreq: Move exynos4 devfreq driver into a new sub-directory
->       PM / devfreq: Add Exynos5-bus devfreq driver for Exynos5250
->
-> MyungJoo Ham (1):
->       PM / devfreq: add comments and Documentation
->
-> Rajagopal Venkat (1):
->       PM / devfreq: account suspend/resume for stats
->
-> Wei Yongjun (1):
->       PM / devfreq: fix missing unlock on error in exynos4_busfreq_pm_notifier_event()
->
->  Documentation/ABI/testing/sysfs-class-devfreq |   20 +
->  drivers/devfreq/Kconfig                       |   10 +
->  drivers/devfreq/Makefile                      |    3 +-
->  drivers/devfreq/devfreq.c                     |   25 ++-
->  drivers/devfreq/exynos/Makefile               |    3 +
->  drivers/devfreq/{ => exynos}/exynos4_bus.c    |    1 +
->  drivers/devfreq/exynos/exynos5_bus.c          |  503 +++++++++++++++++++++++++
->  drivers/devfreq/exynos/exynos_ppmu.c          |   56 +++
->  drivers/devfreq/exynos/exynos_ppmu.h          |   78 ++++
->  include/linux/devfreq.h                       |    2 +
->  10 files changed, 697 insertions(+), 4 deletions(-)
->  create mode 100644 drivers/devfreq/exynos/Makefile
->  rename drivers/devfreq/{ => exynos}/exynos4_bus.c (99%)
->  create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
->  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
->  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.11 (GNU/Linux)
->
-> iQIcBAEBAgAGBQJRLIzeAAoJEBOhurvWBoCKWroP/2bAUWTJ73XhbnJcDoVnr+gV
-> 9ZaDjD0MGEjTN5iDpKdhXludvzcVEwqyX/JHBH58kXIPaWi6CZPaiST/6bQP7LHh
-> SWgyyiTkVNGeHJi2eGgupUY8dsWCtub4vaJznPukgLR5ug/TZk1ltMzT56pBPsWu
-> kwUl6XHvcwJtzgUjkydnEC97ruhobrgbDQFUJdmT6sJHFrHGWEAVudW+zVYoXN9z
-> JQT+w6NXxr7DXLbT3SNDH6G722LJ/h8oyDB7wzNQOLJUcjv3+lEWYut0jYO0Lxfa
-> V51strELYI1FooMuUsM0FCOBp7uftDVUdtA3pRMZKpAqzesFEv72ofE9V+E/Ehh0
-> 84TJJefuvrSmstvVDH00m0SCcWoIUZ03g2kaUh4vG/CkyrcUF3LLXx1aUW8Bvnej
-> SwZDOMsJb9AGADA2chL9m1QFgCpM5Tarc4xU8G6AV+j8NVC/8LO6YS2iGlDzI1Ry
-> xTJFtngjnHdwlehepdU0HxrdYZ8fx+UYiRAs18XzQ0mCPL4XcNS8QbPB4dEfbpvE
-> wYYUAe5kFjIuSaRqJBjIwaVfSeNj8gTwOTp+ewKhKKvQPq3c4i6FTLi+/vRIzOqg
-> +VzcNkn+Fa54e1XxL4y6Bvca+hIpSgqzl9m4yZMOEG8uhTmscxLO+BRfAuGzu90I
-> EFo9EJpdGXUl5dO5wAbf
-> =Eh48
-> -----END PGP SIGNATURE-----
+Cheers,
 
-
-
--- 
-MyungJoo Ham, Ph.D.
-System S/W Lab, S/W Center, Samsung Electronics
+Peter.
