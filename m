@@ -1,112 +1,52 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 3/8] ARM: dts: OMAP3: use twl4030 vdd1 regulator for CPU
-Date: Thu, 14 Mar 2013 15:58:10 -0500
-Message-ID: <1363294695-658-4-git-send-email-nm@ti.com>
+From: Jon Hunter <jon-hunter@ti.com>
+Subject: Re: [PATCH 0/8] ARM: OMAP3+: Switch to use DT based cpu0-cpufreq
+ driver
+Date: Thu, 14 Mar 2013 16:42:20 -0500
+Message-ID: <5142443C.506@ti.com>
 References: <1363294695-658-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:49482 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292Ab3CNVm0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Mar 2013 17:42:26 -0400
 In-Reply-To: <1363294695-658-1-git-send-email-nm@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-omap@vger.kernel.org
-Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@deeprootsystems.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-arm-kernel@lists.infradead.org
 
-Define VDD1 regulator in twl4030 DT and mark it as the supply for the
-various OMAP3 platforms.
 
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Cc: Keerthy <j-keerthy@ti.com>
-Cc: linux-omap@vger.kernel.org
-Cc: devicetree-discuss@lists.ozlabs.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+On 03/14/2013 03:58 PM, Nishanth Menon wrote:
+> The following series arose from trying to use BeagleBoard-XM (OMAP3 variant)
+> for doing CPU DVFS using cpufreq-cpu0. This series will eventually result in
+> migrating the cpufreq support only through device tree (part of the effort
+> to migrate away from non-DT configurations for OMAP). Unfortunately, as already
+> known, we have a bunch of legacy code and mutually dependent device tree
+> conversion that is pending.
+> Key features pending:
+> A) clock framework transition to DT - this should happen soon, so this series hacks
+> the clock node for the time being as suggested in review of original series
+> B) on processors that use voltage controller, voltage processor (VC/VP hardware
+> loop using I2C_SR path) - we have started work on transitioning them to regulator
+> framework driven by DT.
+> C) Adaptive Body Bias and SmartReflex AVS conversion to DT.
+> 
+> As a result of these pending features:
+> - OMAP4 TWL6030 and TPS62361 which set voltage ONLY over I2C_SR have no regulators
+> associated at the moment - fortunately, we boot at highest voltage, so things still
+> work.
+> - Missing ABB and AVS implies that for few of the SoCs (3630, OMAP4), I have not added
+> those OPPs in DT yet - this also needs alignment with iMX, AM series like pending work,
+> where certain OPPs need enabling based on efuse programmed bit sequences - since it
+> is an add-on work, it is not addressed here.
+> 
+> Note: Somewhere in the future, when we have regulators driven off CCF and OMAP
+> converted to CCF, we could remove the DT regulator requirements there as well.
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- arch/arm/boot/dts/omap3-beagle-xm.dts |    6 ++++++
- arch/arm/boot/dts/omap3-beagle.dts    |    6 ++++++
- arch/arm/boot/dts/omap3-evm.dts       |    6 ++++++
- arch/arm/boot/dts/twl4030.dtsi        |    6 ++++++
- 4 files changed, 24 insertions(+)
+OMAP has been converted to the common clock framework (CCF). Are you
+referring to clock framework transition to DT or something else?
 
-diff --git a/arch/arm/boot/dts/omap3-beagle-xm.dts b/arch/arm/boot/dts/=
-omap3-beagle-xm.dts
-index 3705a81..7152746 100644
---- a/arch/arm/boot/dts/omap3-beagle-xm.dts
-+++ b/arch/arm/boot/dts/omap3-beagle-xm.dts
-@@ -13,6 +13,12 @@
- 	model =3D "TI OMAP3 BeagleBoard xM";
- 	compatible =3D "ti,omap3-beagle-xm, ti,omap3-beagle", "ti,omap3";
-=20
-+	cpus {
-+		cpu@0 {
-+			cpu0-supply =3D <&vcc>;
-+		};
-+	};
-+
- 	memory {
- 		device_type =3D "memory";
- 		reg =3D <0x80000000 0x20000000>; /* 512 MB */
-diff --git a/arch/arm/boot/dts/omap3-beagle.dts b/arch/arm/boot/dts/oma=
-p3-beagle.dts
-index f624dc8..8886617 100644
---- a/arch/arm/boot/dts/omap3-beagle.dts
-+++ b/arch/arm/boot/dts/omap3-beagle.dts
-@@ -13,6 +13,12 @@
- 	model =3D "TI OMAP3 BeagleBoard";
- 	compatible =3D "ti,omap3-beagle", "ti,omap3";
-=20
-+	cpus {
-+		cpu@0 {
-+			cpu0-supply =3D <&vcc>;
-+		};
-+	};
-+
- 	memory {
- 		device_type =3D "memory";
- 		reg =3D <0x80000000 0x10000000>; /* 256 MB */
-diff --git a/arch/arm/boot/dts/omap3-evm.dts b/arch/arm/boot/dts/omap3-=
-evm.dts
-index e8ba1c2..d36d19f 100644
---- a/arch/arm/boot/dts/omap3-evm.dts
-+++ b/arch/arm/boot/dts/omap3-evm.dts
-@@ -13,6 +13,12 @@
- 	model =3D "TI OMAP3 EVM (OMAP3530, AM/DM37x)";
- 	compatible =3D "ti,omap3-evm", "ti,omap3";
-=20
-+	cpus {
-+		cpu@0 {
-+			cpu0-supply =3D <&vcc>;
-+		};
-+	};
-+
- 	memory {
- 		device_type =3D "memory";
- 		reg =3D <0x80000000 0x10000000>; /* 256 MB */
-diff --git a/arch/arm/boot/dts/twl4030.dtsi b/arch/arm/boot/dts/twl4030=
-=2Edtsi
-index ed0bc95..608f2e6 100644
---- a/arch/arm/boot/dts/twl4030.dtsi
-+++ b/arch/arm/boot/dts/twl4030.dtsi
-@@ -23,6 +23,12 @@
- 		compatible =3D "ti,twl4030-wdt";
- 	};
-=20
-+	vcc: regulator-vdd1 {
-+		compatible =3D "ti,twl4030-vdd1";
-+		regulator-min-microvolt =3D <600000>;
-+		regulator-max-microvolt =3D <1450000>;
-+	};
-+
- 	vdac: regulator-vdac {
- 		compatible =3D "ti,twl4030-vdac";
- 		regulator-min-microvolt =3D <1800000>;
---=20
-1.7.9.5
-
+Jon
