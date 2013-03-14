@@ -1,46 +1,95 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM/domains: add delayed power off capability
-Date: Thu, 14 Mar 2013 10:59:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1303141053570.1983-100000@iolanthe.rowland.org>
-References: <20130314085916.GC18519@tbergstrom-lnx.Nvidia.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PULL REQUEST for Rafael] PM / devfreq: pull request
+Date: Thu, 14 Mar 2013 17:56:30 +0100
+Message-ID: <9974963.HlzZr59YuP@vostro.rjw.lan>
+References: <1361874441-370-1-git-send-email-myungjoo.ham@samsung.com> <CAJ0PZbTQ8O+yRVeV8wmDqSMKh2+4E8YRdXQSCQpCYEx5MVaoxA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:52446 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757745Ab3CNO7N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Mar 2013 10:59:13 -0400
-In-Reply-To: <20130314085916.GC18519@tbergstrom-lnx.Nvidia.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:42667 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932320Ab3CNQt2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Mar 2013 12:49:28 -0400
+In-Reply-To: <CAJ0PZbTQ8O+yRVeV8wmDqSMKh2+4E8YRdXQSCQpCYEx5MVaoxA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter De Schrijver <pdeschrijver@nvidia.com>
-Cc: Kevin Hilman <khilman@linaro.org>, Mayuresh Kulkarni <mkulkarni@nvidia.com>, Greg KH <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, yongjun_wei@trendmicro.com.cn, nm@ti.com, rajagopal.venkat@linaro.org, a.kesavan@samsung.com, myungjoo.ham@samsung.com
 
-On Thu, 14 Mar 2013, Peter De Schrijver wrote:
+On Thursday, March 14, 2013 05:14:34 PM MyungJoo Ham wrote:
+> Sending again with sisk.pl address.
 
-> > Your drivers should be using runtime PM, which has an autosuspend
-> > timeout feature.  Using autosuspend on any device in the power domain
-> > will have the same effect as this proposed patch.  
-> > 
-> > Using runtime PM to target specific devices that have expensive
-> > save/restore paths is also more understandable and maintainable IMO,
-> > because the "fix" is targetted.
-> > 
+Thanks.
+
+I'm travelling this week, but I'll pull next week.
+
+This is going to end up in 3.10 then, or do you have some urgent fixes for v3.9?
+
+Rafael
+
+
+> On Tue, Feb 26, 2013 at 7:27 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> > -----BEGIN PGP SIGNED MESSAGE-----
+> > Hash: SHA1
+> >
+> > The following changes since commit 19f949f52599ba7c3f67a5897ac6be14bfcb1200:
+> >
+> >   Linux 3.8 (2013-02-18 15:58:34 -0800)
+> >
+> > are available in the git repository at:
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
+> >
+> > Abhilash Kesavan (2):
+> >       PM / devfreq: Move exynos4 devfreq driver into a new sub-directory
+> >       PM / devfreq: Add Exynos5-bus devfreq driver for Exynos5250
+> >
+> > MyungJoo Ham (1):
+> >       PM / devfreq: add comments and Documentation
+> >
+> > Rajagopal Venkat (1):
+> >       PM / devfreq: account suspend/resume for stats
+> >
+> > Wei Yongjun (1):
+> >       PM / devfreq: fix missing unlock on error in exynos4_busfreq_pm_notifier_event()
+> >
+> >  Documentation/ABI/testing/sysfs-class-devfreq |   20 +
+> >  drivers/devfreq/Kconfig                       |   10 +
+> >  drivers/devfreq/Makefile                      |    3 +-
+> >  drivers/devfreq/devfreq.c                     |   25 ++-
+> >  drivers/devfreq/exynos/Makefile               |    3 +
+> >  drivers/devfreq/{ => exynos}/exynos4_bus.c    |    1 +
+> >  drivers/devfreq/exynos/exynos5_bus.c          |  503 +++++++++++++++++++++++++
+> >  drivers/devfreq/exynos/exynos_ppmu.c          |   56 +++
+> >  drivers/devfreq/exynos/exynos_ppmu.h          |   78 ++++
+> >  include/linux/devfreq.h                       |    2 +
+> >  10 files changed, 697 insertions(+), 4 deletions(-)
+> >  create mode 100644 drivers/devfreq/exynos/Makefile
+> >  rename drivers/devfreq/{ => exynos}/exynos4_bus.c (99%)
+> >  create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
+> >  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
+> >  create mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
+> > -----BEGIN PGP SIGNATURE-----
+> > Version: GnuPG v1.4.11 (GNU/Linux)
+> >
+> > iQIcBAEBAgAGBQJRLIzeAAoJEBOhurvWBoCKWroP/2bAUWTJ73XhbnJcDoVnr+gV
+> > 9ZaDjD0MGEjTN5iDpKdhXludvzcVEwqyX/JHBH58kXIPaWi6CZPaiST/6bQP7LHh
+> > SWgyyiTkVNGeHJi2eGgupUY8dsWCtub4vaJznPukgLR5ug/TZk1ltMzT56pBPsWu
+> > kwUl6XHvcwJtzgUjkydnEC97ruhobrgbDQFUJdmT6sJHFrHGWEAVudW+zVYoXN9z
+> > JQT+w6NXxr7DXLbT3SNDH6G722LJ/h8oyDB7wzNQOLJUcjv3+lEWYut0jYO0Lxfa
+> > V51strELYI1FooMuUsM0FCOBp7uftDVUdtA3pRMZKpAqzesFEv72ofE9V+E/Ehh0
+> > 84TJJefuvrSmstvVDH00m0SCcWoIUZ03g2kaUh4vG/CkyrcUF3LLXx1aUW8Bvnej
+> > SwZDOMsJb9AGADA2chL9m1QFgCpM5Tarc4xU8G6AV+j8NVC/8LO6YS2iGlDzI1Ry
+> > xTJFtngjnHdwlehepdU0HxrdYZ8fx+UYiRAs18XzQ0mCPL4XcNS8QbPB4dEfbpvE
+> > wYYUAe5kFjIuSaRqJBjIwaVfSeNj8gTwOTp+ewKhKKvQPq3c4i6FTLi+/vRIzOqg
+> > +VzcNkn+Fa54e1XxL4y6Bvca+hIpSgqzl9m4yZMOEG8uhTmscxLO+BRfAuGzu90I
+> > EFo9EJpdGXUl5dO5wAbf
+> > =Eh48
+> > -----END PGP SIGNATURE-----
 > 
-> No. The goal of this patch is to introduce something similar to autosuspend
-> for turning off domains. Even if all peripherals in a domain are idle, you
-> might not want to turn off the domain immediately, but wait a little in case
-> a new request comes in. We are using this scheme today in our GPU driver and
-> it works quite well, but that's done entirely without PM domains.
-
-The real question here is whether it would be better to implement 
-delayed suspend for PM domains or to use autosuspend for all the 
-devices in those domains.
-
-The implications of doing it one way rather than the other aren't 
-entirely clear.  One thing: PM domains aren't exposed in sysfs, are 
-theY?  If not, there is no way for userspace to adjust the length of 
-the delay.  That's a definite disadvantage.
-
-Alan Stern
-
+> 
+> 
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
