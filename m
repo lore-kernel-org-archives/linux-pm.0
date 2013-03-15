@@ -1,57 +1,48 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/8] ARM: dts: OMAP36xx: move CPU OPP tables to device
- tree
-Date: Fri, 15 Mar 2013 09:38:07 -0500
-Message-ID: <20130315143806.GA3103@kahuna>
-References: <1363294695-658-1-git-send-email-nm@ti.com>
- <1363294695-658-3-git-send-email-nm@ti.com>
- <514244B4.9050808@ti.com>
- <20130315135655.GA2939@kahuna>
- <51432F94.7000306@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RFC patch 02/11] cpuidle / arm : a single cpuidle driver
+Date: Fri, 15 Mar 2013 14:47:05 +0000
+Message-ID: <201303151447.06150.arnd@arndb.de>
+References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org> <1363357630-22214-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <51432F94.7000306@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: linux-omap@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moutng.kundenserver.de ([212.227.126.187]:58539 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755221Ab3COOuo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 10:50:44 -0400
+In-Reply-To: <1363357630-22214-3-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, andrew@lunn.ch, magnus.damm@gmail.com, ben-linux@fluff.org, nsekhar@ti.com, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, kevin.hilman@linaro.org, horms@verge.net.au, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, jason@lakedaemon.net, lenb@kernel.org
 
-On 09:26-20130315, Jon Hunter wrote:
+On Friday 15 March 2013, Daniel Lezcano wrote:
+> The cpuidle drivers are duplicating a lot of code and in most
+> of the case there is a common pattern we can factor out:
 > 
-> On 03/15/2013 08:56 AM, Nishanth Menon wrote:
-> > On 16:44-20130314, Jon Hunter wrote:
-> >>
-> >> On 03/14/2013 03:58 PM, Nishanth Menon wrote:
-> >>> Add DT OPP table for OMAP36xx family of devices. This data is
-> >>> decoded by OF with of_init_opp_table() helper function. This
-> >>> overrides the default OMAP34xx CPU OPP table definition.
-> >>
-> >> Not sure I following the last sentence. The tables are in a different
-> >> dtsi file and only the relevant file should be included, right?
-> > omap3630.dsi includes omap3.dtsi (which is meant for OMAP34xx).
-> > The opp tables introduced by this patch in omap36xx.dtsi will override
-> > the ones defined on omap3.dtsi. Will the following rephrase help clarify
-> > this?
-> > 
-> > Original:
-> > This overrides the default OMAP34xx CPU OPP table definition.
-> > Suggested;
-> > This overrides the default OMAP34xx CPU OPP table definition in
-> > omap3.dtsi.
+>         * setup the broadcast timers
+>         * register the driver
+>         * register the devices
 > 
-> Sorry, I just missed that the omap3430 opps were in omap3.dtsi and not
-> omap34xx.dtsi. I guess I am not familiar with how the DTC overrides
-> nodes, however, at least from a readability standpoint it would seem
-> nice to have the omap3430 opps in a omap3430 specific dtsi and not
-> omap3.dtsi. However, thats just my opinion.
-most of omap3630 is based off omap3430. I know from an readability point
-of view, it might have been good to split that to omap3-common.dtsi,
-omap34xx.dtsi, omap36xx.dtsi etc.. But there is no real need at this
-point in time to do that. Unless, ofcourse, we'd like to set that up as
-an standard for all OMAP SoCs...
+> This arm driver is the common part between all the ARM cpuidle drivers,
+> with the code factored out.
+> 
+> It does not handle the coupled idle state for now but it is the first
+> step to have everyone to converge to the same code pattern.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
--- 
-Regards,
-Nishanth Menon
+Unfortunately, I missed the session in Hong Kong, but I'd like to understand
+what part of this driver is actually ARM specific. I assume there is nothing
+in it that depends on 32 bit ARM hardware, right?
+
+Would the same code be used with arch/arm64?
+
+What about other architectures that want to share a cpuidle driver
+with and ARM SoC using the same hardware? We have a lot of examples
+of SoC vendors that use similar components on ARM and non-ARM SoCs
+based on SH, AVR32, Hexagon, C6x, MIPS or PowerPC.
+
+	Arnd
