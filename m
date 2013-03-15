@@ -1,40 +1,42 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/8] ARM: dts: OMAP36xx: move CPU OPP tables to device
+Subject: Re: [PATCH 6/8] ARM: dts: OMAP446x: move CPU OPP tables to device
  tree
-Date: Fri, 15 Mar 2013 08:56:55 -0500
-Message-ID: <20130315135655.GA2939@kahuna>
+Date: Fri, 15 Mar 2013 09:08:04 -0500
+Message-ID: <20130315140804.GB2939@kahuna>
 References: <1363294695-658-1-git-send-email-nm@ti.com>
- <1363294695-658-3-git-send-email-nm@ti.com>
- <514244B4.9050808@ti.com>
+ <1363294695-658-7-git-send-email-nm@ti.com>
+ <514245EE.6090906@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <514244B4.9050808@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+In-Reply-To: <514245EE.6090906@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 To: Jon Hunter <jon-hunter@ti.com>
 Cc: linux-omap@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16:44-20130314, Jon Hunter wrote:
+On 16:49-20130314, Jon Hunter wrote:
 > 
 > On 03/14/2013 03:58 PM, Nishanth Menon wrote:
-> > Add DT OPP table for OMAP36xx family of devices. This data is
-> > decoded by OF with of_init_opp_table() helper function. This
-> > overrides the default OMAP34xx CPU OPP table definition.
+> > OMAP4430 and 4460 have different OPP definitions. So, create an SoC
+> > variant dtsi file for 4460 and move the OPP definitions to it.
 > 
-> Not sure I following the last sentence. The tables are in a different
-> dtsi file and only the relevant file should be included, right?
-omap3630.dsi includes omap3.dtsi (which is meant for OMAP34xx).
-The opp tables introduced by this patch in omap36xx.dtsi will override
-the ones defined on omap3.dtsi. Will the following rephrase help clarify
-this?
-
-Original:
-This overrides the default OMAP34xx CPU OPP table definition.
-Suggested;
-This overrides the default OMAP34xx CPU OPP table definition in
-omap3.dtsi.
+> FYI, I had to create a similar file for PMU [1]. However, I called it
+> omap4460.dtsi and not omap446x.dtsi as there is only one omap446x
+Hmm, guess I was paranoid about marketing folks spinning off another
+omap446x variant out into the market. Since it is not yet done, nor
+known if they will ever do it, am OK with 4460 convention.
+> device. That should go into to v3.10 and so may be worth basing this on
+> top. I do like your omap4-panda-common.dtsi that is a nice clean-up.
+Thanks on the tip - Sounds good, since this series is based on DT, I
+will base my changes on top of for_3.10 branch.
+> 
+> Cheers
+> Jon
+> 
+> [1]
+> http://git.kernel.org/cgit/linux/kernel/git/bcousson/linux-omap-dt.git/commit/?h=for_3.10/dts&id=5e64b6b1137a54f353528d6da60071c1ef0043ba
 
 -- 
 Regards,
