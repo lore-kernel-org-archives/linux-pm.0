@@ -1,65 +1,57 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC patch 11/11] cpuidle / kirkwood : use common ARM cpuidle driver
-Date: Fri, 15 Mar 2013 15:27:10 +0100
-Message-ID: <1363357630-22214-12-git-send-email-daniel.lezcano@linaro.org>
-References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f182.google.com ([74.125.82.182]:43630 "EHLO
-	mail-we0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754665Ab3COO1m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 10:27:42 -0400
-Received: by mail-we0-f182.google.com with SMTP id t57so3254323wey.41
-        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 07:27:41 -0700 (PDT)
-In-Reply-To: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 2/8] ARM: dts: OMAP36xx: move CPU OPP tables to device
+ tree
+Date: Fri, 15 Mar 2013 09:38:07 -0500
+Message-ID: <20130315143806.GA3103@kahuna>
+References: <1363294695-658-1-git-send-email-nm@ti.com>
+ <1363294695-658-3-git-send-email-nm@ti.com>
+ <514244B4.9050808@ti.com>
+ <20130315135655.GA2939@kahuna>
+ <51432F94.7000306@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <51432F94.7000306@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: linux-omap@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, lenb@kernel.org, rjw@sisk.pl, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle-kirkwood.c |   17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+On 09:26-20130315, Jon Hunter wrote:
+> 
+> On 03/15/2013 08:56 AM, Nishanth Menon wrote:
+> > On 16:44-20130314, Jon Hunter wrote:
+> >>
+> >> On 03/14/2013 03:58 PM, Nishanth Menon wrote:
+> >>> Add DT OPP table for OMAP36xx family of devices. This data is
+> >>> decoded by OF with of_init_opp_table() helper function. This
+> >>> overrides the default OMAP34xx CPU OPP table definition.
+> >>
+> >> Not sure I following the last sentence. The tables are in a different
+> >> dtsi file and only the relevant file should be included, right?
+> > omap3630.dsi includes omap3.dtsi (which is meant for OMAP34xx).
+> > The opp tables introduced by this patch in omap36xx.dtsi will override
+> > the ones defined on omap3.dtsi. Will the following rephrase help clarify
+> > this?
+> > 
+> > Original:
+> > This overrides the default OMAP34xx CPU OPP table definition.
+> > Suggested;
+> > This overrides the default OMAP34xx CPU OPP table definition in
+> > omap3.dtsi.
+> 
+> Sorry, I just missed that the omap3430 opps were in omap3.dtsi and not
+> omap34xx.dtsi. I guess I am not familiar with how the DTC overrides
+> nodes, however, at least from a readability standpoint it would seem
+> nice to have the omap3430 opps in a omap3430 specific dtsi and not
+> omap3.dtsi. However, thats just my opinion.
+most of omap3630 is based off omap3430. I know from an readability point
+of view, it might have been good to split that to omap3-common.dtsi,
+omap34xx.dtsi, omap36xx.dtsi etc.. But there is no real need at this
+point in time to do that. Unless, ofcourse, we'd like to set that up as
+an standard for all OMAP SoCs...
 
-diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-index 670aa1e..60efdc5 100644
---- a/drivers/cpuidle/cpuidle-kirkwood.c
-+++ b/drivers/cpuidle/cpuidle-kirkwood.c
-@@ -53,9 +53,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
- 	},
- 	.state_count = KIRKWOOD_MAX_STATES,
- };
--static struct cpuidle_device *device;
--
--static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
- 
- /* Initialize CPU idle by registering the idle states */
- static int kirkwood_cpuidle_probe(struct platform_device *pdev)
-@@ -70,22 +67,12 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
- 	if (!ddr_operation_base)
- 		return -EADDRNOTAVAIL;
- 
--	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
--	device->state_count = KIRKWOOD_MAX_STATES;
--
--	cpuidle_register_driver(&kirkwood_idle_driver);
--	if (cpuidle_register_device(device)) {
--		pr_err("kirkwood_init_cpuidle: Failed registering\n");
--		return -EIO;
--	}
--	return 0;
-+	return arm_idle_init(&kirkwood_idle_driver);
- }
- 
- int kirkwood_cpuidle_remove(struct platform_device *pdev)
- {
--	cpuidle_unregister_device(device);
--	cpuidle_unregister_driver(&kirkwood_idle_driver);
--
-+	arm_idle_exit(&kirkwood_idle_driver);
- 	return 0;
- }
- 
 -- 
-1.7.9.5
-
+Regards,
+Nishanth Menon
