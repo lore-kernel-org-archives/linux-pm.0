@@ -1,31 +1,48 @@
-From: Jon Hunter <jon-hunter@ti.com>
-Subject: Re: [PATCH 6/8] ARM: dts: OMAP446x: move CPU OPP tables to device
- tree
-Date: Thu, 14 Mar 2013 16:49:34 -0500
-Message-ID: <514245EE.6090906@ti.com>
-References: <1363294695-658-1-git-send-email-nm@ti.com> <1363294695-658-7-git-send-email-nm@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 8/8] cpufreq: omap: remove omap-cpufreq
+Date: Fri, 15 Mar 2013 10:21:18 +0530
+Message-ID: <CAOh2x=kCWHL-e9wZxgE97BuNpj0uu67t6SwqghBkyZKL5hugDg@mail.gmail.com>
+References: <1363294695-658-1-git-send-email-nm@ti.com>
+	<1363294695-658-9-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1363294695-658-7-git-send-email-nm@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1363294695-658-9-git-send-email-nm@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
 To: Nishanth Menon <nm@ti.com>
-Cc: linux-omap@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, =?UTF-8?B?QmVub8OudCBDb3Vzc29u?= <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Mar 15, 2013 at 2:28 AM, Nishanth Menon <nm@ti.com> wrote:
+> We can now use cpufreq-cpu0 driver using DT entries.
+> remove the redundant omap-cpufreq driver from the tree.
+> Remove MAINTAINERS file entry for the same as well.
+>
+> Cc: Kevin Hilman <khilman@deeprootsystems.com>
+> Cc: "Beno=EEt Cousson" <b-cousson@ti.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Keerthy <j-keerthy@ti.com>
+> Cc: linux-omap@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+>  MAINTAINERS                    |    1 -
+>  drivers/cpufreq/Kconfig.arm    |    6 -
+>  drivers/cpufreq/Makefile       |    1 -
+>  drivers/cpufreq/omap-cpufreq.c |  291 ------------------------------=
+----------
+>  4 files changed, 299 deletions(-)
+>  delete mode 100644 drivers/cpufreq/omap-cpufreq.c
 
-On 03/14/2013 03:58 PM, Nishanth Menon wrote:
-> OMAP4430 and 4460 have different OPP definitions. So, create an SoC
-> variant dtsi file for 4460 and move the OPP definitions to it.
-
-FYI, I had to create a similar file for PMU [1]. However, I called it
-omap4460.dtsi and not omap446x.dtsi as there is only one omap446x
-device. That should go into to v3.10 and so may be worth basing this on
-top. I do like your omap4-panda-common.dtsi that is a nice clean-up.
-
-Cheers
-Jon
-
-[1]
-http://git.kernel.org/cgit/linux/kernel/git/bcousson/linux-omap-dt.git/commit/?h=for_3.10/dts&id=5e64b6b1137a54f353528d6da60071c1ef0043ba
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
