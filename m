@@ -1,85 +1,90 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC patch 02/11] cpuidle / arm : a single cpuidle driver
-Date: Fri, 15 Mar 2013 16:07:53 +0100
-Message-ID: <51433949.1030204@linaro.org>
-References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org> <1363357630-22214-3-git-send-email-daniel.lezcano@linaro.org> <201303151447.06150.arnd@arndb.de>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH] PM/domains: add delayed power off capability
+Date: Fri, 15 Mar 2013 11:04:18 -0700
+Message-ID: <87vc8sk09p.fsf@linaro.org>
+References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
+	<20130312134913.GD3514@kroah.com> <513F4208.4040207@nvidia.com>
+	<87zjy7m77d.fsf@linaro.org>
+	<20130314085916.GC18519@tbergstrom-lnx.Nvidia.com>
+	<5141DABF.9050002@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:37722 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754478Ab3COPH6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 11:07:58 -0400
-Received: by mail-wi0-f180.google.com with SMTP id hi8so610105wib.7
-        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 08:07:56 -0700 (PDT)
-In-Reply-To: <201303151447.06150.arnd@arndb.de>
+Received: from mail-pb0-f42.google.com ([209.85.160.42]:33863 "EHLO
+	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419Ab3COSEW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 14:04:22 -0400
+Received: by mail-pb0-f42.google.com with SMTP id xb4so4134885pbc.29
+        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 11:04:21 -0700 (PDT)
+In-Reply-To: <5141DABF.9050002@nvidia.com> (Mayuresh Kulkarni's message of
+	"Thu, 14 Mar 2013 19:42:15 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, andrew@lunn.ch, magnus.damm@gmail.com, ben-linux@fluff.org, nsekhar@ti.com, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, kevin.hilman@linaro.org, horms@verge.net.au, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, jason@lakedaemon.net, lenb@kernel.org
+To: Mayuresh Kulkarni <mkulkarni@nvidia.com>
+Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Greg KH <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>
 
-On 03/15/2013 03:47 PM, Arnd Bergmann wrote:
-> On Friday 15 March 2013, Daniel Lezcano wrote:
->> The cpuidle drivers are duplicating a lot of code and in most
->> of the case there is a common pattern we can factor out:
+Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
+
+> On Thursday 14 March 2013 02:29 PM, Peter De Schrijver wrote:
+>> On Wed, Mar 13, 2013 at 08:27:02PM +0100, Kevin Hilman wrote:
+>>> Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
+>>>
+>>>> On Tuesday 12 March 2013 07:19 PM, Greg KH wrote:
+>>>>> On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
+>>>>>> - this commit adds a capability to delay the powering off
+>>>>>> of the domain
+>>>>>
+>>>>> Why?
+>>>>>
+>>>>
+>>>> - As I mentioned below (sorry for mentioning below rather than at
+>>>> start), powering off a domain means the context save needs to be done
+>>>> && it needs to be restored during power on.
+>>>> - It often observed that saving and restoring of context is expensive
+>>>> in terms of power consumed as well as overall system response.
+>>>
+>>> Are you talking about per-device context save/restore?
+>>>
+>>> Your drivers should be using runtime PM, which has an autosuspend
+>>> timeout feature.  Using autosuspend on any device in the power domain
+>>> will have the same effect as this proposed patch.
+>>>
+>>> Using runtime PM to target specific devices that have expensive
+>>> save/restore paths is also more understandable and maintainable IMO,
+>>> because the "fix" is targetted.
+>>>
 >>
->>         * setup the broadcast timers
->>         * register the driver
->>         * register the devices
+>> No. The goal of this patch is to introduce something similar to autosuspend
+>> for turning off domains. Even if all peripherals in a domain are idle, you
+>> might not want to turn off the domain immediately, but wait a little in case
+>> a new request comes in. We are using this scheme today in our GPU driver and
+>> it works quite well, but that's done entirely without PM domains.
 >>
->> This arm driver is the common part between all the ARM cpuidle drive=
-rs,
->> with the code factored out.
+>> Cheers,
 >>
->> It does not handle the coupled idle state for now but it is the firs=
-t
->> step to have everyone to converge to the same code pattern.
+>> Peter.
 >>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> Unfortunately, I missed the session in Hong Kong, but I'd like to und=
-erstand
-> what part of this driver is actually ARM specific. I assume there is =
-nothing
-> in it that depends on 32 bit ARM hardware, right?
+>
+> - As Peter mentioned above, the idea is to wait for some time before
+> turning off a domain with the anticipation that it will be needed soon
+> for a particular use case.
+> - My previous comments would sound valid if you imagine a domain that
+> has a single device attached to it. In such case, there are 2 things
+> that happen during power-on/off: context save/restore of the device
+> and powering on/off of a domain. Both of them needs energy and
+> possibly time to settle down (stabilize the domain power).
+> - If such a domain is going to be needed very soon in future, it makes
+> sense to avoid its power down for at-least that much amount of time
+> (which is what the proposed patch does).
 
-What depends on the 32bits ARM hardware is the drivers themselves. This
-ARM driver is the first step to consolidate all SoC cpuidle specific
-code we find in arch/arm. The code is designated to factor out these
-drivers, as a first step. The second step is to consolidate more this
-driver (eg. moving the code in arch/arm/kernel/cpuidle.c in this driver=
-).
+...and is also what the pluggable governors inside genpd are meant to
+allow you to do.
 
-The last man standing algorithm we have in mach-ux500 and mach-imx is
-the same, and will be moved in the ARM cpuidle driver.
+More specifically, what you said above: "if such a domain is going to be
+needed very soon in the future" is just another way of saying it there
+is a wakeup latency constraint.   Wakeup latency constratints are
+handled by per-device PM QoS, which can be queried by a governor
+associated with a genpd.
 
-The more it will be consolidated, the more it will be ARM specific.
-
-The final step will be to use the device tree to be passed to this
-driver and do the cpuidle driver initialization from there.
-
-> Would the same code be used with arch/arm64?
-
-I can't tell but IIUC, a single ARM driver will be used based on the
-psci for ARM64, but it does not exist for now. It is possible some code
-pattern could be used from the ARM32 cpuidle driver.
-
-> What about other architectures that want to share a cpuidle driver
-> with and ARM SoC using the same hardware? We have a lot of examples
-> of SoC vendors that use similar components on ARM and non-ARM SoCs
-> based on SH, AVR32, Hexagon, C6x, MIPS or PowerPC.
-
-I guess if they share the same code, it could probably go to the cpuidl=
-e
-core framework instead of a specific driver.
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Kevin
 
