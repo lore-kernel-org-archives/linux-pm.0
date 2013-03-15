@@ -1,90 +1,109 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH] PM/domains: add delayed power off capability
-Date: Fri, 15 Mar 2013 11:04:18 -0700
-Message-ID: <87vc8sk09p.fsf@linaro.org>
-References: <1363078159-17571-1-git-send-email-mkulkarni@nvidia.com>
-	<20130312134913.GD3514@kroah.com> <513F4208.4040207@nvidia.com>
-	<87zjy7m77d.fsf@linaro.org>
-	<20130314085916.GC18519@tbergstrom-lnx.Nvidia.com>
-	<5141DABF.9050002@nvidia.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH 07/50] staging: omap-thermal: introduce RMW_BITS macro
+Date: Sat, 16 Mar 2013 00:09:46 +0300
+Message-ID: <20130315210946.GK9138@mwanda>
+References: <1363352438-15935-1-git-send-email-eduardo.valentin@ti.com>
+ <1363352438-15935-8-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f42.google.com ([209.85.160.42]:33863 "EHLO
-	mail-pb0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751419Ab3COSEW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 14:04:22 -0400
-Received: by mail-pb0-f42.google.com with SMTP id xb4so4134885pbc.29
-        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 11:04:21 -0700 (PDT)
-In-Reply-To: <5141DABF.9050002@nvidia.com> (Mayuresh Kulkarni's message of
-	"Thu, 14 Mar 2013 19:42:15 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1363352438-15935-8-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mayuresh Kulkarni <mkulkarni@nvidia.com>
-Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Greg KH <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>
 
-Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
+On Fri, Mar 15, 2013 at 08:59:55AM -0400, Eduardo Valentin wrote:
+> This patch introduce a macro to read, update, write bitfields.
+> It will be specific to bandgap data structures.
+> 
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> ---
+>  drivers/staging/omap-thermal/omap-bandgap.c |  178 +++++++--------------------
+>  1 files changed, 46 insertions(+), 132 deletions(-)
+> 
+> diff --git a/drivers/staging/omap-thermal/omap-bandgap.c b/drivers/staging/omap-thermal/omap-bandgap.c
+> index 9f2d7cc..1c1b905 100644
+> --- a/drivers/staging/omap-thermal/omap-bandgap.c
+> +++ b/drivers/staging/omap-thermal/omap-bandgap.c
+> @@ -52,25 +52,29 @@ static void omap_bandgap_writel(struct omap_bandgap *bg_ptr, u32 val, u32 reg)
+>  	writel(val, bg_ptr->base + reg);
+>  }
+>  
+> +/* update bits, value will be shifted */
+> +#define RMW_BITS(bg_ptr, id, reg, mask, val)			\
+> +do {								\
+> +	struct temp_sensor_registers *t;			\
+> +	u32 r;							\
+> +								\
+> +	t = bg_ptr->conf->sensors[(id)].registers;		\
+> +	r = omap_bandgap_readl(bg_ptr, t->reg);			\
+> +	r &= ~t->mask;						\
+> +	r |= (val) << __ffs(t->mask);				\
+> +	omap_bandgap_writel(bg_ptr, r, t->reg);			\
+> +} while (0)
+> +
+>  static int omap_bandgap_power(struct omap_bandgap *bg_ptr, bool on)
+>  {
+> -	struct temp_sensor_registers *tsr;
+>  	int i;
+> -	u32 ctrl;
+>  
+>  	if (!OMAP_BANDGAP_HAS(bg_ptr, POWER_SWITCH))
+>  		return 0;
+>  
+> -	for (i = 0; i < bg_ptr->conf->sensor_count; i++) {
+> -		tsr = bg_ptr->conf->sensors[i].registers;
+> -		ctrl = omap_bandgap_readl(bg_ptr, tsr->temp_sensor_ctrl);
+> -		ctrl &= ~tsr->bgap_tempsoff_mask;
+> +	for (i = 0; i < bg_ptr->conf->sensor_count; i++)
+>  		/* active on 0 */
+> -		ctrl |= !on << __ffs(tsr->bgap_tempsoff_mask);
+> -
+> -		/* write BGAP_TEMPSOFF should be reset to 0 */
+> -		omap_bandgap_writel(bg_ptr, ctrl, tsr->temp_sensor_ctrl);
+> -	}
+> +		RMW_BITS(bg_ptr, i, temp_sensor_ctrl, bgap_tempsoff_mask, !on);
+>  
+>  	return 0;
+>  }
+> @@ -78,15 +82,13 @@ static int omap_bandgap_power(struct omap_bandgap *bg_ptr, bool on)
+>  static u32 omap_bandgap_read_temp(struct omap_bandgap *bg_ptr, int id)
+>  {
 
-> On Thursday 14 March 2013 02:29 PM, Peter De Schrijver wrote:
->> On Wed, Mar 13, 2013 at 08:27:02PM +0100, Kevin Hilman wrote:
->>> Mayuresh Kulkarni <mkulkarni@nvidia.com> writes:
->>>
->>>> On Tuesday 12 March 2013 07:19 PM, Greg KH wrote:
->>>>> On Tue, Mar 12, 2013 at 02:19:19PM +0530, Mayuresh Kulkarni wrote:
->>>>>> - this commit adds a capability to delay the powering off
->>>>>> of the domain
->>>>>
->>>>> Why?
->>>>>
->>>>
->>>> - As I mentioned below (sorry for mentioning below rather than at
->>>> start), powering off a domain means the context save needs to be done
->>>> && it needs to be restored during power on.
->>>> - It often observed that saving and restoring of context is expensive
->>>> in terms of power consumed as well as overall system response.
->>>
->>> Are you talking about per-device context save/restore?
->>>
->>> Your drivers should be using runtime PM, which has an autosuspend
->>> timeout feature.  Using autosuspend on any device in the power domain
->>> will have the same effect as this proposed patch.
->>>
->>> Using runtime PM to target specific devices that have expensive
->>> save/restore paths is also more understandable and maintainable IMO,
->>> because the "fix" is targetted.
->>>
->>
->> No. The goal of this patch is to introduce something similar to autosuspend
->> for turning off domains. Even if all peripherals in a domain are idle, you
->> might not want to turn off the domain immediately, but wait a little in case
->> a new request comes in. We are using this scheme today in our GPU driver and
->> it works quite well, but that's done entirely without PM domains.
->>
->> Cheers,
->>
->> Peter.
->>
->
-> - As Peter mentioned above, the idea is to wait for some time before
-> turning off a domain with the anticipation that it will be needed soon
-> for a particular use case.
-> - My previous comments would sound valid if you imagine a domain that
-> has a single device attached to it. In such case, there are 2 things
-> that happen during power-on/off: context save/restore of the device
-> and powering on/off of a domain. Both of them needs energy and
-> possibly time to settle down (stabilize the domain power).
-> - If such a domain is going to be needed very soon in future, it makes
-> sense to avoid its power down for at-least that much amount of time
-> (which is what the proposed patch does).
+This patch is fine and it makes it cleaner than before.
 
-...and is also what the pluggable governors inside genpd are meant to
-allow you to do.
+But that said, I don't care for the RMW_BITS() very much as a long
+term thing.  If we just used pointers instead of passing the offset
+into the bg_ptr->conf->sensors[] array then everything would be a
+lot cleaner.
 
-More specifically, what you said above: "if such a domain is going to be
-needed very soon in the future" is just another way of saying it there
-is a wakeup latency constraint.   Wakeup latency constratints are
-handled by per-device PM QoS, which can be queried by a governor
-associated with a genpd.
+In other words, instead of this:
 
-Kevin
+static u32 omap_bandgap_read_temp(struct omap_bandgap *bg_ptr, int id)
 
+We would have:
+
+static u32 omap_bandgap_read_temp(struct omap_bandgap *bg_ptr,
+				  struct temp_sensor_registers *tsr)
+
+If you have the pointer then it's easy write RMW_BITS() as a
+function.
+
+static void rmw_bits(struct omap_bandgap *bg_ptr, u32 reg, u32 mask, u32 val)
+{
+	u32 r;
+
+	r = omap_bandgap_readl(bg_ptr, reg);
+	r &= ~mask;
+	r |= val << __ffs(mask);
+	omap_bandgap_writel(bg_ptr, r, reg);
+}
+
+It's called like:
+
+	rmw_bits(bg_ptr, tsr->bgap_mask_ctrl, tsr->mask_freeze_mask, 1);
+
+regards,
+dan carpenter
