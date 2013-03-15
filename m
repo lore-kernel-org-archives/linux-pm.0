@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC patch 07/11] cpuidle / shmobile : use common ARM cpuidle driver
-Date: Fri, 15 Mar 2013 15:27:06 +0100
-Message-ID: <1363357630-22214-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: [RFC patch 10/11] cpuidle / calxeda : use common ARM cpuidle driver
+Date: Fri, 15 Mar 2013 15:27:09 +0100
+Message-ID: <1363357630-22214-11-git-send-email-daniel.lezcano@linaro.org>
 References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:52236 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754901Ab3COO1c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 10:27:32 -0400
-Received: by mail-wi0-f175.google.com with SMTP id l13so566248wie.14
-        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 07:27:31 -0700 (PDT)
+Received: from mail-wg0-f54.google.com ([74.125.82.54]:59290 "EHLO
+	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754948Ab3COO1j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 10:27:39 -0400
+Received: by mail-wg0-f54.google.com with SMTP id fm10so3041403wgb.21
+        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 07:27:38 -0700 (PDT)
 In-Reply-To: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,35 +18,88 @@ Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, lenb@ker
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-shmobile/cpuidle.c |   10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ drivers/cpuidle/cpuidle-calxeda.c |   52 +------------------------------------
+ 1 file changed, 1 insertion(+), 51 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
-index 9e05026..11a0542 100644
---- a/arch/arm/mach-shmobile/cpuidle.c
-+++ b/arch/arm/mach-shmobile/cpuidle.c
-@@ -23,7 +23,6 @@ int shmobile_enter_wfi(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	return 0;
+diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+index e1aab38..5db7935 100644
+--- a/drivers/cpuidle/cpuidle-calxeda.c
++++ b/drivers/cpuidle/cpuidle-calxeda.c
+@@ -35,8 +35,6 @@
+ extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
+ extern void *scu_base_addr;
+ 
+-static struct cpuidle_device __percpu *calxeda_idle_cpuidle_devices;
+-
+ static inline unsigned int get_auxcr(void)
+ {
+ 	unsigned int val;
+@@ -85,19 +83,6 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
+ 	return index;
  }
  
--static struct cpuidle_device shmobile_cpuidle_dev;
- static struct cpuidle_driver shmobile_cpuidle_default_driver = {
- 	.name			= "shmobile_cpuidle",
- 	.owner			= THIS_MODULE,
-@@ -43,12 +42,5 @@ void shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
+-static void calxeda_idle_cpuidle_devices_uninit(void)
+-{
+-	int i;
+-	struct cpuidle_device *dev;
+-
+-	for_each_possible_cpu(i) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, i);
+-		cpuidle_unregister_device(dev);
+-	}
+-
+-	free_percpu(calxeda_idle_cpuidle_devices);
+-}
+-
+ static struct cpuidle_driver calxeda_idle_driver = {
+ 	.name = "calxeda_idle",
+ 	.en_core_tk_irqen = 1,
+@@ -118,44 +103,9 @@ static struct cpuidle_driver calxeda_idle_driver = {
  
- int shmobile_cpuidle_init(void)
+ static int __init calxeda_cpuidle_init(void)
  {
--	struct cpuidle_device *dev = &shmobile_cpuidle_dev;
+-	int cpu_id;
+-	int ret;
+-	struct cpuidle_device *dev;
+-	struct cpuidle_driver *drv = &calxeda_idle_driver;
 -
--	cpuidle_register_driver(cpuidle_drv);
+ 	if (!of_machine_is_compatible("calxeda,highbank"))
+ 		return -ENODEV;
+ 
+-	ret = cpuidle_register_driver(drv);
+-	if (ret)
+-		return ret;
 -
--	dev->state_count = cpuidle_drv->state_count;
--	cpuidle_register_device(dev);
+-	calxeda_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+-	if (calxeda_idle_cpuidle_devices == NULL) {
+-		ret = -ENOMEM;
+-		goto unregister_drv;
+-	}
+-
+-	/* initialize state data for each cpuidle_device */
+-	for_each_possible_cpu(cpu_id) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, cpu_id);
+-		dev->cpu = cpu_id;
+-		dev->state_count = drv->state_count;
+-
+-		ret = cpuidle_register_device(dev);
+-		if (ret) {
+-			pr_err("Failed to register cpu %u, error: %d\n",
+-			       cpu_id, ret);
+-			goto uninit;
+-		}
+-	}
 -
 -	return 0;
-+	return arm_idle_init(cpuidle_drv);
+-
+-uninit:
+-	calxeda_idle_cpuidle_devices_uninit();
+-unregister_drv:
+-	cpuidle_unregister_driver(drv);
+-	return ret;
++	return arm_idle_init(&calxeda_idle_driver);
  }
+ module_init(calxeda_cpuidle_init);
 -- 
 1.7.9.5
 
