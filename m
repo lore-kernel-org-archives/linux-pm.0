@@ -1,73 +1,85 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/8] ARM: dts: OMAP36xx: move CPU OPP tables to device tree
-Date: Fri, 15 Mar 2013 10:02:32 -0500
-Message-ID: <20130315150232.GB3297@kahuna>
-References: <1363294695-658-1-git-send-email-nm@ti.com>
- <1363294695-658-3-git-send-email-nm@ti.com>
- <514244B4.9050808@ti.com> <20130315135655.GA2939@kahuna>
- <51432F94.7000306@ti.com> <20130315143806.GA3103@kahuna>
- <51433723.20107@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC patch 02/11] cpuidle / arm : a single cpuidle driver
+Date: Fri, 15 Mar 2013 16:07:53 +0100
+Message-ID: <51433949.1030204@linaro.org>
+References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org> <1363357630-22214-3-git-send-email-daniel.lezcano@linaro.org> <201303151447.06150.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <51433723.20107@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:37722 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754478Ab3COPH6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Mar 2013 11:07:58 -0400
+Received: by mail-wi0-f180.google.com with SMTP id hi8so610105wib.7
+        for <linux-pm@vger.kernel.org>; Fri, 15 Mar 2013 08:07:56 -0700 (PDT)
+In-Reply-To: <201303151447.06150.arnd@arndb.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, andrew@lunn.ch, magnus.damm@gmail.com, ben-linux@fluff.org, nsekhar@ti.com, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, kevin.hilman@linaro.org, horms@verge.net.au, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, jason@lakedaemon.net, lenb@kernel.org
 
-On 09:58-20130315, Jon Hunter wrote:
-> 
-> On 03/15/2013 09:38 AM, Nishanth Menon wrote:
-> > On 09:26-20130315, Jon Hunter wrote:
-> >>
-> >> On 03/15/2013 08:56 AM, Nishanth Menon wrote:
-> >>> On 16:44-20130314, Jon Hunter wrote:
-> >>>>
-> >>>> On 03/14/2013 03:58 PM, Nishanth Menon wrote:
-> >>>>> Add DT OPP table for OMAP36xx family of devices. This data is
-> >>>>> decoded by OF with of_init_opp_table() helper function. This
-> >>>>> overrides the default OMAP34xx CPU OPP table definition.
-> >>>>
-> >>>> Not sure I following the last sentence. The tables are in a different
-> >>>> dtsi file and only the relevant file should be included, right?
-> >>> omap3630.dsi includes omap3.dtsi (which is meant for OMAP34xx).
-> >>> The opp tables introduced by this patch in omap36xx.dtsi will override
-> >>> the ones defined on omap3.dtsi. Will the following rephrase help clarify
-> >>> this?
-> >>>
-> >>> Original:
-> >>> This overrides the default OMAP34xx CPU OPP table definition.
-> >>> Suggested;
-> >>> This overrides the default OMAP34xx CPU OPP table definition in
-> >>> omap3.dtsi.
-> >>
-> >> Sorry, I just missed that the omap3430 opps were in omap3.dtsi and not
-> >> omap34xx.dtsi. I guess I am not familiar with how the DTC overrides
-> >> nodes, however, at least from a readability standpoint it would seem
-> >> nice to have the omap3430 opps in a omap3430 specific dtsi and not
-> >> omap3.dtsi. However, thats just my opinion.
-> > most of omap3630 is based off omap3430. I know from an readability point
-> > of view, it might have been good to split that to omap3-common.dtsi,
-> > omap34xx.dtsi, omap36xx.dtsi etc.. But there is no real need at this
-> > point in time to do that. Unless, ofcourse, we'd like to set that up as
-> > an standard for all OMAP SoCs...
-> 
-> How would omap3-common.dtsi be any different from omap3.dtsi? I don't
-> wish us to go nuts with creating dtsi files either, but having an
-> omap3430.dtsi does not seem unreasonable to me, but that is just my opinion.
-considering omap34xx variants, omap343x.dtsi ;). Will do in v2.
+On 03/15/2013 03:47 PM, Arnd Bergmann wrote:
+> On Friday 15 March 2013, Daniel Lezcano wrote:
+>> The cpuidle drivers are duplicating a lot of code and in most
+>> of the case there is a common pattern we can factor out:
+>>
+>>         * setup the broadcast timers
+>>         * register the driver
+>>         * register the devices
+>>
+>> This arm driver is the common part between all the ARM cpuidle drive=
+rs,
+>> with the code factored out.
+>>
+>> It does not handle the coupled idle state for now but it is the firs=
+t
+>> step to have everyone to converge to the same code pattern.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>=20
+> Unfortunately, I missed the session in Hong Kong, but I'd like to und=
+erstand
+> what part of this driver is actually ARM specific. I assume there is =
+nothing
+> in it that depends on 32 bit ARM hardware, right?
 
--- 
-Regards,
-Nishanth Menon
+What depends on the 32bits ARM hardware is the drivers themselves. This
+ARM driver is the first step to consolidate all SoC cpuidle specific
+code we find in arch/arm. The code is designated to factor out these
+drivers, as a first step. The second step is to consolidate more this
+driver (eg. moving the code in arch/arm/kernel/cpuidle.c in this driver=
+).
+
+The last man standing algorithm we have in mach-ux500 and mach-imx is
+the same, and will be moved in the ARM cpuidle driver.
+
+The more it will be consolidated, the more it will be ARM specific.
+
+The final step will be to use the device tree to be passed to this
+driver and do the cpuidle driver initialization from there.
+
+> Would the same code be used with arch/arm64?
+
+I can't tell but IIUC, a single ARM driver will be used based on the
+psci for ARM64, but it does not exist for now. It is possible some code
+pattern could be used from the ARM32 cpuidle driver.
+
+> What about other architectures that want to share a cpuidle driver
+> with and ARM SoC using the same hardware? We have a lot of examples
+> of SoC vendors that use similar components on ARM and non-ARM SoCs
+> based on SH, AVR32, Hexagon, C6x, MIPS or PowerPC.
+
+I guess if they share the same code, it could probably go to the cpuidl=
+e
+core framework instead of a specific driver.
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
