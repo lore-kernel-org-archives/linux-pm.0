@@ -1,67 +1,42 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH][RFC] PM / Domains: Add on-off notifiers
-Date: Mon, 18 Mar 2013 12:14:17 -0700
-Message-ID: <878v5kh65y.fsf@linaro.org>
-References: <1363351143-28490-1-git-send-email-rickard.andersson@stericsson.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH 2/8] staging: omap-thermal: use spin_lock_irqsave inside
+ IRQ handler
+Date: Mon, 18 Mar 2013 22:16:18 +0300
+Message-ID: <20130318191618.GU9138@mwanda>
+References: <1363618756-15851-1-git-send-email-eduardo.valentin@ti.com>
+ <1363618756-15851-3-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f51.google.com ([209.85.160.51]:51362 "EHLO
-	mail-pb0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605Ab3CRTOU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Mar 2013 15:14:20 -0400
-Received: by mail-pb0-f51.google.com with SMTP id un15so6661961pbc.38
-        for <linux-pm@vger.kernel.org>; Mon, 18 Mar 2013 12:14:20 -0700 (PDT)
-In-Reply-To: <1363351143-28490-1-git-send-email-rickard.andersson@stericsson.com>
-	(Rickard Andersson's message of "Fri, 15 Mar 2013 13:39:03 +0100")
+Received: from userp1040.oracle.com ([156.151.31.81]:29024 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753168Ab3CRTQh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Mar 2013 15:16:37 -0400
+Content-Disposition: inline
+In-Reply-To: <1363618756-15851-3-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Andersson <rickard.andersson@stericsson.com>
-Cc: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
 
-Hi Rickard,
+On Mon, Mar 18, 2013 at 10:59:10AM -0400, Eduardo Valentin wrote:
+> Even if the IRQ is not firing because it is ONE_SHOT and disable
+> at INTC level, the IRQ handler must use spin_lock_irqsave.
+> It is necessary to disable IRQs from the current
+> CPU while it is holding a spin_lock which is need.
+> 
 
-Rickard Andersson <rickard.andersson@stericsson.com> writes:
+Gar...  I think I was just totally wrong on this.  I think your
+original code was fine.  Sorry Eduardo and Greg.
 
-> Some drivers needs to restore their context directly
-> when a power domain is activated. For example a driver
-> handling system bus settings must be able to restore
-> context before the bus is being used for the first time.
-> Other examples could be clock settings hardware blocks and
-> special debugging hardware blocks which should be restored
-> as early as possible in order to be able to debug direcly
-> from waking up. Typically these notifers are needed in
-> systems with CPU coupled power domains. The notifiers
-> are intended to be trigged by cpuidle driver or the
-> suspend ops hooks.
->
-> The drivers that needs to use these notifiers are
-> some special cases. Most drivers should not use this
-> method and instead control their context via the
-> pm_runtime interface.
->
-> Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+This is a threaded IRQ so the regular spin_lock is fine or even the
+mutex would have been.
 
-Some general comments.
+IRQ_ONESHOT is about triggering a second IRQ before the first one
+has been finished, btw.
 
-First, I don't see where the notifiers are actually called in this
-patch, so their intended use is not entirely clear.
+I am an idiot.
 
-Second, I'm a bit reluctant to see another layer of callbacks added to
-the drivers.  I think using notifiers for this adds another level of
-complexity to drivers that already have a pile of PM related callbacks
-to manage.
+regards,
+dan carpenter
 
-IMO, it would be helpful to see an example driver using this feature,
-and how it would interact with the drivers runtime PM callbacks.  For
-example, I suspect that the the notifier callback would bascially be the
-same as the runtime_resume callback, right?
-
-Stated differently, at first glance, it seems the feature needed is
-"runtime resume immidately after genpd power on".  Is that correct?
-
-Also, the changelog implies that ordering may be crucial here (e.g bus
-settings restored before bus is accessed), and using notifiers is not
-going to give you that kind of ordering guarantee.
-
-Kevin
