@@ -1,281 +1,184 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH V4 1/4] cpufreq: exynos: Adding cpufreq driver for exynos5440
-Date: Mon, 18 Mar 2013 16:28:10 +0530
-Message-ID: <CADGdYn5eghg4yyvKJVY+cs0=5KVALxvcUEWYPp=NB4=ZChdqkA@mail.gmail.com>
-References: <1363082299-10561-1-git-send-email-amit.daniel@samsung.com>
-	<1363082299-10561-2-git-send-email-amit.daniel@samsung.com>
-	<CAOh2x=narPBYBNMMs5Qw_rGSgVsSNumb_jw_88C1PNGEc6sSEw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH][RFC] PM / Domains: Add on-off notifiers
+Date: Mon, 18 Mar 2013 14:08:30 +0100
+Message-ID: <CAPDyKFouP5WLhJdR=iVqPEs63cjWgFXs3k_AOq2twq97YN6A4w@mail.gmail.com>
+References: <1363351143-28490-1-git-send-email-rickard.andersson@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=narPBYBNMMs5Qw_rGSgVsSNumb_jw_88C1PNGEc6sSEw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f50.google.com ([209.85.215.50]:44044 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190Ab3CRNIf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Mar 2013 09:08:35 -0400
+Received: by mail-la0-f50.google.com with SMTP id ec20so6055005lab.37
+        for <linux-pm@vger.kernel.org>; Mon, 18 Mar 2013 06:08:30 -0700 (PDT)
+In-Reply-To: <1363351143-28490-1-git-send-email-rickard.andersson@stericsson.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rickard Andersson <rickard.andersson@stericsson.com>
+Cc: linux-pm@vger.kernel.org
 
-Hi Viresh,
-
-On Tue, Mar 12, 2013 at 4:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> This is what Russell told me a long time back:
-> "Don't use Adding, Fixing, etc words as this work is not something, which is
-> already done."
+On 15 March 2013 13:39, Rickard Andersson
+<rickard.andersson@stericsson.com> wrote:
+> Some drivers needs to restore their context directly
+> when a power domain is activated. For example a driver
+> handling system bus settings must be able to restore
+> context before the bus is being used for the first time.
+> Other examples could be clock settings hardware blocks and
+> special debugging hardware blocks which should be restored
+> as early as possible in order to be able to debug direcly
+> from waking up. Typically these notifers are needed in
+> systems with CPU coupled power domains. The notifiers
+> are intended to be trigged by cpuidle driver or the
+> suspend ops hooks.
 >
-> So your subject should have been: "cpufreq: exynos: Add cpufreq driver
-> for exynos5440"
-ok right.
+> The drivers that needs to use these notifiers are
+> some special cases. Most drivers should not use this
+> method and instead control their context via the
+> pm_runtime interface.
 >
-> Fix it if you need another version, which i believe you do :)
-yes no escape now :)
+> Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+> ---
+>  drivers/base/power/domain.c | 64 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   | 22 ++++++++++++++++
+>  2 files changed, 86 insertions(+)
 >
-> On Tue, Mar 12, 2013 at 5:58 PM, Amit Daniel Kachhap
-> <amit.daniel@samsung.com> wrote:
->> This patch adds dvfs support for exynos5440 SOC. This soc has 4 cores and
->> they scale at same frequency. The nature of exynos5440 clock controller is
->> different from previous exynos controllers so not using the common exynos
->> cpufreq framework. The major difference being interrupt notfication for
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 9a6b05a..16fbc52 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1955,6 +1955,69 @@ int pm_genpd_name_detach_cpuidle(const char *name)
+>         return pm_genpd_detach_cpuidle(pm_genpd_lookup_name(name));
+>  }
 >
-> s/notfication/notification
-ok
+> +/**
+> + * pm_genpd_register_on_off_notifier - Register to early power on /
+> + * late power off notifications.
+> + * Only use this function if absolutly needed. It is only intended to be
+> + * used for power domains that are coupled with the CPU, that is, power
+> + * domains being controlled from cpuidle and the platform suspend ops hooks.
+> + * Also only devices that needs their context to be restored directly when
+> + * leaving a sleep state should use this method. Most devices should be
+> + * fine handling their context and power domains via pm_runtime.
+> + * @dev: Device to register.
+> + * @nb: Notifier block to be registered.
+> + */
+> +int pm_genpd_register_on_off_notifier(struct device *dev,
+> +                                     struct notifier_block *nb)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +
+> +       dev_dbg(dev, "%s()\n", __func__);
+> +
+> +       genpd = dev_to_genpd(dev);
+> +
+> +       return atomic_notifier_chain_register(&genpd->on_off_notifier, nb);
+> +}
+> +
+> +/**
+> + * pm_genpd_unregister_on_off_notifier - Unregister to early power on /
+> + * late power off notification.
+> + * @dev: Device to unregister.
+> + * @nb: Notifier block to be unregistered.
+> + */
+> +int pm_genpd_unregister_on_off_notifier(struct device *dev,
+> +                                       struct notifier_block *nb)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +
+> +       dev_dbg(dev, "%s()\n", __func__);
+> +
+> +       genpd = dev_to_genpd(dev);
+> +
+> +       return atomic_notifier_chain_unregister(&genpd->on_off_notifier, nb);
+> +}
+> +
+> +/**
+> + * pm_genpd_notify_power_on_off - Notify that the CPU coupled power
+> + * domain is going to be powered off or has been powered on.
+> + * Intended users of this function are cpuidle drivers and the platform
+> + * suspend operations implementation.
+> + * @genpd: pm domain that will change state.
+> + * @nb: true = has been powered on, false = will power off.
+> + */
+> +int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
+> +                                bool power_on_off)
+> +{
+> +       if (IS_ERR_OR_NULL(genpd))
+> +               return -EINVAL;
+> +
+> +       atomic_notifier_call_chain((&genpd->on_off_notifier),
+> +                                  power_on_off, NULL);
+> +
+> +       return 0;
+> +}
+> +
+> +
+>  /* Default device callbacks for generic PM domains. */
 >
->> frequency change. Also, OPP library is used for device tree parsing to get
->> different parameters like frequency, voltage etc. Since the opp library sorts
->> the frequency table in ascending order so they are again re-arranged in
->> descending order. This will have one-to-one mapping with the clock controller
->> state management logic.
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   29 ++
->>  drivers/cpufreq/Kconfig.arm                        |    9 +
->>  drivers/cpufreq/Makefile                           |    1 +
->>  drivers/cpufreq/exynos5440-cpufreq.c               |  466 ++++++++++++++++++++
->>  4 files changed, 505 insertions(+), 0 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->> new file mode 100644
->> index 0000000..a0dbe0b
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->> @@ -0,0 +1,29 @@
->> +
->> +Exynos5440 cpufreq driver
->> +-------------------
->> +
->> +Exynos5440 SoC cpufreq driver for CPU frequency scaling.
->> +
->> +Required properties:
->> +- interrupts: Interrupt to know the completion of cpu frequency change.
->> +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
->> +       in the decreasing order. Frequency should be in KHZ units and voltage
+>  /**
+> @@ -2136,6 +2199,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>         atomic_set(&genpd->sd_count, 0);
+>         genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
+>         init_waitqueue_head(&genpd->status_wait_queue);
+> +       ATOMIC_INIT_NOTIFIER_HEAD(&genpd->on_off_notifier);
+>         genpd->poweroff_task = NULL;
+>         genpd->resume_count = 0;
+>         genpd->device_count = 0;
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 7c1d252..a0a9cf7 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -82,6 +82,7 @@ struct generic_pm_domain {
+>         bool cached_power_down_ok;
+>         struct device_node *of_node; /* Node in device tree */
+>         struct gpd_cpu_data *cpu_data;
+> +       struct atomic_notifier_head on_off_notifier;
+>  };
 >
-> s/KHZ/KHz
-ok
+>  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+> @@ -159,6 +160,12 @@ extern int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state);
+>  extern int pm_genpd_name_attach_cpuidle(const char *name, int state);
+>  extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
+>  extern int pm_genpd_name_detach_cpuidle(const char *name);
+> +extern int pm_genpd_register_on_off_notifier(struct device *dev,
+> +                                            struct notifier_block *nb);
+> +int pm_genpd_unregister_on_off_notifier(struct device *dev,
+> +                                       struct notifier_block *nb);
+> +int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
+> +                                 bool power_on_off);
+>  extern void pm_genpd_init(struct generic_pm_domain *genpd,
+>                           struct dev_power_governor *gov, bool is_off);
 >
->> +       should be in microvolts.
->
-> probably s/microvolts/micro-volts ??
->
->> +
->> +Optional properties:
->> +- clock-latency: Clock monitor latency in microsecond.
->> +
->> +All the required listed above must be defined under node cpufreq.
->> +
->> +Example:
->> +--------
->> +       cpufreq@160000 {
->> +               compatible = "samsung,exynos5440-cpufreq";
->> +               reg = <0x160000 0x1000>;
->> +               interrupts = <0 57 0>;
->> +               operating-points = <
->> +                               1000000 975000
->> +                               800000  925000>;
->> +               clock-latency = <100000>;
->> +       };
->> +
->
->> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
->> +static void exynos_enable_dvfs(void)
->> +{
->
->> +       /* Set initial performance index */
->> +       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
->> +               if (freq_table[i].frequency == dvfs_info->cur_frequency)
->> +                       break;
->> +
->> +       if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
->> +               dev_crit(dvfs_info->dev, "Boot up frequency not supported\n");
->> +               /* Assign the highest frequency */
->> +               i = 0;
->> +               dvfs_info->cur_frequency = freq_table[i].frequency;
->
-> What about:
->
-> dvfs_info->cur_frequency = freq_table[0].frequency;
->
-> as i don't see i being used again?
-No It is used below for frequency setting.
->
->> +       }
->
->> +}
->
->> +static int exynos_target(struct cpufreq_policy *policy,
->> +                         unsigned int target_freq,
->> +                         unsigned int relation)
->> +{
->
->> +       if (cpufreq_frequency_table_target(policy, freq_table,
->> +                                          target_freq, relation, &index)) {
->> +               ret = -EINVAL;
->
-> Use the error value returned by called functions, probably i gave this
-> comment last time too?
-yes my mistake.
->
->> +               goto out;
->> +       }
->
->> +}
->
->> +static void exynos_sort_descend_freq_table(void)
->> +{
->> +       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
->> +       int i = 0, index;
->> +       unsigned int tmp_freq;
->> +
->> +       /*
->> +        * Freq table is already in ascending order as it is created from
->> +        * OPP library, so just swap the elements to make it descending.
->
-> why??
-I explained this requirement in the patch commit. Will explain it here again.
->
->> +        */
->> +       for (i = 0; i < dvfs_info->freq_count / 2; i++) {
->> +               index = dvfs_info->freq_count - i - 1;
->> +               tmp_freq = freq_tbl[i].frequency;
->> +               freq_tbl[i].frequency = freq_tbl[index].frequency;
->> +               freq_tbl[index].frequency = tmp_freq;
->> +       }
->> +}
->> +
->
->> +static int exynos_cpufreq_probe(struct platform_device *pdev)
->> +{
->> +       int ret = -EINVAL;
->> +       struct device_node *np;
->> +       struct resource res;
->> +
->> +       np =  of_find_compatible_node(NULL, NULL, "samsung,exynos5440-cpufreq");
->> +       if (!np)
->> +               return -ENODEV;
->> +
->> +       dvfs_info = devm_kzalloc(&pdev->dev, sizeof(*dvfs_info), GFP_KERNEL);
->> +       if (!dvfs_info) {
->> +               ret = -ENOMEM;
->> +               goto err_put_node;
->> +       }
->> +
->> +       dvfs_info->dev = &pdev->dev;
->> +       dvfs_info->dev->of_node = np;
->> +
->> +       ret = of_address_to_resource(np, 0, &res);
->> +       if (ret)
->> +               goto err_put_node;
->> +
->> +       dvfs_info->base = devm_ioremap_resource(dvfs_info->dev, &res);
->> +       if (IS_ERR(dvfs_info->base)) {
->> +               ret = PTR_ERR(dvfs_info->base);
->> +               goto err_put_node;
->> +       }
->> +
->> +       dvfs_info->irq = irq_of_parse_and_map(np, 0);
->> +       if (dvfs_info->irq == 0) {
->
-> maybe, if (!dvfs_info->irq) {
-ok
-
-Thanks,
-Amit Daniel
->
->
->> +               dev_err(dvfs_info->dev, "No cpufreq irq found\n");
->> +               ret = -ENODEV;
->> +               goto err_put_node;
->> +       }
->> +
->> +       ret = of_init_opp_table(dvfs_info->dev);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "failed to init OPP table: %d\n", ret);
->> +               goto err_put_node;
->> +       }
->> +
->> +       ret = opp_init_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev,
->> +                       "failed to init cpufreq table: %d\n", ret);
->> +               goto err_put_node;
->> +       }
->> +       dvfs_info->freq_count = opp_get_opp_count(dvfs_info->dev);
->> +       exynos_sort_descend_freq_table();
->> +
->> +       if (of_property_read_u32(np, "clock-latency", &dvfs_info->latency))
->> +               dvfs_info->latency = DEF_TRANS_LATENCY;
->> +
->> +       dvfs_info->cpu_clk = devm_clk_get(dvfs_info->dev, "armclk");
->> +       if (IS_ERR(dvfs_info->cpu_clk)) {
->> +               dev_err(dvfs_info->dev, "Failed to get cpu clock\n");
->> +               ret = PTR_ERR(dvfs_info->cpu_clk);
->> +               goto err_free_table;
->> +       }
->> +
->> +       dvfs_info->cur_frequency = clk_get_rate(dvfs_info->cpu_clk);
->> +       if (!dvfs_info->cur_frequency) {
->> +               dev_err(dvfs_info->dev, "Failed to get clock rate\n");
->> +               ret = -EINVAL;
->> +               goto err_free_table;
->> +       }
->> +       dvfs_info->cur_frequency /= 1000;
->> +
->> +       INIT_WORK(&dvfs_info->irq_work, exynos_cpufreq_work);
->> +       ret = devm_request_irq(dvfs_info->dev, dvfs_info->irq,
->> +                               exynos_cpufreq_irq, IRQF_TRIGGER_NONE,
->> +                               CPUFREQ_NAME, dvfs_info);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "Failed to register IRQ\n");
->> +               goto err_free_table;
->> +       }
->> +
->> +       ret = init_div_table();
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev, "Failed to initialise div table\n");
->> +               goto err_free_table;
->> +       }
->> +
->> +       exynos_enable_dvfs();
->> +       ret = cpufreq_register_driver(&exynos_driver);
->> +       if (ret) {
->> +               dev_err(dvfs_info->dev,
->> +                       "%s: failed to register cpufreq driver\n", __func__);
->> +               goto err_free_table;
->> +       }
->> +
->> +       of_node_put(np);
->> +       dvfs_info->dvfs_enabled = true;
->> +       return 0;
->> +
->> +err_free_table:
->> +       opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
->> +err_put_node:
->> +       of_node_put(np);
->> +       dev_err(dvfs_info->dev, "%s: failed initialization\n", __func__);
->> +       return ret;
->> +}
+> @@ -243,6 +250,21 @@ static inline int pm_genpd_name_detach_cpuidle(const char *name)
+>  {
+>         return -ENOSYS;
+>  }
+> +static inline int pm_genpd_register_on_off_notifier(struct device *dev,
+> +                                            struct notifier_block *nb)
+> +{
+> +       return -ENOSYS;
+> +}
+> +int pm_genpd_unregister_on_off_notifier(struct device *dev,
+> +                                       struct notifier_block *nb)
+> +{
+> +       return -ENOSYS;
+> +}
+> +int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
+> +                                 bool power_on_off)
+> +{
+> +       return -ENOSYS;
+> +}
+>  static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+>                                  struct dev_power_governor *gov, bool is_off)
+>  {
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> 1.8.0
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+This makes sense to me.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
