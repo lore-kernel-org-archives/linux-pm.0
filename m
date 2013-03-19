@@ -1,59 +1,84 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/4][V2] ARM: nomadik: add dynamic irq flag to the timer
-Date: Tue, 19 Mar 2013 12:42:30 +0100
-Message-ID: <51484F26.1010100@linaro.org>
-References: <1362219013-18173-1-git-send-email-daniel.lezcano@linaro.org> <513A0109.9060801@linaro.org> <alpine.LFD.2.02.1303081703160.22263@ionos>
+Subject: Re: [PATCH 2/2] cpuidle / calxeda: remove redundant Kconfig option
+Date: Tue, 19 Mar 2013 12:49:12 +0100
+Message-ID: <514850B8.70707@linaro.org>
+References: <1363080476-26555-1-git-send-email-daniel.lezcano@linaro.org> <1363080476-26555-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f49.google.com ([209.85.214.49]:46881 "EHLO
-	mail-bk0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058Ab3CSLmf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Mar 2013 07:42:35 -0400
-Received: by mail-bk0-f49.google.com with SMTP id w11so179350bku.22
-        for <linux-pm@vger.kernel.org>; Tue, 19 Mar 2013 04:42:33 -0700 (PDT)
-In-Reply-To: <alpine.LFD.2.02.1303081703160.22263@ionos>
+Received: from mail-bk0-f50.google.com ([209.85.214.50]:60633 "EHLO
+	mail-bk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409Ab3CSLtR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Mar 2013 07:49:17 -0400
+Received: by mail-bk0-f50.google.com with SMTP id jg9so183104bkc.37
+        for <linux-pm@vger.kernel.org>; Tue, 19 Mar 2013 04:49:15 -0700 (PDT)
+In-Reply-To: <1363080476-26555-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: john.stultz@linaro.org, linus.walleij@stericsson.com, viresh.kumar@linaro.org, jacob.jun.pan@linux.intel.com, linux-arm-kernel@lists.infradead.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, rickard.andersson@stericsson.com, vincent.guittot@linaro.org, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: rob.herring@calxeda.com
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 
-On 03/08/2013 05:03 PM, Thomas Gleixner wrote:
-> On Fri, 8 Mar 2013, Daniel Lezcano wrote:
+On 03/12/2013 10:27 AM, Daniel Lezcano wrote:
+> When the CPU_IDLE and the ARCH_HIGHBANK options are set it is
+> pointless to define a new option CPU_IDLE_CALXEDA because it
+> is redundant.
 >=20
->>> Add the dynamic irq affinity feature to the timer clock device.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Reviewed-by: Vincent Guittot <vincent.guittot@linaro.org>
->>> Acked-by: Rickard Andersson <rickard.andersson@stericsson.com>
->>> ---
->>
->> Hi Linus,
->>
->> AFAIU, you are ok with this patch, Rickard acked it and Vincent revi=
-ewed it.
->>
->> Thomas agreed to merge it into its tree as I requested because we wi=
-ll
->> need to wait for your tree to gain visibility to this new flag befor=
-e
->> submitting this patch, which can take awhile.
->>
->> Could you please ack it if it is ok for you ?
+> The Makefile drivers directory contains a condition to compile
+> the cpuidle drivers:
 >=20
-> I can provide a for-arm tree to pull as well. Either way fine with me=
-=2E
+> obj-$(CONFIG_CPU_IDLE)          +=3D cpuidle/
+>=20
+> Hence, if CPU_IDLE is not set we won't enter this directory.
+>=20
+> This patch removes the useless Kconfig option and replaces the
+> condition in the Makefile by CONFIG_ARCH_HIGHBANK.
+>=20
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
-Hi Thomas,
+Hi Rob,
 
-the patch 3/4 and 4/4 have been acked-by the different maintainers.
+sorry I missed to add you in Cc for this patch.
 
-I saw you created a 'for-arm' branch (thanks), but the patches 3/4 and
-4/4 aren't there. Did I missed something ?
+Regards
+  -- Daniel
 
-Thanks
-   -- Daniel
+
+>  drivers/cpuidle/Kconfig  |   10 ----------
+>  drivers/cpuidle/Makefile |    2 +-
+>  2 files changed, 1 insertion(+), 11 deletions(-)
+>=20
+> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> index c4cc27e..234ae65 100644
+> --- a/drivers/cpuidle/Kconfig
+> +++ b/drivers/cpuidle/Kconfig
+> @@ -30,13 +30,3 @@ config CPU_IDLE_GOV_MENU
+> =20
+>  config ARCH_NEEDS_CPU_IDLE_COUPLED
+>  	def_bool n
+> -
+> -if CPU_IDLE
+> -
+> -config CPU_IDLE_CALXEDA
+> -	bool "CPU Idle Driver for Calxeda processors"
+> -	depends on ARCH_HIGHBANK
+> -	help
+> -	  Select this to enable cpuidle on Calxeda processors.
+> -
+> -endif
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 0d8bd55..d1aba71 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -5,5 +5,5 @@
+>  obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
+>  obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupled.o
+> =20
+> -obj-$(CONFIG_CPU_IDLE_CALXEDA) +=3D cpuidle-calxeda.o
+> +obj-$(CONFIG_ARCH_HIGHBANK) +=3D cpuidle-calxeda.o
+>  obj-$(CONFIG_ARCH_KIRKWOOD) +=3D cpuidle-kirkwood.o
+>=20
 
 
 --=20
