@@ -1,100 +1,94 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] cpuidle / calxeda: remove redundant Kconfig option
-Date: Tue, 19 Mar 2013 15:35:33 +0100
-Message-ID: <514877B5.6080200@linaro.org>
-References: <1363080476-26555-1-git-send-email-daniel.lezcano@linaro.org> <1363080476-26555-2-git-send-email-daniel.lezcano@linaro.org> <51485876.307@gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 0/8] staging: [omap,ti-soc]-thermal: fixes and renaming
+Date: Tue, 19 Mar 2013 10:36:33 -0400
+Message-ID: <514877F1.8020204@ti.com>
+References: <1363618756-15851-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f180.google.com ([209.85.215.180]:32923 "EHLO
-	mail-ea0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756184Ab3CSOfi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Mar 2013 10:35:38 -0400
-Received: by mail-ea0-f180.google.com with SMTP id j14so267366eak.11
-        for <linux-pm@vger.kernel.org>; Tue, 19 Mar 2013 07:35:37 -0700 (PDT)
-In-Reply-To: <51485876.307@gmail.com>
+Received: from bear.ext.ti.com ([192.94.94.41]:33679 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755134Ab3CSOgs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Mar 2013 10:36:48 -0400
+In-Reply-To: <1363618756-15851-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: rjw@sisk.pl, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 03/19/2013 01:22 PM, Rob Herring wrote:
-> On 03/12/2013 04:27 AM, Daniel Lezcano wrote:
->> When the CPU_IDLE and the ARCH_HIGHBANK options are set it is
->> pointless to define a new option CPU_IDLE_CALXEDA because it
->> is redundant.
->>
->> The Makefile drivers directory contains a condition to compile
->> the cpuidle drivers:
->>
->> obj-$(CONFIG_CPU_IDLE)          +=3D cpuidle/
->>
->> Hence, if CPU_IDLE is not set we won't enter this directory.
->>
->> This patch removes the useless Kconfig option and replaces the
->> condition in the Makefile by CONFIG_ARCH_HIGHBANK.
->=20
-> If I have multiple platforms including highbank compiled in, but want=
- to
-> disable cpuidle just for highbank, then you can't disable it at compi=
-le
-> time.
-
-Could you elaborate a bit ? Is it today possible to have multiple
-platforms in a single kernel ?
-
-> Also, with my PSCI support patches for highbank, it is no longer
-> dependent on ARCH_HIGHBANK which gives us better compile test coverag=
-e.
+Hello Greg,
 
 
+On 18-03-2013 10:59, Eduardo Valentin wrote:
+> Hi Greg,
+>
+> I am sending extra patches on omap-thermal driver, under staging.
+>
+> There are couple of fixes based on Dan Carpenter's review on
+> the last patch set I sent. On top of these, there are some
+> changes on the naming convention for this driver. This rename
+> is based on previous review cycles that this driver has got.
+> Besides, it must support other chip families, apart from OMAP,
+> that's mainly why there is a big rename on this patch set.
+> And as  usual, there are couple of extra fixes.
+
+I am going to resend this series, dropping  patch 02 and splitting 
+patch 04. It will also include extra fixes.
 
 
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>  drivers/cpuidle/Kconfig  |   10 ----------
->>  drivers/cpuidle/Makefile |    2 +-
->>  2 files changed, 1 insertion(+), 11 deletions(-)
->>
->> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
->> index c4cc27e..234ae65 100644
->> --- a/drivers/cpuidle/Kconfig
->> +++ b/drivers/cpuidle/Kconfig
->> @@ -30,13 +30,3 @@ config CPU_IDLE_GOV_MENU
->> =20
->>  config ARCH_NEEDS_CPU_IDLE_COUPLED
->>  	def_bool n
->> -
->> -if CPU_IDLE
->> -
->> -config CPU_IDLE_CALXEDA
->> -	bool "CPU Idle Driver for Calxeda processors"
->> -	depends on ARCH_HIGHBANK
->> -	help
->> -	  Select this to enable cpuidle on Calxeda processors.
->> -
->> -endif
->> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
->> index 0d8bd55..d1aba71 100644
->> --- a/drivers/cpuidle/Makefile
->> +++ b/drivers/cpuidle/Makefile
->> @@ -5,5 +5,5 @@
->>  obj-y +=3D cpuidle.o driver.o governor.o sysfs.o governors/
->>  obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupled.o
->> =20
->> -obj-$(CONFIG_CPU_IDLE_CALXEDA) +=3D cpuidle-calxeda.o
->> +obj-$(CONFIG_ARCH_HIGHBANK) +=3D cpuidle-calxeda.o
->>  obj-$(CONFIG_ARCH_KIRKWOOD) +=3D cpuidle-kirkwood.o
->>
->=20
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+>
+> All these are based on your staging/staging-next branch.
+>
+> For those interested in testing and trying the driver, these patches are
+> also available, as usual, here:
+> git@gitorious.org:thermal-framework/thermal-framework.git thermal_work/omap/ti-thermal-rename
+> https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/omap/ti-thermal-rename
+>
+> BR,
+>
+> Eduardo Valentin (8):
+>    staging: omap-thermal: fix return value
+>    staging: omap-thermal: use spin_lock_irqsave inside IRQ handler
+>    staging: omap-thermal: rename bg_ptr to bgp
+>    staging: rename omap-thermal driver to ti-soc-thermal
+>    staging: ti-soc-thermal: make unexported functions local
+>    staging: ti-soc-thermal: split writable data from readonly data
+>    stating: ti-soc-thermal: use sizeof(*pointer) while allocating
+>    staging: ti-soc-thermal: fix several kernel-doc warnings and error
+>
+>   drivers/staging/Kconfig                            |    2 +-
+>   drivers/staging/Makefile                           |    2 +-
+>   drivers/staging/omap-thermal/Makefile              |    5 -
+>   drivers/staging/omap-thermal/omap-bandgap.c        | 1300 --------------------
+>   drivers/staging/omap-thermal/omap-thermal-common.c |  338 -----
+>   .../{omap-thermal => ti-soc-thermal}/Kconfig       |   14 +-
+>   drivers/staging/ti-soc-thermal/Makefile            |    5 +
+>   .../staging/{omap-thermal => ti-soc-thermal}/TODO  |    0
+>   .../omap4-thermal-data.c                           |   68 +-
+>   .../omap4xxx-bandgap.h                             |    0
+>   .../omap5-thermal-data.c                           |   20 +-
+>   .../omap5xxx-bandgap.h                             |    0
+>   .../omap_bandgap.txt                               |    0
+>   drivers/staging/ti-soc-thermal/ti-bandgap.c        | 1299 +++++++++++++++++++
+>   .../omap-bandgap.h => ti-soc-thermal/ti-bandgap.h} |  181 ++--
+>   drivers/staging/ti-soc-thermal/ti-thermal-common.c |  338 +++++
+>   .../omap-thermal.h => ti-soc-thermal/ti-thermal.h} |   30 +-
+>   17 files changed, 1803 insertions(+), 1799 deletions(-)
+>   delete mode 100644 drivers/staging/omap-thermal/Makefile
+>   delete mode 100644 drivers/staging/omap-thermal/omap-bandgap.c
+>   delete mode 100644 drivers/staging/omap-thermal/omap-thermal-common.c
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/Kconfig (82%)
+>   create mode 100644 drivers/staging/ti-soc-thermal/Makefile
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/TODO (100%)
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/omap4-thermal-data.c (85%)
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/omap4xxx-bandgap.h (100%)
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/omap5-thermal-data.c (96%)
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/omap5xxx-bandgap.h (100%)
+>   rename drivers/staging/{omap-thermal => ti-soc-thermal}/omap_bandgap.txt (100%)
+>   create mode 100644 drivers/staging/ti-soc-thermal/ti-bandgap.c
+>   rename drivers/staging/{omap-thermal/omap-bandgap.h => ti-soc-thermal/ti-bandgap.h} (75%)
+>   create mode 100644 drivers/staging/ti-soc-thermal/ti-thermal-common.c
+>   rename drivers/staging/{omap-thermal/omap-thermal.h => ti-soc-thermal/ti-thermal.h} (72%)
+>
 
