@@ -1,85 +1,63 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V3 0/2] Thermal: cpufreq cooling fix
-Date: Wed, 20 Mar 2013 09:25:54 +0800
-Message-ID: <1363742754.2278.0.camel@rzhang1-mobl4>
-References: <177643.168791363345666297.JavaMail.weblogic@epml10>
-	 <CADGdYn4qzhv=SV+CMHJUguJm5rgULgo3qUdBtLd2e=PBYeU1TQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 4/4] cpufreq: Add Kconfig option to enable/disable have_multiple_policies
+Date: Wed, 20 Mar 2013 09:53:54 +0530
+Message-ID: <CAKohponm_NpYJVcMVcXfMrn+cOFH6OZ2AnWSsVVeSzpmzLM4DQ@mail.gmail.com>
+References: <cover.1362381470.git.viresh.kumar@linaro.org>
+	<3174774.7AKCbYrzc6@vostro.rjw.lan>
+	<CAKohpokwdtSwQmcK=gb2mpzjzp0vpbS7Sra-EhM3QsiQwpog1w@mail.gmail.com>
+	<1409962.M4gLo8y6eX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:11937 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932682Ab3CTBZ6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Mar 2013 21:25:58 -0400
-In-Reply-To: <CADGdYn4qzhv=SV+CMHJUguJm5rgULgo3qUdBtLd2e=PBYeU1TQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1409962.M4gLo8y6eX@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Gu1 <gu1@aeroxteam.fr>, Hongbo Zhang <hongbo.zhang@linaro.org>, amit kachhap <amit.kachhap@gmail.com>
 
-Hi, Amit,
+On 20 March 2013 05:50, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, March 14, 2013 08:39:55 AM Viresh Kumar wrote:
+>> On 14 March 2013 03:11, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> > On Tuesday, March 12, 2013 08:55:12 AM Viresh Kumar wrote:
+>> >> On 12 March 2013 07:38, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> >> > One more question before I apply it.
+>> >> >
+>> >> > Is there any architecture/platform that will set
+>> >> > CONFIG_CPU_FREQ_HAVE_MULTIPLE_POLICIES and keep have_multiple_policies unset
+>> >> > at the same time?
+>> >>
+>> >> No, they are redundant. That's why i have been forcing to drop this patch.
+>> >
+>> > I see.
+>> >
+>> > What about having the Kconfig option alone, however?
+>>
+>> Even that is not enough. We build multiplatform kernels and so need a
+>> variable to be set by platform.
+>
+> Which means the Kconfig option and the field are not redundant in fact.
 
-On Fri, 2013-03-15 at 16:44 +0530, amit daniel kachhap wrote:
-> Hi Rui,
-> 
-> For both the patches,
-> Acked by: Amit Daniel kachhap <amit.daniel@samsung.com>
-> 
-thanks. Do you have a chance to test these patches?
+Yes. Redundant was the wrong word. Actually Kconfig option is just not required
+as we can work efficiently without it.
 
--rui
+> But do we need the field to reside in the policy structure?  It looks like
+> it may just be a global bool variable
 
-> Thanks,
-> Amit Daniel
-> 
-> On Fri, Mar 15, 2013 at 4:37 PM, AMIT DANIEL KACHHAP
-> <amit.daniel@samsung.com> wrote:
-> >
-> >
-> > ------- Original Message -------
-> > Sender : Zhang Rui<rui.zhang@intel.com>
-> > Date   : Mar 12, 2013 00:33 (GMT+09:00)
-> > Title  : [PATCH V3 0/2] Thermal: cpufreq cooling fix
-> >
-> > cpufreq cooling uses different frequencies as different cooling states.
-> >
-> > But the per_cpu cpufreq_frequency_table may contain duplicate,
-> > invalid entries, and it may be in either ascending or descending order.
-> > And currently, code for parsing the per_cpu cpufreq_frequency_table
-> > is used in several places and inconsistent.
-> >
-> > To fix this,
-> > New code is introduce in Patch 1/2, which contains the logic
-> > of parsing per_cpu cpufreq_frequency_table, and this piece of
-> > code can be used to:
-> > 1. get the maximum cooling states
-> > 2. translate cpu frequency to cooling state
-> > 3. translate cooling state to cpu frequency
-> >
-> > Patch 2/2 converts exynos_thermal driver to use the new code
-> > introduced in Patch 1/2.
-> >
-> > History:
-> > V3: fix wrong return value of get_cpu_frequency().
-> >     fix wrong return value of get_property() when property equals GET_MAXL.
-> >
-> > V2: remove cpu cooling table to avoid extra memory allocation.
-> >
-> > V1: introduce code to convert per_cpu cpufreq_frequency_table
-> >     to clean cpu cooling table (no invalid entry,
-> >     no duplicate entry, in descending order).
-> >
-> > I just run build test here. It would be great that some of you
-> > can test it on exynos.
-> > any comments?
-> >
-> > thanks,
-> > rui
-> > <p>&nbsp;</p><p>&nbsp;</p>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yes. It is not per policy but per cpufreq driver. And this can be done
+by sharing
+a function from cpufreq core to driver. But when do you want me to
+call this function
+(which will set this global variable). If we do it from init, then we
+will end up calling it
+again and again. Then it has to be called before calling
+cpufreq_register_driver(),
+as init() gets called internally.
 
+> (in which case the Kconfig option could be dropped IMO).
 
+We are aligned now :)
+
+> Is there any particular reason to put that thing into
+> struct cpufreq_policy?
+
+Just the problem i mentioned to you.
