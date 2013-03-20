@@ -1,94 +1,119 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH V3 0/2] Thermal: cpufreq cooling fix
-Date: Wed, 20 Mar 2013 11:15:34 +0530
-Message-ID: <CADGdYn4EZ7+3dmpSke0q+bgqoRJUL0HwL4rdDs9SCVwcHyWnow@mail.gmail.com>
-References: <177643.168791363345666297.JavaMail.weblogic@epml10>
-	<CADGdYn4qzhv=SV+CMHJUguJm5rgULgo3qUdBtLd2e=PBYeU1TQ@mail.gmail.com>
-	<1363742754.2278.0.camel@rzhang1-mobl4>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [PATCH] mmc: sdio: bind acpi with sdio function device
+Date: Wed, 20 Mar 2013 14:00:45 +0800
+Message-ID: <5149508D.8040507@intel.com>
+References: <1362453892-13304-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:62048 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757375Ab3CTFpe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 01:45:34 -0400
-Received: by mail-ie0-f175.google.com with SMTP id c12so1644118ieb.6
-        for <linux-pm@vger.kernel.org>; Tue, 19 Mar 2013 22:45:34 -0700 (PDT)
-In-Reply-To: <1363742754.2278.0.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1362453892-13304-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Chris Ball <cjb@laptop.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mmc@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, Gu1 <gu1@aeroxteam.fr>, Hongbo Zhang <hongbo.zhang@linaro.org>
 
-On Wed, Mar 20, 2013 at 6:55 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> Hi, Amit,
->
-> On Fri, 2013-03-15 at 16:44 +0530, amit daniel kachhap wrote:
->> Hi Rui,
->>
->> For both the patches,
->> Acked by: Amit Daniel kachhap <amit.daniel@samsung.com>
->>
-> thanks. Do you have a chance to test these patches?
-yes I tested them and they are fine.
-Feel free to add,
-Tested by: Amit Daniel kachhap <amit.daniel@samsung.com>
+Hi Chris,
+
+Any comments on this patch?
 
 Thanks,
-Amit Daniel
->
-> -rui
->
->> Thanks,
->> Amit Daniel
->>
->> On Fri, Mar 15, 2013 at 4:37 PM, AMIT DANIEL KACHHAP
->> <amit.daniel@samsung.com> wrote:
->> >
->> >
->> > ------- Original Message -------
->> > Sender : Zhang Rui<rui.zhang@intel.com>
->> > Date   : Mar 12, 2013 00:33 (GMT+09:00)
->> > Title  : [PATCH V3 0/2] Thermal: cpufreq cooling fix
->> >
->> > cpufreq cooling uses different frequencies as different cooling states.
->> >
->> > But the per_cpu cpufreq_frequency_table may contain duplicate,
->> > invalid entries, and it may be in either ascending or descending order.
->> > And currently, code for parsing the per_cpu cpufreq_frequency_table
->> > is used in several places and inconsistent.
->> >
->> > To fix this,
->> > New code is introduce in Patch 1/2, which contains the logic
->> > of parsing per_cpu cpufreq_frequency_table, and this piece of
->> > code can be used to:
->> > 1. get the maximum cooling states
->> > 2. translate cpu frequency to cooling state
->> > 3. translate cooling state to cpu frequency
->> >
->> > Patch 2/2 converts exynos_thermal driver to use the new code
->> > introduced in Patch 1/2.
->> >
->> > History:
->> > V3: fix wrong return value of get_cpu_frequency().
->> >     fix wrong return value of get_property() when property equals GET_MAXL.
->> >
->> > V2: remove cpu cooling table to avoid extra memory allocation.
->> >
->> > V1: introduce code to convert per_cpu cpufreq_frequency_table
->> >     to clean cpu cooling table (no invalid entry,
->> >     no duplicate entry, in descending order).
->> >
->> > I just run build test here. It would be great that some of you
->> > can test it on exynos.
->> > any comments?
->> >
->> > thanks,
->> > rui
->> > <p>&nbsp;</p><p>&nbsp;</p>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
+Aaron
+
+On 03/05/2013 11:24 AM, Aaron Lu wrote:
+> ACPI spec 5 defined the _ADR encoding for sdio bus as:
+> High word - slot number (0 based)
+> Low word  - function number
+> 
+> This patch adds support for binding sdio function device with acpi node,
+> and if successful, involve acpi into its power management.
+> 
+> Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+> Reviewed-by: Adrian Hunter <adrian.hunter@intel.com>
+> ---
+>  drivers/mmc/core/sdio_bus.c  | 20 +++++++++++++++++++-
+>  drivers/mmc/host/sdhci-pci.c |  1 +
+>  include/linux/mmc/host.h     |  2 ++
+>  3 files changed, 22 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+> index 5e57048..8d6bb18 100644
+> --- a/drivers/mmc/core/sdio_bus.c
+> +++ b/drivers/mmc/core/sdio_bus.c
+> @@ -16,6 +16,7 @@
+>  #include <linux/export.h>
+>  #include <linux/slab.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/acpi.h>
+>  
+>  #include <linux/mmc/card.h>
+>  #include <linux/mmc/host.h>
+> @@ -299,6 +300,19 @@ struct sdio_func *sdio_alloc_func(struct mmc_card *card)
+>  	return func;
+>  }
+>  
+> +#ifdef CONFIG_ACPI
+> +static void sdio_acpi_set_handle(struct sdio_func *func)
+> +{
+> +	struct mmc_host *host = func->card->host;
+> +	u64 addr = (host->slotno << 16) | func->num;
+> +
+> +	ACPI_HANDLE_SET(&func->dev,
+> +			acpi_get_child(ACPI_HANDLE(host->parent), addr));
+> +}
+> +#else
+> +static inline void sdio_acpi_set_handle(struct sdio_func *func) {}
+> +#endif
+> +
+>  /*
+>   * Register a new SDIO function with the driver model.
+>   */
+> @@ -308,9 +322,12 @@ int sdio_add_func(struct sdio_func *func)
+>  
+>  	dev_set_name(&func->dev, "%s:%d", mmc_card_id(func->card), func->num);
+>  
+> +	sdio_acpi_set_handle(func);
+>  	ret = device_add(&func->dev);
+> -	if (ret == 0)
+> +	if (ret == 0) {
+>  		sdio_func_set_present(func);
+> +		acpi_dev_pm_attach(&func->dev, false);
+> +	}
+>  
+>  	return ret;
+>  }
+> @@ -326,6 +343,7 @@ void sdio_remove_func(struct sdio_func *func)
+>  	if (!sdio_func_present(func))
+>  		return;
+>  
+> +	acpi_dev_pm_detach(&func->dev, false);
+>  	device_del(&func->dev);
+>  	put_device(&func->dev);
+>  }
+> diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
+> index c7ccf30..3dee22d 100644
+> --- a/drivers/mmc/host/sdhci-pci.c
+> +++ b/drivers/mmc/host/sdhci-pci.c
+> @@ -1279,6 +1279,7 @@ static struct sdhci_pci_slot *sdhci_pci_probe_slot(
+>  	}
+>  
+>  	host->mmc->pm_caps = MMC_PM_KEEP_POWER | MMC_PM_WAKE_SDIO_IRQ;
+> +	host->mmc->slotno = slotno;
+>  
+>  	ret = sdhci_add_host(host);
+>  	if (ret)
+> diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
+> index d6f20cc..17d7148 100644
+> --- a/include/linux/mmc/host.h
+> +++ b/include/linux/mmc/host.h
+> @@ -361,6 +361,8 @@ struct mmc_host {
+>  
+>  	unsigned int		actual_clock;	/* Actual HC clock rate */
+>  
+> +	unsigned int		slotno;	/* used for sdio acpi binding */
+> +
+>  	unsigned long		private[0] ____cacheline_aligned;
+>  };
+>  
+> 
+
