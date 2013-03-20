@@ -1,55 +1,45 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] cpuidle : handle clockevent notify from the cpuidle
- framework
-Date: Wed, 20 Mar 2013 22:21:26 +0100 (CET)
-Message-ID: <alpine.LFD.2.02.1303202210090.22263@ionos>
-References: <1363795033-26445-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: [PATCH] thermal: Fix compiler warning
+Date: Wed, 20 Mar 2013 18:38:07 -0300
+Message-ID: <1363815487-7191-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:53518 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149Ab3CTVVe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 17:21:34 -0400
-In-Reply-To: <1363795033-26445-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail.free-electrons.com ([94.23.35.102]:50372 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483Ab3CTViJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 17:38:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, lenb@kernel.org, patches@linaro.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, 20 Mar 2013, Daniel Lezcano wrote:
+The following warning is obtained when CONFIG_NET is not defined:
 
-> When a cpu enters a deep idle state, the local timers are stopped and
-> the time framework falls back to the timer device used as a broadcast
-> timer.
-> 
-> The different cpuidle drivers are calling clockevents_notify ENTER/EXIT
-> when the idle state stops the local timer.
-> 
-> The proposed patch introduces a new flag CPUIDLE_FLAG_TIMER_STOP to let
+In file included from drivers/thermal/mvebu_thermal.c:27:0:
+include/linux/thermal.h:254:12: warning: 'thermal_generate_netlink_event'
+defined but not used [-Wunused-function]
 
-Please stop using "proposed patch ...." wording in a patch
-description. The changelog you submit with your patch should be
-applicable w/o rewriting.
+This patch fixes the warning by properly inlining
+thermal_generate_netlink_event().
 
-> the cpuidle framework to call clockevents_notify instead of duplicating
-> again and again these lines in all the cpuidle drivers.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+---
+ include/linux/thermal.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-That's a good enough reason, really. So that paragraph should be
-something like:
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index f0bd7f9..fd7b8f3 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -251,7 +251,7 @@ void thermal_unregister_governor(struct thermal_governor *);
+ extern int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+ 						enum events event);
+ #else
+-static int thermal_generate_netlink_event(struct thermal_zone_device *tz,
++static inline int thermal_generate_netlink_event(struct thermal_zone_device *tz,
+ 						enum events event)
+ {
+ 	return 0;
+-- 
+1.7.8.6
 
-"Add a new flag CPUIDLE_FLAG_TIMER_STOP which can be set by cpuidle
- drivers. If the flag is set the cpuidle core code takes care of the
- notification on behalf of the driver to avoid pointless code
- duplication."
-
-Ideally you would follow up with two or three drivers converted to
-that new infrastructure instead of sending that patch standalone. That
-way reviewers can really see the benefit in terms of reduced code
-duplication.
- 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
-Other than the above rant:
-
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
