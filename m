@@ -1,73 +1,36 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH 16/16] ARM: configs: Update mvebu, dove and kirkwood defconfigs for thermal
-Date: Wed, 20 Mar 2013 19:36:37 -0300
-Message-ID: <1363818997-23137-17-git-send-email-ezequiel.garcia@free-electrons.com>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: "Wenzhou Ourvis" <ourvis@ourvis.com>
+Subject: Re: Hello
+Date: Wed, 20 Mar 2013 20:16:34 -0300
+Message-ID: <20130320230706.E489A4DAB2CB__42490.9257134006$1363824679$gmane$org@mail.swrs.ap.gov.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:50692 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782Ab3CTWh4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 18:37:56 -0400
-In-Reply-To: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
+Received: from mail.swrs.ap.gov.in ([110.234.138.54]:45397 "EHLO
+	mail.swrs.ap.gov.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753918Ab3CUAKb convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 20:10:31 -0400
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Recipients <ourvis@ourvis.com>
 
-The driver for Dove, Kirkwood and Armada XP/370 SoC
-has been integrated in a single driver called mvebu-thermal.
-Update the defconfig for each platform to reflect this.
+Dear E-mail User,
 
-Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
----
-Please note that this change was done independentely from the
-thermal driver patch in order to facilitate its merge by the
-respective maintainers.
 
- arch/arm/configs/dove_defconfig     |    2 +-
- arch/arm/configs/kirkwood_defconfig |    2 +-
- arch/arm/configs/mvebu_defconfig    |    2 ++
- 3 files changed, 4 insertions(+), 2 deletions(-)
+  This is to immediately inform you that your email address with Micros ID: IDJT-32238-EHI-676GI-8ED has won you 2,485,000.00 GBP and a brand new Range Rover SUV from the Wenzhou Ourvis yearly draw promo.
 
-diff --git a/arch/arm/configs/dove_defconfig b/arch/arm/configs/dove_defconfig
-index 4364eff..2136442 100644
---- a/arch/arm/configs/dove_defconfig
-+++ b/arch/arm/configs/dove_defconfig
-@@ -76,7 +76,7 @@ CONFIG_SPI=y
- CONFIG_SPI_ORION=y
- # CONFIG_HWMON is not set
- CONFIG_THERMAL=y
--CONFIG_DOVE_THERMAL=y
-+CONFIG_MVEBU_THERMAL=y
- CONFIG_USB=y
- CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_ROOT_HUB_TT=y
-diff --git a/arch/arm/configs/kirkwood_defconfig b/arch/arm/configs/kirkwood_defconfig
-index 8f0065b..081d39f 100644
---- a/arch/arm/configs/kirkwood_defconfig
-+++ b/arch/arm/configs/kirkwood_defconfig
-@@ -120,7 +120,7 @@ CONFIG_SPI_ORION=y
- CONFIG_GPIO_SYSFS=y
- # CONFIG_HWMON is not set
- CONFIG_THERMAL=y
--CONFIG_KIRKWOOD_THERMAL=y
-+CONFIG_MVEBU_THERMAL=y
- CONFIG_WATCHDOG=y
- CONFIG_ORION_WATCHDOG=y
- CONFIG_HID_DRAGONRISE=y
-diff --git a/arch/arm/configs/mvebu_defconfig b/arch/arm/configs/mvebu_defconfig
-index 2ec8119..f2ac593 100644
---- a/arch/arm/configs/mvebu_defconfig
-+++ b/arch/arm/configs/mvebu_defconfig
-@@ -49,6 +49,8 @@ CONFIG_MTD_M25P80=y
- CONFIG_SERIAL_8250_DW=y
- CONFIG_GPIOLIB=y
- CONFIG_GPIO_SYSFS=y
-+CONFIG_THERMAL=y
-+CONFIG_MVEBU_THERMAL=y
- CONFIG_USB_SUPPORT=y
- CONFIG_USB=y
- CONFIG_USB_EHCI_HCD=y
--- 
-1.7.8.6
+Use the details below to login and fill in the claim form to immediately begin your claims.
 
+
+
+WEBSITE: www.wenzhourvis.cla.fr
+USERNAME: ISO912PP
+PASSWORD: XNO87PS
+
+
+Regards,
+Dr. Warren Payne,
+Wenzhou Ourvis Company.
+European Zonal Coordinator,
+United Kingdom.
