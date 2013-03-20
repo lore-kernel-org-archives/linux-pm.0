@@ -1,158 +1,172 @@
 From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH 10/16] thermal: mvebu: Add infrastructure to support more multiple SoC variants
-Date: Wed, 20 Mar 2013 19:36:31 -0300
-Message-ID: <1363818997-23137-11-git-send-email-ezequiel.garcia@free-electrons.com>
+Subject: [PATCH 11/16] thermal: mvebu: Add support for Armada XP thermal sensor
+Date: Wed, 20 Mar 2013 19:36:32 -0300
+Message-ID: <1363818997-23137-12-git-send-email-ezequiel.garcia@free-electrons.com>
 References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:50629 "EHLO
+Received: from mail.free-electrons.com ([94.23.35.102]:50643 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751782Ab3CTWh1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 18:37:27 -0400
+	with ESMTP id S1751782Ab3CTWhc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 18:37:32 -0400
 In-Reply-To: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-This commit adds the infrastructure required for mvebu thermal driver
-to support multiple SoC variants.
-In particular, we add support for an optional memory resource, and a
-couple of optionals function pointers:
-  * one to handle the case where the thermal sensor needs initialization,
-  * another one to support for valid sensor value checking
+With the infrastructure introduced to support more SoC, we can
+now easily add another thermal sensor.
+
+The Armada XP sensor has no register to check for a valid temperature,
+and has a special formula to obtain the temperature from the thermal
+sensor output register.
 
 Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 ---
- drivers/thermal/mvebu_thermal.c |   68 ++++++++++++++++++++++++++++++++++----
- 1 files changed, 60 insertions(+), 8 deletions(-)
+ .../devicetree/bindings/thermal/mvebu-thermal.txt  |   21 ++++++---
+ drivers/thermal/mvebu_thermal.c                    |   50 ++++++++++++++++++++
+ 2 files changed, 64 insertions(+), 7 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/thermal/mvebu-thermal.txt b/Documentation/devicetree/bindings/thermal/mvebu-thermal.txt
+index 8c0f5eb..7cc3fd4 100644
+--- a/Documentation/devicetree/bindings/thermal/mvebu-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/mvebu-thermal.txt
+@@ -1,13 +1,20 @@
+-* Kirkwood Thermal
+-
+-This version is for Kirkwood 88F8262 & 88F6283 SoCs. Other kirkwoods
+-don't contain a thermal sensor.
++* Marvell EBU Thermal
+ 
+ Required properties:
+-- compatible : "marvell,kirkwood-thermal"
+-- reg : Address range of the thermal registers
+ 
+-Example:
++- compatible:	Should be set to one of the following:
++		marvell,kirkwood-thermal
++		marvell,armadaxp-thermal
++
++- reg:		Device's register space.
++		One or two entries are expected, see the examples below.
++		The first one is required for the sensor register;
++		the second one is optional and is used as the control
++		register for sensor calibration.
++		Currently the only SoC variant having one register range
++		is Kirkwood.
++
++Kirkwood example:
+ 
+ 	thermal@10078 {
+ 		compatible = "marvell,kirkwood-thermal";
 diff --git a/drivers/thermal/mvebu_thermal.c b/drivers/thermal/mvebu_thermal.c
-index 3304057..bfe4817 100644
+index bfe4817..50f13e7 100644
 --- a/drivers/thermal/mvebu_thermal.c
 +++ b/drivers/thermal/mvebu_thermal.c
-@@ -20,8 +20,11 @@
- #include <linux/of.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-+#include <linux/of_device.h>
+@@ -1,6 +1,7 @@
+ /*
+  * Marvell EBU thermal sensor driver
+  *
++ * Copyright (C) 2013 Marvell
+  * Copyright (C) 2012 Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+  *
+  * This software is licensed under the terms of the GNU General Public
+@@ -24,12 +25,21 @@
  #include <linux/thermal.h>
  
-+#define MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD    0x1
-+
+ #define MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD    0x1
++#define MVEBU_THERMAL_SOC_VARIANT_ARMADA_XP   0x2
+ 
  #define MVEBU_THERMAL_VALID_OFFSET	9
  #define MVEBU_THERMAL_VALID_MASK	0x1
  #define MVEBU_THERMAL_TEMP_OFFSET	10
-@@ -30,28 +33,48 @@
+ #define MVEBU_THERMAL_TEMP_MASK		0x1FF
+ 
++/* Thermal Manager Control and Status Register */
++#define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
++#define PMU_TM_DISABLE_OFFS		0
++#define PMU_TM_DISABLE_MASK		(0x1 << PMU_TM_DISABLE_OFFS)
++#define PMU_TDC0_REF_CAL_CNT_OFFS	11
++#define PMU_TDC0_REF_CAL_CNT_MASK	(0x1ff << PMU_TDC0_REF_CAL_CNT_OFFS)
++#define PMU_TDC0_OTF_CAL_MASK		(0x1 << 30)
++
  /* Marvell EBU Thermal Sensor Dev Structure */
  struct mvebu_thermal_priv {
  	void __iomem *sensor;
-+	void __iomem *control;
-+	int soc_variant;
-+
-+	/* Initialize the sensor (optional) */
-+	void (*init_sensor)(struct mvebu_thermal_priv *);
-+
-+	/* Test for a valid sensor value (optional) */
-+	bool (*is_valid)(struct mvebu_thermal_priv *);
+@@ -43,6 +53,35 @@ struct mvebu_thermal_priv {
+ 	bool (*is_valid)(struct mvebu_thermal_priv *);
  };
  
-+static bool mvebu_is_valid(struct mvebu_thermal_priv *priv)
++static void armadaxp_init_sensor(struct mvebu_thermal_priv *priv)
 +{
-+	unsigned long reg = readl_relaxed(priv->sensor);
++	unsigned long reg;
 +
-+	return (reg >> MVEBU_THERMAL_VALID_OFFSET) &
-+		MVEBU_THERMAL_VALID_MASK;
++	if (!priv->control)
++		return;
++
++	/* ??? */
++	reg = readl_relaxed(priv->control);
++	reg |= PMU_TDC0_OTF_CAL_MASK;
++	writel(reg, priv->control);
++
++	/* Reference calibration value */
++	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
++	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
++	writel(reg, priv->control);
++
++	/* Reset the sensor */
++	reg = readl_relaxed(priv->control);
++	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
++
++	writel(reg, priv->control);
++
++	/* Enable the sensor */
++	reg = readl_relaxed(priv->sensor);
++	reg &= ~PMU_TM_DISABLE_MASK;
++	writel(reg, priv->sensor);
 +}
 +
- static int mvebu_get_temp(struct thermal_zone_device *thermal,
- 			  unsigned long *temp)
+ static bool mvebu_is_valid(struct mvebu_thermal_priv *priv)
  {
- 	unsigned long reg;
- 	struct mvebu_thermal_priv *priv = thermal->devdata;
- 
--	reg = readl_relaxed(priv->sensor);
--
- 	/* Valid check */
--	if (!((reg >> MVEBU_THERMAL_VALID_OFFSET) &
--	    MVEBU_THERMAL_VALID_MASK)) {
-+	if (priv->is_valid && !priv->is_valid(priv)) {
- 		dev_err(&thermal->device,
- 			"Temperature sensor reading not valid\n");
- 		return -EIO;
+ 	unsigned long reg = readl_relaxed(priv->sensor);
+@@ -71,6 +110,9 @@ static int mvebu_get_temp(struct thermal_zone_device *thermal,
+ 	case MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD:
+ 		*temp = ((2363302UL - (7339*reg)) / 10);
+ 		break;
++	case MVEBU_THERMAL_SOC_VARIANT_ARMADA_XP:
++		*temp = (3153000000UL - (10000000UL*reg)) / 13825;
++		break;
+ 	default:
+ 		*temp = 0;
+ 		break;
+@@ -88,6 +130,10 @@ static const struct of_device_id mvebu_thermal_id_table[] = {
+ 		.data       = (void *) MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD,
+ 	},
+ 	{
++		.compatible = "marvell,armadaxp-thermal",
++		.data       = (void *) MVEBU_THERMAL_SOC_VARIANT_ARMADA_XP,
++	},
++	{
+ 		/* sentinel */
+ 	},
+ };
+@@ -130,6 +176,9 @@ static int mvebu_thermal_probe(struct platform_device *pdev)
+ 	case MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD:
+ 		priv->is_valid = mvebu_is_valid;
+ 		break;
++	case MVEBU_THERMAL_SOC_VARIANT_ARMADA_XP:
++		priv->init_sensor = armadaxp_init_sensor;
++		break;
+ 	default:
+ 		break;
  	}
+@@ -174,5 +223,6 @@ static struct platform_driver mvebu_thermal_driver = {
+ module_platform_driver(mvebu_thermal_driver);
  
--	reg = (reg >> MVEBU_THERMAL_TEMP_OFFSET) &
-+	reg = (readl_relaxed(priv->sensor) >> MVEBU_THERMAL_TEMP_OFFSET) &
- 		MVEBU_THERMAL_TEMP_MASK;
--	*temp = ((2363302UL - (7339*reg)) / 10);
- 
-+	switch (priv->soc_variant) {
-+	case MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD:
-+		*temp = ((2363302UL - (7339*reg)) / 10);
-+		break;
-+	default:
-+		*temp = 0;
-+		break;
-+	}
- 	return 0;
- }
- 
-@@ -60,17 +83,27 @@ static struct thermal_zone_device_ops ops = {
- };
- 
- static const struct of_device_id mvebu_thermal_id_table[] = {
--	{ .compatible = "marvell,kirkwood-thermal" },
--	{}
-+	{
-+		.compatible = "marvell,kirkwood-thermal",
-+		.data       = (void *) MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD,
-+	},
-+	{
-+		/* sentinel */
-+	},
- };
- MODULE_DEVICE_TABLE(of, mvebu_thermal_id_table);
- 
- static int mvebu_thermal_probe(struct platform_device *pdev)
- {
- 	struct thermal_zone_device *thermal;
-+	const struct of_device_id *match;
- 	struct mvebu_thermal_priv *priv;
- 	struct resource *res;
- 
-+	match = of_match_device(mvebu_thermal_id_table, &pdev->dev);
-+	if (!match)
-+		return -ENODEV;
-+
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	if (!res) {
- 		dev_err(&pdev->dev, "Failed to get platform resource\n");
-@@ -85,6 +118,25 @@ static int mvebu_thermal_probe(struct platform_device *pdev)
- 	if (!priv->sensor)
- 		return -EADDRNOTAVAIL;
- 
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (res) {
-+		priv->control = devm_ioremap_resource(&pdev->dev, res);
-+		if (!priv->control)
-+			return -EADDRNOTAVAIL;
-+	}
-+
-+	priv->soc_variant = (int)match->data;
-+	switch (priv->soc_variant) {
-+	case MVEBU_THERMAL_SOC_VARIANT_KIRKWOOD:
-+		priv->is_valid = mvebu_is_valid;
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	if (priv->init_sensor)
-+		priv->init_sensor(priv);
-+
- 	thermal = thermal_zone_device_register("mvebu_thermal", 0, 0,
- 					       priv, &ops, NULL, 0, 0);
- 	if (IS_ERR(thermal)) {
+ MODULE_AUTHOR("Nobuhiro Iwamatsu <iwamatsu@nigauri.org>");
++MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia@free-electrons.com>");
+ MODULE_DESCRIPTION("mvebu thermal driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 1.7.8.6
 
