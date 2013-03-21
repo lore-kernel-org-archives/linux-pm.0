@@ -1,54 +1,78 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 00/16] Marvell EBU thermal sensor consolidation
-Date: Thu, 21 Mar 2013 09:35:58 -0300
-Message-ID: <20130321123556.GC22714@localhost>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130321064501.GK21478@lunn.ch>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [PATCH 1/4][resend] cpuidle : handle clockevent notify from the
+ cpuidle framework
+Date: Thu, 21 Mar 2013 18:29:03 +0530
+Message-ID: <514B0417.6020401@ti.com>
+References: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:53098 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755845Ab3CUMgG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 08:36:06 -0400
-Content-Disposition: inline
-In-Reply-To: <20130321064501.GK21478@lunn.ch>
+Received: from bear.ext.ti.com ([192.94.94.41]:57106 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754222Ab3CUM5l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Mar 2013 08:57:41 -0400
+In-Reply-To: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Jason Cooper <jason@lakedaemon.net>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, lenb@kernel.org, linus.walleij@linaro.org, rnayak@ti.com, kernel@pengutronix.de, tglx@linutronix.de
 
-On Thu, Mar 21, 2013 at 07:45:01AM +0100, Andrew Lunn wrote:
-> On Wed, Mar 20, 2013 at 07:36:21PM -0300, Ezequiel Garcia wrote:
-> > This patchset is my first attempt at adding basic thermal sensor
-> > support on Armada 370 and Armada XP.
-> >=20
-> > Given Armada 370/XP and the other Marvell SoC with thermal support,
-> > namely Kirkwood and Dove, have fairly similar thermal devices it=20
-> > made sense to integrate all of them into a single driver: mvebu-the=
-rmal.
->=20
-> I went this way to start with, merging Dove, Kirkwood and something
-> which nearly worked for 370. But then i looked at the code, at how
-> little is actually shared, and went back to separate drivers.
->=20
-> Kirkwood has no control registers, so needs a special case in the pro=
-be.
-> The bit location of the temperate value moves around in the register.
-> Each SoC needs its own initialization sequence.
-> Each SoC needs its own is_valid() function.
-> Each Soc needs its own formula to convert to milli centigrad.
->=20
-> I've never seen the datasheets for 370/XP, just a list of registers f=
-or
-> 370. But i get the impression it has two temperate sensors, so should
-> export two values?
->=20
+On Thursday 21 March 2013 05:51 PM, Daniel Lezcano wrote:
+> When a cpu enters a deep idle state, the local timers are stopped and
+> the time framework falls back to the timer device used as a broadcast
+> timer.
+> 
+> The different cpuidle drivers are calling clockevents_notify ENTER/EXIT
+> when the idle state stops the local timer.
+> 
+> Add a new flag CPUIDLE_FLAG_TIMER_STOP which can be set by the cpuidle
+> drivers. If the flag is set, the cpuidle core code takes care of the
+> notification on behalf of the driver to avoid pointless code duplication.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Rajendra Nayak <rnayak@ti.com>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  drivers/cpuidle/cpuidle.c |    9 +++++++++
+>  include/linux/cpuidle.h   |    1 +
+>  2 files changed, 10 insertions(+)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index eba6929..c500370 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -8,6 +8,7 @@
+>   * This code is licenced under the GPL.
+>   */
+>  
+> +#include <linux/clockchips.h>
+>  #include <linux/kernel.h>
+>  #include <linux/mutex.h>
+>  #include <linux/sched.h>
+> @@ -146,12 +147,20 @@ int cpuidle_idle_call(void)
+>  
+>  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>  
+> +	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
+> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> +				   &dev->cpu);
+> +
+Seems like good clean-up from drivers.
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-Why do you think it has two sensors?
+How about taking care of cpu_pm_notifiers() as well with some
+additional flag for CPU and cluster power state. That can help
+to reduce and consolidate the code. What you say ?
 
---=20
-Ezequiel Garc=C3=ADa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
+Regards,
+Santosh
+
+Regards,
+Santosh
+
