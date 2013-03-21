@@ -1,44 +1,36 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH for 3.9] thermal: mvebu: Fix valid check for thermal register
-Date: Thu, 21 Mar 2013 17:42:07 -0300
-Message-ID: <1363898527-3660-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: "Wenzhou Ourvis" <ourvis@ourvis.com>
+Subject: Re: Hello
+Date: Thu, 21 Mar 2013 14:55:48 -0300
+Message-ID: <20130321175551.20F44B6C8D__1062.83197314969$1363901956$gmane$org@mail.dominos.com.my>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:56397 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753223Ab3CUUmT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 16:42:19 -0400
+Received: from mail.dominos.com.my ([60.52.203.108]:39062 "EHLO
+	mail.dominos.com.my" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353Ab3CUVig convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 17:38:36 -0400
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Zhang Rui <rui.zhang@intel.com>, Andrew Lunn <andrew@lunn.ch>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Recipients <ourvis@ourvis.com>
 
-The correct value is obtain by first shifting the register by the offset,
-later applying the valid mask and finally invert the result.
-This check was lacking an extra parenthesis to be strictly correct.
+Dear E-mail User,
 
-Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
----
-I've taken this fix out of the thermal patchset,
-so we can apply it earlier on v3.9.
 
- drivers/thermal/kirkwood_thermal.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+  This is to immediately inform you that your email address with Micros ID: IDJT-32238-EHI-676GI-8ED has won you 2,485,000.00 GBP and a brand new Range Rover SUV from the Wenzhou Ourvis yearly draw promo.
 
-diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-index 65cb4f0..ee433b7 100644
---- a/drivers/thermal/kirkwood_thermal.c
-+++ b/drivers/thermal/kirkwood_thermal.c
-@@ -41,8 +41,8 @@ static int kirkwood_get_temp(struct thermal_zone_device *thermal,
- 	reg = readl_relaxed(priv->sensor);
- 
- 	/* Valid check */
--	if (!(reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
--	    KIRKWOOD_THERMAL_VALID_MASK) {
-+	if (!((reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
-+	    KIRKWOOD_THERMAL_VALID_MASK)) {
- 		dev_err(&thermal->device,
- 			"Temperature sensor reading not valid\n");
- 		return -EIO;
--- 
-1.7.8.6
+Use the details below to login and fill in the claim form to immediately begin your claims.
 
+
+
+WEBSITE: www.wenzhourvis.cla.fr
+USERNAME: ISO912PP
+PASSWORD: XNO87PS
+
+
+Regards,
+Dr. Warren Payne,
+Wenzhou Ourvis Company.
+European Zonal Coordinator,
+United Kingdom.
