@@ -1,36 +1,52 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] PM / devfreq: tie suspend/resume to runtime-pm
-Date: Thu, 21 Mar 2013 11:02:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1303211101530.1899-100000@iolanthe.rowland.org>
-References: <1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH 05/16] thermal: mvebu: Fix valid check for thermal
+ register
+Date: Thu, 21 Mar 2013 12:16:10 -0300
+Message-ID: <20130321151609.GA24246@localhost>
+References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1363818997-23137-6-git-send-email-ezequiel.garcia@free-electrons.com>
+ <20130321143539.GV13280@titan.lakedaemon.net>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:38175 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751023Ab3CUPC6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:02:58 -0400
-In-Reply-To: <1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
+Received: from mail.free-electrons.com ([94.23.35.102]:53850 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656Ab3CUPQT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:16:19 -0400
+Content-Disposition: inline
+In-Reply-To: <20130321143539.GV13280@titan.lakedaemon.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Cc: myungjoo.ham@samsung.com, rjw@sisk.pl, Kevin Hilman <khilman@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jason Cooper <jason@lakedaemon.net>
+Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
 
-On Thu, 21 Mar 2013, Rajagopal Venkat wrote:
+Hi Jason,
 
-> Allow device devfreq to be suspend/resume automatically with
-> runtime pm suspend/resume. The devfreq drivers should be least
-> cared when to suspend/resume the devfreq.
-> 
-> pm_runtime_suspend(dev) will first suspend device devfreq(if available)
-> before device is suspended from runtime pm core.
-> 
-> pm_runtime_resume(dev) will resume device devfreq(if available) after
-> device is resumed from runtime pm core.
+On Thu, Mar 21, 2013 at 10:35:39AM -0400, Jason Cooper wrote:
+> On Wed, Mar 20, 2013 at 07:36:26PM -0300, Ezequiel Garcia wrote:
+> > The correct value is obtain by first shifting the register by the o=
+ffset,
+> > later applying the valid mask and finally invert the result.
+> > This check was lacking an extra parenthesis to be strictly correct.
+> >=20
+> > Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> > ---
+> >  drivers/thermal/mvebu_thermal.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> For the next version of this series, could you please put this fix fi=
+rst
+> in the series?  In this state, it can't be applied to v3.9-rcX, nor
+> -stable.
+>=20
 
-Aren't these backward?  The device continues to need its clocks and 
-frequency settings until _after_ it has been suspended.  Similarly, it 
-needs them to be available _before_ it resumes.
+Given we're still discussing the aproach of this patchset.
+I think I prefer to send the fixes now, not as part of the
+current series but as independent patches.
 
-Alan Stern
-
+What do you think?
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
