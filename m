@@ -1,58 +1,84 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 06/16] thermal: mvebu: Convert to devm_ioremap_resource()
-Date: Thu, 21 Mar 2013 11:08:52 +0100
-Message-ID: <20130321100852.GA5627@lunn.ch>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1363818997-23137-7-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130321061024.GH21478@lunn.ch>
- <20130321094325.GB2469@localhost>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH] thermal: shorten too long mcast group name
+Date: Thu, 21 Mar 2013 10:19:00 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C5573E@BGSMSX101.gar.corp.intel.com>
+References: <20130321.190819.892238877314124764.yamato@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:50046 "EHLO londo.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753140Ab3CUKJM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 21 Mar 2013 06:09:12 -0400
-Content-Disposition: inline
-In-Reply-To: <20130321094325.GB2469@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20130321.190819.892238877314124764.yamato@redhat.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Masatake YAMATO <yamato@redhat.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Cc: "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Jason Cooper <jason@lakedaemon.net>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
 
-On Thu, Mar 21, 2013 at 06:43:26AM -0300, Ezequiel Garcia wrote:
-> On Thu, Mar 21, 2013 at 07:10:24AM +0100, Andrew Lunn wrote:
-> > On Wed, Mar 20, 2013 at 07:36:27PM -0300, Ezequiel Garcia wrote:
-> > > Convert devm_request_and_ioremap() to the newly introduced
-> > > devm_ioremap_resource() which provides more consistent error handling.
-> > > 
-> > > Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> > > ---
-> > >  drivers/thermal/mvebu_thermal.c |    6 ++----
-> > >  1 files changed, 2 insertions(+), 4 deletions(-)
-> > > 
-> > > diff --git a/drivers/thermal/mvebu_thermal.c b/drivers/thermal/mvebu_thermal.c
-> > > index ef04e4e..089b43d 100644
-> > > --- a/drivers/thermal/mvebu_thermal.c
-> > > +++ b/drivers/thermal/mvebu_thermal.c
-> > > @@ -86,11 +86,9 @@ static int mvebu_thermal_probe(struct platform_device *pdev)
-> > >  	if (!priv)
-> > >  		return -ENOMEM;
-> > >  
-> > > -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
-> > > -	if (!priv->sensor) {
-> > > -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> > > +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
-> > > +	if (!priv->sensor)
-> > >  		return -EADDRNOTAVAIL;
-> > > -	}
-> > 
-> > 
-> > It would be better to return priv->sensor, not a fixed error code.
-> > 
+> -----Original Message-----
+> From: linux-acpi-owner@vger.kernel.org [mailto:linux-acpi-
+> owner@vger.kernel.org] On Behalf Of Masatake YAMATO
+> Sent: Thursday, March 21, 2013 3:38 PM
+> To: linux-acpi@vger.kernel.org
+> Cc: yamato@redhat.com
+> Subject: [PATCH] thermal: shorten too long mcast group name
 > 
-> Good catch! I missed that.
+> You will see garbage at the end of line in the output of following command
+> line:
+> 
+>         $ genl ctrl show | grep thermal_mc_group
+>         #1:  ID-0x2  name: thermal_mc_group^B
 
-And the same where the priv->control is introduced.
+Agreed.
 
-    Andrew
+> 
+> The type of structure field for "name" is char[16] in the kernel:
+> 
+>     #define GENL_NAMSIZ 16      /* length of family name */
+>     ...
+>     struct genl_multicast_group {
+>             ...
+>             char                name[GENL_NAMSIZ];
+>             ...
+>     };
+> 
+> strlen("thermal_mc_group") == 16 is too long for the array size.
+> 
+> "thermal_mc_grp" is more readable than "thermal_mc_grou". However,
+> I choose latter; the patch for genl command side may truncate the
+> last char in the name:
+
+I prefer we use thermal_mc_grp.
+
++ Adding Rui & the Linux-pm list.
+
+Thanks,
+Durga
+> 
+>      http://marc.info/?l=linux-netdev&m=136371412625262&w=2
+> 
+> Signed-off-by: Masatake YAMATO <yamato@redhat.com>
+> ---
+>  include/linux/thermal.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f0bd7f9..a65dff3 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -44,7 +44,7 @@
+>  /* Adding event notification support elements */
+>  #define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+>  #define THERMAL_GENL_VERSION                    0x01
+> -#define THERMAL_GENL_MCAST_GROUP_NAME
+> "thermal_mc_group"
+> +#define THERMAL_GENL_MCAST_GROUP_NAME           "thermal_mc_grou"
+> 
+>  /* Default Thermal Governor */
+>  #if defined(CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE)
+> --
+> 1.7.11.7
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
