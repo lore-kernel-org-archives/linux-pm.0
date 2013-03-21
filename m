@@ -1,107 +1,60 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 1/4][resend] cpuidle : handle clockevent notify from the
- cpuidle framework
-Date: Thu, 21 Mar 2013 15:25:04 +0000
-Message-ID: <20130321152502.GA7419@e102568-lin.cambridge.arm.com>
-References: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org>
- <514B0417.6020401@ti.com>
- <514B10AC.9090909@linaro.org>
- <514B1354.50506@ti.com>
- <514B1C06.6070401@linaro.org>
- <514B1EA5.20209@ti.com>
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH 00/16] Marvell EBU thermal sensor consolidation
+Date: Thu, 21 Mar 2013 11:32:51 -0600
+Message-ID: <20130321173251.GA3070@obsidianresearch.com>
+References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <20130321064501.GK21478@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:49739 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755109Ab3CUPZM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:25:12 -0400
-In-Reply-To: <514B1EA5.20209@ti.com>
+Received: from quartz.orcorp.ca ([184.70.90.242]:41056 "EHLO quartz.orcorp.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092Ab3CURc6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Mar 2013 13:32:58 -0400
 Content-Disposition: inline
+In-Reply-To: <20130321064501.GK21478@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "rnayak@ti.com" <rnayak@ti.com>, "lenb@kernel.org" <lenb@kernel.org>
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Florian Fainelli <florian@openwrt.org>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Thu, Mar 21, 2013 at 02:52:21PM +0000, Santosh Shilimkar wrote:
+On Thu, Mar 21, 2013 at 07:45:01AM +0100, Andrew Lunn wrote:
 
-[...]
+> In the end, i decided it was simpler and cleaner to just have separate
+> drivers. This is something which we should think about and discuss.
 
-> >>>> How about taking care of cpu_pm_notifiers() as well with some
-> >>>> additional flag for CPU and cluster power state. That can help
-> >>>> to reduce and consolidate the code. What you say ?
-> >>>
-> >>> Do you mean add a flag for different level of idle (idle, suspend, power
-> >>> off) and then use the cpu_pm_enter/cpu_cluster_pm_enter in all the
-> >>> drivers as a common framework ?
-> >>>
-> >> I mean only for CPUidle considering C-state already has the information
-> >> about CPU and cluster power state. For suspend, we by-default run the notifiers
-> >> so nothing needs to be done there.
-> >>
-> >> You may not even need a framework. Just like we know in a C-state, timer
-> >> stops, same lines, we can say CPU state is going to be say off and hence
-> >> cpu_pm_enter() notifier needs to be called. And same way for cluster.
-> >>
-> >> I still haven't given complete thought but thought crossed my mind
-> >> after looking at your patches.
-> > 
-> > Right, that could be interesting.
-> > 
-> > I see may be one issue with this approach: when we enter an idle state
-> > with power off, some checking are done before cpu_pm_enter and that
-> > could lead to abort the current idle routine.
-> > 
-> I see your point.
-> 
-> > By moving this to the cpuidle framework, we will invoke always
-> > cpu_pm_enter/exit even if the idle enter routine failed.
-> > 
-> If we at all decide to go on this path, we can always get around the
-> issues. The key is these notifiers have to be run very close to the
-> low power entry/exit since the saved context for CPU/CPU cluster
-> at wrong points would lead to many issues.
-> 
-> > But, IMO, the idea is good.
-> > 
-> > For example in cpuidle34xx:
-> > 
-> > static int __omap3_enter_idle(struct cpuidle_device *dev,
-> >                                 struct cpuidle_driver *drv,
-> >                                 int index)
-> > {
-> >         struct omap3_idle_statedata *cx = &omap3_idle_data[index];
-> > 
-> >         local_fiq_disable();
-> > 
-> >         if (omap_irq_pending() || need_resched())
-> >                 goto return_sleep_time;
-> > 
-> > 	...
-> > 
-> >         if (cx->mpu_state == PWRDM_POWER_OFF)
-> >                 cpu_pm_enter();
-> > 
-> > 	...
-> > }
-> > 
-> > The same for omap4 and tegra2/3.
-> > 
-> > With your knowledge of omap, do you think it is possible to move
-> > cpu_pm_enter before entering the idle routine ?
-> > 
-> I will get back on this topic after some experiments most likely
-> by next week.
+When I looked through the merge'd driver I thought the shared code
+really had little to do with Marvell, it was mostly boilerplate that
+would be common to any memory mapped temperature sensor - so maybe the
+drivers should be kept apart and the boiler plate could be factored?
 
-Looks like the way to go, we could enhance the notifiers to be able to
-save/restore specific subsystems with the C-state flags defining which
-ones.
+ thermal_platform_mmio_init(pdev,&ops);
 
-Notifiers actions should not be disruptive so the only drawback in
-executing those before entering the idle routine could possibly be
-a waste of cycles in case the C-state entry fails but certainly something
-to verify on all platforms using them.
+Where ops has the is_valid, init_sensor, get_sensor functions
 
-Lorenzo
+Or something?
 
+...
+
+BTW, Ezequiel your driver is probably a bit smaller if you do
+
+struct mvebu_ops {
+	/* Initialize the sensor (optional) */
+	void (*init_sensor)(struct mvebu_thermal_priv *);
+
+	/* Test for a valid sensor value (optional) */
+	bool (*is_valid)(struct mvebu_thermal_priv *);
+};
+
+static const struct mvebu_ops kirkwood_ops = {..};
+
+static const struct of_device_id mvebu_thermal_id_table[] = {
+	{
+		.compatible = "marvell,kirkwood-thermal",
+		.data       = &kirkwood_ops,
+	},
+
+And drop the switch statement and the MVEBU_THERMAL_SOC_* constants..
+
+Cheers,
+Jason
