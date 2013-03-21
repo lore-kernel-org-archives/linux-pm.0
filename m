@@ -1,303 +1,41 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 2/2] PM / devfreq: tie suspend/resume to runtime-pm
-Date: Fri, 22 Mar 2013 10:34:34 -0700
-Message-ID: <87fvzncp91.fsf@linaro.org>
-References: <1363872506-3630-1-git-send-email-rajagopal.venkat@linaro.org>
-	<1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
+From: "WERNER ERICH ZELLER" <e639@humv.es>
+Subject: ACHTUNG FRIEND!
+Date: Fri, 22 Mar 2013 00:57:10 +0100 (CET)
+Message-ID: <55112.82.128.17.98.1363910230.squirrel__10428.8676674061$1363975575$gmane$org@correo.humv.es>
+Reply-To: wernererichzeller@yahoo.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
-	(Rajagopal Venkat's message of "Thu, 21 Mar 2013 18:58:26 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Cc: myungjoo.ham@samsung.com, rjw@sisk.pl, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from agero.humv.es ([193.146.74.20]:58141 "EHLO agero.humv.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422633Ab3CVSFL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Mar 2013 14:05:11 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rajagopal,
 
-Rajagopal Venkat <rajagopal.venkat@linaro.org> writes:
 
-> Allow device devfreq to be suspend/resume automatically with
-> runtime pm suspend/resume. The devfreq drivers should be least
-> cared when to suspend/resume the devfreq.
 
-That is the "what", but the changelog should also answer the question
-"why?".
+--=20
+Eure Eminenz, das ist das dritte Mal, dass ich schreibe Ihnen bin, ich
+bete nur du es dieses Mal! Ich bin Barrister Werner Erich Zeller des
+Vereinigten K=F6nigreichs und ich schreibe auf Ihre 100% aufrichtiges
+Interesse und Partnerschaft bei der Wiederherstellung der H=F6he von =80=
+ 15
+Mio. (EURO) Privatbank, die fr=FCher zu einem sp=E4ten Kunde von mir, d=
+ie,
+ohne einem bestimmten Nest weitergegeben geh=F6rten zu suchen Angeh=F6r=
+igen
+und Empf=E4nger. Wie f=FCr die Rechtm=E4=DFigkeit und Echtheit, lassen =
+Sie das zu
+mir, ich werde es als Rechtsanwalt rechtlich 100% Griff! Wir stehen bei=
+de
+zu 50% des =80 15 Mio. (EURO) jeweils als Partner profitieren. Schicken=
+ Sie
+mir eine private E-Mail f=FCr die Details: wernererichzeller@yahoo.com =
+und
+Telefon: +447024090820
 
-> pm_runtime_suspend(dev) will first suspend device devfreq(if available)
-> before device is suspended from runtime pm core.
-
-And here you should describe what you mentioned in your response to Alan
-to clarify that suspending devfreq is suspending/resuming the load
-monitoring, not any actual device hardware.  You should also describe
-the rationale behind the ordering of devfreq susepnd/resume and device
-suspend/resume.
-
-> pm_runtime_resume(dev) will resume device devfreq(if available) after
-> device is resumed from runtime pm core.
->
-> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-> ---
->  drivers/base/power/runtime.c |   18 ++++++++++++++-
->  drivers/devfreq/devfreq.c    |   51 ++++++++++++++++++++++++++++++++++++++----
->  include/linux/devfreq.h      |   18 ++++-----------
->  include/linux/pm.h           |    2 ++
->  4 files changed, 70 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 3148b10..951bf92 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -11,6 +11,7 @@
->  #include <linux/export.h>
->  #include <linux/pm_runtime.h>
->  #include <trace/events/rpm.h>
-> +#include <linux/devfreq.h>
->  #include "power.h"
->  
->  static int rpm_resume(struct device *dev, int rpmflags);
-> @@ -406,6 +407,10 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  
->  	__update_runtime_status(dev, RPM_SUSPENDING);
->  
-> +	if (dev->power.devfreq &&
-> +			dev->power.devfreq->runtime_suspend(dev))
-> +		goto fail;
-
-It's not obvious to me why you want to abort the entire runtime suspend
-path if the devfreq governor fails to runtime suspend.  That should also
-be described someplace.
-
-Same comment on skipping the callbacks in rpm_resume below.
-
->  	if (dev->pm_domain)
->  		callback = dev->pm_domain->ops.runtime_suspend;
->  	else if (dev->type && dev->type->pm)
-> @@ -421,8 +426,11 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  		callback = dev->driver->pm->runtime_suspend;
->  
->  	retval = rpm_callback(callback, dev);
-> -	if (retval)
-> +	if (retval) {
-> +		if (dev->power.devfreq)
-> +			dev->power.devfreq->runtime_resume(dev);
-
-What if ->runtime_resume is NULL?
-
->  		goto fail;
-> +	}
->  
->   no_callback:
->  	__update_runtime_status(dev, RPM_SUSPENDED);
-> @@ -638,6 +646,11 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  
->  	__update_runtime_status(dev, RPM_RESUMING);
->  
-> +	if (dev->power.devfreq)
-> +		retval = dev->power.devfreq->runtime_resume(dev);
-
-ditto.
-
-I see that the devfreq core always sets these function pointers in this
-patch, but that's not an assumption the PM core should make, IMO.
-
-> +		if (retval)
-> +			goto skip_callback;
-> +
->  	if (dev->pm_domain)
->  		callback = dev->pm_domain->ops.runtime_resume;
->  	else if (dev->type && dev->type->pm)
-> @@ -653,9 +666,12 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  		callback = dev->driver->pm->runtime_resume;
->  
->  	retval = rpm_callback(callback, dev);
-> +skip_callback:
->  	if (retval) {
->  		__update_runtime_status(dev, RPM_SUSPENDED);
->  		pm_runtime_cancel_pending(dev);
-> +		if (dev->power.devfreq)
-> +			dev->power.devfreq->runtime_suspend(dev);
->  	} else {
->   no_callback:
->  		__update_runtime_status(dev, RPM_ACTIVE);
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 44c4079..ed6cb88 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -25,6 +25,7 @@
->  #include <linux/list.h>
->  #include <linux/printk.h>
->  #include <linux/hrtimer.h>
-> +#include <linux/pm_runtime.h>
->  #include "governor.h"
->  
->  static struct class *devfreq_class;
-> @@ -42,6 +43,9 @@ static LIST_HEAD(devfreq_governor_list);
->  static LIST_HEAD(devfreq_list);
->  static DEFINE_MUTEX(devfreq_list_lock);
->  
-> +static int devfreq_runtime_suspend(struct device *dev);
-> +static int devfreq_runtime_resume(struct device *dev);
-> +
->  /**
->   * find_device_devfreq() - find devfreq struct using device pointer
->   * @dev:	device pointer used to lookup device devfreq.
-> @@ -476,6 +480,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
->  	devfreq->previous_freq = profile->initial_freq;
->  	devfreq->data = data;
->  	devfreq->nb.notifier_call = devfreq_notifier_call;
-> +	devfreq->runtime_suspend = devfreq_runtime_suspend;
-> +	devfreq->runtime_resume = devfreq_runtime_resume;
-> +	dev->power.devfreq = devfreq;
->  
->  	devfreq->trans_table =	devm_kzalloc(dev, sizeof(unsigned int) *
->  						devfreq->profile->max_state *
-> @@ -549,7 +556,7 @@ EXPORT_SYMBOL(devfreq_remove_device);
->   * (e.g., runtime_suspend, suspend) of the device driver that
->   * holds the devfreq.
->   */
-> -int devfreq_suspend_device(struct devfreq *devfreq)
-> +static int devfreq_suspend_device(struct devfreq *devfreq)
->  {
->  	if (!devfreq)
->  		return -EINVAL;
-> @@ -560,7 +567,6 @@ int devfreq_suspend_device(struct devfreq *devfreq)
->  	return devfreq->governor->event_handler(devfreq,
->  				DEVFREQ_GOV_SUSPEND, NULL);
->  }
-> -EXPORT_SYMBOL(devfreq_suspend_device);
-
->  /**
->   * devfreq_resume_device() - Resume devfreq of a device.
-> @@ -570,7 +576,7 @@ EXPORT_SYMBOL(devfreq_suspend_device);
->   * (e.g., runtime_resume, resume) of the device driver that
->   * holds the devfreq.
->   */
-> -int devfreq_resume_device(struct devfreq *devfreq)
-> +static int devfreq_resume_device(struct devfreq *devfreq)
->  {
->  	if (!devfreq)
->  		return -EINVAL;
-> @@ -581,7 +587,44 @@ int devfreq_resume_device(struct devfreq *devfreq)
->  	return devfreq->governor->event_handler(devfreq,
->  				DEVFREQ_GOV_RESUME, NULL);
->  }
-> -EXPORT_SYMBOL(devfreq_resume_device);
-> +
-> +/**
-> + * devfreq_runtime_suspend() - Suspend devfreq of a device.
-> + * @dev: the device associated with devfreq
-> + *
-> + * This function is intended to be called by the runtime-pm
-> + * core when the device associated with devfreq is
-> + * runtime suspended.
-> + */
-> +static int devfreq_runtime_suspend(struct device *dev)
-> +{
-> +	struct devfreq *devfreq;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	devfreq = find_device_devfreq(dev);
-> +	mutex_unlock(&devfreq_list_lock);
-> +
-> +	return devfreq_suspend_device(devfreq);
-> +}
-> +
-> +/**
-> + * devfreq_runtime_resume() - Resume devfreq of a device.
-> + * @dev: the device associated with devfreq
-> + *
-> + * This function is intended to be called by the runtime-pm
-> + * core when the device associated with devfreq is
-> + * runtime resumed.
-> + */
-> +static int devfreq_runtime_resume(struct device *dev)
-> +{
-> +	struct devfreq *devfreq;
-> +
-> +	mutex_lock(&devfreq_list_lock);
-> +	devfreq = find_device_devfreq(dev);
-> +	mutex_unlock(&devfreq_list_lock);
-> +
-> +	return devfreq_resume_device(devfreq);
-> +}
->  
->  /**
->   * devfreq_add_governor() - Add devfreq governor
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index 5f1ab92..f50f46e 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -140,6 +140,8 @@ struct devfreq_governor {
->   * @trans_table:	Statistics of devfreq transitions
->   * @time_in_state:	Statistics of devfreq states
->   * @last_stat_updated:	The last time stat updated
-> + * @runtime_suspend:	func to runtime suspend devfreq from runtime core
-> + * @runtime_resume:	func to runtime resume devfreq from runtime core
->   *
->   * This structure stores the devfreq information for a give device.
->   *
-> @@ -173,6 +175,8 @@ struct devfreq {
->  	unsigned int *trans_table;
->  	unsigned long *time_in_state;
->  	unsigned long last_stat_updated;
-> +	int (*runtime_suspend)(struct device *dev);
-> +	int (*runtime_resume)(struct device *dev);
->  };
->  
->  #if defined(CONFIG_PM_DEVFREQ)
-> @@ -182,10 +186,6 @@ extern struct devfreq *devfreq_add_device(struct device *dev,
->  				  void *data);
->  extern int devfreq_remove_device(struct devfreq *devfreq);
->  
-> -/* Supposed to be called by PM_SLEEP/PM_RUNTIME callbacks */
-> -extern int devfreq_suspend_device(struct devfreq *devfreq);
-> -extern int devfreq_resume_device(struct devfreq *devfreq);
-
-Remvoing these, and removing the EXPORT_SYMBOL()s is an API change that
-is not described in the changelog.
-
-Kevin
-
-> -
->  /* Helper functions for devfreq user device driver with OPP. */
->  extern struct opp *devfreq_recommended_opp(struct device *dev,
->  					   unsigned long *freq, u32 flags);
-> @@ -228,16 +228,6 @@ static inline int devfreq_remove_device(struct devfreq *devfreq)
->  	return 0;
->  }
->  
-> -static inline int devfreq_suspend_device(struct devfreq *devfreq)
-> -{
-> -	return 0;
-> -}
-> -
-> -static inline int devfreq_resume_device(struct devfreq *devfreq)
-> -{
-> -	return 0;
-> -}
-> -
->  static inline struct opp *devfreq_recommended_opp(struct device *dev,
->  					   unsigned long *freq, u32 flags)
->  {
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 03d7bb1..6097db1 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -40,6 +40,7 @@ extern void (*pm_power_off_prepare)(void);
->   */
->  
->  struct device;
-> +struct devfreq;
->  
->  #ifdef CONFIG_PM
->  extern const char power_group_name[];		/* = "power" */
-> @@ -549,6 +550,7 @@ struct dev_pm_info {
->  #endif
->  	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
->  	struct dev_pm_qos	*qos;
-> +	struct devfreq		*devfreq;
->  };
->  
->  extern void update_pm_runtime_accounting(struct device *dev);
+Bitte zur=FCck zu mir sofort!
+Werner Erich Zeller (Attorney)
