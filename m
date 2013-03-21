@@ -1,40 +1,151 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 05/16] thermal: mvebu: Fix valid check for thermal
- register
-Date: Thu, 21 Mar 2013 10:35:39 -0400
-Message-ID: <20130321143539.GV13280@titan.lakedaemon.net>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1363818997-23137-6-git-send-email-ezequiel.garcia@free-electrons.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/4][resend] cpuidle : handle clockevent notify from the
+ cpuidle framework
+Date: Thu, 21 Mar 2013 15:41:10 +0100
+Message-ID: <514B1C06.6070401@linaro.org>
+References: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org> <514B0417.6020401@ti.com> <514B10AC.9090909@linaro.org> <514B1354.50506@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-04-ewr.mailhop.org ([204.13.248.74]:42329 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932834Ab3CUOfv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 10:35:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1363818997-23137-6-git-send-email-ezequiel.garcia@free-electrons.com>
+Received: from mail-ee0-f53.google.com ([74.125.83.53]:43923 "EHLO
+	mail-ee0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932922Ab3CUOlO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 10:41:14 -0400
+Received: by mail-ee0-f53.google.com with SMTP id e53so1813429eek.40
+        for <linux-pm@vger.kernel.org>; Thu, 21 Mar 2013 07:41:12 -0700 (PDT)
+In-Reply-To: <514B1354.50506@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, lenb@kernel.org, linus.walleij@linaro.org, rnayak@ti.com, kernel@pengutronix.de, tglx@linutronix.de
 
-Ezequiel,
+On 03/21/2013 03:04 PM, Santosh Shilimkar wrote:
+> On Thursday 21 March 2013 07:22 PM, Daniel Lezcano wrote:
+>> On 03/21/2013 01:59 PM, Santosh Shilimkar wrote:
+>>> On Thursday 21 March 2013 05:51 PM, Daniel Lezcano wrote:
+>>>> When a cpu enters a deep idle state, the local timers are stopped =
+and
+>>>> the time framework falls back to the timer device used as a broadc=
+ast
+>>>> timer.
+>>>>
+>>>> The different cpuidle drivers are calling clockevents_notify ENTER=
+/EXIT
+>>>> when the idle state stops the local timer.
+>>>>
+>>>> Add a new flag CPUIDLE_FLAG_TIMER_STOP which can be set by the cpu=
+idle
+>>>> drivers. If the flag is set, the cpuidle core code takes care of t=
+he
+>>>> notification on behalf of the driver to avoid pointless code dupli=
+cation.
+>>>>
+>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+>>>> Cc: Len Brown <lenb@kernel.org>
+>>>> Cc: Linus Walleij <linus.walleij@linaro.org>
+>>>> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>>>> Cc: Rajendra Nayak <rnayak@ti.com>
+>>>> Cc: Sascha Hauer <kernel@pengutronix.de>
+>>>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>>>> ---
+>>>>  drivers/cpuidle/cpuidle.c |    9 +++++++++
+>>>>  include/linux/cpuidle.h   |    1 +
+>>>>  2 files changed, 10 insertions(+)
+>>>>
+>>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>>> index eba6929..c500370 100644
+>>>> --- a/drivers/cpuidle/cpuidle.c
+>>>> +++ b/drivers/cpuidle/cpuidle.c
+>>>> @@ -8,6 +8,7 @@
+>>>>   * This code is licenced under the GPL.
+>>>>   */
+>>>> =20
+>>>> +#include <linux/clockchips.h>
+>>>>  #include <linux/kernel.h>
+>>>>  #include <linux/mutex.h>
+>>>>  #include <linux/sched.h>
+>>>> @@ -146,12 +147,20 @@ int cpuidle_idle_call(void)
+>>>> =20
+>>>>  	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>>>> =20
+>>>> +	if (drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP)
+>>>> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+>>>> +				   &dev->cpu);
+>>>> +
+>>> Seems like good clean-up from drivers.
+>>> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>>>
+>>> How about taking care of cpu_pm_notifiers() as well with some
+>>> additional flag for CPU and cluster power state. That can help
+>>> to reduce and consolidate the code. What you say ?
+>>
+>> Do you mean add a flag for different level of idle (idle, suspend, p=
+ower
+>> off) and then use the cpu_pm_enter/cpu_cluster_pm_enter in all the
+>> drivers as a common framework ?
+>>
+> I mean only for CPUidle considering C-state already has the informati=
+on
+> about CPU and cluster power state. For suspend, we by-default run the=
+ notifiers
+> so nothing needs to be done there.
+>=20
+> You may not even need a framework. Just like we know in a C-state, ti=
+mer
+> stops, same lines, we can say CPU state is going to be say off and he=
+nce
+> cpu_pm_enter() notifier needs to be called. And same way for cluster.
+>=20
+> I still haven't given complete thought but thought crossed my mind
+> after looking at your patches.
 
-On Wed, Mar 20, 2013 at 07:36:26PM -0300, Ezequiel Garcia wrote:
-> The correct value is obtain by first shifting the register by the offset,
-> later applying the valid mask and finally invert the result.
-> This check was lacking an extra parenthesis to be strictly correct.
-> 
-> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> ---
->  drivers/thermal/mvebu_thermal.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+Right, that could be interesting.
 
-For the next version of this series, could you please put this fix first
-in the series?  In this state, it can't be applied to v3.9-rcX, nor
--stable.
+I see may be one issue with this approach: when we enter an idle state
+with power off, some checking are done before cpu_pm_enter and that
+could lead to abort the current idle routine.
 
-thx,
+By moving this to the cpuidle framework, we will invoke always
+cpu_pm_enter/exit even if the idle enter routine failed.
 
-Jason.
+But, IMO, the idea is good.
+
+=46or example in cpuidle34xx:
+
+static int __omap3_enter_idle(struct cpuidle_device *dev,
+                                struct cpuidle_driver *drv,
+                                int index)
+{
+        struct omap3_idle_statedata *cx =3D &omap3_idle_data[index];
+
+        local_fiq_disable();
+
+        if (omap_irq_pending() || need_resched())
+                goto return_sleep_time;
+
+	...
+
+        if (cx->mpu_state =3D=3D PWRDM_POWER_OFF)
+                cpu_pm_enter();
+
+	...
+}
+
+The same for omap4 and tegra2/3.
+
+With your knowledge of omap, do you think it is possible to move
+cpu_pm_enter before entering the idle routine ?
+
+Thanks
+  -- Daniel
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
