@@ -1,62 +1,44 @@
 From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 08/16] thermal: mvebu: Fix temperature output formula for
- kirkwood
-Date: Thu, 21 Mar 2013 17:38:57 -0300
-Message-ID: <20130321203856.GA3366@localhost>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1363818997-23137-9-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130321192046.GQ4977@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Subject: [PATCH for 3.9] thermal: mvebu: Fix valid check for thermal register
+Date: Thu, 21 Mar 2013 17:42:07 -0300
+Message-ID: <1363898527-3660-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:56378 "EHLO
+Received: from mail.free-electrons.com ([94.23.35.102]:56397 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752057Ab3CUUjF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 16:39:05 -0400
-Content-Disposition: inline
-In-Reply-To: <20130321192046.GQ4977@n2100.arm.linux.org.uk>
+	with ESMTP id S1753223Ab3CUUmT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 16:42:19 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Zhang Rui <rui.zhang@intel.com>, Andrew Lunn <andrew@lunn.ch>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 
-On Thu, Mar 21, 2013 at 07:20:46PM +0000, Russell King - ARM Linux wrot=
-e:
-> On Wed, Mar 20, 2013 at 07:36:29PM -0300, Ezequiel Garcia wrote:
-> > The temperature formula was taken from the Armada 510 datasheet.
-> > This is wrong because the Kirkwood SoC thermal sensor has
-> > different coefficients.
-> >=20
-> > Fix it using values from 88F682/88F683 Kirkwood datasheet.
->=20
-> Err, hang on.  You've changed this from being a Kirkwood specific
-> driver to being a "mvebu" driver, which I had understood was being
-> done to cover all Kirkwood, Dove, etc SoCs.
->=20
-> If that's the case, then this change is wrong because you break it
-> for Dove.
->=20
-> If the coefficients are different between Kirkwood and Dove, then
-> it needs to be adapted at run time depending on whether it's running
-> on Kirkwood or Dove - not just having the coefficients changed at
-> compile time to suit a different set of platforms.
->=20
-> If it's worth making a change, do it *properly*.
+The correct value is obtain by first shifting the register by the offset,
+later applying the valid mask and finally invert the result.
+This check was lacking an extra parenthesis to be strictly correct.
 
-I'm not sure I'm following you.
+Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+---
+I've taken this fix out of the thermal patchset,
+so we can apply it earlier on v3.9.
 
-This patch fixes the Kirkwood formula on a driver that,
-at this point, only supports Kirkwood.
+ drivers/thermal/kirkwood_thermal.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Dove SoC thermal sensor is supported in dove-thermal,
-until it's merged in patch 13/16 (i.e. after this patch).
+diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+index 65cb4f0..ee433b7 100644
+--- a/drivers/thermal/kirkwood_thermal.c
++++ b/drivers/thermal/kirkwood_thermal.c
+@@ -41,8 +41,8 @@ static int kirkwood_get_temp(struct thermal_zone_device *thermal,
+ 	reg = readl_relaxed(priv->sensor);
+ 
+ 	/* Valid check */
+-	if (!(reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
+-	    KIRKWOOD_THERMAL_VALID_MASK) {
++	if (!((reg >> KIRKWOOD_THERMAL_VALID_OFFSET) &
++	    KIRKWOOD_THERMAL_VALID_MASK)) {
+ 		dev_err(&thermal->device,
+ 			"Temperature sensor reading not valid\n");
+ 		return -EIO;
+-- 
+1.7.8.6
 
-AFAIK, I'm not breaking support for any platform in any
-point of the patchset.
-
-Perhaps I'm missing something?
---=20
-Ezequiel Garc=C3=ADa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
