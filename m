@@ -1,53 +1,107 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH 05/16] thermal: mvebu: Fix valid check for thermal
- register
-Date: Thu, 21 Mar 2013 11:24:00 -0400
-Message-ID: <20130321152400.GX13280@titan.lakedaemon.net>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1363818997-23137-6-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130321143539.GV13280@titan.lakedaemon.net>
- <20130321151609.GA24246@localhost>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 1/4][resend] cpuidle : handle clockevent notify from the
+ cpuidle framework
+Date: Thu, 21 Mar 2013 15:25:04 +0000
+Message-ID: <20130321152502.GA7419@e102568-lin.cambridge.arm.com>
+References: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org>
+ <514B0417.6020401@ti.com>
+ <514B10AC.9090909@linaro.org>
+ <514B1354.50506@ti.com>
+ <514B1C06.6070401@linaro.org>
+ <514B1EA5.20209@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-03-ewr.mailhop.org ([204.13.248.66]:63681 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751051Ab3CUPYL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:24:11 -0400
+Received: from service87.mimecast.com ([91.220.42.44]:49739 "EHLO
+	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755109Ab3CUPZM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:25:12 -0400
+In-Reply-To: <514B1EA5.20209@ti.com>
 Content-Disposition: inline
-In-Reply-To: <20130321151609.GA24246@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "rnayak@ti.com" <rnayak@ti.com>, "lenb@kernel.org" <lenb@kernel.org>
 
-On Thu, Mar 21, 2013 at 12:16:10PM -0300, Ezequiel Garcia wrote:
-> Hi Jason,
-> 
-> On Thu, Mar 21, 2013 at 10:35:39AM -0400, Jason Cooper wrote:
-> > On Wed, Mar 20, 2013 at 07:36:26PM -0300, Ezequiel Garcia wrote:
-> > > The correct value is obtain by first shifting the register by the offset,
-> > > later applying the valid mask and finally invert the result.
-> > > This check was lacking an extra parenthesis to be strictly correct.
-> > > 
-> > > Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> > > ---
-> > >  drivers/thermal/mvebu_thermal.c |    4 ++--
-> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+On Thu, Mar 21, 2013 at 02:52:21PM +0000, Santosh Shilimkar wrote:
+
+[...]
+
+> >>>> How about taking care of cpu_pm_notifiers() as well with some
+> >>>> additional flag for CPU and cluster power state. That can help
+> >>>> to reduce and consolidate the code. What you say ?
+> >>>
+> >>> Do you mean add a flag for different level of idle (idle, suspend, power
+> >>> off) and then use the cpu_pm_enter/cpu_cluster_pm_enter in all the
+> >>> drivers as a common framework ?
+> >>>
+> >> I mean only for CPUidle considering C-state already has the information
+> >> about CPU and cluster power state. For suspend, we by-default run the notifiers
+> >> so nothing needs to be done there.
+> >>
+> >> You may not even need a framework. Just like we know in a C-state, timer
+> >> stops, same lines, we can say CPU state is going to be say off and hence
+> >> cpu_pm_enter() notifier needs to be called. And same way for cluster.
+> >>
+> >> I still haven't given complete thought but thought crossed my mind
+> >> after looking at your patches.
 > > 
-> > For the next version of this series, could you please put this fix first
-> > in the series?  In this state, it can't be applied to v3.9-rcX, nor
-> > -stable.
+> > Right, that could be interesting.
 > > 
+> > I see may be one issue with this approach: when we enter an idle state
+> > with power off, some checking are done before cpu_pm_enter and that
+> > could lead to abort the current idle routine.
+> > 
+> I see your point.
 > 
-> Given we're still discussing the aproach of this patchset.
-> I think I prefer to send the fixes now, not as part of the
-> current series but as independent patches.
+> > By moving this to the cpuidle framework, we will invoke always
+> > cpu_pm_enter/exit even if the idle enter routine failed.
+> > 
+> If we at all decide to go on this path, we can always get around the
+> issues. The key is these notifiers have to be run very close to the
+> low power entry/exit since the saved context for CPU/CPU cluster
+> at wrong points would lead to many issues.
 > 
-> What do you think?
+> > But, IMO, the idea is good.
+> > 
+> > For example in cpuidle34xx:
+> > 
+> > static int __omap3_enter_idle(struct cpuidle_device *dev,
+> >                                 struct cpuidle_driver *drv,
+> >                                 int index)
+> > {
+> >         struct omap3_idle_statedata *cx = &omap3_idle_data[index];
+> > 
+> >         local_fiq_disable();
+> > 
+> >         if (omap_irq_pending() || need_resched())
+> >                 goto return_sleep_time;
+> > 
+> > 	...
+> > 
+> >         if (cx->mpu_state == PWRDM_POWER_OFF)
+> >                 cpu_pm_enter();
+> > 
+> > 	...
+> > }
+> > 
+> > The same for omap4 and tegra2/3.
+> > 
+> > With your knowledge of omap, do you think it is possible to move
+> > cpu_pm_enter before entering the idle routine ?
+> > 
+> I will get back on this topic after some experiments most likely
+> by next week.
 
-I agree.
+Looks like the way to go, we could enhance the notifiers to be able to
+save/restore specific subsystems with the C-state flags defining which
+ones.
 
-thx,
+Notifiers actions should not be disruptive so the only drawback in
+executing those before entering the idle routine could possibly be
+a waste of cycles in case the C-state entry fails but certainly something
+to verify on all platforms using them.
 
-Jason.
+Lorenzo
+
