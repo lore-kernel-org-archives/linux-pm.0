@@ -1,36 +1,50 @@
-From: "Wenzhou Ourvis" <ourvis@ourvis.com>
-Subject: Re: Hello
-Date: Wed, 20 Mar 2013 20:16:34 -0300
-Message-ID: <20130320230706.E489A4DAB2CB__42490.9257134006$1363824679$gmane$org@mail.swrs.ap.gov.in>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 06/16] thermal: mvebu: Convert to devm_ioremap_resource()
+Date: Thu, 21 Mar 2013 07:10:24 +0100
+Message-ID: <20130321061024.GH21478@lunn.ch>
+References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1363818997-23137-7-git-send-email-ezequiel.garcia@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.swrs.ap.gov.in ([110.234.138.54]:45397 "EHLO
-	mail.swrs.ap.gov.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753918Ab3CUAKb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Mar 2013 20:10:31 -0400
-Content-Description: Mail message body
+Received: from londo.lunn.ch ([80.238.139.98]:49793 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996Ab3CUGKj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 21 Mar 2013 02:10:39 -0400
+Content-Disposition: inline
+In-Reply-To: <1363818997-23137-7-git-send-email-ezequiel.garcia@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Recipients <ourvis@ourvis.com>
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Florian Fainelli <florian@openwrt.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Lior Amsalem <alior@marvell.com>
 
-Dear E-mail User,
+On Wed, Mar 20, 2013 at 07:36:27PM -0300, Ezequiel Garcia wrote:
+> Convert devm_request_and_ioremap() to the newly introduced
+> devm_ioremap_resource() which provides more consistent error handling.
+> 
+> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> ---
+>  drivers/thermal/mvebu_thermal.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/mvebu_thermal.c b/drivers/thermal/mvebu_thermal.c
+> index ef04e4e..089b43d 100644
+> --- a/drivers/thermal/mvebu_thermal.c
+> +++ b/drivers/thermal/mvebu_thermal.c
+> @@ -86,11 +86,9 @@ static int mvebu_thermal_probe(struct platform_device *pdev)
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> -	priv->sensor = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!priv->sensor) {
+> -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
+> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> +	if (!priv->sensor)
+>  		return -EADDRNOTAVAIL;
+> -	}
 
+Hi Ezequiel
 
-  This is to immediately inform you that your email address with Micros ID: IDJT-32238-EHI-676GI-8ED has won you 2,485,000.00 GBP and a brand new Range Rover SUV from the Wenzhou Ourvis yearly draw promo.
+It would be better to return priv->sensor, not a fixed error code.
 
-Use the details below to login and fill in the claim form to immediately begin your claims.
-
-
-
-WEBSITE: www.wenzhourvis.cla.fr
-USERNAME: ISO912PP
-PASSWORD: XNO87PS
-
-
-Regards,
-Dr. Warren Payne,
-Wenzhou Ourvis Company.
-European Zonal Coordinator,
-United Kingdom.
+   Andrew
