@@ -1,20 +1,21 @@
 From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 06/16] thermal: mvebu: Convert to devm_ioremap_resource()
-Date: Thu, 21 Mar 2013 12:17:37 -0300
-Message-ID: <20130321151736.GB24246@localhost>
+Subject: Re: [PATCH 15/16] ARM: mvebu: Add thermal support to Armada 370
+ device tree
+Date: Thu, 21 Mar 2013 12:18:40 -0300
+Message-ID: <20130321151838.GC24246@localhost>
 References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1363818997-23137-7-git-send-email-ezequiel.garcia@free-electrons.com>
- <514B138A.7060203@cogentembedded.com>
+ <1363818997-23137-16-git-send-email-ezequiel.garcia@free-electrons.com>
+ <514B1333.4030002@cogentembedded.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:53862 "EHLO
+Received: from mail.free-electrons.com ([94.23.35.102]:53874 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656Ab3CUPRq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:17:46 -0400
+	with ESMTP id S932227Ab3CUPSs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Mar 2013 11:18:48 -0400
 Content-Disposition: inline
-In-Reply-To: <514B138A.7060203@cogentembedded.com>
+In-Reply-To: <514B1333.4030002@cogentembedded.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
@@ -22,41 +23,19 @@ Cc: linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@fre
 
 Hi Sergei,
 
-On Thu, Mar 21, 2013 at 06:04:58PM +0400, Sergei Shtylyov wrote:
+On Thu, Mar 21, 2013 at 06:03:31PM +0400, Sergei Shtylyov wrote:
 > On 21-03-2013 2:36, Ezequiel Garcia wrote:
 >=20
-> > Convert devm_request_and_ioremap() to the newly introduced
-> > devm_ioremap_resource() which provides more consistent error handli=
-ng.
+> > This patch depends on the patch to add Armada 370 support
+> > in the mvebu_thermal driver:
+> > 'thermal: mvebu: Add support for Armada 370 thermal sensor'
 >=20
-> > Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-> > ---
-> >   drivers/thermal/mvebu_thermal.c |    6 ++----
-> >   1 files changed, 2 insertions(+), 4 deletions(-)
->=20
-> > diff --git a/drivers/thermal/mvebu_thermal.c b/drivers/thermal/mveb=
-u_thermal.c
-> > index ef04e4e..089b43d 100644
-> > --- a/drivers/thermal/mvebu_thermal.c
-> > +++ b/drivers/thermal/mvebu_thermal.c
-> > @@ -86,11 +86,9 @@ static int mvebu_thermal_probe(struct platform_d=
-evice *pdev)
-> >   	if (!priv)
-> >   		return -ENOMEM;
-> >
-> > -	priv->sensor =3D devm_request_and_ioremap(&pdev->dev, res);
-> > -	if (!priv->sensor) {
-> > -		dev_err(&pdev->dev, "Failed to request_ioremap memory\n");
-> > +	priv->sensor =3D devm_ioremap_resource(&pdev->dev, res);
-> > +	if (!priv->sensor)
->=20
->     devm_ioremap_resource() returns error code, not NULL.
+>    Sch comments should follow the --- tear line, not precede it.
 >=20
 
-Yes, you're right. Andrew has already pointed this out
-and I'll fix it in the next round.
+Ouch. Yes, that was the original intention!
 
-Thanks for the review!
+Thanks,
 --=20
 Ezequiel Garc=C3=ADa, Free Electrons
 Embedded Linux, Kernel and Android Engineering
