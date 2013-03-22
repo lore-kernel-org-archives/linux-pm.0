@@ -1,24 +1,28 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Fri, 22 Mar 2013 07:51:59 +0530
-Message-ID: <CAKohpokW=NFm0TV-XWwgh-YPQx9z8pEc4TBwROA5j_D2_4K35g@mail.gmail.com>
-References: <6cba8f153cfd4b0d3075a34a6dfe287bdec2eb06.1362676407.git.viresh.kumar@linaro.org>
-	<513CAD9B.908@gmail.com>
-	<CAKohponV8MR=J8bbNFxGF9JXQB0uadv7iDcbW9D-qr2N53U_kQ@mail.gmail.com>
-	<3782512.fC3ZOYy3MV@vostro.rjw.lan>
+Subject: Re: [PATCH] drivers: cpufreq: kirkwood: fix coccicheck warnings
+Date: Fri, 22 Mar 2013 08:14:03 +0530
+Message-ID: <CAOh2x=kh7C-5S0KYy7OQRhoZRzk6rgSPBYcVjd9RN5ck41Mx4w@mail.gmail.com>
+References: <1363911022-7786-1-git-send-email-silviupopescu1990@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3782512.fC3ZOYy3MV@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: robin.randhawa@arm.com, Francesco Lavra <francescolavra.fl@gmail.com>, Steve.Bannister@arm.com, linux@arm.linux.org.uk, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.hambleton@broadcom.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1363911022-7786-1-git-send-email-silviupopescu1990@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+Cc: cpufreq@vger.kernel.org, rjw@sisk.pl, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22 March 2013 05:20, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Please post a complete update patch if you want me to take it.  I'd also would
-> like it to be ACKed by someone involved in the big-LITTLE work on the arch
-> side.
+On Fri, Mar 22, 2013 at 5:40 AM, Silviu-Mihai Popescu
+<silviupopescu1990@gmail.com> wrote:
+> Convert all uses of devm_request_and_ioremap() to the newly introduced
+> devm_ioremap_resource() which provides more consistent error handling.
+>
+> devm_ioremap_resource() provides its own error messages so all explicit
+> error messages can be removed from the failure code paths.
+>
+> Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+> ---
+>  drivers/cpufreq/kirkwood-cpufreq.c |    8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
 
-Okay.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
