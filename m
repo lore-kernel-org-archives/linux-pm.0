@@ -1,107 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline
- function to evaluate freq_target
-Date: Fri, 22 Mar 2013 15:55:46 +0530
-Message-ID: <CAKohpokiu9hK7D71aaWcVb_VQoK6qp5gzoPKXKvC3_cs2XNbEw@mail.gmail.com>
-References: <51366C77.3080309@semaphore.gr>
-	<CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com>
-	<51374F8D.9040300@semaphore.gr>
-	<8496675.6HLUyC7fMI@vostro.rjw.lan>
-	<514C1045.4060406@semaphore.gr>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
+Date: Fri, 22 Mar 2013 16:42:57 +0530
+Message-ID: <CAP245DWx_C0wcW-9SCfR0ViqyyqNbAeZnWfeMiXSgRGupo9jWQ@mail.gmail.com>
+References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <514C1045.4060406@semaphore.gr>
+In-Reply-To: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 March 2013 13:33, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Use an inline function to evaluate freq_target to avoid duplicate code.
->
-> Also, define a macro for the default frequency step.
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+On Fri, Mar 22, 2013 at 3:43 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
+> with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
+> zero.
+
+Rafael,
+
+Since this prevents booting on our hardware (we unregister and
+re-register the cpufreq driver to account for virtual cores), will
+this be considered as a hotfix for 3.9?
+
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+
 > ---
->  drivers/cpufreq/cpufreq_conservative.c | 28 ++++++++++++++++------------
->  1 file changed, 16 insertions(+), 12 deletions(-)
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index fe17bd3..63499c8 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -29,11 +29,24 @@
->  /* Conservative governor macros */
->  #define DEF_FREQUENCY_UP_THRESHOLD             (80)
->  #define DEF_FREQUENCY_DOWN_THRESHOLD           (20)
-> +#define DEF_FREQUENCY_STEP                     (5)
->  #define DEF_SAMPLING_DOWN_FACTOR               (1)
->  #define MAX_SAMPLING_DOWN_FACTOR               (10)
+>  drivers/cpufreq/cpufreq_stats.c | 12 ++++++++----
+>  1 file changed, 8 insertions(+), 4 deletions(-)
 >
->  static DEFINE_PER_CPU(struct cs_cpu_dbs_info_s, cs_cpu_dbs_info);
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index 2fd779e..bfd6273 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -180,15 +180,19 @@ static void cpufreq_stats_free_sysfs(unsigned int cpu)
+>  {
+>         struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
 >
-> +static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
-> +                                          struct cpufreq_policy *policy)
-> +{
-> +       unsigned int freq_target = (cs_tuners->freq_step * policy->max) / 100;
+> -       if (!cpufreq_frequency_get_table(cpu))
+> +       if (!policy)
+>                 return;
+>
+> -       if (policy && !policy_is_shared(policy)) {
+> +       if (!cpufreq_frequency_get_table(cpu))
+> +               goto put_ref;
 > +
-> +       /* max freq cannot be less than 100. But who knows... */
-> +       if (unlikely(freq_target == 0))
-> +               freq_target = DEF_FREQUENCY_STEP;
+> +       if (!policy_is_shared(policy)) {
+>                 pr_debug("%s: Free sysfs stat\n", __func__);
+>                 sysfs_remove_group(&policy->kobj, &stats_attr_group);
+>         }
+> -       if (policy)
+> -               cpufreq_cpu_put(policy);
 > +
-> +       return freq_target;
-> +}
-> +
->  /*
->   * Every sampling_rate, we check, if current idle time is less than 20%
->   * (default), then we try to increase frequency. Every sampling_rate *
-> @@ -49,7 +62,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
->         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
->         struct dbs_data *dbs_data = policy->governor_data;
->         struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-> -       unsigned int freq_target;
+> +put_ref:
+> +       cpufreq_cpu_put(policy);
+>  }
 >
->         /*
->          * break out if we 'cannot' reduce the speed as the user might
-> @@ -66,13 +78,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->                 if (dbs_info->requested_freq == policy->max)
->                         return;
->
-> -               freq_target = (cs_tuners->freq_step * policy->max) / 100;
-> -
-> -               /* max freq cannot be less than 100. But who knows.... */
-> -               if (unlikely(freq_target == 0))
-> -                       freq_target = 5;
-> -
-> -               dbs_info->requested_freq += freq_target;
-> +               dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
->                 if (dbs_info->requested_freq > policy->max)
->                         dbs_info->requested_freq = policy->max;
->
-> @@ -94,9 +100,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
->                 if (policy->cur == policy->min)
->                         return;
->
-> -               freq_target = (cs_tuners->freq_step * policy->max) / 100;
-> -
-> -               dbs_info->requested_freq -= freq_target;
-> +               dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
->                 if (dbs_info->requested_freq < policy->min)
->                         dbs_info->requested_freq = policy->min;
->
-> @@ -323,7 +327,7 @@ static int cs_init(struct dbs_data *dbs_data)
->         tuners->down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD;
->         tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
->         tuners->ignore_nice = 0;
-> -       tuners->freq_step = 5;
-> +       tuners->freq_step = DEF_FREQUENCY_STEP;
->
->         dbs_data->tuners = tuners;
->         dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
+>  static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
 > --
-> 1.8.1.4
->
+> 1.7.12.rc2.18.g61b472e
 >
