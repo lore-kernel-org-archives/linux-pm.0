@@ -1,38 +1,76 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
-Date: Fri, 22 Mar 2013 12:47:35 +0100
-Message-ID: <3472441.hhXSbXj7X9@vostro.rjw.lan>
-References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org> <CAP245DWx_C0wcW-9SCfR0ViqyyqNbAeZnWfeMiXSgRGupo9jWQ@mail.gmail.com> <CAKohpo=bOcPLESk6p88gjHq=i-D8zFhhEL_4pgZUtjRYZnD_7w@mail.gmail.com>
+Subject: Re: [PATCH V3 2/4] cpufreq: governor: Implement per policy instances of governors
+Date: Fri, 22 Mar 2013 12:55:09 +0100
+Message-ID: <1483775.d1txvSJx9o@vostro.rjw.lan>
+References: <cover.1362381470.git.viresh.kumar@linaro.org> <2565053.YP0dCLmaW9@vostro.rjw.lan> <CAKohpomDK+FQvhZsy672P+Q4U1s2AGtJ2QizFTaNqjMRh19G0g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=bOcPLESk6p88gjHq=i-D8zFhhEL_4pgZUtjRYZnD_7w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:33358 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932077Ab3CVLrt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Mar 2013 07:47:49 -0400
+In-Reply-To: <CAKohpomDK+FQvhZsy672P+Q4U1s2AGtJ2QizFTaNqjMRh19G0g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 
-On Friday, March 22, 2013 04:47:29 PM Viresh Kumar wrote:
-> On 22 March 2013 16:42, Amit Kucheria <amit.kucheria@linaro.org> wrote:
-> > On Fri, Mar 22, 2013 at 3:43 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
-> >> with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
-> >> zero.
-> >
-> > Rafael,
-> >
-> > Since this prevents booting on our hardware (we unregister and
-> > re-register the cpufreq driver to account for virtual cores), will
-> > this be considered as a hotfix for 3.9?
-> >
-> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+On Friday, March 22, 2013 07:50:54 AM Viresh Kumar wrote:
+> On 22 March 2013 05:14, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Wednesday, March 20, 2013 10:59:13 AM Viresh Kumar wrote:
 > 
-> Sorry i forgot to mention, this should be pushed for next rc.
+> >> I have queued all patches i had for 3.10 here:
+> >>
+> >> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/for-3.10
+> >
+> > OK, applied these to linux-pm.git/bleeding-edge.
+> 
+> Thanks.
+> 
+> > At the moment bleeding-edge and linux-next diverged slightly on cpufreq, but
+> > I hope the bleeding-edge material won't cause build problems to occur, so I'll
+> > be able to move it to linux-next shortly.
+> 
+> There shouldn't be any build problems not because i have done all build testing
+> properly BUT because my tree is under continuously surveillance by Fengguang's
+> bot. And any problem with my branches is reported very early :)
+> 
+> >> commit f02fca9a2478088c4f7dadf82d998ae007a56285
+> >> Author: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Date:   Wed Mar 20 10:50:33 2013 +0530
+> >>
+> >>     fixup! cpufreq: governor: Implement per policy instances of governors
+> >
+> > I'd actually prefer you to post complete updated patches instead of these
+> > fixups.  They are real PITA for me and probably for everybody else trying
+> > to follow the cpufreq development recently.
+> 
+> Hmm... I always thought fixups are way easy to review (and i still
+> believe that's
+> true) as they just contain what got changed and so people don't have to review
+> whole patch again.
 
-Well, -rc5 is a realistic target.
+They won't have to if you write in the preamble what the differences from
+previous versions are.
+
+> BUT people who are looking for complete patches to apply
+> would be annoyed by this and hence i always show them path of my repo
+> where they can find it.
+
+The problem with this approach is that the complete patches never make it to
+the mailing lists and people have problems with connecting commits to
+previously posted patches.
+
+Moreover, it is *much* more convenient to me to take patches from kernel.org
+patchwork than from your repos, with all due respect.
+
+> So, what i may do is, post fixups and then resend
+> patches. So that reviewer knows what changed and others can have complete
+> patches too.
+
+Sure, that will work too.
 
 Thanks,
 Rafael
