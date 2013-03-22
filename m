@@ -1,78 +1,55 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 00/16] Marvell EBU thermal sensor consolidation
-Date: Fri, 22 Mar 2013 11:23:31 -0300
-Message-ID: <20130322142330.GA31661@localhost>
-References: <1363818997-23137-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130321064501.GK21478@lunn.ch>
- <20130321173251.GA3070@obsidianresearch.com>
+From: Jens Axboe <axboe@kernel.dk>
+Subject: Re: [PATCH RESEND v11 0/4] block layer runtime pm
+Date: Fri, 22 Mar 2013 09:09:58 -0600
+Message-ID: <20130322150958.GK25978@kernel.dk>
+References: <1363338305-4987-1-git-send-email-aaron.lu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:59557 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933209Ab3CVOXj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 10:23:39 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ide-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20130321173251.GA3070@obsidianresearch.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1363338305-4987-1-git-send-email-aaron.lu@intel.com>
+Sender: linux-ide-owner@vger.kernel.org
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>, James Bottomley <James.Bottomley@hansenpartnership.com>, Tejun Heo <tj@kernel.org>, linux-pm@vger.kernel.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, Aaron Lu <aaron.lwe@gmail.com>, Shane Huang <shane.huang@amd.com>, Oliver Neukum <oneukum@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, linux-pm@vger.kernel.org, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Florian Fainelli <florian@openwrt.org>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Thu, Mar 21, 2013 at 11:32:51AM -0600, Jason Gunthorpe wrote:
-> On Thu, Mar 21, 2013 at 07:45:01AM +0100, Andrew Lunn wrote:
->=20
-> > In the end, i decided it was simpler and cleaner to just have separ=
-ate
-> > drivers. This is something which we should think about and discuss.
->=20
-> When I looked through the merge'd driver I thought the shared code
-> really had little to do with Marvell, it was mostly boilerplate that
-> would be common to any memory mapped temperature sensor - so maybe th=
-e
-> drivers should be kept apart and the boiler plate could be factored?
->=20
->  thermal_platform_mmio_init(pdev,&ops);
->=20
-> Where ops has the is_valid, init_sensor, get_sensor functions
->=20
-> Or something?
->=20
+On Fri, Mar 15 2013, Aaron Lu wrote:
+> In August 2010, Jens and Alan discussed about "Runtime PM and the block
+> layer". http://marc.info/?t=128259108400001&r=1&w=2
+> And then Alan has given a detailed implementation guide:
+> http://marc.info/?l=linux-scsi&m=133727953625963&w=2
+> 
+> To test:
+> # ls -l /sys/block/sda
+> /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/block/sda
+> 
+> # echo 10000 > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/autosuspend_delay_ms
+> # echo auto > /sys/devices/pci0000:00/0000:00:1f.2/ata1/host0/target0:0:0/0:0:0:0/power/control
+> Then you'll see sda is suspended after 10secs idle.
+> 
+> [ 1767.680192] sd 2:0:0:0: [sda] Synchronizing SCSI cache
+> [ 1767.680317] sd 2:0:0:0: [sda] Stopping disk
+> 
+> And if you do some IO, it will resume immediately.
+> [ 1791.052438] sd 2:0:0:0: [sda] Starting disk
+> 
+> For test, I often set the autosuspend time to 1 second. If you are using
+> a GUI, the 10 seconds delay may be too long that the disk can not enter
+> runtime suspended state.
+> 
+> Note that sd's runtime suspend callback will dump some kernel messages
+> and the syslog daemon will write kernel message to /var/log/messages,
+> making the disk instantly resume after suspended. So for test, the
+> syslog daemon should better be temporarily stopped.
+> 
+> A git repo for it, on top of v3.9-rc1:
+> https://github.com/aaronlu/linux.git blockpm
 
-Mmm... I'm not entirely sure. It might make sense if we could have
-thermal drivers for mor SoC than just Marvell's.
+I think it's about time we get this in, but the patchset isn't very
+friendly from a scsi vs block perspective. Can you re-shuffle the REQ_PM
+change, just do a separate patch for that. I'll get it queued up for
+3.10 then.
 
-Is it judicious to have a thermal-mmio based on Marvell-only devices?
+-- 
+Jens Axboe
 
-> ...
->=20
-> BTW, Ezequiel your driver is probably a bit smaller if you do
->=20
-> struct mvebu_ops {
-> 	/* Initialize the sensor (optional) */
-> 	void (*init_sensor)(struct mvebu_thermal_priv *);
->=20
-> 	/* Test for a valid sensor value (optional) */
-> 	bool (*is_valid)(struct mvebu_thermal_priv *);
-> };
->=20
-> static const struct mvebu_ops kirkwood_ops =3D {..};
->=20
-> static const struct of_device_id mvebu_thermal_id_table[] =3D {
-> 	{
-> 		.compatible =3D "marvell,kirkwood-thermal",
-> 		.data       =3D &kirkwood_ops,
-> 	},
->=20
-> And drop the switch statement and the MVEBU_THERMAL_SOC_* constants..
->=20
-
-Yes, this sounds like a very good idea. I'll try it and see what happen=
-s.
-
-Thanks,
---=20
-Ezequiel Garc=C3=ADa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
