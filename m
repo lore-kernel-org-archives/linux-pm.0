@@ -1,54 +1,60 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: [PATCH 2/2] thermal: dove: Fix thermal sensor formula
-Date: Fri, 22 Mar 2013 09:23:03 -0300
-Message-ID: <1363954983-30822-3-git-send-email-ezequiel.garcia@free-electrons.com>
-References: <1363954983-30822-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] drivers: cpuidle: kirkwood: fix coccicheck warnings
+Date: Fri, 22 Mar 2013 14:22:05 +0100
+Message-ID: <3028121.Qzfv8ofGRj@vostro.rjw.lan>
+References: <1363911175-12502-1-git-send-email-silviupopescu1990@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:58739 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530Ab3CVMY0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 08:24:26 -0400
-In-Reply-To: <1363954983-30822-1-git-send-email-ezequiel.garcia@free-electrons.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:33592 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753876Ab3CVNOp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Mar 2013 09:14:45 -0400
+In-Reply-To: <1363911175-12502-1-git-send-email-silviupopescu1990@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Zhang Rui <rui.zhang@intel.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
+Cc: linux-kernel@vger.kernel.org, andrew@lunn.ch, jason@lakedaemon.net, Linux PM list <linux-pm@vger.kernel.org>
 
-The currently formula has been taken from the 88AP510 SoC datasheet,
-which is not exactly correct. The correct value for the temperature
-in Celcius of the sensor present in this SoC is:
+On Friday, March 22, 2013 02:12:55 AM Silviu-Mihai Popescu wrote:
+> Convert all uses of devm_request_and_ioremap() to the newly introduced
+> devm_ioremap_resource() which provides more consistent error handling.
+> 
+> devm_ioremap_resource() provides its own error messages so all explicit
+> error messages can be removed from the failure code paths.
+> 
+> Signed-off-by: Silviu-Mihai Popescu <silviupopescu1990@gmail.com>
 
-  Celsius = (322-reg)/1.3625
+Applied to linux-pm.git/bleeding-edge and will be moved to linux-next after
+build testing.
 
-Signed-off-by: Lior Amsalem <alior@marvell.com>
-Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
----
-Tested by compilation only.
+Thanks,
+Rafael
 
- drivers/thermal/dove_thermal.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-index 7b0bfa0..ddd73a5 100644
---- a/drivers/thermal/dove_thermal.c
-+++ b/drivers/thermal/dove_thermal.c
-@@ -107,12 +107,13 @@ static int dove_get_temp(struct thermal_zone_device *thermal,
- 	}
- 
- 	/*
--	 * Calculate temperature. See Section 8.10.1 of 88AP510,
--	 * Documentation/arm/Marvell/README
-+	 * Calculate temperature. According to Marvell internal
-+	 * documentation the formula for this is:
-+	 * Celsius = (322-reg)/1.3625
- 	 */
- 	reg = readl_relaxed(priv->sensor);
- 	reg = (reg >> DOVE_THERMAL_TEMP_OFFSET) & DOVE_THERMAL_TEMP_MASK;
--	*temp = ((2281638UL - (7298*reg)) / 10);
-+	*temp = ((3220000000UL - (10000000UL * reg)) / 13625);
- 
- 	return 0;
- }
+> ---
+>  drivers/cpuidle/cpuidle-kirkwood.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 670aa1e..53aad73 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -66,9 +66,9 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+>  	if (res == NULL)
+>  		return -EINVAL;
+>  
+> -	ddr_operation_base = devm_request_and_ioremap(&pdev->dev, res);
+> -	if (!ddr_operation_base)
+> -		return -EADDRNOTAVAIL;
+> +	ddr_operation_base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(ddr_operation_base))
+> +		return PTR_ERR(ddr_operation_base);
+>  
+>  	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+>  	device->state_count = KIRKWOOD_MAX_STATES;
+> 
 -- 
-1.7.8.6
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
