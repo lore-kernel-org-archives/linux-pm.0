@@ -1,58 +1,50 @@
-From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Subject: Re: [PATCH 2/2] PM / devfreq: tie suspend/resume to runtime-pm
-Date: Fri, 22 Mar 2013 14:35:07 +0530
-Message-ID: <CA+Z25wXYprpAOChV2P1vfbTgUyd7Te5s3RCmTLLaez6qiTx5GA@mail.gmail.com>
-References: <1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
-	<Pine.LNX.4.44L0.1303211101530.1899-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:64186 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932350Ab3CVJFI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 05:05:08 -0400
-Received: by mail-ob0-f178.google.com with SMTP id wd20so3702699obb.23
-        for <linux-pm@vger.kernel.org>; Fri, 22 Mar 2013 02:05:08 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.44L0.1303211101530.1899-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
+Date: Fri, 22 Mar 2013 15:43:52 +0530
+Message-ID: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: myungjoo.ham@samsung.com, rjw@sisk.pl, Kevin Hilman <khilman@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 21 March 2013 20:32, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 21 Mar 2013, Rajagopal Venkat wrote:
->
->> Allow device devfreq to be suspend/resume automatically with
->> runtime pm suspend/resume. The devfreq drivers should be least
->> cared when to suspend/resume the devfreq.
->>
->> pm_runtime_suspend(dev) will first suspend device devfreq(if available)
->> before device is suspended from runtime pm core.
->>
->> pm_runtime_resume(dev) will resume device devfreq(if available) after
->> device is resumed from runtime pm core.
->
-> Aren't these backward?  The device continues to need its clocks and
-> frequency settings until _after_ it has been suspended.  Similarly, it
-> needs them to be available _before_ it resumes.
->
+In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
+with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
+zero.
 
-To clarify, devfreq suspend/resume means suspend/resume of load
-monitoring of a device. The clocks and other resources are still taken
-care by the devfreq driver runtime-pm callbacks. The devfreq must be
-suspended _before_ runtime-pm suspend callback in order to stop load
-monitoring while device is suspending. Similarly devfreq resume should
-happen _after_ runtime-pm resume callback.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_stats.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-Just realised both devfreq suspend/resume are done _before_ invoking
-runtime-pm callbacks. I will fix this up. Thanks.
-
-
-> Alan Stern
->
-
-
-
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 2fd779e..bfd6273 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -180,15 +180,19 @@ static void cpufreq_stats_free_sysfs(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 
+-	if (!cpufreq_frequency_get_table(cpu))
++	if (!policy)
+ 		return;
+ 
+-	if (policy && !policy_is_shared(policy)) {
++	if (!cpufreq_frequency_get_table(cpu))
++		goto put_ref;
++
++	if (!policy_is_shared(policy)) {
+ 		pr_debug("%s: Free sysfs stat\n", __func__);
+ 		sysfs_remove_group(&policy->kobj, &stats_attr_group);
+ 	}
+-	if (policy)
+-		cpufreq_cpu_put(policy);
++
++put_ref:
++	cpufreq_cpu_put(policy);
+ }
+ 
+ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
 -- 
-Regards,
-Rajagopal
+1.7.12.rc2.18.g61b472e
+
