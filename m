@@ -1,35 +1,48 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
-Date: Fri, 22 Mar 2013 17:29:13 +0530
-Message-ID: <CAP245DXfFKpr2Aq5VWKJHdybU8np=_OpYX7pNEeii34bJQGpnA@mail.gmail.com>
-References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org>
-	<CAP245DWx_C0wcW-9SCfR0ViqyyqNbAeZnWfeMiXSgRGupo9jWQ@mail.gmail.com>
-	<38998218.UX7TkEXzYs@vostro.rjw.lan>
-	<CAKohpo=TFO5CEtO_tDxTthC3K01yh08v9h7hXr2Oq4zffgb2OQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V3 2/4] cpufreq: governor: Implement per policy instances of governors
+Date: Fri, 22 Mar 2013 13:11:18 +0100
+Message-ID: <1790330.ctnB4S9NpK@vostro.rjw.lan>
+References: <cover.1362381470.git.viresh.kumar@linaro.org> <1483775.d1txvSJx9o@vostro.rjw.lan> <CAOh2x=n8G+g8EE-9mGovbiB-oXV3pP3bWUds8noATSc3LEYJ8A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f177.google.com ([209.85.128.177]:55999 "EHLO
-	mail-ve0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932768Ab3CVL7N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 07:59:13 -0400
-Received: by mail-ve0-f177.google.com with SMTP id m1so3270532ves.22
-        for <linux-pm@vger.kernel.org>; Fri, 22 Mar 2013 04:59:13 -0700 (PDT)
-In-Reply-To: <CAKohpo=TFO5CEtO_tDxTthC3K01yh08v9h7hXr2Oq4zffgb2OQ@mail.gmail.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:33406 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751698Ab3CVMD6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Mar 2013 08:03:58 -0400
+In-Reply-To: <CAOh2x=n8G+g8EE-9mGovbiB-oXV3pP3bWUds8noATSc3LEYJ8A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 
-On Fri, Mar 22, 2013 at 5:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22 March 2013 17:29, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> Sure.  Can you please remind me what hardware is that, though?
->
-> Not yet upstreamed: big LITTLE :)
+On Friday, March 22, 2013 05:21:19 PM Viresh Kumar wrote:
+> On Fri, Mar 22, 2013 at 5:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Friday, March 22, 2013 07:50:54 AM Viresh Kumar wrote:
+> 
+> >> Hmm... I always thought fixups are way easy to review (and i still
+> >> believe that's
+> >> true) as they just contain what got changed and so people don't have to review
+> >> whole patch again.
+> >
+> > They won't have to if you write in the preamble what the differences from
+> > previous versions are.
+> 
+> You didn't get me.. How will the reviewer check if author has done what he
+> is saying in preamble and he hasn't broken anything new?
 
-Yes, the b.L cpufreq driver is being reviewed currently. And board
-support is being merged in.
+Well, if the submitter wants to cheat, she/he certainly can this way, but
+what's the benefit, honestly?  If the reviewer actually notices that there are
+more differences than the submitter admits to, the consequences may be quite
+unpleasant for the submitter (like the rejection of any future patches, for
+example).  And mistakes are possible anyway (and the more patches you deal
+with, the greater the chances of making a mistake are).
 
-> But, this is broken for all other platforms too.. You just need to compile
-> your driver as module and insmod/remove it to call
-> cpufreq_driver_unregister().
+Thanks.
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
