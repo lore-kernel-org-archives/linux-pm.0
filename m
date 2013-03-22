@@ -1,119 +1,58 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH 3/3 linux-next] cpufreq: conservative: Use an inline function
- to evaluate freq_target
-Date: Fri, 22 Mar 2013 10:03:17 +0200
-Message-ID: <514C1045.4060406@semaphore.gr>
-References: <51366C77.3080309@semaphore.gr> <CAKohpokdG2vd5Cp4Lmcnc5ZrLsa-_4Kcy-DvLjG--6SMVsGZkg@mail.gmail.com> <51374F8D.9040300@semaphore.gr> <8496675.6HLUyC7fMI@vostro.rjw.lan>
+From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Subject: Re: [PATCH 2/2] PM / devfreq: tie suspend/resume to runtime-pm
+Date: Fri, 22 Mar 2013 14:35:07 +0530
+Message-ID: <CA+Z25wXYprpAOChV2P1vfbTgUyd7Te5s3RCmTLLaez6qiTx5GA@mail.gmail.com>
+References: <1363872506-3630-3-git-send-email-rajagopal.venkat@linaro.org>
+	<Pine.LNX.4.44L0.1303211101530.1899-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:54703 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753930Ab3CVIDT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 04:03:19 -0400
-In-Reply-To: <8496675.6HLUyC7fMI@vostro.rjw.lan>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:64186 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932350Ab3CVJFI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Mar 2013 05:05:08 -0400
+Received: by mail-ob0-f178.google.com with SMTP id wd20so3702699obb.23
+        for <linux-pm@vger.kernel.org>; Fri, 22 Mar 2013 02:05:08 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.44L0.1303211101530.1899-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: myungjoo.ham@samsung.com, rjw@sisk.pl, Kevin Hilman <khilman@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael,
+On 21 March 2013 20:32, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 21 Mar 2013, Rajagopal Venkat wrote:
+>
+>> Allow device devfreq to be suspend/resume automatically with
+>> runtime pm suspend/resume. The devfreq drivers should be least
+>> cared when to suspend/resume the devfreq.
+>>
+>> pm_runtime_suspend(dev) will first suspend device devfreq(if available)
+>> before device is suspended from runtime pm core.
+>>
+>> pm_runtime_resume(dev) will resume device devfreq(if available) after
+>> device is resumed from runtime pm core.
+>
+> Aren't these backward?  The device continues to need its clocks and
+> frequency settings until _after_ it has been suspended.  Similarly, it
+> needs them to be available _before_ it resumes.
+>
 
-On 03/22/2013 01:51 AM, Rafael J. Wysocki wrote:
-> This one didn't apply for me to linux-pm.git/bleeding-edge.  Care to rebase?
-> 
-> Rafael
+To clarify, devfreq suspend/resume means suspend/resume of load
+monitoring of a device. The clocks and other resources are still taken
+care by the devfreq driver runtime-pm callbacks. The devfreq must be
+suspended _before_ runtime-pm suspend callback in order to stop load
+monitoring while device is suspending. Similarly devfreq resume should
+happen _after_ runtime-pm resume callback.
 
-Yes, of course. 
-Bellow the rebased patched against latest linux-pm.git/bleeding-edge.
+Just realised both devfreq suspend/resume are done _before_ invoking
+runtime-pm callbacks. I will fix this up. Thanks.
 
-Thanks,
-Stratos
 
---------------------------8<-------------------------------------------
-Use an inline function to evaluate freq_target to avoid duplicate code.
+> Alan Stern
+>
 
-Also, define a macro for the default frequency step.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq_conservative.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index fe17bd3..63499c8 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -29,11 +29,24 @@
- /* Conservative governor macros */
- #define DEF_FREQUENCY_UP_THRESHOLD		(80)
- #define DEF_FREQUENCY_DOWN_THRESHOLD		(20)
-+#define DEF_FREQUENCY_STEP			(5)
- #define DEF_SAMPLING_DOWN_FACTOR		(1)
- #define MAX_SAMPLING_DOWN_FACTOR		(10)
- 
- static DEFINE_PER_CPU(struct cs_cpu_dbs_info_s, cs_cpu_dbs_info);
- 
-+static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
-+					   struct cpufreq_policy *policy)
-+{
-+	unsigned int freq_target = (cs_tuners->freq_step * policy->max) / 100;
-+
-+	/* max freq cannot be less than 100. But who knows... */
-+	if (unlikely(freq_target == 0))
-+		freq_target = DEF_FREQUENCY_STEP;
-+
-+	return freq_target;
-+}
-+
- /*
-  * Every sampling_rate, we check, if current idle time is less than 20%
-  * (default), then we try to increase frequency. Every sampling_rate *
-@@ -49,7 +62,6 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
- 	struct dbs_data *dbs_data = policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
--	unsigned int freq_target;
- 
- 	/*
- 	 * break out if we 'cannot' reduce the speed as the user might
-@@ -66,13 +78,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 		if (dbs_info->requested_freq == policy->max)
- 			return;
- 
--		freq_target = (cs_tuners->freq_step * policy->max) / 100;
--
--		/* max freq cannot be less than 100. But who knows.... */
--		if (unlikely(freq_target == 0))
--			freq_target = 5;
--
--		dbs_info->requested_freq += freq_target;
-+		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
- 		if (dbs_info->requested_freq > policy->max)
- 			dbs_info->requested_freq = policy->max;
- 
-@@ -94,9 +100,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 		if (policy->cur == policy->min)
- 			return;
- 
--		freq_target = (cs_tuners->freq_step * policy->max) / 100;
--
--		dbs_info->requested_freq -= freq_target;
-+		dbs_info->requested_freq -= get_freq_target(cs_tuners, policy);
- 		if (dbs_info->requested_freq < policy->min)
- 			dbs_info->requested_freq = policy->min;
- 
-@@ -323,7 +327,7 @@ static int cs_init(struct dbs_data *dbs_data)
- 	tuners->down_threshold = DEF_FREQUENCY_DOWN_THRESHOLD;
- 	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
- 	tuners->ignore_nice = 0;
--	tuners->freq_step = 5;
-+	tuners->freq_step = DEF_FREQUENCY_STEP;
- 
- 	dbs_data->tuners = tuners;
- 	dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
 -- 
-1.8.1.4
-
-
+Regards,
+Rajagopal
