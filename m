@@ -1,55 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get
-Date: Fri, 22 Mar 2013 14:22:39 +0100
-Message-ID: <1557799.tbMLSpRn7J@vostro.rjw.lan>
-References: <234906745c34fb72b0c450d897f261a22ed18d40.1363947023.git.viresh.kumar@linaro.org> <2999694.A2YTRdtkxt@vostro.rjw.lan> <CAKohpokYkieTyv=e9kM=zp6qJ9o5+c1D7eodsHf2ncCUig-1MA@mail.gmail.com>
+Subject: Re: [PATCH linux-pm] cpufreq: governors: Fix calculation of wall time in get_cpu_idle_time
+Date: Fri, 22 Mar 2013 14:24:11 +0100
+Message-ID: <1799487.FNztk3vCxS@vostro.rjw.lan>
+References: <514C0555.1010806@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:33595 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:33603 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753876Ab3CVNPS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 22 Mar 2013 09:15:18 -0400
-In-Reply-To: <CAKohpokYkieTyv=e9kM=zp6qJ9o5+c1D7eodsHf2ncCUig-1MA@mail.gmail.com>
+	id S1753876Ab3CVNQv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Mar 2013 09:16:51 -0400
+In-Reply-To: <514C0555.1010806@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, March 22, 2013 05:40:25 PM Viresh Kumar wrote:
-> On 22 March 2013 17:42, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Which would be useful to write in the changelog, wouldn't it?
+On Friday, March 22, 2013 09:16:37 AM Stratos Karafotis wrote:
+> With commit 8755a8ae31ba213db196324011a0da2a85807f25 the wall in
+> get_cpu_idle_time is not calculated, when we use ondemand with
+> io_is_busy = 1, preventing the CPU to increase to max frequency.
 > 
-> Hmm..
+> Properly, calculate wall time when we use io_is_busy.
 > 
-> copy-paste with gmail is also broken, so find it attached too.
-> 
-> New change log, no change in patch and you can trust me on that :)
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
 
-OK, applied to bleeding-edge.
+I folded the change below into the original patch.
 
 Thanks,
 Rafael
 
 
-> ----------x-------------x--------
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> From 034e5ac4cccd09872592a46decd38d5f24047f10 Mon Sep 17 00:00:00 2001
-> Message-Id: <034e5ac4cccd09872592a46decd38d5f24047f10.1363954124.git.viresh.kumar@linaro.org>
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Fri, 22 Mar 2013 15:15:48 +0530
-> Subject: [PATCH] cpufreq: stats: do cpufreq_cpu_put() corresponding to
->  cpufreq_cpu_get
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index b49d45d..41e5e56 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -53,7 +53,7 @@ static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
+>  
+>  u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+>  {
+> -	u64 idle_time = get_cpu_idle_time_us(cpu, NULL);
+> +	u64 idle_time = get_cpu_idle_time_us(cpu, io_busy ? wall : NULL);
+>  
+>  	if (idle_time == -1ULL)
+>  		return get_cpu_idle_time_jiffy(cpu, wall);
 > 
-> In cpufreq_stats_free_sysfs() we aren't balancing calls to cpufreq_cpu_get()
-> with cpufreq_cpu_put(). This will never let us have ref count to policy->kobj as
-> zero.
-> 
-> We will get a hang if somehow cpufreq_driver_unregister() is called. And that
-> can happen when we compile our driver as module and insmod/rmmod it.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
