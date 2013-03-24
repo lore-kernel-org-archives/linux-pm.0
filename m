@@ -1,246 +1,123 @@
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: [REGRESSION] [CPUFREQ] 3.9.0-rcX
-Date: Sun, 24 Mar 2013 15:19:08 +0100
-Message-ID: <CAG9S4UhcSSUDgf-_JXsqkjzDo0XU6wHhmU_u=W_Eg9qbi158tw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [REGRESSION] 3.9.0-rcX
+Date: Sun, 24 Mar 2013 19:59:35 +0530
+Message-ID: <CAKohpokBySA5uaTTAwF5tmUr-_+W04Ki_f6cWTLu7n1C3Tcqog@mail.gmail.com>
+References: <CAG9S4UjMeRZECAiigZVLTU4av2ZJNBukyUAoCmiYRjtkdThhFw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, viresh.kumar@linaro.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/mixed; boundary=089e01184d747b63a704d8ac844a
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAG9S4UjMeRZECAiigZVLTU4av2ZJNBukyUAoCmiYRjtkdThhFw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+--089e01184d747b63a704d8ac844a
+Content-Type: text/plain; charset=ISO-8859-1
 
-(long e-mail, sorry ;-))
+On 24 March 2013 19:41, Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
+> (long e-mail, sorry ;-))
 
-Last known good: 3.8.0
+Don't be, it was useful :)
 
-Short description:
-1. On -rc3, after s2ram cpufreq does not set CPU on max frequency on
-high load (on battery).
-2. On -rc4 (this is not real regression because I change config
-between -rc3 and rc4), "ondemand" does not work. Current frequency is
-'strange' (792 MHz).
+> Last known good: 3.8.0
+>
+> Short description:
+> 1. On -rc3, after s2ram cpufreq does not set CPU on max frequency on high
+> load (on battery).
 
-Detailed description:
+Try attached patch for this.
 
-1. Kernel 3.8.0:
+> 2. On -rc4 (this is not real regression because I change config between -rc3
+> and rc4), "ondemand" does not work. Current frequency is 'strange' (792
+> MHz).
 
-I try:
-# cd /sys/devices/system/cpu
-# CPU_LIST="cpu0/cpufreq/ cpu1/cpufreq/ cpu2/cpufreq cpu3/cpufreq"
-# for i in $CPU_LIST; do echo -e "\n\n==================\n$i"; grep ''
--R $i/*; done
+I don't really have a reason for that :(
+But with your config it is clear that, your working setup has:
 
-Output (show only fisrt CPU, others are same):
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:800000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:800000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
+# CONFIG_X86_INTEL_PSTATE is not set
+# CONFIG_X86_PCC_CPUFREQ is not set
+CONFIG_X86_ACPI_CPUFREQ=m
 
-It is good: governor "on demand", frequencies also good (800MHz)
+and rc4 version has:
 
-CASE 1
-Run in other consoles "while true; do echo -n; done" (four times),
-power on/off AC power, suspend to ram:
+CONFIG_X86_INTEL_PSTATE=y
+CONFIG_X86_PCC_CPUFREQ=m
+CONFIG_X86_ACPI_CPUFREQ=m
 
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:2200000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:2200000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
+So, i believe you are using another cpufreq driver this, try with same
+configuration once.
 
-Still is good, governor works as expected.
+> 1. Kernel 3.8.0:
+>
+> Output (show only fisrt CPU, others are same):
+> cpu0/cpufreq//affected_cpus:0
+> cpu0/cpufreq//related_cpus:0 1 2 3
 
+> Kernel 3.9.0-rc1
 
+> CASE 2
+> After boot:
+> cpu0/cpufreq//affected_cpus:0 1 2 3
+> cpu0/cpufreq//related_cpus:0 1 2 3
 
-===============================================================================
+My attached patch will restore 1. instead of CASE 2.
 
-Kernel 3.9.0-rc1
+> ===============================================================================
+> Kernel 3.9.0-rc4
+>
+> CASE 7
+> (normal boot)
+> cpu0/cpufreq//affected_cpus:0
+> cpu0/cpufreq//related_cpus:0
 
-$ diff -uNr /boot/config-3.8.0 /boot/config-3.9.0-rc3  | grep -i CONFIG_X86_
- CONFIG_X86_64=y
- CONFIG_X86_MPPARSE=y
- # CONFIG_X86_EXTENDED_PLATFORM is not set
-+# CONFIG_X86_INTEL_LPSS is not set
- CONFIG_X86_SUPPORTS_MEMORY_FAILURE=y
- CONFIG_X86_MSR=m
- CONFIG_X86_CPUID=m
- CONFIG_X86_PM_TIMER=y
-+# CONFIG_X86_INTEL_PSTATE is not set
- # CONFIG_X86_PCC_CPUFREQ is not set
- CONFIG_X86_ACPI_CPUFREQ=m
- # CONFIG_X86_ACPI_CPUFREQ_CPB is not set
- CONFIG_X86_PLATFORM_DEVICES=y
+This must be related to your different driver.
 
-CASE 2
-After boot:
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0 1 2 3
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:800000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:800000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
+> Config, dmesg:
+> http://mrutecki.pl/download/kernel/3.9.0-rc4/cpufreq/
 
-(seems be ok)
+These were very important and helpful.
 
-CASE 3
-Run in other consoles "while true; do echo -n; done":
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0 1 2 3
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:2200000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:2200000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
+--089e01184d747b63a704d8ac844a
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_heoaonwl0
 
-(still seems be ok)
-
-CASE 4
-Disconnect AC adapter
-(the same as in 'CASE 3')
-
-CASE 5
-Suspend to ram and resume
-
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0 1 2 3
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:800000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:800000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
-
-First error: frequency changed from 2,2GHz (maximum) to 800MHz
-(minimum), despite the high CPU load.
-
-CASE 6
-Power on AC adapter:
-
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0 1 2 3
-cpu0/cpufreq//bios_limit:2200000
-cpu0/cpufreq//cpuinfo_cur_freq:2200000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:10000
-cpu0/cpufreq//related_cpus:0 1 2 3
-cpu0/cpufreq//scaling_available_frequencies:2200000 2000000 1900000
-1800000 1700000 1600000 1500000 1400000 1300000 1200000 1100000
-1000000 900000 800000
-cpu0/cpufreq//scaling_available_governors:ondemand performance
-cpu0/cpufreq//scaling_cur_freq:2200000
-cpu0/cpufreq//scaling_driver:acpi-cpufreq
-cpu0/cpufreq//scaling_governor:ondemand
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
-
-(now back to normal, until AC is disconnected)
-
-===============================================================================
-
-Kernel 3.9.0-rc4
-
-I do some changes:
-$ diff -uNr /boot/config-3.9.0-rc3  /boot/config-3.9.0-rc4 | grep -i CONFIG_X86_
- CONFIG_X86_64=y
--# CONFIG_X86_INTEL_PSTATE is not set
--# CONFIG_X86_PCC_CPUFREQ is not set
-+CONFIG_X86_INTEL_PSTATE=y
-+CONFIG_X86_PCC_CPUFREQ=m
- CONFIG_X86_ACPI_CPUFREQ=m
- # CONFIG_X86_ACPI_CPUFREQ_CPB is not set
- # CONFIG_X86_POWERNOW_K8 is not set
-
-CASE 7
-(normal boot)
-CPU:
-
-cpu0/cpufreq/
-cpu0/cpufreq//affected_cpus:0
-cpu0/cpufreq//cpuinfo_cur_freq:792000
-cpu0/cpufreq//cpuinfo_max_freq:2200000
-cpu0/cpufreq//cpuinfo_min_freq:800000
-cpu0/cpufreq//cpuinfo_transition_latency:4294967295
-cpu0/cpufreq//related_cpus:0
-cpu0/cpufreq//scaling_available_governors:performance powersave
-cpu0/cpufreq//scaling_driver:intel_pstate
-cpu0/cpufreq//scaling_governor:powersave
-cpu0/cpufreq//scaling_max_freq:2200000
-cpu0/cpufreq//scaling_min_freq:800000
-cpu0/cpufreq//scaling_setspeed:<unsupported>
-
-(regardless of the cpu load, power, suspend) 'ondemand' governor is
-not available.
-
-Config, dmesg:
-http://mrutecki.pl/download/kernel/3.9.0-rc4/cpufreq/
-
-
-Regards
-
---
-Maciej Rutecki
-http://www.mrutecki.pl
+RnJvbSAwZWI2YTZjZTI1YzcxZTYwZGM2OWUxODk3ZjgwYjdjZTNiYjQxZmIyIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MGViNmE2Y2UyNWM3MWU2MGRjNjllMTg5N2Y4MGI3
+Y2UzYmI0MWZiMi4xMzY0MTM0ODI3LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAyMyBNYXIg
+MjAxMyAyMzo0Mjo0NCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGktY3B1ZnJl
+cTogRG9uJ3Qgc2V0IHBvbGljeS0+cmVsYXRlZF9jcHVzIGZyb20KIC5pbml0KCkKCldpdGggdGhl
+IGFkZGl0aW9uIG9mIGZvbGxvd2luZyBwYXRjaDoKCmZjZjgwNTggY3B1ZnJlcTogU2ltcGxpZnkg
+Y3B1ZnJlcV9hZGRfZGV2KCkKCmNwdWZyZXEgZHJpdmVyJ3MgLmluaXQoKSByb3V0aW5lIG11c3Qg
+aW5pdGlhbGl6ZSBwb2xpY3ktPmNwdXMgd2l0aCBtYXNrIG9mIGFsbApwb3NzaWJsZSBjcHVzIChP
+bmxpbmUgKyBPZmZsaW5lKSB0aGF0IHNoYXJlIHRoZSBjbG9jay4gVGhlbiB0aGUgY29yZSB3b3Vs
+ZCBjb3B5CnRoaXMgbWFzayBvbnRvIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFuZCB3aWxsIHJlc2V0
+IHBvbGljeS0+Y3B1cyB0byBjYXJyeSBvbmx5Cm9ubGluZSBjcHVzLgoKYWNwaS1jcHVmcmVxIGRy
+aXZlciB3YXNuJ3QgdXBkYXRlZCB3aXRoIHRoaXMgYXNzdW1wdGlvbiBhbmQgc28gc29tZXRpbWVz
+IHdoZW4Kd2UgdHJ5IHRvIGhvdFt1bl1wbHVnIGNwdXMgYXQgcnVuIHRpbWUsIHN5c2ZzIGRpcmVj
+dG9yaWVzIGdldHMgY29ycnVwdGVkLgoKVGhpcyBwYXRjaCBmaXhlcyBhY3BpLWNwdWZyZXEgZHJp
+dmVyIGFnYWluc3QgdGhpcyBjb3JydXB0aW9uLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVm
+cmVxLmMgfCAyIC0tCiAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvYWNwaS1j
+cHVmcmVxLmMKaW5kZXggYWZiZWY5Yy4uMTFiOGI0YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2FjcGktY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYwpA
+QCAtNzIzLDcgKzcyMyw2IEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0cnVj
+dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCSAgICBwb2xpY3ktPnNoYXJlZF90eXBlID09IENQ
+VUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7CiAJCWNwdW1hc2tfY29weShwb2xpY3ktPmNwdXMsIHBl
+cmYtPnNoYXJlZF9jcHVfbWFwKTsKIAl9Ci0JY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9j
+cHVzLCBwZXJmLT5zaGFyZWRfY3B1X21hcCk7CiAKICNpZmRlZiBDT05GSUdfU01QCiAJZG1pX2No
+ZWNrX3N5c3RlbShzd19hbnlfYnVnX2RtaV90YWJsZSk7CkBAIC03MzUsNyArNzM0LDYgQEAgc3Rh
+dGljIGludCBhY3BpX2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xp
+Y3kpCiAJaWYgKGNoZWNrX2FtZF9od3BzdGF0ZV9jcHUoY3B1KSAmJiAhYWNwaV9wc3RhdGVfc3Ry
+aWN0KSB7CiAJCWNwdW1hc2tfY2xlYXIocG9saWN5LT5jcHVzKTsKIAkJY3B1bWFza19zZXRfY3B1
+KGNwdSwgcG9saWN5LT5jcHVzKTsKLQkJY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9jcHVz
+LCBjcHVfc2libGluZ19tYXNrKGNwdSkpOwogCQlwb2xpY3ktPnNoYXJlZF90eXBlID0gQ1BVRlJF
+UV9TSEFSRURfVFlQRV9IVzsKIAkJcHJfaW5mb19vbmNlKFBGWCAib3ZlcnJpZGluZyBCSU9TIHBy
+b3ZpZGVkIF9QU0QgZGF0YVxuIik7CiAJfQotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
+--089e01184d747b63a704d8ac844a--
