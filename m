@@ -1,108 +1,139 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Fix potential problem in acpi_device_get_power()
-Date: Sun, 24 Mar 2013 00:57:16 +0100
-Message-ID: <6380949.vJPdL9PvJh@vostro.rjw.lan>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH v2 11/14] thermal: mvebu: Add support for Marvell Dove
+ SoC family
+Date: Sat, 23 Mar 2013 21:16:26 -0300
+Message-ID: <20130324001625.GA3269@localhost>
+References: <1363991114-4225-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1363991114-4225-12-git-send-email-ezequiel.garcia@free-electrons.com>
+ <514D914D.3010105@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Aaron Lu <aaron.lu@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([94.23.35.102]:42462 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460Ab3CXAQe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 23 Mar 2013 20:16:34 -0400
+Content-Disposition: inline
+In-Reply-To: <514D914D.3010105@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Zhang Rui <rui.zhang@intel.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sat, Mar 23, 2013 at 12:26:05PM +0100, Sebastian Hesselbarth wrote:
+> On 03/22/2013 11:25 PM, Ezequiel Garcia wrote:
+> > With the infrastructure added in mvebu-thermal to support multiple =
+SoC
+> > families, it is now possible to add support for Dove SoC.
+> > This patch adds such support taking the implementation from the
+> > dove-thermal driver, and then removing it.
+> >
+> > Signed-off-by: Ezequiel Garcia<ezequiel.garcia@free-electrons.com>
+> > ---
+> >   .../devicetree/bindings/thermal/dove-thermal.txt   |   18 --
+> >   .../devicetree/bindings/thermal/mvebu-thermal.txt  |    8 +
+> >   drivers/thermal/Kconfig                            |    8 -
+> >   drivers/thermal/Makefile                           |    1 -
+> >   drivers/thermal/dove_thermal.c                     |  210 -------=
+-------------
+> >   drivers/thermal/mvebu_thermal.c                    |   74 +++++++
+> >   6 files changed, 82 insertions(+), 237 deletions(-)
+> >   delete mode 100644 Documentation/devicetree/bindings/thermal/dove=
+-thermal.txt
+> >   delete mode 100644 drivers/thermal/dove_thermal.c
+> >
+>=20
+> [...]
+>=20
+> > diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_=
+thermal.c
+> > deleted file mode 100644
+> > index ddd73a5..0000000
+> > --- a/drivers/thermal/dove_thermal.c
+> > +++ /dev/null
+> > @@ -1,210 +0,0 @@
+> > -/*
+> > - * Dove thermal sensor driver
+> > - *
+> > - * Copyright (C) 2013 Andrew Lunn<andrew@lunn.ch>
+> > - *
+> > - * This software is licensed under the terms of the GNU General Pu=
+blic
+> > - * License version 2, as published by the Free Software Foundation=
+, and
+> > - * may be copied, distributed, and modified under those terms.
+> > - *
+> > - * This program is distributed in the hope that it will be useful,
+> > - * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > - * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> > - * GNU General Public License for more details.
+> > - *
+> > - */
+> > -#include<linux/device.h>
+> > -#include<linux/err.h>
+> > -#include<linux/io.h>
+> > -#include<linux/kernel.h>
+> > -#include<linux/of.h>
+> > -#include<linux/module.h>
+> > -#include<linux/platform_device.h>
+> > -#include<linux/thermal.h>
+> > -
+> > -#define DOVE_THERMAL_TEMP_OFFSET	1
+> > -#define DOVE_THERMAL_TEMP_MASK		0x1FF
+>=20
+> [...]
+>=20
+> > diff --git a/drivers/thermal/mvebu_thermal.c b/drivers/thermal/mveb=
+u_thermal.c
+> > index 56c58b1..2f37b3e 100644
+> > --- a/drivers/thermal/mvebu_thermal.c
+> > +++ b/drivers/thermal/mvebu_thermal.c
+> > @@ -2,6 +2,7 @@
+> >    * Marvell EBU thermal sensor driver
+> >    *
+> >    * Copyright (C) 2013 Marvell
+> > + * Copyright (C) 2013 Andrew Lunn<andrew@lunn.ch>
+> >    * Copyright (C) 2012 Nobuhiro Iwamatsu<iwamatsu@nigauri.org>
+> >    *
+> >    * This software is licensed under the terms of the GNU General P=
+ublic
+> > @@ -38,6 +39,14 @@
+> >   #define PMU_TDC0_REF_CAL_CNT_MASK	(0x1ff<<  PMU_TDC0_REF_CAL_CNT_=
+OFFS)
+> >   #define PMU_TDC0_OTF_CAL_MASK		(0x1<<  30)
+> >   #define PMU_TDC0_START_CAL_MASK		(0x1<<  25)
+> > +#define PMU_TDC0_AVG_NUM_OFFS		25
+> > +#define PMU_TDC0_AVG_NUM_MASK		(0x7<<  PMU_TDC0_AVG_NUM_OFFS)
+> > +#define PMU_TDC0_SEL_VCAL_OFFS		5
+> > +#define PMU_TDC0_SEL_VCAL_MASK		(0x3<<  PMU_TDC0_SEL_VCAL_OFFS)
+> > +
+> > +/* Dove Thermal Diode Control 1 Register */
+> > +#define PMU_TEMP_DIOD_CTRL1_REG		0x04
+> > +#define PMU_TDC1_TEMP_VALID_MASK	(0x1<<  10)
+>=20
+> Ezequiel,
+>=20
+> maybe Dove thermal isn't that compatible with the others as you thoug=
+ht.
+>=20
+> Have a look at DOVE_THERMAL_TEMP_OFFSET above, it is 1 while MVEBU_TH=
+ERMAL_TEMP_OFFSET
+> is 10. I've tested your patches on Dove and they break thermal. You e=
+ither need
+> a dove_get_temp() that uses correct DOVE_THERMAL_TEMP_OFFSET or have =
+it stored
+> within mvebu_thermal_ops and use it in mvebu_get_temp().
+>=20
 
-Theoretically, in some situations acpi_device_get_power() may return
-an incorrect result, because the settings of the power resources
-depended on by the device may indicate a power state shallower than
-the actual power state of the device.
+Ouch, you're totally right. I was too fast on this and I forgot that
+Dove has a specific way of reading the sensor, only the formula is
+shared with Kirkwood.
 
-Say that two devices, A and B, depend on two power resources, X and
-Y, in such a way that _PR0 for both A and B list both X and Y and
-_PR3 for both A and B list power resource Y alone.  Also suppose
-that _PS0 and _PS3 are present for both A and B.  Then, if devices
-A and B are initially in D0, power resources X and Y are initially
-"on" and their reference counters are equal to 2.  To put device A
-into power state D3hot the kernel will decrement the reference
-counter of power resource X, but that power resource won't be turned
-off, because it is still in use by device B (its reference counter is
-equal to 1).  Next, _PS3 will be executed for device A.  Afterward
-the configuration of the power resources will indicate that device
-A is in power state D0 (both X and Y are "on"), but in fact it is
-in D3hot (because _PS3 has been executed for it).
+I'll send a fix for this in v3, probably monday.
 
-In that situation, if acpi_device_get_power() is called to get the
-power state of device A, it will first execute _PSC for it which
-should return 3.  That will cause acpi_device_get_power() to run
-acpi_power_get_inferred_state() for device A and the resultant power
-state will be D0, which is incorrect.
-
-To fix that change acpi_device_get_power() to first execute
-acpi_power_get_inferred_state() for the given device (if it
-depends on power resources) and to evaluate _PSC for it subsequently,
-so that the result inferred from the power resources configuration
-can be amended by the _PSC return value.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c |   39 ++++++++++++++++++++++++---------------
- 1 file changed, 24 insertions(+), 15 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -145,27 +145,36 @@ int acpi_device_get_power(struct acpi_de
- 	}
- 
- 	/*
--	 * Get the device's power state either directly (via _PSC) or
--	 * indirectly (via power resources).
-+	 * Get the device's power state from power resources settings and _PSC,
-+	 * if available.
- 	 */
-+	if (device->power.flags.power_resources) {
-+		int error = acpi_power_get_inferred_state(device, &result);
-+		if (error)
-+			return error;
-+	}
- 	if (device->power.flags.explicit_get) {
-+		acpi_handle handle = device->handle;
- 		unsigned long long psc;
--		acpi_status status = acpi_evaluate_integer(device->handle,
--							   "_PSC", NULL, &psc);
-+		acpi_status status;
-+
-+		status = acpi_evaluate_integer(handle, "_PSC", NULL, &psc);
- 		if (ACPI_FAILURE(status))
- 			return -ENODEV;
- 
--		result = psc;
--	}
--	/* The test below covers ACPI_STATE_UNKNOWN too. */
--	if (result <= ACPI_STATE_D2) {
--	  ; /* Do nothing. */
--	} else if (device->power.flags.power_resources) {
--		int error = acpi_power_get_inferred_state(device, &result);
--		if (error)
--			return error;
--	} else if (result == ACPI_STATE_D3_HOT) {
--		result = ACPI_STATE_D3;
-+		/*
-+		 * The power resources settings may indicate a power state
-+		 * shallower than the actual power state of the device.
-+		 *
-+		 * Moreover, on systems predating ACPI 4.0, if the device
-+		 * doesn't depend on any power resources and _PSC returns 3,
-+		 * that means "power off".  We need to maintain compatibility
-+		 * with those systems.
-+		 */
-+		if (psc > result && psc < ACPI_STATE_D3_COLD)
-+			result = psc;
-+		else if (result == ACPI_STATE_UNKNOWN)
-+			result = psc > ACPI_STATE_D2 ? ACPI_STATE_D3_COLD : psc;
- 	}
- 
- 	/*
-
+Thanks for testing, and sorry for being so careless.
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
