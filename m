@@ -1,123 +1,195 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [REGRESSION] 3.9.0-rcX
-Date: Sun, 24 Mar 2013 19:59:35 +0530
-Message-ID: <CAKohpokBySA5uaTTAwF5tmUr-_+W04Ki_f6cWTLu7n1C3Tcqog@mail.gmail.com>
-References: <CAG9S4UjMeRZECAiigZVLTU4av2ZJNBukyUAoCmiYRjtkdThhFw@mail.gmail.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH 1/2] cpufreq: Notify all policy->cpus in cpufreq_notify_transition()
+Date: Sun, 24 Mar 2013 15:37:36 +0100
+Message-ID: <514F0FB0.8030109@gmail.com>
+References: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=089e01184d747b63a704d8ac844a
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAG9S4UjMeRZECAiigZVLTU4av2ZJNBukyUAoCmiYRjtkdThhFw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mips-bounce@linux-mips.org>
+In-Reply-To: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, Liviu.Dudau@arm.com, sparclinux@vger.kernel.org, linaro-kernel@lists.linaro.org, Guan Xuetao <gxt@mprc.pku.edu.cn>, arvind.chauhan@arm.com, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jesper Nilsson <jesper.nilsson@axis.com>, robin.randhawa@arm.com, Stephen Warren <swarren@wwwdotorg.org>, cpufreq@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Haavard Skinnemoen <hskinnemoen@gmail.com>, cbe-oss-dev@lists.ozlabs.org, Fenghua Yu <fenghua.yu@intel.com>, Steve.Bannister@arm.com, Mike Frysinger <vapier@gentoo.org>, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Mikael Starvik <starvik@axis.com>, Kukjin
 List-Id: linux-pm@vger.kernel.org
 
---089e01184d747b63a704d8ac844a
-Content-Type: text/plain; charset=ISO-8859-1
+On 03/24/2013 02:48 PM, Viresh Kumar wrote:
+> policy->cpus contains all online cpus that have single shared clock line. And
+> their frequencies are always updated together.
+> 
+> Many SMP system's cpufreq drivers take care of this in individual drivers but
+> the best place for this code is in cpufreq core.
+> 
+> This patch modifies cpufreq_notify_transition() to notify frequency change for
+> all cpus in policy->cpus and hence updates all users of this API.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Sekhar Nori <nsekhar@ti.com>
+> Cc: Sascha Hauer <kernel@pengutronix.de>
+> Cc: Eric Miao <eric.y.miao@gmail.com>
+> Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
+> Cc: Ben Dooks <ben-linux@fluff.org>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Haavard Skinnemoen <hskinnemoen@gmail.com>
+> Cc: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> Cc: Mike Frysinger <vapier@gentoo.org>
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: Jesper Nilsson <jesper.nilsson@axis.com>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Thomas Renninger <trenn@suse.de>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-cris-kernel@axis.com
+> Cc: linux-ia64@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: cbe-oss-dev@lists.ozlabs.org
+> Cc: linux-mips@linux-mips.org
+> Cc: linux-sh@vger.kernel.org
+> Cc: sparclinux@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  arch/arm/mach-davinci/cpufreq.c              |  5 +-
+>  arch/arm/mach-imx/cpufreq.c                  |  5 +-
+>  arch/arm/mach-integrator/cpu.c               |  6 +--
+>  arch/arm/mach-pxa/cpufreq-pxa2xx.c           |  5 +-
+>  arch/arm/mach-pxa/cpufreq-pxa3xx.c           |  5 +-
+>  arch/arm/mach-s3c24xx/cpufreq.c              |  8 +--
+>  arch/arm/mach-sa1100/cpu-sa1100.c            |  5 +-
+>  arch/arm/mach-sa1100/cpu-sa1110.c            |  5 +-
+>  arch/arm/mach-tegra/cpu-tegra.c              |  6 +--
+>  arch/avr32/mach-at32ap/cpufreq.c             |  5 +-
+>  arch/blackfin/mach-common/cpufreq.c          | 79 ++++++++++++----------------
+>  arch/cris/arch-v32/mach-a3/cpufreq.c         | 20 +++----
+>  arch/cris/arch-v32/mach-fs/cpufreq.c         | 17 +++---
+>  arch/ia64/kernel/cpufreq/acpi-cpufreq.c      | 22 ++++----
+>  arch/mips/kernel/cpufreq/loongson2_cpufreq.c |  5 +-
+>  arch/powerpc/platforms/cell/cbe_cpufreq.c    |  5 +-
+>  arch/powerpc/platforms/pasemi/cpufreq.c      |  5 +-
+>  arch/powerpc/platforms/powermac/cpufreq_32.c | 14 ++---
+>  arch/powerpc/platforms/powermac/cpufreq_64.c |  5 +-
+>  arch/sh/kernel/cpufreq.c                     |  5 +-
+>  arch/sparc/kernel/us2e_cpufreq.c             | 13 ++---
+>  arch/sparc/kernel/us3_cpufreq.c              | 13 ++---
+>  arch/unicore32/kernel/cpu-ucv2.c             |  5 +-
+>  drivers/cpufreq/acpi-cpufreq.c               | 11 +---
+>  drivers/cpufreq/cpufreq-cpu0.c               | 12 ++---
+>  drivers/cpufreq/cpufreq-nforce2.c            |  5 +-
+>  drivers/cpufreq/cpufreq.c                    | 45 +++++++++-------
+>  drivers/cpufreq/dbx500-cpufreq.c             |  6 +--
+>  drivers/cpufreq/e_powersaver.c               | 11 ++--
+>  drivers/cpufreq/elanfreq.c                   | 10 ++--
+>  drivers/cpufreq/exynos-cpufreq.c             |  7 +--
+>  drivers/cpufreq/gx-suspmod.c                 | 11 ++--
+>  drivers/cpufreq/imx6q-cpufreq.c              | 12 ++---
+>  drivers/cpufreq/kirkwood-cpufreq.c           | 10 ++--
+>  drivers/cpufreq/longhaul.c                   | 18 ++++---
+>  drivers/cpufreq/maple-cpufreq.c              |  5 +-
+>  drivers/cpufreq/omap-cpufreq.c               | 11 +---
+>  drivers/cpufreq/p4-clockmod.c                | 10 +---
+>  drivers/cpufreq/pcc-cpufreq.c                |  5 +-
+>  drivers/cpufreq/powernow-k6.c                | 12 ++---
+>  drivers/cpufreq/powernow-k7.c                | 10 ++--
+>  drivers/cpufreq/powernow-k8.c                | 16 +++---
+>  drivers/cpufreq/s3c2416-cpufreq.c            |  5 +-
+>  drivers/cpufreq/s3c64xx-cpufreq.c            |  7 ++-
+>  drivers/cpufreq/s5pv210-cpufreq.c            |  5 +-
+>  drivers/cpufreq/sc520_freq.c                 | 10 ++--
+>  drivers/cpufreq/spear-cpufreq.c              |  7 +--
+>  drivers/cpufreq/speedstep-centrino.c         | 24 ++-------
+>  drivers/cpufreq/speedstep-ich.c              | 12 +----
+>  drivers/cpufreq/speedstep-smi.c              |  5 +-
+>  include/linux/cpufreq.h                      |  4 +-
+>  51 files changed, 232 insertions(+), 337 deletions(-)
+[...]
+> diff --git a/arch/blackfin/mach-common/cpufreq.c b/arch/blackfin/mach-common/cpufreq.c
+> index d88bd31..4e67368 100644
+> --- a/arch/blackfin/mach-common/cpufreq.c
+> +++ b/arch/blackfin/mach-common/cpufreq.c
+> @@ -127,13 +127,13 @@ unsigned long cpu_set_cclk(int cpu, unsigned long new)
+>  }
+>  #endif
+>  
+> -static int bfin_target(struct cpufreq_policy *poli,
+> +static int bfin_target(struct cpufreq_policy *policy,
+>  			unsigned int target_freq, unsigned int relation)
+>  {
+>  #ifndef CONFIG_BF60x
+>  	unsigned int plldiv;
+>  #endif
+> -	unsigned int index, cpu;
+> +	unsigned int index;
+>  	unsigned long cclk_hz;
+>  	struct cpufreq_freqs freqs;
+>  	static unsigned long lpj_ref;
+> @@ -144,59 +144,48 @@ static int bfin_target(struct cpufreq_policy *poli,
+>  	cycles_t cycles;
+>  #endif
+>  
+> -	for_each_online_cpu(cpu) {
+> -		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> +	if (cpufreq_frequency_table_target(policy, bfin_freq_table, target_freq,
+> +				relation, &index))
+> +		return -EINVAL;
+>  
+> -		if (!policy)
+> -			continue;
+> +	cclk_hz = bfin_freq_table[index].frequency;
+>  
+> -		if (cpufreq_frequency_table_target(policy, bfin_freq_table,
+> -				 target_freq, relation, &index))
+> -			return -EINVAL;
+> +	freqs.old = bfin_getfreq_khz(0);
+> +	freqs.new = cclk_hz;
+>  
+> -		cclk_hz = bfin_freq_table[index].frequency;
+> +	pr_debug("cpufreq: changing cclk to %lu; target = %u, oldfreq = %u\n",
+> +			cclk_hz, target_freq, freqs.old);
+>  
+> -		freqs.old = bfin_getfreq_khz(0);
+> -		freqs.new = cclk_hz;
+> -		freqs.cpu = cpu;
+> -
+> -		pr_debug("cpufreq: changing cclk to %lu; target = %u, oldfreq = %u\n",
+> -			 cclk_hz, target_freq, freqs.old);
+> -
+> -		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> -		if (cpu == CPUFREQ_CPU) {
+> +	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+>  #ifndef CONFIG_BF60x
+> -			plldiv = (bfin_read_PLL_DIV() & SSEL) |
+> -						dpm_state_table[index].csel;
+> -			bfin_write_PLL_DIV(plldiv);
+> +	plldiv = (bfin_read_PLL_DIV() & SSEL) | dpm_state_table[index].csel;
+> +	bfin_write_PLL_DIV(plldiv);
+>  #else
+> -			ret = cpu_set_cclk(cpu, freqs.new * 1000);
+> -			if (ret != 0) {
+> -				WARN_ONCE(ret, "cpufreq set freq failed %d\n", ret);
+> -				break;
+> -			}
+> +	ret = cpu_set_cclk(policy->cpu, freqs.new * 1000);
+> +	if (ret != 0) {
+> +		WARN_ONCE(ret, "cpufreq set freq failed %d\n", ret);
+> +		break;
 
-On 24 March 2013 19:41, Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
-> (long e-mail, sorry ;-))
+This doesn't even compile, as the break statement isn't in the
+for_each_online_cpu() loop anymore.
 
-Don't be, it was useful :)
-
-> Last known good: 3.8.0
->
-> Short description:
-> 1. On -rc3, after s2ram cpufreq does not set CPU on max frequency on high
-> load (on battery).
-
-Try attached patch for this.
-
-> 2. On -rc4 (this is not real regression because I change config between -rc3
-> and rc4), "ondemand" does not work. Current frequency is 'strange' (792
-> MHz).
-
-I don't really have a reason for that :(
-But with your config it is clear that, your working setup has:
-
-# CONFIG_X86_INTEL_PSTATE is not set
-# CONFIG_X86_PCC_CPUFREQ is not set
-CONFIG_X86_ACPI_CPUFREQ=m
-
-and rc4 version has:
-
-CONFIG_X86_INTEL_PSTATE=y
-CONFIG_X86_PCC_CPUFREQ=m
-CONFIG_X86_ACPI_CPUFREQ=m
-
-So, i believe you are using another cpufreq driver this, try with same
-configuration once.
-
-> 1. Kernel 3.8.0:
->
-> Output (show only fisrt CPU, others are same):
-> cpu0/cpufreq//affected_cpus:0
-> cpu0/cpufreq//related_cpus:0 1 2 3
-
-> Kernel 3.9.0-rc1
-
-> CASE 2
-> After boot:
-> cpu0/cpufreq//affected_cpus:0 1 2 3
-> cpu0/cpufreq//related_cpus:0 1 2 3
-
-My attached patch will restore 1. instead of CASE 2.
-
-> ===============================================================================
-> Kernel 3.9.0-rc4
->
-> CASE 7
-> (normal boot)
-> cpu0/cpufreq//affected_cpus:0
-> cpu0/cpufreq//related_cpus:0
-
-This must be related to your different driver.
-
-> Config, dmesg:
-> http://mrutecki.pl/download/kernel/3.9.0-rc4/cpufreq/
-
-These were very important and helpful.
-
---089e01184d747b63a704d8ac844a
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-acpi-cpufreq-Don-t-set-policy-related_cpus-f.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_heoaonwl0
-
-RnJvbSAwZWI2YTZjZTI1YzcxZTYwZGM2OWUxODk3ZjgwYjdjZTNiYjQxZmIyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MGViNmE2Y2UyNWM3MWU2MGRjNjllMTg5N2Y4MGI3
-Y2UzYmI0MWZiMi4xMzY0MTM0ODI3LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogU2F0LCAyMyBNYXIg
-MjAxMyAyMzo0Mjo0NCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFjcGktY3B1ZnJl
-cTogRG9uJ3Qgc2V0IHBvbGljeS0+cmVsYXRlZF9jcHVzIGZyb20KIC5pbml0KCkKCldpdGggdGhl
-IGFkZGl0aW9uIG9mIGZvbGxvd2luZyBwYXRjaDoKCmZjZjgwNTggY3B1ZnJlcTogU2ltcGxpZnkg
-Y3B1ZnJlcV9hZGRfZGV2KCkKCmNwdWZyZXEgZHJpdmVyJ3MgLmluaXQoKSByb3V0aW5lIG11c3Qg
-aW5pdGlhbGl6ZSBwb2xpY3ktPmNwdXMgd2l0aCBtYXNrIG9mIGFsbApwb3NzaWJsZSBjcHVzIChP
-bmxpbmUgKyBPZmZsaW5lKSB0aGF0IHNoYXJlIHRoZSBjbG9jay4gVGhlbiB0aGUgY29yZSB3b3Vs
-ZCBjb3B5CnRoaXMgbWFzayBvbnRvIHBvbGljeS0+cmVsYXRlZF9jcHVzIGFuZCB3aWxsIHJlc2V0
-IHBvbGljeS0+Y3B1cyB0byBjYXJyeSBvbmx5Cm9ubGluZSBjcHVzLgoKYWNwaS1jcHVmcmVxIGRy
-aXZlciB3YXNuJ3QgdXBkYXRlZCB3aXRoIHRoaXMgYXNzdW1wdGlvbiBhbmQgc28gc29tZXRpbWVz
-IHdoZW4Kd2UgdHJ5IHRvIGhvdFt1bl1wbHVnIGNwdXMgYXQgcnVuIHRpbWUsIHN5c2ZzIGRpcmVj
-dG9yaWVzIGdldHMgY29ycnVwdGVkLgoKVGhpcyBwYXRjaCBmaXhlcyBhY3BpLWNwdWZyZXEgZHJp
-dmVyIGFnYWluc3QgdGhpcyBjb3JydXB0aW9uLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFy
-IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVm
-cmVxLmMgfCAyIC0tCiAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
-YS9kcml2ZXJzL2NwdWZyZXEvYWNwaS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvYWNwaS1j
-cHVmcmVxLmMKaW5kZXggYWZiZWY5Yy4uMTFiOGI0YiAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVm
-cmVxL2FjcGktY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9hY3BpLWNwdWZyZXEuYwpA
-QCAtNzIzLDcgKzcyMyw2IEBAIHN0YXRpYyBpbnQgYWNwaV9jcHVmcmVxX2NwdV9pbml0KHN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQogCSAgICBwb2xpY3ktPnNoYXJlZF90eXBlID09IENQ
-VUZSRVFfU0hBUkVEX1RZUEVfQU5ZKSB7CiAJCWNwdW1hc2tfY29weShwb2xpY3ktPmNwdXMsIHBl
-cmYtPnNoYXJlZF9jcHVfbWFwKTsKIAl9Ci0JY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9j
-cHVzLCBwZXJmLT5zaGFyZWRfY3B1X21hcCk7CiAKICNpZmRlZiBDT05GSUdfU01QCiAJZG1pX2No
-ZWNrX3N5c3RlbShzd19hbnlfYnVnX2RtaV90YWJsZSk7CkBAIC03MzUsNyArNzM0LDYgQEAgc3Rh
-dGljIGludCBhY3BpX2NwdWZyZXFfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xp
-Y3kpCiAJaWYgKGNoZWNrX2FtZF9od3BzdGF0ZV9jcHUoY3B1KSAmJiAhYWNwaV9wc3RhdGVfc3Ry
-aWN0KSB7CiAJCWNwdW1hc2tfY2xlYXIocG9saWN5LT5jcHVzKTsKIAkJY3B1bWFza19zZXRfY3B1
-KGNwdSwgcG9saWN5LT5jcHVzKTsKLQkJY3B1bWFza19jb3B5KHBvbGljeS0+cmVsYXRlZF9jcHVz
-LCBjcHVfc2libGluZ19tYXNrKGNwdSkpOwogCQlwb2xpY3ktPnNoYXJlZF90eXBlID0gQ1BVRlJF
-UV9TSEFSRURfVFlQRV9IVzsKIAkJcHJfaW5mb19vbmNlKFBGWCAib3ZlcnJpZGluZyBCSU9TIHBy
-b3ZpZGVkIF9QU0QgZGF0YVxuIik7CiAJfQotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
---089e01184d747b63a704d8ac844a--
+--
+Francesco
