@@ -1,78 +1,60 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/2] thermal: introduce thermal_zone_lookup_temperature
- helper function
-Date: Mon, 25 Mar 2013 06:20:27 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C57DBF@BGSMSX101.gar.corp.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/2] staging: ti-soc-thermal: remove external heat while
+ extrapolating hotspot
+Date: Mon, 25 Mar 2013 14:23:25 +0800
+Message-ID: <1364192605.2465.18.camel@rzhang1-mobl4>
 References: <1363986787-28147-1-git-send-email-eduardo.valentin@ti.com>
-	 <1363986787-28147-2-git-send-email-eduardo.valentin@ti.com>
- <1364191837.2465.7.camel@rzhang1-mobl4>
+	 <1363986787-28147-3-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:6786 "EHLO mga01.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:58850 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932156Ab3CYGUc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Mar 2013 02:20:32 -0400
-In-Reply-To: <1364191837.2465.7.camel@rzhang1-mobl4>
-Content-Language: en-US
+	id S1757755Ab3CYGXn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Mar 2013 02:23:43 -0400
+In-Reply-To: <1363986787-28147-3-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
-biBCZWhhbGYgT2YgWmhhbmcgUnVpDQo+IFNlbnQ6IE1vbmRheSwgTWFyY2ggMjUsIDIwMTMgMTE6
-NDEgQU0NCj4gVG86IEVkdWFyZG8gVmFsZW50aW4NCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
-IDEvMl0gdGhlcm1hbDogaW50cm9kdWNlDQo+IHRoZXJtYWxfem9uZV9sb29rdXBfdGVtcGVyYXR1
-cmUgaGVscGVyIGZ1bmN0aW9uDQo+IA0KPiBPbiBGcmksIDIwMTMtMDMtMjIgYXQgMTc6MTMgLTA0
-MDAsIEVkdWFyZG8gVmFsZW50aW4gd3JvdGU6DQo+ID4gVGhpcyBwYXRjaCBhZGRzIGEgaGVscGVy
-IGZ1bmN0aW9uIHRvIGdldCB0ZW1wZXJhdHVyZSBvZg0KPiA+IGEgdGhlcm1hbCB6b25lLCBiYXNl
-ZCBvbiB0aGUgem9uZSB0eXBlIG5hbWUuDQo+ID4NCj4gPiBJdCB3aWxsIHBlcmZvcm0gYSB6b25l
-IG5hbWUgbG9va3VwIGFuZCByZXR1cm4gdGhlIGxhc3QNCj4gPiBzZW5zb3IgdGVtcGVyYXR1cmUg
-cmVhZGluZy4gSW4gY2FzZSB0aGUgem9uZSBpcyBub3QgZm91bmQNCj4gPiBvciBpZiB0aGUgcmVx
-dWlyZWQgcGFyYW1ldGVycyBhcmUgaW52YWxpZCwgaXQgd2lsbCByZXR1cm4NCj4gPiB0aGUgY29y
-cmVzcG9uZGluZyBlcnJvciBjb2RlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogRWR1YXJkbyBW
-YWxlbnRpbiA8ZWR1YXJkby52YWxlbnRpbkB0aS5jb20+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMv
-dGhlcm1hbC90aGVybWFsX3N5cy5jIHwgICAzMg0KPiArKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKw0KPiA+ICBpbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCAgICAgICB8ICAgIDEgKw0KPiA+
-ICAyIGZpbGVzIGNoYW5nZWQsIDMzIGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4N
-Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMgYi9kcml2ZXJz
-L3RoZXJtYWwvdGhlcm1hbF9zeXMuYw0KPiA+IGluZGV4IDViZDk1ZDQuLmYwY2FhMTMgMTAwNjQ0
-DQo+ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lzLmMNCj4gPiArKysgYi9kcml2
-ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMuYw0KPiA+IEBAIC0xNzkwLDYgKzE3OTAsMzggQEAgdm9p
-ZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VucmVnaXN0ZXIoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9k
-ZXZpY2UgKnR6KQ0KPiA+ICB9DQo+ID4gIEVYUE9SVF9TWU1CT0xfR1BMKHRoZXJtYWxfem9uZV9k
-ZXZpY2VfdW5yZWdpc3Rlcik7DQo+ID4NCj4gPiArLyoqDQo+ID4gKyAqIHRoZXJtYWxfbG9va3Vw
-X3RlbXBlcmF0dXJlIC0gc2VhcmNoIGZvciBhIHpvbmUgYW5kIHJldHVybnMgaXRzDQo+IHRlbXBl
-cmF0dXJlDQo+ID4gKyAqIEBuYW1lOiB0aGVybWFsIHpvbmUgbmFtZSB0byBmZXRjaCB0aGUgdGVt
-cGVyYXR1cmUNCj4gPiArICogQHRlbXBlcmF0dXJlOiBwb2ludGVyIHRvIHN0b3JlIHRoZSB6b25l
-IHRlbXBlcmF0dXJlLCBpbiBjYXNlIGl0IGlzDQo+IGZvdW5kDQo+ID4gKyAqDQo+ID4gKyAqIFdo
-ZW4gdGhlIHpvbmUgaXMgZm91bmQsIHVwZGF0ZXMgQHRlbXBlcmF0dXJlIGFuZCByZXR1cm5zIDAu
-DQo+ID4gKyAqDQo+ID4gKyAqIFJldHVybjogLUVJTlZBTCBpbiBjYXNlIG9mIHdyb25nIHBhcmFt
-ZXRlcnMsIC1FTk9ERVYgaW4gY2FzZSB0aGUNCj4gem9uZQ0KPiA+ICsgKiBpcyBub3QgZm91bmQg
-YW5kIDAgd2hlbiBpdCBpcyBzdWNjZXNzZnVsbHkgZm91bmQuDQo+ID4gKyAqLw0KPiA+ICtpbnQg
-dGhlcm1hbF96b25lX2xvb2t1cF90ZW1wZXJhdHVyZShjb25zdCBjaGFyICpuYW1lLCBpbnQNCj4g
-KnRlbXBlcmF0dXJlKQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAq
-cG9zID0gTlVMTDsNCj4gPiArCWJvb2wgZm91bmQgPSBmYWxzZTsNCj4gPiArDQo+ID4gKwlpZiAo
-IW5hbWUgfHwgIXRlbXBlcmF0dXJlKQ0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsNCj4g
-PiArCW11dGV4X2xvY2soJnRoZXJtYWxfbGlzdF9sb2NrKTsNCj4gPiArCWxpc3RfZm9yX2VhY2hf
-ZW50cnkocG9zLCAmdGhlcm1hbF90el9saXN0LCBub2RlKQ0KPiA+ICsJCWlmICghc3RyY21wKHBv
-cy0+dHlwZSwgbmFtZSkpIHsNCj4gPiArCQkJZm91bmQgPSB0cnVlOw0KPiA+ICsJCQlicmVhazsN
-Cj4gPiArCQl9DQo+ID4gKwlpZiAoZm91bmQpDQo+ID4gKwkJKnRlbXBlcmF0dXJlID0gcG9zLT5s
-YXN0X3RlbXBlcmF0dXJlOw0KPiA+ICsJbXV0ZXhfdW5sb2NrKCZ0aGVybWFsX2xpc3RfbG9jayk7
-DQo+ID4gKw0KPiA+ICsJcmV0dXJuIGZvdW5kID8gMCA6IC1FTk9ERVY7DQo+ID4gK30NCj4gPiAr
-RVhQT1JUX1NZTUJPTF9HUEwodGhlcm1hbF96b25lX2xvb2t1cF90ZW1wZXJhdHVyZSk7DQo+ID4g
-Kw0KPiBwbGVhc2UgZG8gbm90IHVzZSB0aGVybWFsIHpvbmUgdHlwZSBhcyB0aGUgcGFyYW1ldGVy
-IGJlY2F1c2UgdW5pcXVlDQo+IHRoZXJtYWwgem9uZSB0eXBlIHN0cmluZyBpcyBub3QgYSBoYXJk
-IHJ1bGUuDQoNCk9rYXksIGFncmVlIHdpdGggdGhpcy4gVGhpcyBpcyB3aGF0IEkgYW0gaW1wbGVt
-ZW50aW5nIGluDQpteSBjaGFuZ2VzIGFzIHdlbGwuDQoNCj4gSWYgdGhpcyBpcyByZWFsbHkgbmVl
-ZGVkLCBJJ2QgcHJlZmVyIHR3byBBUElzIGluc3RlYWQNCj4gMS4gc3RydWN0IHRoZXJtYWxfem9u
-ZV9kZXZpY2UgKiB0aGVybWFsX3pvbmVfZ2V0X3pvbmVfYnlfbmFtZShjaGFyDQo+ICpuYW1lKTsN
-Cj4gMi4gaW50IHRoZXJtYWxfem9uZV9nZXRfdGVtcGVyYXR1cmUoc3RydWN0IHRoZXJtYWxfem9u
-ZV9kZXZpY2UgKiwgaW50DQo+ICp0ZW1wZXJhdHVyZSk7DQoNCldoeSBkbyB3ZSBuZWVkIHRoaXMg
-c2Vjb25kIEFQST8NCklmIHRoZSBkcml2ZXIgaGFzIGEgJ3R6JyBwb2ludGVyLCBpdCBjYW4gdXNl
-IHR6LT5vcHMtPmdldF90ZW1wDQp0byByZXRyaWV2ZSB0aGUgdGVtcGVyYXR1cmUsIHJpZ2h0ID8N
-Cg0KVGhhbmtzLA0KRHVyZ2ENCg==
+On Fri, 2013-03-22 at 17:13 -0400, Eduardo Valentin wrote:
+> For boards that provide a PCB sensor close to SoC junction
+> temperature, it is possible to remove the cumulative heat
+> reported by the SoC temperature sensor.
+> 
+> This patch changes the extrapolation computation to consider
+> an external sensor in the extrapolation equations.
+> 
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> ---
+>  drivers/staging/ti-soc-thermal/ti-thermal-common.c |    5 ++---
+>  1 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> index 231c549..52d3c1b 100644
+> --- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> @@ -92,10 +92,9 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
+>  	if (ret)
+>  		return ret;
+>  
+> -	pcb_temp = 0;
+> -	/* TODO: Introduce pcb temperature lookup */
+> +	ret = thermal_zone_lookup_temperature("pcb", &pcb_temp);
+>  	/* In case pcb zone is available, use the extrapolation rule with it */
+> -	if (pcb_temp) {
+> +	if (!ret) {
+>  		tmp -= pcb_temp;
+>  		slope = s->slope_pcb;
+>  		constant = s->constant_pcb;
+
+I can not see this piece of code.
+But I assume that the thermal_zone_device is registered in another
+driver, right?
+or else you can use the thermal_zone_device pointer directly instead.
+
+thanks,
+rui
+
