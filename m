@@ -1,60 +1,33 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [REGRESSION] [CPUFREQ] 3.9.0-rcX
-Date: Mon, 25 Mar 2013 08:48:14 -0700
-Message-ID: <515071BE.4070007@gmail.com>
-References: <CAG9S4UjMeRZECAiigZVLTU4av2ZJNBukyUAoCmiYRjtkdThhFw@mail.gmail.com> <CAKohpokBySA5uaTTAwF5tmUr-_+W04Ki_f6cWTLu7n1C3Tcqog@mail.gmail.com> <1965505.vyQ4xZcodg@vostro.rjw.lan>
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH v2 00/14] Marvell EBU thermal sensor consolidation
+Date: Mon, 25 Mar 2013 10:29:24 -0600
+Message-ID: <20130325162924.GA16690@obsidianresearch.com>
+References: <1363991114-4225-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <20130325093001.GH5627@lunn.ch>
+ <20130325104513.GC2502@localhost>
+ <CABJ1b_S9c=tFT17=HycmuRbW1g4y8AvWJpmwMRJwvQ214Yb3fw@mail.gmail.com>
+ <20130325123928.GD2502@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:48681 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758200Ab3CYPsS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 11:48:18 -0400
-In-Reply-To: <1965505.vyQ4xZcodg@vostro.rjw.lan>
+Received: from quartz.orcorp.ca ([184.70.90.242]:39879 "EHLO quartz.orcorp.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758617Ab3CYQ3a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Mar 2013 12:29:30 -0400
+Content-Disposition: inline
+In-Reply-To: <20130325123928.GD2502@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Maciej Rutecki <maciej.rutecki@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Zhang Rui <rui.zhang@intel.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>
 
-On 03/24/2013 07:53 AM, Rafael J. Wysocki wrote:
-> On Sunday, March 24, 2013 07:59:35 PM Viresh Kumar wrote:
->> On 24 March 2013 19:41, Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
->>> (long e-mail, sorry ;-))
->>
->> Don't be, it was useful :)
->>
->>> Last known good: 3.8.0
->>>
->>> Short description:
->>> 1. On -rc3, after s2ram cpufreq does not set CPU on max frequency on high
->>> load (on battery).
->>
->> Try attached patch for this.
->>
->>> 2. On -rc4 (this is not real regression because I change config between -rc3
->>> and rc4), "ondemand" does not work. Current frequency is 'strange' (792
->>> MHz).
->>> ===============================================================================
->>> Kernel 3.9.0-rc4
->>>
->>> CASE 7
->>> (normal boot)
->>> cpu0/cpufreq//affected_cpus:0
->>> cpu0/cpufreq//related_cpus:0
->>
->> This must be related to your different driver.
->
-> Yes, intel_pstate is not really a cpufreq driver.  It just overtakes the
-> whole subsystem.
->
-> Dirk, can you please check if this is as intended?
+On Mon, Mar 25, 2013 at 09:39:30AM -0300, Ezequiel Garcia wrote:
 
-This is working as intended.  The intel_pstate driver has the governor
-integrated into the scaling driver and does not use external governors.
+> Could you test the Dove formula fixes and provide a Tested-by?
+> However little the patches maybe, it still makes me nervous
+> to send untested patches.
 
-The reason the frequency is strange is because intel_pstate returns a
-measured value of the effective frequency that the core ran at during
-the last time it was sampled.
+FWIW, I reviewed and confirmed your new calculation based on the
+Kirkwood doc's I have.
 
---Dirk
+Jason
