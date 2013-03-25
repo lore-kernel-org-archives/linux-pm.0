@@ -1,99 +1,62 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal: rcar: tidyup registration failure case
-Date: Mon, 25 Mar 2013 16:40:56 +0800
-Message-ID: <1364200856.2465.48.camel@rzhang1-mobl4>
-References: <87620gqbbe.wl%kuninori.morimoto.gx@renesas.com>
-	 <874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: drivers: Remove unnecessary assignments of
+ policy-> members
+Date: Mon, 25 Mar 2013 14:15:46 +0530
+Message-ID: <CAKohpomTt-ajNeh-OwV9X-HNBddJzL=JB+ggFY0msmsuZabvjA@mail.gmail.com>
+References: <2ece6d9fe8dfb6882a1c83a1cb2404bacc40b22d.1364138740.git.viresh.kumar@linaro.org>
+	<07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
+	<51500C81.7040307@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:46722 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325Ab3CYIlA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 Mar 2013 04:41:00 -0400
-In-Reply-To: <874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:41925 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757352Ab3CYIpr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 04:45:47 -0400
+Received: by mail-ob0-f177.google.com with SMTP id eh20so5613053obb.22
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 01:45:46 -0700 (PDT)
+In-Reply-To: <51500C81.7040307@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
+To: Sekhar Nori <nsekhar@ti.com>
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Sascha Hauer <kernel@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Sun, 2013-03-24 at 22:49 -0700, Kuninori Morimoto wrote:
-> Current rcar_thermal driver didn't care about rcar_theraml_irq_disable()
-> when registration failure case on _probe(), and _remove().
-> And, it returns without unregistering thermal zone when
-> registration failure case on _probe().
-> This patch fixes these issue.
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> ---
->  drivers/thermal/rcar_thermal.c |   20 ++++++++++++++------
->  1 file changed, 14 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 28f0919..359e943 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -419,13 +419,15 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
->  		if (!priv) {
->  			dev_err(dev, "Could not allocate priv\n");
-> -			return -ENOMEM;
-> +			ret = -ENOMEM;
-> +			goto error_unregister;
->  		}
->  
->  		priv->base = devm_request_and_ioremap(dev, res);
->  		if (!priv->base) {
->  			dev_err(dev, "Unable to ioremap priv register\n");
-> -			return -ENOMEM;
-> +			ret = -ENOMEM;
-> +			goto error_unregister;
->  		}
->  
->  		priv->common = common;
-> @@ -444,10 +446,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  			goto error_unregister;
->  		}
->  
-> -		list_move_tail(&priv->list, &common->head);
-> -
->  		if (rcar_has_irq_support(priv))
->  			rcar_thermal_irq_enable(priv);
-> +
-> +		list_move_tail(&priv->list, &common->head);
->  	}
->  
-why do you need this change for the rcar_thermal_irq_disable issue?
+On 25 March 2013 14:06, Sekhar Nori <nsekhar@ti.com> wrote:
+> There is a line in the code a little above the ones you deleted that
+> also sets these same variables. I guess you were relying on that line to
+> set policy->cur, but that also sets policy->{min, max} which can be
+> cleaned up.
 
-thanks,
-rui
->  	platform_set_drvdata(pdev, common);
-> @@ -457,8 +459,11 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  	return 0;
->  
->  error_unregister:
-> -	rcar_thermal_for_each_priv(priv, common)
-> +	rcar_thermal_for_each_priv(priv, common) {
->  		thermal_zone_device_unregister(priv->zone);
-> +		if (rcar_has_irq_support(priv))
-> +			rcar_thermal_irq_disable(priv);
-> +	}
->  
->  	return -ENODEV;
->  }
-> @@ -468,8 +473,11 @@ static int rcar_thermal_remove(struct platform_device *pdev)
->  	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
->  	struct rcar_thermal_priv *priv;
->  
-> -	rcar_thermal_for_each_priv(priv, common)
-> +	rcar_thermal_for_each_priv(priv, common) {
->  		thermal_zone_device_unregister(priv->zone);
-> +		if (rcar_has_irq_support(priv))
-> +			rcar_thermal_irq_disable(priv);
-> +	}
->  
->  	platform_set_drvdata(pdev, NULL);
->  
+This code is rather confusing or wrong, this was the state of code before
+this patch:
+
+	policy->cur = policy->min = policy->max = davinci_getspeed(0);
+
+	if (freq_table) {
+		result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
+		if (!result)
+			cpufreq_frequency_table_get_attr(freq_table,
+							policy->cpu);
+	} else {
+		policy->cpuinfo.min_freq = policy->min;
+		policy->cpuinfo.max_freq = policy->max;
+	}
+
+        policy->min = policy->cpuinfo.min_freq;
+        policy->max = policy->cpuinfo.max_freq;
+        policy->cur = davinci_getspeed(0);
 
 
+The tricky part is if/else, where if don't return error if
+cpufreq_frequency_table_cpuinfo() fails. We want to set ->min[max]
+and cpuinfo.min[max] always. And i can see this code not doing that for some
+case even with my patch.
+
+Possible scenarios:
+1. Valid freq_table: My patch + what you suggested is required.
+2. Invalid freq_table: We never set cpuinfo.min[max] with or without my patch
+3. No freq_table: Only my patch is required.
+
+If i do what you suggested then 2 and 3 would fail... If you want to
+return error
+in case cpufreq_frequency_table_cpuinfo(), then i can fix it properly.
