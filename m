@@ -1,117 +1,67 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 02/15] cpuidle: initialize the broadcast timer framework
-Date: Mon, 25 Mar 2013 18:55:27 +0100
-Message-ID: <1364234140-514-3-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 04/15] cpuidle: OMAP4: remove timer broadcast initialization
+Date: Mon, 25 Mar 2013 18:55:29 +0100
+Message-ID: <1364234140-514-5-git-send-email-daniel.lezcano@linaro.org>
 References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f45.google.com ([74.125.82.45]:59921 "EHLO
-	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758819Ab3CYRzp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:55:45 -0400
-Received: by mail-wg0-f45.google.com with SMTP id dq12so1439537wgb.24
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 10:55:44 -0700 (PDT)
+Received: from mail-we0-f175.google.com ([74.125.82.175]:55307 "EHLO
+	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758819Ab3CYRzv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:55:51 -0400
+Received: by mail-we0-f175.google.com with SMTP id t11so3269774wey.6
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 10:55:49 -0700 (PDT)
 In-Reply-To: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, tglx@linutronix.de
 Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, lenb@kernel.org, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, linus.walleij@linaro.org, linux@arm.linux.org.uk
 
-The commit 89878baa73f0f1c679355006bd8632e5d78f96c2 introduced
-the CPUIDLE_FLAG_TIMER_STOP flag where we specify a specific idle
-state stops the local timer.
-
-Now use this flag to check at init time if one state will need
-the broadcast timer and, in this case, setup the broadcast timer
-framework. That prevents multiple code duplication in the drivers.
+The initialization is done from the cpuidle framework.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/driver.c |   35 +++++++++++++++++++++++++++++++++--
- include/linux/cpuidle.h  |    2 ++
- 2 files changed, 35 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/cpuidle44xx.c |   14 --------------
+ 1 file changed, 14 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 422c7b6..476ce0c 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -11,6 +11,8 @@
- #include <linux/mutex.h>
- #include <linux/module.h>
+diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2/cpuidle44xx.c
+index fe0e025..f4b1b23 100644
+--- a/arch/arm/mach-omap2/cpuidle44xx.c
++++ b/arch/arm/mach-omap2/cpuidle44xx.c
+@@ -14,7 +14,6 @@
  #include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/clockchips.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/export.h>
+-#include <linux/clockchips.h>
  
- #include "cpuidle.h"
+ #include <asm/proc-fns.h>
  
-@@ -19,9 +21,30 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
- static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, int cpu);
- static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
- 
--static void __cpuidle_driver_init(struct cpuidle_driver *drv)
-+static void cpuidle_setup_broadcast_timer(void *arg)
- {
-+	int cpu = smp_processor_id();
-+	clockevents_notify((long)(arg), &cpu);
-+}
-+
-+static void __cpuidle_driver_init(struct cpuidle_driver *drv, int cpu)
-+{
-+	int i;
-+
- 	drv->refcnt = 0;
-+
-+	for (i = drv->state_count - 1; i >= 0 ; i--) {
-+
-+		if (!(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP))
-+			continue;
-+
-+		drv->bctimer = 1;
-+
-+		on_each_cpu_mask(get_cpu_mask(cpu), cpuidle_setup_broadcast_timer,
-+				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON, 1);
-+
-+		break;
-+	}
+@@ -158,16 +157,6 @@ fail:
+ 	return index;
  }
  
- static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
-@@ -35,7 +58,7 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
- 	if (__cpuidle_get_cpu_driver(cpu))
- 		return -EBUSY;
+-/*
+- * For each cpu, setup the broadcast timer because local timers
+- * stops for the states above C1.
+- */
+-static void omap_setup_broadcast_timer(void *arg)
+-{
+-	int cpu = smp_processor_id();
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
+-}
+-
+ static DEFINE_PER_CPU(struct cpuidle_device, omap4_idle_dev);
  
--	__cpuidle_driver_init(drv);
-+	__cpuidle_driver_init(drv, cpu);
+ static struct cpuidle_driver omap4_idle_driver = {
+@@ -233,9 +222,6 @@ int __init omap4_idle_init(void)
+ 	if (!cpu_clkdm[0] || !cpu_clkdm[1])
+ 		return -ENODEV;
  
- 	__cpuidle_set_cpu_driver(drv, cpu);
- 
-@@ -49,6 +72,14 @@ static void __cpuidle_unregister_driver(struct cpuidle_driver *drv, int cpu)
- 
- 	if (!WARN_ON(drv->refcnt > 0))
- 		__cpuidle_set_cpu_driver(NULL, cpu);
-+
-+	if (drv->bctimer) {
-+
-+		drv->bctimer = 0;
-+
-+		on_each_cpu_mask(get_cpu_mask(cpu), cpuidle_setup_broadcast_timer,
-+				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF, 1);
-+	}
- }
- 
- #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index a837b33..fc3e580 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -107,6 +107,8 @@ struct cpuidle_driver {
- 
- 	/* set to 1 to use the core cpuidle time keeping (for all states). */
- 	unsigned int		en_core_tk_irqen:1;
-+        /* used by the cpuidle framework to setup the broadcast timer */
-+	unsigned int            bctimer:1;
- 	/* states array must be ordered in decreasing power consumption */
- 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
- 	int			state_count;
+-	/* Configure the broadcast timer on each cpu */
+-	on_each_cpu(omap_setup_broadcast_timer, NULL, 1);
+-
+ 	for_each_cpu(cpu_id, cpu_online_mask) {
+ 		dev = &per_cpu(omap4_idle_dev, cpu_id);
+ 		dev->cpu = cpu_id;
 -- 
 1.7.9.5
 
