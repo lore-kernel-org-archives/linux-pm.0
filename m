@@ -1,79 +1,77 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 00/15] ARM: cpuidle: code consolidation
-Date: Mon, 25 Mar 2013 15:27:19 -0500
-Message-ID: <5150B327.5010507@gmail.com>
-References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 07/15] ARM: cpuidle: add init/exit routine
+Date: Mon, 25 Mar 2013 16:28:21 -0400 (EDT)
+Message-ID: <alpine.LFD.2.03.1303251616070.1372@syhkavp.arg>
+References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org> <1364234140-514-8-git-send-email-daniel.lezcano@linaro.org> <20130325181038.GA631@lunn.ch> <51509873.1010408@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:55309 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754418Ab3CYU1W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 16:27:22 -0400
-Received: by mail-oa0-f44.google.com with SMTP id h1so6897355oag.17
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 13:27:22 -0700 (PDT)
-In-Reply-To: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-ve0-f181.google.com ([209.85.128.181]:55290 "EHLO
+	mail-ve0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755029Ab3CYU2Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 16:28:25 -0400
+Received: by mail-ve0-f181.google.com with SMTP id pa12so3714303veb.40
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 13:28:24 -0700 (PDT)
+In-Reply-To: <51509873.1010408@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, tglx@linutronix.de, andrew@lunn.ch, linaro-kernel@lists.linaro.org, magnus.damm@gmail.com, ben-linux@fluff.org, linux-pm@vger.kernel.org, nsekhar@ti.com, patches@linaro.org, rob.herring@calxeda.com, linux@arm.linux.org.uk, kevin.hilman@linaro.org, horms@verge.net.au, jason@lakedaemon.net, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, linaro-kernel@lists.linaro.org, magnus.damm@gmail.com, ben-linux@fluff.org, linux-pm@vger.kernel.org, nsekhar@ti.com, patches@linaro.org, rob.herring@calxeda.com, linux@arm.linux.org.uk, rjw@sisk.pl, kevin.hilman@linaro.org, horms@verge.net.au, jason@lakedaemon.net, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
-On 03/25/2013 12:55 PM, Daniel Lezcano wrote:
-> The flag CPUIDLE_FLAG_TIMER_STOP has been introduced in the commit
-> 89878baa73f0f1c679355006bd8632e5d78f96c2.
-> 
-> The flag tells the cpuidle framework the local timer will stop in the
-> idle state.
-> 
-> It is now easy to know if the cpuidle driver will use or not the broadcast
-> timer by looking at the different states for this flag and then setup
-> the broadcast timer consequently.
-> 
-> When we remove the timer initialization duplicated code in the different
-> drivers, we have most of the drivers with the same init function. This
-> init function is changed to be generic and moved in the ARM cpuidle driver
-> and used from the drivers. That cleanups code and removes a lot of annoying
-> duplicated code.
-> 
-> There is still some modification in OMAP4, tegra2, tegra3 and imx, especially
-> around the coupled idle states, but we are more and more closer to a common
-> squeleton for all the ARM drivers.
-> 
-> Daniel Lezcano (15):
->   timer: move enum definition out of ifdef section
->   cpuidle: initialize the broadcast timer framework
->   cpuidle: ux500: remove timer broadcast initialization
->   cpuidle: OMAP4: remove timer broadcast initialization
->   cpuidle: imx6: remove timer broadcast initialization
->   ARM: cpuidle: remove useless declaration
->   ARM: cpuidle: add init/exit routine
->   ARM: ux500: cpuidle: use init/exit common routine
->   ARM: at91: cpuidle: use init/exit common routine
->   ARM: OMAP3: cpuidle: use init/exit common routine
->   ARM: s3c64xx: cpuidle: use init/exit common routine
->   ARM: tegra1: cpuidle: use init/exit common routine
->   ARM: shmobile: pm: fix init sections
->   ARM: shmobile: cpuidle: remove useless WFI function
->   ARM: shmobile: cpuidle: use init/exit common routine
-> 
->  arch/arm/include/asm/cpuidle.h         |   11 +++---
->  arch/arm/kernel/cpuidle.c              |   57 +++++++++++++++++++++++++++++++-
->  arch/arm/mach-at91/cpuidle.c           |   17 ++--------
->  arch/arm/mach-imx/cpuidle-imx6q.c      |   15 ---------
->  arch/arm/mach-omap2/cpuidle34xx.c      |   18 ++--------
->  arch/arm/mach-omap2/cpuidle44xx.c      |   14 --------
->  arch/arm/mach-s3c64xx/cpuidle.c        |   15 ++-------
->  arch/arm/mach-shmobile/cpuidle.c       |   22 ++----------
->  arch/arm/mach-shmobile/pm-sh7372.c     |    4 +--
->  arch/arm/mach-tegra/cpuidle-tegra114.c |   27 +--------------
->  arch/arm/mach-ux500/cpuidle.c          |   50 +---------------------------
->  drivers/cpuidle/driver.c               |   35 ++++++++++++++++++--
->  include/linux/clockchips.h             |   22 ++++++------
->  include/linux/cpuidle.h                |    2 ++
->  14 files changed, 120 insertions(+), 189 deletions(-)
+On Mon, 25 Mar 2013, Daniel Lezcano wrote:
 
-What happened to the Calxeda driver?
+> On 03/25/2013 07:10 PM, Andrew Lunn wrote:
+> > On Mon, Mar 25, 2013 at 06:55:32PM +0100, Daniel Lezcano wrote:
+> >> The init and exit routine for most of the drivers are the same,
+> >> that is register the driver and register the device.
+> >>
+> >> Provide a common function to do that in the cpuidle driver for ARM,
+> >> so we can get rid of a lot of code duplication in the different SOC
+> >> cpuidle drivers.
+> > 
+> > Hi Daniel
+> > 
+> > Please could you add a comment in the code about which piece is
+> > specific to ARM, because its not obvious to me. Its not like there is
+> > a reference to WFI for example. It looks like this code could go in
+> > drivers/cpuidle/cpuidle.c
+> 
+> Yes, I agree. At the first glance, the code, as it is, could go in this
+> file but more ARM specific code will be moved to this ARM generic code
+> driver like device tree description and couple idle states. The init
+> function would be more arch specific then.
+> 
+> For this reason, I think it is reasonable to move to
+> arm/kernel/cpuidle.c rather than drivers/cpuidle/cpuidle.c first.
 
-Rob
+No.
 
+Please move things under drivers/cpuidle/ upfront.
+
+We do want drivers to be gathered according to their purpose and 
+subsystem, not according to the architecture they belong to.
+
+This is a simple maintenance optimization to do so.
+
+The reason is when someone wishes to improve the subsystem then that 
+someone who might know nothing about the ARM or other architectures 
+won't have to look for obscure drivers buried into arch specific 
+directories.  When things are gathered under a common directory it is 
+then much easier to perform wide ranging changes to a subsystem.
+
+And for those who do know the ARM architecture and wish to modify the 
+ARM driver it is not that hard to locate the driver once.
+
+The "downside" for you might be that the activity under drivers/cpuidle/ 
+is more closely scrutinized by more people.  But that isn't a bad thing 
+either.
+
+> In the future, when all the ARM cpuidle driver will be fully
+> consolidated, that will be easier to identify the common parts across
+> the different arch and then move them to the generic framework.
+
+Nothing prevents you from doing that consolidation work right in 
+drivers/cpuidle/.
+
+
+Nicolas
