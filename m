@@ -1,113 +1,77 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/9] ARM: CPUFreq: Move drivers arch/arm/ -> drivers/cpufreq
-Date: Mon, 25 Mar 2013 15:41:31 +0530
-Message-ID: <cover.1364205812.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/9] cpufreq: davinci: move cpufreq driver to drivers/cpufreq
+Date: Mon, 25 Mar 2013 15:41:34 +0530
+Message-ID: <ef225dbf63b1d834761773384d3f70cb4ac7b611.1364205812.git.viresh.kumar@linaro.org>
+References: <cover.1364205812.git.viresh.kumar@linaro.org>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1364205812.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1364205812.git.viresh.kumar@linaro.org>
+References: <cover.1364205812.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux@arm.linux.org.uk, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux@arm.linux.org.uk, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>, davinci-linux-open-source@linux.davincidsp.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+This patch moves cpufreq driver of ARM based davinci platform to
+drivers/cpufreq.
 
-This patchset tries to move all CPUFreq drivers for ARM platforms from arch=
-/arm
-to drivers/cpufreq directory.
-
-This series is dependent (rebased of) on following patches:
-
-http://www.spinics.net/lists/arm-kernel/msg232540.html
-https://lkml.org/lkml/2013/3/24/151
-
-I want this series to go through Rafael's tree due to dependencies and so w=
-ant
-Ack's by respective maintainers.
-
-These are applied here for people looking to test them:
-
-http://git.linaro.org/gitweb?p=3Dpeople/vireshk/linux.git;a=3Dshortlog;h=3D=
-refs/heads/cpufreq-move-drivers
-
-Viresh Kumar (9):
-  cpufreq: ARM: Arrange drivers in alphabetical order
-  cpufreq: tegra: Move driver to drivers/cpufreq
-  cpufreq: davinci: move cpufreq driver to drivers/cpufreq
-  cpufreq: imx: move cpufreq driver to drivers/cpufreq
-  cpufreq: integrator: move cpufreq driver to drivers/cpufreq
-  cpufreq: pxa3xx: move cpufreq driver to drivers/cpufreq
-  cpufreq: pxa2xx: move cpufreq driver to drivers/cpufreq
-  cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-  cpufreq: sa11x0: move cpufreq driver to drivers/cpufreq
-
- arch/arm/Kconfig                                   |  79 ---------
- arch/arm/mach-davinci/Makefile                     |   1 -
- arch/arm/mach-imx/Makefile                         |   1 -
- arch/arm/mach-imx/mxc.h                            |   6 +-
- arch/arm/mach-integrator/Makefile                  |   1 -
- arch/arm/mach-pxa/Makefile                         |   6 -
- arch/arm/mach-pxa/include/mach/generic.h           |   1 +
- arch/arm/mach-s3c24xx/Kconfig                      |  66 +++----
- arch/arm/mach-s3c24xx/Makefile                     |   6 -
- arch/arm/mach-s3c24xx/{ =3D> include/mach}/s3c2412.h |   0
- arch/arm/mach-s3c24xx/iotiming-s3c2412.c           |   2 +-
- arch/arm/mach-sa1100/Kconfig                       |  26 +--
- arch/arm/mach-sa1100/Makefile                      |   3 -
- arch/arm/mach-sa1100/include/mach/generic.h        |   1 +
- arch/arm/mach-tegra/Makefile                       |   1 -
- arch/arm/plat-samsung/include/plat/cpu-freq-core.h |  10 +-
- arch/arm/plat-samsung/include/plat/cpu-freq.h      |   6 +-
- drivers/cpufreq/Kconfig.arm                        | 191 +++++++++++++++--=
-----
- drivers/cpufreq/Makefile                           |  24 ++-
- .../cpufreq.c =3D> drivers/cpufreq/davinci-cpufreq.c |   2 -
- .../cpufreq.c =3D> drivers/cpufreq/imx-cpufreq.c     |   7 +-
- .../cpu.c =3D> drivers/cpufreq/integrator-cpufreq.c  |   2 -
- .../cpufreq/pxa2xx-cpufreq.c                       |   2 -
- .../cpufreq/pxa3xx-cpufreq.c                       |   5 +-
- .../cpufreq/s3c2410-cpufreq.c                      |   0
- .../cpufreq/s3c2412-cpufreq.c                      |   3 +-
- .../cpufreq/s3c2440-cpufreq.c                      |   0
- .../cpufreq/s3c24xx-cpufreq-debugfs.c              |   0
- .../cpufreq.c =3D> drivers/cpufreq/s3c24xx-cpufreq.c |   0
- .../cpufreq/sa1100-cpufreq.c                       |   3 +-
- .../cpufreq/sa1110-cpufreq.c                       |   3 +-
- .../cpu-tegra.c =3D> drivers/cpufreq/tegra-cpufreq.c |   2 -
- include/linux/cpufreq/imx.h                        |  10 ++
- 33 files changed, 223 insertions(+), 247 deletions(-)
- create mode 100644 arch/arm/mach-pxa/include/mach/generic.h
- rename arch/arm/mach-s3c24xx/{ =3D> include/mach}/s3c2412.h (100%)
- create mode 100644 arch/arm/mach-sa1100/include/mach/generic.h
+Cc: Sekhar Nori <nsekhar@ti.com>
+Cc: davinci-linux-open-source@linux.davincidsp.com
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ arch/arm/mach-davinci/Makefile                                       | 1 -
+ drivers/cpufreq/Makefile                                             | 1 +
+ arch/arm/mach-davinci/cpufreq.c =3D> drivers/cpufreq/davinci-cpufreq.c | 2=
+ --
+ 3 files changed, 1 insertion(+), 3 deletions(-)
  rename arch/arm/mach-davinci/cpufreq.c =3D> drivers/cpufreq/davinci-cpufre=
 q.c (99%)
- rename arch/arm/mach-imx/cpufreq.c =3D> drivers/cpufreq/imx-cpufreq.c (99%=
-)
- rename arch/arm/mach-integrator/cpu.c =3D> drivers/cpufreq/integrator-cpuf=
-req.c (99%)
- rename arch/arm/mach-pxa/cpufreq-pxa2xx.c =3D> drivers/cpufreq/pxa2xx-cpuf=
-req.c (99%)
- rename arch/arm/mach-pxa/cpufreq-pxa3xx.c =3D> drivers/cpufreq/pxa3xx-cpuf=
-req.c (98%)
- rename arch/arm/mach-s3c24xx/cpufreq-s3c2410.c =3D> drivers/cpufreq/s3c241=
-0-cpufreq.c (100%)
- rename arch/arm/mach-s3c24xx/cpufreq-s3c2412.c =3D> drivers/cpufreq/s3c241=
-2-cpufreq.c (99%)
- rename arch/arm/mach-s3c24xx/cpufreq-s3c2440.c =3D> drivers/cpufreq/s3c244=
-0-cpufreq.c (100%)
- rename arch/arm/mach-s3c24xx/cpufreq-debugfs.c =3D> drivers/cpufreq/s3c24x=
-x-cpufreq-debugfs.c (100%)
- rename arch/arm/mach-s3c24xx/cpufreq.c =3D> drivers/cpufreq/s3c24xx-cpufre=
-q.c (100%)
- rename arch/arm/mach-sa1100/cpu-sa1100.c =3D> drivers/cpufreq/sa1100-cpufr=
-eq.c (99%)
- rename arch/arm/mach-sa1100/cpu-sa1110.c =3D> drivers/cpufreq/sa1110-cpufr=
-eq.c (99%)
- rename arch/arm/mach-tegra/cpu-tegra.c =3D> drivers/cpufreq/tegra-cpufreq.=
-c (99%)
- create mode 100644 include/linux/cpufreq/imx.h
 
+diff --git a/arch/arm/mach-davinci/Makefile b/arch/arm/mach-davinci/Makefil=
+e
+index fb5c1aa..dd1ffcc 100644
+--- a/arch/arm/mach-davinci/Makefile
++++ b/arch/arm/mach-davinci/Makefile
+@@ -37,7 +37,6 @@ obj-$(CONFIG_MACH_MITYOMAPL138)=09=09+=3D board-mityomapl=
+138.o
+ obj-$(CONFIG_MACH_OMAPL138_HAWKBOARD)=09+=3D board-omapl138-hawk.o
+=20
+ # Power Management
+-obj-$(CONFIG_CPU_FREQ)=09=09=09+=3D cpufreq.o
+ obj-$(CONFIG_CPU_IDLE)=09=09=09+=3D cpuidle.o
+ obj-$(CONFIG_SUSPEND)=09=09=09+=3D pm.o sleep.o
+ obj-$(CONFIG_HAVE_CLK)=09=09=09+=3D pm_domain.o
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 966ea28..efce6c7 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_X86_INTEL_PSTATE)=09=09+=3D intel_pstate.o
+=20
+ ##########################################################################=
+########
+ # ARM SoC drivers
++obj-$(CONFIG_ARCH_DAVINCI_DA850)=09+=3D davinci-cpufreq.o
+ obj-$(CONFIG_UX500_SOC_DB8500)=09=09+=3D dbx500-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)=09+=3D exynos-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)=09+=3D exynos4210-cpufreq.o
+diff --git a/arch/arm/mach-davinci/cpufreq.c b/drivers/cpufreq/davinci-cpuf=
+req.c
+similarity index 99%
+rename from arch/arm/mach-davinci/cpufreq.c
+rename to drivers/cpufreq/davinci-cpufreq.c
+index 8fb0c2a..5b34f61 100644
+--- a/arch/arm/mach-davinci/cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -30,8 +30,6 @@
+ #include <mach/cpufreq.h>
+ #include <mach/common.h>
+=20
+-#include "clock.h"
+-
+ struct davinci_cpufreq {
+ =09struct device *dev;
+ =09struct clk *armclk;
 --=20
 1.7.12.rc2.18.g61b472e
-
-
