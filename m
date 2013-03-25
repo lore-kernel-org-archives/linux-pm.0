@@ -1,55 +1,69 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH v2 00/14] Marvell EBU thermal sensor consolidation
-Date: Mon, 25 Mar 2013 07:45:14 -0300
-Message-ID: <20130325104513.GC2502@localhost>
-References: <1363991114-4225-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <20130325093001.GH5627@lunn.ch>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 2/2] staging: ti-soc-thermal: remove external heat while
+ extrapolating hotspot
+Date: Mon, 25 Mar 2013 07:18:36 -0400
+Message-ID: <5150328C.80303@ti.com>
+References: <1363986787-28147-1-git-send-email-eduardo.valentin@ti.com>  <1363986787-28147-3-git-send-email-eduardo.valentin@ti.com> <1364192605.2465.18.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:46091 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755542Ab3CYKpS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 06:45:18 -0400
-Content-Disposition: inline
-In-Reply-To: <20130325093001.GH5627@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1364192605.2465.18.camel@rzhang1-mobl4>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Zhang Rui <rui.zhang@intel.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-On Mon, Mar 25, 2013 at 10:30:01AM +0100, Andrew Lunn wrote:
-[...]
->=20
-> What does all this mean? I _think_ there will be less and less shared
-> code in future as these extra features are added.
->=20
+On 25-03-2013 02:23, Zhang Rui wrote:
+> On Fri, 2013-03-22 at 17:13 -0400, Eduardo Valentin wrote:
+>> For boards that provide a PCB sensor close to SoC junction
+>> temperature, it is possible to remove the cumulative heat
+>> reported by the SoC temperature sensor.
+>>
+>> This patch changes the extrapolation computation to consider
+>> an external sensor in the extrapolation equations.
+>>
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>   drivers/staging/ti-soc-thermal/ti-thermal-common.c |    5 ++---
+>>   1 files changed, 2 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+>> index 231c549..52d3c1b 100644
+>> --- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+>> +++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+>> @@ -92,10 +92,9 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
+>>   	if (ret)
+>>   		return ret;
+>>
+>> -	pcb_temp = 0;
+>> -	/* TODO: Introduce pcb temperature lookup */
+>> +	ret = thermal_zone_lookup_temperature("pcb", &pcb_temp);
+>>   	/* In case pcb zone is available, use the extrapolation rule with it */
+>> -	if (pcb_temp) {
+>> +	if (!ret) {
+>>   		tmp -= pcb_temp;
+>>   		slope = s->slope_pcb;
+>>   		constant = s->constant_pcb;
+>
+> I can not see this piece of code.
+> But I assume that the thermal_zone_device is registered in another
+> driver, right?
 
-Yes, I see your point. On the other side, I don't like the idea of
-taking this decision based in the uncertain science of futurology :)
+It is because I made this patch based on staging-next. But you will find 
+the same under drivers/stating/omap-thermal/omap-bandgap.c
 
-When will we add this extra features? Will we add them at all?
 
-> I've not a strong opinion, but i think separate drivers are better.=20
->=20
+Yes. The sensor managed by another driver. And the temperature lookup is 
+assumed to be done by the fw.
 
-Don't you think a single driver could make maintenance cheaper?
+> or else you can use the thermal_zone_device pointer directly instead.
+>
 
-> If we do stick to one driver, i would however want #ifdef
-> CONFIG_ARCH_DOVE, CONFIG_ARCH_KIRKWOOD, CONFIG_MACH_ARMADA_XP &
-> CONFIG_MACH_ARMADA_370 scattered through the code.
->=20
+I'd not recommend this because of the above statements
 
-Mmm... I'm not a fan for ifdefs. Actually, I really *hate* ifdefs.
-I'll try to come up with an ifdef solution without making it too nasty.
-
-Otherwise, perhaps I'll send a patch for Armada 370/XP only; I don't
-want to push harder on something I'm not *absolutely* sure about either=
-=2E
-If we see there's an opportunity to merge the drivers, we can do always
-do that later.
---=20
-Ezequiel Garc=C3=ADa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
+> thanks,
+> rui
+>
+>
+>
