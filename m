@@ -1,62 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: drivers: Remove unnecessary assignments of
- policy-> members
-Date: Mon, 25 Mar 2013 14:15:46 +0530
-Message-ID: <CAKohpomTt-ajNeh-OwV9X-HNBddJzL=JB+ggFY0msmsuZabvjA@mail.gmail.com>
-References: <2ece6d9fe8dfb6882a1c83a1cb2404bacc40b22d.1364138740.git.viresh.kumar@linaro.org>
-	<07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
-	<51500C81.7040307@ti.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH for 3.9 0/2] thermal: Marvell SoC thermal formula fixes
+Date: Mon, 25 Mar 2013 09:50:27 +0100
+Message-ID: <20130325085027.GG5627@lunn.ch>
+References: <1363954983-30822-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1364199456.2465.46.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:41925 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757352Ab3CYIpr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 04:45:47 -0400
-Received: by mail-ob0-f177.google.com with SMTP id eh20so5613053obb.22
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 01:45:46 -0700 (PDT)
-In-Reply-To: <51500C81.7040307@ti.com>
+Received: from londo.lunn.ch ([80.238.139.98]:58158 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757697Ab3CYIug (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Mar 2013 04:50:36 -0400
+Content-Disposition: inline
+In-Reply-To: <1364199456.2465.46.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Sascha Hauer <kernel@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org, linux-omap@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>
 
-On 25 March 2013 14:06, Sekhar Nori <nsekhar@ti.com> wrote:
-> There is a line in the code a little above the ones you deleted that
-> also sets these same variables. I guess you were relying on that line to
-> set policy->cur, but that also sets policy->{min, max} which can be
-> cleaned up.
+On Mon, Mar 25, 2013 at 04:17:36PM +0800, Zhang Rui wrote:
+> Hi,
+> 
+> Ezequiel, thanks for your patch.
+> 
+> On Fri, 2013-03-22 at 09:23 -0300, Ezequiel Garcia wrote:
+> > This is a small patchset that fixes thermal sensor formulas for Kirkwood
+> > and Dove thermal driver. The old formulas had been taken from 88AP510 public
+> > datasheets which appears to be slightly wrong.
+> > 
+> > The current formula comes from Marvell internal documentation
+> > and has been confirmed by Lior Amsalem.
+> > 
+> > This has been tested on a Kirkwood board (Openblocks A6) only.
+> > If at all possible, I would like to have the Dove fix tested
+> > before this is merged.
+> > 
+> > Please note that this fix was previously part of a bigger thermal
+> > patchset [1]. I've taken this out so it can be applied on v3.9 first.
+> > 
+> > [1] http://www.spinics.net/lists/arm-kernel/msg231697.html
+> > 
+> > Ezequiel Garcia (2):
+> >   thermal: kirkwood: Fix thermal sensor formula
+> >   thermal: dove: Fix thermal sensor formula
+> > 
+> 
+> Nobuhiro and Andrew,
+> 
+> what do you think of these patches?
+> As I have no idea of the hardware details, I need your comments before
+> applying them.
 
-This code is rather confusing or wrong, this was the state of code before
-this patch:
+I have no access to the internal documentation, so i cannot say if
+this formula is correct or not. However, Lior Amsalem should be in the
+know.
 
-	policy->cur = policy->min = policy->max = davinci_getspeed(0);
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
-	if (freq_table) {
-		result = cpufreq_frequency_table_cpuinfo(policy, freq_table);
-		if (!result)
-			cpufreq_frequency_table_get_attr(freq_table,
-							policy->cpu);
-	} else {
-		policy->cpuinfo.min_freq = policy->min;
-		policy->cpuinfo.max_freq = policy->max;
-	}
-
-        policy->min = policy->cpuinfo.min_freq;
-        policy->max = policy->cpuinfo.max_freq;
-        policy->cur = davinci_getspeed(0);
-
-
-The tricky part is if/else, where if don't return error if
-cpufreq_frequency_table_cpuinfo() fails. We want to set ->min[max]
-and cpuinfo.min[max] always. And i can see this code not doing that for some
-case even with my patch.
-
-Possible scenarios:
-1. Valid freq_table: My patch + what you suggested is required.
-2. Invalid freq_table: We never set cpuinfo.min[max] with or without my patch
-3. No freq_table: Only my patch is required.
-
-If i do what you suggested then 2 and 3 would fail... If you want to
-return error
-in case cpufreq_frequency_table_cpuinfo(), then i can fix it properly.
+	  Andrew
