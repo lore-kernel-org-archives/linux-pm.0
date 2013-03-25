@@ -1,61 +1,95 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v5 0/8] Reset controller API to reset IP modules on i.MX5 and i.MX6
-Date: Mon, 25 Mar 2013 18:06:21 +0100
-Message-ID: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
+Subject: [PATCH v5 5/8] staging: drm/imx: Use SRC to reset IPU
+Date: Mon, 25 Mar 2013 18:06:26 +0100
+Message-ID: <1364231189-12497-6-git-send-email-p.zabel@pengutronix.de>
+References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35116 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57010 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932272Ab3CYRHQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:07:16 -0400
+	with ESMTP id S932371Ab3CYRHa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:07:30 -0400
+In-Reply-To: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
 
-The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
+Request the System Reset Controller to reset the IPU if
+specified via device tree phandle.
 
-The following patches add a simple API for devices to request being reset
-by separate reset controller hardware and implements the reset signal
-device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
-the i.MX SRC contains self-deasserting reset registers, so I've included
-both ops to manually assert/deassert a reset line, as well as a "reset"
-operation that is supposed to assert the reset line and wait for it to
-deassert.
-
-The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-is made to request being reset by calling the device_reset(&pdev->dev)
-convenience wrapper during probing.
-
-Changes since v4:
- - removed flags parameter from .of_xlate / of_reset_simple_xlate
- - warn also if reset_spec->args_count > rcdev->of_reset_n_cells
- - unlock list mutex only after try_module_get
- - tighten devm_reset_control_match a bit
-
-regards
-Philipp
-
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
 ---
- .../devicetree/bindings/reset/fsl,imx-src.txt      |  49 ++++
- .../devicetree/bindings/reset/gpio-reset.txt       |  37 +++
- Documentation/devicetree/bindings/reset/reset.txt  |  75 ++++++
- .../bindings/staging/imx-drm/fsl-imx-drm.txt       |   3 +
- arch/arm/boot/dts/imx51.dtsi                       |   7 +
- arch/arm/boot/dts/imx53.dtsi                       |   7 +
- arch/arm/boot/dts/imx6q.dtsi                       |   1 +
- arch/arm/boot/dts/imx6qdl.dtsi                     |   4 +-
- arch/arm/mach-imx/Kconfig                          |   3 +
- arch/arm/mach-imx/mm-imx5.c                        |   2 +
- arch/arm/mach-imx/src.c                            |  69 ++++-
- drivers/Kconfig                                    |   2 +
- drivers/Makefile                                   |   3 +
- drivers/reset/Kconfig                              |  26 ++
- drivers/reset/Makefile                             |   2 +
- drivers/reset/core.c                               | 297 +++++++++++++++++++++
- drivers/reset/gpio-reset.c                         | 208 +++++++++++++++
- drivers/staging/imx-drm/ipu-v3/ipu-common.c        |  12 +-
- include/linux/reset-controller.h                   |  51 ++++
- include/linux/reset.h                              |  17 ++
- 20 files changed, 870 insertions(+), 5 deletions(-)
+ .../devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt      |  3 +++
+ drivers/staging/imx-drm/ipu-v3/ipu-common.c                  | 12 +++++++++---
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt b/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
+index 07654f0..f769857 100644
+--- a/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
++++ b/Documentation/devicetree/bindings/staging/imx-drm/fsl-imx-drm.txt
+@@ -8,6 +8,8 @@ Required properties:
+ - interrupts: Should contain sync interrupt and error interrupt,
+   in this order.
+ - #crtc-cells: 1, See below
++- resets: phandle pointing to the system reset controller and
++          reset line index, see reset/fsl,imx-src.txt for details
+ 
+ example:
+ 
+@@ -16,6 +18,7 @@ ipu: ipu@18000000 {
+ 	compatible = "fsl,imx53-ipu";
+ 	reg = <0x18000000 0x080000000>;
+ 	interrupts = <11 10>;
++	resets = <&src 2>;
+ };
+ 
+ Parallel display support
+diff --git a/drivers/staging/imx-drm/ipu-v3/ipu-common.c b/drivers/staging/imx-drm/ipu-v3/ipu-common.c
+index 366f259..04b8320 100644
+--- a/drivers/staging/imx-drm/ipu-v3/ipu-common.c
++++ b/drivers/staging/imx-drm/ipu-v3/ipu-common.c
+@@ -16,6 +16,7 @@
+ #include <linux/export.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
++#include <linux/reset.h>
+ #include <linux/platform_device.h>
+ #include <linux/err.h>
+ #include <linux/spinlock.h>
+@@ -660,7 +661,7 @@ int ipu_idmac_disable_channel(struct ipuv3_channel *channel)
+ }
+ EXPORT_SYMBOL_GPL(ipu_idmac_disable_channel);
+ 
+-static int ipu_reset(struct ipu_soc *ipu)
++static int ipu_memory_reset(struct ipu_soc *ipu)
+ {
+ 	unsigned long timeout;
+ 
+@@ -1104,7 +1105,12 @@ static int ipu_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto out_failed_irq;
+ 
+-	ret = ipu_reset(ipu);
++	ret = device_reset(&pdev->dev);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to reset: %d\n", ret);
++		goto out_failed_reset;
++	}
++	ret = ipu_memory_reset(ipu);
+ 	if (ret)
+ 		goto out_failed_reset;
+ 
+@@ -1130,8 +1136,8 @@ static int ipu_probe(struct platform_device *pdev)
+ failed_add_clients:
+ 	ipu_submodules_exit(ipu);
+ failed_submodules_init:
+-	ipu_irq_exit(ipu);
+ out_failed_reset:
++	ipu_irq_exit(ipu);
+ out_failed_irq:
+ 	clk_disable_unprepare(ipu->clk);
+ failed_clk_get:
+-- 
+1.8.2.rc2
 
