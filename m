@@ -1,69 +1,42 @@
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: Re: [PATCH] PCI / ACPI: Always resume devices on ACPI wakeup
- notifications
-Date: Mon, 25 Mar 2013 09:45:51 -0700
-Message-ID: <20130325164551.GA6869@xanatos>
-References: <2282655.IicBMMa6jN@vostro.rjw.lan>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 1/2] cpufreq: Notify all policy->cpus in cpufreq_notify_transition()
+Date: Mon, 25 Mar 2013 10:48:42 -0600
+Message-ID: <51507FEA.8040306@wwwdotorg.org>
+References: <981c23bd4b2a14c346820685e1203ab7054378f8.1364132845.git.viresh.kumar@linaro.org> <CAKohpo=JuyVmSRFs1wpqvvmouRpL+d8ms-o4UC74OJqAgFv7Vw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2282655.IicBMMa6jN@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mips-bounce@linux-mips.org>
+In-Reply-To: <CAKohpo=JuyVmSRFs1wpqvvmouRpL+d8ms-o4UC74OJqAgFv7Vw@mail.gmail.com>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, linaro-kernel@lists.linaro.org, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <kernel@pengutronix.de>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>, Hans-Christian Egtvedt <egtvedt@samfundet.no>, Mike Frysinger <vapier@gentoo.org>, Mikael Starvik <starvik@axis.com>, Jesper Nilsson <jesper.nilsson@axis.com>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arn>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Mar 23, 2013 at 03:33:03PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 03/24/2013 11:19 PM, Viresh Kumar wrote:
+> On 24 March 2013 19:18, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> policy->cpus contains all online cpus that have single shared clock line. And
+>> their frequencies are always updated together.
+>>
+>> Many SMP system's cpufreq drivers take care of this in individual drivers but
+>> the best place for this code is in cpufreq core.
+>>
+>> This patch modifies cpufreq_notify_transition() to notify frequency change for
+>> all cpus in policy->cpus and hence updates all users of this API.
 > 
-> It turns out that _Lxx control methods provided by some BIOSes clear
-> the PME Status bit of PCI devices they handle, which means that
-> pci_acpi_wake_dev() cannot really use that bit to check whether or
-> not the device has signalled wakeup.
-> 
-> For this reason, make pci_acpi_wake_dev() always attempt to resume
-> the device it is called for regardless of the device's PME Status bit
-> value (that bit still has to be cleared if set at this point,
-> though).
-> 
-> Reported-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Another fixup for tegra:
 
-Should this be marked for stable?  I had this issue on 3.7 and 3.8 as
-well.
+This series including this patch (although I had a devil of a time
+applying this fixup since all the TABs got converted to spaces when it
+was pasted into email)
 
-Sarah
-
-> ---
->  drivers/pci/pci-acpi.c |   15 ++++++++-------
->  1 file changed, 8 insertions(+), 7 deletions(-)
-> 
-> Index: linux-pm/drivers/pci/pci-acpi.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-acpi.c
-> +++ linux-pm/drivers/pci/pci-acpi.c
-> @@ -53,14 +53,15 @@ static void pci_acpi_wake_dev(acpi_handl
->  		return;
->  	}
->  
-> -	if (!pci_dev->pm_cap || !pci_dev->pme_support
-> -	     || pci_check_pme_status(pci_dev)) {
-> -		if (pci_dev->pme_poll)
-> -			pci_dev->pme_poll = false;
-> +	/* Clear PME Status if set. */
-> +	if (pci_dev->pme_support)
-> +		pci_check_pme_status(pci_dev);
->  
-> -		pci_wakeup_event(pci_dev);
-> -		pm_runtime_resume(&pci_dev->dev);
-> -	}
-> +	if (pci_dev->pme_poll)
-> +		pci_dev->pme_poll = false;
-> +
-> +	pci_wakeup_event(pci_dev);
-> +	pm_runtime_resume(&pci_dev->dev);
->  
->  	if (pci_dev->subordinate)
->  		pci_pme_wakeup_bus(pci_dev->subordinate);
-> 
+Acked-by: Stephen Warren <swarren@nvidia.com>
+Tested-by: Stephen Warren <swarren@nvidia.com>
