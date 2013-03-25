@@ -1,92 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 07/15] ARM: cpuidle: add init/exit routine
-Date: Mon, 25 Mar 2013 20:46:09 +0100
-Message-ID: <5150A981.1090001@linaro.org>
-References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org> <1364234140-514-8-git-send-email-daniel.lezcano@linaro.org> <20130325181038.GA631@lunn.ch> <51509873.1010408@linaro.org> <20130325190908.GC631@lunn.ch> <5150A378.60608@linaro.org> <CAP245DUfhQ77Snp6XtRXG+CCeWq6BUWq+2PzFuy=0=XTkSR1=Q@mail.gmail.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 00/15] ARM: cpuidle: code consolidation
+Date: Mon, 25 Mar 2013 15:27:19 -0500
+Message-ID: <5150B327.5010507@gmail.com>
+References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f173.google.com ([74.125.82.173]:35901 "EHLO
-	mail-we0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932858Ab3CYTqJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 15:46:09 -0400
-Received: by mail-we0-f173.google.com with SMTP id t57so1271388wey.32
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 12:46:08 -0700 (PDT)
-In-Reply-To: <CAP245DUfhQ77Snp6XtRXG+CCeWq6BUWq+2PzFuy=0=XTkSR1=Q@mail.gmail.com>
+Received: from mail-oa0-f44.google.com ([209.85.219.44]:55309 "EHLO
+	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418Ab3CYU1W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 16:27:22 -0400
+Received: by mail-oa0-f44.google.com with SMTP id h1so6897355oag.17
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 13:27:22 -0700 (PDT)
+In-Reply-To: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Magnus Damm <magnus.damm@gmail.com>, ben-linux@fluff.org, linux-pm@vger.kernel.org, "Nori, Sekhar" <nsekhar@ti.com>, Patch Tracking <patches@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>, Kevin Hilman <kevin.hilman@linaro.org>, horms@verge.net.au, jason@lakedaemon.net, kernel@pengutronix.de, Kukjin Kim <kgene.kim@samsung.com>, plagnioj@jcrosoft.com, linux@maxim.org.za, Lists LAKML <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, tglx@linutronix.de, andrew@lunn.ch, linaro-kernel@lists.linaro.org, magnus.damm@gmail.com, ben-linux@fluff.org, linux-pm@vger.kernel.org, nsekhar@ti.com, patches@linaro.org, rob.herring@calxeda.com, linux@arm.linux.org.uk, kevin.hilman@linaro.org, horms@verge.net.au, jason@lakedaemon.net, kernel@pengutronix.de, kgene.kim@samsung.com, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
-On 03/25/2013 08:31 PM, Amit Kucheria wrote:
-> On Tue, Mar 26, 2013 at 12:50 AM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> On 03/25/2013 08:09 PM, Andrew Lunn wrote:
->>>>> Please could you add a comment in the code about which piece is
->>>>> specific to ARM, because its not obvious to me. Its not like ther=
-e is
->>>>> a reference to WFI for example. It looks like this code could go =
-in
->>>>> drivers/cpuidle/cpuidle.c
->>>>
->>>> Yes, I agree. At the first glance, the code, as it is, could go in=
- this
->>>> file but more ARM specific code will be moved to this ARM generic =
-code
->>>> driver like device tree description and couple idle states. The in=
-it
->>>> function would be more arch specific then.
->>>
->>> Hi Daniel
->>>
->>> There was a discussion about device tree bindings when i posted
->>> the kirkwood cpuidle driver, now in drivers/cpuidle/cpuidle-kirkwoo=
-d.c.
->>>
->>> The conclusion was that pseudo devices, like cpuidle, do not have D=
-T
->>> bindings. They can check of_machine_is_compatible(), like
->>> cpuidle-calxeda.c does, or they are platform drivers, which is what
->>> cpuidle-kirkwood.c is.
->>>
->>> Even if DT binding was allowed, it again should not be ARM specific=
-=2E
->>
->> If the DT binding was allowed, I *may* not be ARM specific but will
->> certainly used only by the ARM drivers as the x86 platform uses ACPI=
- or
->> static tables.
->>
->>> Are coupled idle states ARM specific?
->>
->> Well the code is not arch specific but today the idle coupling is AR=
-M
->> specific because it is the only arch using this kind of synchronizat=
-ion.
->> There is also a last man standing algorithm common to ux500 and imx
->> (maybe exynos soon) I would like to merge into this ARM driver.
->=20
-> Nico has developed a last man standing algorithm[1] for big.LITTLE
-> TC2. That too needs to be considered during this consolidation. While
-> it was developed for multi-cluster configurations, I don't see what i=
-t
-> shouldn't work here too.
->=20
-> [1] http://lwn.net/Articles/539082/
+On 03/25/2013 12:55 PM, Daniel Lezcano wrote:
+> The flag CPUIDLE_FLAG_TIMER_STOP has been introduced in the commit
+> 89878baa73f0f1c679355006bd8632e5d78f96c2.
+> 
+> The flag tells the cpuidle framework the local timer will stop in the
+> idle state.
+> 
+> It is now easy to know if the cpuidle driver will use or not the broadcast
+> timer by looking at the different states for this flag and then setup
+> the broadcast timer consequently.
+> 
+> When we remove the timer initialization duplicated code in the different
+> drivers, we have most of the drivers with the same init function. This
+> init function is changed to be generic and moved in the ARM cpuidle driver
+> and used from the drivers. That cleanups code and removes a lot of annoying
+> duplicated code.
+> 
+> There is still some modification in OMAP4, tegra2, tegra3 and imx, especially
+> around the coupled idle states, but we are more and more closer to a common
+> squeleton for all the ARM drivers.
+> 
+> Daniel Lezcano (15):
+>   timer: move enum definition out of ifdef section
+>   cpuidle: initialize the broadcast timer framework
+>   cpuidle: ux500: remove timer broadcast initialization
+>   cpuidle: OMAP4: remove timer broadcast initialization
+>   cpuidle: imx6: remove timer broadcast initialization
+>   ARM: cpuidle: remove useless declaration
+>   ARM: cpuidle: add init/exit routine
+>   ARM: ux500: cpuidle: use init/exit common routine
+>   ARM: at91: cpuidle: use init/exit common routine
+>   ARM: OMAP3: cpuidle: use init/exit common routine
+>   ARM: s3c64xx: cpuidle: use init/exit common routine
+>   ARM: tegra1: cpuidle: use init/exit common routine
+>   ARM: shmobile: pm: fix init sections
+>   ARM: shmobile: cpuidle: remove useless WFI function
+>   ARM: shmobile: cpuidle: use init/exit common routine
+> 
+>  arch/arm/include/asm/cpuidle.h         |   11 +++---
+>  arch/arm/kernel/cpuidle.c              |   57 +++++++++++++++++++++++++++++++-
+>  arch/arm/mach-at91/cpuidle.c           |   17 ++--------
+>  arch/arm/mach-imx/cpuidle-imx6q.c      |   15 ---------
+>  arch/arm/mach-omap2/cpuidle34xx.c      |   18 ++--------
+>  arch/arm/mach-omap2/cpuidle44xx.c      |   14 --------
+>  arch/arm/mach-s3c64xx/cpuidle.c        |   15 ++-------
+>  arch/arm/mach-shmobile/cpuidle.c       |   22 ++----------
+>  arch/arm/mach-shmobile/pm-sh7372.c     |    4 +--
+>  arch/arm/mach-tegra/cpuidle-tegra114.c |   27 +--------------
+>  arch/arm/mach-ux500/cpuidle.c          |   50 +---------------------------
+>  drivers/cpuidle/driver.c               |   35 ++++++++++++++++++--
+>  include/linux/clockchips.h             |   22 ++++++------
+>  include/linux/cpuidle.h                |    2 ++
+>  14 files changed, 120 insertions(+), 189 deletions(-)
 
-I had it in mind when answering but I didn't mention it.
+What happened to the Calxeda driver?
 
-Thanks Amit for the pointer.
-
-  -- Daniel
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Rob
 
