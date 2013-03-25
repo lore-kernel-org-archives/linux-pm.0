@@ -1,71 +1,161 @@
-From: Catalin Marinas <catalin.marinas@arm.com>
-Subject: Re: [RFC patch 02/11] cpuidle / arm : a single cpuidle driver
-Date: Mon, 25 Mar 2013 18:27:20 +0000
-Message-ID: <CAHkRjk45cGSKiC003izHrLSZPb3wsmjXPTG3e0raSaXAdQRqEQ@mail.gmail.com>
-References: <1363357630-22214-1-git-send-email-daniel.lezcano@linaro.org>
- <1363357630-22214-3-git-send-email-daniel.lezcano@linaro.org>
- <201303151447.06150.arnd@arndb.de> <51433949.1030204@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 07/15] ARM: cpuidle: add init/exit routine
+Date: Mon, 25 Mar 2013 19:33:23 +0100
+Message-ID: <51509873.1010408@linaro.org>
+References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org> <1364234140-514-8-git-send-email-daniel.lezcano@linaro.org> <20130325181038.GA631@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:54123 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932207Ab3CYS1l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 14:27:41 -0400
-Received: by mail-pa0-f49.google.com with SMTP id kp14so916043pab.22
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 11:27:40 -0700 (PDT)
-In-Reply-To: <51433949.1030204@linaro.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:59247 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932672Ab3CYSdY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 14:33:24 -0400
+Received: by mail-wi0-f170.google.com with SMTP id hm11so11405030wib.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 11:33:23 -0700 (PDT)
+In-Reply-To: <20130325181038.GA631@lunn.ch>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, andrew@lunn.ch, linaro-kernel@lists.linaro.org, kernel@pengutronix.de, linux-pm@vger.kernel.org, nsekhar@ti.com, magnus.damm@gmail.com, rjw@sisk.pl, kevin.hilman@linaro.org, horms@verge.net.au, rob.herring@calxeda.com, ben-linux@fluff.org, kgene.kim@samsung.com, lenb@kernel.org, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, jason@lakedaemon.net
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: rjw@sisk.pl, tglx@linutronix.de, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, lenb@kernel.org, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, linus.walleij@linaro.org, linux@arm.linux.org.uk
 
-On 15 March 2013 15:07, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> On 03/15/2013 03:47 PM, Arnd Bergmann wrote:
->> On Friday 15 March 2013, Daniel Lezcano wrote:
->>> The cpuidle drivers are duplicating a lot of code and in most
->>> of the case there is a common pattern we can factor out:
->>>
->>>         * setup the broadcast timers
->>>         * register the driver
->>>         * register the devices
->>>
->>> This arm driver is the common part between all the ARM cpuidle drivers,
->>> with the code factored out.
->>>
->>> It does not handle the coupled idle state for now but it is the first
->>> step to have everyone to converge to the same code pattern.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 03/25/2013 07:10 PM, Andrew Lunn wrote:
+> On Mon, Mar 25, 2013 at 06:55:32PM +0100, Daniel Lezcano wrote:
+>> The init and exit routine for most of the drivers are the same,
+>> that is register the driver and register the device.
 >>
->> Unfortunately, I missed the session in Hong Kong, but I'd like to understand
->> what part of this driver is actually ARM specific. I assume there is nothing
->> in it that depends on 32 bit ARM hardware, right?
->
-> What depends on the 32bits ARM hardware is the drivers themselves. This
-> ARM driver is the first step to consolidate all SoC cpuidle specific
-> code we find in arch/arm. The code is designated to factor out these
-> drivers, as a first step. The second step is to consolidate more this
-> driver (eg. moving the code in arch/arm/kernel/cpuidle.c in this driver).
->
-> The last man standing algorithm we have in mach-ux500 and mach-imx is
-> the same, and will be moved in the ARM cpuidle driver.
->
-> The more it will be consolidated, the more it will be ARM specific.
->
-> The final step will be to use the device tree to be passed to this
-> driver and do the cpuidle driver initialization from there.
->
->> Would the same code be used with arch/arm64?
->
-> I can't tell but IIUC, a single ARM driver will be used based on the
-> psci for ARM64, but it does not exist for now. It is possible some code
-> pattern could be used from the ARM32 cpuidle driver.
+>> Provide a common function to do that in the cpuidle driver for ARM,
+>> so we can get rid of a lot of code duplication in the different SOC
+>> cpuidle drivers.
+>=20
+> Hi Daniel
+>=20
+> Please could you add a comment in the code about which piece is
+> specific to ARM, because its not obvious to me. Its not like there is
+> a reference to WFI for example. It looks like this code could go in
+> drivers/cpuidle/cpuidle.c
 
-While we recommend PSCI if EL3 (secure mode) is available, not all
-ARMv8 CPU implementations will have this and most likely we'll have to
-reuse existing cpuidle drivers. So if you can make it as generic as
-possible it would really help.
+Yes, I agree. At the first glance, the code, as it is, could go in this
+file but more ARM specific code will be moved to this ARM generic code
+driver like device tree description and couple idle states. The init
+function would be more arch specific then.
 
--- 
-Catalin
+=46or this reason, I think it is reasonable to move to
+arm/kernel/cpuidle.c rather than drivers/cpuidle/cpuidle.c first.
+
+In the future, when all the ARM cpuidle driver will be fully
+consolidated, that will be easier to identify the common parts across
+the different arch and then move them to the generic framework.
+
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>  arch/arm/include/asm/cpuidle.h |    4 +++
+>>  arch/arm/kernel/cpuidle.c      |   57 +++++++++++++++++++++++++++++=
+++++++++++-
+>>  2 files changed, 60 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/c=
+puidle.h
+>> index 7367787..83a38ac 100644
+>> --- a/arch/arm/include/asm/cpuidle.h
+>> +++ b/arch/arm/include/asm/cpuidle.h
+>> @@ -4,6 +4,10 @@
+>>  extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+>>  				    struct cpuidle_driver *drv, int index);
+>> =20
+>> +extern int arm_cpuidle_init(struct cpuidle_driver *drv);
+>> +
+>> +extern void arm_cpuidle_exit(struct cpuidle_driver *drv);
+>> +
+>>  /* Common ARM WFI state */
+>>  #define ARM_CPUIDLE_WFI_STATE_PWR(p) {\
+>>  	.enter                  =3D arm_cpuidle_simple_enter,\
+>> diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+>> index 89545f6..13cfe3e 100644
+>> --- a/arch/arm/kernel/cpuidle.c
+>> +++ b/arch/arm/kernel/cpuidle.c
+>> @@ -9,13 +9,68 @@
+>>   * http://www.gnu.org/copyleft/gpl.html
+>>   */
+>> =20
+>> +#include <linux/module.h>
+>>  #include <linux/cpuidle.h>
+>>  #include <asm/proc-fns.h>
+>> =20
+>> +static DEFINE_PER_CPU(struct cpuidle_device, cpuidle_device);
+>> +
+>>  int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+>> -		struct cpuidle_driver *drv, int index)
+>> +			     struct cpuidle_driver *drv, int index)
+>>  {
+>>  	cpu_do_idle();
+>> =20
+>>  	return index;
+>>  }
+>> +
+>> +int __init arm_cpuidle_init(struct cpuidle_driver *drv)
+>> +{
+>> +       int ret, cpu;
+>> +       struct cpuidle_device *device;
+>> +
+>> +       ret =3D cpuidle_register_driver(drv);
+>> +       if (ret) {
+>> +               printk(KERN_ERR "failed to register idle driver '%s'=
+\n",
+>> +                       drv->name);
+>> +               return ret;
+>> +       }
+>> +
+>> +       for_each_online_cpu(cpu) {
+>> +
+>> +               device =3D &per_cpu(cpuidle_device, cpu);
+>> +               device->cpu =3D cpu;
+>> +               ret =3D cpuidle_register_device(device);
+>> +               if (ret) {
+>> +                       printk(KERN_ERR "Failed to register cpuidle =
+"
+>> +                              "device for cpu%d\n", cpu);
+>> +                       goto out_unregister;
+>> +               }
+>> +       }
+>> +
+>> +out:
+>> +       return ret;
+>> +
+>> +out_unregister:
+>> +       for_each_online_cpu(cpu) {
+>> +               device =3D &per_cpu(cpuidle_device, cpu);
+>> +               cpuidle_unregister_device(device);
+>> +       }
+>> +
+>> +       cpuidle_unregister_driver(drv);
+>> +       goto out;
+>> +}
+>> +EXPORT_SYMBOL_GPL(arm_cpuidle_init);
+>> +
+>> +void __exit arm_cpuidle_exit(struct cpuidle_driver *drv)
+>> +{
+>> +	int cpu;
+>> +	struct cpuidle_device *device;
+>> +
+>> +	for_each_online_cpu(cpu) {
+>> +		device =3D &per_cpu(cpuidle_device, cpu);
+>> +		cpuidle_unregister_device(device);
+>> +	}
+>> +
+>> +	cpuidle_unregister_driver(drv);
+>> +}
+>> +EXPORT_SYMBOL_GPL(arm_cpuidle_exit);
+>> --=20
+>> 1.7.9.5
+>>
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
