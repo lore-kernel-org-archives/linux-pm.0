@@ -1,74 +1,99 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH 2/2] cpufreq: drivers: Remove unnecessary assignments
- of policy-> members
-Date: Mon, 25 Mar 2013 14:06:17 +0530
-Message-ID: <51500C81.7040307@ti.com>
-References: <2ece6d9fe8dfb6882a1c83a1cb2404bacc40b22d.1364138740.git.viresh.kumar@linaro.org> <07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2] thermal: rcar: tidyup registration failure case
+Date: Mon, 25 Mar 2013 16:40:56 +0800
+Message-ID: <1364200856.2465.48.camel@rzhang1-mobl4>
+References: <87620gqbbe.wl%kuninori.morimoto.gx@renesas.com>
+	 <874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <07b96c5b68470001197445fb3d28786ad9acdbe0.1364138740.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, Sascha Hauer <kernel@pengutronix.de>, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org, linux-omap@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:46722 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755325Ab3CYIlA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Mar 2013 04:41:00 -0400
+In-Reply-To: <874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
 
-On 3/24/2013 8:59 PM, Viresh Kumar wrote:
-> Some assignments of policy-> min/max/cur/cpuinfo.min_freq/cpuinfo.max_freq
-> aren't required as part of it is done by cpufreq driver or cpufreq core.
+On Sun, 2013-03-24 at 22:49 -0700, Kuninori Morimoto wrote:
+> Current rcar_thermal driver didn't care about rcar_theraml_irq_disable()
+> when registration failure case on _probe(), and _remove().
+> And, it returns without unregistering thermal zone when
+> registration failure case on _probe().
+> This patch fixes these issue.
 > 
-> Remove them.
-> 
-> At some places we merge multiple lines together too.
-> 
-> Cc: Sekhar Nori <nsekhar@ti.com>
-> Cc: Sascha Hauer <kernel@pengutronix.de>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: linux-sh@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 > ---
->  Documentation/cpu-freq/cpu-drivers.txt | 5 +++--
->  arch/arm/mach-davinci/cpufreq.c        | 4 ----
->  arch/arm/mach-imx/cpufreq.c            | 3 ---
->  arch/sh/kernel/cpufreq.c               | 9 +++------
->  drivers/cpufreq/cpufreq-nforce2.c      | 6 ++----
->  drivers/cpufreq/omap-cpufreq.c         | 4 +---
->  6 files changed, 9 insertions(+), 22 deletions(-)
+>  drivers/thermal/rcar_thermal.c |   20 ++++++++++++++------
+>  1 file changed, 14 insertions(+), 6 deletions(-)
 > 
-> diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-> index 72f70b1..c94383f 100644
-> --- a/Documentation/cpu-freq/cpu-drivers.txt
-> +++ b/Documentation/cpu-freq/cpu-drivers.txt
-> @@ -108,8 +108,9 @@ policy->governor		must contain the "default policy" for
->  				cpufreq_driver.target is called with
->  				these values.
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 28f0919..359e943 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -419,13 +419,15 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+>  		if (!priv) {
+>  			dev_err(dev, "Could not allocate priv\n");
+> -			return -ENOMEM;
+> +			ret = -ENOMEM;
+> +			goto error_unregister;
+>  		}
 >  
-> -For setting some of these values, the frequency table helpers might be
-> -helpful. See the section 2 for more information on them.
-> +For setting some of these values (cpuinfo.min[max]_freq, policy->min[max]), the
-> +frequency table helpers might be helpful. See the section 2 for more information
-> +on them.
+>  		priv->base = devm_request_and_ioremap(dev, res);
+>  		if (!priv->base) {
+>  			dev_err(dev, "Unable to ioremap priv register\n");
+> -			return -ENOMEM;
+> +			ret = -ENOMEM;
+> +			goto error_unregister;
+>  		}
 >  
->  SMP systems normally have same clock source for a group of cpus. For these the
->  .init() would be called only once for the first online cpu. Here the .init()
-> diff --git a/arch/arm/mach-davinci/cpufreq.c b/arch/arm/mach-davinci/cpufreq.c
-> index 8fb0c2a..ff46862 100644
-> --- a/arch/arm/mach-davinci/cpufreq.c
-> +++ b/arch/arm/mach-davinci/cpufreq.c
-> @@ -149,10 +149,6 @@ static int davinci_cpu_init(struct cpufreq_policy *policy)
->  		policy->cpuinfo.max_freq = policy->max;
+>  		priv->common = common;
+> @@ -444,10 +446,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  			goto error_unregister;
+>  		}
+>  
+> -		list_move_tail(&priv->list, &common->head);
+> -
+>  		if (rcar_has_irq_support(priv))
+>  			rcar_thermal_irq_enable(priv);
+> +
+> +		list_move_tail(&priv->list, &common->head);
 >  	}
 >  
-> -	policy->min = policy->cpuinfo.min_freq;
-> -	policy->max = policy->cpuinfo.max_freq;
-> -	policy->cur = davinci_getspeed(0);
+why do you need this change for the rcar_thermal_irq_disable issue?
 
-There is a line in the code a little above the ones you deleted that
-also sets these same variables. I guess you were relying on that line to
-set policy->cur, but that also sets policy->{min, max} which can be
-cleaned up.
+thanks,
+rui
+>  	platform_set_drvdata(pdev, common);
+> @@ -457,8 +459,11 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  	return 0;
+>  
+>  error_unregister:
+> -	rcar_thermal_for_each_priv(priv, common)
+> +	rcar_thermal_for_each_priv(priv, common) {
+>  		thermal_zone_device_unregister(priv->zone);
+> +		if (rcar_has_irq_support(priv))
+> +			rcar_thermal_irq_disable(priv);
+> +	}
+>  
+>  	return -ENODEV;
+>  }
+> @@ -468,8 +473,11 @@ static int rcar_thermal_remove(struct platform_device *pdev)
+>  	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
+>  	struct rcar_thermal_priv *priv;
+>  
+> -	rcar_thermal_for_each_priv(priv, common)
+> +	rcar_thermal_for_each_priv(priv, common) {
+>  		thermal_zone_device_unregister(priv->zone);
+> +		if (rcar_has_irq_support(priv))
+> +			rcar_thermal_irq_disable(priv);
+> +	}
+>  
+>  	platform_set_drvdata(pdev, NULL);
+>  
 
-Thanks,
-Sekhar
+
