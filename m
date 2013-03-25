@@ -1,71 +1,72 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 03/15] cpuidle: ux500: remove timer broadcast initialization
-Date: Mon, 25 Mar 2013 18:55:28 +0100
-Message-ID: <1364234140-514-4-git-send-email-daniel.lezcano@linaro.org>
-References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 00/15] ARM: cpuidle: code consolidation
+Date: Mon, 25 Mar 2013 18:55:25 +0100
+Message-ID: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f179.google.com ([74.125.82.179]:45373 "EHLO
-	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758819Ab3CYRzs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:55:48 -0400
-Received: by mail-we0-f179.google.com with SMTP id u3so5239000wey.38
-        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 10:55:47 -0700 (PDT)
-In-Reply-To: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-we0-f169.google.com ([74.125.82.169]:51420 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758819Ab3CYRzk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:55:40 -0400
+Received: by mail-we0-f169.google.com with SMTP id x43so965987wey.28
+        for <linux-pm@vger.kernel.org>; Mon, 25 Mar 2013 10:55:39 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl, tglx@linutronix.de
 Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, lenb@kernel.org, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, linus.walleij@linaro.org, linux@arm.linux.org.uk
 
-The initialization is done from the cpuidle framework.
+The flag CPUIDLE_FLAG_TIMER_STOP has been introduced in the commit
+89878baa73f0f1c679355006bd8632e5d78f96c2.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-ux500/cpuidle.c |   18 ------------------
- 1 file changed, 18 deletions(-)
+The flag tells the cpuidle framework the local timer will stop in the
+idle state.
 
-diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
-index 6d0c4b6..1b16d9e 100644
---- a/arch/arm/mach-ux500/cpuidle.c
-+++ b/arch/arm/mach-ux500/cpuidle.c
-@@ -11,7 +11,6 @@
- 
- #include <linux/module.h>
- #include <linux/cpuidle.h>
--#include <linux/clockchips.h>
- #include <linux/spinlock.h>
- #include <linux/atomic.h>
- #include <linux/smp.h>
-@@ -112,16 +111,6 @@ static struct cpuidle_driver ux500_idle_driver = {
- 	.state_count = 2,
- };
- 
--/*
-- * For each cpu, setup the broadcast timer because we will
-- * need to migrate the timers for the states >= ApIdle.
-- */
--static void ux500_setup_broadcast_timer(void *arg)
--{
--	int cpu = smp_processor_id();
--	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
--}
--
- int __init ux500_idle_init(void)
- {
- 	int ret, cpu;
-@@ -131,13 +120,6 @@ int __init ux500_idle_init(void)
- 	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
- 			     PRCMU_WAKEUP(ABB));
- 
--	/*
--	 * Configure the timer broadcast for each cpu, that must
--	 * be done from the cpu context, so we use a smp cross
--	 * call with 'on_each_cpu'.
--	 */
--	on_each_cpu(ux500_setup_broadcast_timer, NULL, 1);
--
- 	ret = cpuidle_register_driver(&ux500_idle_driver);
- 	if (ret) {
- 		printk(KERN_ERR "failed to register ux500 idle driver\n");
+It is now easy to know if the cpuidle driver will use or not the broadcast
+timer by looking at the different states for this flag and then setup
+the broadcast timer consequently.
+
+When we remove the timer initialization duplicated code in the different
+drivers, we have most of the drivers with the same init function. This
+init function is changed to be generic and moved in the ARM cpuidle driver
+and used from the drivers. That cleanups code and removes a lot of annoying
+duplicated code.
+
+There is still some modification in OMAP4, tegra2, tegra3 and imx, especially
+around the coupled idle states, but we are more and more closer to a common
+squeleton for all the ARM drivers.
+
+Daniel Lezcano (15):
+  timer: move enum definition out of ifdef section
+  cpuidle: initialize the broadcast timer framework
+  cpuidle: ux500: remove timer broadcast initialization
+  cpuidle: OMAP4: remove timer broadcast initialization
+  cpuidle: imx6: remove timer broadcast initialization
+  ARM: cpuidle: remove useless declaration
+  ARM: cpuidle: add init/exit routine
+  ARM: ux500: cpuidle: use init/exit common routine
+  ARM: at91: cpuidle: use init/exit common routine
+  ARM: OMAP3: cpuidle: use init/exit common routine
+  ARM: s3c64xx: cpuidle: use init/exit common routine
+  ARM: tegra1: cpuidle: use init/exit common routine
+  ARM: shmobile: pm: fix init sections
+  ARM: shmobile: cpuidle: remove useless WFI function
+  ARM: shmobile: cpuidle: use init/exit common routine
+
+ arch/arm/include/asm/cpuidle.h         |   11 +++---
+ arch/arm/kernel/cpuidle.c              |   57 +++++++++++++++++++++++++++++++-
+ arch/arm/mach-at91/cpuidle.c           |   17 ++--------
+ arch/arm/mach-imx/cpuidle-imx6q.c      |   15 ---------
+ arch/arm/mach-omap2/cpuidle34xx.c      |   18 ++--------
+ arch/arm/mach-omap2/cpuidle44xx.c      |   14 --------
+ arch/arm/mach-s3c64xx/cpuidle.c        |   15 ++-------
+ arch/arm/mach-shmobile/cpuidle.c       |   22 ++----------
+ arch/arm/mach-shmobile/pm-sh7372.c     |    4 +--
+ arch/arm/mach-tegra/cpuidle-tegra114.c |   27 +--------------
+ arch/arm/mach-ux500/cpuidle.c          |   50 +---------------------------
+ drivers/cpuidle/driver.c               |   35 ++++++++++++++++++--
+ include/linux/clockchips.h             |   22 ++++++------
+ include/linux/cpuidle.h                |    2 ++
+ 14 files changed, 120 insertions(+), 189 deletions(-)
+
 -- 
 1.7.9.5
 
