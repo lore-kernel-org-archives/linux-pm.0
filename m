@@ -1,58 +1,37 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v5 4/8] ARM i.MX6q: Link system reset controller (SRC) to IPU in DT
-Date: Mon, 25 Mar 2013 18:06:25 +0100
-Message-ID: <1364231189-12497-5-git-send-email-p.zabel@pengutronix.de>
-References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] x86: fix idle notifier not being called in CONFIG_X86_32
+Date: Mon, 25 Mar 2013 12:48:58 -0400
+Message-ID: <51507FFA.4020403@kernel.org>
+References: <1362375673-29287-1-git-send-email-illyas.mansoor@intel.com> <20130306101818.GA6587@gmail.com> <810586B7581CC8469141DADEBC37191224F77316@BGSMSX102.gar.corp.intel.com> <20130306103627.GC16827@gmail.com> <810586B7581CC8469141DADEBC37191224F773F0@BGSMSX102.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57006 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932407Ab3CYRH2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:07:28 -0400
-In-Reply-To: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
+Received: from mail-gh0-f178.google.com ([209.85.160.178]:32981 "EHLO
+	mail-gh0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757543Ab3CYRSW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Mar 2013 13:18:22 -0400
+In-Reply-To: <810586B7581CC8469141DADEBC37191224F773F0@BGSMSX102.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
+To: "Mansoor, Illyas" <illyas.mansoor@intel.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@redhat.com>, X86 <x86@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Matthew Garrett <matthew.garrett@nebula.com>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "Rudramuni, Vishwesh M" <vishwesh.m.rudramuni@intel.com>, "richard@nod.at" <richard@nod.at>, "josh@joshtriplett.org" <josh@joshtriplett.org>, "Kumar P, Mahesh" <mahesh.kumar.p@intel.com>, "Sil, Dyut K" <dyut.k.sil@intel.com>, Arjan van de Ven <arjan@infradead.org>
 
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Stephen Warren <swarren@nvidia.com>
----
- arch/arm/boot/dts/imx6q.dtsi   | 1 +
- arch/arm/boot/dts/imx6qdl.dtsi | 2 ++
- 2 files changed, 3 insertions(+)
+I'm okay with this patch since it makes 32-bit and 64-bit consistent,
+and technically, it fixes a regression.
 
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index cba021e..4cd4f8d 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -291,6 +291,7 @@
- 			interrupts = <0 8 0x4 0 7 0x4>;
- 			clocks = <&clks 133>, <&clks 134>, <&clks 137>;
- 			clock-names = "bus", "di0", "di1";
-+			resets = <&src 4>;
- 		};
- 	};
- };
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 06ec460..3e21e92 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -516,6 +516,7 @@
- 				compatible = "fsl,imx6q-src";
- 				reg = <0x020d8000 0x4000>;
- 				interrupts = <0 91 0x04 0 96 0x04>;
-+				#reset-cells = <1>;
- 			};
- 
- 			gpc: gpc@020dc000 {
-@@ -795,6 +796,7 @@
- 			interrupts = <0 6 0x4 0 5 0x4>;
- 			clocks = <&clks 130>, <&clks 131>, <&clks 132>;
- 			clock-names = "bus", "di0", "di1";
-+			resets = <&src 2>;
- 		};
- 	};
- };
--- 
-1.8.2.rc2
+If/when we get rid of the notifier, we should do it for both 32-and
+64-bit at the same time.
+
+It isn't clear to me that Alex's work will solve this particular
+problem, or that there is a code or logical conflict -- though
+maybe you are referring to some code I've not read yet.
+
+So for this trivial patch...
+Acked-by: Len Brown <len.brown@intel.com>
+
+But I think the bigger problem here is the expectation that out of tree
+drivers will not break.  The interactive governor is not upstream.
+
+Len Brown, Intel Open Source Technology Center
 
