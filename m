@@ -1,63 +1,82 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] thermal: dove: Fix thermal sensor formula
-Date: Tue, 26 Mar 2013 22:24:55 +0800
-Message-ID: <1364307895.2821.24.camel@rzhang1-mobl4>
-References: <1363954983-30822-1-git-send-email-ezequiel.garcia@free-electrons.com>
-	 <1363954983-30822-3-git-send-email-ezequiel.garcia@free-electrons.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 05/15] cpuidle: imx6: remove timer broadcast initialization
+Date: Tue, 26 Mar 2013 22:28:16 +0800
+Message-ID: <20130326142813.GB7141@S2101-09.ap.freescale.net>
+References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org>
+ <1364234140-514-6-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:20923 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934473Ab3CZOZB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Mar 2013 10:25:01 -0400
-In-Reply-To: <1363954983-30822-3-git-send-email-ezequiel.garcia@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1364234140-514-6-git-send-email-daniel.lezcano@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: andrew@lunn.ch, linus.walleij@linaro.org, nsekhar@ti.com, kgene.kim@samsung.com, linux@arm.linux.org.uk, patches@linaro.org, magnus.damm@gmail.com, kevin.hilman@linaro.org, plagnioj@jcrosoft.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, linux-pm@vger.kernel.org, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, ben-linux@fluff.org, tglx@linutronix.de, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jason Cooper <jason@lakedaemon.net>, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>
 
-On Fri, 2013-03-22 at 09:23 -0300, Ezequiel Garcia wrote:
-> The currently formula has been taken from the 88AP510 SoC datasheet,
-> which is not exactly correct. The correct value for the temperature
-> in Celcius of the sensor present in this SoC is:
+On Mon, Mar 25, 2013 at 06:55:30PM +0100, Daniel Lezcano wrote:
+> The initialization is done from the cpuidle framework.
 > 
->   Celsius = (322-reg)/1.3625
-> 
-> Signed-off-by: Lior Amsalem <alior@marvell.com>
-> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-applied to thermal -next.
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
-thanks,
-rui
 > ---
-> Tested by compilation only.
+>  arch/arm/mach-imx/cpuidle-imx6q.c |   15 ---------------
+>  1 file changed, 15 deletions(-)
 > 
->  drivers/thermal/dove_thermal.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-> index 7b0bfa0..ddd73a5 100644
-> --- a/drivers/thermal/dove_thermal.c
-> +++ b/drivers/thermal/dove_thermal.c
-> @@ -107,12 +107,13 @@ static int dove_get_temp(struct thermal_zone_device *thermal,
->  	}
+> diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
+> index 5ae22f7..a783a63 100644
+> --- a/arch/arm/mach-imx/cpuidle-imx6q.c
+> +++ b/arch/arm/mach-imx/cpuidle-imx6q.c
+> @@ -6,7 +6,6 @@
+>   * published by the Free Software Foundation.
+>   */
 >  
->  	/*
-> -	 * Calculate temperature. See Section 8.10.1 of 88AP510,
-> -	 * Documentation/arm/Marvell/README
-> +	 * Calculate temperature. According to Marvell internal
-> +	 * documentation the formula for this is:
-> +	 * Celsius = (322-reg)/1.3625
->  	 */
->  	reg = readl_relaxed(priv->sensor);
->  	reg = (reg >> DOVE_THERMAL_TEMP_OFFSET) & DOVE_THERMAL_TEMP_MASK;
-> -	*temp = ((2281638UL - (7298*reg)) / 10);
-> +	*temp = ((3220000000UL - (10000000UL * reg)) / 13625);
->  
->  	return 0;
+> -#include <linux/clockchips.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/module.h>
+>  #include <asm/cpuidle.h>
+> @@ -43,17 +42,6 @@ done:
+>  	return index;
 >  }
-
-
+>  
+> -/*
+> - * For each cpu, setup the broadcast timer because local timer
+> - * stops for the states other than WFI.
+> - */
+> -static void imx6q_setup_broadcast_timer(void *arg)
+> -{
+> -	int cpu = smp_processor_id();
+> -
+> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
+> -}
+> -
+>  static struct cpuidle_driver imx6q_cpuidle_driver = {
+>  	.name = "imx6q_cpuidle",
+>  	.owner = THIS_MODULE,
+> @@ -84,8 +72,5 @@ int __init imx6q_cpuidle_init(void)
+>  	/* Set chicken bit to get a reliable WAIT mode support */
+>  	imx6q_set_chicken_bit();
+>  
+> -	/* Configure the broadcast timer on each cpu */
+> -	on_each_cpu(imx6q_setup_broadcast_timer, NULL, 1);
+> -
+>  	return imx_cpuidle_init(&imx6q_cpuidle_driver);
+>  }
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
