@@ -1,34 +1,61 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: omap cpufreq driver in multi-platform kernels
-Date: Tue, 26 Mar 2013 20:49:48 -0500
-Message-ID: <5152503C.2050503@gmail.com>
+From: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
+Subject: Re: [PATCH v5 0/8] Reset controller API to reset IP modules on i.MX5
+ and i.MX6
+Date: Tue, 26 Mar 2013 22:13:38 +0100
+Message-ID: <201303262213.39068.marex@denx.de>
+References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
+ <20130326181909.GA31593@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f45.google.com ([209.85.212.45]:52522 "EHLO
-	mail-vb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307Ab3C0Btv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 21:49:51 -0400
-Received: by mail-vb0-f45.google.com with SMTP id q16so2573657vbe.18
-        for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2013 18:49:50 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <20130326181909.GA31593-tWAi6jLit6GreWDznjuHag@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Pavel Machek <pavel-ynQEQJNshbs@public.gmane.org>
+Cc: Fabio Estevam <fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@deeprootsystems.com>, Tony Lindgren <tony@atomide.com>, Paul Walmsley <paul@pwsan.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-Kevin, Tony, Paul,
+Dear Pavel Machek,
 
-The omap cpufreq driver causes problems in multi-platform kernels
-because it unconditionally registers with the cpufreq core and does not
-check sufficiently that it is running on an omap platform. So on a
-kernel with highbank and omap drivers booted on highbank, the
-cpufreq-cpu0 driver fails to init. Any suggestions for how to fix? For
-DT this could just be several of_machine_is_compatible checks, but I'm
-not really sure for non-DT. Converting the driver to a platform driver
-would be another option.
+> Hi!
+> 
+> > The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
+> > reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
+> > 
+> > The following patches add a simple API for devices to request being reset
+> > by separate reset controller hardware and implements the reset signal
+> > device tree binding proposed by Stephen Warren. Contrary to Tegra
+> > hardware, the i.MX SRC contains self-deasserting reset registers, so
+> > I've included both ops to manually assert/deassert a reset line, as well
+> > as a "reset" operation that is supposed to assert the reset line and
+> > wait for it to deassert.
+> > 
+> > The i.MX SRC is enhanced to provide a reset controller and the IPU driver
+> > is made to request being reset by calling the device_reset(&pdev->dev)
+> > convenience wrapper during probing.
+> > 
+> > Changes since v4:
+> >  - removed flags parameter from .of_xlate / of_reset_simple_xlate
+> >  - warn also if reset_spec->args_count > rcdev->of_reset_n_cells
+> >  - unlock list mutex only after try_module_get
+> >  - tighten devm_reset_control_match a bit
+> 
+> Series looks mostly ok to me. (Should the last patch be actually
+> first, so that reset functionality is kept between 5/8 and 8/8?)
 
-This will also affect other cpufreq-cpu0 users like iMX. And I'd guess
-there may be other ARM cpufreq drivers that will cause the same issue.
+Not first, but rather third.
 
-Rob
+You can add my
+Reviewed-by: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
+
+Best regards,
+Marek Vasut
