@@ -1,7 +1,7 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH 2/5] Thermal: thermal framework registration failure case cleanup
-Date: Wed, 27 Mar 2013 00:26:06 +0800
-Message-ID: <1364315169-15427-3-git-send-email-rui.zhang@intel.com>
+Subject: [RFC PATCH 5/5] Thermal: build cpu_cooling code into thermal_sys module
+Date: Wed, 27 Mar 2013 00:26:09 +0800
+Message-ID: <1364315169-15427-6-git-send-email-rui.zhang@intel.com>
 References: <1364315169-15427-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1364315169-15427-1-git-send-email-rui.zhang@intel.com>
@@ -12,39 +12,49 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/thermal/thermal_core.c |   12 ++----------
- 1 file changed, 2 insertions(+), 10 deletions(-)
+ drivers/thermal/Kconfig     |    2 +-
+ drivers/thermal/Makefile    |    2 +-
+ include/linux/cpu_cooling.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5b7863a..845ed6e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1863,13 +1863,9 @@ static int __init thermal_init(void)
- 	int result = 0;
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index a764f16..10014de 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -67,7 +67,7 @@ config THERMAL_GOV_USER_SPACE
+ 	  Enable this to let the user space manage the platform thermals.
  
- 	result = class_register(&thermal_class);
--	if (result) {
--		idr_destroy(&thermal_tz_idr);
--		idr_destroy(&thermal_cdev_idr);
--		mutex_destroy(&thermal_idr_lock);
--		mutex_destroy(&thermal_list_lock);
-+	if (result)
- 		return result;
--	}
-+
- 	result = genetlink_init();
- 	return result;
- }
-@@ -1877,10 +1873,6 @@ static int __init thermal_init(void)
- static void __exit thermal_exit(void)
- {
- 	class_unregister(&thermal_class);
--	idr_destroy(&thermal_tz_idr);
--	idr_destroy(&thermal_cdev_idr);
--	mutex_destroy(&thermal_idr_lock);
--	mutex_destroy(&thermal_list_lock);
- 	genetlink_exit();
- }
+ config CPU_THERMAL
+-	tristate "generic cpu cooling support"
++	bool "generic cpu cooling support"
+ 	depends on CPU_FREQ
+ 	select CPU_FREQ_TABLE
+ 	help
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index b7fffc7..cae124f 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -11,7 +11,7 @@ thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
+ thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
  
+ # cpufreq cooling
+-obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
++thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+ 
+ # platform thermal drivers
+ obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index 40b4ef5..b30cc79c 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -29,7 +29,7 @@
+ #define CPUFREQ_COOLING_START		0
+ #define CPUFREQ_COOLING_STOP		1
+ 
+-#if defined(CONFIG_CPU_THERMAL) || defined(CONFIG_CPU_THERMAL_MODULE)
++#ifdef CONFIG_CPU_THERMAL
+ /**
+  * cpufreq_cooling_register - function to create cpufreq cooling device.
+  * @clip_cpus: cpumask of cpus where the frequency constraints will happen
 -- 
 1.7.9.5
