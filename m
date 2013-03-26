@@ -1,145 +1,98 @@
-From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Subject: Re: [PATCH 1/4] thermal: Add driver for Armada 370/XP SoC thermal
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 1/4] thermal: Add driver for Armada 370/XP SoC thermal
  management
-Date: Tue, 26 Mar 2013 05:59:25 -0300
-Message-ID: <20130326085924.GA2454@localhost>
+Date: Tue, 26 Mar 2013 09:10:55 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C591A5@BGSMSX101.gar.corp.intel.com>
 References: <1364225229-2857-1-git-send-email-ezequiel.garcia@free-electrons.com>
  <1364225229-2857-2-git-send-email-ezequiel.garcia@free-electrons.com>
  <4D68720C2E767A4AA6A8796D42C8EB59C587D8@BGSMSX101.gar.corp.intel.com>
+ <20130326085924.GA2454@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([94.23.35.102]:50896 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757400Ab3CZI7b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 04:59:31 -0400
-Content-Disposition: inline
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C587D8@BGSMSX101.gar.corp.intel.com>
+Received: from mga09.intel.com ([134.134.136.24]:24201 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758729Ab3CZJLJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Mar 2013 05:11:09 -0400
+In-Reply-To: <20130326085924.GA2454@localhost>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, "Zhang, Rui" <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
 
-Hi Durgadoss,
-
-On Mon, Mar 25, 2013 at 05:27:24PM +0000, R, Durgadoss wrote:
-[...]
-> > +static void armadaxp_init_sensor(struct armada_thermal_priv *priv)
-> > +{
-> > +	unsigned long reg;
-> > +
-> > +	/* ??? */
-> > +	reg =3D readl_relaxed(priv->control);
-> > +	reg |=3D PMU_TDC0_OTF_CAL_MASK;
-> > +	writel(reg, priv->control);
-> > +
-> > +	/* Reference calibration value */
-> > +	reg &=3D ~PMU_TDC0_REF_CAL_CNT_MASK;
-> > +	reg |=3D (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
-> > +	writel(reg, priv->control);
->=20
-> I see these two blocks of code being the same for the below
-> function as well. Any specific reason for not making this block=20
-> as a common function and calling it from both the=20
-> _init_sensor functions ?
->=20
-
-I think it's more clear if we define one init_sensor function per SoC.
-The common code is really little and factor that out seems to me like
-too much modularization.
-
-> > +
-> > +	/* Reset the sensor */
-> > +	reg =3D readl_relaxed(priv->control);
-> > +	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
-> > +
-> > +	writel(reg, priv->control);
-> > +
-> > +	/* Enable the sensor */
-> > +	reg =3D readl_relaxed(priv->sensor);
-> > +	reg &=3D ~PMU_TM_DISABLE_MASK;
-> > +	writel(reg, priv->sensor);
-> > +}
-> > +
-> > +static void armada370_init_sensor(struct armada_thermal_priv *priv=
-)
-> > +{
-> > +	unsigned long reg;
-> > +
-> > +	/* ??? */
-> > +	reg =3D readl_relaxed(priv->control);
-> > +	reg |=3D PMU_TDC0_OTF_CAL_MASK;
-> > +	writel(reg, priv->control);
-> > +
-> > +	/* Reference calibration value */
-> > +	reg &=3D ~PMU_TDC0_REF_CAL_CNT_MASK;
-> > +	reg |=3D (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
-> > +	writel(reg, priv->control);
-> > +
-> > +	/* ??? */
-> > +	reg &=3D ~PMU_TDC0_START_CAL_MASK;
-> > +	writel(reg, priv->control);
-> > +
-> > +	/* FIXME: Why do we need this delay? */
-> > +	mdelay(10);
-> > +}
-> > +
-> > +static bool armada_is_valid(struct armada_thermal_priv *priv)
-> > +{
-> > +	unsigned long reg =3D readl_relaxed(priv->sensor);
-> > +
-> > +	return (reg >> THERMAL_VALID_OFFSET) & THERMAL_VALID_MASK;
-> > +}
-> > +
-> > +static int armada_get_temp(struct thermal_zone_device *thermal,
-> > +			  unsigned long *temp)
-> > +{
-> > +	struct armada_thermal_priv *priv =3D thermal->devdata;
-> > +	unsigned long reg;
-> > +
-> > +	/* Valid check */
-> > +	if (priv->ops->is_valid && !priv->ops->is_valid(priv)) {
-> > +		dev_err(&thermal->device,
-> > +			"Temperature sensor reading not valid\n");
-> > +		return -EIO;
-> > +	}
-> > +
-> > +	reg =3D (readl_relaxed(priv->sensor) >> THERMAL_TEMP_OFFSET) &
->=20
-> Can we have the readl_relaxed call as a separate statement ?
->=20
-
-Why would we want that? Do you think it'll be more readable?
-
-> > +		THERMAL_TEMP_MASK;
-> > +	*temp =3D (3153000000UL - (10000000UL*reg)) / 13825;
->=20
-> If I substitute 1 for 'reg' I get  227341.7721...=20
-> Does this mean the temperature is 227 C ??
->=20
-
-Yes, I guess so.
-
-> If you have the info, can you add a comment on what is the
-> valid range that 'reg' can take ?
->
-
-No, I don't have the info. I guess that the valid range 'reg'
-can take are the values that span a temperature between 25 =C2=BAC (or
-lower if it's winter) and when your CPU is on fire :-)
-
-> Also, Is the resulting temperature
-> in MillidegreeCelsius ? If so, please add a comment saying so.
->=20
-
-Yes, the resulting temperature is in millidegree celsius,
-as required by the thermal framework:
-
-Documentation/thermal/sysfs-api.txt
-
-Thanks for the review!
---=20
-Ezequiel Garc=C3=ADa, Free Electrons
-Embedded Linux, Kernel and Android Engineering
-http://free-electrons.com
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFemVxdWllbCBHYXJjaWEgW21h
+aWx0bzplemVxdWllbC5nYXJjaWFAZnJlZS1lbGVjdHJvbnMuY29tXQ0KPiBTZW50OiBUdWVzZGF5
+LCBNYXJjaCAyNiwgMjAxMyAyOjI5IFBNDQo+IFRvOiBSLCBEdXJnYWRvc3MNCj4gQ2M6IGxpbnV4
+LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
+OyBMaW9yDQo+IEFtc2FsZW07IE5vYnVoaXJvIEl3YW1hdHN1OyBaaGFuZywgUnVpOyBTZWJhc3Rp
+YW4gSGVzc2VsYmFydGg7IEFuZHJldw0KPiBMdW5uOyBUaG9tYXMgUGV0YXp6b25pOyBHcmVnb3J5
+IENsZW1lbnQ7IEphc29uIENvb3Blcg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvNF0gdGhlcm1h
+bDogQWRkIGRyaXZlciBmb3IgQXJtYWRhIDM3MC9YUCBTb0MgdGhlcm1hbA0KPiBtYW5hZ2VtZW50
+DQo+IA0KPiBIaSBEdXJnYWRvc3MsDQo+IA0KPiBPbiBNb24sIE1hciAyNSwgMjAxMyBhdCAwNToy
+NzoyNFBNICswMDAwLCBSLCBEdXJnYWRvc3Mgd3JvdGU6DQo+IFsuLi5dDQo+ID4gPiArc3RhdGlj
+IHZvaWQgYXJtYWRheHBfaW5pdF9zZW5zb3Ioc3RydWN0IGFybWFkYV90aGVybWFsX3ByaXYgKnBy
+aXYpDQo+ID4gPiArew0KPiA+ID4gKwl1bnNpZ25lZCBsb25nIHJlZzsNCj4gPiA+ICsNCj4gPiA+
+ICsJLyogPz8/ICovDQo+ID4gPiArCXJlZyA9IHJlYWRsX3JlbGF4ZWQocHJpdi0+Y29udHJvbCk7
+DQo+ID4gPiArCXJlZyB8PSBQTVVfVERDMF9PVEZfQ0FMX01BU0s7DQo+ID4gPiArCXdyaXRlbChy
+ZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKw0KPiA+ID4gKwkvKiBSZWZlcmVuY2UgY2FsaWJy
+YXRpb24gdmFsdWUgKi8NCj4gPiA+ICsJcmVnICY9IH5QTVVfVERDMF9SRUZfQ0FMX0NOVF9NQVNL
+Ow0KPiA+ID4gKwlyZWcgfD0gKDB4ZjEgPDwgUE1VX1REQzBfUkVGX0NBTF9DTlRfT0ZGUyk7DQo+
+ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+DQo+ID4gSSBzZWUgdGhlc2Ug
+dHdvIGJsb2NrcyBvZiBjb2RlIGJlaW5nIHRoZSBzYW1lIGZvciB0aGUgYmVsb3cNCj4gPiBmdW5j
+dGlvbiBhcyB3ZWxsLiBBbnkgc3BlY2lmaWMgcmVhc29uIGZvciBub3QgbWFraW5nIHRoaXMgYmxv
+Y2sNCj4gPiBhcyBhIGNvbW1vbiBmdW5jdGlvbiBhbmQgY2FsbGluZyBpdCBmcm9tIGJvdGggdGhl
+DQo+ID4gX2luaXRfc2Vuc29yIGZ1bmN0aW9ucyA/DQo+ID4NCj4gDQo+IEkgdGhpbmsgaXQncyBt
+b3JlIGNsZWFyIGlmIHdlIGRlZmluZSBvbmUgaW5pdF9zZW5zb3IgZnVuY3Rpb24gcGVyIFNvQy4N
+Cj4gVGhlIGNvbW1vbiBjb2RlIGlzIHJlYWxseSBsaXR0bGUgYW5kIGZhY3RvciB0aGF0IG91dCBz
+ZWVtcyB0byBtZSBsaWtlDQo+IHRvbyBtdWNoIG1vZHVsYXJpemF0aW9uLg0KDQpJIHdvdWxkIGxl
+YXZlIGl0IHVwIHRvIHlvdSwgdGhlbi4NCg0KPiANCj4gPiA+ICsNCj4gPiA+ICsJLyogUmVzZXQg
+dGhlIHNlbnNvciAqLw0KPiA+ID4gKwlyZWcgPSByZWFkbF9yZWxheGVkKHByaXYtPmNvbnRyb2wp
+Ow0KPiA+ID4gKwl3cml0ZWwoKHJlZyB8IFBNVV9UREMwX1NXX1JTVF9NQVNLKSwgcHJpdi0+Y29u
+dHJvbCk7DQo+ID4gPiArDQo+ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+
+ID4gKw0KPiA+ID4gKwkvKiBFbmFibGUgdGhlIHNlbnNvciAqLw0KPiA+ID4gKwlyZWcgPSByZWFk
+bF9yZWxheGVkKHByaXYtPnNlbnNvcik7DQo+ID4gPiArCXJlZyAmPSB+UE1VX1RNX0RJU0FCTEVf
+TUFTSzsNCj4gPiA+ICsJd3JpdGVsKHJlZywgcHJpdi0+c2Vuc29yKTsNCj4gPiA+ICt9DQo+ID4g
+PiArDQo+ID4gPiArc3RhdGljIHZvaWQgYXJtYWRhMzcwX2luaXRfc2Vuc29yKHN0cnVjdCBhcm1h
+ZGFfdGhlcm1hbF9wcml2ICpwcml2KQ0KPiA+ID4gK3sNCj4gPiA+ICsJdW5zaWduZWQgbG9uZyBy
+ZWc7DQo+ID4gPiArDQo+ID4gPiArCS8qID8/PyAqLw0KPiA+ID4gKwlyZWcgPSByZWFkbF9yZWxh
+eGVkKHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKwlyZWcgfD0gUE1VX1REQzBfT1RGX0NBTF9NQVNL
+Ow0KPiA+ID4gKwl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sKTsNCj4gPiA+ICsNCj4gPiA+ICsJ
+LyogUmVmZXJlbmNlIGNhbGlicmF0aW9uIHZhbHVlICovDQo+ID4gPiArCXJlZyAmPSB+UE1VX1RE
+QzBfUkVGX0NBTF9DTlRfTUFTSzsNCj4gPiA+ICsJcmVnIHw9ICgweGYxIDw8IFBNVV9UREMwX1JF
+Rl9DQUxfQ05UX09GRlMpOw0KPiA+ID4gKwl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sKTsNCj4g
+PiA+ICsNCj4gPiA+ICsJLyogPz8/ICovDQo+ID4gPiArCXJlZyAmPSB+UE1VX1REQzBfU1RBUlRf
+Q0FMX01BU0s7DQo+ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKw0K
+PiA+ID4gKwkvKiBGSVhNRTogV2h5IGRvIHdlIG5lZWQgdGhpcyBkZWxheT8gKi8NCj4gPiA+ICsJ
+bWRlbGF5KDEwKTsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGJvb2wgYXJtYWRh
+X2lzX3ZhbGlkKHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2KQ0KPiA+ID4gK3sNCj4g
+PiA+ICsJdW5zaWduZWQgbG9uZyByZWcgPSByZWFkbF9yZWxheGVkKHByaXYtPnNlbnNvcik7DQo+
+ID4gPiArDQo+ID4gPiArCXJldHVybiAocmVnID4+IFRIRVJNQUxfVkFMSURfT0ZGU0VUKSAmIFRI
+RVJNQUxfVkFMSURfTUFTSzsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGludCBh
+cm1hZGFfZ2V0X3RlbXAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnRoZXJtYWwsDQo+ID4g
+PiArCQkJICB1bnNpZ25lZCBsb25nICp0ZW1wKQ0KPiA+ID4gK3sNCj4gPiA+ICsJc3RydWN0IGFy
+bWFkYV90aGVybWFsX3ByaXYgKnByaXYgPSB0aGVybWFsLT5kZXZkYXRhOw0KPiA+ID4gKwl1bnNp
+Z25lZCBsb25nIHJlZzsNCj4gPiA+ICsNCj4gPiA+ICsJLyogVmFsaWQgY2hlY2sgKi8NCj4gPiA+
+ICsJaWYgKHByaXYtPm9wcy0+aXNfdmFsaWQgJiYgIXByaXYtPm9wcy0+aXNfdmFsaWQocHJpdikp
+IHsNCj4gPiA+ICsJCWRldl9lcnIoJnRoZXJtYWwtPmRldmljZSwNCj4gPiA+ICsJCQkiVGVtcGVy
+YXR1cmUgc2Vuc29yIHJlYWRpbmcgbm90IHZhbGlkXG4iKTsNCj4gPiA+ICsJCXJldHVybiAtRUlP
+Ow0KPiA+ID4gKwl9DQo+ID4gPiArDQo+ID4gPiArCXJlZyA9IChyZWFkbF9yZWxheGVkKHByaXYt
+PnNlbnNvcikgPj4gVEhFUk1BTF9URU1QX09GRlNFVCkgJg0KPiA+DQo+ID4gQ2FuIHdlIGhhdmUg
+dGhlIHJlYWRsX3JlbGF4ZWQgY2FsbCBhcyBhIHNlcGFyYXRlIHN0YXRlbWVudCA/DQo+ID4NCj4g
+DQo+IFdoeSB3b3VsZCB3ZSB3YW50IHRoYXQ/IERvIHlvdSB0aGluayBpdCdsbCBiZSBtb3JlIHJl
+YWRhYmxlPw0KDQpZZXMsDQoNCj4gDQo+ID4gPiArCQlUSEVSTUFMX1RFTVBfTUFTSzsNCj4gPiA+
+ICsJKnRlbXAgPSAoMzE1MzAwMDAwMFVMIC0gKDEwMDAwMDAwVUwqcmVnKSkgLyAxMzgyNTsNCj4g
+Pg0KPiA+IElmIEkgc3Vic3RpdHV0ZSAxIGZvciAncmVnJyBJIGdldCAgMjI3MzQxLjc3MjEuLi4N
+Cj4gPiBEb2VzIHRoaXMgbWVhbiB0aGUgdGVtcGVyYXR1cmUgaXMgMjI3IEMgPz8NCj4gPg0KPiAN
+Cj4gWWVzLCBJIGd1ZXNzIHNvLg0KPiANCj4gPiBJZiB5b3UgaGF2ZSB0aGUgaW5mbywgY2FuIHlv
+dSBhZGQgYSBjb21tZW50IG9uIHdoYXQgaXMgdGhlDQo+ID4gdmFsaWQgcmFuZ2UgdGhhdCAncmVn
+JyBjYW4gdGFrZSA/DQo+ID4NCj4gDQo+IE5vLCBJIGRvbid0IGhhdmUgdGhlIGluZm8uIEkgZ3Vl
+c3MgdGhhdCB0aGUgdmFsaWQgcmFuZ2UgJ3JlZycNCj4gY2FuIHRha2UgYXJlIHRoZSB2YWx1ZXMg
+dGhhdCBzcGFuIGEgdGVtcGVyYXR1cmUgYmV0d2VlbiAyNSDCukMgKG9yDQo+IGxvd2VyIGlmIGl0
+J3Mgd2ludGVyKSBhbmQgd2hlbiB5b3VyIENQVSBpcyBvbiBmaXJlIDotKQ0KPiANCj4gPiBBbHNv
+LCBJcyB0aGUgcmVzdWx0aW5nIHRlbXBlcmF0dXJlDQo+ID4gaW4gTWlsbGlkZWdyZWVDZWxzaXVz
+ID8gSWYgc28sIHBsZWFzZSBhZGQgYSBjb21tZW50IHNheWluZyBzby4NCj4gPg0KPiANCj4gWWVz
+LCB0aGUgcmVzdWx0aW5nIHRlbXBlcmF0dXJlIGlzIGluIG1pbGxpZGVncmVlIGNlbHNpdXMsDQo+
+IGFzIHJlcXVpcmVkIGJ5IHRoZSB0aGVybWFsIGZyYW1ld29yazoNCg0Kb2suDQoNClRoYW5rcywN
+CkR1cmdhDQo=
