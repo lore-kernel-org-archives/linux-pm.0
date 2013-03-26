@@ -1,302 +1,250 @@
-From: <Yuantian.Tang@freescale.com>
-Subject: [PATCH 3/3] cpufreq: Add cpufreq driver for Freescale e500mc SOCs
-Date: Tue, 26 Mar 2013 10:36:31 +0800
-Message-ID: <1364265391-26077-3-git-send-email-Yuantian.Tang@freescale.com>
-References: <1364265391-26077-1-git-send-email-Yuantian.Tang@freescale.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 8/9] spark: cpufreq: move cpufreq driver to drivers/cpufreq
+Date: Tue, 26 Mar 2013 09:55:47 +0530
+Message-ID: <CAKohponJJKDcFXK-Zs-eCS2=v3=-CrkEqF1FaHz64D-kq888BA@mail.gmail.com>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+	<2641a3f059f1698ee6825c7b6bfe25a3937e1474.1364229828.git.viresh.kumar@linaro.org>
+	<20130325.130745.670476511400589185.davem@davemloft.net>
+	<CAKohpomnOaVG1xktDL=YGz6yM2vFoYVF2Un-9_zL7owiJVG6gw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1364265391-26077-1-git-send-email-Yuantian.Tang@freescale.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Tang Yuantian <yuantian.tang@freescale.com>, Tang Yuantian <Yuantian.Tang@freescale.com>, Li Yang <leoli@freescale.com>
+Content-Type: multipart/mixed; boundary=e89a8fb207a4cfaac304d8cc50ed
+Return-path: <sparclinux-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomnOaVG1xktDL=YGz6yM2vFoYVF2Un-9_zL7owiJVG6gw@mail.gmail.com>
+Sender: sparclinux-owner@vger.kernel.org
+To: David Miller <davem@davemloft.net>
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, sparclinux@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
+--e89a8fb207a4cfaac304d8cc50ed
+Content-Type: text/plain; charset=ISO-8859-1
 
-Add cpufreq driver for Freescale e500mc, e5500 and e6500 SOCs
-which are capable of changing the frequency of CPU dynamically
+On 26 March 2013 07:30, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25 March 2013 22:37, David Miller <davem@davemloft.net> wrote:
+>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date: Mon, 25 Mar 2013 22:24:44 +0530
+>>
+>>> This patch moves cpufreq driver of SPARK architecture to drivers/cpufreq.
+>>
+>> I don't know what spark is.
+>
+> :(
+>
+> s/spark/sparc ...
+>
+> I will fix patch in V2..
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
+Mistake was done in code too and not only log :)
+
+Here is re-spin of this patch (attached too in case you want to test):
+
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Mon, 25 Mar 2013 11:20:23 +0530
+Subject: [PATCH] sparc: cpufreq:  move cpufreq driver to drivers/cpufreq
+
+This patch moves cpufreq driver of SPARC architecture to drivers/cpufreq.
+
+Cc: David S. Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/Kconfig.powerpc       |  10 ++
- drivers/cpufreq/Makefile              |   1 +
- drivers/cpufreq/ppc-corenet-cpufreq.c | 237 ++++++++++++++++++++++++++++++++++
- 3 files changed, 248 insertions(+)
- create mode 100644 drivers/cpufreq/ppc-corenet-cpufreq.c
+ arch/sparc/Kconfig                                 | 23 ----------------------
+ arch/sparc/kernel/Makefile                         |  3 ---
+ drivers/cpufreq/Kconfig                            | 23 ++++++++++++++++++++++
+ drivers/cpufreq/Makefile                           |  2 ++
+ .../cpufreq/sparc-us2e-cpufreq.c                   |  0
+ .../cpufreq/sparc-us3-cpufreq.c                    |  0
+ 6 files changed, 25 insertions(+), 26 deletions(-)
+ rename arch/sparc/kernel/us2e_cpufreq.c =>
+drivers/cpufreq/sparc-us2e-cpufreq.c (100%)
+ rename arch/sparc/kernel/us3_cpufreq.c =>
+drivers/cpufreq/sparc-us3-cpufreq.c (100%)
 
-diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-index e76992f..6339db4 100644
---- a/drivers/cpufreq/Kconfig.powerpc
-+++ b/drivers/cpufreq/Kconfig.powerpc
-@@ -5,3 +5,13 @@ config CPU_FREQ_MAPLE
- 	help
- 	  This adds support for frequency switching on Maple 970FX
- 	  Evaluation Board and compatible boards (IBM JS2x blades).
-+
-+config PPC_CORENET_CPUFREQ
-+	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-+	depends on PPC_E500MC
+diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+index 289127d..52e7680 100644
+--- a/arch/sparc/Kconfig
++++ b/arch/sparc/Kconfig
+@@ -260,29 +260,6 @@ config HOTPLUG_CPU
+
+ if SPARC64
+ source "drivers/cpufreq/Kconfig"
+-
+-config US3_FREQ
+-	tristate "UltraSPARC-III CPU Frequency driver"
+-	depends on CPU_FREQ
+-	select CPU_FREQ_TABLE
+-	help
+-	  This adds the CPUFreq driver for UltraSPARC-III processors.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq>.
+-
+-	  If in doubt, say N.
+-
+-config US2E_FREQ
+-	tristate "UltraSPARC-IIe CPU Frequency driver"
+-	depends on CPU_FREQ
+-	select CPU_FREQ_TABLE
+-	help
+-	  This adds the CPUFreq driver for UltraSPARC-IIe processors.
+-
+-	  For details, take a look at <file:Documentation/cpu-freq>.
+-
+-	  If in doubt, say N.
+-
+ endif
+
+ config US3_MC
+diff --git a/arch/sparc/kernel/Makefile b/arch/sparc/kernel/Makefile
+index 6cf591b..5276fd4 100644
+--- a/arch/sparc/kernel/Makefile
++++ b/arch/sparc/kernel/Makefile
+@@ -102,9 +102,6 @@ obj-$(CONFIG_PCI_MSI)        += pci_msi.o
+
+ obj-$(CONFIG_COMPAT)         += sys32.o sys_sparc32.o signal32.o
+
+-# sparc64 cpufreq
+-obj-$(CONFIG_US3_FREQ)  += us3_cpufreq.o
+-obj-$(CONFIG_US2E_FREQ) += us2e_cpufreq.o
+ obj-$(CONFIG_US3_MC)    += chmc.o
+
+ obj-$(CONFIG_KPROBES)   += kprobes.o
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 602d5db..a1488f5 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -258,6 +258,29 @@ depends on PPC32 || PPC64
+ source "drivers/cpufreq/Kconfig.powerpc"
+ endmenu
+
++menu "SPARC CPU frequency scaling drivers"
++depends on SPARC64
++config SPARC_US3_CPUFREQ
++	tristate "UltraSPARC-III CPU Frequency driver"
 +	select CPU_FREQ_TABLE
-+	select CLK_PPC_CORENET
 +	help
-+	  This adds the CPUFreq driver support for Freescale e500mc,
-+	  e5500 and e6500 series SoCs which are capable of changing
-+	  the CPU's frequency dynamically.
++	  This adds the CPUFreq driver for UltraSPARC-III processors.
++
++	  For details, take a look at <file:Documentation/cpu-freq>.
++
++	  If in doubt, say N.
++
++config SPARC_US2E_CPUFREQ
++	tristate "UltraSPARC-IIe CPU Frequency driver"
++	select CPU_FREQ_TABLE
++	help
++	  This adds the CPUFreq driver for UltraSPARC-IIe processors.
++
++	  For details, take a look at <file:Documentation/cpu-freq>.
++
++	  If in doubt, say N.
++endmenu
++
+ menu "SH CPU Frequency scaling"
+ depends on SUPERH
+ config SH_CPU_FREQ
 diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 863fd18..2416559 100644
+index ab3a054..050bd0c 100644
 --- a/drivers/cpufreq/Makefile
 +++ b/drivers/cpufreq/Makefile
-@@ -61,3 +61,4 @@ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- ##################################################################################
- # PowerPC platform drivers
- obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
-+obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-new file mode 100644
-index 0000000..ad359d4
---- /dev/null
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -0,0 +1,237 @@
-+/*
-+ * Copyright 2013 Freescale Semiconductor, Inc.
-+ *
-+ * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/cpufreq.h>
-+#include <linux/init.h>
-+#include <linux/mutex.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <linux/clk-provider.h>
-+#include <linux/cpu.h>
-+
-+/**
-+ * struct cpufreq_data - cpufreq driver data
-+ * @cpus_per_cluster: CPU numbers per cluster
-+ * @cpufreq_lock: the mutex lock
-+ */
-+struct cpufreq_data {
-+	int	cpus_per_cluster;
-+	struct mutex cpufreq_lock;
-+};
-+
-+/**
-+ * struct cpu_data - per CPU data struct
-+ * @np: the node of CPU
-+ * @parent: the parent node of np
-+ * @table: frequency table point
-+ */
-+struct cpu_data {
-+	struct device_node  *np;
-+	struct device_node  *parent;
-+	struct cpufreq_frequency_table *table;
-+};
-+
-+static DEFINE_PER_CPU(struct cpu_data, cpu_data);
-+static struct cpufreq_data freq_data;
-+
-+static unsigned int corenet_cpufreq_get_speed(unsigned int cpu)
-+{
-+	struct clk *clk;
-+	struct cpu_data *data = &per_cpu(cpu_data, cpu);
-+
-+	clk = of_clk_get(data->np, 0);
-+
-+	return clk_get_rate(clk) / 1000;
-+}
-+
-+/* reduce the duplicated frequency in frequency table */
-+static int freq_table_redup(struct cpufreq_frequency_table *freq_table,
-+		int cur)
-+{
-+	int i;
-+
-+	for (i = 0; i < cur; i++) {
-+		if (freq_table[i].frequency == CPUFREQ_ENTRY_INVALID ||
-+			freq_table[i].frequency != freq_table[cur].frequency)
-+			continue;
-+
-+		freq_table[cur].index = -1;
-+		freq_table[cur].frequency = CPUFREQ_ENTRY_INVALID;
-+		break;
-+	}
-+
-+	return (i == cur) ? 0 : 1;
-+}
-+
-+static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	unsigned int cpu = policy->cpu;
-+	int i, count;
-+	struct clk *clk;
-+	struct cpufreq_frequency_table *table;
-+	struct cpu_data *data;
-+
-+	data = &per_cpu(cpu_data, cpu);
-+	data->np = of_get_cpu_node(cpu, NULL);
-+	if (!data->np)
-+		return -ENODEV;
-+
-+	data->parent = of_parse_phandle(data->np, "clocks", 0);
-+	if (!data->parent)
-+		return -ENODEV;
-+
-+	count = of_property_count_strings(data->parent, "clock-names");
-+
-+	table = kcalloc(count + 1,
-+			sizeof(struct cpufreq_frequency_table), GFP_KERNEL);
-+	if (!table)
-+		return -ENOMEM;
-+
-+	for (i = cpu; i < freq_data.cpus_per_cluster + cpu; i++)
-+		cpumask_set_cpu(i, policy->cpus);
-+
-+	for (i = 0; i < count; i++) {
-+		table[i].index = i;
-+		clk = of_clk_get(data->parent, i);
-+		table[i].frequency = clk_get_rate(clk) / 1000;
-+		freq_table_redup(table, i);
-+	}
-+	table[i].index = -1;
-+	table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	data->table = table;
-+	cpufreq_frequency_table_get_attr(table, cpu);
-+
-+	/* FIXME: what's the actual transition time? in ns */
-+	policy->cpuinfo.transition_latency = 2000;
-+
-+	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
-+
-+	/* set the min and max frequency properly */
-+	return cpufreq_frequency_table_cpuinfo(policy, table);
-+}
-+
-+static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_frequency_table_put_attr(policy->cpu);
-+
-+	return 0;
-+}
-+
-+static int corenet_cpufreq_verify(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *table;
-+
-+	table = (&per_cpu(cpu_data, policy->cpu))->table;
-+	if (!table)
-+		return -EINVAL;
-+
-+	return cpufreq_frequency_table_verify(policy, table);
-+}
-+
-+static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-+		unsigned int target_freq, unsigned int relation)
-+{
-+	struct cpufreq_freqs freqs;
-+	unsigned int new;
-+	struct clk *clk, *parent;
-+	int ret;
-+	struct cpu_data *data = &per_cpu(cpu_data, policy->cpu);
-+
-+	cpufreq_frequency_table_target(policy, data->table,
-+			target_freq, relation, &new);
-+
-+	if (policy->cur == data->table[new].frequency)
-+		return 0;
-+
-+	freqs.old = policy->cur;
-+	freqs.new = data->table[new].frequency;
-+	freqs.cpu = policy->cpu;
-+
-+	mutex_lock(&freq_data.cpufreq_lock);
-+	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+
-+	clk = of_clk_get(data->np, 0);
-+	parent = of_clk_get(data->parent, new);
-+	ret = clk_set_parent(clk, parent);
-+	if (ret) {
-+		mutex_unlock(&freq_data.cpufreq_lock);
-+		return ret;
-+	}
-+
-+	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	mutex_unlock(&freq_data.cpufreq_lock);
-+
-+	return 0;
-+}
-+
-+static struct freq_attr *corenet_cpu_clks_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	NULL,
-+};
-+
-+static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
-+	.name		= "ppc_cpufreq",
-+	.owner		= THIS_MODULE,
-+	.flags		= CPUFREQ_CONST_LOOPS,
-+	.init		= corenet_cpufreq_cpu_init,
-+	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
-+	.verify		= corenet_cpufreq_verify,
-+	.target		= corenet_cpufreq_target,
-+	.get		= corenet_cpufreq_get_speed,
-+	.attr		= corenet_cpu_clks_attr,
-+};
-+
-+static const struct of_device_id node_matches[] __initconst = {
-+	{ .compatible = "fsl,qoriq-clockgen-1.0", .data = (void *)1, },
-+	{ .compatible = "fsl,qoriq-clockgen-2", .data = (void *)8, },
-+	{}
-+};
-+
-+static int __init ppc_corenet_cpufreq_init(void)
-+{
-+	int ret = 0;
-+	struct device_node  *np;
-+	const struct of_device_id *match;
-+
-+	np = of_find_matching_node(NULL, node_matches);
-+	if (!np)
-+		return -ENODEV;
-+
-+	match = of_match_node(node_matches, np);
-+	freq_data.cpus_per_cluster = (long)match->data;
-+	mutex_init(&freq_data.cpufreq_lock);
-+	of_node_put(np);
-+
-+	ret = cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
-+	if (ret)
-+		return ret;
-+
-+	pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
-+
-+	return ret;
-+}
-+
-+static void __exit ppc_corenet_cpufreq_exit(void)
-+{
-+	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
-+}
-+
-+module_init(ppc_corenet_cpufreq_init);
-+module_exit(ppc_corenet_cpufreq_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
-+MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series SOCs");
--- 
-1.8.0
+@@ -85,4 +85,6 @@ obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
+ obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
+ obj-$(CONFIG_LOONGSON2_CPUFREQ)		+= loongson2_cpufreq.o
+ obj-$(CONFIG_SH_CPU_FREQ)		+= sh-cpufreq.o
++obj-$(CONFIG_SPARC_US2E_CPUFREQ)	+= sparc-us2e-cpufreq.o
++obj-$(CONFIG_SPARC_US3_CPUFREQ)		+= sparc-us3-cpufreq.o
+ obj-$(CONFIG_UNICORE32)			+= unicore2-cpufreq.o
+diff --git a/arch/sparc/kernel/us2e_cpufreq.c
+b/drivers/cpufreq/sparc-us2e-cpufreq.c
+similarity index 100%
+rename from arch/sparc/kernel/us2e_cpufreq.c
+rename to drivers/cpufreq/sparc-us2e-cpufreq.c
+diff --git a/arch/sparc/kernel/us3_cpufreq.c
+b/drivers/cpufreq/sparc-us3-cpufreq.c
+similarity index 100%
+rename from arch/sparc/kernel/us3_cpufreq.c
+rename to drivers/cpufreq/sparc-us3-cpufreq.c
 
+--e89a8fb207a4cfaac304d8cc50ed
+Content-Type: application/octet-stream;
+	name="0001-sparc-cpufreq-move-cpufreq-driver-to-drivers-cpufreq.patch"
+Content-Disposition: attachment;
+	filename="0001-sparc-cpufreq-move-cpufreq-driver-to-drivers-cpufreq.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_heqka1xa0
 
+RnJvbSA2MTY0MWUyYmMwZGUwNjU5ZWZjZDdhZGQ2MzU4ZDcxYmFkZWRlODQwIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NjE2NDFlMmJjMGRlMDY1OWVmY2Q3YWRkNjM1OGQ3
+MWJhZGVkZTg0MC4xMzY0MjcxOTAwLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogTW9uLCAyNSBNYXIg
+MjAxMyAxMToyMDoyMyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIHNwYXJjOiBjcHVmcmVxOiAgbW92
+ZSBjcHVmcmVxIGRyaXZlciB0byBkcml2ZXJzL2NwdWZyZXEKClRoaXMgcGF0Y2ggbW92ZXMgY3B1
+ZnJlcSBkcml2ZXIgb2YgU1BBUkMgYXJjaGl0ZWN0dXJlIHRvIGRyaXZlcnMvY3B1ZnJlcS4KCkNj
+OiBEYXZpZCBTLiBNaWxsZXIgPGRhdmVtQGRhdmVtbG9mdC5uZXQ+CkNjOiBzcGFyY2xpbnV4QHZn
+ZXIua2VybmVsLm9yZwpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBs
+aW5hcm8ub3JnPgotLS0KIGFyY2gvc3BhcmMvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHwgMjMgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogYXJjaC9zcGFyYy9rZXJuZWwv
+TWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAgfCAgMyAtLS0KIGRyaXZlcnMvY3B1ZnJl
+cS9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMjMgKysrKysrKysrKysrKysr
+KysrKysrKwogZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgfCAgMiArKwogLi4uL2NwdWZyZXEvc3BhcmMtdXMyZS1jcHVmcmVxLmMgICAgICAgICAgICAg
+ICAgICAgfCAgMAogLi4uL2NwdWZyZXEvc3BhcmMtdXMzLWNwdWZyZXEuYyAgICAgICAgICAgICAg
+ICAgICAgfCAgMAogNiBmaWxlcyBjaGFuZ2VkLCAyNSBpbnNlcnRpb25zKCspLCAyNiBkZWxldGlv
+bnMoLSkKIHJlbmFtZSBhcmNoL3NwYXJjL2tlcm5lbC91czJlX2NwdWZyZXEuYyA9PiBkcml2ZXJz
+L2NwdWZyZXEvc3BhcmMtdXMyZS1jcHVmcmVxLmMgKDEwMCUpCiByZW5hbWUgYXJjaC9zcGFyYy9r
+ZXJuZWwvdXMzX2NwdWZyZXEuYyA9PiBkcml2ZXJzL2NwdWZyZXEvc3BhcmMtdXMzLWNwdWZyZXEu
+YyAoMTAwJSkKCmRpZmYgLS1naXQgYS9hcmNoL3NwYXJjL0tjb25maWcgYi9hcmNoL3NwYXJjL0tj
+b25maWcKaW5kZXggMjg5MTI3ZC4uNTJlNzY4MCAxMDA2NDQKLS0tIGEvYXJjaC9zcGFyYy9LY29u
+ZmlnCisrKyBiL2FyY2gvc3BhcmMvS2NvbmZpZwpAQCAtMjYwLDI5ICsyNjAsNiBAQCBjb25maWcg
+SE9UUExVR19DUFUKIAogaWYgU1BBUkM2NAogc291cmNlICJkcml2ZXJzL2NwdWZyZXEvS2NvbmZp
+ZyIKLQotY29uZmlnIFVTM19GUkVRCi0JdHJpc3RhdGUgIlVsdHJhU1BBUkMtSUlJIENQVSBGcmVx
+dWVuY3kgZHJpdmVyIgotCWRlcGVuZHMgb24gQ1BVX0ZSRVEKLQlzZWxlY3QgQ1BVX0ZSRVFfVEFC
+TEUKLQloZWxwCi0JICBUaGlzIGFkZHMgdGhlIENQVUZyZXEgZHJpdmVyIGZvciBVbHRyYVNQQVJD
+LUlJSSBwcm9jZXNzb3JzLgotCi0JICBGb3IgZGV0YWlscywgdGFrZSBhIGxvb2sgYXQgPGZpbGU6
+RG9jdW1lbnRhdGlvbi9jcHUtZnJlcT4uCi0KLQkgIElmIGluIGRvdWJ0LCBzYXkgTi4KLQotY29u
+ZmlnIFVTMkVfRlJFUQotCXRyaXN0YXRlICJVbHRyYVNQQVJDLUlJZSBDUFUgRnJlcXVlbmN5IGRy
+aXZlciIKLQlkZXBlbmRzIG9uIENQVV9GUkVRCi0Jc2VsZWN0IENQVV9GUkVRX1RBQkxFCi0JaGVs
+cAotCSAgVGhpcyBhZGRzIHRoZSBDUFVGcmVxIGRyaXZlciBmb3IgVWx0cmFTUEFSQy1JSWUgcHJv
+Y2Vzc29ycy4KLQotCSAgRm9yIGRldGFpbHMsIHRha2UgYSBsb29rIGF0IDxmaWxlOkRvY3VtZW50
+YXRpb24vY3B1LWZyZXE+LgotCi0JICBJZiBpbiBkb3VidCwgc2F5IE4uCi0KIGVuZGlmCiAKIGNv
+bmZpZyBVUzNfTUMKZGlmZiAtLWdpdCBhL2FyY2gvc3BhcmMva2VybmVsL01ha2VmaWxlIGIvYXJj
+aC9zcGFyYy9rZXJuZWwvTWFrZWZpbGUKaW5kZXggNmNmNTkxYi4uNTI3NmZkNCAxMDA2NDQKLS0t
+IGEvYXJjaC9zcGFyYy9rZXJuZWwvTWFrZWZpbGUKKysrIGIvYXJjaC9zcGFyYy9rZXJuZWwvTWFr
+ZWZpbGUKQEAgLTEwMiw5ICsxMDIsNiBAQCBvYmotJChDT05GSUdfUENJX01TSSkgICAgICAgICs9
+IHBjaV9tc2kubwogCiBvYmotJChDT05GSUdfQ09NUEFUKSAgICAgICAgICs9IHN5czMyLm8gc3lz
+X3NwYXJjMzIubyBzaWduYWwzMi5vCiAKLSMgc3BhcmM2NCBjcHVmcmVxCi1vYmotJChDT05GSUdf
+VVMzX0ZSRVEpICArPSB1czNfY3B1ZnJlcS5vCi1vYmotJChDT05GSUdfVVMyRV9GUkVRKSArPSB1
+czJlX2NwdWZyZXEubwogb2JqLSQoQ09ORklHX1VTM19NQykgICAgKz0gY2htYy5vCiAKIG9iai0k
+KENPTkZJR19LUFJPQkVTKSAgICs9IGtwcm9iZXMubwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVm
+cmVxL0tjb25maWcgYi9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZwppbmRleCA2MDJkNWRiLi5hMTQ4
+OGY1IDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZworKysgYi9kcml2ZXJzL2Nw
+dWZyZXEvS2NvbmZpZwpAQCAtMjU4LDYgKzI1OCwyOSBAQCBkZXBlbmRzIG9uIFBQQzMyIHx8IFBQ
+QzY0CiBzb3VyY2UgImRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLnBvd2VycGMiCiBlbmRtZW51CiAK
+K21lbnUgIlNQQVJDIENQVSBmcmVxdWVuY3kgc2NhbGluZyBkcml2ZXJzIgorZGVwZW5kcyBvbiBT
+UEFSQzY0Citjb25maWcgU1BBUkNfVVMzX0NQVUZSRVEKKwl0cmlzdGF0ZSAiVWx0cmFTUEFSQy1J
+SUkgQ1BVIEZyZXF1ZW5jeSBkcml2ZXIiCisJc2VsZWN0IENQVV9GUkVRX1RBQkxFCisJaGVscAor
+CSAgVGhpcyBhZGRzIHRoZSBDUFVGcmVxIGRyaXZlciBmb3IgVWx0cmFTUEFSQy1JSUkgcHJvY2Vz
+c29ycy4KKworCSAgRm9yIGRldGFpbHMsIHRha2UgYSBsb29rIGF0IDxmaWxlOkRvY3VtZW50YXRp
+b24vY3B1LWZyZXE+LgorCisJICBJZiBpbiBkb3VidCwgc2F5IE4uCisKK2NvbmZpZyBTUEFSQ19V
+UzJFX0NQVUZSRVEKKwl0cmlzdGF0ZSAiVWx0cmFTUEFSQy1JSWUgQ1BVIEZyZXF1ZW5jeSBkcml2
+ZXIiCisJc2VsZWN0IENQVV9GUkVRX1RBQkxFCisJaGVscAorCSAgVGhpcyBhZGRzIHRoZSBDUFVG
+cmVxIGRyaXZlciBmb3IgVWx0cmFTUEFSQy1JSWUgcHJvY2Vzc29ycy4KKworCSAgRm9yIGRldGFp
+bHMsIHRha2UgYSBsb29rIGF0IDxmaWxlOkRvY3VtZW50YXRpb24vY3B1LWZyZXE+LgorCisJICBJ
+ZiBpbiBkb3VidCwgc2F5IE4uCitlbmRtZW51CisKIG1lbnUgIlNIIENQVSBGcmVxdWVuY3kgc2Nh
+bGluZyIKIGRlcGVuZHMgb24gU1VQRVJICiBjb25maWcgU0hfQ1BVX0ZSRVEKZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZSBiL2RyaXZlcnMvY3B1ZnJlcS9NYWtlZmlsZQppbmRl
+eCBhYjNhMDU0Li4wNTBiZDBjIDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvTWFrZWZpbGUK
+KysrIGIvZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlCkBAIC04NSw0ICs4NSw2IEBAIG9iai0kKENP
+TkZJR19FVFJBWEZTKQkJCSs9IGNyaXMtZXRyYXhmcy1jcHVmcmVxLm8KIG9iai0kKENPTkZJR19J
+QTY0X0FDUElfQ1BVRlJFUSkJCSs9IGlhNjQtYWNwaS1jcHVmcmVxLm8KIG9iai0kKENPTkZJR19M
+T09OR1NPTjJfQ1BVRlJFUSkJCSs9IGxvb25nc29uMl9jcHVmcmVxLm8KIG9iai0kKENPTkZJR19T
+SF9DUFVfRlJFUSkJCSs9IHNoLWNwdWZyZXEubworb2JqLSQoQ09ORklHX1NQQVJDX1VTMkVfQ1BV
+RlJFUSkJKz0gc3BhcmMtdXMyZS1jcHVmcmVxLm8KK29iai0kKENPTkZJR19TUEFSQ19VUzNfQ1BV
+RlJFUSkJCSs9IHNwYXJjLXVzMy1jcHVmcmVxLm8KIG9iai0kKENPTkZJR19VTklDT1JFMzIpCQkJ
+Kz0gdW5pY29yZTItY3B1ZnJlcS5vCmRpZmYgLS1naXQgYS9hcmNoL3NwYXJjL2tlcm5lbC91czJl
+X2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9zcGFyYy11czJlLWNwdWZyZXEuYwpzaW1pbGFy
+aXR5IGluZGV4IDEwMCUKcmVuYW1lIGZyb20gYXJjaC9zcGFyYy9rZXJuZWwvdXMyZV9jcHVmcmVx
+LmMKcmVuYW1lIHRvIGRyaXZlcnMvY3B1ZnJlcS9zcGFyYy11czJlLWNwdWZyZXEuYwpkaWZmIC0t
+Z2l0IGEvYXJjaC9zcGFyYy9rZXJuZWwvdXMzX2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9z
+cGFyYy11czMtY3B1ZnJlcS5jCnNpbWlsYXJpdHkgaW5kZXggMTAwJQpyZW5hbWUgZnJvbSBhcmNo
+L3NwYXJjL2tlcm5lbC91czNfY3B1ZnJlcS5jCnJlbmFtZSB0byBkcml2ZXJzL2NwdWZyZXEvc3Bh
+cmMtdXMzLWNwdWZyZXEuYwotLSAKMS43LjEyLnJjMi4xOC5nNjFiNDcyZQoK
+--e89a8fb207a4cfaac304d8cc50ed--
