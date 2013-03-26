@@ -1,75 +1,145 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH 09/15] ARM: at91: cpuidle: use init/exit common routine
-Date: Tue, 26 Mar 2013 09:48:48 +0100
-Message-ID: <515160F0.8030002@atmel.com>
-References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org> <1364234140-514-10-git-send-email-daniel.lezcano@linaro.org>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH 1/4] thermal: Add driver for Armada 370/XP SoC thermal
+ management
+Date: Tue, 26 Mar 2013 05:59:25 -0300
+Message-ID: <20130326085924.GA2454@localhost>
+References: <1364225229-2857-1-git-send-email-ezequiel.garcia@free-electrons.com>
+ <1364225229-2857-2-git-send-email-ezequiel.garcia@free-electrons.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59C587D8@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.243]:2119 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759426Ab3CZIs5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 04:48:57 -0400
-In-Reply-To: <1364234140-514-10-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail.free-electrons.com ([94.23.35.102]:50896 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757400Ab3CZI7b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 04:59:31 -0400
+Content-Disposition: inline
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C587D8@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, tglx@linutronix.de, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, plagnioj@jcrosoft.com, lenb@kernel.org, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, linus.walleij@linaro.org, linux@arm.linux.org.uk
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, "Zhang, Rui" <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
 
-On 03/25/2013 06:55 PM, Daniel Lezcano :
-> Remove the duplicate code and use the arm cpuidle driver's common code
-> for initialization.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Hi Durgadoss,
 
-No objection for at91:
+On Mon, Mar 25, 2013 at 05:27:24PM +0000, R, Durgadoss wrote:
+[...]
+> > +static void armadaxp_init_sensor(struct armada_thermal_priv *priv)
+> > +{
+> > +	unsigned long reg;
+> > +
+> > +	/* ??? */
+> > +	reg =3D readl_relaxed(priv->control);
+> > +	reg |=3D PMU_TDC0_OTF_CAL_MASK;
+> > +	writel(reg, priv->control);
+> > +
+> > +	/* Reference calibration value */
+> > +	reg &=3D ~PMU_TDC0_REF_CAL_CNT_MASK;
+> > +	reg |=3D (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+> > +	writel(reg, priv->control);
+>=20
+> I see these two blocks of code being the same for the below
+> function as well. Any specific reason for not making this block=20
+> as a common function and calling it from both the=20
+> _init_sensor functions ?
+>=20
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+I think it's more clear if we define one init_sensor function per SoC.
+The common code is really little and factor that out seems to me like
+too much modularization.
 
+> > +
+> > +	/* Reset the sensor */
+> > +	reg =3D readl_relaxed(priv->control);
+> > +	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
+> > +
+> > +	writel(reg, priv->control);
+> > +
+> > +	/* Enable the sensor */
+> > +	reg =3D readl_relaxed(priv->sensor);
+> > +	reg &=3D ~PMU_TM_DISABLE_MASK;
+> > +	writel(reg, priv->sensor);
+> > +}
+> > +
+> > +static void armada370_init_sensor(struct armada_thermal_priv *priv=
+)
+> > +{
+> > +	unsigned long reg;
+> > +
+> > +	/* ??? */
+> > +	reg =3D readl_relaxed(priv->control);
+> > +	reg |=3D PMU_TDC0_OTF_CAL_MASK;
+> > +	writel(reg, priv->control);
+> > +
+> > +	/* Reference calibration value */
+> > +	reg &=3D ~PMU_TDC0_REF_CAL_CNT_MASK;
+> > +	reg |=3D (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+> > +	writel(reg, priv->control);
+> > +
+> > +	/* ??? */
+> > +	reg &=3D ~PMU_TDC0_START_CAL_MASK;
+> > +	writel(reg, priv->control);
+> > +
+> > +	/* FIXME: Why do we need this delay? */
+> > +	mdelay(10);
+> > +}
+> > +
+> > +static bool armada_is_valid(struct armada_thermal_priv *priv)
+> > +{
+> > +	unsigned long reg =3D readl_relaxed(priv->sensor);
+> > +
+> > +	return (reg >> THERMAL_VALID_OFFSET) & THERMAL_VALID_MASK;
+> > +}
+> > +
+> > +static int armada_get_temp(struct thermal_zone_device *thermal,
+> > +			  unsigned long *temp)
+> > +{
+> > +	struct armada_thermal_priv *priv =3D thermal->devdata;
+> > +	unsigned long reg;
+> > +
+> > +	/* Valid check */
+> > +	if (priv->ops->is_valid && !priv->ops->is_valid(priv)) {
+> > +		dev_err(&thermal->device,
+> > +			"Temperature sensor reading not valid\n");
+> > +		return -EIO;
+> > +	}
+> > +
+> > +	reg =3D (readl_relaxed(priv->sensor) >> THERMAL_TEMP_OFFSET) &
+>=20
+> Can we have the readl_relaxed call as a separate statement ?
+>=20
 
-> ---
->  arch/arm/mach-at91/cpuidle.c |   17 ++---------------
->  1 file changed, 2 insertions(+), 15 deletions(-)
-> 
-> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-> index 0c63815..0aa2c0f 100644
-> --- a/arch/arm/mach-at91/cpuidle.c
-> +++ b/arch/arm/mach-at91/cpuidle.c
-> @@ -27,8 +27,6 @@
->  
->  #define AT91_MAX_STATES	2
->  
-> -static DEFINE_PER_CPU(struct cpuidle_device, at91_cpuidle_device);
-> -
->  /* Actual code that puts the SoC in different idle states */
->  static int at91_enter_idle(struct cpuidle_device *dev,
->  			struct cpuidle_driver *drv,
-> @@ -61,20 +59,9 @@ static struct cpuidle_driver at91_idle_driver = {
->  };
->  
->  /* Initialize CPU idle by registering the idle states */
-> -static int at91_init_cpuidle(void)
-> +static int __init at91_init_cpuidle(void)
->  {
-> -	struct cpuidle_device *device;
-> -
-> -	device = &per_cpu(at91_cpuidle_device, smp_processor_id());
-> -	device->state_count = AT91_MAX_STATES;
-> -
-> -	cpuidle_register_driver(&at91_idle_driver);
-> -
-> -	if (cpuidle_register_device(device)) {
-> -		printk(KERN_ERR "at91_init_cpuidle: Failed registering\n");
-> -		return -EIO;
-> -	}
-> -	return 0;
-> +	return arm_cpuidle_init(&at91_idle_driver);
->  }
->  
->  device_initcall(at91_init_cpuidle);
-> 
+Why would we want that? Do you think it'll be more readable?
 
+> > +		THERMAL_TEMP_MASK;
+> > +	*temp =3D (3153000000UL - (10000000UL*reg)) / 13825;
+>=20
+> If I substitute 1 for 'reg' I get  227341.7721...=20
+> Does this mean the temperature is 227 C ??
+>=20
 
--- 
-Nicolas Ferre
+Yes, I guess so.
+
+> If you have the info, can you add a comment on what is the
+> valid range that 'reg' can take ?
+>
+
+No, I don't have the info. I guess that the valid range 'reg'
+can take are the values that span a temperature between 25 =C2=BAC (or
+lower if it's winter) and when your CPU is on fire :-)
+
+> Also, Is the resulting temperature
+> in MillidegreeCelsius ? If so, please add a comment saying so.
+>=20
+
+Yes, the resulting temperature is in millidegree celsius,
+as required by the thermal framework:
+
+Documentation/thermal/sysfs-api.txt
+
+Thanks for the review!
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
