@@ -1,136 +1,75 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 1/4][resend] cpuidle : handle clockevent notify from the
- cpuidle framework
-Date: Tue, 26 Mar 2013 14:11:11 +0530
-Message-ID: <51515F27.3000303@ti.com>
-References: <1363868494-5503-1-git-send-email-daniel.lezcano@linaro.org> <514B0417.6020401@ti.com> <514B10AC.9090909@linaro.org> <514B1354.50506@ti.com> <514B1C06.6070401@linaro.org> <514B1EA5.20209@ti.com> <20130321152502.GA7419@e102568-lin.cambridge.arm.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH 09/15] ARM: at91: cpuidle: use init/exit common routine
+Date: Tue, 26 Mar 2013 09:48:48 +0100
+Message-ID: <515160F0.8030002@atmel.com>
+References: <1364234140-514-1-git-send-email-daniel.lezcano@linaro.org> <1364234140-514-10-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33363 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754881Ab3CZIjq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Mar 2013 04:39:46 -0400
-In-Reply-To: <20130321152502.GA7419@e102568-lin.cambridge.arm.com>
+Received: from eusmtp01.atmel.com ([212.144.249.243]:2119 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759426Ab3CZIs5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 04:48:57 -0400
+In-Reply-To: <1364234140-514-10-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "rnayak@ti.com" <rnayak@ti.com>, "lenb@kernel.org" <lenb@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, tglx@linutronix.de, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux@maxim.org.za, plagnioj@jcrosoft.com, lenb@kernel.org, nsekhar@ti.com, kevin.hilman@linaro.org, horms@verge.net.au, magnus.damm@gmail.com, kernel@pengutronix.de, ben-linux@fluff.org, kgene.kim@samsung.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, linus.walleij@linaro.org, linux@arm.linux.org.uk
 
-Lorenzo, Daniel,
-
-On Thursday 21 March 2013 08:55 PM, Lorenzo Pieralisi wrote:
-> On Thu, Mar 21, 2013 at 02:52:21PM +0000, Santosh Shilimkar wrote:
+On 03/25/2013 06:55 PM, Daniel Lezcano :
+> Remove the duplicate code and use the arm cpuidle driver's common code
+> for initialization.
 > 
-> [...]
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+No objection for at91:
+
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+
+
+> ---
+>  arch/arm/mach-at91/cpuidle.c |   17 ++---------------
+>  1 file changed, 2 insertions(+), 15 deletions(-)
 > 
->>>>>> How about taking care of cpu_pm_notifiers() as well with some
->>>>>> additional flag for CPU and cluster power state. That can help
->>>>>> to reduce and consolidate the code. What you say ?
->>>>>
->>>>> Do you mean add a flag for different level of idle (idle, suspend, power
->>>>> off) and then use the cpu_pm_enter/cpu_cluster_pm_enter in all the
->>>>> drivers as a common framework ?
->>>>>
->>>> I mean only for CPUidle considering C-state already has the information
->>>> about CPU and cluster power state. For suspend, we by-default run the notifiers
->>>> so nothing needs to be done there.
->>>>
->>>> You may not even need a framework. Just like we know in a C-state, timer
->>>> stops, same lines, we can say CPU state is going to be say off and hence
->>>> cpu_pm_enter() notifier needs to be called. And same way for cluster.
->>>>
->>>> I still haven't given complete thought but thought crossed my mind
->>>> after looking at your patches.
->>>
->>> Right, that could be interesting.
->>>
->>> I see may be one issue with this approach: when we enter an idle state
->>> with power off, some checking are done before cpu_pm_enter and that
->>> could lead to abort the current idle routine.
->>>
->> I see your point.
->>
->>> By moving this to the cpuidle framework, we will invoke always
->>> cpu_pm_enter/exit even if the idle enter routine failed.
->>>
->> If we at all decide to go on this path, we can always get around the
->> issues. The key is these notifiers have to be run very close to the
->> low power entry/exit since the saved context for CPU/CPU cluster
->> at wrong points would lead to many issues.
->>
->>> But, IMO, the idea is good.
->>>
->>> For example in cpuidle34xx:
->>>
->>> static int __omap3_enter_idle(struct cpuidle_device *dev,
->>>                                 struct cpuidle_driver *drv,
->>>                                 int index)
->>> {
->>>         struct omap3_idle_statedata *cx = &omap3_idle_data[index];
->>>
->>>         local_fiq_disable();
->>>
->>>         if (omap_irq_pending() || need_resched())
->>>                 goto return_sleep_time;
->>>
->>> 	...
->>>
->>>         if (cx->mpu_state == PWRDM_POWER_OFF)
->>>                 cpu_pm_enter();
->>>
->>> 	...
->>> }
->>>
->>> The same for omap4 and tegra2/3.
->>>
->>> With your knowledge of omap, do you think it is possible to move
->>> cpu_pm_enter before entering the idle routine ?
->>>
->> I will get back on this topic after some experiments most likely
->> by next week.
+> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+> index 0c63815..0aa2c0f 100644
+> --- a/arch/arm/mach-at91/cpuidle.c
+> +++ b/arch/arm/mach-at91/cpuidle.c
+> @@ -27,8 +27,6 @@
+>  
+>  #define AT91_MAX_STATES	2
+>  
+> -static DEFINE_PER_CPU(struct cpuidle_device, at91_cpuidle_device);
+> -
+>  /* Actual code that puts the SoC in different idle states */
+>  static int at91_enter_idle(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+> @@ -61,20 +59,9 @@ static struct cpuidle_driver at91_idle_driver = {
+>  };
+>  
+>  /* Initialize CPU idle by registering the idle states */
+> -static int at91_init_cpuidle(void)
+> +static int __init at91_init_cpuidle(void)
+>  {
+> -	struct cpuidle_device *device;
+> -
+> -	device = &per_cpu(at91_cpuidle_device, smp_processor_id());
+> -	device->state_count = AT91_MAX_STATES;
+> -
+> -	cpuidle_register_driver(&at91_idle_driver);
+> -
+> -	if (cpuidle_register_device(device)) {
+> -		printk(KERN_ERR "at91_init_cpuidle: Failed registering\n");
+> -		return -EIO;
+> -	}
+> -	return 0;
+> +	return arm_cpuidle_init(&at91_idle_driver);
+>  }
+>  
+>  device_initcall(at91_init_cpuidle);
 > 
-> Looks like the way to go, we could enhance the notifiers to be able to
-> save/restore specific subsystems with the C-state flags defining which
-> ones.
-> 
-> Notifiers actions should not be disruptive so the only drawback in
-> executing those before entering the idle routine could possibly be
-> a waste of cycles in case the C-state entry fails but certainly something
-> to verify on all platforms using them.
->
-After spending few mins on the idea, I made few observations.
-
-1. Since the cpu_pm_enter() involves in saving the context CPU
-co-processors like VFP, debug subsystem, it should be called
-after irq, preemption is disabled and we are on its way
-into idle entry. It can be called from generic idle code
-but we just need to take care of above.
- 
-2. cpu_cluster_pm_enter() actually is bit tricky since its use
-is not consistent with couple idle entry and say smp_idle entry.
-Clusters notifiers are called when the idle drivers finds that
-all the CPUs in that cluster are at sleep and current CPU
-can take down the cluster with it. This notifier as well
-needs to be called late since the after the notifier call,
-there shouldn't be any irq activity which might lead to
-incorrect context save for say irq controller.
-
-3. Same goes with exit notifiers which has to be called
-before irq, preemption is enabled back again.
-
-4. Couple idle overall needs special considerations to
-manage these notifiers from generic code.
-
-Overall it seems to be doable with the direction you
-already started for timer broad-cast notifiers. You
-can at least add this one in your queue of works :-)
-I do not have much cycles left because of other pile
-of work to carry out the changes but you can surely
-count me on reviewing and testing the patches.
-
-Regards,
-Santosh
 
 
+-- 
+Nicolas Ferre
