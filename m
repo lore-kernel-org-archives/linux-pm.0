@@ -1,98 +1,26 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/4] thermal: Add driver for Armada 370/XP SoC thermal
- management
-Date: Tue, 26 Mar 2013 09:10:55 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C591A5@BGSMSX101.gar.corp.intel.com>
-References: <1364225229-2857-1-git-send-email-ezequiel.garcia@free-electrons.com>
- <1364225229-2857-2-git-send-email-ezequiel.garcia@free-electrons.com>
- <4D68720C2E767A4AA6A8796D42C8EB59C587D8@BGSMSX101.gar.corp.intel.com>
- <20130326085924.GA2454@localhost>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 6/9] sh: cpufreq:  move cpufreq driver to drivers/cpufreq
+Date: Tue, 26 Mar 2013 18:29:33 +0900
+Message-ID: <20130326092932.GA23796@linux-sh.org>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+ <ce8e1eec94acecba053f9c2e2b5caa48ce989777.1364229828.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:24201 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758729Ab3CZJLJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Mar 2013 05:11:09 -0400
-In-Reply-To: <20130326085924.GA2454@localhost>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <ce8e1eec94acecba053f9c2e2b5caa48ce989777.1364229828.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, "Zhang, Rui" <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBFemVxdWllbCBHYXJjaWEgW21h
-aWx0bzplemVxdWllbC5nYXJjaWFAZnJlZS1lbGVjdHJvbnMuY29tXQ0KPiBTZW50OiBUdWVzZGF5
-LCBNYXJjaCAyNiwgMjAxMyAyOjI5IFBNDQo+IFRvOiBSLCBEdXJnYWRvc3MNCj4gQ2M6IGxpbnV4
-LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-OyBMaW9yDQo+IEFtc2FsZW07IE5vYnVoaXJvIEl3YW1hdHN1OyBaaGFuZywgUnVpOyBTZWJhc3Rp
-YW4gSGVzc2VsYmFydGg7IEFuZHJldw0KPiBMdW5uOyBUaG9tYXMgUGV0YXp6b25pOyBHcmVnb3J5
-IENsZW1lbnQ7IEphc29uIENvb3Blcg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvNF0gdGhlcm1h
-bDogQWRkIGRyaXZlciBmb3IgQXJtYWRhIDM3MC9YUCBTb0MgdGhlcm1hbA0KPiBtYW5hZ2VtZW50
-DQo+IA0KPiBIaSBEdXJnYWRvc3MsDQo+IA0KPiBPbiBNb24sIE1hciAyNSwgMjAxMyBhdCAwNToy
-NzoyNFBNICswMDAwLCBSLCBEdXJnYWRvc3Mgd3JvdGU6DQo+IFsuLi5dDQo+ID4gPiArc3RhdGlj
-IHZvaWQgYXJtYWRheHBfaW5pdF9zZW5zb3Ioc3RydWN0IGFybWFkYV90aGVybWFsX3ByaXYgKnBy
-aXYpDQo+ID4gPiArew0KPiA+ID4gKwl1bnNpZ25lZCBsb25nIHJlZzsNCj4gPiA+ICsNCj4gPiA+
-ICsJLyogPz8/ICovDQo+ID4gPiArCXJlZyA9IHJlYWRsX3JlbGF4ZWQocHJpdi0+Y29udHJvbCk7
-DQo+ID4gPiArCXJlZyB8PSBQTVVfVERDMF9PVEZfQ0FMX01BU0s7DQo+ID4gPiArCXdyaXRlbChy
-ZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKw0KPiA+ID4gKwkvKiBSZWZlcmVuY2UgY2FsaWJy
-YXRpb24gdmFsdWUgKi8NCj4gPiA+ICsJcmVnICY9IH5QTVVfVERDMF9SRUZfQ0FMX0NOVF9NQVNL
-Ow0KPiA+ID4gKwlyZWcgfD0gKDB4ZjEgPDwgUE1VX1REQzBfUkVGX0NBTF9DTlRfT0ZGUyk7DQo+
-ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+DQo+ID4gSSBzZWUgdGhlc2Ug
-dHdvIGJsb2NrcyBvZiBjb2RlIGJlaW5nIHRoZSBzYW1lIGZvciB0aGUgYmVsb3cNCj4gPiBmdW5j
-dGlvbiBhcyB3ZWxsLiBBbnkgc3BlY2lmaWMgcmVhc29uIGZvciBub3QgbWFraW5nIHRoaXMgYmxv
-Y2sNCj4gPiBhcyBhIGNvbW1vbiBmdW5jdGlvbiBhbmQgY2FsbGluZyBpdCBmcm9tIGJvdGggdGhl
-DQo+ID4gX2luaXRfc2Vuc29yIGZ1bmN0aW9ucyA/DQo+ID4NCj4gDQo+IEkgdGhpbmsgaXQncyBt
-b3JlIGNsZWFyIGlmIHdlIGRlZmluZSBvbmUgaW5pdF9zZW5zb3IgZnVuY3Rpb24gcGVyIFNvQy4N
-Cj4gVGhlIGNvbW1vbiBjb2RlIGlzIHJlYWxseSBsaXR0bGUgYW5kIGZhY3RvciB0aGF0IG91dCBz
-ZWVtcyB0byBtZSBsaWtlDQo+IHRvbyBtdWNoIG1vZHVsYXJpemF0aW9uLg0KDQpJIHdvdWxkIGxl
-YXZlIGl0IHVwIHRvIHlvdSwgdGhlbi4NCg0KPiANCj4gPiA+ICsNCj4gPiA+ICsJLyogUmVzZXQg
-dGhlIHNlbnNvciAqLw0KPiA+ID4gKwlyZWcgPSByZWFkbF9yZWxheGVkKHByaXYtPmNvbnRyb2wp
-Ow0KPiA+ID4gKwl3cml0ZWwoKHJlZyB8IFBNVV9UREMwX1NXX1JTVF9NQVNLKSwgcHJpdi0+Y29u
-dHJvbCk7DQo+ID4gPiArDQo+ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+
-ID4gKw0KPiA+ID4gKwkvKiBFbmFibGUgdGhlIHNlbnNvciAqLw0KPiA+ID4gKwlyZWcgPSByZWFk
-bF9yZWxheGVkKHByaXYtPnNlbnNvcik7DQo+ID4gPiArCXJlZyAmPSB+UE1VX1RNX0RJU0FCTEVf
-TUFTSzsNCj4gPiA+ICsJd3JpdGVsKHJlZywgcHJpdi0+c2Vuc29yKTsNCj4gPiA+ICt9DQo+ID4g
-PiArDQo+ID4gPiArc3RhdGljIHZvaWQgYXJtYWRhMzcwX2luaXRfc2Vuc29yKHN0cnVjdCBhcm1h
-ZGFfdGhlcm1hbF9wcml2ICpwcml2KQ0KPiA+ID4gK3sNCj4gPiA+ICsJdW5zaWduZWQgbG9uZyBy
-ZWc7DQo+ID4gPiArDQo+ID4gPiArCS8qID8/PyAqLw0KPiA+ID4gKwlyZWcgPSByZWFkbF9yZWxh
-eGVkKHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKwlyZWcgfD0gUE1VX1REQzBfT1RGX0NBTF9NQVNL
-Ow0KPiA+ID4gKwl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sKTsNCj4gPiA+ICsNCj4gPiA+ICsJ
-LyogUmVmZXJlbmNlIGNhbGlicmF0aW9uIHZhbHVlICovDQo+ID4gPiArCXJlZyAmPSB+UE1VX1RE
-QzBfUkVGX0NBTF9DTlRfTUFTSzsNCj4gPiA+ICsJcmVnIHw9ICgweGYxIDw8IFBNVV9UREMwX1JF
-Rl9DQUxfQ05UX09GRlMpOw0KPiA+ID4gKwl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sKTsNCj4g
-PiA+ICsNCj4gPiA+ICsJLyogPz8/ICovDQo+ID4gPiArCXJlZyAmPSB+UE1VX1REQzBfU1RBUlRf
-Q0FMX01BU0s7DQo+ID4gPiArCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wpOw0KPiA+ID4gKw0K
-PiA+ID4gKwkvKiBGSVhNRTogV2h5IGRvIHdlIG5lZWQgdGhpcyBkZWxheT8gKi8NCj4gPiA+ICsJ
-bWRlbGF5KDEwKTsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGJvb2wgYXJtYWRh
-X2lzX3ZhbGlkKHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2KQ0KPiA+ID4gK3sNCj4g
-PiA+ICsJdW5zaWduZWQgbG9uZyByZWcgPSByZWFkbF9yZWxheGVkKHByaXYtPnNlbnNvcik7DQo+
-ID4gPiArDQo+ID4gPiArCXJldHVybiAocmVnID4+IFRIRVJNQUxfVkFMSURfT0ZGU0VUKSAmIFRI
-RVJNQUxfVkFMSURfTUFTSzsNCj4gPiA+ICt9DQo+ID4gPiArDQo+ID4gPiArc3RhdGljIGludCBh
-cm1hZGFfZ2V0X3RlbXAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnRoZXJtYWwsDQo+ID4g
-PiArCQkJICB1bnNpZ25lZCBsb25nICp0ZW1wKQ0KPiA+ID4gK3sNCj4gPiA+ICsJc3RydWN0IGFy
-bWFkYV90aGVybWFsX3ByaXYgKnByaXYgPSB0aGVybWFsLT5kZXZkYXRhOw0KPiA+ID4gKwl1bnNp
-Z25lZCBsb25nIHJlZzsNCj4gPiA+ICsNCj4gPiA+ICsJLyogVmFsaWQgY2hlY2sgKi8NCj4gPiA+
-ICsJaWYgKHByaXYtPm9wcy0+aXNfdmFsaWQgJiYgIXByaXYtPm9wcy0+aXNfdmFsaWQocHJpdikp
-IHsNCj4gPiA+ICsJCWRldl9lcnIoJnRoZXJtYWwtPmRldmljZSwNCj4gPiA+ICsJCQkiVGVtcGVy
-YXR1cmUgc2Vuc29yIHJlYWRpbmcgbm90IHZhbGlkXG4iKTsNCj4gPiA+ICsJCXJldHVybiAtRUlP
-Ow0KPiA+ID4gKwl9DQo+ID4gPiArDQo+ID4gPiArCXJlZyA9IChyZWFkbF9yZWxheGVkKHByaXYt
-PnNlbnNvcikgPj4gVEhFUk1BTF9URU1QX09GRlNFVCkgJg0KPiA+DQo+ID4gQ2FuIHdlIGhhdmUg
-dGhlIHJlYWRsX3JlbGF4ZWQgY2FsbCBhcyBhIHNlcGFyYXRlIHN0YXRlbWVudCA/DQo+ID4NCj4g
-DQo+IFdoeSB3b3VsZCB3ZSB3YW50IHRoYXQ/IERvIHlvdSB0aGluayBpdCdsbCBiZSBtb3JlIHJl
-YWRhYmxlPw0KDQpZZXMsDQoNCj4gDQo+ID4gPiArCQlUSEVSTUFMX1RFTVBfTUFTSzsNCj4gPiA+
-ICsJKnRlbXAgPSAoMzE1MzAwMDAwMFVMIC0gKDEwMDAwMDAwVUwqcmVnKSkgLyAxMzgyNTsNCj4g
-Pg0KPiA+IElmIEkgc3Vic3RpdHV0ZSAxIGZvciAncmVnJyBJIGdldCAgMjI3MzQxLjc3MjEuLi4N
-Cj4gPiBEb2VzIHRoaXMgbWVhbiB0aGUgdGVtcGVyYXR1cmUgaXMgMjI3IEMgPz8NCj4gPg0KPiAN
-Cj4gWWVzLCBJIGd1ZXNzIHNvLg0KPiANCj4gPiBJZiB5b3UgaGF2ZSB0aGUgaW5mbywgY2FuIHlv
-dSBhZGQgYSBjb21tZW50IG9uIHdoYXQgaXMgdGhlDQo+ID4gdmFsaWQgcmFuZ2UgdGhhdCAncmVn
-JyBjYW4gdGFrZSA/DQo+ID4NCj4gDQo+IE5vLCBJIGRvbid0IGhhdmUgdGhlIGluZm8uIEkgZ3Vl
-c3MgdGhhdCB0aGUgdmFsaWQgcmFuZ2UgJ3JlZycNCj4gY2FuIHRha2UgYXJlIHRoZSB2YWx1ZXMg
-dGhhdCBzcGFuIGEgdGVtcGVyYXR1cmUgYmV0d2VlbiAyNSDCukMgKG9yDQo+IGxvd2VyIGlmIGl0
-J3Mgd2ludGVyKSBhbmQgd2hlbiB5b3VyIENQVSBpcyBvbiBmaXJlIDotKQ0KPiANCj4gPiBBbHNv
-LCBJcyB0aGUgcmVzdWx0aW5nIHRlbXBlcmF0dXJlDQo+ID4gaW4gTWlsbGlkZWdyZWVDZWxzaXVz
-ID8gSWYgc28sIHBsZWFzZSBhZGQgYSBjb21tZW50IHNheWluZyBzby4NCj4gPg0KPiANCj4gWWVz
-LCB0aGUgcmVzdWx0aW5nIHRlbXBlcmF0dXJlIGlzIGluIG1pbGxpZGVncmVlIGNlbHNpdXMsDQo+
-IGFzIHJlcXVpcmVkIGJ5IHRoZSB0aGVybWFsIGZyYW1ld29yazoNCg0Kb2suDQoNClRoYW5rcywN
-CkR1cmdhDQo=
+On Mon, Mar 25, 2013 at 10:24:42PM +0530, Viresh Kumar wrote:
+> This patch moves cpufreq driver of SUPERH architecture to drivers/cpufreq.
+> 
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: linux-sh@vger.kernel.org
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Looks ok to me.
+
+Acked-by: Paul Mundt <lethal@linux-sh.org>
