@@ -1,72 +1,321 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH for 3.10 v2 0/4] thermal: Add Armada 370/XP support
-Date: Tue, 26 Mar 2013 17:46:37 +0100
-Message-ID: <20130326164637.GT5627@lunn.ch>
-References: <1364292988-8358-1-git-send-email-ezequiel.garcia@free-electrons.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [RFC PATCH 3/5] Thermal: build thermal governors into
+ thermal_sys module
+Date: Tue, 26 Mar 2013 16:53:07 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C59803@BGSMSX101.gar.corp.intel.com>
+References: <1364315169-15427-1-git-send-email-rui.zhang@intel.com>
+ <1364315169-15427-4-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:52523 "EHLO londo.lunn.ch"
+Received: from mga09.intel.com ([134.134.136.24]:20106 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933789Ab3CZQqv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Mar 2013 12:46:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1364292988-8358-1-git-send-email-ezequiel.garcia@free-electrons.com>
+	id S1751540Ab3CZQxM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 12:53:12 -0400
+In-Reply-To: <1364315169-15427-4-git-send-email-rui.zhang@intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Zhang Rui <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
+To: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "andi@lisas.de" <andi@lisas.de>
 
-On Tue, Mar 26, 2013 at 07:16:24AM -0300, Ezequiel Garcia wrote:
-> After Andrew Lunn objected the single driver approach [1] that merged
-> all the Marvell EBU SoC thermal drivers, we have agreed to proceed step
-> by step. For the time being we are adding support for Armada 370/XP only.
-> Given both Armada 370 and Armada XP have a similar feature set, it
-> makes sense to provide a single driver for them.
-> 
-> In the future we can unify this with the other drivers,
-> if this proves to be worthwhile.
-> 
-> This driver has been influenced by the existing Kirkwood driver,
-> also taking account of suggestions made by Jason Gunthorpe.
-> 
-> Testing has been done on the following boards:
-> 
-> For Armada 370: Globalscale Mirabox and Marvell Armada 370 RD
-> For Armada XP:  Plat'home Openblocks AX3 and Marvell Armada XP DB-MV784MP-GP
-> 
-> This series is based in v3.9-rc2. To make testing easier this patchset
-> can be found on a github branch [2].
-> 
-> Changes from v1:
->   * Reorder Kconfig and Makefiles entries as requested by Andrew Lunn.
->   * Make armada_get_temp() more readable, as requested by Durgadoss R.
-> 
-> Any feedback or comments are welcome!
+Hi Rui,
 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+> -----Original Message-----
+> From: Zhang, Rui
+> Sent: Tuesday, March 26, 2013 9:56 PM
+> To: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+> Cc: amit.daniel@samsung.com; R, Durgadoss; andi@lisas.de; Zhang, Rui
+> Subject: [RFC PATCH 3/5] Thermal: build thermal governors into thermal_sys
+> module
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/Makefile       |    6 +++---
+>  drivers/thermal/fair_share.c   |   15 ++-------------
+>  drivers/thermal/step_wise.c    |   16 ++--------------
+>  drivers/thermal/thermal_core.c |   36
+> ++++++++++++++++++++++++++++++++++--
+>  drivers/thermal/thermal_core.h |   25 +++++++++++++++++++++++++
+>  drivers/thermal/user_space.c   |   15 ++-------------
+>  include/linux/thermal.h        |    1 -
+>  7 files changed, 68 insertions(+), 46 deletions(-)
+> 
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index b2009bd..b7fffc7 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -6,9 +6,9 @@ obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+>  thermal_sys-y			+= thermal_core.o
+> 
+>  # governors
+> -obj-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
+> -obj-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
+> -obj-$(CONFIG_THERMAL_GOV_USER_SPACE)	+= user_space.o
+> +thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+=
+> fair_share.o
+> +thermal_sys-$(CONFIG_THERMAL_GOV_STEP_WISE)	+= step_wise.o
+> +thermal_sys-$(CONFIG_THERMAL_GOV_USER_SPACE)	+=
+> user_space.o
+> 
+>  # cpufreq cooling
+>  obj-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> index 792479f..944ba2f 100644
+> --- a/drivers/thermal/fair_share.c
+> +++ b/drivers/thermal/fair_share.c
+> @@ -22,9 +22,6 @@
+>   *
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ~~~~~~~~~~~~~~~~
+>   */
+> 
+> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> -
+> -#include <linux/module.h>
+>  #include <linux/thermal.h>
+> 
+>  #include "thermal_core.h"
+> @@ -111,23 +108,15 @@ static int fair_share_throttle(struct
+> thermal_zone_device *tz, int trip)
+>  static struct thermal_governor thermal_gov_fair_share = {
+>  	.name		= "fair_share",
+>  	.throttle	= fair_share_throttle,
+> -	.owner		= THIS_MODULE,
+>  };
+> 
+> -static int __init thermal_gov_fair_share_init(void)
+> +int thermal_gov_fair_share_register(void)
+>  {
+>  	return thermal_register_governor(&thermal_gov_fair_share);
+>  }
+> 
+> -static void __exit thermal_gov_fair_share_exit(void)
+> +void thermal_gov_fair_share_unregister(void)
+>  {
+>  	thermal_unregister_governor(&thermal_gov_fair_share);
+>  }
+> 
+> -/* This should load after thermal framework */
+> -fs_initcall(thermal_gov_fair_share_init);
+> -module_exit(thermal_gov_fair_share_exit);
+> -
+> -MODULE_AUTHOR("Durgadoss R");
+> -MODULE_DESCRIPTION("A simple weight based thermal throttling
+> governor");
+> -MODULE_LICENSE("GPL");
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 407cde3..a6c9666 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -22,9 +22,6 @@
+>   *
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ~~~~~~~~~~~~~~~~
+>   */
+> 
+> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> -
+> -#include <linux/module.h>
+>  #include <linux/thermal.h>
+> 
+>  #include "thermal_core.h"
+> @@ -180,23 +177,14 @@ static int step_wise_throttle(struct
+> thermal_zone_device *tz, int trip)
+>  static struct thermal_governor thermal_gov_step_wise = {
+>  	.name		= "step_wise",
+>  	.throttle	= step_wise_throttle,
+> -	.owner		= THIS_MODULE,
+>  };
+> 
+> -static int __init thermal_gov_step_wise_init(void)
+> +int thermal_gov_step_wise_register(void)
+>  {
+>  	return thermal_register_governor(&thermal_gov_step_wise);
+>  }
+> 
+> -static void __exit thermal_gov_step_wise_exit(void)
+> +void thermal_gov_step_wise_unregister(void)
+>  {
+>  	thermal_unregister_governor(&thermal_gov_step_wise);
+>  }
+> -
+> -/* This should load after thermal framework */
+> -fs_initcall(thermal_gov_step_wise_init);
+> -module_exit(thermal_gov_step_wise_exit);
+> -
+> -MODULE_AUTHOR("Durgadoss R");
+> -MODULE_DESCRIPTION("A step-by-step thermal throttling governor");
+> -MODULE_LICENSE("GPL");
+> diff --git a/drivers/thermal/thermal_core.c
+> b/drivers/thermal/thermal_core.c
+> index 845ed6e..eac9745 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1858,22 +1858,54 @@ static inline int genetlink_init(void) { return 0; }
+>  static inline void genetlink_exit(void) {}
+>  #endif /* !CONFIG_NET */
+> 
+> +static int __init thermal_register_governors(void)
+> +{
+> +	int result;
+> +
+> +	result = thermal_gov_step_wise_register();
+> +	if (result)
 
+[Patches 1,2 are fine with me].
+
+A pr_err statement here, saying the registration failed,
+would help us a lot.
+
+> +		return result;
+> +
+> +	result = thermal_gov_fair_share_register();
+> +	if (result)
+> +		return result;
+> +
+> +	result = thermal_gov_user_space_register();
+
+Same check + print statement for the other two as well.
+
+> +
+> +	return result;
+> +}
+> +
+> +static void __exit thermal_unregister_governors(void)
+> +{
+> +	thermal_gov_step_wise_unregister();
+> +	thermal_gov_fair_share_unregister();
+> +	thermal_gov_user_space_unregister();
+> +}
+> +
+>  static int __init thermal_init(void)
+>  {
+> -	int result = 0;
+> +	int result;
+> +
+> +	result = thermal_register_governors();
+> +	if (result)
+> +		return result;
 > 
-> [1] http://permalink.gmane.org/gmane.linux.power-management.general/32123
-> [2] https://github.com/MISL-EBU-System-SW/mainline-public/tree/armada-thermal-v2
+>  	result = class_register(&thermal_class);
+>  	if (result)
+
+Shouldn't we do thermal_unregister_governors here ?
+
+>  		return result;
 > 
-> Ezequiel Garcia (4):
->   thermal: Add driver for Armada 370/XP SoC thermal management
->   ARM: mvebu: Add thermal support to Armada XP device tree
->   ARM: mvebu: Add thermal support to Armada 370 device tree
->   ARM: configs: Update mvebu defconfig for thermal
+>  	result = genetlink_init();
+> +	if (result)
+> +		class_unregister(&thermal_class);
+
+Shouldn't we do thermal_unregister_governors here ?
+Probably a goto would make things simpler..
+
+> +
+>  	return result;
+>  }
 > 
->  .../devicetree/bindings/thermal/armada-thermal.txt |   22 ++
->  arch/arm/boot/dts/armada-370.dtsi                  |    6 +
->  arch/arm/boot/dts/armada-xp.dtsi                   |    6 +
->  arch/arm/configs/mvebu_defconfig                   |    2 +
->  drivers/thermal/Kconfig                            |    8 +
->  drivers/thermal/Makefile                           |    1 +
->  drivers/thermal/armada_thermal.c                   |  236 ++++++++++++++++++++
->  7 files changed, 281 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/thermal/armada-thermal.txt
->  create mode 100644 drivers/thermal/armada_thermal.c
+>  static void __exit thermal_exit(void)
+>  {
+> -	class_unregister(&thermal_class);
+>  	genetlink_exit();
+> +	class_unregister(&thermal_class);
+> +	thermal_unregister_governors();
+>  }
 > 
-> -- 
-> 1.7.8.6
+>  fs_initcall(thermal_init);
+> diff --git a/drivers/thermal/thermal_core.h
+> b/drivers/thermal/thermal_core.h
+> index 0d3205a..f84ea0f 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -50,4 +50,29 @@ struct thermal_instance {
+>  	struct list_head cdev_node; /* node in cdev->thermal_instances */
+>  };
 > 
+> +
+> +#ifdef CONFIG_THERMAL_GOV_STEP_WISE
+> +extern int thermal_gov_step_wise_register(void);
+> +extern void thermal_gov_step_wise_unregister(void);
+> +#else
+> +static inline int thermal_gov_step_wise_register(void) { return 0; }
+> +static inline void thermal_gov_step_wise_unregister(void) {}
+> +#endif /* CONFIG_THERMAL_GOV_STEP_WISE */
+> +
+> +#ifdef CONFIG_THERMAL_GOV_FAIR_SHARE
+> +extern int thermal_gov_fair_share_register(void);
+> +extern void thermal_gov_fair_share_unregister(void);
+> +#else
+> +static inline int thermal_gov_fair_share_register(void) { return 0; }
+> +static inline void thermal_gov_fair_share_unregister(void) {}
+> +#endif /* CONFIG_THERMAL_GOV_FAIR_SHARE */
+> +
+> +#ifdef CONFIG_THERMAL_GOV_USER_SPACE
+> +extern int thermal_gov_user_space_register(void);
+> +extern void thermal_gov_user_space_unregister(void);
+> +#else
+> +static inline int thermal_gov_user_space_register(void) { return 0; }
+> +static inline void thermal_gov_user_space_unregister(void) {}
+> +#endif /* CONFIG_THERMAL_GOV_USER_SPACE */
+> +
+>  #endif /* __THERMAL_CORE_H__ */
+> diff --git a/drivers/thermal/user_space.c b/drivers/thermal/user_space.c
+> index 6bbb380..10adcdd 100644
+> --- a/drivers/thermal/user_space.c
+> +++ b/drivers/thermal/user_space.c
+> @@ -22,9 +22,6 @@
+>   *
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> ~~~~~~~~~~~~~~~~
+>   */
+> 
+> -#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> -
+> -#include <linux/module.h>
+>  #include <linux/thermal.h>
+> 
+>  #include "thermal_core.h"
+> @@ -46,23 +43,15 @@ static int notify_user_space(struct
+> thermal_zone_device *tz, int trip)
+>  static struct thermal_governor thermal_gov_user_space = {
+>  	.name		= "user_space",
+>  	.throttle	= notify_user_space,
+> -	.owner		= THIS_MODULE,
+>  };
+> 
+> -static int __init thermal_gov_user_space_init(void)
+> +int thermal_gov_user_space_register(void)
+>  {
+>  	return thermal_register_governor(&thermal_gov_user_space);
+>  }
+> 
+> -static void __exit thermal_gov_user_space_exit(void)
+> +void thermal_gov_user_space_unregister(void)
+>  {
+>  	thermal_unregister_governor(&thermal_gov_user_space);
+>  }
+> 
+> -/* This should load after thermal framework */
+> -fs_initcall(thermal_gov_user_space_init);
+> -module_exit(thermal_gov_user_space_exit);
+> -
+> -MODULE_AUTHOR("Durgadoss R");
+> -MODULE_DESCRIPTION("A user space Thermal notifier");
+> -MODULE_LICENSE("GPL");
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index f0bd7f9..2eeec01 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -184,7 +184,6 @@ struct thermal_governor {
+>  	char name[THERMAL_NAME_LENGTH];
+>  	int (*throttle)(struct thermal_zone_device *tz, int trip);
+>  	struct list_head	governor_list;
+> -	struct module		*owner;
+>  };
+> 
+>  /* Structure that holds binding parameters for a zone */
+> --
+> 1.7.9.5
+
