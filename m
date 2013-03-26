@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH 1/9] thermal: exynos: Adapt to temperature emulation core thermal framework
-Date: Tue, 26 Mar 2013 17:03:54 +0530
-Message-ID: <1364297642-2746-2-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH 5/9] thermal: exynos: Make the zone handling dependent on trip count
+Date: Tue, 26 Mar 2013 17:03:58 +0530
+Message-ID: <1364297642-2746-6-git-send-email-amit.daniel@samsung.com>
 References: <1364297642-2746-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1364297642-2746-1-git-send-email-amit.daniel@samsung.com>
@@ -10,294 +10,192 @@ To: linux-pm@vger.kernel.org
 Cc: Thomas Abraham <thomas.abraham@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This removes the driver specific sysfs support of the temperature
-emulation and uses the newly added core thermal framework for thermal
-emulation. An exynos platform specific handler is added to support this.
+This code changes the zone handling to use the trip count passed
+by the TMU driver. This also helps in adding more zone support.
 
-In this patch, the exynos senor(tmu) related code and exynos framework
-related (thermal zone, cooling devices) code are intentionally kept separate.
-So an emulated function pointer is passed from sensor to framework. This is
-beneficial in adding more sensor support using the same framework code
-which is an ongoing work. The goal is to finally split them totally. Even
-the existing read_temperature also follows the same execution method.
-
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- Documentation/thermal/exynos_thermal_emulation |    8 +-
- drivers/thermal/Kconfig                        |    9 --
- drivers/thermal/exynos_thermal.c               |  158 ++++++++++--------------
- 3 files changed, 67 insertions(+), 108 deletions(-)
+ drivers/thermal/samsung/exynos_common.c      |   56 +++++++++++++------------
+ drivers/thermal/samsung/exynos_common.h      |   13 +++---
+ include/linux/platform_data/exynos_thermal.h |    7 ++-
+ 3 files changed, 40 insertions(+), 36 deletions(-)
 
-diff --git a/Documentation/thermal/exynos_thermal_emulation b/Documentation/thermal/exynos_thermal_emulation
-index b73bbfb..36a3e79 100644
---- a/Documentation/thermal/exynos_thermal_emulation
-+++ b/Documentation/thermal/exynos_thermal_emulation
-@@ -13,11 +13,11 @@ Thermal emulation mode supports software debug for TMU's operation. User can set
- manually with software code and TMU will read current temperature from user value not from
- sensor's value.
+diff --git a/drivers/thermal/samsung/exynos_common.c b/drivers/thermal/samsung/exynos_common.c
+index 649d67c..0c0098d 100644
+--- a/drivers/thermal/samsung/exynos_common.c
++++ b/drivers/thermal/samsung/exynos_common.c
+@@ -84,17 +84,16 @@ static int exynos_set_mode(struct thermal_zone_device *thermal,
+ static int exynos_get_trip_type(struct thermal_zone_device *thermal, int trip,
+ 				 enum thermal_trip_type *type)
+ {
+-	switch (GET_ZONE(trip)) {
+-	case MONITOR_ZONE:
+-	case WARN_ZONE:
+-		*type = THERMAL_TRIP_ACTIVE;
+-		break;
+-	case PANIC_ZONE:
+-		*type = THERMAL_TRIP_CRITICAL;
+-		break;
+-	default:
++	struct exynos_thermal_zone *th_zone = thermal->devdata;
++	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
++
++	if (trip < 0 || trip >= max_trip)
+ 		return -EINVAL;
+-	}
++	else if (trip == (max_trip - 1))
++		*type = THERMAL_TRIP_CRITICAL;
++	else
++		*type = THERMAL_TRIP_ACTIVE;
++
+ 	return 0;
+ }
  
--Enabling CONFIG_EXYNOS_THERMAL_EMUL option will make this support in available.
--When it's enabled, sysfs node will be created under
--/sys/bus/platform/devices/'exynos device name'/ with name of 'emulation'.
-+Enabling CONFIG_THERMAL_EMULATION option will make this support available.
-+When it's enabled, sysfs node will be created as
-+/sys/devices/virtual/thermal/thermal_zone'zone id'/emul_temp.
+@@ -103,8 +102,9 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
+ 				unsigned long *temp)
+ {
+ 	struct exynos_thermal_zone *th_zone = thermal->devdata;
++	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
  
--The sysfs node, 'emulation', will contain value 0 for the initial state. When you input any
-+The sysfs node, 'emul_node', will contain value 0 for the initial state. When you input any
- temperature you want to update to sysfs node, it automatically enable emulation mode and
- current temperature will be changed into it.
- (Exynos also supports user changable delay time which would be used to delay of
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index a764f16..da4c19e 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -117,15 +117,6 @@ config EXYNOS_THERMAL
- 	  If you say yes here you get support for TMU (Thermal Management
- 	  Unit) on SAMSUNG EXYNOS series of SoC.
+-	if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
++	if (trip < 0 || trip >= max_trip)
+ 		return -EINVAL;
  
--config EXYNOS_THERMAL_EMUL
--	bool "EXYNOS TMU emulation mode support"
--	depends on EXYNOS_THERMAL
--	help
--	  Exynos 4412 and 4414 and 5 series has emulation mode on TMU.
--	  Enable this option will be make sysfs node in exynos thermal platform
--	  device directory to support emulation mode. With emulation mode sysfs
--	  node, you can manually input temperature to TMU for simulation purpose.
--
- config DOVE_THERMAL
- 	tristate "Temperature sensor on Marvell Dove SoCs"
- 	depends on ARCH_DOVE
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 46568c0..1cd7837 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -100,13 +100,13 @@
+ 	*temp = th_zone->sensor_conf->trip_data.trip_val[trip];
+@@ -118,10 +118,10 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
+ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+ 				unsigned long *temp)
+ {
+-	int ret;
+-	/* Panic zone */
+-	ret = exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
+-	return ret;
++	struct exynos_thermal_zone *th_zone = thermal->devdata;
++	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
++	/* Get the temp of highest trip*/
++	return exynos_get_trip_temp(thermal, max_trip - 1, temp);
+ }
+ 
+ int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+@@ -157,7 +157,7 @@ static int exynos_bind(struct thermal_zone_device *thermal,
+ 	tab_size = data->cooling_data.freq_clip_count;
+ 
+ 	if (tab_ptr == NULL || tab_size == 0)
+-		return -EINVAL;
++		return 0;
+ 
+ 	/* find the cooling device registered*/
+ 	for (i = 0; i < th_zone->cool_dev_size; i++)
+@@ -206,7 +206,7 @@ static int exynos_unbind(struct thermal_zone_device *thermal,
+ 	tab_size = data->cooling_data.freq_clip_count;
+ 
+ 	if (tab_size == 0)
+-		return -EINVAL;
++		return 0;
+ 
+ 	/* find the cooling device registered*/
+ 	for (i = 0; i < th_zone->cool_dev_size; i++)
+@@ -366,19 +366,21 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+ 		return -ENOMEM;
+ 
+ 	th_zone->sensor_conf = sensor_conf;
+-	cpumask_set_cpu(0, &mask_val);
+-	th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
+-	if (IS_ERR(th_zone->cool_dev[0])) {
+-		pr_err("Failed to register cpufreq cooling device\n");
+-		ret = -EINVAL;
+-		goto err_unregister;
++	if (sensor_conf->cooling_data.freq_clip_count > 0) {
++		cpumask_set_cpu(0, &mask_val);
++		th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
++		if (IS_ERR(th_zone->cool_dev[0])) {
++			pr_err("Failed to register cpufreq cooling device\n");
++			ret = -EINVAL;
++			goto err_unregister;
++		}
++		th_zone->cool_dev_size++;
+ 	}
+-	th_zone->cool_dev_size++;
+ 
+ 	th_zone->therm_dev = thermal_zone_device_register(sensor_conf->name,
+-			EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops, NULL, 0,
+-			sensor_conf->trip_data.trigger_falling ?
+-			0 : IDLE_INTERVAL);
++		sensor_conf->trip_data.trip_count, 0, th_zone, &exynos_dev_ops,
++		NULL, 0, sensor_conf->trip_data.trigger_falling ?
++		0 : IDLE_INTERVAL);
+ 
+ 	if (IS_ERR(th_zone->therm_dev)) {
+ 		pr_err("Failed to register thermal zone device\n");
+diff --git a/drivers/thermal/samsung/exynos_common.h b/drivers/thermal/samsung/exynos_common.h
+index b8d289e..453e09a 100644
+--- a/drivers/thermal/samsung/exynos_common.h
++++ b/drivers/thermal/samsung/exynos_common.h
+@@ -27,23 +27,22 @@
+ #define SENSOR_NAME_LEN	16
+ #define MAX_TRIP_COUNT	8
+ #define MAX_COOLING_DEVICE 4
+-#define MAX_THRESHOLD_LEVS 4
++#define MAX_THRESHOLD_LEVS 5
+ 
+ #define ACTIVE_INTERVAL 500
  #define IDLE_INTERVAL 10000
  #define MCELSIUS	1000
  
--#ifdef CONFIG_EXYNOS_THERMAL_EMUL
-+#ifdef CONFIG_THERMAL_EMULATION
- #define EXYNOS_EMUL_TIME	0x57F0
- #define EXYNOS_EMUL_TIME_SHIFT	16
- #define EXYNOS_EMUL_DATA_SHIFT	8
- #define EXYNOS_EMUL_DATA_MASK	0xFF
- #define EXYNOS_EMUL_ENABLE	0x1
--#endif /* CONFIG_EXYNOS_THERMAL_EMUL */
-+#endif /* CONFIG_THERMAL_EMULATION */
- 
  /* CPU Zone information */
- #define PANIC_ZONE      4
-@@ -145,6 +145,7 @@ struct	thermal_cooling_conf {
- struct thermal_sensor_conf {
- 	char name[SENSOR_NAME_LEN];
- 	int (*read_temperature)(void *data);
-+	int (*write_emul_temp)(void *drv_data, unsigned long temp);
- 	struct thermal_trip_point_conf trip_data;
- 	struct thermal_cooling_conf cooling_data;
- 	void *private_data;
-@@ -369,6 +370,23 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
- 	return 0;
- }
+-#define PANIC_ZONE      4
+-#define WARN_ZONE       3
+-#define MONITOR_ZONE    2
+-#define SAFE_ZONE       1
++#define PANIC_ZONE	5
++#define ALARM_ZONE	4
++#define WARN_ZONE	3
++#define MONITOR_ZONE	2
++#define SAFE_ZONE	1
  
-+/* Get temperature callback functions for thermal zone */
-+static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
-+						unsigned long temp)
-+{
-+	void *data;
-+	int ret = -EINVAL;
-+
-+	if (!th_zone->sensor_conf) {
-+		pr_info("Temperature sensor not initialised\n");
-+		return -EINVAL;
-+	}
-+	data = th_zone->sensor_conf->private_data;
-+	if (th_zone->sensor_conf->write_emul_temp)
-+		ret = th_zone->sensor_conf->write_emul_temp(data, temp);
-+	return ret;
-+}
-+
- /* Get the temperature trend */
- static int exynos_get_trend(struct thermal_zone_device *thermal,
- 			int trip, enum thermal_trend *trend)
-@@ -392,6 +410,7 @@ static struct thermal_zone_device_ops const exynos_dev_ops = {
- 	.bind = exynos_bind,
- 	.unbind = exynos_unbind,
- 	.get_temp = exynos_get_temp,
-+	.set_emul_temp = exynos_set_emul_temp,
- 	.get_trend = exynos_get_trend,
- 	.get_mode = exynos_get_mode,
- 	.set_mode = exynos_set_mode,
-@@ -714,6 +733,47 @@ static int exynos_tmu_read(struct exynos_tmu_data *data)
- 	return temp;
- }
+ #define GET_ZONE(trip) (trip + 2)
+ #define GET_TRIP(zone) (zone - 2)
  
-+#ifdef CONFIG_THERMAL_EMULATION
-+static int exynos_tmu_set_emulation(void *drv_data, unsigned long temp)
-+{
-+	struct exynos_tmu_data *data = drv_data;
-+	unsigned int reg;
-+	int ret = -EINVAL;
+-#define EXYNOS_ZONE_COUNT	3
+-
+ struct	thermal_trip_point_conf {
+ 	int trip_val[MAX_TRIP_COUNT];
+ 	int trip_count;
+diff --git a/include/linux/platform_data/exynos_thermal.h b/include/linux/platform_data/exynos_thermal.h
+index da7e627..893b758 100644
+--- a/include/linux/platform_data/exynos_thermal.h
++++ b/include/linux/platform_data/exynos_thermal.h
+@@ -23,6 +23,8 @@
+ #define _LINUX_EXYNOS_THERMAL_H
+ #include <linux/cpu_cooling.h>
+ 
++#define MAX_TRIP	5
 +
-+	if (data->soc == SOC_ARCH_EXYNOS4210)
-+		goto out;
-+
-+	if (temp && temp < MCELSIUS)
-+		goto out;
-+
-+	mutex_lock(&data->lock);
-+	clk_enable(data->clk);
-+
-+	reg = readl(data->base + EXYNOS_EMUL_CON);
-+
-+	if (temp) {
-+		temp /= MCELSIUS;
-+
-+		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
-+			(temp_to_code(data, temp)
-+			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
-+	} else {
-+		reg &= ~EXYNOS_EMUL_ENABLE;
-+	}
-+
-+	writel(reg, data->base + EXYNOS_EMUL_CON);
-+
-+	clk_disable(data->clk);
-+	mutex_unlock(&data->lock);
-+	return 0;
-+out:
-+	return ret;
-+}
-+#else
-+static int exynos_tmu_set_emulation(void *drv_data,	unsigned long temp)
-+	{ return -EINVAL; }
-+#endif/*CONFIG_THERMAL_EMULATION*/
-+
- static void exynos_tmu_work(struct work_struct *work)
- {
- 	struct exynos_tmu_data *data = container_of(work,
-@@ -747,6 +807,7 @@ static irqreturn_t exynos_tmu_irq(int irq, void *id)
- static struct thermal_sensor_conf exynos_sensor_conf = {
- 	.name			= "exynos-therm",
- 	.read_temperature	= (int (*)(void *))exynos_tmu_read,
-+	.write_emul_temp	= exynos_tmu_set_emulation,
+ enum calibration_type {
+ 	TYPE_ONE_POINT_TRIMMING,
+ 	TYPE_TWO_POINT_TRIMMING,
+@@ -100,11 +102,12 @@ struct freq_clip_table {
+ struct exynos_tmu_platform_data {
+ 	u8 threshold;
+ 	u8 threshold_falling;
+-	u8 trigger_levels[4];
++	u8 trigger_levels[MAX_TRIP];
+ 	bool trigger_level0_en;
+ 	bool trigger_level1_en;
+ 	bool trigger_level2_en;
+ 	bool trigger_level3_en;
++	bool trigger_level4_en;
+ 
+ 	u8 gain;
+ 	u8 reference_voltage;
+@@ -113,7 +116,7 @@ struct exynos_tmu_platform_data {
+ 
+ 	enum calibration_type cal_type;
+ 	enum soc_type type;
+-	struct freq_clip_table freq_tab[4];
++	struct freq_clip_table freq_tab[MAX_TRIP];
+ 	unsigned int freq_tab_count;
  };
- 
- #if defined(CONFIG_CPU_EXYNOS4210)
-@@ -853,93 +914,6 @@ static inline struct  exynos_tmu_platform_data *exynos_get_driver_data(
- 			platform_get_device_id(pdev)->driver_data;
- }
- 
--#ifdef CONFIG_EXYNOS_THERMAL_EMUL
--static ssize_t exynos_tmu_emulation_show(struct device *dev,
--					 struct device_attribute *attr,
--					 char *buf)
--{
--	struct platform_device *pdev = container_of(dev,
--					struct platform_device, dev);
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	unsigned int reg;
--	u8 temp_code;
--	int temp = 0;
--
--	if (data->soc == SOC_ARCH_EXYNOS4210)
--		goto out;
--
--	mutex_lock(&data->lock);
--	clk_enable(data->clk);
--	reg = readl(data->base + EXYNOS_EMUL_CON);
--	clk_disable(data->clk);
--	mutex_unlock(&data->lock);
--
--	if (reg & EXYNOS_EMUL_ENABLE) {
--		reg >>= EXYNOS_EMUL_DATA_SHIFT;
--		temp_code = reg & EXYNOS_EMUL_DATA_MASK;
--		temp = code_to_temp(data, temp_code);
--	}
--out:
--	return sprintf(buf, "%d\n", temp * MCELSIUS);
--}
--
--static ssize_t exynos_tmu_emulation_store(struct device *dev,
--					struct device_attribute *attr,
--					const char *buf, size_t count)
--{
--	struct platform_device *pdev = container_of(dev,
--					struct platform_device, dev);
--	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
--	unsigned int reg;
--	int temp;
--
--	if (data->soc == SOC_ARCH_EXYNOS4210)
--		goto out;
--
--	if (!sscanf(buf, "%d\n", &temp) || temp < 0)
--		return -EINVAL;
--
--	mutex_lock(&data->lock);
--	clk_enable(data->clk);
--
--	reg = readl(data->base + EXYNOS_EMUL_CON);
--
--	if (temp) {
--		/* Both CELSIUS and MCELSIUS type are available for input */
--		if (temp > MCELSIUS)
--			temp /= MCELSIUS;
--
--		reg = (EXYNOS_EMUL_TIME << EXYNOS_EMUL_TIME_SHIFT) |
--			(temp_to_code(data, (temp / MCELSIUS))
--			 << EXYNOS_EMUL_DATA_SHIFT) | EXYNOS_EMUL_ENABLE;
--	} else {
--		reg &= ~EXYNOS_EMUL_ENABLE;
--	}
--
--	writel(reg, data->base + EXYNOS_EMUL_CON);
--
--	clk_disable(data->clk);
--	mutex_unlock(&data->lock);
--
--out:
--	return count;
--}
--
--static DEVICE_ATTR(emulation, 0644, exynos_tmu_emulation_show,
--					exynos_tmu_emulation_store);
--static int create_emulation_sysfs(struct device *dev)
--{
--	return device_create_file(dev, &dev_attr_emulation);
--}
--static void remove_emulation_sysfs(struct device *dev)
--{
--	device_remove_file(dev, &dev_attr_emulation);
--}
--#else
--static inline int create_emulation_sysfs(struct device *dev) { return 0; }
--static inline void remove_emulation_sysfs(struct device *dev) {}
--#endif
--
- static int exynos_tmu_probe(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data;
-@@ -1039,10 +1013,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 		goto err_clk;
- 	}
- 
--	ret = create_emulation_sysfs(&pdev->dev);
--	if (ret)
--		dev_err(&pdev->dev, "Failed to create emulation mode sysfs node\n");
--
- 	return 0;
- err_clk:
- 	platform_set_drvdata(pdev, NULL);
-@@ -1054,8 +1024,6 @@ static int exynos_tmu_remove(struct platform_device *pdev)
- {
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 
--	remove_emulation_sysfs(&pdev->dev);
--
- 	exynos_tmu_control(pdev, false);
- 
- 	exynos_unregister_thermal();
+ #endif /* _LINUX_EXYNOS_THERMAL_H */
 -- 
 1.7.1
