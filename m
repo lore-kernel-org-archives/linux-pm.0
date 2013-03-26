@@ -1,7 +1,7 @@
 From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Subject: [PATCH 1/2 v2] thermal: rcar: tidyup registration failure case
-Date: Mon, 25 Mar 2013 23:08:10 -0700 (PDT)
-Message-ID: <87ppymith5.wl%kuninori.morimoto.gx@renesas.com>
+Subject: [PATCH 2/2 v2] thermal: rcar: add pm_runtime_xxx() support
+Date: Mon, 25 Mar 2013 23:08:52 -0700 (PDT)
+Message-ID: <87obe6itfy.wl%kuninori.morimoto.gx@renesas.com>
 References: <87620gqbbe.wl%kuninori.morimoto.gx@renesas.com>
 	<874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
 	<1364200856.2465.48.camel@rzhang1-mobl4>
@@ -17,81 +17,67 @@ To: Zhang Rui <rui.zhang@intel.com>
 Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-pm@vger.kernel.org, Linux-SH <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Current rcar_thermal driver didn't care about rcar_theraml_irq_disable()
-when registration failure case on _probe(), and _remove().
-And, it returns without unregistering thermal zone when
-registration failure case on _probe().
-This patch fixes these issue.
+Current rcar_thermal() didn't care about own power.
+Without this patch, rcar_thermal doesn't work on APE6 board
 
 Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 ---
 v1 -> v2
 
- - same as v1
+ - fixup pm_runtime_xxx() timing
+ - fixup compile error
 
- drivers/thermal/rcar_thermal.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/thermal/rcar_thermal.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index c490aa5..c199623 100644
+index c199623..0f0f951 100644
 --- a/drivers/thermal/rcar_thermal.c
 +++ b/drivers/thermal/rcar_thermal.c
-@@ -421,13 +421,15 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
- 		if (!priv) {
- 			dev_err(dev, "Could not allocate priv\n");
--			return -ENOMEM;
-+			ret = -ENOMEM;
-+			goto error_unregister;
- 		}
+@@ -24,6 +24,7 @@
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/reboot.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+@@ -377,6 +378,9 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	spin_lock_init(&common->lock);
+ 	common->dev = dev;
  
- 		priv->base = devm_request_and_ioremap(dev, res);
- 		if (!priv->base) {
- 			dev_err(dev, "Unable to ioremap priv register\n");
--			return -ENOMEM;
-+			ret = -ENOMEM;
-+			goto error_unregister;
- 		}
- 
- 		priv->common = common;
-@@ -447,10 +449,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 			goto error_unregister;
- 		}
- 
--		list_move_tail(&priv->list, &common->head);
--
- 		if (rcar_has_irq_support(priv))
- 			rcar_thermal_irq_enable(priv);
++	pm_runtime_enable(dev);
++	pm_runtime_get_sync(dev);
 +
-+		list_move_tail(&priv->list, &common->head);
+ 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+ 	if (irq) {
+ 		int ret;
+@@ -468,12 +472,16 @@ error_unregister:
+ 			rcar_thermal_irq_disable(priv);
  	}
  
- 	platform_set_drvdata(pdev, common);
-@@ -460,8 +462,11 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 	return 0;
- 
- error_unregister:
--	rcar_thermal_for_each_priv(priv, common)
-+	rcar_thermal_for_each_priv(priv, common) {
- 		thermal_zone_device_unregister(priv->zone);
-+		if (rcar_has_irq_support(priv))
-+			rcar_thermal_irq_disable(priv);
-+	}
- 
++	pm_runtime_put_sync(dev);
++	pm_runtime_disable(dev);
++
  	return ret;
  }
-@@ -471,8 +476,11 @@ static int rcar_thermal_remove(struct platform_device *pdev)
+ 
+ static int rcar_thermal_remove(struct platform_device *pdev)
+ {
  	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
++	struct device *dev = &pdev->dev;
  	struct rcar_thermal_priv *priv;
  
--	rcar_thermal_for_each_priv(priv, common)
-+	rcar_thermal_for_each_priv(priv, common) {
- 		thermal_zone_device_unregister(priv->zone);
-+		if (rcar_has_irq_support(priv))
-+			rcar_thermal_irq_disable(priv);
-+	}
+ 	rcar_thermal_for_each_priv(priv, common) {
+@@ -484,6 +492,9 @@ static int rcar_thermal_remove(struct platform_device *pdev)
  
  	platform_set_drvdata(pdev, NULL);
+ 
++	pm_runtime_put_sync(dev);
++	pm_runtime_disable(dev);
++
+ 	return 0;
+ }
  
 -- 
 1.7.9.5
