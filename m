@@ -1,96 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Tue, 26 Mar 2013 20:00:55 +0530
-Message-ID: <CAKohpomRYXaKPoMX-3+SknSQsWiP_sMndPb4WsnLaw0Pa0k2xQ@mail.gmail.com>
-References: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
-	<51519FD3.5000402@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f42.google.com ([209.85.219.42]:42992 "EHLO
-	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759793Ab3CZOaz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 10:30:55 -0400
-Received: by mail-oa0-f42.google.com with SMTP id i18so7731324oag.29
-        for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2013 07:30:55 -0700 (PDT)
-In-Reply-To: <51519FD3.5000402@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH] cpufreq: cpu0: Fix mistake in Documentation example
+Date: Tue, 26 Mar 2013 20:10:46 +0530
+Message-ID: <225d20676ec96aa81683f23485f0339e32a22917.1364308732.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, shawn.guo@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rob.herring@calxeda.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, nicolas.pitre@linaro.org, robin.randhawa@arm.com, linux@arm.linux.org.uk, mark.hambleton@broadcom.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com, Mark Langsdorf <mark.langsdorf@calxeda.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On 26 March 2013 18:47, Rob Herring <robherring2@gmail.com> wrote:
-> On 03/26/2013 04:51 AM, Viresh Kumar wrote:
-> I fail to see anything bL specific here. This is just multi-cluster, but
-> even for that I don't see anything new other than simply allowing per
-> cpu or per cluster opp's. The fact that we have one opp for a cluster is
-> simply an implementation decision in CortexA cores.
+"clock-latency" is incorrectly written as "transition-latency" in an example
+present in Documentation of cpufreq-cpu0. Fix it.
 
-For now it is a very simple driver and yes probably multi-cluster only. It
-will be updated with In Kernel Switcher support as soon as Linaro makes
-a decision to opensource that (likely to happen soon).
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Yes, there can be implementations, like krait, which can have per cpu
-control of opp, but we will wait for any such platform before making this
-driver complex.
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+index 4416ccc..051f764 100644
+--- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
+@@ -32,7 +32,7 @@ cpus {
+ 			396000  950000
+ 			198000  850000
+ 		>;
+-		transition-latency = <61036>; /* two CLK32 periods */
++		clock-latency = <61036>; /* two CLK32 periods */
+ 	};
+ 
+ 	cpu@1 {
+-- 
+1.7.12.rc2.18.g61b472e
 
->> +NOTE: Cpus should boot in the order specified in DT and all cpus for a cluster
->> +must be present contiguously. Generic DT driver will check only node 'x' for
->> +cpu:x.
->
-> The OS cannot necessarily control the order. The OS should be able to
-> boot on which ever core comes up first.
-
-This should be a FIXME instead (will update it). I am waiting for
-final DT bindings
-from ARM guys before this can be written on stone.
-
-For now this is the limitation and it should go away as soon as DT bindings are
-finalized.
-
->> +Optional properties:
->> +- clock-latency: Specify the possible maximum transition latency for clock,
->> +  in unit of nanoseconds.
->
-> Don't we already have "transition-latency" defined?
-
-No, its clock-latency.
-
-$ git grep "clock-latency" Documentation/devicetree/bindings/
-Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt:-
-clock-latency: Specify the possible maximum transition latency for
-clock,
-Documentation/devicetree/bindings/cpufreq/cpufreq-spear.txt:-
-clock-latency: Specify the possible maximum transition latency for
-clock, in
-
-Though transition-latency is mentioned by the example of cpufreq-cpu0.
-I will fix it.
-
-> Don't create
-> something new. Ideally, this should have had "-ns" appended, but the
-> binding is already defined.
-
-I had the same intention.
-
->> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> What is specific to bL? This looks like just a multi-cluster cpufreq
-> driver and should be generalized to that. Also, why can't the existing
-> cpufreq-cpu0 driver be extended to support this?
-
-With IKS code in, it will be a complete big LITTLE driver.
-
->> +/* Currently we support only two clusters */
->> +#define MAX_CLUSTERS 2
->
-> Why? Because that is what the define is or there are other limitations?
-> Seems like this could and should be dynamically discovered with DT.
-
-To keep it simple, as for now as all early systems (atleast which are announced)
-have dual cluster systems only.
-
-We will update it once we have some real systems breaking this law.
-
---
-viresh
