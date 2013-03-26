@@ -1,18 +1,18 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal: kirkwood: Fix thermal sensor formula
-Date: Tue, 26 Mar 2013 22:24:33 +0800
-Message-ID: <1364307873.2821.23.camel@rzhang1-mobl4>
+Subject: Re: [PATCH 2/2] thermal: dove: Fix thermal sensor formula
+Date: Tue, 26 Mar 2013 22:24:55 +0800
+Message-ID: <1364307895.2821.24.camel@rzhang1-mobl4>
 References: <1363954983-30822-1-git-send-email-ezequiel.garcia@free-electrons.com>
-	 <1363954983-30822-2-git-send-email-ezequiel.garcia@free-electrons.com>
+	 <1363954983-30822-3-git-send-email-ezequiel.garcia@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:19342 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:20923 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934459Ab3CZOYm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 Mar 2013 10:24:42 -0400
-In-Reply-To: <1363954983-30822-2-git-send-email-ezequiel.garcia@free-electrons.com>
+	id S934473Ab3CZOZB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Mar 2013 10:25:01 -0400
+In-Reply-To: <1363954983-30822-3-git-send-email-ezequiel.garcia@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
@@ -33,26 +33,27 @@ applied to thermal -next.
 thanks,
 rui
 > ---
->  drivers/thermal/kirkwood_thermal.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+> Tested by compilation only.
 > 
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> index 65cb4f0..84b331f 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -49,13 +49,13 @@ static int kirkwood_get_temp(struct thermal_zone_device *thermal,
+>  drivers/thermal/dove_thermal.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
+> index 7b0bfa0..ddd73a5 100644
+> --- a/drivers/thermal/dove_thermal.c
+> +++ b/drivers/thermal/dove_thermal.c
+> @@ -107,12 +107,13 @@ static int dove_get_temp(struct thermal_zone_device *thermal,
 >  	}
 >  
 >  	/*
-> -	 * Calculate temperature. See Section 8.10.1 of the 88AP510,
-> -	 * datasheet, which has the same sensor.
+> -	 * Calculate temperature. See Section 8.10.1 of 88AP510,
 > -	 * Documentation/arm/Marvell/README
 > +	 * Calculate temperature. According to Marvell internal
 > +	 * documentation the formula for this is:
 > +	 * Celsius = (322-reg)/1.3625
 >  	 */
->  	reg = (reg >> KIRKWOOD_THERMAL_TEMP_OFFSET) &
->  		KIRKWOOD_THERMAL_TEMP_MASK;
+>  	reg = readl_relaxed(priv->sensor);
+>  	reg = (reg >> DOVE_THERMAL_TEMP_OFFSET) & DOVE_THERMAL_TEMP_MASK;
 > -	*temp = ((2281638UL - (7298*reg)) / 10);
 > +	*temp = ((3220000000UL - (10000000UL * reg)) / 13625);
 >  
