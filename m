@@ -1,30 +1,40 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v5 8/8] reset: Add driver for gpio-controlled reset pins
-Date: Wed, 27 Mar 2013 20:10:26 +0800
-Message-ID: <20130327121024.GC2674@S2101-09.ap.freescale.net>
-References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
- <1364231189-12497-9-git-send-email-p.zabel@pengutronix.de>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/5] cpuidle: ux500: remove timer broadcast initialization
+Date: Wed, 27 Mar 2013 14:11:37 +0100
+Message-ID: <5152F009.6020908@linaro.org>
+References: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org> <1364379733-23725-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from va3ehsobe006.messaging.microsoft.com ([216.32.180.16]:15159
-	"EHLO va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753571Ab3C0MKl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 08:10:41 -0400
-Content-Disposition: inline
-In-Reply-To: <1364231189-12497-9-git-send-email-p.zabel@pengutronix.de>
+Received: from mail-wg0-f46.google.com ([74.125.82.46]:58169 "EHLO
+	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754213Ab3C0NLm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 09:11:42 -0400
+Received: by mail-wg0-f46.google.com with SMTP id l18so457396wgh.25
+        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 06:11:41 -0700 (PDT)
+In-Reply-To: <1364379733-23725-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, kernel@pengutronix.de
 
-On Mon, Mar 25, 2013 at 06:06:29PM +0100, Philipp Zabel wrote:
-> This driver implements a reset controller device that toggles gpios
-> connected to reset pins of peripheral ICs. The delay between assertion
-> and de-assertion of the reset signal can be configured.
-> 
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> Reviewed-by: Stephen Warren <swarren@nvidia.com>
+On 03/27/2013 11:22 AM, Daniel Lezcano wrote:
+> The initialization is done from the cpuidle framework.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
-Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
+I believe as I am the author of this driver, you can assume it is
+acked-by myself :)
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
