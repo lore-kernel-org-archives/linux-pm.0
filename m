@@ -1,49 +1,97 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: omap cpufreq driver in multi-platform kernels
-Date: Wed, 27 Mar 2013 13:02:49 -0500
-Message-ID: <20130327180248.GB32693@kahuna>
-References: <5152503C.2050503@gmail.com>
- <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com>
- <20130327133220.GA30868@kahuna>
- <alpine.DEB.2.00.1303271747210.17356@utopia.booyaka.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH V2 8/8] cpufreq: OMAP: donot allow to be used with device tree
+Date: Wed, 27 Mar 2013 11:39:09 -0700
+Message-ID: <87vc8c7kmq.fsf@linaro.org>
+References: <1363715590-5131-1-git-send-email-nm@ti.com>
+	<1363715590-5131-9-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:36930 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751128Ab3C0SCz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Mar 2013 14:02:55 -0400
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1303271747210.17356@utopia.booyaka.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1363715590-5131-9-git-send-email-nm@ti.com> (Nishanth Menon's
+	message of "Tue, 19 Mar 2013 12:53:10 -0500")
+Sender: cpufreq-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap@vger.kernel.org, Jon Hunter <jon-hunter@ti.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Walmsley <paul@pwsan.com>
-Cc: Rob Herring <robherring2@gmail.com>, Kevin Hilman <khilman@deeprootsystems.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On 17:48-20130327, Paul Walmsley wrote:
-> Hi
-> 
-> On Wed, 27 Mar 2013, Nishanth Menon wrote:
-> 
-> > We should deprecate usage on omap-cpufreq driver eventually, instead go
-> > towards embracing the SoC generic implementation of cpufreq-cpu0 driver
-> > IMHO.
-> > http://marc.info/?l=linux-omap&m=136371580826031&w=2
-> > is the series to support cpufreq_cpu0 driver in DT based boot.
-> > Would you think this approach is sane? 
-> 
-> Haven't looked closely at the series, but the idea makes sense to me, as 
-Thanks.
-> long as OMAP doesn't need to do anything too exotic in the CPUFreq driver.
-:) I wish that were the case, from an SoC entitlement point of view,
-purely controlling frequency and regulator is not sufficent for
-most OMAPs/AM variants. We do have to deal with ABB and AVS (now a
-multitude of class variants to deal with) - part of the rationale for
-switching to generic cpufreq as part of DT steps is to force ourselves to
-adhere to common code and entitle required SoC feature set.
+Nishanth Menon <nm@ti.com> writes:
 
-If you get a chance, it would be nice to hear your views on the intermediate
-step(the patch series pointed above) as part of overall OMAP transition to DT.
--- 
-Regards,
-Nishanth Menon
+> We now use Soc generic cpufreq-cpu0 driver using DT entries.
+> However to allow cpufreq-cpu0 and omap-cpufreq drivers to co-exist,
+> we need to ensure the following using the same image:
+> 1. With device tree boot, we use cpufreq-cpu0
+> 2. With non device tree boot, we use omap-cpufreq
+>
+> In the case of (1), we will have cpu OPPs and regulator registered
+> as part of the DT, to ensure that omap-cpufreq and cpufreq-cpu0 don't
+> conflict in managing the frequency of the same cpu, we should not
+> permit init to pass in omap-cpufreq.
+>
+> In the case of (2), we will not have the cpufreq-cpu0 device, hence
+> only omap-cpufreq will be active.
+>
+> So, to acommodate both these usage conditions, we fail init of
+> omap-cpufreq when we boot with device tree.
+>
+> Cc: Kevin Hilman <khilman@deeprootsystems.com>
+> Cc: Jon Hunter <jon-hunter@ti.com>
+> Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Cc: Shawn Guo <shawn.guo@linaro.org>
+> Cc: Keerthy <j-keerthy@ti.com>
+> Cc: linux-omap@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: cpufreq@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+> Changes in V2:
+> 	- donot remove support for omap-cpufreq in non-DT boot
+> 	- little more verbose commit log
+> V1: https://patchwork.kernel.org/patch/2273641/
+>
+>  drivers/cpufreq/omap-cpufreq.c |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cp=
+ufreq.c
+> index 9128c07..9382ed0 100644
+> --- a/drivers/cpufreq/omap-cpufreq.c
+> +++ b/drivers/cpufreq/omap-cpufreq.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/err.h>
+>  #include <linux/clk.h>
+>  #include <linux/io.h>
+> +#include <linux/of.h>
+>  #include <linux/opp.h>
+>  #include <linux/cpu.h>
+>  #include <linux/module.h>
+> @@ -174,6 +175,19 @@ static inline void freq_table_free(void)
+>  static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
+>  {
+>  	int result =3D 0;
+> +	struct device_node *np;
+> +
+> +	/*
+> +	 * If we have a device tree node describing OPPs,
+> +	 * we will NOT permit usage of omap-cpufreq driver.
+> +	 * use cpufreq-cpu0 driver to manage.
+> +	 */
+> +	if (of_have_populated_dt()) {
+> +		for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+> +			if (of_get_property(np, "operating-points", NULL))
+> +				return -EPERM;
+> +		}
+> +	}
+
+I think it's much cleaner to just convert this to a platform_driver lik=
+e
+was done for the generic driver[1].  Then the registration in the
+previous patch can register the omap driver when needed.
+
+Kevin
+
+[1] https://patchwork.kernel.org/patch/2067751/
