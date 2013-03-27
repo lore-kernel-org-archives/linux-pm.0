@@ -1,61 +1,140 @@
-From: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
-Subject: Re: [PATCH v5 0/8] Reset controller API to reset IP modules on i.MX5
- and i.MX6
-Date: Tue, 26 Mar 2013 22:13:38 +0100
-Message-ID: <201303262213.39068.marex@denx.de>
-References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
- <20130326181909.GA31593@amd.pavel.ucw.cz>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: omap cpufreq driver in multi-platform kernels
+Date: Wed, 27 Mar 2013 02:23:57 +0000 (UTC)
+Message-ID: <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com>
+References: <5152503C.2050503@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-In-Reply-To: <20130326181909.GA31593-tWAi6jLit6GreWDznjuHag@public.gmane.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
-List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
- <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
-Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-Sender: "devicetree-discuss"
- <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
-To: Pavel Machek <pavel-ynQEQJNshbs@public.gmane.org>
-Cc: Fabio Estevam <fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from utopia.booyaka.com ([74.50.51.50]:42710 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753502Ab3C0CX6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 22:23:58 -0400
+In-Reply-To: <5152503C.2050503@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-Dear Pavel Machek,
+Hi
 
-> Hi!
-> 
-> > The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-> > reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
-> > 
-> > The following patches add a simple API for devices to request being reset
-> > by separate reset controller hardware and implements the reset signal
-> > device tree binding proposed by Stephen Warren. Contrary to Tegra
-> > hardware, the i.MX SRC contains self-deasserting reset registers, so
-> > I've included both ops to manually assert/deassert a reset line, as well
-> > as a "reset" operation that is supposed to assert the reset line and
-> > wait for it to deassert.
-> > 
-> > The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-> > is made to request being reset by calling the device_reset(&pdev->dev)
-> > convenience wrapper during probing.
-> > 
-> > Changes since v4:
-> >  - removed flags parameter from .of_xlate / of_reset_simple_xlate
-> >  - warn also if reset_spec->args_count > rcdev->of_reset_n_cells
-> >  - unlock list mutex only after try_module_get
-> >  - tighten devm_reset_control_match a bit
-> 
-> Series looks mostly ok to me. (Should the last patch be actually
-> first, so that reset functionality is kept between 5/8 and 8/8?)
+On Tue, 26 Mar 2013, Rob Herring wrote:
 
-Not first, but rather third.
+> The omap cpufreq driver causes problems in multi-platform kernels
+> because it unconditionally registers with the cpufreq core and does not
+> check sufficiently that it is running on an omap platform. So on a
+> kernel with highbank and omap drivers booted on highbank, the
+> cpufreq-cpu0 driver fails to init. Any suggestions for how to fix? For
+> DT this could just be several of_machine_is_compatible checks, but I'm
+> not really sure for non-DT. Converting the driver to a platform driver
+> would be another option.
 
-You can add my
-Reviewed-by: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
+We could move the
 
-Best regards,
-Marek Vasut
+	mpu_clk = clk_get(NULL, "cpufreq_ck");
+
+down to omap_cpufreq_init(), and bail out early if the clock alias doesn't 
+exist.  (Presumably we'd also want to change the clock role name if we did 
+that, to something like "omap_cpufreq_ck".)
+
+Experimental patch follows, comments welcome.
+
+
+- Paul
+
+>From c1b4374d9cdcf59e0cbe93aa5a23335cb3e60798 Mon Sep 17 00:00:00 2001
+From: Paul Walmsley <paul@pwsan.com>
+Date: Tue, 26 Mar 2013 20:16:39 -0600
+Subject: [PATCH] EXPERIMENTAL: cpufreq: avoid loading the OMAP driver on
+ non-OMAP multiplatform targets
+
+etc. etc.
+---
+ arch/arm/mach-omap2/cclock2420_data.c |    2 +-
+ arch/arm/mach-omap2/cclock2430_data.c |    2 +-
+ arch/arm/mach-omap2/cclock3xxx_data.c |    2 +-
+ arch/arm/mach-omap2/cclock44xx_data.c |    2 +-
+ drivers/cpufreq/omap-cpufreq.c        |    8 ++++----
+ 5 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/cclock2420_data.c b/arch/arm/mach-omap2/cclock2420_data.c
+index 0f0a97c..d4316e9 100644
+--- a/arch/arm/mach-omap2/cclock2420_data.c
++++ b/arch/arm/mach-omap2/cclock2420_data.c
+@@ -1885,7 +1885,7 @@ static struct omap_clk omap2420_clks[] = {
+ 	CLK(NULL,	"timer_32k_ck",	&func_32k_ck,	CK_242X),
+ 	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_242X),
+ 	CLK(NULL,	"timer_ext_ck",	&alt_ck,	CK_242X),
+-	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_242X),
++	CLK(NULL,	"omap_cpufreq_ck",	&virt_prcm_set,	CK_242X),
+ };
+ 
+ 
+diff --git a/arch/arm/mach-omap2/cclock2430_data.c b/arch/arm/mach-omap2/cclock2430_data.c
+index aed8f74..7c855b9 100644
+--- a/arch/arm/mach-omap2/cclock2430_data.c
++++ b/arch/arm/mach-omap2/cclock2430_data.c
+@@ -2001,7 +2001,7 @@ static struct omap_clk omap2430_clks[] = {
+ 	CLK(NULL,	"timer_32k_ck",  &func_32k_ck,   CK_243X),
+ 	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_243X),
+ 	CLK(NULL,	"timer_ext_ck",	&alt_ck,	CK_243X),
+-	CLK(NULL,	"cpufreq_ck",	&virt_prcm_set,	CK_243X),
++	CLK(NULL,	"omap_cpufreq_ck",	&virt_prcm_set,	CK_243X),
+ };
+ 
+ static const char *enable_init_clks[] = {
+diff --git a/arch/arm/mach-omap2/cclock3xxx_data.c b/arch/arm/mach-omap2/cclock3xxx_data.c
+index 4579c3c..17dd82c 100644
+--- a/arch/arm/mach-omap2/cclock3xxx_data.c
++++ b/arch/arm/mach-omap2/cclock3xxx_data.c
+@@ -3501,7 +3501,7 @@ static struct omap_clk omap3xxx_clks[] = {
+ 	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
+ 	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
+ 	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
+-	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
++	CLK(NULL,	"omap_cpufreq_ck",	&dpll1_ck,	CK_3XXX),
+ };
+ 
+ static const char *enable_init_clks[] = {
+diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-omap2/cclock44xx_data.c
+index 3d58f33..66b85e5 100644
+--- a/arch/arm/mach-omap2/cclock44xx_data.c
++++ b/arch/arm/mach-omap2/cclock44xx_data.c
+@@ -1660,7 +1660,7 @@ static struct omap_clk omap44xx_clks[] = {
+ 	CLK("4013a000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+ 	CLK("4013c000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+ 	CLK("4013e000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
+-	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
++	CLK(NULL,	"omap_cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
+ };
+ 
+ int __init omap4xxx_clk_init(void)
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpufreq.c
+index 9128c07..d46caa5 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -175,10 +175,6 @@ static int __cpuinit omap_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	int result = 0;
+ 
+-	mpu_clk = clk_get(NULL, "cpufreq_ck");
+-	if (IS_ERR(mpu_clk))
+-		return PTR_ERR(mpu_clk);
+-
+ 	if (policy->cpu >= NR_CPUS) {
+ 		result = -EINVAL;
+ 		goto fail_ck;
+@@ -254,6 +250,10 @@ static struct cpufreq_driver omap_driver = {
+ 
+ static int __init omap_cpufreq_init(void)
+ {
++	mpu_clk = clk_get(NULL, "omap_cpufreq_ck");
++	if (IS_ERR(mpu_clk))
++		return PTR_ERR(mpu_clk);
++
+ 	mpu_dev = get_cpu_device(0);
+ 	if (!mpu_dev) {
+ 		pr_warning("%s: unable to get the mpu device\n", __func__);
+-- 
+1.7.10.4
+
