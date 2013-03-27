@@ -1,113 +1,71 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/5] cpuidle: initialize the broadcast timer framework
-Date: Wed, 27 Mar 2013 11:22:10 +0100
-Message-ID: <1364379733-23725-2-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 3/5] cpuidle: ux500: remove timer broadcast initialization
+Date: Wed, 27 Mar 2013 11:22:11 +0100
+Message-ID: <1364379733-23725-3-git-send-email-daniel.lezcano@linaro.org>
 References: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:62634 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732Ab3C0KWV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 06:22:21 -0400
-Received: by mail-wg0-f41.google.com with SMTP id y10so316103wgg.0
-        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 03:22:20 -0700 (PDT)
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:58332 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683Ab3C0KWY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 06:22:24 -0400
+Received: by mail-wi0-f169.google.com with SMTP id c10so2131062wiw.2
+        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 03:22:22 -0700 (PDT)
 In-Reply-To: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: tglx@linutronix.de, linus.walleij@linaro.org, kernel@pengutronix.de, santosh.shilimkar@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-The commit 89878baa73f0f1c679355006bd8632e5d78f96c2 introduced
-the CPUIDLE_FLAG_TIMER_STOP flag where we specify a specific idle
-state stops the local timer.
-
-Now use this flag to check at init time if one state will need
-the broadcast timer and, in this case, setup the broadcast timer
-framework. That prevents multiple code duplication in the drivers.
+The initialization is done from the cpuidle framework.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/driver.c |   31 +++++++++++++++++++++++++++++--
- include/linux/cpuidle.h  |    2 ++
- 2 files changed, 31 insertions(+), 2 deletions(-)
+ arch/arm/mach-ux500/cpuidle.c |   18 ------------------
+ 1 file changed, 18 deletions(-)
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 422c7b6..8dfaaae 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -11,6 +11,8 @@
- #include <linux/mutex.h>
+diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
+index 6d0c4b6..1b16d9e 100644
+--- a/arch/arm/mach-ux500/cpuidle.c
++++ b/arch/arm/mach-ux500/cpuidle.c
+@@ -11,7 +11,6 @@
+ 
  #include <linux/module.h>
  #include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/clockchips.h>
+-#include <linux/clockchips.h>
+ #include <linux/spinlock.h>
+ #include <linux/atomic.h>
+ #include <linux/smp.h>
+@@ -112,16 +111,6 @@ static struct cpuidle_driver ux500_idle_driver = {
+ 	.state_count = 2,
+ };
  
- #include "cpuidle.h"
- 
-@@ -19,9 +21,28 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
- static void __cpuidle_set_cpu_driver(struct cpuidle_driver *drv, int cpu);
- static struct cpuidle_driver * __cpuidle_get_cpu_driver(int cpu);
- 
--static void __cpuidle_driver_init(struct cpuidle_driver *drv)
-+static void cpuidle_setup_broadcast_timer(void *arg)
+-/*
+- * For each cpu, setup the broadcast timer because we will
+- * need to migrate the timers for the states >= ApIdle.
+- */
+-static void ux500_setup_broadcast_timer(void *arg)
+-{
+-	int cpu = smp_processor_id();
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
+-}
+-
+ int __init ux500_idle_init(void)
  {
-+	int cpu = smp_processor_id();
-+	clockevents_notify((long)(arg), &cpu);
-+}
-+
-+static void __cpuidle_driver_init(struct cpuidle_driver *drv, int cpu)
-+{
-+	int i;
-+
- 	drv->refcnt = 0;
-+
-+	for (i = drv->state_count - 1; i >= 0 ; i--) {
-+
-+		if (!(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP))
-+			continue;
-+
-+		drv->bctimer = 1;
-+		on_each_cpu_mask(get_cpu_mask(cpu), cpuidle_setup_broadcast_timer,
-+				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON, 1);
-+		break;
-+	}
- }
+ 	int ret, cpu;
+@@ -131,13 +120,6 @@ int __init ux500_idle_init(void)
+ 	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
+ 			     PRCMU_WAKEUP(ABB));
  
- static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
-@@ -35,7 +56,7 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv, int cpu)
- 	if (__cpuidle_get_cpu_driver(cpu))
- 		return -EBUSY;
- 
--	__cpuidle_driver_init(drv);
-+	__cpuidle_driver_init(drv, cpu);
- 
- 	__cpuidle_set_cpu_driver(drv, cpu);
- 
-@@ -49,6 +70,12 @@ static void __cpuidle_unregister_driver(struct cpuidle_driver *drv, int cpu)
- 
- 	if (!WARN_ON(drv->refcnt > 0))
- 		__cpuidle_set_cpu_driver(NULL, cpu);
-+
-+	if (drv->bctimer) {
-+		drv->bctimer = 0;
-+		on_each_cpu_mask(get_cpu_mask(cpu), cpuidle_setup_broadcast_timer,
-+				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF, 1);
-+	}
- }
- 
- #ifdef CONFIG_CPU_IDLE_MULTIPLE_DRIVERS
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index a837b33..fc3e580 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -107,6 +107,8 @@ struct cpuidle_driver {
- 
- 	/* set to 1 to use the core cpuidle time keeping (for all states). */
- 	unsigned int		en_core_tk_irqen:1;
-+        /* used by the cpuidle framework to setup the broadcast timer */
-+	unsigned int            bctimer:1;
- 	/* states array must be ordered in decreasing power consumption */
- 	struct cpuidle_state	states[CPUIDLE_STATE_MAX];
- 	int			state_count;
+-	/*
+-	 * Configure the timer broadcast for each cpu, that must
+-	 * be done from the cpu context, so we use a smp cross
+-	 * call with 'on_each_cpu'.
+-	 */
+-	on_each_cpu(ux500_setup_broadcast_timer, NULL, 1);
+-
+ 	ret = cpuidle_register_driver(&ux500_idle_driver);
+ 	if (ret) {
+ 		printk(KERN_ERR "failed to register ux500 idle driver\n");
 -- 
 1.7.9.5
 
