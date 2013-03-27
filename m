@@ -1,75 +1,95 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: omap cpufreq driver in multi-platform kernels
-Date: Wed, 27 Mar 2013 12:02:21 -0500
-Message-ID: <20130327170221.GA32231@kahuna>
-References: <5152503C.2050503@gmail.com>
- <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com>
- <20130327133220.GA30868@kahuna>
- <5153207A.4050109@gmail.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
+Date: Wed, 27 Mar 2013 12:19:31 -0500
+Message-ID: <20130327171931.GA17070@jshin-Toonie>
+References: <cover.1364398686.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:52665 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751128Ab3C0RC3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Mar 2013 13:02:29 -0400
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5153207A.4050109@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <cover.1364398686.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Paul Walmsley <paul@pwsan.com>, Kevin Hilman <khilman@deeprootsystems.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-On 11:38-20130327, Rob Herring wrote:
-> On 03/27/2013 08:32 AM, Nishanth Menon wrote:
-> > On 02:23-20130327, Paul Walmsley wrote:
-> >> Hi
-> >>
-> >> On Tue, 26 Mar 2013, Rob Herring wrote:
-> >>
-> >>> The omap cpufreq driver causes problems in multi-platform kernels
-> >>> because it unconditionally registers with the cpufreq core and does not
-> >>> check sufficiently that it is running on an omap platform. So on a
-> >>> kernel with highbank and omap drivers booted on highbank, the
-> >>> cpufreq-cpu0 driver fails to init. Any suggestions for how to fix? For
-> >>> DT this could just be several of_machine_is_compatible checks, but I'm
-> >>> not really sure for non-DT. Converting the driver to a platform driver
-> >>> would be another option.
-> >>
-> >> We could move the
-> >>
-> >> 	mpu_clk = clk_get(NULL, "cpufreq_ck");
-> >>
-> >> down to omap_cpufreq_init(), and bail out early if the clock alias doesn't 
-> >> exist.  (Presumably we'd also want to change the clock role name if we did 
-> >> that, to something like "omap_cpufreq_ck".)
-> >>
-> >> Experimental patch follows, comments welcome.
-> > We should deprecate usage on omap-cpufreq driver eventually, instead go
-> > towards embracing the SoC generic implementation of cpufreq-cpu0 driver
-> > IMHO.
-> > http://marc.info/?l=linux-omap&m=136371580826031&w=2
-> > is the series to support cpufreq_cpu0 driver in DT based boot.
-> > Would you think this approach is sane? 
+On Wed, Mar 27, 2013 at 09:28:56PM +0530, Viresh Kumar wrote:
+> Hi Guys,
 > 
-> That only solves the problem for DT, but not non-DT. My understanding is
-> non-DT omap platforms will be around for some time.
+> All patches are pushed here for others to apply (you can apply from mail to):
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/governor-per-policy-v4
 > 
-Yes, that is true. There are multiple parts of the problem:
-part #1: DT boot:
-https://patchwork.kernel.org/patch/2303471/ prevents omap-cpufreq from
-interfering in DT enabled boot. (seeing DT entries for highbank it
-probably might help in the specific platform)
-part #2: non DT boot:
-you would not have cpu DT nodes in the system. So, cpufreq-cpu0 wont come
-into play[1]
-Now the conflict between omap-cpufreq Vs non-dt platform cpufreq driver:
-other than registering an dummy device and moving omap_cpufreq_init to
-it (similar to what was done in cpufreq-cpu0[2]) I dont see how we can
-continue to keep multiple platforms sane in mult-arch non-dt boot.
+> Currently, there can't be multiple instances of single governor_type. If we have
+> a multi-package system, where we have multiple instances of struct policy (per
+> package), we can't have multiple instances of same governor. i.e. We can't have
+> multiple instances of ondemand governor for multiple packages.
+> 
+> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> governor-name/. Which again reflects that there can be only one instance of a
+> governor_type in the system.
+> 
+> This is a bottleneck for multicluster system, where we want different packages
+> to use same governor type, but with different tunables.
+> 
+> This patchset is inclined towards fixing this issue. Now we will create
+> governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
+> struct policy alive at any moment. Platform drivers requiring this feature must
+> set have_governor_per_policy variable in their instance of cpufreq_driver. For
+> others the interface is kept same: cpu/cpufreq/<gov>.
+> 
+> 
+> This is V4 of this patchset. V3 is already applied by Rafael in his linux-next
+> branch. Jacob Shin reported some regressions with this patchset and when I went
+> into testing it with his configuration I found more issues then what he
+> reported.
+> 
+> To test these over linux-next you need to revert following first:
+> db9baec cpufreq: Get rid of "struct global_attr"
+> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
+> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
+> 
+> I have tested this for following now and believe there are no more regressions
+> with it:
+> - platform with a single policy instance or single group of cpu
+> - platform with multiple policies but which don't want per policy instance of
+>   governor
+> - platform with multiple policies and which want per policy instance of governor
+> 
+> I have tried with different settings and combinations of governors.
+> 
+> @Rafael: To simplify your life I have sorted out your branch and you can simply
+> pickup the complete branch that I have pushed.
+> 
+> V3->V4:
+> - We have two instances of all show/store routines for ondemand/conservative
+>   governor. One for per-policy instance of governor and other for one governor
+>   instance for all policies.
+> - Dropped: db9baec cpufreq: Get rid of "struct global_attr".
+> - Fixed cpufreq_governor_dbs for multiple policies using same governor instance.
+> - Implemented few macro's in cpufreq_governor.h to make above stuff clean.
+> - Renamed have_multiple_policies to have_governor_per_policy
+> - Some more minor cleanups
+> 
+> Viresh Kumar (2):
+>   cpufreq: Add per policy governor-init/exit infrastructure
+>   cpufreq: governor: Implement per policy instances of governors
+> 
+>  drivers/cpufreq/cpufreq.c              |  36 ++++-
+>  drivers/cpufreq/cpufreq_conservative.c | 193 ++++++++++++++----------
+>  drivers/cpufreq/cpufreq_governor.c     | 212 +++++++++++++++++---------
+>  drivers/cpufreq/cpufreq_governor.h     | 117 +++++++++++++--
+>  drivers/cpufreq/cpufreq_ondemand.c     | 263 ++++++++++++++++++++-------------
+>  include/linux/cpufreq.h                |  17 ++-
+>  6 files changed, 562 insertions(+), 276 deletions(-)
+> 
+> -- 
+> 1.7.12.rc2.18.g61b472e
+> 
+> 
 
-[1] https://patchwork.kernel.org/patch/2351601/
-[2] https://patchwork.kernel.org/patch/2067751/
--- 
-Regards,
-Nishanth Menon
+V4 tested good on AMD machine that the regression was reported on.
+
+Thanks,
+
+Tested-by: Jacob Shin <jacob.shin@amd.com>
+
