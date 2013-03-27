@@ -1,68 +1,44 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 5/5] cpuidle: imx6: remove timer broadcast initialization
-Date: Wed, 27 Mar 2013 11:22:13 +0100
-Message-ID: <1364379733-23725-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:50633 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610Ab3C0KW1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 06:22:27 -0400
-Received: by mail-we0-f169.google.com with SMTP id x43so2744434wey.14
-        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 03:22:26 -0700 (PDT)
-In-Reply-To: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 3/9] cpufreq: davinci: move cpufreq driver to drivers/cpufreq
+Date: Wed, 27 Mar 2013 16:02:58 +0530
+Message-ID: <5152CADA.4020502@ti.com>
+References: <cover.1364205812.git.viresh.kumar@linaro.org> <ef225dbf63b1d834761773384d3f70cb4ac7b611.1364205812.git.viresh.kumar@linaro.org> <5152C755.7010404@ti.com> <CAKohponaNZRdYETsb8W3trk8V7LeC7jsR49hJwGv1iYiVJcduw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponaNZRdYETsb8W3trk8V7LeC7jsR49hJwGv1iYiVJcduw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux@arm.linux.org.uk, davinci-linux-open-source@linux.davincidsp.com
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: tglx@linutronix.de, linus.walleij@linaro.org, kernel@pengutronix.de, santosh.shilimkar@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-The initialization is done from the cpuidle framework.
+On 3/27/2013 3:51 PM, Viresh Kumar wrote:
+> On 27 March 2013 15:47, Sekhar Nori <nsekhar@ti.com> wrote:
+>> On 3/25/2013 3:41 PM, Viresh Kumar wrote:
+>> I am unable to apply this patch for testing. Looks like this could be
+>> because of:
+>>
+>> Content-Type: text/plain; charset="WINDOWS-1252"
+>>
+>> Can you get rid of that charset="WINDOWS-1252"?
+> 
+> I can't, its MSF exchange server behind this.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
----
- arch/arm/mach-imx/cpuidle-imx6q.c |   15 ---------------
- 1 file changed, 15 deletions(-)
+Too bad. But something needs to be done about it since we all like to
+apply patches received in email ;). I have seen reports of people
+configuring gmail to know their @company.com address as another e-mail
+address they own and then using gmail SMTP to send patches (git config).
+You should try that.
 
-diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
-index 5ae22f7..a783a63 100644
---- a/arch/arm/mach-imx/cpuidle-imx6q.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6q.c
-@@ -6,7 +6,6 @@
-  * published by the Free Software Foundation.
-  */
- 
--#include <linux/clockchips.h>
- #include <linux/cpuidle.h>
- #include <linux/module.h>
- #include <asm/cpuidle.h>
-@@ -43,17 +42,6 @@ done:
- 	return index;
- }
- 
--/*
-- * For each cpu, setup the broadcast timer because local timer
-- * stops for the states other than WFI.
-- */
--static void imx6q_setup_broadcast_timer(void *arg)
--{
--	int cpu = smp_processor_id();
--
--	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
--}
--
- static struct cpuidle_driver imx6q_cpuidle_driver = {
- 	.name = "imx6q_cpuidle",
- 	.owner = THIS_MODULE,
-@@ -84,8 +72,5 @@ int __init imx6q_cpuidle_init(void)
- 	/* Set chicken bit to get a reliable WAIT mode support */
- 	imx6q_set_chicken_bit();
- 
--	/* Configure the broadcast timer on each cpu */
--	on_each_cpu(imx6q_setup_broadcast_timer, NULL, 1);
--
- 	return imx_cpuidle_init(&imx6q_cpuidle_driver);
- }
--- 
-1.7.9.5
+> 
+> And for this reason only i push my patches in my public repo all the
+> time, mentioned in cover-letter.
+> 
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/cpufreq-move-drivers
 
+Okay but you never copied me on the cover letter so I only saw this one
+patch. I will pull your tree and test now.
+
+Thanks,
+Sekhar
