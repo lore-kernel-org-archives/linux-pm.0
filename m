@@ -1,67 +1,76 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: Re: [PATCH v5 0/8] Reset controller API to reset IP modules on
- i.MX5 and i.MX6
-Date: Wed, 27 Mar 2013 09:43:10 +0100
-Message-ID: <1364373790.5442.5.camel@pizza.hi.pengutronix.de>
-References: <1364231189-12497-1-git-send-email-p.zabel@pengutronix.de>
-	 <20130326181909.GA31593@amd.pavel.ucw.cz>
-	 <201303262213.39068.marex@denx.de>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH for 3.10 0/4] thermal: Add Armada 370/XP support
+Date: Wed, 27 Mar 2013 05:54:21 -0300
+Message-ID: <20130327085420.GA2465@localhost>
+References: <1364225229-2857-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33972 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751777Ab3C0Inu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 04:43:50 -0400
-In-Reply-To: <201303262213.39068.marex@denx.de>
+Received: from mail.free-electrons.com ([94.23.35.102]:58196 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984Ab3C0Iy0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 04:54:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1364225229-2857-1-git-send-email-ezequiel.garcia@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Vasut <marex@denx.de>
-Cc: Pavel Machek <pavel@denx.de>, linux-arm-kernel@lists.infradead.org, Stephen Warren <swarren@wwwdotorg.org>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Zhang Rui <rui.zhang@intel.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
 
-Hi Marek,
+Hello,
 
-thanks for the review.
+On Mon, Mar 25, 2013 at 12:27:05PM -0300, Ezequiel Garcia wrote:
+> After Andrew Lunn objected the single driver approach [1] that merged
+> all the Marvell EBU SoC thermal drivers, we have agreed to proceed st=
+ep
+> by step. For the time being we are adding support for Armada 370/XP o=
+nly.
+> Given both Armada 370 and Armada XP have a similar feature set, it
+> makes sense to provide a single driver for them.
+>=20
+> In the future we can unify this with the other drivers,
+> if this proves to be worthwhile.
+>=20
+> This driver has been influenced by the existing Kirkwood driver,
+> also taking account of suggestions made by Jason Gunthorpe.
+>=20
+> Testing has been done on the following boards:
+>=20
+> For Armada 370: Globalscale Mirabox and Marvell Armada 370 RD
+> For Armada XP:  Plat'home Openblocks AX3 and Marvell Armada XP DB-MV7=
+84MP-GP
+>=20
+> This series is based in v3.9-rc2. To make testing easier this patchse=
+t
+> has been pushed on a github branch [2].
+>=20
+> Any feedback or comments are welcome!
+>=20
+> [1] http://permalink.gmane.org/gmane.linux.power-management.general/3=
+2123
+> [2] https://github.com/MISL-EBU-System-SW/mainline-public/tree/armada=
+-thermal
 
-Am Dienstag, den 26.03.2013, 22:13 +0100 schrieb Marek Vasut:
-> Dear Pavel Machek,
-> 
-> > Hi!
-> > 
-> > > The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-> > > reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
-> > > 
-> > > The following patches add a simple API for devices to request being reset
-> > > by separate reset controller hardware and implements the reset signal
-> > > device tree binding proposed by Stephen Warren. Contrary to Tegra
-> > > hardware, the i.MX SRC contains self-deasserting reset registers, so
-> > > I've included both ops to manually assert/deassert a reset line, as well
-> > > as a "reset" operation that is supposed to assert the reset line and
-> > > wait for it to deassert.
-> > > 
-> > > The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-> > > is made to request being reset by calling the device_reset(&pdev->dev)
-> > > convenience wrapper during probing.
-> > > 
-> > > Changes since v4:
-> > >  - removed flags parameter from .of_xlate / of_reset_simple_xlate
-> > >  - warn also if reset_spec->args_count > rcdev->of_reset_n_cells
-> > >  - unlock list mutex only after try_module_get
-> > >  - tighten devm_reset_control_match a bit
-> > 
-> > Series looks mostly ok to me. (Should the last patch be actually
-> > first, so that reset functionality is kept between 5/8 and 8/8?)
-> 
-> Not first, but rather third.
-> 
-> You can add my
-> Reviewed-by: Marek Vasut <marex@denx.de>
+Now that Andrew Lunn has acked this series...
 
-The gpio-reset driver is not used yet, so there are no ordering
-limitations. Still, grouping them together as you suggest sounds
-sensible to me.
+>=20
+> Ezequiel Garcia (4):
+>   thermal: Add driver for Armada 370/XP SoC thermal management
 
-regards
-Philipp
+@Zhang: If nobody else has any comments regarding this, would you take
+the first patch through your tree?
 
+>   ARM: mvebu: Add thermal support to Armada XP device tree
+>   ARM: mvebu: Add thermal support to Armada 370 device tree
+>   ARM: configs: Update mvebu defconfig for thermal
+
+@Jason: if Zhang agrees to take the first patch, would you take the res=
+t?
+
+Thanks,
+
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
