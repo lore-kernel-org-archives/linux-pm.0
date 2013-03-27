@@ -1,43 +1,84 @@
 From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
-Subject: [PATCH v2 0/2] Add devfreq runtime pm support
-Date: Wed, 27 Mar 2013 19:22:52 +0530
-Message-ID: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org>
+Subject: [PATCH v2 1/2] PM / devfreq: Fix compiler warnings
+Date: Wed, 27 Mar 2013 19:22:53 +0530
+Message-ID: <1364392374-12236-2-git-send-email-rajagopal.venkat@linaro.org>
+References: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f53.google.com ([209.85.210.53]:46052 "EHLO
-	mail-da0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310Ab3C0Nx2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 09:53:28 -0400
-Received: by mail-da0-f53.google.com with SMTP id n34so2982095dal.26
-        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 06:53:27 -0700 (PDT)
+Received: from mail-pb0-f50.google.com ([209.85.160.50]:38475 "EHLO
+	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310Ab3C0Nxk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 09:53:40 -0400
+Received: by mail-pb0-f50.google.com with SMTP id jt11so1015822pbb.9
+        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 06:53:40 -0700 (PDT)
+In-Reply-To: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, rjw@sisk.pl, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rajagopal Venkat <rajagopal.venkat@linaro.org>
 
-Patch to bind devfreq to runtime pm framework. Instead of explicitly
-using devfreq_suspend_device() and devfreq_resume_device() apis for
-devfreq core suspend/resume, let runtime-pm core handle it automatically.
+Fix compiler warnings generated when devfreq is not enabled
+(CONFIG_PM_DEVFREQ is not set).
 
-Suspend device devfreq core load monitoring with pm_runtime_suspend() and
-resume back on pm_runtime_resume().
+Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+---
+ include/linux/devfreq.h |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Discussed at http://comments.gmane.org/gmane.linux.linaro.devel/13787
-
-Changes from v1:
-- improved change log and code comments
-- added NULL check for devfreq runtime-pm callbacks
------
-
-Rajagopal Venkat (2):
-  PM / devfreq: Fix compiler warnings
-  PM / devfreq: tie suspend/resume to runtime-pm
-
- drivers/base/power/runtime.c |   21 ++++++++++++-
- drivers/devfreq/devfreq.c    |   69 +++++++++++++++++++++++++++++++++++++++---
- include/linux/devfreq.h      |   30 ++++++------------
- include/linux/pm.h           |    2 ++
- 4 files changed, 97 insertions(+), 25 deletions(-)
-
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 04ad61d..5f1ab92 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -215,7 +215,7 @@ struct devfreq_simple_ondemand_data {
+ #endif
+ 
+ #else /* !CONFIG_PM_DEVFREQ */
+-static struct devfreq *devfreq_add_device(struct device *dev,
++static inline struct devfreq *devfreq_add_device(struct device *dev,
+ 					  struct devfreq_dev_profile *profile,
+ 					  const char *governor_name,
+ 					  void *data)
+@@ -223,34 +223,34 @@ static struct devfreq *devfreq_add_device(struct device *dev,
+ 	return NULL;
+ }
+ 
+-static int devfreq_remove_device(struct devfreq *devfreq)
++static inline int devfreq_remove_device(struct devfreq *devfreq)
+ {
+ 	return 0;
+ }
+ 
+-static int devfreq_suspend_device(struct devfreq *devfreq)
++static inline int devfreq_suspend_device(struct devfreq *devfreq)
+ {
+ 	return 0;
+ }
+ 
+-static int devfreq_resume_device(struct devfreq *devfreq)
++static inline int devfreq_resume_device(struct devfreq *devfreq)
+ {
+ 	return 0;
+ }
+ 
+-static struct opp *devfreq_recommended_opp(struct device *dev,
++static inline struct opp *devfreq_recommended_opp(struct device *dev,
+ 					   unsigned long *freq, u32 flags)
+ {
+-	return -EINVAL;
++	return ERR_PTR(-EINVAL);
+ }
+ 
+-static int devfreq_register_opp_notifier(struct device *dev,
++static inline int devfreq_register_opp_notifier(struct device *dev,
+ 					 struct devfreq *devfreq)
+ {
+ 	return -EINVAL;
+ }
+ 
+-static int devfreq_unregister_opp_notifier(struct device *dev,
++static inline int devfreq_unregister_opp_notifier(struct device *dev,
+ 					   struct devfreq *devfreq)
+ {
+ 	return -EINVAL;
 -- 
 1.7.10.4
 
