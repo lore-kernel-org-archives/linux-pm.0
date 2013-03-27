@@ -1,35 +1,88 @@
-From: Paul Walmsley <paul@pwsan.com>
+From: Kevin Hilman <khilman@linaro.org>
 Subject: Re: omap cpufreq driver in multi-platform kernels
-Date: Wed, 27 Mar 2013 17:48:17 +0000 (UTC)
-Message-ID: <alpine.DEB.2.00.1303271747210.17356@utopia.booyaka.com>
-References: <5152503C.2050503@gmail.com> <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com> <20130327133220.GA30868@kahuna>
+Date: Wed, 27 Mar 2013 10:53:57 -0700
+Message-ID: <87d2uk91ai.fsf@linaro.org>
+References: <5152503C.2050503@gmail.com>
+	<alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com>
+	<20130327133220.GA30868@kahuna> <5153207A.4050109@gmail.com>
+	<20130327170221.GA32231@kahuna>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from utopia.booyaka.com ([74.50.51.50]:47887 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754542Ab3C0RsS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 13:48:18 -0400
-In-Reply-To: <20130327133220.GA30868@kahuna>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:55168 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752234Ab3C0RyA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Mar 2013 13:54:00 -0400
+Received: by mail-pa0-f50.google.com with SMTP id bg2so2265852pad.37
+        for <linux-pm@vger.kernel.org>; Wed, 27 Mar 2013 10:54:00 -0700 (PDT)
+In-Reply-To: <20130327170221.GA32231@kahuna> (Nishanth Menon's message of
+	"Wed, 27 Mar 2013 12:02:21 -0500")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Nishanth Menon <nm@ti.com>
-Cc: Rob Herring <robherring2@gmail.com>, Kevin Hilman <khilman@deeprootsystems.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
+Cc: Rob Herring <robherring2@gmail.com>, Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Mark Langsdorf <mark.langsdorf@calxeda.com>
 
-Hi
+Hi Nishanth,
 
-On Wed, 27 Mar 2013, Nishanth Menon wrote:
+Nishanth Menon <nm@ti.com> writes:
 
-> We should deprecate usage on omap-cpufreq driver eventually, instead go
-> towards embracing the SoC generic implementation of cpufreq-cpu0 driver
-> IMHO.
-> http://marc.info/?l=linux-omap&m=136371580826031&w=2
-> is the series to support cpufreq_cpu0 driver in DT based boot.
-> Would you think this approach is sane? 
+> On 11:38-20130327, Rob Herring wrote:
+>> On 03/27/2013 08:32 AM, Nishanth Menon wrote:
+>> > On 02:23-20130327, Paul Walmsley wrote:
+>> >> Hi
+>> >>
+>> >> On Tue, 26 Mar 2013, Rob Herring wrote:
+>> >>
+>> >>> The omap cpufreq driver causes problems in multi-platform kernels
+>> >>> because it unconditionally registers with the cpufreq core and does not
+>> >>> check sufficiently that it is running on an omap platform. So on a
+>> >>> kernel with highbank and omap drivers booted on highbank, the
+>> >>> cpufreq-cpu0 driver fails to init. Any suggestions for how to fix? For
+>> >>> DT this could just be several of_machine_is_compatible checks, but I'm
+>> >>> not really sure for non-DT. Converting the driver to a platform driver
+>> >>> would be another option.
+>> >>
+>> >> We could move the
+>> >>
+>> >> 	mpu_clk = clk_get(NULL, "cpufreq_ck");
+>> >>
+>> >> down to omap_cpufreq_init(), and bail out early if the clock alias doesn't 
+>> >> exist.  (Presumably we'd also want to change the clock role name if we did 
+>> >> that, to something like "omap_cpufreq_ck".)
+>> >>
+>> >> Experimental patch follows, comments welcome.
+>> > We should deprecate usage on omap-cpufreq driver eventually, instead go
+>> > towards embracing the SoC generic implementation of cpufreq-cpu0 driver
+>> > IMHO.
+>> > http://marc.info/?l=linux-omap&m=136371580826031&w=2
+>> > is the series to support cpufreq_cpu0 driver in DT based boot.
+>> > Would you think this approach is sane? 
+>> 
+>> That only solves the problem for DT, but not non-DT. My understanding is
+>> non-DT omap platforms will be around for some time.
+>> 
+> Yes, that is true. There are multiple parts of the problem:
+> part #1: DT boot:
+> https://patchwork.kernel.org/patch/2303471/ prevents omap-cpufreq from
+> interfering in DT enabled boot. (seeing DT entries for highbank it
+> probably might help in the specific platform)
+> part #2: non DT boot:
+> you would not have cpu DT nodes in the system. So, cpufreq-cpu0 wont come
+> into play[1]
+> Now the conflict between omap-cpufreq Vs non-dt platform cpufreq driver:
+> other than registering an dummy device and moving omap_cpufreq_init to
+> it (similar to what was done in cpufreq-cpu0[2]) I dont see how we can
+> continue to keep multiple platforms sane in mult-arch non-dt boot.
+>
+> [1] https://patchwork.kernel.org/patch/2351601/
+> [2] https://patchwork.kernel.org/patch/2067751/
 
-Haven't looked closely at the series, but the idea makes sense to me, as 
-long as OMAP doesn't need to do anything too exotic in the CPUFreq driver.
+I think the platform_device conversion is the way to go.  I think you
+should do that instead of PATCH 8/8 of your OMAP conversion to the
+generic driver[1].
 
+I'll have a closer look at that series also and comment there as well.
 
+Kevin
 
-- Paul
+[1] http://marc.info/?l=linux-omap&m=136371580826031&w=2
