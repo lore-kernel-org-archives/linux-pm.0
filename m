@@ -1,31 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpu0: Fix mistake in Documentation example
-Date: Wed, 27 Mar 2013 08:58:38 +0530
-Message-ID: <CAKohpom9J4i=FYauNjrUqX8195hw6AwHO0zfaECKxA2Ew=Ugbw@mail.gmail.com>
-References: <225d20676ec96aa81683f23485f0339e32a22917.1364308732.git.viresh.kumar@linaro.org>
-	<1473108.YvH7sY4Gsu@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH RESEND 1/2] PM: add TEST_PLATFORM support for freeze state
+Date: Wed, 27 Mar 2013 11:36:10 +0800
+Message-ID: <1364355371-2518-1-git-send-email-rui.zhang@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:58058 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756085Ab3C0D2i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Mar 2013 23:28:38 -0400
-Received: by mail-ob0-f179.google.com with SMTP id un3so7709101obb.24
-        for <linux-pm@vger.kernel.org>; Tue, 26 Mar 2013 20:28:38 -0700 (PDT)
-In-Reply-To: <1473108.YvH7sY4Gsu@vostro.rjw.lan>
+Received: from mga01.intel.com ([192.55.52.88]:60731 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756260Ab3C0DgP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 26 Mar 2013 23:36:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, rob.herring@calxeda.com
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-On 27 March 2013 04:20, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, March 26, 2013 08:10:46 PM Viresh Kumar wrote:
->> "clock-latency" is incorrectly written as "transition-latency" in an example
->> present in Documentation of cpufreq-cpu0. Fix it.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> Am I supposed to take this?
+Invoke freeze_enter() after suspend_test(TEST_PLATFORM) being invoked.
 
-Yes.
+So when setting /sys/power/pm_test to "platform", it can be used to
+check if freeze state is working well after all devices are suspended
+and before processors are blocked,
+
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ kernel/power/suspend.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index d4feda0..5eb30aa 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -184,6 +184,9 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 			goto Platform_wake;
+ 	}
+ 
++	if (suspend_test(TEST_PLATFORM))
++		goto Platform_wake;
++
+ 	/*
+ 	 * PM_SUSPEND_FREEZE equals
+ 	 * frozen processes + suspended devices + idle processors.
+@@ -195,9 +198,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 		goto Platform_wake;
+ 	}
+ 
+-	if (suspend_test(TEST_PLATFORM))
+-		goto Platform_wake;
+-
+ 	error = disable_nonboot_cpus();
+ 	if (error || suspend_test(TEST_CPUS))
+ 		goto Enable_cpus;
+-- 
+1.7.9.5
+
