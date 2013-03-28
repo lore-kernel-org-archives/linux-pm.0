@@ -1,47 +1,75 @@
-From: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: intel_pstate_timer_func divide by zero oops
-Date: Thu, 28 Mar 2013 14:25:55 -0400
-Message-ID: <CAOULuOa70BDS8Sq2p9oC9MZGzjngJD5FB5Wdk4Sk1FXRJKrAnQ@mail.gmail.com>
-References: <alpine.LFD.2.03.1303272103380.8412@gmail.com>
-	<5153B03E.2050201@gmail.com>
-	<CAOULuOa1O5LxwDh6peSGBRR9PyeEtXuhyiaFVvKnFNiqrb4bfQ@mail.gmail.com>
-	<51546359.8000002@gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [Update][PATCH] PCI / ACPI: Always resume devices on ACPI wakeup notifications
+Date: Thu, 28 Mar 2013 22:07:29 +0100
+Message-ID: <2699206.HmPyNvCpNR@vostro.rjw.lan>
+References: <2282655.IicBMMa6jN@vostro.rjw.lan> <1396732.fV788D0xgr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <51546359.8000002@gmail.com>
+In-Reply-To: <1396732.fV788D0xgr@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Mar 28, 2013 at 11:35 AM, Dirk Brandewie
-<dirk.brandewie@gmail.com> wrote:
->>> pid_param_set() is on the stack which means that something is changing
->>> the debugfs parameters or the stack is FUBAR.
->>>
->> I somehow doubt the stack is messed up as the call traces are always
->> identical.
->> (pid_param_set() seems to be in first trace as well.)
->>
->
-> I agree that the two oops are likely the same but unless something is
-> crawling
-> through debugfs writing random values to the files there pid_param_set()
-> should not be on any stack anywhere.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: PCI / ACPI: Always resume devices on ACPI wakeup notifications
 
-Ok.
+It turns out that the _Lxx control methods provided by some BIOSes
+clear the PME Status bit of PCI devices they handle, which means that
+pci_acpi_wake_dev() cannot really use that bit to check whether or
+not the device has signalled wakeup.
 
->
-> There was a similar bug reported by fedora:
-> https://bugzilla.redhat.com/show_bug.cgi?id=920289
->
-> This bug has not showed up again since rc3 can you try the current rc to see
-> if
-> you still see the problem?
->
+One symptom of the problem is, for example, that when an affected PCI
+USB controller is runtime-suspended, then plugging in a new USB device
+into one of the controller's ports will not wake up the controller,
+which should happen.
 
-I updated the Fedora BZ - the oops I got is from latest git as of
-yesterday. So I think the bug is still there post -rc3.
+For this reason, make pci_acpi_wake_dev() always attempt to resume
+the device it is called for regardless of the device's PME Status bit
+value (that bit still has to be cleared if set at this point,
+though).
 
-Parag
+Reported-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: 3.7+ <stable@vger.kernel.org>
+---
+
+The changelog in this version is slightly better than in the previous one, IMHO.
+
+Thanks,
+Rafael
+
+---
+ drivers/pci/pci-acpi.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -53,14 +53,15 @@ static void pci_acpi_wake_dev(acpi_handl
+ 		return;
+ 	}
+ 
+-	if (!pci_dev->pm_cap || !pci_dev->pme_support
+-	     || pci_check_pme_status(pci_dev)) {
+-		if (pci_dev->pme_poll)
+-			pci_dev->pme_poll = false;
++	/* Clear PME Status if set. */
++	if (pci_dev->pme_support)
++		pci_check_pme_status(pci_dev);
+ 
+-		pci_wakeup_event(pci_dev);
+-		pm_runtime_resume(&pci_dev->dev);
+-	}
++	if (pci_dev->pme_poll)
++		pci_dev->pme_poll = false;
++
++	pci_wakeup_event(pci_dev);
++	pm_runtime_resume(&pci_dev->dev);
+ 
+ 	if (pci_dev->subordinate)
+ 		pci_pme_wakeup_bus(pci_dev->subordinate);
