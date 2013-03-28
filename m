@@ -1,67 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Resend][PATCH] PCI / ACPI: Always resume devices on ACPI wakeup notifications
-Date: Thu, 28 Mar 2013 18:10:34 +0100
-Message-ID: <1396732.fV788D0xgr@vostro.rjw.lan>
-References: <2282655.IicBMMa6jN@vostro.rjw.lan>
+Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc5
+Date: Thu, 28 Mar 2013 18:12:48 +0100
+Message-ID: <2079293.xj33ftEVWq@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2282655.IicBMMa6jN@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, linux-pci@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Linus,
 
-It turns out that the _Lxx control methods provided by some BIOSes
-clear the PME Status bit of PCI devices they handle, which means that
-pci_acpi_wake_dev() cannot really use that bit to check whether or
-not the device has signalled wakeup.
+Please pull from the git repository at
 
-The symptom of the problem is, for example, that when a PCI USB
-controller is affected, then plugging in a new USB device into one of
-the controller's ports will not wake up the controller, which should
-happen.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc5
 
-For this reason, make pci_acpi_wake_dev() always attempt to resume
-the device it is called for regardless of the device's PME Status bit
-value (that bit still has to be cleared if set at this point,
-though).
+to receive ACPI and power management fixes for v3.9-rc5 with top-most commit
+6125c2be96b941a08e05516cfa1125ca53945bb2
 
-Reported-and-tested-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: 3.7+ <stable@vger.kernel.org>
----
- drivers/pci/pci-acpi.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+  Merge branch 'acpi-fixes' into fixes
 
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -53,14 +53,15 @@ static void pci_acpi_wake_dev(acpi_handl
- 		return;
- 	}
- 
--	if (!pci_dev->pm_cap || !pci_dev->pme_support
--	     || pci_check_pme_status(pci_dev)) {
--		if (pci_dev->pme_poll)
--			pci_dev->pme_poll = false;
-+	/* Clear PME Status if set. */
-+	if (pci_dev->pme_support)
-+		pci_check_pme_status(pci_dev);
- 
--		pci_wakeup_event(pci_dev);
--		pm_runtime_resume(&pci_dev->dev);
--	}
-+	if (pci_dev->pme_poll)
-+		pci_dev->pme_poll = false;
-+
-+	pci_wakeup_event(pci_dev);
-+	pm_runtime_resume(&pci_dev->dev);
- 
- 	if (pci_dev->subordinate)
- 		pci_pme_wakeup_bus(pci_dev->subordinate);
+on top of commit 8bb9660418e05bb1845ac1a2428444d78e322cc7
+
+  Linux 3.9-rc5
+
+Included are:
+
+- Fix for a recent cpufreq regression related to acpi-cpufreq and
+  suspend/resume from Viresh Kumar.
+
+- cpufreq stats reference counting fix from Viresh Kumar.
+
+- intel_pstate driver fixes from Dirk Brandewie and
+  Konrad Rzeszutek Wilk.
+
+- New ACPI suspend blacklist entry for Sony Vaio VGN-FW21M from
+  Fabio Valentini.
+
+- ACPI Platform Error Interface (APEI) fix from Chen Gong.
+
+- Fix for the new PCI root bridge hotplug code to make it use
+  acpi_scan_lock in analogy with the rest of the ACPI subsystem.
+  From Yinghai Lu.
+
+Thanks!
+
+
+---------------
+
+Chen Gong (1):
+      ACPI / APEI: fix error status check condition for CPER
+
+Dirk Brandewie (2):
+      cpufreq / intel_pstate: Add function to check that all MSRs are valid
+      cpufreq / intel_pstate: Fix calculation of current frequency
+
+Fabio Valentini (1):
+      ACPI / PM: fix suspend and resume on Sony Vaio VGN-FW21M
+
+Konrad Rzeszutek Wilk (1):
+      intel-pstate: Use #defines instead of hard-coded values.
+
+Viresh Kumar (2):
+      cpufreq: acpi-cpufreq: Don't set policy->related_cpus from .init()
+      cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get()
+
+Yinghai Lu (1):
+      PCI / ACPI: hold acpi_scan_lock during root bus hotplug
+
+---------------
+
+ arch/x86/include/uapi/asm/msr-index.h |    1 +
+ drivers/acpi/apei/cper.c              |    2 +-
+ drivers/acpi/pci_root.c               |    9 +++++++--
+ drivers/acpi/sleep.c                  |    8 ++++++++
+ drivers/cpufreq/acpi-cpufreq.c        |    2 --
+ drivers/cpufreq/cpufreq_stats.c       |   12 ++++++++----
+ drivers/cpufreq/intel_pstate.c        |   34 ++++++++++++++++++++++++++++++----
+ 7 files changed, 55 insertions(+), 13 deletions(-)
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
