@@ -1,7 +1,7 @@
 From: Rickard Andersson <rickard.andersson@stericsson.com>
-Subject: [PATCH V2 12/12] ARM: ux500: Create TPIU device
-Date: Thu, 28 Mar 2013 17:11:38 +0100
-Message-ID: <1364487098-10319-13-git-send-email-rickard.andersson@stericsson.com>
+Subject: [PATCH V2 01/12] mfd: db8500: Add IO force function
+Date: Thu, 28 Mar 2013 17:11:27 +0100
+Message-ID: <1364487098-10319-2-git-send-email-rickard.andersson@stericsson.com>
 References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,97 +21,66 @@ To: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: hongbo.zhang@linaro.org, ulf.hansson@linaro.org, khilman@linaro.org, linus.walleij@stericsson.com, daniel.lezcano@linaro.org, rickard.andersson@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-Add platform device for the ux500 TPIU driver. TPIU
-is Trace Port Interface Unit. Also add the device
-to the generic power domain APE.
+The IO force signal needs to be controlled when
+the system enters/exits the sleep state ApSleep.
+This hardware signal tells the system that some
+pins could be driven by GPIO settings instead of
+directly from the hardware block.
 
 Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
 ---
- arch/arm/boot/dts/dbx5x0.dtsi        |  5 +++++
- arch/arm/mach-ux500/board-mop500.c   |  1 +
- arch/arm/mach-ux500/cpu-db8500.c     |  1 +
- arch/arm/mach-ux500/devices-common.c | 16 ++++++++++++++++
- arch/arm/mach-ux500/devices-common.h |  1 +
- 5 files changed, 24 insertions(+)
+ drivers/mfd/db8500-prcmu.c       | 9 +++++++++
+ include/linux/mfd/db8500-prcmu.h | 1 +
+ include/linux/mfd/dbx500-prcmu.h | 5 +++++
+ 3 files changed, 15 insertions(+)
 
-diff --git a/arch/arm/boot/dts/dbx5x0.dtsi b/arch/arm/boot/dts/dbx5x0.dtsi
-index ef98422..9e5fce5 100644
---- a/arch/arm/boot/dts/dbx5x0.dtsi
-+++ b/arch/arm/boot/dts/dbx5x0.dtsi
-@@ -671,6 +671,11 @@
- 		    reg = <0x81000000 0x2000>;
- 		};
- 
-+		tpiu {
-+		    compatible = "stericsson,dbx500-tpiu";
-+		    reg = <0x80190000 0x1000>;
-+		};
-+
- 		external-bus@50000000 {
- 			compatible = "simple-bus";
- 			reg = <0x50000000 0x4000000>;
-diff --git a/arch/arm/mach-ux500/board-mop500.c b/arch/arm/mach-ux500/board-mop500.c
-index 76bace3..f1c08a9 100644
---- a/arch/arm/mach-ux500/board-mop500.c
-+++ b/arch/arm/mach-ux500/board-mop500.c
-@@ -661,6 +661,7 @@ static void __init init_pm_domains(void)
- 
- 	add_platform_device_to_genpd(&db8500_clk_device, &ape_domain);
- 	add_platform_device_to_genpd(&dbx500_icn_device, &ape_domain);
-+	add_platform_device_to_genpd(&dbx500_tpiu_device, &ape_domain);
+diff --git a/drivers/mfd/db8500-prcmu.c b/drivers/mfd/db8500-prcmu.c
+index 268f45d..7f32575 100644
+--- a/drivers/mfd/db8500-prcmu.c
++++ b/drivers/mfd/db8500-prcmu.c
+@@ -879,6 +879,15 @@ bool db8500_prcmu_pending_irq(void)
+ 	return false;
  }
  
- static void __init mop500_init_machine(void)
-diff --git a/arch/arm/mach-ux500/cpu-db8500.c b/arch/arm/mach-ux500/cpu-db8500.c
-index d849986..7096462 100644
---- a/arch/arm/mach-ux500/cpu-db8500.c
-+++ b/arch/arm/mach-ux500/cpu-db8500.c
-@@ -144,6 +144,7 @@ static struct platform_device db8500_prcmu_device = {
- static struct platform_device *platform_devs[] __initdata = {
- 	&db8500_clk_device,
- 	&dbx500_icn_device,
-+	&dbx500_tpiu_device,
- 	&u8500_dma40_device,
- 	&db8500_pmu_device,
- 	&db8500_prcmu_device,
-diff --git a/arch/arm/mach-ux500/devices-common.c b/arch/arm/mach-ux500/devices-common.c
-index 74c7a76..a0f87ae 100644
---- a/arch/arm/mach-ux500/devices-common.c
-+++ b/arch/arm/mach-ux500/devices-common.c
-@@ -34,6 +34,22 @@ struct platform_device dbx500_icn_device = {
- 	.resource = icn_resources
- };
- 
-+static struct resource tpiu_resources[] = {
-+	[0] = {
-+		.start = U8500_TPIU_BASE,
-+		.end   = U8500_TPIU_BASE + SZ_4K - 1,
-+		.flags = IORESOURCE_MEM,
-+		.name  = "base",
-+	},
-+};
++void db8500_prcmu_set_ioforce(bool enable)
++{
++	u32 val = readl(PRCM_IOCR) & ~PRCM_IOCR_IOFORCE;
 +
-+struct platform_device dbx500_tpiu_device = {
-+	.name = "dbx500-tpiu",
-+	.id = -1,
-+	.num_resources = ARRAY_SIZE(tpiu_resources),
-+	.resource = tpiu_resources
-+};
++	if (enable)
++		val |= PRCM_IOCR_IOFORCE;
++	writel(val, PRCM_IOCR);
++}
 +
- static struct platform_device *
- dbx500_add_gpio(struct device *parent, int id, resource_size_t addr, int irq,
- 		struct nmk_gpio_platform_data *pdata)
-diff --git a/arch/arm/mach-ux500/devices-common.h b/arch/arm/mach-ux500/devices-common.h
-index adbf524..3106b13 100644
---- a/arch/arm/mach-ux500/devices-common.h
-+++ b/arch/arm/mach-ux500/devices-common.h
-@@ -17,6 +17,7 @@
+ /*
+  * This function checks if the specified cpu is in in WFI. It's usage
+  * makes sense only if the gic is decoupled with the db8500_prcmu_gic_decouple
+diff --git a/include/linux/mfd/db8500-prcmu.h b/include/linux/mfd/db8500-prcmu.h
+index 6ee4247..21660f6 100644
+--- a/include/linux/mfd/db8500-prcmu.h
++++ b/include/linux/mfd/db8500-prcmu.h
+@@ -547,6 +547,7 @@ int db8500_prcmu_gic_recouple(void);
+ int db8500_prcmu_copy_gic_settings(void);
+ bool db8500_prcmu_gic_pending_irq(void);
+ bool db8500_prcmu_pending_irq(void);
++void db8500_prcmu_set_ioforce(bool enable);
+ bool db8500_prcmu_is_cpu_in_wfi(int cpu);
+ void db8500_prcmu_enable_wakeups(u32 wakeups);
+ int db8500_prcmu_set_epod(u16 epod_id, u8 epod_state);
+diff --git a/include/linux/mfd/dbx500-prcmu.h b/include/linux/mfd/dbx500-prcmu.h
+index c202d6c..2909546 100644
+--- a/include/linux/mfd/dbx500-prcmu.h
++++ b/include/linux/mfd/dbx500-prcmu.h
+@@ -267,6 +267,11 @@ static inline bool prcmu_pending_irq(void)
+ 	return db8500_prcmu_pending_irq();
+ }
  
- struct spi_master_cntlr;
- extern struct platform_device dbx500_icn_device;
-+extern struct platform_device dbx500_tpiu_device;
- 
- static inline struct amba_device *
- dbx500_add_msp_spi(struct device *parent, const char *name,
++static inline void prcmu_set_ioforce(bool force)
++{
++	return db8500_prcmu_set_ioforce(force);
++}
++
+ static inline int prcmu_set_epod(u16 epod_id, u8 epod_state)
+ {
+ 	return db8500_prcmu_set_epod(epod_id, epod_state);
 -- 
 1.8.2
