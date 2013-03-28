@@ -1,74 +1,84 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
-Date: Thu, 28 Mar 2013 14:23:53 +0530
-Message-ID: <CAKohpo=uZxCv6wFJFQx_zrPKujukW9d6_2GihwPpN6BkBAFNwA@mail.gmail.com>
-References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
-	<1364457923-8499-2-git-send-email-amit.daniel@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Paolo Pisati <paolo.pisati@canonical.com>
+Subject: [PATCH v2] cpufreq: check OF /cpus presence before dereferencing it
+Date: Thu, 28 Mar 2013 10:24:29 +0100
+Message-ID: <1364462669-8438-1-git-send-email-paolo.pisati@canonical.com>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1364457923-8499-2-git-send-email-amit.daniel@samsung.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: cpufreq@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28 March 2013 13:35, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
-> This patch adds dvfs support for exynos5440 SOC. This soc has 4 cores and
-> they scale at same frequency. The nature of exynos5440 clock controller is
-> different from previous exynos controllers so not using the common exynos
-> cpufreq framework. The major difference being interrupt notification for
-> frequency change. Also, OPP library is used for device tree parsing to get
-> different parameters like frequency, voltage etc. Since the opp library sorts
-> the frequency table in ascending order so they are again re-arranged in
-> descending order. This will have one-to-one mapping with the clock controller
-> state management logic.
->
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+check for '/cpus' presence before blindly dereferencing it:
 
-Mostly okay now, just minor comments:
+[    4.181793] Unable to handle kernel NULL pointer dereference at virtual address 0000001c
+[    4.181793] pgd = c0004000
+[    4.181823] [0000001c] *pgd=00000000
+[    4.181823] Internal error: Oops: 5 [#1] SMP ARM
+[    4.181823] Modules linked in:
+[    4.181823] CPU: 1    Tainted: G        W     (3.8.0-15-generic #25~hbankD)
+[    4.181854] PC is at of_get_next_child+0x64/0x70
+[    4.181854] LR is at of_get_next_child+0x24/0x70
+[    4.181854] pc : [<c04fda18>]    lr : [<c04fd9d8>]    psr: 60000113
+[    4.181854] sp : ed891ec0  ip : ed891ec0  fp : ed891ed4
+[    4.181884] r10: c04dafd0  r9 : c098690c  r8 : c0936208
+[    4.181884] r7 : ed890000  r6 : c0a63d00  r5 : 00000000  r4 : 00000000
+[    4.181884] r3 : 00000000  r2 : 00000000  r1 : 00000000  r0 : c0b2acc8
+[    4.181884] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+[    4.181884] Control: 10c5387d  Table: adcb804a  DAC: 00000015
+[    4.181915] Process swapper/0 (pid: 1, stack limit = 0xed890238)
+[    4.181915] Stack: (0xed891ec0 to 0xed892000)
+[    4.181915] 1ec0: c09b7b70 00000007 ed891efc ed891ed8 c04daff4 c04fd9c0 00000000 c09b7b70
+[    4.181915] 1ee0: 00000007 c0a63d00 ed890000 c0936208 ed891f54 ed891f00 c00088e0 c04dafdc
+[    4.181945] 1f00: ed891f54 ed891f10 c006e940 00000000 00000000 00000007 00000007 c08a4914
+[    4.181945] 1f20: 00000000 c07dbd30 c0a63d00 c09b7b70 00000007 c0a63d00 000000bc c0936208
+[    4.181945] 1f40: c098690c c0986914 ed891f94 ed891f58 c0936a40 c00087bc 00000007 00000007
+[    4.181976] 1f60: c0936208 be8bda20 b6eea010 c0a63d00 c064547c 00000000 00000000 00000000
+[    4.181976] 1f80: 00000000 00000000 ed891fac ed891f98 c0645498 c09368c8 00000000 00000000
+[    4.181976] 1fa0: 00000000 ed891fb0 c0014658 c0645488 00000000 00000000 00000000 00000000
+[    4.182006] 1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+[    4.182006] 1fe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
+[    4.182037] [<c04fda18>] (of_get_next_child+0x64/0x70) from [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284)
+[    4.182067] [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284) from [<c00088e0>] (do_one_initcall+0x130/0x1b0)
+[    4.182067] [<c00088e0>] (do_one_initcall+0x130/0x1b0) from [<c0936a40>] (kernel_init_freeable+0x184/0x24c)
+[    4.182098] [<c0936a40>] (kernel_init_freeable+0x184/0x24c) from [<c0645498>] (kernel_init+0x1c/0xf4)
+[    4.182128] [<c0645498>] (kernel_init+0x1c/0xf4) from [<c0014658>] (ret_from_fork+0x14/0x20)
+[    4.182128] Code: f57ff04f e320f004 e89da830 e89da830 (e595001c)
+[    4.182128] ---[ end trace 634903a22e8609cb ]---
+[    4.182189] Kernel panic - not syncing: Attempted to kill init!  exitcode=0x0000000b
+[    4.182189]
+[    4.642395] CPU0: stopping
 
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> +static void exynos_cpufreq_work(struct work_struct *work)
-> +{
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Paolo Pisati <paolo.pisati@canonical.com>
+---
+v2: Better variable naming
 
-> +       if (likely(index < dvfs_info->freq_count)) {
-> +               freqs.new = freq_table[index].frequency;
-> +               for_each_cpu(freqs.cpu, policy->cpus)
-> +                       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-> +               dvfs_info->cur_frequency = freqs.new;
-> +       } else {
-> +               dev_crit(dvfs_info->dev, "New frequency out of range\n");
-> +       }
+ drivers/cpufreq/cpufreq-cpu0.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-I believe there is something wrong here. For failure cases too
-we need to issue cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-with the old frequency.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 4e5b7fb..f3e8f51 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -178,10 +178,16 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
+ 
+ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ {
+-	struct device_node *np;
++	struct device_node *np, *parent;
+ 	int ret;
+ 
+-	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
++	parent = of_find_node_by_path("/cpus");
++	if (!parent) {
++		pr_err("failed to find OF /cpus\n");
++		return -ENOENT;
++	}
++
++	for_each_child_of_node(parent, np) {
+ 		if (of_get_property(np, "operating-points", NULL))
+ 			break;
+ 	}
+-- 
+1.7.10.4
 
-> +static int exynos_cpufreq_probe(struct platform_device *pdev)
-> +{
-
-> +       ret = cpufreq_register_driver(&exynos_driver);
-> +       if (ret) {
-> +               dev_err(dvfs_info->dev,
-> +                       "%s: failed to register cpufreq driver\n", __func__);
-> +               goto err_free_table;
-> +       }
-> +
-> +       of_node_put(np);
-
-Don't we need to put node everytime?
-
-> +       dvfs_info->dvfs_enabled = true;
-> +       return 0;
-> +
-> +err_free_table:
-> +       opp_free_cpufreq_table(dvfs_info->dev, &dvfs_info->freq_table);
-> +err_put_node:
-> +       of_node_put(np);
-> +       dev_err(dvfs_info->dev, "%s: failed initialization\n", __func__);
-> +       return ret;
-> +}
-
---
-viresh
