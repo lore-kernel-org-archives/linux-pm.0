@@ -1,45 +1,47 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH 3/3] cpufreq: Add cpufreq driver for Freescale e500mc
- SOCs
-Date: Thu, 28 Mar 2013 03:02:11 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B105983@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364265391-26077-1-git-send-email-Yuantian.Tang@freescale.com>
-	<1364265391-26077-3-git-send-email-Yuantian.Tang@freescale.com>
- <20130327143236.7cb4613b78ad18d79bfbcc57@freescale.com>
+From: Parag Warudkar <parag.lkml@gmail.com>
+Subject: Re: intel_pstate_timer_func divide by zero oops
+Date: Wed, 27 Mar 2013 23:13:45 -0400
+Message-ID: <CAOULuOa1O5LxwDh6peSGBRR9PyeEtXuhyiaFVvKnFNiqrb4bfQ@mail.gmail.com>
+References: <alpine.LFD.2.03.1303272103380.8412@gmail.com>
+	<5153B03E.2050201@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:48775 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754645Ab3C1DCO convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Mar 2013 23:02:14 -0400
-In-Reply-To: <20130327143236.7cb4613b78ad18d79bfbcc57@freescale.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5153B03E.2050201@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Phillips Kim-R1AAHA <R1AAHA@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-> > +		return ret;
-> > +
-> > +	pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static void __exit ppc_corenet_cpufreq_exit(void) {
-> > +	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
-> > +}
-> > +
-> > +module_init(ppc_corenet_cpufreq_init);
-> > +module_exit(ppc_corenet_cpufreq_exit);
-> 
-> this needs to be a module_platform_driver.
-> 
-The compatible string is used for clock driver.
-This driver can not be a platform_driver.
+On Wed, Mar 27, 2013 at 10:51 PM, Dirk Brandewie
+<dirk.brandewie@gmail.com> wrote:
+>
+> Is there any way to capture the beginning of this trace?
 
--Yuantian
+I tried but since the oops scrolls fast followed by a hard freeze, I
+wasn't able to capture it completely.
+May be I can try netconsole and see if that helps.
 
+>
+> pid_param_set() is on the stack which means that something is changing
+> the debugfs parameters or the stack is FUBAR.
+>
+I somehow doubt the stack is messed up as the call traces are always identical.
+(pid_param_set() seems to be in first trace as well.)
+
+>
+> I don't see how duration_us can be zero unless somehow I am getting
+> back-to-back
+> timer callbacks which seems unlikely since the timer is not re-armed until
+> the timer function is about to return and the driver has done all its work
+> for the sample period
+
+Do the two oops with common call stack suggest back to back callbacks?
+
+I will add some debugging checks tomorrow to see what is going on. But
+sounds like a minimal fix would be to guard against callbacks in quick
+succession?
+i.e. return from sample if ktime_us_delta(now, cpu->prev_sample) is zero?
+
+Thanks,
+Parag
