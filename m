@@ -1,84 +1,322 @@
-From: Paolo Pisati <paolo.pisati@canonical.com>
-Subject: [PATCH v2] cpufreq: check OF /cpus presence before dereferencing it
-Date: Thu, 28 Mar 2013 10:24:29 +0100
-Message-ID: <1364462669-8438-1-git-send-email-paolo.pisati@canonical.com>
+From: <Yuantian.Tang@freescale.com>
+Subject: [PATCH 2/2 v2] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+Date: Thu, 28 Mar 2013 17:55:08 +0800
+Message-ID: <1364464508-25393-1-git-send-email-Yuantian.Tang@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <cpufreq-owner@vger.kernel.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, viresh.kumar@linaro.org, Tang Yuantian <yuantian.tang@freescale.com>, Tang Yuantian <Yuantian.Tang@freescale.com>, Li Yang <leoli@freescale.com>
 List-Id: linux-pm@vger.kernel.org
 
-check for '/cpus' presence before blindly dereferencing it:
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-[    4.181793] Unable to handle kernel NULL pointer dereference at virtual address 0000001c
-[    4.181793] pgd = c0004000
-[    4.181823] [0000001c] *pgd=00000000
-[    4.181823] Internal error: Oops: 5 [#1] SMP ARM
-[    4.181823] Modules linked in:
-[    4.181823] CPU: 1    Tainted: G        W     (3.8.0-15-generic #25~hbankD)
-[    4.181854] PC is at of_get_next_child+0x64/0x70
-[    4.181854] LR is at of_get_next_child+0x24/0x70
-[    4.181854] pc : [<c04fda18>]    lr : [<c04fd9d8>]    psr: 60000113
-[    4.181854] sp : ed891ec0  ip : ed891ec0  fp : ed891ed4
-[    4.181884] r10: c04dafd0  r9 : c098690c  r8 : c0936208
-[    4.181884] r7 : ed890000  r6 : c0a63d00  r5 : 00000000  r4 : 00000000
-[    4.181884] r3 : 00000000  r2 : 00000000  r1 : 00000000  r0 : c0b2acc8
-[    4.181884] Flags: nZCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
-[    4.181884] Control: 10c5387d  Table: adcb804a  DAC: 00000015
-[    4.181915] Process swapper/0 (pid: 1, stack limit = 0xed890238)
-[    4.181915] Stack: (0xed891ec0 to 0xed892000)
-[    4.181915] 1ec0: c09b7b70 00000007 ed891efc ed891ed8 c04daff4 c04fd9c0 00000000 c09b7b70
-[    4.181915] 1ee0: 00000007 c0a63d00 ed890000 c0936208 ed891f54 ed891f00 c00088e0 c04dafdc
-[    4.181945] 1f00: ed891f54 ed891f10 c006e940 00000000 00000000 00000007 00000007 c08a4914
-[    4.181945] 1f20: 00000000 c07dbd30 c0a63d00 c09b7b70 00000007 c0a63d00 000000bc c0936208
-[    4.181945] 1f40: c098690c c0986914 ed891f94 ed891f58 c0936a40 c00087bc 00000007 00000007
-[    4.181976] 1f60: c0936208 be8bda20 b6eea010 c0a63d00 c064547c 00000000 00000000 00000000
-[    4.181976] 1f80: 00000000 00000000 ed891fac ed891f98 c0645498 c09368c8 00000000 00000000
-[    4.181976] 1fa0: 00000000 ed891fb0 c0014658 c0645488 00000000 00000000 00000000 00000000
-[    4.182006] 1fc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-[    4.182006] 1fe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
-[    4.182037] [<c04fda18>] (of_get_next_child+0x64/0x70) from [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284)
-[    4.182067] [<c04daff4>] (cpu0_cpufreq_driver_init+0x24/0x284) from [<c00088e0>] (do_one_initcall+0x130/0x1b0)
-[    4.182067] [<c00088e0>] (do_one_initcall+0x130/0x1b0) from [<c0936a40>] (kernel_init_freeable+0x184/0x24c)
-[    4.182098] [<c0936a40>] (kernel_init_freeable+0x184/0x24c) from [<c0645498>] (kernel_init+0x1c/0xf4)
-[    4.182128] [<c0645498>] (kernel_init+0x1c/0xf4) from [<c0014658>] (ret_from_fork+0x14/0x20)
-[    4.182128] Code: f57ff04f e320f004 e89da830 e89da830 (e595001c)
-[    4.182128] ---[ end trace 634903a22e8609cb ]---
-[    4.182189] Kernel panic - not syncing: Attempted to kill init!  exitcode=0x0000000b
-[    4.182189]
-[    4.642395] CPU0: stopping
+Add cpufreq driver for Freescale e500mc, e5500 and e6500 SoCs
+which are capable of changing the frequency of CPU dynamically
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Paolo Pisati <paolo.pisati@canonical.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
-v2: Better variable naming
+v2:
+	- change the per_cpu variable to point type
+	- fixed other issues
 
- drivers/cpufreq/cpufreq-cpu0.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/cpufreq/Kconfig.powerpc       |  10 ++
+ drivers/cpufreq/Makefile              |   1 +
+ drivers/cpufreq/ppc-corenet-cpufreq.c | 255 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 266 insertions(+)
+ create mode 100644 drivers/cpufreq/ppc-corenet-cpufreq.c
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 4e5b7fb..f3e8f51 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -178,10 +178,16 @@ static struct cpufreq_driver cpu0_cpufreq_driver = {
- 
- static int cpu0_cpufreq_probe(struct platform_device *pdev)
- {
--	struct device_node *np;
-+	struct device_node *np, *parent;
- 	int ret;
- 
--	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
-+	parent = of_find_node_by_path("/cpus");
-+	if (!parent) {
-+		pr_err("failed to find OF /cpus\n");
-+		return -ENOENT;
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index e76992f..3a0d8d0 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -5,3 +5,13 @@ config CPU_FREQ_MAPLE
+ 	help
+ 	  This adds support for frequency switching on Maple 970FX
+ 	  Evaluation Board and compatible boards (IBM JS2x blades).
++
++config PPC_CORENET_CPUFREQ
++	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
++	depends on PPC_E500MC && OF && COMMON_CLK
++	select CPU_FREQ_TABLE
++	select CLK_PPC_CORENET
++	help
++	  This adds the CPUFreq driver support for Freescale e500mc,
++	  e5500 and e6500 series SoCs which are capable of changing
++	  the CPU's frequency dynamically.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 863fd18..2416559 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -61,3 +61,4 @@ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ ##################################################################################
+ # PowerPC platform drivers
+ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
++obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+new file mode 100644
+index 0000000..a50ab5a
+--- /dev/null
++++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+@@ -0,0 +1,255 @@
++/*
++ * Copyright 2013 Freescale Semiconductor, Inc.
++ *
++ * CPU Frequency Scaling driver for Freescale PowerPC corenet SoCs.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/clk.h>
++#include <linux/cpu.h>
++#include <linux/cpufreq.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/of.h>
++#include <linux/slab.h>
++#include <linux/types.h>
++
++/**
++ * struct cpufreq_data - cpufreq driver data
++ * @cpus_per_cluster: CPU numbers per cluster
++ * @cpufreq_lock: the mutex lock
++ */
++struct cpufreq_data {
++	int	cpus_per_cluster;
++	struct mutex cpufreq_lock;
++};
++
++/**
++ * struct cpu_data - per CPU data struct
++ * @clk: the clk data of CPU
++ * @parent: the parent node of clock of cpu
++ * @table: frequency table point
++ */
++struct cpu_data {
++	struct clk *clk;
++	struct device_node *parent;
++	struct cpufreq_frequency_table *table;
++};
++
++static DEFINE_PER_CPU(struct cpu_data *, cpu_data);
++static struct cpufreq_data freq_data;
++
++static unsigned int corenet_cpufreq_get_speed(unsigned int cpu)
++{
++	struct cpu_data *data = per_cpu(cpu_data, cpu);
++
++	return clk_get_rate(data->clk) / 1000;
++}
++
++/* reduce the duplicated frequency in frequency table */
++static void freq_table_redup(struct cpufreq_frequency_table *freq_table,
++		int count)
++{
++	int i, j;
++
++	for (i = 1; i < count; i++) {
++		for (j = 0; j < i; j++) {
++			if (freq_table[j].frequency == CPUFREQ_ENTRY_INVALID ||
++					freq_table[j].frequency !=
++					freq_table[i].frequency)
++				continue;
++
++			freq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
++			break;
++		}
++	}
++}
++
++static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int cpu = policy->cpu;
++	struct device_node *np;
++	int i, count;
++	struct clk *clk;
++	struct cpufreq_frequency_table *table;
++	struct cpu_data *data;
++
++	np = of_get_cpu_node(cpu, NULL);
++	if (!np)
++		return -ENODEV;
++
++	data = kzalloc(sizeof(struct cpu_data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->clk = of_clk_get(np, 0);
++	data->parent = of_parse_phandle(np, "clocks", 0);
++	if (!data->parent) {
++		pr_err("%s: could not get clock information\n", __func__);
++		goto err_nomem2;
 +	}
 +
-+	for_each_child_of_node(parent, np) {
- 		if (of_get_property(np, "operating-points", NULL))
- 			break;
- 	}
++	count = of_property_count_strings(data->parent, "clock-names");
++
++	table = kcalloc(count + 1,
++			sizeof(struct cpufreq_frequency_table), GFP_KERNEL);
++	if (!table) {
++		pr_err("%s: no memory\n", __func__);
++		goto err_nomem2;
++	}
++
++	for (i = cpu; i < freq_data.cpus_per_cluster + cpu; i++)
++		cpumask_set_cpu(i, policy->cpus);
++
++	for (i = 0; i < count; i++) {
++		table[i].index = i;
++		clk = of_clk_get(data->parent, i);
++		table[i].frequency = clk_get_rate(clk) / 1000;
++	}
++	freq_table_redup(table, count);
++	table[i].frequency = CPUFREQ_TABLE_END;
++
++	data->table = table;
++	per_cpu(cpu_data, cpu) = data;
++
++	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
++	policy->cur = corenet_cpufreq_get_speed(policy->cpu);
++
++	/* set the min and max frequency properly */
++	i = cpufreq_frequency_table_cpuinfo(policy, table);
++	if (i) {
++		pr_err("invalid frequency table: %d\n", i);
++		goto err_nomem1;
++	}
++	cpufreq_frequency_table_get_attr(table, cpu);
++
++	return 0;
++
++err_nomem1:
++	kfree(table);
++err_nomem2:
++	per_cpu(cpu_data, cpu) = NULL;
++	kfree(data);
++
++	return -ENODEV;
++}
++
++static int __exit corenet_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
++
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	kfree(data->table);
++	kfree(data);
++
++	return 0;
++}
++
++static int corenet_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	struct cpufreq_frequency_table *table;
++
++	table = per_cpu(cpu_data, policy->cpu)->table;
++
++	return cpufreq_frequency_table_verify(policy, table);
++}
++
++static int corenet_cpufreq_target(struct cpufreq_policy *policy,
++		unsigned int target_freq, unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	unsigned int new;
++	struct clk *parent;
++	int ret;
++	struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
++
++	cpufreq_frequency_table_target(policy, data->table,
++			target_freq, relation, &new);
++
++	if (policy->cur == data->table[new].frequency)
++		return 0;
++
++	freqs.old = policy->cur;
++	freqs.new = data->table[new].frequency;
++	freqs.cpu = policy->cpu;
++
++	mutex_lock(&freq_data.cpufreq_lock);
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++	parent = of_clk_get(data->parent, new);
++	ret = clk_set_parent(data->clk, parent);
++	if (ret) {
++		mutex_unlock(&freq_data.cpufreq_lock);
++		return ret;
++	}
++
++	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	mutex_unlock(&freq_data.cpufreq_lock);
++
++	return 0;
++}
++
++static struct freq_attr *corenet_cpu_clks_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
++};
++
++static struct cpufreq_driver ppc_corenet_cpufreq_driver = {
++	.name		= "ppc_cpufreq",
++	.owner		= THIS_MODULE,
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.init		= corenet_cpufreq_cpu_init,
++	.exit		= __exit_p(corenet_cpufreq_cpu_exit),
++	.verify		= corenet_cpufreq_verify,
++	.target		= corenet_cpufreq_target,
++	.get		= corenet_cpufreq_get_speed,
++	.attr		= corenet_cpu_clks_attr,
++};
++
++static const struct of_device_id node_matches[] __initconst = {
++	{ .compatible = "fsl,qoriq-clockgen-1.0", .data = (void *)1, },
++	{ .compatible = "fsl,qoriq-clockgen-2", .data = (void *)8, },
++	{}
++};
++
++static int __init ppc_corenet_cpufreq_init(void)
++{
++	int ret = 0;
++	struct device_node  *np;
++	const struct of_device_id *match;
++
++	np = of_find_matching_node(NULL, node_matches);
++	if (!np)
++		return -ENODEV;
++
++	match = of_match_node(node_matches, np);
++	freq_data.cpus_per_cluster = (unsigned long)match->data;
++	mutex_init(&freq_data.cpufreq_lock);
++	of_node_put(np);
++
++	ret = cpufreq_register_driver(&ppc_corenet_cpufreq_driver);
++	if (ret)
++		return ret;
++
++	pr_info("Freescale PowerPC corenet CPU frequency scaling driver\n");
++
++	return ret;
++}
++module_init(ppc_corenet_cpufreq_init);
++
++static void __exit ppc_corenet_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&ppc_corenet_cpufreq_driver);
++}
++module_exit(ppc_corenet_cpufreq_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Tang Yuantian <Yuantian.Tang@freescale.com>");
++MODULE_DESCRIPTION("cpufreq driver for Freescale e500mc series SoCs");
 -- 
-1.7.10.4
+1.8.0
+
 
