@@ -1,7 +1,7 @@
 From: Rickard Andersson <rickard.andersson@stericsson.com>
-Subject: [PATCH V2 03/12] PM / Domains: Add on-off notifiers
-Date: Thu, 28 Mar 2013 17:11:29 +0100
-Message-ID: <1364487098-10319-4-git-send-email-rickard.andersson@stericsson.com>
+Subject: [PATCH V2 09/12] drivers: bus: ux500: Add ICN driver
+Date: Thu, 28 Mar 2013 17:11:35 +0100
+Message-ID: <1364487098-10319-10-git-send-email-rickard.andersson@stericsson.com>
 References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,172 +21,544 @@ To: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: hongbo.zhang@linaro.org, ulf.hansson@linaro.org, khilman@linaro.org, linus.walleij@stericsson.com, daniel.lezcano@linaro.org, rickard.andersson@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-Some drivers needs to restore their context directly
-when a power domain is activated. For example a driver
-handling system bus settings must be able to restore
-context before the bus is being used for the first time.
-Other examples could be clock settings hardware blocks and
-special debugging hardware blocks which should be restored
-as early as possible in order to be able to debug direcly
-from waking up. Typically these notifers are needed in
-systems with CPU coupled power domains. The notifiers
-are intended to be trigged by cpuidle driver or the
-suspend ops hooks.
-
-The drivers that needs to use these notifiers are
-some special cases. Most drivers should not use this
-method and instead control their context via the
-pm_runtime interface.
+Add driver for the U8500 main interconnect bus. The
+settings of these hardware registers are lost when
+the APE power domain is powered off.
+The ICN default settings are done during early boot.
 
 Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
 ---
-I believe notifiers are the best solution to the problem of
-restoring context early when waking up after sleep. It is
-similar to what is done in /kernel/cpu_pm.c but but for a
-generic power domain instead.
+ drivers/bus/dbx500-icn.c | 522 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 522 insertions(+)
+ create mode 100644 drivers/bus/dbx500-icn.c
 
-An alternative solution could be to try to call the drivers
-runtime_resume/runtime_suspend callbacks instead via genpd
-from cpuidle or suspend/resume. I do not recommend that
-solution for the following reasons:
-
-* Altered use of runtime PM. As it is today the driver itself
-  controls when to runtime-suspend/runtime-resume.
-* Runtime PM is disabled during late stages of suspend.
-* Complicates runtime PM for a few special cases.
-
----
- drivers/base/power/domain.c | 63 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 22 ++++++++++++++++
- 2 files changed, 85 insertions(+)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index acc3a8d..91e3b7d 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1956,6 +1956,68 @@ int pm_genpd_name_detach_cpuidle(const char *name)
- 	return pm_genpd_detach_cpuidle(pm_genpd_lookup_name(name));
- }
- 
-+/**
-+ * pm_genpd_register_on_off_notifier - Register to early power on /
-+ * late power off notifications.
-+ * Only use this function if absolutly needed. It is only intended to be
-+ * used for power domains that are coupled with the CPU, that is, power
-+ * domains being controlled from cpuidle and the platform suspend ops hooks.
-+ * Also only devices that needs their context to be restored directly when
-+ * leaving a sleep state should use this method. Most devices should be
-+ * fine handling their context and power domains via pm_runtime.
-+ * @dev: Device to register.
-+ * @nb: Notifier block to be registered.
+diff --git a/drivers/bus/dbx500-icn.c b/drivers/bus/dbx500-icn.c
+new file mode 100644
+index 0000000..5173650
+--- /dev/null
++++ b/drivers/bus/dbx500-icn.c
+@@ -0,0 +1,522 @@
++/*
++ * U8500 interconnect driver
++ *
++ * Copyright (C) STMicroelectronics 2009
++ * Copyright (C) ST-Ericsson SA 2010-2013
++ *
++ * License Terms: GNU General Public License v2
++ * Author: Sundar Iyer for ST-Ericsson
++ *	   Rickard Andersson  <rickard.andersson@stericsson.com>
++ *
 + */
-+int pm_genpd_register_on_off_notifier(struct device *dev,
-+				      struct notifier_block *nb)
++
++#include <linux/io.h>
++#include <linux/platform_device.h>
++#include <linux/pm_domain.h>
++#include <mach/hardware.h>
++
++/* Priority, BW limiter register offsets */
++#define NODE_HIBW1_ESRAM_IN_0_PRIORITY		0x00
++#define NODE_HIBW1_ESRAM_IN_1_PRIORITY		0x04
++#define NODE_HIBW1_ESRAM_IN_2_PRIORITY		0x08
++#define NODE_HIBW1_ESRAM_IN_0_ARB_1_LIMIT	0x24
++#define NODE_HIBW1_ESRAM_IN_0_ARB_2_LIMIT	0x28
++#define NODE_HIBW1_ESRAM_IN_0_ARB_3_LIMIT	0x2C
++#define NODE_HIBW1_ESRAM_IN_1_ARB_1_LIMIT	0x30
++#define NODE_HIBW1_ESRAM_IN_1_ARB_2_LIMIT	0x34
++#define NODE_HIBW1_ESRAM_IN_1_ARB_3_LIMIT	0x38
++#define NODE_HIBW1_ESRAM_IN_2_ARB_1_LIMIT	0x3C
++#define NODE_HIBW1_ESRAM_IN_2_ARB_2_LIMIT	0x40
++#define NODE_HIBW1_ESRAM_IN_2_ARB_3_LIMIT	0x44
++#define NODE_HIBW1_DDR_IN_0_PRIORITY		0x400
++#define NODE_HIBW1_DDR_IN_1_PRIORITY		0x404
++#define NODE_HIBW1_DDR_IN_2_PRIORITY		0x408
++#define NODE_HIBW1_DDR_IN_0_LIMIT		0x424
++#define NODE_HIBW1_DDR_IN_1_LIMIT		0x428
++#define NODE_HIBW1_DDR_IN_2_LIMIT		0x42C
++#define NODE_HIBW1_DDR_OUT_0_PRIORITY		0x430
++#define NODE_HIBW2_ESRAM_IN_0_PRIORITY		0x800
++#define NODE_HIBW2_ESRAM_IN_1_PRIORITY		0x804
++#define NODE_HIBW2_ESRAM_IN_0_ARB_1_LIMIT	0x818
++#define NODE_HIBW2_ESRAM_IN_0_ARB_2_LIMIT	0x81C
++#define NODE_HIBW2_ESRAM_IN_0_ARB_3_LIMIT	0x820
++#define NODE_HIBW2_ESRAM_IN_1_ARB_1_LIMIT	0x824
++#define NODE_HIBW2_ESRAM_IN_1_ARB_2_LIMIT	0x828
++#define NODE_HIBW2_ESRAM_IN_1_ARB_3_LIMIT	0x82C
++#define NODE_HIBW2_DDR_IN_0_PRIORITY		0xC00
++#define NODE_HIBW2_DDR_IN_1_PRIORITY		0xC04
++#define NODE_HIBW2_DDR_IN_2_PRIORITY		0xC08
++
++#define NODE_HIBW2_DDR_IN_0_LIMIT		0xC24
++#define NODE_HIBW2_DDR_IN_1_LIMIT		0xC28
++#define NODE_HIBW2_DDR_IN_2_LIMIT		0xC2C
++#define NODE_HIBW2_DDR_OUT_0_PRIORITY		0xC30
++
++/*
++ * Note the following addresses are presented in
++ * db8500 design spec v3.1 and v3.3, table 10.
++ * But their addresses are not the same as in the
++ * description. The addresses in the description
++ * of each registers are correct.
++ * NODE_HIBW2_DDR_IN_3_LIMIT is only present in v1.
++ *
++ * Faulty registers addresses in table 10:
++ * NODE_HIBW2_DDR_IN_2_LIMIT 0xC38
++ * NODE_HIBW2_DDR_IN_3_LIMIT 0xC3C
++ * NODE_HIBW2_DDR_OUT_0_PRIORITY 0xC40
++ */
++
++#define NODE_ESRAM0_IN_0_PRIORITY		0x1000
++#define NODE_ESRAM0_IN_1_PRIORITY		0x1004
++#define NODE_ESRAM0_IN_2_PRIORITY		0x1008
++#define NODE_ESRAM0_IN_3_PRIORITY		0x100C
++#define NODE_ESRAM0_IN_0_LIMIT			0x1030
++#define NODE_ESRAM0_IN_1_LIMIT			0x1034
++#define NODE_ESRAM0_IN_2_LIMIT			0x1038
++#define NODE_ESRAM0_IN_3_LIMIT			0x103C
++/* Common */
++#define NODE_ESRAM1_2_IN_0_PRIORITY		0x1400
++#define NODE_ESRAM1_2_IN_1_PRIORITY		0x1404
++#define NODE_ESRAM1_2_IN_2_PRIORITY		0x1408
++#define NODE_ESRAM1_2_IN_3_PRIORITY		0x140C
++#define NODE_ESRAM1_2_IN_0_ARB_1_LIMIT		0x1430
++#define NODE_ESRAM1_2_IN_0_ARB_2_LIMIT		0x1434
++#define NODE_ESRAM1_2_IN_1_ARB_1_LIMIT		0x1438
++#define NODE_ESRAM1_2_IN_1_ARB_2_LIMIT		0x143C
++#define NODE_ESRAM1_2_IN_2_ARB_1_LIMIT		0x1440
++#define NODE_ESRAM1_2_IN_2_ARB_2_LIMIT		0x1444
++#define NODE_ESRAM1_2_IN_3_ARB_1_LIMIT		0x1448
++#define NODE_ESRAM1_2_IN_3_ARB_2_LIMIT		0x144C
++
++#define NODE_ESRAM3_4_IN_0_PRIORITY		0x1800
++#define NODE_ESRAM3_4_IN_1_PRIORITY		0x1804
++#define NODE_ESRAM3_4_IN_2_PRIORITY		0x1808
++#define NODE_ESRAM3_4_IN_3_PRIORITY		0x180C
++#define NODE_ESRAM3_4_IN_0_ARB_1_LIMIT		0x1830
++#define NODE_ESRAM3_4_IN_0_ARB_2_LIMIT		0x1834
++#define NODE_ESRAM3_4_IN_1_ARB_1_LIMIT		0x1838
++#define NODE_ESRAM3_4_IN_1_ARB_2_LIMIT		0x183C
++#define NODE_ESRAM3_4_IN_2_ARB_1_LIMIT		0x1840
++#define NODE_ESRAM3_4_IN_2_ARB_2_LIMIT		0x1844
++#define NODE_ESRAM3_4_IN_3_ARB_1_LIMIT		0x1848
++#define NODE_ESRAM3_4_IN_3_ARB_2_LIMIT		0x184C
++
++static struct {
++	void __iomem *base;
++	u32 hibw1_esram_in_pri[3];
++	u32 hibw1_esram_in0_arb[3];
++	u32 hibw1_esram_in1_arb[3];
++	u32 hibw1_esram_in2_arb[3];
++	u32 hibw1_ddr_in_prio[3];
++	u32 hibw1_ddr_in_limit[3];
++	u32 hibw1_ddr_out_prio;
++
++	/* HiBw2 node registers */
++	u32 hibw2_esram_in_pri[2];
++	u32 hibw2_esram_in0_arblimit[3];
++	u32 hibw2_esram_in1_arblimit[3];
++	u32 hibw2_ddr_in_prio[4];
++	u32 hibw2_ddr_in_limit[4];
++	u32 hibw2_ddr_out_prio;
++
++	/* ESRAM node registers */
++	u32 esram_in_prio[4];
++	u32 esram_in_lim[4];
++	u32 esram0_in_prio[4];
++	u32 esram0_in_lim[4];
++	u32 esram12_in_prio[4];
++	u32 esram12_in_arb_lim[8];
++	u32 esram34_in_prio[4];
++	u32 esram34_in_arb_lim[8];
++} context_icn;
++
++/**
++ * icn_save_context() - Save interconnect context
++ */
++static void icn_save_context(void)
 +{
-+	struct generic_pm_domain *genpd;
++	void __iomem *b = context_icn.base;
 +
-+	dev_dbg(dev, "%s()\n", __func__);
++	context_icn.hibw1_esram_in_pri[0] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_0_PRIORITY);
++	context_icn.hibw1_esram_in_pri[1] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_1_PRIORITY);
++	context_icn.hibw1_esram_in_pri[2] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_2_PRIORITY);
 +
-+	genpd = dev_to_genpd(dev);
++	context_icn.hibw1_esram_in0_arb[0] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_0_ARB_1_LIMIT);
++	context_icn.hibw1_esram_in0_arb[1] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_0_ARB_2_LIMIT);
++	context_icn.hibw1_esram_in0_arb[2] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_0_ARB_3_LIMIT);
 +
-+	return atomic_notifier_chain_register(&genpd->on_off_notifier, nb);
++	context_icn.hibw1_esram_in1_arb[0] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_1_ARB_1_LIMIT);
++	context_icn.hibw1_esram_in1_arb[1] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_1_ARB_2_LIMIT);
++	context_icn.hibw1_esram_in1_arb[2] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_1_ARB_3_LIMIT);
++
++	context_icn.hibw1_esram_in2_arb[0] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_2_ARB_1_LIMIT);
++	context_icn.hibw1_esram_in2_arb[1] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_2_ARB_2_LIMIT);
++	context_icn.hibw1_esram_in2_arb[2] =
++		readl_relaxed(b + NODE_HIBW1_ESRAM_IN_2_ARB_3_LIMIT);
++
++	context_icn.hibw1_ddr_in_prio[0] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_0_PRIORITY);
++	context_icn.hibw1_ddr_in_prio[1] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_1_PRIORITY);
++	context_icn.hibw1_ddr_in_prio[2] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_2_PRIORITY);
++
++	context_icn.hibw1_ddr_in_limit[0] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_0_LIMIT);
++	context_icn.hibw1_ddr_in_limit[1] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_1_LIMIT);
++	context_icn.hibw1_ddr_in_limit[2] =
++		readl_relaxed(b + NODE_HIBW1_DDR_IN_2_LIMIT);
++
++	context_icn.hibw1_ddr_out_prio =
++		readl_relaxed(b + NODE_HIBW1_DDR_OUT_0_PRIORITY);
++
++	context_icn.hibw2_esram_in_pri[0] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_0_PRIORITY);
++	context_icn.hibw2_esram_in_pri[1] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_1_PRIORITY);
++
++	context_icn.hibw2_esram_in0_arblimit[0] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_0_ARB_1_LIMIT);
++	context_icn.hibw2_esram_in0_arblimit[1] =
++		 readl_relaxed(b + NODE_HIBW2_ESRAM_IN_0_ARB_2_LIMIT);
++	context_icn.hibw2_esram_in0_arblimit[2] =
++		 readl_relaxed(b + NODE_HIBW2_ESRAM_IN_0_ARB_3_LIMIT);
++
++	context_icn.hibw2_esram_in1_arblimit[0] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_1_ARB_1_LIMIT);
++	context_icn.hibw2_esram_in1_arblimit[1] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_1_ARB_2_LIMIT);
++	context_icn.hibw2_esram_in1_arblimit[2] =
++		readl_relaxed(b + NODE_HIBW2_ESRAM_IN_1_ARB_3_LIMIT);
++
++	context_icn.hibw2_ddr_in_prio[0] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_0_PRIORITY);
++	context_icn.hibw2_ddr_in_prio[1] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_1_PRIORITY);
++	context_icn.hibw2_ddr_in_prio[2] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_2_PRIORITY);
++
++	context_icn.hibw2_ddr_in_limit[0] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_0_LIMIT);
++	context_icn.hibw2_ddr_in_limit[1] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_1_LIMIT);
++
++	context_icn.hibw2_ddr_in_limit[2] =
++		readl_relaxed(b + NODE_HIBW2_DDR_IN_2_LIMIT);
++
++	context_icn.hibw2_ddr_out_prio =
++		readl_relaxed(b + NODE_HIBW2_DDR_OUT_0_PRIORITY);
++
++	context_icn.esram0_in_prio[0] =
++		readl_relaxed(b + NODE_ESRAM0_IN_0_PRIORITY);
++	context_icn.esram0_in_prio[1] =
++		readl_relaxed(b + NODE_ESRAM0_IN_1_PRIORITY);
++	context_icn.esram0_in_prio[2] =
++		readl_relaxed(b + NODE_ESRAM0_IN_2_PRIORITY);
++	context_icn.esram0_in_prio[3] =
++		readl_relaxed(b + NODE_ESRAM0_IN_3_PRIORITY);
++
++	context_icn.esram0_in_lim[0] =
++		readl_relaxed(b + NODE_ESRAM0_IN_0_LIMIT);
++	context_icn.esram0_in_lim[1] =
++		readl_relaxed(b + NODE_ESRAM0_IN_1_LIMIT);
++	context_icn.esram0_in_lim[2] =
++		readl_relaxed(b + NODE_ESRAM0_IN_2_LIMIT);
++	context_icn.esram0_in_lim[3] =
++		readl_relaxed(b + NODE_ESRAM0_IN_3_LIMIT);
++
++	context_icn.esram12_in_prio[0] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_0_PRIORITY);
++	context_icn.esram12_in_prio[1] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_1_PRIORITY);
++	context_icn.esram12_in_prio[2] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_2_PRIORITY);
++	context_icn.esram12_in_prio[3] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_3_PRIORITY);
++
++	context_icn.esram12_in_arb_lim[0] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_0_ARB_1_LIMIT);
++	context_icn.esram12_in_arb_lim[1] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_0_ARB_2_LIMIT);
++	context_icn.esram12_in_arb_lim[2] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_1_ARB_1_LIMIT);
++	context_icn.esram12_in_arb_lim[3] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_1_ARB_2_LIMIT);
++	context_icn.esram12_in_arb_lim[4] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_2_ARB_1_LIMIT);
++	context_icn.esram12_in_arb_lim[5] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_2_ARB_2_LIMIT);
++	context_icn.esram12_in_arb_lim[6] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_3_ARB_1_LIMIT);
++	context_icn.esram12_in_arb_lim[7] =
++		readl_relaxed(b + NODE_ESRAM1_2_IN_3_ARB_2_LIMIT);
++
++	context_icn.esram34_in_prio[0] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_0_PRIORITY);
++	context_icn.esram34_in_prio[1] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_1_PRIORITY);
++	context_icn.esram34_in_prio[2] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_2_PRIORITY);
++	context_icn.esram34_in_prio[3] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_3_PRIORITY);
++
++	context_icn.esram34_in_arb_lim[0] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_0_ARB_1_LIMIT);
++	context_icn.esram34_in_arb_lim[1] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_0_ARB_2_LIMIT);
++	context_icn.esram34_in_arb_lim[2] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_1_ARB_1_LIMIT);
++	context_icn.esram34_in_arb_lim[3] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_1_ARB_2_LIMIT);
++	context_icn.esram34_in_arb_lim[4] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_2_ARB_1_LIMIT);
++	context_icn.esram34_in_arb_lim[5] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_2_ARB_2_LIMIT);
++	context_icn.esram34_in_arb_lim[6] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_3_ARB_1_LIMIT);
++	context_icn.esram34_in_arb_lim[7] =
++		readl_relaxed(b + NODE_ESRAM3_4_IN_3_ARB_2_LIMIT);
 +}
 +
 +/**
-+ * pm_genpd_unregister_on_off_notifier - Unregister to early power on /
-+ * late power off notification.
-+ * @dev: Device to unregister.
-+ * @nb: Notifier block to be unregistered.
++ * icn_restore_context() - Restore interconnect context
 + */
-+int pm_genpd_unregister_on_off_notifier(struct device *dev,
-+					struct notifier_block *nb)
++static void icn_restore_context(void)
 +{
-+	struct generic_pm_domain *genpd;
++	void __iomem *b = context_icn.base;
 +
-+	dev_dbg(dev, "%s()\n", __func__);
++	writel_relaxed(context_icn.hibw1_esram_in_pri[0],
++		       b + NODE_HIBW1_ESRAM_IN_0_PRIORITY);
++	writel_relaxed(context_icn.hibw1_esram_in_pri[1],
++		       b + NODE_HIBW1_ESRAM_IN_1_PRIORITY);
++	writel_relaxed(context_icn.hibw1_esram_in_pri[2],
++		       b + NODE_HIBW1_ESRAM_IN_2_PRIORITY);
 +
-+	genpd = dev_to_genpd(dev);
++	writel_relaxed(context_icn.hibw1_esram_in0_arb[0],
++		       b + NODE_HIBW1_ESRAM_IN_0_ARB_1_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in0_arb[1],
++		       b + NODE_HIBW1_ESRAM_IN_0_ARB_2_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in0_arb[2],
++		       b + NODE_HIBW1_ESRAM_IN_0_ARB_3_LIMIT);
 +
-+	return atomic_notifier_chain_unregister(&genpd->on_off_notifier, nb);
++	writel_relaxed(context_icn.hibw1_esram_in1_arb[0],
++		       b + NODE_HIBW1_ESRAM_IN_1_ARB_1_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in1_arb[1],
++		       b + NODE_HIBW1_ESRAM_IN_1_ARB_2_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in1_arb[2],
++		       b + NODE_HIBW1_ESRAM_IN_1_ARB_3_LIMIT);
++
++	writel_relaxed(context_icn.hibw1_esram_in2_arb[0],
++		       b + NODE_HIBW1_ESRAM_IN_2_ARB_1_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in2_arb[1],
++		       b + NODE_HIBW1_ESRAM_IN_2_ARB_2_LIMIT);
++	writel_relaxed(context_icn.hibw1_esram_in2_arb[2],
++		       b + NODE_HIBW1_ESRAM_IN_2_ARB_3_LIMIT);
++
++	writel_relaxed(context_icn.hibw1_ddr_in_prio[0],
++		       b + NODE_HIBW1_DDR_IN_0_PRIORITY);
++	writel_relaxed(context_icn.hibw1_ddr_in_prio[1],
++		       b + NODE_HIBW1_DDR_IN_1_PRIORITY);
++	writel_relaxed(context_icn.hibw1_ddr_in_prio[2],
++		       b + NODE_HIBW1_DDR_IN_2_PRIORITY);
++
++	writel_relaxed(context_icn.hibw1_ddr_in_limit[0],
++		       b + NODE_HIBW1_DDR_IN_0_LIMIT);
++	writel_relaxed(context_icn.hibw1_ddr_in_limit[1],
++		       b + NODE_HIBW1_DDR_IN_1_LIMIT);
++	writel_relaxed(context_icn.hibw1_ddr_in_limit[2],
++		       b + NODE_HIBW1_DDR_IN_2_LIMIT);
++
++	writel_relaxed(context_icn.hibw1_ddr_out_prio,
++		       b + NODE_HIBW1_DDR_OUT_0_PRIORITY);
++
++	writel_relaxed(context_icn.hibw2_esram_in_pri[0],
++		       b + NODE_HIBW2_ESRAM_IN_0_PRIORITY);
++	writel_relaxed(context_icn.hibw2_esram_in_pri[1],
++		       b + NODE_HIBW2_ESRAM_IN_1_PRIORITY);
++
++	writel_relaxed(context_icn.hibw2_esram_in0_arblimit[0],
++		       b + NODE_HIBW2_ESRAM_IN_0_ARB_1_LIMIT);
++	writel_relaxed(context_icn.hibw2_esram_in0_arblimit[1],
++		       b + NODE_HIBW2_ESRAM_IN_0_ARB_2_LIMIT);
++	writel_relaxed(context_icn.hibw2_esram_in0_arblimit[2],
++		       b + NODE_HIBW2_ESRAM_IN_0_ARB_3_LIMIT);
++
++	writel_relaxed(context_icn.hibw2_esram_in1_arblimit[0],
++		       b + NODE_HIBW2_ESRAM_IN_1_ARB_1_LIMIT);
++	writel_relaxed(context_icn.hibw2_esram_in1_arblimit[1],
++		       b + NODE_HIBW2_ESRAM_IN_1_ARB_2_LIMIT);
++	writel_relaxed(context_icn.hibw2_esram_in1_arblimit[2],
++		       b + NODE_HIBW2_ESRAM_IN_1_ARB_3_LIMIT);
++
++	writel_relaxed(context_icn.hibw2_ddr_in_prio[0],
++		       b + NODE_HIBW2_DDR_IN_0_PRIORITY);
++	writel_relaxed(context_icn.hibw2_ddr_in_prio[1],
++		       b + NODE_HIBW2_DDR_IN_1_PRIORITY);
++	writel_relaxed(context_icn.hibw2_ddr_in_prio[2],
++		       b + NODE_HIBW2_DDR_IN_2_PRIORITY);
++	writel_relaxed(context_icn.hibw2_ddr_in_limit[0],
++		       b + NODE_HIBW2_DDR_IN_0_LIMIT);
++	writel_relaxed(context_icn.hibw2_ddr_in_limit[1],
++		       b + NODE_HIBW2_DDR_IN_1_LIMIT);
++	writel_relaxed(context_icn.hibw2_ddr_in_limit[2],
++		       b + NODE_HIBW2_DDR_IN_2_LIMIT);
++	writel_relaxed(context_icn.hibw2_ddr_out_prio,
++		       b + NODE_HIBW2_DDR_OUT_0_PRIORITY);
++
++	writel_relaxed(context_icn.esram0_in_prio[0],
++		       b + NODE_ESRAM0_IN_0_PRIORITY);
++	writel_relaxed(context_icn.esram0_in_prio[1],
++		       b + NODE_ESRAM0_IN_1_PRIORITY);
++	writel_relaxed(context_icn.esram0_in_prio[2],
++		       b + NODE_ESRAM0_IN_2_PRIORITY);
++	writel_relaxed(context_icn.esram0_in_prio[3],
++		       b + NODE_ESRAM0_IN_3_PRIORITY);
++
++	writel_relaxed(context_icn.esram0_in_lim[0],
++		       b + NODE_ESRAM0_IN_0_LIMIT);
++	writel_relaxed(context_icn.esram0_in_lim[1],
++		       b + NODE_ESRAM0_IN_1_LIMIT);
++	writel_relaxed(context_icn.esram0_in_lim[2],
++		       b + NODE_ESRAM0_IN_2_LIMIT);
++	writel_relaxed(context_icn.esram0_in_lim[3],
++		       b + NODE_ESRAM0_IN_3_LIMIT);
++
++	writel_relaxed(context_icn.esram12_in_prio[0],
++		       b + NODE_ESRAM1_2_IN_0_PRIORITY);
++	writel_relaxed(context_icn.esram12_in_prio[1],
++		       b + NODE_ESRAM1_2_IN_1_PRIORITY);
++	writel_relaxed(context_icn.esram12_in_prio[2],
++		       b + NODE_ESRAM1_2_IN_2_PRIORITY);
++	writel_relaxed(context_icn.esram12_in_prio[3],
++		       b + NODE_ESRAM1_2_IN_3_PRIORITY);
++
++	writel_relaxed(context_icn.esram12_in_arb_lim[0],
++		       b + NODE_ESRAM1_2_IN_0_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[1],
++		       b + NODE_ESRAM1_2_IN_0_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[2],
++		       b + NODE_ESRAM1_2_IN_1_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[3],
++		       b + NODE_ESRAM1_2_IN_1_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[4],
++		       b + NODE_ESRAM1_2_IN_2_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[5],
++		       b + NODE_ESRAM1_2_IN_2_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[6],
++		       b + NODE_ESRAM1_2_IN_3_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram12_in_arb_lim[7],
++		       b + NODE_ESRAM1_2_IN_3_ARB_2_LIMIT);
++
++	writel_relaxed(context_icn.esram34_in_prio[0],
++		       b + NODE_ESRAM3_4_IN_0_PRIORITY);
++	writel_relaxed(context_icn.esram34_in_prio[1],
++		       b + NODE_ESRAM3_4_IN_1_PRIORITY);
++	writel_relaxed(context_icn.esram34_in_prio[2],
++		       b + NODE_ESRAM3_4_IN_2_PRIORITY);
++	writel_relaxed(context_icn.esram34_in_prio[3],
++		       b + NODE_ESRAM3_4_IN_3_PRIORITY);
++
++	writel_relaxed(context_icn.esram34_in_arb_lim[0],
++		       b + NODE_ESRAM3_4_IN_0_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[1],
++		       b + NODE_ESRAM3_4_IN_0_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[2],
++		       b + NODE_ESRAM3_4_IN_1_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[3],
++		       b + NODE_ESRAM3_4_IN_1_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[4],
++		       b + NODE_ESRAM3_4_IN_2_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[5],
++		       b + NODE_ESRAM3_4_IN_2_ARB_2_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[6],
++		       b + NODE_ESRAM3_4_IN_3_ARB_1_LIMIT);
++	writel_relaxed(context_icn.esram34_in_arb_lim[7],
++		       b + NODE_ESRAM3_4_IN_3_ARB_2_LIMIT);
 +}
 +
-+/**
-+ * pm_genpd_notify_power_on_off - Notify that the CPU coupled power
-+ * domain is going to be powered off or has been powered on.5D
-+ * Intended users of this function are cpuidle drivers and the platform
-+ * suspend operations implementation.
-+ * @genpd: pm domain that will change state.
-+ * @power_on_off: true = has been powered on, false = will power off.
-+ */
-+int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
-+				 bool power_on_off)
++static int icn_context_call(struct notifier_block *this,
++			    unsigned long event, void *data)
 +{
-+	if (IS_ERR_OR_NULL(genpd))
-+		return -EINVAL;
++	bool power_on = (bool)event;
 +
-+	atomic_notifier_call_chain((&genpd->on_off_notifier),
-+				   power_on_off, NULL);
++	if (power_on)
++		icn_restore_context();
++	else
++		icn_save_context();
 +
 +	return 0;
 +}
 +
- /* Default device callbacks for generic PM domains. */
- 
- /**
-@@ -2137,6 +2199,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	atomic_set(&genpd->sd_count, 0);
- 	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
- 	init_waitqueue_head(&genpd->status_wait_queue);
-+	ATOMIC_INIT_NOTIFIER_HEAD(&genpd->on_off_notifier);
- 	genpd->poweroff_task = NULL;
- 	genpd->resume_count = 0;
- 	genpd->device_count = 0;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 7c1d252..bf5e7d514 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -82,6 +82,7 @@ struct generic_pm_domain {
- 	bool cached_power_down_ok;
- 	struct device_node *of_node; /* Node in device tree */
- 	struct gpd_cpu_data *cpu_data;
-+	struct atomic_notifier_head on_off_notifier;
- };
- 
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
-@@ -159,6 +160,12 @@ extern int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state);
- extern int pm_genpd_name_attach_cpuidle(const char *name, int state);
- extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
- extern int pm_genpd_name_detach_cpuidle(const char *name);
-+extern int pm_genpd_register_on_off_notifier(struct device *dev,
-+					     struct notifier_block *nb);
-+extern int pm_genpd_unregister_on_off_notifier(struct device *dev,
-+					struct notifier_block *nb);
-+extern int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
-+				  bool power_on_off);
- extern void pm_genpd_init(struct generic_pm_domain *genpd,
- 			  struct dev_power_governor *gov, bool is_off);
- 
-@@ -243,6 +250,21 @@ static inline int pm_genpd_name_detach_cpuidle(const char *name)
- {
- 	return -ENOSYS;
- }
-+static inline int pm_genpd_register_on_off_notifier(struct device *dev,
-+						    struct notifier_block *nb)
++static struct notifier_block icn_context_notifier = {
++	.notifier_call = icn_context_call,
++};
++
++static const struct of_device_id dbx500_icn_match[] = {
++	{ .compatible = "stericsson,db8500-icn", },
++	{},
++};
++
++static struct platform_driver dbx500_icn_plat_driver = {
++	.driver = {
++		.name = "dbx500-icn",
++		.of_match_table = dbx500_icn_match,
++	},
++};
++
++static int __init dbx500_icn_probe(struct platform_device *pdev)
 +{
-+	return -ENOSYS;
++	int ret = 0;
++	struct resource *res;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "missing platform resources\n");
++		return -EINVAL;
++	}
++
++	if (!request_mem_region(res->start, resource_size(res), pdev->name)) {
++		dev_err(&pdev->dev, "failed to request I/O memory\n");
++		return -EBUSY;
++	}
++
++	context_icn.base = ioremap(res->start, resource_size(res));
++	if (!context_icn.base) {
++		ret = -ENOMEM;
++		goto err_free_mem_region;
++	}
++
++	ret = pm_genpd_register_on_off_notifier(&pdev->dev,
++						&icn_context_notifier);
++	if (ret)
++		goto err_iounmap;
++
++	return ret;
++
++ err_iounmap:
++	iounmap(context_icn.base);
++ err_free_mem_region:
++	release_mem_region(res->start, resource_size(res));
++	return ret;
++
 +}
-+static inline int pm_genpd_unregister_on_off_notifier(struct device *dev,
-+						      struct notifier_block *nb)
++
++static int __init dbx500_icn_init(void)
 +{
-+	return -ENOSYS;
++	return platform_driver_probe(&dbx500_icn_plat_driver,
++				     dbx500_icn_probe);
 +}
-+static inline int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
-+					       bool power_on_off)
-+{
-+	return -ENOSYS;
-+}
- static inline void pm_genpd_init(struct generic_pm_domain *genpd,
- 				 struct dev_power_governor *gov, bool is_off)
- {
++
++arch_initcall(dbx500_icn_init);
 -- 
 1.8.2
