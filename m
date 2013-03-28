@@ -1,255 +1,363 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: [PATCH 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Wed, 27 Mar 2013 17:46:52 -0500
-Message-ID: <20130327224652.GB15786@jshin-Toonie>
-References: <1364423841-6920-1-git-send-email-jacob.shin@amd.com>
- <1364423841-6920-3-git-send-email-jacob.shin@amd.com>
- <20130327224122.GA15786@jshin-Toonie>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2 1/4] thermal: Add driver for Armada 370/XP SoC
+ thermal management
+Date: Thu, 28 Mar 2013 09:43:37 +0800
+Message-ID: <1364435017.2275.20.camel@rzhang1-mobl4>
+References: <1364292988-8358-1-git-send-email-ezequiel.garcia@free-electrons.com>
+	 <1364292988-8358-2-git-send-email-ezequiel.garcia@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130327224122.GA15786@jshin-Toonie>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:30739 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755164Ab3C1Bnn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 27 Mar 2013 21:43:43 -0400
+In-Reply-To: <1364292988-8358-2-git-send-email-ezequiel.garcia@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lior Amsalem <alior@marvell.com>, Nobuhiro Iwamatsu <iwamatsu@nigauri.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Jason Cooper <jason@lakedaemon.net>
 
-On Wed, Mar 27, 2013 at 05:41:22PM -0500, Jacob Shin wrote:
-> On Wed, Mar 27, 2013 at 05:37:21PM -0500, Jacob Shin wrote:
+On Tue, 2013-03-26 at 07:16 -0300, Ezequiel Garcia wrote:
+> This driver supports both Armada 370 and Armada XP SoC
+> thermal management controllers.
+> 
+> Armada 370 has a register to check a valid temperature, whereas
+> Armada XP does not. Each has a different initialization (i.e. calibration)
+> function. The temperature conversion formula is the same for both.
+> 
+> The controller present in each SoC have a very similar feature set,
+> so it corresponds to have one driver to support both of them.
+> 
+> Although this driver may present similarities to Dove and Kirkwood
+> thermal driver, the exact differences and coincidences are not fully
+> known. For this reason, support is given through a separate driver.
+> 
+> Signed-off-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> ---
+> Changes from v1:
+>  * Make armada_get_temp() more readable by reading the register
+>    on a separate line, as requested by Durgadoss R.
+> 
+>  * Reorder Kconfig and Makefile entries, as requested by Andrew Lunn.
+> 
+>  .../devicetree/bindings/thermal/armada-thermal.txt |   22 ++
+>  drivers/thermal/Kconfig                            |    8 +
+>  drivers/thermal/Makefile                           |    1 +
+>  drivers/thermal/armada_thermal.c                   |  236 ++++++++++++++++++++
+>  4 files changed, 267 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/armada-thermal.txt
+>  create mode 100644 drivers/thermal/armada_thermal.c
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> new file mode 100644
+> index 0000000..fff93d5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> @@ -0,0 +1,22 @@
+> +* Marvell Armada 370/XP thermal management
+> +
+> +Required properties:
+> +
+> +- compatible:	Should be set to one of the following:
+> +		marvell,armada370-thermal
+> +		marvell,armadaxp-thermal
+> +
+> +- reg:		Device's register space.
+> +		Two entries are expected, see the examples below.
+> +		The first one is required for the sensor register;
+> +		the second one is required for the control register
+> +		to be used for sensor initialization (a.k.a. calibration).
+> +
+> +Example:
+> +
+> +	thermal@d0018300 {
+> +		compatible = "marvell,armada370-thermal";
+> +                reg = <0xd0018300 0x4
+> +		       0xd0018304 0x4>;
+> +		status = "okay";
+> +	};
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index a764f16..9eddf74 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -144,6 +144,14 @@ config DB8500_THERMAL
+>  	  created. Cooling devices can be bound to the trip points to cool this
+>  	  thermal zone if trip points reached.
+>  
+> +config ARMADA_THERMAL
+> +	tristate "Armada 370/XP thermal management"
+> +	depends on ARCH_MVEBU
+> +	depends on OF
+> +	help
+> +	  Enable this option if you want to have support for thermal management
+> +	  controller present in Armada 370 and Armada XP SoC.
+> +
+>  config DB8500_CPUFREQ_COOLING
+>  	tristate "DB8500 cpufreq cooling"
+>  	depends on ARCH_U8500
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index d3a2b38..7f6509a 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -19,6 +19,7 @@ obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+>  obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+>  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+>  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+> +obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+>  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+>  
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> new file mode 100644
+> index 0000000..6743ec2
+> --- /dev/null
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -0,0 +1,236 @@
+> +/*
+> + * Marvell Armada 370/XP thermal sensor driver
+> + *
+> + * Copyright (C) 2013 Marvell
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/kernel.h>
+> +#include <linux/of.h>
+> +#include <linux/module.h>
+> +#include <linux/delay.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of_device.h>
+> +#include <linux/thermal.h>
+> +
+> +#define THERMAL_VALID_OFFSET		9
+> +#define THERMAL_VALID_MASK		0x1
+> +#define THERMAL_TEMP_OFFSET		10
+> +#define THERMAL_TEMP_MASK		0x1ff
+> +
+> +/* Thermal Manager Control and Status Register */
+> +#define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
+> +#define PMU_TM_DISABLE_OFFS		0
+> +#define PMU_TM_DISABLE_MASK		(0x1 << PMU_TM_DISABLE_OFFS)
+> +#define PMU_TDC0_REF_CAL_CNT_OFFS	11
+> +#define PMU_TDC0_REF_CAL_CNT_MASK	(0x1ff << PMU_TDC0_REF_CAL_CNT_OFFS)
+> +#define PMU_TDC0_OTF_CAL_MASK		(0x1 << 30)
+> +#define PMU_TDC0_START_CAL_MASK		(0x1 << 25)
+> +
+> +struct armada_thermal_ops;
+> +
+> +/* Marvell EBU Thermal Sensor Dev Structure */
+> +struct armada_thermal_priv {
+> +	void __iomem *sensor;
+> +	void __iomem *control;
+> +	struct armada_thermal_ops *ops;
+> +};
+> +
+> +struct armada_thermal_ops {
+> +	/* Initialize the sensor */
+> +	void (*init_sensor)(struct armada_thermal_priv *);
+> +
+> +	/* Test for a valid sensor value (optional) */
+> +	bool (*is_valid)(struct armada_thermal_priv *);
+> +};
+> +
+> +static void armadaxp_init_sensor(struct armada_thermal_priv *priv)
+> +{
+> +	unsigned long reg;
+> +
+> +	/* ??? */
 
-> So sorry .. this file did not get git add'ed. Will resend in a bit
+what does this comment mean?
 
-Here is the correct patch 2/2:
+> +	reg = readl_relaxed(priv->control);
+> +	reg |= PMU_TDC0_OTF_CAL_MASK;
+> +	writel(reg, priv->control);
+> +
+> +	/* Reference calibration value */
+> +	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+> +	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+> +	writel(reg, priv->control);
+> +
+> +	/* Reset the sensor */
+> +	reg = readl_relaxed(priv->control);
+> +	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
+> +
+> +	writel(reg, priv->control);
+> +
+> +	/* Enable the sensor */
+> +	reg = readl_relaxed(priv->sensor);
+> +	reg &= ~PMU_TM_DISABLE_MASK;
+> +	writel(reg, priv->sensor);
+> +}
+> +
+> +static void armada370_init_sensor(struct armada_thermal_priv *priv)
+> +{
+> +	unsigned long reg;
+> +
+> +	/* ??? */
 
-Thanks!
+ditto.
 
----
-
->From 9b79ef03c72f613dcc0cdd3624a6154cb3e76244 Mon Sep 17 00:00:00 2001
-From: Jacob Shin <jacob.shin@amd.com>
-Date: Fri, 22 Mar 2013 10:32:08 -0500
-Subject: [PATCH 2/2] cpufreq: AMD "frequency sensitivity feedback" powersave
- bias for ondemand governor
-
-Future AMD processors, starting with Family 16h, can provide software
-with feedback on how the workload may respond to frequency change --
-memory-bound workloads will not benefit from higher frequency, where
-as compute-bound workloads will. This patch enables this "frequency
-sensitivity feedback" to aid the ondemand governor to make better
-frequency change decisions by hooking into the powersave bias.
-
-Signed-off-by: Jacob Shin <jacob.shin@amd.com>
----
- arch/x86/include/uapi/asm/msr-index.h  |    1 +
- drivers/cpufreq/Kconfig.x86            |   10 +++
- drivers/cpufreq/Makefile               |    1 +
- drivers/cpufreq/amd_freq_sensitivity.c |  149 ++++++++++++++++++++++++++++++++
- 4 files changed, 161 insertions(+)
- create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
-
-diff --git a/arch/x86/include/uapi/asm/msr-index.h b/arch/x86/include/uapi/asm/msr-index.h
-index 7a060f4..b2e6c49 100644
---- a/arch/x86/include/uapi/asm/msr-index.h
-+++ b/arch/x86/include/uapi/asm/msr-index.h
-@@ -173,6 +173,7 @@
- #define MSR_AMD64_TSC_RATIO		0xc0000104
- #define MSR_AMD64_NB_CFG		0xc001001f
- #define MSR_AMD64_PATCH_LOADER		0xc0010020
-+#define MSR_AMD64_FREQ_SENSITIVITY	0xc0010080
- #define MSR_AMD64_OSVW_ID_LENGTH	0xc0010140
- #define MSR_AMD64_OSVW_STATUS		0xc0010141
- #define MSR_AMD64_DC_CFG		0xc0011022
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index d7dc0ed..6c714b0 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -129,6 +129,16 @@ config X86_POWERNOW_K8
- 
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
-+config X86_AMD_FREQ_SENSITIVITY
-+	tristate "AMD 'frequency sensitivity feedback' powersave bias"
-+	depends on CPU_FREQ_GOV_ONDEMAND && X86_ACPI_CPUFREQ
-+	help
-+	  This adds support for 'frequency sensitivity feedback' feature on
-+	  supported AMD processors, which hooks into the ondemand governor's
-+	  powersave bias to influence frequency change decisions.
-+
-+	  If in doubt, say N.
-+
- config X86_GX_SUSPMOD
- 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
- 	depends on X86_32 && PCI
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 863fd18..01dfdaf 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
- obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
- obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
-+obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
- 
- ##################################################################################
- # ARM SoC drivers
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-new file mode 100644
-index 0000000..80669ae
---- /dev/null
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -0,0 +1,149 @@
-+/*
-+ * amd_freq_sensitivity.c: AMD "frequency sensitivity feedback" powersave bias
-+ *                         for ondemand governor.
-+ *
-+ * Copyright (C) 2013 Advanced Micro Devices, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+
-+#include "cpufreq_governor.h"
-+
-+#define PROC_FEEDBACK_INTERFACE_SHIFT		11
-+#define CLASS_CODE_SHIFT			56
-+#define CLASS_CODE_MASK				0xff
-+#define CLASS_CODE_CORE_FREQUENCY_SENSITIVITY	0x01
-+
-+static u32 msr_addr;
-+
-+struct cpu_data_t {
-+	u64 actual;
-+	u64 reference;
-+	unsigned int freq_prev;
-+};
-+
-+static DEFINE_PER_CPU(struct cpu_data_t, cpu_data);
-+
-+static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
-+		unsigned int freq_next, unsigned int relation)
-+{
-+	int sensitivity;
-+	long d_actual, d_reference;
-+	struct msr actual, reference;
-+	struct cpu_data_t *data = &per_cpu(cpu_data, policy->cpu);
-+	struct dbs_data *od_data = policy->governor_data;
-+	struct od_dbs_tuners *od_tuners = od_data->tuners;
-+	struct od_cpu_dbs_info_s *od_info =
-+		od_data->cdata->get_cpu_dbs_info_s(policy->cpu);
-+
-+	rdmsr_on_cpu(policy->cpu, msr_addr, &actual.l, &actual.h);
-+	rdmsr_on_cpu(policy->cpu, msr_addr + 1, &reference.l, &reference.h);
-+	actual.h &= 0x00ffffff;
-+	reference.h &= 0x00ffffff;
-+
-+	if (!od_info->freq_table)
-+		goto out;
-+
-+	/* counter wrapped around, so push until next check */
-+	if (actual.q < data->actual || reference.q < data->reference) {
-+		freq_next = policy->cur;
-+		goto out;
-+	}
-+
-+	d_actual = actual.q - data->actual;
-+	d_reference = reference.q - data->reference;
-+
-+	/* divide by 0, so push as well */
-+	if (d_reference == 0) {
-+		freq_next = policy->cur;
-+		goto out;
-+	}
-+
-+	sensitivity = 1000 - (1000 * (d_reference - d_actual) / d_reference);
-+
-+	if (sensitivity > 1000)
-+		sensitivity = 1000;
-+	else if (sensitivity < 0)
-+		sensitivity = 0;
-+
-+	/* this workload is not CPU bound, so choose a lower freq */
-+	if (sensitivity < od_tuners->powersave_bias) {
-+		if (data->freq_prev == policy->cur)
-+			freq_next = policy->cur;
-+
-+		if (freq_next > policy->cur)
-+			freq_next = policy->cur;
-+		else if (freq_next < policy->cur)
-+			freq_next = policy->min;
-+		else {
-+			unsigned int index = 0;
-+
-+			cpufreq_frequency_table_target(policy,
-+				od_info->freq_table, policy->cur - 1,
-+				CPUFREQ_RELATION_H, &index);
-+			freq_next = od_info->freq_table[index].frequency;
-+		}
-+
-+		data->freq_prev = freq_next;
-+	} else
-+		data->freq_prev = 0;
-+
-+out:
-+	data->actual = actual.q;
-+	data->reference = reference.q;
-+	return freq_next;
-+}
-+
-+static struct od_ops od_ops = {
-+	.powersave_bias_target = amd_powersave_bias_target,
-+};
-+
-+static int __init amd_freq_sensitivity_init(void)
-+{
-+	int i;
-+	u32 eax, edx, dummy;
-+
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-+		return -ENODEV;
-+
-+	cpuid(0x80000007, &eax, &dummy, &dummy, &edx);
-+
-+	if (!(edx & (1 << PROC_FEEDBACK_INTERFACE_SHIFT)))
-+		return -ENODEV;
-+
-+	for (i = 0; i < (eax & 0xf); i++) {
-+		u64 val;
-+		u32 addr = MSR_AMD64_FREQ_SENSITIVITY + (i * 2);
-+
-+		rdmsrl(addr, val);
-+
-+		if (((val >> CLASS_CODE_SHIFT) & CLASS_CODE_MASK)
-+			== CLASS_CODE_CORE_FREQUENCY_SENSITIVITY) {
-+			msr_addr = addr;
-+			break;
-+		}
-+	}
-+
-+	if (!msr_addr)
-+		return -ENODEV;
-+
-+	od_register_ops(&od_ops);
-+	return 0;
-+}
-+
-+static void __exit amd_freq_sensitivity_exit(void)
-+{
-+	od_unregister_ops(&od_ops);
-+}
-+
-+MODULE_AUTHOR("Jacob Shin <jacob.shin@amd.com>");
-+MODULE_DESCRIPTION("AMD 'frequency sensitivity feedback' powersave bias for "
-+		"the ondemand governor.");
-+MODULE_LICENSE("GPL");
-+
-+module_init(amd_freq_sensitivity_init);
-+module_exit(amd_freq_sensitivity_exit);
--- 
-1.7.9.5
+thanks,
+rui
+> +	reg = readl_relaxed(priv->control);
+> +	reg |= PMU_TDC0_OTF_CAL_MASK;
+> +	writel(reg, priv->control);
+> +
+> +	/* Reference calibration value */
+> +	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
+> +	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
+> +	writel(reg, priv->control);
+> +
+> +	/* ??? */
+> +	reg &= ~PMU_TDC0_START_CAL_MASK;
+> +	writel(reg, priv->control);
+> +
+> +	/* FIXME: Why do we need this delay? */
+> +	mdelay(10);
+> +}
+> +
+> +static bool armada_is_valid(struct armada_thermal_priv *priv)
+> +{
+> +	unsigned long reg = readl_relaxed(priv->sensor);
+> +
+> +	return (reg >> THERMAL_VALID_OFFSET) & THERMAL_VALID_MASK;
+> +}
+> +
+> +static int armada_get_temp(struct thermal_zone_device *thermal,
+> +			  unsigned long *temp)
+> +{
+> +	struct armada_thermal_priv *priv = thermal->devdata;
+> +	unsigned long reg;
+> +
+> +	/* Valid check */
+> +	if (priv->ops->is_valid && !priv->ops->is_valid(priv)) {
+> +		dev_err(&thermal->device,
+> +			"Temperature sensor reading not valid\n");
+> +		return -EIO;
+> +	}
+> +
+> +	reg = readl_relaxed(priv->sensor);
+> +	reg = (reg >> THERMAL_TEMP_OFFSET) & THERMAL_TEMP_MASK;
+> +	*temp = (3153000000UL - (10000000UL*reg)) / 13825;
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_device_ops ops = {
+> +	.get_temp = armada_get_temp,
+> +};
+> +
+> +static const struct armada_thermal_ops armadaxp_ops = {
+> +	.init_sensor = armadaxp_init_sensor,
+> +};
+> +
+> +static const struct armada_thermal_ops armada370_ops = {
+> +	.is_valid = armada_is_valid,
+> +	.init_sensor = armada370_init_sensor,
+> +};
+> +
+> +static const struct of_device_id armada_thermal_id_table[] = {
+> +	{
+> +		.compatible = "marvell,armadaxp-thermal",
+> +		.data       = &armadaxp_ops,
+> +	},
+> +	{
+> +		.compatible = "marvell,armada370-thermal",
+> +		.data       = &armada370_ops,
+> +	},
+> +	{
+> +		/* sentinel */
+> +	},
+> +};
+> +MODULE_DEVICE_TABLE(of, armada_thermal_id_table);
+> +
+> +static int armada_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct thermal_zone_device *thermal;
+> +	const struct of_device_id *match;
+> +	struct armada_thermal_priv *priv;
+> +	struct resource *res;
+> +
+> +	match = of_match_device(armada_thermal_id_table, &pdev->dev);
+> +	if (!match)
+> +		return -ENODEV;
+> +
+> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->sensor))
+> +		return PTR_ERR(priv->sensor);
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	priv->control = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->control))
+> +		return PTR_ERR(priv->control);
+> +
+> +	priv->ops = (struct armada_thermal_ops *)match->data;
+> +	priv->ops->init_sensor(priv);
+> +
+> +	thermal = thermal_zone_device_register("armada_thermal", 0, 0,
+> +					       priv, &ops, NULL, 0, 0);
+> +	if (IS_ERR(thermal)) {
+> +		dev_err(&pdev->dev,
+> +			"Failed to register thermal zone device\n");
+> +		return PTR_ERR(thermal);
+> +	}
+> +
+> +	platform_set_drvdata(pdev, thermal);
+> +
+> +	return 0;
+> +}
+> +
+> +static int armada_thermal_exit(struct platform_device *pdev)
+> +{
+> +	struct thermal_zone_device *armada_thermal =
+> +		platform_get_drvdata(pdev);
+> +
+> +	thermal_zone_device_unregister(armada_thermal);
+> +	platform_set_drvdata(pdev, NULL);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver armada_thermal_driver = {
+> +	.probe = armada_thermal_probe,
+> +	.remove = armada_thermal_exit,
+> +	.driver = {
+> +		.name = "armada_thermal",
+> +		.owner = THIS_MODULE,
+> +		.of_match_table = of_match_ptr(armada_thermal_id_table),
+> +	},
+> +};
+> +
+> +module_platform_driver(armada_thermal_driver);
+> +
+> +MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia@free-electrons.com>");
+> +MODULE_DESCRIPTION("Armada 370/XP thermal driver");
+> +MODULE_LICENSE("GPL v2");
 
 
