@@ -1,64 +1,79 @@
 From: Philipp Zabel <p.zabel@pengutronix.de>
-Subject: [PATCH v6 0/8] Reset controller API to reset IP modules on i.MX5 and i.MX6
-Date: Thu, 28 Mar 2013 17:35:15 +0100
-Message-ID: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
+Subject: [PATCH v6 8/8] ARM i.MX5: Add system reset controller (SRC) to i.MX51 and i.MX53 device tree
+Date: Thu, 28 Mar 2013 17:35:23 +0100
+Message-ID: <1364488523-20310-9-git-send-email-p.zabel@pengutronix.de>
+References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56951 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56994 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756215Ab3C1QgC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Mar 2013 12:36:02 -0400
+	with ESMTP id S1756586Ab3C1QgI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Mar 2013 12:36:08 -0400
+In-Reply-To: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawn.guo@linaro.org>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>
 
-[Added Arnd and Greg to the recipients] I think the first three patches
-of this series are candidates to go through Arnd's tree. Arnd, would you
-take those patches?
-        [PATCH v6 1/8] dt: describe base reset signal binding
-        [PATCH v6 2/8] reset: Add reset controller API
-        [PATCH v6 3/8] reset: Add driver for gpio-controlled reset pins
+Also, link SRC to IPU via phandle.
 
-The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
-
-The following patches add a simple API for devices to request being reset
-by separate reset controller hardware and implements the reset signal
-device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
-the i.MX SRC contains self-deasserting reset registers, so I've included
-both ops to manually assert/deassert a reset line, as well as a "reset"
-operation that is supposed to assert the reset line and wait for it to
-deassert.
-
-The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-is made to request being reset by calling the device_reset(&pdev->dev)
-convenience wrapper during probing.
-
-No changes since v5, I just reordered the series.
-
-regards
-Philipp
-
+Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Stephen Warren <swarren@nvidia.com>
+Reviewed-by: Marek Vasut <marex@denx.de>
 ---
- .../devicetree/bindings/reset/fsl,imx-src.txt      |  49 ++++
- .../devicetree/bindings/reset/gpio-reset.txt       |  37 +++
- Documentation/devicetree/bindings/reset/reset.txt  |  75 ++++++
- .../bindings/staging/imx-drm/fsl-imx-drm.txt       |   3 +
- arch/arm/boot/dts/imx51.dtsi                       |   7 +
- arch/arm/boot/dts/imx53.dtsi                       |   7 +
- arch/arm/boot/dts/imx6q.dtsi                       |   1 +
- arch/arm/boot/dts/imx6qdl.dtsi                     |   4 +-
- arch/arm/mach-imx/Kconfig                          |   3 +
- arch/arm/mach-imx/mm-imx5.c                        |   2 +
- arch/arm/mach-imx/src.c                            |  69 ++++-
- drivers/Kconfig                                    |   2 +
- drivers/Makefile                                   |   3 +
- drivers/reset/Kconfig                              |  26 ++
- drivers/reset/Makefile                             |   2 +
- drivers/reset/core.c                               | 297 +++++++++++++++++++++
- drivers/reset/gpio-reset.c                         | 208 +++++++++++++++
- drivers/staging/imx-drm/ipu-v3/ipu-common.c        |  12 +-
- include/linux/reset-controller.h                   |  51 ++++
- include/linux/reset.h                              |  17 ++
- 20 files changed, 870 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/imx51.dtsi | 7 +++++++
+ arch/arm/boot/dts/imx53.dtsi | 7 +++++++
+ 2 files changed, 14 insertions(+)
+
+diff --git a/arch/arm/boot/dts/imx51.dtsi b/arch/arm/boot/dts/imx51.dtsi
+index fcf035b..cfe4e92 100644
+--- a/arch/arm/boot/dts/imx51.dtsi
++++ b/arch/arm/boot/dts/imx51.dtsi
+@@ -67,6 +67,7 @@
+ 			compatible = "fsl,imx51-ipu";
+ 			reg = <0x40000000 0x20000000>;
+ 			interrupts = <11 10>;
++			resets = <&src 2>;
+ 		};
+ 
+ 		aips@70000000 { /* AIPS1 */
+@@ -501,6 +502,12 @@
+ 				status = "disabled";
+ 			};
+ 
++			src: src@73fd0000 {
++				compatible = "fsl,imx51-src";
++				reg = <0x73fd0000 0x4000>;
++				#reset-cells = <1>;
++			};
++
+ 			clks: ccm@73fd4000{
+ 				compatible = "fsl,imx51-ccm";
+ 				reg = <0x73fd4000 0x4000>;
+diff --git a/arch/arm/boot/dts/imx53.dtsi b/arch/arm/boot/dts/imx53.dtsi
+index d05aa21..9e1348d 100644
+--- a/arch/arm/boot/dts/imx53.dtsi
++++ b/arch/arm/boot/dts/imx53.dtsi
+@@ -72,6 +72,7 @@
+ 			compatible = "fsl,imx53-ipu";
+ 			reg = <0x18000000 0x080000000>;
+ 			interrupts = <11 10>;
++			resets = <&src 2>;
+ 		};
+ 
+ 		aips@50000000 { /* AIPS1 */
+@@ -558,6 +559,12 @@
+ 				status = "disabled";
+ 			};
+ 
++			src: src@53fd0000 {
++				compatible = "fsl,imx53-src", "fsl,imx51-src";
++				reg = <0x53fd0000 0x4000>;
++				#reset-cells = <1>;
++			};
++
+ 			clks: ccm@53fd4000{
+ 				compatible = "fsl,imx53-ccm";
+ 				reg = <0x53fd4000 0x4000>;
+-- 
+1.8.2.rc2
 
