@@ -1,119 +1,47 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device tree supported boot
-Date: Thu, 28 Mar 2013 16:52:55 -0500
-Message-ID: <1364507576-19345-2-git-send-email-nm@ti.com>
-References: <1364507576-19345-1-git-send-email-nm@ti.com>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH v6 0/8] Reset controller API to reset IP modules on i.MX5
+ and i.MX6
+Date: Thu, 28 Mar 2013 22:07:54 +0000
+Message-ID: <201303282207.54250.arnd@arndb.de>
+References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1364507576-19345-1-git-send-email-nm@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-omap@vger.kernel.org
-Cc: Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <1364488523-20310-1-git-send-email-p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>, Fabio Estevam <fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Barry Song <Baohua.Song-kQvG35nSl+M@public.gmane.org>, devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-With OMAP3+ and AM33xx supported SoC having defined CPU device tree
-entries with operating-points defined, we can now use the SoC
-generic cpufreq-cpu0 driver by registering appropriate device.
+On Thursday 28 March 2013, Philipp Zabel wrote:
+> [Added Arnd and Greg to the recipients] I think the first three patches
+> of this series are candidates to go through Arnd's tree. Arnd, would you
+> take those patches?
+>         [PATCH v6 1/8] dt: describe base reset signal binding
+>         [PATCH v6 2/8] reset: Add reset controller API
+>         [PATCH v6 3/8] reset: Add driver for gpio-controlled reset pins
 
-As part of this change, add dummy clock node to use cpufreq-cpu0.
-This is an suggested solution till we have OMAP clock nodes in device
-tree.
-Once the OMAP device tree conversion is complete, we can then do:
-clocks =3D <&dpll_mpu_ck>; or the SoC specific equivalent.
+Wow, very nice work. I had completely missed the series so far, as I'm
+quite behind on reading mailing lists.
 
-Inspired by patch: https://patchwork.kernel.org/patch/2067841/
-now made generic.
+Yes, I can certainly take the three patches through arm-soc. Actually
+I just handed over to Olof for now, but I'm assume he will also take
+them when you send a pull request.
 
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Rajendra Nayak <rnayak@ti.com>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
-Cc: Jon Hunter <jon-hunter@ti.com>
-Cc: Keerthy <j-keerthy@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-Changes in v3:
-	- modified CC list.
-	- no functional change
-V2: https://patchwork.kernel.org/patch/2303471/
-V1: https://patchwork.kernel.org/patch/2273571/
+We also have at least one other platform (sirf/prima2) that will need
+the subsystem in the near future. I'm probably stating the obvious here,
+but  please make sure that the pull request you send for arm-soc uses
+the exact git sha1 IDs that will be used for the follow-on patches
+going through the platform trees.
 
- arch/arm/mach-omap2/board-generic.c   |    5 +++++
- arch/arm/mach-omap2/cclock33xx_data.c |    2 +-
- arch/arm/mach-omap2/cclock3xxx_data.c |    3 ++-
- arch/arm/mach-omap2/cclock44xx_data.c |    3 ++-
- 4 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/=
-board-generic.c
-index afa509a..5b147ef 100644
---- a/arch/arm/mach-omap2/board-generic.c
-+++ b/arch/arm/mach-omap2/board-generic.c
-@@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
- 		omap4_panda_display_init_of();
- 	else if (of_machine_is_compatible("ti,omap4-sdp"))
- 		omap_4430sdp_display_init_of();
-+
-+	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
-+		struct platform_device_info devinfo =3D { .name =3D "cpufreq-cpu0", =
-};
-+		platform_device_register_full(&devinfo);
-+	}
- }
-=20
- #ifdef CONFIG_SOC_OMAP2420
-diff --git a/arch/arm/mach-omap2/cclock33xx_data.c b/arch/arm/mach-omap=
-2/cclock33xx_data.c
-index 476b820..cf7e736 100644
---- a/arch/arm/mach-omap2/cclock33xx_data.c
-+++ b/arch/arm/mach-omap2/cclock33xx_data.c
-@@ -852,7 +852,7 @@ static struct omap_clk am33xx_clks[] =3D {
- 	CLK(NULL,	"dpll_core_m5_ck",	&dpll_core_m5_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_core_m6_ck",	&dpll_core_m6_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_mpu_ck",		&dpll_mpu_ck,	CK_AM33XX),
--	CLK("cpu0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
-+	CLK("cpufreq-cpu0.0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_mpu_m2_ck",	&dpll_mpu_m2_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_ddr_ck",		&dpll_ddr_ck,	CK_AM33XX),
- 	CLK(NULL,	"dpll_ddr_m2_ck",	&dpll_ddr_m2_ck,	CK_AM33XX),
-diff --git a/arch/arm/mach-omap2/cclock3xxx_data.c b/arch/arm/mach-omap=
-2/cclock3xxx_data.c
-index 4579c3c..5a5b471 100644
---- a/arch/arm/mach-omap2/cclock3xxx_data.c
-+++ b/arch/arm/mach-omap2/cclock3xxx_data.c
-@@ -3501,7 +3501,8 @@ static struct omap_clk omap3xxx_clks[] =3D {
- 	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
- 	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
- 	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
--	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
-+	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX), /* used in non-device tr=
-ee boot */
-+	CLK("cpufreq-cpu0.0",	NULL,	&dpll1_ck,	CK_3XXX), /* used in device tr=
-ee boot */
- };
-=20
- static const char *enable_init_clks[] =3D {
-diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-omap=
-2/cclock44xx_data.c
-index 3d58f33..bcea785 100644
---- a/arch/arm/mach-omap2/cclock44xx_data.c
-+++ b/arch/arm/mach-omap2/cclock44xx_data.c
-@@ -1660,7 +1660,8 @@ static struct omap_clk omap44xx_clks[] =3D {
- 	CLK("4013a000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
- 	CLK("4013c000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
- 	CLK("4013e000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
--	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
-+	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X), /* used in non-device=
- tree boot */
-+	CLK("cpufreq-cpu0.0",	NULL,	&dpll_mpu_ck,	CK_443X), /* used in device=
- tree boot */
- };
-=20
- int __init omap4xxx_clk_init(void)
---=20
-1.7.9.5
-
+	Arnd
