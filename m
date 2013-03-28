@@ -1,75 +1,162 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [Update][PATCH] PCI / ACPI: Always resume devices on ACPI wakeup notifications
-Date: Thu, 28 Mar 2013 22:07:29 +0100
-Message-ID: <2699206.HmPyNvCpNR@vostro.rjw.lan>
-References: <2282655.IicBMMa6jN@vostro.rjw.lan> <1396732.fV788D0xgr@vostro.rjw.lan>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V3 2/2] cpufreq: OMAP: instantiate omap-cpufreq as a platform_driver
+Date: Thu, 28 Mar 2013 16:52:56 -0500
+Message-ID: <1364507576-19345-3-git-send-email-nm@ti.com>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1396732.fV788D0xgr@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1364507576-19345-1-git-send-email-nm@ti.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: linux-omap@vger.kernel.org
+Cc: Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: PCI / ACPI: Always resume devices on ACPI wakeup notifications
+As multi-platform build is being adopted by more and more ARM platforms=
+,
+initcall function should be used very carefully.  For example, when
+CONFIG_ARM_OMAP2PLUS_CPUFREQ is built in the kernel, omap_cpufreq_init(=
+)
+will be called on all the platforms to initialize omap-cpufreq driver.
 
-It turns out that the _Lxx control methods provided by some BIOSes
-clear the PME Status bit of PCI devices they handle, which means that
-pci_acpi_wake_dev() cannot really use that bit to check whether or
-not the device has signalled wakeup.
+=46urther, on OMAP, we now use Soc generic cpufreq-cpu0 driver using de=
+vice
+tree entries.  To allow cpufreq-cpu0 and omap-cpufreq drivers to co-exi=
+st
+for OMAP in a single image, we need to ensure the following:
+1. With device tree boot, we use cpufreq-cpu0
+2. With non device tree boot, we use omap-cpufreq
 
-One symptom of the problem is, for example, that when an affected PCI
-USB controller is runtime-suspended, then plugging in a new USB device
-into one of the controller's ports will not wake up the controller,
-which should happen.
+In the case of (1), we will have cpu OPPs and regulator registered
+as part of the device tree nodes, to ensure that omap-cpufreq
+and cpufreq-cpu0 don't conflict in managing the frequency of the
+same CPU, we should not permit omap-cpufreq to be probed.
 
-For this reason, make pci_acpi_wake_dev() always attempt to resume
-the device it is called for regardless of the device's PME Status bit
-value (that bit still has to be cleared if set at this point,
-though).
+In the case of (2), we will not have the cpufreq-cpu0 device, hence
+only omap-cpufreq will be active.
 
-Reported-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: 3.7+ <stable@vger.kernel.org>
+To eliminate this undesired these effects, we change omap-cpufreq
+driver to have it instantiated as a platform_driver and register
+"omap-cpufreq" device only when booted without device tree nodes on
+OMAP platforms.
+
+This allows the following:
+a) Will only run on platforms that create the platform_device
+   "omap-cpufreq".
+b) Since the platform_device is registered only when device tree nodes
+   are *not* populated, omap-cpufreq driver does not conflict with
+   the usage of cpufreq-cpu0 driver which is used on OMAP platforms whe=
+n
+   device tree nodes are present.
+
+Inspired by commit 5553f9e26f6f49a93ba732fd222eac6973a4cf35
+(cpufreq: instantiate cpufreq-cpu0 as a platform_driver)
+
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Rajendra Nayak <rnayak@ti.com>
+Cc: Paul Walmsley <paul@pwsan.com>
+Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+Cc: Jon Hunter <jon-hunter@ti.com>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+[robherring2@gmail.com: reported conflict of omap-cpufreq vs other
+driver in an non-device tree supported boot]
+Reported-by: Rob Herring <robherring2@gmail.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
+Changes in V3:
+	- converted to platform_driver to
+		address https://patchwork.kernel.org/patch/2303491/ as well
+	- modified CC list.
+V2: https://patchwork.kernel.org/patch/2303491/
+V1: https://patchwork.kernel.org/patch/2273681/
 
-The changelog in this version is slightly better than in the previous one, IMHO.
+ arch/arm/mach-omap2/pm.c       |    9 +++++++++
+ drivers/cpufreq/omap-cpufreq.c |   19 ++++++++++++++-----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
 
-Thanks,
-Rafael
-
----
- drivers/pci/pci-acpi.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -53,14 +53,15 @@ static void pci_acpi_wake_dev(acpi_handl
- 		return;
- 	}
- 
--	if (!pci_dev->pm_cap || !pci_dev->pme_support
--	     || pci_check_pme_status(pci_dev)) {
--		if (pci_dev->pme_poll)
--			pci_dev->pme_poll = false;
-+	/* Clear PME Status if set. */
-+	if (pci_dev->pme_support)
-+		pci_check_pme_status(pci_dev);
- 
--		pci_wakeup_event(pci_dev);
--		pm_runtime_resume(&pci_dev->dev);
--	}
-+	if (pci_dev->pme_poll)
-+		pci_dev->pme_poll = false;
+diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
+index 673a4c1..8d15f9a 100644
+--- a/arch/arm/mach-omap2/pm.c
++++ b/arch/arm/mach-omap2/pm.c
+@@ -265,6 +265,12 @@ static void __init omap4_init_voltages(void)
+ 	omap2_set_init_voltage("iva", "dpll_iva_m5x2_ck", "iva");
+ }
+=20
++static inline void omap_init_cpufreq(void)
++{
++	struct platform_device_info devinfo =3D { .name =3D "omap-cpufreq", }=
+;
++	platform_device_register_full(&devinfo);
++}
 +
-+	pci_wakeup_event(pci_dev);
-+	pm_runtime_resume(&pci_dev->dev);
- 
- 	if (pci_dev->subordinate)
- 		pci_pme_wakeup_bus(pci_dev->subordinate);
+ static int __init omap2_common_pm_init(void)
+ {
+ 	if (!of_have_populated_dt())
+@@ -294,6 +300,9 @@ int __init omap2_common_pm_late_init(void)
+=20
+ 		/* Smartreflex device init */
+ 		omap_devinit_smartreflex();
++
++		/* cpufreq dummy device instantiation */
++		omap_init_cpufreq();
+ 	}
+=20
+ #ifdef CONFIG_SUSPEND
+diff --git a/drivers/cpufreq/omap-cpufreq.c b/drivers/cpufreq/omap-cpuf=
+req.c
+index 9128c07..d4f84b8 100644
+--- a/drivers/cpufreq/omap-cpufreq.c
++++ b/drivers/cpufreq/omap-cpufreq.c
+@@ -25,6 +25,7 @@
+ #include <linux/opp.h>
+ #include <linux/cpu.h>
+ #include <linux/module.h>
++#include <linux/platform_device.h>
+ #include <linux/regulator/consumer.h>
+=20
+ #include <asm/smp_plat.h>
+@@ -252,7 +253,7 @@ static struct cpufreq_driver omap_driver =3D {
+ 	.attr		=3D omap_cpufreq_attr,
+ };
+=20
+-static int __init omap_cpufreq_init(void)
++static int omap_cpufreq_probe(struct platform_device *pdev)
+ {
+ 	mpu_dev =3D get_cpu_device(0);
+ 	if (!mpu_dev) {
+@@ -280,12 +281,20 @@ static int __init omap_cpufreq_init(void)
+ 	return cpufreq_register_driver(&omap_driver);
+ }
+=20
+-static void __exit omap_cpufreq_exit(void)
++static int omap_cpufreq_remove(struct platform_device *pdev)
+ {
+-	cpufreq_unregister_driver(&omap_driver);
++	return cpufreq_unregister_driver(&omap_driver);
+ }
+=20
++static struct platform_driver omap_cpufreq_platdrv =3D {
++	.driver =3D {
++		.name	=3D "omap-cpufreq",
++		.owner	=3D THIS_MODULE,
++	},
++	.probe		=3D omap_cpufreq_probe,
++	.remove		=3D omap_cpufreq_remove,
++};
++module_platform_driver(omap_cpufreq_platdrv);
++
+ MODULE_DESCRIPTION("cpufreq driver for OMAP SoCs");
+ MODULE_LICENSE("GPL");
+-module_init(omap_cpufreq_init);
+-module_exit(omap_cpufreq_exit);
+--=20
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
