@@ -1,40 +1,88 @@
-From: Benoit Cousson <b-cousson@ti.com>
-Subject: Re: [PATCH V2 0/8] ARM: OMAP3+: support cpufreq-cpu0 for device tree
- boot
-Date: Thu, 28 Mar 2013 16:49:20 +0100
-Message-ID: <51546680.5080107@ti.com>
-References: <1363715590-5131-1-git-send-email-nm@ti.com> <51542390.1020300@ti.com> <CAGo_u6rn=GHVfJiz_7gkse2e-e3BZicEqJBQWomftpi-nCvfng@mail.gmail.com>
+From: Rickard Andersson <rickard.andersson@stericsson.com>
+Subject: [PATCH V2 02/12] ARM: ux500: Add platform suspend ops
+Date: Thu, 28 Mar 2013 17:11:28 +0100
+Message-ID: <1364487098-10319-3-git-send-email-rickard.andersson@stericsson.com>
+References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6rn=GHVfJiz_7gkse2e-e3BZicEqJBQWomftpi-nCvfng@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Shawn Guo <shawn.guo@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, Keerthy <j-keerthy@ti.com>, devicetree-discuss@lists.ozlabs.org, cpufreq@vger.kernel.org, Santosh Shilimkar <santosh.shilimkar@ti.com>, Jon Hunter <jon-hunter@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: hongbo.zhang@linaro.org, ulf.hansson@linaro.org, khilman@linaro.org, linus.walleij@stericsson.com, daniel.lezcano@linaro.org, rickard.andersson@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-On 03/28/2013 02:43 PM, Nishanth Menon wrote:
-> Hi Benoit,
-> 
-> On Thu, Mar 28, 2013 at 6:03 AM, Benoit Cousson <b-cousson@ti.com> wrote:
->> The patches 1 to 6 looks good to me. Beside the pretty long Cc list,
->> that should not necessarily contain all the mailing list.
-> Arrgh.. my bad. I will keep it in mind for the future.
-> 
->>
->> Since you are changing / renaming some DTS files, and to avoid any merge
->> conflict I will apply only these 6 patches.
->> DTS and driver changes are in theory orthogonal enough to allow merging
->> them separately and in any order.
->>
->> I'll update my branch with these patches ASAP.
-> Thanks. I will post a v3 of remaining patches later today.
+Support for platform suspend operation
+WFI (Wait For Interrupt) is added.
 
-Patches after changelog cleanup are available in the following branch:
+Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
+---
+ arch/arm/mach-ux500/Makefile  |  1 +
+ arch/arm/mach-ux500/suspend.c | 35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+ create mode 100644 arch/arm/mach-ux500/suspend.c
 
-git://git.kernel.org/pub/scm/linux/kernel/git/bcousson/linux-omap-dt.git for_3.10/dts
-
-Regards,
-Benoit
-
+diff --git a/arch/arm/mach-ux500/Makefile b/arch/arm/mach-ux500/Makefile
+index f24710d..f182cc21 100644
+--- a/arch/arm/mach-ux500/Makefile
++++ b/arch/arm/mach-ux500/Makefile
+@@ -5,6 +5,7 @@
+ obj-y				:= cpu.o devices.o devices-common.o \
+ 				   id.o usb.o timer.o
+ obj-$(CONFIG_CPU_IDLE)          += cpuidle.o
++obj-$(CONFIG_SUSPEND)          += suspend.o
+ obj-$(CONFIG_CACHE_L2X0)	+= cache-l2x0.o
+ obj-$(CONFIG_UX500_SOC_DB8500)	+= cpu-db8500.o devices-db8500.o
+ obj-$(CONFIG_MACH_MOP500)	+= board-mop500.o board-mop500-sdi.o \
+diff --git a/arch/arm/mach-ux500/suspend.c b/arch/arm/mach-ux500/suspend.c
+new file mode 100644
+index 0000000..d1ac203
+--- /dev/null
++++ b/arch/arm/mach-ux500/suspend.c
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (C) STMicroelectronics 2009
++ * Copyright (C) ST-Ericsson SA 2010-2013
++ *
++ * License Terms: GNU General Public License v2
++ *
++ * Authors: Rickard Andersson <rickard.andersson@stericsson.com>,
++ *	    Jonas Aaberg <jonas.aberg@stericsson.com>,
++ *	    Sundar Iyer for ST-Ericsson.
++ */
++
++#include <linux/suspend.h>
++
++static int ux500_suspend_enter(suspend_state_t state)
++{
++	cpu_do_idle();
++	return 0;
++}
++
++static int ux500_suspend_valid(suspend_state_t state)
++{
++	return state == PM_SUSPEND_MEM || state == PM_SUSPEND_STANDBY;
++}
++
++static const struct platform_suspend_ops ux500_suspend_ops = {
++	.enter	      = ux500_suspend_enter,
++	.valid	      = ux500_suspend_valid,
++};
++
++static __init int ux500_suspend_init(void)
++{
++	suspend_set_ops(&ux500_suspend_ops);
++	return 0;
++}
++device_initcall(ux500_suspend_init);
+-- 
+1.8.2
