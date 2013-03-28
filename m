@@ -1,7 +1,7 @@
 From: Rickard Andersson <rickard.andersson@stericsson.com>
-Subject: [PATCH V2 06/12] clk: ux500: Add PRCC power management
-Date: Thu, 28 Mar 2013 17:11:32 +0100
-Message-ID: <1364487098-10319-7-git-send-email-rickard.andersson@stericsson.com>
+Subject: [PATCH V2 03/12] PM / Domains: Add on-off notifiers
+Date: Thu, 28 Mar 2013 17:11:29 +0100
+Message-ID: <1364487098-10319-4-git-send-email-rickard.andersson@stericsson.com>
 References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,243 +21,172 @@ To: rjw@sisk.pl, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: hongbo.zhang@linaro.org, ulf.hansson@linaro.org, khilman@linaro.org, linus.walleij@stericsson.com, daniel.lezcano@linaro.org, rickard.andersson@stericsson.com
 List-Id: linux-pm@vger.kernel.org
 
-When reaching a sleep state where the APE power domain
-is being turned off the context of the PRCC block needs
-to saved. When the power domain is turned on again the
-context is restored in order for the PRCC clocks to
-function correctly.
+Some drivers needs to restore their context directly
+when a power domain is activated. For example a driver
+handling system bus settings must be able to restore
+context before the bus is being used for the first time.
+Other examples could be clock settings hardware blocks and
+special debugging hardware blocks which should be restored
+as early as possible in order to be able to debug direcly
+from waking up. Typically these notifers are needed in
+systems with CPU coupled power domains. The notifiers
+are intended to be trigged by cpuidle driver or the
+suspend ops hooks.
+
+The drivers that needs to use these notifiers are
+some special cases. Most drivers should not use this
+method and instead control their context via the
+pm_runtime interface.
 
 Signed-off-by: Rickard Andersson <rickard.andersson@stericsson.com>
 ---
- drivers/clk/ux500/clk-prcc.c  | 71 ++++++++++++++++++++++++++++++++++++-
- drivers/clk/ux500/clk.h       |  5 +++
- drivers/clk/ux500/u8500_clk.c | 82 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 157 insertions(+), 1 deletion(-)
+I believe notifiers are the best solution to the problem of
+restoring context early when waking up after sleep. It is
+similar to what is done in /kernel/cpu_pm.c but but for a
+generic power domain instead.
 
-diff --git a/drivers/clk/ux500/clk-prcc.c b/drivers/clk/ux500/clk-prcc.c
-index 7eee7f7..01739f7 100644
---- a/drivers/clk/ux500/clk-prcc.c
-+++ b/drivers/clk/ux500/clk-prcc.c
-@@ -3,7 +3,8 @@
-  *
-  * Copyright (C) 2012 ST-Ericsson SA
-  * Author: Ulf Hansson <ulf.hansson@linaro.org>
-- *
-+ *	   Rickard Andersson <rickard.andersson@stericsson.com>
-+ *	   Jonas Aaberg <jonas.aberg@stericsson.com>
-  * License terms: GNU General Public License (GPL) version 2
-  */
- 
-@@ -13,10 +14,13 @@
- #include <linux/io.h>
- #include <linux/err.h>
- #include <linux/types.h>
-+#include <linux/platform_device.h>
- #include <mach/hardware.h>
- 
- #include "clk.h"
- 
-+#define UX500_NR_PRCC_BANKS 5
-+
- #define PRCC_PCKEN			0x000
- #define PRCC_PCKDIS			0x004
- #define PRCC_KCKEN			0x008
-@@ -33,6 +37,12 @@ struct clk_prcc {
- 	int is_enabled;
- };
- 
-+static struct {
-+	void __iomem *base;
-+	u32 bus_clk;
-+	u32 kern_clk;
-+} context_prcc[UX500_NR_PRCC_BANKS];
-+
- /* PRCC clock operations. */
- 
- static int clk_prcc_pclk_enable(struct clk_hw *hw)
-@@ -162,3 +172,62 @@ struct clk *clk_reg_prcc_kclk(const char *name,
- 	return clk_reg_prcc(name, parent_name, phy_base, cg_sel, flags,
- 			&clk_prcc_kclk_ops);
+An alternative solution could be to try to call the drivers
+runtime_resume/runtime_suspend callbacks instead via genpd
+from cpuidle or suspend/resume. I do not recommend that
+solution for the following reasons:
+
+* Altered use of runtime PM. As it is today the driver itself
+  controls when to runtime-suspend/runtime-resume.
+* Runtime PM is disabled during late stages of suspend.
+* Complicates runtime PM for a few special cases.
+
+---
+ drivers/base/power/domain.c | 63 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   | 22 ++++++++++++++++
+ 2 files changed, 85 insertions(+)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index acc3a8d..91e3b7d 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1956,6 +1956,68 @@ int pm_genpd_name_detach_cpuidle(const char *name)
+ 	return pm_genpd_detach_cpuidle(pm_genpd_lookup_name(name));
  }
-+
-+void clk_prcc_save_context(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < UX500_NR_PRCC_BANKS; i++) {
-+		context_prcc[i].bus_clk =
-+			readl(context_prcc[i].base + PRCC_PCKSR);
-+		context_prcc[i].kern_clk =
-+			readl(context_prcc[i].base + PRCC_KCKSR);
-+	}
-+}
-+
-+void clk_prcc_restore_context(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < UX500_NR_PRCC_BANKS; i++) {
-+		writel(~context_prcc[i].bus_clk,
-+		       context_prcc[i].base + PRCC_PCKDIS);
-+		writel(~context_prcc[i].kern_clk,
-+		       context_prcc[i].base + PRCC_KCKDIS);
-+
-+		writel(context_prcc[i].bus_clk,
-+		       context_prcc[i].base + PRCC_PCKEN);
-+		writel(context_prcc[i].kern_clk,
-+		       context_prcc[i].base + PRCC_KCKEN);
-+	}
-+}
-+
-+int __init clk_prcc_init(struct platform_device *pdev)
-+{
-+	int i;
-+	struct resource *res;
-+	int ret = 0;
-+
-+	for (i = 0; i < UX500_NR_PRCC_BANKS; i++) {
-+		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
-+		if (!res) {
-+			ret = -EINVAL;
-+			goto err_iounmap;
-+		}
-+
-+		context_prcc[i].base = ioremap(res->start, resource_size(res));
-+		if (!context_prcc[i].base) {
-+			ret = -ENOMEM;
-+			goto err_iounmap;
-+		}
-+	}
-+
-+	return ret;
-+
-+ err_iounmap:
-+	for (i = 0; i < UX500_NR_PRCC_BANKS; i++) {
-+		if (context_prcc[i].base)
-+			iounmap(context_prcc[i].base);
-+	}
-+	return ret;
-+}
-diff --git a/drivers/clk/ux500/clk.h b/drivers/clk/ux500/clk.h
-index c3e4491..3394fb8 100644
---- a/drivers/clk/ux500/clk.h
-+++ b/drivers/clk/ux500/clk.h
-@@ -11,6 +11,7 @@
- #define __UX500_CLK_H
  
- #include <linux/clk.h>
-+#include <linux/platform_device.h>
- 
- struct clk *clk_reg_prcc_pclk(const char *name,
- 			      const char *parent_name,
-@@ -57,4 +58,8 @@ struct clk *clk_reg_prcmu_opp_volt_scalable(const char *name,
- 					    unsigned long rate,
- 					    unsigned long flags);
- 
-+void clk_prcc_save_context(void);
-+void clk_prcc_restore_context(void);
-+int __init clk_prcc_init(struct platform_device *pdev);
-+
- #endif /* __UX500_CLK_H */
-diff --git a/drivers/clk/ux500/u8500_clk.c b/drivers/clk/ux500/u8500_clk.c
-index 6b889a0..63ed580 100644
---- a/drivers/clk/ux500/u8500_clk.c
-+++ b/drivers/clk/ux500/u8500_clk.c
-@@ -12,9 +12,19 @@
- #include <linux/clk-provider.h>
- #include <linux/mfd/dbx500-prcmu.h>
- #include <linux/platform_data/clk-ux500.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
- #include <mach/db8500-regs.h>
- #include "clk.h"
- 
-+/*
-+ * Number of PRCC parent clocks that needs to be
-+ * enabled when saving/restoring PRCC context.
++/**
++ * pm_genpd_register_on_off_notifier - Register to early power on /
++ * late power off notifications.
++ * Only use this function if absolutly needed. It is only intended to be
++ * used for power domains that are coupled with the CPU, that is, power
++ * domains being controlled from cpuidle and the platform suspend ops hooks.
++ * Also only devices that needs their context to be restored directly when
++ * leaving a sleep state should use this method. Most devices should be
++ * fine handling their context and power domains via pm_runtime.
++ * @dev: Device to register.
++ * @nb: Notifier block to be registered.
 + */
-+#define NR_PRCC_PARENT_CLOCKS 5
-+
-+struct clk *prcc_context_parent[NR_PRCC_PARENT_CLOCKS];
-+
- void u8500_clk_init(void)
- {
- 	struct prcmu_fw_version *fw_version;
-@@ -522,3 +532,75 @@ void u8500_clk_init(void)
- 			U8500_CLKRST6_BASE, BIT(0), CLK_SET_RATE_GATE);
- 	clk_register_clkdev(clk, NULL, "rng");
- }
-+
-+static void prcc_parents_enable(bool enable)
++int pm_genpd_register_on_off_notifier(struct device *dev,
++				      struct notifier_block *nb)
 +{
-+	int i;
++	struct generic_pm_domain *genpd;
 +
-+	for (i = 0; i < NR_PRCC_PARENT_CLOCKS; i++) {
-+		if (enable)
-+			clk_enable(prcc_context_parent[i]);
-+		else
-+			clk_disable(prcc_context_parent[i]);
-+	}
++	dev_dbg(dev, "%s()\n", __func__);
++
++	genpd = dev_to_genpd(dev);
++
++	return atomic_notifier_chain_register(&genpd->on_off_notifier, nb);
 +}
 +
-+static int prcc_context_call(struct notifier_block *this,
-+				 unsigned long event, void *data)
++/**
++ * pm_genpd_unregister_on_off_notifier - Unregister to early power on /
++ * late power off notification.
++ * @dev: Device to unregister.
++ * @nb: Notifier block to be unregistered.
++ */
++int pm_genpd_unregister_on_off_notifier(struct device *dev,
++					struct notifier_block *nb)
 +{
-+	bool power_on = (bool)event;
++	struct generic_pm_domain *genpd;
 +
-+	prcc_parents_enable(true);
++	dev_dbg(dev, "%s()\n", __func__);
 +
-+	if (power_on)
-+		clk_prcc_restore_context();
-+	else
-+		clk_prcc_save_context();
++	genpd = dev_to_genpd(dev);
 +
-+	prcc_parents_enable(false);
++	return atomic_notifier_chain_unregister(&genpd->on_off_notifier, nb);
++}
++
++/**
++ * pm_genpd_notify_power_on_off - Notify that the CPU coupled power
++ * domain is going to be powered off or has been powered on.5D
++ * Intended users of this function are cpuidle drivers and the platform
++ * suspend operations implementation.
++ * @genpd: pm domain that will change state.
++ * @power_on_off: true = has been powered on, false = will power off.
++ */
++int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
++				 bool power_on_off)
++{
++	if (IS_ERR_OR_NULL(genpd))
++		return -EINVAL;
++
++	atomic_notifier_call_chain((&genpd->on_off_notifier),
++				   power_on_off, NULL);
 +
 +	return 0;
 +}
 +
-+static struct notifier_block prcc_context_notifier = {
-+	.notifier_call = prcc_context_call,
-+};
-+
-+static struct platform_driver u8500_clk_plat_driver = {
-+	.driver = {
-+		.name = "u8500-clk",
-+	},
-+};
-+
-+static int __init u8500_clk_probe(struct platform_device *pdev)
+ /* Default device callbacks for generic PM domains. */
+ 
+ /**
+@@ -2137,6 +2199,7 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ 	atomic_set(&genpd->sd_count, 0);
+ 	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
+ 	init_waitqueue_head(&genpd->status_wait_queue);
++	ATOMIC_INIT_NOTIFIER_HEAD(&genpd->on_off_notifier);
+ 	genpd->poweroff_task = NULL;
+ 	genpd->resume_count = 0;
+ 	genpd->device_count = 0;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 7c1d252..bf5e7d514 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -82,6 +82,7 @@ struct generic_pm_domain {
+ 	bool cached_power_down_ok;
+ 	struct device_node *of_node; /* Node in device tree */
+ 	struct gpd_cpu_data *cpu_data;
++	struct atomic_notifier_head on_off_notifier;
+ };
+ 
+ static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+@@ -159,6 +160,12 @@ extern int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state);
+ extern int pm_genpd_name_attach_cpuidle(const char *name, int state);
+ extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
+ extern int pm_genpd_name_detach_cpuidle(const char *name);
++extern int pm_genpd_register_on_off_notifier(struct device *dev,
++					     struct notifier_block *nb);
++extern int pm_genpd_unregister_on_off_notifier(struct device *dev,
++					struct notifier_block *nb);
++extern int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
++				  bool power_on_off);
+ extern void pm_genpd_init(struct generic_pm_domain *genpd,
+ 			  struct dev_power_governor *gov, bool is_off);
+ 
+@@ -243,6 +250,21 @@ static inline int pm_genpd_name_detach_cpuidle(const char *name)
+ {
+ 	return -ENOSYS;
+ }
++static inline int pm_genpd_register_on_off_notifier(struct device *dev,
++						    struct notifier_block *nb)
 +{
-+	int ret;
-+	int i;
-+
-+	ret = clk_prcc_init(pdev);
-+	if (ret)
-+		return ret;
-+
-+	for (i = 0; i < NR_PRCC_PARENT_CLOCKS; i++) {
-+		const int clusters[] = {1, 2, 3, 5, 6};
-+		char clkname[10];
-+
-+		snprintf(clkname, sizeof(clkname), "PERIPH%d", clusters[i]);
-+
-+		prcc_context_parent[i] = clk_get_sys(clkname, NULL);
-+		BUG_ON(IS_ERR(prcc_context_parent[i]));
-+		clk_prepare(prcc_context_parent[i]);
-+	}
-+
-+	ret = pm_genpd_register_on_off_notifier(&pdev->dev,
-+						&prcc_context_notifier);
-+	return ret;
++	return -ENOSYS;
 +}
-+
-+static int __init u8500_clk_arch_init(void)
++static inline int pm_genpd_unregister_on_off_notifier(struct device *dev,
++						      struct notifier_block *nb)
 +{
-+	return platform_driver_probe(&u8500_clk_plat_driver,
-+				     u8500_clk_probe);
++	return -ENOSYS;
 +}
-+
-+arch_initcall(u8500_clk_arch_init);
++static inline int pm_genpd_notify_power_on_off(struct generic_pm_domain *genpd,
++					       bool power_on_off)
++{
++	return -ENOSYS;
++}
+ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+ 				 struct dev_power_governor *gov, bool is_off)
+ {
 -- 
 1.8.2
