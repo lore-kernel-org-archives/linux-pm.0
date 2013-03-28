@@ -1,86 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc5
-Date: Thu, 28 Mar 2013 18:12:48 +0100
-Message-ID: <2079293.xj33ftEVWq@vostro.rjw.lan>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: [PATCH V2 0/2] cpufreq: ondemand: add AMD specific powersave bias
+Date: Thu, 28 Mar 2013 13:24:15 -0500
+Message-ID: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Jacob Shin <jacob.shin@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+This patchset adds AMD specific powersave bias function to the ondemand
+governor; which can be used to help ondemand governor make more power conscious
+frequency change decisions based on feedback from hardware (availble on AMD
+Family 16h and above).
 
-Please pull from the git repository at
+Hardware feedback tells software how "sensitive" to frequency changes the
+workloads are. CPU-bound workloads will be more sensitive -- they will
+perform better as frequency increases. Memory/IO-bound workloads will be less
+sensitive -- they will not necessarily perform better as frequnecy increases.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc5
+This patchset was compared against ondemand governor without powersave bias
+and did not show any performance degradation on CPU-bound workloads such as
+kernbench and unixbench. While saving power on Memory-bound workloads such as
+stream.
 
-to receive ACPI and power management fixes for v3.9-rc5 with top-most commit
-6125c2be96b941a08e05516cfa1125ca53945bb2
+This applies to linux-pm's linux-next branch, on top of Viresh's 'Implement
+per policy instance of governor' V4 patchset:
 
-  Merge branch 'acpi-fixes' into fixes
+https://lkml.org/lkml/2013/3/27/348
 
-on top of commit 8bb9660418e05bb1845ac1a2428444d78e322cc7
+V2:
+* Added proper include files to amd_freq_sensitivity.c
+* Only register powersave_bias_target function pointer and not the entire
+  od_ops.
 
-  Linux 3.9-rc5
+Jacob Shin (2):
+  cpufreq: ondemand: allow custom powersave_bias_target function to be
+    registered
+  cpufreq: AMD "frequency sensitivity feedback" powersave bias for
+    ondemand governor
 
-Included are:
-
-- Fix for a recent cpufreq regression related to acpi-cpufreq and
-  suspend/resume from Viresh Kumar.
-
-- cpufreq stats reference counting fix from Viresh Kumar.
-
-- intel_pstate driver fixes from Dirk Brandewie and
-  Konrad Rzeszutek Wilk.
-
-- New ACPI suspend blacklist entry for Sony Vaio VGN-FW21M from
-  Fabio Valentini.
-
-- ACPI Platform Error Interface (APEI) fix from Chen Gong.
-
-- Fix for the new PCI root bridge hotplug code to make it use
-  acpi_scan_lock in analogy with the rest of the ACPI subsystem.
-  From Yinghai Lu.
-
-Thanks!
-
-
----------------
-
-Chen Gong (1):
-      ACPI / APEI: fix error status check condition for CPER
-
-Dirk Brandewie (2):
-      cpufreq / intel_pstate: Add function to check that all MSRs are valid
-      cpufreq / intel_pstate: Fix calculation of current frequency
-
-Fabio Valentini (1):
-      ACPI / PM: fix suspend and resume on Sony Vaio VGN-FW21M
-
-Konrad Rzeszutek Wilk (1):
-      intel-pstate: Use #defines instead of hard-coded values.
-
-Viresh Kumar (2):
-      cpufreq: acpi-cpufreq: Don't set policy->related_cpus from .init()
-      cpufreq: stats: do cpufreq_cpu_put() corresponding to cpufreq_cpu_get()
-
-Yinghai Lu (1):
-      PCI / ACPI: hold acpi_scan_lock during root bus hotplug
-
----------------
-
- arch/x86/include/uapi/asm/msr-index.h |    1 +
- drivers/acpi/apei/cper.c              |    2 +-
- drivers/acpi/pci_root.c               |    9 +++++++--
- drivers/acpi/sleep.c                  |    8 ++++++++
- drivers/cpufreq/acpi-cpufreq.c        |    2 --
- drivers/cpufreq/cpufreq_stats.c       |   12 ++++++++----
- drivers/cpufreq/intel_pstate.c        |   34 ++++++++++++++++++++++++++++++----
- 7 files changed, 55 insertions(+), 13 deletions(-)
+ arch/x86/include/uapi/asm/msr-index.h  |    1 +
+ drivers/cpufreq/Kconfig.x86            |   10 +++
+ drivers/cpufreq/Makefile               |    1 +
+ drivers/cpufreq/amd_freq_sensitivity.c |  147 ++++++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq_governor.h     |    3 +
+ drivers/cpufreq/cpufreq_ondemand.c     |   22 ++++-
+ 6 files changed, 181 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
