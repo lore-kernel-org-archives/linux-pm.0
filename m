@@ -1,107 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
-Date: Fri, 29 Mar 2013 12:47:06 +0530
-Message-ID: <CAKohpo=4ypXkE=VDBHOWnLHG_x2cbh7=OGA=87MEMLyNaTi=xg@mail.gmail.com>
-References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+From: Pavel Machek <pavel@denx.de>
+Subject: Re: [PATCH v6 0/8] Reset controller API to reset IP modules on
+ i.MX5 and i.MX6
+Date: Fri, 29 Mar 2013 11:16:03 +0100
+Message-ID: <20130329101602.GA7283@amd.pavel.ucw.cz>
+References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Yuantian.Tang@freescale.com
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Li Yang <leoli@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Mike Turquette <mturquette@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, kernel@pengutronix.de, Len Brown <len.brown@intel.com>, Shawn Guo <shawn.guo@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29 March 2013 11:22,  <Yuantian.Tang@freescale.com> wrote:
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +
+On Thu 2013-03-28 17:35:15, Philipp Zabel wrote:
+> [Added Arnd and Greg to the recipients] I think the first three patches
+> of this series are candidates to go through Arnd's tree. Arnd, would you
+> take those patches?
+>         [PATCH v6 1/8] dt: describe base reset signal binding
+>         [PATCH v6 2/8] reset: Add reset controller API
+>         [PATCH v6 3/8] reset: Add driver for gpio-controlled reset pins
+> 
+> The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
+> reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
+> 
+> The following patches add a simple API for devices to request being reset
+> by separate reset controller hardware and implements the reset signal
+> device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
+> the i.MX SRC contains self-deasserting reset registers, so I've included
+> both ops to manually assert/deassert a reset line, as well as a "reset"
+> operation that is supposed to assert the reset line and wait for it to
+> deassert.
+> 
+> The i.MX SRC is enhanced to provide a reset controller and the IPU driver
+> is made to request being reset by calling the device_reset(&pdev->dev)
+> convenience wrapper during probing.
+> 
+> No changes since v5, I just reordered the series.
 
-Add following here for better debug prints (sorry, i should have done
-it earlier)
+Reviewed-by: Pavel Machek <pavel@ucw.cz>
 
-#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-
-> +#include <linux/clk.h>
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/errno.h>
-> +#include <linux/init.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +
-
-> +static unsigned int    cpus_per_cluster;
-
-remove tab with space after int.
-
-> +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +       struct device_node *np;
-> +       int i, count, ret;
-> +       struct clk *clk;
-> +       struct cpufreq_frequency_table *table;
-> +       struct cpu_data *data;
-> +       unsigned int cpu = policy->cpu;
-> +
-> +       np = of_get_cpu_node(cpu, NULL);
-> +       if (!np)
-> +               return -ENODEV;
-> +
-> +       data = kzalloc(sizeof(*data), GFP_KERNEL);
-> +       if (!data)
-> +               return -ENOMEM;
-> +
-> +       data->clk = of_clk_get(np, 0);
-
-what if this fails?
-
-> +       /* align the cpu id with cluster if any */
-> +       i = (cpu / cpus_per_cluster) * cpus_per_cluster;
-> +       for (count = 0; count < cpus_per_cluster; count++)
-> +               cpumask_set_cpu(i + count, policy->cpus);
-
-Better than before but i still see some regression with it :)
-
-What if cpu order in DT is changed a bit and so cpus boot with following
-order: 0 1 3 5 7 2 6 4
-
-And so you will end up grouping 0135 and 7264 :)
-
-See if topology_core_cpumask() gives you correct pairs.
-
-> +static int corenet_cpufreq_target(struct cpufreq_policy *policy,
-> +               unsigned int target_freq, unsigned int relation)
-> +{
-> +       struct cpufreq_freqs freqs;
-> +       unsigned int new;
-> +       struct clk *parent;
-> +       int ret;
-> +       struct cpu_data *data = per_cpu(cpu_data, policy->cpu);
-> +
-> +       cpufreq_frequency_table_target(policy, data->table,
-> +                       target_freq, relation, &new);
-> +
-> +       if (policy->cur == data->table[new].frequency)
-> +               return 0;
-> +
-> +       freqs.old = policy->cur;
-> +       freqs.new = data->table[new].frequency;
-> +       freqs.cpu = policy->cpu;
-> +
-> +       mutex_lock(&cpufreq_lock);
-> +       cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-
-What i wanted here from you was:
-
-	for_each_cpu(freqs.cpu, policy->cpus)
-		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-
-Which would be fixed later by my patch, but until then you must have correct
-code in your driver. What if my patchset is rejected :)
-
-Mostly good now. Probably V4 would be the last one :)
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
