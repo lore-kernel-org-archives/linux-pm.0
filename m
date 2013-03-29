@@ -1,236 +1,239 @@
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+From: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
 Subject: Re: [Update][PATCH] PCI / ACPI: Always resume devices on ACPI wakeup
  notifications
-Date: Fri, 29 Mar 2013 09:05:35 -0700
-Message-ID: <20130329160535.GA5113@xanatos>
-References: <2282655.IicBMMa6jN@vostro.rjw.lan>
- <1396732.fV788D0xgr@vostro.rjw.lan>
- <2699206.HmPyNvCpNR@vostro.rjw.lan>
- <5155ADD2.3090005@fold.natur.cuni.cz>
+Date: Fri, 29 Mar 2013 18:11:05 +0100
+Message-ID: <5155CB29.3010305@fold.natur.cuni.cz>
+References: <2282655.IicBMMa6jN@vostro.rjw.lan> <1396732.fV788D0xgr@vostro.rjw.lan> <2699206.HmPyNvCpNR@vostro.rjw.lan> <5155ADD2.3090005@fold.natur.cuni.cz> <20130329160535.GA5113@xanatos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5155ADD2.3090005@fold.natur.cuni.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20130329160535.GA5113@xanatos>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bhelgaas@google.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 29, 2013 at 04:05:54PM +0100, Martin Mokrejs wrote:
-> [   36.594171] xhci_hcd 0000:0b:00.0: xhci_suspend: stopping port polling.
-> [   36.594202] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [   36.594247] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_suspend: 0
-> [   36.594349] xhci_hcd 0000:0b:00.0: PME# enabled
-> [   36.703695] r8169 0000:05:00.0 eth0: link down
-> [   37.098299] microcode: CPU0 updated to revision 0x28, date = 2012-04-24
-> [   37.098941] microcode: CPU1 updated to revision 0x28, date = 2012-04-24
-> [   37.098944] perf_event_intel: PEBS enabled due to microcode update
-> [   38.343029] r8169 0000:05:00.0 eth0: link up
-> [   39.094944] r8169 0000:05:00.0 eth0: link down
-> [   41.492768] r8169 0000:05:00.0 eth0: link up
-> [   62.782910] xhci_hcd 0000:0b:00.0: Poll event ring: 4294943584
-> [   62.782938] xhci_hcd 0000:0b:00.0: op reg status = 0xffffffff
-> [   62.782939] xhci_hcd 0000:0b:00.0: HW died, polling stopped.
-> [   88.754183] pcieport 0000:00:1c.0: PME# enabled
-> [   88.764182] xhci_hcd 0000:0b:00.0: PME# disabled
-> [   88.764192] xhci_hcd 0000:0b:00.0: enabling bus mastering
-> [   88.764206] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [   88.764242] xhci_hcd 0000:0b:00.0: Port Status Change Event for port 2
-> [   88.764246] xhci_hcd 0000:0b:00.0: resume root hub
-> [   88.764259] xhci_hcd 0000:0b:00.0: handle_port_status: starting port polling.
-> [   88.764276] xhci_hcd 0000:0b:00.0: xhci_resume: starting port polling.
-> [   88.764281] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_resume: 0
+Sarah,
+  please let me know if you feel the test was screwed by laptop-mode-tools
+kicking in, although I believed they were not running while I was on AC power.
+I was testing under these conditions:
+
+vostro ~ # grep . /sys/bus/pci/devices/*/power/control
+/sys/bus/pci/devices/0000:00:00.0/power/control:auto
+/sys/bus/pci/devices/0000:00:02.0/power/control:auto
+/sys/bus/pci/devices/0000:00:16.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1a.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1b.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1c.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1c.1/power/control:auto
+/sys/bus/pci/devices/0000:00:1c.3/power/control:auto
+/sys/bus/pci/devices/0000:00:1c.4/power/control:auto
+/sys/bus/pci/devices/0000:00:1c.7/power/control:auto
+/sys/bus/pci/devices/0000:00:1d.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1f.0/power/control:auto
+/sys/bus/pci/devices/0000:00:1f.2/power/control:auto
+/sys/bus/pci/devices/0000:00:1f.3/power/control:auto
+/sys/bus/pci/devices/0000:05:00.0/power/control:auto
+/sys/bus/pci/devices/0000:09:00.0/power/control:auto
+/sys/bus/pci/devices/0000:0b:00.0/power/control:auto
+/sys/bus/pci/devices/0000:11:00.0/power/control:auto
+vostro ~ # grep . /sys/bus/pci/devices/*/power/runtime_status
+/sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
+/sys/bus/pci/devices/0000:00:02.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:16.0/power/runtime_status:suspended
+/sys/bus/pci/devices/0000:00:1a.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1b.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1c.0/power/runtime_status:suspended
+/sys/bus/pci/devices/0000:00:1c.1/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1c.3/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1c.4/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1c.7/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1d.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1f.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1f.2/power/runtime_status:active
+/sys/bus/pci/devices/0000:00:1f.3/power/runtime_status:suspended
+/sys/bus/pci/devices/0000:05:00.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:09:00.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:0b:00.0/power/runtime_status:active
+/sys/bus/pci/devices/0000:11:00.0/power/runtime_status:active
+vostro ~ # 
+
+My apologies if that twisted the test and thanks for you detailed explanations.
+
+I will spot below, however, a few questions.
+
+Sarah Sharp wrote:
+> On Fri, Mar 29, 2013 at 04:05:54PM +0100, Martin Mokrejs wrote:
+
 > 
+>> Nevertheless, I went to check if if the USB3 socket dies after first unplug of device
+>> or not anymore thanks to the patch being tested:
+>>
+>> I plugged into the USB3.0 socket a mouse, it worked. Around its unplug I got:
+>>
+>> [   94.954779] hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x100
+>> [   94.954795] hub 3-0:1.0: hub_suspend
+>> [   94.954802] usb usb3: bus auto-suspend, wakeup 1
+>> [   94.954817] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
+>> [   94.954835] xhci_hcd 0000:0b:00.0: xhci_suspend: stopping port polling.
+>> [   94.954857] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
+>> [   94.954898] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_suspend: 0
+>> [   94.954983] xhci_hcd 0000:0b:00.0: PME# enabled
+>> [  169.622513] hub 2-1:1.0: state 7 ports 8 chg 0000 evt 0004
+>> [  169.623057] hub 2-1:1.0: port 2, status 0101, change 0001, 12 Mb/s
+>> [  169.777012] hub 2-1:1.0: debounce: port 2: total 100ms stable 100ms status 0x101
+>> [  169.856992] usb 2-1.2: new low-speed USB device number 4 using ehci-pci
+>>
+>> and the port was dead, no matter what "lsusb -v or -vv" options I tried. At about
+>> [  169.622513] I plugged the mouse into a USB2.0 socket (do not know if that is 1a.0 or 1d.0).
 > 
-> What "HW died? Why 1c.0 is here? What is this device actually doing?
-
-It's harmless.  The xHCI polling loop to debug the host registers and
-rings simply notices that the registers are reading as all ffs.  I
-believe that's normal when a PCI device is in D3.  I just haven't had
-time to make a patch to disable the polling loop when the host is suspended.
-
-So, for now, ignore the "HW died, polling stopped." messages.
-
-> Nevertheless, I went to check if if the USB3 socket dies after first unplug of device
-> or not anymore thanks to the patch being tested:
+> All right, I wonder if the USB core/xHCI driver is forgetting to clear a
+> port status change bit after the device is unplugged.  That can cause
+> the xHCI host to not give us a port status change event later (and thus
+> no PME).  Looking at the logs later, it doesn't seem like we do this
+> though.
 > 
-> I plugged into the USB3.0 socket a mouse, it worked. Around its unplug I got:
+>> If I run lsusb -vv it does (with the problematic patch):
+>>
+>> [ 1760.414086] pcieport 0000:00:1c.4: PME# disabled
+>> [ 1760.434314] xhci_hcd 0000:0b:00.0: PME# disabled
+>> [ 1760.434327] xhci_hcd 0000:0b:00.0: enabling bus mastering
+>> [ 1760.434338] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
+>> [ 1760.434360] xhci_hcd 0000:0b:00.0: Port Status Change Event for port 2
 > 
-> [   94.954779] hub 3-0:1.0: debounce: port 2: total 100ms stable 100ms status 0x100
-> [   94.954795] hub 3-0:1.0: hub_suspend
-> [   94.954802] usb usb3: bus auto-suspend, wakeup 1
-> [   94.954817] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [   94.954835] xhci_hcd 0000:0b:00.0: xhci_suspend: stopping port polling.
-> [   94.954857] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [   94.954898] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_suspend: 0
-> [   94.954983] xhci_hcd 0000:0b:00.0: PME# enabled
-> [  169.622513] hub 2-1:1.0: state 7 ports 8 chg 0000 evt 0004
-> [  169.623057] hub 2-1:1.0: port 2, status 0101, change 0001, 12 Mb/s
-> [  169.777012] hub 2-1:1.0: debounce: port 2: total 100ms stable 100ms status 0x101
-> [  169.856992] usb 2-1.2: new low-speed USB device number 4 using ehci-pci
+> Ok, so the xHCI driver *is* getting a port status change event, and thus
+> must have gotten a PME.  So the PCI layer is doing its job.
 > 
-> and the port was dead, no matter what "lsusb -v or -vv" options I tried. At about
-> [  169.622513] I plugged the mouse into a USB2.0 socket (do not know if that is 1a.0 or 1d.0).
-
-All right, I wonder if the USB core/xHCI driver is forgetting to clear a
-port status change bit after the device is unplugged.  That can cause
-the xHCI host to not give us a port status change event later (and thus
-no PME).  Looking at the logs later, it doesn't seem like we do this
-though.
-
-> If I run lsusb -vv it does (with the problematic patch):
+>> [ 1760.434363] xhci_hcd 0000:0b:00.0: resume root hub
+>> [ 1760.434367] xhci_hcd 0000:0b:00.0: handle_port_status: starting port polling.
+>> [ 1760.434378] xhci_hcd 0000:0b:00.0: xhci_resume: starting port polling.
+>> [ 1760.434383] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_resume: 0
+>> [ 1760.434388] usb usb3: usb auto-resume
+>> [ 1760.434407] hub 3-0:1.0: hub_resume
+>> [ 1760.434439] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
+>> [ 1760.434440] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
+>> [ 1760.434464] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x202a0
+>> [ 1760.434465] xhci_hcd 0000:0b:00.0: Get port status returned 0x10100
+>> [ 1760.434492] xhci_hcd 0000:0b:00.0: clear port connect change, actual port 1 status  = 0x2a0
 > 
-> [ 1760.414086] pcieport 0000:00:1c.4: PME# disabled
-> [ 1760.434314] xhci_hcd 0000:0b:00.0: PME# disabled
-> [ 1760.434327] xhci_hcd 0000:0b:00.0: enabling bus mastering
-> [ 1760.434338] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [ 1760.434360] xhci_hcd 0000:0b:00.0: Port Status Change Event for port 2
+> Odd.  The port status shows there's no device connected, but there was a
+> connect change:
+> 
+> sarah@xanatos:~$ ./decode-port-status 0x202a0
+> port status = 0x0202a0
+>  bit  0     (CCS)          0x0, device not connected
+>  bit  1     (PED)          0x0, port disabled
+>  bit  3     (OCA)          0x0, no over-current condition
+>  bit  4     (PR)           0x0, port not in reset
+>  bits 8:5   (PLS)          0x5, link is in the RxDetect state
+>  bit  9     (PP)           0x1, port power on
+>  bits 13:10 (speed)        0x0, Undefined
+>  bits 15:14 (indicators)   0x0, port indicators are off
+>  bit  17    (CSC)          0x1, connect change
+>  bit  18    (PEC)          0x0, no port enable/disable change
+>  bit  19    (WRC)          0x0, no warm port reset change
+>  bit  20    (OCC)          0x0, no over-current change
+>  bit  21    (PRC)          0x0, no port reset change
+>  bit  22    (PLC)          0x0, no port link change
+>  bit  23    (CEC)          0x0, no port config error change
+>  bit  25    (WCE)          0x0, wake on connect disabled
+>  bit  26    (WDE)          0x0, wake on disconnect disabled
+>  bit  27    (WOE)          0x0, wake on over-current enable disabled
+>  bit  30    (DR)           0x0, device is permanently attached
+> 
+> RxDetect is the "I'm looking for a USB device" port state.
+> 
+>> [ 1760.434642] usb usb4: usb wakeup-resume
+>> [ 1760.434646] usb usb4: usb auto-resume
+>> [ 1760.434661] hub 4-0:1.0: hub_resume
+>> [ 1760.434683] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
+>> [ 1760.434684] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
+>> [ 1760.434710] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
+>> [ 1760.434711] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
+>> [ 1760.434727] hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
+>> [ 1760.434757] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 0 status  = 0xe0002a0
+>> [ 1760.434784] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 1 status  = 0xe0002a0
+>> [ 1760.434791] hub 4-0:1.0: hub_suspend
+>> [ 1760.434796] usb usb4: bus auto-suspend, wakeup 1
+>> [ 1760.434807] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
+>> [ 1760.553734] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
+>> [ 1760.553751] hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
+>> [ 1760.574793] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
+>> [ 1760.574794] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
+>> [ 1760.575300] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
+>> [ 1760.575301] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
+> 
+> sarah@xanatos:~$ ./decode-port-status 0x2a0
+> port status = 0x0002a0
+>  bit  0     (CCS)          0x0, device not connected
+>  bit  1     (PED)          0x0, port disabled
+>  bit  3     (OCA)          0x0, no over-current condition
+>  bit  4     (PR)           0x0, port not in reset
+>  bits 8:5   (PLS)          0x5, link is in the RxDetect state
+>  bit  9     (PP)           0x1, port power on
+>  bits 13:10 (speed)        0x0, Undefined
+>  bits 15:14 (indicators)   0x0, port indicators are off
+>  bit  17    (CSC)          0x0, no connect change
+>  bit  18    (PEC)          0x0, no port enable/disable change
+>  bit  19    (WRC)          0x0, no warm port reset change
+>  bit  20    (OCC)          0x0, no over-current change
+>  bit  21    (PRC)          0x0, no port reset change
+>  bit  22    (PLC)          0x0, no port link change
+>  bit  23    (CEC)          0x0, no port config error change
+>  bit  25    (WCE)          0x0, wake on connect disabled
+>  bit  26    (WDE)          0x0, wake on disconnect disabled
+>  bit  27    (WOE)          0x0, wake on over-current enable disabled
+>  bit  30    (DR)           0x0, device is permanently attached
+> 
+> Nope, your host really isn't reporting there's a device connected
+> *at all*.  That's just broken hardware, and there's really nothing
+> software can do if the hardware isn't reporting connect events, even
+> with polling.
+> 
+> It also doesn't sound like the other TI redriver bug.  That bug only
+> effected USB 3.0 ports, and when lsusb was run, we would find the port
+> in Compliance Mode.  This is the host simply not reporting the USB 2.0
+> port connect at all.
+> 
+> Maybe if we completely disable PCI runtime PM for your host, we can work
+> around this bug?
 
-Ok, so the xHCI driver *is* getting a port status change event, and thus
-must have gotten a PME.  So the PCI layer is doing its job.
+I am not sure I understand what you mean. The proposed patch makes the
+situation worse. To be able to use the xHCI port for second and later times,
+I have to plugin a device and run 'lsusb -vv' to get the device detected
+before the "port" falls asleep. This is NOT necessary for the SandyBridge
+USB2.0 port under same conditions (well, regarding the disclaimer I made
+on the very top of this message, from the other thread where Ying found that
+I had laptop-mode-tools installed I realized that laptop-mode-tools
+fiddled with xHCI port while NOT with EHCI port. Please correct me if
+I was wrong. So, please re-consider your above conclusions. Most importantly,
+I don not understand the "This is the host simply not reporting the USB 2.0
+port connect at all.". Did you mean "USB 3.0 instead"?
 
-> [ 1760.434363] xhci_hcd 0000:0b:00.0: resume root hub
-> [ 1760.434367] xhci_hcd 0000:0b:00.0: handle_port_status: starting port polling.
-> [ 1760.434378] xhci_hcd 0000:0b:00.0: xhci_resume: starting port polling.
-> [ 1760.434383] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_resume: 0
-> [ 1760.434388] usb usb3: usb auto-resume
-> [ 1760.434407] hub 3-0:1.0: hub_resume
-> [ 1760.434439] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.434440] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
-> [ 1760.434464] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x202a0
-> [ 1760.434465] xhci_hcd 0000:0b:00.0: Get port status returned 0x10100
-> [ 1760.434492] xhci_hcd 0000:0b:00.0: clear port connect change, actual port 1 status  = 0x2a0
+Other than that, I am ready to file a bug report to Dell's Pro Support site
+but from my last experience they were quite clue-less regarding the broken
+"express card PresDet detection". ;-) I bet they could replace the TexasInstruments
+USB3.0 card which is a separate thing in the laptop. At least I could get
+the TI hardware which has hopefully fixed the redriver. ;-)
+How could I reproduce the issue in Win7 which are on the laptop? I mean,
+the change the PM handling to reproduce what I got on linux under laptop-mode-tools?
+;)
 
-Odd.  The port status shows there's no device connected, but there was a
-connect change:
+> 
+> Can you send me the output of `sudo lspci -vvv -n` again?
 
-sarah@xanatos:~$ ./decode-port-status 0x202a0
-port status = 0x0202a0
- bit  0     (CCS)          0x0, device not connected
- bit  1     (PED)          0x0, port disabled
- bit  3     (OCA)          0x0, no over-current condition
- bit  4     (PR)           0x0, port not in reset
- bits 8:5   (PLS)          0x5, link is in the RxDetect state
- bit  9     (PP)           0x1, port power on
- bits 13:10 (speed)        0x0, Undefined
- bits 15:14 (indicators)   0x0, port indicators are off
- bit  17    (CSC)          0x1, connect change
- bit  18    (PEC)          0x0, no port enable/disable change
- bit  19    (WRC)          0x0, no warm port reset change
- bit  20    (OCC)          0x0, no over-current change
- bit  21    (PRC)          0x0, no port reset change
- bit  22    (PLC)          0x0, no port link change
- bit  23    (CEC)          0x0, no port config error change
- bit  25    (WCE)          0x0, wake on connect disabled
- bit  26    (WDE)          0x0, wake on disconnect disabled
- bit  27    (WOE)          0x0, wake on over-current enable disabled
- bit  30    (DR)           0x0, device is permanently attached
+Will send after I reboot into a clean state and re-test the behavior while
+laptop-mode-tools are gone. Maybe the issue will remain anyways.
+So so far I tested effectively as under:
 
-RxDetect is the "I'm looking for a USB device" port state.
+echo auto > /sys/bus/pci/devices/0000:0b:00.0/power/control
 
-> [ 1760.434642] usb usb4: usb wakeup-resume
-> [ 1760.434646] usb usb4: usb auto-resume
-> [ 1760.434661] hub 4-0:1.0: hub_resume
-> [ 1760.434683] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.434684] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.434710] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
-> [ 1760.434711] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.434727] hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
-> [ 1760.434757] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 0 status  = 0xe0002a0
-> [ 1760.434784] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 1 status  = 0xe0002a0
-> [ 1760.434791] hub 4-0:1.0: hub_suspend
-> [ 1760.434796] usb usb4: bus auto-suspend, wakeup 1
-> [ 1760.434807] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.553734] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.553751] hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
-> [ 1760.574793] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.574794] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
-> [ 1760.575300] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
-> [ 1760.575301] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
+and without laptop-mode-tools trickery I should be now testing under
 
-sarah@xanatos:~$ ./decode-port-status 0x2a0
-port status = 0x0002a0
- bit  0     (CCS)          0x0, device not connected
- bit  1     (PED)          0x0, port disabled
- bit  3     (OCA)          0x0, no over-current condition
- bit  4     (PR)           0x0, port not in reset
- bits 8:5   (PLS)          0x5, link is in the RxDetect state
- bit  9     (PP)           0x1, port power on
- bits 13:10 (speed)        0x0, Undefined
- bits 15:14 (indicators)   0x0, port indicators are off
- bit  17    (CSC)          0x0, no connect change
- bit  18    (PEC)          0x0, no port enable/disable change
- bit  19    (WRC)          0x0, no warm port reset change
- bit  20    (OCC)          0x0, no over-current change
- bit  21    (PRC)          0x0, no port reset change
- bit  22    (PLC)          0x0, no port link change
- bit  23    (CEC)          0x0, no port config error change
- bit  25    (WCE)          0x0, wake on connect disabled
- bit  26    (WDE)          0x0, wake on disconnect disabled
- bit  27    (WOE)          0x0, wake on over-current enable disabled
- bit  30    (DR)           0x0, device is permanently attached
+echo on > /sys/bus/pci/devices/0000:0b:00.0/power/control
 
-Nope, your host really isn't reporting there's a device connected
-*at all*.  That's just broken hardware, and there's really nothing
-software can do if the hardware isn't reporting connect events, even
-with polling.
+, right?
 
-It also doesn't sound like the other TI redriver bug.  That bug only
-effected USB 3.0 ports, and when lsusb was run, we would find the port
-in Compliance Mode.  This is the host simply not reporting the USB 2.0
-port connect at all.
-
-Maybe if we completely disable PCI runtime PM for your host, we can work
-around this bug?
-
-Can you send me the output of `sudo lspci -vvv -n` again?
-
-Sarah Sharp
-
-> [ 1760.576768] hub 3-0:1.0: hub_suspend
-> [ 1760.576774] usb usb3: bus auto-suspend, wakeup 1
-> [ 1760.576789] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.576802] xhci_hcd 0000:0b:00.0: xhci_suspend: stopping port polling.
-> [ 1760.576817] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [ 1760.576851] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_suspend: 0
-> [ 1760.576938] xhci_hcd 0000:0b:00.0: PME# enabled
-> [ 1760.613874] xhci_hcd 0000:0b:00.0: PME# disabled
-> [ 1760.613884] xhci_hcd 0000:0b:00.0: enabling bus mastering
-> [ 1760.613895] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [ 1760.613914] xhci_hcd 0000:0b:00.0: xhci_resume: starting port polling.
-> [ 1760.613922] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.613924] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_resume: 0
-> [ 1760.613929] usb usb4: usb auto-resume
-> [ 1760.613945] hub 4-0:1.0: hub_resume
-> [ 1760.613981] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.613982] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.614010] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
-> [ 1760.614012] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.614038] usb usb3: usb wakeup-resume
-> [ 1760.614040] usb usb3: usb auto-resume
-> [ 1760.614059] hub 3-0:1.0: hub_resume
-> [ 1760.614080] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.614081] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
-> [ 1760.614104] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
-> [ 1760.614105] xhci_hcd 0000:0b:00.0: Get port status returned 0x100
-> [ 1760.614122] hub 4-0:1.0: state 7 ports 2 chg 0000 evt 0000
-> [ 1760.614126] hub 3-0:1.0: state 7 ports 2 chg 0000 evt 0000
-> [ 1760.614134] hub 3-0:1.0: hub_suspend
-> [ 1760.614139] usb usb3: bus auto-suspend, wakeup 1
-> [ 1760.614152] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.623621] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.646744] xhci_hcd 0000:0b:00.0: get port status, actual port 0 status  = 0x2a0
-> [ 1760.646746] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.647281] xhci_hcd 0000:0b:00.0: get port status, actual port 1 status  = 0x2a0
-> [ 1760.647283] xhci_hcd 0000:0b:00.0: Get port status returned 0x2a0
-> [ 1760.657965] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 0 status  = 0xe0002a0
-> [ 1760.657992] xhci_hcd 0000:0b:00.0: set port remote wake mask, actual port 1 status  = 0xe0002a0
-> [ 1760.658000] hub 4-0:1.0: hub_suspend
-> [ 1760.658004] usb usb4: bus auto-suspend, wakeup 1
-> [ 1760.658015] xhci_hcd 0000:0b:00.0: xhci_hub_status_data: stopping port polling.
-> [ 1760.658027] xhci_hcd 0000:0b:00.0: xhci_suspend: stopping port polling.
-> [ 1760.658042] xhci_hcd 0000:0b:00.0: // Setting command ring address to 0xd6007001
-> [ 1760.658074] xhci_hcd 0000:0b:00.0: hcd_pci_runtime_suspend: 0
-> [ 1760.658159] xhci_hcd 0000:0b:00.0: PME# enabled
-> [ 1760.683743] pcieport 0000:00:1c.4: PME# enabled
+Thank you,
+Martin
