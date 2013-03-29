@@ -1,30 +1,29 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH 9/9] ARM: omap3: cpuidle: enable time keeping
-Date: Fri, 29 Mar 2013 17:05:38 +0530
-Message-ID: <51557C8A.4060607@ti.com>
-References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org> <1364553095-25110-9-git-send-email-daniel.lezcano@linaro.org>
+From: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH 7/9] ARM: davinci: cpuidle: fix wrong enter function
+Date: Fri, 29 Mar 2013 17:06:05 +0530
+Message-ID: <51557CA5.3060208@ti.com>
+References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org> <1364553095-25110-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:45964 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753735Ab3C2LeI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 29 Mar 2013 07:34:08 -0400
-In-Reply-To: <1364553095-25110-9-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364553095-25110-7-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: rjw-KKrjLPT3xs0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, arnd@arndb.de, lenb@kernel.org, nsekhar@ti.com
 
 On Friday 29 March 2013 04:01 PM, Daniel Lezcano wrote:
-> The TIME_VALID flag is specified for the different states but
-> the time residency computation is not done, no tk flag, no time
-> computation in the idle function.
+> The davinci_enter_idle is called from the cpuidle with the
+> cpuidle_wrap_enter function. This one does the time compution
+> for entering and exiting the idle function and then we call
+> again cpuidle_wrap_enter for cpu_do_idle. This is wrong, we
+> are calling recursively cpuidle_wrap_enter for nothing and
+> furthermore reenabling the local irq.
 > 
-> Set the en_core_tk_irqen flag to activate it.
+> Remove this and replace it by the cpu_do_idle function.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
-
+Looks right to me.
+Acked-by: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
