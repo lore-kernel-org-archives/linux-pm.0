@@ -1,39 +1,69 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH 1/9] ARM: cpuidle: remove useless declaration
-Date: Fri, 29 Mar 2013 11:31:27 +0100
-Message-ID: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rjw-KKrjLPT3xs0@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 2/9] ARM: shmobile: pm: fix init sections
+Date: Fri, 29 Mar 2013 11:31:28 +0100
+Message-ID: <1364553095-25110-2-git-send-email-daniel.lezcano@linaro.org>
+References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f171.google.com ([74.125.82.171]:34792 "EHLO
+	mail-we0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167Ab3C2Kbm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Mar 2013 06:31:42 -0400
+Received: by mail-we0-f171.google.com with SMTP id d46so264883wer.16
+        for <linux-pm@vger.kernel.org>; Fri, 29 Mar 2013 03:31:41 -0700 (PDT)
+In-Reply-To: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, nsekhar@ti.com
 
-The noop functions code is not necessary because the header file is
-included in files which are compiled when CONFIG_CPU_IDLE is on.
+Add the __init section for the functions which are called
+at init time.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Daniel Lezcano <daniel.linaro.org>
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 ---
- arch/arm/include/asm/cpuidle.h |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+ arch/arm/mach-shmobile/cpuidle.c   |    4 ++--
+ arch/arm/mach-shmobile/pm-sh7372.c |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index 2fca60a..7367787 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -1,13 +1,8 @@
- #ifndef __ASM_ARM_CPUIDLE_H
- #define __ASM_ARM_CPUIDLE_H
+diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
+index 9e05026..068f9ca 100644
+--- a/arch/arm/mach-shmobile/cpuidle.c
++++ b/arch/arm/mach-shmobile/cpuidle.c
+@@ -36,12 +36,12 @@ static struct cpuidle_driver shmobile_cpuidle_default_driver = {
  
--#ifdef CONFIG_CPU_IDLE
- extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
--		struct cpuidle_driver *drv, int index);
--#else
--static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
--		struct cpuidle_driver *drv, int index) { return -ENODEV; }
--#endif
-+				    struct cpuidle_driver *drv, int index);
+ static struct cpuidle_driver *cpuidle_drv = &shmobile_cpuidle_default_driver;
  
- /* Common ARM WFI state */
- #define ARM_CPUIDLE_WFI_STATE_PWR(p) {\
+-void shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
++void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
+ {
+ 	cpuidle_drv = drv;
+ }
+ 
+-int shmobile_cpuidle_init(void)
++int __init shmobile_cpuidle_init(void)
+ {
+ 	struct cpuidle_device *dev = &shmobile_cpuidle_dev;
+ 
+diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
+index a0826a4..f6b14ca 100644
+--- a/arch/arm/mach-shmobile/pm-sh7372.c
++++ b/arch/arm/mach-shmobile/pm-sh7372.c
+@@ -450,12 +450,12 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
+ 	},
+ };
+ 
+-static void sh7372_cpuidle_init(void)
++static void __init sh7372_cpuidle_init(void)
+ {
+ 	shmobile_cpuidle_set_driver(&sh7372_cpuidle_driver);
+ }
+ #else
+-static void sh7372_cpuidle_init(void) {}
++static void __init sh7372_cpuidle_init(void) {}
+ #endif
+ 
+ #ifdef CONFIG_SUSPEND
 -- 
 1.7.9.5
+
