@@ -1,94 +1,45 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 5/9] ARM: tegra2: cpuidle: change driver initialization
-Date: Fri, 29 Mar 2013 11:31:31 +0100
-Message-ID: <1364553095-25110-5-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 8/9] intel: cpuidle: remove stop/start critical timings
+Date: Fri, 29 Mar 2013 11:31:34 +0100
+Message-ID: <1364553095-25110-8-git-send-email-daniel.lezcano@linaro.org>
 References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f169.google.com ([74.125.82.169]:60233 "EHLO
-	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753118Ab3C2Kbs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Mar 2013 06:31:48 -0400
-Received: by mail-we0-f169.google.com with SMTP id x43so271997wey.28
-        for <linux-pm@vger.kernel.org>; Fri, 29 Mar 2013 03:31:47 -0700 (PDT)
-In-Reply-To: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364553095-25110-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, nsekhar@ti.com
 
-Initialize the idle states directly in the driver structure.
+The start/stop_critical_timings are called from arch/x86/kernel/process.c
+in the cpu_idle loop function.
 
-That prevents extra structure declaration and memcpy at init time.
+Remove the ones in the cpuidle driver.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/mach-tegra/cpuidle-tegra20.c |   40 ++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+ drivers/idle/intel_idle.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index 825ced4..1ad1a67 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -43,28 +43,32 @@ static atomic_t abort_barrier;
- static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
- 				    struct cpuidle_driver *drv,
- 				    int index);
-+#define TEGRA20_MAX_STATES 2
-+#else
-+#define TEGRA20_MAX_STATES 1
- #endif
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 5d66750..c99c31e 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -339,7 +339,6 @@ static int intel_idle(struct cpuidle_device *dev,
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
  
--static struct cpuidle_state tegra_idle_states[] = {
--	[0] = ARM_CPUIDLE_WFI_STATE_PWR(600),
--#ifdef CONFIG_PM_SLEEP
--	[1] = {
--		.enter			= tegra20_idle_lp2_coupled,
--		.exit_latency		= 5000,
--		.target_residency	= 10000,
--		.power_usage		= 0,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--					  CPUIDLE_FLAG_COUPLED,
--		.name			= "powered-down",
--		.desc			= "CPU power gated",
--	},
--#endif
--};
+-	stop_critical_timings();
+ 	if (!need_resched()) {
+ 
+ 		__monitor((void *)&current_thread_info()->flags, 0, 0);
+@@ -348,8 +347,6 @@ static int intel_idle(struct cpuidle_device *dev,
+ 			__mwait(eax, ecx);
+ 	}
+ 
+-	start_critical_timings();
 -
- static struct cpuidle_driver tegra_idle_driver = {
- 	.name = "tegra_idle",
- 	.owner = THIS_MODULE,
- 	.en_core_tk_irqen = 1,
-+	.states = {
-+		ARM_CPUIDLE_WFI_STATE_PWR(600),
-+#ifdef CONFIG_PM_SLEEP
-+		{
-+			.enter            = tegra20_idle_lp2_coupled,
-+			.exit_latency     = 5000,
-+			.target_residency = 10000,
-+			.power_usage      = 0,
-+			.flags            = CPUIDLE_FLAG_TIME_VALID |
-+			CPUIDLE_FLAG_COUPLED,
-+			.name             = "powered-down",
-+			.desc             = "CPU power gated",
-+		},
-+#endif
-+	},
-+	.state_count = TEGRA20_MAX_STATES,
-+	.safe_state_index = 0,
- };
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
  
- static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
-@@ -226,10 +230,6 @@ int __init tegra20_cpuidle_init(void)
- 	tegra_tear_down_cpu = tegra20_tear_down_cpu;
- #endif
- 
--	drv->state_count = ARRAY_SIZE(tegra_idle_states);
--	memcpy(drv->states, tegra_idle_states,
--			drv->state_count * sizeof(drv->states[0]));
--
- 	ret = cpuidle_register_driver(&tegra_idle_driver);
- 	if (ret) {
- 		pr_err("CPUidle driver registration failed\n");
 -- 
 1.7.9.5
-
