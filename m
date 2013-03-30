@@ -1,56 +1,29 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: cpufreq-cpu0: No need to check cpu number in init()
-Date: Sat, 30 Mar 2013 18:26:29 +0530
-Message-ID: <3f6e2ec11acfe89c192735f357c830d968daa0fd.1364648083.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:57621 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756774Ab3C3M4j (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Mar 2013 08:56:39 -0400
-Received: by mail-pd0-f180.google.com with SMTP id g10so603127pdj.11
-        for <linux-pm@vger.kernel.org>; Sat, 30 Mar 2013 05:56:38 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+Date: Sat, 30 Mar 2013 19:22:28 +0530
+Message-ID: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Yuantian.Tang@freescale.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoli@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl, shawn.guo@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-It is not possible for init() to be called for any cpu other than cpu0. During
-bootup whatever cpu is used to boot system will be assigned as cpu0. And later
-on policy->cpu can only change if we hotunplug all cpus first and then hotplug
-them back in different order, which isn't possible (system requires atleast one
-cpu to be up always :)).
+On Fri, Mar 29, 2013 at 11:22 AM,  <Yuantian.Tang@freescale.com> wrote:
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
 
-Though I can see one situation where policy->cpu can be different then zero.
-- Hot-unplug cpu 0.
-- rmmod cpufreq-cpu0 module
-- insmod it back
-- hotplug cpu 0 again.
+> +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> +{
 
-Here, policy->cpu would be different. But the driver doesn't have any dependency
-on cpu0 as such. We don't mind which cpu of a system is policy->cpu and so this
-check is just not required.
+> +       for (i = 0; i < count; i++) {
+> +               table[i].index = i;
 
-Remove it.
+One more thing, you don't need to set index at all as you aren't using it.
+And cpufreq core never uses it.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-cpu0.c | 3 ---
- 1 file changed, 3 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 0f16267..1cab820 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -124,9 +124,6 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	int ret;
- 
--	if (policy->cpu != 0)
--		return -EINVAL;
--
- 	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
- 	if (ret) {
- 		pr_err("invalid frequency table: %d\n", ret);
--- 
-1.7.12.rc2.18.g61b472e
-
+> +               clk = of_clk_get(data->parent, i);
+> +               table[i].frequency = clk_get_rate(clk) / 1000;
+> +       }
