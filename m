@@ -1,213 +1,73 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of CPU load to early increase frequency
-Date: Fri, 29 Mar 2013 23:38:03 +0100
-Message-ID: <2826152.N3vY2cE3iV@vostro.rjw.lan>
-References: <51253715.7080600@semaphore.gr> <CAKohpokKCrvMYWQCRWccDJHbBNO7km5-vP=d3TwhDyU7HGX-YA@mail.gmail.com> <51561556.7020904@semaphore.gr>
+Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
+Date: Sat, 30 Mar 2013 03:17:09 +0100
+Message-ID: <2566297.LngxUqUYMZ@vostro.rjw.lan>
+References: <cover.1364398686.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51561556.7020904@semaphore.gr>
+In-Reply-To: <cover.1364398686.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, jacob.shin@amd.com
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, March 30, 2013 12:27:34 AM Stratos Karafotis wrote:
-> On 02/22/2013 03:56 AM, Viresh Kumar wrote:
-> > On 21 February 2013 23:09, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> >
-> >> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
+On Wednesday, March 27, 2013 09:28:56 PM Viresh Kumar wrote:
+> Hi Guys,
 > 
-> Hi Rafael,
+> All patches are pushed here for others to apply (you can apply from mail to):
+> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/governor-per-policy-v4
 > 
-> In case you are interested in this patch I rebased it to the latest linux-pm/bleeding-edge.
+> Currently, there can't be multiple instances of single governor_type. If we have
+> a multi-package system, where we have multiple instances of struct policy (per
+> package), we can't have multiple instances of same governor. i.e. We can't have
+> multiple instances of ondemand governor for multiple packages.
+> 
+> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
+> governor-name/. Which again reflects that there can be only one instance of a
+> governor_type in the system.
+> 
+> This is a bottleneck for multicluster system, where we want different packages
+> to use same governor type, but with different tunables.
+> 
+> This patchset is inclined towards fixing this issue. Now we will create
+> governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
+> struct policy alive at any moment. Platform drivers requiring this feature must
+> set have_governor_per_policy variable in their instance of cpufreq_driver. For
+> others the interface is kept same: cpu/cpufreq/<gov>.
+> 
+> 
+> This is V4 of this patchset. V3 is already applied by Rafael in his linux-next
+> branch. Jacob Shin reported some regressions with this patchset and when I went
+> into testing it with his configuration I found more issues then what he
+> reported.
+> 
+> To test these over linux-next you need to revert following first:
+> db9baec cpufreq: Get rid of "struct global_attr"
+> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
+> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
+> 
+> I have tested this for following now and believe there are no more regressions
+> with it:
+> - platform with a single policy instance or single group of cpu
+> - platform with multiple policies but which don't want per policy instance of
+>   governor
+> - platform with multiple policies and which want per policy instance of governor
+> 
+> I have tried with different settings and combinations of governors.
+> 
+> @Rafael: To simplify your life I have sorted out your branch and you can simply
+> pickup the complete branch that I have pushed.
 
-Thanks!
+I've applied these two patches and re-applied the queue on top of them.
 
-I have a backlog of cpufreq patches to sort out, so it may take some time till
-I get to this one.
+All is in my linux-next branch now.
 
 Thanks,
 Rafael
 
 
-> ------------------------------------------
-> Instead of checking only the absolute value of CPU load_freq to increase
-> frequency, we detect forthcoming CPU load rise and increase frequency
-> earlier.
-> 
-> Every sampling rate, we calculate the gradient of load_freq. If it is
-> too steep we assume that the load most probably will go over
-> up_threshold in next iteration(s) and we increase frequency immediately.
-> 
-> New tuners are introduced:
-> - early_demand: to enable this functionality (disabled by default).
-> - grad_up_threshold: over this gradient of load we will increase
-> frequency immediately.
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_governor.c |  1 +
->  drivers/cpufreq/cpufreq_governor.h |  3 ++
->  drivers/cpufreq/cpufreq_ondemand.c | 59 +++++++++++++++++++++++++++++++++++++-
->  3 files changed, 62 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 41e5e56..1d9abc4 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -328,6 +328,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		} else {
->  			od_dbs_info->rate_mult = 1;
->  			od_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-> +			od_dbs_info->prev_load_freq = 0;
->  			od_ops->powersave_bias_init_cpu(cpu);
->  		}
->  
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index 1f7de13..c33b37a 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -95,6 +95,7 @@ struct od_cpu_dbs_info_s {
->  	unsigned int freq_hi_jiffies;
->  	unsigned int rate_mult;
->  	unsigned int sample_type:1;
-> +	unsigned int prev_load_freq;
->  };
->  
->  struct cs_cpu_dbs_info_s {
-> @@ -113,6 +114,8 @@ struct od_dbs_tuners {
->  	unsigned int adj_up_threshold;
->  	unsigned int powersave_bias;
->  	unsigned int io_is_busy;
-> +	unsigned int grad_up_threshold;
-> +	unsigned int early_demand;
->  };
->  
->  struct cs_dbs_tuners {
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 29ed48a..6cd59a7 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -31,6 +31,7 @@
->  #define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
->  #define DEF_FREQUENCY_UP_THRESHOLD		(80)
->  #define DEF_SAMPLING_DOWN_FACTOR		(1)
-> +#define DEF_GRAD_UP_THRESHOLD			(50)
->  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
->  #define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
->  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
-> @@ -168,11 +169,26 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
->  	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
->  	struct dbs_data *dbs_data = policy->governor_data;
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> +	int boost_freq = 0;
->  
->  	dbs_info->freq_lo = 0;
->  
-> +	/*
-> +	 * Calculate the gradient of load_freq. If it is too steep we assume
-> +	 * that the load will go over up_threshold in next iteration(s) and
-> +	 * we increase the frequency immediately
-> +	 */
-> +	if (od_tuners->early_demand) {
-> +		if (load_freq > dbs_info->prev_load_freq &&
-> +		   (load_freq - dbs_info->prev_load_freq >
-> +		    od_tuners->grad_up_threshold * policy->cur))
-> +			boost_freq = 1;
-> +
-> +		dbs_info->prev_load_freq = load_freq;
-> +	}
-> +
->  	/* Check for frequency increase */
-> -	if (load_freq > od_tuners->up_threshold * policy->cur) {
-> +	if (boost_freq || load_freq > od_tuners->up_threshold * policy->cur) {
->  		/* If switching to max speed, apply sampling_down_factor */
->  		if (policy->cur < policy->max)
->  			dbs_info->rate_mult =
-> @@ -454,12 +470,47 @@ static ssize_t store_powersave_bias(struct cpufreq_policy *policy,
->  	return count;
->  }
->  
-> +static ssize_t store_grad_up_threshold(struct cpufreq_policy *policy,
-> +		const char *buf, size_t count)
-> +{
-> +	struct dbs_data *dbs_data = policy->governor_data;
-> +	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> +	unsigned int input;
-> +	int ret;
-> +	ret = sscanf(buf, "%u", &input);
-> +
-> +	if (ret != 1 || input > MAX_FREQUENCY_UP_THRESHOLD ||
-> +			input < MIN_FREQUENCY_UP_THRESHOLD) {
-> +		return -EINVAL;
-> +	}
-> +
-> +	od_tuners->grad_up_threshold = input;
-> +	return count;
-> +}
-> +
-> +static ssize_t store_early_demand(struct cpufreq_policy *policy,
-> +		const char *buf, size_t count)
-> +{
-> +	struct dbs_data *dbs_data = policy->governor_data;
-> +	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> +	unsigned int input;
-> +	int ret;
-> +
-> +	ret = sscanf(buf, "%u", &input);
-> +	if (ret != 1)
-> +		return -EINVAL;
-> +	od_tuners->early_demand = !!input;
-> +	return count;
-> +}
-> +
->  show_one(od, sampling_rate, sampling_rate);
->  show_one(od, io_is_busy, io_is_busy);
->  show_one(od, up_threshold, up_threshold);
->  show_one(od, sampling_down_factor, sampling_down_factor);
->  show_one(od, ignore_nice, ignore_nice);
->  show_one(od, powersave_bias, powersave_bias);
-> +show_one(od, grad_up_threshold, grad_up_threshold);
-> +show_one(od, early_demand, early_demand);
->  declare_show_sampling_rate_min();
->  
->  cpufreq_freq_attr_rw(sampling_rate);
-> @@ -468,6 +519,8 @@ cpufreq_freq_attr_rw(up_threshold);
->  cpufreq_freq_attr_rw(sampling_down_factor);
->  cpufreq_freq_attr_rw(ignore_nice);
->  cpufreq_freq_attr_rw(powersave_bias);
-> +cpufreq_freq_attr_rw(grad_up_threshold);
-> +cpufreq_freq_attr_rw(early_demand);
->  cpufreq_freq_attr_ro(sampling_rate_min);
->  
->  static struct attribute *dbs_attributes[] = {
-> @@ -478,6 +531,8 @@ static struct attribute *dbs_attributes[] = {
->  	&ignore_nice.attr,
->  	&powersave_bias.attr,
->  	&io_is_busy.attr,
-> +	&grad_up_threshold.attr,
-> +	&early_demand.attr,
->  	NULL
->  };
->  
-> @@ -525,9 +580,11 @@ static int od_init(struct dbs_data *dbs_data)
->  	}
->  
->  	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-> +	tuners->grad_up_threshold = DEF_GRAD_UP_THRESHOLD;
->  	tuners->ignore_nice = 0;
->  	tuners->powersave_bias = 0;
->  	tuners->io_is_busy = should_io_be_busy();
-> +	tuners->early_demand = 0;
->  
->  	dbs_data->tuners = tuners;
->  	mutex_init(&dbs_data->mutex);
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
