@@ -1,51 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
-Date: Sat, 30 Mar 2013 23:08:56 +0100
-Message-ID: <1656173.qmCdUDP7Pu@vostro.rjw.lan>
-References: <cover.1364398686.git.viresh.kumar@linaro.org> <2566297.LngxUqUYMZ@vostro.rjw.lan> <CAKohpon_C3LYe++cOb_9fgtz=DfQV_vWRNuH=UVXcKOO14GUhQ@mail.gmail.com>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: omap cpufreq driver in multi-platform kernels
+Date: Sat, 30 Mar 2013 22:21:40 +0000 (UTC)
+Message-ID: <alpine.DEB.2.00.1303302156180.6436@utopia.booyaka.com>
+References: <5152503C.2050503@gmail.com> <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com> <20130327133220.GA30868@kahuna> <5153207A.4050109@gmail.com> <20130327170221.GA32231@kahuna> <87d2uk91ai.fsf@linaro.org> <20130327175621.GA32693@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon_C3LYe++cOb_9fgtz=DfQV_vWRNuH=UVXcKOO14GUhQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, jacob.shin@amd.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from utopia.booyaka.com ([74.50.51.50]:35422 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951Ab3C3WVl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Mar 2013 18:21:41 -0400
+In-Reply-To: <20130327175621.GA32693@kahuna>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robherring2@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Saturday, March 30, 2013 09:06:37 AM Viresh Kumar wrote:
-> On 30 March 2013 07:47, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, March 27, 2013 09:28:56 PM Viresh Kumar wrote:
-> 
-> >> To test these over linux-next you need to revert following first:
-> >> db9baec cpufreq: Get rid of "struct global_attr"
-> >> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
-> >> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
-> 
-> > I've applied these two patches and re-applied the queue on top of them.
-> >
-> > All is in my linux-next branch now.
-> 
-> You were supposed to remove below patch too, which you missed :)
-> 
-> c7baa5e cpufreq: Get rid of "struct global_attr"
+Hi folks,
 
-OK, I'll remove it.
+On Wed, 27 Mar 2013, Nishanth Menon wrote:
 
-And by the way, I'm no longer amused with the mess going on in the cpufreq land.
+> On 10:53-20130327, Kevin Hilman wrote:
+> > Nishanth Menon <nm@ti.com> writes:
+> > > On 11:38-20130327, Rob Herring wrote:
+> > >> On 03/27/2013 08:32 AM, Nishanth Menon wrote:
+> > >> > On 02:23-20130327, Paul Walmsley wrote:
+> > >> >> On Tue, 26 Mar 2013, Rob Herring wrote:
+> > >> >>>
+> > >> >>> Converting the driver to a platform driver would be another option.
+> > 
+> > I think the platform_device conversion is the way to go.  I think you
+> > should do that instead of PATCH 8/8 of your OMAP conversion to the
+> > generic driver[1].
+>
+> Yep, thinking about this over lunch, I came to the same conclusion that
+> instead of checking on DT node existance, platform_device conversion
+> will solve both parts of the puzzle.
 
-Please send me *patches*.  I'm not interested in git pointers.
+Looked at this a little today.  I see that the platform_driver CPUFreq 
+driver approach was taken with several SoCs in mainline. Could someone 
+explain the theory behind making the CPUFreq drivers platform_drivers, 
+rather than just modules?
 
-Moreover, please send those patches in a way allowing me to figure out the
-ordering without looking into your git tree.
+The part that doesn't make sense to me is that the existing CPUFreq 
+drivers don't represent an actual hardware block.  Conceptually, they 
+aren't drivers for the CPU, nor are they drivers for a CPU frequency 
+scaling IP block.  One might as well bind a CPUIdle driver or a CPU 
+throttling thermal driver to the CPU device.
 
-If you have a number of outstanding cpufreq patches for me to apply, please
-create a patch series out of them and send it.
+Wouldn't it be best to just make them modules?
 
-Thanks,
-Rafael
+Also, noticed that the Highbank CPUFreq driver creates a virtual device in 
+its code.  That also doesn't seem right.  Isn't device creation better 
+left to DT/ACPI/whatever?
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+regards,
+
+- Paul
