@@ -1,56 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/9] ia64: cpufreq: move cpufreq driver to drivers/cpufreq
-Date: Sat, 30 Mar 2013 15:21:54 +0530
-Message-ID: <CAKohponax2iDZeA-WG_L2XVHU5GGJB2nSPWVoVxbZUoez1ZpDw@mail.gmail.com>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-	<afc636963b63becccf34d092203c53369bd1b735.1364229828.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <afc636963b63becccf34d092203c53369bd1b735.1364229828.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org
+From: Devendra Naga <devendra.aaru@gmail.com>
+Subject: [PATCH] thermal: fair_share: check for a valid thermal zone device
+Date: Sat, 30 Mar 2013 15:34:37 +0530
+Message-ID: <1364637877-28068-1-git-send-email-devendra.aaru@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f49.google.com ([209.85.210.49]:36267 "EHLO
+	mail-da0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753330Ab3C3KEx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Mar 2013 06:04:53 -0400
+Received: by mail-da0-f49.google.com with SMTP id t11so485490daj.22
+        for <linux-pm@vger.kernel.org>; Sat, 30 Mar 2013 03:04:52 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc: Devendra Naga <devendra.aaru@gmail.com>
 
-On 25 March 2013 22:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-> index 9a02f71..dd59848 100644
-> --- a/arch/ia64/Kconfig
-> +++ b/arch/ia64/Kconfig
-> @@ -591,9 +591,8 @@ source "kernel/power/Kconfig"
->  source "drivers/acpi/Kconfig"
->
->  if PM
-> -
-> -source "arch/ia64/kernel/cpufreq/Kconfig"
-> -
-> +menu "CPU Frequency scaling"
-> +source "drivers/cpufreq/Kconfig"
->  endif
->
->  endmenu
+to be on safe side check for a valid thermal zone device and fail if there
+is no thermal zone device.
 
-Fixup:
-
-commit 509bc3c30aff65045918f69f750d8845f004cc0a
-Author: Viresh Kumar <viresh.kumar@linaro.org>
-Date:   Sat Mar 30 15:20:41 2013 +0530
-
-    fixup! ia64: cpufreq:  move cpufreq driver to drivers/cpufreq
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
 ---
- arch/ia64/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/fair_share.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index dd59848..152b5f2 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -593,6 +593,7 @@ source "drivers/acpi/Kconfig"
- if PM
- menu "CPU Frequency scaling"
- source "drivers/cpufreq/Kconfig"
-+endmenu
- endif
+diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+index 792479f..4cd1d47 100644
+--- a/drivers/thermal/fair_share.c
++++ b/drivers/thermal/fair_share.c
+@@ -85,7 +85,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+ 	int i;
+ 	int cur_trip_level = get_trip_level(tz);
+ 
+-	if (!tz->tzp || !tz->tzp->tbp)
++	if (!tz || !tz->tzp || !tz->tzp->tbp)
+ 		return -EINVAL;
+ 
+ 	tzp = tz->tzp;
+-- 
+1.8.1.4
 
- endmenu
