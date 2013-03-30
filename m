@@ -1,40 +1,36 @@
-From: Devendra Naga <devendra.aaru@gmail.com>
-Subject: [PATCH] thermal: fair_share: check for a valid thermal zone device
-Date: Sat, 30 Mar 2013 15:34:37 +0530
-Message-ID: <1364637877-28068-1-git-send-email-devendra.aaru@gmail.com>
+From: "devendra.aaru" <devendra.aaru@gmail.com>
+Subject: potential NULL dereference at get_target_state in drivers/thermal/fair_share.c
+Date: Sat, 30 Mar 2013 15:35:37 +0530
+Message-ID: <CAHdPZaOiONMyRdMsYVEQYeMjNsMQb3LG8zfKC0GYJNRtfAVPpA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f49.google.com ([209.85.210.49]:36267 "EHLO
-	mail-da0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330Ab3C3KEx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Mar 2013 06:04:53 -0400
-Received: by mail-da0-f49.google.com with SMTP id t11so485490daj.22
-        for <linux-pm@vger.kernel.org>; Sat, 30 Mar 2013 03:04:52 -0700 (PDT)
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:53937 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754599Ab3C3KFi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 Mar 2013 06:05:38 -0400
+Received: by mail-wg0-f41.google.com with SMTP id y10so1003951wgg.4
+        for <linux-pm@vger.kernel.org>; Sat, 30 Mar 2013 03:05:37 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
-Cc: Devendra Naga <devendra.aaru@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Durgadoss R <durgadoss.r@intel.com>
 
-to be on safe side check for a valid thermal zone device and fail if there
-is no thermal zone device.
+Hello Zhang, Durgadoss,
 
-Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
----
- drivers/thermal/fair_share.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I have found a code that does this cdev->ops->get_max_state
 
-diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-index 792479f..4cd1d47 100644
---- a/drivers/thermal/fair_share.c
-+++ b/drivers/thermal/fair_share.c
-@@ -85,7 +85,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
- 	int i;
- 	int cur_trip_level = get_trip_level(tz);
- 
--	if (!tz->tzp || !tz->tzp->tbp)
-+	if (!tz || !tz->tzp || !tz->tzp->tbp)
- 		return -EINVAL;
- 
- 	tzp = tz->tzp;
--- 
-1.8.1.4
+static long get_target_state(struct thermal_zone_device *tz,
+                struct thermal_cooling_device *cdev, int weight, int level)
+{
+        unsigned long max_state;
 
+        cdev->ops->get_max_state(cdev, &max_state);
+
+        return (long)(weight * level * max_state) / (100 * tz->trips);
+}
+
+as the ops can be NULL the panic can occur. if not i have to check for
+a valid get_max_state pointer. so if the ops->get_max_state is NULL
+what should i suppose to be returning here?
+
+thanks a lot,
