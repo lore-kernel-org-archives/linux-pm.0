@@ -1,73 +1,30 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V4 0/2] Implement per policy instance of governor
-Date: Sat, 30 Mar 2013 03:17:09 +0100
-Message-ID: <2566297.LngxUqUYMZ@vostro.rjw.lan>
-References: <cover.1364398686.git.viresh.kumar@linaro.org>
+From: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 5/9] ARM: tegra2: cpuidle: change driver initialization
+Date: Sat, 30 Mar 2013 10:22:32 +0800
+Message-ID: <1364610152.2622.3.camel@jlo-ubuntu-64.nvidia.com>
+References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>
+	 <1364553095-25110-5-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <cover.1364398686.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, jacob.shin@amd.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364553095-25110-5-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "rjw-KKrjLPT3xs0@public.gmane.org" <rjw-KKrjLPT3xs0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org" <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, "rnayak-l0cyMroinI0@public.gmane.org" <rnayak-l0cyMroinI0@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org" <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "santosh.shilimkar-l0cyMroinI0@public.gmane.org" <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, "arnd-r2nGTMty4D4@public.gmane.org" <arnd-r2nGTMty4D4@public.gmane.org>, "lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "nsekhar-l0cyMroinI0@public.gmane.org" <nsekhar-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 27, 2013 09:28:56 PM Viresh Kumar wrote:
-> Hi Guys,
+On Fri, 2013-03-29 at 18:31 +0800, Daniel Lezcano wrote:
+> Initialize the idle states directly in the driver structure.
 > 
-> All patches are pushed here for others to apply (you can apply from mail to):
-> http://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=shortlog;h=refs/heads/governor-per-policy-v4
+> That prevents extra structure declaration and memcpy at init time.
 > 
-> Currently, there can't be multiple instances of single governor_type. If we have
-> a multi-package system, where we have multiple instances of struct policy (per
-> package), we can't have multiple instances of same governor. i.e. We can't have
-> multiple instances of ondemand governor for multiple packages.
-> 
-> Governors directory in sysfs is created at /sys/devices/system/cpu/cpufreq/
-> governor-name/. Which again reflects that there can be only one instance of a
-> governor_type in the system.
-> 
-> This is a bottleneck for multicluster system, where we want different packages
-> to use same governor type, but with different tunables.
-> 
-> This patchset is inclined towards fixing this issue. Now we will create
-> governors directory in cpu/cpu*/cpufreq/<gov> for platforms which have multiple
-> struct policy alive at any moment. Platform drivers requiring this feature must
-> set have_governor_per_policy variable in their instance of cpufreq_driver. For
-> others the interface is kept same: cpu/cpufreq/<gov>.
-> 
-> 
-> This is V4 of this patchset. V3 is already applied by Rafael in his linux-next
-> branch. Jacob Shin reported some regressions with this patchset and when I went
-> into testing it with his configuration I found more issues then what he
-> reported.
-> 
-> To test these over linux-next you need to revert following first:
-> db9baec cpufreq: Get rid of "struct global_attr"
-> 86bd6f0 cpufreq: governor: Implement per policy instances of governors
-> 8ae67b1 cpufreq: Add per policy governor-init/exit infrastructure
-> 
-> I have tested this for following now and believe there are no more regressions
-> with it:
-> - platform with a single policy instance or single group of cpu
-> - platform with multiple policies but which don't want per policy instance of
->   governor
-> - platform with multiple policies and which want per policy instance of governor
-> 
-> I have tried with different settings and combinations of governors.
-> 
-> @Rafael: To simplify your life I have sorted out your branch and you can simply
-> pickup the complete branch that I have pushed.
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-I've applied these two patches and re-applied the queue on top of them.
+Hi Daniel,
 
-All is in my linux-next branch now.
+Thank you.
 
-Thanks,
-Rafael
+Both the 5th and 6th patch,
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Reviewed-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
