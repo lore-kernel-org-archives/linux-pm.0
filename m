@@ -1,29 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
-Date: Sat, 30 Mar 2013 19:22:28 +0530
-Message-ID: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
-References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH] cpufreq: cpufreq-cpu0: Call CPUFREQ_POSTCHANGE notifier for failure cases too
+Date: Sat, 30 Mar 2013 19:48:07 +0530
+Message-ID: <cbaaebaef94c13405888bc150e12d62754fc266d.1364653063.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Yuantian.Tang@freescale.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org, Li Yang <leoli@freescale.com>
+To: rjw@sisk.pl, shawn.guo@linaro.org
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Mar 29, 2013 at 11:22 AM,  <Yuantian.Tang@freescale.com> wrote:
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+Currently we are simply returning from target() if we encounter some error after
+broadcasting CPUFREQ_PRECHANGE notifier. Which looks to be wrong as others might
+depend on POSTCHANGE notifier for their functioning.
 
-> +static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
-> +{
+So, better broadcast CPUFREQ_POSTCHANGE notifier for these failure cases too,
+but with old frequency.
 
-> +       for (i = 0; i < count; i++) {
-> +               table[i].index = i;
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-One more thing, you don't need to set index at all as you aren't using it.
-And cpufreq core never uses it.
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 1cab820..6561853 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -74,7 +74,9 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 		if (IS_ERR(opp)) {
+ 			rcu_read_unlock();
+ 			pr_err("failed to find OPP for %ld\n", freq_Hz);
+-			return PTR_ERR(opp);
++			freqs.new = freqs.old;
++			ret = PTR_ERR(opp);
++			goto post_notify;
+ 		}
+ 		volt = opp_get_voltage(opp);
+ 		rcu_read_unlock();
+@@ -92,7 +94,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 		if (ret) {
+ 			pr_err("failed to scale voltage up: %d\n", ret);
+ 			freqs.new = freqs.old;
+-			return ret;
++			goto post_notify;
+ 		}
+ 	}
+ 
+@@ -101,7 +103,8 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 		pr_err("failed to set clock rate: %d\n", ret);
+ 		if (cpu_reg)
+ 			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
+-		return ret;
++		freqs.new = freqs.old;
++		goto post_notify;
+ 	}
+ 
+ 	/* scaling down?  scale voltage after frequency */
+@@ -111,13 +114,13 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
+ 			pr_err("failed to scale voltage down: %d\n", ret);
+ 			clk_set_rate(cpu_clk, freqs.old * 1000);
+ 			freqs.new = freqs.old;
+-			return ret;
+ 		}
+ 	}
+ 
++post_notify:
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+-- 
+1.7.12.rc2.18.g61b472e
 
-> +               clk = of_clk_get(data->parent, i);
-> +               table[i].frequency = clk_get_rate(clk) / 1000;
-> +       }
