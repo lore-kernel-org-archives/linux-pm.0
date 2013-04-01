@@ -1,86 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspended DRAM bridge
-Date: Mon, 01 Apr 2013 23:41:22 +0200
-Message-ID: <1461283.gKidiaRK7T@vostro.rjw.lan>
-References: <5159BAC9.80700@fold.natur.cuni.cz> <35938665.ZFvDxnCU3l@vostro.rjw.lan> <5159F775.30805@fold.natur.cuni.cz>
+From: Paul Walmsley <paul@pwsan.com>
+Subject: Re: omap cpufreq driver in multi-platform kernels
+Date: Mon, 1 Apr 2013 21:58:10 +0000 (UTC)
+Message-ID: <alpine.DEB.2.00.1304012154460.21548@utopia.booyaka.com>
+References: <5152503C.2050503@gmail.com> <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com> <20130327133220.GA30868@kahuna> <5153207A.4050109@gmail.com> <20130327170221.GA32231@kahuna> <87d2uk91ai.fsf@linaro.org> <20130327175621.GA32693@kahuna>
+ <alpine.DEB.2.00.1303302156180.6436@utopia.booyaka.com> <5159E3FF.4050308@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49629 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758009Ab3DAVds (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Apr 2013 17:33:48 -0400
-In-Reply-To: <5159F775.30805@fold.natur.cuni.cz>
+Received: from utopia.booyaka.com ([74.50.51.50]:42752 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758524Ab3DAV6L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Apr 2013 17:58:11 -0400
+In-Reply-To: <5159E3FF.4050308@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Rob Herring <robherring2@gmail.com>
+Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Shawn Guo <shawn.guo@linaro.org>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-On Monday, April 01, 2013 11:09:09 PM Martin Mokrejs wrote:
-> Hi Rafael,
-> 
-> Rafael J. Wysocki wrote:
-> > On Monday, April 01, 2013 06:50:17 PM Martin Mokrejs wrote:
-> >> Hi Rafael,
-> >>   I have a simple question. Why seems my DRAM controller suspended?
+Hi
+
+On Mon, 1 Apr 2013, Rob Herring wrote:
+
+> On 03/30/2013 05:21 PM, Paul Walmsley wrote:
 > > 
-> > I suppose that runtime PM is disabled for that device and therefore
-> > runtime_status is meaningless.
-> 
-> But I really mean this pair of values:
-> 
-> /sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
-> 
-> /sys/bus/pci/devices/0000:00:00.0/power/control:auto
-> 
-> 
+> > Looked at this a little today.  I see that the platform_driver CPUFreq 
+> > driver approach was taken with several SoCs in mainline. Could someone 
+> > explain the theory behind making the CPUFreq drivers platform_drivers, 
+> > rather than just modules?
 > > 
-> > And really, that attribute is for *debugging* things by developers who know
-> > what they are looking for and not for random poking.
+> > The part that doesn't make sense to me is that the existing CPUFreq 
+> > drivers don't represent an actual hardware block.  Conceptually, they 
+> > aren't drivers for the CPU, nor are they drivers for a CPU frequency 
+> > scaling IP block.  One might as well bind a CPUIdle driver or a CPU 
+> > throttling thermal driver to the CPU device.
+> > 
+> > Wouldn't it be best to just make them modules?
 > 
-> Well, if me or you are to figure out why laptop-mode-tools make my life
-> even more miserable with hotplug issues the requests to provide
+> Then module auto loading doesn't work AFAIK. We will want them to be
+> built as modules in multi-platform kernels to reduce the kernel size,
+> but you don't want to just shift the problem to the OS to decide what
+> modules a given platform needs.
 > 
-> grep . /sys/bus/pci/devices/*/power/runtime_status
-> grep . /sys/bus/pci/devices/*/power/control
+> > Also, noticed that the Highbank CPUFreq driver creates a virtual device in 
+> > its code.  That also doesn't seem right.  Isn't device creation better 
+> > left to DT/ACPI/whatever?
 > 
-> provide crap. How can I infer something if I cannot trust the values?
+> DT describes the h/w. Creating DT nodes that match the cpufreq drivers
+> is not describing the h/w, but what Linux wants currently. Cpufreq
+> drivers either touch parts of multiple h/w blocks, a single shared h/w
+> block or don't touch h/w directly. The cpufreq-cpu0 driver is the last
+> case and does use DT. Perhaps we will get to the point that all
+> low-level interfaces are abstracted and we can have a single cpufreq driver.
+> 
+> I think platform drivers are the right way to go, but I'd like to come
+> up with a better way to instantiate the devices. The only idea I've come
+> up with is to do some sort of automatic device creation based machine
+> compatible property matching.
 
-The phrase "trust the values" above doesn't make sense.  You need to know what
-the values are supposed to *mean* in the first place, which you evidently
-don't.
-
-And what they mean is:
-
-/sys/devices/.../power/runtime_status - the current value of the device's
-runtime_status attribute at the moment.  [Notice that you need to know the code
-in question to know the meaning of that attribute.]  That field always has
-certain value, even though it may not make sense *to* *you*.
-
-/sys/devices/.../power/control - "on" means that user space doesn't allow the
-device to be runtime-suspended, while "auto" meanse that it *does* allow that
-to happen.  Nothing more or less than that.
-
-In particular, "auto" doesn't need to mean that the device will be
-runtime-suspended at all and the value of runtime_status requires
-interpretation.
-
-That's how it goes.
-
-Now, if you want me (or anyone else on this list) to help you, why don't you
-test 3.9-rc5 with the patch at https://patchwork.kernel.org/patch/2368081/
-applied and send *one* message describing *briefly* what *does* *not* *work*
-for you, without attaching any logs, lspci outputs and so on just yet?
-
-Then, we can try to address the problems you have in 3.9-rc5 and go back to the
-(still supported) 'stable' kernels from there.
-
-Does that sound like a workable plan?
-
-Rafael
+So sounds like DT is expected to be used in a Linux-specific way as a 
+/etc/modules replacement.  Why not create a Linux-specific DT node that 
+can be used to load any module?  Wouldn't that have the same effect, but 
+avoid creating false device nodes that don't exist in the hardware?
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+- Paul
