@@ -1,33 +1,29 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 1/2] USB / PM: Don't try to hide PM QoS flags from
- usb_port_device_release()
-Date: Sun, 31 Mar 2013 20:03:47 -0700
-Message-ID: <20130401030347.GC20857@kroah.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/2] USB PM and PM QoS fixes (Re: gpf in pm_qos_remote_wakeup_show)
+Date: Sun, 31 Mar 2013 20:29:20 -0700
+Message-ID: <CA+55aFwW7N-tVLg4NJBu3T_VUqCVHNi1MkF3cmvFq5ymn3ExRg@mail.gmail.com>
 References: <512F8980.4040809@oracle.com>
- <2829731.BFs3ri3Eud@vostro.rjw.lan>
- <1876128.a4gSDF7byc@vostro.rjw.lan>
- <1651223.ep7oZJM5CX@vostro.rjw.lan>
+	<51576A0C.5030907@oracle.com>
+	<2829731.BFs3ri3Eud@vostro.rjw.lan>
+	<1876128.a4gSDF7byc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1651223.ep7oZJM5CX@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Sasha Levin <sasha.levin@oracle.com>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f172.google.com ([209.85.220.172]:48447 "EHLO
+	mail-vc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755674Ab3DAD3V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Mar 2013 23:29:21 -0400
+In-Reply-To: <1876128.a4gSDF7byc@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sasha Levin <sasha.levin@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, USB list <linux-usb@vger.kernel.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>
 
-On Mon, Apr 01, 2013 at 12:57:21AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Remove the call to dev_pm_qos_hide_flags(), added by commit 6e30d7cb
-> "usb: Add driver/usb/core/(port.c,hub.h) files", from
-> usb_port_device_release(), because (1) it is completely unnecessary
-> (the flags have been removed already by the PM core during the
-> unregistration of the device object) and (2) it triggers a NULL
-> pointer dereference in sysfs_find_dirent() (dev->kobj->sd is NULL at
-> this point).
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sun, Mar 31, 2013 at 3:56 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> So, I have two patches (on top of the Linus' tree) that will follow shortly:
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Should I take these directly as patches, or expect them to show up in
+a pull soon (ie do you have or expect to have other things pending)?
+
+                    Linus
