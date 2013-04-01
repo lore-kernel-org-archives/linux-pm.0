@@ -1,47 +1,40 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: potential NULL dereference at get_target_state in
- drivers/thermal/fair_share.c
-Date: Mon, 01 Apr 2013 09:09:14 +0800
-Message-ID: <1364778554.2178.11.camel@rzhang1-mobl4>
-References: <CAHdPZaOiONMyRdMsYVEQYeMjNsMQb3LG8zfKC0GYJNRtfAVPpA@mail.gmail.com>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
+Date: Mon, 1 Apr 2013 02:16:55 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B122EF7@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:17597 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752830Ab3DABJR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 31 Mar 2013 21:09:17 -0400
-In-Reply-To: <CAHdPZaOiONMyRdMsYVEQYeMjNsMQb3LG8zfKC0GYJNRtfAVPpA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Li Yang-R58472 <r58472@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: "devendra.aaru" <devendra.aaru@gmail.com>
-Cc: linux-pm@vger.kernel.org, Durgadoss R <durgadoss.r@intel.com>
 
-On Sat, 2013-03-30 at 15:35 +0530, devendra.aaru wrote:
-> Hello Zhang, Durgadoss,
-> 
-> I have found a code that does this cdev->ops->get_max_state
-> 
-> static long get_target_state(struct thermal_zone_device *tz,
->                 struct thermal_cooling_device *cdev, int weight, int level)
-> {
->         unsigned long max_state;
-> 
->         cdev->ops->get_max_state(cdev, &max_state);
-> 
->         return (long)(weight * level * max_state) / (100 * tz->trips);
-> }
-> 
-> as the ops can be NULL the panic can occur. if not i have to check for
-> a valid get_max_state pointer. so if the ops->get_max_state is NULL
-> what should i suppose to be returning here?
-> 
-any cdev must be registered with valid ops and ops->get_max_state.
-if ops or ops->get_max_state is NULL, it suggests a big problem, like
-racing issue, etc, and IMO, a panic is more meaningful for us to debug
-the problem here.
-
-thanks,
-rui
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
+ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
+IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqM9TCMzDI1SAyMTo1Mg0KPiBU
+bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBjcHVmcmVx
+QHZnZXIua2VybmVsLm9yZzsgTGludXggUE0gbGlzdDsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5v
+emxhYnMub3JnOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzXSBjcHVm
+cmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBlNTAwbWMNCj4gU29Dcw0KPiAN
+Cj4gT24gRnJpLCBNYXIgMjksIDIwMTMgYXQgMTE6MjIgQU0sICA8WXVhbnRpYW4uVGFuZ0BmcmVl
+c2NhbGUuY29tPiB3cm90ZToNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BwYy1j
+b3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
+ZXEuYw0KPiANCj4gPiArc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0
+IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsNCj4gDQo+ID4gKyAgICAgICBmb3IgKGkgPSAwOyBp
+IDwgY291bnQ7IGkrKykgew0KPiA+ICsgICAgICAgICAgICAgICB0YWJsZVtpXS5pbmRleCA9IGk7
+DQo+IA0KPiBPbmUgbW9yZSB0aGluZywgeW91IGRvbid0IG5lZWQgdG8gc2V0IGluZGV4IGF0IGFs
+bCBhcyB5b3UgYXJlbid0IHVzaW5nIGl0Lg0KPiBBbmQgY3B1ZnJlcSBjb3JlIG5ldmVyIHVzZXMg
+aXQuDQo+IA0KT0ssIG5vIHByb2JsZW0uDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4gPiArICAg
+ICAgICAgICAgICAgY2xrID0gb2ZfY2xrX2dldChkYXRhLT5wYXJlbnQsIGkpOw0KPiA+ICsgICAg
+ICAgICAgICAgICB0YWJsZVtpXS5mcmVxdWVuY3kgPSBjbGtfZ2V0X3JhdGUoY2xrKSAvIDEwMDA7
+DQo+ID4gKyAgICAgICB9DQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBz
+ZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1l
+c3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0
+DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
 
