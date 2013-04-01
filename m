@@ -1,40 +1,39 @@
 From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v6 0/8] Reset controller API to reset IP modules on i.MX5
- and i.MX6
-Date: Mon, 1 Apr 2013 14:23:34 +0800
-Message-ID: <20130401062332.GB1693@S2101-09.ap.freescale.net>
-References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
+Subject: Re: [PATCH] cpufreq: cpufreq-cpu0: No need to check cpu number in
+ init()
+Date: Mon, 1 Apr 2013 14:44:20 +0800
+Message-ID: <20130401064418.GE1693@S2101-09.ap.freescale.net>
+References: <3f6e2ec11acfe89c192735f357c830d968daa0fd.1364648083.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe006.messaging.microsoft.com ([216.32.181.186]:33896
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757715Ab3DAGXZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Apr 2013 02:23:25 -0400
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <3f6e2ec11acfe89c192735f357c830d968daa0fd.1364648083.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Warren <swarren@wwwdotorg.org>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Sascha Hauer <s.hauer@pengutronix.de>, kernel@pengutronix.de, devicetree-discuss@lists.ozlabs.org, Mike Turquette <mturquette@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 
-On Thu, Mar 28, 2013 at 05:35:15PM +0100, Philipp Zabel wrote:
-> The system reset controller (SRC) on i.MX51, i.MX53, and i.MX6q controls
-> reset lines to the GPU, VPU, IPU, and OpenVG IP modules.
+On Sat, Mar 30, 2013 at 06:26:29PM +0530, Viresh Kumar wrote:
+> It is not possible for init() to be called for any cpu other than cpu0. During
+> bootup whatever cpu is used to boot system will be assigned as cpu0. And later
+> on policy->cpu can only change if we hotunplug all cpus first and then hotplug
+> them back in different order, which isn't possible (system requires atleast one
+> cpu to be up always :)).
 > 
-> The following patches add a simple API for devices to request being reset
-> by separate reset controller hardware and implements the reset signal
-> device tree binding proposed by Stephen Warren. Contrary to Tegra hardware,
-> the i.MX SRC contains self-deasserting reset registers, so I've included
-> both ops to manually assert/deassert a reset line, as well as a "reset"
-> operation that is supposed to assert the reset line and wait for it to
-> deassert.
+> Though I can see one situation where policy->cpu can be different then zero.
+> - Hot-unplug cpu 0.
+> - rmmod cpufreq-cpu0 module
+> - insmod it back
+> - hotplug cpu 0 again.
 > 
-> The i.MX SRC is enhanced to provide a reset controller and the IPU driver
-> is made to request being reset by calling the device_reset(&pdev->dev)
-> convenience wrapper during probing.
+> Here, policy->cpu would be different. But the driver doesn't have any dependency
+> on cpu0 as such. We don't mind which cpu of a system is policy->cpu and so this
+> check is just not required.
 > 
-> No changes since v5, I just reordered the series.
+> Remove it.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-All applied, thanks.
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
 
