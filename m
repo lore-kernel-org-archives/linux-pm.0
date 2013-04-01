@@ -1,38 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/9] cpufreq: cpu0: Fix mistake in Documentation example
-Date: Mon,  1 Apr 2013 18:27:41 +0530
-Message-ID: <b2577e655ec7b069dd6318193a1d7e94f0d1b4f7.1364820620.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/9] cpufreq: cpufreq-cpu0: No need to check cpu number in init()
+Date: Mon,  1 Apr 2013 18:27:43 +0530
+Message-ID: <e15015fc03add6737b546610c4bcd141f0e8ea7b.1364820620.git.viresh.kumar@linaro.org>
 References: <cover.1364820620.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <cover.1364820620.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1364820620.git.viresh.kumar@linaro.org>
 References: <cover.1364820620.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-"clock-latency" is incorrectly written as "transition-latency" in an example
-present in Documentation of cpufreq-cpu0. Fix it.
+It is not possible for init() to be called for any cpu other than cpu0. During
+bootup whatever cpu is used to boot system will be assigned as cpu0. And later
+on policy->cpu can only change if we hotunplug all cpus first and then hotplug
+them back in different order, which isn't possible (system requires atleast one
+cpu to be up always :)).
+
+Though I can see one situation where policy->cpu can be different then zero.
+- Hot-unplug cpu 0.
+- rmmod cpufreq-cpu0 module
+- insmod it back
+- hotplug cpu 0 again.
+
+Here, policy->cpu would be different. But the driver doesn't have any dependency
+on cpu0 as such. We don't mind which cpu of a system is policy->cpu and so this
+check is just not required.
+
+Remove it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Acked-by: Shawn Guo <shawn.guo@linaro.org>
 ---
- Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq-cpu0.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-index 4416ccc..051f764 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-cpu0.txt
-@@ -32,7 +32,7 @@ cpus {
- 			396000  950000
- 			198000  850000
- 		>;
--		transition-latency = <61036>; /* two CLK32 periods */
-+		clock-latency = <61036>; /* two CLK32 periods */
- 	};
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 6bb88af..4c5a4cf 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -130,9 +130,6 @@ static int cpu0_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int ret;
  
- 	cpu@1 {
+-	if (policy->cpu != 0)
+-		return -EINVAL;
+-
+ 	ret = cpufreq_frequency_table_cpuinfo(policy, freq_table);
+ 	if (ret) {
+ 		pr_err("invalid frequency table: %d\n", ret);
 -- 
 1.7.12.rc2.18.g61b472e
+
