@@ -1,40 +1,33 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH v3] cpufreq: Add cpufreq driver for Freescale e500mc SoCs
-Date: Mon, 1 Apr 2013 02:16:55 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B122EF7@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1364536350-23788-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 1/2] USB / PM: Don't try to hide PM QoS flags from
+ usb_port_device_release()
+Date: Sun, 31 Mar 2013 20:03:47 -0700
+Message-ID: <20130401030347.GC20857@kroah.com>
+References: <512F8980.4040809@oracle.com>
+ <2829731.BFs3ri3Eud@vostro.rjw.lan>
+ <1876128.a4gSDF7byc@vostro.rjw.lan>
+ <1651223.ep7oZJM5CX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=k2cchYWnX0AitOjCOfP_mC-=cm2sm4qhrGv0S9ywzP2g@mail.gmail.com>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1651223.ep7oZJM5CX@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Sasha Levin <sasha.levin@oracle.com>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
-ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
-IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqM9TCMzDI1SAyMTo1Mg0KPiBU
-bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpOyBjcHVmcmVx
-QHZnZXIua2VybmVsLm9yZzsgTGludXggUE0gbGlzdDsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5v
-emxhYnMub3JnOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYzXSBjcHVm
-cmVxOiBBZGQgY3B1ZnJlcSBkcml2ZXIgZm9yIEZyZWVzY2FsZSBlNTAwbWMNCj4gU29Dcw0KPiAN
-Cj4gT24gRnJpLCBNYXIgMjksIDIwMTMgYXQgMTE6MjIgQU0sICA8WXVhbnRpYW4uVGFuZ0BmcmVl
-c2NhbGUuY29tPiB3cm90ZToNCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3BwYy1j
-b3JlbmV0LWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVmcmVxL3BwYy1jb3JlbmV0LWNwdWZy
-ZXEuYw0KPiANCj4gPiArc3RhdGljIGludCBjb3JlbmV0X2NwdWZyZXFfY3B1X2luaXQoc3RydWN0
-IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpIHsNCj4gDQo+ID4gKyAgICAgICBmb3IgKGkgPSAwOyBp
-IDwgY291bnQ7IGkrKykgew0KPiA+ICsgICAgICAgICAgICAgICB0YWJsZVtpXS5pbmRleCA9IGk7
-DQo+IA0KPiBPbmUgbW9yZSB0aGluZywgeW91IGRvbid0IG5lZWQgdG8gc2V0IGluZGV4IGF0IGFs
-bCBhcyB5b3UgYXJlbid0IHVzaW5nIGl0Lg0KPiBBbmQgY3B1ZnJlcSBjb3JlIG5ldmVyIHVzZXMg
-aXQuDQo+IA0KT0ssIG5vIHByb2JsZW0uDQoNClRoYW5rcywNCll1YW50aWFuDQoNCj4gPiArICAg
-ICAgICAgICAgICAgY2xrID0gb2ZfY2xrX2dldChkYXRhLT5wYXJlbnQsIGkpOw0KPiA+ICsgICAg
-ICAgICAgICAgICB0YWJsZVtpXS5mcmVxdWVuY3kgPSBjbGtfZ2V0X3JhdGUoY2xrKSAvIDEwMDA7
-DQo+ID4gKyAgICAgICB9DQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBz
-ZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1l
-c3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0
-DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
+On Mon, Apr 01, 2013 at 12:57:21AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Remove the call to dev_pm_qos_hide_flags(), added by commit 6e30d7cb
+> "usb: Add driver/usb/core/(port.c,hub.h) files", from
+> usb_port_device_release(), because (1) it is completely unnecessary
+> (the flags have been removed already by the PM core during the
+> unregistration of the device object) and (2) it triggers a NULL
+> pointer dereference in sysfs_find_dirent() (dev->kobj->sd is NULL at
+> this point).
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
