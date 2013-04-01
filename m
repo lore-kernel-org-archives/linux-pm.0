@@ -1,111 +1,128 @@
-From: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Subject: Re: suspended DRAM bridge
-Date: Tue, 02 Apr 2013 00:03:22 +0200
-Message-ID: <515A042A.6010005@fold.natur.cuni.cz>
-References: <5159BAC9.80700@fold.natur.cuni.cz> <35938665.ZFvDxnCU3l@vostro.rjw.lan> <5159F775.30805@fold.natur.cuni.cz> <1461283.gKidiaRK7T@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/5] timer: move enum definition out of ifdef section
+Date: Tue, 02 Apr 2013 01:24:55 +0200
+Message-ID: <5116925.ZeoNyu5C6N@vostro.rjw.lan>
+References: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fold.natur.cuni.cz ([195.113.57.32]:46471 "HELO
-	fold.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758443Ab3DAWD0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Apr 2013 18:03:26 -0400
-In-Reply-To: <1461283.gKidiaRK7T@vostro.rjw.lan>
+Received: from hydra.sisk.pl ([212.160.235.94]:49675 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757146Ab3DAXRV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 1 Apr 2013 19:17:21 -0400
+In-Reply-To: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: tglx@linutronix.de, linus.walleij@linaro.org, kernel@pengutronix.de, santosh.shilimkar@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-Rafael J. Wysocki wrote:
-> On Monday, April 01, 2013 11:09:09 PM Martin Mokrejs wrote:
->> Hi Rafael,
->>
->> Rafael J. Wysocki wrote:
->>> On Monday, April 01, 2013 06:50:17 PM Martin Mokrejs wrote:
->>>> Hi Rafael,
->>>>   I have a simple question. Why seems my DRAM controller suspended?
->>>
->>> I suppose that runtime PM is disabled for that device and therefore
->>> runtime_status is meaningless.
->>
->> But I really mean this pair of values:
->>
->> /sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
->>
->> /sys/bus/pci/devices/0000:00:00.0/power/control:auto
->>
->>
->>>
->>> And really, that attribute is for *debugging* things by developers who know
->>> what they are looking for and not for random poking.
->>
->> Well, if me or you are to figure out why laptop-mode-tools make my life
->> even more miserable with hotplug issues the requests to provide
->>
->> grep . /sys/bus/pci/devices/*/power/runtime_status
->> grep . /sys/bus/pci/devices/*/power/control
->>
->> provide crap. How can I infer something if I cannot trust the values?
+Hi,
+
+All 5 in this series applied to linux-pm.git/linux-next.
+
+What am I supposed to do with patches [6-15/15] in your previous series?
+
+Are you going to resend the ones that have been ACKed?
+
+Rafael
+
+
+On Wednesday, March 27, 2013 11:22:09 AM Daniel Lezcano wrote:
+> The next patch will setup automatically the broadcast timer for
+> the different cpuidle driver when one idle state stops its timer.
+> This will be part of the generic code.
 > 
-> The phrase "trust the values" above doesn't make sense.  You need to know what
-> the values are supposed to *mean* in the first place, which you evidently
-> don't.
+> But some ARM boards, like s3c64xx, uses cpuidle but without the
+> CONFIG_GENERIC_CLOCKEVENTS_BUILD set. Hence the cpuidle framework
+> will be compiled with the code supposed to be generic, that is
+> with clockevents_notify and the different enum.
 > 
-> And what they mean is:
+> Also the function clockevents_notify is a noop macro, this is fine
+> except the usual code is:
 > 
-> /sys/devices/.../power/runtime_status - the current value of the device's
-> runtime_status attribute at the moment.  [Notice that you need to know the code
-> in question to know the meaning of that attribute.]  That field always has
-> certain value, even though it may not make sense *to* *you*.
-
-That's why I asked what 'suspended' means in case of a DRAM bridge (of the only
-bridge in a working laptop). ;-)
-
+> 	int cpu = smp_processor_id();
+> 	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
 > 
-> /sys/devices/.../power/control - "on" means that user space doesn't allow the
-> device to be runtime-suspended, while "auto" meanse that it *does* allow that
-> to happen.  Nothing more or less than that.
+> and that raises a warning for the variable cpu which is not used.
 > 
-> In particular, "auto" doesn't need to mean that the device will be
-> runtime-suspended at all and the value of runtime_status requires
-> interpretation.
-
-But your conclusion was that 
-/sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
-does NOT mean it is actually suspended otherwise the laptop would not work.
-
+> Move the clock_event_nofitiers enum definition out of the
+> CONFIG_GENERIC_CLOCKEVENTS_BUILD section to prevent a compilation
+> error when these are used in the code.
 > 
-> That's how it goes.
-
-I did realize that control:'auto' does NOT immediately mean runtime_status:'suspended',
-don't worry. I posted above a pair of values for 0000:00:00.0 and your explanation
-seemed that 
-/sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
-and
-/sys/bus/pci/devices/0000:00:00.0/power/control:auto
-
-does not say the truth (that the device is actually suspended).
-
-
-But if I sent you /sys/bus/pci/devices/0000:00:00.0/power/runtime_status:suspended
-then what for do you need /sys/bus/pci/devices/0000:00:00.0/power/control ?
-And even, if I sent /sys/bus/pci/devices/0000:00:00.0/power/control:auto.
-
+> Change the clockevents_notify macro to a static inline noop function
+> to prevent a compilation warning.
 > 
-> Now, if you want me (or anyone else on this list) to help you, why don't you
-> test 3.9-rc5 with the patch at https://patchwork.kernel.org/patch/2368081/
-> applied and send *one* message describing *briefly* what *does* *not* *work*
-> for you, without attaching any logs, lspci outputs and so on just yet?
-
-You just asked, ok, will do.
-
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  include/linux/clockchips.h |   32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
 > 
-> Then, we can try to address the problems you have in 3.9-rc5 and go back to the
-> (still supported) 'stable' kernels from there.
+> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+> index 6634652..f9fd937 100644
+> --- a/include/linux/clockchips.h
+> +++ b/include/linux/clockchips.h
+> @@ -8,6 +8,20 @@
+>  #ifndef _LINUX_CLOCKCHIPS_H
+>  #define _LINUX_CLOCKCHIPS_H
+>  
+> +/* Clock event notification values */
+> +enum clock_event_nofitiers {
+> +	CLOCK_EVT_NOTIFY_ADD,
+> +	CLOCK_EVT_NOTIFY_BROADCAST_ON,
+> +	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+> +	CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
+> +	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> +	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+> +	CLOCK_EVT_NOTIFY_SUSPEND,
+> +	CLOCK_EVT_NOTIFY_RESUME,
+> +	CLOCK_EVT_NOTIFY_CPU_DYING,
+> +	CLOCK_EVT_NOTIFY_CPU_DEAD,
+> +};
+> +
+>  #ifdef CONFIG_GENERIC_CLOCKEVENTS_BUILD
+>  
+>  #include <linux/clocksource.h>
+> @@ -26,20 +40,6 @@ enum clock_event_mode {
+>  	CLOCK_EVT_MODE_RESUME,
+>  };
+>  
+> -/* Clock event notification values */
+> -enum clock_event_nofitiers {
+> -	CLOCK_EVT_NOTIFY_ADD,
+> -	CLOCK_EVT_NOTIFY_BROADCAST_ON,
+> -	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+> -	CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
+> -	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+> -	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+> -	CLOCK_EVT_NOTIFY_SUSPEND,
+> -	CLOCK_EVT_NOTIFY_RESUME,
+> -	CLOCK_EVT_NOTIFY_CPU_DYING,
+> -	CLOCK_EVT_NOTIFY_CPU_DEAD,
+> -};
+> -
+>  /*
+>   * Clock event features
+>   */
+> @@ -173,7 +173,7 @@ extern int tick_receive_broadcast(void);
+>  #ifdef CONFIG_GENERIC_CLOCKEVENTS
+>  extern void clockevents_notify(unsigned long reason, void *arg);
+>  #else
+> -# define clockevents_notify(reason, arg) do { } while (0)
+> +static inline void clockevents_notify(unsigned long reason, void *arg) {}
+>  #endif
+>  
+>  #else /* CONFIG_GENERIC_CLOCKEVENTS_BUILD */
+> @@ -181,7 +181,7 @@ extern void clockevents_notify(unsigned long reason, void *arg);
+>  static inline void clockevents_suspend(void) {}
+>  static inline void clockevents_resume(void) {}
+>  
+> -#define clockevents_notify(reason, arg) do { } while (0)
+> +static inline void clockevents_notify(unsigned long reason, void *arg) {}
+>  
+>  #endif
+>  
 > 
-> Does that sound like a workable plan?
-
-Sure.
-
-Martin
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
