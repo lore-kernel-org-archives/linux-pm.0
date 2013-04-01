@@ -1,42 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 1/2] USB / PM: Don't try to hide PM QoS flags from usb_port_device_release()
-Date: Mon, 01 Apr 2013 00:57:21 +0200
-Message-ID: <1651223.ep7oZJM5CX@vostro.rjw.lan>
-References: <512F8980.4040809@oracle.com> <2829731.BFs3ri3Eud@vostro.rjw.lan> <1876128.a4gSDF7byc@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: fair_share: check for a valid thermal zone
+ device
+Date: Mon, 01 Apr 2013 09:05:01 +0800
+Message-ID: <1364778301.2178.7.camel@rzhang1-mobl4>
+References: <1364637877-28068-1-git-send-email-devendra.aaru@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1876128.a4gSDF7byc@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sasha Levin <sasha.levin@oracle.com>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sarah Sharp <sarah.a.sharp@linux.intel.com>, Lan Tianyu <tianyu.lan@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:17688 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756236Ab3DABFF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 31 Mar 2013 21:05:05 -0400
+In-Reply-To: <1364637877-28068-1-git-send-email-devendra.aaru@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Devendra Naga <devendra.aaru@gmail.com>
+Cc: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sat, 2013-03-30 at 15:34 +0530, Devendra Naga wrote:
+> to be on safe side check for a valid thermal zone device and fail if there
+> is no thermal zone device.
+> 
 
-Remove the call to dev_pm_qos_hide_flags(), added by commit 6e30d7cb
-"usb: Add driver/usb/core/(port.c,hub.h) files", from
-usb_port_device_release(), because (1) it is completely unnecessary
-(the flags have been removed already by the PM core during the
-unregistration of the device object) and (2) it triggers a NULL
-pointer dereference in sysfs_find_dirent() (dev->kobj->sd is NULL at
-this point).
+> Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+> ---
+>  drivers/thermal/fair_share.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> index 792479f..4cd1d47 100644
+> --- a/drivers/thermal/fair_share.c
+> +++ b/drivers/thermal/fair_share.c
+> @@ -85,7 +85,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+>  	int i;
+>  	int cur_trip_level = get_trip_level(tz);
+>  
+> -	if (!tz->tzp || !tz->tzp->tbp)
+> +	if (!tz || !tz->tzp || !tz->tzp->tbp)
+>  		return -EINVAL;
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/usb/core/port.c |    1 -
- 1 file changed, 1 deletion(-)
+when tz equals NULL, it suggests a really serious problem, and IMO, a
+NULL pointer dereference or Panic in this case is more meaningful.
 
-Index: linux-pm/drivers/usb/core/port.c
-===================================================================
---- linux-pm.orig/drivers/usb/core/port.c
-+++ linux-pm/drivers/usb/core/port.c
-@@ -67,7 +67,6 @@ static void usb_port_device_release(stru
- {
- 	struct usb_port *port_dev = to_usb_port(dev);
- 
--	dev_pm_qos_hide_flags(dev);
- 	kfree(port_dev);
- }
- 
+thanks,
+rui
+
