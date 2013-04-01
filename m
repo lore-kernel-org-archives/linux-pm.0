@@ -1,78 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 0/2] cpufreq: Introduce LAB cpufreq governor.
-Date: Mon, 1 Apr 2013 21:07:08 +0530
-Message-ID: <CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
-References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 00/14] staging: ti-soc-thermal: fixes and trending support
+Date: Mon, 1 Apr 2013 12:04:32 -0400
+Message-ID: <1364832286-17304-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f172.google.com ([209.85.128.172]:41351 "EHLO
-	mail-ve0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758667Ab3DAPhJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Apr 2013 11:37:09 -0400
-In-Reply-To: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, sw0312.kim@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Mon, Apr 1, 2013 at 1:54 PM, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
-> <<Purpose>>
->  One of the problem of ondemand is that it considers the most busy
-> cpu only while doesn't care how many cpu is in busy state at the
-> moment. This may results in unnecessary power consumption, and it'll
-> be critical for the system having limited power source.
->
->  To get the best energy efficiency, LAB governor considers not only
-> idle time but also the number of idle cpus. It primarily focuses on
-> supplying adequate performance to users within the limited resource.
-> It checks the number of idle cpus then controls the maximum frequency
-> dynamically. And it also applies different frequency increasing level
-> depends on that information. In simple terms the less the number of
-> busy cpus, the better performance will be given.
->  In addition, stable system's power consumption in the busy state can
-> be achieved also with using LAB governor. This will help to manage and
-> estimate power consumption in certain system.
+Hello Greg,
 
-Hi Jonghwa,
+Here is a new series of patches for ti-soc-thermal. It will contain
+a couple of minor fixes, but it has also support for trending,
+computed by HW history buffer.
 
-First of all, i should accept that i haven't got to the minute details
-about your
-patch until now but have done a broad review of it.
+These patches are also available here:
+git@gitorious.org:thermal-framework/thermal-framework.git thermal_work/omap/ti-soc-thermal-history-buffer
+https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/omap/ti-soc-thermal-history-buffer
 
-There are many things that i am concerned about:
-- I don't want an additional governor to be added to cpufreq unless there is a
-very very strong reason for it. See what happened to earlier attempts:
+Eduardo Valentin (4):
+  staging: ti-soc-thermal: return error in case power switch is not
+    supported
+  staging: ti-soc-thermal: expose ti_thermal_report_temperature
+  staging: ti-soc-thermal: report alert events on OMAP4 devices
+  staging: ti-soc-thermal: report alert events on OMAP5 devices
 
-https://lkml.org/lkml/2012/2/7/504
+J Keerthy (9):
+  staging: ti-soc-thermal: Add counter_delay_mask field to
+    temp_sensor_registers struct
+  staging: ti-soc-thermal: Initialise counter_delay field for OMAP5
+    sensors
+  staging: ti-soc-thermal: Introduce HAS_COUNTER_DELAY feature for
+    bandgap
+  staging: ti-soc-thermal: Enable COUNTER_DELAY feature for OMAP5
+  staging: ti-soc-thermal: Modify update_interval r/w functions to
+    incorporate the OMAP5 feature of COUNTER_DELAY.
+  staging: ti-soc-thermal: Introduce HAS_HISTORY_BUFFER feature for
+    bandgap
+  staging: ti-soc-thermal: Enable HISTORY_BUFFER Feature for OMAP5
+  staging: ti-soc-thermal:Introduce ti_bandgap_get_trend function for
+    OMAP5
+  staging: ti-soc-thermal: Add get_trend support
 
-But it doesn't mean you can't get it in. :)
+Nishanth Menon (1):
+  staging: ti-soc-thermal: remove kernel-doc warnings reported with -v
 
-- What the real logic behind your patchset: I haven't got it
-completely with your
-mails. So what you said is:
+ .../staging/ti-soc-thermal/omap4-thermal-data.c    |    2 +
+ .../staging/ti-soc-thermal/omap5-thermal-data.c    |    8 +-
+ drivers/staging/ti-soc-thermal/omap5xxx-bandgap.h  |    1 +
+ drivers/staging/ti-soc-thermal/ti-bandgap.c        |  298 +++++++++++++++++---
+ drivers/staging/ti-soc-thermal/ti-bandgap.h        |   11 +
+ drivers/staging/ti-soc-thermal/ti-thermal-common.c |   27 ++-
+ drivers/staging/ti-soc-thermal/ti-thermal.h        |    7 +
+ 7 files changed, 319 insertions(+), 35 deletions(-)
 
-  - The lesser the number of busy cpus: you want to run at higher freqs
-  - The more the number of busy cpus: you want to run at lower freqs
+-- 
+1.7.7.1.488.ge8e1c
 
-But the basic idea i had about this stuff was: The more the number of
-busy cpus, the more loaded the system is, otherwise scheduler wouldn't
-have used so many cpus and so there is need to run at higher frequency
-rather than a lower one. Which would save power in a sense.. Finish work
-early and let most of the cpus enter idle state as early as possible. But
-with your solution we would run at lower frequencies and so these cpus
-will take longer to get into idle state again. This will really kill
-lot of power.
-
-Think about it.
-
-- In case you need some sort of support on this use case, why replicate ondemand
-governor again by creating another governor. I have had some hard time removing
-the amount of redundancy inside governors and you are again going towards that
-direction. Modifying ondemand governor for this response would be a
-better option.
-
-- You haven't rebased of latest code from linux-next :)
-
---
-viresh
