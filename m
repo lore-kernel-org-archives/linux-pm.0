@@ -1,40 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspended DRAM bridge
-Date: Mon, 01 Apr 2013 22:56:34 +0200
-Message-ID: <35938665.ZFvDxnCU3l@vostro.rjw.lan>
-References: <5159BAC9.80700@fold.natur.cuni.cz>
+Subject: Re: [PATCH 0/9] CPUFreq Updates & Fixes for 3.10
+Date: Mon, 01 Apr 2013 23:05:43 +0200
+Message-ID: <1893788.IlN605kbG3@vostro.rjw.lan>
+References: <cover.1364820620.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49605 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757445Ab3DAUtA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Apr 2013 16:49:00 -0400
-In-Reply-To: <5159BAC9.80700@fold.natur.cuni.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1364820620.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, April 01, 2013 06:50:17 PM Martin Mokrejs wrote:
+On Monday, April 01, 2013 06:27:40 PM Viresh Kumar wrote:
 > Hi Rafael,
->   I have a simple question. Why seems my DRAM controller suspended?
+> 
+> These are fixes and updates that are sent and reviewed as separate patchsets
+> earlier. They are all now combined as part of a single patchset for you to apply
+> in your linux-next branch.
+> 
+> All have got reviews earlier and got fixups mailed and applied.
+> 
+> The remaining patches: "Move Cpufreq drivers to drivers/cpufreq" are awaiting
+> few more Acks before I send them to you.
+> 
+> I wanted to have another patch as part of this patchset, but I am awaiting Ack
+> for it:
+> tools: cpufreq: Fix cpufreq-info print messages for affected[related]_cpus
+> 
+> That can be applied separately once it receives an Ack.
+> 
+> Thanks
+> Viresh
+> 
+> Viresh Kumar (9):
+>   cpufreq: cpu0: Fix mistake in Documentation example
+>   cpufreq: Documentation: Fix cpufreq_frequency_table name
+>   cpufreq: cpufreq-cpu0: No need to check cpu number in init()
+>   cpufreq: cpufreq-cpu0: Call CPUFREQ_POSTCHANGE notifier for failure
+>     cases too
+>   cpufreq: Notify all policy->cpus in cpufreq_notify_transition()
+>   cpufreq: Don't check if cpu is online/offline for cpufreq callbacks
+>   cpufreq: drivers: don't check range of target freq in .target()
+>   cpufreq: drivers: Remove unnecessary assignments of policy-> members
+>   cpufreq: ARM big LITTLE: Add generic cpufreq driver and its DT glue
 
-I suppose that runtime PM is disabled for that device and therefore
-runtime_status is meaningless.
+Thanks!
 
-And really, that attribute is for *debugging* things by developers who know
-what they are looking for and not for random poking.
+The [5/9] seems to be missing.  Care to send?
 
-Besides, this is a host bridge, not a DRAM controller.
-
-> Does it make any sense in a laptop computer? How could the laptop work at all?
-
-I suppose it wouldn't work if the PCI host bridge were suspended.  At least
-it couldn't access memory and the PCI bus then.
-
-Thanks,
 Rafael
 
 
