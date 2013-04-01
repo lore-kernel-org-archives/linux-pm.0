@@ -1,69 +1,72 @@
-From: Paul Walmsley <paul@pwsan.com>
-Subject: Re: omap cpufreq driver in multi-platform kernels
-Date: Mon, 1 Apr 2013 19:27:03 +0000 (UTC)
-Message-ID: <alpine.DEB.2.00.1304011921240.21548@utopia.booyaka.com>
-References: <5152503C.2050503@gmail.com> <alpine.DEB.2.00.1303270212110.8161@utopia.booyaka.com> <20130327133220.GA30868@kahuna> <5153207A.4050109@gmail.com> <20130327170221.GA32231@kahuna> <87d2uk91ai.fsf@linaro.org> <20130327175621.GA32693@kahuna>
- <alpine.DEB.2.00.1303302156180.6436@utopia.booyaka.com> <5159C1FA.8090000@ti.com>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH V2 0/2] cpufreq: ondemand: add AMD specific powersave bias
+Date: Mon, 1 Apr 2013 14:38:39 -0500
+Message-ID: <20130401193839.GA15738@jshin-Toonie>
+References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
+ <CAKohpokHs3pxnYx3QraEYhxqGs8KdTiomPpcbEDNgChaZDWK4A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5159C1FA.8090000@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Mark Langsdorf <mark.langsdorf@calxeda.com>, Shawn Guo <shawn.guo@linaro.org>, Rob Herring <robherring2@gmail.com>, Tony Lindgren <tony@atomide.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from va3ehsobe010.messaging.microsoft.com ([216.32.180.30]:1455 "EHLO
+	va3outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758854Ab3DATit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Apr 2013 15:38:49 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpokHs3pxnYx3QraEYhxqGs8KdTiomPpcbEDNgChaZDWK4A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Eduardo,
-
-On Mon, 1 Apr 2013, Eduardo Valentin wrote:
-
-> On 30-03-2013 18:21, Paul Walmsley wrote:
-> > On Wed, 27 Mar 2013, Nishanth Menon wrote:
-> > 
-> > > On 10:53-20130327, Kevin Hilman wrote:
-> > > > Nishanth Menon <nm@ti.com> writes:
-> > > > > On 11:38-20130327, Rob Herring wrote:
-> > > > > > On 03/27/2013 08:32 AM, Nishanth Menon wrote:
-> > > > > > > On 02:23-20130327, Paul Walmsley wrote:
-> > > > > > > > On Tue, 26 Mar 2013, Rob Herring wrote:
-> > > > > > > > > 
-> > > > > > > > > Converting the driver to a platform driver would be another
-> > > > > > > > > option.
-> > > > 
-> > > > I think the platform_device conversion is the way to go.  I think you
-> > > > should do that instead of PATCH 8/8 of your OMAP conversion to the
-> > > > generic driver[1].
-> > > 
-> > > Yep, thinking about this over lunch, I came to the same conclusion that
-> > > instead of checking on DT node existance, platform_device conversion
-> > > will solve both parts of the puzzle.
-> > 
-> > Looked at this a little today.  I see that the platform_driver CPUFreq
-> > driver approach was taken with several SoCs in mainline. Could someone
-> > explain the theory behind making the CPUFreq drivers platform_drivers,
-> > rather than just modules?
-> > 
-> > The part that doesn't make sense to me is that the existing CPUFreq
-> > drivers don't represent an actual hardware block.  Conceptually, they
-> > aren't drivers for the CPU, nor are they drivers for a CPU frequency
-> > scaling IP block.  One might as well bind a CPUIdle driver or a CPU
-> > throttling thermal driver to the CPU device.
+On Fri, Mar 29, 2013 at 08:18:54AM +0530, Viresh Kumar wrote:
+> On 28 March 2013 23:54, Jacob Shin <jacob.shin@amd.com> wrote:
+> > This patchset adds AMD specific powersave bias function to the ondemand
+> > governor; which can be used to help ondemand governor make more power conscious
+> > frequency change decisions based on feedback from hardware (availble on AMD
+> > Family 16h and above).
+> >
+> > Hardware feedback tells software how "sensitive" to frequency changes the
+> > workloads are. CPU-bound workloads will be more sensitive -- they will
+> > perform better as frequency increases. Memory/IO-bound workloads will be less
+> > sensitive -- they will not necessarily perform better as frequnecy increases.
+> >
+> > This patchset was compared against ondemand governor without powersave bias
+> > and did not show any performance degradation on CPU-bound workloads such as
+> > kernbench and unixbench. While saving power on Memory-bound workloads such as
+> > stream.
+> >
+> > This applies to linux-pm's linux-next branch, on top of Viresh's 'Implement
+> > per policy instance of governor' V4 patchset:
+> >
+> > https://lkml.org/lkml/2013/3/27/348
+> >
+> > V2:
+> > * Added proper include files to amd_freq_sensitivity.c
+> > * Only register powersave_bias_target function pointer and not the entire
+> >   od_ops.
+> >
+> > Jacob Shin (2):
+> >   cpufreq: ondemand: allow custom powersave_bias_target function to be
+> >     registered
+> >   cpufreq: AMD "frequency sensitivity feedback" powersave bias for
+> >     ondemand governor
+> >
+> >  arch/x86/include/uapi/asm/msr-index.h  |    1 +
+> >  drivers/cpufreq/Kconfig.x86            |   10 +++
+> >  drivers/cpufreq/Makefile               |    1 +
+> >  drivers/cpufreq/amd_freq_sensitivity.c |  147 ++++++++++++++++++++++++++++++++
+> >  drivers/cpufreq/cpufreq_governor.h     |    3 +
+> >  drivers/cpufreq/cpufreq_ondemand.c     |   22 ++++-
+> >  6 files changed, 181 insertions(+), 3 deletions(-)
+> >  create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
 > 
-> I do agree with your point. On the other hand, I'd like to make a
-> clarification here.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> CPU throttling feature not really done as a driver. The feature is exported to
-> be used by policies built by other code. Check drivers/thermal/cpu_cooling.c.
-> 
-> Thermal drivers are in fact drivers, as they are bound to an actual hardware
-> block, a bandgap, a thermal sensor or a thermistor.
 
-That might be the case for some or all of what's in mainline for the 
-thermal framework.  But I've seen at least one Linux BSP for an ARM SoC 
-implement a thermal "cooling device" that isn't directly backed by any 
-hardware IP block.  
+Hi Rafael,
 
-Anyway, this is kind of a tangent.
+If this looks okay to you,
+please commit to linux-next when you get the chance.
 
+Thanks!
 
-- Paul
