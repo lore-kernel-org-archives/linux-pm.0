@@ -1,44 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/9] ia64: cpufreq: move cpufreq driver to drivers/cpufreq
-Date: Tue, 2 Apr 2013 06:19:35 +0530
-Message-ID: <CAKohpompxOpwi7fsy1m5UBxymR=dsVra3wvMcvziu7jd9iq8Ow@mail.gmail.com>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-	<afc636963b63becccf34d092203c53369bd1b735.1364229828.git.viresh.kumar@linaro.org>
-	<CAKohponax2iDZeA-WG_L2XVHU5GGJB2nSPWVoVxbZUoez1ZpDw@mail.gmail.com>
-	<CAKohpokkyQK+650aPLtdXJ0wHWupR=-bcTM_eCoZRDy3N47HJQ@mail.gmail.com>
-	<CA+8MBbLwxiPPvyKyQNEDSbNKthpAmooKVe7b+pg-NCETOkSLPA@mail.gmail.com>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v6 2/2] cpufreq: covert the cpufreq_data_lock to a
+	spinlock
+Date: Mon, 1 Apr 2013 19:56:18 -0500
+Message-ID: <20130402005618.GA12199@gulag1.americas.sgi.com>
+References: <5159C147.70800@sgi.com> <1364847069-2887-1-git-send-email-nzimmer@sgi.com> <1364847069-2887-3-git-send-email-nzimmer@sgi.com> <1479737.lmOfIzUVqh@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CA+8MBbLwxiPPvyKyQNEDSbNKthpAmooKVe7b+pg-NCETOkSLPA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1479737.lmOfIzUVqh@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Tony Luck <tony.luck@gmail.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2 April 2013 02:52, Tony Luck <tony.luck@gmail.com> wrote:
-> [Repost in plain text so the lists don't bounce it - curse you Gmail
-> for switching to HTML]
+On Mon, Apr 01, 2013 at 10:41:27PM +0200, Rafael J. Wysocki wrote:
+> On Monday, April 01, 2013 03:11:09 PM Nathan Zimmer wrote:
+> > This eliminates the rest of the contention found in __cpufreq_cpu_get.
+> > I am not seeing a way to use the rcu so we will have to make due with a
+> > rwlock for now.
+> > 
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> 
+> I've already applied this one.
+> 
+> Can you please check if the version in my tree is OK?
+> 
+> Rafael
+> 
 
-Just to let others know how you fixed it: Above the compose area there
-is a small button (or whatever you call it) which can show "Rich Formatting"
-or "plain text". Click on that so that it shows "Rich Formatting" all the time.
-
->> Any comments on this patch?
->
-> This part looks OK ... But is there a big finish later in the patch series where
-> you unify some/all of the cpufreq code across architectures?  By
-> itself just moving
-> bits from arch/ia64/kernel/cpufreq to drivers/cpufreq/ doesn't look to add
-> much value.
-
-There are people (including me) who tried various times to get things fixed/
-consolidated in cpufreq area. They mostly worked over cleaning up stuff inside
-drivers/cpufreq area rather then looking at complete kernel. To make that
-path easy, this patchset is the first step: "Bring all of them together"..
-
-After this more consolidation work may follow which will span all
-cpufreq drivers.
-One aspect would be to use cpufreq-cpu0 for whatever platform we can.
-
-For now, your Ack will work :)
+Nope, the previous version was too different, probably best to just replace it.
+> 
