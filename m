@@ -1,121 +1,34 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: [PATCH V2 1/2] cpufreq: ondemand: allow custom
- powersave_bias_target function to be registered
-Date: Tue, 2 Apr 2013 09:35:43 -0500
-Message-ID: <20130402143543.GB19613@jshin-Toonie>
-References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
- <1364495057-14939-2-git-send-email-jacob.shin@amd.com>
- <20130402124332.GA5488@pd.tnic>
+From: Nathan Zimmer <nzimmer@sgi.com>
+Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use
+	the rcu
+Date: Tue, 2 Apr 2013 09:55:36 -0500
+Message-ID: <20130402145536.GA31757@gulag1.americas.sgi.com>
+References: <5159C147.70800@sgi.com> <1364847069-2887-1-git-send-email-nzimmer@sgi.com> <1364847069-2887-2-git-send-email-nzimmer@sgi.com> <CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:30821 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932082Ab3DBOg0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Apr 2013 10:36:26 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20130402124332.GA5488@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nathan Zimmer <nzimmer@sgi.com>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Apr 02, 2013 at 02:43:32PM +0200, Borislav Petkov wrote:
-> On Thu, Mar 28, 2013 at 01:24:16PM -0500, Jacob Shin wrote:
-> > This allows for another [arch specific] driver to hook into existing
-> > powersave bias function of the ondemand governor. i.e. This allows AMD
-> > specific powersave bias function (in a separate AMD specific driver)
-> > to aid ondemand governor's frequency transition deicisions.
-> > 
-> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> > ---
-> >  drivers/cpufreq/cpufreq_governor.h |    3 +++
-> >  drivers/cpufreq/cpufreq_ondemand.c |   22 +++++++++++++++++++---
-> >  2 files changed, 22 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> > index c83cabf..4b6808f 100644
-> > --- a/drivers/cpufreq/cpufreq_governor.h
-> > +++ b/drivers/cpufreq/cpufreq_governor.h
-> > @@ -262,4 +262,7 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
-> >  		unsigned int sampling_rate);
-> >  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> >  		struct common_dbs_data *cdata, unsigned int event);
-> > +void od_register_powersave_bias_function(unsigned int (*f)
-> > +		(struct cpufreq_policy *, unsigned int, unsigned int));
-> > +void od_unregister_powersave_bias_function(void);
+On Tue, Apr 02, 2013 at 10:35:46AM +0530, Viresh Kumar wrote:
+> On 2 April 2013 01:41, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
 > 
-> We generally call those a "callback" or a "handler". I.e.,
-> od_register_powersave_bias_handler or something.
+> > +static struct cpufreq_driver __rcu *cpufreq_driver;
+> > +static DEFINE_SPINLOCK(cpufreq_driver_lock);
+> 
+> You really need this lock? This is only used in cpufreq_register_driver
+> and unregister_driver... And it doesn't protect other routines at all. And
+> because we are using rcu stuff now, probably this lock is just not required.
+> 
+The lock is unneeded if we expect register and unregister driver to not be
+called from muliple threads at once.  I didn't make that assumption.
 
-Okay, will change.
-
+> > +static DEFINE_SPINLOCK(cpufreq_data_lock);
 > 
-> >  #endif /* _CPUFREQ_GOVERNER_H */
-> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> > index 15e80ee..36f0798 100644
-> > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > @@ -40,6 +40,8 @@
-> >  
-> >  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
-> >  
-> > +static struct od_ops od_ops;
-> > +
-> >  #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
-> >  static struct cpufreq_governor cpufreq_gov_ondemand;
-> >  #endif
-> > @@ -145,7 +147,8 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
-> >  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> >  
-> >  	if (od_tuners->powersave_bias)
-> > -		freq = powersave_bias_target(p, freq, CPUFREQ_RELATION_H);
-> > +		freq = od_ops.powersave_bias_target(p, freq,
-> > +				CPUFREQ_RELATION_H);
-> >  	else if (p->cur == p->max)
-> >  		return;
-> >  
-> > @@ -206,8 +209,8 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
-> >  			__cpufreq_driver_target(policy, freq_next,
-> >  					CPUFREQ_RELATION_L);
-> >  		} else {
-> > -			int freq = powersave_bias_target(policy, freq_next,
-> > -					CPUFREQ_RELATION_L);
-> > +			int freq = od_ops.powersave_bias_target(policy,
-> > +					freq_next, CPUFREQ_RELATION_L);
-> >  			__cpufreq_driver_target(policy, freq,
-> >  					CPUFREQ_RELATION_L);
-> >  		}
-> > @@ -565,6 +568,19 @@ static struct common_dbs_data od_dbs_cdata = {
-> >  	.exit = od_exit,
-> >  };
-> >  
-> > +void od_register_powersave_bias_function(unsigned int (*f)
-> > +		(struct cpufreq_policy *, unsigned int, unsigned int))
-> > +{
-> > +	od_ops.powersave_bias_target = f;
-> > +}
-> > +EXPORT_SYMBOL_GPL(od_register_powersave_bias_function);
-> > +
-> > +void od_unregister_powersave_bias_function(void)
-> > +{
-> > +	od_ops.powersave_bias_target = powersave_bias_target;
-> 
-> This is very confusing: we have ->powersave_bias_target and the default
-> powersave_bias_target in the ondemand governor. Can we call the default
-> one generic_powersave_bias_target or default_* or whatever.
-
-Okay, will do.
-
-Thanks!
-
-> 
-> Thanks.
-> 
-> -- 
-> Regards/Gruss,
->     Boris.
-> 
-> Sent from a fat crate under my desk. Formatting is fine.
-> --
-> 
-
+> Only this one is required and it can be the rwlock which is already pushed
+> by rafael.
