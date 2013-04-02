@@ -1,262 +1,56 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: [PATCH V3 2/2] cpufreq: AMD "frequency sensitivity feedback" powersave bias for ondemand governor
-Date: Tue, 2 Apr 2013 13:11:44 -0500
-Message-ID: <1364926304-1799-3-git-send-email-jacob.shin@amd.com>
-References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
+From: Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Subject: Re: How to facilitate the cpuidle drivers to go to the same
+ direction (Was: Re: [PATCH 4/9] ARM: OMAP4: cpuidle: fix wrong driver
+ initialization)
+Date: Tue, 2 Apr 2013 11:37:54 -0700
+Message-ID: <20130402183754.GN25867@quad.lixom.net>
+References: <1364553095-25110-4-git-send-email-daniel.lezcano@linaro.org>
+ <51556F1D.5030208@ti.com>
+ <515570DF.5010608@linaro.org>
+ <CAP245DX+mYQhhJ-fU6PQdV6V-1P7PGUaOoNo+QdhRFaQR=wiEQ@mail.gmail.com>
+ <51558723.1050904@ti.com>
+ <CAP245DWAAgQ4co34mdkFgepC5kP9v0n6B954ej2X_y20LE9kSQ@mail.gmail.com>
+ <5155AEE7.106@ti.com>
+ <5155B85F.6030808@linaro.org>
+ <515923C7.8040408@linux.vnet.ibm.com>
+ <1364804988.32247.3.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db8lp0187.outbound.messaging.microsoft.com ([213.199.154.187]:50374
-	"EHLO db8outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757676Ab3DBS1F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Apr 2013 14:27:05 -0400
-In-Reply-To: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1364804988.32247.3.camel@pasglop>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Cc: Deepthi Dharwar <deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>, Amit Kucheria <amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lists linaro-kernel <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, Patch Tracking <patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Nori, Sekhar" <nsekhar-l0cyMroinI0@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Rajendra Nayak <rnayak-l0cyMroinI0@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, Lists LAKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, lethal-M7jkjyW5wf5g9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>, Jacob Shin <jacob.shin@amd.com>
 
-Future AMD processors, starting with Family 16h, can provide software
-with feedback on how the workload may respond to frequency change --
-memory-bound workloads will not benefit from higher frequency, where
-as compute-bound workloads will. This patch enables this "frequency
-sensitivity feedback" to aid the ondemand governor to make better
-frequency change decisions by hooking into the powersave bias.
+On Mon, Apr 01, 2013 at 10:29:48AM +0200, Benjamin Herrenschmidt wrote:
+> On Mon, 2013-04-01 at 11:35 +0530, Deepthi Dharwar wrote:
+> > But then, this means we get all the
+> > arch specific code out under drivers/cpuidle
+> > which can be very messy.
+> 
+> Not really no. We already have that here or there in other drivers,
+> it's not necessarily messy and the stuff like that can generally be made
+> reasonably self contained.
+> 
+> The main issue is that if I (powerpc) wants a fix in my
+> some_ppc_box_idle.c driver, especially if it needs to sync with other
+> arch changes, having to sync/ack with Rafael might complicate things a
+> bit (though not necessarily a lot).
+> 
+> I would probably keep the liberty of sending to Linus directly urgent
+> bug/regression fixes to individual cpuidle drivers relating to our archs
+> without waiting every now and then if for example Rafael is on
+> vacation :-)
 
-Signed-off-by: Jacob Shin <jacob.shin@amd.com>
----
- arch/x86/include/asm/cpufeature.h      |    1 +
- arch/x86/kernel/cpu/scattered.c        |    3 +-
- drivers/cpufreq/Kconfig.x86            |   17 ++++
- drivers/cpufreq/Makefile               |    1 +
- drivers/cpufreq/amd_freq_sensitivity.c |  150 ++++++++++++++++++++++++++++++++
- 5 files changed, 171 insertions(+), 1 deletion(-)
- create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
+Merging them all over sounds like a good idea to me as well.
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 93fe929..9e22520 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -182,6 +182,7 @@
- #define X86_FEATURE_PTS		(7*32+ 6) /* Intel Package Thermal Status */
- #define X86_FEATURE_DTHERM	(7*32+ 7) /* Digital Thermal Sensor */
- #define X86_FEATURE_HW_PSTATE	(7*32+ 8) /* AMD HW-PState */
-+#define X86_FEATURE_PROC_FEEDBACK (7*32+ 9) /* AMD ProcFeedbackInterface */
- 
- /* Virtualization flags: Linux defined, word 8 */
- #define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
-diff --git a/arch/x86/kernel/cpu/scattered.c b/arch/x86/kernel/cpu/scattered.c
-index ee8e9ab..d92b5da 100644
---- a/arch/x86/kernel/cpu/scattered.c
-+++ b/arch/x86/kernel/cpu/scattered.c
-@@ -39,8 +39,9 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
- 		{ X86_FEATURE_APERFMPERF,	CR_ECX, 0, 0x00000006, 0 },
- 		{ X86_FEATURE_EPB,		CR_ECX, 3, 0x00000006, 0 },
- 		{ X86_FEATURE_XSAVEOPT,		CR_EAX,	0, 0x0000000d, 1 },
--		{ X86_FEATURE_CPB,		CR_EDX, 9, 0x80000007, 0 },
- 		{ X86_FEATURE_HW_PSTATE,	CR_EDX, 7, 0x80000007, 0 },
-+		{ X86_FEATURE_CPB,		CR_EDX, 9, 0x80000007, 0 },
-+		{ X86_FEATURE_PROC_FEEDBACK,	CR_EDX,11, 0x80000007, 0 },
- 		{ X86_FEATURE_NPT,		CR_EDX, 0, 0x8000000a, 0 },
- 		{ X86_FEATURE_LBRV,		CR_EDX, 1, 0x8000000a, 0 },
- 		{ X86_FEATURE_SVML,		CR_EDX, 2, 0x8000000a, 0 },
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index d7dc0ed..018fced 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -129,6 +129,23 @@ config X86_POWERNOW_K8
- 
- 	  For details, take a look at <file:Documentation/cpu-freq/>.
- 
-+config X86_AMD_FREQ_SENSITIVITY
-+	tristate "AMD frequency sensitivity feedback powersave bias"
-+	depends on CPU_FREQ_GOV_ONDEMAND && X86_ACPI_CPUFREQ && CPU_SUP_AMD
-+	help
-+	  This adds AMD specific powersave bias function to the ondemand
-+	  governor; which can be used to help ondemand governor make more power
-+	  conscious frequency change decisions based on feedback from hardware
-+	  (availble on AMD Family 16h and above).
-+
-+	  Hardware feedback tells software how "sensitive" to frequency changes
-+	  the CPUs' workloads are. CPU-bound workloads will be more sensitive
-+	  -- they will perform better as frequency increases. Memory/IO-bound
-+	  workloads will be less sensitive -- they will not necessarily perform
-+	  better as frequnecy increases.
-+
-+	  If in doubt, say N.
-+
- config X86_GX_SUSPMOD
- 	tristate "Cyrix MediaGX/NatSemi Geode Suspend Modulation"
- 	depends on X86_32 && PCI
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 863fd18..01dfdaf 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_X86_SPEEDSTEP_CENTRINO)	+= speedstep-centrino.o
- obj-$(CONFIG_X86_P4_CLOCKMOD)		+= p4-clockmod.o
- obj-$(CONFIG_X86_CPUFREQ_NFORCE2)	+= cpufreq-nforce2.o
- obj-$(CONFIG_X86_INTEL_PSTATE)		+= intel_pstate.o
-+obj-$(CONFIG_X86_AMD_FREQ_SENSITIVITY)	+= amd_freq_sensitivity.o
- 
- ##################################################################################
- # ARM SoC drivers
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-new file mode 100644
-index 0000000..e3e62d2
---- /dev/null
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -0,0 +1,150 @@
-+/*
-+ * amd_freq_sensitivity.c: AMD frequency sensitivity feedback powersave bias
-+ *                         for the ondemand governor.
-+ *
-+ * Copyright (C) 2013 Advanced Micro Devices, Inc.
-+ *
-+ * Author: Jacob Shin <jacob.shin@amd.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/percpu-defs.h>
-+#include <linux/init.h>
-+#include <linux/mod_devicetable.h>
-+
-+#include <asm/msr.h>
-+#include <asm/cpufeature.h>
-+
-+#include "cpufreq_governor.h"
-+
-+#define MSR_AMD64_FREQ_SENSITIVITY_ACTUAL	0xc0010080
-+#define MSR_AMD64_FREQ_SENSITIVITY_REFERENCE	0xc0010081
-+#define CLASS_CODE_SHIFT			56
-+#define CLASS_CODE_CORE_FREQ_SENSITIVITY	0x01
-+#define POWERSAVE_BIAS_MAX			1000
-+
-+struct cpu_data_t {
-+	u64 actual;
-+	u64 reference;
-+	unsigned int freq_prev;
-+};
-+
-+static DEFINE_PER_CPU(struct cpu_data_t, cpu_data);
-+
-+static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
-+					      unsigned int freq_next,
-+					      unsigned int relation)
-+{
-+	int sensitivity;
-+	long d_actual, d_reference;
-+	struct msr actual, reference;
-+	struct cpu_data_t *data = &per_cpu(cpu_data, policy->cpu);
-+	struct dbs_data *od_data = policy->governor_data;
-+	struct od_dbs_tuners *od_tuners = od_data->tuners;
-+	struct od_cpu_dbs_info_s *od_info =
-+		od_data->cdata->get_cpu_dbs_info_s(policy->cpu);
-+
-+	if (!od_info->freq_table)
-+		return freq_next;
-+
-+	rdmsr_on_cpu(policy->cpu, MSR_AMD64_FREQ_SENSITIVITY_ACTUAL,
-+		&actual.l, &actual.h);
-+	rdmsr_on_cpu(policy->cpu, MSR_AMD64_FREQ_SENSITIVITY_REFERENCE,
-+		&reference.l, &reference.h);
-+	actual.h &= 0x00ffffff;
-+	reference.h &= 0x00ffffff;
-+
-+	/* counter wrapped around, so stay on current frequency */
-+	if (actual.q < data->actual || reference.q < data->reference) {
-+		freq_next = policy->cur;
-+		goto out;
-+	}
-+
-+	d_actual = actual.q - data->actual;
-+	d_reference = reference.q - data->reference;
-+
-+	/* divide by 0, so stay on current frequency as well */
-+	if (d_reference == 0) {
-+		freq_next = policy->cur;
-+		goto out;
-+	}
-+
-+	sensitivity = POWERSAVE_BIAS_MAX -
-+		(POWERSAVE_BIAS_MAX * (d_reference - d_actual) / d_reference);
-+
-+	clamp(sensitivity, 0, POWERSAVE_BIAS_MAX);
-+
-+	/* this workload is not CPU bound, so choose a lower freq */
-+	if (sensitivity < od_tuners->powersave_bias) {
-+		if (data->freq_prev == policy->cur)
-+			freq_next = policy->cur;
-+
-+		if (freq_next > policy->cur)
-+			freq_next = policy->cur;
-+		else if (freq_next < policy->cur)
-+			freq_next = policy->min;
-+		else {
-+			unsigned int index;
-+
-+			cpufreq_frequency_table_target(policy,
-+				od_info->freq_table, policy->cur - 1,
-+				CPUFREQ_RELATION_H, &index);
-+			freq_next = od_info->freq_table[index].frequency;
-+		}
-+
-+		data->freq_prev = freq_next;
-+	} else
-+		data->freq_prev = 0;
-+
-+out:
-+	data->actual = actual.q;
-+	data->reference = reference.q;
-+	return freq_next;
-+}
-+
-+static int __init amd_freq_sensitivity_init(void)
-+{
-+	int err;
-+	u64 val;
-+
-+	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-+		return -ENODEV;
-+
-+	if (!static_cpu_has(X86_FEATURE_PROC_FEEDBACK))
-+		return -ENODEV;
-+
-+	err = rdmsrl_safe(MSR_AMD64_FREQ_SENSITIVITY_ACTUAL, &val);
-+
-+	if (err)
-+		return -ENODEV;
-+
-+	if ((val >> CLASS_CODE_SHIFT) != CLASS_CODE_CORE_FREQ_SENSITIVITY)
-+		return -ENODEV;
-+
-+	od_register_powersave_bias_handler(amd_powersave_bias_target);
-+	return 0;
-+}
-+module_init(amd_freq_sensitivity_init);
-+
-+static void __exit amd_freq_sensitivity_exit(void)
-+{
-+	od_unregister_powersave_bias_handler();
-+}
-+module_exit(amd_freq_sensitivity_exit);
-+
-+static const struct x86_cpu_id amd_freq_sensitivity_ids[] = {
-+	X86_FEATURE_MATCH(X86_FEATURE_PROC_FEEDBACK),
-+	{}
-+};
-+MODULE_DEVICE_TABLE(x86cpu, amd_freq_sensitivity_ids);
-+
-+MODULE_AUTHOR("Jacob Shin <jacob.shin@amd.com>");
-+MODULE_DESCRIPTION("AMD frequency sensitivity feedback powersave bias for "
-+		"the ondemand governor.");
-+MODULE_LICENSE("GPL");
--- 
-1.7.9.5
+This isn't too different from how we handle other subsystems; as
+architecutre maintainer you just use your judgement on what needs an ack
+vs cc. Some smaller details about how the backend of the driver works
+on a platform is quite different from refactoring portions of the
+framework.
 
 
+-Olof
