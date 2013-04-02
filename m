@@ -1,52 +1,117 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] tools: cpufreq: Fix cpufreq-info print messages for affected[related]_cpus
-Date: Tue, 2 Apr 2013 18:38:56 +0530
-Message-ID: <CAKohpomMdBDHPVEeHsCf5o1ABmc4CboeXsZfvf2_E3deVTdVKg@mail.gmail.com>
-References: <8c5305cdbe0fb20730e6b28f79a71d36a472a817.1364567091.git.viresh.kumar@linaro.org>
-	<1637142.c6PaEcqfQ4@vostro.rjw.lan>
-	<3284856.AI9dTDMm0S@skinner.arch.suse.de>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/2 v2] thermal: rcar: tidyup registration failure case
+Date: Tue, 02 Apr 2013 21:17:27 +0800
+Message-ID: <1364908647.2190.39.camel@rzhang1-mobl4>
+References: <87620gqbbe.wl%kuninori.morimoto.gx@renesas.com>
+	 <874ng0qb9f.wl%kuninori.morimoto.gx@renesas.com>
+	 <1364200856.2465.48.camel@rzhang1-mobl4>
+	 <871ub3j9r3.wl%kuninori.morimoto.gx@renesas.com>
+	 <87sj3iiu5m.wl%kuninori.morimoto.gx@renesas.com>
+	 <87r4j2itio.wl%kuninori.morimoto.gx@renesas.com>
+	 <87ppymith5.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3284856.AI9dTDMm0S@skinner.arch.suse.de>
-Sender: cpufreq-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <87ppymith5.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Simon <horms@verge.net.au>, Magnus <magnus.damm@gmail.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-pm@vger.kernel.org, Linux-SH <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 April 2013 17:34, Thomas Renninger <trenn@suse.de> wrote:
-> On Friday, March 29, 2013 10:40:38 PM Rafael J. Wysocki wrote:
->> On Friday, March 29, 2013 07:56:39 PM Viresh Kumar wrote:
->> > -           printf(_("  CPUs which run at the same hardware frequency: "));
->> > +           printf(_("  All (Online & Offline) CPUs that run at the same hardware frequency: "));
-> This one is not worth changing IMO, in the end it tells the user more or less the same and
-> as this stuff is translated, I'd not change it.
+On Mon, 2013-03-25 at 23:08 -0700, Kuninori Morimoto wrote:
+> Current rcar_thermal driver didn't care about rcar_theraml_irq_disable()
+> when registration failure case on _probe(), and _remove().
+> And, it returns without unregistering thermal zone when
+> registration failure case on _probe().
+> This patch fixes these issue.
+> 
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-Okay.
+rebased on thermal -next and applied.
+please make a double check.
 
->> > -           printf(_("  CPUs which need to have their frequency coordinated by software: "));
->> > +           printf(_("  Online CPUs that run at the same hardware frequency: "));
->> >             while (cpus->next) {
-> I agree that this message is more developer than user oriented,
-> but cpupower is more for the end-user. So this message is not perfect.
+>From 1dc20828e674a781635286072bae909dc4e5c377 Mon Sep 17 00:00:00 2001
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Tue, 26 Mar 2013 06:08:10 +0000
+Subject: [PATCH] thermal: rcar: tidyup registration failure case
 
-> From what I can see of current code with patch aa77a52764a92216b61a6c8079b5c01937c046cd
-> all related_cpus users are gone and related-cpus does not have any meaning at all
-> anymore?
+Current rcar_thermal driver didn't care about rcar_theraml_irq_disable()
+when registration failure case on _probe(), and _remove().
+And, it returns without unregistering thermal zone when
+registration failure case on _probe().
+This patch fixes these issue.
 
-No, that's wrong. We need to set policy->cpus correctly (with online +
-offline cpus) and cpufreq core will take care of setting related_cpus
-with everything
-from policy->cpus and policy->cpus will be modified to keep only online cpus.
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/rcar_thermal.c |   23 ++++++++++++++++-------
+ 1 file changed, 16 insertions(+), 7 deletions(-)
 
-> I haven't gone through your latest changes, but will at least give them a test on
-> a AMD K10 multi socket machine which iirc where using related_cpus.
-> I try to catch up with latest cpufreq changes as well, but wow... no idea when this
-> will happen.
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 2cc5b61..4d6095b 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -419,12 +419,15 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 		priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+ 		if (!priv) {
+ 			dev_err(dev, "Could not allocate priv\n");
+-			return -ENOMEM;
++			ret = -ENOMEM;
++			goto error_unregister;
+ 		}
+ 
+ 		priv->base = devm_ioremap_resource(dev, res);
+-		if (IS_ERR(priv->base))
+-			return PTR_ERR(priv->base);
++		if (IS_ERR(priv->base)) {
++			ret = PTR_ERR(priv->base);
++			goto error_unregister;
++		}
+ 
+ 		priv->common = common;
+ 		priv->id = i;
+@@ -443,10 +446,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 			goto error_unregister;
+ 		}
+ 
+-		list_move_tail(&priv->list, &common->head);
+-
+ 		if (rcar_has_irq_support(priv))
+ 			rcar_thermal_irq_enable(priv);
++
++		list_move_tail(&priv->list, &common->head);
+ 	}
+ 
+ 	platform_set_drvdata(pdev, common);
+@@ -456,8 +459,11 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 	return 0;
+ 
+ error_unregister:
+-	rcar_thermal_for_each_priv(priv, common)
++	rcar_thermal_for_each_priv(priv, common) {
+ 		thermal_zone_device_unregister(priv->zone);
++		if (rcar_has_irq_support(priv))
++			rcar_thermal_irq_disable(priv);
++	}
+ 
+ 	return ret;
+ }
+@@ -467,8 +473,11 @@ static int rcar_thermal_remove(struct platform_device *pdev)
+ 	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
+ 	struct rcar_thermal_priv *priv;
+ 
+-	rcar_thermal_for_each_priv(priv, common)
++	rcar_thermal_for_each_priv(priv, common) {
+ 		thermal_zone_device_unregister(priv->zone);
++		if (rcar_has_irq_support(priv))
++			rcar_thermal_irq_disable(priv);
++	}
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-- 
+1.7.9.5
 
-:)
 
-> For now I would just leave it (cpupower messages/manpage) as it is, there is
-> nothing critical which must get fixed immediately.
 
-Yes its not really critical but it must be fixed to reflect the right stuff.
