@@ -1,39 +1,41 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V3 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Tue, 2 Apr 2013 23:01:24 +0200
-Message-ID: <20130402210124.GI17675@pd.tnic>
-References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
- <20130402192352.GC17675@pd.tnic>
- <20130402200337.GA17919@jshin-Toonie>
- <2932884.BNCEuERbdR@skinner.arch.suse.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of CPU load to early increase frequency
+Date: Wed, 03 Apr 2013 00:55:51 +0200
+Message-ID: <31773720.6bVyeZQsYt@vostro.rjw.lan>
+References: <51253715.7080600@semaphore.gr> <1544183.cq3KaqH8x3@vostro.rjw.lan> <515AFDFA.8090108@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2932884.BNCEuERbdR@skinner.arch.suse.de>
+In-Reply-To: <515AFDFA.8090108@semaphore.gr>
 Sender: cpufreq-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Jacob Shin <jacob.shin@amd.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 02, 2013 at 10:51:51PM +0200, Thomas Renninger wrote:
-> Yep, if you want anyone to make use of this, it should better get
-> embedded in more general, at least general ondemand code.
+On Tuesday, April 02, 2013 06:49:14 PM Stratos Karafotis wrote:
+> On 04/02/2013 04:50 PM, Rafael J. Wysocki wrote:
+> > Do you have any numbers indicating that this actually makes things better?
+> > 
+> > Rafael
+> 
+> No, I don't.
+> The expected behaviour after this patch is to "force" max frequency few sampling periods earlier.
+> The idea was to increase system responsiveness especially on 'small' embedded systems (phones for example).
+> 
+> Actually, I thought to provide some numbers but I had no idea how to measure this.
+> 
+> Would it be enough to provide the number of times that the CPU increases frequency 
+> because of early_demand versus the total number of increments?
 
-Yeah, it all sounds like we want to enable this by default on systems
-which support it. Maybe with an off-switch for people who want plain
-ondemand decisions.
+I think it would be better to check if your approach leads to a better behavior
+as far as energy savings are concerned.  If it actually is worse, then I don't
+see a reason to apply it.
 
-The remaining systems with ripped out powersave_bias would get plain
-ondemand governor decisions. Provided, of course, nobody uses
-powersave_bias and the functionality doesn't make any sense anyway.
+Thanks,
+Rafael
 
-Thanks.
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
