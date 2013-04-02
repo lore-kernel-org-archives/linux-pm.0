@@ -1,76 +1,98 @@
 From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH V2 2/2] cpufreq: AMD "frequency sensitivity feedback" powersave bias for ondemand governor
-Date: Tue, 02 Apr 2013 13:40:13 +0200
-Message-ID: <4985234.c9GFoGKqo8@skinner.arch.suse.de>
-References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com> <1364495057-14939-3-git-send-email-jacob.shin@amd.com>
+Subject: Re: [PATCH] tools: cpufreq: Fix cpufreq-info print messages for affected[related]_cpus
+Date: Tue, 02 Apr 2013 14:04:04 +0200
+Message-ID: <3284856.AI9dTDMm0S@skinner.arch.suse.de>
+References: <8c5305cdbe0fb20730e6b28f79a71d36a472a817.1364567091.git.viresh.kumar@linaro.org> <1637142.c6PaEcqfQ4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:37815 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759896Ab3DBLkP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Apr 2013 07:40:15 -0400
-In-Reply-To: <1364495057-14939-3-git-send-email-jacob.shin@amd.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1637142.c6PaEcqfQ4@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, March 28, 2013 01:24:17 PM Jacob Shin wrote:
-> Future AMD processors, starting with Family 16h, can provide software
-> with feedback on how the workload may respond to frequency change --
-> memory-bound workloads will not benefit from higher frequency, where
-> as compute-bound workloads will. This patch enables this "frequency
-> sensitivity feedback" to aid the ondemand governor to make better
-> frequency change decisions by hooking into the powersave bias.
-If I read this correctly, nothing changes even if the driver is loaded,
-unless user modifies:
-/sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
-is this correct?
+On Friday, March 29, 2013 10:40:38 PM Rafael J. Wysocki wrote:
+> On Friday, March 29, 2013 07:56:39 PM Viresh Kumar wrote:
+> > Earlier definitions of affected and related cpus were:
+> > Related_cpus: CPUs which run at the same hardware frequency.
+> > Affected_cpus: CPUs which need to have their frequency coordinated by
+> > software.
+> > 
+> > These definitions were very confusing as they don't communicate the real
+> > difference between them.
+> > 
+> > Following are the new definitions of these variables:
+> > Related_cpus: All (Online & Offline) CPUs that run at the same hardware
+> > frequency. Affected_cpus: Online CPUs that run at the same hardware
+> > frequency.
+> > 
+> > Above definitions are more consistent with latest cpufreq core code.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Thomas Renninger is maintaining cpupower nowadays (added to CC).  I won't
+> get any cpupower changes without his ACK.
+> 
+> Thanks,
+> Rafael
+> 
+> > ---
+> > 
+> >  tools/power/cpupower/utils/cpufreq-info.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/tools/power/cpupower/utils/cpufreq-info.c
+> > b/tools/power/cpupower/utils/cpufreq-info.c index 28953c9..a81d4ec 100644
+> > --- a/tools/power/cpupower/utils/cpufreq-info.c
+> > +++ b/tools/power/cpupower/utils/cpufreq-info.c
+> > @@ -247,7 +247,7 @@ static void debug_output_one(unsigned int cpu)
+> > 
+> >  	cpus = cpufreq_get_related_cpus(cpu);
+> >  	if (cpus) {
+> > 
+> > -		printf(_("  CPUs which run at the same hardware frequency: "));
+> > +		printf(_("  All (Online & Offline) CPUs that run at the same hardware frequency: "));
+This one is not worth changing IMO, in the end it tells the user more or less the same and
+as this stuff is translated, I'd not change it.
+> >  		while (cpus->next) {
+> >  		
+> >  			printf("%d ", cpus->cpu);
+> >  			cpus = cpus->next;
+> > 
+> > @@ -258,7 +258,7 @@ static void debug_output_one(unsigned int cpu)
+> > 
+> >  	cpus = cpufreq_get_affected_cpus(cpu);
+> >  	if (cpus) {
+> > 
+> > -		printf(_("  CPUs which need to have their frequency coordinated by software: "));
+> > +		printf(_("  Online CPUs that run at the same hardware frequency: "));
+> >  		while (cpus->next) {
+I agree that this message is more developer than user oriented,
+but cpupower is more for the end-user. So this message is not perfect.
 
-I wonder who should modify:
-/sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
-Even cpupower is not aware of this very specific tunable.
+Checking the manpage which should also get adjusted, I found another bug:
 
-Also, are you sure cpufreq subsystem will be the only user
-of this one?
-Or could cpuidle or others also make use of this somewhen in the future?
+       -a --related-cpus
+              Determines which CPUs run at the same hardware frequency.
 
-Then this could more be done like:
-drivers/cpufreq/mperf.c
-And scheduler, cpuidle, cpufreq or whatever could use this as well.
+       -a --affected-cpus
+              Determines  which  CPUs need to have their frequency coordinated
+              by software.
 
-Just some thinking:
-I wonder how one could check/verify that the right thing is done
-(by CPU and kernel). Ideally it would be nice to have the CPU register
-appended to a cpufreq or cpuidle event trace.
-But this very (AMD or X86 only?) specific data would not look nice there.
-An arch placeholder value would be needed or similar?
+It must be:
+       -r --related-cpus
 
-...
-> +}
-> +
-> +static int __init amd_freq_sensitivity_init(void)
-> +{
-> +	int i;
-> +	u32 eax, edx, dummy;
-> +
-> +	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
-> +		return -ENODEV;
-> +
-> +	cpuid(0x80000007, &eax, &dummy, &dummy, &edx);
-If this really should be a separate module:
-Does/will Intel have the same (feature/cpuid bit)?
-Anyway, this should get a general AMD or X86 CPU capability flag.
+>From what I can see of current code with patch aa77a52764a92216b61a6c8079b5c01937c046cd
+all related_cpus users are gone and related-cpus does not have any meaning at all
+anymore?
+I haven't gone through your latest changes, but will at least give them a test on
+a AMD K10 multi socket machine which iirc where using related_cpus.
+I try to catch up with latest cpufreq changes as well, but wow... no idea when this
+will happen.
 
-Then you can also autoload this driver similar to how it's done in acpi-
-cpufreq:
-static const struct x86_cpu_id acpi_cpufreq_ids[] = {
-        X86_FEATURE_MATCH(X86_FEATURE_ACPI),
-        X86_FEATURE_MATCH(X86_FEATURE_HW_PSTATE),
-        {}
-};
-MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
+For now I would just leave it (cpupower messages/manpage) as it is, there is
+nothing critical which must get fixed immediately.
 
-       Thomas
+      Thomas
