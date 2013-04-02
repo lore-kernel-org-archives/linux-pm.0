@@ -1,78 +1,37 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/1] thermal: add a warning for temperature emulation
- feature
-Date: Tue, 02 Apr 2013 21:33:53 +0800
-Message-ID: <1364909633.2190.42.camel@rzhang1-mobl4>
-References: <1364333914-32586-1-git-send-email-eduardo.valentin@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/9] CPUFreq Updates & Fixes for 3.10
+Date: Tue, 02 Apr 2013 15:45 +0200
+Message-ID: <1635284.x1nGYKZPTd@vostro.rjw.lan>
+References: <cover.1364820620.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:41031 "EHLO mga02.intel.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:50124 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760784Ab3DBNd6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Apr 2013 09:33:58 -0400
-In-Reply-To: <1364333914-32586-1-git-send-email-eduardo.valentin@ti.com>
+	id S1761349Ab3DBNhZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Apr 2013 09:37:25 -0400
+In-Reply-To: <cover.1364820620.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 2013-03-26 at 17:38 -0400, Eduardo Valentin wrote:
-> Because this feature is for debuging purposes, it is highly
-> recommended to do not enable this on production systems.
-> This patch adds warnings for system integrators, so that
-> people are aware of this potential security issue.
+On Monday, April 01, 2013 06:27:40 PM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  Documentation/thermal/sysfs-api.txt |    4 ++++
->  drivers/thermal/Kconfig             |    5 +++++
->  2 files changed, 9 insertions(+), 0 deletions(-)
+> These are fixes and updates that are sent and reviewed as separate patchsets
+> earlier. They are all now combined as part of a single patchset for you to apply
+> in your linux-next branch.
 > 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index a9abb84..0a7d6df 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -265,6 +265,10 @@ emul_temp
->  	Unit: millidegree Celsius
->  	WO, Optional
->  
-> +	  WARNING: Be careful while enabling this option on production systems,
-> +	  because userland can easily disable the thermal policy by simply
-> +	  flooding this sysfs node with low temperature values.
-> +
->  *****************************
->  * Cooling device attributes *
->  *****************************
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index a764f16..004e5f7 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -80,12 +80,17 @@ config CPU_THERMAL
->  
->  config THERMAL_EMULATION
->  	bool "Thermal emulation mode support"
-> +	default false
+> All have got reviews earlier and got fixups mailed and applied.
 
-we do not need this as any Kconfig option is set to 'n' by default.
+Whole series applied to linux-pm.git/bleeding-edge.
 
-Others seem okay to me and applied.
-
-thanks,
-rui
->  	help
->  	  Enable this option to make a emul_temp sysfs node in thermal zone
->  	  directory to support temperature emulation. With emulation sysfs node,
->  	  user can manually input temperature and test the different trip
->  	  threshold behaviour for simulation purpose.
->  
-> +	  WARNING: Be careful while enabling this option on production systems,
-> +	  because userland can easily disable the thermal policy by simply
-> +	  flooding this sysfs node with low temperature values.
-> +
->  config SPEAR_THERMAL
->  	bool "SPEAr thermal sensor driver"
->  	depends on PLAT_SPEAR
+Thanks,
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
