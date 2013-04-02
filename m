@@ -1,34 +1,63 @@
 From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: Re: [PATCH v6 1/2] cpufreq: split the cpufreq_driver_lock and use
-	the rcu
-Date: Tue, 2 Apr 2013 09:55:36 -0500
-Message-ID: <20130402145536.GA31757@gulag1.americas.sgi.com>
-References: <5159C147.70800@sgi.com> <1364847069-2887-1-git-send-email-nzimmer@sgi.com> <1364847069-2887-2-git-send-email-nzimmer@sgi.com> <CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
+Subject: Re: [PATCH v6 2/2] cpufreq: covert the cpufreq_data_lock to a
+	spinlock
+Date: Tue, 2 Apr 2013 09:58:14 -0500
+Message-ID: <20130402145813.GB31757@gulag1.americas.sgi.com>
+References: <5159C147.70800@sgi.com> <20130402005618.GA12199@gulag1.americas.sgi.com> <CAKohpo=MVrz5YFqDkLkHCh4uTDrCc6KhVO23kyMPz3MHqOztsA@mail.gmail.com> <8666267.Du60305uqJ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohpok7MR28trAddHRi5Lcg0bGBHBnOfJO=yu7SQqGnV5ZCRg@mail.gmail.com>
+In-Reply-To: <8666267.Du60305uqJ@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nathan Zimmer <nzimmer@sgi.com>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 02, 2013 at 10:35:46AM +0530, Viresh Kumar wrote:
-> On 2 April 2013 01:41, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+On Tue, Apr 02, 2013 at 02:48:07PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, April 02, 2013 10:34:21 AM Viresh Kumar wrote:
+> > On 2 April 2013 06:26, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > > On Mon, Apr 01, 2013 at 10:41:27PM +0200, Rafael J. Wysocki wrote:
+> > >> On Monday, April 01, 2013 03:11:09 PM Nathan Zimmer wrote:
+> > >> > This eliminates the rest of the contention found in __cpufreq_cpu_get.
+> > >> > I am not seeing a way to use the rcu so we will have to make due with a
+> > >> > rwlock for now.
+> > >> >
+> > >> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > >> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> > >> > Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
+> > >>
+> > >> I've already applied this one.
+> > >>
+> > >> Can you please check if the version in my tree is OK?
+> > >>
+> > >> Rafael
+> > >>
+> > >
+> > > Nope, the previous version was too different, probably best to just replace it.
+> > 
+> > Nathan,
+> > 
+> > First of all I should accept that I didn't had your last patch while
+> > reviewing this
+> > one earlier. Thanks Rafael.
+> > 
+> > Now, I believe the previous patch which Rafael has pushed was good and we
+> > can simply keep it. What you can do is, just add a patch over it (which would
+> > mostly be 1/2 of your patchset), that simply separates rcu stuff out of the lock
+> > and leave lock for cpufreq_data..
 > 
-> > +static struct cpufreq_driver __rcu *cpufreq_driver;
-> > +static DEFINE_SPINLOCK(cpufreq_driver_lock);
+> Yeah, I'd very much prefer that.
 > 
-> You really need this lock? This is only used in cpufreq_register_driver
-> and unregister_driver... And it doesn't protect other routines at all. And
-> because we are using rcu stuff now, probably this lock is just not required.
+> Nathan, I'm going to keep the rwlock patch unless it is demonstrably incorrect.
 > 
-The lock is unneeded if we expect register and unregister driver to not be
-called from muliple threads at once.  I didn't make that assumption.
+> Thanks,
+> Rafael
+> 
+> 
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
 
-> > +static DEFINE_SPINLOCK(cpufreq_data_lock);
-> 
-> Only this one is required and it can be the rwlock which is already pushed
-> by rafael.
+Ok I'll go that route.
+
