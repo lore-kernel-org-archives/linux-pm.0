@@ -1,127 +1,109 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/5] timer: move enum definition out of ifdef section
-Date: Tue, 02 Apr 2013 01:24:55 +0200
-Message-ID: <5116925.ZeoNyu5C6N@vostro.rjw.lan>
-References: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 1/2] PM / devfreq: Fix compiler warnings
+Date: Tue, 02 Apr 2013 02:16:38 +0200
+Message-ID: <2056616.R7YExf9Ucu@vostro.rjw.lan>
+References: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org> <1364392374-12236-2-git-send-email-rajagopal.venkat@linaro.org> <CAJ0PZbQNTLEmJQ_sRnByNCzwTKs84dGA7Ap2Yj5KRPefoeNsyw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49675 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:49710 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757146Ab3DAXRV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Apr 2013 19:17:21 -0400
-In-Reply-To: <1364379733-23725-1-git-send-email-daniel.lezcano@linaro.org>
+	id S1758759Ab3DBAJE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 1 Apr 2013 20:09:04 -0400
+In-Reply-To: <CAJ0PZbQNTLEmJQ_sRnByNCzwTKs84dGA7Ap2Yj5KRPefoeNsyw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: tglx@linutronix.de, linus.walleij@linaro.org, kernel@pengutronix.de, santosh.shilimkar@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, patches@linaro.org
+To: myungjoo.ham@gmail.com
+Cc: Rajagopal Venkat <rajagopal.venkat@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+On Thursday, March 28, 2013 03:03:12 PM MyungJoo Ham wrote:
+> On Wed, Mar 27, 2013 at 10:52 PM, Rajagopal Venkat
+> <rajagopal.venkat@linaro.org> wrote:
+> > Fix compiler warnings generated when devfreq is not enabled
+> > (CONFIG_PM_DEVFREQ is not set).
+> >
+> > Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+> 
+> Thanks!
+> 
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-All 5 in this series applied to linux-pm.git/linux-next.
+Applied.
 
-What am I supposed to do with patches [6-15/15] in your previous series?
-
-Are you going to resend the ones that have been ACKed?
-
+Thanks,
 Rafael
 
 
-On Wednesday, March 27, 2013 11:22:09 AM Daniel Lezcano wrote:
-> The next patch will setup automatically the broadcast timer for
-> the different cpuidle driver when one idle state stops its timer.
-> This will be part of the generic code.
+> > ---
+> >  include/linux/devfreq.h |   16 ++++++++--------
+> >  1 file changed, 8 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> > index 04ad61d..5f1ab92 100644
+> > --- a/include/linux/devfreq.h
+> > +++ b/include/linux/devfreq.h
+> > @@ -215,7 +215,7 @@ struct devfreq_simple_ondemand_data {
+> >  #endif
+> >
+> >  #else /* !CONFIG_PM_DEVFREQ */
+> > -static struct devfreq *devfreq_add_device(struct device *dev,
+> > +static inline struct devfreq *devfreq_add_device(struct device *dev,
+> >                                           struct devfreq_dev_profile *profile,
+> >                                           const char *governor_name,
+> >                                           void *data)
+> > @@ -223,34 +223,34 @@ static struct devfreq *devfreq_add_device(struct device *dev,
+> >         return NULL;
+> >  }
+> >
+> > -static int devfreq_remove_device(struct devfreq *devfreq)
+> > +static inline int devfreq_remove_device(struct devfreq *devfreq)
+> >  {
+> >         return 0;
+> >  }
+> >
+> > -static int devfreq_suspend_device(struct devfreq *devfreq)
+> > +static inline int devfreq_suspend_device(struct devfreq *devfreq)
+> >  {
+> >         return 0;
+> >  }
+> >
+> > -static int devfreq_resume_device(struct devfreq *devfreq)
+> > +static inline int devfreq_resume_device(struct devfreq *devfreq)
+> >  {
+> >         return 0;
+> >  }
+> >
+> > -static struct opp *devfreq_recommended_opp(struct device *dev,
+> > +static inline struct opp *devfreq_recommended_opp(struct device *dev,
+> >                                            unsigned long *freq, u32 flags)
+> >  {
+> > -       return -EINVAL;
+> > +       return ERR_PTR(-EINVAL);
+> >  }
+> >
+> > -static int devfreq_register_opp_notifier(struct device *dev,
+> > +static inline int devfreq_register_opp_notifier(struct device *dev,
+> >                                          struct devfreq *devfreq)
+> >  {
+> >         return -EINVAL;
+> >  }
+> >
+> > -static int devfreq_unregister_opp_notifier(struct device *dev,
+> > +static inline int devfreq_unregister_opp_notifier(struct device *dev,
+> >                                            struct devfreq *devfreq)
+> >  {
+> >         return -EINVAL;
+> > --
+> > 1.7.10.4
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> But some ARM boards, like s3c64xx, uses cpuidle but without the
-> CONFIG_GENERIC_CLOCKEVENTS_BUILD set. Hence the cpuidle framework
-> will be compiled with the code supposed to be generic, that is
-> with clockevents_notify and the different enum.
 > 
-> Also the function clockevents_notify is a noop macro, this is fine
-> except the usual code is:
 > 
-> 	int cpu = smp_processor_id();
-> 	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
-> 
-> and that raises a warning for the variable cpu which is not used.
-> 
-> Move the clock_event_nofitiers enum definition out of the
-> CONFIG_GENERIC_CLOCKEVENTS_BUILD section to prevent a compilation
-> error when these are used in the code.
-> 
-> Change the clockevents_notify macro to a static inline noop function
-> to prevent a compilation warning.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  include/linux/clockchips.h |   32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
-> 
-> diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-> index 6634652..f9fd937 100644
-> --- a/include/linux/clockchips.h
-> +++ b/include/linux/clockchips.h
-> @@ -8,6 +8,20 @@
->  #ifndef _LINUX_CLOCKCHIPS_H
->  #define _LINUX_CLOCKCHIPS_H
->  
-> +/* Clock event notification values */
-> +enum clock_event_nofitiers {
-> +	CLOCK_EVT_NOTIFY_ADD,
-> +	CLOCK_EVT_NOTIFY_BROADCAST_ON,
-> +	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
-> +	CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
-> +	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> +	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-> +	CLOCK_EVT_NOTIFY_SUSPEND,
-> +	CLOCK_EVT_NOTIFY_RESUME,
-> +	CLOCK_EVT_NOTIFY_CPU_DYING,
-> +	CLOCK_EVT_NOTIFY_CPU_DEAD,
-> +};
-> +
->  #ifdef CONFIG_GENERIC_CLOCKEVENTS_BUILD
->  
->  #include <linux/clocksource.h>
-> @@ -26,20 +40,6 @@ enum clock_event_mode {
->  	CLOCK_EVT_MODE_RESUME,
->  };
->  
-> -/* Clock event notification values */
-> -enum clock_event_nofitiers {
-> -	CLOCK_EVT_NOTIFY_ADD,
-> -	CLOCK_EVT_NOTIFY_BROADCAST_ON,
-> -	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
-> -	CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
-> -	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
-> -	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
-> -	CLOCK_EVT_NOTIFY_SUSPEND,
-> -	CLOCK_EVT_NOTIFY_RESUME,
-> -	CLOCK_EVT_NOTIFY_CPU_DYING,
-> -	CLOCK_EVT_NOTIFY_CPU_DEAD,
-> -};
-> -
->  /*
->   * Clock event features
->   */
-> @@ -173,7 +173,7 @@ extern int tick_receive_broadcast(void);
->  #ifdef CONFIG_GENERIC_CLOCKEVENTS
->  extern void clockevents_notify(unsigned long reason, void *arg);
->  #else
-> -# define clockevents_notify(reason, arg) do { } while (0)
-> +static inline void clockevents_notify(unsigned long reason, void *arg) {}
->  #endif
->  
->  #else /* CONFIG_GENERIC_CLOCKEVENTS_BUILD */
-> @@ -181,7 +181,7 @@ extern void clockevents_notify(unsigned long reason, void *arg);
->  static inline void clockevents_suspend(void) {}
->  static inline void clockevents_resume(void) {}
->  
-> -#define clockevents_notify(reason, arg) do { } while (0)
-> +static inline void clockevents_notify(unsigned long reason, void *arg) {}
->  
->  #endif
->  
 > 
 -- 
 I speak only for myself.
