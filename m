@@ -1,58 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v6 2/2] cpufreq: covert the cpufreq_data_lock to a spinlock
-Date: Tue, 02 Apr 2013 14:48:07 +0200
-Message-ID: <8666267.Du60305uqJ@vostro.rjw.lan>
-References: <5159C147.70800@sgi.com> <20130402005618.GA12199@gulag1.americas.sgi.com> <CAKohpo=MVrz5YFqDkLkHCh4uTDrCc6KhVO23kyMPz3MHqOztsA@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH V2 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target function to be registered
+Date: Tue, 2 Apr 2013 14:43:32 +0200
+Message-ID: <20130402124332.GA5488@pd.tnic>
+References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
+ <1364495057-14939-2-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=MVrz5YFqDkLkHCh4uTDrCc6KhVO23kyMPz3MHqOztsA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1364495057-14939-2-git-send-email-jacob.shin@amd.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, April 02, 2013 10:34:21 AM Viresh Kumar wrote:
-> On 2 April 2013 06:26, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> > On Mon, Apr 01, 2013 at 10:41:27PM +0200, Rafael J. Wysocki wrote:
-> >> On Monday, April 01, 2013 03:11:09 PM Nathan Zimmer wrote:
-> >> > This eliminates the rest of the contention found in __cpufreq_cpu_get.
-> >> > I am not seeing a way to use the rcu so we will have to make due with a
-> >> > rwlock for now.
-> >> >
-> >> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> >> > Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >> > Signed-off-by: Nathan Zimmer <nzimmer@sgi.com>
-> >>
-> >> I've already applied this one.
-> >>
-> >> Can you please check if the version in my tree is OK?
-> >>
-> >> Rafael
-> >>
-> >
-> > Nope, the previous version was too different, probably best to just replace it.
+On Thu, Mar 28, 2013 at 01:24:16PM -0500, Jacob Shin wrote:
+> This allows for another [arch specific] driver to hook into existing
+> powersave bias function of the ondemand governor. i.e. This allows AMD
+> specific powersave bias function (in a separate AMD specific driver)
+> to aid ondemand governor's frequency transition deicisions.
 > 
-> Nathan,
+> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+> ---
+>  drivers/cpufreq/cpufreq_governor.h |    3 +++
+>  drivers/cpufreq/cpufreq_ondemand.c |   22 +++++++++++++++++++---
+>  2 files changed, 22 insertions(+), 3 deletions(-)
 > 
-> First of all I should accept that I didn't had your last patch while
-> reviewing this
-> one earlier. Thanks Rafael.
-> 
-> Now, I believe the previous patch which Rafael has pushed was good and we
-> can simply keep it. What you can do is, just add a patch over it (which would
-> mostly be 1/2 of your patchset), that simply separates rcu stuff out of the lock
-> and leave lock for cpufreq_data..
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index c83cabf..4b6808f 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -262,4 +262,7 @@ bool need_load_eval(struct cpu_dbs_common_info *cdbs,
+>  		unsigned int sampling_rate);
+>  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  		struct common_dbs_data *cdata, unsigned int event);
+> +void od_register_powersave_bias_function(unsigned int (*f)
+> +		(struct cpufreq_policy *, unsigned int, unsigned int));
+> +void od_unregister_powersave_bias_function(void);
 
-Yeah, I'd very much prefer that.
+We generally call those a "callback" or a "handler". I.e.,
+od_register_powersave_bias_handler or something.
 
-Nathan, I'm going to keep the rwlock patch unless it is demonstrably incorrect.
+>  #endif /* _CPUFREQ_GOVERNER_H */
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 15e80ee..36f0798 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -40,6 +40,8 @@
+>  
+>  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
+>  
+> +static struct od_ops od_ops;
+> +
+>  #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
+>  static struct cpufreq_governor cpufreq_gov_ondemand;
+>  #endif
+> @@ -145,7 +147,8 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+>  
+>  	if (od_tuners->powersave_bias)
+> -		freq = powersave_bias_target(p, freq, CPUFREQ_RELATION_H);
+> +		freq = od_ops.powersave_bias_target(p, freq,
+> +				CPUFREQ_RELATION_H);
+>  	else if (p->cur == p->max)
+>  		return;
+>  
+> @@ -206,8 +209,8 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>  			__cpufreq_driver_target(policy, freq_next,
+>  					CPUFREQ_RELATION_L);
+>  		} else {
+> -			int freq = powersave_bias_target(policy, freq_next,
+> -					CPUFREQ_RELATION_L);
+> +			int freq = od_ops.powersave_bias_target(policy,
+> +					freq_next, CPUFREQ_RELATION_L);
+>  			__cpufreq_driver_target(policy, freq,
+>  					CPUFREQ_RELATION_L);
+>  		}
+> @@ -565,6 +568,19 @@ static struct common_dbs_data od_dbs_cdata = {
+>  	.exit = od_exit,
+>  };
+>  
+> +void od_register_powersave_bias_function(unsigned int (*f)
+> +		(struct cpufreq_policy *, unsigned int, unsigned int))
+> +{
+> +	od_ops.powersave_bias_target = f;
+> +}
+> +EXPORT_SYMBOL_GPL(od_register_powersave_bias_function);
+> +
+> +void od_unregister_powersave_bias_function(void)
+> +{
+> +	od_ops.powersave_bias_target = powersave_bias_target;
 
-Thanks,
-Rafael
+This is very confusing: we have ->powersave_bias_target and the default
+powersave_bias_target in the ondemand governor. Can we call the default
+one generic_powersave_bias_target or default_* or whatever.
 
+Thanks.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
