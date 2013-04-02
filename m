@@ -1,94 +1,104 @@
-From: Martin Mokrejs <mmokrejs@fold.natur.cuni.cz>
-Subject: Re: suspended DRAM bridge
-Date: Tue, 02 Apr 2013 16:30:05 +0200
-Message-ID: <515AEB6D.3020502@fold.natur.cuni.cz>
-References: <5159BAC9.80700@fold.natur.cuni.cz> <35938665.ZFvDxnCU3l@vostro.rjw.lan> <5159F775.30805@fold.natur.cuni.cz> <1461283.gKidiaRK7T@vostro.rjw.lan>
+From: Jacob Shin <jacob.shin@amd.com>
+Subject: Re: [PATCH V2 2/2] cpufreq: AMD "frequency sensitivity feedback"
+ powersave bias for ondemand governor
+Date: Tue, 2 Apr 2013 09:34:53 -0500
+Message-ID: <20130402143453.GA19613@jshin-Toonie>
+References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
+ <1364495057-14939-3-git-send-email-jacob.shin@amd.com>
+ <4985234.c9GFoGKqo8@skinner.arch.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fold.natur.cuni.cz ([195.113.57.32]:58956 "HELO
-	fold.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761021Ab3DBOaJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Apr 2013 10:30:09 -0400
-In-Reply-To: <1461283.gKidiaRK7T@vostro.rjw.lan>
+Received: from ch1ehsobe005.messaging.microsoft.com ([216.32.181.185]:9009
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761234Ab3DBOfA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Apr 2013 10:35:00 -0400
+Content-Disposition: inline
+In-Reply-To: <4985234.c9GFoGKqo8@skinner.arch.suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Rafael J. Wysocki wrote:
-> Now, if you want me (or anyone else on this list) to help you, why don't you
-> test 3.9-rc5 with the patch at https://patchwork.kernel.org/patch/2368081/
-> applied and send *one* message describing *briefly* what *does* *not* *work*
-> for you, without attaching any logs, lspci outputs and so on just yet?
+On Tue, Apr 02, 2013 at 01:40:13PM +0200, Thomas Renninger wrote:
+> On Thursday, March 28, 2013 01:24:17 PM Jacob Shin wrote:
+> > Future AMD processors, starting with Family 16h, can provide software
+> > with feedback on how the workload may respond to frequency change --
+> > memory-bound workloads will not benefit from higher frequency, where
+> > as compute-bound workloads will. This patch enables this "frequency
+> > sensitivity feedback" to aid the ondemand governor to make better
+> > frequency change decisions by hooking into the powersave bias.
+> If I read this correctly, nothing changes even if the driver is loaded,
+> unless user modifies:
+> /sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
+> is this correct?
+
+Hi, yes that is correct.
+
 > 
-> Then, we can try to address the problems you have in 3.9-rc5 and go back to the
-> (still supported) 'stable' kernels from there.
+> I wonder who should modify:
+> /sys/devices/system/cpu/cpufreq/ondemand/powersave_bias
+> Even cpupower is not aware of this very specific tunable.
 
-So, I tried 3.9-rc5 with the above patch and neither of my issues with dead xHCI
-port nor pciehp being completely broken fixed. I did not test whether there is an
-improvement on the acpiphp side (which was a regression in 3.8 compared to 3.7).
-I tested all under laptop-mode-tools which enabled the powersaving.
+Hmm .. I had thought that end user or distros would already know about
+it/use it since the powersave_bias tunable sysfs already exists.
 
+I guess not?
 
+> 
+> Also, are you sure cpufreq subsystem will be the only user
+> of this one?
+> Or could cpuidle or others also make use of this somewhen in the future?
 
-The xHCI issue while pcie_aspm=off:
-An unplug of a mouse results in:
+I think so, since this register deals with how the workload is
+affected by frequency changes -- cpufreq.
 
-/sys/bus/pci/devices/0000:00:1c.4/power/runtime_status:active
-[cut]
--/sys/bus/pci/devices/0000:0b:00.0/power/runtime_status:active
-+/sys/bus/pci/devices/0000:0b:00.0/power/runtime_status:suspended
+> 
+> Then this could more be done like:
+> drivers/cpufreq/mperf.c
+> And scheduler, cpuidle, cpufreq or whatever could use this as well.
+> 
+> Just some thinking:
+> I wonder how one could check/verify that the right thing is done
+> (by CPU and kernel). Ideally it would be nice to have the CPU register
+> appended to a cpufreq or cpuidle event trace.
+> But this very (AMD or X86 only?) specific data would not look nice there.
+> An arch placeholder value would be needed or similar?
+> 
+> ...
+> > +}
+> > +
+> > +static int __init amd_freq_sensitivity_init(void)
+> > +{
+> > +	int i;
+> > +	u32 eax, edx, dummy;
+> > +
+> > +	if (boot_cpu_data.x86_vendor != X86_VENDOR_AMD)
+> > +		return -ENODEV;
+> > +
+> > +	cpuid(0x80000007, &eax, &dummy, &dummy, &edx);
+> If this really should be a separate module:
+> Does/will Intel have the same (feature/cpuid bit)?
+> Anyway, this should get a general AMD or X86 CPU capability flag.
 
-After the unplug the TI chip does not detect a device being re-connected to the port
-while it is suspended. I think this just repeats what Sarah already said. Either 'lsusb -v'
-or 'echo on > /sys/bus/pci/devices/0000:0b:00.0/power/control' recover from the problem.
-That also ensures the dead port does not happen again upon next USB device unplug.
-Either pcieport should deny suspend of the particular device underneath or xhci_hcd
-should do it by itself as it actually caused the suicide itself.
+As far as I know, this is AMD specific, yes I'll add the AMD vendor
+check.
 
+> 
+> Then you can also autoload this driver similar to how it's done in acpi-
+> cpufreq:
+> static const struct x86_cpu_id acpi_cpufreq_ids[] = {
+>         X86_FEATURE_MATCH(X86_FEATURE_ACPI),
+>         X86_FEATURE_MATCH(X86_FEATURE_HW_PSTATE),
+>         {}
+> };
+> MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
 
+Okay.
 
+Thanks.
 
-The eSATA-card based pciehp testing while pcie_aspm=off:
-Although 1c.7 and 11:00 were not suspended an eject of the cold-plugged card was unnoticed.
-That results in /proc/iomem and /proc/interrupts reporting old values claiming the cold-boot
-status did not change during hot eject.
-'lspci -vvv' reports 0xff values for a broken 11:00 entry which covers only the very first
-line of an entry (like lspci without extra verbosity).
-Then, rmmod sata_sil24 removes just the driver association with memory ranges
-assigned to it but the 11:00 device remains in /proc/iomem with its memory ranges.
-At the same time /proc/interrupts claims IRQ 19 was released (if we can trust it).
-If it's unclear, due to those 0xff one cannot squeeze any details from lspci.
-In dmesg just the rmmod caused some new lines (confirming the eject was unnoticed).
+> 
+>        Thomas
+> 
 
-Subsequent hot insert of the card does not result in IRQ being obtained if we trust
-/proc/interrupts claimed it was never released. But, lspci shows it received
-IRQ 19 and compared to cold-booted state with a card inserted and driver loaded,
-'Latency: 0, Cache Line Size: 64 bytes' does not appear anymore in 'lspci -vvv'
-describing the hot plugged card. Actually, the whole line is gone.
-
-During the hot insert a driver was not loaded so manual modprobe sata_sil24 loads the
-driver but the driver is failing already during its init with 'enabling device (0000 -> 0003)'
-and 'failed to clear port RST' while it claims it is using IRQ 19.
-Loading of the driver caused 'Latency: 0' line to pop up in 'lspci -vvv' for the 11:00 device.
-
-Attaching a SATA drive to the eSATA card is not noticed anywhere.
-
-Subsequent rescan-scsi-bus call from a shell does not help, sata_sil24 tries same procedure
-like during its initialization which failed. So it fails again. SATA disk attached to the card
-is not detected, link remains down.
-
-
-
-I could have distilled more out of the log files but you wanted the answer to be brief,
-so, in brief, it still doesn't work.
-
-
-Because this goes only to you two and linux-pm, please let me know whether linux-pci
-and linux-acpi should be updated on this. They got quite a lot of info last days/weeks
-and this email goes to maybe a lot other people and avoid those who were already involved.
-I will leave it up to you. Just a note.
-
-Martin
