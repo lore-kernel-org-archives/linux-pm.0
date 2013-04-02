@@ -1,24 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/9] CPUFreq Updates & Fixes for 3.10
-Date: Tue, 2 Apr 2013 18:53:31 +0530
-Message-ID: <CAKohpokfXRaBhUHHVo68z3_Dnr6dH=oY1r94Fofrsa6TO2pbZw@mail.gmail.com>
-References: <cover.1364820620.git.viresh.kumar@linaro.org>
-	<1893788.IlN605kbG3@vostro.rjw.lan>
-	<CAKohpoku_SbdzC+iC33ad6bQvFLW128BfXM_3x3x8_v9MgwUhA@mail.gmail.com>
-	<3027411.cHP1ssyQqr@vostro.rjw.lan>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH V2 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target function to be registered
+Date: Tue, 2 Apr 2013 15:31:14 +0200
+Message-ID: <20130402133114.GC5488@pd.tnic>
+References: <1364495057-14939-1-git-send-email-jacob.shin@amd.com>
+ <1364495057-14939-2-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3027411.cHP1ssyQqr@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:59921 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761563Ab3DBNbQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Apr 2013 09:31:16 -0400
+Content-Disposition: inline
+In-Reply-To: <1364495057-14939-2-git-send-email-jacob.shin@amd.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 2 April 2013 18:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Well, if you go to https://patchwork.kernel.org/project/linux-pm/list/,
-> it's not there.  Moreover, it's not in my mailbox, although I'm subscribed
-> to the LKML, linux-pm and cpufreq.
+On Thu, Mar 28, 2013 at 01:24:16PM -0500, Jacob Shin wrote:
+> @@ -206,8 +209,8 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>  			__cpufreq_driver_target(policy, freq_next,
+>  					CPUFREQ_RELATION_L);
+>  		} else {
+> -			int freq = powersave_bias_target(policy, freq_next,
+> -					CPUFREQ_RELATION_L);
+> +			int freq = od_ops.powersave_bias_target(policy,
+> +					freq_next, CPUFREQ_RELATION_L);
+>  			__cpufreq_driver_target(policy, freq,
+>  					CPUFREQ_RELATION_L);
 
-Hmm.... Something happened probably because of the long cc list that
-patch had.
+Btw, one more thing: you can simplify this code a bit, while you're at
+it:
+
+                if (!od_tuners->powersave_bias) {
+                        __cpufreq_driver_target(policy, freq_next,
+						CPUFREQ_RELATION_L);
+			return;
+		}
+
+		freq_next = od_ops.powersave_bias_target(policy, freq_next, CPUFREQ_RELATION_L);
+		__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+	}
+
+and drop the local "int freq" too.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
