@@ -1,41 +1,27 @@
-From: stratosk <stratosk@semaphore.gr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
  CPU load to early increase frequency
-Date: Wed, 03 Apr 2013 09:31:39 +0300
-Message-ID: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
+Date: Wed, 3 Apr 2013 12:13:56 +0530
+Message-ID: <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com>
+References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:59361 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761576Ab3DCGbs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 02:31:48 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: stratosk <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-SSdtIHNvcnJ5LCBJIGRvbid0IHVuZGVyc3RhbmQuClRoZSBnb2FsIG9mIHRoaXMgcGF0Y2ggaXMg
-bm90IGVuZXJneSBzYXZpbmcuClRoZSBnb2FsIGlzIHRvIGRldGVjdCBDUFUgbG9hZCBhcyBzb29u
-IGFzIHBvc3NpYmxlIHRvIGluY3JlYXNlIGZyZXF1ZW5jeS4KCkNvdWxkIHlvdSBwbGVhc2UgY2xh
-cmlmeSB0aGlzPwoKVGhhbmtzLApTdHJhdG9zCgoiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lz
-ay5wbD4gd3JvdGU6Cgo+T24gVHVlc2RheSwgQXByaWwgMDIsIDIwMTMgMDY6NDk6MTQgUE0gU3Ry
-YXRvcyBLYXJhZm90aXMgd3JvdGU6Cj4+IE9uIDA0LzAyLzIwMTMgMDQ6NTAgUE0sIFJhZmFlbCBK
-LiBXeXNvY2tpIHdyb3RlOgo+PiA+IERvIHlvdSBoYXZlIGFueSBudW1iZXJzIGluZGljYXRpbmcg
-dGhhdCB0aGlzIGFjdHVhbGx5IG1ha2VzIHRoaW5ncyBiZXR0ZXI/Cj4+ID4gCj4+ID4gUmFmYWVs
-Cj4+IAo+PiBObywgSSBkb24ndC4KPj4gVGhlIGV4cGVjdGVkIGJlaGF2aW91ciBhZnRlciB0aGlz
-IHBhdGNoIGlzIHRvICJmb3JjZSIgbWF4IGZyZXF1ZW5jeSBmZXcgc2FtcGxpbmcgcGVyaW9kcyBl
-YXJsaWVyLgo+PiBUaGUgaWRlYSB3YXMgdG8gaW5jcmVhc2Ugc3lzdGVtIHJlc3BvbnNpdmVuZXNz
-IGVzcGVjaWFsbHkgb24gJ3NtYWxsJyBlbWJlZGRlZCBzeXN0ZW1zIChwaG9uZXMgZm9yIGV4YW1w
-bGUpLgo+PiAKPj4gQWN0dWFsbHksIEkgdGhvdWdodCB0byBwcm92aWRlIHNvbWUgbnVtYmVycyBi
-dXQgSSBoYWQgbm8gaWRlYSBob3cgdG8gbWVhc3VyZSB0aGlzLgo+PiAKPj4gV291bGQgaXQgYmUg
-ZW5vdWdoIHRvIHByb3ZpZGUgdGhlIG51bWJlciBvZiB0aW1lcyB0aGF0IHRoZSBDUFUgaW5jcmVh
-c2VzIGZyZXF1ZW5jeSAKPj4gYmVjYXVzZSBvZiBlYXJseV9kZW1hbmQgdmVyc3VzIHRoZSB0b3Rh
-bCBudW1iZXIgb2YgaW5jcmVtZW50cz8KPgo+SSB0aGluayBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8g
-Y2hlY2sgaWYgeW91ciBhcHByb2FjaCBsZWFkcyB0byBhIGJldHRlciBiZWhhdmlvcgo+YXMgZmFy
-IGFzIGVuZXJneSBzYXZpbmdzIGFyZSBjb25jZXJuZWQuICBJZiBpdCBhY3R1YWxseSBpcyB3b3Jz
-ZSwgdGhlbiBJIGRvbid0Cj5zZWUgYSByZWFzb24gdG8gYXBwbHkgaXQuCj4KPlRoYW5rcywKPlJh
-ZmFlbAo+Cj4KPi0tIAo+SSBzcGVhayBvbmx5IGZvciBteXNlbGYuCj5SYWZhZWwgSi4gV3lzb2Nr
-aSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuCg==
+On 3 April 2013 12:01, stratosk <stratosk@semaphore.gr> wrote:
+> I'm sorry, I don't understand.
+> The goal of this patch is not energy saving.
 
+He probably misunderstood it...
+
+> The goal is to detect CPU load as soon as possible to increase frequency.
+>
+> Could you please clarify this?
+
+But he is looking for some numbers to prove your patch. Some numbers
+that shows performance is better with your changes...
