@@ -1,65 +1,161 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/9] ARM: cpuidle: remove useless declaration
-Date: Wed, 03 Apr 2013 14:23:23 +0200
-Message-ID: <515C1F3B.5040008@linaro.org>
-References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 9/9] POWERPC: pseries: cpuidle: use time keeping flag
+Date: Wed, 03 Apr 2013 16:25:54 +0200
+Message-ID: <515C3BF2.7040609@linaro.org>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-9-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f175.google.com ([209.85.215.175]:59555 "EHLO
-	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760273Ab3DCMX2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 08:23:28 -0400
-Received: by mail-ea0-f175.google.com with SMTP id r16so623039ead.6
-        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 05:23:27 -0700 (PDT)
-In-Reply-To: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364991322-20585-9-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: deepthi@linux.vnet.ibm.com, linaro-kernel@lists.linaro.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, patches@linaro.org, linux-pm@vger.kernel.org, rnayak@ti.com, nsekhar@ti.com, josephl@nvidia.com, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
 On 04/03/2013 02:15 PM, Daniel Lezcano wrote:
-> The noop functions code is not necessary because the header file is
-> included in files which are compiled when CONFIG_CPU_IDLE is on.
+> The current code computes the idle time but that can be handled
+> by the cpuidle framework if we enable the .en_core_tk_irqen flag.
 >
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Set the flag and remove the code related to the time computation.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Deepthi Dharwar <deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+> ---
 
-I have been involved in the development of this file. I know Rob is no
-longer working on this neither monitoring the code.
+Rafael,
 
-Russell are you ok with this patch ? Rafael needs your ack to take this
-patch into its tree.
+Deepthi took the patch, did a fix and tested it, this is why there is
+its signed-off.
+
+Deepthi, could you ack the patch for Rafael also ?
 
 Thanks
-
 -- Daniel
 
-> ---
->  arch/arm/include/asm/cpuidle.h |    7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
+>  arch/powerpc/platforms/pseries/processor_idle.c |   35 ++++++++++---=
+----------
+>  1 file changed, 15 insertions(+), 20 deletions(-)
 >
-> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cp=
-uidle.h
-> index 2fca60a..7367787 100644
-> --- a/arch/arm/include/asm/cpuidle.h
-> +++ b/arch/arm/include/asm/cpuidle.h
-> @@ -1,13 +1,8 @@
->  #ifndef __ASM_ARM_CPUIDLE_H
->  #define __ASM_ARM_CPUIDLE_H
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/p=
+owerpc/platforms/pseries/processor_idle.c
+> index 4d806b4..a197120 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -23,8 +23,9 @@
+>  #include "pseries.h"
 > =20
-> -#ifdef CONFIG_CPU_IDLE
->  extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
-> -		struct cpuidle_driver *drv, int index);
-> -#else
-> -static inline int arm_cpuidle_simple_enter(struct cpuidle_device *de=
-v,
-> -		struct cpuidle_driver *drv, int index) { return -ENODEV; }
-> -#endif
-> +				    struct cpuidle_driver *drv, int index);
+>  struct cpuidle_driver pseries_idle_driver =3D {
+> -	.name =3D		"pseries_idle",
+> -	.owner =3D	THIS_MODULE,
+> +	.name             =3D "pseries_idle",
+> +	.owner            =3D THIS_MODULE,
+> +	.en_core_tk_irqen =3D 1,
+>  };
 > =20
->  /* Common ARM WFI state */
->  #define ARM_CPUIDLE_WFI_STATE_PWR(p) {\
+>  #define MAX_IDLE_STATE_COUNT	2
+> @@ -33,10 +34,8 @@ static int max_idle_state =3D MAX_IDLE_STATE_COUNT=
+ - 1;
+>  static struct cpuidle_device __percpu *pseries_cpuidle_devices;
+>  static struct cpuidle_state *cpuidle_state_table;
+> =20
+> -static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t =
+*kt_before)
+> +static inline void idle_loop_prolog(unsigned long *in_purr)
+>  {
+> -
+> -	*kt_before =3D ktime_get();
+>  	*in_purr =3D mfspr(SPRN_PURR);
+>  	/*
+>  	 * Indicate to the HV that we are idle. Now would be
+> @@ -45,12 +44,10 @@ static inline void idle_loop_prolog(unsigned long=
+ *in_purr, ktime_t *kt_before)
+>  	get_lppaca()->idle =3D 1;
+>  }
+> =20
+> -static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t k=
+t_before)
+> +static inline void idle_loop_epilog(unsigned long in_purr)
+>  {
+>  	get_lppaca()->wait_state_cycles +=3D mfspr(SPRN_PURR) - in_purr;
+>  	get_lppaca()->idle =3D 0;
+> -
+> -	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
+>  }
+> =20
+>  static int snooze_loop(struct cpuidle_device *dev,
+> @@ -58,10 +55,9 @@ static int snooze_loop(struct cpuidle_device *dev,
+>  			int index)
+>  {
+>  	unsigned long in_purr;
+> -	ktime_t kt_before;
+>  	int cpu =3D dev->cpu;
+> =20
+> -	idle_loop_prolog(&in_purr, &kt_before);
+> +	idle_loop_prolog(&in_purr);
+>  	local_irq_enable();
+>  	set_thread_flag(TIF_POLLING_NRFLAG);
+> =20
+> @@ -75,8 +71,8 @@ static int snooze_loop(struct cpuidle_device *dev,
+>  	clear_thread_flag(TIF_POLLING_NRFLAG);
+>  	smp_mb();
+> =20
+> -	dev->last_residency =3D
+> -		(int)idle_loop_epilog(in_purr, kt_before);
+> +	idle_loop_epilog(in_purr);
+> +
+>  	return index;
+>  }
+> =20
+> @@ -102,9 +98,8 @@ static int dedicated_cede_loop(struct cpuidle_devi=
+ce *dev,
+>  				int index)
+>  {
+>  	unsigned long in_purr;
+> -	ktime_t kt_before;
+> =20
+> -	idle_loop_prolog(&in_purr, &kt_before);
+> +	idle_loop_prolog(&in_purr);
+>  	get_lppaca()->donate_dedicated_cpu =3D 1;
+> =20
+>  	ppc64_runlatch_off();
+> @@ -112,8 +107,9 @@ static int dedicated_cede_loop(struct cpuidle_dev=
+ice *dev,
+>  	check_and_cede_processor();
+> =20
+>  	get_lppaca()->donate_dedicated_cpu =3D 0;
+> -	dev->last_residency =3D
+> -		(int)idle_loop_epilog(in_purr, kt_before);
+> +
+> +	idle_loop_epilog(in_purr);
+> +
+>  	return index;
+>  }
+> =20
+> @@ -122,9 +118,8 @@ static int shared_cede_loop(struct cpuidle_device=
+ *dev,
+>  			int index)
+>  {
+>  	unsigned long in_purr;
+> -	ktime_t kt_before;
+> =20
+> -	idle_loop_prolog(&in_purr, &kt_before);
+> +	idle_loop_prolog(&in_purr);
+> =20
+>  	/*
+>  	 * Yield the processor to the hypervisor.  We return if
+> @@ -135,8 +130,8 @@ static int shared_cede_loop(struct cpuidle_device=
+ *dev,
+>  	 */
+>  	check_and_cede_processor();
+> =20
+> -	dev->last_residency =3D
+> -		(int)idle_loop_epilog(in_purr, kt_before);
+> +	idle_loop_epilog(in_purr);
+> +
+>  	return index;
+>  }
+> =20
 
 
 --=20
@@ -69,4 +165,3 @@ v,
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
