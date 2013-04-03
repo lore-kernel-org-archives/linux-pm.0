@@ -1,133 +1,65 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device tree supported boot
-Date: Wed, 03 Apr 2013 11:47:03 -0700
-Message-ID: <87ppybxxi0.fsf@linaro.org>
-References: <1364507576-19345-1-git-send-email-nm@ti.com>
-	<1364507576-19345-2-git-send-email-nm@ti.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 8/9] ARM: omap3: cpuidle: enable time keeping
+Date: Wed, 03 Apr 2013 22:49:03 +0200
+Message-ID: <515C95BF.6030103@linaro.org>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-8-git-send-email-daniel.lezcano@linaro.org> <87zjxfzetw.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1364507576-19345-2-git-send-email-nm@ti.com> (Nishanth Menon's
-	message of "Thu, 28 Mar 2013 16:52:55 -0500")
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <87zjxfzetw.fsf-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: rjw-KKrjLPT3xs0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Nishanth Menon <nm@ti.com> writes:
+On 04/03/2013 07:47 PM, Kevin Hilman wrote:
+> Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+>=20
+>> The TIME_VALID flag is specified for the different states but
+>> the time residency computation is not done, no tk flag, no time
+>> computation in the idle function.
+>>
+>> Set the en_core_tk_irqen flag to activate it.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Acked-by: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
+>=20
+> Acked-by: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>=20
+> Also, is this a regression fix that also needs to hit v3.9?
 
-> With OMAP3+ and AM33xx supported SoC having defined CPU device tree
-> entries with operating-points defined, we can now use the SoC
-> generic cpufreq-cpu0 driver by registering appropriate device.
->
-> As part of this change, add dummy clock node to use cpufreq-cpu0.
-> This is an suggested solution till we have OMAP clock nodes in device
-> tree.
-> Once the OMAP device tree conversion is complete, we can then do:
-> clocks =3D <&dpll_mpu_ck>; or the SoC specific equivalent.
-> Inspired by patch: https://patchwork.kernel.org/patch/2067841/
-> now made generic.
->
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Rajendra Nayak <rnayak@ti.com>
-> Cc: Paul Walmsley <paul@pwsan.com>
-> Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
-> Cc: Jon Hunter <jon-hunter@ti.com>
-> Cc: Keerthy <j-keerthy@ti.com>
-> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+Yes, I think so.
 
-One more thought on this patch...
-> ---
-> Changes in v3:
-> 	- modified CC list.
-> 	- no functional change
-> V2: https://patchwork.kernel.org/patch/2303471/
-> V1: https://patchwork.kernel.org/patch/2273571/
->
->  arch/arm/mach-omap2/board-generic.c   |    5 +++++
->  arch/arm/mach-omap2/cclock33xx_data.c |    2 +-
->  arch/arm/mach-omap2/cclock3xxx_data.c |    3 ++-
->  arch/arm/mach-omap2/cclock44xx_data.c |    3 ++-
->  4 files changed, 10 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap=
-2/board-generic.c
-> index afa509a..5b147ef 100644
-> --- a/arch/arm/mach-omap2/board-generic.c
-> +++ b/arch/arm/mach-omap2/board-generic.c
-> @@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
->  		omap4_panda_display_init_of();
->  	else if (of_machine_is_compatible("ti,omap4-sdp"))
->  		omap_4430sdp_display_init_of();
-> +
-> +	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
-> +		struct platform_device_info devinfo =3D { .name =3D "cpufreq-cpu0"=
-, };
-> +		platform_device_register_full(&devinfo);
-> +	}
 
-Rather than adding new clkdev nodes below, how about using clk add_alia=
-s
-here?
+>> ---
+>>  arch/arm/mach-omap2/cpuidle34xx.c |    5 +++--
+>>  1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2=
+/cpuidle34xx.c
+>> index 80392fc..4f67a5b 100644
+>> --- a/arch/arm/mach-omap2/cpuidle34xx.c
+>> +++ b/arch/arm/mach-omap2/cpuidle34xx.c
+>> @@ -274,8 +274,9 @@ static int omap3_enter_idle_bm(struct cpuidle_de=
+vice *dev,
+>>  static DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
+>> =20
+>>  static struct cpuidle_driver omap3_idle_driver =3D {
+>> -	.name =3D		"omap3_idle",
+>> -	.owner =3D	THIS_MODULE,
+>> +	.name             =3D "omap3_idle",
+>> +	.owner            =3D THIS_MODULE,
+>> +	.en_core_tk_irqen =3D 1,
+>>  	.states =3D {
+>>  		{
+>>  			.enter		  =3D omap3_enter_idle_bm,
 
-Kevin
 
->  }
-> =20
->  #ifdef CONFIG_SOC_OMAP2420
-> diff --git a/arch/arm/mach-omap2/cclock33xx_data.c b/arch/arm/mach-om=
-ap2/cclock33xx_data.c
-> index 476b820..cf7e736 100644
-> --- a/arch/arm/mach-omap2/cclock33xx_data.c
-> +++ b/arch/arm/mach-omap2/cclock33xx_data.c
-> @@ -852,7 +852,7 @@ static struct omap_clk am33xx_clks[] =3D {
->  	CLK(NULL,	"dpll_core_m5_ck",	&dpll_core_m5_ck,	CK_AM33XX),
->  	CLK(NULL,	"dpll_core_m6_ck",	&dpll_core_m6_ck,	CK_AM33XX),
->  	CLK(NULL,	"dpll_mpu_ck",		&dpll_mpu_ck,	CK_AM33XX),
-> -	CLK("cpu0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
-> +	CLK("cpufreq-cpu0.0",	NULL,			&dpll_mpu_ck,	CK_AM33XX),
->  	CLK(NULL,	"dpll_mpu_m2_ck",	&dpll_mpu_m2_ck,	CK_AM33XX),
->  	CLK(NULL,	"dpll_ddr_ck",		&dpll_ddr_ck,	CK_AM33XX),
->  	CLK(NULL,	"dpll_ddr_m2_ck",	&dpll_ddr_m2_ck,	CK_AM33XX),
-> diff --git a/arch/arm/mach-omap2/cclock3xxx_data.c b/arch/arm/mach-om=
-ap2/cclock3xxx_data.c
-> index 4579c3c..5a5b471 100644
-> --- a/arch/arm/mach-omap2/cclock3xxx_data.c
-> +++ b/arch/arm/mach-omap2/cclock3xxx_data.c
-> @@ -3501,7 +3501,8 @@ static struct omap_clk omap3xxx_clks[] =3D {
->  	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
->  	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
->  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
-> -	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
-> +	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX), /* used in non-device =
-tree boot */
-> +	CLK("cpufreq-cpu0.0",	NULL,	&dpll1_ck,	CK_3XXX), /* used in device =
-tree boot */
->  };
-> =20
->  static const char *enable_init_clks[] =3D {
-> diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-om=
-ap2/cclock44xx_data.c
-> index 3d58f33..bcea785 100644
-> --- a/arch/arm/mach-omap2/cclock44xx_data.c
-> +++ b/arch/arm/mach-omap2/cclock44xx_data.c
-> @@ -1660,7 +1660,8 @@ static struct omap_clk omap44xx_clks[] =3D {
->  	CLK("4013a000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
->  	CLK("4013c000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
->  	CLK("4013e000.timer",	"timer_sys_ck",	&syc_clk_div_ck,	CK_443X),
-> -	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X),
-> +	CLK(NULL,	"cpufreq_ck",	&dpll_mpu_ck,	CK_443X), /* used in non-devi=
-ce tree boot */
-> +	CLK("cpufreq-cpu0.0",	NULL,	&dpll_mpu_ck,	CK_443X), /* used in devi=
-ce tree boot */
->  };
-> =20
->  int __init omap4xxx_clk_init(void)
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
