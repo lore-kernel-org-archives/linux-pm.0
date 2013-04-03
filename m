@@ -1,149 +1,340 @@
 From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH V3 0/2] ARM: OMAP3+: support cpufreq-cpu0 for device tree boot
-Date: Wed, 03 Apr 2013 10:47:39 -0700
-Message-ID: <87y5czzetg.fsf@linaro.org>
-References: <1364507576-19345-1-git-send-email-nm@ti.com>
+Subject: Re: [PATCH v2 2/2] PM / devfreq: tie suspend/resume to runtime-pm
+Date: Wed, 03 Apr 2013 11:16:14 -0700
+Message-ID: <87fvz7zdht.fsf@linaro.org>
+References: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org>
+	<1364392374-12236-3-git-send-email-rajagopal.venkat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f53.google.com ([209.85.160.53]:55626 "EHLO
-	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762607Ab3DCRrm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 13:47:42 -0400
-Received: by mail-pb0-f53.google.com with SMTP id un15so968985pbc.26
-        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 10:47:42 -0700 (PDT)
-In-Reply-To: <1364507576-19345-1-git-send-email-nm@ti.com> (Nishanth Menon's
-	message of "Thu, 28 Mar 2013 16:52:54 -0500")
+Received: from mail-pb0-f41.google.com ([209.85.160.41]:44313 "EHLO
+	mail-pb0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758730Ab3DCSQS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 14:16:18 -0400
+Received: by mail-pb0-f41.google.com with SMTP id mc17so996951pbc.28
+        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 11:16:18 -0700 (PDT)
+In-Reply-To: <1364392374-12236-3-git-send-email-rajagopal.venkat@linaro.org>
+	(Rajagopal Venkat's message of "Wed, 27 Mar 2013 19:22:54 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+To: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+Cc: myungjoo.ham@samsung.com, rjw@sisk.pl, Alan Stern <stern@rowland.harvard.edu>, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Nishanth Menon <nm@ti.com> writes:
+Rajagopal Venkat <rajagopal.venkat@linaro.org> writes:
 
-> The following version 3 of the series arose from trying to use BeagleBoard-XM
-> (OMAP3 variant) for doing CPU DVFS using cpufreq-cpu0. This series enables the
-> generic cpufreq-cpu0 driver to be used in device tree enabled boot while
-> maintaining support of the legacy omap-cpufreq driver when used in non device
-> tree enabled boot.
->
-> However, in order to enable complete SoC entitlement for OMAP platforms, with
-> this series, key features are still pending on device tree adaptation for OMAP:
-> A) clock framework data transition to DT - this should happen soon, so this
-> series hacks the clock node for the time being as suggested in review of
-> original series[1].
-> B) On processors that use voltage controller, voltage processor (VC/VP hardware
-> loop using I2C_SR path) - we have started work on transitioning them to
-> regulator framework driven by DT.
-> C) Adaptive Body Bias and SmartReflex AVS conversion to DT. [2]
->
-> Note: At this point in time, we do not have DT entries for clock on OMAP
-> platforms. Common Clock Framework(CCF) could also control regulators[3].
-> Once these conversions are complete, there might be minimal cleanup work to
-> switch to the new data structure changes.
->
-> Key benefit of the series is to allow all relevant TI platforms now to use a
-> single cpufreq driver and equivalent frameworks in addition be part of the
-> transition to device tree.
-> NOTE: As a result of this series:
-> 1. omap-cpufreq will be used only in non device tree boot scenario. we should
->    delete this driver once the 100% DT conversion is complete.
-> 2. Generic cpufreq-cpu0 will be used only in device tree boot scenario.
->    boot systems.
+> Devfreq core suspend/resume of a device is explicitly handled
+> by devfreq driver through devfreq_suspend_device() and
+> devfreq_resume_device() apis typically called from runtime
+> suspend/resume callbacks. This patch aims to take away this
+> from devfreq drivers and handle it from runtime-pm core. So
+> that device devfreq core suspend/resume is automatically done
+> with runtime pm suspend/resume. The devfreq drivers shouldn't
+> be concerned on when to suspend/resume the devfreq.
 
-Yes, I like this direction better.  Thanks for reworking and thanks for
-the thorough changelog.
+The terminology is a bit confusing here since you're mixing runtime
+suspend/resume and just suspend/resume.  AFAICT, this patch is only
+handling devfreq in the runtime PM core, correct?
 
-> Key changes in version 3:
-> 	- series now rebased on Device tree patches queued for OMAP 3.10
-> 	- DT patches introducing OPPs are now merged, so pending patches alone
-> 	  are part of the new series.
-> 	- omap-cpufreq is now converted to platform_device to address:
-> 		http://marc.info/?t=136434901900001&r=1&w=2
->
-> version 2 of the series:
-> 	http://marc.info/?t=136371570200003&r=1&w=2
-> 	available at:
-> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v2
->
-> version 1 of the series:
-> 	http://marc.info/?t=136329485400005&r=1&w=2
-> 	available at:
-> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v1
->
-> [1] Original discussion thread which triggered this series:
-> 	http://marc.info/?l=linux-pm&m=136304313700602&w=2
-> 	https://patchwork.kernel.org/patch/2251841/
-> 	https://patchwork.kernel.org/patch/2251851/
-> [2] ABB RFC: http://marc.info/?l=linux-omap&m=136449099409794&w=2 
-> [3] CCF DVFS patches:
-> https://patchwork.kernel.org/patch/2195431/
-> https://patchwork.kernel.org/patch/2195421/
-> https://patchwork.kernel.org/patch/2195451/
-> https://patchwork.kernel.org/patch/2195441/
-> https://patchwork.kernel.org/patch/2195461/
->
-> Version 3 is now based on for-3.10/dts branch from Benoit:
-> 	http://git.kernel.org/cgit/linux/kernel/git/bcousson/linux-omap-dt.git/log/?h=for_3.10/dts
-> 	d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
->
-> Version 3 is also available at:
-> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v3
-> 	git link: git://github.com/nmenon/linux-2.6-playground.git
-> 	branch: cpufreq-cpu0-omap-all-v3
->
-> Test coverage:
-> 	test script: http://pastebin.com/zrr8ptge
-> Platforms verified:
-> 	beaglebone(rev A6a) - AM33xx compatible - http://pastebin.com/GVP2wDVr
-> 	beagleboard (rev C1D) - OMAP3430 compatible
-> 		- DT enabled boot: http://pastebin.com/2AY1F5Qa
-> 		- No DT enabled boot: http://pastebin.com/hDk0gbpU
-> 	omap3-beagle-xm -OMAP3630 compatible - http://pastebin.com/5tHAQcLZ
-> 	Pandaboard -(OMAP4430 ES2.2) - http://pastebin.com/6D9aDPXT
-> 	Pandaboard-ES -(OMAP4460 ES1.1) - http://pastebin.com/ExrBEczr
+Also, how does this work when multiple devices may be using the same
+devfreq instance?  Using this patch, it looks like the devfreq governor
+will be shutdown as soon as the first device runtime suspends, right?
 
-And thanks also for the broad testing.
-
-One nit about the test report/coverage is I don't see any
-test/verification that the voltage is still being scaled based on the DT
-based OPPs.  It's easy to verify at least from the regulator PoV that
-the voltage is scaled also.
-
-My dumb DVFS test script (below) should work on any busybox rootfs 
-
-Care to give that (or something like it) a try as well?  
-
-With that extra confirmation of testing, I will queue up this series.
-
-Thanks,
+> This patch is targeted to handle devfreq core load monitoring
+> suspend/resume only. Not the actual hardware itself. All the
+> resources like clocks and regulators must still be handled by
+> devfreq driver using runtime-pm. The sequence of devfreq and
+  ^^^^^^^
+devfreq driver?  Did you mean device driver?
 
 Kevin
 
-[1]
-#!/bin/sh
-
-REG=`find /sys/class/regulator -follow -maxdepth 2 -name name -exec grep -l mpu {} \;`
-mpu_reg=`echo $REG | cut -d'/' -f5`
-echo MPU regulator: $mpu_reg
-
-if [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ]; then
-  echo "CPUfreq not enabled in kernel."
-  exit 0
-fi
-
-cd /sys/devices/system/cpu/cpu0/cpufreq
-echo -n "Available frequencies: "
-cat scaling_available_frequencies
-echo -n "Current frequency: "
-cat scaling_cur_freq
-echo userspace > scaling_governor
-
-for freq in `cat scaling_available_frequencies`; do
-  echo ${freq} > scaling_setspeed
-  echo -n "current freq: "
-  cat scaling_cur_freq
-  echo -n "current voltage: "
-  cat /sys/class/regulator/${mpu_reg}/microvolts
-  sleep 2
-done
+> device runtime suspend/resume is,
+>
+> pm_runtime_suspend(dev) will first suspend device devfreq
+> (if available) before device is suspended to ensure devfreq load
+> monitoring is stopped and no device resources like clocks are
+> accessed while device suspend is in progress.
+>
+> pm_runtime_resume(dev) will resume device devfreq(if available)
+> after device is resumed to ensure device resources like clocks
+> are ready for use.
+>
+> As devfreq suspend/resume is done automatically from runtime-pm,
+> this patch removes the existing devfreq_suspend_device() and
+> devfreq_resume_device() apis.
+>
+> Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+> ---
+>  drivers/base/power/runtime.c |   21 ++++++++++++-
+>  drivers/devfreq/devfreq.c    |   69 +++++++++++++++++++++++++++++++++++++++---
+>  include/linux/devfreq.h      |   18 +++--------
+>  include/linux/pm.h           |    2 ++
+>  4 files changed, 91 insertions(+), 19 deletions(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 3148b10..2438abc 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -11,6 +11,7 @@
+>  #include <linux/export.h>
+>  #include <linux/pm_runtime.h>
+>  #include <trace/events/rpm.h>
+> +#include <linux/devfreq.h>
+>  #include "power.h"
+>  
+>  static int rpm_resume(struct device *dev, int rpmflags);
+> @@ -406,6 +407,14 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>  
+>  	__update_runtime_status(dev, RPM_SUSPENDING);
+>  
+> +	/*
+> +	 * Try suspending devfreq before device is runtime suspended.
+> +	 * It wouldn't make sense to continue devfreq load monitoring
+> +	 * when device is runtime suspended.
+> +	 */
+> +	if (dev->power.devfreq && dev->power.devfreq->runtime_suspend)
+> +		dev->power.devfreq->runtime_suspend(dev);
+> +
+>  	if (dev->pm_domain)
+>  		callback = dev->pm_domain->ops.runtime_suspend;
+>  	else if (dev->type && dev->type->pm)
+> @@ -421,8 +430,12 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>  		callback = dev->driver->pm->runtime_suspend;
+>  
+>  	retval = rpm_callback(callback, dev);
+> -	if (retval)
+> +	if (retval) {
+> +		/* Resume back devfreq on device suspend failure */
+> +		if (dev->power.devfreq && dev->power.devfreq->runtime_resume)
+> +			dev->power.devfreq->runtime_resume(dev);
+>  		goto fail;
+> +	}
+>  
+>   no_callback:
+>  	__update_runtime_status(dev, RPM_SUSPENDED);
+> @@ -661,6 +674,12 @@ static int rpm_resume(struct device *dev, int rpmflags)
+>  		__update_runtime_status(dev, RPM_ACTIVE);
+>  		if (parent)
+>  			atomic_inc(&parent->power.child_count);
+> +		/*
+> +		 * Resume devfreq after runtime resume sequence to ensure
+> +		 * device resources are available for devfreq load monitoring.
+> +		 */
+> +		if (dev->power.devfreq && dev->power.devfreq->runtime_resume)
+> +			dev->power.devfreq->runtime_resume(dev);
+>  	}
+>  	wake_up_all(&dev->power.wait_queue);
+>  
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 44c4079..b8dab0d 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/list.h>
+>  #include <linux/printk.h>
+>  #include <linux/hrtimer.h>
+> +#include <linux/pm_runtime.h>
+>  #include "governor.h"
+>  
+>  static struct class *devfreq_class;
+> @@ -42,6 +43,9 @@ static LIST_HEAD(devfreq_governor_list);
+>  static LIST_HEAD(devfreq_list);
+>  static DEFINE_MUTEX(devfreq_list_lock);
+>  
+> +static void devfreq_runtime_suspend(struct device *dev);
+> +static void devfreq_runtime_resume(struct device *dev);
+> +
+>  /**
+>   * find_device_devfreq() - find devfreq struct using device pointer
+>   * @dev:	device pointer used to lookup device devfreq.
+> @@ -387,6 +391,8 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+>   */
+>  static void _remove_devfreq(struct devfreq *devfreq, bool skip)
+>  {
+> +	unsigned long flags;
+> +
+>  	mutex_lock(&devfreq_list_lock);
+>  	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
+>  		mutex_unlock(&devfreq_list_lock);
+> @@ -400,6 +406,10 @@ static void _remove_devfreq(struct devfreq *devfreq, bool skip)
+>  		devfreq->governor->event_handler(devfreq,
+>  						 DEVFREQ_GOV_STOP, NULL);
+>  
+> +	spin_lock_irqsave(&devfreq->dev.parent->power.lock, flags);
+> +	devfreq->dev.parent->power.devfreq = NULL;
+> +	spin_unlock_irqrestore(&devfreq->dev.parent->power.lock, flags);
+> +
+>  	if (devfreq->profile->exit)
+>  		devfreq->profile->exit(devfreq->dev.parent);
+>  
+> @@ -442,6 +452,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  {
+>  	struct devfreq *devfreq;
+>  	struct devfreq_governor *governor;
+> +	unsigned long flags;
+>  	int err = 0;
+>  
+>  	if (!dev || !profile || !governor_name) {
+> @@ -476,6 +487,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  	devfreq->previous_freq = profile->initial_freq;
+>  	devfreq->data = data;
+>  	devfreq->nb.notifier_call = devfreq_notifier_call;
+> +	devfreq->runtime_suspend = devfreq_runtime_suspend;
+> +	devfreq->runtime_resume = devfreq_runtime_resume;
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +	dev->power.devfreq = devfreq;
+> +	spin_unlock_irqrestore(&dev->power.lock, flags);
+> +
+>  
+>  	devfreq->trans_table =	devm_kzalloc(dev, sizeof(unsigned int) *
+>  						devfreq->profile->max_state *
+> @@ -549,7 +566,7 @@ EXPORT_SYMBOL(devfreq_remove_device);
+>   * (e.g., runtime_suspend, suspend) of the device driver that
+>   * holds the devfreq.
+>   */
+> -int devfreq_suspend_device(struct devfreq *devfreq)
+> +static int devfreq_suspend_device(struct devfreq *devfreq)
+>  {
+>  	if (!devfreq)
+>  		return -EINVAL;
+> @@ -560,7 +577,6 @@ int devfreq_suspend_device(struct devfreq *devfreq)
+>  	return devfreq->governor->event_handler(devfreq,
+>  				DEVFREQ_GOV_SUSPEND, NULL);
+>  }
+> -EXPORT_SYMBOL(devfreq_suspend_device);
+>  
+>  /**
+>   * devfreq_resume_device() - Resume devfreq of a device.
+> @@ -570,7 +586,7 @@ EXPORT_SYMBOL(devfreq_suspend_device);
+>   * (e.g., runtime_resume, resume) of the device driver that
+>   * holds the devfreq.
+>   */
+> -int devfreq_resume_device(struct devfreq *devfreq)
+> +static int devfreq_resume_device(struct devfreq *devfreq)
+>  {
+>  	if (!devfreq)
+>  		return -EINVAL;
+> @@ -581,7 +597,52 @@ int devfreq_resume_device(struct devfreq *devfreq)
+>  	return devfreq->governor->event_handler(devfreq,
+>  				DEVFREQ_GOV_RESUME, NULL);
+>  }
+> -EXPORT_SYMBOL(devfreq_resume_device);
+> +
+> +/**
+> + * devfreq_runtime_suspend() - Suspend devfreq of a device.
+> + * @dev: the device associated with devfreq
+> + *
+> + * This function is intended to be called by the runtime-pm
+> + * core when the device associated with devfreq is
+> + * runtime suspended.
+> + */
+> +static void devfreq_runtime_suspend(struct device *dev)
+> +{
+> +	struct devfreq *devfreq;
+> +	int err;
+> +
+> +	mutex_lock(&devfreq_list_lock);
+> +	devfreq = find_device_devfreq(dev);
+> +	mutex_unlock(&devfreq_list_lock);
+> +
+> +	err = devfreq_suspend_device(devfreq);
+> +	if (err)
+> +		dev_err(dev, "devfreq runtime suspend failed with (%d) error\n",
+> +			err);
+> +}
+> +
+> +/**
+> + * devfreq_runtime_resume() - Resume devfreq of a device.
+> + * @dev: the device associated with devfreq
+> + *
+> + * This function is intended to be called by the runtime-pm
+> + * core when the device associated with devfreq is
+> + * runtime resumed.
+> + */
+> +static void devfreq_runtime_resume(struct device *dev)
+> +{
+> +	struct devfreq *devfreq;
+> +	int err;
+> +
+> +	mutex_lock(&devfreq_list_lock);
+> +	devfreq = find_device_devfreq(dev);
+> +	mutex_unlock(&devfreq_list_lock);
+> +
+> +	err = devfreq_resume_device(devfreq);
+> +	if (err)
+> +		dev_err(dev, "devfreq runtime resume failed with (%d) error\n",
+> +			err);
+> +}
+>  
+>  /**
+>   * devfreq_add_governor() - Add devfreq governor
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index 5f1ab92..669368b 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -140,6 +140,8 @@ struct devfreq_governor {
+>   * @trans_table:	Statistics of devfreq transitions
+>   * @time_in_state:	Statistics of devfreq states
+>   * @last_stat_updated:	The last time stat updated
+> + * @runtime_suspend:	func to runtime suspend devfreq from runtime core
+> + * @runtime_resume:	func to runtime resume devfreq from runtime core
+>   *
+>   * This structure stores the devfreq information for a give device.
+>   *
+> @@ -173,6 +175,8 @@ struct devfreq {
+>  	unsigned int *trans_table;
+>  	unsigned long *time_in_state;
+>  	unsigned long last_stat_updated;
+> +	void (*runtime_suspend)(struct device *dev);
+> +	void (*runtime_resume)(struct device *dev);
+>  };
+>  
+>  #if defined(CONFIG_PM_DEVFREQ)
+> @@ -182,10 +186,6 @@ extern struct devfreq *devfreq_add_device(struct device *dev,
+>  				  void *data);
+>  extern int devfreq_remove_device(struct devfreq *devfreq);
+>  
+> -/* Supposed to be called by PM_SLEEP/PM_RUNTIME callbacks */
+> -extern int devfreq_suspend_device(struct devfreq *devfreq);
+> -extern int devfreq_resume_device(struct devfreq *devfreq);
+> -
+>  /* Helper functions for devfreq user device driver with OPP. */
+>  extern struct opp *devfreq_recommended_opp(struct device *dev,
+>  					   unsigned long *freq, u32 flags);
+> @@ -228,16 +228,6 @@ static inline int devfreq_remove_device(struct devfreq *devfreq)
+>  	return 0;
+>  }
+>  
+> -static inline int devfreq_suspend_device(struct devfreq *devfreq)
+> -{
+> -	return 0;
+> -}
+> -
+> -static inline int devfreq_resume_device(struct devfreq *devfreq)
+> -{
+> -	return 0;
+> -}
+> -
+>  static inline struct opp *devfreq_recommended_opp(struct device *dev,
+>  					   unsigned long *freq, u32 flags)
+>  {
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 03d7bb1..734449c 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -40,6 +40,7 @@ extern void (*pm_power_off_prepare)(void);
+>   */
+>  
+>  struct device;
+> +struct devfreq;
+>  
+>  #ifdef CONFIG_PM
+>  extern const char power_group_name[];		/* = "power" */
+> @@ -549,6 +550,7 @@ struct dev_pm_info {
+>  #endif
+>  	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
+>  	struct dev_pm_qos	*qos;
+> +	struct devfreq		*devfreq;  /* device devfreq */
+>  };
+>  
+>  extern void update_pm_runtime_accounting(struct device *dev);
