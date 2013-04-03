@@ -1,27 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Wed, 3 Apr 2013 12:13:56 +0530
-Message-ID: <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
+Subject: Re: [PATCH 8/9] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Wed, 3 Apr 2013 14:57:17 +0530
+Message-ID: <CAKohpom_W8cTA3L80ozcq4HkFaHuuPSNrrFKSFmocorfPra_Cw@mail.gmail.com>
+References: <cover.1364205812.git.viresh.kumar@linaro.org>
+	<918ff6cc407525d682817cf736347ec572e0316d.1364205812.git.viresh.kumar@linaro.org>
+	<CAKohpon+wk_F0E2oJ_VOj7EKZ0mVbis1-gPSr-T9zLsMC_XohA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
+In-Reply-To: <CAKohpon+wk_F0E2oJ_VOj7EKZ0mVbis1-gPSr-T9zLsMC_XohA@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: stratosk <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: arvind.chauhan@arm.com, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, arnd.bergmann@linaro.org, linux@arm.linux.org.uk, Viresh Kumar <viresh.kumar@linaro.org>, linux-samsung-soc@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 3 April 2013 12:01, stratosk <stratosk@semaphore.gr> wrote:
-> I'm sorry, I don't understand.
-> The goal of this patch is not energy saving.
-
-He probably misunderstood it...
-
-> The goal is to detect CPU load as soon as possible to increase frequency.
+On 31 March 2013 09:23, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25 March 2013 15:41, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> This patch moves cpufreq driver of Samsung's ARM based s3c24xx platform to
+>> drivers/cpufreq.
+>>
+>> Cc: Ben Dooks <ben-linux@fluff.org>
+>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+>> Cc: linux-samsung-soc@vger.kernel.org
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  arch/arm/Kconfig                                   | 46 ---------------
+>>  arch/arm/mach-s3c24xx/Kconfig                      | 66 +++++++++-------------
+>>  arch/arm/mach-s3c24xx/Makefile                     |  6 --
+>>  arch/arm/mach-s3c24xx/{ => include/mach}/s3c2412.h |  0
+>>  arch/arm/mach-s3c24xx/iotiming-s3c2412.c           |  2 +-
+>>  arch/arm/plat-samsung/include/plat/cpu-freq-core.h | 10 ++--
+>>  arch/arm/plat-samsung/include/plat/cpu-freq.h      |  6 +-
+>>  drivers/cpufreq/Kconfig.arm                        | 58 +++++++++++++++++++
+>>  drivers/cpufreq/Makefile                           |  5 ++
+>>  .../cpufreq/s3c2410-cpufreq.c                      |  0
+>>  .../cpufreq/s3c2412-cpufreq.c                      |  3 +-
+>>  .../cpufreq/s3c2440-cpufreq.c                      |  0
+>>  .../cpufreq/s3c24xx-cpufreq-debugfs.c              |  0
+>>  .../cpufreq.c => drivers/cpufreq/s3c24xx-cpufreq.c |  0
+>>  14 files changed, 100 insertions(+), 102 deletions(-)
+>>  rename arch/arm/mach-s3c24xx/{ => include/mach}/s3c2412.h (100%)
+>>  rename arch/arm/mach-s3c24xx/cpufreq-s3c2410.c => drivers/cpufreq/s3c2410-cpufreq.c (100%)
+>>  rename arch/arm/mach-s3c24xx/cpufreq-s3c2412.c => drivers/cpufreq/s3c2412-cpufreq.c (99%)
+>>  rename arch/arm/mach-s3c24xx/cpufreq-s3c2440.c => drivers/cpufreq/s3c2440-cpufreq.c (100%)
+>>  rename arch/arm/mach-s3c24xx/cpufreq-debugfs.c => drivers/cpufreq/s3c24xx-cpufreq-debugfs.c (100%)
+>>  rename arch/arm/mach-s3c24xx/cpufreq.c => drivers/cpufreq/s3c24xx-cpufreq.c (100%)
 >
-> Could you please clarify this?
+> Ben/Kukjin,
+>
+> Can i have your View or Ack for this patch?
 
-But he is looking for some numbers to prove your patch. Some numbers
-that shows performance is better with your changes...
+Ping!!
