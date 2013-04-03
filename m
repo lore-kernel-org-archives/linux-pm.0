@@ -1,85 +1,39 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
-Subject: Re: [PATCH] cpufreq: convert the cpufreq_driver to use the rcu
-Date: Wed, 3 Apr 2013 11:37:10 -0500
-Message-ID: <515C5AB6.5090109@sgi.com>
-References: <AKohpo=Um9LGhGtMB0z9C2jxmS3oHwV7i_Gmsq5rR80ZcGYyLw@mail.gmail.com> <1365001386-29970-1-git-send-email-nzimmer@sgi.com> <CAKohpon1QiCfJhWBi_f7U1EU410JMGHq+QnpEPJ+rdiUjsKsQA@mail.gmail.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 5/9] ARM: tegra2: cpuidle: change driver initialization
+Date: Wed, 03 Apr 2013 10:51:32 -0600
+Message-ID: <515C5E14.3070202@wwwdotorg.org>
+References: <1364553095-25110-1-git-send-email-daniel.lezcano@linaro.org>  <1364553095-25110-5-git-send-email-daniel.lezcano@linaro.org> <1364610152.2622.3.camel@jlo-ubuntu-64.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon1QiCfJhWBi_f7U1EU410JMGHq+QnpEPJ+rdiUjsKsQA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:39472 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760213Ab3DCQvg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 12:51:36 -0400
+In-Reply-To: <1364610152.2622.3.camel@jlo-ubuntu-64.nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joseph Lo <josephl@nvidia.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "rnayak@ti.com" <rnayak@ti.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "horms+renesas@verge.net.au" <horms+renesas@verge.net.au>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, "arnd@arndb.de" <arnd@arndb.de>, "lenb@kernel.org" <lenb@kernel.org>, "nsekhar@ti.com" <nsekhar@ti.com>
 
-On 04/03/2013 10:32 AM, Viresh Kumar wrote:
-> Please always mention Version number and history. Not everybody
-> remembers what changed after last version.
-Your right.  I was rushing and forgot.
-I need to develop the habit of adding some history to my git commits 
-when I amend them.
+On 03/29/2013 08:22 PM, Joseph Lo wrote:
+> On Fri, 2013-03-29 at 18:31 +0800, Daniel Lezcano wrote:
+>> Initialize the idle states directly in the driver structure.
+>>
+>> That prevents extra structure declaration and memcpy at init time.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> Hi Daniel,
+> 
+> Thank you.
+> 
+> Both the 5th and 6th patch,
+> 
+> Reviewed-by: Joseph Lo <josephl@nvidia.com>
 
->
-> On 3 April 2013 20:33, Nathan Zimmer <nzimmer@sgi.com> wrote:
->> We eventually would like to remove the rwlock cpufreq_driver_lock or convert
->> it back to a spinlock and protect the read sections with RCU.  The first step in
-> Why do we want to convert it back to spinlock?
-Documentation/spinlocks.txt:84
-I am not sure why but there is the directive I am following.
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>   bool have_governor_per_policy(void)
->>   {
->> -       return cpufreq_driver->have_governor_per_policy;
->> +       bool have_governor;
-> Name it have_governor_per_policy, it looks wrong otherwise.
->
->> +       rcu_read_lock();
->> +       have_governor = rcu_dereference(cpufreq_driver)->have_governor_per_policy;
->> +       rcu_read_unlock();
->> +       return have_governor;
->>   }
-Will do.
->>   static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *buf)
->>   {
->> -       return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", cpufreq_driver->name);
->> +       char *name;
->> +       rcu_read_lock();
->> +       name = rcu_dereference(cpufreq_driver)->name;
->> +       rcu_read_unlock();
->> +       return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", name);
->>   }
-> This is the definition of struct cpufreq_driver:
->
-> struct cpufreq_driver {
-> 	struct module           *owner;
-> 	char			name[CPUFREQ_NAME_LEN];
->
->         ...
-> };
->
-> Purpose of rcu read_lock/unlock are to define the rcu critical section
-> after which rcu layer is free to free the memory allocated to earlier
-> instance of cpufreq_driver.
->
-> So, after the unlock() call you _should_not_ use the memory allocated to
-> cpufreq_driver instance. And here, you are using memory allocated to name[]
-> after the unlock() call.
-Ok I'll fix this spot.
+Thanks. Those same two patches therefore,
 
-> Which looks to be wrong... I left other parts of driver upto you to fix for this
-> "rule of thumb".
-In places like show_bios_limit and cpufreq_add_dev_interface we know 
-that the memory will still
-be there since the cpufreq_driver->owner is held.
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-> Sorry for not pointing this earlier but rcu is as new to me as it is
-> to you. I know
-> you must be frustrated with so many versions of this patch, and everytime we
-> get a new problem to you... Don't get disheartened with it.. Keep the good work
-> going :)
-Making a learners mistake isn't really discouraging to me, even when I 
-do it twice.
-
-> --
-> viresh
