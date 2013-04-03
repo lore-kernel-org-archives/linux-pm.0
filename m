@@ -1,99 +1,82 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv2 3/3] staging: ti-soc-thermal: remove external heat while extrapolating hotspot
-Date: Wed, 3 Apr 2013 18:13:17 -0400
-Message-ID: <1365027197-2793-4-git-send-email-eduardo.valentin@ti.com>
-References: <1365027197-2793-1-git-send-email-eduardo.valentin@ti.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [Update][PATCH] PCI / ACPI: Always resume devices on ACPI wakeup notifications
+Date: Wed, 3 Apr 2013 16:38:03 -0600
+Message-ID: <CAErSpo4DLswMWVRXUhXx6VcVk27YXpqjbNsnTF4jGv7eunv5hg@mail.gmail.com>
+References: <2282655.IicBMMa6jN@vostro.rjw.lan> <1396732.fV788D0xgr@vostro.rjw.lan>
+ <2699206.HmPyNvCpNR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:56173 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755939Ab3DCWOy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Apr 2013 18:14:54 -0400
-In-Reply-To: <1365027197-2793-1-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:63310 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759153Ab3DCWiY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 18:38:24 -0400
+Received: by mail-ob0-f170.google.com with SMTP id wc20so1961637obb.1
+        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 15:38:23 -0700 (PDT)
+In-Reply-To: <2699206.HmPyNvCpNR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, Eduardo Valentin <eduardo.valentin@ti.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>, Sarah Sharp <sarah.a.sharp@linux.intel.com>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Huang, Ying" <ying.huang@intel.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 
-For boards that provide a PCB sensor close to SoC junction
-temperature, it is possible to remove the cumulative heat
-reported by the SoC temperature sensor.
+On Thu, Mar 28, 2013 at 3:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: PCI / ACPI: Always resume devices on ACPI wakeup notifications
+>
+> It turns out that the _Lxx control methods provided by some BIOSes
+> clear the PME Status bit of PCI devices they handle, which means that
+> pci_acpi_wake_dev() cannot really use that bit to check whether or
+> not the device has signalled wakeup.
+>
+> One symptom of the problem is, for example, that when an affected PCI
+> USB controller is runtime-suspended, then plugging in a new USB device
+> into one of the controller's ports will not wake up the controller,
+> which should happen.
+>
+> For this reason, make pci_acpi_wake_dev() always attempt to resume
+> the device it is called for regardless of the device's PME Status bit
+> value (that bit still has to be cleared if set at this point,
+> though).
+>
+> Reported-by: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
+> Cc: 3.7+ <stable@vger.kernel.org>
+> ---
+>
+> The changelog in this version is slightly better than in the previous one, IMHO.
 
-This patch changes the extrapolation computation to consider
-an external sensor in the extrapolation equations.
+I applied this to for-linus for v3.9.  Thanks!
 
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- drivers/staging/ti-soc-thermal/ti-thermal-common.c |   30 +++++++++++++------
- 1 files changed, 20 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-index 231c549..780368b 100644
---- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-@@ -38,6 +38,7 @@
- /* common data structures */
- struct ti_thermal_data {
- 	struct thermal_zone_device *ti_thermal;
-+	struct thermal_zone_device *pcb_tz;
- 	struct thermal_cooling_device *cool_dev;
- 	struct ti_bandgap *bgp;
- 	enum thermal_device_mode mode;
-@@ -77,10 +78,12 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
- static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
- 				      unsigned long *temp)
- {
-+	struct thermal_zone_device *pcb_tz = NULL;
- 	struct ti_thermal_data *data = thermal->devdata;
- 	struct ti_bandgap *bgp;
- 	const struct ti_temp_sensor *s;
--	int ret, tmp, pcb_temp, slope, constant;
-+	int ret, tmp, slope, constant;
-+	unsigned long pcb_temp;
- 
- 	if (!data)
- 		return 0;
-@@ -92,16 +95,22 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
- 	if (ret)
- 		return ret;
- 
--	pcb_temp = 0;
--	/* TODO: Introduce pcb temperature lookup */
-+	/* Default constants */
-+	slope = s->slope;
-+	constant = s->constant;
-+
-+	pcb_tz = data->pcb_tz;
- 	/* In case pcb zone is available, use the extrapolation rule with it */
--	if (pcb_temp) {
--		tmp -= pcb_temp;
--		slope = s->slope_pcb;
--		constant = s->constant_pcb;
--	} else {
--		slope = s->slope;
--		constant = s->constant;
-+	if (!IS_ERR_OR_NULL(pcb_tz)) {
-+		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
-+		if (!ret) {
-+			tmp -= pcb_temp; /* got a valid PCB temp */
-+			slope = s->slope_pcb;
-+			constant = s->constant_pcb;
-+		} else {
-+			dev_err(bgp->dev,
-+				"Failed to read PCB state. Using defaults\n");
-+		}
- 	}
- 	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
- 
-@@ -248,6 +257,7 @@ static struct ti_thermal_data
- 	data->sensor_id = id;
- 	data->bgp = bgp;
- 	data->mode = THERMAL_DEVICE_ENABLED;
-+	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
- 	INIT_WORK(&data->thermal_wq, ti_thermal_work);
- 
- 	return data;
--- 
-1.7.7.1.488.ge8e1c
-
+> ---
+>  drivers/pci/pci-acpi.c |   15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+>
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -53,14 +53,15 @@ static void pci_acpi_wake_dev(acpi_handl
+>                 return;
+>         }
+>
+> -       if (!pci_dev->pm_cap || !pci_dev->pme_support
+> -            || pci_check_pme_status(pci_dev)) {
+> -               if (pci_dev->pme_poll)
+> -                       pci_dev->pme_poll = false;
+> +       /* Clear PME Status if set. */
+> +       if (pci_dev->pme_support)
+> +               pci_check_pme_status(pci_dev);
+>
+> -               pci_wakeup_event(pci_dev);
+> -               pm_runtime_resume(&pci_dev->dev);
+> -       }
+> +       if (pci_dev->pme_poll)
+> +               pci_dev->pme_poll = false;
+> +
+> +       pci_wakeup_event(pci_dev);
+> +       pm_runtime_resume(&pci_dev->dev);
+>
+>         if (pci_dev->subordinate)
+>                 pci_pme_wakeup_bus(pci_dev->subordinate);
+>
