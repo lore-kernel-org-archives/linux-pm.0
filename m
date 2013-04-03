@@ -1,59 +1,149 @@
 From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH 8/9] ARM: omap3: cpuidle: enable time keeping
-Date: Wed, 03 Apr 2013 10:47:23 -0700
-Message-ID: <87zjxfzetw.fsf@linaro.org>
-References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
-	<1364991322-20585-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V3 0/2] ARM: OMAP3+: support cpufreq-cpu0 for device tree boot
+Date: Wed, 03 Apr 2013 10:47:39 -0700
+Message-ID: <87y5czzetg.fsf@linaro.org>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:36754 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759474Ab3DCRr2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 13:47:28 -0400
-Received: by mail-pa0-f41.google.com with SMTP id kx1so1035526pab.14
-        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 10:47:27 -0700 (PDT)
-In-Reply-To: <1364991322-20585-8-git-send-email-daniel.lezcano@linaro.org>
-	(Daniel Lezcano's message of "Wed, 3 Apr 2013 14:15:21 +0200")
+Received: from mail-pb0-f53.google.com ([209.85.160.53]:55626 "EHLO
+	mail-pb0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762607Ab3DCRrm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 13:47:42 -0400
+Received: by mail-pb0-f53.google.com with SMTP id un15so968985pbc.26
+        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 10:47:42 -0700 (PDT)
+In-Reply-To: <1364507576-19345-1-git-send-email-nm@ti.com> (Nishanth Menon's
+	message of "Thu, 28 Mar 2013 16:52:54 -0500")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, nsekhar@ti.com, josephl@nvidia.com, deepthi@linux.vnet.ibm.com
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+Nishanth Menon <nm@ti.com> writes:
 
-> The TIME_VALID flag is specified for the different states but
-> the time residency computation is not done, no tk flag, no time
-> computation in the idle function.
+> The following version 3 of the series arose from trying to use BeagleBoard-XM
+> (OMAP3 variant) for doing CPU DVFS using cpufreq-cpu0. This series enables the
+> generic cpufreq-cpu0 driver to be used in device tree enabled boot while
+> maintaining support of the legacy omap-cpufreq driver when used in non device
+> tree enabled boot.
 >
-> Set the en_core_tk_irqen flag to activate it.
+> However, in order to enable complete SoC entitlement for OMAP platforms, with
+> this series, key features are still pending on device tree adaptation for OMAP:
+> A) clock framework data transition to DT - this should happen soon, so this
+> series hacks the clock node for the time being as suggested in review of
+> original series[1].
+> B) On processors that use voltage controller, voltage processor (VC/VP hardware
+> loop using I2C_SR path) - we have started work on transitioning them to
+> regulator framework driven by DT.
+> C) Adaptive Body Bias and SmartReflex AVS conversion to DT. [2]
 >
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> Note: At this point in time, we do not have DT entries for clock on OMAP
+> platforms. Common Clock Framework(CCF) could also control regulators[3].
+> Once these conversions are complete, there might be minimal cleanup work to
+> switch to the new data structure changes.
+>
+> Key benefit of the series is to allow all relevant TI platforms now to use a
+> single cpufreq driver and equivalent frameworks in addition be part of the
+> transition to device tree.
+> NOTE: As a result of this series:
+> 1. omap-cpufreq will be used only in non device tree boot scenario. we should
+>    delete this driver once the 100% DT conversion is complete.
+> 2. Generic cpufreq-cpu0 will be used only in device tree boot scenario.
+>    boot systems.
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+Yes, I like this direction better.  Thanks for reworking and thanks for
+the thorough changelog.
 
-Also, is this a regression fix that also needs to hit v3.9?
+> Key changes in version 3:
+> 	- series now rebased on Device tree patches queued for OMAP 3.10
+> 	- DT patches introducing OPPs are now merged, so pending patches alone
+> 	  are part of the new series.
+> 	- omap-cpufreq is now converted to platform_device to address:
+> 		http://marc.info/?t=136434901900001&r=1&w=2
+>
+> version 2 of the series:
+> 	http://marc.info/?t=136371570200003&r=1&w=2
+> 	available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v2
+>
+> version 1 of the series:
+> 	http://marc.info/?t=136329485400005&r=1&w=2
+> 	available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v1
+>
+> [1] Original discussion thread which triggered this series:
+> 	http://marc.info/?l=linux-pm&m=136304313700602&w=2
+> 	https://patchwork.kernel.org/patch/2251841/
+> 	https://patchwork.kernel.org/patch/2251851/
+> [2] ABB RFC: http://marc.info/?l=linux-omap&m=136449099409794&w=2 
+> [3] CCF DVFS patches:
+> https://patchwork.kernel.org/patch/2195431/
+> https://patchwork.kernel.org/patch/2195421/
+> https://patchwork.kernel.org/patch/2195451/
+> https://patchwork.kernel.org/patch/2195441/
+> https://patchwork.kernel.org/patch/2195461/
+>
+> Version 3 is now based on for-3.10/dts branch from Benoit:
+> 	http://git.kernel.org/cgit/linux/kernel/git/bcousson/linux-omap-dt.git/log/?h=for_3.10/dts
+> 	d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
+>
+> Version 3 is also available at:
+> 	https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-cpu0-omap-all-v3
+> 	git link: git://github.com/nmenon/linux-2.6-playground.git
+> 	branch: cpufreq-cpu0-omap-all-v3
+>
+> Test coverage:
+> 	test script: http://pastebin.com/zrr8ptge
+> Platforms verified:
+> 	beaglebone(rev A6a) - AM33xx compatible - http://pastebin.com/GVP2wDVr
+> 	beagleboard (rev C1D) - OMAP3430 compatible
+> 		- DT enabled boot: http://pastebin.com/2AY1F5Qa
+> 		- No DT enabled boot: http://pastebin.com/hDk0gbpU
+> 	omap3-beagle-xm -OMAP3630 compatible - http://pastebin.com/5tHAQcLZ
+> 	Pandaboard -(OMAP4430 ES2.2) - http://pastebin.com/6D9aDPXT
+> 	Pandaboard-ES -(OMAP4460 ES1.1) - http://pastebin.com/ExrBEczr
+
+And thanks also for the broad testing.
+
+One nit about the test report/coverage is I don't see any
+test/verification that the voltage is still being scaled based on the DT
+based OPPs.  It's easy to verify at least from the regulator PoV that
+the voltage is scaled also.
+
+My dumb DVFS test script (below) should work on any busybox rootfs 
+
+Care to give that (or something like it) a try as well?  
+
+With that extra confirmation of testing, I will queue up this series.
+
+Thanks,
 
 Kevin
 
-> ---
->  arch/arm/mach-omap2/cpuidle34xx.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-> index 80392fc..4f67a5b 100644
-> --- a/arch/arm/mach-omap2/cpuidle34xx.c
-> +++ b/arch/arm/mach-omap2/cpuidle34xx.c
-> @@ -274,8 +274,9 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
->  static DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
->  
->  static struct cpuidle_driver omap3_idle_driver = {
-> -	.name =		"omap3_idle",
-> -	.owner =	THIS_MODULE,
-> +	.name             = "omap3_idle",
-> +	.owner            = THIS_MODULE,
-> +	.en_core_tk_irqen = 1,
->  	.states = {
->  		{
->  			.enter		  = omap3_enter_idle_bm,
+[1]
+#!/bin/sh
+
+REG=`find /sys/class/regulator -follow -maxdepth 2 -name name -exec grep -l mpu {} \;`
+mpu_reg=`echo $REG | cut -d'/' -f5`
+echo MPU regulator: $mpu_reg
+
+if [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ]; then
+  echo "CPUfreq not enabled in kernel."
+  exit 0
+fi
+
+cd /sys/devices/system/cpu/cpu0/cpufreq
+echo -n "Available frequencies: "
+cat scaling_available_frequencies
+echo -n "Current frequency: "
+cat scaling_cur_freq
+echo userspace > scaling_governor
+
+for freq in `cat scaling_available_frequencies`; do
+  echo ${freq} > scaling_setspeed
+  echo -n "current freq: "
+  cat scaling_cur_freq
+  echo -n "current voltage: "
+  cat /sys/class/regulator/${mpu_reg}/microvolts
+  sleep 2
+done
