@@ -1,51 +1,35 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: Re: [PATCH v4 4/4] PM: Devfreq: Add Exynos5-bus devfreq driver for
- Exynos5250
-Date: Wed, 03 Apr 2013 13:35:18 +0900
-Message-ID: <24d701ce3024$a52d5310$ef87f930$%kim@samsung.com>
-References: <17352980.268481359965953092.JavaMail.weblogic@epml13>
- <CAM4voakFpXwG7ukO5p4=NKDQZc--rcLDPU8jGag_gB=4ZdvRAA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target handler to be registered
+Date: Wed, 3 Apr 2013 10:42:51 +0530
+Message-ID: <CAKohpomQN2endmNtvVS3JrqqPbyQpaZuVbiJ_hpM5SFLfDNRww@mail.gmail.com>
+References: <1364926304-1799-1-git-send-email-jacob.shin@amd.com>
+	<1364926304-1799-2-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ks_c_5601-1987
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:28178 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760338Ab3DCEfV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 00:35:21 -0400
-In-reply-to: <CAM4voakFpXwG7ukO5p4=NKDQZc--rcLDPU8jGag_gB=4ZdvRAA@mail.gmail.com>
-Content-language: ko
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:33549 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378Ab3DCFMw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 01:12:52 -0400
+Received: by mail-oa0-f43.google.com with SMTP id l10so1114540oag.16
+        for <linux-pm@vger.kernel.org>; Tue, 02 Apr 2013 22:12:52 -0700 (PDT)
+In-Reply-To: <1364926304-1799-2-git-send-email-jacob.shin@amd.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Abhilash Kesavan' <kesavan.abhilash@gmail.com>, myungjoo.ham@samsung.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?ks_c_5601-1987?B?J7nasOa5zic=?= <kyungmin.park@samsung.com>, rjw@sisk.pl, =?ks_c_5601-1987?B?J8PWwb7Iryc=?= <jhbird.choi@samsung.com>
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>
 
-Abhilash Kesavan wrote:
+On 2 April 2013 23:41, Jacob Shin <jacob.shin@amd.com> wrote:
+> This allows for another [arch specific] driver to hook into existing
+> powersave bias function of the ondemand governor. i.e. This allows AMD
+> specific powersave bias function (in a separate AMD specific driver)
+> to aid ondemand governor's frequency transition deicisions.
+>
+> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+> ---
+>  drivers/cpufreq/cpufreq_governor.h |    3 +++
+>  drivers/cpufreq/cpufreq_ondemand.c |   32 ++++++++++++++++++++++++--------
+>  2 files changed, 27 insertions(+), 8 deletions(-)
 
-> >> > One concern is that I cannot apply Patch 1/4 directly as the .dts
-> file isn't
-> >> > available to me.
-> >> > Do you intend to apply that patch to another tree and apply the other
-> three
-> >> > to devfreq tree?
-> >> I have been merging the devfreq tree into Kgene's tree for my testing.
-> I am not
-> >> sure how this should get in, any suggestions ?
-> >
-> > I'd suggest to send Patch 1/4 to Kgene and get it applied first if that
-> patch is preliminary to the other patchset. If it is not, we can go
-> seperated and independently.
-
-> Thanks for the suggestion. Kgene is a recipient on patches 1 and 2. I
-> am hoping he'll pick it up soon. However, the devfreq patches are not
-> dependent on them and can be applied independently.
-
-Just note, as I commented, arch side patches should be re-worked and
-current devfreq in mainline won't cause any problems without the arch side.
-And I discussed with Abhilash about that, he will finish arch side re-
-posting next time.
-
-Thanks.
-
-- Kukjin
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
