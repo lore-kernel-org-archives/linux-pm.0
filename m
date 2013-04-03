@@ -1,96 +1,50 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 4/9] ARM: tegra2: cpuidle: change driver initialization
-Date: Wed,  3 Apr 2013 14:15:17 +0200
-Message-ID: <1364991322-20585-4-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 6/9] ARM: davinci: cpuidle: fix wrong enter function
+Date: Wed,  3 Apr 2013 14:15:19 +0200
+Message-ID: <1364991322-20585-6-git-send-email-daniel.lezcano@linaro.org>
 References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:37880 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760626Ab3DCMPg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Apr 2013 08:15:36 -0400
-Received: by mail-wi0-f179.google.com with SMTP id hn17so1438777wib.0
-        for <linux-pm@vger.kernel.org>; Wed, 03 Apr 2013 05:15:35 -0700 (PDT)
-In-Reply-To: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364991322-20585-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-KKrjLPT3xs0@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, nsekhar@ti.com, josephl@nvidia.com, deepthi@linux.vnet.ibm.com
 
-Initialize the idle states directly in the driver structure.
+The davinci_enter_idle is called from the cpuidle with the
+cpuidle_wrap_enter function. This one does the time compution
+for entering and exiting the idle function and then we call
+again cpuidle_wrap_enter for cpu_do_idle. This is wrong, we
+are calling recursively cpuidle_wrap_enter for nothing and
+furthermore reenabling the local irq.
 
-That prevents extra structure declaration and memcpy at init time.
+Remove this and replace it by the cpu_do_idle function.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Joseph Lo <josephl@nvidia.com>
-Acked-by: Joseph Lo <josephl@nvidia.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Santosh Shilimkar <santosh.shilimkar-l0cyMroinI0@public.gmane.org>
 ---
- arch/arm/mach-tegra/cpuidle-tegra20.c |   40 ++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 20 deletions(-)
+ arch/arm/mach-davinci/cpuidle.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index 825ced4..1ad1a67 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -43,28 +43,32 @@ static atomic_t abort_barrier;
- static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
- 				    struct cpuidle_driver *drv,
- 				    int index);
-+#define TEGRA20_MAX_STATES 2
-+#else
-+#define TEGRA20_MAX_STATES 1
- #endif
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index 5ac9e93..22d6d4a 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -50,14 +50,10 @@ static void davinci_save_ddr_power(int enter, bool pdown)
  
--static struct cpuidle_state tegra_idle_states[] = {
--	[0] = ARM_CPUIDLE_WFI_STATE_PWR(600),
--#ifdef CONFIG_PM_SLEEP
--	[1] = {
--		.enter			= tegra20_idle_lp2_coupled,
--		.exit_latency		= 5000,
--		.target_residency	= 10000,
--		.power_usage		= 0,
--		.flags			= CPUIDLE_FLAG_TIME_VALID |
--					  CPUIDLE_FLAG_COUPLED,
--		.name			= "powered-down",
--		.desc			= "CPU power gated",
--	},
--#endif
--};
+ /* Actual code that puts the SoC in different idle states */
+ static int davinci_enter_idle(struct cpuidle_device *dev,
+-				struct cpuidle_driver *drv,
+-						int index)
++			      struct cpuidle_driver *drv, int index)
+ {
+ 	davinci_save_ddr_power(1, ddr2_pdown);
 -
- static struct cpuidle_driver tegra_idle_driver = {
- 	.name = "tegra_idle",
- 	.owner = THIS_MODULE,
- 	.en_core_tk_irqen = 1,
-+	.states = {
-+		ARM_CPUIDLE_WFI_STATE_PWR(600),
-+#ifdef CONFIG_PM_SLEEP
-+		{
-+			.enter            = tegra20_idle_lp2_coupled,
-+			.exit_latency     = 5000,
-+			.target_residency = 10000,
-+			.power_usage      = 0,
-+			.flags            = CPUIDLE_FLAG_TIME_VALID |
-+			CPUIDLE_FLAG_COUPLED,
-+			.name             = "powered-down",
-+			.desc             = "CPU power gated",
-+		},
-+#endif
-+	},
-+	.state_count = TEGRA20_MAX_STATES,
-+	.safe_state_index = 0,
- };
- 
- static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
-@@ -226,10 +230,6 @@ int __init tegra20_cpuidle_init(void)
- 	tegra_tear_down_cpu = tegra20_tear_down_cpu;
- #endif
- 
--	drv->state_count = ARRAY_SIZE(tegra_idle_states);
--	memcpy(drv->states, tegra_idle_states,
--			drv->state_count * sizeof(drv->states[0]));
+-	index = cpuidle_wrap_enter(dev,	drv, index,
+-				arm_cpuidle_simple_enter);
 -
- 	ret = cpuidle_register_driver(&tegra_idle_driver);
- 	if (ret) {
- 		pr_err("CPUidle driver registration failed\n");
++	cpu_do_idle();
+ 	davinci_save_ddr_power(0, ddr2_pdown);
+ 
+ 	return index;
 -- 
 1.7.9.5
-
