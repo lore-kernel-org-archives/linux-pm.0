@@ -1,45 +1,54 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V4 1/2] cpufreq: ondemand: allow custom
- powersave_bias_target handler to be registered
-Date: Thu, 4 Apr 2013 23:32:20 +0200
-Message-ID: <20130404213220.GK32271@pd.tnic>
-References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
- <1365092344-11310-2-git-send-email-jacob.shin@amd.com>
- <CAKohpom6BSJZc_ohgnjRTV2EBUAPy8TKVphtoRaNSt1wFP70uA@mail.gmail.com>
- <20130404171804.GA4696@jshin-Toonie>
- <20130404191225.GH32271@pd.tnic>
- <20130404202813.GA24479@jshin-Toonie>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 1/9] ARM: cpuidle: remove useless declaration
+Date: Fri, 05 Apr 2013 00:30:30 +0200
+Message-ID: <2872594.RzEdba6jp9@vostro.rjw.lan>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130404202813.GA24479@jshin-Toonie>
-Sender: cpufreq-owner@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364991322-20585-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 04, 2013 at 03:28:13PM -0500, Jacob Shin wrote:
-> Ah, okay .. here is the fixup:
+On Wednesday, April 03, 2013 02:15:14 PM Daniel Lezcano wrote:
+> The noop functions code is not necessary because the header file is
+> included in files which are compiled when CONFIG_CPU_IDLE is on.
 > 
-> From 7236287faa1a499686c9aac1d3f3f224516a7bbf Mon Sep 17 00:00:00 2001
-> From: Jacob Shin <jacob.shin@amd.com>
-> Date: Tue, 2 Apr 2013 09:56:56 -0500
-> Subject: [PATCH 1/2] cpufreq: ondemand: allow custom powersave_bias_target
->  handler to be registered
-> 
-> This allows for another [arch specific] driver to hook into existing
-> powersave bias function of the ondemand governor. i.e. This allows AMD
-> specific powersave bias function (in a separate AMD specific driver)
-> to aid ondemand governor's frequency transition decisions.
-> 
-> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Acked-by: Borislav Petkov <bp@suse.de>
+I need an ACK for this one.
 
+Thanks,
+Rafael
+
+
+> ---
+>  arch/arm/include/asm/cpuidle.h |    7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+> index 2fca60a..7367787 100644
+> --- a/arch/arm/include/asm/cpuidle.h
+> +++ b/arch/arm/include/asm/cpuidle.h
+> @@ -1,13 +1,8 @@
+>  #ifndef __ASM_ARM_CPUIDLE_H
+>  #define __ASM_ARM_CPUIDLE_H
+>  
+> -#ifdef CONFIG_CPU_IDLE
+>  extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+> -		struct cpuidle_driver *drv, int index);
+> -#else
+> -static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+> -		struct cpuidle_driver *drv, int index) { return -ENODEV; }
+> -#endif
+> +				    struct cpuidle_driver *drv, int index);
+>  
+>  /* Common ARM WFI state */
+>  #define ARM_CPUIDLE_WFI_STATE_PWR(p) {\
+> 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
