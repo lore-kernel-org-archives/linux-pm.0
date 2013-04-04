@@ -1,75 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 11/18] cpufreq: cris: move cpufreq driver to drivers/cpufreq
-Date: Thu,  4 Apr 2013 18:24:19 +0530
-Message-ID: <c9222567062448d604994ab706db0f047a5ffd47.1365079581.git.viresh.kumar@linaro.org>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq driver to drivers/cpufreq
+Date: Thu, 4 Apr 2013 13:02:09 +0000
+Message-ID: <201304041302.09995.arnd@arndb.de>
+References: <cover.1365079581.git.viresh.kumar@linaro.org> <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
+In-Reply-To: <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Jesper Nilsson <jesper.nilsson@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel@axis.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch moves cpufreq drivers of CRIS architecture to drivers/cpufreq.
+On Thursday 04 April 2013, Viresh Kumar wrote:
+> This patch moves cpufreq driver of powerpc platforms/cell to drivers/cpufreq.
+> 
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Compile Tested only.
+> 
+>  arch/powerpc/platforms/cell/Kconfig                | 26 +---------------------
+>  arch/powerpc/platforms/cell/Makefile               |  3 ---
+>  drivers/cpufreq/Kconfig.powerpc                    | 18 +++++++++++++++
+>  drivers/cpufreq/Makefile                           |  3 +++
+>  .../cpufreq/ppc_cbe_cpufreq.c                      |  2 +-
+>  .../cpufreq/ppc_cbe_cpufreq_pervasive.c            |  3 +--
+>  .../cpufreq/ppc_cbe_cpufreq_pmi.c                  |  3 +--
+>  .../linux/ppc_cbe_cpufreq.h                        |  4 ++--
 
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: linux-cris-kernel@axis.com
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
----
- arch/cris/arch-v32/mach-a3/Makefile                                     | 1 -
- arch/cris/arch-v32/mach-fs/Makefile                                     | 1 -
- drivers/cpufreq/Makefile                                                | 2 ++
- .../mach-a3/cpufreq.c => drivers/cpufreq/cris-artpec3-cpufreq.c         | 0
- .../mach-fs/cpufreq.c => drivers/cpufreq/cris-etraxfs-cpufreq.c         | 0
- 5 files changed, 2 insertions(+), 2 deletions(-)
- rename arch/cris/arch-v32/mach-a3/cpufreq.c => drivers/cpufreq/cris-artpec3-cpufreq.c (100%)
- rename arch/cris/arch-v32/mach-fs/cpufreq.c => drivers/cpufreq/cris-etraxfs-cpufreq.c (100%)
+Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
+header globally visible in include/linux/. Isn't it just used by as the
+interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
 
-diff --git a/arch/cris/arch-v32/mach-a3/Makefile b/arch/cris/arch-v32/mach-a3/Makefile
-index d366e08..18a2271 100644
---- a/arch/cris/arch-v32/mach-a3/Makefile
-+++ b/arch/cris/arch-v32/mach-a3/Makefile
-@@ -3,7 +3,6 @@
- #
- 
- obj-y   := dma.o pinmux.o io.o arbiter.o
--obj-$(CONFIG_CPU_FREQ)   += cpufreq.o
- 
- clean:
- 
-diff --git a/arch/cris/arch-v32/mach-fs/Makefile b/arch/cris/arch-v32/mach-fs/Makefile
-index d366e08..18a2271 100644
---- a/arch/cris/arch-v32/mach-fs/Makefile
-+++ b/arch/cris/arch-v32/mach-fs/Makefile
-@@ -3,7 +3,6 @@
- #
- 
- obj-y   := dma.o pinmux.o io.o arbiter.o
--obj-$(CONFIG_CPU_FREQ)   += cpufreq.o
- 
- clean:
- 
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 19de776..751815d 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -84,3 +84,5 @@ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
- # Other platform drivers
- obj-$(CONFIG_AVR32_AT32AP_CPUFREQ)	+= at32ap-cpufreq.o
- obj-$(CONFIG_BLACKFIN)			+= blackfin-cpufreq.o
-+obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
-+obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
-diff --git a/arch/cris/arch-v32/mach-a3/cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
-similarity index 100%
-rename from arch/cris/arch-v32/mach-a3/cpufreq.c
-rename to drivers/cpufreq/cris-artpec3-cpufreq.c
-diff --git a/arch/cris/arch-v32/mach-fs/cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
-similarity index 100%
-rename from arch/cris/arch-v32/mach-fs/cpufreq.c
-rename to drivers/cpufreq/cris-etraxfs-cpufreq.c
--- 
-1.7.12.rc2.18.g61b472e
+	Arnd
