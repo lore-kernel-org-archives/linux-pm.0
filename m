@@ -1,196 +1,131 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Thu, 04 Apr 2013 02:30:32 +0300
-Message-ID: <515CBB98.4020607@semaphore.gr>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
+ tree supported boot
+Date: Wed, 3 Apr 2013 21:52:11 -0500
+Message-ID: <20130404025211.GA2456@snafu>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
+ <1364507576-19345-2-git-send-email-nm@ti.com>
+ <87ppybxxi0.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------020504000702030900090901"
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3060957.HxB12olH3c@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:45430 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932933Ab3DDCwO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Apr 2013 22:52:14 -0400
+Content-Disposition: inline
+In-Reply-To: <87ppybxxi0.fsf@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-This is a multi-part message in MIME format.
---------------020504000702030900090901
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-On 04/03/2013 02:14 PM, Rafael J. Wysocki wrote:
-> On Wednesday, April 03, 2013 12:13:56 PM Viresh Kumar wrote:
->> On 3 April 2013 12:01, stratosk <stratosk@semaphore.gr> wrote:
->>> I'm sorry, I don't understand.
->>> The goal of this patch is not energy saving.
->>
->> He probably misunderstood it...
->>
->>> The goal is to detect CPU load as soon as possible to increase frequency.
->>>
->>> Could you please clarify this?
->>
->> But he is looking for some numbers to prove your patch. Some numbers
->> that shows performance is better with your changes...
+On 11:47-20130403, Kevin Hilman wrote:
+> Nishanth Menon <nm@ti.com> writes:
 > 
-> Yes.  If the goal of the patch is to improve performance, it would be good to
-> know that it does meet the goal. IOW, *something* is supposed to be better with
-> the patch and if so, numbers in support of this should be provided.
+[...]
+> > diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
+> > index afa509a..5b147ef 100644
+> > --- a/arch/arm/mach-omap2/board-generic.c
+> > +++ b/arch/arm/mach-omap2/board-generic.c
+> > @@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
+> >  		omap4_panda_display_init_of();
+> >  	else if (of_machine_is_compatible("ti,omap4-sdp"))
+> >  		omap_4430sdp_display_init_of();
+> > +
+> > +	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
+> > +		struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
+> > +		platform_device_register_full(&devinfo);
+> > +	}
 > 
-> Thanks,
-> Rafael
+> Rather than adding new clkdev nodes below, how about using clk add_alias
+> here?
+Thanks for pointing this out, I spend some time implementing such a
+scheme and following is my opinion:
 
-I tried to do some measurements simulating a CPU load with a loop that simply counts
-an integer. The first test simulates a CPU load that lasts 2 x sampling_rate = ~ 20000us.
-The second ~40000us and the third ~60000us.
-There are 5 runs in each test. In each run the benchmark program counts 20 times with
-early_demand off and 20 times with early_demand on and takes the average times.
+Summary:
+There is one major problem which forces us to introduce this "clock
+hack" - clock nodes are not in device tree yet. Yes, clock add alias
+can be used (see option b,c,d..) - but the maintenance burden while we
+transition into DT based clock node is just not worth the effort. The
+current patch(option a) seems to be least of the compromise approaches
+available, IMHO.
 
-I run the benchmark program on 3.9-rc5 + early_demand patch. My CPU is the i7-3770 @ 3.40 GHz
+(testing example:
+ options a, b, c all generate the log: http://pastebin.com/dJe7G9Q9
+ with the updated test script: http://pastebin.com/c3ZiU2Ng (now prints
+voltage as well))
 
-Please find below the results, and the benchmark code attached.
-Please note, that the idea of this patch is to push the CPU to max frequency few sampling
-periods (1 in most cases) earlier for a more responsive system. 
+So this means we have to be able to choose one of the available hacks:
+option a) - add clock nodes in cclock_xyz_data.c
+	the current patch under discussion.
+Pros:
+	- we keep board-generic.c intact
+	- DT entries as needed example:
+	clocks = <&dpll1>; can be used. So conversion of DT clock nodes
+	and delete of cclock_xyz_data.c could be done in a smooth manner
+	- we do can continue to support with the same code some TI
+	platforms which have been transitioned to DT clock nodes, while
+	in the same code others remain with _data.c and at the end of
+	complete transition we dont need to cleanup code.
+	- Allows us to have different DPLL names for controlling cpu0
+	clock as SoC needs in DT/_data.c
+Cons:
+	yes, we have those ugly clock entries in clock_xyz_data.c files
+	- but it anyways needs an HACK to work with current data files -
+	why spread the hack around to other files and DT as well?
 
-Thanks for your time,
-Stratos
+option b) using *only* clock alias cpufreq_ck
+	http://pastebin.com/BHLNsfib
+Pros:
+	- we could maintain clock_xyz_data.c without much modification
+Cons:
+	- forced to maintain cpufreq_ck clock node even for DT
+	conversion
+	- tons of cleanup in code, DT entries to be done while we
+	are in-transition and completion of transition to DT clock
+	nodes.
 
---------
+option c) detect if clock node is populated, else use clock alias:
+	http://pastebin.com/WpP8CSL8
+Pros:
+	- we could add DT nodes without cleanup later on.
+Cons:
+	- replicated code (which needs to be eventually cleaned up) just
+	to detect cpu nodes with clock nodes registered
+	- cleanup needs to be done anyways in 
+Pros:
+	- we could maintain clock_xyz_data.c without much modification
+Cons:
+	- forced to maintain cpufreq_ck clock node even for DT
+	conversion
+	- tons of cleanup in code, DT entries to be done while we
+	are in-transition and completion of transition to DT clock
+	nodes.
 
-counter 10,000,000
-run	early_demand off	early_demand on		diff
-1	20183us			20100us			0.41%
-2	20127us			20091us			0.18%
-3	20121us			20034us			0.43%
-4	20262us			20043us			1.08%
-5	20192us			20101us			0.45%
+option d) pass the dummy pdev created for cpufreq to clock_xyz_data
+init/ io.c early_init.
+	I did not implement this, but is an theoretical possibility
+	we create the clock nodes in early_init, yeah we could register
+	the platform_device and pass the node over to clock_xyz_data as
+	an option, but that just means we have to cleanup in more than
+	one place now - board-generic, io.c, clock_xyz_data.c etc..
 
-counter 20,000,000
-run	early_demand off	early_demand on		diff
-1	40037us			39846us			0.47%
-2	40051us			39829us			0.55%
-3	39996us			39845us			0.38%
-4	40104us			39876us			0.57%
-5	40090us			39841us			0.62%
+[...]
+> > diff --git a/arch/arm/mach-omap2/cclock3xxx_data.c b/arch/arm/mach-omap2/cclock3xxx_data.c
+> > index 4579c3c..5a5b471 100644
+> > --- a/arch/arm/mach-omap2/cclock3xxx_data.c
+> > +++ b/arch/arm/mach-omap2/cclock3xxx_data.c
+> > @@ -3501,7 +3501,8 @@ static struct omap_clk omap3xxx_clks[] = {
+> >  	CLK(NULL,	"uart4_ick",	&uart4_ick_am35xx,	CK_AM35XX),
+> >  	CLK(NULL,	"timer_32k_ck",	&omap_32k_fck,  CK_3XXX),
+> >  	CLK(NULL,	"timer_sys_ck",	&sys_ck,	CK_3XXX),
+> > -	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX),
+> > +	CLK(NULL,	"cpufreq_ck",	&dpll1_ck,	CK_3XXX), /* used in non-device tree boot */
+> > +	CLK("cpufreq-cpu0.0",	NULL,	&dpll1_ck,	CK_3XXX), /* used in device tree boot */
+> >  };
+[...]
 
-counter 30,000,000
-run	early_demand off	early_demand on		diff
-1	60010us			59834us			0.29%
-2	59560us			59854us			-0.491%
-3	60006us			59827us			0.29%
-4	59998us			59828us			0.28%
-5	60012us			59866us			0.24%
-
-
---------------020504000702030900090901
-Content-Type: text/x-csrc;
- name="bench.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="bench.c"
-
-#include <stdio.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-
-struct timeval start, end;
-unsigned long long i, cnt;
-long utime, seconds, useconds;
-
-void enable_early() {
-	system("echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/early_demand");
-}
-
-void disable_early() {
-        system("echo 0 > /sys/devices/system/cpu/cpufreq/ondemand/early_demand");
-}
-
-void calibrate()
-{
-	sleep(1);
-
-	gettimeofday(&start, NULL);
-
-	for (i = 0; i < 1000000000; i++);
-
-	gettimeofday(&end, NULL);
-	seconds = end.tv_sec - start.tv_sec;
-	useconds = end.tv_usec - start.tv_usec;
-	utime = seconds * 1000000 + useconds;
-	
-	printf("Calibrating\n");
-	printf("Elapsed time: %ld microseconds\n", utime);
-
-	/* find the counter for 10ms */
-	cnt = i * 10000 / utime;
-
-	printf("cnt: %ld\n", cnt);
-}
-
-long do_bench()
-{
-	gettimeofday(&start, NULL);
-
-	for (i = 0; i < cnt; i++);
-
-	gettimeofday(&end, NULL);
-	seconds = end.tv_sec - start.tv_sec;
-	useconds = end.tv_usec - start.tv_usec;
-	utime = seconds * 1000000 + useconds;
-	
-	printf("Elapsed time: %ld microseconds\n", utime);
-
-	return utime;
-}
-
-void benchmark()
-{
-	const int iter = 20;
-	long total_off = 0;
-	long total_on = 0;
-	int diff_perc;
-	unsigned int i;
-
-	/* calibrate(); */
-	cnt = 10000000;
-
-	disable_early();
-	do_bench(); /* do a first benchmark but do not count in total */	
-	sleep(5);
-
-	for (i = 0; i < iter; i++) {
-		total_off += do_bench();
-		
-		usleep(500000);
-	}
-	total_off /= iter;
-
-	printf("early_demand off - average time: %ld microseconds\n", total_off);
-
-	enable_early();
-	do_bench(); /* do a first benchmark but do not count in total */
-	sleep(5);
-
-	for (i = 0; i < iter; i++) {
-                total_on += do_bench();
-
-                usleep(500000);
-        }
-        total_on /= iter;
-
-	diff_perc = total_off - total_on;
-
-        printf("early_demand on - average time: %ld microseconds\n", total_on);
-	printf("diff: %d\n", diff_perc);
-}
-
-main ()
-{
-	printf("Starting benchmark\n");
-	benchmark();
-
-}
-
---------------020504000702030900090901--
+-- 
+Regards,
+Nishanth Menon
