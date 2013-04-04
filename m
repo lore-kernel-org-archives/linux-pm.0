@@ -1,34 +1,63 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH linux-next v8] cpufreq: convert the cpufreq_driver to use
- the rcu
-Date: Thu, 4 Apr 2013 21:57:19 +0530
-Message-ID: <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
-References: <515C5AB6.5090109@sgi.com>
-	<1365087205-8708-1-git-send-email-nzimmer@sgi.com>
+Subject: Re: [PATCH V4 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target handler to be registered
+Date: Thu, 4 Apr 2013 22:06:35 +0530
+Message-ID: <CAKohpom6BSJZc_ohgnjRTV2EBUAPy8TKVphtoRaNSt1wFP70uA@mail.gmail.com>
+References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
+	<1365092344-11310-2-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1365087205-8708-1-git-send-email-nzimmer@sgi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nathan Zimmer <nzimmer@sgi.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:56446 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763207Ab3DDQgh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 12:36:37 -0400
+Received: by mail-ob0-f181.google.com with SMTP id ni5so2699067obc.40
+        for <linux-pm@vger.kernel.org>; Thu, 04 Apr 2013 09:36:35 -0700 (PDT)
+In-Reply-To: <1365092344-11310-2-git-send-email-jacob.shin@amd.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>
 
-On 4 April 2013 20:23, Nathan Zimmer <nzimmer@sgi.com> wrote:
-> We eventually would like to remove the rwlock cpufreq_driver_lock or convert
-> it back to a spinlock and protect the read sections with RCU.  The first step in
-> that is moving the cpufreq_driver to use the rcu.
-> I don't see an easy wasy to protect the cpufreq_cpu_data structure with the
-> RCU, so I am leaving it with the rwlock for now since under certain configs
-> __cpufreq_cpu_get is hot spot with 256+ cores.
->
-> v5: Go a different way and split up the lock and use the rcu
-> v6: use bools instead of checking function pointers
->     covert the cpufreq_data_lock to a rwlock
-> v7: Rebase to use the already accepted half
-> v8: Correct have_governor_per_policy
->     Reviewed location of rcu_read_(un)lock in several spots
+On 4 April 2013 21:49, Jacob Shin <jacob.shin@amd.com> wrote:
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
 
-Sorry for long delay or too many versions of this patch :)
+> +static void od_set_powersave_bias(unsigned int powersave_bias)
+> +{
+> +       unsigned int cpu;
+> +       struct od_dbs_tuners *od_tuners;
+> +
+> +       if (!have_governor_per_policy()) {
+> +               od_tuners = od_dbs_cdata.gdbs_data->tuners;
+> +               od_tuners->powersave_bias = powersave_bias;
+> +               return;
+> +       }
+> +
+> +       for_each_online_cpu(cpu) {
+> +               struct cpufreq_policy *policy;
+> +               struct dbs_data *dbs_data;
+> +               policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
+> +               dbs_data = policy->governor_data;
+> +               od_tuners = dbs_data->tuners;
+> +               od_tuners->powersave_bias = powersave_bias;
+> +       }
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+You can keep only the for_each_online_cpu() loop and remove the other
+one. And in that one also, you don't have to do this for every cpu...
+
+something like this will help you...
+
+cpus_processed = NULL;
+
+for_each_online_cpu(cpu) {
+    if cpu-is-present-in cpus_processed
+        continue;
+
+    cpu-set-mask(cpus_processed, policy->cpus);
+
+}
+
+Syntax is poor, please choose the correct one.
+
+> +}
