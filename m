@@ -1,37 +1,37 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V4 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Thu, 4 Apr 2013 21:23:23 +0200
-Message-ID: <20130404192323.GI32271@pd.tnic>
-References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
- <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/4] PCI/PM: D3cold support for system suspend
+Date: Thu, 04 Apr 2013 22:18:04 +0200
+Message-ID: <40154903.vXKcu58qDG@vostro.rjw.lan>
+References: <1359434058-15918-1-git-send-email-ying.huang@intel.com> <CAErSpo6m=3txSUH5Bwm7Y7K=25UWA4-kgPs_fs-Pa8jkP5WRDA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Jacob Shin <jacob.shin@amd.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo6m=3txSUH5Bwm7Y7K=25UWA4-kgPs_fs-Pa8jkP5WRDA@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Huang Ying <ying.huang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 04, 2013 at 11:19:04AM -0500, Jacob Shin wrote:
-> Future AMD processors, starting with Family 16h, can provide software
-> with feedback on how the workload may respond to frequency change --
-> memory-bound workloads will not benefit from higher frequency, where
-> as compute-bound workloads will. This patch enables this "frequency
-> sensitivity feedback" to aid the ondemand governor to make better
-> frequency change decisions by hooking into the powersave bias.
+On Thursday, April 04, 2013 12:26:52 PM Bjorn Helgaas wrote:
+> On Mon, Jan 28, 2013 at 9:34 PM, Huang Ying <ying.huang@intel.com> wrote:
+> > [PATCH 1/4] PCI/ACPI: Add target state as parameter to pci_platform_pm_ops->run_wake
+> > [PATCH 2/4] PCI: Rename pci_dev->runtime_d3cold to pci_dev->set_d3cold
+> > [PATCH 3/4] PCI/PM: Set pci_dev->set_d3cold in pci_set_power_state
+> > [PATCH 4/4] PCI/PM: Enable D3cold support for system suspend
 > 
-> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
+> Do we still need these?
+> 
+> What problem do they solve?  Or what new functionality do they add?
 
-Looks good to me.
+They were supposed to allow PCI devices to be put into D3cold (via ACPI)
+during system suspend, but I think it's better not to do that at this
+point.
 
-Acked-by: Borislav Petkov <bp@suse.de>
+Thanks,
+Rafael
+
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
