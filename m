@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/18] cpufreq: integrator: move cpufreq driver to drivers/cpufreq
-Date: Thu,  4 Apr 2013 18:24:14 +0530
-Message-ID: <062b894f52bcf748d2a5ba82e98319b9734356a9.1365079581.git.viresh.kumar@linaro.org>
+Subject: [PATCH 05/18] cpufreq: pxa2xx: move cpufreq driver to drivers/cpufreq
+Date: Thu,  4 Apr 2013 18:24:13 +0530
+Message-ID: <41cb34556b2cb26923842fcaf38990f46dfbd7f1.1365079581.git.viresh.kumar@linaro.org>
 References: <cover.1365079581.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
@@ -9,101 +9,84 @@ In-Reply-To: <cover.1365079581.git.viresh.kumar@linaro.org>
 References: <cover.1365079581.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Eric Miao <eric.y.miao@gmail.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch moves cpufreq driver of ARM based integrator platform to
-drivers/cpufreq.
+This patch moves cpufreq driver of ARM based pxa2xx platform to drivers/cpufreq.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
 Cc: linux-arm-kernel@lists.infradead.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Eric Miao <eric.y.miao@gmail.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- arch/arm/Kconfig                                              | 11 -----------
- arch/arm/mach-integrator/Makefile                             |  1 -
- drivers/cpufreq/Kconfig.arm                                   |  8 ++++++++
- drivers/cpufreq/Makefile                                      |  1 +
- .../cpu.c => drivers/cpufreq/integrator-cpufreq.c             |  2 --
- 5 files changed, 9 insertions(+), 14 deletions(-)
- rename arch/arm/mach-integrator/cpu.c => drivers/cpufreq/integrator-cpufreq.c (99%)
+ arch/arm/Kconfig                                                   | 7 -------
+ arch/arm/mach-pxa/Makefile                                         | 5 -----
+ drivers/cpufreq/Makefile                                           | 2 ++
+ .../mach-pxa/cpufreq-pxa2xx.c => drivers/cpufreq/pxa2xx-cpufreq.c  | 2 --
+ 4 files changed, 2 insertions(+), 14 deletions(-)
+ rename arch/arm/mach-pxa/cpufreq-pxa2xx.c => drivers/cpufreq/pxa2xx-cpufreq.c (99%)
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index 76eb836..c3563f6 100644
+index 13b7394..76eb836 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -2166,17 +2166,6 @@ config CPU_FREQ_SA1100
- config CPU_FREQ_SA1110
- 	bool
+@@ -2177,13 +2177,6 @@ config CPU_FREQ_INTEGRATOR
  
--config CPU_FREQ_INTEGRATOR
--	tristate "CPUfreq driver for ARM Integrator CPUs"
--	depends on ARCH_INTEGRATOR && CPU_FREQ
+ 	  If in doubt, say Y.
+ 
+-config CPU_FREQ_PXA
+-	bool
+-	depends on CPU_FREQ && ARCH_PXA && PXA25x
 -	default y
--	help
--	  This enables the CPUfreq driver for ARM Integrator CPUs.
--
--	  For details, take a look at <file:Documentation/cpu-freq>.
--
--	  If in doubt, say Y.
+-	select CPU_FREQ_DEFAULT_GOV_USERSPACE
+-	select CPU_FREQ_TABLE
 -
  config CPU_FREQ_S3C
  	bool
  	help
-diff --git a/arch/arm/mach-integrator/Makefile b/arch/arm/mach-integrator/Makefile
-index 5521d18..d14d6b7 100644
---- a/arch/arm/mach-integrator/Makefile
-+++ b/arch/arm/mach-integrator/Makefile
-@@ -9,5 +9,4 @@ obj-$(CONFIG_ARCH_INTEGRATOR_AP)	+= integrator_ap.o
- obj-$(CONFIG_ARCH_INTEGRATOR_CP)	+= integrator_cp.o
+diff --git a/arch/arm/mach-pxa/Makefile b/arch/arm/mach-pxa/Makefile
+index 929e700..648867a 100644
+--- a/arch/arm/mach-pxa/Makefile
++++ b/arch/arm/mach-pxa/Makefile
+@@ -7,11 +7,6 @@ obj-y				+= clock.o devices.o generic.o irq.o \
+ 				   time.o reset.o
+ obj-$(CONFIG_PM)		+= pm.o sleep.o standby.o
  
- obj-$(CONFIG_PCI)			+= pci_v3.o pci.o
--obj-$(CONFIG_CPU_FREQ_INTEGRATOR)	+= cpu.o
- obj-$(CONFIG_INTEGRATOR_IMPD1)		+= impd1.o
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 25d866a..97f208d 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -66,6 +66,14 @@ config ARM_IMX6Q_CPUFREQ
+-ifeq ($(CONFIG_CPU_FREQ),y)
+-obj-$(CONFIG_PXA25x)		+= cpufreq-pxa2xx.o
+-obj-$(CONFIG_PXA27x)		+= cpufreq-pxa2xx.o
+-endif
+-
+ # Generic drivers that other drivers may depend upon
  
- 	  If in doubt, say N.
- 
-+config ARM_INTEGRATOR
-+	tristate "CPUfreq driver for ARM Integrator CPUs"
-+	depends on ARCH_INTEGRATOR
-+	default y
-+	help
-+	  This enables the CPUfreq driver for ARM Integrator CPUs.
-+	  If in doubt, say Y.
-+
- config ARM_KIRKWOOD_CPUFREQ
- 	def_bool ARCH_KIRKWOOD && OF
- 	help
+ # SoC-specific code
 diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index aa766fb..8d58016 100644
+index 3458bf2..aa766fb 100644
 --- a/drivers/cpufreq/Makefile
 +++ b/drivers/cpufreq/Makefile
-@@ -57,6 +57,7 @@ obj-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)	+= exynos4x12-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+@@ -59,6 +59,8 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
-+obj-$(CONFIG_ARM_INTEGRATOR)		+= integrator-cpufreq.o
  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_PXA25x)			+= pxa2xx-cpufreq.o
-diff --git a/arch/arm/mach-integrator/cpu.c b/drivers/cpufreq/integrator-cpufreq.c
++obj-$(CONFIG_PXA25x)			+= pxa2xx-cpufreq.o
++obj-$(CONFIG_PXA27x)			+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
+ obj-$(CONFIG_ARM_S3C2416_CPUFREQ)	+= s3c2416-cpufreq.o
+ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
+diff --git a/arch/arm/mach-pxa/cpufreq-pxa2xx.c b/drivers/cpufreq/pxa2xx-cpufreq.c
 similarity index 99%
-rename from arch/arm/mach-integrator/cpu.c
-rename to drivers/cpufreq/integrator-cpufreq.c
-index df863c3..f7c99df 100644
---- a/arch/arm/mach-integrator/cpu.c
-+++ b/drivers/cpufreq/integrator-cpufreq.c
+rename from arch/arm/mach-pxa/cpufreq-pxa2xx.c
+rename to drivers/cpufreq/pxa2xx-cpufreq.c
+index f1ca4da..fe4c55b 100644
+--- a/arch/arm/mach-pxa/cpufreq-pxa2xx.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
 @@ -1,6 +1,4 @@
  /*
-- *  linux/arch/arm/mach-integrator/cpu.c
+- *  linux/arch/arm/mach-pxa/cpufreq-pxa2xx.c
 - *
-  *  Copyright (C) 2001-2002 Deep Blue Solutions Ltd.
+  *  Copyright (C) 2002,2003 Intrinsyc Software
   *
   * This program is free software; you can redistribute it and/or modify
 -- 
