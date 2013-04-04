@@ -1,133 +1,54 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv2 1/3] thermal: introduce thermal_zone_get_zone_by_name
- helper function
-Date: Thu, 4 Apr 2013 16:22:16 -0400
-Message-ID: <515DE0F8.7070702@ti.com>
-References: <1365027197-2793-1-git-send-email-eduardo.valentin@ti.com> <1365027197-2793-2-git-send-email-eduardo.valentin@ti.com> <4D68720C2E767A4AA6A8796D42C8EB59C650A4@BGSMSX101.gar.corp.intel.com>
+Subject: Re: [PATCH V2 1/3] Thermal: rename thermal_sys.c to thermal_core.c
+Date: Thu, 4 Apr 2013 16:24:50 -0400
+Message-ID: <515DE192.1030408@ti.com>
+References: <1364567196-3560-1-git-send-email-rui.zhang@intel.com> <1364567196-3560-2-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C650A4@BGSMSX101.gar.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:40852 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764145Ab3DDUZJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 16:25:09 -0400
+In-Reply-To: <1364567196-3560-2-git-send-email-rui.zhang@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, durgadoss.r@intel.com, andi@lisas.de, eduardo.valentin@ti.com
 
-On 04-04-2013 13:12, R, Durgadoss wrote:
->> -----Original Message-----
->> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
->> Sent: Thursday, April 04, 2013 3:43 AM
->> To: Zhang, Rui
->> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; R, Durgadoss;
->> Eduardo Valentin
->> Subject: [PATCHv2 1/3] thermal: introduce
->> thermal_zone_get_zone_by_name helper function
->>
->> This patch adds a helper function to get a reference of
->> a thermal zone, based on the zone type name.
->>
->> It will perform a zone name lookup and return a reference
->> to a thermal zone device that matches the name requested.
->> In case the zone is not found or when several zones match
->> same name or if the required parameters are invalid, it will return
->> the corresponding error code (ERR_PTR).
->>
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>   drivers/thermal/thermal_sys.c |   34
->> ++++++++++++++++++++++++++++++++++
->>   include/linux/thermal.h       |    1 +
->>   2 files changed, 35 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
->> index 5bd95d4..6e1da0a 100644
->> --- a/drivers/thermal/thermal_sys.c
->> +++ b/drivers/thermal/thermal_sys.c
->> @@ -1790,6 +1790,40 @@ void thermal_zone_device_unregister(struct
->> thermal_zone_device *tz)
->>   }
->>   EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
->>
->> +/**
->> + * thermal_zone_get_zone_by_name() - search for a zone and returns its
->> ref
->> + * @name: thermal zone name to fetch the temperature
->> + *
->> + * When only one zone is found with the passed name, returns a reference
->> to it.
->> + *
->> + * Return: On success returns a reference to an unique thermal zone with
->> + * matching name equals to @name, a ERR_PTR otherwise.
->> + */
->> +struct thermal_zone_device *thermal_zone_get_zone_by_name(const
->> char *name)
->> +{
->> +	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-EINVAL);
->> +	int found = 0;
->> +
->> +	if (!name)
->> +		goto exit;
->> +
->> +	mutex_lock(&thermal_list_lock);
->> +	list_for_each_entry(pos, &thermal_tz_list, node)
->> +		if (!strnicmp(name, pos->type, THERMAL_NAME_LENGTH)) {
->> +			found++;
->> +			ref = pos;
->> +		}
->> +	mutex_unlock(&thermal_list_lock);
->> +
->> +	/* Success only when an unique zone is found */
->> +	if (found != 1)
->> +		ref = ERR_PTR(-ENODEV);
+On 29-03-2013 10:26, Zhang Rui wrote:
+> this is the preparation work to build all the thermal core framework
+> source file, like governors, cpu cooling, etc, into one module.
 >
-> I think we should differentiate between the two cases:
-> 1. The zone does not exist at all
-> 	return NULL in this case
-> 2. There are multiple zones
-> 	return ERR_PTR(-EEXIST) in this case
+> No functional change in this patch.
 >
-> This way the calling function can figure out the exact reason
-> for failure.
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-I think the code documentation is already clear enough to say that this 
-is for unique matches. But in case you want to differentiate these 
-cases, I can resend it. Do you have a usage for this?
+Durga and me have already reviewed and acked this patch. Can you please 
+add our Acked-by on this patch?
 
-Besides, I would prefer to return ERR_PTR(-ENODEV) in the first case. 
-The way it is in the original patch.
+> ---
+>   drivers/thermal/Makefile                          |    1 +
+>   drivers/thermal/{thermal_sys.c => thermal_core.c} |    0
+>   2 files changed, 1 insertion(+)
+>   rename drivers/thermal/{thermal_sys.c => thermal_core.c} (100%)
+>
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index d3a2b38..b2009bd 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -3,6 +3,7 @@
+>   #
+>
+>   obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+> +thermal_sys-y			+= thermal_core.o
+>
+>   # governors
+>   obj-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
+> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_core.c
+> similarity index 100%
+> rename from drivers/thermal/thermal_sys.c
+> rename to drivers/thermal/thermal_core.c
+>
 
->
-> Thanks,
-> Durga
->
->> +
->> +exit:
->> +	return ref;
->> +}
->> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
->> +
->>   #ifdef CONFIG_NET
->>   static struct genl_family thermal_event_genl_family = {
->>   	.id = GENL_ID_GENERATE,
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index 542a39c..0cf9eb5 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -237,6 +237,7 @@ void thermal_zone_device_update(struct
->> thermal_zone_device *);
->>   struct thermal_cooling_device *thermal_cooling_device_register(char *,
->> void *,
->>   		const struct thermal_cooling_device_ops *);
->>   void thermal_cooling_device_unregister(struct thermal_cooling_device *);
->> +struct thermal_zone_device *thermal_zone_get_zone_by_name(const
->> char *name);
->>
->>   int thermal_zone_trend_get(struct thermal_zone_device *, int);
->>   struct thermal_instance *thermal_instance_get(struct
->> thermal_zone_device *,
->> --
->> 1.7.7.1.488.ge8e1c
->
->
->
