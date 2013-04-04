@@ -1,36 +1,37 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH 6/9] ARM: davinci: cpuidle: fix wrong enter function
-Date: Thu, 4 Apr 2013 12:46:02 +0530
-Message-ID: <515D28B2.90408@ti.com>
-References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-6-git-send-email-daniel.lezcano@linaro.org>
+From: stratosk <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Thu, 04 Apr 2013 10:21:55 +0300
+Message-ID: <6abgl9p3kyb9lrgptch39iyw.1365060115568@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:58208 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933079Ab3DDHQo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Apr 2013 03:16:44 -0400
-In-Reply-To: <1364991322-20585-6-git-send-email-daniel.lezcano@linaro.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:37829 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763173Ab3DDHWF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 03:22:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, josephl@nvidia.com, deepthi@linux.vnet.ibm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 4/3/2013 5:45 PM, Daniel Lezcano wrote:
-> The davinci_enter_idle is called from the cpuidle with the
-> cpuidle_wrap_enter function. This one does the time compution
-> for entering and exiting the idle function and then we call
-> again cpuidle_wrap_enter for cpu_do_idle. This is wrong, we
-> are calling recursively cpuidle_wrap_enter for nothing and
-> furthermore reenabling the local irq.
-> 
-> Remove this and replace it by the cpu_do_idle function.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
+SSBhZ3JlZSB0aGF0IHdlIHdpbGwgaGF2ZSBmYWxzZSBhbGFybXMgYnV0IHRoaXMgd2lsbCBub3Qg
+YmUgYSB0b3RhbCB3YXN0ZSBvZiBwb3dlciBzaW5jZSB0aGUgbG9hZCB3aWxsIGJlIG1vcmUgdGhh
+biA1MCAodGhlIGRlZmF1bHQgZ3JhZF91cF90aHJlc2hvbGQgdmFsdWUpLgoKU28sIEkgZG9uJ3Qg
+dGhpbmsgdGhlcmUgd2lsbCBiZSAqc2lnbmlmaWNhbnQqIGluY3JlYXNlIGluIHBvd2VyLiBUaG91
+Z2gsIEkgZG9uJ3Qga25vdyBhIHdheSB0byBwcm92ZSB0aGlzIHdpdGggbnVtYmVycy4KClRoYW5r
+cywKU3RyYXRvcwoKVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6
+Cgo+T24gNCBBcHJpbCAyMDEzIDEyOjE3LCBzdHJhdG9zayA8c3RyYXRvc2tAc2VtYXBob3JlLmdy
+PiB3cm90ZToKPj4gV2h5IGRvIHlvdSBzdXNwZWN0IHNpZ25pZmljYW50IGluY3JlYXNlZCBwb3dl
+cj8gV2l0aCBvbmRlbWFuZCAgdGhlIENQVSB3aWxsIGdvIGRvd24gdG8gbG93ZXN0IGZyZXEgYXMg
+c29vbiBhcyB0aGUgbG9hZCB3aWxsIGRlY3JlYXNlZC4gQW5kIHRoZSBtZWFzdXJlbWVudCBzaG93
+cyB0aGF0IHRoZSBDUFUgbG9hZCB3aWxsIGRlY3JlYXNlIGZhc3RlciAoYmVjYXVzZSBvZiBmYXN0
+ZXIgY2FsY3VsYXRpb24pLgo+Cj5JIHN1c3BlY3QgaXQgYmVjYXVzZSB3ZSBhcmUgaW5jcmVhc2lu
+ZyBmcmVxIGJhc2VkIG9uIHRoZSBhc3N1bXB0aW9uOgo+IklmIGluY3JlYXNlIGluIGxvYWQgZnJv
+bSBsYXN0IGNhbGN1bGF0aW9uIGlzIG1vcmUgdGhlbiB0aHJlc2hvbGQsIHRoZW4KPndlIG11c3Qg
+dXNlIGhpZ2ggZnJlcSIuLgo+Cj5TbywgdGhpcyByaXNlIGNhbiBiZSBmYWxzZSBhbGFybSBtdWx0
+aXBsZSB0aW1lcyBhbmQgd2UgbWlnaHQgbm90IHNlZQo+YSBsb2FkIGluY3JlYXNlIGFmdGVyIG1v
+dmluZyB0byBoaWdoIGZyZXEgYW5kIHNvIHdlIGFyZSBydW5uaW5nIGF0Cj5oaWdoL21heCBmcmVx
+IHdpdGhvdXQgYW55IG5lZWQgb2YgaXQuIEFuZCBzbyBtb3JlIHBvd2VyLgo=
 
-Acked-by: Sekhar Nori <nsekhar@ti.com>
-
-Thanks,
-Sekhar
