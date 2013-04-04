@@ -1,48 +1,25 @@
-From: stratosk <stratosk@semaphore.gr>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
  CPU load to early increase frequency
-Date: Thu, 04 Apr 2013 09:47:57 +0300
-Message-ID: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
+Date: Thu, 4 Apr 2013 12:21:09 +0530
+Message-ID: <CAKohpok2ubQmpmim2p7aE_T3N-+4CVwf31M=-kyb00UTC7hALw@mail.gmail.com>
+References: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: stratosk <stratosk@semaphore.gr>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgVmlyZXNoLAoKSSBuZXZlciB1c2UgcGVyZm9ybWFuY2UgZ292ZXJub3IsIGJ1dCBJIHdhbnQg
-aW1wcm92ZWQgcGVyZm9ybWFuY2Ugd2l0aCBvbmRlbWFuZC4KCldoeSBkbyB5b3Ugc3VzcGVjdCBz
-aWduaWZpY2FudCBpbmNyZWFzZWQgcG93ZXI/IFdpdGggb25kZW1hbmQgIHRoZSBDUFUgd2lsbCBn
-byBkb3duIHRvIGxvd2VzdCBmcmVxIGFzIHNvb24gYXMgdGhlIGxvYWQgd2lsbCBkZWNyZWFzZWQu
-IEFuZCB0aGUgbWVhc3VyZW1lbnQgc2hvd3MgdGhhdCB0aGUgQ1BVIGxvYWQgd2lsbCBkZWNyZWFz
-ZSBmYXN0ZXIgKGJlY2F1c2Ugb2YgZmFzdGVyIGNhbGN1bGF0aW9uKS4KCkkgYnVpbGQgYW5kIGRp
-c3RyaWJ1dGUgYSAzLjAueSBrZXJuZWwgZm9yIGEgc21hcnQgcGhvbmUgYXJtIGNvcnRleCBBOC4g
-VGhlcmUgYXJlIGFib3V0IDEwMDAwIGluc3RhbGxhdGlvbnMgd2l0aCBlYXJseV9kZW1hbmQgaW5j
-bHVkZWQuIE5vYm9keSBub3RpY2VkIGluY3JlYXNlZCBwb3dlci4KClRob3VnaCwgSSdtIG5vdCBh
-YmxlIHRvIHByb3ZpZGUgbnVtYmVycyBpbiB0aGUgZm9ybSBvZiBwb3dlci4KClRoYW5rcywKU3Ry
-YXRvcwoKVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cgo+SGkg
-U3RyYXRvcywKPgo+T24gNCBBcHJpbCAyMDEzIDA1OjAwLCBTdHJhdG9zIEthcmFmb3RpcyA8c3Ry
-YXRvc2tAc2VtYXBob3JlLmdyPiB3cm90ZToKPj4gSSB0cmllZCB0byBkbyBzb21lIG1lYXN1cmVt
-ZW50cyBzaW11bGF0aW5nIGEgQ1BVIGxvYWQgd2l0aCBhIGxvb3AgdGhhdCBzaW1wbHkgY291bnRz
-Cj4+IGFuIGludGVnZXIuIFRoZSBmaXJzdCB0ZXN0IHNpbXVsYXRlcyBhIENQVSBsb2FkIHRoYXQg
-bGFzdHMgMiB4IHNhbXBsaW5nX3JhdGUgPSB+IDIwMDAwdXMuCj4+IFRoZSBzZWNvbmQgfjQwMDAw
-dXMgYW5kIHRoZSB0aGlyZCB+NjAwMDB1cy4KPj4gVGhlcmUgYXJlIDUgcnVucyBpbiBlYWNoIHRl
-c3QuIEluIGVhY2ggcnVuIHRoZSBiZW5jaG1hcmsgcHJvZ3JhbSBjb3VudHMgMjAgdGltZXMgd2l0
-aAo+PiBlYXJseV9kZW1hbmQgb2ZmIGFuZCAyMCB0aW1lcyB3aXRoIGVhcmx5X2RlbWFuZCBvbiBh
-bmQgdGFrZXMgdGhlIGF2ZXJhZ2UgdGltZXMuCj4+Cj4+IEkgcnVuIHRoZSBiZW5jaG1hcmsgcHJv
-Z3JhbSBvbiAzLjktcmM1ICsgZWFybHlfZGVtYW5kIHBhdGNoLiBNeSBDUFUgaXMgdGhlIGk3LTM3
-NzAgQCAzLjQwIEdIego+Pgo+PiBQbGVhc2UgZmluZCBiZWxvdyB0aGUgcmVzdWx0cywgYW5kIHRo
-ZSBiZW5jaG1hcmsgY29kZSBhdHRhY2hlZC4KPj4gUGxlYXNlIG5vdGUsIHRoYXQgdGhlIGlkZWEg
-b2YgdGhpcyBwYXRjaCBpcyB0byBwdXNoIHRoZSBDUFUgdG8gbWF4IGZyZXF1ZW5jeSBmZXcgc2Ft
-cGxpbmcKPj4gcGVyaW9kcyAoMSBpbiBtb3N0IGNhc2VzKSBlYXJsaWVyIGZvciBhIG1vcmUgcmVz
-cG9uc2l2ZSBzeXN0ZW0uCj4KPlllcywgeW91ciByZXN1bHRzIHNob3cgc29tZSBpbXByb3ZlbWVu
-dHMuIEJVVCBpZiBwZXJmb3JtYW5jZSBpcyB0aGUgb25seSB0aGluZwo+d2Ugd2VyZSBsb29raW5n
-IGZvciwgdGhlbiB3ZSB3aWxsIG5ldmVyIHVzZSBvbmRlbWFuZCBnb3Zlcm5vciBidXQgcGVyZm9y
-bWFuY2UKPmdvdmVybm9yLgo+Cj5JIHN1c3BlY3QgdGhpcyBsaXR0bGUgaW5jcmVhc2UgaW4gcGVy
-Zm9ybWFuY2UgbXVzdCBoYXZlIGluY3JlYXNlZCBwb3dlciBudW1iZXJzCj50b28gKHNpZ25pZmlj
-YW50bHkpLiBTbywgaWYgeW91IGNhbiBnZXQgbnVtYmVycyBpbiB0aGUgZm9ybSBvZiBwb3dlci9w
-ZXJmb3JtYW5jZQo+d2l0aCBhbmQgd2l0aG91dCB5b3VyIHBhdGNoLCBpdCB3aWxsIGJlIGdyZWF0
-Lgo+Cj4tLQo+dmlyZXNoCg==
+On 4 April 2013 12:17, stratosk <stratosk@semaphore.gr> wrote:
+> Why do you suspect significant increased power? With ondemand  the CPU will go down to lowest freq as soon as the load will decreased. And the measurement shows that the CPU load will decrease faster (because of faster calculation).
 
+I suspect it because we are increasing freq based on the assumption:
+"If increase in load from last calculation is more then threshold, then
+we must use high freq"..
+
+So, this rise can be false alarm multiple times and we might not see
+a load increase after moving to high freq and so we are running at
+high/max freq without any need of it. And so more power.
