@@ -1,19 +1,19 @@
 From: Rajagopal Venkat <rajagopal.venkat@linaro.org>
 Subject: Re: [PATCH v2 2/2] PM / devfreq: tie suspend/resume to runtime-pm
-Date: Thu, 4 Apr 2013 16:11:48 +0530
-Message-ID: <CA+Z25wU+yLnhzJtq9mYn+AU9YGKW_GABpZ8p3H-Yjqa1iazHzw@mail.gmail.com>
+Date: Thu, 4 Apr 2013 16:18:25 +0530
+Message-ID: <CA+Z25wWEf2_v4+j7Khxo9FaVnqB6+xezvkg5EZ1sLw2fUyvV6Q@mail.gmail.com>
 References: <1364392374-12236-1-git-send-email-rajagopal.venkat@linaro.org>
 	<1364392374-12236-3-git-send-email-rajagopal.venkat@linaro.org>
 	<87fvz7zdht.fsf@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:53983 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755338Ab3DDKls (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 06:41:48 -0400
-Received: by mail-oa0-f54.google.com with SMTP id n12so2552957oag.27
-        for <linux-pm@vger.kernel.org>; Thu, 04 Apr 2013 03:41:48 -0700 (PDT)
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:48312 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757663Ab3DDKs0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 06:48:26 -0400
+Received: by mail-ob0-f178.google.com with SMTP id wd20so2367849obb.37
+        for <linux-pm@vger.kernel.org>; Thu, 04 Apr 2013 03:48:25 -0700 (PDT)
 In-Reply-To: <87fvz7zdht.fsf@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -42,12 +42,12 @@ am not clear enough. I will update it.
 
 >
 > Also, how does this work when multiple devices may be using the same
+
+As per the devfreq design, this is not allowed. Only one devfreq
+instance can be associated with a device.
+
 > devfreq instance?  Using this patch, it looks like the devfreq governor
 > will be shutdown as soon as the first device runtime suspends, right?
-
-As per the devfre
-
-
 >
 >> This patch is targeted to handle devfreq core load monitoring
 >> suspend/resume only. Not the actual hardware itself. All the
@@ -55,7 +55,8 @@ As per the devfre
 >> devfreq driver using runtime-pm. The sequence of devfreq and
 >   ^^^^^^^
 > devfreq driver?  Did you mean device driver?
-Yes device driver.
+
+Yes. device driver.
 
 >
 > Kevin
