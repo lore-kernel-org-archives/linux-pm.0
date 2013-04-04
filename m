@@ -1,40 +1,137 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 18/18] cpufreq: powerpc/platforms/cell: move cpufreq driver to drivers/cpufreq
-Date: Thu, 4 Apr 2013 13:02:09 +0000
-Message-ID: <201304041302.09995.arnd@arndb.de>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v6 1/8] dt: describe base reset signal binding
+Date: Thu, 04 Apr 2013 08:49:10 -0500
+Message-ID: <515D84D6.8090107@gmail.com>
+References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de> <1364488523-20310-2-git-send-email-p.zabel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0f989533f2e47d4d632710029bf0273082bafee3.1365079581.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f42.google.com ([209.85.219.42]:58286 "EHLO
+	mail-oa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760609Ab3DDNtP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Apr 2013 09:49:15 -0400
+Received: by mail-oa0-f42.google.com with SMTP id i18so2782664oag.1
+        for <linux-pm@vger.kernel.org>; Thu, 04 Apr 2013 06:49:14 -0700 (PDT)
+In-Reply-To: <1364488523-20310-2-git-send-email-p.zabel@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Mike Turquette <mturquette@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, kernel@pengutronix.de, Stephen Warren <swarren@nvidia.com>, devicetree-discuss@lists.ozlabs.org
 
-On Thursday 04 April 2013, Viresh Kumar wrote:
-> This patch moves cpufreq driver of powerpc platforms/cell to drivers/cpufreq.
+On 03/28/2013 11:35 AM, Philipp Zabel wrote:
+> From: Stephen Warren <swarren@nvidia.com>
 > 
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> This binding is intended to represent the hardware reset signals present
+> internally in most IC (SoC, FPGA, ...) designs.
+> It consists of a binding for a reset controller device (provider), and a
+> pair of properties, "resets" and "reset-names", to link a device node
+> (consumer) to its reset controller via phandle, similarly to the clock
+> and interrupt bindings.
+> 
+> The reset controller has all information necessary to reset the consumer
+> device. That could be provided via device tree, or it could be implemented
+> in hardware.
+> The aim is to enable device drivers to request a framework API to issue a
+> reset simply by providing their struct device pointer as the most common
+> case.
+> 
+> Signed-off-by: Stephen Warren <swarren@nvidia.com>
+> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
+> Reviewed-by: Marek Vasut <marex@denx.de>
+
+Looks good.
+
+Acked-by: Rob Herring <rob.herring@calxeda.com>
+
+Rob
+
 > ---
-> Compile Tested only.
+>  Documentation/devicetree/bindings/reset/reset.txt | 75 +++++++++++++++++++++++
+>  1 file changed, 75 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/reset/reset.txt
 > 
->  arch/powerpc/platforms/cell/Kconfig                | 26 +---------------------
->  arch/powerpc/platforms/cell/Makefile               |  3 ---
->  drivers/cpufreq/Kconfig.powerpc                    | 18 +++++++++++++++
->  drivers/cpufreq/Makefile                           |  3 +++
->  .../cpufreq/ppc_cbe_cpufreq.c                      |  2 +-
->  .../cpufreq/ppc_cbe_cpufreq_pervasive.c            |  3 +--
->  .../cpufreq/ppc_cbe_cpufreq_pmi.c                  |  3 +--
->  .../linux/ppc_cbe_cpufreq.h                        |  4 ++--
+> diff --git a/Documentation/devicetree/bindings/reset/reset.txt b/Documentation/devicetree/bindings/reset/reset.txt
+> new file mode 100644
+> index 0000000..31db6ff
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/reset/reset.txt
+> @@ -0,0 +1,75 @@
+> += Reset Signal Device Tree Bindings =
+> +
+> +This binding is intended to represent the hardware reset signals present
+> +internally in most IC (SoC, FPGA, ...) designs. Reset signals for whole
+> +standalone chips are most likely better represented as GPIOs, although there
+> +are likely to be exceptions to this rule.
+> +
+> +Hardware blocks typically receive a reset signal. This signal is generated by
+> +a reset provider (e.g. power management or clock module) and received by a
+> +reset consumer (the module being reset, or a module managing when a sub-
+> +ordinate module is reset). This binding exists to represent the provider and
+> +consumer, and provide a way to couple the two together.
+> +
+> +A reset signal is represented by the phandle of the provider, plus a reset
+> +specifier - a list of DT cells that represents the reset signal within the
+> +provider. The length (number of cells) and semantics of the reset specifier
+> +are dictated by the binding of the reset provider, although common schemes
+> +are described below.
+> +
+> +A word on where to place reset signal consumers in device tree: It is possible
+> +in hardware for a reset signal to affect multiple logically separate HW blocks
+> +at once. In this case, it would be unwise to represent this reset signal in
+> +the DT node of each affected HW block, since if activated, an unrelated block
+> +may be reset. Instead, reset signals should be represented in the DT node
+> +where it makes most sense to control it; this may be a bus node if all
+> +children of the bus are affected by the reset signal, or an individual HW
+> +block node for dedicated reset signals. The intent of this binding is to give
+> +appropriate software access to the reset signals in order to manage the HW,
+> +rather than to slavishly enumerate the reset signal that affects each HW
+> +block.
+> +
+> += Reset providers =
+> +
+> +Required properties:
+> +#reset-cells:	Number of cells in a reset specifier; Typically 0 for nodes
+> +		with a single reset output and 1 for nodes with multiple
+> +		reset outputs.
+> +
+> +For example:
+> +
+> +	rst: reset-controller {
+> +		#reset-cells = <1>;
+> +	};
+> +
+> += Reset consumers =
+> +
+> +Required properties:
+> +resets:		List of phandle and reset specifier pairs, one pair
+> +		for each reset signal that affects the device, or that the
+> +		device manages. Note: if the reset provider specifies '0' for
+> +		#reset-cells, then only the phandle portion of the pair will
+> +		appear.
+> +
+> +Optional properties:
+> +reset-names:	List of reset signal name strings sorted in the same order as
+> +		the resets property. Consumers drivers will use reset-names to
+> +		match reset signal names with reset specifiers.
+> +
+> +For example:
+> +
+> +	device {
+> +		resets = <&rst 20>;
+> +		reset-names = "reset";
+> +	};
+> +
+> +This represents a device with a single reset signal named "reset".
+> +
+> +	bus {
+> +		resets = <&rst 10> <&rst 11> <&rst 12> <&rst 11>;
+> +		reset-names = "i2s1", "i2s2", "dma", "mixer";
+> +	};
+> +
+> +This represents a bus that controls the reset signal of each of four sub-
+> +ordinate devices. Consider for example a bus that fails to operate unless no
+> +child device has reset asserted.
+> 
 
-Moving the files is good, but I don't see a reason to make the cbe_cpufreq.h
-header globally visible in include/linux/. Isn't it just used by as the
-interface between ppc_cbe_cpufreq_pmi.c  and ppc_cbe_cpufreq.c?
-
-	Arnd
