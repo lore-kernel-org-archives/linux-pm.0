@@ -1,25 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Thu, 4 Apr 2013 12:21:09 +0530
-Message-ID: <CAKohpok2ubQmpmim2p7aE_T3N-+4CVwf31M=-kyb00UTC7hALw@mail.gmail.com>
-References: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 6/9] ARM: davinci: cpuidle: fix wrong enter function
+Date: Thu, 4 Apr 2013 12:46:02 +0530
+Message-ID: <515D28B2.90408@ti.com>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-6-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: stratosk <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:58208 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933079Ab3DDHQo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Apr 2013 03:16:44 -0400
+In-Reply-To: <1364991322-20585-6-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, rnayak@ti.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, santosh.shilimkar@ti.com, arnd@arndb.de, lenb@kernel.org, josephl@nvidia.com, deepthi@linux.vnet.ibm.com
 
-On 4 April 2013 12:17, stratosk <stratosk@semaphore.gr> wrote:
-> Why do you suspect significant increased power? With ondemand  the CPU will go down to lowest freq as soon as the load will decreased. And the measurement shows that the CPU load will decrease faster (because of faster calculation).
+On 4/3/2013 5:45 PM, Daniel Lezcano wrote:
+> The davinci_enter_idle is called from the cpuidle with the
+> cpuidle_wrap_enter function. This one does the time compution
+> for entering and exiting the idle function and then we call
+> again cpuidle_wrap_enter for cpu_do_idle. This is wrong, we
+> are calling recursively cpuidle_wrap_enter for nothing and
+> furthermore reenabling the local irq.
+> 
+> Remove this and replace it by the cpu_do_idle function.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
-I suspect it because we are increasing freq based on the assumption:
-"If increase in load from last calculation is more then threshold, then
-we must use high freq"..
+Acked-by: Sekhar Nori <nsekhar@ti.com>
 
-So, this rise can be false alarm multiple times and we might not see
-a load increase after moving to high freq and so we are running at
-high/max freq without any need of it. And so more power.
+Thanks,
+Sekhar
