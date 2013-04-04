@@ -1,48 +1,103 @@
-From: Jacob Shin <jacob.shin@amd.com>
-Subject: Re: [PATCH V4 2/2] cpufreq: AMD "frequency sensitivity feedback"
- powersave bias for ondemand governor
-Date: Thu, 4 Apr 2013 15:29:47 -0500
-Message-ID: <20130404202947.GB24479@jshin-Toonie>
-References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
- <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
- <20130404192323.GI32271@pd.tnic>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc6
+Date: Thu, 04 Apr 2013 23:13:17 +0200
+Message-ID: <1903330.VdMMbXjxYW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130404192323.GI32271@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:51453 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761144Ab3DDVFj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Apr 2013 17:05:39 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Apr 04, 2013 at 09:23:23PM +0200, Borislav Petkov wrote:
-> On Thu, Apr 04, 2013 at 11:19:04AM -0500, Jacob Shin wrote:
-> > Future AMD processors, starting with Family 16h, can provide software
-> > with feedback on how the workload may respond to frequency change --
-> > memory-bound workloads will not benefit from higher frequency, where
-> > as compute-bound workloads will. This patch enables this "frequency
-> > sensitivity feedback" to aid the ondemand governor to make better
-> > frequency change decisions by hooking into the powersave bias.
-> > 
-> > Signed-off-by: Jacob Shin <jacob.shin@amd.com>
-> 
-> Looks good to me.
-> 
-> Acked-by: Borislav Petkov <bp@suse.de>
+Hi Linus,
 
-Rafael, got acks from both Boris and Thomas. Please commit to
-linux-next when you get the chance.
+Please pull from the git repository at
 
-Thanks,
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc6
 
--Jacob
+to receive ACPI and power management fixes for v3.9-rc6 with top-most commit
+6cb437acd93a01fdbd6bac9c78ac8159c644e576
 
-> 
-> -- 
-> Regards/Gruss,
->     Boris.
-> 
-> Sent from a fat crate under my desk. Formatting is fine.
-> --
-> 
+  Merge branch 'acpi-fixes' into fixes
 
+on top of commit 07961ac7c0ee8b546658717034fe692fd12eefa9
+
+  Linux 3.9-rc5
+
+Included are:
+
+- Revert of a recent cpuidle change that caused Nehalem machines
+  to hang on boot from Alex Shi.
+
+- USB power management fix addressing a crash in the port device
+  object's release routine.
+
+- Device PM QoS fix for a potential deadlock related to sysfs
+  interface.
+
+- Fix for a cpufreq crash when the /cpus Device Tree node is missing.
+  From Paolo Pisati.
+
+- Fix for a build issue on ia64 related to the fact that the
+  Boot Graphics Resource Table (BGRT) is only useful on x86 with
+  EFI.  From Tony Luck.
+
+- Two fixes for ACPI handles being set incorrectly for device
+  objects that don't correspond to any ACPI namespace nodes in
+  the I2C and SPI subsystems.
+
+- Fix for compiler warnings related to CONFIG_PM_DEVFREQ being
+  unset from Rajagopal Venkat.
+
+- Fix for a symbol definition typo in cpufreq_governor.h from
+  Borislav Petkov.
+
+Thanks!
+
+---------------
+
+Alex Shi (1):
+      cpuidle / ACPI: recover percpu ACPI processor cstate
+
+Borislav Petkov (1):
+      cpufreq: Correct header guards typo
+
+Paolo Pisati (1):
+      cpufreq: check OF node /cpus presence before dereferencing it
+
+Rafael J. Wysocki (4):
+      USB / PM: Don't try to hide PM QoS flags from usb_port_device_release()
+      PM / QoS: Avoid possible deadlock related to sysfs access
+      ACPI / SPI: Use parent's ACPI_HANDLE() in acpi_register_spi_devices()
+      ACPI / I2C: Use parent's ACPI_HANDLE() in acpi_i2c_register_devices()
+
+Rajagopal Venkat (1):
+      PM / devfreq: Fix compiler warnings for CONFIG_PM_DEVFREQ unset
+
+Tony Luck (1):
+      ACPI / BGRT: Don't let users configure BGRT on non X86 systems
+
+---------------
+
+ drivers/acpi/Kconfig                        |    2 +-
+ drivers/acpi/acpi_i2c.c                     |    2 +-
+ drivers/acpi/processor_idle.c               |   13 ++++----
+ drivers/base/power/qos.c                    |   60 +++++++++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq-cpu0.c              |   10 ++++--
+ drivers/cpufreq/cpufreq_governor.h          |    6 ++--
+ drivers/i2c/busses/i2c-designware-platdrv.c |    1 -
+ drivers/spi/spi-pxa2xx.c                    |    1 -
+ drivers/spi/spi.c                           |    2 +-
+ drivers/usb/core/port.c                     |    1 -
+ include/linux/devfreq.h                     |   16 +++++-----
+ 11 files changed, 76 insertions(+), 38 deletions(-)
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
