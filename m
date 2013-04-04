@@ -1,103 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] ACPI and power management fixes for v3.9-rc6
-Date: Thu, 04 Apr 2013 23:13:17 +0200
-Message-ID: <1903330.VdMMbXjxYW@vostro.rjw.lan>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH V4 1/2] cpufreq: ondemand: allow custom
+ powersave_bias_target handler to be registered
+Date: Thu, 4 Apr 2013 23:32:20 +0200
+Message-ID: <20130404213220.GK32271@pd.tnic>
+References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
+ <1365092344-11310-2-git-send-email-jacob.shin@amd.com>
+ <CAKohpom6BSJZc_ohgnjRTV2EBUAPy8TKVphtoRaNSt1wFP70uA@mail.gmail.com>
+ <20130404171804.GA4696@jshin-Toonie>
+ <20130404191225.GH32271@pd.tnic>
+ <20130404202813.GA24479@jshin-Toonie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:51453 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761144Ab3DDVFj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Apr 2013 17:05:39 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20130404202813.GA24479@jshin-Toonie>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Linus,
+On Thu, Apr 04, 2013 at 03:28:13PM -0500, Jacob Shin wrote:
+> Ah, okay .. here is the fixup:
+> 
+> From 7236287faa1a499686c9aac1d3f3f224516a7bbf Mon Sep 17 00:00:00 2001
+> From: Jacob Shin <jacob.shin@amd.com>
+> Date: Tue, 2 Apr 2013 09:56:56 -0500
+> Subject: [PATCH 1/2] cpufreq: ondemand: allow custom powersave_bias_target
+>  handler to be registered
+> 
+> This allows for another [arch specific] driver to hook into existing
+> powersave bias function of the ondemand governor. i.e. This allows AMD
+> specific powersave bias function (in a separate AMD specific driver)
+> to aid ondemand governor's frequency transition decisions.
+> 
+> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
 
-Please pull from the git repository at
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.9-rc6
-
-to receive ACPI and power management fixes for v3.9-rc6 with top-most commit
-6cb437acd93a01fdbd6bac9c78ac8159c644e576
-
-  Merge branch 'acpi-fixes' into fixes
-
-on top of commit 07961ac7c0ee8b546658717034fe692fd12eefa9
-
-  Linux 3.9-rc5
-
-Included are:
-
-- Revert of a recent cpuidle change that caused Nehalem machines
-  to hang on boot from Alex Shi.
-
-- USB power management fix addressing a crash in the port device
-  object's release routine.
-
-- Device PM QoS fix for a potential deadlock related to sysfs
-  interface.
-
-- Fix for a cpufreq crash when the /cpus Device Tree node is missing.
-  From Paolo Pisati.
-
-- Fix for a build issue on ia64 related to the fact that the
-  Boot Graphics Resource Table (BGRT) is only useful on x86 with
-  EFI.  From Tony Luck.
-
-- Two fixes for ACPI handles being set incorrectly for device
-  objects that don't correspond to any ACPI namespace nodes in
-  the I2C and SPI subsystems.
-
-- Fix for compiler warnings related to CONFIG_PM_DEVFREQ being
-  unset from Rajagopal Venkat.
-
-- Fix for a symbol definition typo in cpufreq_governor.h from
-  Borislav Petkov.
-
-Thanks!
-
----------------
-
-Alex Shi (1):
-      cpuidle / ACPI: recover percpu ACPI processor cstate
-
-Borislav Petkov (1):
-      cpufreq: Correct header guards typo
-
-Paolo Pisati (1):
-      cpufreq: check OF node /cpus presence before dereferencing it
-
-Rafael J. Wysocki (4):
-      USB / PM: Don't try to hide PM QoS flags from usb_port_device_release()
-      PM / QoS: Avoid possible deadlock related to sysfs access
-      ACPI / SPI: Use parent's ACPI_HANDLE() in acpi_register_spi_devices()
-      ACPI / I2C: Use parent's ACPI_HANDLE() in acpi_i2c_register_devices()
-
-Rajagopal Venkat (1):
-      PM / devfreq: Fix compiler warnings for CONFIG_PM_DEVFREQ unset
-
-Tony Luck (1):
-      ACPI / BGRT: Don't let users configure BGRT on non X86 systems
-
----------------
-
- drivers/acpi/Kconfig                        |    2 +-
- drivers/acpi/acpi_i2c.c                     |    2 +-
- drivers/acpi/processor_idle.c               |   13 ++++----
- drivers/base/power/qos.c                    |   60 +++++++++++++++++++++++++++--------
- drivers/cpufreq/cpufreq-cpu0.c              |   10 ++++--
- drivers/cpufreq/cpufreq_governor.h          |    6 ++--
- drivers/i2c/busses/i2c-designware-platdrv.c |    1 -
- drivers/spi/spi-pxa2xx.c                    |    1 -
- drivers/spi/spi.c                           |    2 +-
- drivers/usb/core/port.c                     |    1 -
- include/linux/devfreq.h                     |   16 +++++-----
- 11 files changed, 76 insertions(+), 38 deletions(-)
+Acked-by: Borislav Petkov <bp@suse.de>
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
