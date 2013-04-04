@@ -1,57 +1,33 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH V4 1/2] cpufreq: ondemand: allow custom
- powersave_bias_target handler to be registered
-Date: Thu, 4 Apr 2013 21:12:25 +0200
-Message-ID: <20130404191225.GH32271@pd.tnic>
+Subject: Re: [PATCH V4 2/2] cpufreq: AMD "frequency sensitivity feedback"
+ powersave bias for ondemand governor
+Date: Thu, 4 Apr 2013 21:23:23 +0200
+Message-ID: <20130404192323.GI32271@pd.tnic>
 References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
- <1365092344-11310-2-git-send-email-jacob.shin@amd.com>
- <CAKohpom6BSJZc_ohgnjRTV2EBUAPy8TKVphtoRaNSt1wFP70uA@mail.gmail.com>
- <20130404171804.GA4696@jshin-Toonie>
+ <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:53593 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764451Ab3DDTM3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Apr 2013 15:12:29 -0400
+Return-path: <cpufreq-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20130404171804.GA4696@jshin-Toonie>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1365092344-11310-3-git-send-email-jacob.shin@amd.com>
+Sender: cpufreq-owner@vger.kernel.org
 To: Jacob Shin <jacob.shin@amd.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Renninger <trenn@suse.de>
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 04, 2013 at 12:18:04PM -0500, Jacob Shin wrote:
-> @@ -574,6 +577,45 @@ static struct common_dbs_data od_dbs_cdata = {
->  	.exit = od_exit,
->  };
->  
-> +static void od_set_powersave_bias(unsigned int powersave_bias)
-> +{
-> +	struct cpufreq_policy *policy;
-> +	struct dbs_data *dbs_data;
-> +	struct od_dbs_tuners *od_tuners;
-> +	unsigned int cpu;
-> +	cpumask_t done;
-> +
-> +	cpumask_clear(&done);
-> +
+On Thu, Apr 04, 2013 at 11:19:04AM -0500, Jacob Shin wrote:
+> Future AMD processors, starting with Family 16h, can provide software
+> with feedback on how the workload may respond to frequency change --
+> memory-bound workloads will not benefit from higher frequency, where
+> as compute-bound workloads will. This patch enables this "frequency
+> sensitivity feedback" to aid the ondemand governor to make better
+> frequency change decisions by hooking into the powersave bias.
+> 
+> Signed-off-by: Jacob Shin <jacob.shin@amd.com>
 
-get_online_cpus();
+Looks good to me.
 
-> +	for_each_online_cpu(cpu) {
-> +		if (cpumask_test_cpu(cpu, &done))
-> +			continue;
-> +
-> +		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.cur_policy;
-> +		dbs_data = policy->governor_data;
-> +		od_tuners = dbs_data->tuners;
-> +		od_tuners->powersave_bias = powersave_bias;
-> +
-> +		cpumask_or(&done, &done, policy->cpus);
-> +	}
-
-put_online_cpus();
+Acked-by: Borislav Petkov <bp@suse.de>
 
 -- 
 Regards/Gruss,
