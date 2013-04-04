@@ -1,44 +1,48 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH 9/9] powerpc: cpufreq: move cpufreq driver to drivers/cpufreq
-Date: Thu, 4 Apr 2013 12:00:43 +0530
-Message-ID: <CAP245DU68CCR9pDSryCv=tu00NjXkvEoerp6H6H9fQaYJgQA1g@mail.gmail.com>
-References: <cover.1364229828.git.viresh.kumar@linaro.org>
-	<4180fd5b43906421fc155126e8b7bea5fb3ff375.1364229828.git.viresh.kumar@linaro.org>
-	<CAKohpo=LOJ3DfaGzCm6a6ev2+dNUgEpJd+04pGMhdSpkyZNR9A@mail.gmail.com>
-	<CAKohpomRMkKouiy+iJUiheTcPGCDVLbxppL5f4oc-WMu2E5T8g@mail.gmail.com>
-	<1364985034.16520.12.camel@pasglop>
-	<CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
+From: stratosk <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Thu, 04 Apr 2013 09:47:57 +0300
+Message-ID: <c47p1i8x8eiep3wulmq44fxd.1365058077739@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, deepthi@linux.vnet.ibm.com
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Steve Bannister <Steve.Bannister@arm.com>, Arvind Chauhan <arvind.chauhan@arm.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Charles Garcia-Tobin <charles.garcia-tobin@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 4, 2013 at 11:55 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 3 April 2013 16:00, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->> On Wed, 2013-04-03 at 15:00 +0530, Viresh Kumar wrote:
->>> On 31 March 2013 09:33, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
->>> > Benjamin/Paul/Olof,
->>> >
->>> > Any comments on this?
->>>
->>> Ping!!
->>
->> I'm on vacation until end of April. No objection to the patch but
->> somebody needs to test it.
->
-> Hi,
->
-> Can somebody else from powerpc world give it a try?
+SGkgVmlyZXNoLAoKSSBuZXZlciB1c2UgcGVyZm9ybWFuY2UgZ292ZXJub3IsIGJ1dCBJIHdhbnQg
+aW1wcm92ZWQgcGVyZm9ybWFuY2Ugd2l0aCBvbmRlbWFuZC4KCldoeSBkbyB5b3Ugc3VzcGVjdCBz
+aWduaWZpY2FudCBpbmNyZWFzZWQgcG93ZXI/IFdpdGggb25kZW1hbmQgIHRoZSBDUFUgd2lsbCBn
+byBkb3duIHRvIGxvd2VzdCBmcmVxIGFzIHNvb24gYXMgdGhlIGxvYWQgd2lsbCBkZWNyZWFzZWQu
+IEFuZCB0aGUgbWVhc3VyZW1lbnQgc2hvd3MgdGhhdCB0aGUgQ1BVIGxvYWQgd2lsbCBkZWNyZWFz
+ZSBmYXN0ZXIgKGJlY2F1c2Ugb2YgZmFzdGVyIGNhbGN1bGF0aW9uKS4KCkkgYnVpbGQgYW5kIGRp
+c3RyaWJ1dGUgYSAzLjAueSBrZXJuZWwgZm9yIGEgc21hcnQgcGhvbmUgYXJtIGNvcnRleCBBOC4g
+VGhlcmUgYXJlIGFib3V0IDEwMDAwIGluc3RhbGxhdGlvbnMgd2l0aCBlYXJseV9kZW1hbmQgaW5j
+bHVkZWQuIE5vYm9keSBub3RpY2VkIGluY3JlYXNlZCBwb3dlci4KClRob3VnaCwgSSdtIG5vdCBh
+YmxlIHRvIHByb3ZpZGUgbnVtYmVycyBpbiB0aGUgZm9ybSBvZiBwb3dlci4KClRoYW5rcywKU3Ry
+YXRvcwoKVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cgo+SGkg
+U3RyYXRvcywKPgo+T24gNCBBcHJpbCAyMDEzIDA1OjAwLCBTdHJhdG9zIEthcmFmb3RpcyA8c3Ry
+YXRvc2tAc2VtYXBob3JlLmdyPiB3cm90ZToKPj4gSSB0cmllZCB0byBkbyBzb21lIG1lYXN1cmVt
+ZW50cyBzaW11bGF0aW5nIGEgQ1BVIGxvYWQgd2l0aCBhIGxvb3AgdGhhdCBzaW1wbHkgY291bnRz
+Cj4+IGFuIGludGVnZXIuIFRoZSBmaXJzdCB0ZXN0IHNpbXVsYXRlcyBhIENQVSBsb2FkIHRoYXQg
+bGFzdHMgMiB4IHNhbXBsaW5nX3JhdGUgPSB+IDIwMDAwdXMuCj4+IFRoZSBzZWNvbmQgfjQwMDAw
+dXMgYW5kIHRoZSB0aGlyZCB+NjAwMDB1cy4KPj4gVGhlcmUgYXJlIDUgcnVucyBpbiBlYWNoIHRl
+c3QuIEluIGVhY2ggcnVuIHRoZSBiZW5jaG1hcmsgcHJvZ3JhbSBjb3VudHMgMjAgdGltZXMgd2l0
+aAo+PiBlYXJseV9kZW1hbmQgb2ZmIGFuZCAyMCB0aW1lcyB3aXRoIGVhcmx5X2RlbWFuZCBvbiBh
+bmQgdGFrZXMgdGhlIGF2ZXJhZ2UgdGltZXMuCj4+Cj4+IEkgcnVuIHRoZSBiZW5jaG1hcmsgcHJv
+Z3JhbSBvbiAzLjktcmM1ICsgZWFybHlfZGVtYW5kIHBhdGNoLiBNeSBDUFUgaXMgdGhlIGk3LTM3
+NzAgQCAzLjQwIEdIego+Pgo+PiBQbGVhc2UgZmluZCBiZWxvdyB0aGUgcmVzdWx0cywgYW5kIHRo
+ZSBiZW5jaG1hcmsgY29kZSBhdHRhY2hlZC4KPj4gUGxlYXNlIG5vdGUsIHRoYXQgdGhlIGlkZWEg
+b2YgdGhpcyBwYXRjaCBpcyB0byBwdXNoIHRoZSBDUFUgdG8gbWF4IGZyZXF1ZW5jeSBmZXcgc2Ft
+cGxpbmcKPj4gcGVyaW9kcyAoMSBpbiBtb3N0IGNhc2VzKSBlYXJsaWVyIGZvciBhIG1vcmUgcmVz
+cG9uc2l2ZSBzeXN0ZW0uCj4KPlllcywgeW91ciByZXN1bHRzIHNob3cgc29tZSBpbXByb3ZlbWVu
+dHMuIEJVVCBpZiBwZXJmb3JtYW5jZSBpcyB0aGUgb25seSB0aGluZwo+d2Ugd2VyZSBsb29raW5n
+IGZvciwgdGhlbiB3ZSB3aWxsIG5ldmVyIHVzZSBvbmRlbWFuZCBnb3Zlcm5vciBidXQgcGVyZm9y
+bWFuY2UKPmdvdmVybm9yLgo+Cj5JIHN1c3BlY3QgdGhpcyBsaXR0bGUgaW5jcmVhc2UgaW4gcGVy
+Zm9ybWFuY2UgbXVzdCBoYXZlIGluY3JlYXNlZCBwb3dlciBudW1iZXJzCj50b28gKHNpZ25pZmlj
+YW50bHkpLiBTbywgaWYgeW91IGNhbiBnZXQgbnVtYmVycyBpbiB0aGUgZm9ybSBvZiBwb3dlci9w
+ZXJmb3JtYW5jZQo+d2l0aCBhbmQgd2l0aG91dCB5b3VyIHBhdGNoLCBpdCB3aWxsIGJlIGdyZWF0
+Lgo+Cj4tLQo+dmlyZXNoCg==
 
-Deepthi, can you help?
-
-> OR
->
-> @Rafael: Can we get this pushed in linux-next as is and then people would
-> be forced to test it and in case there are any complains, i will fix them or
-> you can revert it?
