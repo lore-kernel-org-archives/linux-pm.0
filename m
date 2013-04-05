@@ -1,51 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Raname index as data in cpufreq_frequency_table
-Date: Fri, 05 Apr 2013 12:45:33 +0200
-Message-ID: <2281585.KIHsrTRMxO@vostro.rjw.lan>
-References: <03ca6f17860d290cfc67e51969062612f0ab26ab.1364643234.git.viresh.kumar@linaro.org> <CAKohpo=wNHsV0vFhcTWg0g7=Wtbdx=g2wqpNPfidQfGhhK9Cig@mail.gmail.com> <CAKohpo=jUOciKCAWWJ_bC-uSKzdk4a49r39gaOsuroVbqSRyFg@mail.gmail.com>
+Subject: Re: [PATCH V5 0/4] cpufreq: exynos5440: support for cpufreq driver
+Date: Fri, 05 Apr 2013 14:38:26 +0200
+Message-ID: <2949363.nNl2A6XIoS@vostro.rjw.lan>
+References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=jUOciKCAWWJ_bC-uSKzdk4a49r39gaOsuroVbqSRyFg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 05, 2013 04:00:04 PM Viresh Kumar wrote:
-> On 31 March 2013 09:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 31 March 2013 07:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> On Sunday, March 31, 2013 07:03:04 AM Viresh Kumar wrote:
-> >>> On 31 March 2013 03:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>> > Sorry, I won't apply this.  It changes too much stuff at a time and I'm not
-> >>> > really sure if the change being made is necessary.
-> >>>
-> >>> Hmm.. I thought it is important  as it puts the real meaning of "index" in the
-> >>> code.
-> >>
-> >> And what does that change, really?  What about documenting the meaning of
-> >> "index" instead?
-> >
-> > Probably not the logic but perception. People don't necessarily go through
-> > Documentation but code for writing new stuff. And so code should reflect the
-> > real meaning.
-> >
-> > In case we write something like following in documentation:
-> > "Index: This is driver specific data for each frequency. Core doesn't use it."
-> >
-> > Then "Index" looks even more wrong. Its not the right name for any such
-> > variable. And so it should be fixed.
+On Thursday, March 28, 2013 01:35:18 PM Amit Daniel Kachhap wrote:
+> Submitting the V5 version of exynos5440 cpufreq driver. This patchset addresses
+> all the coding and design concerns raised especially by Viresh.
 > 
-> Forgot reply to all earlier :(
+> Changes in V5:
+> * Removed the unnecessary DT look up entry from mach-exynos5-dt.c.
+> * Fixed all coding and comments issue raised by Viresh.
 > 
-> You have any more comments on this patch? I really thought this change
-> would be good. I agree it touches lot of stuff but for clean/clear code.
+> Changes in V4:
+> * Added dev_err logs instead of pr_err.
+> * Used the devm_ioremap_resource API.
+> * Implemented several coding guidelines and minor error comments from Sylwester,
+>   Russell and Viresh.
+> 
+> Changes in V3:
+> * Converted the driver to probe based as suggested by Viresh. This is also
+>   beneficial for multiplatform kernel.
+> * Other coding guidelines related changes.
+> * Moved the DT node outside cpu0 node as the driver is now a platform
+>   driver.
+> 
+> Changes in V2:
+> * Added OPP library support to parse DT parameters.
+> * Removed a hack to handle interrupts in bootup.
+> * Implemented other review comments from Viresh and Inder.
+> 
+> All these patches are dependent on Thomas Abraham common clock patches.
+> (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html)
+> This whole patch series is based on 3.9-rc4.
+> 
+> Amit Daniel Kachhap (4):
+>   cpufreq: exynos: Add cpufreq driver for exynos5440
+>   cpufreq: exynos: Remove error return even if no soc is found
+>   arm: exynos: Enable OPP library support for exynos5440
+>   arm: dts: Add cpufreq controller node for Exynos5440 SoC
+> 
+>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   28 ++
+>  arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
+>  arch/arm/mach-exynos/Kconfig                       |    2 +
+>  drivers/cpufreq/Kconfig.arm                        |    9 +
+>  drivers/cpufreq/Makefile                           |    1 +
+>  drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
+>  drivers/cpufreq/exynos5440-cpufreq.c               |  474 ++++++++++++++++++++
+>  7 files changed, 527 insertions(+), 1 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
+>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
 
-OK
+Is this for me or the Samsung tree?
 
-Please resend it after v3.10-rc1 and I'll take it for v3.11.  Surely, it can
-wait for that long.
+If it's for me, I need ACKs from the Samsung tree maintainers.  Also, please
+address the Viresh's comments.
 
 Thanks,
 Rafael
