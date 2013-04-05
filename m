@@ -1,99 +1,39 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv3 3/3] staging: ti-soc-thermal: remove external heat while extrapolating hotspot
-Date: Fri, 5 Apr 2013 08:32:30 -0400
-Message-ID: <1365165150-11720-4-git-send-email-eduardo.valentin@ti.com>
-References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V4 0/2] cpufreq: ondemand: add AMD specific powersave bias
+Date: Fri, 05 Apr 2013 13:55:11 +0200
+Message-ID: <2396755.WnKv3T7qE3@vostro.rjw.lan>
+References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com> <CAKohpomhBtR2aONp=GsOUeaM1=8f2ZN7EfcGyc1NYZX=ZsweWA@mail.gmail.com> <CAKohpo=OeNfJnmbqxP-+bG1ZZahk6kZ-AjcXn-zRQw24_6UG5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:38098 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161279Ab3DEMeB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Apr 2013 08:34:01 -0400
-In-Reply-To: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=OeNfJnmbqxP-+bG1ZZahk6kZ-AjcXn-zRQw24_6UG5g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>, Jacob Shin <jacob.shin@amd.com>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, Eduardo Valentin <eduardo.valentin@ti.com>
 
-For boards that provide a PCB sensor close to SoC junction
-temperature, it is possible to remove the cumulative heat
-reported by the SoC temperature sensor.
+On Friday, April 05, 2013 12:19:36 PM Viresh Kumar wrote:
+> On 5 April 2013 10:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > For the latest versions sent by you (including {get|put}_online_cpus()):
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Hi Rafael,
+> 
+> I see that you have applied this patchset to bleeding-edge, but in
+> wrong order. You have applied 2/2 first and then 1/2, which is
+> wrong as after 2/2 we will have a compilation failure.
 
-This patch changes the extrapolation computation to consider
-an external sensor in the extrapolation equations.
+Ah, good catch.  I didn't notice that patchwork changed the ordering when
+creating a bundle.
 
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- drivers/staging/ti-soc-thermal/ti-thermal-common.c |   30 +++++++++++++------
- 1 files changed, 20 insertions(+), 10 deletions(-)
+Should be fixed now.
 
-diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-index 231c549..780368b 100644
---- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-@@ -38,6 +38,7 @@
- /* common data structures */
- struct ti_thermal_data {
- 	struct thermal_zone_device *ti_thermal;
-+	struct thermal_zone_device *pcb_tz;
- 	struct thermal_cooling_device *cool_dev;
- 	struct ti_bandgap *bgp;
- 	enum thermal_device_mode mode;
-@@ -77,10 +78,12 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
- static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
- 				      unsigned long *temp)
- {
-+	struct thermal_zone_device *pcb_tz = NULL;
- 	struct ti_thermal_data *data = thermal->devdata;
- 	struct ti_bandgap *bgp;
- 	const struct ti_temp_sensor *s;
--	int ret, tmp, pcb_temp, slope, constant;
-+	int ret, tmp, slope, constant;
-+	unsigned long pcb_temp;
- 
- 	if (!data)
- 		return 0;
-@@ -92,16 +95,22 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
- 	if (ret)
- 		return ret;
- 
--	pcb_temp = 0;
--	/* TODO: Introduce pcb temperature lookup */
-+	/* Default constants */
-+	slope = s->slope;
-+	constant = s->constant;
-+
-+	pcb_tz = data->pcb_tz;
- 	/* In case pcb zone is available, use the extrapolation rule with it */
--	if (pcb_temp) {
--		tmp -= pcb_temp;
--		slope = s->slope_pcb;
--		constant = s->constant_pcb;
--	} else {
--		slope = s->slope;
--		constant = s->constant;
-+	if (!IS_ERR_OR_NULL(pcb_tz)) {
-+		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
-+		if (!ret) {
-+			tmp -= pcb_temp; /* got a valid PCB temp */
-+			slope = s->slope_pcb;
-+			constant = s->constant_pcb;
-+		} else {
-+			dev_err(bgp->dev,
-+				"Failed to read PCB state. Using defaults\n");
-+		}
- 	}
- 	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
- 
-@@ -248,6 +257,7 @@ static struct ti_thermal_data
- 	data->sensor_id = id;
- 	data->bgp = bgp;
- 	data->mode = THERMAL_DEVICE_ENABLED;
-+	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
- 	INIT_WORK(&data->thermal_wq, ti_thermal_work);
- 
- 	return data;
+Thanks,
+Rafael
+
+
 -- 
-1.7.7.1.488.ge8e1c
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
