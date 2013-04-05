@@ -1,65 +1,66 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 1/2] regulator: core: return err value for regulator_get if there is no DT binding
-Date: Thu, 4 Apr 2013 23:21:47 -0500
-Message-ID: <1365135708-23886-2-git-send-email-nm@ti.com>
-References: <1365135708-23886-1-git-send-email-nm@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 0/2] cpufreq: ondemand: add AMD specific powersave bias
+Date: Fri, 5 Apr 2013 10:19:07 +0530
+Message-ID: <CAKohpomhBtR2aONp=GsOUeaM1=8f2ZN7EfcGyc1NYZX=ZsweWA@mail.gmail.com>
+References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1365135708-23886-1-git-send-email-nm@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1365092344-11310-1-git-send-email-jacob.shin@amd.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Jacob Shin <jacob.shin@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-commit 6d191a5fc7a969d972f1681e1c23781aecb06a61
-(regulator: core: Don't defer probe if there's no DT binding for a supply)
+On 4 April 2013 21:49, Jacob Shin <jacob.shin@amd.com> wrote:
+> This patchset adds AMD specific powersave bias function to the ondemand
+> governor; which can be used to help ondemand governor make more power conscious
+> frequency change decisions based on feedback from hardware (availble on AMD
+> Family 16h and above).
+>
+> Hardware feedback tells software how "sensitive" to frequency changes the
+> workloads are. CPU-bound workloads will be more sensitive -- they will
+> perform better as frequency increases. Memory/IO-bound workloads will be less
+> sensitive -- they will not necessarily perform better as frequnecy increases.
+>
+> This patchset was compared against ondemand governor without powersave bias
+> and did not show any performance degradation on CPU-bound workloads such as
+> kernbench and unixbench. While saving power on Memory-bound workloads such as
+> stream.
+>
+> V4:
+> * Added proper documentation to Documentation/cpu-freq/
+> * Revised so that when this driver loads, the feature is enabled by
+>   default with a sane tunable value.
+>
+> V3:
+> * Added to CPUID bit to cpufeature.h
+> * Added MODULE_DEVICE_TABLE to autoload this driver.
+> * Other small changes per feedback from:
+>   https://lkml.org/lkml/2013/4/2/349
+>
+> V2:
+> * Added proper include files to amd_freq_sensitivity.c
+> * Only register powersave_bias_target function pointer and not the entire
+>   od_ops.
+>
+> Jacob Shin (2):
+>   cpufreq: ondemand: allow custom powersave_bias_target handler to be
+>     registered
+>   cpufreq: AMD "frequency sensitivity feedback" powersave bias for
+>     ondemand governor
+>
+>  Documentation/cpu-freq/governors.txt   |   21 +++++
+>  arch/x86/include/asm/cpufeature.h      |    1 +
+>  arch/x86/kernel/cpu/scattered.c        |    3 +-
+>  drivers/cpufreq/Kconfig.x86            |   17 ++++
+>  drivers/cpufreq/Makefile               |    1 +
+>  drivers/cpufreq/amd_freq_sensitivity.c |  148 ++++++++++++++++++++++++++++++++
+>  drivers/cpufreq/cpufreq_governor.h     |    4 +
+>  drivers/cpufreq/cpufreq_ondemand.c     |   56 ++++++++++--
+>  8 files changed, 242 insertions(+), 9 deletions(-)
+>  create mode 100644 drivers/cpufreq/amd_freq_sensitivity.c
 
-Attempted to differentiate between regulator_get() with an actual
-DT binding for the supply and when there is none to avoid unnecessary
-deferal.
+For the latest versions sent by you (including {get|put}_online_cpus()):
 
-In cases where a driver, such as cpufreq driver, need to handle (based
-on platform) DT nodes which may or may not have regulator supply
-binding, it is necessary to differentiate the return value. When there
-is regulator supply node, defering the probe is beneficial
-as sequence of dependent regulator probe may not be predictable.
-However, where is no regulator supply binding, it can operate without
-the same as needed.
-
-So, to provide an appropriate return result, when we cannot find an
-regulator in regulator_dev_lookup and we run out of options,
-use the regulator_dev_lookup result. This helps the caller to help make
-informed decision.
-
-Cc: Liam Girdwood <lgirdwood@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- drivers/regulator/core.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index e3661c2..139d86a 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -1229,7 +1229,7 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
- 	struct regulator_dev *rdev;
- 	struct regulator *regulator = ERR_PTR(-EPROBE_DEFER);
- 	const char *devname = NULL;
--	int ret;
-+	int ret = 0;
- 
- 	if (id == NULL) {
- 		pr_err("get() with no identifier\n");
-@@ -1266,7 +1266,7 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
- #endif
- 
- 	mutex_unlock(&regulator_list_mutex);
--	return regulator;
-+	return ret ? ERR_PTR(ret) : regulator;
- 
- found:
- 	if (rdev->exclusive) {
--- 
-1.7.9.5
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
