@@ -1,89 +1,86 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 16:32:51 -0500
-Message-ID: <20130405213250.GA8534@kahuna>
-References: <20130404190053.GA4371@kahuna>
- <515E9E79.8010300@ti.com>
- <CAGo_u6r+JdNaCmVh+dHLppJ7eaYh4W5aL1aAg8xQfAju6PyZdQ@mail.gmail.com>
- <20130405161338.GB10155@atomide.com>
- <20130405163254.GA7259@kahuna>
- <20130405170527.GC10155@atomide.com>
- <20130405171750.GA7398@kahuna>
- <20130405192829.GE10155@atomide.com>
- <20130405200201.GA7804@kahuna>
- <20130405211003.GK6182@atomide.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv3 2/3] thermal: expose thermal_zone_get_temp API
+Date: Fri, 5 Apr 2013 08:32:29 -0400
+Message-ID: <1365165150-11720-3-git-send-email-eduardo.valentin@ti.com>
+References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130405211003.GK6182@atomide.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 14:10-20130405, Tony Lindgren wrote:
-> * Nishanth Menon <nm@ti.com> [130405 13:06]:
-> > On 12:28-20130405, Tony Lindgren wrote:
-[...]
-> > > How about just set it up in omap2_common_pm_init instead
-> > > of the board-generic?
-> > umm.. We want to eventually want to get rid of mach-omap2/pm.c (all
-> > those create processor devices etc should go away with proper
-> > representation of devices as nodes in DT if possible.
-> > But, I think you mean something like in the "else" condition of
-> > https://patchwork.kernel.org/patch/2359711/ ? - I'd again have the same
-> > request of not having anything to do with pm.c and keeping as little as
-> > possible for all TI processors in mach-omap2.
-> > 
-> > Could you enlighten me about why you'd not like it in board-generic.c?
-> > will creating an function ti_generic_cpufreq_init() in board-generic.c
-> > and calling it from omap_generic_init help?
-> 
-> I'd like to keep board-generic.c down to minimum. Can't you
-> set it up in omap_init_cpufreq() in your second patch of this
-> series?
-Thanks. That seems to be a better compromise. Will do. I can sequence patch
-[2] above the current patch[1] if there is a need to fix multi-arch builds
-for 3.9: in that case I will probably leave the current [2] patch as
-is, and once our clock representation discussion is done, the rev 4 of
-the patch [1], I can do the following:
-diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
-index 8d15f9a..b250689 100644
---- a/arch/arm/mach-omap2/pm.c
-+++ b/arch/arm/mach-omap2/pm.c
-@@ -267,8 +267,14 @@ static void __init omap4_init_voltages(void)
- 
- static inline void omap_init_cpufreq(void)
- {
--	struct platform_device_info devinfo = { .name = "omap-cpufreq", };
--	platform_device_register_full(&devinfo);
-+	struct platform_device_info devinfo = { .name = "omap-cpufreq", }
-+
-+	if (!of_have_populated_dt()) {
-+		platform_device_register_full(&devinfo);
-+	} else if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
-+		devinfo.name = "cpufreq-cpu0"
-+		platform_device_register_full(&devinfo);
-+	}
+This patch exports the thermal_zone_get_temp API so that driver
+writers can fetch temperature of thermal zones managed by other
+drivers.
+
+Acked-by: Durgadoss R <durgadoss.r@intel.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/thermal_sys.c |   20 +++++++++++++++++---
+ include/linux/thermal.h       |    1 +
+ 2 files changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index e9b636b..83bfa0d 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -371,16 +371,28 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ 	monitor_thermal_zone(tz);
  }
  
- static int __init omap2_common_pm_init(void)
-@@ -301,9 +307,9 @@ int __init omap2_common_pm_late_init(void)
- 		/* Smartreflex device init */
- 		omap_devinit_smartreflex();
+-static int thermal_zone_get_temp(struct thermal_zone_device *tz,
+-				unsigned long *temp)
++/**
++ * thermal_zone_get_temp() - returns its the temperature of thermal zone
++ * @tz: a valid pointer to a struct thermal_zone_device
++ * @temp: a valid pointer to where to store the resulting temperature.
++ *
++ * When a valid thermal zone reference is passed, it will fetch its
++ * temperature and fill @temp.
++ *
++ * Return: On success returns 0, an error code otherwise
++ */
++int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
+ {
+-	int ret = 0;
++	int ret = -EINVAL;
+ #ifdef CONFIG_THERMAL_EMULATION
+ 	int count;
+ 	unsigned long crit_temp = -1UL;
+ 	enum thermal_trip_type type;
+ #endif
  
--		/* cpufreq dummy device instantiation */
--		omap_init_cpufreq();
- 	}
-+	/* cpufreq dummy device instantiation */
-+	omap_init_cpufreq();
++	if (IS_ERR_OR_NULL(tz))
++		goto exit;
++
+ 	mutex_lock(&tz->lock);
  
- #ifdef CONFIG_SUSPEND
- 	suspend_set_ops(&omap_pm_ops);
-[1] https://patchwork.kernel.org/patch/2399201/
-[2] https://patchwork.kernel.org/patch/2359711/
+ 	ret = tz->ops->get_temp(tz, temp);
+@@ -404,8 +416,10 @@ static int thermal_zone_get_temp(struct thermal_zone_device *tz,
+ skip_emul:
+ #endif
+ 	mutex_unlock(&tz->lock);
++exit:
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+ 
+ static void update_temperature(struct thermal_zone_device *tz)
+ {
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 0cf9eb5..8eea86c 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -238,6 +238,7 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 		const struct thermal_cooling_device_ops *);
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+ struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
++int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp);
+ 
+ int thermal_zone_trend_get(struct thermal_zone_device *, int);
+ struct thermal_instance *thermal_instance_get(struct thermal_zone_device *,
 -- 
-Regards,
-Nishanth Menon
+1.7.7.1.488.ge8e1c
