@@ -1,82 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V5 0/4] cpufreq: exynos5440: support for cpufreq driver
-Date: Fri, 05 Apr 2013 14:38:26 +0200
-Message-ID: <2949363.nNl2A6XIoS@vostro.rjw.lan>
-References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
+ tree supported boot
+Date: Fri, 5 Apr 2013 11:32:54 -0500
+Message-ID: <20130405163254.GA7259@kahuna>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
+ <1364507576-19345-2-git-send-email-nm@ti.com>
+ <87ppybxxi0.fsf@linaro.org>
+ <20130404025211.GA2456@snafu>
+ <515D0BF1.7060802@ti.com>
+ <20130404190053.GA4371@kahuna>
+ <515E9E79.8010300@ti.com>
+ <CAGo_u6r+JdNaCmVh+dHLppJ7eaYh4W5aL1aAg8xQfAju6PyZdQ@mail.gmail.com>
+ <20130405161338.GB10155@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49651 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161978Ab3DEQdB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Apr 2013 12:33:01 -0400
+Content-Disposition: inline
+In-Reply-To: <20130405161338.GB10155@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 
-On Thursday, March 28, 2013 01:35:18 PM Amit Daniel Kachhap wrote:
-> Submitting the V5 version of exynos5440 cpufreq driver. This patchset addresses
-> all the coding and design concerns raised especially by Viresh.
+On 09:13-20130405, Tony Lindgren wrote:
+> * Nishanth Menon <nm@ti.com> [130405 04:31]:
+> > On Fri, Apr 5, 2013 at 4:50 AM, Rajendra Nayak <rnayak@ti.com> wrote:
+> > > On Friday 05 April 2013 12:30 AM, Nishanth Menon wrote:
+> > > - I am agree with Tony in his discussion in
+> > >> http://marc.info/?t=136370325600009&r=1&w=2
+> > >>
+> > >> *if* we are moving clock to DT, we should move the data to DT as well -
+> > >
+> > Further, maintaining dts vs kernel code compatibility aside, consider
+> > adding new platforms - more code containing clock data that we have to
+> > carry on in kernel - If we have !
+> > 
+> > I love the idea that Roger's patch does, as a *step #1* of
+> > transitioning clock data out-of-kernel image and enabling drivers to
+> > entitle DT based boot.
+> > 
+> > if this is the only step we will ever take, then it will be a
+> > disappointing decision. whether the final data goes to /lib/firmware
+> > or arch/arm/boot/dts - even though, I prefer it in dts, I have no
+> > strong feelings about it.
+> > However, we need to be prepared (at the earliest possible time) to
+> > move that data out of kernel image as *step #2*.
 > 
-> Changes in V5:
-> * Removed the unnecessary DT look up entry from mach-exynos5-dt.c.
-> * Fixed all coding and comments issue raised by Viresh.
-> 
-> Changes in V4:
-> * Added dev_err logs instead of pr_err.
-> * Used the devm_ioremap_resource API.
-> * Implemented several coding guidelines and minor error comments from Sylwester,
->   Russell and Viresh.
-> 
-> Changes in V3:
-> * Converted the driver to probe based as suggested by Viresh. This is also
->   beneficial for multiplatform kernel.
-> * Other coding guidelines related changes.
-> * Moved the DT node outside cpu0 node as the driver is now a platform
->   driver.
-> 
-> Changes in V2:
-> * Added OPP library support to parse DT parameters.
-> * Removed a hack to handle interrupts in bootup.
-> * Implemented other review comments from Viresh and Inder.
-> 
-> All these patches are dependent on Thomas Abraham common clock patches.
-> (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg15860.html)
-> This whole patch series is based on 3.9-rc4.
-> 
-> Amit Daniel Kachhap (4):
->   cpufreq: exynos: Add cpufreq driver for exynos5440
->   cpufreq: exynos: Remove error return even if no soc is found
->   arm: exynos: Enable OPP library support for exynos5440
->   arm: dts: Add cpufreq controller node for Exynos5440 SoC
-> 
->  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   28 ++
->  arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
->  arch/arm/mach-exynos/Kconfig                       |    2 +
->  drivers/cpufreq/Kconfig.arm                        |    9 +
->  drivers/cpufreq/Makefile                           |    1 +
->  drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
->  drivers/cpufreq/exynos5440-cpufreq.c               |  474 ++++++++++++++++++++
->  7 files changed, 527 insertions(+), 1 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-exynos5440.txt
->  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
+> Yes agreed, Roger's approach is a good first step. It just needs to
+> be a proper device driver under drivers/clock/omap. Also note that
+> the /lib/firmware part is an additional step to the DT defined clocks,
+> but might actually make it easier to implement various PM related bits
+> than trying to map them as DT properties.
 
-Is this for me or the Samsung tree?
+on the first step angle,
+Applying current approach that Roger has taken:
+Benoit's tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/bcousson/linux-omap-dt.git
+for_3.10/dts  d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
++:
+https://patchwork.kernel.org/patch/2312211/
+https://patchwork.kernel.org/patch/2335671/
+And the diff below[1] as replacement for this patch - does indeed work on
+PandaBoard. Now the question is which direction should I take - will
+wait on decision in https://lkml.org/lkml/2013/4/5/173 thread.
+I have similar issues: clock alias is a mess of a code to cleanup and keep alive
+for mpu dplls - I have posted on this mail thread various variants of trying to
+do this - there is no simple solution.
 
-If it's for me, I need ACKs from the Samsung tree maintainers.  Also, please
-address the Viresh's comments.
+If we cannot go any further, we are essentially stalled on moving
+cpufreq (OPP entries along with it, regulators, voltage ....) to device
+tree.
 
-Thanks,
-Rafael
-
-
+[1]
+diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/omap443x.dtsi
+index cccf39a..1fddb1e 100644
+--- a/arch/arm/boot/dts/omap443x.dtsi
++++ b/arch/arm/boot/dts/omap443x.dtsi
+@@ -21,6 +21,8 @@
+ 				800000  1313000
+ 				1008000 1375000
+ 			>;
++			clocks = <&clks 6>;
++			clock-names = "cpu";
+ 			clock-latency = <300000>; /* From legacy driver */
+ 		};
+ 	};
+diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
+index afa509a..5b147ef 100644
+--- a/arch/arm/mach-omap2/board-generic.c
++++ b/arch/arm/mach-omap2/board-generic.c
+@@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
+ 		omap4_panda_display_init_of();
+ 	else if (of_machine_is_compatible("ti,omap4-sdp"))
+ 		omap_4430sdp_display_init_of();
++
++	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
++		struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
++		platform_device_register_full(&devinfo);
++	}
+ }
+ 
+ #ifdef CONFIG_SOC_OMAP2420
+diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-omap2/cclock44xx_data.c
+index a93617b..54530d0 100644
+--- a/arch/arm/mach-omap2/cclock44xx_data.c
++++ b/arch/arm/mach-omap2/cclock44xx_data.c
+@@ -1675,6 +1675,7 @@ static struct clk *dt_clks[] = {
+ 	&auxclk3_ck,
+ 	&auxclk4_ck,
+ 	&auxclk5_ck,
++	&dpll_mpu_ck,
+ };
+ 
+ static struct clk_onecell_data clock_data;
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+Nishanth Menon
