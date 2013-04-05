@@ -1,96 +1,61 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 2/2] cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
-Date: Thu, 4 Apr 2013 23:21:48 -0500
-Message-ID: <1365135708-23886-3-git-send-email-nm@ti.com>
-References: <1365135708-23886-1-git-send-email-nm@ti.com>
+Subject: [PATCH 0/2] cpufreq/regulator: Handle regulators that defer probe with device tree bindings
+Date: Thu, 4 Apr 2013 23:21:46 -0500
+Message-ID: <1365135708-23886-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1365135708-23886-1-git-send-email-nm@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-regulator_get will now return -EPROBE_DEFER when the cpu0-supply
-node is present, but the regulator is not yet registered.
+Hi,
+Currently get_regulator returns -EPROBE_DEFER in the case of regulator supply
+which have no device tree node or even if regulator which are depicted in device
+tree node is defering it's registration for valid reasons.
 
-It is possible for this to occur when the regulator registration
-by itself might be defered due to some dependent interface not
-yet instantiated. For example: an regulator which uses I2C and GPIO
-might need both systems available before proceeding, in this case,
-the regulator might defer it's registration.
+This makes it impossible to use an regulator that registers itself after
+cpufreq-cpu0 probe is complete. The reason for the same is regulator framework
+fails to return appropriate error value when device tree binding is not actually
+present as a node.
 
-However, the cpufreq-cpu0 driver assumes that any un-successful return
-result is equivalent of failure.
+Once we fix that, we can then fix cpufreq-cpu0 to make intelligent decisions
+based on return value.
 
-When the regulator_get returns failure other than -EPROBE_DEFER, it
-makes sense to assume that supply node is not present and proceed
-with the assumption that only clock control is necessary in the
-platform.
+Nishanth Menon (2):
+  regulator: core: return err value for regulator_get if there is no DT
+    binding
+  cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
 
-With this change, we can now handle the following conditions:
-a) cpu0-supply binding is not present, regulator_get will return
-appropriate error result, resulting in cpufreq-cpu0 driver controlling
-just the clock.
-b) cpu0-supply binding is present, regulator_get returns -EPROBE_DEFER,
-we retry resulting in cpufreq-cpu0 driver registering later once the
-regulator is available.
-c) cpu0-supply binding is present, regulator_get returns -EPROBE_DEFER,
-however, regulator never registers, we retry until cpufreq-cpu0
-driver fails to register pointing at device tree information bug.
-However, in this case, the fact that cpufreq-cpu0 operates with clock
-only when the DT binding clearly indicates need of a supply is a bug of
-it's own.
-d) cpu0-supply gets an regulator at probe - cpufreq-cpu0 driver controls
-both the clock and regulator
-
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shawn Guo <shawn.guo@linaro.org>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
  drivers/cpufreq/cpufreq-cpu0.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/regulator/core.c       |    4 ++--
+ 2 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 4e5b7fb..55fec7c 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -194,6 +194,20 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	cpu_dev = &pdev->dev;
- 	cpu_dev->of_node = np;
- 
-+	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
-+	if (IS_ERR(cpu_reg)) {
-+		/*
-+		 * If cpu0 regulator supply node is present, but regulator is
-+		 * not yet registered, we should try defering probe.
-+		 */
-+		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
-+			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
-+			return -EPROBE_DEFER;
-+		}
-+		pr_err("failed to get cpu0 regulator: %ld\n", PTR_ERR(cpu_reg));
-+		cpu_reg = NULL;
-+	}
-+
- 	cpu_clk = devm_clk_get(cpu_dev, NULL);
- 	if (IS_ERR(cpu_clk)) {
- 		ret = PTR_ERR(cpu_clk);
-@@ -201,12 +215,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_node;
- 	}
- 
--	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
--	if (IS_ERR(cpu_reg)) {
--		pr_warn("failed to get cpu0 regulator\n");
--		cpu_reg = NULL;
--	}
--
- 	ret = of_init_opp_table(cpu_dev);
- 	if (ret) {
- 		pr_err("failed to init OPP table: %d\n", ret);
+Series is based off tag v3.9-rc5 (also applies on rafael's bleeding-edge branch)
+
+Series is also available at:
+https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-regulator-fixing-v1
+git link: git://github.com/nmenon/linux-2.6-playground.git
+branch: push/cpufreq-regulator-fixing-v1
+
+Test scenarios(performed on 3.9-rc3 on beagle-XM platform):
+test #1:  cpu0-supply binding is not present:
+	http://pastebin.com/0SSC1HAw
+test #2: cpu0-supply binding is present, but regulator defers probing:
+	http://pastebin.com/HCSJqtRK
+test #3: cpu0-supply binding is present, but regulator never registers (bug in DT binding)
+	http://pastebin.com/guUwQcGW
+test #4: cpu0-supply binding is present, regulator is available:
+	http://pastebin.com/hsbBdxiz
+	
+Sub Note: This series might not be important for 3.9, considering the regulator
+bug has been around since last year, however, it might be nice to have it fixed
+up in 3.10 sometime.
+
+Regards,
+Nishanth Menon
 -- 
 1.7.9.5
+
 
