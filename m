@@ -1,39 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V4 0/2] cpufreq: ondemand: add AMD specific powersave bias
-Date: Fri, 05 Apr 2013 13:55:11 +0200
-Message-ID: <2396755.WnKv3T7qE3@vostro.rjw.lan>
-References: <1365092344-11310-1-git-send-email-jacob.shin@amd.com> <CAKohpomhBtR2aONp=GsOUeaM1=8f2ZN7EfcGyc1NYZX=ZsweWA@mail.gmail.com> <CAKohpo=OeNfJnmbqxP-+bG1ZZahk6kZ-AjcXn-zRQw24_6UG5g@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv3 1/3] thermal: introduce thermal_zone_get_zone_by_name helper function
+Date: Fri, 5 Apr 2013 08:32:28 -0400
+Message-ID: <1365165150-11720-2-git-send-email-eduardo.valentin@ti.com>
+References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=OeNfJnmbqxP-+bG1ZZahk6kZ-AjcXn-zRQw24_6UG5g@mail.gmail.com>
+In-Reply-To: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Borislav Petkov <bp@alien8.de>, Jacob Shin <jacob.shin@amd.com>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 05, 2013 12:19:36 PM Viresh Kumar wrote:
-> On 5 April 2013 10:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > For the latest versions sent by you (including {get|put}_online_cpus()):
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Hi Rafael,
-> 
-> I see that you have applied this patchset to bleeding-edge, but in
-> wrong order. You have applied 2/2 first and then 1/2, which is
-> wrong as after 2/2 we will have a compilation failure.
+This patch adds a helper function to get a reference of
+a thermal zone, based on the zone type name.
 
-Ah, good catch.  I didn't notice that patchwork changed the ordering when
-creating a bundle.
+It will perform a zone name lookup and return a reference
+to a thermal zone device that matches the name requested.
+In case the zone is not found or when several zones match
+same name or if the required parameters are invalid, it will return
+the corresponding error code (ERR_PTR).
 
-Should be fixed now.
+Cc: Durgadoss R <durgadoss.r@intel.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/thermal_sys.c |   38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h       |    1 +
+ 2 files changed, 39 insertions(+), 0 deletions(-)
 
-Thanks,
-Rafael
-
-
+diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+index 5bd95d4..e9b636b 100644
+--- a/drivers/thermal/thermal_sys.c
++++ b/drivers/thermal/thermal_sys.c
+@@ -1790,6 +1790,44 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+ 
++/**
++ * thermal_zone_get_zone_by_name() - search for a zone and returns its ref
++ * @name: thermal zone name to fetch the temperature
++ *
++ * When only one zone is found with the passed name, returns a reference to it.
++ *
++ * Return: On success returns a reference to an unique thermal zone with
++ * matching name equals to @name, an ERR_PTR otherwise (-EINVAL for invalid
++ * paramenters, -ENODEV for not found and -EEXIST for multiple matches).
++ */
++struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name)
++{
++	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-EINVAL);
++	unsigned int found = 0;
++
++	if (!name)
++		goto exit;
++
++	mutex_lock(&thermal_list_lock);
++	list_for_each_entry(pos, &thermal_tz_list, node)
++		if (!strnicmp(name, pos->type, THERMAL_NAME_LENGTH)) {
++			found++;
++			ref = pos;
++		}
++	mutex_unlock(&thermal_list_lock);
++
++	/* nothing has been found, thus an error code for it */
++	if (found == 0)
++		ref = ERR_PTR(-ENODEV);
++	else if (found > 1)
++	/* Success only when an unique zone is found */
++		ref = ERR_PTR(-EEXIST);
++
++exit:
++	return ref;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
++
+ #ifdef CONFIG_NET
+ static struct genl_family thermal_event_genl_family = {
+ 	.id = GENL_ID_GENERATE,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 542a39c..0cf9eb5 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -237,6 +237,7 @@ void thermal_zone_device_update(struct thermal_zone_device *);
+ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 		const struct thermal_cooling_device_ops *);
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
++struct thermal_zone_device *thermal_zone_get_zone_by_name(const char *name);
+ 
+ int thermal_zone_trend_get(struct thermal_zone_device *, int);
+ struct thermal_instance *thermal_instance_get(struct thermal_zone_device *,
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.7.1.488.ge8e1c
