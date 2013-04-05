@@ -1,30 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/18] For-3.10: CPUFreq: Move drivers to drivers/cpufreq
-Date: Fri, 5 Apr 2013 06:47:03 +0530
-Message-ID: <CAKohpom8=jn+i2VUEFwgRQDAwaxBT7rB-nHcY1rSE_BxW+VBmA@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<2724059.EMM6yAeBck@vostro.rjw.lan>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH 2/2] cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
+Date: Thu, 4 Apr 2013 23:21:48 -0500
+Message-ID: <1365135708-23886-3-git-send-email-nm@ti.com>
+References: <1365135708-23886-1-git-send-email-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2724059.EMM6yAeBck@vostro.rjw.lan>
+In-Reply-To: <1365135708-23886-1-git-send-email-nm@ti.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+To: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 5 April 2013 04:06, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, April 04, 2013 06:24:08 PM Viresh Kumar wrote:
->> Hi Rafael,
->>
->> These are all the remaining patches i have for 3.10. All of them have received
->> Acks from their maintainers leaving powerpc ones. I have got an additional patch
->> for powerpc (18) this time, it was the only driver left out of drivers/cpufreq.
->>
->> Please consider them for applying to your bleeding-edge or linux-next.
->
-> Patches [1-16/18] plus the fixed-up [18/18] (slightly modified due to the
-> ordering change) applied to bleeding-edge.  For [17/18] I need an ACK from the
-> powerpc side.
+regulator_get will now return -EPROBE_DEFER when the cpu0-supply
+node is present, but the regulator is not yet registered.
 
-Thanks.
+It is possible for this to occur when the regulator registration
+by itself might be defered due to some dependent interface not
+yet instantiated. For example: an regulator which uses I2C and GPIO
+might need both systems available before proceeding, in this case,
+the regulator might defer it's registration.
+
+However, the cpufreq-cpu0 driver assumes that any un-successful return
+result is equivalent of failure.
+
+When the regulator_get returns failure other than -EPROBE_DEFER, it
+makes sense to assume that supply node is not present and proceed
+with the assumption that only clock control is necessary in the
+platform.
+
+With this change, we can now handle the following conditions:
+a) cpu0-supply binding is not present, regulator_get will return
+appropriate error result, resulting in cpufreq-cpu0 driver controlling
+just the clock.
+b) cpu0-supply binding is present, regulator_get returns -EPROBE_DEFER,
+we retry resulting in cpufreq-cpu0 driver registering later once the
+regulator is available.
+c) cpu0-supply binding is present, regulator_get returns -EPROBE_DEFER,
+however, regulator never registers, we retry until cpufreq-cpu0
+driver fails to register pointing at device tree information bug.
+However, in this case, the fact that cpufreq-cpu0 operates with clock
+only when the DT binding clearly indicates need of a supply is a bug of
+it's own.
+d) cpu0-supply gets an regulator at probe - cpufreq-cpu0 driver controls
+both the clock and regulator
+
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+ drivers/cpufreq/cpufreq-cpu0.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 4e5b7fb..55fec7c 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -194,6 +194,20 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 	cpu_dev = &pdev->dev;
+ 	cpu_dev->of_node = np;
+ 
++	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
++	if (IS_ERR(cpu_reg)) {
++		/*
++		 * If cpu0 regulator supply node is present, but regulator is
++		 * not yet registered, we should try defering probe.
++		 */
++		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
++			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
++			return -EPROBE_DEFER;
++		}
++		pr_err("failed to get cpu0 regulator: %ld\n", PTR_ERR(cpu_reg));
++		cpu_reg = NULL;
++	}
++
+ 	cpu_clk = devm_clk_get(cpu_dev, NULL);
+ 	if (IS_ERR(cpu_clk)) {
+ 		ret = PTR_ERR(cpu_clk);
+@@ -201,12 +215,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_node;
+ 	}
+ 
+-	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+-	if (IS_ERR(cpu_reg)) {
+-		pr_warn("failed to get cpu0 regulator\n");
+-		cpu_reg = NULL;
+-	}
+-
+ 	ret = of_init_opp_table(cpu_dev);
+ 	if (ret) {
+ 		pr_err("failed to init OPP table: %d\n", ret);
+-- 
+1.7.9.5
+
