@@ -1,71 +1,45 @@
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/2] regulator: core: return err value for regulator_get
- if there is no DT binding
-Date: Fri, 5 Apr 2013 11:17:54 +0100
-Message-ID: <20130405101754.GD6597@opensource.wolfsonmicro.com>
-References: <1365135708-23886-1-git-send-email-nm@ti.com>
- <1365135708-23886-2-git-send-email-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
+ drivers/cpufreq
+Date: Fri, 05 Apr 2013 13:36:29 +0200
+Message-ID: <1769336.FkfMpuXqqb@vostro.rjw.lan>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
+ <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0/kgSOzhNoDC5T3a"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1365135708-23886-2-git-send-email-nm@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
+On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
+> On 5 April 2013 12:18, Kukjin Kim <kgene.kim@samsung.com> wrote:
+> > Basically, this moving looks good to me, but should be re-worked based on
+> > for-next of samsung tree because this touches too many samsung stuff so this
+> > should be sent to upstream via samsung tree.
+> 
+> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
+> it can't be
+> moved to your tree if there is a issue.
 
---0/kgSOzhNoDC5T3a
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well, I'm dropping it.  Please merge via the Samsung tree.
 
-On Thu, Apr 04, 2013 at 11:21:47PM -0500, Nishanth Menon wrote:
-> commit 6d191a5fc7a969d972f1681e1c23781aecb06a61
-> (regulator: core: Don't defer probe if there's no DT binding for a supply)
->=20
-> Attempted to differentiate between regulator_get() with an actual
-> DT binding for the supply and when there is none to avoid unnecessary
-> deferal.
+Thanks,
+Rafael
 
-So, this is an extremely long and hence difficult to understand and
-follow commit message which manages to miss out mentioning the core
-issue which is that we're ignoring the return value from lookup_dev().
-I had to actually look at the code to understand.
 
-What should be being said here is that the ret value supplied by
-regulator_dev_lookup() is being ignored by _regulator_get().
-
->  	mutex_unlock(&regulator_list_mutex);
-> -	return regulator;
-> +	return ret ? ERR_PTR(ret) : regulator;
-
-Please implement this so it looks like the rest of the function -
-everywhere else in the function we just make regulator an ERR_PTR() and
-goto out, we should do the same.
-
---0/kgSOzhNoDC5T3a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRXqTLAAoJELSic+t+oim9hEwP/2na3lv0AznYrBSF2HNVlajQ
-YdrJeWKCsyXJ2vRKwQcxEdWyyB/r9Ymawosp9YztxxwIYKyKQoyQ0I7EafrtOpPb
-Ql/z1NUCDYUV2g0UYuUOy+H/TOv6yhv2nbqy65Zl33MbieCiEzP26LEhJoiKb/e+
-RE9VPHVLfJJIkYKbG3K5a1IfETksko14Wzqd6cbKQhU0A4MAacOcPiEQxAXtneHA
-74Wiy0CUtfGaFl3N0UyYDPi5bCbREeem2UCgITkObI/gjjDuh3CAkF5zf/DxtGEO
-JtxMLeb4/Mqpjz7wBaHENufQQOJOcXARNMRbgjWpTsUfRCNWgQgksoYti7Q0C5G1
-MpsXeCH0gtbwVlVXDEpVYrqZ972monI5j/6EriB1o7mI0eK8sR/lywenFih+bdv/
-vyWeqhKq5gYjWkzSfQmYqZtK++YI5dNAzbXY9EcKtMHcU72xVnZOJwPJxl2Wj9Tn
-/POh9DE5N3SD3Y8J9tpTlVLv8BXZjzdYo46sN6+5/uMBjZ1HCMggRAx684qsct8O
-k5Tf1KJeGV8krRlFJoSyBTm5Up4hrYgBYldudx8fNdQz/q9m7tfKsSrZZDpKbIT1
-K/7QgfTZv1kWNdFUJLvbfA+D0AqwXg5Up6DyqUB5QZ2ppBn3CJX8ZsqScIcHOEem
-R3Q9SeX6XW/bsQ5bUa1X
-=W9eo
------END PGP SIGNATURE-----
-
---0/kgSOzhNoDC5T3a--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
