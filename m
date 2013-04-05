@@ -1,123 +1,102 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCHv3 1/3] thermal: introduce thermal_zone_get_zone_by_name
- helper function
-Date: Fri, 5 Apr 2013 12:47:44 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C67B4D@BGSMSX101.gar.corp.intel.com>
-References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
- <1365165150-11720-2-git-send-email-eduardo.valentin@ti.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V3 2/2] cpufreq: OMAP: instantiate omap-cpufreq as a
+ platform_driver
+Date: Fri, 5 Apr 2013 12:07:07 -0500
+Message-ID: <20130405170707.GA7361@kahuna>
+References: <1364507576-19345-1-git-send-email-nm@ti.com>
+ <1364507576-19345-3-git-send-email-nm@ti.com>
+ <CAOh2x=mdzfyMoGuavrMFgkDgMt=ihxdxa_HG1T8ehfSa1W7j7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1365165150-11720-2-git-send-email-eduardo.valentin@ti.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAOh2x=mdzfyMoGuavrMFgkDgMt=ihxdxa_HG1T8ehfSa1W7j7Q@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@linaro.org>, Rajendra Nayak <rnayak@ti.com>, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
-> Sent: Friday, April 05, 2013 6:02 PM
-> To: Zhang, Rui
-> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; R, Durgadoss;
-> Eduardo Valentin
-> Subject: [PATCHv3 1/3] thermal: introduce
-> thermal_zone_get_zone_by_name helper function
-> 
-> This patch adds a helper function to get a reference of
-> a thermal zone, based on the zone type name.
-> 
-> It will perform a zone name lookup and return a reference
-> to a thermal zone device that matches the name requested.
-> In case the zone is not found or when several zones match
-> same name or if the required parameters are invalid, it will return
-> the corresponding error code (ERR_PTR).
-> 
-> Cc: Durgadoss R <durgadoss.r@intel.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+On 08:29-20130329, Viresh Kumar wrote:
+> On Fri, Mar 29, 2013 at 3:22 AM, Nishanth Menon <nm@ti.com> wrote:
+> > As multi-platform build is being adopted by more and more ARM platf=
+orms,
+> > initcall function should be used very carefully.  For example, when
+> > CONFIG_ARM_OMAP2PLUS_CPUFREQ is built in the kernel, omap_cpufreq_i=
+nit()
+> > will be called on all the platforms to initialize omap-cpufreq driv=
+er.
+> >
+> > Further, on OMAP, we now use Soc generic cpufreq-cpu0 driver using =
+device
+> > tree entries.  To allow cpufreq-cpu0 and omap-cpufreq drivers to co=
+-exist
+> > for OMAP in a single image, we need to ensure the following:
+> > 1. With device tree boot, we use cpufreq-cpu0
+> > 2. With non device tree boot, we use omap-cpufreq
+> >
+> > In the case of (1), we will have cpu OPPs and regulator registered
+> > as part of the device tree nodes, to ensure that omap-cpufreq
+> > and cpufreq-cpu0 don't conflict in managing the frequency of the
+> > same CPU, we should not permit omap-cpufreq to be probed.
+> >
+> > In the case of (2), we will not have the cpufreq-cpu0 device, hence
+> > only omap-cpufreq will be active.
+> >
+> > To eliminate this undesired these effects, we change omap-cpufreq
+> > driver to have it instantiated as a platform_driver and register
+> > "omap-cpufreq" device only when booted without device tree nodes on
+> > OMAP platforms.
+> >
+> > This allows the following:
+> > a) Will only run on platforms that create the platform_device
+> >    "omap-cpufreq".
+> > b) Since the platform_device is registered only when device tree no=
+des
+> >    are *not* populated, omap-cpufreq driver does not conflict with
+> >    the usage of cpufreq-cpu0 driver which is used on OMAP platforms=
+ when
+> >    device tree nodes are present.
+> >
+> > Inspired by commit 5553f9e26f6f49a93ba732fd222eac6973a4cf35
+> > (cpufreq: instantiate cpufreq-cpu0 as a platform_driver)
+> >
+> > Cc: Kevin Hilman <khilman@linaro.org>
+> > Cc: Rajendra Nayak <rnayak@ti.com>
+> > Cc: Paul Walmsley <paul@pwsan.com>
+> > Cc: "Beno=EEt Cousson" <b-cousson@ti.com>
+> > Cc: Jon Hunter <jon-hunter@ti.com>
+> > Cc: Keerthy <j-keerthy@ti.com>
+> > Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+> > Cc: Shawn Guo <shawn.guo@linaro.org>
+> > [robherring2@gmail.com: reported conflict of omap-cpufreq vs other
+> > driver in an non-device tree supported boot]
+> > Reported-by: Rob Herring <robherring2@gmail.com>
+> > Signed-off-by: Nishanth Menon <nm@ti.com>
+> > ---
+> > Changes in V3:
+> >         - converted to platform_driver to
+> >                 address https://patchwork.kernel.org/patch/2303491/=
+ as well
+> >         - modified CC list.
+> > V2: https://patchwork.kernel.org/patch/2303491/
+> > V1: https://patchwork.kernel.org/patch/2273681/
+> >
+> >  arch/arm/mach-omap2/pm.c       |    9 +++++++++
+> >  drivers/cpufreq/omap-cpufreq.c |   19 ++++++++++++++-----
+> >  2 files changed, 23 insertions(+), 5 deletions(-)
+>=20
+> For cpufreq core:
+>=20
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Since this patch could be merged independently to help multi-platform
+builds, While the omap community discusses:
+http://marc.info/?t=3D136450773400004&r=3D1&w=3D2
+http://marc.info/?t=3D136370325600009&r=3D1&w=3D2&n=3D7
 
-Looks okay to me.
-Acked-by: Durgadoss R <durgadoss.r@intel.com>
-
-Thanks,
-Durga
-
-> ---
->  drivers/thermal/thermal_sys.c |   38
-> ++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h       |    1 +
->  2 files changed, 39 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 5bd95d4..e9b636b 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -1790,6 +1790,44 @@ void thermal_zone_device_unregister(struct
-> thermal_zone_device *tz)
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
-> 
-> +/**
-> + * thermal_zone_get_zone_by_name() - search for a zone and returns its
-> ref
-> + * @name: thermal zone name to fetch the temperature
-> + *
-> + * When only one zone is found with the passed name, returns a reference
-> to it.
-> + *
-> + * Return: On success returns a reference to an unique thermal zone with
-> + * matching name equals to @name, an ERR_PTR otherwise (-EINVAL for
-> invalid
-> + * paramenters, -ENODEV for not found and -EEXIST for multiple matches).
-> + */
-> +struct thermal_zone_device *thermal_zone_get_zone_by_name(const
-> char *name)
-> +{
-> +	struct thermal_zone_device *pos = NULL, *ref = ERR_PTR(-EINVAL);
-> +	unsigned int found = 0;
-> +
-> +	if (!name)
-> +		goto exit;
-> +
-> +	mutex_lock(&thermal_list_lock);
-> +	list_for_each_entry(pos, &thermal_tz_list, node)
-> +		if (!strnicmp(name, pos->type, THERMAL_NAME_LENGTH)) {
-> +			found++;
-> +			ref = pos;
-> +		}
-> +	mutex_unlock(&thermal_list_lock);
-> +
-> +	/* nothing has been found, thus an error code for it */
-> +	if (found == 0)
-> +		ref = ERR_PTR(-ENODEV);
-> +	else if (found > 1)
-> +	/* Success only when an unique zone is found */
-> +		ref = ERR_PTR(-EEXIST);
-> +
-> +exit:
-> +	return ref;
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_zone_get_zone_by_name);
-> +
->  #ifdef CONFIG_NET
->  static struct genl_family thermal_event_genl_family = {
->  	.id = GENL_ID_GENERATE,
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 542a39c..0cf9eb5 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -237,6 +237,7 @@ void thermal_zone_device_update(struct
-> thermal_zone_device *);
->  struct thermal_cooling_device *thermal_cooling_device_register(char *,
-> void *,
->  		const struct thermal_cooling_device_ops *);
->  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
-> +struct thermal_zone_device *thermal_zone_get_zone_by_name(const
-> char *name);
-> 
->  int thermal_zone_trend_get(struct thermal_zone_device *, int);
->  struct thermal_instance *thermal_instance_get(struct
-> thermal_zone_device *,
-> --
-> 1.7.7.1.488.ge8e1c
+To enable cpufreq-cpu0 driver in DT mode, I wonder if we could queue th=
+is up
+for 3.10.
+--=20
+Regards,
+Nishanth Menon
