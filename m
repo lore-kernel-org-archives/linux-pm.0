@@ -1,149 +1,54 @@
-From: Rajendra Nayak <rnayak@ti.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 15:20:49 +0530
-Message-ID: <515E9E79.8010300@ti.com>
-References: <1364507576-19345-1-git-send-email-nm@ti.com> <1364507576-19345-2-git-send-email-nm@ti.com> <87ppybxxi0.fsf@linaro.org> <20130404025211.GA2456@snafu> <515D0BF1.7060802@ti.com> <20130404190053.GA4371@kahuna>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Raname index as data in cpufreq_frequency_table
+Date: Fri, 5 Apr 2013 16:00:04 +0530
+Message-ID: <CAKohpo=jUOciKCAWWJ_bC-uSKzdk4a49r39gaOsuroVbqSRyFg@mail.gmail.com>
+References: <03ca6f17860d290cfc67e51969062612f0ab26ab.1364643234.git.viresh.kumar@linaro.org>
+	<2835305.o7Hvg1cesG@vostro.rjw.lan>
+	<CAKohpo=vorTDONBR2czcZpP64sCfv1Qa-u8zGkHys9miwQrURw@mail.gmail.com>
+	<6766028.RBJyPM3lJj@vostro.rjw.lan>
+	<CAKohpo=wNHsV0vFhcTWg0g7=Wtbdx=g2wqpNPfidQfGhhK9Cig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20130404190053.GA4371@kahuna>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Kevin Hilman <khilman@linaro.org>, linux-omap@vger.kernel.org, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?ISO-8859-1?Q?Beno=EEt_Cousson?= <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:44041 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932572Ab3DEKaF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Apr 2013 06:30:05 -0400
+Received: by mail-oa0-f41.google.com with SMTP id f4so3814769oah.28
+        for <linux-pm@vger.kernel.org>; Fri, 05 Apr 2013 03:30:04 -0700 (PDT)
+In-Reply-To: <CAKohpo=wNHsV0vFhcTWg0g7=Wtbdx=g2wqpNPfidQfGhhK9Cig@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Stephen Warren <swarren@wwwdotorg.org>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
 
-On Friday 05 April 2013 12:30 AM, Nishanth Menon wrote:
-> On 10:43-20130404, Rajendra Nayak wrote:
->> On Thursday 04 April 2013 08:22 AM, Nishanth Menon wrote:
->>> On 11:47-20130403, Kevin Hilman wrote:
->>>> Nishanth Menon <nm@ti.com> writes:
->>>>
->>> [...]
->>>>> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
->>>>> index afa509a..5b147ef 100644
->>>>> --- a/arch/arm/mach-omap2/board-generic.c
->>>>> +++ b/arch/arm/mach-omap2/board-generic.c
->>>>> @@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
->>>>>  		omap4_panda_display_init_of();
->>>>>  	else if (of_machine_is_compatible("ti,omap4-sdp"))
->>>>>  		omap_4430sdp_display_init_of();
->>>>> +
->>>>> +	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
->>>>> +		struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
->>>>> +		platform_device_register_full(&devinfo);
->>>>> +	}
->>>>
->>>> Rather than adding new clkdev nodes below, how about using clk add_alias
->>>> here?
->>> Thanks for pointing this out, I spend some time implementing such a
->>> scheme and following is my opinion:
+On 31 March 2013 09:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 31 March 2013 07:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> On Sunday, March 31, 2013 07:03:04 AM Viresh Kumar wrote:
+>>> On 31 March 2013 03:31, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> > Sorry, I won't apply this.  It changes too much stuff at a time and I'm not
+>>> > really sure if the change being made is necessary.
 >>>
->>> Summary:
->>> There is one major problem which forces us to introduce this "clock
->>> hack" - clock nodes are not in device tree yet. Yes, clock add alias
+>>> Hmm.. I thought it is important  as it puts the real meaning of "index" in the
+>>> code.
 >>
->> There's already a patch floating around for this..
->> https://lkml.org/lkml/2013/4/2/84
-> Not really. Try on OMAP4 PandaBoard:
-> Based on
-> git://git.kernel.org/pub/scm/linux/kernel/git/bcousson/linux-omap-dt.git
-> for_3.10/dts  d114294 ARM: dts: AM33XX: Corrects typo in interrupt field in SPI node
-> + the patch https://patchwork.kernel.org/patch/2335671/ applied
-> Pandaboard 4 Log: http://pastebin.com/qsdsbv7p
-> The Patch does not even work, unless there is un-documented patch
-> dependencies!
+>> And what does that change, really?  What about documenting the meaning of
+>> "index" instead?
+>
+> Probably not the logic but perception. People don't necessarily go through
+> Documentation but code for writing new stuff. And so code should reflect the
+> real meaning.
+>
+> In case we write something like following in documentation:
+> "Index: This is driver specific data for each frequency. Core doesn't use it."
+>
+> Then "Index" looks even more wrong. Its not the right name for any such
+> variable. And so it should be fixed.
 
-I guess Roger responded to that.
+Forgot reply to all earlier :(
 
-> 
-> Secondly, even if it did work, it would still continue to need yet another
-> hack[1] 
+You have any more comments on this patch? I really thought this change
+would be good. I agree it touches lot of stuff but for clean/clear code.
 
-Why do you think thats a hack? Besides I don't know if you are
-doing it right.
-
-- I am agree with Tony in his discussion in
-> http://marc.info/?t=136370325600009&r=1&w=2
-> 
-> *if* we are moving clock to DT, we should move the data to DT as well -
-
-I don't think Tony said 'move all clock data into DT'. He was suggesting
-a combination of DT and /lib/firmware
-
-> similar to what other platforms do - highbank as far as i can quickly
-> see. (drivers/clk/clk-highbank.c and arch/arm/boot/dts/ecx-common.dtsi
-
-Well, you chose to look at highbank (which has 8 clock nodes in DT, as
-opposed to OMAP5 which has around 250 in kernel) why don't you also look at imx?
-drivers/clk/mxs/clk-imx28.c and Documentation/devicetree/bindings/clock/imx28-clock.txt
-for examples.
-They have around 65 nodes (still way lesser than OMAP) and see what
-they do. Thats exactly what Roger does in his patch.
-
-regards,
-Rajendra
-
-> as examples). Clk alias might have been a solution, but in this case,
-> clk add alias (as I indicated in this thread is not really worth the
-> effort for the mess of code it creates for cpu clock).
-> 
-> [1]
-> diff --git a/arch/arm/boot/dts/omap4.dtsi b/arch/arm/boot/dts/omap4.dtsi
-> index dd8f58f..9282b4c 100644
-> --- a/arch/arm/boot/dts/omap4.dtsi
-> +++ b/arch/arm/boot/dts/omap4.dtsi
-> @@ -635,4 +635,9 @@
->  			ti,has-mailbox;
->  		};
->  	};
-> +
-> +	dpll_mpu: scrmclks {
-> +		compatible = "ti,omap4-clock";
-> +		#clock-cells = <1>;
-> +	};
->  };
-> diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/omap443x.dtsi
-> index cccf39a..1587a5f 100644
-> --- a/arch/arm/boot/dts/omap443x.dtsi
-> +++ b/arch/arm/boot/dts/omap443x.dtsi
-> @@ -21,6 +21,8 @@
->  				800000  1313000
->  				1008000 1375000
->  			>;
-> +			clocks = <&dpll_mpu>;
-> +			clock-names = "cpu";
->  			clock-latency = <300000>; /* From legacy driver */
->  		};
->  	};
-> diff --git a/arch/arm/mach-omap2/board-generic.c b/arch/arm/mach-omap2/board-generic.c
-> index afa509a..5b147ef 100644
-> --- a/arch/arm/mach-omap2/board-generic.c
-> +++ b/arch/arm/mach-omap2/board-generic.c
-> @@ -49,6 +49,11 @@ static void __init omap_generic_init(void)
->  		omap4_panda_display_init_of();
->  	else if (of_machine_is_compatible("ti,omap4-sdp"))
->  		omap_4430sdp_display_init_of();
-> +
-> +	if (IS_ENABLED(CONFIG_GENERIC_CPUFREQ_CPU0)) {
-> +		struct platform_device_info devinfo = { .name = "cpufreq-cpu0", };
-> +		platform_device_register_full(&devinfo);
-> +	}
->  }
->  
->  #ifdef CONFIG_SOC_OMAP2420
-> diff --git a/arch/arm/mach-omap2/cclock44xx_data.c b/arch/arm/mach-omap2/cclock44xx_data.c
-> index a93617b..ba4562a 100644
-> --- a/arch/arm/mach-omap2/cclock44xx_data.c
-> +++ b/arch/arm/mach-omap2/cclock44xx_data.c
-> @@ -1675,6 +1675,7 @@ static struct clk *dt_clks[] = {
->  	&auxclk3_ck,
->  	&auxclk4_ck,
->  	&auxclk5_ck,
-> +	&dpll_mpu_ck,
->  };
->  
->  static struct clk_onecell_data clock_data;
-> 
-
+--
+viresh
