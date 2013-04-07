@@ -1,50 +1,65 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V3 1/2] ARM: OMAP3+: use cpu0-cpufreq driver in device
- tree supported boot
-Date: Fri, 5 Apr 2013 17:23:24 -0500
-Message-ID: <20130405222324.GA8732@kahuna>
-References: <20130405163254.GA7259@kahuna>
- <20130405170527.GC10155@atomide.com>
- <20130405171750.GA7398@kahuna>
- <20130405192829.GE10155@atomide.com>
- <20130405200201.GA7804@kahuna>
- <20130405211003.GK6182@atomide.com>
- <20130405213250.GA8534@kahuna>
- <20130405214051.GG10155@atomide.com>
- <20130405221041.GA8648@kahuna>
- <20130405221755.GI10155@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20130405221755.GI10155@atomide.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Rajendra Nayak <rnayak@ti.com>, Kevin Hilman <khilman@linaro.org>, linux-omap <linux-omap@vger.kernel.org>, Rob Herring <robherring2@gmail.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Paul Walmsley <paul@pwsan.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <b-cousson@ti.com>, Jon Hunter <jon-hunter@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Shawn Guo <shawn.guo@linaro.org>
+From: Huacai Chen <chenhc@lemote.com>
+Subject: [PATCH] PM/reboot: call syscore_shutdown() after disable_nonboot_cpus()
+Date: Sun,  7 Apr 2013 10:14:14 +0800
+Message-ID: <1365300854-3133-1-git-send-email-chenhc@lemote.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:59939 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161252Ab3DGCOk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Apr 2013 22:14:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, Huacai Chen <chenhc@lemote.com>, stable@vger.kernel.org
 
-On 15:17-20130405, Tony Lindgren wrote:
-> * Nishanth Menon <nm@ti.com> [130405 15:15]:
-> > Option b) leave a dummy node registered
-> > static inline void omap_init_cpufreq(void)
-> > {
-> > 	struct platform_device_info devinfo = { };
-> > 
-> > 	if (!of_have_populated_dt())
-> > 		devinfo.name = "omap-cpufreq";
-> > 	else
-> > 		devinfo.name = "cpufreq-cpu0"
-> > 	
-> > 	platform_device_register_full(&devinfo);
-> > }
-> > 
-> > If there are no objections to (b), I dont mind it either.
-> 
-> To me option (b) looks better as it's if else :)
-Alrity.. Going once...twice...sold! All Nay-sayers will now be branded with
-if-else braces ;)
+As commit 40dc166c (PM / Core: Introduce struct syscore_ops for core
+subsystems PM) say, syscore_ops operations should be carried with one
+CPU on-line and interrupts disabled. However, after commit f96972f2d
+(kernel/sys.c: call disable_nonboot_cpus() in kernel_restart()),
+syscore_shutdown() is called before disable_nonboot_cpus(), so break
+the rules. We have a MIPS machine with a 8259A PIC, and there is an
+external timer (HPET) linked at 8259A. Since 8259A has been shutdown
+too early (by syscore_shutdown()), disable_nonboot_cpus() runs without
+timer interrupt, so it hangs and reboot fails. This patch call
+syscore_shutdown() a little later (after disable_nonboot_cpus()) to
+avoid reboot failure, this is the same way as poweroff does.
 
-I will now wait for conclusion of  https://lkml.org/lkml/2013/4/2/84
+BTW, add disable_nonboot_cpus() in kernel_halt() for consistency.
+
+Signed-off-by: Huacai Chen <chenhc@lemote.com>
+Cc: <stable@vger.kernel.org>
+---
+ kernel/sys.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 39c9c4a..0da73cf 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -324,7 +324,6 @@ void kernel_restart_prepare(char *cmd)
+ 	system_state = SYSTEM_RESTART;
+ 	usermodehelper_disable();
+ 	device_shutdown();
+-	syscore_shutdown();
+ }
+ 
+ /**
+@@ -370,6 +369,7 @@ void kernel_restart(char *cmd)
+ {
+ 	kernel_restart_prepare(cmd);
+ 	disable_nonboot_cpus();
++	syscore_shutdown();
+ 	if (!cmd)
+ 		printk(KERN_EMERG "Restarting system.\n");
+ 	else
+@@ -395,6 +395,7 @@ static void kernel_shutdown_prepare(enum system_states state)
+ void kernel_halt(void)
+ {
+ 	kernel_shutdown_prepare(SYSTEM_HALT);
++	disable_nonboot_cpus();
+ 	syscore_shutdown();
+ 	printk(KERN_EMERG "System halted.\n");
+ 	kmsg_dump(KMSG_DUMP_HALT);
 -- 
-Regards,
-Nishanth Menon
+1.7.7.3
+
