@@ -1,78 +1,62 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 7/9] intel: cpuidle: remove stop/start critical timings
-Date: Sun, 07 Apr 2013 22:52:44 +0200
-Message-ID: <5161DC9C.3020703@linaro.org>
-References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-7-git-send-email-daniel.lezcano@linaro.org> <3375360.P4DAA9Jd5Y@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM/reboot: call syscore_shutdown() after disable_nonboot_cpus()
+Date: Sun, 07 Apr 2013 23:10:30 +0200
+Message-ID: <2582863.XOOaeZz0rz@vostro.rjw.lan>
+References: <1365300854-3133-1-git-send-email-chenhc@lemote.com> <3513307.9cks2gqsZt@vostro.rjw.lan> <20130407152932.GA18032@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3375360.P4DAA9Jd5Y-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:53632 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934312Ab3DGVCu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 7 Apr 2013 17:02:50 -0400
+In-Reply-To: <20130407152932.GA18032@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>, Huacai Chen <chenhc@lemote.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, stable@vger.kernel.org
 
-On 04/05/2013 12:31 AM, Rafael J. Wysocki wrote:
-> On Wednesday, April 03, 2013 02:15:20 PM Daniel Lezcano wrote:
->> The start/stop_critical_timings are called from arch/x86/kernel/proc=
-ess.c
->> in the cpu_idle loop function.
->>
->> Remove the ones in the cpuidle driver.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->=20
-> For this one I need an ACK from Len.
->=20
-> Len, any objections?
+On Sunday, April 07, 2013 08:29:32 AM Greg KH wrote:
+> On Sun, Apr 07, 2013 at 10:46:00AM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, April 07, 2013 10:14:14 AM Huacai Chen wrote:
+> > > As commit 40dc166c (PM / Core: Introduce struct syscore_ops for core
+> > > subsystems PM) say, syscore_ops operations should be carried with one
+> > > CPU on-line and interrupts disabled. However, after commit f96972f2d
+> > > (kernel/sys.c: call disable_nonboot_cpus() in kernel_restart()),
+> > > syscore_shutdown() is called before disable_nonboot_cpus(), so break
+> > > the rules. We have a MIPS machine with a 8259A PIC, and there is an
+> > > external timer (HPET) linked at 8259A. Since 8259A has been shutdown
+> > > too early (by syscore_shutdown()), disable_nonboot_cpus() runs without
+> > > timer interrupt, so it hangs and reboot fails. This patch call
+> > > syscore_shutdown() a little later (after disable_nonboot_cpus()) to
+> > > avoid reboot failure, this is the same way as poweroff does.
+> > > 
+> > > BTW, add disable_nonboot_cpus() in kernel_halt() for consistency.
+> > > 
+> > > Signed-off-by: Huacai Chen <chenhc@lemote.com>
+> > > Cc: <stable@vger.kernel.org>
+> > 
+> > While I agree with the changes, I'm not sure if I'm the right maintainer,
+> > as this isn't really PM code.
+> > 
+> > Andrew, should I take this?
+> 
+> Andrew is on vacation for a few weeks, so you might need to take this
+> through your tree.
 
+OK
 
-Len ? ping ...
+But, it looks like we should actually disable interrupts on the remaining
+CPU after we've called disable_nonboot_cpus() so that the syscore_shutdown()
+assumptions are satisfied which the patch doesn't do.
 
->> ---
->>  drivers/idle/intel_idle.c |    3 ---
->>  1 file changed, 3 deletions(-)
->>
->> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
->> index 5d66750..c99c31e 100644
->> --- a/drivers/idle/intel_idle.c
->> +++ b/drivers/idle/intel_idle.c
->> @@ -339,7 +339,6 @@ static int intel_idle(struct cpuidle_device *dev=
-,
->>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
->>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
->> =20
->> -	stop_critical_timings();
->>  	if (!need_resched()) {
->> =20
->>  		__monitor((void *)&current_thread_info()->flags, 0, 0);
->> @@ -348,8 +347,6 @@ static int intel_idle(struct cpuidle_device *dev=
-,
->>  			__mwait(eax, ecx);
->>  	}
->> =20
->> -	start_critical_timings();
->> -
->>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
->>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
->> =20
->>
+Chen (I apologize if that's not the right part of your full name to use here),
+do you think that's not necessary and if so, then for what reason?
+
+Rafael
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
-  * English - detected
-  * English
-  * French
-
-  * English
-  * French
-
- <javascript:void(0);> <#>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
