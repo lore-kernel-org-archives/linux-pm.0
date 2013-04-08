@@ -1,108 +1,100 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH 9/9] ARM: dts: Add device tree node for exynos5440 TMU
- controller
-Date: Mon, 08 Apr 2013 21:24:59 +0900
-Message-ID: <2d0d01ce3454$166aac70$43400550$%kim@samsung.com>
-References: <1364297642-2746-1-git-send-email-amit.daniel@samsung.com>
- <1364297642-2746-10-git-send-email-amit.daniel@samsung.com>
+From: chenhc@lemote.com
+Subject: Re: [PATCH] PM/reboot: call syscore_shutdown() after
+ disable_nonboot_cpus()
+Date: Mon, 8 Apr 2013 22:29:46 +0800
+Message-ID: <3557860596dc88c320d7a477a268052f.squirrel@mail.lemote.com>
+References: <1365300854-3133-1-git-send-email-chenhc@lemote.com>
+    <2582863.XOOaeZz0rz@vostro.rjw.lan>
+    <6c971a50f7639f17b1c419b6a885409b.squirrel@mail.lemote.com>
+    <11388244.eyJZJtFod3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:47587 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935337Ab3DHMZB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 08:25:01 -0400
-In-reply-to: <1364297642-2746-10-git-send-email-amit.daniel@samsung.com>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;charset=gb2312
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <11388244.eyJZJtFod3@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Amit Daniel Kachhap' <amit.daniel@samsung.com>, linux-pm@vger.kernel.org
-Cc: 'Thomas Abraham' <thomas.abraham@linaro.org>, 'Zhang Rui' <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com
 
-Amit Daniel Kachhap wrote:
-> 
-> This patch adds device node for TMU controller. There are 3
-> instances of the controllers so 3 nodes are created.
-> 
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos5440.dtsi |   43
-> +++++++++++++++++++++++++++++++++++++
->  1 files changed, 43 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/exynos5440.dtsi
-> b/arch/arm/boot/dts/exynos5440.dtsi
-> index 5f3562a..b74ce9f 100644
-> --- a/arch/arm/boot/dts/exynos5440.dtsi
-> +++ b/arch/arm/boot/dts/exynos5440.dtsi
-> @@ -16,6 +16,12 @@
-> 
->  	interrupt-parent = <&gic>;
-> 
-> +	aliases {
-> +		tmuctrl0 = &tmuctrl_0;
-> +		tmuctrl1 = &tmuctrl_1;
-> +		tmuctrl2 = &tmuctrl_2;
-> +	};
-> +
->  	gic:interrupt-controller@2E0000 {
->  		compatible = "arm,cortex-a15-gic";
->  		#interrupt-cells = <3>;
-> @@ -156,4 +162,41 @@
->  		reg = <0x130000 0x1000>;
->  		interrupts = <0 17 0>, <0 16 0>;
->  	};
-> +
-> +	tmu_ctrl_info: tmu-ctrl-info {
-> +		gain = <5>;
-> +		reference-voltage = <16>;
-> +		noise-cancel-mode = <4>;
-> +		cal-type = <2>;
-> +		cal-mode = <0>;
-> +		efuse-value = <0x5b2c>;
-> +		threshold-falling = <5>;
-> +	};
-> +
-> +	tmuctrl_0: tmuctrl@160118 {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x160118 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
+> On Monday, April 08, 2013 10:51:45 AM chenhc@lemote.com wrote:
+>> > On Sunday, April 07, 2013 08:29:32 AM Greg KH wrote:
+>> >> On Sun, Apr 07, 2013 at 10:46:00AM +0200, Rafael J. Wysocki wrote:
+>> >> > On Sunday, April 07, 2013 10:14:14 AM Huacai Chen wrote:
+>> >> > > As commit 40dc166c (PM / Core: Introduce struct syscore_ops for
+>> core
+>> >> > > subsystems PM) say, syscore_ops operations should be carried with
+>> >> one
+>> >> > > CPU on-line and interrupts disabled. However, after commit
+>> f96972f2d
+>> >> > > (kernel/sys.c: call disable_nonboot_cpus() in kernel_restart()),
+>> >> > > syscore_shutdown() is called before disable_nonboot_cpus(), so
+>> break
+>> >> > > the rules. We have a MIPS machine with a 8259A PIC, and there is
+>> an
+>> >> > > external timer (HPET) linked at 8259A. Since 8259A has been
+>> shutdown
+>> >> > > too early (by syscore_shutdown()), disable_nonboot_cpus() runs
+>> >> without
+>> >> > > timer interrupt, so it hangs and reboot fails. This patch call
+>> >> > > syscore_shutdown() a little later (after disable_nonboot_cpus())
+>> to
+>> >> > > avoid reboot failure, this is the same way as poweroff does.
+>> >> > >
+>> >> > > BTW, add disable_nonboot_cpus() in kernel_halt() for consistency.
+>> >> > >
+>> >> > > Signed-off-by: Huacai Chen <chenhc@lemote.com>
+>> >> > > Cc: <stable@vger.kernel.org>
+>> >> >
+>> >> > While I agree with the changes, I'm not sure if I'm the right
+>> >> maintainer,
+>> >> > as this isn't really PM code.
+>> >> >
+>> >> > Andrew, should I take this?
+>> >>
+>> >> Andrew is on vacation for a few weeks, so you might need to take this
+>> >> through your tree.
+>> >
+>> > OK
+>> >
+>> > But, it looks like we should actually disable interrupts on the
+>> remaining
+>> > CPU after we've called disable_nonboot_cpus() so that the
+>> > syscore_shutdown()
+>> > assumptions are satisfied which the patch doesn't do.
+>> >
+>> > Chen (I apologize if that's not the right part of your full name to
+>> use
+>> > here),
+>> > do you think that's not necessary and if so, then for what reason?
+>>
+>> Reboot and poweroff are both OK after I move syscore_shutdown(), I also
+>> don't
+>> know whether we should disable interrupts. Since you are the author of
+>> commit 40dc166c (PM / Core: Introduce struct syscore_ops for core
+>> subsystems
+>>  PM), please tell me why syscore_shutdown() need interrupt disabled?
+>
+> Well, the syscore_ callbacks generally do things that may go wrong when an
+> interrupt comes in while they are being done.  At least that's what
+> happens
+> for the suspend/resume syscore_ callbacks, but I'm not really sure about
+> the
+> shutdown ones.
+>
+> I suppose we can leave it as is for the time being.  At least I'm not
+> aware of
+> any problems related to that.
+OK, linux-3.0, 3.2 and 3.4 -stable branch also need this patch because they
+also have merged the commit f96972f2d (kernel/sys.c: call
+disable_nonboot_cpus() in kernel_restart())
 
-Should be:
-+		clocks = <&clock 21>;
-
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
-> +
-> +	tmuctrl_1: tmuctrl@16011C {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x16011C 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
-
-+		clocks = <&clock 21>;
-
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
-> +
-> +	tmuctrl_2: tmuctrl@160120 {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x160120 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
-
-+		clocks = <&clock 21>;
-
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
->  };
+>
+> Thanks,
+> Rafael
+>
+>
 > --
-> 1.7.1
-
-- Kukjin
-
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+>
