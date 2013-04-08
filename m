@@ -1,100 +1,156 @@
-From: chenhc@lemote.com
-Subject: Re: [PATCH] PM/reboot: call syscore_shutdown() after
- disable_nonboot_cpus()
-Date: Mon, 8 Apr 2013 22:29:46 +0800
-Message-ID: <3557860596dc88c320d7a477a268052f.squirrel@mail.lemote.com>
-References: <1365300854-3133-1-git-send-email-chenhc@lemote.com>
-    <2582863.XOOaeZz0rz@vostro.rjw.lan>
-    <6c971a50f7639f17b1c419b6a885409b.squirrel@mail.lemote.com>
-    <11388244.eyJZJtFod3@vostro.rjw.lan>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 0/4] thermal threshold event notification
+Date: Mon, 8 Apr 2013 08:26:53 -0700
+Message-ID: <20130408152653.GC20919@roeck-us.net>
+References: <1365102689-12581-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20130404194321.GA24956@roeck-us.net>
+ <515DDDF0.9020904@linux.intel.com>
+ <20130406032431.GA25103@roeck-us.net>
+ <51622E08.3020902@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;charset=gb2312
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11388244.eyJZJtFod3@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.active-venture.com ([67.228.131.205]:57146 "EHLO
+	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760732Ab3DHP0s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 11:26:48 -0400
+Content-Disposition: inline
+In-Reply-To: <51622E08.3020902@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: fenghua.yu@intel.com, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-> On Monday, April 08, 2013 10:51:45 AM chenhc@lemote.com wrote:
->> > On Sunday, April 07, 2013 08:29:32 AM Greg KH wrote:
->> >> On Sun, Apr 07, 2013 at 10:46:00AM +0200, Rafael J. Wysocki wrote:
->> >> > On Sunday, April 07, 2013 10:14:14 AM Huacai Chen wrote:
->> >> > > As commit 40dc166c (PM / Core: Introduce struct syscore_ops for
->> core
->> >> > > subsystems PM) say, syscore_ops operations should be carried with
->> >> one
->> >> > > CPU on-line and interrupts disabled. However, after commit
->> f96972f2d
->> >> > > (kernel/sys.c: call disable_nonboot_cpus() in kernel_restart()),
->> >> > > syscore_shutdown() is called before disable_nonboot_cpus(), so
->> break
->> >> > > the rules. We have a MIPS machine with a 8259A PIC, and there is
->> an
->> >> > > external timer (HPET) linked at 8259A. Since 8259A has been
->> shutdown
->> >> > > too early (by syscore_shutdown()), disable_nonboot_cpus() runs
->> >> without
->> >> > > timer interrupt, so it hangs and reboot fails. This patch call
->> >> > > syscore_shutdown() a little later (after disable_nonboot_cpus())
->> to
->> >> > > avoid reboot failure, this is the same way as poweroff does.
->> >> > >
->> >> > > BTW, add disable_nonboot_cpus() in kernel_halt() for consistency.
->> >> > >
->> >> > > Signed-off-by: Huacai Chen <chenhc@lemote.com>
->> >> > > Cc: <stable@vger.kernel.org>
->> >> >
->> >> > While I agree with the changes, I'm not sure if I'm the right
->> >> maintainer,
->> >> > as this isn't really PM code.
->> >> >
->> >> > Andrew, should I take this?
->> >>
->> >> Andrew is on vacation for a few weeks, so you might need to take this
->> >> through your tree.
->> >
->> > OK
->> >
->> > But, it looks like we should actually disable interrupts on the
->> remaining
->> > CPU after we've called disable_nonboot_cpus() so that the
->> > syscore_shutdown()
->> > assumptions are satisfied which the patch doesn't do.
->> >
->> > Chen (I apologize if that's not the right part of your full name to
->> use
->> > here),
->> > do you think that's not necessary and if so, then for what reason?
->>
->> Reboot and poweroff are both OK after I move syscore_shutdown(), I also
->> don't
->> know whether we should disable interrupts. Since you are the author of
->> commit 40dc166c (PM / Core: Introduce struct syscore_ops for core
->> subsystems
->>  PM), please tell me why syscore_shutdown() need interrupt disabled?
->
-> Well, the syscore_ callbacks generally do things that may go wrong when an
-> interrupt comes in while they are being done.  At least that's what
-> happens
-> for the suspend/resume syscore_ callbacks, but I'm not really sure about
-> the
-> shutdown ones.
->
-> I suppose we can leave it as is for the time being.  At least I'm not
-> aware of
-> any problems related to that.
-OK, linux-3.0, 3.2 and 3.4 -stable branch also need this patch because they
-also have merged the commit f96972f2d (kernel/sys.c: call
-disable_nonboot_cpus() in kernel_restart())
-
->
+On Sun, Apr 07, 2013 at 07:40:08PM -0700, Srinivas Pandruvada wrote:
+> Hi Guenter,
+> 
+> Thanks for your quick response. Please see my answers in-line.
+> 
 > Thanks,
-> Rafael
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
->
+> Srinivas
+> 
+> On 04/05/2013 08:24 PM, Guenter Roeck wrote:
+> >On Thu, Apr 04, 2013 at 01:09:20PM -0700, Srinivas Pandruvada wrote:
+> >>On 04/04/2013 12:43 PM, Guenter Roeck wrote:
+> >>>On Thu, Apr 04, 2013 at 12:11:25PM -0700, Srinivas Pandruvada wrote:
+> >>>>This is clear that there is reluctance in adding thresholds in coretemp sysfs,
+> >>>>during previous attempts. Proably because of lake of use cases.
+> >>>>But this time use case may be more compelling.
+> >>>>
+> >>>>We have many small form factor devices like ultrabooks, slate PCs in the market.
+> >>>>Unfortunately these devices reach maximum temperature with relatively less
+> >>>>workloads, causing BIOS to do thermal throttling. There are real performance
+> >>>>issues due to aggressive BIOS action to control thermals and also thermal breakdown
+> >>>>in some cases.
+> >>>>
+> >>>>Even the most expensive laptops, don't have correct ACPI thermal configuration,
+> >>>>so that kernel thermal driver can act. In some case even the trip point is higher
+> >>>>than critical temperature setting.
+> >>>>
+> >>>>Intel has developed several drivers, which can be used to cool the system very efficiently.
+> >>>>They include RAPL based cooling driver, Powerclamp driver and P state driver.
+> >>>>To utilize these cooling device a closed loop user mode program is required, which
+> >>>>will utilize these method and dynamically compensate for high CPU temperatures,
+> >>>>without relying on any configuration data.
+> >>>>One such solution is developed is "Linux thermal daemon". More details can be
+> >>>>obtained from
+> >>>>"https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
+> >>>>This daemon polls for cpu temperature and apply compensation once the CPU reach target
+> >>>>temperature.
+> >>>>
+> >>>>This polling can be mostly avoided, by getting notification for the temperature, where
+> >>>>it needs to wake up and get ready for apply compensation. In most of the normal use
+> >>>>cases, there may not be any threshold events. So very minimal number of user space
+> >>>>notification for thermal thresholds.
+> >>>>
+> >>>>This patch adds two entries to coretemp sysfs.
+> >>>>tempX_notify_threshold_1
+> >>>>tempX_notify_threshold_2
+> >>>>
+> >>>>These two settings acts on "Package level", not on core level. So it will only appear
+> >>>>if there is support for package temperature. Many of recent Intel processors, support
+> >>>>package temperatures
+> >>>>When any valid value is written to these files, it will directly set corresponding CPU MSR,
+> >>>>in the corresponding package and read back directly from MSR. Since package MSR, affects
+> >>>>all cores in package, setting will be applicable to all CPU's in the package minimizing
+> >>>>read, writes and notifications. Also package threshold interrupts are enabled only when,
+> >>>>a non zero value is written to thresholds.
+> >>>>
+> >>>>Once thresholds are violated, it uses a rate control of 5 seconds, reducing the number
+> >>>>of interrupts, when temperature is hanging around trip point. Using the sticky log bit,
+> >>>>it sends kboject uevent change notification for corresponding package sysfs.
+> >>>>Once the thermal daemon receives notification, it can change to new threshold or act
+> >>>>immediately to reduce CPU temperature.
+> >>>>
+> >>>>
+> >>>>Srinivas Pandruvada (4):
+> >>>>   x86, mcheck, therm_throt: Process package thresholds
+> >>>>   hwmon: (coretemp) Add threshold support
+> >>>>   hwmon: (coretemp) : Add notification support
+> >>>>   drivers/hwmon/coretemp : Debug fs interface
+> >>>>
+> >>>>  arch/x86/include/asm/mce.h               |   7 +
+> >>>>  arch/x86/kernel/cpu/mcheck/therm_throt.c |  50 ++++-
+> >>>>  drivers/hwmon/coretemp.c                 | 319 +++++++++++++++++++++++++++++--
+> >>>>  3 files changed, 361 insertions(+), 15 deletions(-)
+> >>>>
+> >>>Key question: Why does the thermal subsystem not work for you ?
+> >>Thermal is bigger issue in Ultrabooks, Slate PCs and other small
+> >>form factor devices.
+> >>Linux ACPI thermal driver depends on ACPI configuration to activate
+> >>active/passive control. So if you have garbage data or not optimized
+> >>data, the current Linux driver can't control thermals. There are
+> >>multiple platforms with bad ACPI data. Some of them have "ACPI
+> >>threshold > critical temp"
+> >>
+> >I wasn't talking about ACPI, I was talking about the Linux thermal subsystem
+> >in drivers/thermal. There is no single mention of "ACPI" in that directory.
+> 
+> <Thermal drivers also  resides outside this directory. ACPI also
+> registers as thermal zone similar to other example you mentioned
+> below. ACPI is the only means to configure per platform thermal trip
+> points in thermal zones in PC platform.
+> >
+> >
+> >>Currently all these systems, rely on BIOS fan and T state control.
+> >>Once T states are used the performance gets hurt. Also we had cases
+> >>of thermal breakdown.
+> >>
+> >>In addition there are several new methods to cool the system,
+> >>developed by Intel and are in latest Linux kernel. They are
+> >>specially designed to cool the system when needed.
+> >>
+> >So, again, why can't you use the thermal subsystem ?
+> <Thermal zone needs to show temperature.  This will be duplicate
+> what coretemp.X is showing. I want to prevent identical information
+> be displayed at two different sysfs>
+> Also the db8500 example you are giving, uses a pre-configured
+> thresholds loaded during probe().
+> There is no thermal ABI to set thresholds at run time. Basically
+> when a temperature is above a trip temp, corresponding cooling
+> devices will be activated.
+> So I still I have to write a platform driver to set thresholds, and
+> then registers with thermal zone. This will show as another
+> packagetemp.x at sysfs like coretemp.x.
+> 
+> So please let me know how to set dynamic thresholds?
+> >
+> 
+> >The db8500_thermal driver in drivers/thermal is quite similar to what
+> >you try to accomplish. I would suggest to look into it and use a similar
+> >approach. I really don't see how this fits into the hwmon subsystem.
+> <Is this logic based on that hwmon shouldn't have write interface
+> and used only for monitoring?  I think some hwmon driver already
+> have write interface like gpiofan.>
+
+That isn't the point. hwmon is static in nature, not dynamic. Its scope is
+hardware monitoring, not thermal management. This is what the thermal subsystem
+is for. Yes, presumably you would need a platform driver to set the thresholds.
+Another question, though, would be if you want or need a user space component in
+the first place or if you can implement all required functionality in a thermal
+driver.
+
+Copying Zhang Rui and the linux-pm mailing list to get feedback from others.
+
+Thanks,
+Guenter
