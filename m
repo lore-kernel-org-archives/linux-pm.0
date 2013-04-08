@@ -1,50 +1,93 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH RESEND 01/11] thermal: use strlcpy instead of strcpy
-Date: Mon, 8 Apr 2013 12:07:28 -0400
-Message-ID: <1365437258-31412-2-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH RESEND 05/11] thermal: rename get_tz_trend to thermal_zone_trend_get
+Date: Mon, 8 Apr 2013 12:07:32 -0400
+Message-ID: <1365437258-31412-6-git-send-email-eduardo.valentin@ti.com>
 References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:50504 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933990Ab3DHQI1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 12:08:27 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:35894 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934098Ab3DHQJp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Apr 2013 12:09:45 -0400
 In-Reply-To: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-For memory boundaries safety, use strlcpy instead of strcpy.
+To follow the prefix names used by the thermal exported functions,
+this patch renames get_tz_trend to thermal_zone_trend_get.
 
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/thermal_sys.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ Documentation/thermal/sysfs-api.txt |    2 +-
+ drivers/thermal/step_wise.c         |    2 +-
+ drivers/thermal/thermal_sys.c       |    4 ++--
+ include/linux/thermal.h             |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index 059b3bf..a9abb84 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -351,7 +351,7 @@ crosses any of the configured thresholds.
+ 
+ 5. Export Symbol APIs:
+ 
+-5.1: get_tz_trend:
++5.1: thermal_zone_trend_get:
+ This function returns the trend of a thermal zone, i.e the rate of change
+ of temperature of the thermal zone. Ideally, the thermal sensor drivers
+ are supposed to implement the callback. If they don't, the thermal
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index 407cde3..a640e2b 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -116,7 +116,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+ 		tz->ops->get_trip_type(tz, trip, &trip_type);
+ 	}
+ 
+-	trend = get_tz_trend(tz, trip);
++	trend = thermal_zone_trend_get(tz, trip);
+ 
+ 	if (tz->temperature >= trip_temp)
+ 		throttle = true;
 diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index 5b7863a..7875607 100644
+index 44e89c0..242c82a 100644
 --- a/drivers/thermal/thermal_sys.c
 +++ b/drivers/thermal/thermal_sys.c
-@@ -1289,7 +1289,7 @@ thermal_cooling_device_register(char *type, void *devdata,
- 		return ERR_PTR(result);
- 	}
+@@ -153,7 +153,7 @@ static void release_idr(struct idr *idr, struct mutex *lock, int id)
+ 		mutex_unlock(lock);
+ }
  
--	strcpy(cdev->type, type ? : "");
-+	strlcpy(cdev->type, type ? : "", sizeof(cdev->type));
- 	mutex_init(&cdev->lock);
- 	INIT_LIST_HEAD(&cdev->thermal_instances);
- 	cdev->ops = ops;
-@@ -1594,7 +1594,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 		return ERR_PTR(result);
- 	}
+-int get_tz_trend(struct thermal_zone_device *tz, int trip)
++int thermal_zone_trend_get(struct thermal_zone_device *tz, int trip)
+ {
+ 	enum thermal_trend trend;
  
--	strcpy(tz->type, type ? : "");
-+	strlcpy(tz->type, type ? : "", sizeof(tz->type));
- 	tz->ops = ops;
- 	tz->tzp = tzp;
- 	tz->device.class = &thermal_class;
+@@ -168,7 +168,7 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
+ 
+ 	return trend;
+ }
+-EXPORT_SYMBOL(get_tz_trend);
++EXPORT_SYMBOL(thermal_zone_trend_get);
+ 
+ struct thermal_instance *thermal_instance_get(struct thermal_zone_device *tz,
+ 			struct thermal_cooling_device *cdev, int trip)
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e2a49e1..542a39c 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -238,7 +238,7 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 		const struct thermal_cooling_device_ops *);
+ void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+ 
+-int get_tz_trend(struct thermal_zone_device *, int);
++int thermal_zone_trend_get(struct thermal_zone_device *, int);
+ struct thermal_instance *thermal_instance_get(struct thermal_zone_device *,
+ 		struct thermal_cooling_device *, int);
+ void thermal_cdev_update(struct thermal_cooling_device *);
 -- 
 1.7.7.1.488.ge8e1c
 
