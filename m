@@ -1,93 +1,50 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH RESEND 04/11] thermal: rename get_thermal_instance to thermal_instance_get
-Date: Mon, 8 Apr 2013 12:07:31 -0400
-Message-ID: <1365437258-31412-5-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH RESEND 01/11] thermal: use strlcpy instead of strcpy
+Date: Mon, 8 Apr 2013 12:07:28 -0400
+Message-ID: <1365437258-31412-2-git-send-email-eduardo.valentin@ti.com>
 References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:50569 "EHLO
+Received: from devils.ext.ti.com ([198.47.26.153]:50504 "EHLO
 	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934071Ab3DHQJY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 12:09:24 -0400
+	with ESMTP id S933990Ab3DHQI1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 12:08:27 -0400
 In-Reply-To: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-To follow the prefix names used by the thermal exported functions,
-this patch renames get_thermal_instance to thermal_instance_get.
+For memory boundaries safety, use strlcpy instead of strcpy.
 
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- Documentation/thermal/sysfs-api.txt |    2 +-
- drivers/thermal/fair_share.c        |    2 +-
- drivers/thermal/thermal_sys.c       |    4 ++--
- include/linux/thermal.h             |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_sys.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 4b23190..059b3bf 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -358,7 +358,7 @@ are supposed to implement the callback. If they don't, the thermal
- framework calculated the trend by comparing the previous and the current
- temperature values.
- 
--5.2:get_thermal_instance:
-+5.2:thermal_instance_get:
- This function returns the thermal_instance corresponding to a given
- {thermal_zone, cooling_device, trip_point} combination. Returns NULL
- if such an instance does not exist.
-diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-index 792479f..f629446 100644
---- a/drivers/thermal/fair_share.c
-+++ b/drivers/thermal/fair_share.c
-@@ -95,7 +95,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
- 			continue;
- 
- 		cdev = tzp->tbp[i].cdev;
--		instance = get_thermal_instance(tz, cdev, trip);
-+		instance = thermal_instance_get(tz, cdev, trip);
- 		if (!instance)
- 			continue;
- 
 diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-index ffaf6d3..44e89c0 100644
+index 5b7863a..7875607 100644
 --- a/drivers/thermal/thermal_sys.c
 +++ b/drivers/thermal/thermal_sys.c
-@@ -170,7 +170,7 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
- }
- EXPORT_SYMBOL(get_tz_trend);
+@@ -1289,7 +1289,7 @@ thermal_cooling_device_register(char *type, void *devdata,
+ 		return ERR_PTR(result);
+ 	}
  
--struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
-+struct thermal_instance *thermal_instance_get(struct thermal_zone_device *tz,
- 			struct thermal_cooling_device *cdev, int trip)
- {
- 	struct thermal_instance *pos = NULL;
-@@ -191,7 +191,7 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
+-	strcpy(cdev->type, type ? : "");
++	strlcpy(cdev->type, type ? : "", sizeof(cdev->type));
+ 	mutex_init(&cdev->lock);
+ 	INIT_LIST_HEAD(&cdev->thermal_instances);
+ 	cdev->ops = ops;
+@@ -1594,7 +1594,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 		return ERR_PTR(result);
+ 	}
  
- 	return target_instance;
- }
--EXPORT_SYMBOL(get_thermal_instance);
-+EXPORT_SYMBOL(thermal_instance_get);
- 
- static void print_bind_err_msg(struct thermal_zone_device *tz,
- 			struct thermal_cooling_device *cdev, int ret)
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index e8ec9d8..e2a49e1 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -239,7 +239,7 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
- void thermal_cooling_device_unregister(struct thermal_cooling_device *);
- 
- int get_tz_trend(struct thermal_zone_device *, int);
--struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
-+struct thermal_instance *thermal_instance_get(struct thermal_zone_device *,
- 		struct thermal_cooling_device *, int);
- void thermal_cdev_update(struct thermal_cooling_device *);
- void thermal_notify_framework(struct thermal_zone_device *, int);
+-	strcpy(tz->type, type ? : "");
++	strlcpy(tz->type, type ? : "", sizeof(tz->type));
+ 	tz->ops = ops;
+ 	tz->tzp = tzp;
+ 	tz->device.class = &thermal_class;
 -- 
 1.7.7.1.488.ge8e1c
 
