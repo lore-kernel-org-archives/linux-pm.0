@@ -1,52 +1,68 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/4] usb: introduce usb force power off mechanism
-Date: Mon, 8 Apr 2013 15:24:31 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1304081517240.1529-100000@iolanthe.rowland.org>
-References: <20130408175519.GH6117@xanatos>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 7/9] intel: cpuidle: remove stop/start critical timings
+Date: Mon, 08 Apr 2013 21:27:25 +0200
+Message-ID: <51631A1D.3090705@linaro.org>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <5161DC9C.3020703@linaro.org> <51630115.6040205@linaro.org> <6514915.cyFSTtqpte@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:53700 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1763113Ab3DHTYc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 15:24:32 -0400
-In-Reply-To: <20130408175519.GH6117@xanatos>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:64556 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935574Ab3DHT12 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 15:27:28 -0400
+Received: by mail-wi0-f173.google.com with SMTP id ez12so2943559wid.6
+        for <linux-pm@vger.kernel.org>; Mon, 08 Apr 2013 12:27:27 -0700 (PDT)
+In-Reply-To: <6514915.cyFSTtqpte@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lenb@kernel.org, kristen.c.accardi@intel.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>, deepthi@linux.vnet.ibm.com, linaro-kernel@lists.linaro.org, linux@arm.linux.org.uk, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, patches@linaro.org, nsekhar@ti.com, rnayak@ti.com, josephl@nvidia.com, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
-On Mon, 8 Apr 2013, Sarah Sharp wrote:
+On 04/08/2013 09:27 PM, Rafael J. Wysocki wrote:
+> On Monday, April 08, 2013 07:40:37 PM Daniel Lezcano wrote:
+>> On 04/07/2013 10:52 PM, Daniel Lezcano wrote:
+>>> On 04/05/2013 12:31 AM, Rafael J. Wysocki wrote:
+>>>> On Wednesday, April 03, 2013 02:15:20 PM Daniel Lezcano wrote:
+>>>>> The start/stop_critical_timings are called from arch/x86/kernel/p=
+rocess.c
+>>>>> in the cpu_idle loop function.
+>>>>>
+>>>>> Remove the ones in the cpuidle driver.
+>>>>>
+>>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>> For this one I need an ACK from Len.
+>>>>
+>>>> Len, any objections?
+>>>
+>>> Len ? ping ...
+>>
+>> Rafael,
+>>
+>> this patch is not dependent from any patch in the series, is it poss=
+ible
+>> you apply the patchset except this patch ?
+>>
+>> May be you can apply it later when Len acks it, or I can resend it, =
+no ?
+>>
+>> I have a lot of code consolidation patches awaiting for this patchse=
+t to
+>> be merged.
+>=20
+> OK, I'll take the rest of your patches in this series (except for [1/=
+9]
+> which also is not depended on by anything AFAICS).
 
-> That could work.  However, we have to think about future platform power
-> changes as well.  Coming up with a USB specific way to work around the
-> runtime PM core will hurt us in the long run, if we end up having to
-> change the runtime PM core for another kernel user.
-> 
-> Len, Rafael, and Kristen, is there a need from any of the future power
-> work to have an 'off' mechanism added to the runtime PM core, so that
-> power/control would have 'on', 'auto', and 'off' options?  It currently
-> only has 'on' and 'auto'.
+Thanks Rafael.
 
-I can't say anything about future power work -- Len, Rafael, et al.  
-will have to speak to that -- but the current design of the runtime PM
-core doesn't allow for a distinction between "low power" and "no
-power".  As far as the core is concerned, either the device is fully
-active or else it isn't (i.e., it is suspended).  To change this would
-be a major rewrite.
+  -- Daniel
 
-> The kernel is always going to be more conservative about what policies
-> cause the 'auto' option to turn off USB ports.  A Linux distro may want
-> to override those policies and force the port off, or power off a
-> misbehaving device for a hard reset.  That's why we need an 'off'
-> extension to power/control to bypass the runtime PM usage counts and
-> power something off.
-> 
-> Are there analogous needs for other users of power/control?
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-In fact, some other people have made similar requests.  I can't 
-remember the exact contexts now...  One of them may have been related 
-to the PCI D4cold stuff.
-
-Alan Stern
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
