@@ -1,156 +1,51 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 0/4] thermal threshold event notification
-Date: Mon, 8 Apr 2013 08:26:53 -0700
-Message-ID: <20130408152653.GC20919@roeck-us.net>
-References: <1365102689-12581-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20130404194321.GA24956@roeck-us.net>
- <515DDDF0.9020904@linux.intel.com>
- <20130406032431.GA25103@roeck-us.net>
- <51622E08.3020902@linux.intel.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: From: Eduardo Valentin <eduardo.valentin@ti.com>
+Date: Mon, 8 Apr 2013 12:07:27 -0400
+Message-ID: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.active-venture.com ([67.228.131.205]:57146 "EHLO
-	mail.active-venture.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760732Ab3DHP0s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 11:26:48 -0400
-Content-Disposition: inline
-In-Reply-To: <51622E08.3020902@linux.intel.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:35802 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751100Ab3DHQIC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Apr 2013 12:08:02 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: fenghua.yu@intel.com, lm-sensors@lm-sensors.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sun, Apr 07, 2013 at 07:40:08PM -0700, Srinivas Pandruvada wrote:
-> Hi Guenter,
-> 
-> Thanks for your quick response. Please see my answers in-line.
-> 
-> Thanks,
-> Srinivas
-> 
-> On 04/05/2013 08:24 PM, Guenter Roeck wrote:
-> >On Thu, Apr 04, 2013 at 01:09:20PM -0700, Srinivas Pandruvada wrote:
-> >>On 04/04/2013 12:43 PM, Guenter Roeck wrote:
-> >>>On Thu, Apr 04, 2013 at 12:11:25PM -0700, Srinivas Pandruvada wrote:
-> >>>>This is clear that there is reluctance in adding thresholds in coretemp sysfs,
-> >>>>during previous attempts. Proably because of lake of use cases.
-> >>>>But this time use case may be more compelling.
-> >>>>
-> >>>>We have many small form factor devices like ultrabooks, slate PCs in the market.
-> >>>>Unfortunately these devices reach maximum temperature with relatively less
-> >>>>workloads, causing BIOS to do thermal throttling. There are real performance
-> >>>>issues due to aggressive BIOS action to control thermals and also thermal breakdown
-> >>>>in some cases.
-> >>>>
-> >>>>Even the most expensive laptops, don't have correct ACPI thermal configuration,
-> >>>>so that kernel thermal driver can act. In some case even the trip point is higher
-> >>>>than critical temperature setting.
-> >>>>
-> >>>>Intel has developed several drivers, which can be used to cool the system very efficiently.
-> >>>>They include RAPL based cooling driver, Powerclamp driver and P state driver.
-> >>>>To utilize these cooling device a closed loop user mode program is required, which
-> >>>>will utilize these method and dynamically compensate for high CPU temperatures,
-> >>>>without relying on any configuration data.
-> >>>>One such solution is developed is "Linux thermal daemon". More details can be
-> >>>>obtained from
-> >>>>"https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
-> >>>>This daemon polls for cpu temperature and apply compensation once the CPU reach target
-> >>>>temperature.
-> >>>>
-> >>>>This polling can be mostly avoided, by getting notification for the temperature, where
-> >>>>it needs to wake up and get ready for apply compensation. In most of the normal use
-> >>>>cases, there may not be any threshold events. So very minimal number of user space
-> >>>>notification for thermal thresholds.
-> >>>>
-> >>>>This patch adds two entries to coretemp sysfs.
-> >>>>tempX_notify_threshold_1
-> >>>>tempX_notify_threshold_2
-> >>>>
-> >>>>These two settings acts on "Package level", not on core level. So it will only appear
-> >>>>if there is support for package temperature. Many of recent Intel processors, support
-> >>>>package temperatures
-> >>>>When any valid value is written to these files, it will directly set corresponding CPU MSR,
-> >>>>in the corresponding package and read back directly from MSR. Since package MSR, affects
-> >>>>all cores in package, setting will be applicable to all CPU's in the package minimizing
-> >>>>read, writes and notifications. Also package threshold interrupts are enabled only when,
-> >>>>a non zero value is written to thresholds.
-> >>>>
-> >>>>Once thresholds are violated, it uses a rate control of 5 seconds, reducing the number
-> >>>>of interrupts, when temperature is hanging around trip point. Using the sticky log bit,
-> >>>>it sends kboject uevent change notification for corresponding package sysfs.
-> >>>>Once the thermal daemon receives notification, it can change to new threshold or act
-> >>>>immediately to reduce CPU temperature.
-> >>>>
-> >>>>
-> >>>>Srinivas Pandruvada (4):
-> >>>>   x86, mcheck, therm_throt: Process package thresholds
-> >>>>   hwmon: (coretemp) Add threshold support
-> >>>>   hwmon: (coretemp) : Add notification support
-> >>>>   drivers/hwmon/coretemp : Debug fs interface
-> >>>>
-> >>>>  arch/x86/include/asm/mce.h               |   7 +
-> >>>>  arch/x86/kernel/cpu/mcheck/therm_throt.c |  50 ++++-
-> >>>>  drivers/hwmon/coretemp.c                 | 319 +++++++++++++++++++++++++++++--
-> >>>>  3 files changed, 361 insertions(+), 15 deletions(-)
-> >>>>
-> >>>Key question: Why does the thermal subsystem not work for you ?
-> >>Thermal is bigger issue in Ultrabooks, Slate PCs and other small
-> >>form factor devices.
-> >>Linux ACPI thermal driver depends on ACPI configuration to activate
-> >>active/passive control. So if you have garbage data or not optimized
-> >>data, the current Linux driver can't control thermals. There are
-> >>multiple platforms with bad ACPI data. Some of them have "ACPI
-> >>threshold > critical temp"
-> >>
-> >I wasn't talking about ACPI, I was talking about the Linux thermal subsystem
-> >in drivers/thermal. There is no single mention of "ACPI" in that directory.
-> 
-> <Thermal drivers also  resides outside this directory. ACPI also
-> registers as thermal zone similar to other example you mentioned
-> below. ACPI is the only means to configure per platform thermal trip
-> points in thermal zones in PC platform.
-> >
-> >
-> >>Currently all these systems, rely on BIOS fan and T state control.
-> >>Once T states are used the performance gets hurt. Also we had cases
-> >>of thermal breakdown.
-> >>
-> >>In addition there are several new methods to cool the system,
-> >>developed by Intel and are in latest Linux kernel. They are
-> >>specially designed to cool the system when needed.
-> >>
-> >So, again, why can't you use the thermal subsystem ?
-> <Thermal zone needs to show temperature.  This will be duplicate
-> what coretemp.X is showing. I want to prevent identical information
-> be displayed at two different sysfs>
-> Also the db8500 example you are giving, uses a pre-configured
-> thresholds loaded during probe().
-> There is no thermal ABI to set thresholds at run time. Basically
-> when a temperature is above a trip temp, corresponding cooling
-> devices will be activated.
-> So I still I have to write a platform driver to set thresholds, and
-> then registers with thermal zone. This will show as another
-> packagetemp.x at sysfs like coretemp.x.
-> 
-> So please let me know how to set dynamic thresholds?
-> >
-> 
-> >The db8500_thermal driver in drivers/thermal is quite similar to what
-> >you try to accomplish. I would suggest to look into it and use a similar
-> >approach. I really don't see how this fits into the hwmon subsystem.
-> <Is this logic based on that hwmon shouldn't have write interface
-> and used only for monitoring?  I think some hwmon driver already
-> have write interface like gpiofan.>
 
-That isn't the point. hwmon is static in nature, not dynamic. Its scope is
-hardware monitoring, not thermal management. This is what the thermal subsystem
-is for. Yes, presumably you would need a platform driver to set the thresholds.
-Another question, though, would be if you want or need a user space component in
-the first place or if you can implement all required functionality in a thermal
-driver.
 
-Copying Zhang Rui and the linux-pm mailing list to get feedback from others.
+Here is a sequence of fixes and documentation improvements
+thermal code base. This should be first of a series of changes
+I am planing to send out.
 
-Thanks,
-Guenter
+On this very first there is no change in functionality, as
+the patches only change symbol names and updates kernel-doc
+comments and their formants.
+
+
+
+Eduardo Valentin (11):
+  thermal: use strlcpy instead of strcpy
+  thermal: update driver license
+  thermal: rename notify_thermal_framework to thermal_notify_framework
+  thermal: rename get_thermal_instance to thermal_instance_get
+  thermal: rename get_tz_trend to thermal_zone_trend_get
+  thermal: use EXPORT_SYMBOL_GPL
+  thermal: update kernel-doc for thermal_zone_bind_cooling_device
+  thermal: update kernel-doc for thermal_zone_unbind_cooling_device
+  thermal: update kernel-doc for thermal_cooling_device_register
+  thermal: update kernel-doc for create_trip_attrs
+  thermal: update kernel-doc for thermal_zone_device_register
+
+ Documentation/thermal/sysfs-api.txt |    6 +-
+ drivers/thermal/fair_share.c        |    2 +-
+ drivers/thermal/step_wise.c         |    2 +-
+ drivers/thermal/thermal_sys.c       |   90 ++++++++++++++++++++++++-----------
+ include/linux/thermal.h             |    6 +-
+ 5 files changed, 70 insertions(+), 36 deletions(-)
+
+-- 
+1.7.7.1.488.ge8e1c
+
