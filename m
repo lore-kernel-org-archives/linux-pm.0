@@ -1,80 +1,81 @@
-From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
-Subject: Re: [PATCH 2/4] usb: introduce usb force power off mechanism
-Date: Mon, 8 Apr 2013 10:55:19 -0700
-Message-ID: <20130408175519.GH6117@xanatos>
-References: <20130408160144.GA12665@kroah.com>
- <Pine.LNX.4.44L0.1304081229100.1529-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH 7/9] intel: cpuidle: remove stop/start critical timings
+Date: Mon, 08 Apr 2013 21:27:40 +0200
+Message-ID: <6514915.cyFSTtqpte@vostro.rjw.lan>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <5161DC9C.3020703@linaro.org> <51630115.6040205@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:44633 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762491Ab3DHRzT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Apr 2013 13:55:19 -0400
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1304081229100.1529-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <51630115.6040205-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, lenb@kernel.org, kristen.c.accardi@intel.com
 
-Cc-ing the linux-pm list and some Intel power devs, as I think this
-specific discussion could benefit from a broader audience.
-
-On Mon, Apr 08, 2013 at 12:33:00PM -0400, Alan Stern wrote:
-> On Mon, 8 Apr 2013, Greg KH wrote:
+On Monday, April 08, 2013 07:40:37 PM Daniel Lezcano wrote:
+> On 04/07/2013 10:52 PM, Daniel Lezcano wrote:
+> > On 04/05/2013 12:31 AM, Rafael J. Wysocki wrote:
+> >> On Wednesday, April 03, 2013 02:15:20 PM Daniel Lezcano wrote:
+> >>> The start/stop_critical_timings are called from arch/x86/kernel/process.c
+> >>> in the cpu_idle loop function.
+> >>>
+> >>> Remove the ones in the cpuidle driver.
+> >>>
+> >>> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >> For this one I need an ACK from Len.
+> >>
+> >> Len, any objections?
+> >
+> > Len ? ping ...
 > 
-> > On Mon, Apr 08, 2013 at 08:57:43AM -0700, Sarah Sharp wrote:
-> > > On Mon, Apr 08, 2013 at 06:29:36AM -0700, Greg KH wrote:
-> > > > On Mon, Apr 08, 2013 at 08:58:09PM +0800, Lan Tianyu wrote:
-> > > > > On 2013/3/30 4:24, Alan Stern wrote:
-> > > > > >On Fri, 29 Mar 2013, Sarah Sharp wrote:
-> > > > > Hi Alan & Sarah:
-> > > > > 	I just recall why I put power off and power on in one ioctl.
-> > > > > At first, I also tried to make power on and power off into two ioctls.
-> > > > > But I found after powering off a device, the usbfs device node will
-> > > > > be removed and so can't power on the port via the same usbfs node.
-> > > > > 
-> > > > > For this point, we should add usbfs node for usb port?
-> > > > 
-> > > > No.
-> > > 
-> > > I agree that we shouldn't add more usbfs files without thinking very
-> > > carefully about it, since lots of tools like libusb use them.  However,
-> > > we do need a way to manually power off a port, wait a variable length of
-> > > time (or perhaps for a distro-specific event like screen unblank), and
-> > > turn the port on.
-> > > 
-> > > So how do we turn the port power back on with the options we have?
-> > > Would userspace have to turn the port power off via usbfs, and then
-> > > manually back on by setting the port's sysfs power/control to 'on'?
-> > 
-> > Whatever method we use, it should be the same interface for both on
-> > and off, so I would prefer to just use the sysfs one, as usbfs does not
-> > represent ports, only USB devices.
+> Rafael,
 > 
-> There is a way we can do it using the existing usbfs framework.  The
-> new ioctls could be sent to the parent hub, instead of the device
-> attached to the port.  Rather like USBDEVFS_CLAIM_PORT and
-> USBDEVFS_RELEASE_PORT.
+> this patch is not dependent from any patch in the series, is it possible
+> you apply the patchset except this patch ?
+> 
+> May be you can apply it later when Len acks it, or I can resend it, no ?
+> 
+> I have a lot of code consolidation patches awaiting for this patchset to
+> be merged.
 
-That could work.  However, we have to think about future platform power
-changes as well.  Coming up with a USB specific way to work around the
-runtime PM core will hurt us in the long run, if we end up having to
-change the runtime PM core for another kernel user.
+OK, I'll take the rest of your patches in this series (except for [1/9]
+which also is not depended on by anything AFAICS).
 
-Len, Rafael, and Kristen, is there a need from any of the future power
-work to have an 'off' mechanism added to the runtime PM core, so that
-power/control would have 'on', 'auto', and 'off' options?  It currently
-only has 'on' and 'auto'.
+Thanks,
+Rafael
 
-The kernel is always going to be more conservative about what policies
-cause the 'auto' option to turn off USB ports.  A Linux distro may want
-to override those policies and force the port off, or power off a
-misbehaving device for a hard reset.  That's why we need an 'off'
-extension to power/control to bypass the runtime PM usage counts and
-power something off.
 
-Are there analogous needs for other users of power/control?
-
-Sarah Sharp
+> > ---
+> >  drivers/idle/intel_idle.c |    3 ---
+> >  1 file changed, 3 deletions(-)
+> >
+> > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> > index 5d66750..c99c31e 100644
+> > --- a/drivers/idle/intel_idle.c
+> > +++ b/drivers/idle/intel_idle.c
+> > @@ -339,7 +339,6 @@ static int intel_idle(struct cpuidle_device *dev,
+> >  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+> >  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+> >  
+> > -	stop_critical_timings();
+> >  	if (!need_resched()) {
+> >  
+> >  		__monitor((void *)&current_thread_info()->flags, 0, 0);
+> > @@ -348,8 +347,6 @@ static int intel_idle(struct cpuidle_device *dev,
+> >  			__mwait(eax, ecx);
+> >  	}
+> >  
+> > -	start_critical_timings();
+> > -
+> >  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+> >  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+> >  
+> >
+> >
+> 
+> 
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
