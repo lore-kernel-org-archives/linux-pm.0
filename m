@@ -1,42 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Mon, 08 Apr 2013 12:46:38 +0200
-Message-ID: <2166815.0SZ6SYhSDN@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <1769336.FkfMpuXqqb@vostro.rjw.lan> <2ccd01ce3439$911b51b0$b351f510$%kim@samsung.com>
+Subject: Re: [PATCH] PM/reboot: call syscore_shutdown() after disable_nonboot_cpus()
+Date: Mon, 08 Apr 2013 12:55:48 +0200
+Message-ID: <11388244.eyJZJtFod3@vostro.rjw.lan>
+References: <1365300854-3133-1-git-send-email-chenhc@lemote.com> <2582863.XOOaeZz0rz@vostro.rjw.lan> <6c971a50f7639f17b1c419b6a885409b.squirrel@mail.lemote.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2ccd01ce3439$911b51b0$b351f510$%kim@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, 'Ben Dooks' <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:54057 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933985Ab3DHKsG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Apr 2013 06:48:06 -0400
+In-Reply-To: <6c971a50f7639f17b1c419b6a885409b.squirrel@mail.lemote.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: chenhc@lemote.com
+Cc: Greg KH <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fuxin Zhang <zhangfx@lemote.com>, stable@vger.kernel.org
 
-On Monday, April 08, 2013 06:15:09 PM Kukjin Kim wrote:
-> Rafael J. Wysocki wrote:
-> > 
-> > On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
-> > > On 5 April 2013 12:18, Kukjin Kim <kgene.kim@samsung.com> wrote:
-> > > > Basically, this moving looks good to me, but should be re-worked based
-> > on
-> > > > for-next of samsung tree because this touches too many samsung stuff
-> > so this
-> > > > should be sent to upstream via samsung tree.
-> > >
-> > > Hmm... Its already applied in Rafael's tree. But it doesn't mean that
-> > > it can't be
-> > > moved to your tree if there is a issue.
-> > 
-> > Well, I'm dropping it.  Please merge via the Samsung tree.
-> > 
-> OK, I will.
+On Monday, April 08, 2013 10:51:45 AM chenhc@lemote.com wrote:
+> > On Sunday, April 07, 2013 08:29:32 AM Greg KH wrote:
+> >> On Sun, Apr 07, 2013 at 10:46:00AM +0200, Rafael J. Wysocki wrote:
+> >> > On Sunday, April 07, 2013 10:14:14 AM Huacai Chen wrote:
+> >> > > As commit 40dc166c (PM / Core: Introduce struct syscore_ops for core
+> >> > > subsystems PM) say, syscore_ops operations should be carried with
+> >> one
+> >> > > CPU on-line and interrupts disabled. However, after commit f96972f2d
+> >> > > (kernel/sys.c: call disable_nonboot_cpus() in kernel_restart()),
+> >> > > syscore_shutdown() is called before disable_nonboot_cpus(), so break
+> >> > > the rules. We have a MIPS machine with a 8259A PIC, and there is an
+> >> > > external timer (HPET) linked at 8259A. Since 8259A has been shutdown
+> >> > > too early (by syscore_shutdown()), disable_nonboot_cpus() runs
+> >> without
+> >> > > timer interrupt, so it hangs and reboot fails. This patch call
+> >> > > syscore_shutdown() a little later (after disable_nonboot_cpus()) to
+> >> > > avoid reboot failure, this is the same way as poweroff does.
+> >> > >
+> >> > > BTW, add disable_nonboot_cpus() in kernel_halt() for consistency.
+> >> > >
+> >> > > Signed-off-by: Huacai Chen <chenhc@lemote.com>
+> >> > > Cc: <stable@vger.kernel.org>
+> >> >
+> >> > While I agree with the changes, I'm not sure if I'm the right
+> >> maintainer,
+> >> > as this isn't really PM code.
+> >> >
+> >> > Andrew, should I take this?
+> >>
+> >> Andrew is on vacation for a few weeks, so you might need to take this
+> >> through your tree.
+> >
+> > OK
+> >
+> > But, it looks like we should actually disable interrupts on the remaining
+> > CPU after we've called disable_nonboot_cpus() so that the
+> > syscore_shutdown()
+> > assumptions are satisfied which the patch doesn't do.
+> >
+> > Chen (I apologize if that's not the right part of your full name to use
+> > here),
+> > do you think that's not necessary and if so, then for what reason?
 > 
-> I got patch file from Viresh, and there is a sign from Rafael,
-> but it should be ack. So Rafael, let me use your ack on this patch when
-> I apply. If any problems, please let me know.
+> Reboot and poweroff are both OK after I move syscore_shutdown(), I also don't
+> know whether we should disable interrupts. Since you are the author of
+> commit 40dc166c (PM / Core: Introduce struct syscore_ops for core subsystems
+>  PM), please tell me why syscore_shutdown() need interrupt disabled?
 
-Since it was signed-off by me before, you can assume it's been ACKed as well.
+Well, the syscore_ callbacks generally do things that may go wrong when an
+interrupt comes in while they are being done.  At least that's what happens
+for the suspend/resume syscore_ callbacks, but I'm not really sure about the
+shutdown ones.
+
+I suppose we can leave it as is for the time being.  At least I'm not aware of
+any problems related to that.
 
 Thanks,
 Rafael
