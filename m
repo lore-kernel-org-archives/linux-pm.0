@@ -1,72 +1,59 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 5/8] staging: ti-soc-thermal: update OMAP5 extrapolation rules
-Date: Mon, 8 Apr 2013 08:19:11 -0400
-Message-ID: <1365423555-2669-6-git-send-email-eduardo.valentin@ti.com>
-References: <1365423555-2669-1-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 0/8] staging: ti-soc-thermal: fixes and TODO update
+Date: Mon, 8 Apr 2013 08:19:06 -0400
+Message-ID: <1365423555-2669-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1365423555-2669-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:50901 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935057Ab3DHMTs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Apr 2013 08:19:48 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: gregkh@linuxfoundation.org
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-Update the constants to the correct hotspot extrapolation
-equation constants. OMAP4 constants are revisited and correct.
+Hello Greg,
 
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
+Here is a series of fixes and I am also updating and revising
+the TODO list.
+
+The fixes present in this series  are:
+. Extrapolation rules for OMAP4/5 (have been updated)
+. Defer probe whenever cpufreq is not ready (Thanks to Keerthy for reporting)
+. Device removal was checking for wrong callback
+
+The TODO list has shrink as many of them was already DONE by
+previous series of patches.
+
+These patches are based on top of your staging-next. Tested
+on OMAP4430 and OMAP5430.
+
+These patches are also available here:
+git@gitorious.org:thermal-framework/thermal-framework.git thermal_work/omap/ti-soc-thermal-fixes
+https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/omap/ti-soc-fixes
+
+All best,
+
+Eduardo Valentin (8):
+  staging: ti-soc-thermal: update TODO list
+  staging: ti-soc-thermal: fix min/max TODO (already done)
+  staging: ti-soc-thermal: Remove TC1/TC2 TODO (already done)
+  staging: ti-soc-thermal: introduce OMAP4430 extrapolation constants
+  staging: ti-soc-thermal: update OMAP5 extrapolation rules
+  staging: ti-soc-thermal: remove extrapolation rules from TODO
+  staging: ti-soc-thermal: defer probe if cpufreq is not ready
+  staging: ti-soc-thermal: fix device removal
+
+ drivers/staging/ti-soc-thermal/TODO                |   12 --------
+ .../staging/ti-soc-thermal/omap4-thermal-data.c    |    8 +++---
  .../staging/ti-soc-thermal/omap5-thermal-data.c    |    1 -
- drivers/staging/ti-soc-thermal/ti-thermal.h        |   16 ++++++++--------
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/staging/ti-soc-thermal/ti-bandgap.c        |   29 +++++++++++++++----
+ drivers/staging/ti-soc-thermal/ti-thermal-common.c |    8 ++++-
+ drivers/staging/ti-soc-thermal/ti-thermal.h        |   20 ++++++++-----
+ 6 files changed, 45 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/staging/ti-soc-thermal/omap5-thermal-data.c b/drivers/staging/ti-soc-thermal/omap5-thermal-data.c
-index f170211..eff0c80 100644
---- a/drivers/staging/ti-soc-thermal/omap5-thermal-data.c
-+++ b/drivers/staging/ti-soc-thermal/omap5-thermal-data.c
-@@ -314,7 +314,6 @@ omap5430_adc_to_temp[
- };
- 
- /* OMAP54xx ES2.0 data */
--/* TODO : Need to update the slope/constant for ES2.0 silicon */
- const struct ti_bandgap_data omap5430_data = {
- 	.features = TI_BANDGAP_FEATURE_TSHUT_CONFIG |
- 			TI_BANDGAP_FEATURE_FREEZE_BIT |
-diff --git a/drivers/staging/ti-soc-thermal/ti-thermal.h b/drivers/staging/ti-soc-thermal/ti-thermal.h
-index 47cc902..5055777 100644
---- a/drivers/staging/ti-soc-thermal/ti-thermal.h
-+++ b/drivers/staging/ti-soc-thermal/ti-thermal.h
-@@ -33,10 +33,10 @@
- #define OMAP_GRADIENT_SLOPE_4470				308
- #define OMAP_GRADIENT_CONST_4470				-7896
- 
--#define OMAP_GRADIENT_SLOPE_5430_CPU				196
--#define OMAP_GRADIENT_CONST_5430_CPU				-6822
--#define OMAP_GRADIENT_SLOPE_5430_GPU				64
--#define OMAP_GRADIENT_CONST_5430_GPU				978
-+#define OMAP_GRADIENT_SLOPE_5430_CPU				65
-+#define OMAP_GRADIENT_CONST_5430_CPU				-1791
-+#define OMAP_GRADIENT_SLOPE_5430_GPU				117
-+#define OMAP_GRADIENT_CONST_5430_GPU				-2992
- 
- /* PCB sensor calculation constants */
- #define OMAP_GRADIENT_SLOPE_W_PCB_4430				0
-@@ -46,10 +46,10 @@
- #define OMAP_GRADIENT_SLOPE_W_PCB_4470				1063
- #define OMAP_GRADIENT_CONST_W_PCB_4470				-477
- 
--#define OMAP_GRADIENT_SLOPE_W_PCB_5430_CPU			469
--#define OMAP_GRADIENT_CONST_W_PCB_5430_CPU			-1272
--#define OMAP_GRADIENT_SLOPE_W_PCB_5430_GPU			378
--#define OMAP_GRADIENT_CONST_W_PCB_5430_GPU			154
-+#define OMAP_GRADIENT_SLOPE_W_PCB_5430_CPU			100
-+#define OMAP_GRADIENT_CONST_W_PCB_5430_CPU			484
-+#define OMAP_GRADIENT_SLOPE_W_PCB_5430_GPU			464
-+#define OMAP_GRADIENT_CONST_W_PCB_5430_GPU			-5102
- 
- /* trip points of interest in milicelsius (at hotspot level) */
- #define OMAP_TRIP_COLD						100000
 -- 
 1.7.7.1.488.ge8e1c
 
