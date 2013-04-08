@@ -1,113 +1,96 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V5 0/4] cpufreq: exynos5440: support for cpufreq driver
-Date: Mon, 08 Apr 2013 21:49:33 +0200
-Message-ID: <1403255.89Vcuzrghk@vostro.rjw.lan>
-References: <1364457923-8499-1-git-send-email-amit.daniel@samsung.com> <CADGdYn7ZRCSymU7k3Sn4mbS6B=dxy1N+vhQuyiFnhOQLLzrTbw@mail.gmail.com> <2d0501ce3450$fac4e9c0$f04ebd40$%kim@samsung.com>
+From: Sarah Sharp <sarah.a.sharp@linux.intel.com>
+Subject: Re: [PATCH 2/4] usb: introduce usb force power off mechanism
+Date: Mon, 8 Apr 2013 13:35:46 -0700
+Message-ID: <20130408203546.GJ6117@xanatos>
+References: <20130408160144.GA12665@kroah.com>
+ <Pine.LNX.4.44L0.1304081229100.1529-100000@iolanthe.rowland.org>
+ <20130408175519.GH6117@xanatos>
+ <1919828.eO05XvLALR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:54410 "EHLO hydra.sisk.pl"
+Received: from mga01.intel.com ([192.55.52.88]:64539 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935796Ab3DHTlu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Apr 2013 15:41:50 -0400
-In-Reply-To: <2d0501ce3450$fac4e9c0$f04ebd40$%kim@samsung.com>
+	id S935836Ab3DHUft (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Apr 2013 16:35:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1919828.eO05XvLALR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: 'amit daniel kachhap' <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 'Thomas Abraham' <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, 'Inderpal Singh' <inderpal.singh@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Russell King - ARM Linux' <linux@arm.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@linuxfoundation.org>, Lan Tianyu <tianyu.lan@intel.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, lenb@kernel.org, kristen.c.accardi@intel.com
 
-On Monday, April 08, 2013 09:02:44 PM Kukjin Kim wrote:
-> amit daniel kachhap wrote:
+On Mon, Apr 08, 2013 at 09:39:07PM +0200, Rafael J. Wysocki wrote:
+> On Monday, April 08, 2013 10:55:19 AM Sarah Sharp wrote:
+> > Cc-ing the linux-pm list and some Intel power devs, as I think this
+> > specific discussion could benefit from a broader audience.
 > > 
-> > On Fri, Apr 5, 2013 at 6:08 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > On Thursday, March 28, 2013 01:35:18 PM Amit Daniel Kachhap wrote:
-> > >> Submitting the V5 version of exynos5440 cpufreq driver. This patchset
-> > addresses
-> > >> all the coding and design concerns raised especially by Viresh.
-> > >>
-> > >> Changes in V5:
-> > >> * Removed the unnecessary DT look up entry from mach-exynos5-dt.c.
-> > >> * Fixed all coding and comments issue raised by Viresh.
-> > >>
-> > >> Changes in V4:
-> > >> * Added dev_err logs instead of pr_err.
-> > >> * Used the devm_ioremap_resource API.
-> > >> * Implemented several coding guidelines and minor error comments from
-> > Sylwester,
-> > >>   Russell and Viresh.
-> > >>
-> > >> Changes in V3:
-> > >> * Converted the driver to probe based as suggested by Viresh. This is
-> > also
-> > >>   beneficial for multiplatform kernel.
-> > >> * Other coding guidelines related changes.
-> > >> * Moved the DT node outside cpu0 node as the driver is now a platform
-> > >>   driver.
-> > >>
-> > >> Changes in V2:
-> > >> * Added OPP library support to parse DT parameters.
-> > >> * Removed a hack to handle interrupts in bootup.
-> > >> * Implemented other review comments from Viresh and Inder.
-> > >>
-> > >> All these patches are dependent on Thomas Abraham common clock patches.
-> > >> (http://www.mail-archive.com/linux-samsung-
-> > soc@vger.kernel.org/msg15860.html)
-> > >> This whole patch series is based on 3.9-rc4.
-> > >>
-> > >> Amit Daniel Kachhap (4):
-> > >>   cpufreq: exynos: Add cpufreq driver for exynos5440
-> > >>   cpufreq: exynos: Remove error return even if no soc is found
-> > >>   arm: exynos: Enable OPP library support for exynos5440
-> > >>   arm: dts: Add cpufreq controller node for Exynos5440 SoC
-> > >>
-> > >>  .../bindings/cpufreq/cpufreq-exynos5440.txt        |   28 ++
-> > >>  arch/arm/boot/dts/exynos5440.dtsi                  |   12 +
-> > >>  arch/arm/mach-exynos/Kconfig                       |    2 +
-> > >>  drivers/cpufreq/Kconfig.arm                        |    9 +
-> > >>  drivers/cpufreq/Makefile                           |    1 +
-> > >>  drivers/cpufreq/exynos-cpufreq.c                   |    2 +-
-> > >>  drivers/cpufreq/exynos5440-cpufreq.c               |  474
-> > ++++++++++++++++++++
-> > >>  7 files changed, 527 insertions(+), 1 deletions(-)
-> > >>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-
-> > exynos5440.txt
-> > >>  create mode 100644 drivers/cpufreq/exynos5440-cpufreq.c
-> > >
-> > > Is this for me or the Samsung tree?
-> > >
-> > > If it's for me, I need ACKs from the Samsung tree maintainers.  Also,
-> > please
-> > > address the Viresh's comments.
-> > >
-> > > Thanks,
-> > > Rafael
-> > >
-> > Hi Rafael,
+> > On Mon, Apr 08, 2013 at 12:33:00PM -0400, Alan Stern wrote:
+> > > On Mon, 8 Apr 2013, Greg KH wrote:
+> > > 
+> > > > On Mon, Apr 08, 2013 at 08:57:43AM -0700, Sarah Sharp wrote:
+> > > > > On Mon, Apr 08, 2013 at 06:29:36AM -0700, Greg KH wrote:
+> > > > > > On Mon, Apr 08, 2013 at 08:58:09PM +0800, Lan Tianyu wrote:
+> > > > > > > On 2013/3/30 4:24, Alan Stern wrote:
+> > > > > > > >On Fri, 29 Mar 2013, Sarah Sharp wrote:
+> > > > > > > Hi Alan & Sarah:
+> > > > > > > 	I just recall why I put power off and power on in one ioctl.
+> > > > > > > At first, I also tried to make power on and power off into two ioctls.
+> > > > > > > But I found after powering off a device, the usbfs device node will
+> > > > > > > be removed and so can't power on the port via the same usbfs node.
+> > > > > > > 
+> > > > > > > For this point, we should add usbfs node for usb port?
+> > > > > > 
+> > > > > > No.
+> > > > > 
+> > > > > I agree that we shouldn't add more usbfs files without thinking very
+> > > > > carefully about it, since lots of tools like libusb use them.  However,
+> > > > > we do need a way to manually power off a port, wait a variable length of
+> > > > > time (or perhaps for a distro-specific event like screen unblank), and
+> > > > > turn the port on.
+> > > > > 
+> > > > > So how do we turn the port power back on with the options we have?
+> > > > > Would userspace have to turn the port power off via usbfs, and then
+> > > > > manually back on by setting the port's sysfs power/control to 'on'?
+> > > > 
+> > > > Whatever method we use, it should be the same interface for both on
+> > > > and off, so I would prefer to just use the sysfs one, as usbfs does not
+> > > > represent ports, only USB devices.
+> > > 
+> > > There is a way we can do it using the existing usbfs framework.  The
+> > > new ioctls could be sent to the parent hub, instead of the device
+> > > attached to the port.  Rather like USBDEVFS_CLAIM_PORT and
+> > > USBDEVFS_RELEASE_PORT.
 > > 
-> > I submitted the V6 version with all comments from Viresh addressed.
+> > That could work.  However, we have to think about future platform power
+> > changes as well.  Coming up with a USB specific way to work around the
+> > runtime PM core will hurt us in the long run, if we end up having to
+> > change the runtime PM core for another kernel user.
 > > 
-> > Hi Kukjin Kim,
-> > 
-> > Any suggestion on how this patch should be merged. In my opinion it
-> > should go via Rafael's tree as this patch uses some fixes present in
-> > Rafael's tree like modified cpufreq_notify_transition API.
-> > 
-> Yes, I agree. The v6 series including resending 1/4 patch looks good to me.
-> But the patch V6 4/4 would be sent to upstream via samsung tree to avoid
-> useless merge conflicts and I think, it's possible.
+> > Len, Rafael, and Kristen, is there a need from any of the future power
+> > work to have an 'off' mechanism added to the runtime PM core, so that
+> > power/control would have 'on', 'auto', and 'off' options?  It currently
+> > only has 'on' and 'auto'.
 > 
-> So Rafael, please take 1/4 ~ 3/4 patches in your tree with my ack.
+> There's no such work for the reason given in another message a while ago.
 > 
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> > The kernel is always going to be more conservative about what policies
+> > cause the 'auto' option to turn off USB ports.  A Linux distro may want
+> > to override those policies and force the port off, or power off a
+> > misbehaving device for a hard reset.  That's why we need an 'off'
+> > extension to power/control to bypass the runtime PM usage counts and
+> > power something off.
 > 
-> If any problems, please let me know.
+> Then please make it USB-specific.  Although I believe it would be
+> dangerous, too, if used without care (say, for a storage device attached
+> via USB).
 
-I will, thank you!
+All right, then let's make this USB specific.  Alan's idea of making the
+ioctls bind to the parent hub makes sense.
 
-Rafael
+And yes, userspace will have to take care about which ports it powers
+off.  I think we currently expose enough information about what devices
+are attached to which ports to allow Linux distros to make smart
+decisions about what to allow to be powered off.
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Sarah Sharp
