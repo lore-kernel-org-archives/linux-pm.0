@@ -1,48 +1,103 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: RE: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
- drivers/cpufreq
-Date: Mon, 08 Apr 2013 18:15:09 +0900
-Message-ID: <2ccd01ce3439$911b51b0$b351f510$%kim@samsung.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
- <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
- <1769336.FkfMpuXqqb@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 7/8] staging: ti-soc-thermal: defer probe if cpufreq is not
+ ready
+Date: Mon, 8 Apr 2013 08:19:13 -0400
+Message-ID: <1365423555-2669-8-git-send-email-eduardo.valentin@ti.com>
+References: <1365423555-2669-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:58710 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759250Ab3DHJPL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Apr 2013 05:15:11 -0400
-In-reply-to: <1769336.FkfMpuXqqb@vostro.rjw.lan>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devel-bounces@linuxdriverproject.org>
+In-Reply-To: <1365423555-2669-1-git-send-email-eduardo.valentin@ti.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/devel>,
+ <mailto:devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/devel/>
+List-Post: <mailto:devel@linuxdriverproject.org>
+List-Help: <mailto:devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/devel>,
+ <mailto:devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: devel-bounces@linuxdriverproject.org
+Sender: "devel" <devel-bounces@linuxdriverproject.org>
+To: gregkh@linuxfoundation.org
+Cc: devel@driverdev.osuosl.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Viresh Kumar' <viresh.kumar@linaro.org>
-Cc: robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, 'Ben Dooks' <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Rafael J. Wysocki wrote:
-> 
-> On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
-> > On 5 April 2013 12:18, Kukjin Kim <kgene.kim@samsung.com> wrote:
-> > > Basically, this moving looks good to me, but should be re-worked based
-> on
-> > > for-next of samsung tree because this touches too many samsung stuff
-> so this
-> > > should be sent to upstream via samsung tree.
-> >
-> > Hmm... Its already applied in Rafael's tree. But it doesn't mean that
-> > it can't be
-> > moved to your tree if there is a issue.
-> 
-> Well, I'm dropping it.  Please merge via the Samsung tree.
-> 
-OK, I will.
+When builtin compiled, there is a chance for this driver
+be probed before cpufreq driver is up and running. In this
+case, the cpucooling device can be wrong initialized.
 
-I got patch file from Viresh, and there is a sign from Rafael, but it should be ack. So Rafael, let me use your ack on this patch when I apply. If any problems, please let me know.
+Thus, this patch makes sure this driver is probed only
+when cpufreq driver is ready. Whenever there is no
+cpufreq driver registered, the probe will return -EPROBE_DEFER.
 
-Thanks.
+Tested-by: J Keerthy <j-keerthy@ti.com>
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/staging/ti-soc-thermal/ti-bandgap.c        |   27 ++++++++++++++++---
+ drivers/staging/ti-soc-thermal/ti-thermal-common.c |    5 +++
+ 2 files changed, 27 insertions(+), 5 deletions(-)
 
-- Kukjin
-
+diff --git a/drivers/staging/ti-soc-thermal/ti-bandgap.c b/drivers/staging/ti-soc-thermal/ti-bandgap.c
+index 5b06b12..37fdba6 100644
+--- a/drivers/staging/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/staging/ti-soc-thermal/ti-bandgap.c
+@@ -1305,12 +1305,18 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 	for (i = 0; i < bgp->conf->sensor_count; i++) {
+ 		char *domain;
+ 
+-		if (bgp->conf->sensors[i].register_cooling)
+-			bgp->conf->sensors[i].register_cooling(bgp, i);
++		if (bgp->conf->sensors[i].register_cooling) {
++			ret = bgp->conf->sensors[i].register_cooling(bgp, i);
++			if (ret)
++				goto remove_sensors;
++		}
+ 
+-		domain = bgp->conf->sensors[i].domain;
+-		if (bgp->conf->expose_sensor)
+-			bgp->conf->expose_sensor(bgp, i, domain);
++		if (bgp->conf->expose_sensor) {
++			domain = bgp->conf->sensors[i].domain;
++			ret = bgp->conf->expose_sensor(bgp, i, domain);
++			if (ret)
++				goto remove_last_cooling;
++		}
+ 	}
+ 
+ 	/*
+@@ -1329,6 +1335,17 @@ int ti_bandgap_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++remove_last_cooling:
++	if (bgp->conf->sensors[i].unregister_cooling)
++		bgp->conf->sensors[i].unregister_cooling(bgp, i);
++remove_sensors:
++	for (i--; i >= 0; i--) {
++		if (bgp->conf->sensors[i].unregister_cooling)
++			bgp->conf->sensors[i].unregister_cooling(bgp, i);
++		if (bgp->conf->remove_sensor)
++			bgp->conf->remove_sensor(bgp, i);
++	}
++	ti_bandgap_power(bgp, false);
+ disable_clk:
+ 	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+ 		clk_disable_unprepare(bgp->fclock);
+diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+index 58e19bc..e3c5e67 100644
+--- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+@@ -339,6 +339,11 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+ 	if (!data)
+ 		return -EINVAL;
+ 
++	if (!cpufreq_get_current_driver()) {
++		dev_dbg(bgp->dev, "no cpufreq driver yet\n");
++		return -EPROBE_DEFER;
++	}
++
+ 	/* Register cooling device */
+ 	data->cool_dev = cpufreq_cooling_register(cpu_present_mask);
+ 	if (IS_ERR_OR_NULL(data->cool_dev)) {
+-- 
+1.7.7.1.488.ge8e1c
