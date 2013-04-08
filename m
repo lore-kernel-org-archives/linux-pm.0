@@ -1,42 +1,62 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V6 3/4] arm: exynos: Enable OPP library support for exynos5440
-Date: Mon,  8 Apr 2013 13:47:37 +0530
-Message-ID: <1365409058-32643-4-git-send-email-amit.daniel@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V6 1/4] cpufreq: exynos: Add cpufreq driver for exynos5440
+Date: Mon, 8 Apr 2013 14:17:06 +0530
+Message-ID: <CAKohpo=CFTo2UCnECeeuKdz34cuedV_tqn7zGA9bzU_PiJ46qg@mail.gmail.com>
 References: <1365409058-32643-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1365409058-32643-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+	<1365409058-32643-2-git-send-email-amit.daniel@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1365409058-32643-2-git-send-email-amit.daniel@samsung.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, cpufreq@vger.kernel.org, Inderpal Singh <inderpal.singh@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-The OPP library support is needed for exynos5440 cpu frequency
-dynamic scaling driver.
+On 8 April 2013 13:47, Amit Daniel Kachhap <amit.daniel@samsung.com> wrote:
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- arch/arm/mach-exynos/Kconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index f3f3b14..bce2195 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -42,6 +42,15 @@ config ARM_EXYNOS5250_CPUFREQ
+>           This adds the CPUFreq driver for Samsung EXYNOS5250
+>           SoC.
+>
+> +config ARM_EXYNOS5440_CPUFREQ
+> +       def_bool SOC_EXYNOS5440
+> +       depends on HAVE_CLK && PM_OPP && OF
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 70f94c8..d5dde07 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -72,10 +72,12 @@ config SOC_EXYNOS5440
- 	bool "SAMSUNG EXYNOS5440"
- 	default y
- 	depends on ARCH_EXYNOS5
-+	select ARCH_HAS_OPP
- 	select ARM_ARCH_TIMER
- 	select AUTO_ZRELADDR
- 	select PINCTRL
- 	select PINCTRL_EXYNOS5440
-+	select PM_OPP
- 	help
- 	  Enable EXYNOS5440 SoC support
- 
--- 
-1.7.1
+Don't you need a depend on your Soc or mach or arch? Don't send another
+version for this now.. Just send a new patch over this patchset.
+
+> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+
+> +static int exynos_target(struct cpufreq_policy *policy,
+> +                         unsigned int target_freq,
+> +                         unsigned int relation)
+> +{
+> +       unsigned int index, tmp;
+> +       int ret = 0, i;
+> +       struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
+> +
+> +       mutex_lock(&cpufreq_lock);
+> +       freqs.old = dvfs_info->cur_frequency;
+> +
+> +       ret = cpufreq_frequency_table_target(policy, freq_table,
+> +                                          target_freq, relation, &index);
+> +       if (ret)
+> +               goto out;
+> +
+
+Move freqs.old = *** here.
+
+> +       freqs.new = freq_table[index].frequency;
+> +       freqs.cpu = policy->cpu;
+
+You don't need this. Below call takes care of it.
+
+Rest is fine.. Just resend this patch with all above issues fixed and i will Ack
+it without any further reviews :)
+
+Don't wait for few days for doing this, send it right now. :)
