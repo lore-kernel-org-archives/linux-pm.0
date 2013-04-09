@@ -1,94 +1,83 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [RFC PATCH v2 15/15] mm: Print memory region statistics to understand
- the buddy allocator behavior
-Date: Wed, 10 Apr 2013 03:19:15 +0530
-Message-ID: <20130409214911.4500.76868.stgit@srivatsabhat.in.ibm.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl
-Cc: gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, srivatsa.bhat@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+From: Andrew Bresticker <abrestic@chromium.org>
+Subject: [PATCH] thermal: cpu_cooling: fix handling of invalid frequency table entries
+Date: Tue,  9 Apr 2013 14:56:56 -0700
+Message-ID: <1365544616-10003-1-git-send-email-abrestic@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f201.google.com ([209.85.223.201]:45089 "EHLO
+	mail-ie0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100Ab3DIV5B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 17:57:01 -0400
+Received: by mail-ie0-f201.google.com with SMTP id a11so1887407iee.0
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 14:57:01 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Bresticker <abrestic@chromium.org>
 
-In order to observe the behavior of the region-aware buddy allocator, modify
-vmstat.c to also print memory region related statistics. In particular, enable
-memory region-related info in /proc/zoneinfo and /proc/buddyinfo, since they
-would help us to atleast (roughly) observe how the new buddy allocator is
-behaving.
+get_cpu_frequency() goes into an infinite loop if any of the entries
+in the CPU frequency table are invalid.  This patch fixes that case
+and, with a separate counter for frequency levels, ensures that the
+n-th valid frequency level is returned.
 
-For now, the region statistics correspond to the zone memory regions and not
-the (absolute) node memory regions, and some of the statistics (especially the
-no. of present pages) might not be very accurate. But since we account for
-and print the free page statistics for every zone memory region accurately, we
-should be able to observe the new page allocator behavior to a reasonable
-degree of accuracy.
-
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
 ---
+ drivers/thermal/cpu_cooling.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
- mm/vmstat.c |   34 ++++++++++++++++++++++++++++++----
- 1 file changed, 30 insertions(+), 4 deletions(-)
-
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 63e12f0..1a90475 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -825,11 +825,28 @@ const char * const vmstat_text[] = {
- static void frag_show_print(struct seq_file *m, pg_data_t *pgdat,
- 						struct zone *zone)
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 836828e..e6db441 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -124,14 +124,14 @@ static int is_cpufreq_valid(int cpu)
+ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
  {
--	int order;
-+	int i, order, t;
-+	struct free_area *area;
+ 	int ret = 0, i = 0;
+-	unsigned long level_index;
++	unsigned long level_index = 0;
+ 	bool descend = false;
+ 	struct cpufreq_frequency_table *table =
+ 					cpufreq_frequency_get_table(cpu);
+ 	if (!table)
+ 		return ret;
  
--	seq_printf(m, "Node %d, zone %8s ", pgdat->node_id, zone->name);
--	for (order = 0; order < MAX_ORDER; ++order)
--		seq_printf(m, "%6lu ", zone->free_area[order].nr_free);
-+	seq_printf(m, "Node %d, zone %8s \n", pgdat->node_id, zone->name);
-+
-+	for (i = 0; i < zone->nr_zone_regions; i++) {
-+
-+		seq_printf(m, "\t\t Region %d ", i);
-+
-+		for (order = 0; order < MAX_ORDER; ++order) {
-+			unsigned long nr_free = 0;
-+
-+			area = &zone->free_area[order];
-+
-+			for (t = 0; t < MIGRATE_TYPES; t++) {
-+				nr_free +=
-+					area->free_list[t].mr_list[i].nr_free;
-+			}
-+			seq_printf(m, "%6lu ", nr_free);
-+		}
-+		seq_putc(m, '\n');
-+	}
- 	seq_putc(m, '\n');
+-	while (table[i].frequency != CPUFREQ_TABLE_END) {
++	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 
+@@ -143,24 +143,25 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+ 		}
+ 
+ 		/*return if level matched and table in descending order*/
+-		if (descend && i == level)
++		if (descend && level_index == level)
+ 			return table[i].frequency;
+-		i++;
++		level_index++;
+ 	}
+ 	i--;
++	level_index--;
+ 
+-	if (level > i || descend)
++	if (level > level_index || descend)
+ 		return ret;
+-	level_index = i - level;
++	level = level_index - level;
+ 
+ 	/*Scan the table in reverse order and match the level*/
+-	while (i >= 0) {
++	for (; i >= 0; i--) {
+ 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 		/*return if level matched*/
+-		if (i == level_index)
++		if (level_index == level)
+ 			return table[i].frequency;
+-		i--;
++		level_index--;
+ 	}
+ 	return ret;
  }
- 
-@@ -1016,6 +1033,15 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
- 		   zone->present_pages,
- 		   zone->managed_pages);
- 
-+	seq_printf(m, "\n\nPer-region page stats\t present\t free\n\n");
-+	for (i = 0; i < zone->nr_zone_regions; i++) {
-+		struct zone_mem_region *region;
-+
-+		region = &zone->zone_regions[i];
-+		seq_printf(m, "\tRegion %d \t %6lu \t %6lu\n", i,
-+				region->present_pages, region->nr_free);
-+	}
-+
- 	for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
- 		seq_printf(m, "\n    %-12s %lu", vmstat_text[i],
- 				zone_page_state(zone, i));
+-- 
+1.8.1.3
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
