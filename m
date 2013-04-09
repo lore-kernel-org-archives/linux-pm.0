@@ -1,61 +1,139 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH v4] cpufreq: powerpc: Add cpufreq driver for Freescale
- e500mc SoCs
-Date: Tue, 9 Apr 2013 10:04:11 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B12831E@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1365496365-28450-1-git-send-email-Yuantian.Tang@freescale.com>
- <CAKohpokVf0hCokDL62WeaUdYEBycf+Kh_cRgWxTR--_12xjEBA@mail.gmail.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC PATCH 0/2] cpufreq: Introduce LAB cpufreq governor.
+Date: Tue, 09 Apr 2013 12:37:19 +0200
+Message-ID: <20130409123719.7399d5ad@amdc308.digital.local>
+References: <1364804657-16590-1-git-send-email-jonghwa3.lee@samsung.com>
+ <CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpokVf0hCokDL62WeaUdYEBycf+Kh_cRgWxTR--_12xjEBA@mail.gmail.com>
-Content-Language: en-US
+In-reply-to: <CAOh2x=nPJa0GReiN=OHLG=m4Gq51F=4VppdaQL20xi-aUa8x2Q@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Li Yang-R58472 <r58472@freescale.com>
+Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, sw0312.kim@samsung.com, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-VGhhbmtzLCB5b3UgbWFrZSBteSBjb2RlIGxvb2sgYmV0dGVyIGVhY2ggcmV2aWV3Lg0KDQpUaGFu
-a3MsDQpZdWFudGlhbg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
-VmlyZXNoIEt1bWFyIFttYWlsdG86dmlyZXNoLmt1bWFyQGxpbmFyby5vcmddDQo+IFNlbnQ6IDIw
-MTPE6jTUwjnI1SAxNzo0Nw0KPiBUbzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0Bz
-aXNrLnBsOyBjcHVmcmVxQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-Ow0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
-YWJzLm9yZzsgTGkgWWFuZy0NCj4gUjU4NDcyDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjRdIGNw
-dWZyZXE6IHBvd2VycGM6IEFkZCBjcHVmcmVxIGRyaXZlciBmb3INCj4gRnJlZXNjYWxlIGU1MDBt
-YyBTb0NzDQo+IA0KPiBNb3N0bHkgZ29vZCBub3csIFY1IHNob3VsZCBiZSB0aGUgZmluYWwgb25l
-Lg0KPiANCj4gT24gOSBBcHJpbCAyMDEzIDE0OjAyLCAgPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxl
-LmNvbT4gd3JvdGU6DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5l
-dC1jcHVmcmVxLmMNCj4gPiBiL2RyaXZlcnMvY3B1ZnJlcS9wcGMtY29yZW5ldC1jcHVmcmVxLmMN
-Cj4gDQo+ID4gK3N0YXRpYyBpbnQgY29yZW5ldF9jcHVmcmVxX3RhcmdldChzdHJ1Y3QgY3B1ZnJl
-cV9wb2xpY3kgKnBvbGljeSwNCj4gPiArICAgICAgICAgICAgICAgdW5zaWduZWQgaW50IHRhcmdl
-dF9mcmVxLCB1bnNpZ25lZCBpbnQgcmVsYXRpb24pIHsNCj4gPiArICAgICAgIHN0cnVjdCBjcHVm
-cmVxX2ZyZXFzIGZyZXFzOw0KPiA+ICsgICAgICAgdW5zaWduZWQgaW50IG5ldzsNCj4gPiArICAg
-ICAgIHN0cnVjdCBjbGsgKnBhcmVudDsNCj4gPiArICAgICAgIGludCByZXQ7DQo+ID4gKyAgICAg
-ICBzdHJ1Y3QgY3B1X2RhdGEgKmRhdGEgPSBwZXJfY3B1KGNwdV9kYXRhLCBwb2xpY3ktPmNwdSk7
-DQo+ID4gKw0KPiA+ICsgICAgICAgY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGVfdGFyZ2V0KHBvbGlj
-eSwgZGF0YS0+dGFibGUsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgdGFyZ2V0X2ZyZXEs
-IHJlbGF0aW9uLCAmbmV3KTsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAocG9saWN5LT5jdXIgPT0g
-ZGF0YS0+dGFibGVbbmV3XS5mcmVxdWVuY3kpDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiAw
-Ow0KPiA+ICsNCj4gPiArICAgICAgIGZyZXFzLm9sZCA9IHBvbGljeS0+Y3VyOw0KPiA+ICsgICAg
-ICAgZnJlcXMubmV3ID0gZGF0YS0+dGFibGVbbmV3XS5mcmVxdWVuY3k7DQo+ID4gKyAgICAgICBm
-cmVxcy5jcHUgPSBwb2xpY3ktPmNwdTsNCj4gDQo+IFlvdSBkb24ndCBuZWVkIHRvIHNldCBmcmVx
-cy5jcHUuLg0KPiANCj4gPiArICAgICAgIG11dGV4X2xvY2soJmNwdWZyZXFfbG9jayk7DQo+ID4g
-KyAgICAgICBjcHVmcmVxX25vdGlmeV90cmFuc2l0aW9uKHBvbGljeSwgJmZyZXFzLCBDUFVGUkVR
-X1BSRUNIQU5HRSk7DQo+ID4gKw0KPiA+ICsgICAgICAgcGFyZW50ID0gb2ZfY2xrX2dldChkYXRh
-LT5wYXJlbnQsIG5ldyk7DQo+ID4gKyAgICAgICByZXQgPSBjbGtfc2V0X3BhcmVudChkYXRhLT5j
-bGssIHBhcmVudCk7DQo+ID4gKyAgICAgICBpZiAocmV0KSB7DQo+ID4gKyAgICAgICAgICAgICAg
-IGZyZXFzLm5ldyA9IGZyZXFzLm9sZDsNCj4gPiArICAgICAgICAgICAgICAgY3B1ZnJlcV9ub3Rp
-ZnlfdHJhbnNpdGlvbihwb2xpY3ksICZmcmVxcywNCj4gQ1BVRlJFUV9QT1NUQ0hBTkdFKTsNCj4g
-PiArICAgICAgICAgICAgICAgbXV0ZXhfdW5sb2NrKCZjcHVmcmVxX2xvY2spOw0KPiA+ICsgICAg
-ICAgICAgICAgICByZXR1cm4gcmV0Ow0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAg
-IGNwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24ocG9saWN5LCAmZnJlcXMsIENQVUZSRVFfUE9TVENI
-QU5HRSk7DQo+ID4gKyAgICAgICBtdXRleF91bmxvY2soJmNwdWZyZXFfbG9jayk7DQo+IA0KPiBX
-aGF0IGFib3V0IHdyaXRpbmcgaXQgYXM6DQo+IA0KPiArICAgICAgIHJldCA9IGNsa19zZXRfcGFy
-ZW50KGRhdGEtPmNsaywgcGFyZW50KTsNCj4gKyAgICAgICBpZiAocmV0KQ0KPiArICAgICAgICAg
-ICAgICAgZnJlcXMubmV3ID0gZnJlcXMub2xkOw0KPiArDQo+ICsgICAgICAgY3B1ZnJlcV9ub3Rp
-ZnlfdHJhbnNpdGlvbihwb2xpY3ksICZmcmVxcywgQ1BVRlJFUV9QT1NUQ0hBTkdFKTsNCj4gKyAg
-ICAgICBtdXRleF91bmxvY2soJmNwdWZyZXFfbG9jayk7DQo+IA0KPiByZXR1cm4gcmV0Ow0KPiAN
-Cj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQoNCg==
+Hi Viresh,
 
+First of all I'd like to apologize for a late response.
+Please find my comments below. 
+
+> On Mon, Apr 1, 2013 at 1:54 PM, Jonghwa Lee
+> <jonghwa3.lee@samsung.com> wrote:
+> > <<Purpose>>
+> >  One of the problem of ondemand is that it considers the most busy
+> > cpu only while doesn't care how many cpu is in busy state at the
+> > moment. This may results in unnecessary power consumption, and it'll
+> > be critical for the system having limited power source.
+> >
+> >  To get the best energy efficiency, LAB governor considers not only
+> > idle time but also the number of idle cpus. It primarily focuses on
+> > supplying adequate performance to users within the limited resource.
+> > It checks the number of idle cpus then controls the maximum
+> > frequency dynamically. And it also applies different frequency
+> > increasing level depends on that information. In simple terms the
+> > less the number of busy cpus, the better performance will be given.
+> >  In addition, stable system's power consumption in the busy state
+> > can be achieved also with using LAB governor. This will help to
+> > manage and estimate power consumption in certain system.
+> 
+> Hi Jonghwa,
+> 
+> First of all, i should accept that i haven't got to the minute details
+> about your
+> patch until now but have done a broad review of it.
+> 
+> There are many things that i am concerned about:
+> - I don't want an additional governor to be added to cpufreq unless
+> there is a very very strong reason for it. See what happened to
+> earlier attempts:
+> 
+> https://lkml.org/lkml/2012/2/7/504
+> 
+> But it doesn't mean you can't get it in. :)
+> 
+> - What the real logic behind your patchset: I haven't got it
+> completely with your
+> mails. So what you said is:
+> 
+>   - The lesser the number of busy cpus: you want to run at higher
+> freqs
+>   - The more the number of busy cpus: you want to run at lower freqs
+> 
+> But the basic idea i had about this stuff was: The more the number of
+> busy cpus, the more loaded the system is, otherwise scheduler wouldn't
+> have used so many cpus and so there is need to run at higher frequency
+> rather than a lower one. Which would save power in a sense.. Finish
+> work early and let most of the cpus enter idle state as early as
+> possible. But with your solution we would run at lower frequencies
+> and so these cpus will take longer to get into idle state again. This
+> will really kill lot of power.
+
+Our approach is a bit different than cpufreq_ondemand one. Ondemand
+takes the per CPU idle time, then on that basis calculates per cpu load.
+The next step is to choose the highest load and then use this value to
+properly scale frequency.
+
+On the other hand LAB tries to model different behavior:
+
+As a first step we applied Vincent Guittot's "pack small tasks" [*]
+patch to improve "race to idle" behavior:
+http://article.gmane.org/gmane.linux.kernel/1371435/match=sched+pack+small+tasks	
+
+Afterwards, we decided to investigate different approach for power
+governing:
+
+Use the number of sleeping CPUs (not the maximal per-CPU load) to
+change frequency. We thereof depend on [*] to "pack" as many tasks to
+CPU as possible and allow other to sleep. 
+On this basis we can increase (even overclock) frequency (when other
+CPUs sleep) to improve performance of the only running CPU. 
+
+Contrary, when all cores are heavily loaded, we decided to reduce
+frequency by around 30%. With this approach user experience recution is
+still acceptable (with much less power consumption).
+When system is "idle" - only small background tasks are running, the
+frequency is reduced to minimum. 
+
+To sum up:
+
+Different approach (number of idle CPUs) is used by us to control
+ondemand governor. We also heavily depend on [*] patch set.
+
+> 
+> Think about it.
+> 
+> - In case you need some sort of support on this use case, why
+> replicate ondemand governor again by creating another governor. I
+> have had some hard time removing the amount of redundancy inside
+> governors and you are again going towards that direction. Modifying
+> ondemand governor for this response would be a better option.
+
+We have only posted the "RFC" so, we are open for suggestions. 
+
+At cpufreq_governor.c file the dbs_check_cpu function is responsible
+for calculating the maximal load (among CPUs). I think that we could
+also count the number of sleeping CPUs (as the average of time
+accumulated data). Then we could pass this data to newly written
+function (e.g. lab_check_cpu) defined at cpufreq_ondemand.c (and
+pointed to by gov_check_cpu).
+
+This would require change to dbs_check_cpu function and extending
+ONDEMAND governor by lab_check_cpu() function.
+
+> 
+> - You haven't rebased of latest code from linux-next :)
+> 
+
+We have posted this "RFC" patch mainly for discussion, and I think it
+fits its purpose :-).
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Poland (SRPOL) | Linux Platform Group
