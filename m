@@ -1,47 +1,56 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Tue, 09 Apr 2013 19:56:53 +0300
-Message-ID: <51644855.1090300@semaphore.gr>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan> <515CBB98.4020607@semaphore.gr> <CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com> <515F2AF3.9050709@semaphore.gr>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Tue, 9 Apr 2013 18:57:49 +0200
+Message-ID: <CA+icZUW+SuJurKp-_CWW4Q22YCJUOmfDCsqaQxv6OLhE0_pjpw@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<31778276.CDMUtaAAnc@vostro.rjw.lan>
+	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
+	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
+	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
+	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <515F2AF3.9050709@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
-> Hi Viresh,
+On Tue, Apr 9, 2013 at 6:51 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 9 April 2013 21:38, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+>> With x=3 the system gets in an unuseable state.
+>>
+>>      root# echo 0 > /sys/devices/system/cpu/cpu3/online
+>>
+>> I could not write my reply and had to do a hard/cold reboot.
+>> The dmesg log I saw looked similiar to my digicam-shot.
 >
-> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
->> Hi Stratos,
->>
->> Yes, your results show some improvements. BUT if performance is the only thing
->> we were looking for, then we will never use ondemand governor but performance
->> governor.
->>
->> I suspect this little increase in performance must have increased power numbers
->> too (significantly). So, if you can get numbers in the form of power/performance
->> with and without your patch, it will be great.
->>
->> --
->> viresh
->>
+> Few things i need from you. First is output of cpufreq-info. Then
+> all the steps you did to reproduce above? Removed any other cpus?
 >
-> I run some more tests. I increased the number of iterations to 100 (from 20).
-> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us), 15,000,000 (~30000us).
+> I am not able to find next-20130326 tag in my repo, only have 23 and 28.
+> Can you debug it a bit to find exact line of code causing this issue using
+> objdump?
 >
-> This time, I also extracted statistics from cpufreq_stats driver. I think this will be an
-> indication for power consumption. Below the results and attached the program I used for to
-> get these numbers.
+> HINT: Documentation/BUG-HUNTING..
+>
 
-Any comments would be appreciated.
+next-20130326 see...
 
-Thanks,
-Stratos
+[1] http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tag/?id=next-20130326
 
+objdump of file?
 
+> Give me line numbers of both of these functions: __cpufreq_governor() and
+> __cpufreq_remove_dev().
+
+I must checkout by myself and jump on next-20130326.
+Unfortunately, I have it installed but have no binaries and deleted
+the branch from my local GIT branch.
+
+Still on the fs/pipe issue from vfs-next :-).
+I guess I have a working follow-up patch, still compiling.
+
+- Sedat -
