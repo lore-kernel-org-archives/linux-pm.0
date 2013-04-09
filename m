@@ -1,30 +1,138 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 14/18] cpufreq: sh: move cpufreq driver to drivers/cpufreq
-Date: Tue, 9 Apr 2013 19:42:51 +0530
-Message-ID: <CAKohpomqfVqiw1PJxBRRA8=A6hV_63AW4nRpM8TfZPA5bypcKQ@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<3167220d1e262ff22078993a5beec55e82dfd951.1365079581.git.viresh.kumar@linaro.org>
-	<20130409125509.GH15412@verge.net.au>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] thermal: fix frequency table lookup bugs
+Date: Tue, 9 Apr 2013 10:55:17 -0400
+Message-ID: <51642BD5.4030803@ti.com>
+References: <1365465287-24530-1-git-send-email-abrestic@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130409125509.GH15412@verge.net.au>
-Sender: cpufreq-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:54363 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761809Ab3DIOza (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 10:55:30 -0400
+In-Reply-To: <1365465287-24530-1-git-send-email-abrestic@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Bresticker <abrestic@chromium.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com
 
-On 9 April 2013 18:25, Simon Horman <horms@verge.net.au> wrote:
-> On Thu, Apr 04, 2013 at 06:24:22PM +0530, Viresh Kumar wrote:
->> This patch moves cpufreq driver of SUPERH architecture to drivers/cpufreq.
+Hi Andrew,
+
+On 08-04-2013 19:54, Andrew Bresticker wrote:
+> The loops which are used to perform lookups in CPU frequency tables in
+> cpu_cooling and the Exynos thermal driver do not update the loop counter
+> if they encounter an invalid table entry, leading to an infinite loop in
+> that case.
 >
-> Why?
+> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+> ---
+>   drivers/thermal/cpu_cooling.c    | 19 ++++++++++---------
+>   drivers/thermal/exynos_thermal.c |  8 ++++----
+>   2 files changed, 14 insertions(+), 13 deletions(-)
 >
-> I am missing the cover email where I assume the explanation lies.
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 836828e..e6db441 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -124,14 +124,14 @@ static int is_cpufreq_valid(int cpu)
+>   static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>   {
+>   	int ret = 0, i = 0;
+> -	unsigned long level_index;
+> +	unsigned long level_index = 0;
+>   	bool descend = false;
+>   	struct cpufreq_frequency_table *table =
+>   					cpufreq_frequency_get_table(cpu);
+>   	if (!table)
+>   		return ret;
+>
+> -	while (table[i].frequency != CPUFREQ_TABLE_END) {
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>   		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>   			continue;
+Wouldn't be easier to just increase the index i before doing a continue?
 
-Hi Simon,
+>
+> @@ -143,24 +143,25 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+>   		}
+>
+>   		/*return if level matched and table in descending order*/
+> -		if (descend && i == level)
+> +		if (descend && level_index == level)
+>   			return table[i].frequency;
 
-The idea was to keep all cpufreq drivers at a common and most suitable
-place, so that future consolidation work can be done easily and efficiently.
+What this has to do with the patch description? Besides why would you be 
+comparing level against 0 all the time (you have initialized level_index 
+to 0 at this point).
 
-So, functionally this patch shouldn't change anything.
+> -		i++;
+> +		level_index++;
+
+level_index wont be updated in case of INVALID entry.
+
+>   	}
+>   	i--;
+> +	level_index--;
+>
+> -	if (level > i || descend)
+> +	if (level > level_index || descend)
+>   		return ret;
+> -	level_index = i - level;
+> +	level = level_index - level;
+>
+>   	/*Scan the table in reverse order and match the level*/
+> -	while (i >= 0) {
+> +	for (; i >= 0; i--) {
+>   		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>   			continue;
+>   		/*return if level matched*/
+> -		if (i == level_index)
+> +		if (level_index == level)
+>   			return table[i].frequency;
+> -		i--;
+> +		level_index--;
+>   	}
+
+I believe you do more than what you have described in your intention 
+under you patch description
+
+Can you please split your patch into smaller changes?
+>   	return ret;
+>   }
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index d5e6267..524b2a0 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -237,7 +237,7 @@ static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+>
+>   static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+>   {
+> -	int i = 0, ret = -EINVAL;
+> +	int i, level = 0, ret = -EINVAL;
+>   	struct cpufreq_frequency_table *table = NULL;
+>   #ifdef CONFIG_CPU_FREQ
+>   	table = cpufreq_frequency_get_table(cpu);
+> @@ -245,12 +245,12 @@ static int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+>   	if (!table)
+>   		return ret;
+>
+> -	while (table[i].frequency != CPUFREQ_TABLE_END) {
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>   		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>   			continue;
+>   		if (table[i].frequency == freq)
+> -			return i;
+> -		i++;
+> +			return level;
+> +		level++;
+
+Can you please send a separate patch on this driver instead?
+
+
+
+>   	}
+>   	return ret;
+>   }
+>
+
