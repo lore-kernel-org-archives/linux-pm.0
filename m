@@ -1,56 +1,189 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Tue, 9 Apr 2013 18:57:49 +0200
-Message-ID: <CA+icZUW+SuJurKp-_CWW4Q22YCJUOmfDCsqaQxv6OLhE0_pjpw@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<31778276.CDMUtaAAnc@vostro.rjw.lan>
-	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
-	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
-	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Andrew Bresticker <abrestic@google.com>
+Subject: Re: [PATCH] thermal: fix frequency table lookup bugs
+Date: Tue, 9 Apr 2013 10:02:47 -0700
+Message-ID: <CAL1qeaGW=m+DNbGhEzTJBDt1NNpPrVcBzzWzhk447hf2tyb2fw@mail.gmail.com>
+References: <1365465287-24530-1-git-send-email-abrestic@chromium.org>
+	<51642BD5.4030803@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f172.google.com ([209.85.128.172]:35568 "EHLO
+	mail-ve0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754461Ab3DIRCs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 13:02:48 -0400
+Received: by mail-ve0-f172.google.com with SMTP id oz10so6630669veb.17
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 10:02:47 -0700 (PDT)
+In-Reply-To: <51642BD5.4030803@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Andrew Bresticker <abrestic@chromium.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Apr 9, 2013 at 6:51 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 9 April 2013 21:38, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->> With x=3 the system gets in an unuseable state.
+Hi Eduardo,
+
+On Tue, Apr 9, 2013 at 7:55 AM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> Hi Andrew,
+>
+>
+> On 08-04-2013 19:54, Andrew Bresticker wrote:
 >>
->>      root# echo 0 > /sys/devices/system/cpu/cpu3/online
+>> The loops which are used to perform lookups in CPU frequency tables in
+>> cpu_cooling and the Exynos thermal driver do not update the loop counter
+>> if they encounter an invalid table entry, leading to an infinite loop in
+>> that case.
 >>
->> I could not write my reply and had to do a hard/cold reboot.
->> The dmesg log I saw looked similiar to my digicam-shot.
+>> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+>> ---
+>>   drivers/thermal/cpu_cooling.c    | 19 ++++++++++---------
+>>   drivers/thermal/exynos_thermal.c |  8 ++++----
+>>   2 files changed, 14 insertions(+), 13 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+>> index 836828e..e6db441 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -124,14 +124,14 @@ static int is_cpufreq_valid(int cpu)
+>>   static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long
+>> level)
+>>   {
+>>         int ret = 0, i = 0;
+>> -       unsigned long level_index;
+>> +       unsigned long level_index = 0;
+>>         bool descend = false;
+>>         struct cpufreq_frequency_table *table =
+>>                                         cpufreq_frequency_get_table(cpu);
+>>         if (!table)
+>>                 return ret;
+>>
+>> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
+>> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                         continue;
 >
-> Few things i need from you. First is output of cpufreq-info. Then
-> all the steps you did to reproduce above? Removed any other cpus?
+> Wouldn't be easier to just increase the index i before doing a continue?
+
+I think this is cleaner.  The code is iterating through an array -- it
+should be a for loop.
+
 >
-> I am not able to find next-20130326 tag in my repo, only have 23 and 28.
-> Can you debug it a bit to find exact line of code causing this issue using
-> objdump?
 >
-> HINT: Documentation/BUG-HUNTING..
+>>
+>> @@ -143,24 +143,25 @@ static unsigned int get_cpu_frequency(unsigned int
+>> cpu, unsigned long level)
+>>                 }
+>>
+>>                 /*return if level matched and table in descending order*/
+>> -               if (descend && i == level)
+>> +               if (descend && level_index == level)
+>>                         return table[i].frequency;
+>
+>
+> What this has to do with the patch description?
+
+I'm using level_index as the counter of valid frequencies, where as i
+is the index into the array.  If there are invalid entries, they are
+not necessarily equal.  The point of this function is to find the
+level-th *valid* frequency in the table.
+
+> Besides why would you be comparing level against 0 all the time (you have
+> initialized level_index to 0 at this point).
+
+Huh? level_index is clearly incremented below...
+
+>
+>> -               i++;
+>> +               level_index++;
+>
+>
+> level_index wont be updated in case of INVALID entry.
+
+That's the point.
+
+>
+>
+>>         }
+>>         i--;
+>> +       level_index--;
+>>
+>> -       if (level > i || descend)
+>> +       if (level > level_index || descend)
+>>                 return ret;
+>> -       level_index = i - level;
+>> +       level = level_index - level;
+>>
+>>         /*Scan the table in reverse order and match the level*/
+>> -       while (i >= 0) {
+>> +       for (; i >= 0; i--) {
+>>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                         continue;
+>>                 /*return if level matched*/
+>> -               if (i == level_index)
+>> +               if (level_index == level)
+>>                         return table[i].frequency;
+>> -               i--;
+>> +               level_index--;
+>>         }
+>
+>
+> I believe you do more than what you have described in your intention under
+> you patch description
+
+I disagree.  I'm fixing the loop so that it properly handles invalid
+entries and thus the infinite loop problem I mention in the commit
+message.
+
+> Can you please split your patch into smaller changes?
+
+I don't think there is a need for separate patches to cpu_cooling.c.
+
+>
+>>         return ret;
+>>   }
+>> diff --git a/drivers/thermal/exynos_thermal.c
+>> b/drivers/thermal/exynos_thermal.c
+>> index d5e6267..524b2a0 100644
+>> --- a/drivers/thermal/exynos_thermal.c
+>> +++ b/drivers/thermal/exynos_thermal.c
+>> @@ -237,7 +237,7 @@ static int exynos_get_crit_temp(struct
+>> thermal_zone_device *thermal,
+>>
+>>   static int exynos_get_frequency_level(unsigned int cpu, unsigned int
+>> freq)
+>>   {
+>> -       int i = 0, ret = -EINVAL;
+>> +       int i, level = 0, ret = -EINVAL;
+>>         struct cpufreq_frequency_table *table = NULL;
+>>   #ifdef CONFIG_CPU_FREQ
+>>         table = cpufreq_frequency_get_table(cpu);
+>> @@ -245,12 +245,12 @@ static int exynos_get_frequency_level(unsigned int
+>> cpu, unsigned int freq)
+>>         if (!table)
+>>                 return ret;
+>>
+>> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
+>> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>>                         continue;
+>>                 if (table[i].frequency == freq)
+>> -                       return i;
+>> -               i++;
+>> +                       return level;
+>> +               level++;
+>
+>
+> Can you please send a separate patch on this driver instead?
+
+Sure.
+
+>
+>
+>
+>>         }
+>>         return ret;
+>>   }
+>>
 >
 
-next-20130326 see...
-
-[1] http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tag/?id=next-20130326
-
-objdump of file?
-
-> Give me line numbers of both of these functions: __cpufreq_governor() and
-> __cpufreq_remove_dev().
-
-I must checkout by myself and jump on next-20130326.
-Unfortunately, I have it installed but have no binaries and deleted
-the branch from my local GIT branch.
-
-Still on the fs/pipe issue from vfs-next :-).
-I guess I have a working follow-up patch, still compiling.
-
-- Sedat -
+Thanks,
+Andrew
