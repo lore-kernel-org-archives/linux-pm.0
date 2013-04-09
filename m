@@ -1,37 +1,62 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Tue, 9 Apr 2013 16:59:20 +0200
-Message-ID: <CA+icZUV219yQ2Bw=81C8e_cfNERjCENNOvokehQ=bzc66-+L2w@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<31778276.CDMUtaAAnc@vostro.rjw.lan>
-	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
-	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] thermal: step_wise: set throttle target within thermal
+ instance limits
+Date: Tue, 9 Apr 2013 11:00:49 -0400
+Message-ID: <51642D21.2060705@ti.com>
+References: <1365465371-24652-1-git-send-email-abrestic@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:38380 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936004Ab3DIPA5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Apr 2013 11:00:57 -0400
+In-Reply-To: <1365465371-24652-1-git-send-email-abrestic@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Bresticker <abrestic@chromium.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com
 
-On Tue, Apr 9, 2013 at 4:56 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 9 April 2013 19:34, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->> I have seen it on reboots.
->> How to online/offline from sysfs?
+Hi Andrew,
+
+On 08-04-2013 19:56, Andrew Bresticker wrote:
+> When selecting a target cooling state in get_target_state(), make sure
+> that the state is at least as high as the minimum when the temperature
+> is rising and at least as low as the maximum when the temperature is
+> falling.  Previously the cooling level would only be incremented or
+> decremented by one in these cases.
 >
-> offline a cpu "x" with:
+> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+> ---
+>   drivers/thermal/step_wise.c | 4 ++++
+>   1 file changed, 4 insertions(+)
 >
-> echo 0 > /sys/devices/system/cpu/cpux/online
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 0cd5e9f..49992a4 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -47,9 +47,13 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>   	if (trend == THERMAL_TREND_RAISING) {
+>   		cur_state = cur_state < instance->upper ?
+>   			    (cur_state + 1) : instance->upper;
+> +		if (cur_state < instance->lower)
+> +			cur_state = instance->lower;
+>   	} else if (trend == THERMAL_TREND_DROPPING) {
+>   		cur_state = cur_state > instance->lower ?
+>   			    (cur_state - 1) : instance->lower;
+> +		if (cur_state > instance->upper)
+> +			cur_state = instance->upper;
+>   	}
+
+
+In which situations cur_state will be out of the [lower;upper] 
+boundaries? I mean at this point while temperature is rising, and we are 
+rising the cooling level, we should be already above lower (and 
+vice-versa). Can you please describe better the situation you are trying 
+to cover/ that you have identified?
+
 >
-> and online with echo 1 > to same location.
+>   	return cur_state;
+>
 
-Eh, yeah I re-remember it now :-).
-I will try with next-20130328 which boots fine here and hope the
-hanging on reboot and in running system is OK.
-
-next-20130409 is broken due to vfs-next issues (see Linux-Next ML).
-Will try that first...
-
-- Sedat -
