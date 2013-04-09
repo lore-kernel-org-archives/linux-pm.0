@@ -1,187 +1,82 @@
-From: Andrew Bresticker <abrestic@google.com>
-Subject: Re: [PATCH] thermal: fix frequency table lookup bugs
-Date: Tue, 9 Apr 2013 10:02:47 -0700
-Message-ID: <CAL1qeaGW=m+DNbGhEzTJBDt1NNpPrVcBzzWzhk447hf2tyb2fw@mail.gmail.com>
-References: <1365465287-24530-1-git-send-email-abrestic@chromium.org>
-	<51642BD5.4030803@ti.com>
+From: Andrew Bresticker <abrestic@chromium.org>
+Subject: Re: [PATCH] thermal: step_wise: set throttle target within thermal
+ instance limits
+Date: Tue, 9 Apr 2013 10:09:34 -0700
+Message-ID: <CAL1qeaENU4z9FC4kXmcTGfzKBg3nVmpRNomBYa=HAenDRbPOgA@mail.gmail.com>
+References: <1365465371-24652-1-git-send-email-abrestic@chromium.org>
+	<51642D21.2060705@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f172.google.com ([209.85.128.172]:35568 "EHLO
-	mail-ve0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754461Ab3DIRCs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 13:02:48 -0400
-Received: by mail-ve0-f172.google.com with SMTP id oz10so6630669veb.17
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 10:02:47 -0700 (PDT)
-In-Reply-To: <51642BD5.4030803@ti.com>
+Received: from mail-ve0-f175.google.com ([209.85.128.175]:45881 "EHLO
+	mail-ve0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932522Ab3DIRJf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 13:09:35 -0400
+Received: by mail-ve0-f175.google.com with SMTP id pb11so6602203veb.20
+        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 10:09:34 -0700 (PDT)
+In-Reply-To: <51642D21.2060705@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Andrew Bresticker <abrestic@chromium.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Hi Eduardo,
 
-On Tue, Apr 9, 2013 at 7:55 AM, Eduardo Valentin
+On Tue, Apr 9, 2013 at 8:00 AM, Eduardo Valentin
 <eduardo.valentin@ti.com> wrote:
 > Hi Andrew,
 >
 >
-> On 08-04-2013 19:54, Andrew Bresticker wrote:
+> On 08-04-2013 19:56, Andrew Bresticker wrote:
 >>
->> The loops which are used to perform lookups in CPU frequency tables in
->> cpu_cooling and the Exynos thermal driver do not update the loop counter
->> if they encounter an invalid table entry, leading to an infinite loop in
->> that case.
+>> When selecting a target cooling state in get_target_state(), make sure
+>> that the state is at least as high as the minimum when the temperature
+>> is rising and at least as low as the maximum when the temperature is
+>> falling.  Previously the cooling level would only be incremented or
+>> decremented by one in these cases.
 >>
 >> Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
 >> ---
->>   drivers/thermal/cpu_cooling.c    | 19 ++++++++++---------
->>   drivers/thermal/exynos_thermal.c |  8 ++++----
->>   2 files changed, 14 insertions(+), 13 deletions(-)
+>>   drivers/thermal/step_wise.c | 4 ++++
+>>   1 file changed, 4 insertions(+)
 >>
->> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
->> index 836828e..e6db441 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -124,14 +124,14 @@ static int is_cpufreq_valid(int cpu)
->>   static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long
->> level)
->>   {
->>         int ret = 0, i = 0;
->> -       unsigned long level_index;
->> +       unsigned long level_index = 0;
->>         bool descend = false;
->>         struct cpufreq_frequency_table *table =
->>                                         cpufreq_frequency_get_table(cpu);
->>         if (!table)
->>                 return ret;
->>
->> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
->> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->>                         continue;
->
-> Wouldn't be easier to just increase the index i before doing a continue?
-
-I think this is cleaner.  The code is iterating through an array -- it
-should be a for loop.
-
->
->
->>
->> @@ -143,24 +143,25 @@ static unsigned int get_cpu_frequency(unsigned int
->> cpu, unsigned long level)
->>                 }
->>
->>                 /*return if level matched and table in descending order*/
->> -               if (descend && i == level)
->> +               if (descend && level_index == level)
->>                         return table[i].frequency;
->
->
-> What this has to do with the patch description?
-
-I'm using level_index as the counter of valid frequencies, where as i
-is the index into the array.  If there are invalid entries, they are
-not necessarily equal.  The point of this function is to find the
-level-th *valid* frequency in the table.
-
-> Besides why would you be comparing level against 0 all the time (you have
-> initialized level_index to 0 at this point).
-
-Huh? level_index is clearly incremented below...
-
->
->> -               i++;
->> +               level_index++;
->
->
-> level_index wont be updated in case of INVALID entry.
-
-That's the point.
-
->
->
->>         }
->>         i--;
->> +       level_index--;
->>
->> -       if (level > i || descend)
->> +       if (level > level_index || descend)
->>                 return ret;
->> -       level_index = i - level;
->> +       level = level_index - level;
->>
->>         /*Scan the table in reverse order and match the level*/
->> -       while (i >= 0) {
->> +       for (; i >= 0; i--) {
->>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->>                         continue;
->>                 /*return if level matched*/
->> -               if (i == level_index)
->> +               if (level_index == level)
->>                         return table[i].frequency;
->> -               i--;
->> +               level_index--;
+>> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+>> index 0cd5e9f..49992a4 100644
+>> --- a/drivers/thermal/step_wise.c
+>> +++ b/drivers/thermal/step_wise.c
+>> @@ -47,9 +47,13 @@ static unsigned long get_target_state(struct
+>> thermal_instance *instance,
+>>         if (trend == THERMAL_TREND_RAISING) {
+>>                 cur_state = cur_state < instance->upper ?
+>>                             (cur_state + 1) : instance->upper;
+>> +               if (cur_state < instance->lower)
+>> +                       cur_state = instance->lower;
+>>         } else if (trend == THERMAL_TREND_DROPPING) {
+>>                 cur_state = cur_state > instance->lower ?
+>>                             (cur_state - 1) : instance->lower;
+>> +               if (cur_state > instance->upper)
+>> +                       cur_state = instance->upper;
 >>         }
 >
 >
-> I believe you do more than what you have described in your intention under
-> you patch description
+>
+> In which situations cur_state will be out of the [lower;upper] boundaries? I
+> mean at this point while temperature is rising, and we are rising the
+> cooling level, we should be already above lower (and vice-versa). Can you
+> please describe better the situation you are trying to cover/ that you have
+> identified?
 
-I disagree.  I'm fixing the loop so that it properly handles invalid
-entries and thus the infinite loop problem I mention in the commit
-message.
+Suppose we hit a trip point which has bounds from 5 to 10, but
+cur_state is 0 because there has previously been no thermal
+throttling.  In that case, we would only go to level 1, even though
+the thermal instance specifies we should be between 5 and 10.  This
+patch would fix it so that we go directly to level 5 instead.
 
-> Can you please split your patch into smaller changes?
-
-I don't think there is a need for separate patches to cpu_cooling.c.
+I will resend this with a more descriptive commit message.
 
 >
->>         return ret;
->>   }
->> diff --git a/drivers/thermal/exynos_thermal.c
->> b/drivers/thermal/exynos_thermal.c
->> index d5e6267..524b2a0 100644
->> --- a/drivers/thermal/exynos_thermal.c
->> +++ b/drivers/thermal/exynos_thermal.c
->> @@ -237,7 +237,7 @@ static int exynos_get_crit_temp(struct
->> thermal_zone_device *thermal,
 >>
->>   static int exynos_get_frequency_level(unsigned int cpu, unsigned int
->> freq)
->>   {
->> -       int i = 0, ret = -EINVAL;
->> +       int i, level = 0, ret = -EINVAL;
->>         struct cpufreq_frequency_table *table = NULL;
->>   #ifdef CONFIG_CPU_FREQ
->>         table = cpufreq_frequency_get_table(cpu);
->> @@ -245,12 +245,12 @@ static int exynos_get_frequency_level(unsigned int
->> cpu, unsigned int freq)
->>         if (!table)
->>                 return ret;
->>
->> -       while (table[i].frequency != CPUFREQ_TABLE_END) {
->> +       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->>                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->>                         continue;
->>                 if (table[i].frequency == freq)
->> -                       return i;
->> -               i++;
->> +                       return level;
->> +               level++;
->
->
-> Can you please send a separate patch on this driver instead?
-
-Sure.
-
->
->
->
->>         }
->>         return ret;
->>   }
+>>         return cur_state;
 >>
 >
 
