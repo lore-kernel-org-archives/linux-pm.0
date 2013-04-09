@@ -1,66 +1,78 @@
-From: Andrew Bresticker <abrestic@chromium.org>
-Subject: [PATCH] thermal: step_wise: set throttle target within thermal instance limits
-Date: Tue,  9 Apr 2013 14:59:47 -0700
-Message-ID: <1365544787-22940-1-git-send-email-abrestic@chromium.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq / intel_pstate: Optimize intel_pstate_set_policy
+Date: Tue,  9 Apr 2013 15:38:18 -0700
+Message-ID: <1365547098-23847-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f201.google.com ([209.85.210.201]:34093 "EHLO
-	mail-ia0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761010Ab3DIV7u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 17:59:50 -0400
-Received: by mail-ia0-f201.google.com with SMTP id k25so783277iah.2
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 14:59:50 -0700 (PDT)
+Received: from mga09.intel.com ([134.134.136.24]:64239 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932361Ab3DIWeR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Apr 2013 18:34:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Bresticker <abrestic@chromium.org>
+To: cpufreq@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When selecting a target cooling state in get_target_state(), make sure
-that the state is at least as high as the minimum when the temperature
-is rising and at least as low as the maximum when the temperature is
-falling.  This is necessary because, in the THREAML_TREND_RAISING and
-THERMAL_TREND_DROPPING cases, the current state may only be incremented
-or decremented by one even if it is outside the bounds of the thermal
-instance.  This might occur, for example, if the CPU is heating up
-and hits a thermal trip point for the first time when it's frequency
-is much higher than the range specified by the thermal instance
-corresponding to the trip point.
+This function is called quite often from other subsystems.
+Removed unused call to intel_pstate_get_min_max().
+Also when "policy->policy == CPUFREQ_POLICY_PERFORMANCE", then
+no need to do calculations as the limits will be forced anyway.
+Also corrected filename in the header.
 
-Signed-off-by: Andrew Bresticker <abrestic@chromium.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/thermal/step_wise.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 407cde3..ca4f79f 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -59,9 +59,12 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index f6dd1e7..f3729d4 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1,5 +1,5 @@
+ /*
+- * cpufreq_snb.c: Native P state management for Intel processors
++ * intel_pstate.c: Native P state management for Intel processors
+  *
+  * (C) Copyright 2012 Intel Corporation
+  * Author: Dirk Brandewie <dirk.j.brandewie@intel.com>
+@@ -658,30 +658,27 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
+ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpudata *cpu;
+-	int min, max;
  
- 	switch (trend) {
- 	case THERMAL_TREND_RAISING:
--		if (throttle)
-+		if (throttle) {
- 			cur_state = cur_state < instance->upper ?
- 				    (cur_state + 1) : instance->upper;
-+			if (cur_state < instance->lower)
-+				cur_state = instance->lower;
-+		}
- 		break;
- 	case THERMAL_TREND_RAISE_FULL:
- 		if (throttle)
-@@ -71,8 +74,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 		if (cur_state == instance->lower) {
- 			if (!throttle)
- 				cur_state = -1;
--		} else
-+		} else {
- 			cur_state -= 1;
-+			if (cur_state > instance->upper)
-+				cur_state = instance->upper;
-+		}
- 		break;
- 	case THERMAL_TREND_DROP_FULL:
- 		if (cur_state == instance->lower) {
+ 	cpu = all_cpu_data[policy->cpu];
+ 
+ 	if (!policy->cpuinfo.max_freq)
+ 		return -ENODEV;
+ 
+-	intel_pstate_get_min_max(cpu, &min, &max);
+-
+-	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+-	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
+-	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+-
+-	limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
+-	limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
+-	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+-
+ 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+ 		limits.min_perf_pct = 100;
+ 		limits.min_perf = int_tofp(1);
+ 		limits.max_perf_pct = 100;
+ 		limits.max_perf = int_tofp(1);
+ 		limits.no_turbo = 0;
++		return 0;
+ 	}
++	limits.min_perf_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
++	limits.min_perf_pct = clamp_t(int, limits.min_perf_pct, 0 , 100);
++	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
++
++	limits.max_perf_pct = policy->max * 100 / policy->cpuinfo.max_freq;
++	limits.max_perf_pct = clamp_t(int, limits.max_perf_pct, 0 , 100);
++	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 
+ 	return 0;
+ }
 -- 
-1.8.1.3
+1.7.11.7
 
