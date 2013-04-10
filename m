@@ -1,73 +1,29 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Wed, 10 Apr 2013 08:52:14 +0530
-Message-ID: <CAKohponhGA1LCe8Hv7xHk0ULXVVPTgmEY-nKTgpE0w6VmX--Ng@mail.gmail.com>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com>
-	<CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com>
-	<3060957.HxB12olH3c@vostro.rjw.lan>
-	<515CBB98.4020607@semaphore.gr>
-	<CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com>
-	<515F2AF3.9050709@semaphore.gr>
-	<51644855.1090300@semaphore.gr>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 14/18] cpufreq: sh: move cpufreq driver to drivers/cpufreq
+Date: Wed, 10 Apr 2013 13:30:28 +0900
+Message-ID: <20130410043027.GA10044@verge.net.au>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <3167220d1e262ff22078993a5beec55e82dfd951.1365079581.git.viresh.kumar@linaro.org>
+ <20130409125509.GH15412@verge.net.au>
+ <CAKohpomqfVqiw1PJxBRRA8=A6hV_63AW4nRpM8TfZPA5bypcKQ@mail.gmail.com>
+ <20130410021236.GK11105@verge.net.au>
+ <CAKohpon+7rcqN0pt6tLs+0bwPkgxhipujrf-mcDck=KDC2A2OA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:50215 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933902Ab3DJDWO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Apr 2013 23:22:14 -0400
-Received: by mail-oa0-f49.google.com with SMTP id j6so17928oag.22
-        for <linux-pm@vger.kernel.org>; Tue, 09 Apr 2013 20:22:14 -0700 (PDT)
-In-Reply-To: <51644855.1090300@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKohpon+7rcqN0pt6tLs+0bwPkgxhipujrf-mcDck=KDC2A2OA@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 9 April 2013 22:26, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
->>
->> Hi Viresh,
->>
->> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
->>>
->>> Hi Stratos,
->>>
->>> Yes, your results show some improvements. BUT if performance is the only
->>> thing
->>> we were looking for, then we will never use ondemand governor but
->>> performance
->>> governor.
->>>
->>> I suspect this little increase in performance must have increased power
->>> numbers
->>> too (significantly). So, if you can get numbers in the form of
->>> power/performance
->>> with and without your patch, it will be great.
->>>
->>> --
->>> viresh
->>>
->>
->> I run some more tests. I increased the number of iterations to 100 (from
->> 20).
->> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us),
->> 15,000,000 (~30000us).
->>
->> This time, I also extracted statistics from cpufreq_stats driver. I think
->> this will be an
->> indication for power consumption. Below the results and attached the
->> program I used for to
->> get these numbers.
->
->
-> Any comments would be appreciated.
+On Wed, Apr 10, 2013 at 08:21:51AM +0530, Viresh Kumar wrote:
+> On 10 April 2013 07:42, Simon Horman <horms@verge.net.au> wrote:
+> > Thanks, I understand.
+> >
+> > I have no objections to this, but Paul should probably review it.
+> 
+> It is already Acked by him and applied by Rafael.
 
-Sorry, i forgot about this mail earlier..
-
-Your performance numbers look improved but i am still not sure about
-power consumption. But as this is not going to be the default settings, i
-think we can take this patch.
-
-@Rafael:?
+:)
