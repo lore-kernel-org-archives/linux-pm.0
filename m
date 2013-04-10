@@ -1,117 +1,75 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 15/18] ARM: calxeda: cpuidle: use init/exit common routine
-Date: Wed, 10 Apr 2013 09:31:27 -0500
-Message-ID: <516577BF.1010809@gmail.com>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org> <1365603743-5618-16-git-send-email-daniel.lezcano@linaro.org>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH 07/18] ARM: at91: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 16:39:13 +0200
+Message-ID: <51657991.5010205@atmel.com>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org> <1365603743-5618-8-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f54.google.com ([209.85.216.54]:45250 "EHLO
-	mail-qa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759088Ab3DJOba (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:31:30 -0400
-Received: by mail-qa0-f54.google.com with SMTP id o13so303482qaj.20
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:31:30 -0700 (PDT)
-In-Reply-To: <1365603743-5618-16-git-send-email-daniel.lezcano@linaro.org>
+Received: from eusmtp01.atmel.com ([212.144.249.243]:32317 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758427Ab3DJOjS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:39:18 -0400
+In-Reply-To: <1365603743-5618-8-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 04/10/2013 09:22 AM, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initialization.
+On 04/10/2013 04:22 PM, Daniel Lezcano :
+> Remove the duplicate code and use the arm cpuidle driver's common code
+> for initialization.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Seems okay:
+
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+
+
 > ---
->  drivers/cpuidle/cpuidle-calxeda.c |   52 +------------------------------------
->  1 file changed, 1 insertion(+), 51 deletions(-)
-
-For this and patch #5:
-
-Acked-by: Rob Herring <rob.herring@calxeda.com>
-
-Rob
-
+>  arch/arm/mach-at91/cpuidle.c |   17 ++---------------
+>  1 file changed, 2 insertions(+), 15 deletions(-)
 > 
-> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-> index a3b56f5..e344b56 100644
-> --- a/drivers/cpuidle/cpuidle-calxeda.c
-> +++ b/drivers/cpuidle/cpuidle-calxeda.c
-> @@ -35,8 +35,6 @@
->  extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
->  extern void *scu_base_addr;
+> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+> index 0130df7..48f1228 100644
+> --- a/arch/arm/mach-at91/cpuidle.c
+> +++ b/arch/arm/mach-at91/cpuidle.c
+> @@ -27,8 +27,6 @@
 >  
-> -static struct cpuidle_device __percpu *calxeda_idle_cpuidle_devices;
+>  #define AT91_MAX_STATES	2
+>  
+> -static DEFINE_PER_CPU(struct cpuidle_device, at91_cpuidle_device);
 > -
->  static inline unsigned int get_auxcr(void)
+>  /* Actual code that puts the SoC in different idle states */
+>  static int at91_enter_idle(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+> @@ -60,20 +58,9 @@ static struct cpuidle_driver at91_idle_driver = {
+>  };
+>  
+>  /* Initialize CPU idle by registering the idle states */
+> -static int at91_init_cpuidle(void)
+> +static int __init at91_init_cpuidle(void)
 >  {
->  	unsigned int val;
-> @@ -85,19 +83,6 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
->  	return index;
->  }
->  
-> -static void calxeda_idle_cpuidle_devices_uninit(void)
-> -{
-> -	int i;
-> -	struct cpuidle_device *dev;
+> -	struct cpuidle_device *device;
 > -
-> -	for_each_possible_cpu(i) {
-> -		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, i);
-> -		cpuidle_unregister_device(dev);
+> -	device = &per_cpu(at91_cpuidle_device, smp_processor_id());
+> -	device->state_count = AT91_MAX_STATES;
+> -
+> -	cpuidle_register_driver(&at91_idle_driver);
+> -
+> -	if (cpuidle_register_device(device)) {
+> -		printk(KERN_ERR "at91_init_cpuidle: Failed registering\n");
+> -		return -EIO;
 > -	}
-> -
-> -	free_percpu(calxeda_idle_cpuidle_devices);
-> -}
-> -
->  static struct cpuidle_driver calxeda_idle_driver = {
->  	.name = "calxeda_idle",
->  	.states = {
-> @@ -117,44 +102,9 @@ static struct cpuidle_driver calxeda_idle_driver = {
->  
->  static int __init calxeda_cpuidle_init(void)
->  {
-> -	int cpu_id;
-> -	int ret;
-> -	struct cpuidle_device *dev;
-> -	struct cpuidle_driver *drv = &calxeda_idle_driver;
-> -
->  	if (!of_machine_is_compatible("calxeda,highbank"))
->  		return -ENODEV;
->  
-> -	ret = cpuidle_register_driver(drv);
-> -	if (ret)
-> -		return ret;
-> -
-> -	calxeda_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-> -	if (calxeda_idle_cpuidle_devices == NULL) {
-> -		ret = -ENOMEM;
-> -		goto unregister_drv;
-> -	}
-> -
-> -	/* initialize state data for each cpuidle_device */
-> -	for_each_possible_cpu(cpu_id) {
-> -		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, cpu_id);
-> -		dev->cpu = cpu_id;
-> -		dev->state_count = drv->state_count;
-> -
-> -		ret = cpuidle_register_device(dev);
-> -		if (ret) {
-> -			pr_err("Failed to register cpu %u, error: %d\n",
-> -			       cpu_id, ret);
-> -			goto uninit;
-> -		}
-> -	}
-> -
 > -	return 0;
-> -
-> -uninit:
-> -	calxeda_idle_cpuidle_devices_uninit();
-> -unregister_drv:
-> -	cpuidle_unregister_driver(drv);
-> -	return ret;
-> +	return cpuidle_register(&calxeda_idle_driver, NULL);
+> +	return cpuidle_register(&at91_idle_driver, NULL);
 >  }
->  module_init(calxeda_cpuidle_init);
+>  
+>  device_initcall(at91_init_cpuidle);
 > 
 
+
+-- 
+Nicolas Ferre
