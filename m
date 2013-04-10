@@ -1,70 +1,66 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH 05/18] cpuidle: make a single register function for all
-Date: Wed, 10 Apr 2013 20:02:31 +0200
-Message-ID: <5165A937.70705@linaro.org>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org> <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org> <20130410170457.GL13524@lunn.ch>
+Date: Wed, 10 Apr 2013 20:04:22 +0200
+Message-ID: <5165A9A6.70905@linaro.org>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org>
+ <20130410165509.GK13524@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f49.google.com ([74.125.82.49]:57550 "EHLO
-	mail-wg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935980Ab3DJSCf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 14:02:35 -0400
-Received: by mail-wg0-f49.google.com with SMTP id e12so783967wgh.4
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 11:02:34 -0700 (PDT)
-In-Reply-To: <20130410170457.GL13524@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20130410165509.GK13524@lunn.ch>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Andrew Lunn <andrew@lunn.ch>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+Cc: khilman@deeprootsystems.com, linus.walleij@linaro.org, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, santosh.shilimkar@ti.com, kernel@pengutronix.de
+List-Id: linux-pm@vger.kernel.org
 
-On 04/10/2013 07:04 PM, Andrew Lunn wrote:
->> +int cpuidle_register(struct cpuidle_driver *drv,
->> +		     const struct cpumask *const coupled_cpus)
->> +{
->> +	int ret, cpu;
->> +	struct cpuidle_device *device;
->> +
->> +	ret =3D cpuidle_register_driver(drv);
->> +	if (ret) {
->> +		printk(KERN_ERR "failed to register cpuidle driver\n");
->> +		return ret;
->> +	}
->> +
->> +	for_each_possible_cpu(cpu) {
->> +		device =3D &per_cpu(cpuidle_dev, cpu);
->> +		device->cpu =3D cpu;
->> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
->> +		device->coupled_cpus =3D *coupled_cpus;
->> +#endif
->=20
-> At least the kirkwood and the calxeda driver set=20
->=20
->    device->state_count
->=20
-> which you don't appear to do. cpuidle_add_state_sysfs() and
-> cpuidle_remove_state_sysfs() use this. Is it now being set somewhere
-> else?
-
-Yes, in cpuidle_enable_device called from cpuidle_register_device:
-
-
-int cpuidle_enable_device(struct cpuidle_device *dev)
-{
-	...
-
-        if (!dev->state_count)
-                dev->state_count =3D drv->state_count;
-
-	...
-}
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+T24gMDQvMTAvMjAxMyAwNjo1NSBQTSwgQW5kcmV3IEx1bm4gd3JvdGU6Cj4+ICsvKioKPj4gKyAq
+IGNwdWlkbGVfcmVnaXN0ZXI6IHJlZ2lzdGVycyB0aGUgZHJpdmVyIGFuZCB0aGUgY3B1IGRldmlj
+ZXMgd2l0aCB0aGUKPj4gKyAqIGNvdXBsZWRfY3B1cyBwYXNzZWQgYXMgcGFyYW1ldGVyLiBUaGlz
+IGZ1bmN0aW9uIGlzIHVzZWQgZm9yIGFsbCBjb21tb24KPj4gKyAqIGluaXRpYWxpemF0aW9uIHBh
+dHRlcm4gdGhlcmUgYXJlIGluIHRoZSBhcmNoIHNwZWNpZmljIGRyaXZlcnMuIFRoZQo+PiArICog
+ZGV2aWNlcyBpcyBnbG9iYWxseSBkZWZpbmVkIGluIHRoaXMgZmlsZS4KPj4gKyAqCj4+ICsgKiBA
+ZHJ2ICAgICAgICAgOiBhIHZhbGlkIHBvaW50ZXIgdG8gYSBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIK
+Pj4gKyAqIEBjb3VwbGVkX2NwdXM6IGEgY3B1bWFzayBmb3IgdGhlIGNvdXBsZWQgc3RhdGVzCj4+
+ICsgKgo+PiArICogUmV0dXJucyAwIG9uIHN1Y2Nlc3MsIDwgMCBvdGhlcndpc2UKPj4gKyAqLwo+
+PiAraW50IGNwdWlkbGVfcmVnaXN0ZXIoc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsCj4+ICsJ
+CSAgICAgY29uc3Qgc3RydWN0IGNwdW1hc2sgKmNvbnN0IGNvdXBsZWRfY3B1cykKPj4gK3sKPj4g
+KwlpbnQgcmV0LCBjcHU7Cj4+ICsJc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXZpY2U7Cj4+ICsK
+Pj4gKwlyZXQgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYpOwo+PiArCWlmIChyZXQpIHsK
+Pj4gKwkJcHJpbnRrKEtFUk5fRVJSICJmYWlsZWQgdG8gcmVnaXN0ZXIgY3B1aWRsZSBkcml2ZXJc
+biIpOwo+IAo+IHByX2VycigpCgpPay4KCj4+ICsJCXJldHVybiByZXQ7Cj4+ICsJfQo+PiArCj4+
+ICsJZm9yX2VhY2hfcG9zc2libGVfY3B1KGNwdSkgewo+PiArCQlkZXZpY2UgPSAmcGVyX2NwdShj
+cHVpZGxlX2RldiwgY3B1KTsKPj4gKwkJZGV2aWNlLT5jcHUgPSBjcHU7Cj4+ICsjaWZkZWYgQ09O
+RklHX0FSQ0hfTkVFRFNfQ1BVX0lETEVfQ09VUExFRAo+PiArCQlkZXZpY2UtPmNvdXBsZWRfY3B1
+cyA9ICpjb3VwbGVkX2NwdXM7Cj4+ICsjZW5kaWYKPj4gKwkJcmV0ID0gY3B1aWRsZV9yZWdpc3Rl
+cl9kZXZpY2UoZGV2aWNlKTsKPj4gKwkJaWYgKCFyZXQpCj4+ICsJCQljb250aW51ZTsKPj4gKwo+
+PiArCQlwcmludGsoS0VSTl9FUlIgIkZhaWxlZCB0byByZWdpc3RlciBjcHVpZGxlICIKPj4gKwkJ
+ICAgICAgICJkZXZpY2UgZm9yIGNwdSVkXG4iLCBjcHUpOwo+IAo+IHByX2VycigpIGFuZCBkb24n
+dCBzcGxpdCB0aGUgbWVzc2FnZSBvdmVyIHR3byBsaW5lcywgaXQgbWFrZXMgaXQKPiBoYXJkZXIg
+Zm9yIHNvbWVib2R5IHRvIGZpbmQgd2l0aAo+IAo+IGdyZXAgLXIgIkZhaWxlZCB0byByZWdpc3Rl
+ciBjcHVpZGxlIGRldmljZSBmb3IgY3B1IiAqCgpPayBpZiB0aGUgbGluZSBsZW5ndGggaXMgdW5k
+ZXIgODAgY2hhcnMuCgo+PiArCQljcHVpZGxlX3VucmVnaXN0ZXIoZHJ2KTsKPj4gKwkJYnJlYWs7
+Cj4+ICsJfQo+PiArCj4+ICsJcmV0dXJuIDA7Cj4gCj4gWW91IHNob3VsZCByZXR1cm4gYW4gZXJy
+b3IgY29kZSwgc28gdGhhdCB0aGUgY2FsbGVyIGNhbiBhbHNvIHJldHVybiBhbgo+IGVycm9yIGNv
+ZGUuIElmIHlvdSBsb29rIGF0IGNwdWlkbGUta2lya3dvb2QgYW5kIGNwdWlkbGUtY2FseGVkYSwg
+YW5kCj4gbWF5YmUgb3RoZXJzLCBpZiB0aGUgcmVnaXN0cmF0aW9uIGZhaWxzLCB0aGUgcHJvYmUg
+ZnVuY3Rpb24gcmV0dXJucyBhbgo+IGVycm9yIGNvZGUsIGFzIGl0IHNob3VsZC4gV2l0aCB5b3Vy
+IGNoYW5nZSwgaXRzIGFsd2F5cyBnb2luZyB0byByZXR1cm4KPiAwLCBldmVuIGlmIGl0IGZhaWxz
+LgoKUmlnaHQsIHJpZ2h0IDopCgppdCBzaG91bGQgYmUgJ3JldHVybiByZXQ7JwoKVGhhbmtzIGZv
+ciBwb2ludGluZyB0aGlzLgoKICAtLSBEYW5pZWwKCgotLSAKIDxodHRwOi8vd3d3LmxpbmFyby5v
+cmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZv
+bGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNl
+Ym9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6
+Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
+dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
