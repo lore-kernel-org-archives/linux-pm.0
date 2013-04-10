@@ -1,64 +1,50 @@
-From: Matthias Larisch <mail@matthias-larisch.de>
-Subject: Processor Package C6 state does not work on real idle Intel Core I
- first generation (Westmere/Arrandale)
-Date: Wed, 10 Apr 2013 13:48:03 +0200
-Message-ID: <20130410134803.7788494f@purefruit.fritz.box>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [GIT PULL] CPUidle: OMAP cleanups for v3.10
+Date: Wed, 10 Apr 2013 14:19:30 +0200
+Message-ID: <13035794.tRqHcUoFsl@vostro.rjw.lan>
+References: <87txnfz31g.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.mlh-server.de ([5.9.104.232]:56411 "EHLO
-	mail.mlh-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779Ab3DJMEw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 08:04:52 -0400
-Received: from purefruit.fritz.box (dhcp-95-88.wlan1.uni-oldenburg.de [134.106.95.88])
-	(Authenticated sender: mail@matthias-larisch.de)
-	by mail.mlh-server.de (Postfix) with ESMTPSA id 013FE3070E7
-	for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 13:47:48 +0200 (CEST)
+Received: from hydra.sisk.pl ([212.160.235.94]:55412 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752142Ab3DJMLr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Apr 2013 08:11:47 -0400
+In-Reply-To: <87txnfz31g.fsf@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
-Hello all,
+On Tuesday, April 09, 2013 04:40:11 PM Kevin Hilman wrote:
+> [resend with correct address for linux-pm]
+> 
+> Rafael,
+> 
+> Please pull the following OMAP CPUidle changes for v3.10.
+> 
+> Due to dependencies on other CPUidle changes that are already in your
+> linux-next branch, this branch is based on the commit where you merged
+> your pm-cpuidle-next branch into linux-next.
+> 
+> Kevin
+> 
+> The following changes since commit f69e44b2059f2238ac558b4a115ebcdefe20b9be:
+> 
+>   Merge branch 'pm-cpuidle-next' into linux-next (2013-04-08 12:32:07 +0200)
+> 
+> are available in the git repository at:
+> 
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git tags/omap-pm-v3.10/cleanup/cpuidle-v2
 
-I recently discovered a problem that I verified with my Lenovo X201 and my
-Lenovo T410 (both using Core-I5 520m Intel Westmere/Arrandale processor).
+Pulled into my bleeding-edge branch.  I'll move it to linux-next tomorrow.
 
-
-Problem is:
-Real idle system (very low wakeup count, c6 residencies above 50-100ms as shown
-by powertop) DO NOT stay in package C6 so use much more power!
-
-I also posted this in german thinkpad forum but there have been no comments so
-far:
-http://thinkpad-forum.de/threads/157461-X201-i5-520m-Package-C6-nur-_mit_-CPU-Last
-
-Steps to reproduce:
-- Kill all running processes generating wakeups (stop X)
-- verify number of wakeups with powertop, should stay below 3-5/second
-- verify C6 residency per core with powertop. Should be above 100ms
-- See Package-C6 percentage: Will be at 40-70%, PC3 also very low (sum << 80)
-- Generate light load in second terminal: while [ 1 ]; do sleep 0.1; done
-
-- See Package-C6 percentage rising and power usage (checked both via ACPI and
-  wall meter) going down about 3-4W although C6 residency per core will go down
-  to 10-20ms and wakeups go up
-
-
-Can anyone point me to some tools I can use to dig further into this? There has
-to be some kind of wakeup source from PC6 (outside Kernel maybe?) but no signal
-to go into pc6 again. 
+Thanks,
+Rafael
 
 
-Kernel from T410:
-Linux purefruit 3.8.3-2-ck #1 SMP PREEMPT Tue Mar 19 11:53:17 CET 2013 x86_64
-GNU/Linux
-
-Kernel on X201 is also the 3.8.3-2 without CK.
-
-Checked both with archlinux LTS kernel (3.0.72-1), same problem there.
-
-Any ideas?
-
-Thanks a lot,
-Matthias Larisch
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
