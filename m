@@ -1,44 +1,45 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 0/2] MAINTAINERS: update thermal subsystem entry
-Date: Wed, 10 Apr 2013 10:44:07 -0400
-Message-ID: <1365605049-22635-1-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 1/2] MAINTAINERS: Add Thermal subsystem co-maintainer
+Date: Wed, 10 Apr 2013 10:44:08 -0400
+Message-ID: <1365605049-22635-2-git-send-email-eduardo.valentin@ti.com>
+References: <1365605049-22635-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:51291 "EHLO bear.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:51312 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760120Ab3DJOoi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Apr 2013 10:44:38 -0400
+	id S1760120Ab3DJOo6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Apr 2013 10:44:58 -0400
+In-Reply-To: <1365605049-22635-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>, Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-Hi Linus, Rui,
+Adding myself as co-maintainer for the thermal subsystem.
 
-I am adding myself as thermal subsystem co-maintainer, as discussed
-off line with Rui.
+The agreed work split will be so that as a co-maintainer
+I will be taking care of platform thermal drivers, non-ACPI
+thermal drivers and making sure the thermal framework core
+code will continue to suffice the non-ACPI thermal needs.
 
-The work split will be so that I will help by taking care of platform
-thermal drivers and non-ACPI thermal drivers. I will also help by making
-sure we keep the thermal framework core code generic enough to cover
-the non-ACPI thermal drivers too.
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ MAINTAINERS |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Rui will continue his current role and will be keeping the tree and sending
-out the pull requests. I can of course help there too, whenever there is
-a need or when he is off.
-
-I took the opportunity to also add the patchwork entry for the thermal subsystem.
-
-Regards,
-
-Eduardo Valentin (2):
-  MAINTAINERS: Add Thermal subsystem co-maintainer
-  MAINTAINERS: Add patchwork entry for Thermal subsystem
-
- MAINTAINERS |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 836a618..0850f21 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -7899,6 +7899,7 @@ F:	arch/xtensa/
+ 
+ THERMAL
+ M:      Zhang Rui <rui.zhang@intel.com>
++M:      Eduardo Valentin <eduardo.valentin@ti.com>
+ L:      linux-pm@vger.kernel.org
+ T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+ S:      Supported
 -- 
 1.7.7.1.488.ge8e1c
 
