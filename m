@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 08/18] ARM: OMAP3: cpuidle: use init/exit common routine
-Date: Wed, 10 Apr 2013 16:22:13 +0200
-Message-ID: <1365603743-5618-9-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 09/18] ARM: s3c64xx: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 16:22:14 +0200
+Message-ID: <1365603743-5618-10-git-send-email-daniel.lezcano@linaro.org>
 References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:35050 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936186Ab3DJOWy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:22:54 -0400
-Received: by mail-wi0-f170.google.com with SMTP id hm11so6213508wib.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:22:53 -0700 (PDT)
+Received: from mail-wg0-f52.google.com ([74.125.82.52]:60203 "EHLO
+	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752659Ab3DJOW5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:22:57 -0400
+Received: by mail-wg0-f52.google.com with SMTP id n12so549802wgh.19
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:22:56 -0700 (PDT)
 In-Reply-To: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,57 +20,40 @@ Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-omap2/cpuidle34xx.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ arch/arm/mach-s3c64xx/cpuidle.c |   14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
-index 027a787..cca045c 100644
---- a/arch/arm/mach-omap2/cpuidle34xx.c
-+++ b/arch/arm/mach-omap2/cpuidle34xx.c
-@@ -26,6 +26,7 @@
- #include <linux/cpuidle.h>
- #include <linux/export.h>
- #include <linux/cpu_pm.h>
-+#include <asm/cpuidle.h>
- 
- #include "powerdomain.h"
- #include "clockdomain.h"
-@@ -259,8 +260,6 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
- 	return ret;
+diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/cpuidle.c
+index 852ff16..3c8ab07 100644
+--- a/arch/arm/mach-s3c64xx/cpuidle.c
++++ b/arch/arm/mach-s3c64xx/cpuidle.c
+@@ -40,8 +40,6 @@ static int s3c64xx_enter_idle(struct cpuidle_device *dev,
+ 	return index;
  }
  
--static DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
+-static DEFINE_PER_CPU(struct cpuidle_device, s3c64xx_cpuidle_device);
 -
- static struct cpuidle_driver omap3_idle_driver = {
- 	.name             = "omap3_idle",
- 	.owner            = THIS_MODULE,
-@@ -336,8 +335,6 @@ static struct cpuidle_driver omap3_idle_driver = {
-  */
- int __init omap3_idle_init(void)
- {
--	struct cpuidle_device *dev;
--
- 	mpu_pd = pwrdm_lookup("mpu_pwrdm");
- 	core_pd = pwrdm_lookup("core_pwrdm");
- 	per_pd = pwrdm_lookup("per_pwrdm");
-@@ -346,16 +343,5 @@ int __init omap3_idle_init(void)
- 	if (!mpu_pd || !core_pd || !per_pd || !cam_pd)
- 		return -ENODEV;
+ static struct cpuidle_driver s3c64xx_cpuidle_driver = {
+ 	.name	= "s3c64xx_cpuidle",
+ 	.owner  = THIS_MODULE,
+@@ -60,16 +58,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_driver = {
  
--	cpuidle_register_driver(&omap3_idle_driver);
+ static int __init s3c64xx_init_cpuidle(void)
+ {
+-	int ret;
 -
--	dev = &per_cpu(omap3_idle_dev, smp_processor_id());
--	dev->cpu = 0;
+-	cpuidle_register_driver(&s3c64xx_cpuidle_driver);
 -
--	if (cpuidle_register_device(dev)) {
--		printk(KERN_ERR "%s: CPUidle register device failed\n",
--		       __func__);
--		return -EIO;
+-	ret = cpuidle_register_device(&s3c64xx_cpuidle_device);
+-	if (ret) {
+-		pr_err("Failed to register cpuidle device: %d\n", ret);
+-		return ret;
 -	}
 -
 -	return 0;
-+	return cpuidle_register(&omap3_idle_driver, NULL);
++	return cpuidle_register(&s3c64xx_cpuidle_driver, NULL);
  }
+ device_initcall(s3c64xx_init_cpuidle);
 -- 
 1.7.9.5
 
