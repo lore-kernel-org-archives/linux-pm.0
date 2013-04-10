@@ -1,96 +1,166 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 05/18] cpuidle: make a single register function for all
-Date: Thu, 11 Apr 2013 00:07:33 +0200
-Message-ID: <5165E2A5.4040401@linaro.org>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org> <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org> <20130410165509.GK13524@lunn.ch> <5165A9A6.70905@linaro.org> <20130410181817.GM13524@lunn.ch>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / PM: Expose lists of device wakeup power resources to user space
+Date: Thu, 11 Apr 2013 00:40:53 +0200
+Message-ID: <1425777.0jqdrENv3E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:36131 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675Ab3DJWHh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 18:07:37 -0400
-Received: by mail-wi0-f179.google.com with SMTP id hn17so968832wib.6
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 15:07:36 -0700 (PDT)
-In-Reply-To: <20130410181817.GM13524@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 04/10/2013 08:18 PM, Andrew Lunn wrote:
-> On Wed, Apr 10, 2013 at 08:04:22PM +0200, Daniel Lezcano wrote:
->> On 04/10/2013 06:55 PM, Andrew Lunn wrote:
->>>> +/**
->>>> + * cpuidle_register: registers the driver and the cpu devices wit=
-h the
->>>> + * coupled_cpus passed as parameter. This function is used for al=
-l common
->>>> + * initialization pattern there are in the arch specific drivers.=
- The
->>>> + * devices is globally defined in this file.
->>>> + *
->>>> + * @drv         : a valid pointer to a struct cpuidle_driver
->>>> + * @coupled_cpus: a cpumask for the coupled states
->>>> + *
->>>> + * Returns 0 on success, < 0 otherwise
->>>> + */
->>>> +int cpuidle_register(struct cpuidle_driver *drv,
->>>> +		     const struct cpumask *const coupled_cpus)
->>>> +{
->>>> +	int ret, cpu;
->>>> +	struct cpuidle_device *device;
->>>> +
->>>> +	ret =3D cpuidle_register_driver(drv);
->>>> +	if (ret) {
->>>> +		printk(KERN_ERR "failed to register cpuidle driver\n");
->>>
->>> pr_err()
->>
->> Ok.
->>
->>>> +		return ret;
->>>> +	}
->>>> +
->>>> +	for_each_possible_cpu(cpu) {
->>>> +		device =3D &per_cpu(cpuidle_dev, cpu);
->>>> +		device->cpu =3D cpu;
->>>> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
->>>> +		device->coupled_cpus =3D *coupled_cpus;
->>>> +#endif
->>>> +		ret =3D cpuidle_register_device(device);
->>>> +		if (!ret)
->>>> +			continue;
->>>> +
->>>> +		printk(KERN_ERR "Failed to register cpuidle "
->>>> +		       "device for cpu%d\n", cpu);
->>>
->>> pr_err() and don't split the message over two lines, it makes it
->>> harder for somebody to find with
->>>
->>> grep -r "Failed to register cpuidle device for cpu" *
->>
->> Ok if the line length is under 80 chars.
->=20
-> Take a closer look at the CodingStyle documents. This is one except t=
-o
-> the rule. Such lines can be longer than 80 characters.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Oh, right !
+Commit 18a3870 (ACPI / PM: Expose lists of device power resources
+to user space) exposed the lists of ACPI power resources associated
+with power states of ACPI devices, but it didn't expose the lists
+of ACPI wakeup power resources, which also is necessary to get the
+full picture of dependencies between ACPI devices and power
+resources.
 
-"However, never break user-visible strings such as printk messages,
-because that breaks the ability to grep for them."
+For this reason, for every ACPI device node having a list of ACPI
+wakeup power resources associated with it, expose that list to user
+space in analogy with commit 18a3870.
 
-Will fix it, thanks.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/ABI/testing/sysfs-devices-power_resources_wakeup |   13 ++
+ drivers/acpi/power.c                                           |   58 ++++++----
+ 2 files changed, 52 insertions(+), 19 deletions(-)
 
-  -- Daniel
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -459,57 +459,79 @@ static struct attribute_group attr_group
+ 	},
+ };
+ 
+-static void acpi_power_hide_list(struct acpi_device *adev, int state)
++static struct attribute_group wakeup_attr_group = {
++	.name = "power_resources_wakeup",
++	.attrs = attrs,
++};
++
++static void acpi_power_hide_list(struct acpi_device *adev,
++				 struct list_head *resources,
++				 struct attribute_group *attr_group)
+ {
+-	struct acpi_device_power_state *ps = &adev->power.states[state];
+ 	struct acpi_power_resource_entry *entry;
+ 
+-	if (list_empty(&ps->resources))
++	if (list_empty(resources))
+ 		return;
+ 
+-	list_for_each_entry_reverse(entry, &ps->resources, node) {
++	list_for_each_entry_reverse(entry, resources, node) {
+ 		struct acpi_device *res_dev = &entry->resource->device;
+ 
+ 		sysfs_remove_link_from_group(&adev->dev.kobj,
+-					     attr_groups[state].name,
++					     attr_group->name,
+ 					     dev_name(&res_dev->dev));
+ 	}
+-	sysfs_remove_group(&adev->dev.kobj, &attr_groups[state]);
++	sysfs_remove_group(&adev->dev.kobj, attr_group);
+ }
+ 
+-static void acpi_power_expose_list(struct acpi_device *adev, int state)
++static void acpi_power_expose_list(struct acpi_device *adev,
++				   struct list_head *resources,
++				   struct attribute_group *attr_group)
+ {
+-	struct acpi_device_power_state *ps = &adev->power.states[state];
+ 	struct acpi_power_resource_entry *entry;
+ 	int ret;
+ 
+-	if (list_empty(&ps->resources))
++	if (list_empty(resources))
+ 		return;
+ 
+-	ret = sysfs_create_group(&adev->dev.kobj, &attr_groups[state]);
++	ret = sysfs_create_group(&adev->dev.kobj, attr_group);
+ 	if (ret)
+ 		return;
+ 
+-	list_for_each_entry(entry, &ps->resources, node) {
++	list_for_each_entry(entry, resources, node) {
+ 		struct acpi_device *res_dev = &entry->resource->device;
+ 
+ 		ret = sysfs_add_link_to_group(&adev->dev.kobj,
+-					      attr_groups[state].name,
++					      attr_group->name,
+ 					      &res_dev->dev.kobj,
+ 					      dev_name(&res_dev->dev));
+ 		if (ret) {
+-			acpi_power_hide_list(adev, state);
++			acpi_power_hide_list(adev, resources, attr_group);
+ 			break;
+ 		}
+ 	}
+ }
+ 
++static void acpi_power_expose_hide(struct acpi_device *adev,
++				   struct list_head *resources,
++				   struct attribute_group *attr_group,
++				   bool expose)
++{
++	if (expose)
++		acpi_power_expose_list(adev, resources, attr_group);
++	else
++		acpi_power_hide_list(adev, resources, attr_group);
++}
++
+ void acpi_power_add_remove_device(struct acpi_device *adev, bool add)
+ {
+ 	struct acpi_device_power_state *ps;
+ 	struct acpi_power_resource_entry *entry;
+ 	int state;
+ 
++	if (adev->wakeup.flags.valid)
++		acpi_power_expose_hide(adev, &adev->wakeup.resources,
++				       &wakeup_attr_group, add);
++
+ 	if (!adev->power.flags.power_resources)
+ 		return;
+ 
+@@ -523,12 +545,10 @@ void acpi_power_add_remove_device(struct
+ 			acpi_power_remove_dependent(resource, adev);
+ 	}
+ 
+-	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++) {
+-		if (add)
+-			acpi_power_expose_list(adev, state);
+-		else
+-			acpi_power_hide_list(adev, state);
+-	}
++	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++)
++		acpi_power_expose_hide(adev,
++				       &adev->power.states[state].resources,
++				       &attr_groups[state], add);
+ }
+ 
+ int acpi_power_wakeup_list_init(struct list_head *list, int *system_level_p)
+Index: linux-pm/Documentation/ABI/testing/sysfs-devices-power_resources_wakeup
+===================================================================
+--- /dev/null
++++ linux-pm/Documentation/ABI/testing/sysfs-devices-power_resources_wakeup
+@@ -0,0 +1,13 @@
++What:		/sys/devices/.../power_resources_wakeup/
++Date:		April 2013
++Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++Description:
++		The /sys/devices/.../power_resources_wakeup/ directory is only
++		present for device objects representing ACPI device nodes that
++		require ACPI power resources for wakeup signaling.
++
++		If present, it contains symbolic links to device directories
++		representing ACPI power resources that need to be turned on for
++		the given device node to be able to signal wakeup.  The names of
++		the links are the same as the names of the directories they
++		point to.
+\ No newline at end of file
 
