@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 17/18] ARM: davinci: cpuidle: use init/exit common routine
-Date: Wed, 10 Apr 2013 16:22:22 +0200
-Message-ID: <1365603743-5618-18-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 16/18] ARM: kirkwood: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 16:22:21 +0200
+Message-ID: <1365603743-5618-17-git-send-email-daniel.lezcano@linaro.org>
 References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:55602 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936888Ab3DJOXV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:21 -0400
-Received: by mail-wg0-f47.google.com with SMTP id y10so553629wgg.14
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:20 -0700 (PDT)
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:50120 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936888Ab3DJOXX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:23 -0400
+Received: by mail-wg0-f43.google.com with SMTP id f12so552781wgh.22
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:22 -0700 (PDT)
 In-Reply-To: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,56 +20,48 @@ Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-davinci/cpuidle.c |   20 +-------------------
- 1 file changed, 1 insertion(+), 19 deletions(-)
+ drivers/cpuidle/cpuidle-kirkwood.c |   17 ++---------------
+ 1 file changed, 2 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
-index c2887c5..36aef3a 100644
---- a/arch/arm/mach-davinci/cpuidle.c
-+++ b/arch/arm/mach-davinci/cpuidle.c
-@@ -25,7 +25,6 @@
- 
- #define DAVINCI_CPUIDLE_MAX_STATES	2
- 
--static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
- static void __iomem *ddr2_reg_base;
- static bool ddr2_pdown;
- 
-@@ -76,12 +75,8 @@ static struct cpuidle_driver davinci_idle_driver = {
- 
- static int __init davinci_cpuidle_probe(struct platform_device *pdev)
- {
--	int ret;
--	struct cpuidle_device *device;
- 	struct davinci_cpuidle_config *pdata = pdev->dev.platform_data;
- 
--	device = &per_cpu(davinci_cpuidle_device, smp_processor_id());
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index 6f31524..53290e1 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -52,9 +52,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
+ 	},
+ 	.state_count = KIRKWOOD_MAX_STATES,
+ };
+-static struct cpuidle_device *device;
 -
- 	if (!pdata) {
- 		dev_err(&pdev->dev, "cannot get platform data\n");
- 		return -ENOENT;
-@@ -91,20 +86,7 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+-static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
  
- 	ddr2_pdown = pdata->ddr2_pdown;
+ /* Initialize CPU idle by registering the idle states */
+ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+@@ -69,22 +66,12 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+ 	if (IS_ERR(ddr_operation_base))
+ 		return PTR_ERR(ddr_operation_base);
  
--	ret = cpuidle_register_driver(&davinci_idle_driver);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register driver\n");
--		return ret;
+-	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+-	device->state_count = KIRKWOOD_MAX_STATES;
+-
+-	cpuidle_register_driver(&kirkwood_idle_driver);
+-	if (cpuidle_register_device(device)) {
+-		pr_err("kirkwood_init_cpuidle: Failed registering\n");
+-		return -EIO;
 -	}
--
--	ret = cpuidle_register_device(device);
--	if (ret) {
--		dev_err(&pdev->dev, "failed to register device\n");
--		cpuidle_unregister_driver(&davinci_idle_driver);
--		return ret;
--	}
--
 -	return 0;
-+	return cpuidle_register(&davinci_idle_driver, NULL);
++	return cpuidle_register(&kirkwood_idle_driver, NULL);
  }
  
- static struct platform_driver davinci_cpuidle_driver = {
+ int kirkwood_cpuidle_remove(struct platform_device *pdev)
+ {
+-	cpuidle_unregister_device(device);
+-	cpuidle_unregister_driver(&kirkwood_idle_driver);
+-
++	cpuidle_unregister(&kirkwood_idle_driver);
+ 	return 0;
+ }
+ 
 -- 
 1.7.9.5
 
