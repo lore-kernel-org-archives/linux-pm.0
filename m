@@ -1,166 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Expose lists of device wakeup power resources to user space
-Date: Thu, 11 Apr 2013 00:40:53 +0200
-Message-ID: <1425777.0jqdrENv3E@vostro.rjw.lan>
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 14/15] mm: Add alloc-free handshake to trigger
+ memory region compaction
+Date: Wed, 10 Apr 2013 16:26:00 -0700
+Message-ID: <5165F508.4020207@linux.vnet.ibm.com>
+References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <20130409214853.4500.63619.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130409214853.4500.63619.stgit@srivatsabhat.in.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 04/09/2013 02:48 PM, Srivatsa S. Bhat wrote:
+> We need a way to decide when to trigger the worker threads to perform
+> region evacuation/compaction. So the strategy used is as follows:
+>
+> Alloc path of page allocator:
+> ----------------------------
+>
+> This accurately tracks the allocations and detects the first allocation
+> in a new region and notes down that region number. Performing compaction
+> rightaway is not going to be helpful because we need free pages in the
+> lower regions to be able to do that. And the page allocator allocated in
+> this region precisely because there was no memory available in lower regions.
+> So the alloc path just notes down the freshly used region's id.
+>
+> Free path of page allocator:
+> ---------------------------
+>
+> When we enter this path, we know that some memory is being freed. Here we
+> check if the alloc path had noted down any region for compaction. If so,
+> we trigger the worker function that tries to compact that memory.
+>
+> Also, we avoid any locking/synchronization overhead over this worker
+> function in the alloc/free path, by attaching appropriate semantics to the
+> available status flags etc, such that we won't need any special locking
+> around them.
+>
 
-Commit 18a3870 (ACPI / PM: Expose lists of device power resources
-to user space) exposed the lists of ACPI power resources associated
-with power states of ACPI devices, but it didn't expose the lists
-of ACPI wakeup power resources, which also is necessary to get the
-full picture of dependencies between ACPI devices and power
-resources.
+Can you explain why avoiding locking works in this case?
 
-For this reason, for every ACPI device node having a list of ACPI
-wakeup power resources associated with it, expose that list to user
-space in analogy with commit 18a3870.
+It appears the lack of locking is only on the worker side, and the 
+mem_power_ctrl is implicitly protected by zone->lock on the alloc & free 
+side.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/ABI/testing/sysfs-devices-power_resources_wakeup |   13 ++
- drivers/acpi/power.c                                           |   58 ++++++----
- 2 files changed, 52 insertions(+), 19 deletions(-)
+In the previous patch I see smp_mb(), but no explanation is provided for 
+why they are needed. Are they related to/necessary for this lack of locking?
 
-Index: linux-pm/drivers/acpi/power.c
-===================================================================
---- linux-pm.orig/drivers/acpi/power.c
-+++ linux-pm/drivers/acpi/power.c
-@@ -459,57 +459,79 @@ static struct attribute_group attr_group
- 	},
- };
- 
--static void acpi_power_hide_list(struct acpi_device *adev, int state)
-+static struct attribute_group wakeup_attr_group = {
-+	.name = "power_resources_wakeup",
-+	.attrs = attrs,
-+};
-+
-+static void acpi_power_hide_list(struct acpi_device *adev,
-+				 struct list_head *resources,
-+				 struct attribute_group *attr_group)
- {
--	struct acpi_device_power_state *ps = &adev->power.states[state];
- 	struct acpi_power_resource_entry *entry;
- 
--	if (list_empty(&ps->resources))
-+	if (list_empty(resources))
- 		return;
- 
--	list_for_each_entry_reverse(entry, &ps->resources, node) {
-+	list_for_each_entry_reverse(entry, resources, node) {
- 		struct acpi_device *res_dev = &entry->resource->device;
- 
- 		sysfs_remove_link_from_group(&adev->dev.kobj,
--					     attr_groups[state].name,
-+					     attr_group->name,
- 					     dev_name(&res_dev->dev));
- 	}
--	sysfs_remove_group(&adev->dev.kobj, &attr_groups[state]);
-+	sysfs_remove_group(&adev->dev.kobj, attr_group);
- }
- 
--static void acpi_power_expose_list(struct acpi_device *adev, int state)
-+static void acpi_power_expose_list(struct acpi_device *adev,
-+				   struct list_head *resources,
-+				   struct attribute_group *attr_group)
- {
--	struct acpi_device_power_state *ps = &adev->power.states[state];
- 	struct acpi_power_resource_entry *entry;
- 	int ret;
- 
--	if (list_empty(&ps->resources))
-+	if (list_empty(resources))
- 		return;
- 
--	ret = sysfs_create_group(&adev->dev.kobj, &attr_groups[state]);
-+	ret = sysfs_create_group(&adev->dev.kobj, attr_group);
- 	if (ret)
- 		return;
- 
--	list_for_each_entry(entry, &ps->resources, node) {
-+	list_for_each_entry(entry, resources, node) {
- 		struct acpi_device *res_dev = &entry->resource->device;
- 
- 		ret = sysfs_add_link_to_group(&adev->dev.kobj,
--					      attr_groups[state].name,
-+					      attr_group->name,
- 					      &res_dev->dev.kobj,
- 					      dev_name(&res_dev->dev));
- 		if (ret) {
--			acpi_power_hide_list(adev, state);
-+			acpi_power_hide_list(adev, resources, attr_group);
- 			break;
- 		}
- 	}
- }
- 
-+static void acpi_power_expose_hide(struct acpi_device *adev,
-+				   struct list_head *resources,
-+				   struct attribute_group *attr_group,
-+				   bool expose)
-+{
-+	if (expose)
-+		acpi_power_expose_list(adev, resources, attr_group);
-+	else
-+		acpi_power_hide_list(adev, resources, attr_group);
-+}
-+
- void acpi_power_add_remove_device(struct acpi_device *adev, bool add)
- {
- 	struct acpi_device_power_state *ps;
- 	struct acpi_power_resource_entry *entry;
- 	int state;
- 
-+	if (adev->wakeup.flags.valid)
-+		acpi_power_expose_hide(adev, &adev->wakeup.resources,
-+				       &wakeup_attr_group, add);
-+
- 	if (!adev->power.flags.power_resources)
- 		return;
- 
-@@ -523,12 +545,10 @@ void acpi_power_add_remove_device(struct
- 			acpi_power_remove_dependent(resource, adev);
- 	}
- 
--	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++) {
--		if (add)
--			acpi_power_expose_list(adev, state);
--		else
--			acpi_power_hide_list(adev, state);
--	}
-+	for (state = ACPI_STATE_D0; state <= ACPI_STATE_D3_HOT; state++)
-+		acpi_power_expose_hide(adev,
-+				       &adev->power.states[state].resources,
-+				       &attr_groups[state], add);
- }
- 
- int acpi_power_wakeup_list_init(struct list_head *list, int *system_level_p)
-Index: linux-pm/Documentation/ABI/testing/sysfs-devices-power_resources_wakeup
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/ABI/testing/sysfs-devices-power_resources_wakeup
-@@ -0,0 +1,13 @@
-+What:		/sys/devices/.../power_resources_wakeup/
-+Date:		April 2013
-+Contact:	Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+Description:
-+		The /sys/devices/.../power_resources_wakeup/ directory is only
-+		present for device objects representing ACPI device nodes that
-+		require ACPI power resources for wakeup signaling.
-+
-+		If present, it contains symbolic links to device directories
-+		representing ACPI power resources that need to be turned on for
-+		the given device node to be able to signal wakeup.  The names of
-+		the links are the same as the names of the directories they
-+		point to.
-\ No newline at end of file
+What happens when a region is passed over for compaction because the 
+worker is already compacting another region? Can this occur? Will the 
+compaction re-trigger appropriately?
 
+I recommend combining this patch and the previous patch to make the 
+interface more clear, or make functions that explicitly handle the 
+interface for accessing mem_power_ctrl.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
