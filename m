@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 13/18] ARM: tegra2: cpuidle: use init/exit common routine
-Date: Wed, 10 Apr 2013 16:22:18 +0200
-Message-ID: <1365603743-5618-14-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 17/18] ARM: davinci: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 16:22:22 +0200
+Message-ID: <1365603743-5618-18-git-send-email-daniel.lezcano@linaro.org>
 References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:60174 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936887Ab3DJOXQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:16 -0400
-Received: by mail-we0-f174.google.com with SMTP id u12so402751wey.33
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:14 -0700 (PDT)
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:55602 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936888Ab3DJOXV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:21 -0400
+Received: by mail-wg0-f47.google.com with SMTP id y10so553629wgg.14
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:20 -0700 (PDT)
 In-Reply-To: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,58 +20,56 @@ Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-tegra/cpuidle-tegra20.c |   33 +--------------------------------
- 1 file changed, 1 insertion(+), 32 deletions(-)
+ arch/arm/mach-davinci/cpuidle.c |   20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index f1f6ac4..d6c2ba6 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -70,8 +70,6 @@ static struct cpuidle_driver tegra_idle_driver = {
- 	.safe_state_index = 0,
- };
+diff --git a/arch/arm/mach-davinci/cpuidle.c b/arch/arm/mach-davinci/cpuidle.c
+index c2887c5..36aef3a 100644
+--- a/arch/arm/mach-davinci/cpuidle.c
++++ b/arch/arm/mach-davinci/cpuidle.c
+@@ -25,7 +25,6 @@
  
--static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
--
- #ifdef CONFIG_PM_SLEEP
- #ifdef CONFIG_SMP
- static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
-@@ -220,34 +218,5 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+ #define DAVINCI_CPUIDLE_MAX_STATES	2
  
- int __init tegra20_cpuidle_init(void)
+-static DEFINE_PER_CPU(struct cpuidle_device, davinci_cpuidle_device);
+ static void __iomem *ddr2_reg_base;
+ static bool ddr2_pdown;
+ 
+@@ -76,12 +75,8 @@ static struct cpuidle_driver davinci_idle_driver = {
+ 
+ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
  {
 -	int ret;
--	unsigned int cpu;
--	struct cpuidle_device *dev;
--	struct cpuidle_driver *drv = &tegra_idle_driver;
+-	struct cpuidle_device *device;
+ 	struct davinci_cpuidle_config *pdata = pdev->dev.platform_data;
+ 
+-	device = &per_cpu(davinci_cpuidle_device, smp_processor_id());
 -
--#ifdef CONFIG_PM_SLEEP
--	tegra_tear_down_cpu = tegra20_tear_down_cpu;
--#endif
--
--	ret = cpuidle_register_driver(&tegra_idle_driver);
+ 	if (!pdata) {
+ 		dev_err(&pdev->dev, "cannot get platform data\n");
+ 		return -ENOENT;
+@@ -91,20 +86,7 @@ static int __init davinci_cpuidle_probe(struct platform_device *pdev)
+ 
+ 	ddr2_pdown = pdata->ddr2_pdown;
+ 
+-	ret = cpuidle_register_driver(&davinci_idle_driver);
 -	if (ret) {
--		pr_err("CPUidle driver registration failed\n");
+-		dev_err(&pdev->dev, "failed to register driver\n");
 -		return ret;
 -	}
 -
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(tegra_idle_device, cpu);
--		dev->cpu = cpu;
--#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
--		dev->coupled_cpus = *cpu_possible_mask;
--#endif
--
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("CPU%u: CPUidle device registration failed\n",
--				cpu);
--			return ret;
--		}
+-	ret = cpuidle_register_device(device);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to register device\n");
+-		cpuidle_unregister_driver(&davinci_idle_driver);
+-		return ret;
 -	}
+-
 -	return 0;
-+	return cpuidle_register(&tegra_idle_driver, cpu_possible_mask);
++	return cpuidle_register(&davinci_idle_driver, NULL);
  }
+ 
+ static struct platform_driver davinci_cpuidle_driver = {
 -- 
 1.7.9.5
 
