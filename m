@@ -1,66 +1,53 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 05/18] cpuidle: make a single register function for all
-Date: Wed, 10 Apr 2013 20:04:22 +0200
-Message-ID: <5165A9A6.70905@linaro.org>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
- <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org>
- <20130410165509.GK13524@lunn.ch>
+Subject: Re: [PATCH 10/18] ARM: tegra1: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 20:05:25 +0200
+Message-ID: <5165A9E5.1070107@linaro.org>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org> <1365603743-5618-11-git-send-email-daniel.lezcano@linaro.org> <5165A165.3000105@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20130410165509.GK13524@lunn.ch>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: khilman@deeprootsystems.com, linus.walleij@linaro.org, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, santosh.shilimkar@ti.com, kernel@pengutronix.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f173.google.com ([74.125.82.173]:38548 "EHLO
+	mail-we0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934881Ab3DJSF3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 14:05:29 -0400
+Received: by mail-we0-f173.google.com with SMTP id t57so581195wey.18
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 11:05:28 -0700 (PDT)
+In-Reply-To: <5165A165.3000105@wwwdotorg.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-T24gMDQvMTAvMjAxMyAwNjo1NSBQTSwgQW5kcmV3IEx1bm4gd3JvdGU6Cj4+ICsvKioKPj4gKyAq
-IGNwdWlkbGVfcmVnaXN0ZXI6IHJlZ2lzdGVycyB0aGUgZHJpdmVyIGFuZCB0aGUgY3B1IGRldmlj
-ZXMgd2l0aCB0aGUKPj4gKyAqIGNvdXBsZWRfY3B1cyBwYXNzZWQgYXMgcGFyYW1ldGVyLiBUaGlz
-IGZ1bmN0aW9uIGlzIHVzZWQgZm9yIGFsbCBjb21tb24KPj4gKyAqIGluaXRpYWxpemF0aW9uIHBh
-dHRlcm4gdGhlcmUgYXJlIGluIHRoZSBhcmNoIHNwZWNpZmljIGRyaXZlcnMuIFRoZQo+PiArICog
-ZGV2aWNlcyBpcyBnbG9iYWxseSBkZWZpbmVkIGluIHRoaXMgZmlsZS4KPj4gKyAqCj4+ICsgKiBA
-ZHJ2ICAgICAgICAgOiBhIHZhbGlkIHBvaW50ZXIgdG8gYSBzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIK
-Pj4gKyAqIEBjb3VwbGVkX2NwdXM6IGEgY3B1bWFzayBmb3IgdGhlIGNvdXBsZWQgc3RhdGVzCj4+
-ICsgKgo+PiArICogUmV0dXJucyAwIG9uIHN1Y2Nlc3MsIDwgMCBvdGhlcndpc2UKPj4gKyAqLwo+
-PiAraW50IGNwdWlkbGVfcmVnaXN0ZXIoc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsCj4+ICsJ
-CSAgICAgY29uc3Qgc3RydWN0IGNwdW1hc2sgKmNvbnN0IGNvdXBsZWRfY3B1cykKPj4gK3sKPj4g
-KwlpbnQgcmV0LCBjcHU7Cj4+ICsJc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXZpY2U7Cj4+ICsK
-Pj4gKwlyZXQgPSBjcHVpZGxlX3JlZ2lzdGVyX2RyaXZlcihkcnYpOwo+PiArCWlmIChyZXQpIHsK
-Pj4gKwkJcHJpbnRrKEtFUk5fRVJSICJmYWlsZWQgdG8gcmVnaXN0ZXIgY3B1aWRsZSBkcml2ZXJc
-biIpOwo+IAo+IHByX2VycigpCgpPay4KCj4+ICsJCXJldHVybiByZXQ7Cj4+ICsJfQo+PiArCj4+
-ICsJZm9yX2VhY2hfcG9zc2libGVfY3B1KGNwdSkgewo+PiArCQlkZXZpY2UgPSAmcGVyX2NwdShj
-cHVpZGxlX2RldiwgY3B1KTsKPj4gKwkJZGV2aWNlLT5jcHUgPSBjcHU7Cj4+ICsjaWZkZWYgQ09O
-RklHX0FSQ0hfTkVFRFNfQ1BVX0lETEVfQ09VUExFRAo+PiArCQlkZXZpY2UtPmNvdXBsZWRfY3B1
-cyA9ICpjb3VwbGVkX2NwdXM7Cj4+ICsjZW5kaWYKPj4gKwkJcmV0ID0gY3B1aWRsZV9yZWdpc3Rl
-cl9kZXZpY2UoZGV2aWNlKTsKPj4gKwkJaWYgKCFyZXQpCj4+ICsJCQljb250aW51ZTsKPj4gKwo+
-PiArCQlwcmludGsoS0VSTl9FUlIgIkZhaWxlZCB0byByZWdpc3RlciBjcHVpZGxlICIKPj4gKwkJ
-ICAgICAgICJkZXZpY2UgZm9yIGNwdSVkXG4iLCBjcHUpOwo+IAo+IHByX2VycigpIGFuZCBkb24n
-dCBzcGxpdCB0aGUgbWVzc2FnZSBvdmVyIHR3byBsaW5lcywgaXQgbWFrZXMgaXQKPiBoYXJkZXIg
-Zm9yIHNvbWVib2R5IHRvIGZpbmQgd2l0aAo+IAo+IGdyZXAgLXIgIkZhaWxlZCB0byByZWdpc3Rl
-ciBjcHVpZGxlIGRldmljZSBmb3IgY3B1IiAqCgpPayBpZiB0aGUgbGluZSBsZW5ndGggaXMgdW5k
-ZXIgODAgY2hhcnMuCgo+PiArCQljcHVpZGxlX3VucmVnaXN0ZXIoZHJ2KTsKPj4gKwkJYnJlYWs7
-Cj4+ICsJfQo+PiArCj4+ICsJcmV0dXJuIDA7Cj4gCj4gWW91IHNob3VsZCByZXR1cm4gYW4gZXJy
-b3IgY29kZSwgc28gdGhhdCB0aGUgY2FsbGVyIGNhbiBhbHNvIHJldHVybiBhbgo+IGVycm9yIGNv
-ZGUuIElmIHlvdSBsb29rIGF0IGNwdWlkbGUta2lya3dvb2QgYW5kIGNwdWlkbGUtY2FseGVkYSwg
-YW5kCj4gbWF5YmUgb3RoZXJzLCBpZiB0aGUgcmVnaXN0cmF0aW9uIGZhaWxzLCB0aGUgcHJvYmUg
-ZnVuY3Rpb24gcmV0dXJucyBhbgo+IGVycm9yIGNvZGUsIGFzIGl0IHNob3VsZC4gV2l0aCB5b3Vy
-IGNoYW5nZSwgaXRzIGFsd2F5cyBnb2luZyB0byByZXR1cm4KPiAwLCBldmVuIGlmIGl0IGZhaWxz
-LgoKUmlnaHQsIHJpZ2h0IDopCgppdCBzaG91bGQgYmUgJ3JldHVybiByZXQ7JwoKVGhhbmtzIGZv
-ciBwb2ludGluZyB0aGlzLgoKICAtLSBEYW5pZWwKCgotLSAKIDxodHRwOi8vd3d3LmxpbmFyby5v
-cmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZv
-bGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNl
-Ym9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6
-Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
-dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 04/10/2013 07:29 PM, Stephen Warren wrote:
+> On 04/10/2013 08:22 AM, Daniel Lezcano wrote:
+>> Subject: ARM: tegra1: cpuidle: use init/exit common routine
+>=20
+> The tag there should be just ARM: tegra: - Tegra1 isn't something tha=
+t's
+> supported upstream. Same comment for the other two Tegra patches.
+
+Ok.
+
+>> Remove the duplicated code and use the cpuidle common code for initi=
+alization.
+>=20
+> Other than that, the 3 Tegra patches look reasonable assuming the
+> patches that implement the new common APIs are accepted, so the 3 Teg=
+ra
+> patches,
+>=20
+> Acked-by: Stephen Warren <swarren@nvidia.com>
+
+Thanks for review
+
+  -- Daniel
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
