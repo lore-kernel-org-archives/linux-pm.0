@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 16/18] ARM: kirkwood: cpuidle: use init/exit common routine
-Date: Wed, 10 Apr 2013 16:22:21 +0200
-Message-ID: <1365603743-5618-17-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 18/18] ARM: imx: cpuidle: use init/exit common routine
+Date: Wed, 10 Apr 2013 16:22:23 +0200
+Message-ID: <1365603743-5618-19-git-send-email-daniel.lezcano@linaro.org>
 References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:50120 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936888Ab3DJOXX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:23 -0400
-Received: by mail-wg0-f43.google.com with SMTP id f12so552781wgh.22
-        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:22 -0700 (PDT)
+Received: from mail-we0-f180.google.com ([74.125.82.180]:61054 "EHLO
+	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936888Ab3DJOX2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 10:23:28 -0400
+Received: by mail-we0-f180.google.com with SMTP id r5so404619wey.11
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 07:23:27 -0700 (PDT)
 In-Reply-To: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,48 +20,120 @@ Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/cpuidle-kirkwood.c |   17 ++---------------
- 1 file changed, 2 insertions(+), 15 deletions(-)
+ arch/arm/mach-imx/cpuidle-imx5.c  |   36 +-----------------------------------
+ arch/arm/mach-imx/cpuidle-imx6q.c |   36 +-----------------------------------
+ 2 files changed, 2 insertions(+), 70 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-index 6f31524..53290e1 100644
---- a/drivers/cpuidle/cpuidle-kirkwood.c
-+++ b/drivers/cpuidle/cpuidle-kirkwood.c
-@@ -52,9 +52,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
- 	},
- 	.state_count = KIRKWOOD_MAX_STATES,
- };
--static struct cpuidle_device *device;
+diff --git a/arch/arm/mach-imx/cpuidle-imx5.c b/arch/arm/mach-imx/cpuidle-imx5.c
+index 3d9f0c9..ba4565f 100644
+--- a/arch/arm/mach-imx/cpuidle-imx5.c
++++ b/arch/arm/mach-imx/cpuidle-imx5.c
+@@ -13,8 +13,6 @@
+ 
+ #include "hardware.h"
+ 
+-static DEFINE_PER_CPU(struct cpuidle_device, devices);
 -
--static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
- 
- /* Initialize CPU idle by registering the idle states */
- static int kirkwood_cpuidle_probe(struct platform_device *pdev)
-@@ -69,22 +66,12 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
- 	if (IS_ERR(ddr_operation_base))
- 		return PTR_ERR(ddr_operation_base);
- 
--	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
--	device->state_count = KIRKWOOD_MAX_STATES;
--
--	cpuidle_register_driver(&kirkwood_idle_driver);
--	if (cpuidle_register_device(device)) {
--		pr_err("kirkwood_init_cpuidle: Failed registering\n");
--		return -EIO;
--	}
--	return 0;
-+	return cpuidle_register(&kirkwood_idle_driver, NULL);
- }
- 
- int kirkwood_cpuidle_remove(struct platform_device *pdev)
+ static int imx5_cpuidle_enter(struct cpuidle_device *dev,
+ 			      struct cpuidle_driver *drv, int index)
  {
--	cpuidle_unregister_device(device);
--	cpuidle_unregister_driver(&kirkwood_idle_driver);
--
-+	cpuidle_unregister(&kirkwood_idle_driver);
- 	return 0;
- }
+@@ -38,37 +36,5 @@ static struct cpuidle_driver imx5_cpuidle_driver = {
  
+ int __init imx5_cpuidle_init(void)
+ {
+-	struct cpuidle_device *dev;
+-	int cpu, ret;
+-
+-	ret = cpuidle_register_driver(&imx5_cpuidle_driver);
+-	if (ret) {
+-		pr_err("%s: Failed to register cpuidle driver with error: %d\n",
+-			 __func__, ret);
+-		return ret;
+-	}
+-
+-	/* initialize state data for each cpuidle_device */
+-	for_each_possible_cpu(cpu) {
+-		dev = &per_cpu(devices, cpu);
+-		dev->cpu = cpu;
+-
+-		ret = cpuidle_register_device(dev);
+-		if (ret) {
+-			pr_err("%s: Failed to register cpu %u, error: %d\n",
+-				__func__, cpu, ret);
+-			goto out_unregister;
+-		}
+-	}
+-
+-	return 0;
+-
+-out_unregister:
+-	for_each_possible_cpu(cpu) {
+-		dev = &per_cpu(devices, cpu);
+-		cpuidle_unregister_device(dev);
+-	}
+-
+-	cpuidle_unregister_driver(&imx5_cpuidle_driver);
+-	return ret;
++	return cpuidle_register(&imx5_cpuidle_driver, NULL);
+ }
+diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
+index c066b74faa..23ddfb6 100644
+--- a/arch/arm/mach-imx/cpuidle-imx6q.c
++++ b/arch/arm/mach-imx/cpuidle-imx6q.c
+@@ -14,8 +14,6 @@
+ #include "common.h"
+ #include "cpuidle.h"
+ 
+-static DEFINE_PER_CPU(struct cpuidle_device, devices);
+-
+ static atomic_t master = ATOMIC_INIT(0);
+ static DEFINE_SPINLOCK(master_lock);
+ 
+@@ -67,43 +65,11 @@ static struct cpuidle_driver imx6q_cpuidle_driver = {
+ 
+ int __init imx6q_cpuidle_init(void)
+ {
+-	struct cpuidle_device *dev;
+-	int cpu, ret;
+-
+ 	/* Need to enable SCU standby for entering WAIT modes */
+ 	imx_scu_standby_enable();
+ 
+ 	/* Set chicken bit to get a reliable WAIT mode support */
+ 	imx6q_set_chicken_bit();
+ 
+-	ret = cpuidle_register_driver(&imx6q_cpuidle_driver);
+-	if (ret) {
+-		pr_err("%s: Failed to register cpuidle driver with error: %d\n",
+-			 __func__, ret);
+-		return ret;
+-	}
+-
+-	/* initialize state data for each cpuidle_device */
+-	for_each_possible_cpu(cpu) {
+-		dev = &per_cpu(devices, cpu);
+-		dev->cpu = cpu;
+-
+-		ret = cpuidle_register_device(dev);
+-		if (ret) {
+-			pr_err("%s: Failed to register cpu %u, error: %d\n",
+-				__func__, cpu, ret);
+-			goto out_unregister;
+-		}
+-	}
+-
+-	return 0;
+-
+-out_unregister:
+-	for_each_possible_cpu(cpu) {
+-		dev = &per_cpu(devices, cpu);
+-		cpuidle_unregister_device(dev);
+-	}
+-
+-	cpuidle_unregister_driver(&imx6q_cpuidle_driver);
+-	return ret;
++	return cpuidle_register(&imx6q_cpuidle_driver, NULL);
+ }
 -- 
 1.7.9.5
 
