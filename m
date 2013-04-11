@@ -1,94 +1,59 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [9/9] ARM: dts: Add device tree node for exynos5440 TMU controller
-Date: Thu, 11 Apr 2013 17:15:50 -0400
-Message-ID: <51672806.5040501@ti.com>
-References: <1364297642-2746-10-git-send-email-amit.daniel@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: Call __cpufreq_governor() with correct policy->cpus mask
+Date: Thu, 11 Apr 2013 23:34:03 +0200
+Message-ID: <1706828.TqVJcHNWlq@vostro.rjw.lan>
+References: <e3001264b4d7328b41130857adbb51e93d224c26.1365667475.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1364297642-2746-10-git-send-email-amit.daniel@samsung.com>
+In-Reply-To: <e3001264b4d7328b41130857adbb51e93d224c26.1365667475.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, grant.likely@secretlab.ca, eduardo.valentin@ti.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-Amit,
+On Thursday, April 11, 2013 01:34:53 PM Viresh Kumar wrote:
+> __cpufreq_governor() must be called with correct policy->cpus mask. In
+> __cpufreq_remove_dev() we initially clear policy->cpus with cpumask_clear_cpu()
+> and then call __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT). In case
+> governor is doing some per-cpu stuff in EXIT callback, this can create uncertain
+> behavior.
+> 
+> Generic governors in drivers/cpufreq/ doesn't do any per-cpu stuff in EXIT
+> callback and so we don't face any issues currently. But its better to keep the
+> code clean, so we don't face any issues in future.
+> 
+> Now, we call cpumask_clear_cpu() only when multiple cpus are managed by policy.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Copying Grant for DT.
+Applied.
 
-On 26-03-2013 07:34, Amit Daniel Kachhap wrote:
-> This patch adds device node for TMU controller. There are 3
-> instances of the controllers so 3 nodes are created.
->
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->
+Thanks,
+Rafael
+
+
 > ---
-> arch/arm/boot/dts/exynos5440.dtsi |   43 +++++++++++++++++++++++++++++++++++++
->   1 files changed, 43 insertions(+), 0 deletions(-)
->
-> diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-> index 5f3562a..b74ce9f 100644
-> --- a/arch/arm/boot/dts/exynos5440.dtsi
-> +++ b/arch/arm/boot/dts/exynos5440.dtsi
-> @@ -16,6 +16,12 @@
->
->   	interrupt-parent = <&gic>;
->
-> +	aliases {
-> +		tmuctrl0 = &tmuctrl_0;
-> +		tmuctrl1 = &tmuctrl_1;
-> +		tmuctrl2 = &tmuctrl_2;
-> +	};
+>  drivers/cpufreq/cpufreq.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index fd97a62..3564947 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1105,7 +1105,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
+>  
+>  	WARN_ON(lock_policy_rwsem_write(cpu));
+>  	cpus = cpumask_weight(data->cpus);
+> -	cpumask_clear_cpu(cpu, data->cpus);
 > +
->   	gic:interrupt-controller@2E0000 {
->   		compatible = "arm,cortex-a15-gic";
->   		#interrupt-cells = <3>;
-> @@ -156,4 +162,41 @@
->   		reg = <0x130000 0x1000>;
->   		interrupts = <0 17 0>, <0 16 0>;
->   	};
-> +
-> +	tmu_ctrl_info: tmu-ctrl-info {
-> +		gain = <5>;
-> +		reference-voltage = <16>;
-> +		noise-cancel-mode = <4>;
-> +		cal-type = <2>;
-> +		cal-mode = <0>;
-> +		efuse-value = <0x5b2c>;
-> +		threshold-falling = <5>;
-> +	};
-> +
-> +	tmuctrl_0: tmuctrl@160118 {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x160118 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
-> +
-> +	tmuctrl_1: tmuctrl@16011C {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x16011C 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
-> +
-> +	tmuctrl_2: tmuctrl@160120 {
-> +		compatible = "samsung,exynos5440-tmu";
-> +		reg = <0x160120 0x300>;
-> +		interrupts = <0 58 0>;
-> +		clocks = <&clock 8>;
-> +		clock-names = "tmu_apbif";
-> +		tmu-ctrl-data = <&tmu_ctrl_info>;
-> +	};
-
-Grant, how the above thermal data must be handled in DT? Is it fine to 
-create private phandles like that?
-
->   };
->
-Please consider the comments on patch 8.
+> +	if (cpus > 1)
+> +		cpumask_clear_cpu(cpu, data->cpus);
+>  	unlock_policy_rwsem_write(cpu);
+>  
+>  	if (cpu != data->cpu) {
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
