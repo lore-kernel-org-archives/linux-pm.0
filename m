@@ -1,58 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management fixes for v3.9-rc7
-Date: Thu, 11 Apr 2013 23:38:03 +0200
-Message-ID: <1717944.2nHtn633sQ@vostro.rjw.lan>
+From: "Benenati, Chris J" <chris.j.benenati@intel.com>
+Subject: Apparent bug in pci_platform_power_transition() [drivers/pci/pci.c]
+Date: Thu, 11 Apr 2013 23:13:49 +0000
+Message-ID: <27806FC4E5928A408B78E88BBC67A2306F466BBA@ORSMSX101.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56523 "EHLO hydra.sisk.pl"
+Received: from mga11.intel.com ([192.55.52.93]:5701 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752922Ab3DKVaQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Apr 2013 17:30:16 -0400
+	id S1765536Ab3DKXOD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 19:14:03 -0400
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-Hi Linus,
+In 3.2, the marked lines (***) below were added:
 
-Please pull from the git repository at
+static int pci_platform_power_transition(struct pci_dev *dev, pci_power_t state)
+{                               
+        int error;
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-3.9-rc7
+        if (platform_pci_power_manageable(dev)) {
+               error = platform_pci_set_power_state(dev, state);
+               if (!error)            
+                       pci_update_current_state(dev, state);
+ ***           /* Fall back to PCI_D0 if native PM is not supported */
+ ***           if (!dev->pm_cap)
+ ***                   dev->current_state = PCI_D0;
+        } else {
+               error = -ENODEV;
+               /* Fall back to PCI_D0 if native PM is not supported */
+               if (!dev->pm_cap)
+                       dev->current_state = PCI_D0;
+        }
 
-to receive power management fixes for v3.9-rc7 with top-most commit
-6f389a8f1dd22a24f3d9afc2812b30d639e94625
+        return error;
+}
 
-  PM / reboot: call syscore_shutdown() after disable_nonboot_cpus()
+If the target state is PCI_D3, the new code serves to *undo* the marked code below executed by the preceding call to pci_update_current_state() when PCI PM registers are not present:
 
-on top of commit 31880c37c11e28cb81c70757e38392b42e695dc6
+void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+{
+    if (dev->pm_cap) {
+        u16 pmcsr;
 
-  Linux 3.9-rc6
+        pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+        dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+    } else {
+***     dev->current_state = state;
+    }
+}
 
-Included are:
+This is despite the fact that platform_pci_power_manageable() indicated that the platform FW could handle it and the succeeding call to platform_pci_set_power_state() succeeded. That means that devices with FW support but no PCI PM support will be left in the wrong state.
 
-- System reboot/halt fix that prevents some systems from crashing
-  during reboot due to a violation of ordering between
-  syscore_shutdown() and disable_nonboot_cpus().  From Huacai Chen.
+It appears the new "if" statement should be "else if":
 
-- intel_pstate driver fix for a delay time calculation mistake
-  that causes systems using the driver to crash occasionally in a
-  hard to reproduce way.  From Dirk Brandewie.
+       if (!error)            
+               pci_update_current_state(dev, state);
+ ***   else if (!dev->pm_cap) /* Fall back to PCI_D0 if native PM is not supported */
+ ***           dev->current_state = PCI_D0;
 
-Thanks!
-
----------------
-
-Dirk Brandewie (1):
-      cpufreq / intel_pstate: Set timer timeout correctly
-
-Huacai Chen (1):
-      PM / reboot: call syscore_shutdown() after disable_nonboot_cpus()
-
----------------
-
- drivers/cpufreq/intel_pstate.c |    1 -
- kernel/sys.c                   |    3 ++-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
+Rafael concurs with me.
