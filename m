@@ -1,61 +1,58 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 11/18] ARM: shmobile: cpuidle: use init/exit common
- routine
-Date: Thu, 11 Apr 2013 11:46:39 +0900
-Message-ID: <20130411024639.GD21037@verge.net.au>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
- <1365603743-5618-12-git-send-email-daniel.lezcano@linaro.org>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 9/9] powerpc: cpufreq: move cpufreq driver to
+ drivers/cpufreq
+Date: Wed, 10 Apr 2013 23:59:57 -0700
+Message-ID: <20130411065957.GB31465@quad.lixom.net>
+References: <cover.1364229828.git.viresh.kumar@linaro.org>
+ <4180fd5b43906421fc155126e8b7bea5fb3ff375.1364229828.git.viresh.kumar@linaro.org>
+ <CAKohpo=LOJ3DfaGzCm6a6ev2+dNUgEpJd+04pGMhdSpkyZNR9A@mail.gmail.com>
+ <CAKohpomRMkKouiy+iJUiheTcPGCDVLbxppL5f4oc-WMu2E5T8g@mail.gmail.com>
+ <1364985034.16520.12.camel@pasglop>
+ <CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:34391 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935674Ab3DKCqn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 22:46:43 -0400
+Received: from mail-pb0-f41.google.com ([209.85.160.41]:42720 "EHLO
+	mail-pb0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736Ab3DKG76 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 02:59:58 -0400
+Received: by mail-pb0-f41.google.com with SMTP id mc17so706581pbc.0
+        for <linux-pm@vger.kernel.org>; Wed, 10 Apr 2013 23:59:57 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1365603743-5618-12-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <CAKohpo=EPbGocbNaZcNtGuZy4Tst5jH4rPviQ6L=YuZceDnKMw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, arvind.chauhan@arm.com, Arnd Bergmann <arnd.bergmann@linaro.org>, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On Wed, Apr 10, 2013 at 04:22:16PM +0200, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initialization.
+On Thu, Apr 04, 2013 at 11:55:56AM +0530, Viresh Kumar wrote:
+> On 3 April 2013 16:00, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> > On Wed, 2013-04-03 at 15:00 +0530, Viresh Kumar wrote:
+> >> On 31 March 2013 09:33, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >> > Benjamin/Paul/Olof,
+> >> >
+> >> > Any comments on this?
+> >>
+> >> Ping!!
+> >
+> > I'm on vacation until end of April. No objection to the patch but
+> > somebody needs to test it.
+> 
+> Hi,
+> 
+> Can somebody else from powerpc world give it a try?
+> 
+> OR
+> 
+> @Rafael: Can we get this pushed in linux-next as is and then people would
+> be forced to test it and in case there are any complains, i will fix them or
+> you can revert it?
 
-Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-> ---
->  arch/arm/mach-shmobile/cpuidle.c |   10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
-> 
-> diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
-> index d671ae9..0afeb5c 100644
-> --- a/arch/arm/mach-shmobile/cpuidle.c
-> +++ b/arch/arm/mach-shmobile/cpuidle.c
-> @@ -16,7 +16,6 @@
->  #include <asm/cpuidle.h>
->  #include <asm/io.h>
->  
-> -static struct cpuidle_device shmobile_cpuidle_dev;
->  static struct cpuidle_driver shmobile_cpuidle_default_driver = {
->  	.name			= "shmobile_cpuidle",
->  	.owner			= THIS_MODULE,
-> @@ -34,12 +33,5 @@ void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
->  
->  int __init shmobile_cpuidle_init(void)
->  {
-> -	struct cpuidle_device *dev = &shmobile_cpuidle_dev;
-> -
-> -	cpuidle_register_driver(cpuidle_drv);
-> -
-> -	dev->state_count = cpuidle_drv->state_count;
-> -	cpuidle_register_device(dev);
-> -
-> -	return 0;
-> +	return cpuidle_register(cpuidle_drv, NULL);
->  }
-> -- 
-> 1.7.9.5
-> 
+That's not very nice this late in the staging cycle. Give the powerpc
+guys a little more time than a single day to come back with test results,
+please.
+
+
+-Olof
