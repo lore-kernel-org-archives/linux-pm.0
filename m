@@ -1,65 +1,203 @@
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 14/15] mm: Add alloc-free handshake to trigger
- memory region compaction
-Date: Wed, 10 Apr 2013 16:26:00 -0700
-Message-ID: <5165F508.4020207@linux.vnet.ibm.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <20130409214853.4500.63619.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20130409214853.4500.63619.stgit@srivatsabhat.in.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH 00/30] ARM: exynos multiplatform support
+Date: Thu, 11 Apr 2013 02:04:42 +0200
+Message-ID: <1365638712-1028578-1-git-send-email-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moutng.kundenserver.de ([212.227.17.9]:49714 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937299Ab3DKAHz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Apr 2013 20:07:55 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, linux-samsung-soc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, stern@rowland.harvard.edu, a.zummo@towertech.it, ben-linux@fluff.org, cjb@laptop.org, dwmw2@infradead.org, grant.likely@secretlab.ca, gregkh@linuxfoundation.org, jg1.han@samsung.com, john.stultz@linaro.org, broonie@opensource.wolfsonmicro.com, mchehab@redhat.com, mturquette@linaro.org, padma.kvr@gmail.com, thierry.reding@avionic-design.de, tglx@linutronix.de, t.figa@samsung.com, wsa@the-dreams.de, rui.zhang@intel.com, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, linux-i2c@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-usb@vger.kernel.org, rtc-linux@googlegroups.com, spi-devel-general@lists.sourceforge.net
 
-On 04/09/2013 02:48 PM, Srivatsa S. Bhat wrote:
-> We need a way to decide when to trigger the worker threads to perform
-> region evacuation/compaction. So the strategy used is as follows:
->
-> Alloc path of page allocator:
-> ----------------------------
->
-> This accurately tracks the allocations and detects the first allocation
-> in a new region and notes down that region number. Performing compaction
-> rightaway is not going to be helpful because we need free pages in the
-> lower regions to be able to do that. And the page allocator allocated in
-> this region precisely because there was no memory available in lower regions.
-> So the alloc path just notes down the freshly used region's id.
->
-> Free path of page allocator:
-> ---------------------------
->
-> When we enter this path, we know that some memory is being freed. Here we
-> check if the alloc path had noted down any region for compaction. If so,
-> we trigger the worker function that tries to compact that memory.
->
-> Also, we avoid any locking/synchronization overhead over this worker
-> function in the alloc/free path, by attaching appropriate semantics to the
-> available status flags etc, such that we won't need any special locking
-> around them.
->
+Hi everyone,
 
-Can you explain why avoiding locking works in this case?
+I have updated my series for multiplatform support of the ARM exynos
+platform, based on what is currently queued up in arm-soc.
 
-It appears the lack of locking is only on the worker side, and the 
-mem_power_ctrl is implicitly protected by zone->lock on the alloc & free 
-side.
+It would be really nice to still get this merged for 3.10. A lot of
+the patches are really trivial, but there are some complex ones
+as well.
 
-In the previous patch I see smp_mb(), but no explanation is provided for 
-why they are needed. Are they related to/necessary for this lack of locking?
+To all subsystem maintainers: feel free to directly apply the patches
+for your subsystem, there should be no dependencies between any of them,
+aside from the last patch requiring all of the earlier ones to be applied
+first. Getting an Ack is also fine so we can put the patches into arm-soc.
 
-What happens when a region is passed over for compaction because the 
-worker is already compacting another region? Can this occur? Will the 
-compaction re-trigger appropriately?
+	Arnd
 
-I recommend combining this patch and the previous patch to make the 
-interface more clear, or make functions that explicitly handle the 
-interface for accessing mem_power_ctrl.
+Arnd Bergmann (30):
+  ARM: exynos: introduce EXYNOS_ATAGS symbol
+  ARM: exynos: prepare for sparse IRQ
+  ARM: exynos: move debug-macro.S to include/debug/
+  ARM: samsung: move mfc device definition to s5p-dev-mfc.c
+  tty: serial/samsung: prepare for common clock API
+  tty: serial/samsung: make register definitions global
+  tty: serial/samsung: fix modular build
+  i2c: s3c2410: make header file local
+  mmc: sdhci-s3c: remove platform dependencies
+  usb: exynos: do not include plat/usb-phy.h
+  [media] exynos: remove unnecessary header inclusions
+  video/exynos: remove unnecessary header inclusions
+  video/s3c: move platform_data out of arch/arm
+  thermal/exynos: remove unnecessary header inclusions
+  mtd: onenand/samsung: make regs-onenand.h file local
+  rtc: s3c: make header file local
+  pwm: samsung: repair the worst MMIO abuses
+  ASoC: samsung: move plat/ headers to local directory
+  ASoC: samsung: use irq resource for idma
+  ASoC: samsung: convert to dmaengine API
+  ASoC: samsung/i2s: fix module_device_table
+  ASoC: samsung/idma: export idma_reg_addr_init
+  clk: exynos: prepare for multiplatform
+  clocksource: exynos_mct: remove platform header dependency
+  irqchip: exynos: pass max combiner number to combiner_init
+  irqchip: exynos: allocate combiner_data dynamically
+  irqchip: exynos: localize irq lookup for ATAGS
+  irqchip: exynos: pass irq_base from platform
+  spi: s3c64xx: move to generic dmaengine API
+  ARM: exynos: enable multiplatform support
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+ arch/arm/Kconfig                                   |  10 +-
+ arch/arm/Kconfig.debug                             |   8 +
+ arch/arm/configs/exynos4_defconfig                 |   2 +-
+ .../mach/debug-macro.S => include/debug/exynos.S}  |  12 +-
+ .../plat/debug-macro.S => include/debug/samsung.S} |   2 +-
+ arch/arm/mach-exynos/Kconfig                       |  40 ++-
+ arch/arm/mach-exynos/Makefile                      |   5 +-
+ arch/arm/mach-exynos/common.c                      |  26 +-
+ arch/arm/mach-exynos/common.h                      |   7 +-
+ arch/arm/mach-exynos/dev-uart.c                    |   1 +
+ arch/arm/mach-exynos/include/mach/irqs.h           |   5 +-
+ arch/arm/mach-exynos/mach-armlex4210.c             |   2 +
+ arch/arm/mach-exynos/mach-exynos4-dt.c             |   3 +
+ arch/arm/mach-exynos/mach-exynos5-dt.c             |   2 +
+ arch/arm/mach-exynos/mach-nuri.c                   |   2 +
+ arch/arm/mach-exynos/mach-origen.c                 |   2 +
+ arch/arm/mach-exynos/mach-smdk4x12.c               |   2 +
+ arch/arm/mach-exynos/mach-smdkv310.c               |   3 +
+ arch/arm/mach-exynos/setup-sdhci-gpio.c            |   2 +-
+ arch/arm/mach-exynos/setup-usb-phy.c               |   8 +-
+ arch/arm/mach-s3c24xx/clock-s3c2440.c              |   5 +
+ arch/arm/mach-s3c24xx/common.c                     |   5 +
+ arch/arm/mach-s3c24xx/dma-s3c2410.c                |   2 -
+ arch/arm/mach-s3c24xx/dma-s3c2412.c                |   2 -
+ arch/arm/mach-s3c24xx/dma-s3c2440.c                |   2 -
+ arch/arm/mach-s3c24xx/dma-s3c2443.c                |   2 -
+ arch/arm/mach-s3c24xx/include/mach/debug-macro.S   |   2 +-
+ arch/arm/mach-s3c24xx/mach-rx1950.c                |   1 -
+ arch/arm/mach-s3c64xx/include/mach/debug-macro.S   |   2 +-
+ arch/arm/mach-s3c64xx/setup-usb-phy.c              |   4 +-
+ arch/arm/mach-s5p64x0/include/mach/debug-macro.S   |   2 +-
+ arch/arm/mach-s5pc100/include/mach/debug-macro.S   |   2 +-
+ arch/arm/mach-s5pc100/setup-sdhci-gpio.c           |   1 -
+ arch/arm/mach-s5pv210/include/mach/debug-macro.S   |   2 +-
+ arch/arm/mach-s5pv210/setup-sdhci-gpio.c           |   1 -
+ arch/arm/mach-s5pv210/setup-usb-phy.c              |   4 +-
+ arch/arm/plat-samsung/Kconfig                      |   7 +-
+ arch/arm/plat-samsung/Makefile                     |   8 +-
+ arch/arm/plat-samsung/devs.c                       |  62 ++---
+ arch/arm/plat-samsung/include/plat/fb.h            |  50 +---
+ arch/arm/plat-samsung/include/plat/pm.h            |   5 +
+ arch/arm/plat-samsung/include/plat/regs-serial.h   | 282 +--------------------
+ arch/arm/plat-samsung/include/plat/sdhci.h         |  56 +---
+ arch/arm/plat-samsung/include/plat/usb-phy.h       |   5 +-
+ arch/arm/plat-samsung/irq-vic-timer.c              |   1 +
+ arch/arm/plat-samsung/pm.c                         |   1 +
+ arch/arm/plat-samsung/s5p-dev-mfc.c                |  42 ++-
+ arch/arm/plat-samsung/s5p-irq.c                    |   1 +
+ drivers/clk/samsung/clk-exynos4.c                  |  93 +++----
+ drivers/clk/samsung/clk-exynos5250.c               |   1 -
+ drivers/clk/samsung/clk-exynos5440.c               |   1 -
+ drivers/clk/samsung/clk.h                          |   2 -
+ drivers/clocksource/exynos_mct.c                   |  21 +-
+ drivers/gpio/Makefile                              |   2 +-
+ drivers/i2c/busses/i2c-s3c2410.c                   |   3 +-
+ .../regs-iic.h => drivers/i2c/busses/i2c-s3c2410.h |   0
+ drivers/irqchip/exynos-combiner.c                  | 116 +++++----
+ drivers/media/platform/exynos-gsc/gsc-regs.c       |   1 -
+ drivers/media/platform/s5p-tv/sii9234_drv.c        |   3 -
+ drivers/mmc/host/Kconfig                           |   2 +-
+ .../mmc/host/sdhci-s3c-regs.h                      |   0
+ drivers/mmc/host/sdhci-s3c.c                       |   5 +-
+ drivers/mtd/onenand/samsung.c                      |   4 +-
+ .../mtd/onenand/samsung.h                          |   2 -
+ drivers/pwm/pwm-samsung.c                          |  60 +++--
+ drivers/rtc/rtc-s3c.c                              |   3 +-
+ .../plat/regs-rtc.h => drivers/rtc/rtc-s3c.h       |   3 +-
+ drivers/spi/spi-s3c64xx.c                          | 185 ++++++++++----
+ drivers/thermal/exynos_thermal.c                   |   2 -
+ drivers/tty/serial/samsung.c                       |  17 +-
+ drivers/tty/serial/samsung.h                       |   4 +-
+ drivers/usb/host/ehci-s5p.c                        |   1 -
+ drivers/usb/host/ohci-exynos.c                     |   1 -
+ drivers/video/exynos/exynos_mipi_dsi.c             |   2 -
+ drivers/video/exynos/exynos_mipi_dsi_common.c      |   2 -
+ drivers/video/exynos/exynos_mipi_dsi_lowlevel.c    |   2 -
+ drivers/video/s3c-fb.c                             |   3 +-
+ include/linux/platform_data/mmc-sdhci-s3c.h        |  56 ++++
+ include/linux/platform_data/spi-s3c64xx.h          |   3 +
+ include/linux/platform_data/video_s3c.h            |  54 ++++
+ include/linux/serial_s3c.h                         | 260 +++++++++++++++++++
+ sound/soc/samsung/ac97.c                           |   2 +-
+ sound/soc/samsung/dma.c                            | 219 ++++++++++++++++
+ sound/soc/samsung/dma.h                            |  15 +-
+ sound/soc/samsung/h1940_uda1380.c                  |   2 +-
+ sound/soc/samsung/i2s.c                            |   4 +-
+ sound/soc/samsung/idma.c                           |  11 +-
+ sound/soc/samsung/neo1973_wm8753.c                 |   2 +-
+ sound/soc/samsung/pcm.c                            |   1 -
+ .../include/plat => sound/soc/samsung}/regs-ac97.h |   0
+ .../include/plat => sound/soc/samsung}/regs-iis.h  |   0
+ sound/soc/samsung/rx1950_uda1380.c                 |   2 +-
+ sound/soc/samsung/s3c24xx-i2s.c                    |   2 +-
+ sound/soc/samsung/s3c24xx_uda134x.c                |   2 +-
+ sound/soc/samsung/spdif.c                          |   1 -
+ 95 files changed, 1146 insertions(+), 734 deletions(-)
+ rename arch/arm/{mach-exynos/include/mach/debug-macro.S => include/debug/exynos.S} (84%)
+ rename arch/arm/{plat-samsung/include/plat/debug-macro.S => include/debug/samsung.S} (98%)
+ rename arch/arm/plat-samsung/include/plat/regs-iic.h => drivers/i2c/busses/i2c-s3c2410.h (100%)
+ rename arch/arm/plat-samsung/include/plat/regs-sdhci.h => drivers/mmc/host/sdhci-s3c-regs.h (100%)
+ rename arch/arm/plat-samsung/include/plat/regs-onenand.h => drivers/mtd/onenand/samsung.h (98%)
+ rename arch/arm/plat-samsung/include/plat/regs-rtc.h => drivers/rtc/rtc-s3c.h (97%)
+ create mode 100644 include/linux/platform_data/mmc-sdhci-s3c.h
+ create mode 100644 include/linux/platform_data/video_s3c.h
+ create mode 100644 include/linux/serial_s3c.h
+ rename {arch/arm/plat-samsung/include/plat => sound/soc/samsung}/regs-ac97.h (100%)
+ rename {arch/arm/plat-samsung/include/plat => sound/soc/samsung}/regs-iis.h (100%)
+
+-- 
+1.8.1.2
+
+Cc: stern@rowland.harvard.edu
+Cc: a.zummo@towertech.it
+Cc: ben-linux@fluff.org
+Cc: cjb@laptop.org
+Cc: dwmw2@infradead.org
+Cc: grant.likely@secretlab.ca
+Cc: gregkh@linuxfoundation.org
+Cc: jg1.han@samsung.com
+Cc: john.stultz@linaro.org
+Cc: broonie@opensource.wolfsonmicro.com
+Cc: mchehab@redhat.com
+Cc: mturquette@linaro.org
+Cc: padma.kvr@gmail.com
+Cc: thierry.reding@avionic-design.de
+Cc: tglx@linutronix.de
+Cc: t.figa@samsung.com
+Cc: wsa@the-dreams.de
+Cc: rui.zhang@intel.com
+Cc: alsa-devel@alsa-project.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-i2c@vger.kernel.org
+Cc: linux-media@vger.kernel.org
+Cc: linux-mmc@vger.kernel.org
+Cc: linux-mtd@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-serial@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Cc: rtc-linux@googlegroups.com
+Cc: spi-devel-general@lists.sourceforge.net
+.
