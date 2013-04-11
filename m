@@ -1,108 +1,69 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH v6 3/8] reset: Add driver for gpio-controlled reset pins
-Date: Thu, 11 Apr 2013 03:35:37 -0700
-Message-ID: <CAOesGMgo61M=oxG6_6EEGu7kL3Wa+HsdEomCxUnvj-Rbdhujgg@mail.gmail.com>
-References: <1364488523-20310-1-git-send-email-p.zabel@pengutronix.de>
-	<1364488523-20310-4-git-send-email-p.zabel@pengutronix.de>
+From: Daniel Lezcano <daniel.lezcano@free.fr>
+Subject: Re: [PATCH 13/18] ARM: tegra2: cpuidle: use init/exit common routine
+Date: Thu, 11 Apr 2013 07:58:26 +0200
+Message-ID: <51665102.10301@free.fr>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365603743-5618-14-git-send-email-daniel.lezcano@linaro.org>
+ <1365642100.1806.5.camel@jlo-ubuntu-64.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:53626 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751225Ab3DKKfj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 06:35:39 -0400
-Received: by mail-wi0-f169.google.com with SMTP id c10so402073wiw.4
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 03:35:38 -0700 (PDT)
-In-Reply-To: <1364488523-20310-4-git-send-email-p.zabel@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1365642100.1806.5.camel@jlo-ubuntu-64.nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Joseph Lo <josephl@nvidia.com>
+Cc: "andrew@lunn.ch" <andrew@lunn.ch>, Daniel Lezcano <daniel.lezcano@linaro.org>, "khilman@deeprootsystems.com" <khilman@deeprootsystems.com>, "nsekhar@ti.com" <nsekhar@ti.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "patches@linaro.org" <patches@linaro.org>, "magnus.damm@gmail.com" <magnus.damm@gmail.com>, "tony@atomide.com" <tony@atomide.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>, "swarren@wwwdotorg.org" <swarren@wwwdotorg.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "rjw@sisk.pl" <rjw@sisk.pl>, "horms@verge.net.au" <horms@verge.net.au>, "linux@maxim.org.za" <linux@maxim.org.za>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "deepthi@linux.vnet.ibm.com" <deepthi@linux.vnet.ibm.com>, jkosi
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Mike Turquette <mturquette@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, kernel@pengutronix.de, Shawn Guo <shawn.guo@linaro.org>, devicetree-discuss@lists.ozlabs.org, Rob Herring <rob.herring@calxeda.com>, Grant Likely <grant.likely@secretlab.ca>
 
-Hi,
-
-On Thu, Mar 28, 2013 at 9:35 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
-> This driver implements a reset controller device that toggles gpios
-> connected to reset pins of peripheral ICs. The delay between assertion
-> and de-assertion of the reset signal can be configured.
+On 04/11/2013 03:01 AM, Joseph Lo wrote:
+> On Wed, 2013-04-10 at 22:22 +0800, Daniel Lezcano wrote:
+>> Remove the duplicated code and use the cpuidle common code for initialization.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>  arch/arm/mach-tegra/cpuidle-tegra20.c |   33 +--------------------------------
+>>  1 file changed, 1 insertion(+), 32 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
+>> index f1f6ac4..d6c2ba6 100644
+>> --- a/arch/arm/mach-tegra/cpuidle-tegra20.c
+>> +++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
+>> @@ -70,8 +70,6 @@ static struct cpuidle_driver tegra_idle_driver = {
+>>  	.safe_state_index = 0,
+>>  };
+>>  
+>> -static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
+>> -
+>>  #ifdef CONFIG_PM_SLEEP
+>>  #ifdef CONFIG_SMP
+>>  static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
+>> @@ -220,34 +218,5 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+>>  
+>>  int __init tegra20_cpuidle_init(void)
+>>  {
+>> -	int ret;
+>> -	unsigned int cpu;
+>> -	struct cpuidle_device *dev;
+>> -	struct cpuidle_driver *drv = &tegra_idle_driver;
+>> -
+>> -#ifdef CONFIG_PM_SLEEP
+>> -	tegra_tear_down_cpu = tegra20_tear_down_cpu;
+>> -#endif
+> Hi Daniel,
 >
-> Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
-> Reviewed-by: Stephen Warren <swarren@nvidia.com>
-> Reviewed-by: Marek Vasut <marex@denx.de>
-> Reviewed-by: Shawn Guo <shawn.guo@linaro.org>
-> ---
->  .../devicetree/bindings/reset/gpio-reset.txt       |  37 ++++
->  drivers/reset/Kconfig                              |  13 ++
->  drivers/reset/Makefile                             |   1 +
->  drivers/reset/gpio-reset.c                         | 208 +++++++++++++++++++++
->  4 files changed, 259 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/reset/gpio-reset.txt
->  create mode 100644 drivers/reset/gpio-reset.c
+> Please keep these 3 lines above, just like you did for Tegra30.
 >
-> diff --git a/Documentation/devicetree/bindings/reset/gpio-reset.txt b/Documentation/devicetree/bindings/reset/gpio-reset.txt
-> new file mode 100644
-> index 0000000..1f203eb
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/reset/gpio-reset.txt
-> @@ -0,0 +1,37 @@
-> +GPIO reset controller
-> +=====================
-> +
-> +A GPIO reset controller controls a number of GPIOs that are connected
-> +to reset pins of peripheral ICs.
-> +
-> +Please also refer to reset.txt in this directory for common reset
-> +controller binding usage.
-> +
-> +Required properties:
-> +- compatible: Should be "gpio-reset"
-> +- reset-gpios: List of gpios used as reset lines. The gpio specifier for this
-> +               property depends on the gpio controller that provides the gpio.
-> +- #reset-cells: 1, see below
-> +
-> +Optional properties:
-> +- reset-delays: List of delays in microseconds. The corresponding gpio reset
-> +                line should be asserted for this duration to reset.
-> +- initially-in-reset: List of integers. Zero if the initial state should be
-> +                      a deasserted reset line, nonzero if the line should be
-> +                      kept in reset.
-> +
-> +example:
-> +
-> +gpio_reset: gpio-reset {
-> +       compatible = "gpio-reset";
-> +       reset-gpios = <&gpio5 0 1>; /* active-low */
-> +       reset-delays = <10000>; /* 10 ms */
-> +       initially-in-reset: <1>;
-> +       #reset-cells = <1>;
-> +};
+> Thanks,
+> Joseph
 
-I find this binding that uses an array of GPIOs and their state to be
-a bit awkward, especially if you compare it to something like the
-simple gpio regulators that have a simpler one-to-one mapping.
+Oups, thanks !
 
-Also, if you did one node per gpio you'd have a boolean property for
-"initially-in-reset" which seems much more logical (i.e. the property
-is either there, or it's not).
-
-A couple of more comments:
-
-> +config RESET_GPIO
-> +       tristate "GPIO reset controller support"
-> +       depends on GENERIC_GPIO
-> +       help
-> +         This driver provides support for reset lines that are controlled
-> +         directly by GPIOs.
-> +         The delay between assertion and de-assertion of the reset signal
-> +         can be configured.
-
-Can be configured how? And why would I care about that when I'm trying
-to decide if I need to include this driver in my kernel configuration
-or not? Seems like misplaced information.
-
-Since this is a platform driver and not just an OF driver, shouldn't
-you provide a way to specify the same configuration data through a
-platform_data structure as well?
-
-
--Olof
+  -- Daniel
