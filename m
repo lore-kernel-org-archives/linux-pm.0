@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V2 patch 13/19] ARM: OMAP4: cpuidle: use init/exit common routine
-Date: Thu, 11 Apr 2013 22:42:43 +0200
-Message-ID: <1365712969-7541-14-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V2 patch 14/19] ARM: tegra: cpuidle: use init/exit common routine for tegra2
+Date: Thu, 11 Apr 2013 22:42:44 +0200
+Message-ID: <1365712969-7541-15-git-send-email-daniel.lezcano@linaro.org>
 References: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:41874 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422650Ab3DKUn3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:29 -0400
-Received: by mail-we0-f178.google.com with SMTP id z53so1629393wey.9
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:28 -0700 (PDT)
+Received: from mail-we0-f175.google.com ([74.125.82.175]:49817 "EHLO
+	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422651Ab3DKUnb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:31 -0400
+Received: by mail-we0-f175.google.com with SMTP id t11so1577909wey.6
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:30 -0700 (PDT)
 In-Reply-To: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,61 +19,59 @@ Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengu
 Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Acked-by: Stephen Warren <swarren@nvidia.com>
 ---
- arch/arm/mach-omap2/cpuidle44xx.c |   22 ++--------------------
- 1 file changed, 2 insertions(+), 20 deletions(-)
+ arch/arm/mach-tegra/cpuidle-tegra20.c |   30 +-----------------------------
+ 1 file changed, 1 insertion(+), 29 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/cpuidle44xx.c b/arch/arm/mach-omap2/cpuidle44xx.c
-index cd188de..861dd90 100644
---- a/arch/arm/mach-omap2/cpuidle44xx.c
-+++ b/arch/arm/mach-omap2/cpuidle44xx.c
-@@ -15,6 +15,7 @@
- #include <linux/cpu_pm.h>
- #include <linux/export.h>
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
+index f1f6ac4..590ec25 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra20.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
+@@ -70,8 +70,6 @@ static struct cpuidle_driver tegra_idle_driver = {
+ 	.safe_state_index = 0,
+ };
  
-+#include <asm/cpuidle.h>
- #include <asm/proc-fns.h>
- 
- #include "common.h"
-@@ -157,8 +158,6 @@ fail:
- 	return index;
- }
- 
--static DEFINE_PER_CPU(struct cpuidle_device, omap4_idle_dev);
+-static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
 -
- static struct cpuidle_driver omap4_idle_driver = {
- 	.name				= "omap4_idle",
- 	.owner				= THIS_MODULE,
-@@ -207,9 +206,6 @@ static struct cpuidle_driver omap4_idle_driver = {
-  */
- int __init omap4_idle_init(void)
+ #ifdef CONFIG_PM_SLEEP
+ #ifdef CONFIG_SMP
+ static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
+@@ -220,34 +218,8 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+ 
+ int __init tegra20_cpuidle_init(void)
  {
+-	int ret;
+-	unsigned int cpu;
 -	struct cpuidle_device *dev;
--	unsigned int cpu_id = 0;
+-	struct cpuidle_driver *drv = &tegra_idle_driver;
 -
- 	mpu_pd = pwrdm_lookup("mpu_pwrdm");
- 	cpu_pd[0] = pwrdm_lookup("cpu0_pwrdm");
- 	cpu_pd[1] = pwrdm_lookup("cpu1_pwrdm");
-@@ -221,19 +217,5 @@ int __init omap4_idle_init(void)
- 	if (!cpu_clkdm[0] || !cpu_clkdm[1])
- 		return -ENODEV;
- 
--	for_each_cpu(cpu_id, cpu_online_mask) {
--		dev = &per_cpu(omap4_idle_dev, cpu_id);
--		dev->cpu = cpu_id;
--#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
--		dev->coupled_cpus = *cpu_online_mask;
--#endif
--		cpuidle_register_driver(&omap4_idle_driver);
+ #ifdef CONFIG_PM_SLEEP
+ 	tegra_tear_down_cpu = tegra20_tear_down_cpu;
+ #endif
 -
--		if (cpuidle_register_device(dev)) {
--			pr_err("%s: CPUidle register failed\n", __func__);
--			return -EIO;
--		}
+-	ret = cpuidle_register_driver(&tegra_idle_driver);
+-	if (ret) {
+-		pr_err("CPUidle driver registration failed\n");
+-		return ret;
 -	}
 -
+-	for_each_possible_cpu(cpu) {
+-		dev = &per_cpu(tegra_idle_device, cpu);
+-		dev->cpu = cpu;
+-#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+-		dev->coupled_cpus = *cpu_possible_mask;
+-#endif
+-
+-		ret = cpuidle_register_device(dev);
+-		if (ret) {
+-			pr_err("CPU%u: CPUidle device registration failed\n",
+-				cpu);
+-			return ret;
+-		}
+-	}
 -	return 0;
-+	return cpuidle_register(&omap4_idle_driver, cpu_online_mask);
++	return cpuidle_register(&tegra_idle_driver, cpu_possible_mask);
  }
 -- 
 1.7.9.5
