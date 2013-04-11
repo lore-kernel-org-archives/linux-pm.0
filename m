@@ -1,208 +1,76 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V2 patch 06/19] cpuidle: make a single register function for all
-Date: Thu, 11 Apr 2013 22:42:36 +0200
-Message-ID: <1365712969-7541-7-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V2 patch 09/19] ARM: OMAP3: cpuidle: use init/exit common routine
+Date: Thu, 11 Apr 2013 22:42:39 +0200
+Message-ID: <1365712969-7541-10-git-send-email-daniel.lezcano@linaro.org>
 References: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f49.google.com ([74.125.82.49]:50644 "EHLO
-	mail-wg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422626Ab3DKUnL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:11 -0400
-Received: by mail-wg0-f49.google.com with SMTP id x12so923015wgg.16
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:10 -0700 (PDT)
+Received: from mail-we0-f181.google.com ([74.125.82.181]:60912 "EHLO
+	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765104Ab3DKUnS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:18 -0400
+Received: by mail-we0-f181.google.com with SMTP id d7so1575638wer.40
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:17 -0700 (PDT)
 In-Reply-To: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-The usual scheme to initialize a cpuidle driver on a SMP is:
-
-	cpuidle_register_driver(drv);
-	for_each_possible_cpu(cpu) {
-		device = &per_cpu(cpuidle_dev, cpu);
-		cpuidle_register_device(device);
-	}
-
-This code is duplicated in each cpuidle driver.
-
-On UP systems, it is done this way:
-
-	cpuidle_register_driver(drv);
-	device = &per_cpu(cpuidle_dev, cpu);
-	cpuidle_register_device(device);
-
-On UP, the macro 'for_each_cpu' does one iteration:
-
-#define for_each_cpu(cpu, mask)                 \
-        for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
-
-Hence, the initialization loop is the same for UP than SMP.
-
-Beside, we saw different bugs / mis-initialization / return code unchecked in
-the different drivers, the code is duplicated including bugs. After fixing all
-these ones, it appears the initialization pattern is the same for everyone.
-
-Please note, some drivers are doing dev->state_count = drv->state_count. This is
-not necessary because it is done by the cpuidle_enable_device function in the
-cpuidle framework. This is true, until you have the same states for all your
-devices. Otherwise, the 'low level' API should be used instead with the specific
-initialization for the driver.
-
-Let's add a wrapper function doing this initialization with a cpumask parameter
-for the coupled idle states and use it for all the drivers.
-
-That will save a lot of LOC, consolidate the code, and the modifications in the
-future could be done in a single place. Another benefit is the consolidation of
-the cpuidle_device variable which is now in the cpuidle framework and no longer
-spread accross the different arch specific drivers.
+Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- Documentation/cpuidle/driver.txt |    6 ++++
- drivers/cpuidle/cpuidle.c        |   72 ++++++++++++++++++++++++++++++++++++++
- include/linux/cpuidle.h          |    9 +++--
- 3 files changed, 85 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/cpuidle34xx.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/cpuidle/driver.txt b/Documentation/cpuidle/driver.txt
-index 7a9e09e..1b0d81d 100644
---- a/Documentation/cpuidle/driver.txt
-+++ b/Documentation/cpuidle/driver.txt
-@@ -15,11 +15,17 @@ has mechanisms in place to support actual entry-exit into CPU idle states.
- cpuidle driver initializes the cpuidle_device structure for each CPU device
- and registers with cpuidle using cpuidle_register_device.
+diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+index 027a787..cca045c 100644
+--- a/arch/arm/mach-omap2/cpuidle34xx.c
++++ b/arch/arm/mach-omap2/cpuidle34xx.c
+@@ -26,6 +26,7 @@
+ #include <linux/cpuidle.h>
+ #include <linux/export.h>
+ #include <linux/cpu_pm.h>
++#include <asm/cpuidle.h>
  
-+If all the idle states are the same, the wrapper function cpuidle_register
-+could be used instead.
-+
- It can also support the dynamic changes (like battery <-> AC), by using
- cpuidle_pause_and_lock, cpuidle_disable_device and cpuidle_enable_device,
- cpuidle_resume_and_unlock.
+ #include "powerdomain.h"
+ #include "clockdomain.h"
+@@ -259,8 +260,6 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
+ 	return ret;
+ }
  
- Interfaces:
-+extern int cpuidle_register(struct cpuidle_driver *drv,
-+                            const struct cpumask *const coupled_cpus);
-+extern int cpuidle_unregister(struct cpuidle_driver *drv);
- extern int cpuidle_register_driver(struct cpuidle_driver *drv);
- extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
- extern int cpuidle_register_device(struct cpuidle_device *dev);
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 0da795b..49e8d30 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -24,6 +24,7 @@
- #include "cpuidle.h"
- 
- DEFINE_PER_CPU(struct cpuidle_device *, cpuidle_devices);
-+DEFINE_PER_CPU(struct cpuidle_device, cpuidle_dev);
- 
- DEFINE_MUTEX(cpuidle_lock);
- LIST_HEAD(cpuidle_detected_devices);
-@@ -453,6 +454,77 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
- 
- EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
- 
-+/*
-+ * cpuidle_unregister: unregister a driver and the devices. This function
-+ * can be used only if the driver has been previously registered through
-+ * the cpuidle_register function.
-+ *
-+ * @drv: a valid pointer to a struct cpuidle_driver
-+ */
-+void cpuidle_unregister(struct cpuidle_driver *drv)
-+{
-+	int cpu;
-+	struct cpuidle_device *device;
-+
-+	for_each_possible_cpu(cpu) {
-+		device = &per_cpu(cpuidle_dev, cpu);
-+		cpuidle_unregister_device(device);
-+	}
-+
-+	cpuidle_unregister_driver(drv);
-+}
-+EXPORT_SYMBOL_GPL(cpuidle_unregister);
-+
-+/**
-+ * cpuidle_register: registers the driver and the cpu devices with the
-+ * coupled_cpus passed as parameter. This function is used for all common
-+ * initialization pattern there are in the arch specific drivers. The
-+ * devices is globally defined in this file.
-+ *
-+ * @drv         : a valid pointer to a struct cpuidle_driver
-+ * @coupled_cpus: a cpumask for the coupled states
-+ *
-+ * Returns 0 on success, < 0 otherwise
-+ */
-+int cpuidle_register(struct cpuidle_driver *drv,
-+		     const struct cpumask *const coupled_cpus)
-+{
-+	int ret, cpu;
-+	struct cpuidle_device *device;
-+
-+	ret = cpuidle_register_driver(drv);
-+	if (ret) {
-+		pr_err("failed to register cpuidle driver\n");
-+		return ret;
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		device = &per_cpu(cpuidle_dev, cpu);
-+		device->cpu = cpu;
-+
-+#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-+		/*
-+		 * On multiplatform for ARM, the coupled idle states could
-+		 * enabled in the kernel even if the cpuidle driver does not
-+		 * use it. Note, coupled_cpus is a struct copy.
-+		 */
-+		if (coupled_cpus)
-+			device->coupled_cpus = *coupled_cpus;
-+#endif
-+		ret = cpuidle_register_device(device);
-+		if (!ret)
-+			continue;
-+
-+		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
-+
-+		cpuidle_unregister(drv);
-+		break;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(cpuidle_register);
-+
- #ifdef CONFIG_SMP
- 
- static void smp_callback(void *v)
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 79e3811..3c86faa 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -123,7 +123,9 @@ extern void cpuidle_driver_unref(void);
- extern void cpuidle_unregister_driver(struct cpuidle_driver *drv);
- extern int cpuidle_register_device(struct cpuidle_device *dev);
- extern void cpuidle_unregister_device(struct cpuidle_device *dev);
+-static DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
 -
-+extern int cpuidle_register(struct cpuidle_driver *drv,
-+			    const struct cpumask *const coupled_cpus);
-+extern void cpuidle_unregister(struct cpuidle_driver *drv);
- extern void cpuidle_pause_and_lock(void);
- extern void cpuidle_resume_and_unlock(void);
- extern void cpuidle_pause(void);
-@@ -148,7 +150,10 @@ static inline void cpuidle_unregister_driver(struct cpuidle_driver *drv) { }
- static inline int cpuidle_register_device(struct cpuidle_device *dev)
- {return -ENODEV; }
- static inline void cpuidle_unregister_device(struct cpuidle_device *dev) { }
+ static struct cpuidle_driver omap3_idle_driver = {
+ 	.name             = "omap3_idle",
+ 	.owner            = THIS_MODULE,
+@@ -336,8 +335,6 @@ static struct cpuidle_driver omap3_idle_driver = {
+  */
+ int __init omap3_idle_init(void)
+ {
+-	struct cpuidle_device *dev;
 -
-+static inline int cpuidle_register(struct cpuidle_driver *drv,
-+				   const struct cpumask *const coupled_cpus)
-+{return -ENODEV; }
-+static inline void cpuidle_unregister(struct cpuidle_driver *drv) { }
- static inline void cpuidle_pause_and_lock(void) { }
- static inline void cpuidle_resume_and_unlock(void) { }
- static inline void cpuidle_pause(void) { }
+ 	mpu_pd = pwrdm_lookup("mpu_pwrdm");
+ 	core_pd = pwrdm_lookup("core_pwrdm");
+ 	per_pd = pwrdm_lookup("per_pwrdm");
+@@ -346,16 +343,5 @@ int __init omap3_idle_init(void)
+ 	if (!mpu_pd || !core_pd || !per_pd || !cam_pd)
+ 		return -ENODEV;
+ 
+-	cpuidle_register_driver(&omap3_idle_driver);
+-
+-	dev = &per_cpu(omap3_idle_dev, smp_processor_id());
+-	dev->cpu = 0;
+-
+-	if (cpuidle_register_device(dev)) {
+-		printk(KERN_ERR "%s: CPUidle register device failed\n",
+-		       __func__);
+-		return -EIO;
+-	}
+-
+-	return 0;
++	return cpuidle_register(&omap3_idle_driver, NULL);
+ }
 -- 
 1.7.9.5
 
