@@ -1,59 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: Call __cpufreq_governor() with correct policy->cpus mask
-Date: Thu, 11 Apr 2013 23:34:03 +0200
-Message-ID: <1706828.TqVJcHNWlq@vostro.rjw.lan>
-References: <e3001264b4d7328b41130857adbb51e93d224c26.1365667475.git.viresh.kumar@linaro.org>
+Subject: [GIT PULL] Power management fixes for v3.9-rc7
+Date: Thu, 11 Apr 2013 23:38:03 +0200
+Message-ID: <1717944.2nHtn633sQ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e3001264b4d7328b41130857adbb51e93d224c26.1365667475.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:56523 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922Ab3DKVaQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Apr 2013 17:30:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thursday, April 11, 2013 01:34:53 PM Viresh Kumar wrote:
-> __cpufreq_governor() must be called with correct policy->cpus mask. In
-> __cpufreq_remove_dev() we initially clear policy->cpus with cpumask_clear_cpu()
-> and then call __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT). In case
-> governor is doing some per-cpu stuff in EXIT callback, this can create uncertain
-> behavior.
-> 
-> Generic governors in drivers/cpufreq/ doesn't do any per-cpu stuff in EXIT
-> callback and so we don't face any issues currently. But its better to keep the
-> code clean, so we don't face any issues in future.
-> 
-> Now, we call cpumask_clear_cpu() only when multiple cpus are managed by policy.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi Linus,
 
-Applied.
+Please pull from the git repository at
 
-Thanks,
-Rafael
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-3.9-rc7
 
+to receive power management fixes for v3.9-rc7 with top-most commit
+6f389a8f1dd22a24f3d9afc2812b30d639e94625
 
-> ---
->  drivers/cpufreq/cpufreq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index fd97a62..3564947 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1105,7 +1105,9 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->  
->  	WARN_ON(lock_policy_rwsem_write(cpu));
->  	cpus = cpumask_weight(data->cpus);
-> -	cpumask_clear_cpu(cpu, data->cpus);
-> +
-> +	if (cpus > 1)
-> +		cpumask_clear_cpu(cpu, data->cpus);
->  	unlock_policy_rwsem_write(cpu);
->  
->  	if (cpu != data->cpu) {
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+  PM / reboot: call syscore_shutdown() after disable_nonboot_cpus()
+
+on top of commit 31880c37c11e28cb81c70757e38392b42e695dc6
+
+  Linux 3.9-rc6
+
+Included are:
+
+- System reboot/halt fix that prevents some systems from crashing
+  during reboot due to a violation of ordering between
+  syscore_shutdown() and disable_nonboot_cpus().  From Huacai Chen.
+
+- intel_pstate driver fix for a delay time calculation mistake
+  that causes systems using the driver to crash occasionally in a
+  hard to reproduce way.  From Dirk Brandewie.
+
+Thanks!
+
+---------------
+
+Dirk Brandewie (1):
+      cpufreq / intel_pstate: Set timer timeout correctly
+
+Huacai Chen (1):
+      PM / reboot: call syscore_shutdown() after disable_nonboot_cpus()
+
+---------------
+
+ drivers/cpufreq/intel_pstate.c |    1 -
+ kernel/sys.c                   |    3 ++-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
