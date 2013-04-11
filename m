@@ -1,139 +1,219 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V2 patch 19/19] ARM: imx: cpuidle: use init/exit common routine
-Date: Thu, 11 Apr 2013 22:42:49 +0200
-Message-ID: <1365712969-7541-20-git-send-email-daniel.lezcano@linaro.org>
-References: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:49976 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422633Ab3DKUnp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:45 -0400
-Received: by mail-wg0-f47.google.com with SMTP id y10so2023857wgg.2
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:44 -0700 (PDT)
-In-Reply-To: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [5/9] thermal: exynos: Make the zone handling dependent on trip
+ count
+Date: Thu, 11 Apr 2013 16:48:03 -0400
+Message-ID: <51672183.3030109@ti.com>
+References: <1364297642-2746-6-git-send-email-amit.daniel@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1364297642-2746-6-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, eduardo.valentin@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-Remove the duplicated code and use the cpuidle common code for initialization.
+On 26-03-2013 07:33, Amit Daniel Kachhap wrote:
+> This code changes the zone handling to use the trip count passed
+> by the TMU driver. This also helps in adding more zone support.
+>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>
+> ---
+> drivers/thermal/samsung/exynos_common.c      |   56 +++++++++++++------------
+>   drivers/thermal/samsung/exynos_common.h      |   13 +++---
+>   include/linux/platform_data/exynos_thermal.h |    7 ++-
+>   3 files changed, 40 insertions(+), 36 deletions(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_common.c b/drivers/thermal/samsung/exynos_common.c
+> index 649d67c..0c0098d 100644
+> --- a/drivers/thermal/samsung/exynos_common.c
+> +++ b/drivers/thermal/samsung/exynos_common.c
+> @@ -84,17 +84,16 @@ static int exynos_set_mode(struct thermal_zone_device *thermal,
+>   static int exynos_get_trip_type(struct thermal_zone_device *thermal, int trip,
+>   				 enum thermal_trip_type *type)
+>   {
+> -	switch (GET_ZONE(trip)) {
+> -	case MONITOR_ZONE:
+> -	case WARN_ZONE:
+> -		*type = THERMAL_TRIP_ACTIVE;
+> -		break;
+> -	case PANIC_ZONE:
+> -		*type = THERMAL_TRIP_CRITICAL;
+> -		break;
+> -	default:
+> +	struct exynos_thermal_zone *th_zone = thermal->devdata;
+> +	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
+> +
+> +	if (trip < 0 || trip >= max_trip)
+>   		return -EINVAL;
+> -	}
+> +	else if (trip == (max_trip - 1))
+> +		*type = THERMAL_TRIP_CRITICAL;
+> +	else
+> +		*type = THERMAL_TRIP_ACTIVE;
+> +
+>   	return 0;
+>   }
+>
+> @@ -103,8 +102,9 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
+>   				unsigned long *temp)
+>   {
+>   	struct exynos_thermal_zone *th_zone = thermal->devdata;
+> +	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
+>
+> -	if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
+> +	if (trip < 0 || trip >= max_trip)
+>   		return -EINVAL;
+>
+>   	*temp = th_zone->sensor_conf->trip_data.trip_val[trip];
+> @@ -118,10 +118,10 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
+>   static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+>   				unsigned long *temp)
+>   {
+> -	int ret;
+> -	/* Panic zone */
+> -	ret = exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
+> -	return ret;
+> +	struct exynos_thermal_zone *th_zone = thermal->devdata;
+> +	int max_trip = th_zone->sensor_conf->trip_data.trip_count;
+> +	/* Get the temp of highest trip*/
+> +	return exynos_get_trip_temp(thermal, max_trip - 1, temp);
+>   }
+>
+>   int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
+> @@ -157,7 +157,7 @@ static int exynos_bind(struct thermal_zone_device *thermal,
+>   	tab_size = data->cooling_data.freq_clip_count;
+>
+>   	if (tab_ptr == NULL || tab_size == 0)
+> -		return -EINVAL;
+> +		return 0;
+>
+>   	/* find the cooling device registered*/
+>   	for (i = 0; i < th_zone->cool_dev_size; i++)
+> @@ -206,7 +206,7 @@ static int exynos_unbind(struct thermal_zone_device *thermal,
+>   	tab_size = data->cooling_data.freq_clip_count;
+>
+>   	if (tab_size == 0)
+> -		return -EINVAL;
+> +		return 0;
+>
+>   	/* find the cooling device registered*/
+>   	for (i = 0; i < th_zone->cool_dev_size; i++)
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-imx/cpuidle-imx5.c  |   36 +-----------------------------------
- arch/arm/mach-imx/cpuidle-imx6q.c |   36 +-----------------------------------
- 2 files changed, 2 insertions(+), 70 deletions(-)
+The above two chunks are confusing. I dont understand how they are now 
+supposed to be valid settings.
 
-diff --git a/arch/arm/mach-imx/cpuidle-imx5.c b/arch/arm/mach-imx/cpuidle-imx5.c
-index 3d9f0c9..ba4565f 100644
---- a/arch/arm/mach-imx/cpuidle-imx5.c
-+++ b/arch/arm/mach-imx/cpuidle-imx5.c
-@@ -13,8 +13,6 @@
- 
- #include "hardware.h"
- 
--static DEFINE_PER_CPU(struct cpuidle_device, devices);
--
- static int imx5_cpuidle_enter(struct cpuidle_device *dev,
- 			      struct cpuidle_driver *drv, int index)
- {
-@@ -38,37 +36,5 @@ static struct cpuidle_driver imx5_cpuidle_driver = {
- 
- int __init imx5_cpuidle_init(void)
- {
--	struct cpuidle_device *dev;
--	int cpu, ret;
--
--	ret = cpuidle_register_driver(&imx5_cpuidle_driver);
--	if (ret) {
--		pr_err("%s: Failed to register cpuidle driver with error: %d\n",
--			 __func__, ret);
--		return ret;
--	}
--
--	/* initialize state data for each cpuidle_device */
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(devices, cpu);
--		dev->cpu = cpu;
--
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("%s: Failed to register cpu %u, error: %d\n",
--				__func__, cpu, ret);
--			goto out_unregister;
--		}
--	}
--
--	return 0;
--
--out_unregister:
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(devices, cpu);
--		cpuidle_unregister_device(dev);
--	}
--
--	cpuidle_unregister_driver(&imx5_cpuidle_driver);
--	return ret;
-+	return cpuidle_register(&imx5_cpuidle_driver, NULL);
- }
-diff --git a/arch/arm/mach-imx/cpuidle-imx6q.c b/arch/arm/mach-imx/cpuidle-imx6q.c
-index c066b74faa..23ddfb6 100644
---- a/arch/arm/mach-imx/cpuidle-imx6q.c
-+++ b/arch/arm/mach-imx/cpuidle-imx6q.c
-@@ -14,8 +14,6 @@
- #include "common.h"
- #include "cpuidle.h"
- 
--static DEFINE_PER_CPU(struct cpuidle_device, devices);
--
- static atomic_t master = ATOMIC_INIT(0);
- static DEFINE_SPINLOCK(master_lock);
- 
-@@ -67,43 +65,11 @@ static struct cpuidle_driver imx6q_cpuidle_driver = {
- 
- int __init imx6q_cpuidle_init(void)
- {
--	struct cpuidle_device *dev;
--	int cpu, ret;
--
- 	/* Need to enable SCU standby for entering WAIT modes */
- 	imx_scu_standby_enable();
- 
- 	/* Set chicken bit to get a reliable WAIT mode support */
- 	imx6q_set_chicken_bit();
- 
--	ret = cpuidle_register_driver(&imx6q_cpuidle_driver);
--	if (ret) {
--		pr_err("%s: Failed to register cpuidle driver with error: %d\n",
--			 __func__, ret);
--		return ret;
--	}
--
--	/* initialize state data for each cpuidle_device */
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(devices, cpu);
--		dev->cpu = cpu;
--
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("%s: Failed to register cpu %u, error: %d\n",
--				__func__, cpu, ret);
--			goto out_unregister;
--		}
--	}
--
--	return 0;
--
--out_unregister:
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(devices, cpu);
--		cpuidle_unregister_device(dev);
--	}
--
--	cpuidle_unregister_driver(&imx6q_cpuidle_driver);
--	return ret;
-+	return cpuidle_register(&imx6q_cpuidle_driver, NULL);
- }
--- 
-1.7.9.5
+> @@ -366,19 +366,21 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+>   		return -ENOMEM;
+>
+>   	th_zone->sensor_conf = sensor_conf;
+> -	cpumask_set_cpu(0, &mask_val);
+> -	th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
+> -	if (IS_ERR(th_zone->cool_dev[0])) {
+> -		pr_err("Failed to register cpufreq cooling device\n");
+> -		ret = -EINVAL;
+> -		goto err_unregister;
+> +	if (sensor_conf->cooling_data.freq_clip_count > 0) {
+> +		cpumask_set_cpu(0, &mask_val);
+> +		th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
+> +		if (IS_ERR(th_zone->cool_dev[0])) {
+> +			pr_err("Failed to register cpufreq cooling device\n");
+> +			ret = -EINVAL;
+> +			goto err_unregister;
+> +		}
+> +		th_zone->cool_dev_size++;
+>   	}
+> -	th_zone->cool_dev_size++;
+>
+>   	th_zone->therm_dev = thermal_zone_device_register(sensor_conf->name,
+> -			EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops, NULL, 0,
+> -			sensor_conf->trip_data.trigger_falling ?
+> -			0 : IDLE_INTERVAL);
+> +		sensor_conf->trip_data.trip_count, 0, th_zone, &exynos_dev_ops,
+> +		NULL, 0, sensor_conf->trip_data.trigger_falling ?
+> +		0 : IDLE_INTERVAL);
+>
+>   	if (IS_ERR(th_zone->therm_dev)) {
+>   		pr_err("Failed to register thermal zone device\n");
+> diff --git a/drivers/thermal/samsung/exynos_common.h b/drivers/thermal/samsung/exynos_common.h
+> index b8d289e..453e09a 100644
+> --- a/drivers/thermal/samsung/exynos_common.h
+> +++ b/drivers/thermal/samsung/exynos_common.h
+> @@ -27,23 +27,22 @@
+>   #define SENSOR_NAME_LEN	16
+>   #define MAX_TRIP_COUNT	8
+>   #define MAX_COOLING_DEVICE 4
+> -#define MAX_THRESHOLD_LEVS 4
+> +#define MAX_THRESHOLD_LEVS 5
+>
+>   #define ACTIVE_INTERVAL 500
+>   #define IDLE_INTERVAL 10000
+>   #define MCELSIUS	1000
+>
+>   /* CPU Zone information */
+> -#define PANIC_ZONE      4
+> -#define WARN_ZONE       3
+> -#define MONITOR_ZONE    2
+> -#define SAFE_ZONE       1
+> +#define PANIC_ZONE	5
+> +#define ALARM_ZONE	4
+> +#define WARN_ZONE	3
+> +#define MONITOR_ZONE	2
+> +#define SAFE_ZONE	1
+>
 
+
+Updating this does not seam to be part of the intent of this patch. You 
+probably want to send a separate patch for this.
+
+>   #define GET_ZONE(trip) (trip + 2)
+>   #define GET_TRIP(zone) (zone - 2)
+>
+> -#define EXYNOS_ZONE_COUNT	3
+> -
+>   struct	thermal_trip_point_conf {
+>   	int trip_val[MAX_TRIP_COUNT];
+>   	int trip_count;
+> diff --git a/include/linux/platform_data/exynos_thermal.h b/include/linux/platform_data/exynos_thermal.h
+> index da7e627..893b758 100644
+> --- a/include/linux/platform_data/exynos_thermal.h
+> +++ b/include/linux/platform_data/exynos_thermal.h
+> @@ -23,6 +23,8 @@
+>   #define _LINUX_EXYNOS_THERMAL_H
+>   #include <linux/cpu_cooling.h>
+>
+> +#define MAX_TRIP	5
+> +
+
+
+Should MAX_TRIP/THRESHOLD_LEVEL/PANIC_ZONE be somewhat same
+
+>   enum calibration_type {
+>   	TYPE_ONE_POINT_TRIMMING,
+>   	TYPE_TWO_POINT_TRIMMING,
+> @@ -100,11 +102,12 @@ struct freq_clip_table {
+>   struct exynos_tmu_platform_data {
+>   	u8 threshold;
+>   	u8 threshold_falling;
+> -	u8 trigger_levels[4];
+> +	u8 trigger_levels[MAX_TRIP];
+>   	bool trigger_level0_en;
+>   	bool trigger_level1_en;
+>   	bool trigger_level2_en;
+>   	bool trigger_level3_en;
+> +	bool trigger_level4_en;
+>
+>   	u8 gain;
+>   	u8 reference_voltage;
+> @@ -113,7 +116,7 @@ struct exynos_tmu_platform_data {
+>
+>   	enum calibration_type cal_type;
+>   	enum soc_type type;
+> -	struct freq_clip_table freq_tab[4];
+> +	struct freq_clip_table freq_tab[MAX_TRIP];
+>   	unsigned int freq_tab_count;
+>   };
+>   #endif /* _LINUX_EXYNOS_THERMAL_H */
+>
