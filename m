@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V2 patch 11/19] ARM: tegra: cpuidle: use init/exit common routine
-Date: Thu, 11 Apr 2013 22:42:41 +0200
-Message-ID: <1365712969-7541-12-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V2 patch 16/19] ARM: calxeda: cpuidle: use init/exit common routine
+Date: Thu, 11 Apr 2013 22:42:46 +0200
+Message-ID: <1365712969-7541-17-git-send-email-daniel.lezcano@linaro.org>
 References: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:35163 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765104Ab3DKUnY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:24 -0400
-Received: by mail-wi0-f181.google.com with SMTP id hj8so990769wib.8
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:22 -0700 (PDT)
+Received: from mail-we0-f181.google.com ([74.125.82.181]:37121 "EHLO
+	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422633Ab3DKUng (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 16:43:36 -0400
+Received: by mail-we0-f181.google.com with SMTP id d7so1561535wer.12
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 13:43:35 -0700 (PDT)
 In-Reply-To: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,48 +19,90 @@ Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengu
 Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 ---
- arch/arm/mach-tegra/cpuidle-tegra114.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ drivers/cpuidle/cpuidle-calxeda.c |   52 +------------------------------------
+ 1 file changed, 1 insertion(+), 51 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
-index c5fadf9..1d1c602 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra114.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
-@@ -29,31 +29,7 @@ static struct cpuidle_driver tegra_idle_driver = {
- 	},
- };
+diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+index a3b56f5..e344b56 100644
+--- a/drivers/cpuidle/cpuidle-calxeda.c
++++ b/drivers/cpuidle/cpuidle-calxeda.c
+@@ -35,8 +35,6 @@
+ extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
+ extern void *scu_base_addr;
  
--static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
+-static struct cpuidle_device __percpu *calxeda_idle_cpuidle_devices;
 -
- int __init tegra114_cpuidle_init(void)
+ static inline unsigned int get_auxcr(void)
  {
--	int ret;
--	unsigned int cpu;
+ 	unsigned int val;
+@@ -85,19 +83,6 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
+ 	return index;
+ }
+ 
+-static void calxeda_idle_cpuidle_devices_uninit(void)
+-{
+-	int i;
 -	struct cpuidle_device *dev;
--	struct cpuidle_driver *drv = &tegra_idle_driver;
 -
--	ret = cpuidle_register_driver(&tegra_idle_driver);
--	if (ret) {
--		pr_err("CPUidle driver registration failed\n");
--		return ret;
+-	for_each_possible_cpu(i) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, i);
+-		cpuidle_unregister_device(dev);
 -	}
 -
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(tegra_idle_device, cpu);
--		dev->cpu = cpu;
+-	free_percpu(calxeda_idle_cpuidle_devices);
+-}
+-
+ static struct cpuidle_driver calxeda_idle_driver = {
+ 	.name = "calxeda_idle",
+ 	.states = {
+@@ -117,44 +102,9 @@ static struct cpuidle_driver calxeda_idle_driver = {
+ 
+ static int __init calxeda_cpuidle_init(void)
+ {
+-	int cpu_id;
+-	int ret;
+-	struct cpuidle_device *dev;
+-	struct cpuidle_driver *drv = &calxeda_idle_driver;
+-
+ 	if (!of_machine_is_compatible("calxeda,highbank"))
+ 		return -ENODEV;
+ 
+-	ret = cpuidle_register_driver(drv);
+-	if (ret)
+-		return ret;
+-
+-	calxeda_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+-	if (calxeda_idle_cpuidle_devices == NULL) {
+-		ret = -ENOMEM;
+-		goto unregister_drv;
+-	}
+-
+-	/* initialize state data for each cpuidle_device */
+-	for_each_possible_cpu(cpu_id) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, cpu_id);
+-		dev->cpu = cpu_id;
+-		dev->state_count = drv->state_count;
 -
 -		ret = cpuidle_register_device(dev);
 -		if (ret) {
--			pr_err("CPU%u: CPUidle device registration failed\n",
--				cpu);
--			return ret;
+-			pr_err("Failed to register cpu %u, error: %d\n",
+-			       cpu_id, ret);
+-			goto uninit;
 -		}
 -	}
+-
 -	return 0;
-+	return cpuidle_register(&tegra_idle_driver, NULL);
+-
+-uninit:
+-	calxeda_idle_cpuidle_devices_uninit();
+-unregister_drv:
+-	cpuidle_unregister_driver(drv);
+-	return ret;
++	return cpuidle_register(&calxeda_idle_driver, NULL);
  }
+ module_init(calxeda_cpuidle_init);
 -- 
 1.7.9.5
 
