@@ -1,69 +1,74 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [V2 patch 01/19] ARM: shmobile: cpuidle: remove
- shmobile_enter_wfi function
-Date: Fri, 12 Apr 2013 09:44:25 +0900
-Message-ID: <20130412004425.GD24461@verge.net.au>
-References: <1365712969-7541-1-git-send-email-daniel.lezcano@linaro.org>
- <1365712969-7541-2-git-send-email-daniel.lezcano@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V2 1/3] Thermal: rename thermal_sys.c to thermal_core.c
+Date: Fri, 12 Apr 2013 09:12:56 +0800
+Message-ID: <1365729176.2183.20.camel@rzhang1-mobl4>
+References: <1364567196-3560-1-git-send-email-rui.zhang@intel.com>
+	 <1364567196-3560-2-git-send-email-rui.zhang@intel.com>
+	 <515DE192.1030408@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:42158 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751056Ab3DLAo2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Apr 2013 20:44:28 -0400
-Content-Disposition: inline
-In-Reply-To: <1365712969-7541-2-git-send-email-daniel.lezcano@linaro.org>
+Received: from mga14.intel.com ([143.182.124.37]:8936 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752523Ab3DLBNA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Apr 2013 21:13:00 -0400
+In-Reply-To: <515DE192.1030408@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, durgadoss.r@intel.com, andi@lisas.de
 
-On Thu, Apr 11, 2013 at 10:42:31PM +0200, Daniel Lezcano wrote:
-> Remove the shmobile_enter_wfi function which is the same as the
-> common WFI enter function from the arm cpuidle driver defined
-> with the ARM_CPUIDLE_WFI_STATE macro.
-
-Should this patch also make shmobile_enter_wfi static in
-arch/arm/mach-shmobile/cpuidle.c ?
-
-Also, I have a slight preference for the patch to be split into two.
-1. A patch to remove usage of shmobile_enter_wfi from the sh7372 SoC.
-2. A patch to remove shmobile_enter_wfi. from common.h
-   (and make it static?).
-
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  arch/arm/mach-shmobile/include/mach/common.h |    3 ---
->  arch/arm/mach-shmobile/pm-sh7372.c           |    1 -
->  2 files changed, 4 deletions(-)
+On Thu, 2013-04-04 at 16:24 -0400, Eduardo Valentin wrote:
+> On 29-03-2013 10:26, Zhang Rui wrote:
+> > this is the preparation work to build all the thermal core framework
+> > source file, like governors, cpu cooling, etc, into one module.
+> >
+> > No functional change in this patch.
+> >
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 > 
-> diff --git a/arch/arm/mach-shmobile/include/mach/common.h b/arch/arm/mach-shmobile/include/mach/common.h
-> index e48606d..362f9b2 100644
-> --- a/arch/arm/mach-shmobile/include/mach/common.h
-> +++ b/arch/arm/mach-shmobile/include/mach/common.h
-> @@ -13,9 +13,6 @@ extern int shmobile_clk_init(void);
->  extern void shmobile_handle_irq_intc(struct pt_regs *);
->  extern struct platform_suspend_ops shmobile_suspend_ops;
->  struct cpuidle_driver;
-> -struct cpuidle_device;
-> -extern int shmobile_enter_wfi(struct cpuidle_device *dev,
-> -			      struct cpuidle_driver *drv, int index);
->  extern void shmobile_cpuidle_set_driver(struct cpuidle_driver *drv);
->  
->  extern void sh7372_init_irq(void);
-> diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
-> index f6b14ca..fbef7b9 100644
-> --- a/arch/arm/mach-shmobile/pm-sh7372.c
-> +++ b/arch/arm/mach-shmobile/pm-sh7372.c
-> @@ -414,7 +414,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
->  	.state_count		= 5,
->  	.safe_state_index	= 0, /* C1 */
->  	.states[0] = ARM_CPUIDLE_WFI_STATE,
-> -	.states[0].enter = shmobile_enter_wfi,
->  	.states[1] = {
->  		.name = "C2",
->  		.desc = "Core Standby Mode",
-> -- 
-> 1.7.9.5
+> Durga and me have already reviewed and acked this patch. Can you please 
+> add our Acked-by on this patch?
+
+sure.
+BTW, I've talked with Rafael, and we agree on adding prefix "acpi_" for
+ACPI drivers, and then we can rename thermal_sys.ko to thermal.ko.
+
+But I'll try to push this patch set for 3.10, to fix the problem on
+hand, also for easily back porting to 3.8 and 3.9 stable kernel.
+Then, we'll rename a couple of ACPI drivers and then thermal driver in
+3.11.
+
+what do you think?
+
+thanks,
+rui
+
 > 
+> > ---
+> >   drivers/thermal/Makefile                          |    1 +
+> >   drivers/thermal/{thermal_sys.c => thermal_core.c} |    0
+> >   2 files changed, 1 insertion(+)
+> >   rename drivers/thermal/{thermal_sys.c => thermal_core.c} (100%)
+> >
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index d3a2b38..b2009bd 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -3,6 +3,7 @@
+> >   #
+> >
+> >   obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+> > +thermal_sys-y			+= thermal_core.o
+> >
+> >   # governors
+> >   obj-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
+> > diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_core.c
+> > similarity index 100%
+> > rename from drivers/thermal/thermal_sys.c
+> > rename to drivers/thermal/thermal_core.c
+> >
+> 
+
+
