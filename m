@@ -1,48 +1,46 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] MAINTAINERS: Add patchwork entry for Thermal
- subsystem
-Date: Fri, 12 Apr 2013 09:59:51 +0800
-Message-ID: <1365731991.2183.42.camel@rzhang1-mobl4>
-References: <1365605049-22635-1-git-send-email-eduardo.valentin@ti.com>
-	 <1365605049-22635-3-git-send-email-eduardo.valentin@ti.com>
+From: Axel Lin <axel.lin@ingics.com>
+Subject: [RESEND][PATCH 1/3] PM / devfreq: exynos4_bus: Fix missing
+ mutex_unlock if opp_find_freq_floor fails
+Date: Fri, 12 Apr 2013 13:54:18 +0800
+Message-ID: <1365746058.4025.1.camel@phoenix>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:49646 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282Ab3DLB7y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Apr 2013 21:59:54 -0400
-In-Reply-To: <1365605049-22635-3-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-da0-f51.google.com ([209.85.210.51]:47264 "EHLO
+	mail-da0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750817Ab3DLFyZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 01:54:25 -0400
+Received: by mail-da0-f51.google.com with SMTP id g27so994161dan.10
+        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 22:54:24 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 2013-04-10 at 10:44 -0400, Eduardo Valentin wrote:
-> Update the Thermal subsystem MAINTAINERS entry by adding
-> its patchwork link.
-> 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
+We need to call mutex_unlock() in the error path.
 
-thanks,
-rui
-> ---
->  MAINTAINERS |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 0850f21..ace0114 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -7902,6 +7902,7 @@ M:      Zhang Rui <rui.zhang@intel.com>
->  M:      Eduardo Valentin <eduardo.valentin@ti.com>
->  L:      linux-pm@vger.kernel.org
->  T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
-> +Q:      https://patchwork.kernel.org/project/linux-pm/list/
->  S:      Supported
->  F:      drivers/thermal/
->  F:      include/linux/thermal.h
+Signed-off-by: Axel Lin <axel.lin@ingics.com>
+---
+ drivers/devfreq/exynos4_bus.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/exynos4_bus.c b/drivers/devfreq/exynos4_bus.c
+index 1deee09..54b9615 100644
+--- a/drivers/devfreq/exynos4_bus.c
++++ b/drivers/devfreq/exynos4_bus.c
+@@ -974,7 +974,8 @@ static int exynos4_busfreq_pm_notifier_event(struct notifier_block *this,
+ 			rcu_read_unlock();
+ 			dev_err(data->dev, "%s: unable to find a min freq\n",
+ 				__func__);
+-			return PTR_ERR(opp);
++			err = PTR_ERR(opp);
++			goto unlock;
+ 		}
+ 		new_oppinfo.rate = opp_get_freq(opp);
+ 		new_oppinfo.volt = opp_get_voltage(opp);
+-- 
+1.7.9.5
+
 
 
