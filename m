@@ -1,261 +1,67 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [5/9] thermal: exynos: Make the zone handling dependent on trip
- count
-Date: Fri, 12 Apr 2013 08:45:00 -0400
-Message-ID: <516801CC.9090203@ti.com>
-References: <1364297642-2746-6-git-send-email-amit.daniel@samsung.com> <51672183.3030109@ti.com> <CADGdYn4aAoPWSA94R+io5GEzD9i-pA5JMBg_SqXMb3K4c+FqNg@mail.gmail.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Fri, 12 Apr 2013 16:24:19 +0200
+Message-ID: <CA+icZUULhGR61V=wCXYctzBaM7Dei0-zGXApmfqQyiByzd5-cw@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<31778276.CDMUtaAAnc@vostro.rjw.lan>
+	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
+	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
+	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
+	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
+	<CA+icZUW12caZHDfgCV6E-1T4ExBPmu5bBNSqCzDwjUeidfRUPA@mail.gmail.com>
+	<CA+icZUUEExm5Mktxoj6=UdzBe5HUzskktKWdHNOKaFXVHaySBg@mail.gmail.com>
+	<CA+icZUW2LQmWMdaVjf5oE8y3zCq8Y2829WM9dwDKxA42N5tVDQ@mail.gmail.com>
+	<CAKohpom7Mn8aQZTUx-_fQF+9KWste0uYsZcaQ5rcM6ab45-0+g@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn4aAoPWSA94R+io5GEzD9i-pA5JMBg_SqXMb3K4c+FqNg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <CAKohpom7Mn8aQZTUx-_fQF+9KWste0uYsZcaQ5rcM6ab45-0+g@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12-04-2013 07:16, amit daniel kachhap wrote:
-> Hi Eduardo,
+On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+>> I found this "[RFC PATCH] kbuild: Build linux-tools package with 'make
+>> deb-pkg'" from February 2012.
+>> Can't say what happened to it...
 >
-> On Fri, Apr 12, 2013 at 2:18 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> On 26-03-2013 07:33, Amit Daniel Kachhap wrote:
->>>
->>> This code changes the zone handling to use the trip count passed
->>> by the TMU driver. This also helps in adding more zone support.
->>>
->>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>>
->>> ---
->>> drivers/thermal/samsung/exynos_common.c      |   56
->>> +++++++++++++------------
->>>    drivers/thermal/samsung/exynos_common.h      |   13 +++---
->>>    include/linux/platform_data/exynos_thermal.h |    7 ++-
->>>    3 files changed, 40 insertions(+), 36 deletions(-)
->>>
->>> diff --git a/drivers/thermal/samsung/exynos_common.c
->>> b/drivers/thermal/samsung/exynos_common.c
->>> index 649d67c..0c0098d 100644
->>> --- a/drivers/thermal/samsung/exynos_common.c
->>> +++ b/drivers/thermal/samsung/exynos_common.c
->>> @@ -84,17 +84,16 @@ static int exynos_set_mode(struct thermal_zone_device
->>> *thermal,
->>>    static int exynos_get_trip_type(struct thermal_zone_device *thermal, int
->>> trip,
->>>                                   enum thermal_trip_type *type)
->>>    {
->>> -       switch (GET_ZONE(trip)) {
->>> -       case MONITOR_ZONE:
->>> -       case WARN_ZONE:
->>> -               *type = THERMAL_TRIP_ACTIVE;
->>> -               break;
->>> -       case PANIC_ZONE:
->>> -               *type = THERMAL_TRIP_CRITICAL;
->>> -               break;
->>> -       default:
->>> +       struct exynos_thermal_zone *th_zone = thermal->devdata;
->>> +       int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->>> +
->>> +       if (trip < 0 || trip >= max_trip)
->>>                  return -EINVAL;
->>> -       }
->>> +       else if (trip == (max_trip - 1))
->>> +               *type = THERMAL_TRIP_CRITICAL;
->>> +       else
->>> +               *type = THERMAL_TRIP_ACTIVE;
->>> +
->>>          return 0;
->>>    }
->>>
->>> @@ -103,8 +102,9 @@ static int exynos_get_trip_temp(struct
->>> thermal_zone_device *thermal, int trip,
->>>                                  unsigned long *temp)
->>>    {
->>>          struct exynos_thermal_zone *th_zone = thermal->devdata;
->>> +       int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->>>
->>> -       if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
->>> +       if (trip < 0 || trip >= max_trip)
->>>                  return -EINVAL;
->>>
->>>          *temp = th_zone->sensor_conf->trip_data.trip_val[trip];
->>> @@ -118,10 +118,10 @@ static int exynos_get_trip_temp(struct
->>> thermal_zone_device *thermal, int trip,
->>>    static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
->>>                                  unsigned long *temp)
->>>    {
->>> -       int ret;
->>> -       /* Panic zone */
->>> -       ret = exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
->>> -       return ret;
->>> +       struct exynos_thermal_zone *th_zone = thermal->devdata;
->>> +       int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->>> +       /* Get the temp of highest trip*/
->>> +       return exynos_get_trip_temp(thermal, max_trip - 1, temp);
->>>    }
->>>
->>>    int exynos_get_frequency_level(unsigned int cpu, unsigned int freq)
->>> @@ -157,7 +157,7 @@ static int exynos_bind(struct thermal_zone_device
->>> *thermal,
->>>          tab_size = data->cooling_data.freq_clip_count;
->>>
->>>          if (tab_ptr == NULL || tab_size == 0)
->>> -               return -EINVAL;
->>> +               return 0;
->>>
->>>          /* find the cooling device registered*/
->>>          for (i = 0; i < th_zone->cool_dev_size; i++)
->>> @@ -206,7 +206,7 @@ static int exynos_unbind(struct thermal_zone_device
->>> *thermal,
->>>          tab_size = data->cooling_data.freq_clip_count;
->>>
->>>          if (tab_size == 0)
->>> -               return -EINVAL;
->>> +               return 0;
->>>
->>>          /* find the cooling device registered*/
->>>          for (i = 0; i < th_zone->cool_dev_size; i++)
->>
->>
->> The above two chunks are confusing. I dont understand how they are now
->> supposed to be valid settings.
-> Well it is made valid when there is no cooling table registered and
-> hence no cooling.
-
-I suppose that is the case when you have sensors covering domains 
-different of your CPU domain, where you cool off using cpufreq (table), 
-right?
-
-I suggest you adding a comment explaining why this is now valid..
-
-
->>
->>
->>> @@ -366,19 +366,21 @@ int exynos_register_thermal(struct
->>> thermal_sensor_conf *sensor_conf)
->>>                  return -ENOMEM;
->>>
->>>          th_zone->sensor_conf = sensor_conf;
->>> -       cpumask_set_cpu(0, &mask_val);
->>> -       th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
->>> -       if (IS_ERR(th_zone->cool_dev[0])) {
->>> -               pr_err("Failed to register cpufreq cooling device\n");
->>> -               ret = -EINVAL;
->>> -               goto err_unregister;
->>> +       if (sensor_conf->cooling_data.freq_clip_count > 0) {
->>> +               cpumask_set_cpu(0, &mask_val);
->>> +               th_zone->cool_dev[0] =
->>> cpufreq_cooling_register(&mask_val);
->>> +               if (IS_ERR(th_zone->cool_dev[0])) {
->>> +                       pr_err("Failed to register cpufreq cooling
->>> device\n");
->>> +                       ret = -EINVAL;
->>> +                       goto err_unregister;
->>> +               }
->>> +               th_zone->cool_dev_size++;
->>>          }
->>> -       th_zone->cool_dev_size++;
->>>
->>>          th_zone->therm_dev =
->>> thermal_zone_device_register(sensor_conf->name,
->>> -                       EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops,
->>> NULL, 0,
->>> -                       sensor_conf->trip_data.trigger_falling ?
->>> -                       0 : IDLE_INTERVAL);
->>> +               sensor_conf->trip_data.trip_count, 0, th_zone,
->>> &exynos_dev_ops,
->>> +               NULL, 0, sensor_conf->trip_data.trigger_falling ?
->>> +               0 : IDLE_INTERVAL);
->>>
->>>          if (IS_ERR(th_zone->therm_dev)) {
->>>                  pr_err("Failed to register thermal zone device\n");
->>> diff --git a/drivers/thermal/samsung/exynos_common.h
->>> b/drivers/thermal/samsung/exynos_common.h
->>> index b8d289e..453e09a 100644
->>> --- a/drivers/thermal/samsung/exynos_common.h
->>> +++ b/drivers/thermal/samsung/exynos_common.h
->>> @@ -27,23 +27,22 @@
->>>    #define SENSOR_NAME_LEN       16
->>>    #define MAX_TRIP_COUNT        8
->>>    #define MAX_COOLING_DEVICE 4
->>> -#define MAX_THRESHOLD_LEVS 4
->>> +#define MAX_THRESHOLD_LEVS 5
->>>
->>>    #define ACTIVE_INTERVAL 500
->>>    #define IDLE_INTERVAL 10000
->>>    #define MCELSIUS      1000
->>>
->>>    /* CPU Zone information */
->>> -#define PANIC_ZONE      4
->>> -#define WARN_ZONE       3
->>> -#define MONITOR_ZONE    2
->>> -#define SAFE_ZONE       1
->>> +#define PANIC_ZONE     5
->>> +#define ALARM_ZONE     4
->>> +#define WARN_ZONE      3
->>> +#define MONITOR_ZONE   2
->>> +#define SAFE_ZONE      1
->>>
->>
->>
->> Updating this does not seam to be part of the intent of this patch. You
->> probably want to send a separate patch for this.
-> yes right.
->>
->>
->>>    #define GET_ZONE(trip) (trip + 2)
->>>    #define GET_TRIP(zone) (zone - 2)
->>>
->>> -#define EXYNOS_ZONE_COUNT      3
->>> -
->>>    struct        thermal_trip_point_conf {
->>>          int trip_val[MAX_TRIP_COUNT];
->>>          int trip_count;
->>> diff --git a/include/linux/platform_data/exynos_thermal.h
->>> b/include/linux/platform_data/exynos_thermal.h
->>> index da7e627..893b758 100644
->>> --- a/include/linux/platform_data/exynos_thermal.h
->>> +++ b/include/linux/platform_data/exynos_thermal.h
->>> @@ -23,6 +23,8 @@
->>>    #define _LINUX_EXYNOS_THERMAL_H
->>>    #include <linux/cpu_cooling.h>
->>>
->>> +#define MAX_TRIP       5
->>> +
->>
->>
->>
->> Should MAX_TRIP/THRESHOLD_LEVEL/PANIC_ZONE be somewhat same
-> Yes they can be removed.
->>
->>
->>>    enum calibration_type {
->>>          TYPE_ONE_POINT_TRIMMING,
->>>          TYPE_TWO_POINT_TRIMMING,
->>> @@ -100,11 +102,12 @@ struct freq_clip_table {
->>>    struct exynos_tmu_platform_data {
->>>          u8 threshold;
->>>          u8 threshold_falling;
->>> -       u8 trigger_levels[4];
->>> +       u8 trigger_levels[MAX_TRIP];
->>>          bool trigger_level0_en;
->>>          bool trigger_level1_en;
->>>          bool trigger_level2_en;
->>>          bool trigger_level3_en;
->>> +       bool trigger_level4_en;
->>>
->>>          u8 gain;
->>>          u8 reference_voltage;
->>> @@ -113,7 +116,7 @@ struct exynos_tmu_platform_data {
->>>
->>>          enum calibration_type cal_type;
->>>          enum soc_type type;
->>> -       struct freq_clip_table freq_tab[4];
->>> +       struct freq_clip_table freq_tab[MAX_TRIP];
->>>          unsigned int freq_tab_count;
->>>    };
->>>    #endif /* _LINUX_EXYNOS_THERMAL_H */
->>>
->>
+> Sedat,
 >
+> Sorry for being late. I am down with Fever and throat infection since few days.
+> Still struggling with it..
 >
+> There are few things i tried. Firstly the tag: next-20130326 is bad as there are
+> some bad commits in cpufreq core in it.
+>
+> I then tried latest linux-next/master on my Thinkpad (model name        : Intel(R)
+> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ubuntu
+> just hanged.
+>
+> Then i tried Rafael's linux-next branch
+>
+> 079576f Merge branch 'pm-cpufreq-next' into linux-next
+>
+> And couldn't find any issues with it. I am easily able to remove/add cpus at
+> runtime..
+>
+> Can you give this branch a try?
+>
+
+OK, you seem to be well again, nice to hear.
+
+I was doing the whole week spring-cleaning in the apartment of my parents.
+Now, I have some minutes for a compilation run.
+
+I guess "cpufreq: Call __cpufreq_governor() with correct policy->cpus
+mask" could be the correct fix, but will try the GIT branch you have
+mentioned.
+
+- Sedat -
+
+[1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=linux-next&id=e4969ebac83fdea78d89c779331396728a4e6199
+
+> --
+> viresh
