@@ -1,54 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI / PM: Fix fallback to PCI_D0 in pci_platform_power_transition()
-Date: Sat, 13 Apr 2013 01:58:17 +0200
-Message-ID: <48795235.crcTAaJqPb@vostro.rjw.lan>
+Subject: Re: Apparent bug in pci_platform_power_transition() [drivers/pci/pci.c]
+Date: Sat, 13 Apr 2013 01:58:59 +0200
+Message-ID: <3004913.OX5v9ZAviA@vostro.rjw.lan>
+References: <27806FC4E5928A408B78E88BBC67A2306F466BBA@ORSMSX101.amr.corp.intel.com> <4137609.B6PHIUpiDT@vostro.rjw.lan> <27806FC4E5928A408B78E88BBC67A2306F4675A3@ORSMSX101.amr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57538 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:57540 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754808Ab3DLXu2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Apr 2013 19:50:28 -0400
+	id S1756379Ab3DLXvK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Apr 2013 19:51:10 -0400
+In-Reply-To: <27806FC4E5928A408B78E88BBC67A2306F4675A3@ORSMSX101.amr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Benenati, Chris J" <chris.j.benenati@intel.com>
+To: "Benenati, Chris J" <chris.j.benenati@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, April 12, 2013 10:12:32 PM Benenati, Chris J wrote:
+> >On Thursday, April 11, 2013 11:13:49 PM Benenati, Chris J wrote:
+> >> In 3.2, the marked lines (***) below were added:
+> >> 
+> >> static int pci_platform_power_transition(struct pci_dev *dev, pci_power_t state)
+> >> {                               
+> >>         int error;
+> >> 
+> >>         if (platform_pci_power_manageable(dev)) {
+> >>                error = platform_pci_set_power_state(dev, state);
+> >>                if (!error)            
+> >>                        pci_update_current_state(dev, state);
+> >>  ***           /* Fall back to PCI_D0 if native PM is not supported */
+> >>  ***           if (!dev->pm_cap)
+> >>  ***                   dev->current_state = PCI_D0;
+> >>         } else {
+> >>                error = -ENODEV;
+> >>                /* Fall back to PCI_D0 if native PM is not supported */
+> >>                if (!dev->pm_cap)
+> >>                        dev->current_state = PCI_D0;
+> >>         }
+> >> 
+> >>         return error;
+> >> }
+> >> 
+> >> If the target state is PCI_D3, the new code serves to *undo* the marked code below executed by the preceding call to pci_update_current_state() when PCI PM registers are not present:
+> >> 
+> >> void pci_update_current_state(struct pci_dev *dev, pci_power_t state) 
+> >> {
+> >>     if (dev->pm_cap) {
+> >>         u16 pmcsr;
+> >> 
+> >>         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+> >>         dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+> >>     } else {
+> >> ***     dev->current_state = state;
+> >>     }
+> >> }
+> >> 
+> >> This is despite the fact that platform_pci_power_manageable() indicated that the platform FW could handle it and the succeeding call to platform_pci_set_power_state() succeeded. That means that devices with FW support but no PCI PM support will be left in the wrong state.
+> >> 
+> >> It appears the new "if" statement should be "else if":
+> >> 
+> >>        if (!error)            
+> >>                pci_update_current_state(dev, state);
+> >>  ***   else if (!dev->pm_cap) /* Fall back to PCI_D0 if native PM is not supported */
+> >>  ***           dev->current_state = PCI_D0;
+> >> 
+> >> Rafael concurs with me.
+> >
+> >Yes, I do.
+> >
+> >Are you willing to submit a patch fixing the problem (essentially the change you've proposed above), or do you want me to do that?
+> >
+> >Rafael
+> 
+> I have never submitted a patch and do not know the procedure, so would appreciate it if you would do it.  Thanks.
 
-Commit b51306c (PCI: Set device power state to PCI_D0 for device
-without native PM support) modified pci_platform_power_transition()
-by adding code causing dev->current_state for devices that don't
-support native PCI PM but are power-manageable by the platform to be
-changed to PCI_D0 regardless of the value returned by the preceding
-platform_pci_set_power_state().  In particular, that also is done
-if the platform_pci_set_power_state() has been successful, which
-causes the correct power state of the device set by
-pci_update_current_state() in that case to be overwritten by PCI_D0.
+No problem, posted a while ago.
 
-Fix that mistake by making the fallback to PCI_D0 only happen if
-the platform_pci_set_power_state() has returned an error.
+Thanks,
+Rafael
 
-Reported-by: Chris J. Benenati <chris.j.benenati@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: <stable@vger.kernel.org>
----
- drivers/pci/pci.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux-pm/drivers/pci/pci.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci.c
-+++ linux-pm/drivers/pci/pci.c
-@@ -646,8 +646,7 @@ static int pci_platform_power_transition
- 		error = platform_pci_set_power_state(dev, state);
- 		if (!error)
- 			pci_update_current_state(dev, state);
--		/* Fall back to PCI_D0 if native PM is not supported */
--		if (!dev->pm_cap)
-+		else if (!dev->pm_cap) /* Fall back to PCI_D0 */
- 			dev->current_state = PCI_D0;
- 	} else {
- 		error = -ENODEV;
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
