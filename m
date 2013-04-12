@@ -1,82 +1,76 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V3 patch 07/19] ARM: ux500: cpuidle: use init/exit common routine
-Date: Fri, 12 Apr 2013 14:35:53 +0200
-Message-ID: <1365770165-27096-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V3 patch 09/19] ARM: OMAP3: cpuidle: use init/exit common routine
+Date: Fri, 12 Apr 2013 14:35:55 +0200
+Message-ID: <1365770165-27096-10-git-send-email-daniel.lezcano@linaro.org>
 References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:62072 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753703Ab3DLMgd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:36:33 -0400
-Received: by mail-wi0-f176.google.com with SMTP id hm14so1533620wib.15
-        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2013 05:36:32 -0700 (PDT)
+Received: from mail-we0-f175.google.com ([74.125.82.175]:39647 "EHLO
+	mail-we0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753703Ab3DLMgj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:36:39 -0400
+Received: by mail-we0-f175.google.com with SMTP id t11so2027165wey.34
+        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2013 05:36:38 -0700 (PDT)
 In-Reply-To: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-Remove the duplicate code and use the cpuidle common code for initialization.
+Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- arch/arm/mach-ux500/cpuidle.c |   32 +-------------------------------
- 1 file changed, 1 insertion(+), 31 deletions(-)
+ arch/arm/mach-omap2/cpuidle34xx.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
-index 5657d4a..488e074 100644
---- a/arch/arm/mach-ux500/cpuidle.c
-+++ b/arch/arm/mach-ux500/cpuidle.c
-@@ -21,7 +21,6 @@
+diff --git a/arch/arm/mach-omap2/cpuidle34xx.c b/arch/arm/mach-omap2/cpuidle34xx.c
+index 027a787..cca045c 100644
+--- a/arch/arm/mach-omap2/cpuidle34xx.c
++++ b/arch/arm/mach-omap2/cpuidle34xx.c
+@@ -26,6 +26,7 @@
+ #include <linux/cpuidle.h>
+ #include <linux/export.h>
+ #include <linux/cpu_pm.h>
++#include <asm/cpuidle.h>
  
- static atomic_t master = ATOMIC_INIT(0);
- static DEFINE_SPINLOCK(master_lock);
--static DEFINE_PER_CPU(struct cpuidle_device, ux500_cpuidle_device);
- 
- static inline int ux500_enter_idle(struct cpuidle_device *dev,
- 				   struct cpuidle_driver *drv, int index)
-@@ -112,40 +111,11 @@ static struct cpuidle_driver ux500_idle_driver = {
- 
- int __init ux500_idle_init(void)
- {
--	int ret, cpu;
--	struct cpuidle_device *device;
--
-         /* Configure wake up reasons */
- 	prcmu_enable_wakeups(PRCMU_WAKEUP(ARM) | PRCMU_WAKEUP(RTC) |
- 			     PRCMU_WAKEUP(ABB));
- 
--	ret = cpuidle_register_driver(&ux500_idle_driver);
--	if (ret) {
--		printk(KERN_ERR "failed to register ux500 idle driver\n");
--		return ret;
--	}
--
--	for_each_possible(cpu) {
--		device = &per_cpu(ux500_cpuidle_device, cpu);
--		device->cpu = cpu;
--		ret = cpuidle_register_device(device);
--		if (ret) {
--			printk(KERN_ERR "Failed to register cpuidle "
--			       "device for cpu%d\n", cpu);
--			goto out_unregister;
--		}
--	}
--out:
--	return ret;
--
--out_unregister:
--	for_each_possible_cpu(cpu) {
--		device = &per_cpu(ux500_cpuidle_device, cpu);
--		cpuidle_unregister_device(device);
--	}
--
--	cpuidle_unregister_driver(&ux500_idle_driver);
--	goto out;
-+	return cpuidle_register(&ux500_idle_driver, NULL);
+ #include "powerdomain.h"
+ #include "clockdomain.h"
+@@ -259,8 +260,6 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
+ 	return ret;
  }
  
- device_initcall(ux500_idle_init);
+-static DEFINE_PER_CPU(struct cpuidle_device, omap3_idle_dev);
+-
+ static struct cpuidle_driver omap3_idle_driver = {
+ 	.name             = "omap3_idle",
+ 	.owner            = THIS_MODULE,
+@@ -336,8 +335,6 @@ static struct cpuidle_driver omap3_idle_driver = {
+  */
+ int __init omap3_idle_init(void)
+ {
+-	struct cpuidle_device *dev;
+-
+ 	mpu_pd = pwrdm_lookup("mpu_pwrdm");
+ 	core_pd = pwrdm_lookup("core_pwrdm");
+ 	per_pd = pwrdm_lookup("per_pwrdm");
+@@ -346,16 +343,5 @@ int __init omap3_idle_init(void)
+ 	if (!mpu_pd || !core_pd || !per_pd || !cam_pd)
+ 		return -ENODEV;
+ 
+-	cpuidle_register_driver(&omap3_idle_driver);
+-
+-	dev = &per_cpu(omap3_idle_dev, smp_processor_id());
+-	dev->cpu = 0;
+-
+-	if (cpuidle_register_device(dev)) {
+-		printk(KERN_ERR "%s: CPUidle register device failed\n",
+-		       __func__);
+-		return -EIO;
+-	}
+-
+-	return 0;
++	return cpuidle_register(&omap3_idle_driver, NULL);
+ }
 -- 
 1.7.9.5
 
