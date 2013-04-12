@@ -1,102 +1,84 @@
-From: "myungjoo.ham" <myungjoo.ham@samsung.com>
-Subject: RE: [RESEND][PATCH 1/3] PM / devfreq: exynos4_bus: Fix missing
- mutex_unlock if opp_find_freq_floor fails
-Date: Fri, 12 Apr 2013 21:11:00 +0900
-Message-ID: <002101ce3776$cbc83f90$6358beb0$@samsung.com>
-References: <1365746058.4025.1.camel@phoenix>
- <1413655.hhUbBAKNUi@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH V2 1/3] Thermal: rename thermal_sys.c to thermal_core.c
+Date: Fri, 12 Apr 2013 08:21:15 -0400
+Message-ID: <5167FC3B.2070200@ti.com>
+References: <1364567196-3560-1-git-send-email-rui.zhang@intel.com>  <1364567196-3560-2-git-send-email-rui.zhang@intel.com>  <515DE192.1030408@ti.com> <1365729176.2183.20.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:33656 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878Ab3DLMLC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:11:02 -0400
-In-reply-to: <1413655.hhUbBAKNUi@vostro.rjw.lan>
-Content-language: ko
+Received: from comal.ext.ti.com ([198.47.26.152]:50854 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753805Ab3DLMVg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Apr 2013 08:21:36 -0400
+In-Reply-To: <1365729176.2183.20.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Axel Lin' <axel.lin@ingics.com>, 'Kyungmin Park' <kyungmin.park@samsung.com>, 'Kukjin Kim' <kgene.kim@samsung.com>
-Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, durgadoss.r@intel.com, andi@lisas.de
 
-> On Friday, April 12, 2013 11:52:01 AM =ED=95=A8=EB=AA=85=EC=A3=BC wro=
-te:
-> > > On Friday, April 12, 2013 01:54:18 PM Axel Lin wrote:
-> > > > We need to call mutex_unlock() in the error path.
-> > > >=20
-> > > > Signed-off-by: Axel Lin <axel.lin@ingics.com>
-> > >=20
-> > > All three patches applied to linux-pm.git/linux-next.
-> > >=20
-> > > Exynos maintainers, if you have any objections, please holler.
-> > >=20
-> > > Thanks,
-> > > Rafael
-> >=20
-> > This patch was included in the last pull-request patchset
-> > though the path was updated. (its precedessor patch moved
-> > exynos drivers to /drivers/devfreq/exynos/* after adding
-> > Exynos common driver files)
->=20
-> OK, so do you want me to drop it?
->=20
-> What about the remaining two?
+On 11-04-2013 21:12, Zhang Rui wrote:
+> On Thu, 2013-04-04 at 16:24 -0400, Eduardo Valentin wrote:
+>> On 29-03-2013 10:26, Zhang Rui wrote:
+>>> this is the preparation work to build all the thermal core framework
+>>> source file, like governors, cpu cooling, etc, into one module.
+>>>
+>>> No functional change in this patch.
+>>>
+>>> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>>
+>> Durga and me have already reviewed and acked this patch. Can you please
+>> add our Acked-by on this patch?
+>
+> sure.
+> BTW, I've talked with Rafael, and we agree on adding prefix "acpi_" for
+> ACPI drivers, and then we can rename thermal_sys.ko to thermal.ko.
+>
 
-Yes, please drop 1/3. It's duplicated.
+Good!
 
-The patches 2~3/3 can wait. They are actually not bugfixes.
+> But I'll try to push this patch set for 3.10, to fix the problem on
+> hand, also for easily back porting to 3.8 and 3.9 stable kernel.
+> Then, we'll rename a couple of ACPI drivers and then thermal driver in
+> 3.11.
+>
+> what do you think?
 
->=20
-> Do you have any more devfreq patches for me to take into v3.10?  If s=
-o,
-> please send a pull request ASAP.
->=20
-> Thanks,
-> Rafael
->=20
->=20
-> > >=20
-> > > > ---
-> > > >  drivers/devfreq/exynos4_bus.c |    3 ++-
-> > > >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > > >=20
-> > > > diff --git a/drivers/devfreq/exynos4_bus.c b/drivers/devfreq/ex=
-ynos4_bus.c
-> > > > index 1deee09..54b9615 100644
-> > > > --- a/drivers/devfreq/exynos4_bus.c
-> > > > +++ b/drivers/devfreq/exynos4_bus.c
-> > > > @@ -974,7 +974,8 @@ static int exynos4_busfreq_pm_notifier_even=
-t(struct notifier_block *this,
-> > > >  			rcu_read_unlock();
-> > > >  			dev_err(data->dev, "%s: unable to find a min freq\n",
-> > > >  				__func__);
-> > > > -			return PTR_ERR(opp);
-> > > > +			err =3D PTR_ERR(opp);
-> > > > +			goto unlock;
-> > > >  		}
-> > > >  		new_oppinfo.rate =3D opp_get_freq(opp);
-> > > >  		new_oppinfo.volt =3D opp_get_voltage(opp);
-> > > >=20
-> > > --=20
-> > > I speak only for myself.
-> > > Rafael J. Wysocki, Intel Open Source Technology Center.
-> > >=20
-> > >=20
-> > >=20
-> > >       =20
-> > >  =20
-> > >         =20
-> > >=20
->=20
-> --=20
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
->=20
->=20
->=20
->       =20
->  =20
->         =20
+I am OK with this approach.
+
+Thanks for keeping this up.
+
+>
+> thanks,
+> rui
+>
+>>
+>>> ---
+>>>    drivers/thermal/Makefile                          |    1 +
+>>>    drivers/thermal/{thermal_sys.c => thermal_core.c} |    0
+>>>    2 files changed, 1 insertion(+)
+>>>    rename drivers/thermal/{thermal_sys.c => thermal_core.c} (100%)
+>>>
+>>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>>> index d3a2b38..b2009bd 100644
+>>> --- a/drivers/thermal/Makefile
+>>> +++ b/drivers/thermal/Makefile
+>>> @@ -3,6 +3,7 @@
+>>>    #
+>>>
+>>>    obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+>>> +thermal_sys-y			+= thermal_core.o
+>>>
+>>>    # governors
+>>>    obj-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
+>>> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_core.c
+>>> similarity index 100%
+>>> rename from drivers/thermal/thermal_sys.c
+>>> rename to drivers/thermal/thermal_core.c
+>>>
+>>
+>
+>
+>
 >
 
