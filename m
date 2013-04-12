@@ -1,84 +1,148 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V2 1/3] Thermal: rename thermal_sys.c to thermal_core.c
-Date: Fri, 12 Apr 2013 08:21:15 -0400
-Message-ID: <5167FC3B.2070200@ti.com>
-References: <1364567196-3560-1-git-send-email-rui.zhang@intel.com>  <1364567196-3560-2-git-send-email-rui.zhang@intel.com>  <515DE192.1030408@ti.com> <1365729176.2183.20.camel@rzhang1-mobl4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [V3 patch 00/19] cpuidle: code consolidation
+Date: Fri, 12 Apr 2013 14:35:46 +0200
+Message-ID: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:50854 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753805Ab3DLMVg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Apr 2013 08:21:36 -0400
-In-Reply-To: <1365729176.2183.20.camel@rzhang1-mobl4>
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:45789 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456Ab3DLMgM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:36:12 -0400
+Received: by mail-wi0-f176.google.com with SMTP id hm14so1535284wib.9
+        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2013 05:36:10 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, amit.daniel@samsung.com, durgadoss.r@intel.com, andi@lisas.de
+To: rjw@sisk.pl
+Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 11-04-2013 21:12, Zhang Rui wrote:
-> On Thu, 2013-04-04 at 16:24 -0400, Eduardo Valentin wrote:
->> On 29-03-2013 10:26, Zhang Rui wrote:
->>> this is the preparation work to build all the thermal core framework
->>> source file, like governors, cpu cooling, etc, into one module.
->>>
->>> No functional change in this patch.
->>>
->>> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->>
->> Durga and me have already reviewed and acked this patch. Can you please
->> add our Acked-by on this patch?
->
-> sure.
-> BTW, I've talked with Rafael, and we agree on adding prefix "acpi_" for
-> ACPI drivers, and then we can rename thermal_sys.ko to thermal.ko.
->
+This patchset series provide some code consolidation across the different
+cpuidle drivers. It contains two parts, the first one is the removal of
+the time keeping flag and the second one, is a common initialization routine.
 
-Good!
+All the drivers use the en_core_tk_irqen flag, which means it is not necessary
+to make the time computation optional. We can remove this flag and assume the
+cpuidle framework always manage this operation.
 
-> But I'll try to push this patch set for 3.10, to fix the problem on
-> hand, also for easily back porting to 3.8 and 3.9 stable kernel.
-> Then, we'll rename a couple of ACPI drivers and then thermal driver in
-> 3.11.
->
-> what do you think?
+The cpuidle code initialization is duplicated across the different drivers in
+the same manner.
 
-I am OK with this approach.
+The repeating pattern is:
 
-Thanks for keeping this up.
+SMP:
 
->
-> thanks,
-> rui
->
->>
->>> ---
->>>    drivers/thermal/Makefile                          |    1 +
->>>    drivers/thermal/{thermal_sys.c => thermal_core.c} |    0
->>>    2 files changed, 1 insertion(+)
->>>    rename drivers/thermal/{thermal_sys.c => thermal_core.c} (100%)
->>>
->>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->>> index d3a2b38..b2009bd 100644
->>> --- a/drivers/thermal/Makefile
->>> +++ b/drivers/thermal/Makefile
->>> @@ -3,6 +3,7 @@
->>>    #
->>>
->>>    obj-$(CONFIG_THERMAL)		+= thermal_sys.o
->>> +thermal_sys-y			+= thermal_core.o
->>>
->>>    # governors
->>>    obj-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= fair_share.o
->>> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_core.c
->>> similarity index 100%
->>> rename from drivers/thermal/thermal_sys.c
->>> rename to drivers/thermal/thermal_core.c
->>>
->>
->
->
->
->
+cpuidle_register_driver(drv);
+for_each_possible_cpu(cpu) {
+        dev = per_cpu(cpuidle_device, cpu);
+        cpuidle_register_device(dev);
+}
+
+UP:
+
+cpuidle_register_driver(drv);
+cpuidle_register_device(dev);
+
+As on a UP machine the macro 'for_each_cpu' is a one iteration loop, using the
+initialization loop from SMP to UP works.
+
+The patchset does some cleanup for different drivers in order to make the init
+code the same. Then it introduces a generic function:
+
+  cpuidle_register(struct cpuidle_driver *drv, struct cpumask *cpumask)
+
+The cpumask is for the coupled idle states.
+
+The drivers are then modified to take into account this new function and
+to remove the duplicated code.
+
+The benefit is observable in the diffstat: 332 lines of code removed.
+
+Changelog:
+
+ - V3:
+   * folded patch 5/19 into 19/19, they were:
+     * ARM: imx: cpuidle: use init/exit common routine
+     * ARM: imx: cpuidle: create separate drivers for imx5/imx6
+   * removed rule to make cpuidle.o in the imx's Makefile
+   * splitted patch 1/19 into two, they are:
+     * [V3 patch 01/19] ARM: shmobile: cpuidle: remove shmobile_enter_wfi
+     * [V3 patch 02/19] ARM: shmobile: cpuidle: remove shmobile_enter_wfi prototype
+
+ - V2:
+   * fixed cpumask NULL test for coupled state in cpuidle_register 
+   * added comment about structure copy
+   * changed printk by pr_err
+   * folded splitted message
+   * fixed return code in cpuidle_register
+   * updated Documentation/cpuidle/drivers.txt
+   * added in the changelog dev->state_count is filled by cpuidle_enable_device
+   * fixed tag for tegra in the first line patch description
+   * fixed tegra2 removed tegra_tear_down_cpu = tegra20_tear_down_cpu;
+
+ - V1: Initial post
+
+Tested-on: u8500
+Tested-on: at91
+Tested-on: intel i5
+Tested-on: OMAP4
+
+Compiled with and without CPU_IDLE for:
+ u8500, at91, davinci, exynos, imx5, imx6, kirkwood, multi_v7 (for calxeda),
+ omap2plus, s3c64, tegra1, tegra2, tegra3
+
+Daniel Lezcano (19):
+  ARM: shmobile: cpuidle: remove shmobile_enter_wfi function
+  ARM: shmobile: cpuidle: remove shmobile_enter_wfi prototype
+  ARM: OMAP3: remove cpuidle_wrap_enter
+  cpuidle: remove en_core_tk_irqen flag
+  ARM: ux500: cpuidle: replace for_each_online_cpu by
+    for_each_possible_cpu
+  cpuidle: make a single register function for all
+  ARM: ux500: cpuidle: use init/exit common routine
+  ARM: at91: cpuidle: use init/exit common routine
+  ARM: OMAP3: cpuidle: use init/exit common routine
+  ARM: s3c64xx: cpuidle: use init/exit common routine
+  ARM: tegra: cpuidle: use init/exit common routine
+  ARM: shmobile: cpuidle: use init/exit common routine
+  ARM: OMAP4: cpuidle: use init/exit common routine
+  ARM: tegra: cpuidle: use init/exit common routine for tegra2
+  ARM: tegra: cpuidle: use init/exit common routine for tegra3
+  ARM: calxeda: cpuidle: use init/exit common routine
+  ARM: kirkwood: cpuidle: use init/exit common routine
+  ARM: davinci: cpuidle: use init/exit common routine
+  ARM: imx: cpuidle: use init/exit common routine
+
+ Documentation/cpuidle/driver.txt                |    6 +
+ arch/arm/mach-at91/cpuidle.c                    |   18 +--
+ arch/arm/mach-davinci/cpuidle.c                 |   21 +---
+ arch/arm/mach-exynos/cpuidle.c                  |    1 -
+ arch/arm/mach-imx/Makefile                      |    2 +-
+ arch/arm/mach-imx/cpuidle-imx5.c                |   40 +++++++
+ arch/arm/mach-imx/cpuidle-imx6q.c               |    3 +-
+ arch/arm/mach-imx/cpuidle.c                     |   80 -------------
+ arch/arm/mach-imx/cpuidle.h                     |   10 +-
+ arch/arm/mach-imx/pm-imx5.c                     |   30 +----
+ arch/arm/mach-omap2/cpuidle34xx.c               |   49 ++------
+ arch/arm/mach-omap2/cpuidle44xx.c               |   23 +---
+ arch/arm/mach-s3c64xx/cpuidle.c                 |   15 +--
+ arch/arm/mach-shmobile/cpuidle.c                |   11 +-
+ arch/arm/mach-shmobile/include/mach/common.h    |    3 -
+ arch/arm/mach-shmobile/pm-sh7372.c              |    2 -
+ arch/arm/mach-tegra/cpuidle-tegra114.c          |   27 +----
+ arch/arm/mach-tegra/cpuidle-tegra20.c           |   31 +----
+ arch/arm/mach-tegra/cpuidle-tegra30.c           |   28 +----
+ arch/arm/mach-ux500/cpuidle.c                   |   33 +-----
+ arch/powerpc/platforms/pseries/processor_idle.c |    1 -
+ arch/sh/kernel/cpu/shmobile/cpuidle.c           |    1 -
+ arch/x86/kernel/apm_32.c                        |    1 -
+ drivers/acpi/processor_idle.c                   |    1 -
+ drivers/cpuidle/cpuidle-calxeda.c               |   53 +--------
+ drivers/cpuidle/cpuidle-kirkwood.c              |   18 +--
+ drivers/cpuidle/cpuidle.c                       |  144 ++++++++++++++---------
+ drivers/idle/intel_idle.c                       |    1 -
+ include/linux/cpuidle.h                         |   20 ++--
+ 29 files changed, 175 insertions(+), 498 deletions(-)
+ create mode 100644 arch/arm/mach-imx/cpuidle-imx5.c
+ delete mode 100644 arch/arm/mach-imx/cpuidle.c
+
+-- 
+1.7.9.5
 
