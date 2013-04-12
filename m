@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V3 patch 11/19] ARM: tegra: cpuidle: use init/exit common routine
-Date: Fri, 12 Apr 2013 14:35:57 +0200
-Message-ID: <1365770165-27096-12-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V3 patch 12/19] ARM: shmobile: cpuidle: use init/exit common routine
+Date: Fri, 12 Apr 2013 14:35:58 +0200
+Message-ID: <1365770165-27096-13-git-send-email-daniel.lezcano@linaro.org>
 References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f176.google.com ([74.125.82.176]:51778 "EHLO
-	mail-we0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753703Ab3DLMgp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:36:45 -0400
-Received: by mail-we0-f176.google.com with SMTP id s43so1943262wey.7
-        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2013 05:36:44 -0700 (PDT)
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:49404 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753703Ab3DLMgt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 08:36:49 -0400
+Received: by mail-wi0-f175.google.com with SMTP id c10so1538110wiw.2
+        for <linux-pm@vger.kernel.org>; Fri, 12 Apr 2013 05:36:48 -0700 (PDT)
 In-Reply-To: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,47 +19,36 @@ Cc: linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengu
 Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 ---
- arch/arm/mach-tegra/cpuidle-tegra114.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ arch/arm/mach-shmobile/cpuidle.c |   10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
-index c5fadf9..1d1c602 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra114.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
-@@ -29,31 +29,7 @@ static struct cpuidle_driver tegra_idle_driver = {
- 	},
- };
+diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
+index d671ae9..0afeb5c 100644
+--- a/arch/arm/mach-shmobile/cpuidle.c
++++ b/arch/arm/mach-shmobile/cpuidle.c
+@@ -16,7 +16,6 @@
+ #include <asm/cpuidle.h>
+ #include <asm/io.h>
  
--static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
--
- int __init tegra114_cpuidle_init(void)
+-static struct cpuidle_device shmobile_cpuidle_dev;
+ static struct cpuidle_driver shmobile_cpuidle_default_driver = {
+ 	.name			= "shmobile_cpuidle",
+ 	.owner			= THIS_MODULE,
+@@ -34,12 +33,5 @@ void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
+ 
+ int __init shmobile_cpuidle_init(void)
  {
--	int ret;
--	unsigned int cpu;
--	struct cpuidle_device *dev;
--	struct cpuidle_driver *drv = &tegra_idle_driver;
+-	struct cpuidle_device *dev = &shmobile_cpuidle_dev;
 -
--	ret = cpuidle_register_driver(&tegra_idle_driver);
--	if (ret) {
--		pr_err("CPUidle driver registration failed\n");
--		return ret;
--	}
+-	cpuidle_register_driver(cpuidle_drv);
 -
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(tegra_idle_device, cpu);
--		dev->cpu = cpu;
+-	dev->state_count = cpuidle_drv->state_count;
+-	cpuidle_register_device(dev);
 -
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("CPU%u: CPUidle device registration failed\n",
--				cpu);
--			return ret;
--		}
--	}
 -	return 0;
-+	return cpuidle_register(&tegra_idle_driver, NULL);
++	return cpuidle_register(cpuidle_drv, NULL);
  }
 -- 
 1.7.9.5
