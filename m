@@ -1,48 +1,72 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [RESEND][PATCH 3/3] PM / devfreq: exynos4_bus: Fix table entry size
- for exynos4x12_clkdiv_dmc1
-Date: Fri, 12 Apr 2013 13:56:21 +0800
-Message-ID: <1365746181.4025.3.camel@phoenix>
-References: <1365746058.4025.1.camel@phoenix>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH 04/18] ARM: imx: cpuidle: create separate drivers for
+ imx5/imx6
+Date: Fri, 12 Apr 2013 14:05:30 +0800
+Message-ID: <20130412060527.GA16494@S2101-09.ap.freescale.net>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365603743-5618-5-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:42292 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078Ab3DLF40 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 01:56:26 -0400
-Received: by mail-pd0-f170.google.com with SMTP id 10so1231339pdi.29
-        for <linux-pm@vger.kernel.org>; Thu, 11 Apr 2013 22:56:26 -0700 (PDT)
-In-Reply-To: <1365746058.4025.1.camel@phoenix>
+Received: from ch1ehsobe003.messaging.microsoft.com ([216.32.181.183]:44783
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751370Ab3DLGFU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 02:05:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1365603743-5618-5-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-exynos4x12_clkdiv_dmc1 contains { G2DACP, DIVC2C, DIVC2C_ACLK }, thus
-set the size to 3 rather than 6.
+On Wed, Apr 10, 2013 at 04:22:09PM +0200, Daniel Lezcano wrote:
+> The code intializes the cpuidle driver at different places.
+> The cpuidle driver for :
+>   * imx5 : is in the pm-imx5.c, the init function is in cpuidle.c
+>   * imx6 : is in cpuidle-imx6q.c, the init function is in cpuidle.c
+>            and cpuidle-imx6q.c
+> 
+> Instead of having the cpuidle code spread across different files,
+> let's write a driver for each SoC and make the code similar.
+> 
+> That implies some code duplication but that will be fixed with the
+> next patches which consolidate the initialization for all the drivers.
+> 
+IMO, this is unnecessary churn.  I agree that we can have cpuidle-imx5.c
+instead of carrying imx5 cpuidle code in pm-imx5.c.  But removing
+cpuidle.c and duplicating what imx_cpuidle_init() does into imx5 and
+imx6q driver is a step backward to me.
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
----
- drivers/devfreq/exynos4_bus.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I suggest simply merging this patch into "[PATCH 18/18] ARM: imx:
+cpuidle: use init/exit common routine"
 
-diff --git a/drivers/devfreq/exynos4_bus.c b/drivers/devfreq/exynos4_bus.c
-index 45d00d1..1deee09 100644
---- a/drivers/devfreq/exynos4_bus.c
-+++ b/drivers/devfreq/exynos4_bus.c
-@@ -235,7 +235,7 @@ static const unsigned int exynos4x12_clkdiv_dmc0[][6] = {
- 	/* DMC L4: 100MHz */
- 	{7, 1, 1, 7, 1, 1},
- };
--static const unsigned int exynos4x12_clkdiv_dmc1[][6] = {
-+static const unsigned int exynos4x12_clkdiv_dmc1[][3] = {
- 	/*
- 	 * Clock divider value for following
- 	 * { G2DACP, DIVC2C, DIVC2C_ACLK }
--- 
-1.7.9.5
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-imx/Makefile        |    1 +
+>  arch/arm/mach-imx/cpuidle-imx5.c  |   74 ++++++++++++++++++++++++++++++++++
+>  arch/arm/mach-imx/cpuidle-imx6q.c |   36 ++++++++++++++++-
+>  arch/arm/mach-imx/cpuidle.c       |   80 -------------------------------------
+>  arch/arm/mach-imx/cpuidle.h       |   10 ++---
+>  arch/arm/mach-imx/pm-imx5.c       |   29 +-------------
+>  6 files changed, 115 insertions(+), 115 deletions(-)
+>  create mode 100644 arch/arm/mach-imx/cpuidle-imx5.c
+>  delete mode 100644 arch/arm/mach-imx/cpuidle.c
+> 
+> diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
+> index c4ce090..bfd5f5b 100644
+> --- a/arch/arm/mach-imx/Makefile
+> +++ b/arch/arm/mach-imx/Makefile
+> @@ -31,6 +31,7 @@ obj-$(CONFIG_CPU_FREQ_IMX)    += cpufreq.o
+>  
+>  ifeq ($(CONFIG_CPU_IDLE),y)
+>  obj-y += cpuidle.o
 
+This target should be removed, since arch/arm/mach-imx/cpuidle.c goes
+away.
 
+Shawn
+
+> +obj-$(CONFIG_SOC_IMX5) += cpuidle-imx5.o
+>  obj-$(CONFIG_SOC_IMX6Q) += cpuidle-imx6q.o
+>  endif
 
