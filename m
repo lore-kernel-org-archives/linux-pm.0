@@ -1,80 +1,44 @@
-From: Alex Shi <alex.shi@intel.com>
-Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Fri, 12 Apr 2013 16:46:50 +0800
-Message-ID: <5167C9FA.8050406@intel.com>
-References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org>
+From: Ulf Hansson <ulf.hansson@stericsson.com>
+Subject: [PATCH] PM / Runtime: Asyncronous idle|suspend parent devices at removal
+Date: Fri, 12 Apr 2013 11:41:30 +0200
+Message-ID: <1365759690-23687-1-git-send-email-ulf.hansson@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:20733 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752695Ab3DLIrY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Apr 2013 04:47:24 -0400
-In-Reply-To: <516724F5.20504@kernel.org>
+Received: from eu1sys200aog104.obsmtp.com ([207.126.144.117]:36541 "EHLO
+	eu1sys200aog104.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752713Ab3DLJmL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Apr 2013 05:42:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, bp@alien8.de, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On 04/12/2013 05:02 AM, Len Brown wrote:
->> > x = 16   299.915 /43 77           259.127 /58 66
-> Are you sure that powersave mode ran in 43 seconds
-> when performance mode ran in 58 seconds?
+From: Ulf Hansson <ulf.hansson@linaro.org>
 
-Thanks a lot for comments, Len!
-Will do more testing by your tool fspin. :)
+For irq safe devices return the runtime reference for the parent
+by using the asyncronous runtime PM API. Thus we don't have to
+wait for it to become idle|suspended. Instead we can move on and
+handle the next device in queue.
 
-powersaving using less time when thread = 16 or 32.
-The main contribution come from CPU freq boost. I have disable the boost
-of cpufreq. then find the compile time become similar between
-powersaving and performance on thread 32, and powersaving is slower when
-threads is 16.
-And less Context Switch from less lazy power balance should also do some
-help.
-> 
-> If that is true, than somewhere in this patch series
-> you have a _significant_ performance benefit
-> on this workload under these conditions!
-> 
-> Interestingly, powersave mode also ran at
-> 15% higher power than performance mode.
-> maybe "powersave" isn't quite the right name for it:-)
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+---
+ drivers/base/power/runtime.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-What other name you suggest? :)
-> 
->> > x = 32   341.221 /35 83           323.418 /38 81
-> Why does this patch series have a performance impact (8%)
-> at x=32.  All the processors are always busy, no?
-
-No, all processors are not always busy in 'make -j vmlinux'
-So, compile time also get benefit from boost and less CS. the
-performance policy doesn't introduce any impact. there is nothing added
-in performance policy.
-> 
->> > data explains: 189.416 /228 23
->> > 	189.416: average Watts during compilation
->> > 	228: seconds(compile time)
->> > 	23:  scaled performance/watts = 1000000 / seconds / watts
->> > The performance value of kbuild is better on threads 16/32, that's due
->> > to lazy power balance reduced the context switch and CPU has more boost 
->> > chance on powersaving balance.
-> 25% is a huge difference in performance.
-> Can you get a performance benefit in that scenario
-> without having a negative performance impact
-> in the other scenarios?  In particular,
-
-will try packing task on cpu capacity not cpu weight.
-> an 8% hit to the fully utilized case is a deal killer.
-
-that is the 8% gain on powersaving, not 8% lose on performance policy. :)
-> 
-> The x=16 performance change here suggest there is value
-> someplace in this patch series to increase performance.
-> However, the case that these scheduling changes are
-> a benefit from an energy efficiency point of view
-> is yet to be made.
-
-
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 1244930..ef13ad08 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1400,5 +1400,5 @@ void pm_runtime_remove(struct device *dev)
+ 	if (dev->power.runtime_status == RPM_ACTIVE)
+ 		pm_runtime_set_suspended(dev);
+ 	if (dev->power.irq_safe && dev->parent)
+-		pm_runtime_put_sync(dev->parent);
++		pm_runtime_put(dev->parent);
+ }
 -- 
-Thanks Alex
+1.7.10
+
