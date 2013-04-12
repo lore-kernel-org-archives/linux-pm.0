@@ -1,64 +1,123 @@
-From: "Benenati, Chris J" <chris.j.benenati@intel.com>
-Subject: RE: Apparent bug in pci_platform_power_transition()
- [drivers/pci/pci.c]
-Date: Fri, 12 Apr 2013 22:12:32 +0000
-Message-ID: <27806FC4E5928A408B78E88BBC67A2306F4675A3@ORSMSX101.amr.corp.intel.com>
-References: <27806FC4E5928A408B78E88BBC67A2306F466BBA@ORSMSX101.amr.corp.intel.com>
- <4137609.B6PHIUpiDT@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Sat, 13 Apr 2013 00:51:39 +0200
+Message-ID: <1923819.6Nb81T2TR8@vostro.rjw.lan>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:15212 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827Ab3DLWMe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Apr 2013 18:12:34 -0400
-In-Reply-To: <4137609.B6PHIUpiDT@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sedat.dilek@gmail.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 
-Pk9uIFRodXJzZGF5LCBBcHJpbCAxMSwgMjAxMyAxMToxMzo0OSBQTSBCZW5lbmF0aSwgQ2hyaXMg
-SiB3cm90ZToNCj4+IEluIDMuMiwgdGhlIG1hcmtlZCBsaW5lcyAoKioqKSBiZWxvdyB3ZXJlIGFk
-ZGVkOg0KPj4gDQo+PiBzdGF0aWMgaW50IHBjaV9wbGF0Zm9ybV9wb3dlcl90cmFuc2l0aW9uKHN0
-cnVjdCBwY2lfZGV2ICpkZXYsIHBjaV9wb3dlcl90IHN0YXRlKQ0KPj4geyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICANCj4+ICAgICAgICAgaW50IGVycm9yOw0KPj4gDQo+PiAgICAgICAg
-IGlmIChwbGF0Zm9ybV9wY2lfcG93ZXJfbWFuYWdlYWJsZShkZXYpKSB7DQo+PiAgICAgICAgICAg
-ICAgICBlcnJvciA9IHBsYXRmb3JtX3BjaV9zZXRfcG93ZXJfc3RhdGUoZGV2LCBzdGF0ZSk7DQo+
-PiAgICAgICAgICAgICAgICBpZiAoIWVycm9yKSAgICAgICAgICAgIA0KPj4gICAgICAgICAgICAg
-ICAgICAgICAgICBwY2lfdXBkYXRlX2N1cnJlbnRfc3RhdGUoZGV2LCBzdGF0ZSk7DQo+PiAgKioq
-ICAgICAgICAgICAvKiBGYWxsIGJhY2sgdG8gUENJX0QwIGlmIG5hdGl2ZSBQTSBpcyBub3Qgc3Vw
-cG9ydGVkICovDQo+PiAgKioqICAgICAgICAgICBpZiAoIWRldi0+cG1fY2FwKQ0KPj4gICoqKiAg
-ICAgICAgICAgICAgICAgICBkZXYtPmN1cnJlbnRfc3RhdGUgPSBQQ0lfRDA7DQo+PiAgICAgICAg
-IH0gZWxzZSB7DQo+PiAgICAgICAgICAgICAgICBlcnJvciA9IC1FTk9ERVY7DQo+PiAgICAgICAg
-ICAgICAgICAvKiBGYWxsIGJhY2sgdG8gUENJX0QwIGlmIG5hdGl2ZSBQTSBpcyBub3Qgc3VwcG9y
-dGVkICovDQo+PiAgICAgICAgICAgICAgICBpZiAoIWRldi0+cG1fY2FwKQ0KPj4gICAgICAgICAg
-ICAgICAgICAgICAgICBkZXYtPmN1cnJlbnRfc3RhdGUgPSBQQ0lfRDA7DQo+PiAgICAgICAgIH0N
-Cj4+IA0KPj4gICAgICAgICByZXR1cm4gZXJyb3I7DQo+PiB9DQo+PiANCj4+IElmIHRoZSB0YXJn
-ZXQgc3RhdGUgaXMgUENJX0QzLCB0aGUgbmV3IGNvZGUgc2VydmVzIHRvICp1bmRvKiB0aGUgbWFy
-a2VkIGNvZGUgYmVsb3cgZXhlY3V0ZWQgYnkgdGhlIHByZWNlZGluZyBjYWxsIHRvIHBjaV91cGRh
-dGVfY3VycmVudF9zdGF0ZSgpIHdoZW4gUENJIFBNIHJlZ2lzdGVycyBhcmUgbm90IHByZXNlbnQ6
-DQo+PiANCj4+IHZvaWQgcGNpX3VwZGF0ZV9jdXJyZW50X3N0YXRlKHN0cnVjdCBwY2lfZGV2ICpk
-ZXYsIHBjaV9wb3dlcl90IHN0YXRlKSANCj4+IHsNCj4+ICAgICBpZiAoZGV2LT5wbV9jYXApIHsN
-Cj4+ICAgICAgICAgdTE2IHBtY3NyOw0KPj4gDQo+PiAgICAgICAgIHBjaV9yZWFkX2NvbmZpZ193
-b3JkKGRldiwgZGV2LT5wbV9jYXAgKyBQQ0lfUE1fQ1RSTCwgJnBtY3NyKTsNCj4+ICAgICAgICAg
-ZGV2LT5jdXJyZW50X3N0YXRlID0gKHBtY3NyICYgUENJX1BNX0NUUkxfU1RBVEVfTUFTSyk7DQo+
-PiAgICAgfSBlbHNlIHsNCj4+ICoqKiAgICAgZGV2LT5jdXJyZW50X3N0YXRlID0gc3RhdGU7DQo+
-PiAgICAgfQ0KPj4gfQ0KPj4gDQo+PiBUaGlzIGlzIGRlc3BpdGUgdGhlIGZhY3QgdGhhdCBwbGF0
-Zm9ybV9wY2lfcG93ZXJfbWFuYWdlYWJsZSgpIGluZGljYXRlZCB0aGF0IHRoZSBwbGF0Zm9ybSBG
-VyBjb3VsZCBoYW5kbGUgaXQgYW5kIHRoZSBzdWNjZWVkaW5nIGNhbGwgdG8gcGxhdGZvcm1fcGNp
-X3NldF9wb3dlcl9zdGF0ZSgpIHN1Y2NlZWRlZC4gVGhhdCBtZWFucyB0aGF0IGRldmljZXMgd2l0
-aCBGVyBzdXBwb3J0IGJ1dCBubyBQQ0kgUE0gc3VwcG9ydCB3aWxsIGJlIGxlZnQgaW4gdGhlIHdy
-b25nIHN0YXRlLg0KPj4gDQo+PiBJdCBhcHBlYXJzIHRoZSBuZXcgImlmIiBzdGF0ZW1lbnQgc2hv
-dWxkIGJlICJlbHNlIGlmIjoNCj4+IA0KPj4gICAgICAgIGlmICghZXJyb3IpICAgICAgICAgICAg
-DQo+PiAgICAgICAgICAgICAgICBwY2lfdXBkYXRlX2N1cnJlbnRfc3RhdGUoZGV2LCBzdGF0ZSk7
-DQo+PiAgKioqICAgZWxzZSBpZiAoIWRldi0+cG1fY2FwKSAvKiBGYWxsIGJhY2sgdG8gUENJX0Qw
-IGlmIG5hdGl2ZSBQTSBpcyBub3Qgc3VwcG9ydGVkICovDQo+PiAgKioqICAgICAgICAgICBkZXYt
-PmN1cnJlbnRfc3RhdGUgPSBQQ0lfRDA7DQo+PiANCj4+IFJhZmFlbCBjb25jdXJzIHdpdGggbWUu
-DQo+DQo+WWVzLCBJIGRvLg0KPg0KPkFyZSB5b3Ugd2lsbGluZyB0byBzdWJtaXQgYSBwYXRjaCBm
-aXhpbmcgdGhlIHByb2JsZW0gKGVzc2VudGlhbGx5IHRoZSBjaGFuZ2UgeW91J3ZlIHByb3Bvc2Vk
-IGFib3ZlKSwgb3IgZG8geW91IHdhbnQgbWUgdG8gZG8gdGhhdD8NCj4NCj5SYWZhZWwNCg0KSSBo
-YXZlIG5ldmVyIHN1Ym1pdHRlZCBhIHBhdGNoIGFuZCBkbyBub3Qga25vdyB0aGUgcHJvY2VkdXJl
-LCBzbyB3b3VsZCBhcHByZWNpYXRlIGl0IGlmIHlvdSB3b3VsZCBkbyBpdC4gIFRoYW5rcy4NCg==
+On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
+> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.com> =
+wrote:
+> > On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.com=
+> wrote:
+> >> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.co=
+m> wrote:
+> >>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@lina=
+ro.org> wrote:
+> >>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wrot=
+e:
+> >>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package wit=
+h 'make
+> >>>>> deb-pkg'" from February 2012.
+> >>>>> Can't say what happened to it...
+> >>>>
+> >>>> Sedat,
+> >>>>
+> >>>> Sorry for being late. I am down with Fever and throat infection =
+since few days.
+> >>>> Still struggling with it..
+> >>>>
+> >>>> There are few things i tried. Firstly the tag: next-20130326 is =
+bad as there are
+> >>>> some bad commits in cpufreq core in it.
+> >>>>
+> >>>> I then tried latest linux-next/master on my Thinkpad (model name=
+        : Intel(R)
+> >>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ubu=
+ntu
+> >>>> just hanged.
+> >>>>
+> >>>> Then i tried Rafael's linux-next branch
+> >>>>
+> >>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
+> >>>>
+> >>>> And couldn't find any issues with it. I am easily able to remove=
+/add cpus at
+> >>>> runtime..
+> >>>>
+> >>>> Can you give this branch a try?
+> >>>>
+> >>>
+> >>> OK, you seem to be well again, nice to hear.
+> >>>
+> >>> I was doing the whole week spring-cleaning in the apartment of my=
+ parents.
+> >>> Now, I have some minutes for a compilation run.
+> >>>
+> >>> I guess "cpufreq: Call __cpufreq_governor() with correct policy->=
+cpus
+> >>> mask" could be the correct fix, but will try the GIT branch you h=
+ave
+> >>> mentioned.
+> >>>
+> >>> - Sedat -
+> >>>
+> >>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
+it/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e6199
+> >>>
+> >>
+> >> Both BROKEN here, specific pm-next commitid and pulling
+> >> pm.git#linux-next into next-20130411 (see attached files).
+> >>
+> >> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause o=
+f this all?
+> >>
+> >
+> > [ CC Nathan ]
+> >
+> > NO, wrong assumption.
+> >
+> > 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
+> > "cpufreq: convert cpufreq_driver to using RCU"
+> > 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
+> > __cpufreq_governor() with correct policy->cpus mask"
+> > 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-07=
+9576f] Merge branch
+> > 'pm-cpufreq-next' into linux-next
+> >
+> > - Sedat -
+> >
+> >
+> >> - Sedat -
+> >>
+> >> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.gi=
+t/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
+> >>
+> >>>> --
+> >>>> viresh
+>=20
+> [ TO Dirk (Author of Intel pstate driver) ]
+>=20
+> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-trace!
+>=20
+> My kernel-config and dmesg are attached.
+
+You're seeing a trouble with a new driver, then, so that's not a regres=
+sion.
+
+Thanks for taking the time to debug this!
+
+Rafael
+
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
