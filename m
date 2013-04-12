@@ -1,93 +1,51 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] Thermal: Don't resolve THERMAL_NO_LIMIT to max_state.
-Date: Fri, 12 Apr 2013 09:38:30 +0800
-Message-ID: <1365730710.2183.26.camel@rzhang1-mobl4>
-References: <1364304589-24335-1-git-send-email-yshuiv7@gmail.com>
+Subject: Re: [PATCH 1/2] MAINTAINERS: Add Thermal subsystem co-maintainer
+Date: Fri, 12 Apr 2013 09:59:02 +0800
+Message-ID: <1365731942.2183.41.camel@rzhang1-mobl4>
+References: <1365605049-22635-1-git-send-email-eduardo.valentin@ti.com>
+	 <1365605049-22635-2-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:25779 "EHLO mga03.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:19583 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044Ab3DLBie (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Apr 2013 21:38:34 -0400
-In-Reply-To: <1364304589-24335-1-git-send-email-yshuiv7@gmail.com>
+	id S1752282Ab3DLB70 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Apr 2013 21:59:26 -0400
+In-Reply-To: <1365605049-22635-2-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Yuxuan Shui <yshuiv7@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Amit Kachhap <amit.kachhap@linaro.org>, durga <durgadoss.r@intel.com>, eduardo <eduardo.valentin@ti.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org
 
-On Tue, 2013-03-26 at 21:29 +0800, Yuxuan Shui wrote:
-> max_state may change at runtime, for example, when loading/unloading
-> cpufreq policy.
+On Wed, 2013-04-10 at 10:44 -0400, Eduardo Valentin wrote:
+> Adding myself as co-maintainer for the thermal subsystem.
 > 
-this seems to be a problem that we have not covered yet.
-
-when loading/unloading the cpufreq policy, the cpufreq_frequency_table
-will be changed as well, right?
-what if we want to use p4 for trip point 2, and then there are only two
-valid entries after reloading cpufreq policy?
-
-To me, the real thing we missed here is a mechanism for dynamic
-binding. 
+> The agreed work split will be so that as a co-maintainer
+> I will be taking care of platform thermal drivers, non-ACPI
+> thermal drivers and making sure the thermal framework core
+> code will continue to suffice the non-ACPI thermal needs.
+> 
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 
 thanks,
 rui
-
-> Signed-off-by: Yuxuan Shui <yshuiv7@gmail.com>
 > ---
->  drivers/thermal/step_wise.c   | 11 ++++++++---
->  drivers/thermal/thermal_sys.c |  5 ++---
->  2 files changed, 10 insertions(+), 6 deletions(-)
+>  MAINTAINERS |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index 407cde3..2edb7e9 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -54,18 +54,23 @@ static unsigned long get_target_state(struct thermal_instance *instance,
->  {
->  	struct thermal_cooling_device *cdev = instance->cdev;
->  	unsigned long cur_state;
-> +	unsigned long max_state;
-> +	int upper;
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 836a618..0850f21 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -7899,6 +7899,7 @@ F:	arch/xtensa/
 >  
->  	cdev->ops->get_cur_state(cdev, &cur_state);
-> +	cdev->ops->get_max_state(cdev, &max_state);
-> +
-> +	upper = instance->upper == THERMAL_NO_LIMIT ? max_state : instance->upper;
->  
->  	switch (trend) {
->  	case THERMAL_TREND_RAISING:
->  		if (throttle)
-> -			cur_state = cur_state < instance->upper ?
-> -				    (cur_state + 1) : instance->upper;
-> +			cur_state = cur_state < upper ?
-> +				    (cur_state + 1) : upper;
->  		break;
->  	case THERMAL_TREND_RAISE_FULL:
->  		if (throttle)
-> -			cur_state = instance->upper;
-> +			cur_state = upper;
->  		break;
->  	case THERMAL_TREND_DROPPING:
->  		if (cur_state == instance->lower) {
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 5b7863a..f02e4d4 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -1134,11 +1134,10 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
->  
->  	cdev->ops->get_max_state(cdev, &max_state);
->  
-> -	/* lower default 0, upper default max_state */
-> +	/* lower default 0 */
->  	lower = lower == THERMAL_NO_LIMIT ? 0 : lower;
-> -	upper = upper == THERMAL_NO_LIMIT ? max_state : upper;
->  
-> -	if (lower > upper || upper > max_state)
-> +	if (lower > upper || (upper != THERMAL_NO_LIMIT && upper > max_state))
->  		return -EINVAL;
->  
->  	dev =
+>  THERMAL
+>  M:      Zhang Rui <rui.zhang@intel.com>
+> +M:      Eduardo Valentin <eduardo.valentin@ti.com>
+>  L:      linux-pm@vger.kernel.org
+>  T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+>  S:      Supported
 
 
