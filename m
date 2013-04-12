@@ -1,67 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / Runtime: Improve prepare handling at system suspend for genpd
-Date: Fri, 12 Apr 2013 13:50:36 +0200
-Message-ID: <1844674.ZBv3XGts1U@vostro.rjw.lan>
-References: <1365759704-23722-1-git-send-email-ulf.hansson@stericsson.com>
+Subject: Re: [RESEND][PATCH 1/3] PM / devfreq: exynos4_bus: Fix missing mutex_unlock if opp_find_freq_floor fails
+Date: Fri, 12 Apr 2013 13:51:22 +0200
+Message-ID: <1413655.hhUbBAKNUi@vostro.rjw.lan>
+References: <1365746058.4025.1.camel@phoenix>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56966 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539Ab3DLLms (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Apr 2013 07:42:48 -0400
-In-Reply-To: <1365759704-23722-1-git-send-email-ulf.hansson@stericsson.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1365746058.4025.1.camel@phoenix>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Axel Lin <axel.lin@ingics.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@stericsson.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Friday, April 12, 2013 11:41:44 AM Ulf Hansson wrote:
-> From: Ulf Hansson <ulf.hansson@linaro.org>
+On Friday, April 12, 2013 01:54:18 PM Axel Lin wrote:
+> We need to call mutex_unlock() in the error path.
 > 
-> When genpd prepares for a system suspend it will fetch a runtime
-> reference for the device. When returning it we now use the
-> asyncronous runtime PM API. Thus we don't have to wait for the
-> device to become idle|suspended before we move on and handle the
-> next device in queue.
-> 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Signed-off-by: Axel Lin <axel.lin@ingics.com>
 
 All three patches applied to linux-pm.git/linux-next.
+
+Exynos maintainers, if you have any objections, please holler.
 
 Thanks,
 Rafael
 
-
 > ---
->  drivers/base/power/domain.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/devfreq/exynos4_bus.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 9a6b05a..e6ec4a7 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -920,7 +920,7 @@ static int pm_genpd_prepare(struct device *dev)
->  		pm_wakeup_event(dev, 0);
->  
->  	if (pm_wakeup_pending()) {
-> -		pm_runtime_put_sync(dev);
-> +		pm_runtime_put(dev);
->  		return -EBUSY;
->  	}
->  
-> @@ -961,7 +961,7 @@ static int pm_genpd_prepare(struct device *dev)
->  		pm_runtime_enable(dev);
->  	}
->  
-> -	pm_runtime_put_sync(dev);
-> +	pm_runtime_put(dev);
->  	return ret;
->  }
->  
+> diff --git a/drivers/devfreq/exynos4_bus.c b/drivers/devfreq/exynos4_bus.c
+> index 1deee09..54b9615 100644
+> --- a/drivers/devfreq/exynos4_bus.c
+> +++ b/drivers/devfreq/exynos4_bus.c
+> @@ -974,7 +974,8 @@ static int exynos4_busfreq_pm_notifier_event(struct notifier_block *this,
+>  			rcu_read_unlock();
+>  			dev_err(data->dev, "%s: unable to find a min freq\n",
+>  				__func__);
+> -			return PTR_ERR(opp);
+> +			err = PTR_ERR(opp);
+> +			goto unlock;
+>  		}
+>  		new_oppinfo.rate = opp_get_freq(opp);
+>  		new_oppinfo.volt = opp_get_voltage(opp);
 > 
 -- 
 I speak only for myself.
