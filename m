@@ -1,50 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Fri, 12 Apr 2013 13:53:36 +0530
-Message-ID: <CAKohpom7Mn8aQZTUx-_fQF+9KWste0uYsZcaQ5rcM6ab45-0+g@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<31778276.CDMUtaAAnc@vostro.rjw.lan>
-	<CA+icZUXXHb9vmcNuFmYha34SV7xch2S8OcgZ+cLVVnNebs5pNQ@mail.gmail.com>
-	<CAKohpok+9dRaENjBfnN9gZF3zvFU9v19xV_eFfcM3Pj6Cv=S2w@mail.gmail.com>
-	<CA+icZUWH5Ni9koj4V8Ws8jJ7smwmU7JuUWBFh=aiCqkrCpqB5A@mail.gmail.com>
-	<CAKohponzmLzPN8ua3p4TCt2waZCQCd+4Znh+tSQ4MBjcy+Ss6A@mail.gmail.com>
-	<CA+icZUW12caZHDfgCV6E-1T4ExBPmu5bBNSqCzDwjUeidfRUPA@mail.gmail.com>
-	<CA+icZUUEExm5Mktxoj6=UdzBe5HUzskktKWdHNOKaFXVHaySBg@mail.gmail.com>
-	<CA+icZUW2LQmWMdaVjf5oE8y3zCq8Y2829WM9dwDKxA42N5tVDQ@mail.gmail.com>
+From: Alex Shi <alex.shi@intel.com>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Fri, 12 Apr 2013 16:46:50 +0800
+Message-ID: <5167C9FA.8050406@intel.com>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CA+icZUW2LQmWMdaVjf5oE8y3zCq8Y2829WM9dwDKxA42N5tVDQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:20733 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752695Ab3DLIrY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Apr 2013 04:47:24 -0400
+In-Reply-To: <516724F5.20504@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, bp@alien8.de, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wrote:
-> I found this "[RFC PATCH] kbuild: Build linux-tools package with 'make
-> deb-pkg'" from February 2012.
-> Can't say what happened to it...
+On 04/12/2013 05:02 AM, Len Brown wrote:
+>> > x = 16   299.915 /43 77           259.127 /58 66
+> Are you sure that powersave mode ran in 43 seconds
+> when performance mode ran in 58 seconds?
 
-Sedat,
+Thanks a lot for comments, Len!
+Will do more testing by your tool fspin. :)
 
-Sorry for being late. I am down with Fever and throat infection since few days.
-Still struggling with it..
+powersaving using less time when thread = 16 or 32.
+The main contribution come from CPU freq boost. I have disable the boost
+of cpufreq. then find the compile time become similar between
+powersaving and performance on thread 32, and powersaving is slower when
+threads is 16.
+And less Context Switch from less lazy power balance should also do some
+help.
+> 
+> If that is true, than somewhere in this patch series
+> you have a _significant_ performance benefit
+> on this workload under these conditions!
+> 
+> Interestingly, powersave mode also ran at
+> 15% higher power than performance mode.
+> maybe "powersave" isn't quite the right name for it:-)
 
-There are few things i tried. Firstly the tag: next-20130326 is bad as there are
-some bad commits in cpufreq core in it.
+What other name you suggest? :)
+> 
+>> > x = 32   341.221 /35 83           323.418 /38 81
+> Why does this patch series have a performance impact (8%)
+> at x=32.  All the processors are always busy, no?
 
-I then tried latest linux-next/master on my Thinkpad (model name	: Intel(R)
-Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ubuntu
-just hanged.
+No, all processors are not always busy in 'make -j vmlinux'
+So, compile time also get benefit from boost and less CS. the
+performance policy doesn't introduce any impact. there is nothing added
+in performance policy.
+> 
+>> > data explains: 189.416 /228 23
+>> > 	189.416: average Watts during compilation
+>> > 	228: seconds(compile time)
+>> > 	23:  scaled performance/watts = 1000000 / seconds / watts
+>> > The performance value of kbuild is better on threads 16/32, that's due
+>> > to lazy power balance reduced the context switch and CPU has more boost 
+>> > chance on powersaving balance.
+> 25% is a huge difference in performance.
+> Can you get a performance benefit in that scenario
+> without having a negative performance impact
+> in the other scenarios?  In particular,
 
-Then i tried Rafael's linux-next branch
+will try packing task on cpu capacity not cpu weight.
+> an 8% hit to the fully utilized case is a deal killer.
 
-079576f Merge branch 'pm-cpufreq-next' into linux-next
+that is the 8% gain on powersaving, not 8% lose on performance policy. :)
+> 
+> The x=16 performance change here suggest there is value
+> someplace in this patch series to increase performance.
+> However, the case that these scheduling changes are
+> a benefit from an energy efficiency point of view
+> is yet to be made.
 
-And couldn't find any issues with it. I am easily able to remove/add cpus at
-runtime..
 
-Can you give this branch a try?
-
---
-viresh
+-- 
+Thanks Alex
