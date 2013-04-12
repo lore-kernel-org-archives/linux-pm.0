@@ -1,123 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Sat, 13 Apr 2013 00:51:39 +0200
-Message-ID: <1923819.6Nb81T2TR8@vostro.rjw.lan>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
+Subject: Re: [RESEND][PATCH 1/3] PM / devfreq: exynos4_bus: Fix missing mutex_unlock if opp_find_freq_floor fails
+Date: Sat, 13 Apr 2013 01:20:23 +0200
+Message-ID: <2583577.Kz0O4QXtvD@vostro.rjw.lan>
+References: <1365746058.4025.1.camel@phoenix> <1413655.hhUbBAKNUi@vostro.rjw.lan> <002101ce3776$cbc83f90$6358beb0$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
+In-Reply-To: <002101ce3776$cbc83f90$6358beb0$@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+To: "myungjoo.ham" <myungjoo.ham@samsung.com>, 'Axel Lin' <axel.lin@ingics.com>
+Cc: 'Kyungmin Park' <kyungmin.park@samsung.com>, 'Kukjin Kim' <kgene.kim@samsung.com>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
-> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.com> =
-wrote:
-> > On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.com=
-> wrote:
-> >> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.co=
-m> wrote:
-> >>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@lina=
-ro.org> wrote:
-> >>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wrot=
-e:
-> >>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package wit=
-h 'make
-> >>>>> deb-pkg'" from February 2012.
-> >>>>> Can't say what happened to it...
-> >>>>
-> >>>> Sedat,
-> >>>>
-> >>>> Sorry for being late. I am down with Fever and throat infection =
-since few days.
-> >>>> Still struggling with it..
-> >>>>
-> >>>> There are few things i tried. Firstly the tag: next-20130326 is =
-bad as there are
-> >>>> some bad commits in cpufreq core in it.
-> >>>>
-> >>>> I then tried latest linux-next/master on my Thinkpad (model name=
-        : Intel(R)
-> >>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ubu=
-ntu
-> >>>> just hanged.
-> >>>>
-> >>>> Then i tried Rafael's linux-next branch
-> >>>>
-> >>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
-> >>>>
-> >>>> And couldn't find any issues with it. I am easily able to remove=
-/add cpus at
-> >>>> runtime..
-> >>>>
-> >>>> Can you give this branch a try?
-> >>>>
-> >>>
-> >>> OK, you seem to be well again, nice to hear.
-> >>>
-> >>> I was doing the whole week spring-cleaning in the apartment of my=
- parents.
-> >>> Now, I have some minutes for a compilation run.
-> >>>
-> >>> I guess "cpufreq: Call __cpufreq_governor() with correct policy->=
-cpus
-> >>> mask" could be the correct fix, but will try the GIT branch you h=
-ave
-> >>> mentioned.
-> >>>
-> >>> - Sedat -
-> >>>
-> >>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
-it/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e6199
-> >>>
-> >>
-> >> Both BROKEN here, specific pm-next commitid and pulling
-> >> pm.git#linux-next into next-20130411 (see attached files).
-> >>
-> >> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause o=
-f this all?
-> >>
-> >
-> > [ CC Nathan ]
-> >
-> > NO, wrong assumption.
-> >
-> > 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
-> > "cpufreq: convert cpufreq_driver to using RCU"
-> > 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
-> > __cpufreq_governor() with correct policy->cpus mask"
-> > 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-07=
-9576f] Merge branch
-> > 'pm-cpufreq-next' into linux-next
-> >
-> > - Sedat -
-> >
-> >
-> >> - Sedat -
-> >>
-> >> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.gi=
-t/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
-> >>
-> >>>> --
-> >>>> viresh
+On Friday, April 12, 2013 09:11:00 PM myungjoo.ham wrote:
+> > On Friday, April 12, 2013 11:52:01 AM =ED=95=A8=EB=AA=85=EC=A3=BC w=
+rote:
+> > > > On Friday, April 12, 2013 01:54:18 PM Axel Lin wrote:
+> > > > > We need to call mutex_unlock() in the error path.
+> > > > >=20
+> > > > > Signed-off-by: Axel Lin <axel.lin@ingics.com>
+> > > >=20
+> > > > All three patches applied to linux-pm.git/linux-next.
+> > > >=20
+> > > > Exynos maintainers, if you have any objections, please holler.
+> > > >=20
+> > > > Thanks,
+> > > > Rafael
+> > >=20
+> > > This patch was included in the last pull-request patchset
+> > > though the path was updated. (its precedessor patch moved
+> > > exynos drivers to /drivers/devfreq/exynos/* after adding
+> > > Exynos common driver files)
+> >=20
+> > OK, so do you want me to drop it?
+> >=20
+> > What about the remaining two?
 >=20
-> [ TO Dirk (Author of Intel pstate driver) ]
+> Yes, please drop 1/3. It's duplicated.
 >=20
-> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-trace!
->=20
-> My kernel-config and dmesg are attached.
+> The patches 2~3/3 can wait. They are actually not bugfixes.
 
-You're seeing a trouble with a new driver, then, so that's not a regres=
-sion.
+OK, I've dropped all three.
 
-Thanks for taking the time to debug this!
+Axel, please push [2-3/3] thorugh the Exynos tree.
 
+Thanks,
 Rafael
 
 
+> > > > > ---
+> > > > >  drivers/devfreq/exynos4_bus.c |    3 ++-
+> > > > >  1 file changed, 2 insertions(+), 1 deletion(-)
+> > > > >=20
+> > > > > diff --git a/drivers/devfreq/exynos4_bus.c b/drivers/devfreq/=
+exynos4_bus.c
+> > > > > index 1deee09..54b9615 100644
+> > > > > --- a/drivers/devfreq/exynos4_bus.c
+> > > > > +++ b/drivers/devfreq/exynos4_bus.c
+> > > > > @@ -974,7 +974,8 @@ static int exynos4_busfreq_pm_notifier_ev=
+ent(struct notifier_block *this,
+> > > > >  			rcu_read_unlock();
+> > > > >  			dev_err(data->dev, "%s: unable to find a min freq\n",
+> > > > >  				__func__);
+> > > > > -			return PTR_ERR(opp);
+> > > > > +			err =3D PTR_ERR(opp);
+> > > > > +			goto unlock;
+> > > > >  		}
+> > > > >  		new_oppinfo.rate =3D opp_get_freq(opp);
+> > > > >  		new_oppinfo.volt =3D opp_get_voltage(opp);
+> > > > >=20
+> >=20
+> >
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 --=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
