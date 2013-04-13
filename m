@@ -1,138 +1,133 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Sat, 13 Apr 2013 11:55:54 +0200
-Message-ID: <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
-	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
-	<1923819.6Nb81T2TR8@vostro.rjw.lan>
-Reply-To: sedat.dilek@gmail.com
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
+ and its DT glue
+Date: Sat, 13 Apr 2013 22:13:58 +0200
+Message-ID: <5169BC86.7010905@gmail.com>
+References: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1923819.6Nb81T2TR8@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ea0-f175.google.com ([209.85.215.175]:59516 "EHLO
+	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329Ab3DMUNg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Apr 2013 16:13:36 -0400
+In-Reply-To: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, nicolas.pitre@linaro.org, robin.randhawa@arm.com, linux@arm.linux.org.uk, mark.hambleton@broadcom.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
 
-On Sat, Apr 13, 2013 at 12:51 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote=
-:
-> On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
->> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.com>=
- wrote:
->> > On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.co=
-m> wrote:
->> >> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.c=
-om> wrote:
->> >>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@lin=
-aro.org> wrote:
->> >>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wro=
-te:
->> >>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package wi=
-th 'make
->> >>>>> deb-pkg'" from February 2012.
->> >>>>> Can't say what happened to it...
->> >>>>
->> >>>> Sedat,
->> >>>>
->> >>>> Sorry for being late. I am down with Fever and throat infection=
- since few days.
->> >>>> Still struggling with it..
->> >>>>
->> >>>> There are few things i tried. Firstly the tag: next-20130326 is=
- bad as there are
->> >>>> some bad commits in cpufreq core in it.
->> >>>>
->> >>>> I then tried latest linux-next/master on my Thinkpad (model nam=
-e        : Intel(R)
->> >>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ub=
-untu
->> >>>> just hanged.
->> >>>>
->> >>>> Then i tried Rafael's linux-next branch
->> >>>>
->> >>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
->> >>>>
->> >>>> And couldn't find any issues with it. I am easily able to remov=
-e/add cpus at
->> >>>> runtime..
->> >>>>
->> >>>> Can you give this branch a try?
->> >>>>
->> >>>
->> >>> OK, you seem to be well again, nice to hear.
->> >>>
->> >>> I was doing the whole week spring-cleaning in the apartment of m=
-y parents.
->> >>> Now, I have some minutes for a compilation run.
->> >>>
->> >>> I guess "cpufreq: Call __cpufreq_governor() with correct policy-=
->cpus
->> >>> mask" could be the correct fix, but will try the GIT branch you =
-have
->> >>> mentioned.
->> >>>
->> >>> - Sedat -
->> >>>
->> >>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.=
-git/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e619=
-9
->> >>>
->> >>
->> >> Both BROKEN here, specific pm-next commitid and pulling
->> >> pm.git#linux-next into next-20130411 (see attached files).
->> >>
->> >> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause =
-of this all?
->> >>
->> >
->> > [ CC Nathan ]
->> >
->> > NO, wrong assumption.
->> >
->> > 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
->> > "cpufreq: convert cpufreq_driver to using RCU"
->> > 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
->> > __cpufreq_governor() with correct policy->cpus mask"
->> > 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-0=
-79576f] Merge branch
->> > 'pm-cpufreq-next' into linux-next
->> >
->> > - Sedat -
->> >
->> >
->> >> - Sedat -
->> >>
->> >> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
-it/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
->> >>
->> >>>> --
->> >>>> viresh
->>
->> [ TO Dirk (Author of Intel pstate driver) ]
->>
->> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-trace=
-!
->>
->> My kernel-config and dmesg are attached.
->
-> You're seeing a trouble with a new driver, then, so that's not a regr=
-ession.
->
+On 03/26/2013 10:51 AM, Viresh Kumar wrote:
+> big LITTLE is ARM's new Architecture focussing power/performance needs of modern
+> world. More information about big LITTLE can be found here:
+> 
+> http://www.arm.com/products/processors/technologies/biglittleprocessing.php
+> http://lwn.net/Articles/481055/
+> 
+> In order to keep cpufreq support for all big LITTLE platforms simple/generic,
+> this patch tries to add a generic cpufreq driver layer for all big LITTLE
+> platforms.
+> 
+> The driver is divided into two parts:
+> - Core driver: Generic and shared across all big LITTLE SoC's
+> - Glue drivers: Per platform drivers providing ops to the core driver
+> 
+> This patch adds in a generic glue driver which would extract information from
+> Device Tree.
+> 
+> Future SoC's can either reuse the DT glue or write their own depending on the
+> need.
+> 
+> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+[...]
+> diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
+> new file mode 100644
+> index 0000000..452ff46
+> --- /dev/null
+> +++ b/drivers/cpufreq/arm_big_little_dt.c
+> @@ -0,0 +1,92 @@
+> +/*
+> + * Generic big.LITTLE CPUFreq Interface driver
+> + *
+> + * It provides necessary ops to arm_big_little cpufreq driver and gets
+> + * Frequency information from Device Tree. Freq table in DT must be in KHz.
+> + *
+> + * Copyright (C) 2013 Linaro.
+> + * Viresh Kumar <viresh.kumar@linaro.org>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> + * kind, whether express or implied; without even the implied warranty
+> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/device.h>
+> +#include <linux/export.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/opp.h>
+> +#include <linux/slab.h>
+> +#include <linux/types.h>
+> +#include "arm_big_little.h"
+> +
+> +static int dt_init_opp_table(struct device *cpu_dev)
+> +{
+> +	struct device_node *np = NULL;
+> +	int count = 0, ret;
+> +
+> +	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
 
-What do you mean by this?
+If of_find_node_by_path() returns NULL, there will be a NULL pointer
+dereference.
 
-What are the next steps to get this fixed?
+> +		if (count++ != cpu_dev->id)
+> +			continue;
+> +		if (!of_get_property(np, "operating-points", NULL))
+> +			return -ENODATA;
+> +
+> +		cpu_dev->of_node = np;
+> +
+> +		ret = of_init_opp_table(cpu_dev);
+> +		if (ret)
+> +			return ret;
+> +
+> +		return 0;
 
-- Sedat -
+of_node_put() should be called on np before returning.
+Also, the reference count of the parent node should be decremented as well.
 
-> Thanks for taking the time to debug this!
->
-> Rafael
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+These comments apply to the below function dt_get_transition_latency() too.
+
+> +	}
+> +
+> +	return -ENODEV;
+> +}
+> +
+> +static int dt_get_transition_latency(struct device *cpu_dev)
+> +{
+> +	struct device_node *np = NULL;
+> +	u32 transition_latency = CPUFREQ_ETERNAL;
+> +	int count = 0;
+> +
+> +	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+> +		if (count++ != cpu_dev->id)
+> +			continue;
+> +
+> +		of_property_read_u32(np, "clock-latency", &transition_latency);
+> +		return 0;
+> +	}
+> +
+> +	return -ENODEV;
+> +}
+
+--
+Francesco
