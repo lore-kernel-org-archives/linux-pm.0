@@ -1,133 +1,54 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Sat, 13 Apr 2013 22:13:58 +0200
-Message-ID: <5169BC86.7010905@gmail.com>
-References: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
+From: Alex Shi <alex.shi@intel.com>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Sun, 14 Apr 2013 09:28:50 +0800
+Message-ID: <516A0652.8040505@intel.com>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f175.google.com ([209.85.215.175]:59516 "EHLO
-	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329Ab3DMUNg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Apr 2013 16:13:36 -0400
-In-Reply-To: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
+Received: from mga01.intel.com ([192.55.52.88]:19032 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754055Ab3DNB3E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 13 Apr 2013 21:29:04 -0400
+In-Reply-To: <20130412162348.GE2368@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, nicolas.pitre@linaro.org, robin.randhawa@arm.com, linux@arm.linux.org.uk, mark.hambleton@broadcom.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
+To: Borislav Petkov <bp@alien8.de>
+Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 03/26/2013 10:51 AM, Viresh Kumar wrote:
-> big LITTLE is ARM's new Architecture focussing power/performance needs of modern
-> world. More information about big LITTLE can be found here:
+On 04/13/2013 12:23 AM, Borislav Petkov wrote:
+> On Fri, Apr 12, 2013 at 04:46:50PM +0800, Alex Shi wrote:
+>> > Thanks a lot for comments, Len!
+> AFAICT, you kinda forgot to answer his most important question:
 > 
-> http://www.arm.com/products/processors/technologies/biglittleprocessing.php
-> http://lwn.net/Articles/481055/
-> 
-> In order to keep cpufreq support for all big LITTLE platforms simple/generic,
-> this patch tries to add a generic cpufreq driver layer for all big LITTLE
-> platforms.
-> 
-> The driver is divided into two parts:
-> - Core driver: Generic and shared across all big LITTLE SoC's
-> - Glue drivers: Per platform drivers providing ops to the core driver
-> 
-> This patch adds in a generic glue driver which would extract information from
-> Device Tree.
-> 
-> Future SoC's can either reuse the DT glue or write their own depending on the
-> need.
-> 
-> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-[...]
-> diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
-> new file mode 100644
-> index 0000000..452ff46
-> --- /dev/null
-> +++ b/drivers/cpufreq/arm_big_little_dt.c
-> @@ -0,0 +1,92 @@
-> +/*
-> + * Generic big.LITTLE CPUFreq Interface driver
-> + *
-> + * It provides necessary ops to arm_big_little cpufreq driver and gets
-> + * Frequency information from Device Tree. Freq table in DT must be in KHz.
-> + *
-> + * Copyright (C) 2013 Linaro.
-> + * Viresh Kumar <viresh.kumar@linaro.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/cpufreq.h>
-> +#include <linux/device.h>
-> +#include <linux/export.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/opp.h>
-> +#include <linux/slab.h>
-> +#include <linux/types.h>
-> +#include "arm_big_little.h"
-> +
-> +static int dt_init_opp_table(struct device *cpu_dev)
-> +{
-> +	struct device_node *np = NULL;
-> +	int count = 0, ret;
-> +
-> +	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
+>> > These numbers suggest that this patch series simultaneously
+>> > has a negative impact on performance and energy required
+>> > to retire the workload.  Why do it?
 
-If of_find_node_by_path() returns NULL, there will be a NULL pointer
-dereference.
+Even some scenario the total energy cost more, at least the avg watts
+dropped in that scenarios. Len said he has low p-state which can work
+there. but that's is different. I had sent some data in another email
+list to show the difference:
 
-> +		if (count++ != cpu_dev->id)
-> +			continue;
-> +		if (!of_get_property(np, "operating-points", NULL))
-> +			return -ENODATA;
-> +
-> +		cpu_dev->of_node = np;
-> +
-> +		ret = of_init_opp_table(cpu_dev);
-> +		if (ret)
-> +			return ret;
-> +
-> +		return 0;
+The following is 2 times kbuild testing result for 3 kinds condiation on
+SNB EP box, the middle column is the lowest p-state testing result, we
+can see, it has the lowest power consumption, also has the lowest
+performance/watts value.
+At least for kbuild benchmark, powersaving policy has the best
+compromise on powersaving and power efficient. Further more, due to cpu
+boost feature, it has better performance in some scenarios.
 
-of_node_put() should be called on np before returning.
-Also, the reference count of the parent node should be decremented as well.
+   powersaving + ondemand  userspace + fixed 1.2GHz performance+ondemand
+x = 8    231.318 /75 57           165.063 /166 36        253.552 /63 62
+x = 16   280.357 /49 72           174.408 /106 54        296.776 /41 82
+x = 32   325.206 /34 90           178.675 /90 62         314.153 /37 86
 
-These comments apply to the below function dt_get_transition_latency() too.
+x = 8    233.623 /74 57           164.507 /168 36        254.775 /65 60
+x = 16   272.54  /38 96           174.364 /106 54        297.731 /42 79
+x = 32   320.758 /34 91           177.917 /91 61         317.875 /35 89
+x = 64   326.837 /33 92           179.037 /90 62         320.615 /36 86
 
-> +	}
-> +
-> +	return -ENODEV;
-> +}
-> +
-> +static int dt_get_transition_latency(struct device *cpu_dev)
-> +{
-> +	struct device_node *np = NULL;
-> +	u32 transition_latency = CPUFREQ_ETERNAL;
-> +	int count = 0;
-> +
-> +	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
-> +		if (count++ != cpu_dev->id)
-> +			continue;
-> +
-> +		of_property_read_u32(np, "clock-latency", &transition_latency);
-> +		return 0;
-> +	}
-> +
-> +	return -ENODEV;
-> +}
-
---
-Francesco
+-- 
+Thanks
+    Alex
