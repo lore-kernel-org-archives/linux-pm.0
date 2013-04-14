@@ -1,44 +1,73 @@
-From: Alex Shi <alex.shi@intel.com>
-Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Sun, 14 Apr 2013 13:10:18 +0800
-Message-ID: <516A3A3A.2030205@intel.com>
-References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [V3 patch 17/19] ARM: kirkwood: cpuidle: use init/exit common
+ routine
+Date: Sun, 14 Apr 2013 17:14:29 +0200
+Message-ID: <20130414151429.GF5061@lunn.ch>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365770165-27096-18-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:24348 "EHLO mga11.intel.com"
+Received: from londo.lunn.ch ([80.238.139.98]:39471 "EHLO londo.lunn.ch"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718Ab3DNFKl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 14 Apr 2013 01:10:41 -0400
-In-Reply-To: <516A0652.8040505@intel.com>
+	id S1751873Ab3DNPQA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 14 Apr 2013 11:16:00 -0400
+Content-Disposition: inline
+In-Reply-To: <1365770165-27096-18-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 04/14/2013 09:28 AM, Alex Shi wrote:
->>>> >> > These numbers suggest that this patch series simultaneously
->>>> >> > has a negative impact on performance and energy required
->>>> >> > to retire the workload.  Why do it?
-> Even some scenario the total energy cost more, at least the avg watts
-> dropped in that scenarios. Len said he has low p-state which can work
-> there. but that's is different. I had sent some data in another email
-> list to show the difference:
+On Fri, Apr 12, 2013 at 02:36:03PM +0200, Daniel Lezcano wrote:
+> Remove the duplicated code and use the cpuidle common code for initialization.
 > 
-> The following is 2 times kbuild testing result for 3 kinds condiation on
-> SNB EP box, the middle column is the lowest p-state testing result, we
-> can see, it has the lowest power consumption, also has the lowest
-> performance/watts value.
-> At least for kbuild benchmark, powersaving policy has the best
-> compromise on powersaving and power efficient. Further more, due to cpu
-> boost feature, it has better performance in some scenarios.
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/cpuidle/cpuidle-kirkwood.c |   17 ++---------------
+>  1 file changed, 2 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 6f31524..53290e1 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -52,9 +52,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
+>  	},
+>  	.state_count = KIRKWOOD_MAX_STATES,
+>  };
+> -static struct cpuidle_device *device;
+> -
+> -static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
+>  
+>  /* Initialize CPU idle by registering the idle states */
+>  static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+> @@ -69,22 +66,12 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+>  	if (IS_ERR(ddr_operation_base))
+>  		return PTR_ERR(ddr_operation_base);
+>  
+> -	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+> -	device->state_count = KIRKWOOD_MAX_STATES;
+> -
+> -	cpuidle_register_driver(&kirkwood_idle_driver);
+> -	if (cpuidle_register_device(device)) {
+> -		pr_err("kirkwood_init_cpuidle: Failed registering\n");
+> -		return -EIO;
+> -	}
+> -	return 0;
+> +	return cpuidle_register(&kirkwood_idle_driver, NULL);
+>  }
+>  
+>  int kirkwood_cpuidle_remove(struct platform_device *pdev)
+>  {
+> -	cpuidle_unregister_device(device);
+> -	cpuidle_unregister_driver(&kirkwood_idle_driver);
+> -
+> +	cpuidle_unregister(&kirkwood_idle_driver);
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.7.9.5
+> 
 
-BTW, another benefit on powersaving is that powersaving policy is very
-flexible on system load. when task number in sched domain is beyond LCPU
-number, it will take performance oriented balance. That conduct the
-similar performance when system is busy.
-
--- 
-Thanks
-    Alex
+Tested-by: Andrew Lunn <andrew@lunn.ch>
