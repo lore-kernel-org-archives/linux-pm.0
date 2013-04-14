@@ -1,37 +1,43 @@
 From: Alex Shi <alex.shi@intel.com>
 Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Sun, 14 Apr 2013 09:36:52 +0800
-Message-ID: <516A0834.6080201@intel.com>
-References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <1365785311.5814.36.camel@marge.simpson.net> <20130412171251.GF2368@pd.tnic>
+Date: Sun, 14 Apr 2013 13:10:18 +0800
+Message-ID: <516A3A3A.2030205@intel.com>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130412171251.GF2368@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Mike Galbraith <efault@gmx.de>, Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:24348 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718Ab3DNFKl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 14 Apr 2013 01:10:41 -0400
+In-Reply-To: <516A0652.8040505@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 04/13/2013 01:12 AM, Borislav Petkov wrote:
-> On Fri, Apr 12, 2013 at 06:48:31PM +0200, Mike Galbraith wrote:
->> (just saying there are other aspects besides joules in there)
+On 04/14/2013 09:28 AM, Alex Shi wrote:
+>>>> >> > These numbers suggest that this patch series simultaneously
+>>>> >> > has a negative impact on performance and energy required
+>>>> >> > to retire the workload.  Why do it?
+> Even some scenario the total energy cost more, at least the avg watts
+> dropped in that scenarios. Len said he has low p-state which can work
+> there. but that's is different. I had sent some data in another email
+> list to show the difference:
 > 
-> Yeah, but we don't allow any regressions in sched*, do we? Can we pick
-> only the good cherries? :-)
-> 
+> The following is 2 times kbuild testing result for 3 kinds condiation on
+> SNB EP box, the middle column is the lowest p-state testing result, we
+> can see, it has the lowest power consumption, also has the lowest
+> performance/watts value.
+> At least for kbuild benchmark, powersaving policy has the best
+> compromise on powersaving and power efficient. Further more, due to cpu
+> boost feature, it has better performance in some scenarios.
 
-Thanks for all of discussion on this threads. :)
-I think we can bear a little power efficient lose when want powersaving.
-
-For second question, the performance increase come from cpu boost
-feature, the hardware feature diffined, if there are some cores idle in
-cpu socket, other core has more chance to boost on higher frequency. The
-task packing try to pack tasks so that left more idle cores.
-
-The difficult to merge this feature into current performance is that
-current balance policy is trying to give as much as possible cpu
-resources to each of task. that just conflict with the cpu boost condition.
+BTW, another benefit on powersaving is that powersaving policy is very
+flexible on system load. when task number in sched domain is beyond LCPU
+number, it will take performance oriented balance. That conduct the
+similar performance when system is busy.
 
 -- 
 Thanks
