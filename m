@@ -1,231 +1,167 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Mon, 15 Apr 2013 18:13:43 +0200
-Message-ID: <CA+icZUU11F3OUCyKmNAcUu-p7M8SaJ+gY2ZD-RDTyjg-7MvqPA@mail.gmail.com>
+Date: Mon, 15 Apr 2013 22:52:28 +0530
+Message-ID: <CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
 References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
 	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
 	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
 	<1923819.6Nb81T2TR8@vostro.rjw.lan>
 	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
 	<516C25AE.4050503@intel.com>
-Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:52373 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134Ab3DOQNq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 12:13:46 -0400
+Content-Type: multipart/mixed; boundary=f46d04479f774bc27d04da697fc2
+Return-path: <cpufreq-owner@vger.kernel.org>
 In-Reply-To: <516C25AE.4050503@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: cpufreq-owner@vger.kernel.org
 To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Cc: sedat.dilek@gmail.com, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 15, 2013 at 6:07 PM, Dirk Brandewie
-<dirk.brandewie@gmail.com> wrote:
-> On 04/13/2013 02:55 AM, Sedat Dilek wrote:
->>
->> On Sat, Apr 13, 2013 at 12:51 AM, Rafael J. Wysocki <rjw@sisk.pl> wr=
-ote:
->>>
->>> On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
->>>>
->>>> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.co=
-m>
->>>> wrote:
->>>>>
->>>>> On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.c=
-om>
->>>>> wrote:
->>>>>>
->>>>>> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.=
-com>
->>>>>> wrote:
->>>>>>>
->>>>>>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar
->>>>>>> <viresh.kumar@linaro.org> wrote:
->>>>>>>>
->>>>>>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wr=
-ote:
->>>>>>>>>
->>>>>>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package w=
-ith
->>>>>>>>> 'make
->>>>>>>>> deb-pkg'" from February 2012.
->>>>>>>>> Can't say what happened to it...
->>>>>>>>
->>>>>>>>
->>>>>>>> Sedat,
->>>>>>>>
->>>>>>>> Sorry for being late. I am down with Fever and throat infectio=
-n
->>>>>>>> since few days.
->>>>>>>> Still struggling with it..
->>>>>>>>
->>>>>>>> There are few things i tried. Firstly the tag: next-20130326 i=
-s bad
->>>>>>>> as there are
->>>>>>>> some bad commits in cpufreq core in it.
->>>>>>>>
->>>>>>>> I then tried latest linux-next/master on my Thinkpad (model na=
-me
->>>>>>>> : Intel(R)
->>>>>>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My u=
-buntu
->>>>>>>> just hanged.
->>>>>>>>
->>>>>>>> Then i tried Rafael's linux-next branch
->>>>>>>>
->>>>>>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
->>>>>>>>
->>>>>>>> And couldn't find any issues with it. I am easily able to remo=
-ve/add
->>>>>>>> cpus at
->>>>>>>> runtime..
->>>>>>>>
->>>>>>>> Can you give this branch a try?
->>>>>>>>
->>>>>>>
->>>>>>> OK, you seem to be well again, nice to hear.
->>>>>>>
->>>>>>> I was doing the whole week spring-cleaning in the apartment of =
-my
->>>>>>> parents.
->>>>>>> Now, I have some minutes for a compilation run.
->>>>>>>
->>>>>>> I guess "cpufreq: Call __cpufreq_governor() with correct policy=
-->cpus
->>>>>>> mask" could be the correct fix, but will try the GIT branch you=
- have
->>>>>>> mentioned.
->>>>>>>
->>>>>>> - Sedat -
->>>>>>>
->>>>>>> [1]
->>>>>>> http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git=
-/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e6199
->>>>>>>
->>>>>>
->>>>>> Both BROKEN here, specific pm-next commitid and pulling
->>>>>> pm.git#linux-next into next-20130411 (see attached files).
->>>>>>
->>>>>> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause=
- of
->>>>>> this all?
->>>>>>
->>>>>
->>>>> [ CC Nathan ]
->>>>>
->>>>> NO, wrong assumption.
->>>>>
->>>>> 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
->>>>> "cpufreq: convert cpufreq_driver to using RCU"
->>>>> 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
->>>>> __cpufreq_governor() with correct policy->cpus mask"
->>>>> 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-=
-079576f] Merge branch
->>>>> 'pm-cpufreq-next' into linux-next
->>>>>
->>>>> - Sedat -
->>>>>
->>>>>
->>>>>> - Sedat -
->>>>>>
->>>>>> [1]
->>>>>> http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/=
-commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
->>>>>>
->>>>>>>> --
->>>>>>>> viresh
->>>>
->>>>
->>>> [ TO Dirk (Author of Intel pstate driver) ]
->>>>
->>>> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-tra=
-ce!
->>>>
->>>> My kernel-config and dmesg are attached.
->>>
->>>
->>> You're seeing a trouble with a new driver, then, so that's not a
->>> regression.
->>>
->
-> This IS a regression.
->
-> If the intel_pstate driver is being used __cpufreq_governor() should =
-NOT be
+--f46d04479f774bc27d04da697fc2
+Content-Type: text/plain; charset=ISO-8859-1
+
+On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
 > called intel_pstate does not implement the target() callback.
 >
-
-So the "if (has_target)" line has to be put some lines above or what
-is your proposal?
-
-- Sedat -
-
 > Nathan's commit 5800043b2 changed the fence around the call to
-> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant h=
-unk.
->
-> @@ -1007,9 +1068,12 @@ static int __cpufreq_remove_dev(struct device =
-*dev,
-> struct subsys_interface *sif
->         unsigned int cpu =3D dev->id, ret, cpus;
->         unsigned long flags;
->         struct cpufreq_policy *data;
-> +       struct cpufreq_driver *driver;
->         struct kobject *kobj;
->         struct completion *cmp;
->         struct device *cpu_dev;
-> +       bool has_target;
-> +       int (*exit)(struct cpufreq_policy *policy);
->
->         pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
->
-> @@ -1025,14 +1089,19 @@ static int __cpufreq_remove_dev(struct device=
- *dev,
-> struct subsys_interface *sif
->                 return -EINVAL;
->         }
->
-> -       if (cpufreq_driver->target)
-> +       rcu_read_lock();
-> +       driver =3D rcu_dereference(cpufreq_driver);
-> +       has_target =3D driver->target ? true : false;
-> +       exit =3D driver->exit;
+> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
+
+No it isn't.
+
 > +       if (has_target)
 >                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
->
->  #ifdef CONFIG_HOTPLUG_CPU
-> -       if (!cpufreq_driver->setpolicy)
-> +       if (!driver->setpolicy)
->                 strncpy(per_cpu(cpufreq_cpu_governor, cpu),
->                         data->governor->name, CPUFREQ_NAME_LEN);
->  #endif
-> +       rcu_read_unlock();
->
->         WARN_ON(lock_policy_rwsem_write(cpu));
->         cpus =3D cpumask_weight(data->cpus);
->
->
->
->
->>
->> What do you mean by this?
->>
->> What are the next steps to get this fixed?
->>
->> - Sedat -
->>
->>> Thanks for taking the time to debug this!
->>>
->>> Rafael
->>>
->>>
->>> --
->>> I speak only for myself.
->>> Rafael J. Wysocki, Intel Open Source Technology Center.
->
->
+
+As it has taken care of this limitation.
+
+BUT some of my earlier patches haven't. :(
+Here is the fix (Sedat please try this and give your tested-by, use the attached
+patch as gmail might break what i am copying in mail)..
+
+Sorry for being late in fixing this issue, i am still down with Tonsil infection
+and fever.. Today only i got some power to fix it after seeing Dirk's mail.
+
+Your tested-by may help me to recover quickly :)
+
+@Rafael: I will probably be down for one more week and so not doing any
+reviews for now... I do check important mails sent directly to me though.
+
+------------x----------------------x------------------
+
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Mon, 15 Apr 2013 22:43:57 +0530
+Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
+ target()
+
+Some cpufreq drivers implement their own governor and so don't need us to call
+generic governors interface via __cpufreq_governor(). Few recent commits haven't
+obeyed this law well and we saw some regressions.
+
+This patch tries to fix this issue.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 3564947..a6f6595 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
+cpu, unsigned int sibling,
+ 				  struct device *dev)
+ {
+ 	struct cpufreq_policy *policy;
+-	int ret = 0;
++	int ret = 0, has_target = 0;
+ 	unsigned long flags;
+
+ 	policy = cpufreq_cpu_get(sibling);
+ 	WARN_ON(!policy);
+
+-	__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++	rcu_read_lock();
++	has_target = !!rcu_dereference(cpufreq_driver)->target;
++	rcu_read_unlock();
++
++	if (has_target)
++		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+
+ 	lock_policy_rwsem_write(sibling);
+
+@@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
+cpu, unsigned int sibling,
+
+ 	unlock_policy_rwsem_write(sibling);
+
+-	__cpufreq_governor(policy, CPUFREQ_GOV_START);
+-	__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++	if (has_target) {
++		__cpufreq_governor(policy, CPUFREQ_GOV_START);
++		__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
++	}
+
+ 	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+ 	if (ret) {
+@@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
+*dev, struct subsys_interface *sif
+
+ 	/* If cpu is last user of policy, free policy */
+ 	if (cpus == 1) {
+-		__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
++		if (has_target)
++			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+
+ 		lock_policy_rwsem_read(cpu);
+ 		kobj = &data->kobj;
+
+--f46d04479f774bc27d04da697fc2
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-Don-t-call-__cpufreq_governor-for-drivers-wi.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-Don-t-call-__cpufreq_governor-for-drivers-wi.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hfjwtdd80
+
+RnJvbSA3MzUyYTNkZDYwYWNkMzg5Y2VmYzQwZmFjMTI4MzdkMzJjOGE2ZjI2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NzM1MmEzZGQ2MGFjZDM4OWNlZmM0MGZhYzEyODM3
+ZDMyYzhhNmYyNi4xMzY2MDQ2MjAyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogTW9uLCAxNSBBcHIg
+MjAxMyAyMjo0Mzo1NyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IERvbid0IGNhbGwg
+X19jcHVmcmVxX2dvdmVybm9yKCkgZm9yIGRyaXZlcnMgd2l0aG91dAogdGFyZ2V0KCkKClNvbWUg
+Y3B1ZnJlcSBkcml2ZXJzIGltcGxlbWVudCB0aGVpciBvd24gZ292ZXJub3IgYW5kIHNvIGRvbid0
+IG5lZWQgdXMgdG8gY2FsbApnZW5lcmljIGdvdmVybm9ycyBpbnRlcmZhY2UgdmlhIF9fY3B1ZnJl
+cV9nb3Zlcm5vcigpLiBGZXcgcmVjZW50IGNvbW1pdHMgaGF2ZW4ndApvYmV5ZWQgdGhpcyBsYXcg
+d2VsbCBhbmQgd2Ugc2F3IHNvbWUgcmVncmVzc2lvbnMuCgpUaGlzIHBhdGNoIHRyaWVzIHRvIGZp
+eCB0aGlzIGlzc3VlLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJA
+bGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgMTggKysrKysrKysr
+KysrKy0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMTMgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMo
+LSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVm
+cmVxL2NwdWZyZXEuYwppbmRleCAzNTY0OTQ3Li5hNmY2NTk1IDEwMDY0NAotLS0gYS9kcml2ZXJz
+L2NwdWZyZXEvY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTg1
+OCwxMyArODU4LDE4IEBAIHN0YXRpYyBpbnQgY3B1ZnJlcV9hZGRfcG9saWN5X2NwdSh1bnNpZ25l
+ZCBpbnQgY3B1LCB1bnNpZ25lZCBpbnQgc2libGluZywKIAkJCQkgIHN0cnVjdCBkZXZpY2UgKmRl
+dikKIHsKIAlzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeTsKLQlpbnQgcmV0ID0gMDsKKwlp
+bnQgcmV0ID0gMCwgaGFzX3RhcmdldCA9IDA7CiAJdW5zaWduZWQgbG9uZyBmbGFnczsKIAogCXBv
+bGljeSA9IGNwdWZyZXFfY3B1X2dldChzaWJsaW5nKTsKIAlXQVJOX09OKCFwb2xpY3kpOwogCi0J
+X19jcHVmcmVxX2dvdmVybm9yKHBvbGljeSwgQ1BVRlJFUV9HT1ZfU1RPUCk7CisJcmN1X3JlYWRf
+bG9jaygpOworCWhhc190YXJnZXQgPSAhIXJjdV9kZXJlZmVyZW5jZShjcHVmcmVxX2RyaXZlcikt
+PnRhcmdldDsKKwlyY3VfcmVhZF91bmxvY2soKTsKKworCWlmIChoYXNfdGFyZ2V0KQorCQlfX2Nw
+dWZyZXFfZ292ZXJub3IocG9saWN5LCBDUFVGUkVRX0dPVl9TVE9QKTsKIAogCWxvY2tfcG9saWN5
+X3J3c2VtX3dyaXRlKHNpYmxpbmcpOwogCkBAIC04NzcsOCArODgyLDEwIEBAIHN0YXRpYyBpbnQg
+Y3B1ZnJlcV9hZGRfcG9saWN5X2NwdSh1bnNpZ25lZCBpbnQgY3B1LCB1bnNpZ25lZCBpbnQgc2li
+bGluZywKIAogCXVubG9ja19wb2xpY3lfcndzZW1fd3JpdGUoc2libGluZyk7CiAKLQlfX2NwdWZy
+ZXFfZ292ZXJub3IocG9saWN5LCBDUFVGUkVRX0dPVl9TVEFSVCk7Ci0JX19jcHVmcmVxX2dvdmVy
+bm9yKHBvbGljeSwgQ1BVRlJFUV9HT1ZfTElNSVRTKTsKKwlpZiAoaGFzX3RhcmdldCkgeworCQlf
+X2NwdWZyZXFfZ292ZXJub3IocG9saWN5LCBDUFVGUkVRX0dPVl9TVEFSVCk7CisJCV9fY3B1ZnJl
+cV9nb3Zlcm5vcihwb2xpY3ksIENQVUZSRVFfR09WX0xJTUlUUyk7CisJfQogCiAJcmV0ID0gc3lz
+ZnNfY3JlYXRlX2xpbmsoJmRldi0+a29iaiwgJnBvbGljeS0+a29iaiwgImNwdWZyZXEiKTsKIAlp
+ZiAocmV0KSB7CkBAIC0xMTQ2LDcgKzExNTMsOCBAQCBzdGF0aWMgaW50IF9fY3B1ZnJlcV9yZW1v
+dmVfZGV2KHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0IHN1YnN5c19pbnRlcmZhY2UgKnNpZgog
+CiAJLyogSWYgY3B1IGlzIGxhc3QgdXNlciBvZiBwb2xpY3ksIGZyZWUgcG9saWN5ICovCiAJaWYg
+KGNwdXMgPT0gMSkgewotCQlfX2NwdWZyZXFfZ292ZXJub3IoZGF0YSwgQ1BVRlJFUV9HT1ZfUE9M
+SUNZX0VYSVQpOworCQlpZiAoaGFzX3RhcmdldCkKKwkJCV9fY3B1ZnJlcV9nb3Zlcm5vcihkYXRh
+LCBDUFVGUkVRX0dPVl9QT0xJQ1lfRVhJVCk7CiAKIAkJbG9ja19wb2xpY3lfcndzZW1fcmVhZChj
+cHUpOwogCQlrb2JqID0gJmRhdGEtPmtvYmo7Ci0tIAoxLjcuMTIucmMyLjE4Lmc2MWI0NzJlCgo=
+--f46d04479f774bc27d04da697fc2--
