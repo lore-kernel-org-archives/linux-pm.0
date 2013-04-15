@@ -1,77 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: ARM big LITTLE: Add generic cpufreq driver
- and its DT glue
-Date: Mon, 15 Apr 2013 12:32:59 +0530
-Message-ID: <CAKohpo=zGZzE7Fvj6zhdwNcnLGX0LN0jbpo+1goJz586N20cXw@mail.gmail.com>
-References: <1f864ec505cae7c5daea3810a3c26e0f5cda38ea.1364290815.git.viresh.kumar@linaro.org>
-	<5169BC86.7010905@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: [PATCH 1/2] cpufreq: ARM big LITTLE: put DT nodes after using them
+Date: Mon, 15 Apr 2013 12:35:24 +0530
+Message-ID: <1ff24e0c044fb7a30b6244451dd440455efab43b.1366009279.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f41.google.com ([209.85.219.41]:61634 "EHLO
-	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932998Ab3DOHDA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 03:03:00 -0400
-Received: by mail-oa0-f41.google.com with SMTP id f4so4164342oah.14
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 00:03:00 -0700 (PDT)
-In-Reply-To: <5169BC86.7010905@gmail.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:58108 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934971Ab3DOHFg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 03:05:36 -0400
+Received: by mail-pd0-f176.google.com with SMTP id r11so2331276pdi.21
+        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 00:05:35 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Francesco Lavra <francescolavra.fl@gmail.com>
-Cc: rjw@sisk.pl, nicolas.pitre@linaro.org, robin.randhawa@arm.com, linux@arm.linux.org.uk, mark.hambleton@broadcom.com, linux-pm@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, devicetree-discuss@lists.ozlabs.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
-
-On 14 April 2013 01:43, Francesco Lavra <francescolavra.fl@gmail.com> wrote:
-
->> +     for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
->
-> If of_find_node_by_path() returns NULL, there will be a NULL pointer
-> dereference.
->
->> +             if (count++ != cpu_dev->id)
->> +                     continue;
->> +             if (!of_get_property(np, "operating-points", NULL))
->> +                     return -ENODATA;
->> +
->> +             cpu_dev->of_node = np;
->> +
->> +             ret = of_init_opp_table(cpu_dev);
->> +             if (ret)
->> +                     return ret;
->> +
->> +             return 0;
->
-> of_node_put() should be called on np before returning.
-> Also, the reference count of the parent node should be decremented as well.
->
-> These comments apply to the below function dt_get_transition_latency() too.
-
-Thanks Francesco.
-
-Below fixes this (I will send it separately to Rafael):
-
-Subject: [PATCH 1/2] cpufreq: ARM big LITTLE: put DT nodes after using them
+To: rjw@sisk.pl
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
 DT nodes should be put using of_node_put() to balance their usage counts. This
 is not done properly in ARM's big LITTLE driver. Fix it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+Hi Rafael,
+
+These are fixes for 3.10
+
  drivers/cpufreq/arm_big_little_dt.c | 43 +++++++++++++++++++++++++------------
  1 file changed, 29 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little_dt.c
-b/drivers/cpufreq/arm_big_little_dt.c
+diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
 index 452ff46..44be311 100644
 --- a/drivers/cpufreq/arm_big_little_dt.c
 +++ b/drivers/cpufreq/arm_big_little_dt.c
 @@ -31,22 +31,28 @@
-
+ 
  static int dt_init_opp_table(struct device *cpu_dev)
  {
 -	struct device_node *np = NULL;
 +	struct device_node *np, *parent;
  	int count = 0, ret;
-
+ 
 -	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
 +	parent = of_find_node_by_path("/cpus");
 +	if (!parent) {
@@ -103,17 +69,17 @@ index 452ff46..44be311 100644
 +
 +		return ret;
  	}
-
+ 
  	return -ENODEV;
 @@ -54,15 +60,24 @@ static int dt_init_opp_table(struct device *cpu_dev)
-
+ 
  static int dt_get_transition_latency(struct device *cpu_dev)
  {
 -	struct device_node *np = NULL;
 +	struct device_node *np, *parent;
  	u32 transition_latency = CPUFREQ_ETERNAL;
  	int count = 0;
-
+ 
 -	for_each_child_of_node(of_find_node_by_path("/cpus"), np) {
 +	parent = of_find_node_by_path("/cpus");
 +	if (!parent) {
@@ -124,10 +90,14 @@ index 452ff46..44be311 100644
 +	for_each_child_of_node(parent, np) {
  		if (count++ != cpu_dev->id)
  			continue;
-
+ 
  		of_property_read_u32(np, "clock-latency", &transition_latency);
 +		of_node_put(np);
 +		of_node_put(parent);
 +
  		return 0;
  	}
+ 
+-- 
+1.7.12.rc2.18.g61b472e
+
