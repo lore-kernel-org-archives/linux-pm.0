@@ -1,227 +1,167 @@
-From: Nathan Zimmer <nzimmer@sgi.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
 Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Mon, 15 Apr 2013 13:05:06 -0500
-Message-ID: <516C4152.3070601@sgi.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com> <1923819.6Nb81T2TR8@vostro.rjw.lan> <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com> <516C25AE.4050503@intel.com> <516C3868.40903@sgi.com> <516C3BF1.6050902@gmail.com>
+Date: Mon, 15 Apr 2013 20:07:43 +0200
+Message-ID: <CA+icZUVbdeOVMFU0RePtpA+-fxFyk0JnePUg6MVP-ZkeicEGKw@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
+	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
+	<1923819.6Nb81T2TR8@vostro.rjw.lan>
+	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
+	<516C25AE.4050503@intel.com>
+	<CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
+	<CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
+	<CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <516C3BF1.6050902@gmail.com>
-Sender: linux-next-owner@vger.kernel.org
-To: Dirk Brandewie <dirk.brandewie@gmail.com>
-Cc: sedat.dilek@gmail.com, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/15/2013 12:42 PM, Dirk Brandewie wrote:
-> On 04/15/2013 10:27 AM, Nathan Zimmer wrote:
->> On 04/15/2013 11:07 AM, Dirk Brandewie wrote:
->>> On 04/13/2013 02:55 AM, Sedat Dilek wrote:
->>>> On Sat, Apr 13, 2013 at 12:51 AM, Rafael J. Wysocki <rjw@sisk.pl>=20
->>>> wrote:
->>>>> On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
->>>>>> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek=20
->>>>>> <sedat.dilek@gmail.com> wrote:
->>>>>>> On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek=20
->>>>>>> <sedat.dilek@gmail.com> wrote:
->>>>>>>> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek=20
->>>>>>>> <sedat.dilek@gmail.com> wrote:
->>>>>>>>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar=20
->>>>>>>>> <viresh.kumar@linaro.org>
->>>>>>>>> wrote:
->>>>>>>>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com>=20
->>>>>>>>>> wrote:
->>>>>>>>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package=
-=20
->>>>>>>>>>> with 'make
->>>>>>>>>>> deb-pkg'" from February 2012.
->>>>>>>>>>> Can't say what happened to it...
->>>>>>>>>>
->>>>>>>>>> Sedat,
->>>>>>>>>>
->>>>>>>>>> Sorry for being late. I am down with Fever and throat=20
->>>>>>>>>> infection since
->>>>>>>>>> few days.
->>>>>>>>>> Still struggling with it..
->>>>>>>>>>
->>>>>>>>>> There are few things i tried. Firstly the tag: next-20130326=
-=20
->>>>>>>>>> is bad as
->>>>>>>>>> there are
->>>>>>>>>> some bad commits in cpufreq core in it.
->>>>>>>>>>
->>>>>>>>>> I then tried latest linux-next/master on my Thinkpad (model =
-name
->>>>>>>>>> : Intel(R)
->>>>>>>>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My=
-=20
->>>>>>>>>> ubuntu
->>>>>>>>>> just hanged.
->>>>>>>>>>
->>>>>>>>>> Then i tried Rafael's linux-next branch
->>>>>>>>>>
->>>>>>>>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
->>>>>>>>>>
->>>>>>>>>> And couldn't find any issues with it. I am easily able to=20
->>>>>>>>>> remove/add
->>>>>>>>>> cpus at
->>>>>>>>>> runtime..
->>>>>>>>>>
->>>>>>>>>> Can you give this branch a try?
->>>>>>>>>>
->>>>>>>>>
->>>>>>>>> OK, you seem to be well again, nice to hear.
->>>>>>>>>
->>>>>>>>> I was doing the whole week spring-cleaning in the apartment o=
-f=20
->>>>>>>>> my parents.
->>>>>>>>> Now, I have some minutes for a compilation run.
->>>>>>>>>
->>>>>>>>> I guess "cpufreq: Call __cpufreq_governor() with correct=20
->>>>>>>>> policy->cpus
->>>>>>>>> mask" could be the correct fix, but will try the GIT branch=20
->>>>>>>>> you have
->>>>>>>>> mentioned.
->>>>>>>>>
->>>>>>>>> - Sedat -
->>>>>>>>>
->>>>>>>>> [1]
->>>>>>>>> http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
-it/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e6199=
-=20
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>
->>>>>>>>
->>>>>>>> Both BROKEN here, specific pm-next commitid and pulling
->>>>>>>> pm.git#linux-next into next-20130411 (see attached files).
->>>>>>>>
->>>>>>>> Is "cpufreq: convert cpufreq_driver to using RCU" the root=20
->>>>>>>> cause of this
->>>>>>>> all?
->>>>>>>>
->>>>>>>
->>>>>>> [ CC Nathan ]
->>>>>>>
->>>>>>> NO, wrong assumption.
->>>>>>>
->>>>>>> 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Reve=
-rt
->>>>>>> "cpufreq: convert cpufreq_driver to using RCU"
->>>>>>> 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
->>>>>>> __cpufreq_governor() with correct policy->cpus mask"
->>>>>>> 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-nex=
-t-079576f] Merge=20
->>>>>>> branch
->>>>>>> 'pm-cpufreq-next' into linux-next
->>>>>>>
->>>>>>> - Sedat -
->>>>>>>
->>>>>>>
->>>>>>>> - Sedat -
->>>>>>>>
->>>>>>>> [1]
->>>>>>>> http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.gi=
-t/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b=20
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>>>> --=20
->>>>>>>>>> viresh
->>>>>>
->>>>>> [ TO Dirk (Author of Intel pstate driver) ]
->>>>>>
->>>>>> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-t=
-race!
->>>>>>
->>>>>> My kernel-config and dmesg are attached.
->>>>>
->>>>> You're seeing a trouble with a new driver, then, so that's not a=20
->>>>> regression.
->>>>>
+On Mon, Apr 15, 2013 at 7:57 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+>> On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+>>>> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
+>>>> called intel_pstate does not implement the target() callback.
+>>>>
+>>>> Nathan's commit 5800043b2 changed the fence around the call to
+>>>> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
 >>>
->>> This IS a regression.
+>>> No it isn't.
 >>>
->>> If the intel_pstate driver is being used __cpufreq_governor() shoul=
-d=20
->>> NOT be
->>> called intel_pstate does not implement the target() callback.
+>>>> +       if (has_target)
+>>>>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
 >>>
->>> Nathan's commit 5800043b2 changed the fence around the call to
->>> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant=
-=20
->>> hunk.
+>>> As it has taken care of this limitation.
 >>>
->>> @@ -1007,9 +1068,12 @@ static int __cpufreq_remove_dev(struct devic=
-e=20
->>> *dev,
->>> struct subsys_interface *sif
->>>      unsigned int cpu =3D dev->id, ret, cpus;
->>>      unsigned long flags;
->>>      struct cpufreq_policy *data;
->>> +    struct cpufreq_driver *driver;
->>>      struct kobject *kobj;
->>>      struct completion *cmp;
->>>      struct device *cpu_dev;
->>> +    bool has_target;
->>> +    int (*exit)(struct cpufreq_policy *policy);
+>>> BUT some of my earlier patches haven't. :(
+>>> Here is the fix (Sedat please try this and give your tested-by, use the attached
+>>> patch as gmail might break what i am copying in mail)..
 >>>
->>>      pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+>>> Sorry for being late in fixing this issue, i am still down with Tonsil infection
+>>> and fever.. Today only i got some power to fix it after seeing Dirk's mail.
 >>>
->>> @@ -1025,14 +1089,19 @@ static int __cpufreq_remove_dev(struct=20
->>> device *dev,
->>> struct subsys_interface *sif
->>>          return -EINVAL;
->>>      }
->>>
->>> -    if (cpufreq_driver->target)
->>> +    rcu_read_lock();
->>> +    driver =3D rcu_dereference(cpufreq_driver);
->>> +    has_target =3D driver->target ? true : false;
->>> +    exit =3D driver->exit;
->>> +    if (has_target)
->>>          __cpufreq_governor(data, CPUFREQ_GOV_STOP);
->>>
->>>  #ifdef CONFIG_HOTPLUG_CPU
->>> -    if (!cpufreq_driver->setpolicy)
->>> +    if (!driver->setpolicy)
->>>          strncpy(per_cpu(cpufreq_cpu_governor, cpu),
->>>              data->governor->name, CPUFREQ_NAME_LEN);
->>>  #endif
->>> +    rcu_read_unlock();
->>>
->>>      WARN_ON(lock_policy_rwsem_write(cpu));
->>>      cpus =3D cpumask_weight(data->cpus);
+>>> Your tested-by may help me to recover quickly :)
 >>>
 >>
->> I am not clear at what is at issue.  Are you saying=20
->> __cpufreq_governor can
->> change the value of cpufreq_driver->target?  I hadn't thought that=20
->> was allowed
->> but if it is the code would need to be fixed.
+>> Hehe.
+>> Me myself and I was today chez-mon-docteur... Let's see the results on Thursday.
+>> Again, get well soon.
 >>
+>> Tested against...
+>>
+>>  "BROKEN" Linux-Next (next-20130411) with attached patchset (incl.
+>> your cpufreq-next-fixes).
+>>
+>> Test-Case...
+>>
+>> CONFIG_X86_INTEL_PSTATE=y
+>>
+>> root# echo 0 > /sys/devices/system/cpu/cpu3/online
+>>
+>> Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+>>
+>> ...did not test on-reboot-case.
+>>
+
+Reboot is also fine here.
+
+>> ( Dirk promised to test as well... )
+>>
+
+Dirk confirmed your patch works for him.
+Good!
+
+- Sedat -
+
 >
-> Sorry I think pointing to your patch may have red herring see viresh'=
-s=20
-> mail.
+> Might be interesting as an extra-confirmation:
 >
-> The issue is that __cpufreq_governor() is being called when=20
-> intel_pstate is the
-> scaling driver intel_pstate does not implement ->target(). From the s=
-tack
-> trace it looked like this was happening in __cpufreq_remove_dev() so =
-I=20
-> "assumed"
-> it was the first instance of the target fence that was failing.
+> root# echo 1 > /sys/devices/system/cpu/cpu3/online
 >
-> I am rebuilding using the next tree with viresh's patch I will let yo=
-u=20
-> know what
-> I find sorry for the noise.
+> [ dmesg ]
 >
-> --Dirk
->> Nate
+> [  556.101961] smpboot: Booting Node 0 Processor 3 APIC 0x3
+> [  556.113158] Disabled fast string operations
+> [  556.116621] Intel pstate controlling: cpu 3
 >
-No worries.  I would rather see extra noise from linux-next then extra=20
-bugs in the mainline.
+> - Sedat -
+>
+>> - Sedat -
+>>
+>>> @Rafael: I will probably be down for one more week and so not doing any
+>>> reviews for now... I do check important mails sent directly to me though.
+>>>
+>>> ------------x----------------------x------------------
+>>>
+>>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>>> Date: Mon, 15 Apr 2013 22:43:57 +0530
+>>> Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
+>>>  target()
+>>>
+>>> Some cpufreq drivers implement their own governor and so don't need us to call
+>>> generic governors interface via __cpufreq_governor(). Few recent commits haven't
+>>> obeyed this law well and we saw some regressions.
+>>>
+>>> This patch tries to fix this issue.
+>>>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
+>>>  1 file changed, 13 insertions(+), 5 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>>> index 3564947..a6f6595 100644
+>>> --- a/drivers/cpufreq/cpufreq.c
+>>> +++ b/drivers/cpufreq/cpufreq.c
+>>> @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
+>>> cpu, unsigned int sibling,
+>>>                                   struct device *dev)
+>>>  {
+>>>         struct cpufreq_policy *policy;
+>>> -       int ret = 0;
+>>> +       int ret = 0, has_target = 0;
+>>>         unsigned long flags;
+>>>
+>>>         policy = cpufreq_cpu_get(sibling);
+>>>         WARN_ON(!policy);
+>>>
+>>> -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>>> +       rcu_read_lock();
+>>> +       has_target = !!rcu_dereference(cpufreq_driver)->target;
+>>> +       rcu_read_unlock();
+>>> +
+>>> +       if (has_target)
+>>> +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>>>
+>>>         lock_policy_rwsem_write(sibling);
+>>>
+>>> @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
+>>> cpu, unsigned int sibling,
+>>>
+>>>         unlock_policy_rwsem_write(sibling);
+>>>
+>>> -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>>> -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>>> +       if (has_target) {
+>>> +               __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>>> +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>>> +       }
+>>>
+>>>         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+>>>         if (ret) {
+>>> @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
+>>> *dev, struct subsys_interface *sif
+>>>
+>>>         /* If cpu is last user of policy, free policy */
+>>>         if (cpus == 1) {
+>>> -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+>>> +               if (has_target)
+>>> +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+>>>
+>>>                 lock_policy_rwsem_read(cpu);
+>>>                 kobj = &data->kobj;
