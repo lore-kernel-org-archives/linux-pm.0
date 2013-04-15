@@ -1,76 +1,43 @@
 From: Alex Shi <alex.shi@intel.com>
 Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Mon, 15 Apr 2013 14:04:09 +0800
-Message-ID: <516B9859.70004@intel.com>
-References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com> <20130414155925.GC20547@pd.tnic>
+Date: Mon, 15 Apr 2013 14:16:55 +0800
+Message-ID: <516B9B57.3030902@intel.com>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com> <20130414155925.GC20547@pd.tnic> <516B9859.70004@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130414155925.GC20547@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:43332 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751067Ab3DOGRf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Apr 2013 02:17:35 -0400
+In-Reply-To: <516B9859.70004@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Borislav Petkov <bp@alien8.de>
 Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
-On 04/14/2013 11:59 PM, Borislav Petkov wrote:
-> On Sun, Apr 14, 2013 at 09:28:50AM +0800, Alex Shi wrote:
->> Even some scenario the total energy cost more, at least the avg watts
->> dropped in that scenarios.
-> 
-> Ok, what's wrong with x = 32 then? So basically if you're looking at
-> avg watts, you don't want to have more than 16 threads, otherwise
-> powersaving sucks on that particular uarch and platform. Can you say
-> that for all platforms out there?
+On 04/15/2013 02:04 PM, Alex Shi wrote:
+> On 04/14/2013 11:59 PM, Borislav Petkov wrote:
+>> > On Sun, Apr 14, 2013 at 09:28:50AM +0800, Alex Shi wrote:
+>>> >> Even some scenario the total energy cost more, at least the avg watts
+>>> >> dropped in that scenarios.
+>> > 
+>> > Ok, what's wrong with x = 32 then? So basically if you're looking at
+>> > avg watts, you don't want to have more than 16 threads, otherwise
+>> > powersaving sucks on that particular uarch and platform. Can you say
+>> > that for all platforms out there?
+> The cpu freq boost make the avg watts higher with x = 32, and also make
+> higher power efficiency. We can disable cpu freq boost for this if we
+> want lower power consumption all time.
+> But for my understanding, the power efficient is better way to save power.
 
-The cpu freq boost make the avg watts higher with x = 32, and also make
-higher power efficiency. We can disable cpu freq boost for this if we
-want lower power consumption all time.
-But for my understanding, the power efficient is better way to save power.
-As to other platforms, I'm glad to see any testing or try and give me
-results...
-> 
-> Also, I've added in the columns below the Energy = Power * Time thing.
+BTW, lowest p-state, no freq boost and plus this powersaving policy will
+give the lowest power consumption.
 
-Thanks. btw the third data of each column is 'performance/watt'. that
-shows similar meaning on the other side. :)
-> 
-> And the funny thing is, exactly there where avg watts is better in
-> powersaving, energy for workload retire is worse. And the other way
-> around. Basically, avg watts vs retire energy is reciprocal. Great :-\.
-> 
->> Len said he has low p-state which can work there. but that's is
->> different. I had sent some data in another email list to show the
->> difference:
->>
->> The following is 2 times kbuild testing result for 3 kinds condiation on
->> SNB EP box, the middle column is the lowest p-state testing result, we
->> can see, it has the lowest power consumption, also has the lowest
->> performance/watts value.
->> At least for kbuild benchmark, powersaving policy has the best
->> compromise on powersaving and power efficient. Further more, due to cpu
->> boost feature, it has better performance in some scenarios.
->>
->>    powersaving + ondemand  userspace + fixed 1.2GHz performance+ondemand
->> x = 8    231.318 /75 57           165.063 /166 36        253.552 /63 62
->> x = 16   280.357 /49 72           174.408 /106 54        296.776 /41 82
->> x = 32   325.206 /34 90           178.675 /90 62         314.153 /37 86
->>
->> x = 8    233.623 /74 57           164.507 /168 36        254.775 /65 60
->> x = 16   272.54  /38 96           174.364 /106 54        297.731 /42 79
->> x = 32   320.758 /34 91           177.917 /91 61         317.875 /35 89
->> x = 64   326.837 /33 92           179.037 /90 62         320.615 /36 86
-> 
-> 	    17348.850		    27400.458		   15973.776
-> 	    13737.493		    18487.248		   12167.816
-> 	    11057.004		    16080.750		   11623.661
-> 
-> 	    17288.102		    27637.176		   16560.375
-> 	    10356.52		    18482.584		   12504.702
-> 	    10905.772		    16190.447		   11125.625
-> 	    10785.621		    16113.330		   11542.140
-> 
-
+And I need to say again. the powersaving policy just effect on system
+under utilisation. when system goes busy, it won't has effect.
+performance oriented policy will take over balance behaviour.
 
 -- 
 Thanks Alex
