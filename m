@@ -1,118 +1,56 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 0/4] thermal threshold and notification v2.0
-Date: Mon, 15 Apr 2013 08:20:32 -0700
-Message-ID: <516C1AC0.6030403@linux.intel.com>
-References: <1365541282-19366-1-git-send-email-srinivas.pandruvada@linux.intel.com> <20130413013230.GB14726@roeck-us.net>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [RFC patch 2/2] ARM: at91: cpuidle: move the driver to
+ drivers/cpuidle directory
+Date: Mon, 15 Apr 2013 18:00:41 +0200
+Message-ID: <20130415160041.GF15139@game.jcrosoft.org>
+References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
+ <1366032598-23053-3-git-send-email-daniel.lezcano@linaro.org>
+ <20130415142047.GE15139@game.jcrosoft.org>
+ <516C10C5.4050107@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:58989 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752506Ab3DOPPf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Apr 2013 11:15:35 -0400
-In-Reply-To: <20130413013230.GB14726@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <516C10C5.4050107@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nicolas.ferre@atmel.com, rjw@sisk.pl, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Zhang Rui <rui.zhang@intel.com>, lm-sensors@lm-sensors.org, fenghua.yu@intel.com, tony.luck@intel.com, bp@alien8.de, linux-pm@vger.kernel.org
 
-On 04/12/2013 06:32 PM, Guenter Roeck wrote:
-> On Tue, Apr 09, 2013 at 02:01:18PM -0700, Srinivas Pandruvada wrote:
->> v2.0
->> As suggested by Guenter Roeck, used the previous development in this area
->> as starting point. The first patch is same as what Guenter Roeck submitted
->> before except for checkpatch error for strtoul.As per this patch, the following
->> additional coretemp sysfs entries will be added:
->> tempX_threshold1 - Reflects value of CPU thermal threshold T0.
->> tempX_threshold1_triggered
->> 	         - Reflects status of CPU thermal status register bit 6
->> 		   (THERM_STATUS_THRESHOLD0).
->> tempX_threshold2 - Reflects value of CPU thermal threshold T1.
->> tempX_threshold2_triggered
->> 	         - Reflects status of CPU thermal status register bit 8
->> 		   (THERM_STATUS_THRESHOLD1).
->>
->>
->> The notification mechanism is implemented for package level by using uevent.
->> Also a debugfs interface is added to check count of interrupts and worker fn
->> scheduling.
->>
->>
->> v1.0
->>
->> This is clear that there is reluctance in adding thresholds in coretemp sysfs,
->> during previous attempts. Proably because of lake of use cases.
->> But this time use case may be more compelling.
->>
->> We have many small form factor devices like ultrabooks, slate PCs in the market.
->> Unfortunately these devices reach maximum temperature with relatively less
->> workloads, causing BIOS to do thermal throttling. There are real performance
->> issues due to aggressive BIOS action to control thermals and also thermal breakdown
->> in some cases.
->>
->> Even the most expensive laptops, don't have correct ACPI thermal configuration,
->> so that kernel thermal driver can act. In some case even the trip point is higher
->> than critical temperature setting.
->>
->> Intel has developed several drivers, which can be used to cool the system very efficiently.
->> They include RAPL based cooling driver, Powerclamp driver and P state driver.
->> To utilize these cooling device a closed loop user mode program is required, which
->> will utilize these method and dynamically compensate for high CPU temperatures,
->> without relying on any configuration data.
->> One such solution is developed is "Linux thermal daemon". More details can be
->> obtained from
->> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
->> This daemon polls for cpu temperature and apply compensation once the CPU reach target
->> temperature.
->>
->> This polling can be mostly avoided, by getting notification for the temperature, where
->> it needs to wake up and get ready for apply compensation. In most of the normal use
->> cases, there may not be any threshold events. So very minimal number of user space
->> notification for thermal thresholds.
->>
->> Notification are added only for package level thresholds, to minimize events. Also
->> interrupts are enabled only when a non tj_max(default) value is written to thresholds.
->>
->> Once thresholds are violated, it uses a rate control of 5 seconds, reducing the number
->> of interrupts, when temperature is hanging around trip point. Using the sticky log bit,
->> it sends kboject uevent change notification for corresponding package sysfs.
->> Once the thermal daemon receives notification, it can change to new threshold or act
->> immediately to reduce CPU temperature.*
->>
->> Guenter Roeck (1):
->>    hwmon: (coretemp) Add support for thermal threshold attributes
->>
->> Srinivas Pandruvada (3):
->>    x86, mcheck, therm_throt: Process package thresholds
->>    hwmon: (coretemp) : Add notification support
->>    hwmon: (coretemp) : Add debugfs to support thresholds
->>
->>   Documentation/hwmon/coretemp             |   8 +
->>   arch/x86/include/asm/mce.h               |   7 +
->>   arch/x86/kernel/cpu/mcheck/therm_throt.c |  63 ++++++-
->>   drivers/hwmon/coretemp.c                 | 292 +++++++++++++++++++++++++++++--
->>   4 files changed, 356 insertions(+), 14 deletions(-)
->>
-> Rui,
->
-> can you have a look at this series ?
->
-> I would like to get some feedback from thermal subsystem supporters if hwmon
-> is really the right place for this. I may be wrong, but it seems to me it would
-> better fit into thermal.
->
-> Thanks,
-> Guenter
-
-I am fine using thermal zones, but the coretemp will be duplicated in 
-both coretemp and thermal sysfs and lot of code duplication. Also trip 
-point in this case is not for activating any cooling device, but just to 
-notify user space. So this will be a zone with no associated cdevs.
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
+T24gMTY6MzcgTW9uIDE1IEFwciAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiBPbiAwNC8x
+NS8yMDEzIDA0OjIwIFBNLCBKZWFuLUNocmlzdG9waGUgUExBR05JT0wtVklMTEFSRCB3cm90ZToK
+PiA+IE9uIDE1OjI5IE1vbiAxNSBBcHIgICAgICwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4gPj4g
+V2UgZG9uJ3QgaGF2ZSBhbnkgZGVwZW5kZW5jeSB3aXRoIHRoZSBTb0Mgc3BlY2lmaWMgY29kZS4K
+PiA+Pgo+ID4+IE1vdmUgdGhlIGRyaXZlciB0byB0aGUgZHJpdmVycy9jcHVpZGxlIGRpcmVjdG9y
+eS4KPiA+Pgo+ID4+IEFkZCBOaWNvbGFzIEZlcnJlIGFzIGF1dGhvciBvZiB0aGUgZHJpdmVyLCBz
+byBpdCB3aWxsIGJlIGluIGNvcHkgb2YgdGhlIGVtYWlscy4KPiA+Pgo+ID4+IFNpZ25lZC1vZmYt
+Ynk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPgo+ID4gcGxlYXNl
+IHVzZSAtTSB3aGVuIGdlbmVyYXRpbmcgdGhlIHBhdGNoCj4gCj4gT2gsIHJpZ2h0LiBUaGFua3Mg
+Zm9yIHJlbWluZGluZyBtZSB0aGUgb3B0aW9uLgo+IAo+IFsgLi4uIF0KPiAKPiA+PiArI2luY2x1
+ZGUgPGxpbnV4L21vZHVsZS5oPgo+ID4+ICsjaW5jbHVkZSA8bGludXgvaW5pdC5oPgo+ID4+ICsj
+aW5jbHVkZSA8bGludXgvY3B1aWRsZS5oPgo+ID4+ICsjaW5jbHVkZSA8YXNtL2NwdWlkbGUuaD4K
+PiA+PiArCj4gPj4gKyNkZWZpbmUgQVQ5MV9NQVhfU1RBVEVTCTIKPiA+PiArCj4gPj4gK2V4dGVy
+biB2b2lkICgqYXQ5MV9zdGFuZGJ5X29wcykodm9pZCk7Cj4gPiByZWFsbHkgZG9uJ3QgbGlrZSBj
+YW4gd2UgcGFzcyBpdCB2aWEgdGhlIHBtPwo+IAo+IEkgYWdyZWUsIGl0IGlzIGhhY2tpc2guIENh
+biB5b3UgZWxhYm9yYXRlIHdoZW4geW91IHNheSAicGFzcyBpdCB2aWEgdGhlCj4gcG0iID8KCkkg
+d2FzIHRoaW5raW5nIGFib3V0IGl0CgpJIHdvdWxkIGV2ZW4gcHJlZmVyIHRvIGhhdmUgYSBwbGF0
+ZnJvbSBkcml2ZXIgdGhhdCBwYXNzIGl0IHZpYSBwbGF0Zm9ybSBkYXRhCmV2ZW4gaW4gRFQKCmJ1
+dCBub3Qgc29tZXRoaW5nIHRoYXQgY2FuIHRvdWNoIGdsb2JhbGx5CgphbmQgZm9yIGRyaXZlcnMg
+SSBwcmVmZXIgdG8gZG8gbm90IHVzZSBjcHVfaXMgb25seSBmb3IgdGhlIGNvcmUKCkJlc3QgUmVn
+YXJkcywKSi4KPiAKPiAKPiAKPiAtLSAKPiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
+by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcwo+IAo+IEZvbGxvdyBM
+aW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8
+Cj4gPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo+IDxodHRwOi8v
+d3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCj4gCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
+dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
+ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
