@@ -1,59 +1,76 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [V3 patch 12/19] ARM: shmobile: cpuidle: use init/exit common
- routine
-Date: Mon, 15 Apr 2013 12:56:25 +0900
-Message-ID: <20130415035625.GD3070@verge.net.au>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
- <1365770165-27096-13-git-send-email-daniel.lezcano@linaro.org>
+From: Alex Shi <alex.shi@intel.com>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Mon, 15 Apr 2013 14:04:09 +0800
+Message-ID: <516B9859.70004@intel.com>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com> <20130414155925.GC20547@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:50087 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921Ab3DOD42 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Apr 2013 23:56:28 -0400
-Content-Disposition: inline
-In-Reply-To: <1365770165-27096-13-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130414155925.GC20547@pd.tnic>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On Fri, Apr 12, 2013 at 02:35:58PM +0200, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initialization.
+On 04/14/2013 11:59 PM, Borislav Petkov wrote:
+> On Sun, Apr 14, 2013 at 09:28:50AM +0800, Alex Shi wrote:
+>> Even some scenario the total energy cost more, at least the avg watts
+>> dropped in that scenarios.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Simon Horman <horms+renesas@verge.net.au>
-> ---
->  arch/arm/mach-shmobile/cpuidle.c |   10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
+> Ok, what's wrong with x = 32 then? So basically if you're looking at
+> avg watts, you don't want to have more than 16 threads, otherwise
+> powersaving sucks on that particular uarch and platform. Can you say
+> that for all platforms out there?
+
+The cpu freq boost make the avg watts higher with x = 32, and also make
+higher power efficiency. We can disable cpu freq boost for this if we
+want lower power consumption all time.
+But for my understanding, the power efficient is better way to save power.
+As to other platforms, I'm glad to see any testing or try and give me
+results...
 > 
-> diff --git a/arch/arm/mach-shmobile/cpuidle.c b/arch/arm/mach-shmobile/cpuidle.c
-> index d671ae9..0afeb5c 100644
-> --- a/arch/arm/mach-shmobile/cpuidle.c
-> +++ b/arch/arm/mach-shmobile/cpuidle.c
-> @@ -16,7 +16,6 @@
->  #include <asm/cpuidle.h>
->  #include <asm/io.h>
->  
-> -static struct cpuidle_device shmobile_cpuidle_dev;
->  static struct cpuidle_driver shmobile_cpuidle_default_driver = {
->  	.name			= "shmobile_cpuidle",
->  	.owner			= THIS_MODULE,
-> @@ -34,12 +33,5 @@ void __init shmobile_cpuidle_set_driver(struct cpuidle_driver *drv)
->  
->  int __init shmobile_cpuidle_init(void)
->  {
-> -	struct cpuidle_device *dev = &shmobile_cpuidle_dev;
-> -
-> -	cpuidle_register_driver(cpuidle_drv);
-> -
-> -	dev->state_count = cpuidle_drv->state_count;
-> -	cpuidle_register_device(dev);
-> -
-> -	return 0;
-> +	return cpuidle_register(cpuidle_drv, NULL);
->  }
-> -- 
-> 1.7.9.5
+> Also, I've added in the columns below the Energy = Power * Time thing.
+
+Thanks. btw the third data of each column is 'performance/watt'. that
+shows similar meaning on the other side. :)
 > 
+> And the funny thing is, exactly there where avg watts is better in
+> powersaving, energy for workload retire is worse. And the other way
+> around. Basically, avg watts vs retire energy is reciprocal. Great :-\.
+> 
+>> Len said he has low p-state which can work there. but that's is
+>> different. I had sent some data in another email list to show the
+>> difference:
+>>
+>> The following is 2 times kbuild testing result for 3 kinds condiation on
+>> SNB EP box, the middle column is the lowest p-state testing result, we
+>> can see, it has the lowest power consumption, also has the lowest
+>> performance/watts value.
+>> At least for kbuild benchmark, powersaving policy has the best
+>> compromise on powersaving and power efficient. Further more, due to cpu
+>> boost feature, it has better performance in some scenarios.
+>>
+>>    powersaving + ondemand  userspace + fixed 1.2GHz performance+ondemand
+>> x = 8    231.318 /75 57           165.063 /166 36        253.552 /63 62
+>> x = 16   280.357 /49 72           174.408 /106 54        296.776 /41 82
+>> x = 32   325.206 /34 90           178.675 /90 62         314.153 /37 86
+>>
+>> x = 8    233.623 /74 57           164.507 /168 36        254.775 /65 60
+>> x = 16   272.54  /38 96           174.364 /106 54        297.731 /42 79
+>> x = 32   320.758 /34 91           177.917 /91 61         317.875 /35 89
+>> x = 64   326.837 /33 92           179.037 /90 62         320.615 /36 86
+> 
+> 	    17348.850		    27400.458		   15973.776
+> 	    13737.493		    18487.248		   12167.816
+> 	    11057.004		    16080.750		   11623.661
+> 
+> 	    17288.102		    27637.176		   16560.375
+> 	    10356.52		    18482.584		   12504.702
+> 	    10905.772		    16190.447		   11125.625
+> 	    10785.621		    16113.330		   11542.140
+> 
+
+
+-- 
+Thanks Alex
