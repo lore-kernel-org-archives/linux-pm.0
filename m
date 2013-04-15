@@ -1,177 +1,156 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [lm-sensors] [PATCH 0/4] thermal threshold and notification v2.0
-Date: Mon, 15 Apr 2013 17:53:31 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C6EE10@BGSMSX101.gar.corp.intel.com>
-References: <1365541282-19366-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<20130413013230.GB14726@roeck-us.net> <516C1AC0.6030403@linux.intel.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Mon, 15 Apr 2013 19:57:17 +0200
+Message-ID: <CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
+	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
+	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
+	<1923819.6Nb81T2TR8@vostro.rjw.lan>
+	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
+	<516C25AE.4050503@intel.com>
+	<CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
+	<CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:34722 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754765Ab3DORxh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 13:53:37 -0400
-In-Reply-To: <516C1AC0.6030403@linux.intel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>
-Cc: "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "bp@alien8.de" <bp@alien8.de>, "Zhang, Rui" <rui.zhang@intel.com>
 
-> -----Original Message-----
-> From: lm-sensors-bounces@lm-sensors.org [mailto:lm-sensors-
-> bounces@lm-sensors.org] On Behalf Of Srinivas Pandruvada
-> Sent: Monday, April 15, 2013 8:51 PM
-> To: Guenter Roeck
-> Cc: Yu, Fenghua; Luck, Tony; linux-pm@vger.kernel.org; lm-sensors@lm-
-> sensors.org; bp@alien8.de; Zhang, Rui
-> Subject: Re: [lm-sensors] [PATCH 0/4] thermal threshold and notification v2.0
-> 
-> On 04/12/2013 06:32 PM, Guenter Roeck wrote:
-> > On Tue, Apr 09, 2013 at 02:01:18PM -0700, Srinivas Pandruvada wrote:
-> >> v2.0
-> >> As suggested by Guenter Roeck, used the previous development in this
-> area
-> >> as starting point. The first patch is same as what Guenter Roeck submitted
-> >> before except for checkpatch error for strtoul.As per this patch, the
-> following
-> >> additional coretemp sysfs entries will be added:
-> >> tempX_threshold1 - Reflects value of CPU thermal threshold T0.
-> >> tempX_threshold1_triggered
-> >> 	         - Reflects status of CPU thermal status register bit 6
-> >> 		   (THERM_STATUS_THRESHOLD0).
-> >> tempX_threshold2 - Reflects value of CPU thermal threshold T1.
-> >> tempX_threshold2_triggered
-> >> 	         - Reflects status of CPU thermal status register bit 8
-> >> 		   (THERM_STATUS_THRESHOLD1).
-> >>
-> >>
-> >> The notification mechanism is implemented for package level by using
-> uevent.
-> >> Also a debugfs interface is added to check count of interrupts and worker
-> fn
-> >> scheduling.
-> >>
-> >>
-> >> v1.0
-> >>
-> >> This is clear that there is reluctance in adding thresholds in coretemp
-> sysfs,
-> >> during previous attempts. Proably because of lake of use cases.
-> >> But this time use case may be more compelling.
-> >>
-> >> We have many small form factor devices like ultrabooks, slate PCs in the
-> market.
-> >> Unfortunately these devices reach maximum temperature with relatively
-> less
-> >> workloads, causing BIOS to do thermal throttling. There are real
-> performance
-> >> issues due to aggressive BIOS action to control thermals and also thermal
-> breakdown
-> >> in some cases.
-> >>
-> >> Even the most expensive laptops, don't have correct ACPI thermal
-> configuration,
-> >> so that kernel thermal driver can act. In some case even the trip point is
-> higher
-> >> than critical temperature setting.
-> >>
-> >> Intel has developed several drivers, which can be used to cool the system
-> very efficiently.
-> >> They include RAPL based cooling driver, Powerclamp driver and P state
-> driver.
-> >> To utilize these cooling device a closed loop user mode program is
-> required, which
-> >> will utilize these method and dynamically compensate for high CPU
-> temperatures,
-> >> without relying on any configuration data.
-> >> One such solution is developed is "Linux thermal daemon". More details
-> can be
-> >> obtained from
-> >>
-> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon
-> _Introduction.pdf".
-> >> This daemon polls for cpu temperature and apply compensation once the
-> CPU reach target
-> >> temperature.
-> >>
-> >> This polling can be mostly avoided, by getting notification for the
-> temperature, where
-> >> it needs to wake up and get ready for apply compensation. In most of the
-> normal use
-> >> cases, there may not be any threshold events. So very minimal number of
-> user space
-> >> notification for thermal thresholds.
-> >>
-> >> Notification are added only for package level thresholds, to minimize
-> events. Also
-> >> interrupts are enabled only when a non tj_max(default) value is written
-> to thresholds.
-> >>
-> >> Once thresholds are violated, it uses a rate control of 5 seconds, reducing
-> the number
-> >> of interrupts, when temperature is hanging around trip point. Using the
-> sticky log bit,
-> >> it sends kboject uevent change notification for corresponding package
-> sysfs.
-> >> Once the thermal daemon receives notification, it can change to new
-> threshold or act
-> >> immediately to reduce CPU temperature.*
-> >>
-> >> Guenter Roeck (1):
-> >>    hwmon: (coretemp) Add support for thermal threshold attributes
-> >>
-> >> Srinivas Pandruvada (3):
-> >>    x86, mcheck, therm_throt: Process package thresholds
-> >>    hwmon: (coretemp) : Add notification support
-> >>    hwmon: (coretemp) : Add debugfs to support thresholds
-> >>
-> >>   Documentation/hwmon/coretemp             |   8 +
-> >>   arch/x86/include/asm/mce.h               |   7 +
-> >>   arch/x86/kernel/cpu/mcheck/therm_throt.c |  63 ++++++-
-> >>   drivers/hwmon/coretemp.c                 | 292
-> +++++++++++++++++++++++++++++--
-> >>   4 files changed, 356 insertions(+), 14 deletions(-)
-> >>
-> > Rui,
-> >
-> > can you have a look at this series ?
-> >
-> > I would like to get some feedback from thermal subsystem supporters if
-> hwmon
-> > is really the right place for this. I may be wrong, but it seems to me it would
-> > better fit into thermal.
-> >
-> > Thanks,
-> > Guenter
-> 
-> I am fine using thermal zones, but the coretemp will be duplicated in
-> both coretemp and thermal sysfs and lot of code duplication. Also trip
-> point in this case is not for activating any cooling device, but just to
-> notify user space. So this will be a zone with no associated cdevs.
+On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
+> On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+>>> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
+>>> called intel_pstate does not implement the target() callback.
+>>>
+>>> Nathan's commit 5800043b2 changed the fence around the call to
+>>> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
+>>
+>> No it isn't.
+>>
+>>> +       if (has_target)
+>>>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+>>
+>> As it has taken care of this limitation.
+>>
+>> BUT some of my earlier patches haven't. :(
+>> Here is the fix (Sedat please try this and give your tested-by, use the attached
+>> patch as gmail might break what i am copying in mail)..
+>>
+>> Sorry for being late in fixing this issue, i am still down with Tonsil infection
+>> and fever.. Today only i got some power to fix it after seeing Dirk's mail.
+>>
+>> Your tested-by may help me to recover quickly :)
+>>
+>
+> Hehe.
+> Me myself and I was today chez-mon-docteur... Let's see the results on Thursday.
+> Again, get well soon.
+>
+> Tested against...
+>
+>  "BROKEN" Linux-Next (next-20130411) with attached patchset (incl.
+> your cpufreq-next-fixes).
+>
+> Test-Case...
+>
+> CONFIG_X86_INTEL_PSTATE=y
+>
+> root# echo 0 > /sys/devices/system/cpu/cpu3/online
+>
+> Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+>
+> ...did not test on-reboot-case.
+>
+> ( Dirk promised to test as well... )
+>
 
-Yes, this was the idea which we discussed in lm-sensors a few months ago.
-[I could not locate the thread in the web]. Except that we will register as
-'thermal sensor' and not as 'thermal zones' because of the changes happening
-to the thermal framework recently[1].
+Might be interesting as an extra-confirmation:
 
-This way, we can expose trip points and configure them, without having a
-need to associate any cdevs.
+root# echo 1 > /sys/devices/system/cpu/cpu3/online
 
-[1] https://lkml.org/lkml/2013/2/5/228
+[ dmesg ]
 
-Thanks,
-Durga
-> 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> 
-> 
-> _______________________________________________
-> lm-sensors mailing list
-> lm-sensors@lm-sensors.org
-> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+[  556.101961] smpboot: Booting Node 0 Processor 3 APIC 0x3
+[  556.113158] Disabled fast string operations
+[  556.116621] Intel pstate controlling: cpu 3
+
+- Sedat -
+
+> - Sedat -
+>
+>> @Rafael: I will probably be down for one more week and so not doing any
+>> reviews for now... I do check important mails sent directly to me though.
+>>
+>> ------------x----------------------x------------------
+>>
+>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date: Mon, 15 Apr 2013 22:43:57 +0530
+>> Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
+>>  target()
+>>
+>> Some cpufreq drivers implement their own governor and so don't need us to call
+>> generic governors interface via __cpufreq_governor(). Few recent commits haven't
+>> obeyed this law well and we saw some regressions.
+>>
+>> This patch tries to fix this issue.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
+>>  1 file changed, 13 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 3564947..a6f6595 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
+>> cpu, unsigned int sibling,
+>>                                   struct device *dev)
+>>  {
+>>         struct cpufreq_policy *policy;
+>> -       int ret = 0;
+>> +       int ret = 0, has_target = 0;
+>>         unsigned long flags;
+>>
+>>         policy = cpufreq_cpu_get(sibling);
+>>         WARN_ON(!policy);
+>>
+>> -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>> +       rcu_read_lock();
+>> +       has_target = !!rcu_dereference(cpufreq_driver)->target;
+>> +       rcu_read_unlock();
+>> +
+>> +       if (has_target)
+>> +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>>
+>>         lock_policy_rwsem_write(sibling);
+>>
+>> @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
+>> cpu, unsigned int sibling,
+>>
+>>         unlock_policy_rwsem_write(sibling);
+>>
+>> -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>> -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>> +       if (has_target) {
+>> +               __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>> +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>> +       }
+>>
+>>         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+>>         if (ret) {
+>> @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
+>> *dev, struct subsys_interface *sif
+>>
+>>         /* If cpu is last user of policy, free policy */
+>>         if (cpus == 1) {
+>> -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+>> +               if (has_target)
+>> +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+>>
+>>                 lock_policy_rwsem_read(cpu);
+>>                 kobj = &data->kobj;
