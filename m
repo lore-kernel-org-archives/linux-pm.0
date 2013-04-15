@@ -1,94 +1,200 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC patch 1/2] ARM: at91: cpuidle: encapsulate the standby code
-Date: Mon, 15 Apr 2013 16:13:59 +0200
-Message-ID: <516C0B27.9080406@linaro.org>
-References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
- <1366032598-23053-2-git-send-email-daniel.lezcano@linaro.org>
- <516C069E.2040205@atmel.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [RFC patch 2/2] ARM: at91: cpuidle: move the driver to drivers/cpuidle
+ directory
+Date: Mon, 15 Apr 2013 16:14:08 +0200
+Message-ID: <516C0B30.501@atmel.com>
+References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org> <1366032598-23053-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <516C069E.2040205@atmel.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rjw@sisk.pl, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eusmtp01.atmel.com ([212.144.249.243]:9251 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751304Ab3DOOOJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 10:14:09 -0400
+In-Reply-To: <1366032598-23053-3-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, plagnioj@jcrosoft.com
+Cc: linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-T24gMDQvMTUvMjAxMyAwMzo1NCBQTSwgTmljb2xhcyBGZXJyZSB3cm90ZToKPiBIaSBEYW5pZWws
-Cj4gCj4gT24gMDQvMTUvMjAxMyAwMzoyOSBQTSwgRGFuaWVsIExlemNhbm8gOgo+PiBJbiBvcmRl
-ciB0byBzcGxpdCB0aGUgcG0gY29kZSBmcm9tIHRoZSBjcHVpZGxlIGRyaXZlciwgYWRkIGFuIG9w
-cyBmb3IgdGhlCj4+IHN0YW5kYnkgZnVuY3Rpb24gd2hpY2ggd2lsbCBiZSBpbml0aWFsaXplZCBi
-eSB0aGUgcG0gaW5pdCBmdW5jdGlvbnMgZGlyZWN0bHksCj4+IHRodXMgbm8gbmVlZCBvZiB0aGUg
-U29DIHNwZWNpZmljIGhlYWRlcnMuCj4+Cj4+IENsZWFudXAgYWxzbyB0aGUgaGVhZGVycyBpbmNs
-dWRlZCBpbiB0aGlzIGZpbGUgYXMgdGhleSBhcmUgbm8gbG9uZ2VyIG5lZWRlZC4KPj4KPj4gU2ln
-bmVkLW9mZi1ieTogRGFuaWVsIExlemNhbm8gPGRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmc+Cj4+
-IC0tLQo+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL2NwdWlkbGUuYyB8ICAgMTkgKysrKy0tLS0tLS0t
-LS0tLS0tLQo+PiAgYXJjaC9hcm0vbWFjaC1hdDkxL3BtLmMgICAgICB8ICAgIDggKysrKysrKy0K
-Pj4gIDIgZmlsZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgMTYgZGVsZXRpb25zKC0pCj4+
-Cj4+IGRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5jIGIvYXJjaC9hcm0v
-bWFjaC1hdDkxL2NwdWlkbGUuYwo+PiBpbmRleCA0OGYxMjI4Li5iMmJlYzkyIDEwMDY0NAo+PiAt
-LS0gYS9hcmNoL2FybS9tYWNoLWF0OTEvY3B1aWRsZS5jCj4+ICsrKyBiL2FyY2gvYXJtL21hY2gt
-YXQ5MS9jcHVpZGxlLmMKPj4gQEAgLTEzLDMyICsxMywyMSBAQAo+PiAgICogIzIgd2FpdC1mb3It
-aW50ZXJydXB0IGFuZCBSQU0gc2VsZiByZWZyZXNoCj4+ICAgKi8KPj4gIAo+PiAtI2luY2x1ZGUg
-PGxpbnV4L2tlcm5lbC5oPgo+PiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgo+PiAgI2luY2x1
-ZGUgPGxpbnV4L2luaXQuaD4KPj4gLSNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4K
-Pj4gICNpbmNsdWRlIDxsaW51eC9jcHVpZGxlLmg+Cj4+IC0jaW5jbHVkZSA8bGludXgvaW8uaD4K
-Pj4gLSNpbmNsdWRlIDxsaW51eC9leHBvcnQuaD4KPj4gLSNpbmNsdWRlIDxhc20vcHJvYy1mbnMu
-aD4KPj4gICNpbmNsdWRlIDxhc20vY3B1aWRsZS5oPgo+PiAtI2luY2x1ZGUgPG1hY2gvY3B1Lmg+
-Cj4+IC0KPj4gLSNpbmNsdWRlICJwbS5oIgo+PiAgCj4+ICAjZGVmaW5lIEFUOTFfTUFYX1NUQVRF
-UwkyCj4+ICAKPj4gK2V4dGVybiB2b2lkICgqYXQ5MV9zdGFuZGJ5X29wcykodm9pZCk7Cj4+ICsK
-Pj4gIC8qIEFjdHVhbCBjb2RlIHRoYXQgcHV0cyB0aGUgU29DIGluIGRpZmZlcmVudCBpZGxlIHN0
-YXRlcyAqLwo+PiAgc3RhdGljIGludCBhdDkxX2VudGVyX2lkbGUoc3RydWN0IGNwdWlkbGVfZGV2
-aWNlICpkZXYsCj4+ICAJCQlzdHJ1Y3QgY3B1aWRsZV9kcml2ZXIgKmRydiwKPj4gIAkJCSAgICAg
-ICBpbnQgaW5kZXgpCj4+ICB7Cj4+IC0JaWYgKGNwdV9pc19hdDkxcm05MjAwKCkpCj4+IC0JCWF0
-OTFybTkyMDBfc3RhbmRieSgpOwo+PiAtCWVsc2UgaWYgKGNwdV9pc19hdDkxc2FtOWc0NSgpKQo+
-PiAtCQlhdDkxc2FtOWc0NV9zdGFuZGJ5KCk7Cj4+IC0JZWxzZQo+PiAtCQlhdDkxc2FtOV9zdGFu
-ZGJ5KCk7Cj4+IC0KPj4gKwlhdDkxX3N0YW5kYnlfb3BzKCk7Cj4+ICAJcmV0dXJuIGluZGV4Owo+
-PiAgfQo+PiAgCj4+IGRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNoLWF0OTEvcG0uYyBiL2FyY2gv
-YXJtL21hY2gtYXQ5MS9wbS5jCj4+IGluZGV4IDczZjFmMjUuLmY0NTZlODYgMTAwNjQ0Cj4+IC0t
-LSBhL2FyY2gvYXJtL21hY2gtYXQ5MS9wbS5jCj4+ICsrKyBiL2FyY2gvYXJtL21hY2gtYXQ5MS9w
-bS5jCj4+IEBAIC0zOSw2ICszOSw4IEBACj4+ICAjaW5jbHVkZSAiYXQ5MV9yc3RjLmgiCj4+ICAj
-aW5jbHVkZSAiYXQ5MV9zaGR3Yy5oIgo+PiAgCj4+ICt2b2lkICgqYXQ5MV9zdGFuZGJ5X29wcyko
-dm9pZCk7Cj4gCj4gSXMgdGhpcyBhIGNvbW1vbiBwYXR0ZXJuIHRvIGhhdmUgc3VjaCBhIGZsb2F0
-aW5nIGZ1bmN0aW9uIHBvaW50ZXIgaW4gdGhlCj4gcG0gY29kZT8KCldlbGwsIGFscmVhZHkgc2Vl
-biBidXQgSSBhZ3JlZSBpdCBpcyBub3QgcmVhbGx5IG5pY2UuCgpUaGUgaWRlYSBJIGhhZCB3YXMg
-dG8gY29udmVydCBsaXR0bGUgYnkgbGl0dGxlIGFsbCB0aGVzZSBwbSBmdW5jdGlvbnMKaW50byBv
-cHMsIHRoZW4gb3JkZXIsIGdyb3VwIGFuZCB1c2UgdGhlbSB0byBpbml0aWFsaXplIHRoZSBjcHVp
-ZGxlCmRyaXZlcnMgdGhyb3VnaCBhIHNpbmdsZSBBUk0gZHJpdmVyLiBUaGUgY29ycmVjdCBvcmRl
-ciB3b3VsZCBoYXZlIGJlZW4KdG8gY29udmVydCBmaXJzdCB0aGVzZSB0byBvcHMgdGhlbiBtb3Zl
-IHRoZSBkcml2ZXIgYnV0IHRoZXJlIGFyZSBzbyBtYW55CmRyaXZlcnMsIHNvIG1hbnkgY29kZSwg
-SSBkb24ndCBrbm93IHdoZXJlIGRvIEkgc3RhcnQuCgpEbyB5b3UgaGF2ZSBhIHN1Z2dlc3Rpb24g
-PwoKPj4gKwo+PiAgc3RhdGljIHZvaWQgX19pbml0IHNob3dfcmVzZXRfc3RhdHVzKHZvaWQpCj4+
-ICB7Cj4+ICAJc3RhdGljIGNoYXIgcmVzZXRbXSBfX2luaXRkYXRhID0gInJlc2V0IjsKPj4gQEAg
-LTMyMSw4ICszMjMsMTIgQEAgc3RhdGljIGludCBfX2luaXQgYXQ5MV9wbV9pbml0KHZvaWQpCj4+
-ICAJcHJfaW5mbygiQVQ5MTogUG93ZXIgTWFuYWdlbWVudCVzXG4iLCAoc2xvd19jbG9jayA/ICIg
-KHdpdGggc2xvdyBjbG9jayBtb2RlKSIgOiAiIikpOwo+PiAgCj4+ICAJLyogQVQ5MVJNOTIwMCBT
-RFJBTSBsb3ctcG93ZXIgbW9kZSBjYW5ub3QgYmUgdXNlZCB3aXRoIHNlbGYtcmVmcmVzaC4gKi8K
-Pj4gLQlpZiAoY3B1X2lzX2F0OTFybTkyMDAoKSkKPj4gKwlpZiAoY3B1X2lzX2F0OTFybTkyMDAo
-KSkgewo+PiAgCQlhdDkxX3JhbWNfd3JpdGUoMCwgQVQ5MVJNOTIwMF9TRFJBTUNfTFBSLCAwKTsK
-Pj4gKwkJYXQ5MV9zdGFuZGJ5X29wcyA9IGF0OTFybTkyMDBfc3RhbmRieTsKPj4gKwl9IGVsc2Ug
-aWYgKGNwdV9pc19hdDkxc2FtOWc0NSgpKQo+IAo+IENvZGluZ1N0eWxlOiBlbmRpbmcgInsiIGlz
-IG1pc3NpbmcuCj4gCj4+ICsJCWF0OTFfc3RhbmRieV9vcHM9IGF0OTFzYW05ZzQ1X3N0YW5kYnk7
-Cj4gCj4gQ29kaW5nU3R5bGU6ICIgIiBpcyBtaXNzaW5nCj4gCj4+ICsJZWxzZSBhdDkxX3N0YW5k
-Ynlfb3BzID0gYXQ5MXNhbTlfc3RhbmRieTsKPiAKPiBDb2RpbmdTdHlsZTogbm90IG9uIHRoZSBz
-YW1lIGxpbmUgKyAie30iIG1pc3NpbmcKPiAKPj4gIAo+PiAgCXN1c3BlbmRfc2V0X29wcygmYXQ5
-MV9wbV9vcHMpOwo+IAo+IEkgYW0gaW4gZmF2b3IgZm9yIHRoZSBtb3ZlLiAKCk9rLCBjb29sLgoK
-PiBCdXQgcGxlYXNlIHJld3JpdGUgYSBuZXcgc2VyaWVzLgoKWWVzLCBzdXJlLCB0aGF0IHdhcyBh
-IGRyYWZ0LgoKVGhhbmtzIGZvciB0aGUgcmV2aWV3LgoKICAtLSBEYW5pZWwKCgotLSAKIDxodHRw
-Oi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBm
-b3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFn
-ZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBU
-d2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpfX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2Vy
-bmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0
-cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVs
-Cg==
+On 04/15/2013 03:29 PM, Daniel Lezcano :
+> We don't have any dependency with the SoC specific code.
+> 
+> Move the driver to the drivers/cpuidle directory.
+> 
+> Add Nicolas Ferre as author of the driver, so it will be in copy of the emails.
+
+Unfortunately, I am not the author of this driver. It is the work of
+Albin Tonnerre <albin.tonnerre@free-electrons.com>. So, for sure, I (and
+Jean-Christohpe) can babysit this code but I cannot be awarded for it...
+
+You can certainly add to the header of this file:
+Maintained by the AT91 crew: Nicolas Ferre, Jean-Christophe
+Plagniol-Villard (together with email addresses).
+
+
+
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-at91/Makefile  |    1 -
+>  arch/arm/mach-at91/cpuidle.c |   55 ----------------------------------------
+>  drivers/cpuidle/Makefile     |    1 +
+>  drivers/cpuidle/at91.c       |   57 ++++++++++++++++++++++++++++++++++++++++++
+
+No, sorry this file name is not appropriate: I prefer cpuidle-at91.c
+
+>  4 files changed, 58 insertions(+), 56 deletions(-)
+>  delete mode 100644 arch/arm/mach-at91/cpuidle.c
+>  create mode 100644 drivers/cpuidle/at91.c
+> 
+> diff --git a/arch/arm/mach-at91/Makefile b/arch/arm/mach-at91/Makefile
+> index 39218ca..3c7fca1 100644
+> --- a/arch/arm/mach-at91/Makefile
+> +++ b/arch/arm/mach-at91/Makefile
+> @@ -99,7 +99,6 @@ obj-y				+= leds.o
+>  # Power Management
+>  obj-$(CONFIG_PM)		+= pm.o
+>  obj-$(CONFIG_AT91_SLOW_CLOCK)	+= pm_slowclock.o
+> -obj-$(CONFIG_CPU_IDLE)	+= cpuidle.o
+>  
+>  ifeq ($(CONFIG_PM_DEBUG),y)
+>  CFLAGS_pm.o += -DDEBUG
+> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+> deleted file mode 100644
+> index b2bec92..0000000
+> --- a/arch/arm/mach-at91/cpuidle.c
+> +++ /dev/null
+> @@ -1,55 +0,0 @@
+> -/*
+> - * based on arch/arm/mach-kirkwood/cpuidle.c
+> - *
+> - * CPU idle support for AT91 SoC
+> - *
+> - * This file is licensed under the terms of the GNU General Public
+> - * License version 2.  This program is licensed "as is" without any
+> - * warranty of any kind, whether express or implied.
+> - *
+> - * The cpu idle uses wait-for-interrupt and RAM self refresh in order
+> - * to implement two idle states -
+> - * #1 wait-for-interrupt
+> - * #2 wait-for-interrupt and RAM self refresh
+> - */
+> -
+> -#include <linux/module.h>
+> -#include <linux/init.h>
+> -#include <linux/cpuidle.h>
+> -#include <asm/cpuidle.h>
+> -
+> -#define AT91_MAX_STATES	2
+> -
+> -extern void (*at91_standby_ops)(void);
+> -
+> -/* Actual code that puts the SoC in different idle states */
+> -static int at91_enter_idle(struct cpuidle_device *dev,
+> -			struct cpuidle_driver *drv,
+> -			       int index)
+> -{
+> -	at91_standby_ops();
+> -	return index;
+> -}
+> -
+> -static struct cpuidle_driver at91_idle_driver = {
+> -	.name			= "at91_idle",
+> -	.owner			= THIS_MODULE,
+> -	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+> -	.states[1]		= {
+> -		.enter			= at91_enter_idle,
+> -		.exit_latency		= 10,
+> -		.target_residency	= 100000,
+> -		.flags			= CPUIDLE_FLAG_TIME_VALID,
+> -		.name			= "RAM_SR",
+> -		.desc			= "WFI and DDR Self Refresh",
+> -	},
+> -	.state_count = AT91_MAX_STATES,
+> -};
+> -
+> -/* Initialize CPU idle by registering the idle states */
+> -static int __init at91_init_cpuidle(void)
+> -{
+> -	return cpuidle_register(&at91_idle_driver, NULL);
+> -}
+> -
+> -device_initcall(at91_init_cpuidle);
+> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+> index 0d8bd55..ba4e977 100644
+> --- a/drivers/cpuidle/Makefile
+> +++ b/drivers/cpuidle/Makefile
+> @@ -7,3 +7,4 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+>  
+>  obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
+>  obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
+> +obj-$(CONFIG_ARCH_AT91) += at91.o
+> diff --git a/drivers/cpuidle/at91.c b/drivers/cpuidle/at91.c
+> new file mode 100644
+> index 0000000..2bc745b
+> --- /dev/null
+> +++ b/drivers/cpuidle/at91.c
+> @@ -0,0 +1,57 @@
+> +/*
+> + * based on arch/arm/mach-kirkwood/cpuidle.c
+> + *
+> + * CPU idle support for AT91 SoC
+> + *
+> + * Author: Nicolas Ferre <nicolas.ferre@atmel.com>
+> + *
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + *
+> + * The cpu idle uses wait-for-interrupt and RAM self refresh in order
+> + * to implement two idle states -
+> + * #1 wait-for-interrupt
+> + * #2 wait-for-interrupt and RAM self refresh
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/cpuidle.h>
+> +#include <asm/cpuidle.h>
+> +
+> +#define AT91_MAX_STATES	2
+> +
+> +extern void (*at91_standby_ops)(void);
+> +
+> +/* Actual code that puts the SoC in different idle states */
+> +static int at91_enter_idle(struct cpuidle_device *dev,
+> +			struct cpuidle_driver *drv,
+> +			       int index)
+> +{
+> +	at91_standby_ops();
+> +	return index;
+> +}
+> +
+> +static struct cpuidle_driver at91_idle_driver = {
+> +	.name			= "at91_idle",
+> +	.owner			= THIS_MODULE,
+> +	.states[0]		= ARM_CPUIDLE_WFI_STATE,
+> +	.states[1]		= {
+> +		.enter			= at91_enter_idle,
+> +		.exit_latency		= 10,
+> +		.target_residency	= 100000,
+> +		.flags			= CPUIDLE_FLAG_TIME_VALID,
+> +		.name			= "RAM_SR",
+> +		.desc			= "WFI and DDR Self Refresh",
+> +	},
+> +	.state_count = AT91_MAX_STATES,
+> +};
+> +
+> +/* Initialize CPU idle by registering the idle states */
+> +static int __init at91_init_cpuidle(void)
+> +{
+> +	return cpuidle_register(&at91_idle_driver, NULL);
+> +}
+> +
+> +device_initcall(at91_init_cpuidle);
+> 
+
+
+-- 
+Nicolas Ferre
