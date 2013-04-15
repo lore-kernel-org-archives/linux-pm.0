@@ -1,69 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: ARM big LITTLE: Adapt to latest cpufreq updates
-Date: Mon, 15 Apr 2013 12:35:25 +0530
-Message-ID: <c62439c62a0e8bf098a22a44cce0a48bfbddea39.1366009279.git.viresh.kumar@linaro.org>
-References: <1ff24e0c044fb7a30b6244451dd440455efab43b.1366009279.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1ff24e0c044fb7a30b6244451dd440455efab43b.1366009279.git.viresh.kumar@linaro.org>
-In-Reply-To: <1ff24e0c044fb7a30b6244451dd440455efab43b.1366009279.git.viresh.kumar@linaro.org>
-References: <1ff24e0c044fb7a30b6244451dd440455efab43b.1366009279.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
+Subject: [PATCH] cpufreq: cpu0: Put cpu parent node after using it
+Date: Mon, 15 Apr 2013 12:39:37 +0530
+Message-ID: <377acb684be024176e1c64f7ca5b1937c3a23878.1366009701.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, shawn.guo@linaro.org
 Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This driver isn't updated to work with latest cpufreq core updates that happened
-recently. Fix them.
+Parent node must be put after using it to balance its usage count. This was
+missing in cpufreq-cpu0 driver. Fix it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-As original patch breaks compilation, its best to merge this patch with original
-patch.
+ drivers/cpufreq/cpufreq-cpu0.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/cpufreq/arm_big_little.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 1d29d1a..dbdf677 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -77,8 +77,6 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 			target_freq, relation, &freq_tab_idx);
- 	freqs.new = freq_table[cur_cluster][freq_tab_idx].frequency;
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 31282fc..3ab8294 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -257,6 +257,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 	}
  
--	freqs.cpu = policy->cpu;
--
- 	pr_debug("%s: cpu: %d, cluster: %d, oldfreq: %d, target freq: %d, new freq: %d\n",
- 			__func__, cpu, cur_cluster, freqs.old, target_freq,
- 			freqs.new);
-@@ -86,8 +84,7 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 	if (freqs.old == freqs.new)
- 		return 0;
+ 	of_node_put(np);
++	of_node_put(parent);
+ 	return 0;
  
--	for_each_cpu(freqs.cpu, policy->cpus)
--		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
-+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
- 
- 	ret = clk_set_rate(clk[cur_cluster], freqs.new * 1000);
- 	if (ret) {
-@@ -97,8 +94,7 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 
- 	policy->cur = freqs.new;
- 
--	for_each_cpu(freqs.cpu, policy->cpus)
--		cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
-+	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
- 
- 	return ret;
- }
-@@ -231,7 +227,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
- 	.get			= bL_cpufreq_get,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
--	.have_multiple_policies	= true,
-+	.have_governor_per_policy = true,
- 	.attr			= bL_cpufreq_attr,
- };
- 
+ out_free_table:
 -- 
 1.7.12.rc2.18.g61b472e
+
