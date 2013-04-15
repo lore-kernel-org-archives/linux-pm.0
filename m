@@ -1,61 +1,118 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC patch 2/2] ARM: at91: cpuidle: move the driver to drivers/cpuidle
- directory
-Date: Mon, 15 Apr 2013 16:37:57 +0200
-Message-ID: <516C10C5.4050107@linaro.org>
-References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org> <1366032598-23053-3-git-send-email-daniel.lezcano@linaro.org> <20130415142047.GE15139@game.jcrosoft.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/4] thermal threshold and notification v2.0
+Date: Mon, 15 Apr 2013 08:20:32 -0700
+Message-ID: <516C1AC0.6030403@linux.intel.com>
+References: <1365541282-19366-1-git-send-email-srinivas.pandruvada@linux.intel.com> <20130413013230.GB14726@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f172.google.com ([74.125.82.172]:58395 "EHLO
-	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016Ab3DOOiA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 10:38:00 -0400
-Received: by mail-we0-f172.google.com with SMTP id r3so3801837wey.3
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 07:37:59 -0700 (PDT)
-In-Reply-To: <20130415142047.GE15139@game.jcrosoft.org>
+Received: from mga02.intel.com ([134.134.136.20]:58989 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752506Ab3DOPPf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Apr 2013 11:15:35 -0400
+In-Reply-To: <20130413013230.GB14726@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Cc: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Zhang Rui <rui.zhang@intel.com>, lm-sensors@lm-sensors.org, fenghua.yu@intel.com, tony.luck@intel.com, bp@alien8.de, linux-pm@vger.kernel.org
 
-On 04/15/2013 04:20 PM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> On 15:29 Mon 15 Apr     , Daniel Lezcano wrote:
->> We don't have any dependency with the SoC specific code.
+On 04/12/2013 06:32 PM, Guenter Roeck wrote:
+> On Tue, Apr 09, 2013 at 02:01:18PM -0700, Srinivas Pandruvada wrote:
+>> v2.0
+>> As suggested by Guenter Roeck, used the previous development in this area
+>> as starting point. The first patch is same as what Guenter Roeck submitted
+>> before except for checkpatch error for strtoul.As per this patch, the following
+>> additional coretemp sysfs entries will be added:
+>> tempX_threshold1 - Reflects value of CPU thermal threshold T0.
+>> tempX_threshold1_triggered
+>> 	         - Reflects status of CPU thermal status register bit 6
+>> 		   (THERM_STATUS_THRESHOLD0).
+>> tempX_threshold2 - Reflects value of CPU thermal threshold T1.
+>> tempX_threshold2_triggered
+>> 	         - Reflects status of CPU thermal status register bit 8
+>> 		   (THERM_STATUS_THRESHOLD1).
 >>
->> Move the driver to the drivers/cpuidle directory.
 >>
->> Add Nicolas Ferre as author of the driver, so it will be in copy of =
-the emails.
+>> The notification mechanism is implemented for package level by using uevent.
+>> Also a debugfs interface is added to check count of interrupts and worker fn
+>> scheduling.
 >>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> please use -M when generating the patch
+>>
+>> v1.0
+>>
+>> This is clear that there is reluctance in adding thresholds in coretemp sysfs,
+>> during previous attempts. Proably because of lake of use cases.
+>> But this time use case may be more compelling.
+>>
+>> We have many small form factor devices like ultrabooks, slate PCs in the market.
+>> Unfortunately these devices reach maximum temperature with relatively less
+>> workloads, causing BIOS to do thermal throttling. There are real performance
+>> issues due to aggressive BIOS action to control thermals and also thermal breakdown
+>> in some cases.
+>>
+>> Even the most expensive laptops, don't have correct ACPI thermal configuration,
+>> so that kernel thermal driver can act. In some case even the trip point is higher
+>> than critical temperature setting.
+>>
+>> Intel has developed several drivers, which can be used to cool the system very efficiently.
+>> They include RAPL based cooling driver, Powerclamp driver and P state driver.
+>> To utilize these cooling device a closed loop user mode program is required, which
+>> will utilize these method and dynamically compensate for high CPU temperatures,
+>> without relying on any configuration data.
+>> One such solution is developed is "Linux thermal daemon". More details can be
+>> obtained from
+>> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
+>> This daemon polls for cpu temperature and apply compensation once the CPU reach target
+>> temperature.
+>>
+>> This polling can be mostly avoided, by getting notification for the temperature, where
+>> it needs to wake up and get ready for apply compensation. In most of the normal use
+>> cases, there may not be any threshold events. So very minimal number of user space
+>> notification for thermal thresholds.
+>>
+>> Notification are added only for package level thresholds, to minimize events. Also
+>> interrupts are enabled only when a non tj_max(default) value is written to thresholds.
+>>
+>> Once thresholds are violated, it uses a rate control of 5 seconds, reducing the number
+>> of interrupts, when temperature is hanging around trip point. Using the sticky log bit,
+>> it sends kboject uevent change notification for corresponding package sysfs.
+>> Once the thermal daemon receives notification, it can change to new threshold or act
+>> immediately to reduce CPU temperature.*
+>>
+>> Guenter Roeck (1):
+>>    hwmon: (coretemp) Add support for thermal threshold attributes
+>>
+>> Srinivas Pandruvada (3):
+>>    x86, mcheck, therm_throt: Process package thresholds
+>>    hwmon: (coretemp) : Add notification support
+>>    hwmon: (coretemp) : Add debugfs to support thresholds
+>>
+>>   Documentation/hwmon/coretemp             |   8 +
+>>   arch/x86/include/asm/mce.h               |   7 +
+>>   arch/x86/kernel/cpu/mcheck/therm_throt.c |  63 ++++++-
+>>   drivers/hwmon/coretemp.c                 | 292 +++++++++++++++++++++++++++++--
+>>   4 files changed, 356 insertions(+), 14 deletions(-)
+>>
+> Rui,
+>
+> can you have a look at this series ?
+>
+> I would like to get some feedback from thermal subsystem supporters if hwmon
+> is really the right place for this. I may be wrong, but it seems to me it would
+> better fit into thermal.
+>
+> Thanks,
+> Guenter
 
-Oh, right. Thanks for reminding me the option.
+I am fine using thermal zones, but the coretemp will be duplicated in 
+both coretemp and thermal sysfs and lot of code duplication. Also trip 
+point in this case is not for activating any cooling device, but just to 
+notify user space. So this will be a zone with no associated cdevs.
 
-[ ... ]
-
->> +#include <linux/module.h>
->> +#include <linux/init.h>
->> +#include <linux/cpuidle.h>
->> +#include <asm/cpuidle.h>
->> +
->> +#define AT91_MAX_STATES	2
->> +
->> +extern void (*at91_standby_ops)(void);
-> really don't like can we pass it via the pm?
-
-I agree, it is hackish. Can you elaborate when you say "pass it via the
-pm" ?
-
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
