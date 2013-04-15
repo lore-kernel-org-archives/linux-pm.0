@@ -1,101 +1,62 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC patch 1/2] ARM: at91: cpuidle: encapsulate the standby code
-Date: Mon, 15 Apr 2013 15:29:57 +0200
-Message-ID: <1366032598-23053-2-git-send-email-daniel.lezcano@linaro.org>
-References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [RFC patch 0/2] ARM: at91: cpuidle: move driver to drivers/cpuidle
+Date: Mon, 15 Apr 2013 15:29:56 +0200
+Message-ID: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f52.google.com ([74.125.82.52]:47216 "EHLO
-	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751361Ab3DONaD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 09:30:03 -0400
-Received: by mail-wg0-f52.google.com with SMTP id n12so4715556wgh.7
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 06:30:02 -0700 (PDT)
-In-Reply-To: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:51806 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021Ab3DONaB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 09:30:01 -0400
+Received: by mail-wi0-f179.google.com with SMTP id hn17so1542886wib.12
+        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 06:30:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org
 Cc: linaro-kernel@lists.linaro.org
 
-In order to split the pm code from the cpuidle driver, add an ops for the
-standby function which will be initialized by the pm init functions directly,
-thus no need of the SoC specific headers.
+The number of cpuidle drivers is increasing more and more. Today we have
+in total 24 drivers. A lot of the code is duplicated, at least for the
+initialization. A work of consolidation has been done during this year:
+ * a lot of code cleanup in all the drivers
+ * time keeping is now part of the framework
+ * timer broadcast is now part of the framework
+ * a WFI state function for ARM is defined and used in the drivers
+ * an init function has been proposed to factor out the initialization across
+   the drivers (patchset pending)
 
-Cleanup also the headers included in this file as they are no longer needed.
+What has been observed is a lot of code duplicationis, modification made in
+the framework takes awhile before reaching the driver which uses an old API,
+duplicate routine and bugs, etc ...
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/mach-at91/cpuidle.c |   19 ++++---------------
- arch/arm/mach-at91/pm.c      |    8 +++++++-
- 2 files changed, 11 insertions(+), 16 deletions(-)
+It appears the drivers are belonging to different trees, the cpuidle framework
+is under linux-pm, the drivers are per SoC tree. The communication is made
+difficult because of the different mailing lists where the cpuidle are
+submitted.
 
-diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
-index 48f1228..b2bec92 100644
---- a/arch/arm/mach-at91/cpuidle.c
-+++ b/arch/arm/mach-at91/cpuidle.c
-@@ -13,32 +13,21 @@
-  * #2 wait-for-interrupt and RAM self refresh
-  */
- 
--#include <linux/kernel.h>
-+#include <linux/module.h>
- #include <linux/init.h>
--#include <linux/platform_device.h>
- #include <linux/cpuidle.h>
--#include <linux/io.h>
--#include <linux/export.h>
--#include <asm/proc-fns.h>
- #include <asm/cpuidle.h>
--#include <mach/cpu.h>
--
--#include "pm.h"
- 
- #define AT91_MAX_STATES	2
- 
-+extern void (*at91_standby_ops)(void);
-+
- /* Actual code that puts the SoC in different idle states */
- static int at91_enter_idle(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			       int index)
- {
--	if (cpu_is_at91rm9200())
--		at91rm9200_standby();
--	else if (cpu_is_at91sam9g45())
--		at91sam9g45_standby();
--	else
--		at91sam9_standby();
--
-+	at91_standby_ops();
- 	return index;
- }
- 
-diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
-index 73f1f25..f456e86 100644
---- a/arch/arm/mach-at91/pm.c
-+++ b/arch/arm/mach-at91/pm.c
-@@ -39,6 +39,8 @@
- #include "at91_rstc.h"
- #include "at91_shdwc.h"
- 
-+void (*at91_standby_ops)(void);
-+
- static void __init show_reset_status(void)
- {
- 	static char reset[] __initdata = "reset";
-@@ -321,8 +323,12 @@ static int __init at91_pm_init(void)
- 	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow clock mode)" : ""));
- 
- 	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
--	if (cpu_is_at91rm9200())
-+	if (cpu_is_at91rm9200()) {
- 		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
-+		at91_standby_ops = at91rm9200_standby;
-+	} else if (cpu_is_at91sam9g45())
-+		at91_standby_ops= at91sam9g45_standby;
-+	else at91_standby_ops = at91sam9_standby;
- 
- 	suspend_set_ops(&at91_pm_ops);
- 
+After this work, it is time to prevent all these problems to occur again.
+
+I propose to move the cpuidle drivers to the drivers/cpuidle directory, hence
+having one single submission path for cpuidle in order to have the cpuidle
+framework and the different drivers synced.
+
+This series move the AT91 cpuidle driver under drivers/cpuidle. That does not
+change the rule to have the patches acked-by the author of the driver.
+
+Note the calxeda and kirkwood drivers are now in drivers/cpuidle.
+
+Daniel Lezcano (2):
+  ARM: at91: cpuidle: encapsulate the standby code
+  ARM: at91: cpuidle: move the driver to drivers/cpuidle directory
+
+ arch/arm/mach-at91/Makefile  |    1 -
+ arch/arm/mach-at91/cpuidle.c |   66 ------------------------------------------
+ arch/arm/mach-at91/pm.c      |    8 ++++-
+ drivers/cpuidle/Makefile     |    1 +
+ drivers/cpuidle/at91.c       |   55 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 63 insertions(+), 68 deletions(-)
+ delete mode 100644 arch/arm/mach-at91/cpuidle.c
+ create mode 100644 drivers/cpuidle/at91.c
+
 -- 
 1.7.9.5
 
