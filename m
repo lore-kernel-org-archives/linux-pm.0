@@ -1,56 +1,189 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [RFC patch 2/2] ARM: at91: cpuidle: move the driver to
- drivers/cpuidle directory
-Date: Mon, 15 Apr 2013 18:00:41 +0200
-Message-ID: <20130415160041.GF15139@game.jcrosoft.org>
-References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
- <1366032598-23053-3-git-send-email-daniel.lezcano@linaro.org>
- <20130415142047.GE15139@game.jcrosoft.org>
- <516C10C5.4050107@linaro.org>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Mon, 15 Apr 2013 09:07:10 -0700
+Message-ID: <516C25AE.4050503@intel.com>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com> <CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com> <1923819.6Nb81T2TR8@vostro.rjw.lan> <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <516C10C5.4050107@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nicolas.ferre@atmel.com, rjw@sisk.pl, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
+Sender: linux-next-owner@vger.kernel.org
+To: sedat.dilek@gmail.com
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMTY6MzcgTW9uIDE1IEFwciAgICAgLCBEYW5pZWwgTGV6Y2FubyB3cm90ZToKPiBPbiAwNC8x
-NS8yMDEzIDA0OjIwIFBNLCBKZWFuLUNocmlzdG9waGUgUExBR05JT0wtVklMTEFSRCB3cm90ZToK
-PiA+IE9uIDE1OjI5IE1vbiAxNSBBcHIgICAgICwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4gPj4g
-V2UgZG9uJ3QgaGF2ZSBhbnkgZGVwZW5kZW5jeSB3aXRoIHRoZSBTb0Mgc3BlY2lmaWMgY29kZS4K
-PiA+Pgo+ID4+IE1vdmUgdGhlIGRyaXZlciB0byB0aGUgZHJpdmVycy9jcHVpZGxlIGRpcmVjdG9y
-eS4KPiA+Pgo+ID4+IEFkZCBOaWNvbGFzIEZlcnJlIGFzIGF1dGhvciBvZiB0aGUgZHJpdmVyLCBz
-byBpdCB3aWxsIGJlIGluIGNvcHkgb2YgdGhlIGVtYWlscy4KPiA+Pgo+ID4+IFNpZ25lZC1vZmYt
-Ynk6IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPgo+ID4gcGxlYXNl
-IHVzZSAtTSB3aGVuIGdlbmVyYXRpbmcgdGhlIHBhdGNoCj4gCj4gT2gsIHJpZ2h0LiBUaGFua3Mg
-Zm9yIHJlbWluZGluZyBtZSB0aGUgb3B0aW9uLgo+IAo+IFsgLi4uIF0KPiAKPiA+PiArI2luY2x1
-ZGUgPGxpbnV4L21vZHVsZS5oPgo+ID4+ICsjaW5jbHVkZSA8bGludXgvaW5pdC5oPgo+ID4+ICsj
-aW5jbHVkZSA8bGludXgvY3B1aWRsZS5oPgo+ID4+ICsjaW5jbHVkZSA8YXNtL2NwdWlkbGUuaD4K
-PiA+PiArCj4gPj4gKyNkZWZpbmUgQVQ5MV9NQVhfU1RBVEVTCTIKPiA+PiArCj4gPj4gK2V4dGVy
-biB2b2lkICgqYXQ5MV9zdGFuZGJ5X29wcykodm9pZCk7Cj4gPiByZWFsbHkgZG9uJ3QgbGlrZSBj
-YW4gd2UgcGFzcyBpdCB2aWEgdGhlIHBtPwo+IAo+IEkgYWdyZWUsIGl0IGlzIGhhY2tpc2guIENh
-biB5b3UgZWxhYm9yYXRlIHdoZW4geW91IHNheSAicGFzcyBpdCB2aWEgdGhlCj4gcG0iID8KCkkg
-d2FzIHRoaW5raW5nIGFib3V0IGl0CgpJIHdvdWxkIGV2ZW4gcHJlZmVyIHRvIGhhdmUgYSBwbGF0
-ZnJvbSBkcml2ZXIgdGhhdCBwYXNzIGl0IHZpYSBwbGF0Zm9ybSBkYXRhCmV2ZW4gaW4gRFQKCmJ1
-dCBub3Qgc29tZXRoaW5nIHRoYXQgY2FuIHRvdWNoIGdsb2JhbGx5CgphbmQgZm9yIGRyaXZlcnMg
-SSBwcmVmZXIgdG8gZG8gbm90IHVzZSBjcHVfaXMgb25seSBmb3IgdGhlIGNvcmUKCkJlc3QgUmVn
-YXJkcywKSi4KPiAKPiAKPiAKPiAtLSAKPiAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
-by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29Dcwo+IAo+IEZvbGxvdyBM
-aW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8
-Cj4gPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo+IDxodHRwOi8v
-d3d3LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPiBCbG9nCj4gCgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlz
-dApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 04/13/2013 02:55 AM, Sedat Dilek wrote:
+> On Sat, Apr 13, 2013 at 12:51 AM, Rafael J. Wysocki <rjw@sisk.pl> wro=
+te:
+>> On Friday, April 12, 2013 11:08:37 PM Sedat Dilek wrote:
+>>> On Fri, Apr 12, 2013 at 6:27 PM, Sedat Dilek <sedat.dilek@gmail.com=
+> wrote:
+>>>> On Fri, Apr 12, 2013 at 5:45 PM, Sedat Dilek <sedat.dilek@gmail.co=
+m> wrote:
+>>>>> On Fri, Apr 12, 2013 at 4:24 PM, Sedat Dilek <sedat.dilek@gmail.c=
+om> wrote:
+>>>>>> On Fri, Apr 12, 2013 at 10:23 AM, Viresh Kumar <viresh.kumar@lin=
+aro.org> wrote:
+>>>>>>> On 10 April 2013 11:44, Sedat Dilek <sedat.dilek@gmail.com> wro=
+te:
+>>>>>>>> I found this "[RFC PATCH] kbuild: Build linux-tools package wi=
+th 'make
+>>>>>>>> deb-pkg'" from February 2012.
+>>>>>>>> Can't say what happened to it...
+>>>>>>>
+>>>>>>> Sedat,
+>>>>>>>
+>>>>>>> Sorry for being late. I am down with Fever and throat infection=
+ since few days.
+>>>>>>> Still struggling with it..
+>>>>>>>
+>>>>>>> There are few things i tried. Firstly the tag: next-20130326 is=
+ bad as there are
+>>>>>>> some bad commits in cpufreq core in it.
+>>>>>>>
+>>>>>>> I then tried latest linux-next/master on my Thinkpad (model nam=
+e        : Intel(R)
+>>>>>>> Core(TM) i7-2640M CPU @ 2.80GHz) and couldn't boot it up. My ub=
+untu
+>>>>>>> just hanged.
+>>>>>>>
+>>>>>>> Then i tried Rafael's linux-next branch
+>>>>>>>
+>>>>>>> 079576f Merge branch 'pm-cpufreq-next' into linux-next
+>>>>>>>
+>>>>>>> And couldn't find any issues with it. I am easily able to remov=
+e/add cpus at
+>>>>>>> runtime..
+>>>>>>>
+>>>>>>> Can you give this branch a try?
+>>>>>>>
+>>>>>>
+>>>>>> OK, you seem to be well again, nice to hear.
+>>>>>>
+>>>>>> I was doing the whole week spring-cleaning in the apartment of m=
+y parents.
+>>>>>> Now, I have some minutes for a compilation run.
+>>>>>>
+>>>>>> I guess "cpufreq: Call __cpufreq_governor() with correct policy-=
+>cpus
+>>>>>> mask" could be the correct fix, but will try the GIT branch you =
+have
+>>>>>> mentioned.
+>>>>>>
+>>>>>> - Sedat -
+>>>>>>
+>>>>>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.=
+git/commit/?h=3Dlinux-next&id=3De4969ebac83fdea78d89c779331396728a4e619=
+9
+>>>>>>
+>>>>>
+>>>>> Both BROKEN here, specific pm-next commitid and pulling
+>>>>> pm.git#linux-next into next-20130411 (see attached files).
+>>>>>
+>>>>> Is "cpufreq: convert cpufreq_driver to using RCU" the root cause =
+of this all?
+>>>>>
+>>>>
+>>>> [ CC Nathan ]
+>>>>
+>>>> NO, wrong assumption.
+>>>>
+>>>> 2013-04-12 18:04 Sedat Dilek        o [revert-cpufreq-rcu] Revert
+>>>> "cpufreq: convert cpufreq_driver to using RCU"
+>>>> 2013-04-12 18:04 Sedat Dilek        o Revert "cpufreq: Call
+>>>> __cpufreq_governor() with correct policy->cpus mask"
+>>>> 2013-04-11 23:24 Rafael J. Wysocki  M=E2=94=80=E2=94=90 [pm-next-0=
+79576f] Merge branch
+>>>> 'pm-cpufreq-next' into linux-next
+>>>>
+>>>> - Sedat -
+>>>>
+>>>>
+>>>>> - Sedat -
+>>>>>
+>>>>> [1] http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.g=
+it/commit/?h=3Dlinux-next&id=3D5800043b2488a1c4c6e859af860644d37419d58b
+>>>>>
+>>>>>>> --
+>>>>>>> viresh
+>>>
+>>> [ TO Dirk (Author of Intel pstate driver) ]
+>>>
+>>> With CONFIG_X86_INTEL_PSTATE=3Dn (unset) I do not see the call-trac=
+e!
+>>>
+>>> My kernel-config and dmesg are attached.
+>>
+>> You're seeing a trouble with a new driver, then, so that's not a reg=
+ression.
+>>
+
+This IS a regression.
+
+If the intel_pstate driver is being used __cpufreq_governor() should NO=
+T be
+called intel_pstate does not implement the target() callback.
+
+Nathan's commit 5800043b2 changed the fence around the call to
+__cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hun=
+k.
+
+@@ -1007,9 +1068,12 @@ static int __cpufreq_remove_dev(struct device *d=
+ev,=20
+struct subsys_interface *sif
+  	unsigned int cpu =3D dev->id, ret, cpus;
+  	unsigned long flags;
+  	struct cpufreq_policy *data;
++	struct cpufreq_driver *driver;
+  	struct kobject *kobj;
+  	struct completion *cmp;
+  	struct device *cpu_dev;
++	bool has_target;
++	int (*exit)(struct cpufreq_policy *policy);
+
+  	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+
+@@ -1025,14 +1089,19 @@ static int __cpufreq_remove_dev(struct device *=
+dev,=20
+struct subsys_interface *sif
+  		return -EINVAL;
+  	}
+
+-	if (cpufreq_driver->target)
++	rcu_read_lock();
++	driver =3D rcu_dereference(cpufreq_driver);
++	has_target =3D driver->target ? true : false;
++	exit =3D driver->exit;
++	if (has_target)
+  		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+
+  #ifdef CONFIG_HOTPLUG_CPU
+-	if (!cpufreq_driver->setpolicy)
++	if (!driver->setpolicy)
+  		strncpy(per_cpu(cpufreq_cpu_governor, cpu),
+  			data->governor->name, CPUFREQ_NAME_LEN);
+  #endif
++	rcu_read_unlock();
+
+  	WARN_ON(lock_policy_rwsem_write(cpu));
+  	cpus =3D cpumask_weight(data->cpus);
+
+
+
+>
+> What do you mean by this?
+>
+> What are the next steps to get this fixed?
+>
+> - Sedat -
+>
+>> Thanks for taking the time to debug this!
+>>
+>> Rafael
+>>
+>>
+>> --
+>> I speak only for myself.
+>> Rafael J. Wysocki, Intel Open Source Technology Center.
