@@ -1,107 +1,49 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCHv3 3/3] staging: ti-soc-thermal: remove external heat
- while extrapolating hotspot
-Date: Mon, 15 Apr 2013 09:44:19 +0800
-Message-ID: <1365990259.2803.4.camel@rzhang1-mobl4>
-References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>
-	 <1365165150-11720-4-git-send-email-eduardo.valentin@ti.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [V3 patch 01/19] ARM: shmobile: cpuidle: remove
+ shmobile_enter_wfi function
+Date: Mon, 15 Apr 2013 12:56:08 +0900
+Message-ID: <20130415035608.GB3070@verge.net.au>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365770165-27096-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:51242 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754008Ab3DOBoW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 14 Apr 2013 21:44:22 -0400
-In-Reply-To: <1365165150-11720-4-git-send-email-eduardo.valentin@ti.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:50028 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755680Ab3DOD4L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Apr 2013 23:56:11 -0400
+Content-Disposition: inline
+In-Reply-To: <1365770165-27096-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On Fri, 2013-04-05 at 08:32 -0400, Eduardo Valentin wrote:
-> For boards that provide a PCB sensor close to SoC junction
-> temperature, it is possible to remove the cumulative heat
-> reported by the SoC temperature sensor.
+On Fri, Apr 12, 2013 at 02:35:47PM +0200, Daniel Lezcano wrote:
+> Remove the shmobile_enter_wfi function which is the same as the
+> common WFI enter function from the arm cpuidle driver defined
+> with the ARM_CPUIDLE_WFI_STATE macro.
 > 
-> This patch changes the extrapolation computation to consider
-> an external sensor in the extrapolation equations.
-> 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-hmm, who should take this patch?
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-thanks,
-rui
 > ---
->  drivers/staging/ti-soc-thermal/ti-thermal-common.c |   30 +++++++++++++------
->  1 files changed, 20 insertions(+), 10 deletions(-)
+>  arch/arm/mach-shmobile/pm-sh7372.c |    1 -
+>  1 file changed, 1 deletion(-)
 > 
-> diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-> index 231c549..780368b 100644
-> --- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
-> @@ -38,6 +38,7 @@
->  /* common data structures */
->  struct ti_thermal_data {
->  	struct thermal_zone_device *ti_thermal;
-> +	struct thermal_zone_device *pcb_tz;
->  	struct thermal_cooling_device *cool_dev;
->  	struct ti_bandgap *bgp;
->  	enum thermal_device_mode mode;
-> @@ -77,10 +78,12 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
->  static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
->  				      unsigned long *temp)
->  {
-> +	struct thermal_zone_device *pcb_tz = NULL;
->  	struct ti_thermal_data *data = thermal->devdata;
->  	struct ti_bandgap *bgp;
->  	const struct ti_temp_sensor *s;
-> -	int ret, tmp, pcb_temp, slope, constant;
-> +	int ret, tmp, slope, constant;
-> +	unsigned long pcb_temp;
->  
->  	if (!data)
->  		return 0;
-> @@ -92,16 +95,22 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
->  	if (ret)
->  		return ret;
->  
-> -	pcb_temp = 0;
-> -	/* TODO: Introduce pcb temperature lookup */
-> +	/* Default constants */
-> +	slope = s->slope;
-> +	constant = s->constant;
-> +
-> +	pcb_tz = data->pcb_tz;
->  	/* In case pcb zone is available, use the extrapolation rule with it */
-> -	if (pcb_temp) {
-> -		tmp -= pcb_temp;
-> -		slope = s->slope_pcb;
-> -		constant = s->constant_pcb;
-> -	} else {
-> -		slope = s->slope;
-> -		constant = s->constant;
-> +	if (!IS_ERR_OR_NULL(pcb_tz)) {
-> +		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
-> +		if (!ret) {
-> +			tmp -= pcb_temp; /* got a valid PCB temp */
-> +			slope = s->slope_pcb;
-> +			constant = s->constant_pcb;
-> +		} else {
-> +			dev_err(bgp->dev,
-> +				"Failed to read PCB state. Using defaults\n");
-> +		}
->  	}
->  	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
->  
-> @@ -248,6 +257,7 @@ static struct ti_thermal_data
->  	data->sensor_id = id;
->  	data->bgp = bgp;
->  	data->mode = THERMAL_DEVICE_ENABLED;
-> +	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
->  	INIT_WORK(&data->thermal_wq, ti_thermal_work);
->  
->  	return data;
-
-
+> diff --git a/arch/arm/mach-shmobile/pm-sh7372.c b/arch/arm/mach-shmobile/pm-sh7372.c
+> index f6b14ca..fbef7b9 100644
+> --- a/arch/arm/mach-shmobile/pm-sh7372.c
+> +++ b/arch/arm/mach-shmobile/pm-sh7372.c
+> @@ -414,7 +414,6 @@ static struct cpuidle_driver sh7372_cpuidle_driver = {
+>  	.state_count		= 5,
+>  	.safe_state_index	= 0, /* C1 */
+>  	.states[0] = ARM_CPUIDLE_WFI_STATE,
+> -	.states[0].enter = shmobile_enter_wfi,
+>  	.states[1] = {
+>  		.name = "C2",
+>  		.desc = "Core Standby Mode",
+> -- 
+> 1.7.9.5
+> 
