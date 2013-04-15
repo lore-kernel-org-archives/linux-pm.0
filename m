@@ -1,48 +1,120 @@
-From: Alex Shi <alex.shi@intel.com>
-Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Mon, 15 Apr 2013 21:50:22 +0800
-Message-ID: <516C059E.20800@intel.com>
-References: <1365040862-8390-1-git-send-email-alex.shi@intel.com> <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com> <20130412162348.GE2368@pd.tnic> <516A0652.8040505@intel.com> <20130414155925.GC20547@pd.tnic> <516B9859.70004@intel.com> <516B9B57.3030902@intel.com> <20130415095203.GA26524@pd.tnic>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [RFC patch 1/2] ARM: at91: cpuidle: encapsulate the standby code
+Date: Mon, 15 Apr 2013 15:54:38 +0200
+Message-ID: <516C069E.2040205@atmel.com>
+References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org> <1366032598-23053-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:3574 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853Ab3DONue (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Apr 2013 09:50:34 -0400
-In-Reply-To: <20130415095203.GA26524@pd.tnic>
+Received: from eusmtp01.atmel.com ([212.144.249.242]:40861 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014Ab3DONyi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 09:54:38 -0400
+In-Reply-To: <1366032598-23053-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org
 
-On 04/15/2013 05:52 PM, Borislav Petkov wrote:
-> On Mon, Apr 15, 2013 at 02:16:55PM +0800, Alex Shi wrote:
->> And I need to say again. the powersaving policy just effect on system
->> under utilisation. when system goes busy, it won't has effect.
->> performance oriented policy will take over balance behaviour.
+Hi Daniel,
+
+On 04/15/2013 03:29 PM, Daniel Lezcano :
+> In order to split the pm code from the cpuidle driver, add an ops for the
+> standby function which will be initialized by the pm init functions directly,
+> thus no need of the SoC specific headers.
 > 
-> And AFACU your patches, you do this automatically, right?
-
-Yes
- In which case,
-> an underutilized system will have switched to powersaving balancing and
-> will use *more* energy to retire the workload. Correct?
+> Cleanup also the headers included in this file as they are no longer needed.
 > 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  arch/arm/mach-at91/cpuidle.c |   19 ++++---------------
+>  arch/arm/mach-at91/pm.c      |    8 +++++++-
+>  2 files changed, 11 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+> index 48f1228..b2bec92 100644
+> --- a/arch/arm/mach-at91/cpuidle.c
+> +++ b/arch/arm/mach-at91/cpuidle.c
+> @@ -13,32 +13,21 @@
+>   * #2 wait-for-interrupt and RAM self refresh
+>   */
+>  
+> -#include <linux/kernel.h>
+> +#include <linux/module.h>
+>  #include <linux/init.h>
+> -#include <linux/platform_device.h>
+>  #include <linux/cpuidle.h>
+> -#include <linux/io.h>
+> -#include <linux/export.h>
+> -#include <asm/proc-fns.h>
+>  #include <asm/cpuidle.h>
+> -#include <mach/cpu.h>
+> -
+> -#include "pm.h"
+>  
+>  #define AT91_MAX_STATES	2
+>  
+> +extern void (*at91_standby_ops)(void);
+> +
+>  /* Actual code that puts the SoC in different idle states */
+>  static int at91_enter_idle(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+>  			       int index)
+>  {
+> -	if (cpu_is_at91rm9200())
+> -		at91rm9200_standby();
+> -	else if (cpu_is_at91sam9g45())
+> -		at91sam9g45_standby();
+> -	else
+> -		at91sam9_standby();
+> -
+> +	at91_standby_ops();
+>  	return index;
+>  }
+>  
+> diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+> index 73f1f25..f456e86 100644
+> --- a/arch/arm/mach-at91/pm.c
+> +++ b/arch/arm/mach-at91/pm.c
+> @@ -39,6 +39,8 @@
+>  #include "at91_rstc.h"
+>  #include "at91_shdwc.h"
+>  
+> +void (*at91_standby_ops)(void);
 
-For fairness and total threads consideration, powersaving cost quit
-similar energy on kbuild benchmark, and even better.
+Is this a common pattern to have such a floating function pointer in the
+pm code?
 
-	    17348.850		    27400.458		   15973.776
-	    13737.493		    18487.248		   12167.816
-	    11057.004		    16080.750		   11623.661
+> +
+>  static void __init show_reset_status(void)
+>  {
+>  	static char reset[] __initdata = "reset";
+> @@ -321,8 +323,12 @@ static int __init at91_pm_init(void)
+>  	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow clock mode)" : ""));
+>  
+>  	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
+> -	if (cpu_is_at91rm9200())
+> +	if (cpu_is_at91rm9200()) {
+>  		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
+> +		at91_standby_ops = at91rm9200_standby;
+> +	} else if (cpu_is_at91sam9g45())
 
-	    17288.102		    27637.176		   16560.375
-	    10356.52		    18482.584		   12504.702
-	    10905.772		    16190.447		   11125.625
-	    10785.621		    16113.330		   11542.140
+CodingStyle: ending "{" is missing.
 
+> +		at91_standby_ops= at91sam9g45_standby;
+
+CodingStyle: " " is missing
+
+> +	else at91_standby_ops = at91sam9_standby;
+
+CodingStyle: not on the same line + "{}" missing
+
+>  
+>  	suspend_set_ops(&at91_pm_ops);
+
+I am in favor for the move. But please rewrite a new series.
+
+Bye,
 -- 
-Thanks
-    Alex
+Nicolas Ferre
