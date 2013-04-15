@@ -1,167 +1,99 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Mon, 15 Apr 2013 20:07:43 +0200
-Message-ID: <CA+icZUVbdeOVMFU0RePtpA+-fxFyk0JnePUg6MVP-ZkeicEGKw@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
-	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
-	<1923819.6Nb81T2TR8@vostro.rjw.lan>
-	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
-	<516C25AE.4050503@intel.com>
-	<CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
-	<CA+icZUVk1_Dw5Kb8uWwk7xjrgx6jPOfP8BZdFXQ9bqgmdckHuQ@mail.gmail.com>
-	<CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH] PCI / PM: Fix fallback to PCI_D0 in pci_platform_power_transition()
+Date: Mon, 15 Apr 2013 14:18:18 -0600
+Message-ID: <CAErSpo7vUWSoav+rJgGK15xA7f0W+a0_16tZLFGCz5HO-HVZ2g@mail.gmail.com>
+References: <48795235.crcTAaJqPb@vostro.rjw.lan> <CAE9FiQVEWy2MVfVmv4oL9D24OcF83dQv+OcFd5K6v8ZHeGumJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CA+icZUVbv-e8tY1+zZE+z0377yvrFUZvPkZ5qi9nHzfmEYNbTQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAE9FiQVEWy2MVfVmv4oL9D24OcF83dQv+OcFd5K6v8ZHeGumJA@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Benenati, Chris J" <chris.j.benenati@intel.com>, Ajaykumar Hotchandani <ajaykumar.hotchandani@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 15, 2013 at 7:57 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
-> On Mon, Apr 15, 2013 at 7:51 PM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->> On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
->>>> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
->>>> called intel_pstate does not implement the target() callback.
->>>>
->>>> Nathan's commit 5800043b2 changed the fence around the call to
->>>> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
->>>
->>> No it isn't.
->>>
->>>> +       if (has_target)
->>>>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
->>>
->>> As it has taken care of this limitation.
->>>
->>> BUT some of my earlier patches haven't. :(
->>> Here is the fix (Sedat please try this and give your tested-by, use the attached
->>> patch as gmail might break what i am copying in mail)..
->>>
->>> Sorry for being late in fixing this issue, i am still down with Tonsil infection
->>> and fever.. Today only i got some power to fix it after seeing Dirk's mail.
->>>
->>> Your tested-by may help me to recover quickly :)
->>>
+On Fri, Apr 12, 2013 at 11:50 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> On Fri, Apr 12, 2013 at 4:58 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> Hehe.
->> Me myself and I was today chez-mon-docteur... Let's see the results on Thursday.
->> Again, get well soon.
+>> Commit b51306c (PCI: Set device power state to PCI_D0 for device
+>> without native PM support) modified pci_platform_power_transition()
+>> by adding code causing dev->current_state for devices that don't
+>> support native PCI PM but are power-manageable by the platform to be
+>> changed to PCI_D0 regardless of the value returned by the preceding
+>> platform_pci_set_power_state().  In particular, that also is done
+>> if the platform_pci_set_power_state() has been successful, which
+>> causes the correct power state of the device set by
+>> pci_update_current_state() in that case to be overwritten by PCI_D0.
 >>
->> Tested against...
+>> Fix that mistake by making the fallback to PCI_D0 only happen if
+>> the platform_pci_set_power_state() has returned an error.
 >>
->>  "BROKEN" Linux-Next (next-20130411) with attached patchset (incl.
->> your cpufreq-next-fixes).
->>
->> Test-Case...
->>
->> CONFIG_X86_INTEL_PSTATE=y
->>
->> root# echo 0 > /sys/devices/system/cpu/cpu3/online
->>
->> Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
->>
->> ...did not test on-reboot-case.
->>
+>> Reported-by: Chris J. Benenati <chris.j.benenati@intel.com>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Cc: <stable@vger.kernel.org>
 
-Reboot is also fine here.
+I folded in Yinghai's simplification and added a URL to Chris's report
+and applied to my pci/rafael-pm branch:
+http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/rafael-pm
 
->> ( Dirk promised to test as well... )
+If it still looks good to you, Rafael, I'll merge it to next for v3.10.
+
+I don't know what the user-visible effect of this is, and it's been
+around for a long time, but if you think this should go in v3.9
+instead, let me know.
+
+Bjorn
+
+>> ---
+>>  drivers/pci/pci.c |    3 +--
+>>  1 file changed, 1 insertion(+), 2 deletions(-)
 >>
-
-Dirk confirmed your patch works for him.
-Good!
-
-- Sedat -
-
->
-> Might be interesting as an extra-confirmation:
->
-> root# echo 1 > /sys/devices/system/cpu/cpu3/online
->
-> [ dmesg ]
->
-> [  556.101961] smpboot: Booting Node 0 Processor 3 APIC 0x3
-> [  556.113158] Disabled fast string operations
-> [  556.116621] Intel pstate controlling: cpu 3
->
-> - Sedat -
->
->> - Sedat -
+>> Index: linux-pm/drivers/pci/pci.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/pci/pci.c
+>> +++ linux-pm/drivers/pci/pci.c
+>> @@ -646,8 +646,7 @@ static int pci_platform_power_transition
+>>                 error = platform_pci_set_power_state(dev, state);
+>>                 if (!error)
+>>                         pci_update_current_state(dev, state);
+>> -               /* Fall back to PCI_D0 if native PM is not supported */
+>> -               if (!dev->pm_cap)
+>> +               else if (!dev->pm_cap) /* Fall back to PCI_D0 */
+>>                         dev->current_state = PCI_D0;
+>>         } else {
+>>                 error = -ENODEV;
 >>
->>> @Rafael: I will probably be down for one more week and so not doing any
->>> reviews for now... I do check important mails sent directly to me though.
->>>
->>> ------------x----------------------x------------------
->>>
->>> From: Viresh Kumar <viresh.kumar@linaro.org>
->>> Date: Mon, 15 Apr 2013 22:43:57 +0530
->>> Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
->>>  target()
->>>
->>> Some cpufreq drivers implement their own governor and so don't need us to call
->>> generic governors interface via __cpufreq_governor(). Few recent commits haven't
->>> obeyed this law well and we saw some regressions.
->>>
->>> This patch tries to fix this issue.
->>>
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>>  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
->>>  1 file changed, 13 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->>> index 3564947..a6f6595 100644
->>> --- a/drivers/cpufreq/cpufreq.c
->>> +++ b/drivers/cpufreq/cpufreq.c
->>> @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
->>> cpu, unsigned int sibling,
->>>                                   struct device *dev)
->>>  {
->>>         struct cpufreq_policy *policy;
->>> -       int ret = 0;
->>> +       int ret = 0, has_target = 0;
->>>         unsigned long flags;
->>>
->>>         policy = cpufreq_cpu_get(sibling);
->>>         WARN_ON(!policy);
->>>
->>> -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->>> +       rcu_read_lock();
->>> +       has_target = !!rcu_dereference(cpufreq_driver)->target;
->>> +       rcu_read_unlock();
->>> +
->>> +       if (has_target)
->>> +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->>>
->>>         lock_policy_rwsem_write(sibling);
->>>
->>> @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
->>> cpu, unsigned int sibling,
->>>
->>>         unlock_policy_rwsem_write(sibling);
->>>
->>> -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
->>> -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
->>> +       if (has_target) {
->>> +               __cpufreq_governor(policy, CPUFREQ_GOV_START);
->>> +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
->>> +       }
->>>
->>>         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->>>         if (ret) {
->>> @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
->>> *dev, struct subsys_interface *sif
->>>
->>>         /* If cpu is last user of policy, free policy */
->>>         if (cpus == 1) {
->>> -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->>> +               if (has_target)
->>> +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->>>
->>>                 lock_policy_rwsem_read(cpu);
->>>                 kobj = &data->kobj;
+>
+> Acked-by: Yinghai Lu <yinghai@kernel.org>
+>
+> also could simplify it further.
+>
+> ---
+>  drivers/pci/pci.c |   12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
+>
+> Index: linux-2.6/drivers/pci/pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pci.c
+> +++ linux-2.6/drivers/pci/pci.c
+> @@ -646,15 +646,11 @@ static int pci_platform_power_transition
+>          error = platform_pci_set_power_state(dev, state);
+>          if (!error)
+>              pci_update_current_state(dev, state);
+> -        /* Fall back to PCI_D0 if native PM is not supported */
+> -        if (!dev->pm_cap)
+> -            dev->current_state = PCI_D0;
+> -    } else {
+> +    } else
+>          error = -ENODEV;
+> -        /* Fall back to PCI_D0 if native PM is not supported */
+> -        if (!dev->pm_cap)
+> -            dev->current_state = PCI_D0;
+> -    }
+> +
+> +    if (error && !dev->pm_cap) /* Fall back to PCI_D0 */
+> +        dev->current_state = PCI_D0;
+>
+>      return error;
+>  }
