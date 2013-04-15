@@ -1,119 +1,101 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv3 3/3] staging: ti-soc-thermal: remove external heat while
- extrapolating hotspot
-Date: Mon, 15 Apr 2013 09:24:19 -0400
-Message-ID: <516BFF83.8040800@ti.com>
-References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>  <1365165150-11720-4-git-send-email-eduardo.valentin@ti.com> <1365990259.2803.4.camel@rzhang1-mobl4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFC patch 1/2] ARM: at91: cpuidle: encapsulate the standby code
+Date: Mon, 15 Apr 2013 15:29:57 +0200
+Message-ID: <1366032598-23053-2-git-send-email-daniel.lezcano@linaro.org>
+References: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:45979 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964Ab3DONY1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 09:24:27 -0400
-In-Reply-To: <1365990259.2803.4.camel@rzhang1-mobl4>
+Received: from mail-wg0-f52.google.com ([74.125.82.52]:47216 "EHLO
+	mail-wg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751361Ab3DONaD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 09:30:03 -0400
+Received: by mail-wg0-f52.google.com with SMTP id n12so4715556wgh.7
+        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 06:30:02 -0700 (PDT)
+In-Reply-To: <1366032598-23053-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com, Greg KH <gregkh@linuxfoundation.org>
+To: linux@maxim.org.za, nicolas.ferre@atmel.com, linux-arm-kernel@lists.infradead.org, rjw@sisk.pl, plagnioj@jcrosoft.com, linux-pm@vger.kernel.org
+Cc: linaro-kernel@lists.linaro.org
 
-On 14-04-2013 21:44, Zhang Rui wrote:
-> On Fri, 2013-04-05 at 08:32 -0400, Eduardo Valentin wrote:
->> For boards that provide a PCB sensor close to SoC junction
->> temperature, it is possible to remove the cumulative heat
->> reported by the SoC temperature sensor.
->>
->> This patch changes the extrapolation computation to consider
->> an external sensor in the extrapolation equations.
->>
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->
-> hmm, who should take this patch?
->
+In order to split the pm code from the cpuidle driver, add an ops for the
+standby function which will be initialized by the pm init functions directly,
+thus no need of the SoC specific headers.
 
-I will send this one to Greg, maintainer of the staging tree.
+Cleanup also the headers included in this file as they are no longer needed.
 
-BTW, Rui, do you think there is still time to send the TI driver out of 
-the drivers/staging/ti-soc-thermal to drivers/thermal/ti-soc-thermal for 
-3.10? If yes, I can send a series straight away.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/mach-at91/cpuidle.c |   19 ++++---------------
+ arch/arm/mach-at91/pm.c      |    8 +++++++-
+ 2 files changed, 11 insertions(+), 16 deletions(-)
 
-
-
-> thanks,
-> rui
->> ---
->>   drivers/staging/ti-soc-thermal/ti-thermal-common.c |   30 +++++++++++++------
->>   1 files changed, 20 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
->> index 231c549..780368b 100644
->> --- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
->> +++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
->> @@ -38,6 +38,7 @@
->>   /* common data structures */
->>   struct ti_thermal_data {
->>   	struct thermal_zone_device *ti_thermal;
->> +	struct thermal_zone_device *pcb_tz;
->>   	struct thermal_cooling_device *cool_dev;
->>   	struct ti_bandgap *bgp;
->>   	enum thermal_device_mode mode;
->> @@ -77,10 +78,12 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
->>   static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
->>   				      unsigned long *temp)
->>   {
->> +	struct thermal_zone_device *pcb_tz = NULL;
->>   	struct ti_thermal_data *data = thermal->devdata;
->>   	struct ti_bandgap *bgp;
->>   	const struct ti_temp_sensor *s;
->> -	int ret, tmp, pcb_temp, slope, constant;
->> +	int ret, tmp, slope, constant;
->> +	unsigned long pcb_temp;
->>
->>   	if (!data)
->>   		return 0;
->> @@ -92,16 +95,22 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
->>   	if (ret)
->>   		return ret;
->>
->> -	pcb_temp = 0;
->> -	/* TODO: Introduce pcb temperature lookup */
->> +	/* Default constants */
->> +	slope = s->slope;
->> +	constant = s->constant;
->> +
->> +	pcb_tz = data->pcb_tz;
->>   	/* In case pcb zone is available, use the extrapolation rule with it */
->> -	if (pcb_temp) {
->> -		tmp -= pcb_temp;
->> -		slope = s->slope_pcb;
->> -		constant = s->constant_pcb;
->> -	} else {
->> -		slope = s->slope;
->> -		constant = s->constant;
->> +	if (!IS_ERR_OR_NULL(pcb_tz)) {
->> +		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
->> +		if (!ret) {
->> +			tmp -= pcb_temp; /* got a valid PCB temp */
->> +			slope = s->slope_pcb;
->> +			constant = s->constant_pcb;
->> +		} else {
->> +			dev_err(bgp->dev,
->> +				"Failed to read PCB state. Using defaults\n");
->> +		}
->>   	}
->>   	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
->>
->> @@ -248,6 +257,7 @@ static struct ti_thermal_data
->>   	data->sensor_id = id;
->>   	data->bgp = bgp;
->>   	data->mode = THERMAL_DEVICE_ENABLED;
->> +	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
->>   	INIT_WORK(&data->thermal_wq, ti_thermal_work);
->>
->>   	return data;
->
->
->
->
+diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+index 48f1228..b2bec92 100644
+--- a/arch/arm/mach-at91/cpuidle.c
++++ b/arch/arm/mach-at91/cpuidle.c
+@@ -13,32 +13,21 @@
+  * #2 wait-for-interrupt and RAM self refresh
+  */
+ 
+-#include <linux/kernel.h>
++#include <linux/module.h>
+ #include <linux/init.h>
+-#include <linux/platform_device.h>
+ #include <linux/cpuidle.h>
+-#include <linux/io.h>
+-#include <linux/export.h>
+-#include <asm/proc-fns.h>
+ #include <asm/cpuidle.h>
+-#include <mach/cpu.h>
+-
+-#include "pm.h"
+ 
+ #define AT91_MAX_STATES	2
+ 
++extern void (*at91_standby_ops)(void);
++
+ /* Actual code that puts the SoC in different idle states */
+ static int at91_enter_idle(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			       int index)
+ {
+-	if (cpu_is_at91rm9200())
+-		at91rm9200_standby();
+-	else if (cpu_is_at91sam9g45())
+-		at91sam9g45_standby();
+-	else
+-		at91sam9_standby();
+-
++	at91_standby_ops();
+ 	return index;
+ }
+ 
+diff --git a/arch/arm/mach-at91/pm.c b/arch/arm/mach-at91/pm.c
+index 73f1f25..f456e86 100644
+--- a/arch/arm/mach-at91/pm.c
++++ b/arch/arm/mach-at91/pm.c
+@@ -39,6 +39,8 @@
+ #include "at91_rstc.h"
+ #include "at91_shdwc.h"
+ 
++void (*at91_standby_ops)(void);
++
+ static void __init show_reset_status(void)
+ {
+ 	static char reset[] __initdata = "reset";
+@@ -321,8 +323,12 @@ static int __init at91_pm_init(void)
+ 	pr_info("AT91: Power Management%s\n", (slow_clock ? " (with slow clock mode)" : ""));
+ 
+ 	/* AT91RM9200 SDRAM low-power mode cannot be used with self-refresh. */
+-	if (cpu_is_at91rm9200())
++	if (cpu_is_at91rm9200()) {
+ 		at91_ramc_write(0, AT91RM9200_SDRAMC_LPR, 0);
++		at91_standby_ops = at91rm9200_standby;
++	} else if (cpu_is_at91sam9g45())
++		at91_standby_ops= at91sam9g45_standby;
++	else at91_standby_ops = at91sam9_standby;
+ 
+ 	suspend_set_ops(&at91_pm_ops);
+ 
+-- 
+1.7.9.5
 
