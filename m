@@ -1,74 +1,42 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] PCI / PM: Make pci_pme_active() ignore devices without
- PME support
-Date: Mon, 15 Apr 2013 14:19:18 -0600
-Message-ID: <CAErSpo7UMyyVwkR-j0URYtzzDw51EfT48yzCzbZp87ek7axORw@mail.gmail.com>
-References: <2415503.p0WDU1yixb@vostro.rjw.lan>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH] PM / Runtime: Improve prepare handling at system suspend for genpd
+Date: Mon, 15 Apr 2013 15:44:51 -0700
+Message-ID: <87vc7n8lcs.fsf@linaro.org>
+References: <1365759704-23722-1-git-send-email-ulf.hansson@stericsson.com>
+	<1844674.ZBv3XGts1U@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f179.google.com ([209.85.214.179]:49724 "EHLO
-	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755716Ab3DOUTj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 16:19:39 -0400
-Received: by mail-ob0-f179.google.com with SMTP id tb18so4518629obb.10
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 13:19:38 -0700 (PDT)
-In-Reply-To: <2415503.p0WDU1yixb@vostro.rjw.lan>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:41487 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930Ab3DOWoz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 18:44:55 -0400
+Received: by mail-pd0-f169.google.com with SMTP id 10so2765860pdc.14
+        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 15:44:54 -0700 (PDT)
+In-Reply-To: <1844674.ZBv3XGts1U@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Fri, 12 Apr 2013 13:50:36 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Ulf Hansson <ulf.hansson@stericsson.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Rickard Andersson <rickard.andersson@stericsson.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Wed, Apr 10, 2013 at 2:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Make pci_pme_active() ignore devices without PME support, so that
-> it doesn't print the "PME enabled" or "PME disabled" debug messages
-> for devices that don't support PME.
->
-> So that pci_pme_active() doesn't have to check pm_cap in addition
-> to pme_support, make pci_pm_init() clear pme_support upfront to
-> make sure that it will be 0 for pm_cap equal to 0.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Applied to http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/rafael-pm
-for v3.10.
+> On Friday, April 12, 2013 11:41:44 AM Ulf Hansson wrote:
+>> From: Ulf Hansson <ulf.hansson@linaro.org>
+>> 
+>> When genpd prepares for a system suspend it will fetch a runtime
+>> reference for the device. When returning it we now use the
+>> asyncronous runtime PM API. Thus we don't have to wait for the
+>> device to become idle|suspended before we move on and handle the
+>> next device in queue.
+>> 
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Cc: Kevin Hilman <khilman@linaro.org>
+>> Cc: Alan Stern <stern@rowland.harvard.edu>
+>
+> All three patches applied to linux-pm.git/linux-next.
 
-Thanks!
+In case it matters, for all three:
 
-> ---
->  drivers/pci/pci.c |    5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
->
-> Index: linux-pm/drivers/pci/pci.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci.c
-> +++ linux-pm/drivers/pci/pci.c
-> @@ -1575,7 +1575,7 @@ void pci_pme_active(struct pci_dev *dev,
->  {
->         u16 pmcsr;
->
-> -       if (!dev->pm_cap)
-> +       if (!dev->pme_support)
->                 return;
->
->         pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
-> @@ -1924,6 +1924,7 @@ void pci_pm_init(struct pci_dev *dev)
->         dev->wakeup_prepared = false;
->
->         dev->pm_cap = 0;
-> +       dev->pme_support = 0;
->
->         /* find PCI PM capability in list */
->         pm = pci_find_capability(dev, PCI_CAP_ID_PM);
-> @@ -1975,8 +1976,6 @@ void pci_pm_init(struct pci_dev *dev)
->                 device_set_wakeup_capable(&dev->dev, true);
->                 /* Disable the PME# generation functionality */
->                 pci_pme_active(dev, false);
-> -       } else {
-> -               dev->pme_support = 0;
->         }
->  }
->
->
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
