@@ -1,35 +1,57 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [V3 patch 00/19] cpuidle: code consolidation
-Date: Mon, 15 Apr 2013 16:03:51 -0700
-Message-ID: <87k3o38kh4.fsf@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Tue, 16 Apr 2013 01:12:06 +0200
+Message-ID: <20130415231206.GE12144@pd.tnic>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com>
+ <516724F5.20504@kernel.org>
+ <5167C9FA.8050406@intel.com>
+ <20130412162348.GE2368@pd.tnic>
+ <516A0652.8040505@intel.com>
+ <20130414155925.GC20547@pd.tnic>
+ <516B9859.70004@intel.com>
+ <516B9B57.3030902@intel.com>
+ <20130415095203.GA26524@pd.tnic>
+ <516C059E.20800@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f45.google.com ([209.85.210.45]:41202 "EHLO
-	mail-da0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932513Ab3DOXDz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Apr 2013 19:03:55 -0400
-Received: by mail-da0-f45.google.com with SMTP id v40so2276181dad.32
-        for <linux-pm@vger.kernel.org>; Mon, 15 Apr 2013 16:03:54 -0700 (PDT)
-In-Reply-To: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
-	(Daniel Lezcano's message of "Fri, 12 Apr 2013 14:35:46 +0200")
+Received: from mail.skyhub.de ([78.46.96.112]:48206 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933440Ab3DOXMK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Apr 2013 19:12:10 -0400
+Content-Disposition: inline
+In-Reply-To: <516C059E.20800@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+To: Alex Shi <alex.shi@intel.com>
+Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Daniel,
+On Mon, Apr 15, 2013 at 09:50:22PM +0800, Alex Shi wrote:
+> For fairness and total threads consideration, powersaving cost quit
+> similar energy on kbuild benchmark, and even better.
+> 
+> 	    17348.850		    27400.458		   15973.776
+> 	    13737.493		    18487.248		   12167.816
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+Yeah, but those lines don't look good - powersaving needs more energy
+than performance.
 
-> This patchset series provide some code consolidation across the different
-> cpuidle drivers. It contains two parts, the first one is the removal of
-> the time keeping flag and the second one, is a common initialization routine.
+And what is even crazier is that fixed 1.2 GHz case. I'd guess in
+the normal case those cores are at triple the freq. - i.e. somewhere
+around 3-4 GHz. And yet, 1.2 GHz eats almost *double* the power than
+performance and powersaving.
 
-Do you have this series in a branch somewhere (preferrable on top of
-Rafael's linux-next) for ease of testing?
+So for the x=8 and maybe even the x=16 case we're basically better off
+with performance.
 
-Thanks,
+Or could it be that the power measurements are not really that accurate
+and those numbers above are not really correct?
 
-Kevin
+Hmm.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
