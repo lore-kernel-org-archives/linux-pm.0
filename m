@@ -1,52 +1,54 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [V3 patch 00/19] cpuidle: code consolidation
-Date: Tue, 16 Apr 2013 10:42:17 +0200
-Message-ID: <516D0EE9.40704@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <87k3o38kh4.fsf@linaro.org>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Tue, 16 Apr 2013 12:24:05 +0200
+Message-ID: <20130416102405.GD5332@pd.tnic>
+References: <5167C9FA.8050406@intel.com>
+ <20130412162348.GE2368@pd.tnic>
+ <516A0652.8040505@intel.com>
+ <20130414155925.GC20547@pd.tnic>
+ <516B9859.70004@intel.com>
+ <516B9B57.3030902@intel.com>
+ <20130415095203.GA26524@pd.tnic>
+ <516C059E.20800@intel.com>
+ <20130415231206.GE12144@pd.tnic>
+ <516C99BB.30309@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f44.google.com ([74.125.83.44]:52826 "EHLO
-	mail-ee0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561Ab3DPImX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2013 04:42:23 -0400
-Received: by mail-ee0-f44.google.com with SMTP id c41so114809eek.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2013 01:42:22 -0700 (PDT)
-In-Reply-To: <87k3o38kh4.fsf@linaro.org>
+Received: from mail.skyhub.de ([78.46.96.112]:54635 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753190Ab3DPKYI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Apr 2013 06:24:08 -0400
+Content-Disposition: inline
+In-Reply-To: <516C99BB.30309@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, santosh.shilimkar@ti.com, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+To: Alex Shi <alex.shi@intel.com>
+Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 04/16/2013 01:03 AM, Kevin Hilman wrote:
-> Hi Daniel,
->=20
-> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
->=20
->> This patchset series provide some code consolidation across the diff=
-erent
->> cpuidle drivers. It contains two parts, the first one is the removal=
- of
->> the time keeping flag and the second one, is a common initialization=
- routine.
->=20
-> Do you have this series in a branch somewhere (preferrable on top of
-> Rafael's linux-next) for ease of testing?
+On Tue, Apr 16, 2013 at 08:22:19AM +0800, Alex Shi wrote:
+> testing has a little variation, but the power data is quite accurate.
+> I may change to packing tasks per cpu capacity than current cpu
+> weight. that should has better power efficient value.
 
-Yes, I updated my git tree [1].
+Yeah, this probably needs careful measuring - and by "this" I mean how
+to place N tasks where N is less than number of cores in the system.
 
-Thanks for testing.
+I can imagine trying to migrate them all together on a single physical
+socket (maybe even overcommitting it) so that you can flush the caches
+of the cores on the other sockets and so that you can power down the
+other sockets and avoid coherent traffic from waking them up, to be one
+strategy. My supposition here is that maybe putting the whole unused
+sockets in a deep sleep state could save a lot of power.
 
-  -- Daniel
+Or not, who knows. Only empirical measurements should show us what
+actually happens.
 
-[1] git://git.linaro.org/people/dlezcano/cpuidle-next.git linux-pm-next
+Thanks.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+-- 
+Regards/Gruss,
+    Boris.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Sent from a fat crate under my desk. Formatting is fine.
+--
