@@ -1,152 +1,85 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [lm-sensors] [PATCH 0/4] thermal threshold and notification v2.0
-Date: Tue, 16 Apr 2013 05:12:00 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C6F3CD@BGSMSX101.gar.corp.intel.com>
-References: <1365541282-19366-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20130413013230.GB14726@roeck-us.net> <516C1AC0.6030403@linux.intel.com>
-	 <4D68720C2E767A4AA6A8796D42C8EB59C6EE10@BGSMSX101.gar.corp.intel.com>
- <1366088268.2323.48.camel@rzhang1-mobl4>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH] cpufreq: exynos5440: Protect opp search calls with rcu lock
+Date: Tue, 16 Apr 2013 12:21:41 +0530
+Message-ID: <CADGdYn6FJFWgx=8PGNwjmxVpsBU=QrvMKpPQMANuBwOHUPmt8w@mail.gmail.com>
+References: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
+	<CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:26506 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002Ab3DPFMJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Apr 2013 01:12:09 -0400
-In-Reply-To: <1366088268.2323.48.camel@rzhang1-mobl4>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "bp@alien8.de" <bp@alien8.de>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6
-IFR1ZXNkYXksIEFwcmlsIDE2LCAyMDEzIDEwOjI4IEFNDQo+IFRvOiBSLCBEdXJnYWRvc3MNCj4g
-Q2M6IFNyaW5pdmFzIFBhbmRydXZhZGE7IEd1ZW50ZXIgUm9lY2s7IFl1LCBGZW5naHVhOyBMdWNr
-LCBUb255OyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBsbS1zZW5zb3JzQGxtLXNlbnNv
-cnMub3JnOyBicEBhbGllbjguZGUNCj4gU3ViamVjdDogUkU6IFtsbS1zZW5zb3JzXSBbUEFUQ0gg
-MC80XSB0aGVybWFsIHRocmVzaG9sZCBhbmQgbm90aWZpY2F0aW9uIHYyLjANCj4gDQo+IE9uIE1v
-biwgMjAxMy0wNC0xNSBhdCAxMTo1MyAtMDYwMCwgUiwgRHVyZ2Fkb3NzIHdyb3RlOg0KPiA+ID4g
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxtLXNlbnNvcnMtYm91bmNl
-c0BsbS1zZW5zb3JzLm9yZyBbbWFpbHRvOmxtLXNlbnNvcnMtDQo+ID4gPiBib3VuY2VzQGxtLXNl
-bnNvcnMub3JnXSBPbiBCZWhhbGYgT2YgU3Jpbml2YXMgUGFuZHJ1dmFkYQ0KPiA+ID4gU2VudDog
-TW9uZGF5LCBBcHJpbCAxNSwgMjAxMyA4OjUxIFBNDQo+ID4gPiBUbzogR3VlbnRlciBSb2Vjaw0K
-PiA+ID4gQ2M6IFl1LCBGZW5naHVhOyBMdWNrLCBUb255OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
-cmc7IGxtLXNlbnNvcnNAbG0tDQo+ID4gPiBzZW5zb3JzLm9yZzsgYnBAYWxpZW44LmRlOyBaaGFu
-ZywgUnVpDQo+ID4gPiBTdWJqZWN0OiBSZTogW2xtLXNlbnNvcnNdIFtQQVRDSCAwLzRdIHRoZXJt
-YWwgdGhyZXNob2xkIGFuZCBub3RpZmljYXRpb24NCj4gdjIuMA0KPiA+ID4NCj4gPiA+IE9uIDA0
-LzEyLzIwMTMgMDY6MzIgUE0sIEd1ZW50ZXIgUm9lY2sgd3JvdGU6DQo+ID4gPiA+IE9uIFR1ZSwg
-QXByIDA5LCAyMDEzIGF0IDAyOjAxOjE4UE0gLTA3MDAsIFNyaW5pdmFzIFBhbmRydXZhZGEgd3Jv
-dGU6DQo+ID4gPiA+PiB2Mi4wDQo+ID4gPiA+PiBBcyBzdWdnZXN0ZWQgYnkgR3VlbnRlciBSb2Vj
-aywgdXNlZCB0aGUgcHJldmlvdXMgZGV2ZWxvcG1lbnQgaW4NCj4gdGhpcw0KPiA+ID4gYXJlYQ0K
-PiA+ID4gPj4gYXMgc3RhcnRpbmcgcG9pbnQuIFRoZSBmaXJzdCBwYXRjaCBpcyBzYW1lIGFzIHdo
-YXQgR3VlbnRlciBSb2Vjaw0KPiBzdWJtaXR0ZWQNCj4gPiA+ID4+IGJlZm9yZSBleGNlcHQgZm9y
-IGNoZWNrcGF0Y2ggZXJyb3IgZm9yIHN0cnRvdWwuQXMgcGVyIHRoaXMgcGF0Y2gsIHRoZQ0KPiA+
-ID4gZm9sbG93aW5nDQo+ID4gPiA+PiBhZGRpdGlvbmFsIGNvcmV0ZW1wIHN5c2ZzIGVudHJpZXMg
-d2lsbCBiZSBhZGRlZDoNCj4gPiA+ID4+IHRlbXBYX3RocmVzaG9sZDEgLSBSZWZsZWN0cyB2YWx1
-ZSBvZiBDUFUgdGhlcm1hbCB0aHJlc2hvbGQgVDAuDQo+ID4gPiA+PiB0ZW1wWF90aHJlc2hvbGQx
-X3RyaWdnZXJlZA0KPiA+ID4gPj4gCSAgICAgICAgIC0gUmVmbGVjdHMgc3RhdHVzIG9mIENQVSB0
-aGVybWFsIHN0YXR1cyByZWdpc3RlciBiaXQgNg0KPiA+ID4gPj4gCQkgICAoVEhFUk1fU1RBVFVT
-X1RIUkVTSE9MRDApLg0KPiA+ID4gPj4gdGVtcFhfdGhyZXNob2xkMiAtIFJlZmxlY3RzIHZhbHVl
-IG9mIENQVSB0aGVybWFsIHRocmVzaG9sZCBUMS4NCj4gPiA+ID4+IHRlbXBYX3RocmVzaG9sZDJf
-dHJpZ2dlcmVkDQo+ID4gPiA+PiAJICAgICAgICAgLSBSZWZsZWN0cyBzdGF0dXMgb2YgQ1BVIHRo
-ZXJtYWwgc3RhdHVzIHJlZ2lzdGVyIGJpdCA4DQo+ID4gPiA+PiAJCSAgIChUSEVSTV9TVEFUVVNf
-VEhSRVNIT0xEMSkuDQo+ID4gPiA+Pg0KPiA+ID4gPj4NCj4gPiA+ID4+IFRoZSBub3RpZmljYXRp
-b24gbWVjaGFuaXNtIGlzIGltcGxlbWVudGVkIGZvciBwYWNrYWdlIGxldmVsIGJ5IHVzaW5nDQo+
-ID4gPiB1ZXZlbnQuDQo+ID4gPiA+PiBBbHNvIGEgZGVidWdmcyBpbnRlcmZhY2UgaXMgYWRkZWQg
-dG8gY2hlY2sgY291bnQgb2YgaW50ZXJydXB0cyBhbmQNCj4gd29ya2VyDQo+ID4gPiBmbg0KPiA+
-ID4gPj4gc2NoZWR1bGluZy4NCj4gPiA+ID4+DQo+ID4gPiA+Pg0KPiA+ID4gPj4gdjEuMA0KPiA+
-ID4gPj4NCj4gPiA+ID4+IFRoaXMgaXMgY2xlYXIgdGhhdCB0aGVyZSBpcyByZWx1Y3RhbmNlIGlu
-IGFkZGluZyB0aHJlc2hvbGRzIGluIGNvcmV0ZW1wDQo+ID4gPiBzeXNmcywNCj4gPiA+ID4+IGR1
-cmluZyBwcmV2aW91cyBhdHRlbXB0cy4gUHJvYWJseSBiZWNhdXNlIG9mIGxha2Ugb2YgdXNlIGNh
-c2VzLg0KPiA+ID4gPj4gQnV0IHRoaXMgdGltZSB1c2UgY2FzZSBtYXkgYmUgbW9yZSBjb21wZWxs
-aW5nLg0KPiA+ID4gPj4NCj4gPiA+ID4+IFdlIGhhdmUgbWFueSBzbWFsbCBmb3JtIGZhY3RvciBk
-ZXZpY2VzIGxpa2UgdWx0cmFib29rcywgc2xhdGUgUENzIGluDQo+IHRoZQ0KPiA+ID4gbWFya2V0
-Lg0KPiA+ID4gPj4gVW5mb3J0dW5hdGVseSB0aGVzZSBkZXZpY2VzIHJlYWNoIG1heGltdW0gdGVt
-cGVyYXR1cmUgd2l0aA0KPiByZWxhdGl2ZWx5DQo+ID4gPiBsZXNzDQo+ID4gPiA+PiB3b3JrbG9h
-ZHMsIGNhdXNpbmcgQklPUyB0byBkbyB0aGVybWFsIHRocm90dGxpbmcuIFRoZXJlIGFyZSByZWFs
-DQo+ID4gPiBwZXJmb3JtYW5jZQ0KPiA+ID4gPj4gaXNzdWVzIGR1ZSB0byBhZ2dyZXNzaXZlIEJJ
-T1MgYWN0aW9uIHRvIGNvbnRyb2wgdGhlcm1hbHMgYW5kIGFsc28NCj4gdGhlcm1hbA0KPiA+ID4g
-YnJlYWtkb3duDQo+ID4gPiA+PiBpbiBzb21lIGNhc2VzLg0KPiA+ID4gPj4NCj4gPiA+ID4+IEV2
-ZW4gdGhlIG1vc3QgZXhwZW5zaXZlIGxhcHRvcHMsIGRvbid0IGhhdmUgY29ycmVjdCBBQ1BJIHRo
-ZXJtYWwNCj4gPiA+IGNvbmZpZ3VyYXRpb24sDQo+ID4gPiA+PiBzbyB0aGF0IGtlcm5lbCB0aGVy
-bWFsIGRyaXZlciBjYW4gYWN0LiBJbiBzb21lIGNhc2UgZXZlbiB0aGUgdHJpcCBwb2ludA0KPiBp
-cw0KPiA+ID4gaGlnaGVyDQo+ID4gPiA+PiB0aGFuIGNyaXRpY2FsIHRlbXBlcmF0dXJlIHNldHRp
-bmcuDQo+ID4gPiA+Pg0KPiA+ID4gPj4gSW50ZWwgaGFzIGRldmVsb3BlZCBzZXZlcmFsIGRyaXZl
-cnMsIHdoaWNoIGNhbiBiZSB1c2VkIHRvIGNvb2wgdGhlDQo+IHN5c3RlbQ0KPiA+ID4gdmVyeSBl
-ZmZpY2llbnRseS4NCj4gPiA+ID4+IFRoZXkgaW5jbHVkZSBSQVBMIGJhc2VkIGNvb2xpbmcgZHJp
-dmVyLCBQb3dlcmNsYW1wIGRyaXZlciBhbmQgUCBzdGF0ZQ0KPiA+ID4gZHJpdmVyLg0KPiA+ID4g
-Pj4gVG8gdXRpbGl6ZSB0aGVzZSBjb29saW5nIGRldmljZSBhIGNsb3NlZCBsb29wIHVzZXIgbW9k
-ZSBwcm9ncmFtIGlzDQo+ID4gPiByZXF1aXJlZCwgd2hpY2gNCj4gPiA+ID4+IHdpbGwgdXRpbGl6
-ZSB0aGVzZSBtZXRob2QgYW5kIGR5bmFtaWNhbGx5IGNvbXBlbnNhdGUgZm9yIGhpZ2ggQ1BVDQo+
-ID4gPiB0ZW1wZXJhdHVyZXMsDQo+ID4gPiA+PiB3aXRob3V0IHJlbHlpbmcgb24gYW55IGNvbmZp
-Z3VyYXRpb24gZGF0YS4NCj4gPiA+ID4+IE9uZSBzdWNoIHNvbHV0aW9uIGlzIGRldmVsb3BlZCBp
-cyAiTGludXggdGhlcm1hbCBkYWVtb24iLiBNb3JlDQo+IGRldGFpbHMNCj4gPiA+IGNhbiBiZQ0K
-PiA+ID4gPj4gb2J0YWluZWQgZnJvbQ0KPiA+ID4gPj4NCj4gPiA+DQo+ICJodHRwczovL2dpdGh1
-Yi5jb20vMDFvcmcvdGhlcm1hbF9kYWVtb24vYmxvYi9tYXN0ZXIvVGhlcm1hbERhZW1vbg0KPiA+
-ID4gX0ludHJvZHVjdGlvbi5wZGYiLg0KPiA+ID4gPj4gVGhpcyBkYWVtb24gcG9sbHMgZm9yIGNw
-dSB0ZW1wZXJhdHVyZSBhbmQgYXBwbHkgY29tcGVuc2F0aW9uIG9uY2UNCj4gdGhlDQo+ID4gPiBD
-UFUgcmVhY2ggdGFyZ2V0DQo+ID4gPiA+PiB0ZW1wZXJhdHVyZS4NCj4gPiA+ID4+DQo+ID4gPiA+
-PiBUaGlzIHBvbGxpbmcgY2FuIGJlIG1vc3RseSBhdm9pZGVkLCBieSBnZXR0aW5nIG5vdGlmaWNh
-dGlvbiBmb3IgdGhlDQo+ID4gPiB0ZW1wZXJhdHVyZSwgd2hlcmUNCj4gPiA+ID4+IGl0IG5lZWRz
-IHRvIHdha2UgdXAgYW5kIGdldCByZWFkeSBmb3IgYXBwbHkgY29tcGVuc2F0aW9uLiBJbiBtb3N0
-IG9mDQo+IHRoZQ0KPiA+ID4gbm9ybWFsIHVzZQ0KPiA+ID4gPj4gY2FzZXMsIHRoZXJlIG1heSBu
-b3QgYmUgYW55IHRocmVzaG9sZCBldmVudHMuIFNvIHZlcnkgbWluaW1hbA0KPiBudW1iZXIgb2YN
-Cj4gPiA+IHVzZXIgc3BhY2UNCj4gPiA+ID4+IG5vdGlmaWNhdGlvbiBmb3IgdGhlcm1hbCB0aHJl
-c2hvbGRzLg0KPiA+ID4gPj4NCj4gPiA+ID4+IE5vdGlmaWNhdGlvbiBhcmUgYWRkZWQgb25seSBm
-b3IgcGFja2FnZSBsZXZlbCB0aHJlc2hvbGRzLCB0byBtaW5pbWl6ZQ0KPiA+ID4gZXZlbnRzLiBB
-bHNvDQo+ID4gPiA+PiBpbnRlcnJ1cHRzIGFyZSBlbmFibGVkIG9ubHkgd2hlbiBhIG5vbiB0al9t
-YXgoZGVmYXVsdCkgdmFsdWUgaXMNCj4gd3JpdHRlbg0KPiA+ID4gdG8gdGhyZXNob2xkcy4NCj4g
-PiA+ID4+DQo+ID4gPiA+PiBPbmNlIHRocmVzaG9sZHMgYXJlIHZpb2xhdGVkLCBpdCB1c2VzIGEg
-cmF0ZSBjb250cm9sIG9mIDUgc2Vjb25kcywNCj4gcmVkdWNpbmcNCj4gPiA+IHRoZSBudW1iZXIN
-Cj4gPiA+ID4+IG9mIGludGVycnVwdHMsIHdoZW4gdGVtcGVyYXR1cmUgaXMgaGFuZ2luZyBhcm91
-bmQgdHJpcCBwb2ludC4gVXNpbmcNCj4gdGhlDQo+ID4gPiBzdGlja3kgbG9nIGJpdCwNCj4gPiA+
-ID4+IGl0IHNlbmRzIGtib2plY3QgdWV2ZW50IGNoYW5nZSBub3RpZmljYXRpb24gZm9yIGNvcnJl
-c3BvbmRpbmcgcGFja2FnZQ0KPiA+ID4gc3lzZnMuDQo+ID4gPiA+PiBPbmNlIHRoZSB0aGVybWFs
-IGRhZW1vbiByZWNlaXZlcyBub3RpZmljYXRpb24sIGl0IGNhbiBjaGFuZ2UgdG8gbmV3DQo+ID4g
-PiB0aHJlc2hvbGQgb3IgYWN0DQo+ID4gPiA+PiBpbW1lZGlhdGVseSB0byByZWR1Y2UgQ1BVIHRl
-bXBlcmF0dXJlLioNCj4gPiA+ID4+DQo+ID4gPiA+PiBHdWVudGVyIFJvZWNrICgxKToNCj4gPiA+
-ID4+ICAgIGh3bW9uOiAoY29yZXRlbXApIEFkZCBzdXBwb3J0IGZvciB0aGVybWFsIHRocmVzaG9s
-ZCBhdHRyaWJ1dGVzDQo+ID4gPiA+Pg0KPiA+ID4gPj4gU3Jpbml2YXMgUGFuZHJ1dmFkYSAoMyk6
-DQo+ID4gPiA+PiAgICB4ODYsIG1jaGVjaywgdGhlcm1fdGhyb3Q6IFByb2Nlc3MgcGFja2FnZSB0
-aHJlc2hvbGRzDQo+ID4gPiA+PiAgICBod21vbjogKGNvcmV0ZW1wKSA6IEFkZCBub3RpZmljYXRp
-b24gc3VwcG9ydA0KPiA+ID4gPj4gICAgaHdtb246IChjb3JldGVtcCkgOiBBZGQgZGVidWdmcyB0
-byBzdXBwb3J0IHRocmVzaG9sZHMNCj4gPiA+ID4+DQo+ID4gPiA+PiAgIERvY3VtZW50YXRpb24v
-aHdtb24vY29yZXRlbXAgICAgICAgICAgICAgfCAgIDggKw0KPiA+ID4gPj4gICBhcmNoL3g4Ni9p
-bmNsdWRlL2FzbS9tY2UuaCAgICAgICAgICAgICAgIHwgICA3ICsNCj4gPiA+ID4+ICAgYXJjaC94
-ODYva2VybmVsL2NwdS9tY2hlY2svdGhlcm1fdGhyb3QuYyB8ICA2MyArKysrKystDQo+ID4gPiA+
-PiAgIGRyaXZlcnMvaHdtb24vY29yZXRlbXAuYyAgICAgICAgICAgICAgICAgfCAyOTINCj4gPiA+
-ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPiA+ID4+ICAgNCBmaWxlcyBjaGFu
-Z2VkLCAzNTYgaW5zZXJ0aW9ucygrKSwgMTQgZGVsZXRpb25zKC0pDQo+ID4gPiA+Pg0KPiA+ID4g
-PiBSdWksDQo+ID4gPiA+DQo+ID4gPiA+IGNhbiB5b3UgaGF2ZSBhIGxvb2sgYXQgdGhpcyBzZXJp
-ZXMgPw0KPiA+ID4gPg0KPiA+ID4gPiBJIHdvdWxkIGxpa2UgdG8gZ2V0IHNvbWUgZmVlZGJhY2sg
-ZnJvbSB0aGVybWFsIHN1YnN5c3RlbSBzdXBwb3J0ZXJzDQo+IGlmDQo+ID4gPiBod21vbg0KPiA+
-ID4gPiBpcyByZWFsbHkgdGhlIHJpZ2h0IHBsYWNlIGZvciB0aGlzLiBJIG1heSBiZSB3cm9uZywg
-YnV0IGl0IHNlZW1zIHRvIG1lIGl0DQo+IHdvdWxkDQo+ID4gPiA+IGJldHRlciBmaXQgaW50byB0
-aGVybWFsLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MsDQo+ID4gPiA+IEd1ZW50ZXINCj4gPiA+
-DQo+ID4gPiBJIGFtIGZpbmUgdXNpbmcgdGhlcm1hbCB6b25lcywgYnV0IHRoZSBjb3JldGVtcCB3
-aWxsIGJlIGR1cGxpY2F0ZWQgaW4NCj4gPiA+IGJvdGggY29yZXRlbXAgYW5kIHRoZXJtYWwgc3lz
-ZnMgYW5kIGxvdCBvZiBjb2RlIGR1cGxpY2F0aW9uLiBBbHNvIHRyaXANCj4gPiA+IHBvaW50IGlu
-IHRoaXMgY2FzZSBpcyBub3QgZm9yIGFjdGl2YXRpbmcgYW55IGNvb2xpbmcgZGV2aWNlLCBidXQg
-anVzdCB0bw0KPiA+ID4gbm90aWZ5IHVzZXIgc3BhY2UuIFNvIHRoaXMgd2lsbCBiZSBhIHpvbmUg
-d2l0aCBubyBhc3NvY2lhdGVkIGNkZXZzLg0KPiA+DQo+ID4gWWVzLCB0aGlzIHdhcyB0aGUgaWRl
-YSB3aGljaCB3ZSBkaXNjdXNzZWQgaW4gbG0tc2Vuc29ycyBhIGZldyBtb250aHMgYWdvLg0KPiA+
-IFtJIGNvdWxkIG5vdCBsb2NhdGUgdGhlIHRocmVhZCBpbiB0aGUgd2ViXS4gRXhjZXB0IHRoYXQg
-d2Ugd2lsbCByZWdpc3RlciBhcw0KPiA+ICd0aGVybWFsIHNlbnNvcicgYW5kIG5vdCBhcyAndGhl
-cm1hbCB6b25lcycgYmVjYXVzZSBvZiB0aGUgY2hhbmdlcw0KPiBoYXBwZW5pbmcNCj4gPiB0byB0
-aGUgdGhlcm1hbCBmcmFtZXdvcmsgcmVjZW50bHlbMV0uDQo+ID4NCj4gPiBUaGlzIHdheSwgd2Ug
-Y2FuIGV4cG9zZSB0cmlwIHBvaW50cyBhbmQgY29uZmlndXJlIHRoZW0sIHdpdGhvdXQgaGF2aW5n
-IGENCj4gPiBuZWVkIHRvIGFzc29jaWF0ZSBhbnkgY2RldnMuDQo+ID4NCj4gQWdyZWVkLg0KPiBC
-dXQgbm90ZSB0aGF0IHRoaXMgaXMgYWxzbyB0cnVlIGluIGN1cnJlbnQgY29kZSBhcyB3ZWxsLg0K
-DQpZZXMsIEkgYWdyZWUuDQoNClRoYW5rcywNCkR1cmdhDQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0K
-PiA+IFsxXSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMy8yLzUvMjI4DQo+IA0KPiA+IFRoYW5r
-cywNCj4gPiBEdXJnYQ0KPiA+ID4NCj4gPiA+ID4gLS0NCj4gPiA+ID4gVG8gdW5zdWJzY3JpYmUg
-ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXBtIiBpbg0K
-PiA+ID4gPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9y
-Zw0KPiA+ID4gPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3Jn
-L21ham9yZG9tby1pbmZvLmh0bWwNCj4gPiA+ID4NCj4gPiA+DQo+ID4gPg0KPiA+ID4gX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4gPiA+IGxtLXNlbnNv
-cnMgbWFpbGluZyBsaXN0DQo+ID4gPiBsbS1zZW5zb3JzQGxtLXNlbnNvcnMub3JnDQo+ID4gPiBo
-dHRwOi8vbGlzdHMubG0tc2Vuc29ycy5vcmcvbWFpbG1hbi9saXN0aW5mby9sbS1zZW5zb3JzDQo+
-IA0KDQo=
+Hi Nishanth,
+
+Thanks for reviewing this patch.
+
+On Mon, Apr 15, 2013 at 7:40 PM, Nishanth Menon <nm@ti.com> wrote:
+> Daniel,
+> On Mon, Apr 15, 2013 at 1:24 AM, Amit Daniel Kachhap
+> <amit.daniel@samsung.com> wrote:
+>> As per the OPP library documentation(Documentation/power/opp.txt) all
+>> opp find/get calls should be protected by rcu locks.
+>>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>
+>> This patch is created against linux-next tree and is suggested by
+>> Nishanth Menon. (https://lkml.org/lkml/2013/4/12/119)
+>>
+>>  drivers/cpufreq/exynos5440-cpufreq.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+>> index ead7ed4..0c74018 100644
+>> --- a/drivers/cpufreq/exynos5440-cpufreq.c
+>> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
+>> @@ -120,11 +120,13 @@ static int init_div_table(void)
+>>         int i = 0;
+>>         struct opp *opp;
+>>
+>> +       rcu_read_lock();
+>>         for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>
+>>                 opp = opp_find_freq_exact(dvfs_info->dev,
+>>                                         freq_tbl[i].frequency * 1000, true);
+>>                 if (IS_ERR(opp)) {
+>> +                       rcu_read_unlock();
+>>                         dev_err(dvfs_info->dev,
+>>                                 "failed to find valid OPP for %u KHZ\n",
+>>                                 freq_tbl[i].frequency);
+>> @@ -159,6 +161,7 @@ static int init_div_table(void)
+>>                 __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
+>>         }
+>>
+>> +       rcu_read_unlock();
+>
+> Is it not possible to reduce the amount of code protected by RCU lock?
+> something like this:
+Yes it is possible but then this part of code is a loop of max 8
+iteration so rcu_read_lock will be called those many times.
+Also this code blocks are just register writes and not doing any time
+consuming operations.
+
+Thanks,
+Amit Daniel
+> +               rcu_read_lock();
+>                 opp = opp_find_freq_exact(dvfs_info->dev,
+>                                         freq_tbl[i].frequency * 1000, true);
+>                 if (IS_ERR(opp)) {
+> +                       rcu_read_unlock();
+>                         dev_err(dvfs_info->dev,
+>                                 "failed to find valid OPP for %u KHZ\n",
+>                                 freq_tbl[i].frequency);
+>                         return PTR_ERR(opp);
+>                 }
+> +               volt_id = opp_get_voltage(opp);
+> +               rcu_unlock();
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
