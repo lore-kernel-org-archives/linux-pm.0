@@ -1,73 +1,72 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Tue, 16 Apr 2013 21:34:21 +0300
-Message-ID: <516D99AD.4070104@semaphore.gr>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan> <515CBB98.4020607@semaphore.gr> <CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com> <515F2AF3.9050709@semaphore.gr> <51644855.1090300@semaphore.gr> <CAKohponhGA1LCe8Hv7xHk0ULXVVPTgmEY-nKTgpE0w6VmX--Ng@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V2 1/2] regulator: core: return err value for regulator_get if there is no DT binding
+Date: Tue, 16 Apr 2013 16:45:16 -0500
+Message-ID: <1366148717-12586-1-git-send-email-nm@ti.com>
+References: <20130405101754.GD6597@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohponhGA1LCe8Hv7xHk0ULXVVPTgmEY-nKTgpE0w6VmX--Ng@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130405101754.GD6597@opensource.wolfsonmicro.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: broonie@opensource.wolfsonmicro.com
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/10/2013 06:22 AM, Viresh Kumar wrote:
-> On 9 April 2013 22:26, Stratos Karafotis <stratosk@semaphore.gr> wrote:
->> On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
->>>
->>> Hi Viresh,
->>>
->>> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
->>>>
->>>> Hi Stratos,
->>>>
->>>> Yes, your results show some improvements. BUT if performance is the only
->>>> thing
->>>> we were looking for, then we will never use ondemand governor but
->>>> performance
->>>> governor.
->>>>
->>>> I suspect this little increase in performance must have increased power
->>>> numbers
->>>> too (significantly). So, if you can get numbers in the form of
->>>> power/performance
->>>> with and without your patch, it will be great.
->>>>
->>>> --
->>>> viresh
->>>>
->>>
->>> I run some more tests. I increased the number of iterations to 100 (from
->>> 20).
->>> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us),
->>> 15,000,000 (~30000us).
->>>
->>> This time, I also extracted statistics from cpufreq_stats driver. I think
->>> this will be an
->>> indication for power consumption. Below the results and attached the
->>> program I used for to
->>> get these numbers.
->>
->>
->> Any comments would be appreciated.
->
-> Sorry, i forgot about this mail earlier..
->
-> Your performance numbers look improved but i am still not sure about
-> power consumption. But as this is not going to be the default settings, i
-> think we can take this patch.
->
-> @Rafael:?
->
+commit 6d191a5fc7a969d972f1681e1c23781aecb06a61
+(regulator: core: Don't defer probe if there's no DT binding for a supply)
 
-Hi Rafael,
+Attempted to differentiate between regulator_get() with an actual
+DT binding for the supply and when there is none to avoid unnecessary
+deferal.
+However, ret value supplied by regulator_dev_lookup() is being
+ignored by regulator_get(). So, exit with the appropriate return value.
 
-I'm sorry for bothering you again for this patch.
-Are these number adequate? Should I provide more benchmark results?
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+based on v3.9-rc7
+Changes in v2 (review comments update):
+	- simplified commit log
+	- error handling inline with rest of function
+Available at: https://github.com/nmenon/linux-2.6-playground/commits/push/cpufreq-regulator-fixing-v2
+V1:
+https://patchwork.kernel.org/patch/2396571/
+(original depending cpufreq patch: https://patchwork.kernel.org/patch/2396541/
+  - no change expected- so not reposting unless requested)
 
-Thanks for your time.
+ drivers/regulator/core.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Stratos
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index e3661c2..cfe8b84 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1229,7 +1229,7 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
+ 	struct regulator_dev *rdev;
+ 	struct regulator *regulator = ERR_PTR(-EPROBE_DEFER);
+ 	const char *devname = NULL;
+-	int ret;
++	int ret = 0;
+ 
+ 	if (id == NULL) {
+ 		pr_err("get() with no identifier\n");
+@@ -1245,6 +1245,15 @@ static struct regulator *_regulator_get(struct device *dev, const char *id,
+ 	if (rdev)
+ 		goto found;
+ 
++	/*
++	 * If we have return value from dev_lookup fail, we do not expect to
++	 * succeed, so, quit with appropriate error value
++	 */
++	if (ret) {
++		regulator = ERR_PTR(ret);
++		goto out;
++	}
++
+ 	if (board_wants_dummy_regulator) {
+ 		rdev = dummy_regulator_rdev;
+ 		goto found;
+-- 
+1.7.9.5
+
