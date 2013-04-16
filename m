@@ -1,217 +1,152 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/4] thermal threshold event notification
-Date: Tue, 16 Apr 2013 13:05:50 +0800
-Message-ID: <1366088750.2323.55.camel@rzhang1-mobl4>
-References: <1365102689-12581-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20130404194321.GA24956@roeck-us.net> <515DDDF0.9020904@linux.intel.com>
-	 <20130406032431.GA25103@roeck-us.net> <51622E08.3020902@linux.intel.com>
-	 <20130408152653.GC20919@roeck-us.net>
-	 <1366084864.2323.23.camel@rzhang1-mobl4>
-	 <20130416045327.GA2551@roeck-us.net>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [lm-sensors] [PATCH 0/4] thermal threshold and notification v2.0
+Date: Tue, 16 Apr 2013 05:12:00 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C6F3CD@BGSMSX101.gar.corp.intel.com>
+References: <1365541282-19366-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20130413013230.GB14726@roeck-us.net> <516C1AC0.6030403@linux.intel.com>
+	 <4D68720C2E767A4AA6A8796D42C8EB59C6EE10@BGSMSX101.gar.corp.intel.com>
+ <1366088268.2323.48.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:38790 "EHLO mga14.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:26506 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002Ab3DPFF5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Apr 2013 01:05:57 -0400
-In-Reply-To: <20130416045327.GA2551@roeck-us.net>
+	id S1751002Ab3DPFMJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Apr 2013 01:12:09 -0400
+In-Reply-To: <1366088268.2323.48.camel@rzhang1-mobl4>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, fenghua.yu@intel.com, lm-sensors@lm-sensors.org, linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "bp@alien8.de" <bp@alien8.de>
 
-On Mon, 2013-04-15 at 21:53 -0700, Guenter Roeck wrote:
-> On Tue, Apr 16, 2013 at 12:01:04PM +0800, Zhang Rui wrote:
-> > Hi,
-> > 
-> > On Mon, 2013-04-08 at 08:26 -0700, Guenter Roeck wrote:
-> > > On Sun, Apr 07, 2013 at 07:40:08PM -0700, Srinivas Pandruvada wrote:
-> > > > Hi Guenter,
-> > > > 
-> > > > Thanks for your quick response. Please see my answers in-line.
-> > > > 
-> > > > Thanks,
-> > > > Srinivas
-> > > > 
-> > > > On 04/05/2013 08:24 PM, Guenter Roeck wrote:
-> > > > >On Thu, Apr 04, 2013 at 01:09:20PM -0700, Srinivas Pandruvada wrote:
-> > > > >>On 04/04/2013 12:43 PM, Guenter Roeck wrote:
-> > > > >>>On Thu, Apr 04, 2013 at 12:11:25PM -0700, Srinivas Pandruvada wrote:
-> > > > >>>>This is clear that there is reluctance in adding thresholds in coretemp sysfs,
-> > > > >>>>during previous attempts. Proably because of lake of use cases.
-> > > > >>>>But this time use case may be more compelling.
-> > > > >>>>
-> > > > >>>>We have many small form factor devices like ultrabooks, slate PCs in the market.
-> > > > >>>>Unfortunately these devices reach maximum temperature with relatively less
-> > > > >>>>workloads, causing BIOS to do thermal throttling. There are real performance
-> > > > >>>>issues due to aggressive BIOS action to control thermals and also thermal breakdown
-> > > > >>>>in some cases.
-> > > > >>>>
-> > > > >>>>Even the most expensive laptops, don't have correct ACPI thermal configuration,
-> > > > >>>>so that kernel thermal driver can act. In some case even the trip point is higher
-> > > > >>>>than critical temperature setting.
-> > > > >>>>
-> > > > >>>>Intel has developed several drivers, which can be used to cool the system very efficiently.
-> > > > >>>>They include RAPL based cooling driver, Powerclamp driver and P state driver.
-> > > > >>>>To utilize these cooling device a closed loop user mode program is required, which
-> > > > >>>>will utilize these method and dynamically compensate for high CPU temperatures,
-> > > > >>>>without relying on any configuration data.
-> > > > >>>>One such solution is developed is "Linux thermal daemon". More details can be
-> > > > >>>>obtained from
-> > > > >>>>"https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
-> > > > >>>>This daemon polls for cpu temperature and apply compensation once the CPU reach target
-> > > > >>>>temperature.
-> > > > >>>>
-> > > > >>>>This polling can be mostly avoided, by getting notification for the temperature, where
-> > > > >>>>it needs to wake up and get ready for apply compensation. In most of the normal use
-> > > > >>>>cases, there may not be any threshold events. So very minimal number of user space
-> > > > >>>>notification for thermal thresholds.
-> > > > >>>>
-> > > > >>>>This patch adds two entries to coretemp sysfs.
-> > > > >>>>tempX_notify_threshold_1
-> > > > >>>>tempX_notify_threshold_2
-> > > > >>>>
-> > > > >>>>These two settings acts on "Package level", not on core level. So it will only appear
-> > > > >>>>if there is support for package temperature. Many of recent Intel processors, support
-> > > > >>>>package temperatures
-> > > > >>>>When any valid value is written to these files, it will directly set corresponding CPU MSR,
-> > > > >>>>in the corresponding package and read back directly from MSR. Since package MSR, affects
-> > > > >>>>all cores in package, setting will be applicable to all CPU's in the package minimizing
-> > > > >>>>read, writes and notifications. Also package threshold interrupts are enabled only when,
-> > > > >>>>a non zero value is written to thresholds.
-> > > > >>>>
-> > > > >>>>Once thresholds are violated, it uses a rate control of 5 seconds, reducing the number
-> > > > >>>>of interrupts, when temperature is hanging around trip point. Using the sticky log bit,
-> > > > >>>>it sends kboject uevent change notification for corresponding package sysfs.
-> > > > >>>>Once the thermal daemon receives notification, it can change to new threshold or act
-> > > > >>>>immediately to reduce CPU temperature.
-> > > > >>>>
-> > > > >>>>
-> > > > >>>>Srinivas Pandruvada (4):
-> > > > >>>>   x86, mcheck, therm_throt: Process package thresholds
-> > > > >>>>   hwmon: (coretemp) Add threshold support
-> > > > >>>>   hwmon: (coretemp) : Add notification support
-> > > > >>>>   drivers/hwmon/coretemp : Debug fs interface
-> > > > >>>>
-> > > > >>>>  arch/x86/include/asm/mce.h               |   7 +
-> > > > >>>>  arch/x86/kernel/cpu/mcheck/therm_throt.c |  50 ++++-
-> > > > >>>>  drivers/hwmon/coretemp.c                 | 319 +++++++++++++++++++++++++++++--
-> > > > >>>>  3 files changed, 361 insertions(+), 15 deletions(-)
-> > > > >>>>
-> > > > >>>Key question: Why does the thermal subsystem not work for you ?
-> > > > >>Thermal is bigger issue in Ultrabooks, Slate PCs and other small
-> > > > >>form factor devices.
-> > > > >>Linux ACPI thermal driver depends on ACPI configuration to activate
-> > > > >>active/passive control. So if you have garbage data or not optimized
-> > > > >>data, the current Linux driver can't control thermals. There are
-> > > > >>multiple platforms with bad ACPI data. Some of them have "ACPI
-> > > > >>threshold > critical temp"
-> > > > >>
-> > > > >I wasn't talking about ACPI, I was talking about the Linux thermal subsystem
-> > > > >in drivers/thermal. There is no single mention of "ACPI" in that directory.
-> > > > 
-> > > > <Thermal drivers also  resides outside this directory. ACPI also
-> > > > registers as thermal zone similar to other example you mentioned
-> > > > below. ACPI is the only means to configure per platform thermal trip
-> > > > points in thermal zones in PC platform.
-> > > > >
-> > > > >
-> > > > >>Currently all these systems, rely on BIOS fan and T state control.
-> > > > >>Once T states are used the performance gets hurt. Also we had cases
-> > > > >>of thermal breakdown.
-> > > > >>
-> > > > >>In addition there are several new methods to cool the system,
-> > > > >>developed by Intel and are in latest Linux kernel. They are
-> > > > >>specially designed to cool the system when needed.
-> > > > >>
-> > > > >So, again, why can't you use the thermal subsystem ?
-> > > > <Thermal zone needs to show temperature.  This will be duplicate
-> > > > what coretemp.X is showing. I want to prevent identical information
-> > > > be displayed at two different sysfs>
-> > > > Also the db8500 example you are giving, uses a pre-configured
-> > > > thresholds loaded during probe().
-> > > > There is no thermal ABI to set thresholds at run time. Basically
-> > > > when a temperature is above a trip temp, corresponding cooling
-> > > > devices will be activated.
-> > > > So I still I have to write a platform driver to set thresholds, and
-> > > > then registers with thermal zone. This will show as another
-> > > > packagetemp.x at sysfs like coretemp.x.
-> > > > 
-> > > > So please let me know how to set dynamic thresholds?
-> > > > >
-> > > > 
-> > > > >The db8500_thermal driver in drivers/thermal is quite similar to what
-> > > > >you try to accomplish. I would suggest to look into it and use a similar
-> > > > >approach. I really don't see how this fits into the hwmon subsystem.
-> > > > <Is this logic based on that hwmon shouldn't have write interface
-> > > > and used only for monitoring?  I think some hwmon driver already
-> > > > have write interface like gpiofan.>
-> > > 
-> > > That isn't the point. hwmon is static in nature, not dynamic. Its scope is
-> > > hardware monitoring, not thermal management. This is what the thermal subsystem
-> > > is for. Yes, presumably you would need a platform driver to set the thresholds.
-> > > Another question, though, would be if you want or need a user space component in
-> > > the first place or if you can implement all required functionality in a thermal
-> > > driver.
-> > > 
-> > Agreed.
-> > 
-> > I read the slides at
-> > https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf
-> > 
-> > According to your slides, you have four kinds of cooling devices,
-> > 1. RAPL cooling device driver
-> > 2. P states control
-> > 3. Intel power clamp driver
-> > 4. T states
-> > and four trip points (according to the picture in page 9).
-> > 
-> > I think you will use, say RAPL for trip point 0 (the bigger the number
-> > is, the higher temperature the trip point is), both RAPL and P state
-> > control for trip point1, ..., all of the cooling devices for trip point
-> > 3, etc, right?
-> > 
-> > IMO, all of these actions fit into the Linux/Thermal subsystem
-> > naturally.
-> > 
-> > so my question would be why do you prefer to do it by user space
-> > component?
-> > 
-> Even if a user space component is needed or desired, I would much prefer
-> if the thermal subsystem would be enhanced to support it
-
-It does today.
-a sensor driver can register a thermal zone without any cooling devices.
-and using "userspace" governor, so that the thermal subsystem will
-invoke a callback when the temperature crosses a trip point, instead of
-throttling/de-throttling cooling devices.
-
-But if you are talking about export events to userspace directly, you're
-right that it is not done in thermal subsystem today.
-there is an API thermal_generate_netlink_event() for platform thermal
-drivers to generate a thermal netlink to userspace, but it seems that no
-one is using this for now. 
-
-thanks,
-rui
->  instead of
-> creating a hwmon overlay and duplicate what the thermal subsystem
-> tries to accomplish.
-> 
-
-
-> I think we will at some point need a neat way of passing hwmon
-> information into the thermal subsystem (neat -> without requiring
-> from each hwmon driver to also register with the thermal subsystem),
-> but that is a different problem.
-> 
-> Thanks,
-> Guenter
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6
+IFR1ZXNkYXksIEFwcmlsIDE2LCAyMDEzIDEwOjI4IEFNDQo+IFRvOiBSLCBEdXJnYWRvc3MNCj4g
+Q2M6IFNyaW5pdmFzIFBhbmRydXZhZGE7IEd1ZW50ZXIgUm9lY2s7IFl1LCBGZW5naHVhOyBMdWNr
+LCBUb255OyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBsbS1zZW5zb3JzQGxtLXNlbnNv
+cnMub3JnOyBicEBhbGllbjguZGUNCj4gU3ViamVjdDogUkU6IFtsbS1zZW5zb3JzXSBbUEFUQ0gg
+MC80XSB0aGVybWFsIHRocmVzaG9sZCBhbmQgbm90aWZpY2F0aW9uIHYyLjANCj4gDQo+IE9uIE1v
+biwgMjAxMy0wNC0xNSBhdCAxMTo1MyAtMDYwMCwgUiwgRHVyZ2Fkb3NzIHdyb3RlOg0KPiA+ID4g
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxtLXNlbnNvcnMtYm91bmNl
+c0BsbS1zZW5zb3JzLm9yZyBbbWFpbHRvOmxtLXNlbnNvcnMtDQo+ID4gPiBib3VuY2VzQGxtLXNl
+bnNvcnMub3JnXSBPbiBCZWhhbGYgT2YgU3Jpbml2YXMgUGFuZHJ1dmFkYQ0KPiA+ID4gU2VudDog
+TW9uZGF5LCBBcHJpbCAxNSwgMjAxMyA4OjUxIFBNDQo+ID4gPiBUbzogR3VlbnRlciBSb2Vjaw0K
+PiA+ID4gQ2M6IFl1LCBGZW5naHVhOyBMdWNrLCBUb255OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
+cmc7IGxtLXNlbnNvcnNAbG0tDQo+ID4gPiBzZW5zb3JzLm9yZzsgYnBAYWxpZW44LmRlOyBaaGFu
+ZywgUnVpDQo+ID4gPiBTdWJqZWN0OiBSZTogW2xtLXNlbnNvcnNdIFtQQVRDSCAwLzRdIHRoZXJt
+YWwgdGhyZXNob2xkIGFuZCBub3RpZmljYXRpb24NCj4gdjIuMA0KPiA+ID4NCj4gPiA+IE9uIDA0
+LzEyLzIwMTMgMDY6MzIgUE0sIEd1ZW50ZXIgUm9lY2sgd3JvdGU6DQo+ID4gPiA+IE9uIFR1ZSwg
+QXByIDA5LCAyMDEzIGF0IDAyOjAxOjE4UE0gLTA3MDAsIFNyaW5pdmFzIFBhbmRydXZhZGEgd3Jv
+dGU6DQo+ID4gPiA+PiB2Mi4wDQo+ID4gPiA+PiBBcyBzdWdnZXN0ZWQgYnkgR3VlbnRlciBSb2Vj
+aywgdXNlZCB0aGUgcHJldmlvdXMgZGV2ZWxvcG1lbnQgaW4NCj4gdGhpcw0KPiA+ID4gYXJlYQ0K
+PiA+ID4gPj4gYXMgc3RhcnRpbmcgcG9pbnQuIFRoZSBmaXJzdCBwYXRjaCBpcyBzYW1lIGFzIHdo
+YXQgR3VlbnRlciBSb2Vjaw0KPiBzdWJtaXR0ZWQNCj4gPiA+ID4+IGJlZm9yZSBleGNlcHQgZm9y
+IGNoZWNrcGF0Y2ggZXJyb3IgZm9yIHN0cnRvdWwuQXMgcGVyIHRoaXMgcGF0Y2gsIHRoZQ0KPiA+
+ID4gZm9sbG93aW5nDQo+ID4gPiA+PiBhZGRpdGlvbmFsIGNvcmV0ZW1wIHN5c2ZzIGVudHJpZXMg
+d2lsbCBiZSBhZGRlZDoNCj4gPiA+ID4+IHRlbXBYX3RocmVzaG9sZDEgLSBSZWZsZWN0cyB2YWx1
+ZSBvZiBDUFUgdGhlcm1hbCB0aHJlc2hvbGQgVDAuDQo+ID4gPiA+PiB0ZW1wWF90aHJlc2hvbGQx
+X3RyaWdnZXJlZA0KPiA+ID4gPj4gCSAgICAgICAgIC0gUmVmbGVjdHMgc3RhdHVzIG9mIENQVSB0
+aGVybWFsIHN0YXR1cyByZWdpc3RlciBiaXQgNg0KPiA+ID4gPj4gCQkgICAoVEhFUk1fU1RBVFVT
+X1RIUkVTSE9MRDApLg0KPiA+ID4gPj4gdGVtcFhfdGhyZXNob2xkMiAtIFJlZmxlY3RzIHZhbHVl
+IG9mIENQVSB0aGVybWFsIHRocmVzaG9sZCBUMS4NCj4gPiA+ID4+IHRlbXBYX3RocmVzaG9sZDJf
+dHJpZ2dlcmVkDQo+ID4gPiA+PiAJICAgICAgICAgLSBSZWZsZWN0cyBzdGF0dXMgb2YgQ1BVIHRo
+ZXJtYWwgc3RhdHVzIHJlZ2lzdGVyIGJpdCA4DQo+ID4gPiA+PiAJCSAgIChUSEVSTV9TVEFUVVNf
+VEhSRVNIT0xEMSkuDQo+ID4gPiA+Pg0KPiA+ID4gPj4NCj4gPiA+ID4+IFRoZSBub3RpZmljYXRp
+b24gbWVjaGFuaXNtIGlzIGltcGxlbWVudGVkIGZvciBwYWNrYWdlIGxldmVsIGJ5IHVzaW5nDQo+
+ID4gPiB1ZXZlbnQuDQo+ID4gPiA+PiBBbHNvIGEgZGVidWdmcyBpbnRlcmZhY2UgaXMgYWRkZWQg
+dG8gY2hlY2sgY291bnQgb2YgaW50ZXJydXB0cyBhbmQNCj4gd29ya2VyDQo+ID4gPiBmbg0KPiA+
+ID4gPj4gc2NoZWR1bGluZy4NCj4gPiA+ID4+DQo+ID4gPiA+Pg0KPiA+ID4gPj4gdjEuMA0KPiA+
+ID4gPj4NCj4gPiA+ID4+IFRoaXMgaXMgY2xlYXIgdGhhdCB0aGVyZSBpcyByZWx1Y3RhbmNlIGlu
+IGFkZGluZyB0aHJlc2hvbGRzIGluIGNvcmV0ZW1wDQo+ID4gPiBzeXNmcywNCj4gPiA+ID4+IGR1
+cmluZyBwcmV2aW91cyBhdHRlbXB0cy4gUHJvYWJseSBiZWNhdXNlIG9mIGxha2Ugb2YgdXNlIGNh
+c2VzLg0KPiA+ID4gPj4gQnV0IHRoaXMgdGltZSB1c2UgY2FzZSBtYXkgYmUgbW9yZSBjb21wZWxs
+aW5nLg0KPiA+ID4gPj4NCj4gPiA+ID4+IFdlIGhhdmUgbWFueSBzbWFsbCBmb3JtIGZhY3RvciBk
+ZXZpY2VzIGxpa2UgdWx0cmFib29rcywgc2xhdGUgUENzIGluDQo+IHRoZQ0KPiA+ID4gbWFya2V0
+Lg0KPiA+ID4gPj4gVW5mb3J0dW5hdGVseSB0aGVzZSBkZXZpY2VzIHJlYWNoIG1heGltdW0gdGVt
+cGVyYXR1cmUgd2l0aA0KPiByZWxhdGl2ZWx5DQo+ID4gPiBsZXNzDQo+ID4gPiA+PiB3b3JrbG9h
+ZHMsIGNhdXNpbmcgQklPUyB0byBkbyB0aGVybWFsIHRocm90dGxpbmcuIFRoZXJlIGFyZSByZWFs
+DQo+ID4gPiBwZXJmb3JtYW5jZQ0KPiA+ID4gPj4gaXNzdWVzIGR1ZSB0byBhZ2dyZXNzaXZlIEJJ
+T1MgYWN0aW9uIHRvIGNvbnRyb2wgdGhlcm1hbHMgYW5kIGFsc28NCj4gdGhlcm1hbA0KPiA+ID4g
+YnJlYWtkb3duDQo+ID4gPiA+PiBpbiBzb21lIGNhc2VzLg0KPiA+ID4gPj4NCj4gPiA+ID4+IEV2
+ZW4gdGhlIG1vc3QgZXhwZW5zaXZlIGxhcHRvcHMsIGRvbid0IGhhdmUgY29ycmVjdCBBQ1BJIHRo
+ZXJtYWwNCj4gPiA+IGNvbmZpZ3VyYXRpb24sDQo+ID4gPiA+PiBzbyB0aGF0IGtlcm5lbCB0aGVy
+bWFsIGRyaXZlciBjYW4gYWN0LiBJbiBzb21lIGNhc2UgZXZlbiB0aGUgdHJpcCBwb2ludA0KPiBp
+cw0KPiA+ID4gaGlnaGVyDQo+ID4gPiA+PiB0aGFuIGNyaXRpY2FsIHRlbXBlcmF0dXJlIHNldHRp
+bmcuDQo+ID4gPiA+Pg0KPiA+ID4gPj4gSW50ZWwgaGFzIGRldmVsb3BlZCBzZXZlcmFsIGRyaXZl
+cnMsIHdoaWNoIGNhbiBiZSB1c2VkIHRvIGNvb2wgdGhlDQo+IHN5c3RlbQ0KPiA+ID4gdmVyeSBl
+ZmZpY2llbnRseS4NCj4gPiA+ID4+IFRoZXkgaW5jbHVkZSBSQVBMIGJhc2VkIGNvb2xpbmcgZHJp
+dmVyLCBQb3dlcmNsYW1wIGRyaXZlciBhbmQgUCBzdGF0ZQ0KPiA+ID4gZHJpdmVyLg0KPiA+ID4g
+Pj4gVG8gdXRpbGl6ZSB0aGVzZSBjb29saW5nIGRldmljZSBhIGNsb3NlZCBsb29wIHVzZXIgbW9k
+ZSBwcm9ncmFtIGlzDQo+ID4gPiByZXF1aXJlZCwgd2hpY2gNCj4gPiA+ID4+IHdpbGwgdXRpbGl6
+ZSB0aGVzZSBtZXRob2QgYW5kIGR5bmFtaWNhbGx5IGNvbXBlbnNhdGUgZm9yIGhpZ2ggQ1BVDQo+
+ID4gPiB0ZW1wZXJhdHVyZXMsDQo+ID4gPiA+PiB3aXRob3V0IHJlbHlpbmcgb24gYW55IGNvbmZp
+Z3VyYXRpb24gZGF0YS4NCj4gPiA+ID4+IE9uZSBzdWNoIHNvbHV0aW9uIGlzIGRldmVsb3BlZCBp
+cyAiTGludXggdGhlcm1hbCBkYWVtb24iLiBNb3JlDQo+IGRldGFpbHMNCj4gPiA+IGNhbiBiZQ0K
+PiA+ID4gPj4gb2J0YWluZWQgZnJvbQ0KPiA+ID4gPj4NCj4gPiA+DQo+ICJodHRwczovL2dpdGh1
+Yi5jb20vMDFvcmcvdGhlcm1hbF9kYWVtb24vYmxvYi9tYXN0ZXIvVGhlcm1hbERhZW1vbg0KPiA+
+ID4gX0ludHJvZHVjdGlvbi5wZGYiLg0KPiA+ID4gPj4gVGhpcyBkYWVtb24gcG9sbHMgZm9yIGNw
+dSB0ZW1wZXJhdHVyZSBhbmQgYXBwbHkgY29tcGVuc2F0aW9uIG9uY2UNCj4gdGhlDQo+ID4gPiBD
+UFUgcmVhY2ggdGFyZ2V0DQo+ID4gPiA+PiB0ZW1wZXJhdHVyZS4NCj4gPiA+ID4+DQo+ID4gPiA+
+PiBUaGlzIHBvbGxpbmcgY2FuIGJlIG1vc3RseSBhdm9pZGVkLCBieSBnZXR0aW5nIG5vdGlmaWNh
+dGlvbiBmb3IgdGhlDQo+ID4gPiB0ZW1wZXJhdHVyZSwgd2hlcmUNCj4gPiA+ID4+IGl0IG5lZWRz
+IHRvIHdha2UgdXAgYW5kIGdldCByZWFkeSBmb3IgYXBwbHkgY29tcGVuc2F0aW9uLiBJbiBtb3N0
+IG9mDQo+IHRoZQ0KPiA+ID4gbm9ybWFsIHVzZQ0KPiA+ID4gPj4gY2FzZXMsIHRoZXJlIG1heSBu
+b3QgYmUgYW55IHRocmVzaG9sZCBldmVudHMuIFNvIHZlcnkgbWluaW1hbA0KPiBudW1iZXIgb2YN
+Cj4gPiA+IHVzZXIgc3BhY2UNCj4gPiA+ID4+IG5vdGlmaWNhdGlvbiBmb3IgdGhlcm1hbCB0aHJl
+c2hvbGRzLg0KPiA+ID4gPj4NCj4gPiA+ID4+IE5vdGlmaWNhdGlvbiBhcmUgYWRkZWQgb25seSBm
+b3IgcGFja2FnZSBsZXZlbCB0aHJlc2hvbGRzLCB0byBtaW5pbWl6ZQ0KPiA+ID4gZXZlbnRzLiBB
+bHNvDQo+ID4gPiA+PiBpbnRlcnJ1cHRzIGFyZSBlbmFibGVkIG9ubHkgd2hlbiBhIG5vbiB0al9t
+YXgoZGVmYXVsdCkgdmFsdWUgaXMNCj4gd3JpdHRlbg0KPiA+ID4gdG8gdGhyZXNob2xkcy4NCj4g
+PiA+ID4+DQo+ID4gPiA+PiBPbmNlIHRocmVzaG9sZHMgYXJlIHZpb2xhdGVkLCBpdCB1c2VzIGEg
+cmF0ZSBjb250cm9sIG9mIDUgc2Vjb25kcywNCj4gcmVkdWNpbmcNCj4gPiA+IHRoZSBudW1iZXIN
+Cj4gPiA+ID4+IG9mIGludGVycnVwdHMsIHdoZW4gdGVtcGVyYXR1cmUgaXMgaGFuZ2luZyBhcm91
+bmQgdHJpcCBwb2ludC4gVXNpbmcNCj4gdGhlDQo+ID4gPiBzdGlja3kgbG9nIGJpdCwNCj4gPiA+
+ID4+IGl0IHNlbmRzIGtib2plY3QgdWV2ZW50IGNoYW5nZSBub3RpZmljYXRpb24gZm9yIGNvcnJl
+c3BvbmRpbmcgcGFja2FnZQ0KPiA+ID4gc3lzZnMuDQo+ID4gPiA+PiBPbmNlIHRoZSB0aGVybWFs
+IGRhZW1vbiByZWNlaXZlcyBub3RpZmljYXRpb24sIGl0IGNhbiBjaGFuZ2UgdG8gbmV3DQo+ID4g
+PiB0aHJlc2hvbGQgb3IgYWN0DQo+ID4gPiA+PiBpbW1lZGlhdGVseSB0byByZWR1Y2UgQ1BVIHRl
+bXBlcmF0dXJlLioNCj4gPiA+ID4+DQo+ID4gPiA+PiBHdWVudGVyIFJvZWNrICgxKToNCj4gPiA+
+ID4+ICAgIGh3bW9uOiAoY29yZXRlbXApIEFkZCBzdXBwb3J0IGZvciB0aGVybWFsIHRocmVzaG9s
+ZCBhdHRyaWJ1dGVzDQo+ID4gPiA+Pg0KPiA+ID4gPj4gU3Jpbml2YXMgUGFuZHJ1dmFkYSAoMyk6
+DQo+ID4gPiA+PiAgICB4ODYsIG1jaGVjaywgdGhlcm1fdGhyb3Q6IFByb2Nlc3MgcGFja2FnZSB0
+aHJlc2hvbGRzDQo+ID4gPiA+PiAgICBod21vbjogKGNvcmV0ZW1wKSA6IEFkZCBub3RpZmljYXRp
+b24gc3VwcG9ydA0KPiA+ID4gPj4gICAgaHdtb246IChjb3JldGVtcCkgOiBBZGQgZGVidWdmcyB0
+byBzdXBwb3J0IHRocmVzaG9sZHMNCj4gPiA+ID4+DQo+ID4gPiA+PiAgIERvY3VtZW50YXRpb24v
+aHdtb24vY29yZXRlbXAgICAgICAgICAgICAgfCAgIDggKw0KPiA+ID4gPj4gICBhcmNoL3g4Ni9p
+bmNsdWRlL2FzbS9tY2UuaCAgICAgICAgICAgICAgIHwgICA3ICsNCj4gPiA+ID4+ICAgYXJjaC94
+ODYva2VybmVsL2NwdS9tY2hlY2svdGhlcm1fdGhyb3QuYyB8ICA2MyArKysrKystDQo+ID4gPiA+
+PiAgIGRyaXZlcnMvaHdtb24vY29yZXRlbXAuYyAgICAgICAgICAgICAgICAgfCAyOTINCj4gPiA+
+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0NCj4gPiA+ID4+ICAgNCBmaWxlcyBjaGFu
+Z2VkLCAzNTYgaW5zZXJ0aW9ucygrKSwgMTQgZGVsZXRpb25zKC0pDQo+ID4gPiA+Pg0KPiA+ID4g
+PiBSdWksDQo+ID4gPiA+DQo+ID4gPiA+IGNhbiB5b3UgaGF2ZSBhIGxvb2sgYXQgdGhpcyBzZXJp
+ZXMgPw0KPiA+ID4gPg0KPiA+ID4gPiBJIHdvdWxkIGxpa2UgdG8gZ2V0IHNvbWUgZmVlZGJhY2sg
+ZnJvbSB0aGVybWFsIHN1YnN5c3RlbSBzdXBwb3J0ZXJzDQo+IGlmDQo+ID4gPiBod21vbg0KPiA+
+ID4gPiBpcyByZWFsbHkgdGhlIHJpZ2h0IHBsYWNlIGZvciB0aGlzLiBJIG1heSBiZSB3cm9uZywg
+YnV0IGl0IHNlZW1zIHRvIG1lIGl0DQo+IHdvdWxkDQo+ID4gPiA+IGJldHRlciBmaXQgaW50byB0
+aGVybWFsLg0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MsDQo+ID4gPiA+IEd1ZW50ZXINCj4gPiA+
+DQo+ID4gPiBJIGFtIGZpbmUgdXNpbmcgdGhlcm1hbCB6b25lcywgYnV0IHRoZSBjb3JldGVtcCB3
+aWxsIGJlIGR1cGxpY2F0ZWQgaW4NCj4gPiA+IGJvdGggY29yZXRlbXAgYW5kIHRoZXJtYWwgc3lz
+ZnMgYW5kIGxvdCBvZiBjb2RlIGR1cGxpY2F0aW9uLiBBbHNvIHRyaXANCj4gPiA+IHBvaW50IGlu
+IHRoaXMgY2FzZSBpcyBub3QgZm9yIGFjdGl2YXRpbmcgYW55IGNvb2xpbmcgZGV2aWNlLCBidXQg
+anVzdCB0bw0KPiA+ID4gbm90aWZ5IHVzZXIgc3BhY2UuIFNvIHRoaXMgd2lsbCBiZSBhIHpvbmUg
+d2l0aCBubyBhc3NvY2lhdGVkIGNkZXZzLg0KPiA+DQo+ID4gWWVzLCB0aGlzIHdhcyB0aGUgaWRl
+YSB3aGljaCB3ZSBkaXNjdXNzZWQgaW4gbG0tc2Vuc29ycyBhIGZldyBtb250aHMgYWdvLg0KPiA+
+IFtJIGNvdWxkIG5vdCBsb2NhdGUgdGhlIHRocmVhZCBpbiB0aGUgd2ViXS4gRXhjZXB0IHRoYXQg
+d2Ugd2lsbCByZWdpc3RlciBhcw0KPiA+ICd0aGVybWFsIHNlbnNvcicgYW5kIG5vdCBhcyAndGhl
+cm1hbCB6b25lcycgYmVjYXVzZSBvZiB0aGUgY2hhbmdlcw0KPiBoYXBwZW5pbmcNCj4gPiB0byB0
+aGUgdGhlcm1hbCBmcmFtZXdvcmsgcmVjZW50bHlbMV0uDQo+ID4NCj4gPiBUaGlzIHdheSwgd2Ug
+Y2FuIGV4cG9zZSB0cmlwIHBvaW50cyBhbmQgY29uZmlndXJlIHRoZW0sIHdpdGhvdXQgaGF2aW5n
+IGENCj4gPiBuZWVkIHRvIGFzc29jaWF0ZSBhbnkgY2RldnMuDQo+ID4NCj4gQWdyZWVkLg0KPiBC
+dXQgbm90ZSB0aGF0IHRoaXMgaXMgYWxzbyB0cnVlIGluIGN1cnJlbnQgY29kZSBhcyB3ZWxsLg0K
+DQpZZXMsIEkgYWdyZWUuDQoNClRoYW5rcywNCkR1cmdhDQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0K
+PiA+IFsxXSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMy8yLzUvMjI4DQo+IA0KPiA+IFRoYW5r
+cywNCj4gPiBEdXJnYQ0KPiA+ID4NCj4gPiA+ID4gLS0NCj4gPiA+ID4gVG8gdW5zdWJzY3JpYmUg
+ZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LXBtIiBpbg0K
+PiA+ID4gPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9y
+Zw0KPiA+ID4gPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3Jn
+L21ham9yZG9tby1pbmZvLmh0bWwNCj4gPiA+ID4NCj4gPiA+DQo+ID4gPg0KPiA+ID4gX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4gPiA+IGxtLXNlbnNv
+cnMgbWFpbGluZyBsaXN0DQo+ID4gPiBsbS1zZW5zb3JzQGxtLXNlbnNvcnMub3JnDQo+ID4gPiBo
+dHRwOi8vbGlzdHMubG0tc2Vuc29ycy5vcmcvbWFpbG1hbi9saXN0aW5mby9sbS1zZW5zb3JzDQo+
+IA0KDQo=
