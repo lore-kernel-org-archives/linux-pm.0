@@ -1,114 +1,73 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH] PCI / PM: Fix fallback to PCI_D0 in pci_platform_power_transition()
-Date: Tue, 16 Apr 2013 12:31:55 -0600
-Message-ID: <CAErSpo69sjvPRX5kXcb4kN14HxVBXMVWnG-nGDVaFZd2pUY3YQ@mail.gmail.com>
-References: <48795235.crcTAaJqPb@vostro.rjw.lan> <CAE9FiQVEWy2MVfVmv4oL9D24OcF83dQv+OcFd5K6v8ZHeGumJA@mail.gmail.com>
- <CAErSpo7vUWSoav+rJgGK15xA7f0W+a0_16tZLFGCz5HO-HVZ2g@mail.gmail.com> <2880576.TkeK8oBDas@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Tue, 16 Apr 2013 21:34:21 +0300
+Message-ID: <516D99AD.4070104@semaphore.gr>
+References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan> <515CBB98.4020607@semaphore.gr> <CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com> <515F2AF3.9050709@semaphore.gr> <51644855.1090300@semaphore.gr> <CAKohponhGA1LCe8Hv7xHk0ULXVVPTgmEY-nKTgpE0w6VmX--Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2880576.TkeK8oBDas@vostro.rjw.lan>
+In-Reply-To: <CAKohponhGA1LCe8Hv7xHk0ULXVVPTgmEY-nKTgpE0w6VmX--Ng@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Benenati, Chris J" <chris.j.benenati@intel.com>, Ajaykumar Hotchandani <ajaykumar.hotchandani@oracle.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 16, 2013 at 12:01 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, April 15, 2013 02:18:18 PM Bjorn Helgaas wrote:
->> On Fri, Apr 12, 2013 at 11:50 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->> > On Fri, Apr 12, 2013 at 4:58 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> Commit b51306c (PCI: Set device power state to PCI_D0 for device
->> >> without native PM support) modified pci_platform_power_transition()
->> >> by adding code causing dev->current_state for devices that don't
->> >> support native PCI PM but are power-manageable by the platform to be
->> >> changed to PCI_D0 regardless of the value returned by the preceding
->> >> platform_pci_set_power_state().  In particular, that also is done
->> >> if the platform_pci_set_power_state() has been successful, which
->> >> causes the correct power state of the device set by
->> >> pci_update_current_state() in that case to be overwritten by PCI_D0.
->> >>
->> >> Fix that mistake by making the fallback to PCI_D0 only happen if
->> >> the platform_pci_set_power_state() has returned an error.
->> >>
->> >> Reported-by: Chris J. Benenati <chris.j.benenati@intel.com>
->> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> Cc: <stable@vger.kernel.org>
+On 04/10/2013 06:22 AM, Viresh Kumar wrote:
+> On 9 April 2013 22:26, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+>> On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
+>>>
+>>> Hi Viresh,
+>>>
+>>> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
+>>>>
+>>>> Hi Stratos,
+>>>>
+>>>> Yes, your results show some improvements. BUT if performance is the only
+>>>> thing
+>>>> we were looking for, then we will never use ondemand governor but
+>>>> performance
+>>>> governor.
+>>>>
+>>>> I suspect this little increase in performance must have increased power
+>>>> numbers
+>>>> too (significantly). So, if you can get numbers in the form of
+>>>> power/performance
+>>>> with and without your patch, it will be great.
+>>>>
+>>>> --
+>>>> viresh
+>>>>
+>>>
+>>> I run some more tests. I increased the number of iterations to 100 (from
+>>> 20).
+>>> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us),
+>>> 15,000,000 (~30000us).
+>>>
+>>> This time, I also extracted statistics from cpufreq_stats driver. I think
+>>> this will be an
+>>> indication for power consumption. Below the results and attached the
+>>> program I used for to
+>>> get these numbers.
 >>
->> I folded in Yinghai's simplification and added a URL to Chris's report
->> and applied to my pci/rafael-pm branch:
->> http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/rafael-pm
 >>
->> If it still looks good to you, Rafael, I'll merge it to next for v3.10.
+>> Any comments would be appreciated.
 >
-> Well, the simplification adds an extra check for error into both code paths,
-> so I'm not sure if it's really worth it (that's why I didn't do it originally
-> in the first place), but I suppose that's not a big deal.  It looks good as far
-> as the correctness is concerned anyway.
+> Sorry, i forgot about this mail earlier..
 >
->> I don't know what the user-visible effect of this is, and it's been
->> around for a long time, but if you think this should go in v3.9
->> instead, let me know.
+> Your performance numbers look improved but i am still not sure about
+> power consumption. But as this is not going to be the default settings, i
+> think we can take this patch.
 >
-> I think v3.9+stable should be sufficient.
+> @Rafael:?
+>
 
-It sounds like you meant to say "v3.10+stable should be sufficient".
-Is that right, or do you want me to push this to Linus before v3.9 is
-released?
+Hi Rafael,
 
->> >> ---
->> >>  drivers/pci/pci.c |    3 +--
->> >>  1 file changed, 1 insertion(+), 2 deletions(-)
->> >>
->> >> Index: linux-pm/drivers/pci/pci.c
->> >> ===================================================================
->> >> --- linux-pm.orig/drivers/pci/pci.c
->> >> +++ linux-pm/drivers/pci/pci.c
->> >> @@ -646,8 +646,7 @@ static int pci_platform_power_transition
->> >>                 error = platform_pci_set_power_state(dev, state);
->> >>                 if (!error)
->> >>                         pci_update_current_state(dev, state);
->> >> -               /* Fall back to PCI_D0 if native PM is not supported */
->> >> -               if (!dev->pm_cap)
->> >> +               else if (!dev->pm_cap) /* Fall back to PCI_D0 */
->> >>                         dev->current_state = PCI_D0;
->> >>         } else {
->> >>                 error = -ENODEV;
->> >>
->> >
->> > Acked-by: Yinghai Lu <yinghai@kernel.org>
->> >
->> > also could simplify it further.
->> >
->> > ---
->> >  drivers/pci/pci.c |   12 ++++--------
->> >  1 file changed, 4 insertions(+), 8 deletions(-)
->> >
->> > Index: linux-2.6/drivers/pci/pci.c
->> > ===================================================================
->> > --- linux-2.6.orig/drivers/pci/pci.c
->> > +++ linux-2.6/drivers/pci/pci.c
->> > @@ -646,15 +646,11 @@ static int pci_platform_power_transition
->> >          error = platform_pci_set_power_state(dev, state);
->> >          if (!error)
->> >              pci_update_current_state(dev, state);
->> > -        /* Fall back to PCI_D0 if native PM is not supported */
->> > -        if (!dev->pm_cap)
->> > -            dev->current_state = PCI_D0;
->> > -    } else {
->> > +    } else
->> >          error = -ENODEV;
->> > -        /* Fall back to PCI_D0 if native PM is not supported */
->> > -        if (!dev->pm_cap)
->> > -            dev->current_state = PCI_D0;
->> > -    }
->> > +
->> > +    if (error && !dev->pm_cap) /* Fall back to PCI_D0 */
->> > +        dev->current_state = PCI_D0;
->> >
->> >      return error;
->> >  }
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+I'm sorry for bothering you again for this patch.
+Are these number adequate? Should I provide more benchmark results?
+
+Thanks for your time.
+
+Stratos
