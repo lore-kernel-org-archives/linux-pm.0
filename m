@@ -1,85 +1,35 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH] cpufreq: exynos5440: Protect opp search calls with rcu lock
-Date: Tue, 16 Apr 2013 12:21:41 +0530
-Message-ID: <CADGdYn6FJFWgx=8PGNwjmxVpsBU=QrvMKpPQMANuBwOHUPmt8w@mail.gmail.com>
-References: <1366007087-12090-1-git-send-email-amit.daniel@samsung.com>
-	<CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
+From: Alex Shi <alex.shi@intel.com>
+Subject: bltk-game regressions on snb laptop
+Date: Tue, 16 Apr 2013 15:14:31 +0800
+Message-ID: <516CFA57.3060709@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6qD5hO7x0fYwe+cZ5GHRA6tRG+vmhnf4GFjt9G0inQ0xA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([143.182.124.21]:47439 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754127Ab3DPHPG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Apr 2013 03:15:06 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Nishanth,
+LKP found a performance and performance/watt regression on commit
+aa77a52764a92216b61, acpi-cpufreq: Don't set policy->related_cpus from
+.init.
 
-Thanks for reviewing this patch.
+The commit removed the related_cpus setting, plus Our laptop has no
+coordinate type setting in BIOS. So the related_cpus is only include the
+cpu self, then the policy->cpus are impacted and only has self too.
 
-On Mon, Apr 15, 2013 at 7:40 PM, Nishanth Menon <nm@ti.com> wrote:
-> Daniel,
-> On Mon, Apr 15, 2013 at 1:24 AM, Amit Daniel Kachhap
-> <amit.daniel@samsung.com> wrote:
->> As per the OPP library documentation(Documentation/power/opp.txt) all
->> opp find/get calls should be protected by rcu locks.
->>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>
->> This patch is created against linux-next tree and is suggested by
->> Nishanth Menon. (https://lkml.org/lkml/2013/4/12/119)
->>
->>  drivers/cpufreq/exynos5440-cpufreq.c |    3 +++
->>  1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
->> index ead7ed4..0c74018 100644
->> --- a/drivers/cpufreq/exynos5440-cpufreq.c
->> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
->> @@ -120,11 +120,13 @@ static int init_div_table(void)
->>         int i = 0;
->>         struct opp *opp;
->>
->> +       rcu_read_lock();
->>         for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
->>
->>                 opp = opp_find_freq_exact(dvfs_info->dev,
->>                                         freq_tbl[i].frequency * 1000, true);
->>                 if (IS_ERR(opp)) {
->> +                       rcu_read_unlock();
->>                         dev_err(dvfs_info->dev,
->>                                 "failed to find valid OPP for %u KHZ\n",
->>                                 freq_tbl[i].frequency);
->> @@ -159,6 +161,7 @@ static int init_div_table(void)
->>                 __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
->>         }
->>
->> +       rcu_read_unlock();
->
-> Is it not possible to reduce the amount of code protected by RCU lock?
-> something like this:
-Yes it is possible but then this part of code is a loop of max 8
-iteration so rcu_read_lock will be called those many times.
-Also this code blocks are just register writes and not doing any time
-consuming operations.
+With ondemand governor, the bad commit cause bltk-game benchmark drop to
+18fps from 50fps, the performance/watt value also dropped a lot.
+bltk-game runs 9 thread on the 4core*HT laptop.
 
-Thanks,
-Amit Daniel
-> +               rcu_read_lock();
->                 opp = opp_find_freq_exact(dvfs_info->dev,
->                                         freq_tbl[i].frequency * 1000, true);
->                 if (IS_ERR(opp)) {
-> +                       rcu_read_unlock();
->                         dev_err(dvfs_info->dev,
->                                 "failed to find valid OPP for %u KHZ\n",
->                                 freq_tbl[i].frequency);
->                         return PTR_ERR(opp);
->                 }
-> +               volt_id = opp_get_voltage(opp);
-> +               rcu_unlock();
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+As Arjan and Len mentioned, the commit is correct in logical,
+policy->cpus should only include the cpu self.
+So I don't know where is the problem, maybe ondemand or some place
+others. Anyway, I just report the issue to you.
+
+-- 
+Thanks Alex
