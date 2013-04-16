@@ -1,54 +1,41 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [patch v7 0/21] sched: power aware scheduling
-Date: Tue, 16 Apr 2013 12:24:05 +0200
-Message-ID: <20130416102405.GD5332@pd.tnic>
-References: <5167C9FA.8050406@intel.com>
- <20130412162348.GE2368@pd.tnic>
- <516A0652.8040505@intel.com>
- <20130414155925.GC20547@pd.tnic>
- <516B9859.70004@intel.com>
- <516B9B57.3030902@intel.com>
- <20130415095203.GA26524@pd.tnic>
- <516C059E.20800@intel.com>
- <20130415231206.GE12144@pd.tnic>
- <516C99BB.30309@intel.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [V3 patch 05/19] ARM: ux500: cpuidle: replace for_each_online_cpu
+ by for_each_possible_cpu
+Date: Tue, 16 Apr 2013 14:34:39 +0200
+Message-ID: <CACRpkdasndAyCitHkB3z3vH06WOD7qtzzjD9cXmAkvUEO_x3OA@mail.gmail.com>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
+	<1365770165-27096-6-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:54635 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190Ab3DPKYI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Apr 2013 06:24:08 -0400
-Content-Disposition: inline
-In-Reply-To: <516C99BB.30309@intel.com>
+Received: from mail-ie0-f170.google.com ([209.85.223.170]:45611 "EHLO
+	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755277Ab3DPMel (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Apr 2013 08:34:41 -0400
+Received: by mail-ie0-f170.google.com with SMTP id c11so410844ieb.1
+        for <linux-pm@vger.kernel.org>; Tue, 16 Apr 2013 05:34:39 -0700 (PDT)
+In-Reply-To: <1365770165-27096-6-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Shi <alex.shi@intel.com>
-Cc: Len Brown <lenb@kernel.org>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, efault@gmx.de, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sascha Hauer <kernel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, "santosh.shilimkar@ti.com" <santosh.shilimkar@ti.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Andrew Victor <linux@maxim.org.za>, Rob Herring <rob.herring@calxeda.com>, "Nori, Sekhar" <nsekhar@ti.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, deepthi@linux.vnet.ibm.com, Paul Mundt <lethal@linux-sh.org>, Jiri Kosina <jkosina@suse.cz>, Kukjin Kim <kgene.kim@samsung.com>, ext Kevin Hilman <khilman@deeprootsystems.com>, ext Tony Lindgren <tony@atomide.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kern>
 
-On Tue, Apr 16, 2013 at 08:22:19AM +0800, Alex Shi wrote:
-> testing has a little variation, but the power data is quite accurate.
-> I may change to packing tasks per cpu capacity than current cpu
-> weight. that should has better power efficient value.
+On Fri, Apr 12, 2013 at 2:35 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
 
-Yeah, this probably needs careful measuring - and by "this" I mean how
-to place N tasks where N is less than number of cores in the system.
+> All the drivers are using, in their initialization function, the
+> for_each_possible_cpu macro.
+>
+> Using for_each_online_cpu means the driver must handle the initialization
+> of the cpuidle device when a cpu is up which is not the case here.
+>
+> Change the macro to for_each_possible_cpu as that fix the hotplug
+> initialization and make the initialization routine consistent with the
+> rest of the code in the different drivers.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I can imagine trying to migrate them all together on a single physical
-socket (maybe even overcommitting it) so that you can flush the caches
-of the cores on the other sockets and so that you can power down the
-other sockets and avoid coherent traffic from waking them up, to be one
-strategy. My supposition here is that maybe putting the whole unused
-sockets in a deep sleep state could save a lot of power.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-Or not, who knows. Only empirical measurements should show us what
-actually happens.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Yours,
+Linus Walleij
