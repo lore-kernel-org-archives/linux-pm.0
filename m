@@ -1,52 +1,60 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 07/30] thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
-Date: Wed, 17 Apr 2013 13:12:00 -0400
-Message-ID: <1366218743-20841-8-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 08/30] thermal: cpu_cooling: add documentation for get_property
+Date: Wed, 17 Apr 2013 13:12:01 -0400
+Message-ID: <1366218743-20841-9-git-send-email-eduardo.valentin@ti.com>
 References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:41439 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965273Ab3DQRPY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Apr 2013 13:15:24 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: amit.kachhap@linaro.org
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Update documentation for is_cpufreq_valid function so
-that kernel-doc does not complain about return value.
+As this is one of the central functions of this file,
+it deserves a proper documentation. This patch improves
+the existing comment to format it as a kernel-doc style.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/cpu_cooling.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/thermal/cpu_cooling.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 68d5a2d..bc1ec19 100644
+index bc1ec19..0fa14b7 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -102,8 +102,14 @@ static void release_idr(struct idr *idr, int id)
- /* Below code defines functions to be used for cpufreq as cooling device */
+@@ -124,8 +124,14 @@ enum cpufreq_cooling_property {
+ 	GET_MAXL,
+ };
  
- /**
-- * is_cpufreq_valid - function to check if a cpu has frequency transition policy.
-+ * is_cpufreq_valid - function to check frequency transitioning capability.
-  * @cpu: cpu for which check is needed.
+-/*
+- * this is the common function to
++/**
++ * get_property - fetch a property of interest for a give cpu.
++ * @cpu: cpu for which the property is required
++ * @input: query parameter
++ * @output: query return
++ * @property: type of query (frequency, level, max level)
 + *
-+ * This function will check the current state of the system if
-+ * it is capable of changing the frequency for a given @cpu.
++ * This is the common function to
+  * 1. get maximum cpu cooling states
+  * 2. translate frequency to cooling state
+  * 3. translate cooling state to frequency
+@@ -134,7 +140,9 @@ enum cpufreq_cooling_property {
+  * a) reduce duplicate code as most of the code can be shared.
+  * b) make sure the logic is consistent when translating between
+  *    cooling states and frequencies.
+-*/
 + *
-+ * Return: 0 if the system is not currently capable of changing
-+ * the frequency of given cpu. !0 in case the frequency is changeable.
-  */
- static int is_cpufreq_valid(int cpu)
++ * Return: 0 on success, -EINVAL when invalid parameters are passed.
++ */
+ static int get_property(unsigned int cpu, unsigned long input,
+ 	unsigned int* output, enum cpufreq_cooling_property property)
  {
 -- 
 1.8.2.1.342.gfa7285d
-
