@@ -1,57 +1,41 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: From: Eduardo Valentin <eduardo.valentin@ti.com>
-Date: Wed, 17 Apr 2013 13:15:12 -0400
-Message-ID: <516ED8A0.5050706@ti.com>
-References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 10/30] thermal: cpu_cooling: align on open parenthesis
+Date: Wed, 17 Apr 2013 13:12:03 -0400
+Message-ID: <1366218743-20841-11-git-send-email-eduardo.valentin@ti.com>
+References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
+In-Reply-To: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, eduardo.valentin@ti.com
+To: amit.kachhap@linaro.org
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Rui,
+Improve code readiness by remove checkpatch.pl warnings
+on get_property function.
 
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/cpu_cooling.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-On 08-04-2013 12:07, Eduardo Valentin wrote:
->
->
-> Here is a sequence of fixes and documentation improvements
-> thermal code base. This should be first of a series of changes
-> I am planing to send out.
->
-> On this very first there is no change in functionality, as
-> the patches only change symbol names and updates kernel-doc
-> comments and their formants.
-
-I am going to rebase this series on top of your latest -next branch and 
-resend with your comments.
-
-I believe name standardization could be still be applied though.
-
->
->
->
-> Eduardo Valentin (11):
->    thermal: use strlcpy instead of strcpy
->    thermal: update driver license
->    thermal: rename notify_thermal_framework to thermal_notify_framework
->    thermal: rename get_thermal_instance to thermal_instance_get
->    thermal: rename get_tz_trend to thermal_zone_trend_get
->    thermal: use EXPORT_SYMBOL_GPL
->    thermal: update kernel-doc for thermal_zone_bind_cooling_device
->    thermal: update kernel-doc for thermal_zone_unbind_cooling_device
->    thermal: update kernel-doc for thermal_cooling_device_register
->    thermal: update kernel-doc for create_trip_attrs
->    thermal: update kernel-doc for thermal_zone_device_register
->
->   Documentation/thermal/sysfs-api.txt |    6 +-
->   drivers/thermal/fair_share.c        |    2 +-
->   drivers/thermal/step_wise.c         |    2 +-
->   drivers/thermal/thermal_sys.c       |   90 ++++++++++++++++++++++++-----------
->   include/linux/thermal.h             |    6 +-
->   5 files changed, 70 insertions(+), 36 deletions(-)
->
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 224048c..3d985ff 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -144,7 +144,8 @@ enum cpufreq_cooling_property {
+  * Return: 0 on success, -EINVAL when invalid parameters are passed.
+  */
+ static int get_property(unsigned int cpu, unsigned long input,
+-	unsigned int* output, enum cpufreq_cooling_property property)
++			unsigned int *output,
++			enum cpufreq_cooling_property property)
+ {
+ 	int i, j;
+ 	unsigned long max_level = 0, level = 0;
+-- 
+1.8.2.1.342.gfa7285d
