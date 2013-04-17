@@ -1,53 +1,133 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [patch] Thermal: cpufreq cooling: endian bug in
- cpufreq_get_max_state()
-Date: Wed, 17 Apr 2013 23:45:53 +0800
-Message-ID: <1366213553.2091.70.camel@rzhang1-mobl4>
-References: <20130417071828.GD7923@elgon.mountain>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
+Date: Wed, 17 Apr 2013 18:14:55 +0200
+Message-ID: <3689306.YZQlEiUYft@vostro.rjw.lan>
+References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com> <CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com> <CA+icZUVsNG66_v8QA17LQ27z1tjRjDqzB148OSV9WQP0_NkRKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:11654 "EHLO mga02.intel.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:35589 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965236Ab3DQPqE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Apr 2013 11:46:04 -0400
-In-Reply-To: <20130417071828.GD7923@elgon.mountain>
+	id S965231Ab3DQQHE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Apr 2013 12:07:04 -0400
+In-Reply-To: <CA+icZUVsNG66_v8QA17LQ27z1tjRjDqzB148OSV9WQP0_NkRKA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: sedat.dilek@gmail.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dirk Brandewie <dirk.brandewie@gmail.com>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
 
-On Wed, 2013-04-17 at 10:18 +0300, Dan Carpenter wrote:
-> This code doesn't work on big endian systems because we're storing low
-> values in the high bits of the unsigned long.  It makes it a very high
-> value instead.
+On Wednesday, April 17, 2013 04:04:46 PM Sedat Dilek wrote:
+> On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
+> >> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
+> >> called intel_pstate does not implement the target() callback.
+> >>
+> >> Nathan's commit 5800043b2 changed the fence around the call to
+> >> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
+> >
+> > No it isn't.
+> >
+> >> +       if (has_target)
+> >>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+> >
+> > As it has taken care of this limitation.
+> >
+> > BUT some of my earlier patches haven't. :(
+> > Here is the fix (Sedat please try this and give your tested-by, use the attached
+> > patch as gmail might break what i am copying in mail)..
+> >
+> > Sorry for being late in fixing this issue, i am still down with Tonsil infection
+> > and fever.. Today only i got some power to fix it after seeing Dirk's mail.
+> >
+> > Your tested-by may help me to recover quickly :)
+> >
+> > @Rafael: I will probably be down for one more week and so not doing any
+> > reviews for now... I do check important mails sent directly to me though.
+> >
 > 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-
-applied to thermal -next.
-
-thanks,
-rui
+> Hi Viresh,
 > 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 5f5c780..768b508 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -303,12 +303,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
->  	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
->  	struct cpumask *mask = &cpufreq_device->allowed_cpus;
->  	unsigned int cpu;
-> -	unsigned long count = 0;
-> +	unsigned int count = 0;
->  	int ret;
->  
->  	cpu = cpumask_any(mask);
->  
-> -	ret = get_property(cpu, 0, (unsigned int *)&count, GET_MAXL);
-> +	ret = get_property(cpu, 0, &count, GET_MAXL);
->  
->  	if (count > 0)
->  		*state = count;
+> can you sent a separate patch on this (with Reported/Tested-by#s)?
+> AFAICS this is not in pm.git#linux-next?
+
+That's because I'm traveling and not pushing things to the tree.  I'll start
+doing that again on Saturday.  Till then, please apply the Viresh's patch
+on top of linux-next.
+
+Thanks,
+Rafael
 
 
+> > ------------x----------------------x------------------
+> >
+> > From: Viresh Kumar <viresh.kumar@linaro.org>
+> > Date: Mon, 15 Apr 2013 22:43:57 +0530
+> > Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
+> >  target()
+> >
+> > Some cpufreq drivers implement their own governor and so don't need us to call
+> > generic governors interface via __cpufreq_governor(). Few recent commits haven't
+> > obeyed this law well and we saw some regressions.
+> >
+> > This patch tries to fix this issue.
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
+> >  1 file changed, 13 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 3564947..a6f6595 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
+> > cpu, unsigned int sibling,
+> >                                   struct device *dev)
+> >  {
+> >         struct cpufreq_policy *policy;
+> > -       int ret = 0;
+> > +       int ret = 0, has_target = 0;
+> >         unsigned long flags;
+> >
+> >         policy = cpufreq_cpu_get(sibling);
+> >         WARN_ON(!policy);
+> >
+> > -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> > +       rcu_read_lock();
+> > +       has_target = !!rcu_dereference(cpufreq_driver)->target;
+> > +       rcu_read_unlock();
+> > +
+> > +       if (has_target)
+> > +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+> >
+> >         lock_policy_rwsem_write(sibling);
+> >
+> > @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
+> > cpu, unsigned int sibling,
+> >
+> >         unlock_policy_rwsem_write(sibling);
+> >
+> > -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> > -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> > +       if (has_target) {
+> > +               __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> > +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+> > +       }
+> >
+> >         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> >         if (ret) {
+> > @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
+> > *dev, struct subsys_interface *sif
+> >
+> >         /* If cpu is last user of policy, free policy */
+> >         if (cpus == 1) {
+> > -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> > +               if (has_target)
+> > +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+> >
+> >                 lock_policy_rwsem_read(cpu);
+> >                 kobj = &data->kobj;
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
