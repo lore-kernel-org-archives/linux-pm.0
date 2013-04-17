@@ -1,108 +1,124 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 18/30] thermal: cpu_cooling: alignment improvements
-Date: Wed, 17 Apr 2013 13:12:11 -0400
-Message-ID: <1366218743-20841-19-git-send-email-eduardo.valentin@ti.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 2/3] thermal: expose thermal_zone_get_temp API
+Date: Wed, 17 Apr 2013 15:10:38 -0400
+Message-ID: <516EF3AE.1090200@ti.com>
+References: <1365165150-11720-1-git-send-email-eduardo.valentin@ti.com>  <1365165150-11720-3-git-send-email-eduardo.valentin@ti.com> <1365990234.2803.3.camel@rzhang1-mobl4> <516BFEFB.1080405@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:41890 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965917Ab3DQRYL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Apr 2013 13:24:11 -0400
-In-Reply-To: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:47880 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966538Ab3DQTKw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2013 15:10:52 -0400
+In-Reply-To: <516BFEFB.1080405@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: amit.kachhap@linaro.org
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
 
-Improve code readiness by changing alignments so that
-they match open parenthesis, like checkpatch.pl --strict
-suggests.
+On 15-04-2013 09:22, Eduardo Valentin wrote:
+> On 14-04-2013 21:43, Zhang Rui wrote:
+>> On Fri, 2013-04-05 at 08:32 -0400, Eduardo Valentin wrote:
+>>> This patch exports the thermal_zone_get_temp API so that driver
+>>> writers can fetch temperature of thermal zones managed by other
+>>> drivers.
+>>>
+>>> Acked-by: Durgadoss R <durgadoss.r@intel.com>
+>>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>>
+>> refreshed the patch to modify drivers/thermal/thermal_core.c instead of
+>> drivers/thermal/thermal_sys.c and applied to thermal -next.
+>
+> Thanks!
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- drivers/thermal/cpu_cooling.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index b5de9d4..35b5835 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -273,7 +273,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
-  * cooling state).
-  */
- static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
--				unsigned long cooling_state)
-+				 unsigned long cooling_state)
- {
- 	unsigned int cpuid, clip_freq;
- 	struct cpumask *mask = &cpufreq_device->allowed_cpus;
-@@ -315,7 +315,7 @@ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
-  * Return: 0 (success)
-  */
- static int cpufreq_thermal_notifier(struct notifier_block *nb,
--					unsigned long event, void *data)
-+				    unsigned long event, void *data)
- {
- 	struct cpufreq_policy *policy = data;
- 	unsigned long max_freq = 0;
-@@ -406,8 +406,8 @@ static struct notifier_block thermal_cpufreq_notifier_block = {
-  * cpufreq_cooling_register - function to create cpufreq cooling device.
-  * @clip_cpus: cpumask of cpus where the frequency constraints will happen.
-  */
--struct thermal_cooling_device *cpufreq_cooling_register(
--	const struct cpumask *clip_cpus)
-+struct thermal_cooling_device *
-+cpufreq_cooling_register(const struct cpumask *clip_cpus)
- {
- 	struct thermal_cooling_device *cool_dev;
- 	struct cpufreq_cooling_device *cpufreq_dev = NULL;
-@@ -426,12 +426,12 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 			max = policy.cpuinfo.max_freq;
- 		} else {
- 			if (min != policy.cpuinfo.min_freq ||
--				max != policy.cpuinfo.max_freq)
-+			    max != policy.cpuinfo.max_freq)
- 				return ERR_PTR(-EINVAL);
- 		}
- 	}
- 	cpufreq_dev = kzalloc(sizeof(struct cpufreq_cooling_device),
--			GFP_KERNEL);
-+			      GFP_KERNEL);
- 	if (!cpufreq_dev)
- 		return ERR_PTR(-ENOMEM);
- 
-@@ -446,7 +446,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	sprintf(dev_name, "thermal-cpufreq-%d", cpufreq_dev->id);
- 
- 	cool_dev = thermal_cooling_device_register(dev_name, cpufreq_dev,
--						&cpufreq_cooling_ops);
-+						   &cpufreq_cooling_ops);
- 	if (!cool_dev) {
- 		release_idr(&cpufreq_idr, cpufreq_dev->id);
- 		kfree(cpufreq_dev);
-@@ -459,7 +459,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
- 	/* Register the notifier for first cpufreq cooling device */
- 	if (cpufreq_dev_count == 0)
- 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
--						CPUFREQ_POLICY_NOTIFIER);
-+					  CPUFREQ_POLICY_NOTIFIER);
- 	cpufreq_dev_count++;
- 
- 	mutex_unlock(&cooling_cpufreq_lock);
-@@ -482,7 +482,7 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 	/* Unregister the notifier for the last cpufreq cooling device */
- 	if (cpufreq_dev_count == 0) {
- 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
--					CPUFREQ_POLICY_NOTIFIER);
-+					    CPUFREQ_POLICY_NOTIFIER);
- 	}
- 	mutex_unlock(&cooling_cpufreq_lock);
- 
--- 
-1.8.2.1.342.gfa7285d
+Just a gentle reminder, this one does not seam to be applied to 
+thermal/next.
+>
+>>
+>> thanks,
+>> rui
+>>
+>>> ---
+>>>   drivers/thermal/thermal_sys.c |   20 +++++++++++++++++---
+>>>   include/linux/thermal.h       |    1 +
+>>>   2 files changed, 18 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/thermal_sys.c
+>>> b/drivers/thermal/thermal_sys.c
+>>> index e9b636b..83bfa0d 100644
+>>> --- a/drivers/thermal/thermal_sys.c
+>>> +++ b/drivers/thermal/thermal_sys.c
+>>> @@ -371,16 +371,28 @@ static void handle_thermal_trip(struct
+>>> thermal_zone_device *tz, int trip)
+>>>       monitor_thermal_zone(tz);
+>>>   }
+>>>
+>>> -static int thermal_zone_get_temp(struct thermal_zone_device *tz,
+>>> -                unsigned long *temp)
+>>> +/**
+>>> + * thermal_zone_get_temp() - returns its the temperature of thermal
+>>> zone
+>>> + * @tz: a valid pointer to a struct thermal_zone_device
+>>> + * @temp: a valid pointer to where to store the resulting temperature.
+>>> + *
+>>> + * When a valid thermal zone reference is passed, it will fetch its
+>>> + * temperature and fill @temp.
+>>> + *
+>>> + * Return: On success returns 0, an error code otherwise
+>>> + */
+>>> +int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned
+>>> long *temp)
+>>>   {
+>>> -    int ret = 0;
+>>> +    int ret = -EINVAL;
+>>>   #ifdef CONFIG_THERMAL_EMULATION
+>>>       int count;
+>>>       unsigned long crit_temp = -1UL;
+>>>       enum thermal_trip_type type;
+>>>   #endif
+>>>
+>>> +    if (IS_ERR_OR_NULL(tz))
+>>> +        goto exit;
+>>> +
+>>>       mutex_lock(&tz->lock);
+>>>
+>>>       ret = tz->ops->get_temp(tz, temp);
+>>> @@ -404,8 +416,10 @@ static int thermal_zone_get_temp(struct
+>>> thermal_zone_device *tz,
+>>>   skip_emul:
+>>>   #endif
+>>>       mutex_unlock(&tz->lock);
+>>> +exit:
+>>>       return ret;
+>>>   }
+>>> +EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+>>>
+>>>   static void update_temperature(struct thermal_zone_device *tz)
+>>>   {
+>>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>>> index 0cf9eb5..8eea86c 100644
+>>> --- a/include/linux/thermal.h
+>>> +++ b/include/linux/thermal.h
+>>> @@ -238,6 +238,7 @@ struct thermal_cooling_device
+>>> *thermal_cooling_device_register(char *, void *,
+>>>           const struct thermal_cooling_device_ops *);
+>>>   void thermal_cooling_device_unregister(struct
+>>> thermal_cooling_device *);
+>>>   struct thermal_zone_device *thermal_zone_get_zone_by_name(const
+>>> char *name);
+>>> +int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned
+>>> long *temp);
+>>>
+>>>   int thermal_zone_trend_get(struct thermal_zone_device *, int);
+>>>   struct thermal_instance *thermal_instance_get(struct
+>>> thermal_zone_device *,
+>>
+>>
+>>
+>>
+>
+>
+>
 
