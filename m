@@ -1,124 +1,118 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PCI / PM: Fix fallback to PCI_D0 in pci_platform_power_transition()
-Date: Wed, 17 Apr 2013 18:19:12 +0200
-Message-ID: <5921138.PXoHfspviV@vostro.rjw.lan>
-References: <48795235.crcTAaJqPb@vostro.rjw.lan> <2880576.TkeK8oBDas@vostro.rjw.lan> <CAErSpo69sjvPRX5kXcb4kN14HxVBXMVWnG-nGDVaFZd2pUY3YQ@mail.gmail.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH] Thermal: thermal API cleanup
+Date: Wed, 17 Apr 2013 16:17:28 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C704B2@BGSMSX101.gar.corp.intel.com>
+References: <1366211920.2091.55.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <CAErSpo69sjvPRX5kXcb4kN14HxVBXMVWnG-nGDVaFZd2pUY3YQ@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, "Benenati, Chris J" <chris.j.benenati@intel.com>, Ajaykumar Hotchandani <ajaykumar.hotchandani@oracle.com>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:34563 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753765Ab3DQQRc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Apr 2013 12:17:32 -0400
+In-Reply-To: <1366211920.2091.55.camel@rzhang1-mobl4>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: eduardo <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Tuesday, April 16, 2013 12:31:55 PM Bjorn Helgaas wrote:
-> On Tue, Apr 16, 2013 at 12:01 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Monday, April 15, 2013 02:18:18 PM Bjorn Helgaas wrote:
-> >> On Fri, Apr 12, 2013 at 11:50 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >> > On Fri, Apr 12, 2013 at 4:58 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >>
-> >> >> Commit b51306c (PCI: Set device power state to PCI_D0 for device
-> >> >> without native PM support) modified pci_platform_power_transition()
-> >> >> by adding code causing dev->current_state for devices that don't
-> >> >> support native PCI PM but are power-manageable by the platform to be
-> >> >> changed to PCI_D0 regardless of the value returned by the preceding
-> >> >> platform_pci_set_power_state().  In particular, that also is done
-> >> >> if the platform_pci_set_power_state() has been successful, which
-> >> >> causes the correct power state of the device set by
-> >> >> pci_update_current_state() in that case to be overwritten by PCI_D0.
-> >> >>
-> >> >> Fix that mistake by making the fallback to PCI_D0 only happen if
-> >> >> the platform_pci_set_power_state() has returned an error.
-> >> >>
-> >> >> Reported-by: Chris J. Benenati <chris.j.benenati@intel.com>
-> >> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >> Cc: <stable@vger.kernel.org>
-> >>
-> >> I folded in Yinghai's simplification and added a URL to Chris's report
-> >> and applied to my pci/rafael-pm branch:
-> >> http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/rafael-pm
-> >>
-> >> If it still looks good to you, Rafael, I'll merge it to next for v3.10.
-> >
-> > Well, the simplification adds an extra check for error into both code paths,
-> > so I'm not sure if it's really worth it (that's why I didn't do it originally
-> > in the first place), but I suppose that's not a big deal.  It looks good as far
-> > as the correctness is concerned anyway.
-> >
-> >> I don't know what the user-visible effect of this is, and it's been
-> >> around for a long time, but if you think this should go in v3.9
-> >> instead, let me know.
-> >
-> > I think v3.9+stable should be sufficient.
-> 
-> It sounds like you meant to say "v3.10+stable should be sufficient".
-> Is that right, or do you want me to push this to Linus before v3.9 is
-> released?
-
-Yes, I meant v3.10+stable.  Sorry.
-
-Thanks,
-Rafael
-
-
-> >> >> ---
-> >> >>  drivers/pci/pci.c |    3 +--
-> >> >>  1 file changed, 1 insertion(+), 2 deletions(-)
-> >> >>
-> >> >> Index: linux-pm/drivers/pci/pci.c
-> >> >> ===================================================================
-> >> >> --- linux-pm.orig/drivers/pci/pci.c
-> >> >> +++ linux-pm/drivers/pci/pci.c
-> >> >> @@ -646,8 +646,7 @@ static int pci_platform_power_transition
-> >> >>                 error = platform_pci_set_power_state(dev, state);
-> >> >>                 if (!error)
-> >> >>                         pci_update_current_state(dev, state);
-> >> >> -               /* Fall back to PCI_D0 if native PM is not supported */
-> >> >> -               if (!dev->pm_cap)
-> >> >> +               else if (!dev->pm_cap) /* Fall back to PCI_D0 */
-> >> >>                         dev->current_state = PCI_D0;
-> >> >>         } else {
-> >> >>                 error = -ENODEV;
-> >> >>
-> >> >
-> >> > Acked-by: Yinghai Lu <yinghai@kernel.org>
-> >> >
-> >> > also could simplify it further.
-> >> >
-> >> > ---
-> >> >  drivers/pci/pci.c |   12 ++++--------
-> >> >  1 file changed, 4 insertions(+), 8 deletions(-)
-> >> >
-> >> > Index: linux-2.6/drivers/pci/pci.c
-> >> > ===================================================================
-> >> > --- linux-2.6.orig/drivers/pci/pci.c
-> >> > +++ linux-2.6/drivers/pci/pci.c
-> >> > @@ -646,15 +646,11 @@ static int pci_platform_power_transition
-> >> >          error = platform_pci_set_power_state(dev, state);
-> >> >          if (!error)
-> >> >              pci_update_current_state(dev, state);
-> >> > -        /* Fall back to PCI_D0 if native PM is not supported */
-> >> > -        if (!dev->pm_cap)
-> >> > -            dev->current_state = PCI_D0;
-> >> > -    } else {
-> >> > +    } else
-> >> >          error = -ENODEV;
-> >> > -        /* Fall back to PCI_D0 if native PM is not supported */
-> >> > -        if (!dev->pm_cap)
-> >> > -            dev->current_state = PCI_D0;
-> >> > -    }
-> >> > +
-> >> > +    if (error && !dev->pm_cap) /* Fall back to PCI_D0 */
-> >> > +        dev->current_state = PCI_D0;
-> >> >
-> >> >      return error;
-> >> >  }
-> > --
-> > I speak only for myself.
-> > Rafael J. Wysocki, Intel Open Source Technology Center.
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
+Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
+biBCZWhhbGYgT2YgWmhhbmcgUnVpDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMTcsIDIwMTMg
+ODo0OSBQTQ0KPiBUbzogTGludXggUE0gbGlzdA0KPiBDYzogZWR1YXJkbzsgWmhhbmcsIFJ1aQ0K
+PiBTdWJqZWN0OiBbUEFUQ0hdIFRoZXJtYWw6IHRoZXJtYWwgQVBJIGNsZWFudXANCj4gDQo+IEZy
+b20gZDZkYjZiYTk4MzFkMDczMzhlMTFkNDgyMWZlYmVjNGVmM2NkZjhmNiBNb24gU2VwIDE3IDAw
+OjAwOjAwDQo+IDIwMDENCj4gRnJvbTogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0K
+PiBEYXRlOiBXZWQsIDE3IEFwciAyMDEzIDIzOjEyOjQwICswODAwDQo+IFN1YmplY3Q6IFtQQVRD
+SF0gVGhlcm1hbDogdGhlcm1hbCBBUEkgY2xlYW51cA0KPiANCj4gV2UgYnVpbGQgYWxsIHRoZSB0
+aGVybWFsIGdvdmVybm9ycyBpbnRvIHRoZXJtYWwgbW9kdWxlLA0KPiB0aHVzIGEgY291cGxlIG9m
+IEFQSXMgc2hvdWxkIGJlIGNsZWFuZWQgdXAgYXMgdGhleSBhcmUgdXNlZA0KPiBieSB0aGVybWFs
+IGdvdmVybm9ycyBvbmx5Lg0KPiANCj4gQ2xlYW51cCBmb3IgZ2V0X3R6X3RyZW5kKCksIGdldF90
+aGVybWFsX2luc3RhbmNlKCksDQo+IGFuZCB0aGVybWFsX2NkZXZfdXBkYXRlKCksIGluIHRoaXMg
+cGF0Y2guDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5j
+b20+DQoNCkxvb2tzIGdvb2QgdG8gbWUsDQpBY2tlZC1ieTogRHVyZ2Fkb3NzIFIgPGR1cmdhZG9z
+cy5yQGludGVsLmNvbT4NCg0KVGhhbmtzLA0KRHVyZ2ENCg0KPiAtLS0NCj4gIERvY3VtZW50YXRp
+b24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IHwgICAxOSArLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICBk
+cml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMgICAgICB8ICAgIDMgLS0tDQo+ICBkcml2ZXJz
+L3RoZXJtYWwvdGhlcm1hbF9jb3JlLmggICAgICB8ICAgIDUgKysrKysNCj4gIGluY2x1ZGUvbGlu
+dXgvdGhlcm1hbC5oICAgICAgICAgICAgIHwgICAgNCAtLS0tDQo+ICA0IGZpbGVzIGNoYW5nZWQs
+IDYgaW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvRG9j
+dW1lbnRhdGlvbi90aGVybWFsL3N5c2ZzLWFwaS50eHQNCj4gYi9Eb2N1bWVudGF0aW9uL3RoZXJt
+YWwvc3lzZnMtYXBpLnR4dA0KPiBpbmRleCBiMmZmZTk4Li40ZGNjNGM3IDEwMDY0NA0KPiAtLS0g
+YS9Eb2N1bWVudGF0aW9uL3RoZXJtYWwvc3lzZnMtYXBpLnR4dA0KPiArKysgYi9Eb2N1bWVudGF0
+aW9uL3RoZXJtYWwvc3lzZnMtYXBpLnR4dA0KPiBAQCAtMzU1LDI3ICszNTUsMTAgQEAgY3Jvc3Nl
+cyBhbnkgb2YgdGhlIGNvbmZpZ3VyZWQgdGhyZXNob2xkcy4NCj4gDQo+ICA1LiBFeHBvcnQgU3lt
+Ym9sIEFQSXM6DQo+IA0KPiAtNS4xOiBnZXRfdHpfdHJlbmQ6DQo+IC1UaGlzIGZ1bmN0aW9uIHJl
+dHVybnMgdGhlIHRyZW5kIG9mIGEgdGhlcm1hbCB6b25lLCBpLmUgdGhlIHJhdGUgb2YgY2hhbmdl
+DQo+IC1vZiB0ZW1wZXJhdHVyZSBvZiB0aGUgdGhlcm1hbCB6b25lLiBJZGVhbGx5LCB0aGUgdGhl
+cm1hbCBzZW5zb3IgZHJpdmVycw0KPiAtYXJlIHN1cHBvc2VkIHRvIGltcGxlbWVudCB0aGUgY2Fs
+bGJhY2suIElmIHRoZXkgZG9uJ3QsIHRoZSB0aGVybWFsDQo+IC1mcmFtZXdvcmsgY2FsY3VsYXRl
+ZCB0aGUgdHJlbmQgYnkgY29tcGFyaW5nIHRoZSBwcmV2aW91cyBhbmQgdGhlIGN1cnJlbnQNCj4g
+LXRlbXBlcmF0dXJlIHZhbHVlcy4NCj4gLQ0KPiAtNS4yOmdldF90aGVybWFsX2luc3RhbmNlOg0K
+PiAtVGhpcyBmdW5jdGlvbiByZXR1cm5zIHRoZSB0aGVybWFsX2luc3RhbmNlIGNvcnJlc3BvbmRp
+bmcgdG8gYSBnaXZlbg0KPiAte3RoZXJtYWxfem9uZSwgY29vbGluZ19kZXZpY2UsIHRyaXBfcG9p
+bnR9IGNvbWJpbmF0aW9uLiBSZXR1cm5zIE5VTEwNCj4gLWlmIHN1Y2ggYW4gaW5zdGFuY2UgZG9l
+cyBub3QgZXhpc3QuDQo+IC0NCj4gLTUuMzpub3RpZnlfdGhlcm1hbF9mcmFtZXdvcms6DQo+ICs1
+LjE6bm90aWZ5X3RoZXJtYWxfZnJhbWV3b3JrOg0KPiAgVGhpcyBmdW5jdGlvbiBoYW5kbGVzIHRo
+ZSB0cmlwIGV2ZW50cyBmcm9tIHNlbnNvciBkcml2ZXJzLiBJdCBzdGFydHMNCj4gIHRocm90dGxp
+bmcgdGhlIGNvb2xpbmcgZGV2aWNlcyBhY2NvcmRpbmcgdG8gdGhlIHBvbGljeSBjb25maWd1cmVk
+Lg0KPiAgRm9yIENSSVRJQ0FMIGFuZCBIT1QgdHJpcCBwb2ludHMsIHRoaXMgbm90aWZpZXMgdGhl
+IHJlc3BlY3RpdmUgZHJpdmVycywNCj4gIGFuZCBkb2VzIGFjdHVhbCB0aHJvdHRsaW5nIGZvciBv
+dGhlciB0cmlwIHBvaW50cyBpLmUgQUNUSVZFIGFuZCBQQVNTSVZFLg0KPiAgVGhlIHRocm90dGxp
+bmcgcG9saWN5IGlzIGJhc2VkIG9uIHRoZSBjb25maWd1cmVkIHBsYXRmb3JtIGRhdGE7IGlmIG5v
+DQo+ICBwbGF0Zm9ybSBkYXRhIGlzIHByb3ZpZGVkLCB0aGlzIHVzZXMgdGhlIHN0ZXBfd2lzZSB0
+aHJvdHRsaW5nIHBvbGljeS4NCj4gLQ0KPiAtNS40OnRoZXJtYWxfY2Rldl91cGRhdGU6DQo+IC1U
+aGlzIGZ1bmN0aW9uIHNlcnZlcyBhcyBhbiBhcmJpdHJhdG9yIHRvIHNldCB0aGUgc3RhdGUgb2Yg
+YSBjb29saW5nDQo+IC1kZXZpY2UuIEl0IHNldHMgdGhlIGNvb2xpbmcgZGV2aWNlIHRvIHRoZSBk
+ZWVwZXN0IGNvb2xpbmcgc3RhdGUgaWYNCj4gLXBvc3NpYmxlLg0KPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+IGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxf
+Y29yZS5jDQo+IGluZGV4IDRjZGMzZTMuLmFjMzgwZmMgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMv
+dGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9j
+b3JlLmMNCj4gQEAgLTE2Niw3ICsxNjYsNiBAQCBpbnQgZ2V0X3R6X3RyZW5kKHN0cnVjdCB0aGVy
+bWFsX3pvbmVfZGV2aWNlICp0eiwgaW50DQo+IHRyaXApDQo+IA0KPiAgCXJldHVybiB0cmVuZDsN
+Cj4gIH0NCj4gLUVYUE9SVF9TWU1CT0woZ2V0X3R6X3RyZW5kKTsNCj4gDQo+ICBzdHJ1Y3QgdGhl
+cm1hbF9pbnN0YW5jZSAqZ2V0X3RoZXJtYWxfaW5zdGFuY2Uoc3RydWN0DQo+IHRoZXJtYWxfem9u
+ZV9kZXZpY2UgKnR6LA0KPiAgCQkJc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYs
+IGludCB0cmlwKQ0KPiBAQCAtMTg5LDcgKzE4OCw2IEBAIHN0cnVjdCB0aGVybWFsX2luc3RhbmNl
+DQo+ICpnZXRfdGhlcm1hbF9pbnN0YW5jZShzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdHos
+DQo+IA0KPiAgCXJldHVybiB0YXJnZXRfaW5zdGFuY2U7DQo+ICB9DQo+IC1FWFBPUlRfU1lNQk9M
+KGdldF90aGVybWFsX2luc3RhbmNlKTsNCj4gDQo+ICBzdGF0aWMgdm9pZCBwcmludF9iaW5kX2Vy
+cl9tc2coc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6LA0KPiAgCQkJc3RydWN0IHRoZXJt
+YWxfY29vbGluZ19kZXZpY2UgKmNkZXYsIGludCByZXQpDQo+IEBAIC0xNDE1LDcgKzE0MTMsNiBA
+QCB2b2lkIHRoZXJtYWxfY2Rldl91cGRhdGUoc3RydWN0DQo+IHRoZXJtYWxfY29vbGluZ19kZXZp
+Y2UgKmNkZXYpDQo+ICAJY2Rldi0+b3BzLT5zZXRfY3VyX3N0YXRlKGNkZXYsIHRhcmdldCk7DQo+
+ICAJY2Rldi0+dXBkYXRlZCA9IHRydWU7DQo+ICB9DQo+IC1FWFBPUlRfU1lNQk9MKHRoZXJtYWxf
+Y2Rldl91cGRhdGUpOw0KPiANCj4gIC8qKg0KPiAgICogbm90aWZ5X3RoZXJtYWxfZnJhbWV3b3Jr
+IC0gU2Vuc29yIGRyaXZlcnMgdXNlIHRoaXMgQVBJIHRvIG5vdGlmeQ0KPiBmcmFtZXdvcmsNCj4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuaA0KPiBiL2RyaXZlcnMv
+dGhlcm1hbC90aGVybWFsX2NvcmUuaA0KPiBpbmRleCA3Y2YyZjY2Li4wYmI5OGQyIDEwMDY0NA0K
+PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmgNCj4gKysrIGIvZHJpdmVycy90
+aGVybWFsL3RoZXJtYWxfY29yZS5oDQo+IEBAIC01MCw2ICs1MCwxMSBAQCBzdHJ1Y3QgdGhlcm1h
+bF9pbnN0YW5jZSB7DQo+ICAJc3RydWN0IGxpc3RfaGVhZCBjZGV2X25vZGU7IC8qIG5vZGUgaW4g
+Y2Rldi0+dGhlcm1hbF9pbnN0YW5jZXMgKi8NCj4gIH07DQo+IA0KPiAraW50IGdldF90el90cmVu
+ZChzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLCBpbnQpOw0KPiArc3RydWN0IHRoZXJtYWxf
+aW5zdGFuY2UgKmdldF90aGVybWFsX2luc3RhbmNlKHN0cnVjdA0KPiB0aGVybWFsX3pvbmVfZGV2
+aWNlICosDQo+ICsgICAgICAgICAgICAgICAgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Ug
+KiwgaW50KTsNCj4gK3ZvaWQgdGhlcm1hbF9jZGV2X3VwZGF0ZShzdHJ1Y3QgdGhlcm1hbF9jb29s
+aW5nX2RldmljZSAqKTsNCj4gKw0KPiAgaW50IHRoZXJtYWxfcmVnaXN0ZXJfZ292ZXJub3Ioc3Ry
+dWN0IHRoZXJtYWxfZ292ZXJub3IgKik7DQo+ICB2b2lkIHRoZXJtYWxfdW5yZWdpc3Rlcl9nb3Zl
+cm5vcihzdHJ1Y3QgdGhlcm1hbF9nb3Zlcm5vciAqKTsNCj4gDQo+IGRpZmYgLS1naXQgYS9pbmNs
+dWRlL2xpbnV4L3RoZXJtYWwuaCBiL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+IGluZGV4IDQ0
+NDViOTUuLjA5N2U2NzQgMTAwNjQ0DQo+IC0tLSBhL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+
+ICsrKyBiL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+IEBAIC0yNDAsMTAgKzI0MCw2IEBAIHN0
+cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlDQo+ICp0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX3Jl
+Z2lzdGVyKGNoYXIgKiwgdm9pZCAqLA0KPiAgCQljb25zdCBzdHJ1Y3QgdGhlcm1hbF9jb29saW5n
+X2RldmljZV9vcHMgKik7DQo+ICB2b2lkIHRoZXJtYWxfY29vbGluZ19kZXZpY2VfdW5yZWdpc3Rl
+cihzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqKTsNCj4gDQo+IC1pbnQgZ2V0X3R6X3Ry
+ZW5kKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosIGludCk7DQo+IC1zdHJ1Y3QgdGhlcm1h
+bF9pbnN0YW5jZSAqZ2V0X3RoZXJtYWxfaW5zdGFuY2Uoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9k
+ZXZpY2UgKiwNCj4gLQkJc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKiwgaW50KTsNCj4g
+LXZvaWQgdGhlcm1hbF9jZGV2X3VwZGF0ZShzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAq
+KTsNCj4gIHZvaWQgbm90aWZ5X3RoZXJtYWxfZnJhbWV3b3JrKHN0cnVjdCB0aGVybWFsX3pvbmVf
+ZGV2aWNlICosIGludCk7DQo+IA0KPiAgI2lmZGVmIENPTkZJR19ORVQNCj4gLS0NCj4gMS43Ljku
+NQ0KPiANCj4gDQo+IA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2Vu
+ZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVz
+c2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8g
+YXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
