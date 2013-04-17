@@ -1,7 +1,7 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 14/30] thermal: cpu_cooling: improve documentation for get_cpu_frequency
-Date: Wed, 17 Apr 2013 13:12:07 -0400
-Message-ID: <1366218743-20841-15-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 15/30] thermal: cpu_cooling: update documentation for cpufreq_apply_cooling
+Date: Wed, 17 Apr 2013 13:12:08 -0400
+Message-ID: <1366218743-20841-16-git-send-email-eduardo.valentin@ti.com>
 References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,36 +12,32 @@ To: amit.kachhap@linaro.org
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Fix kernel-doc warning on get_cpu_frequency and improve
-documentation comments.
+Update kernel-doc comments for cpufreq_apply_cooling function.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/cpu_cooling.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/thermal/cpu_cooling.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 1ddfb15..593da29 100644
+index 593da29..934c0b0 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -239,8 +239,14 @@ EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
- /**
-  * get_cpu_frequency - get the absolute value of frequency from level.
-  * @cpu: cpu for which frequency is fetched.
-- * @level: level of frequency, equals cooling state of cpu cooling device
-+ * @level: cooling level
+@@ -265,6 +265,12 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
+  * @cpufreq_device: cpufreq_cooling_device pointer containing frequency
+  *	clipping data.
+  * @cooling_state: value of the cooling state.
 + *
-+ * This function matches cooling level with frequency. Based on a cooling level
-+ * of frequency, equals cooling state of cpu cooling device, it will return
-+ * the corresponding frequency.
-  *	e.g level=0 --> 1st MAX FREQ, level=1 ---> 2nd MAX FREQ, .... etc
++ * Function used to make sure the cpufreq layer is aware of current thermal
++ * limits. The limits are applied by updating the cpufreq policy.
 + *
-+ * Return: 0 on error, the corresponding frequency otherwise.
++ * Return: 0 on success, an error code otherwise (-EINVAL in case wrong
++ * cooling state).
   */
- static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- {
+ static int cpufreq_apply_cooling(struct cpufreq_cooling_device *cpufreq_device,
+ 				unsigned long cooling_state)
 -- 
 1.8.2.1.342.gfa7285d
