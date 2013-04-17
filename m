@@ -1,126 +1,107 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: linux-next: Tree for Apr 9 [cpufreq: NULL pointer deref]
-Date: Wed, 17 Apr 2013 16:04:46 +0200
-Message-ID: <CA+icZUVsNG66_v8QA17LQ27z1tjRjDqzB148OSV9WQP0_NkRKA@mail.gmail.com>
-References: <CA+icZUU_K9PiFMqMsOEk1+c2DX8LrUojZptPiRVarv4dcB2qFA@mail.gmail.com>
-	<CA+icZUUsAqJ3kyCZivYeTpY7n=EDMv1UcC2VNwQro4h7NHDWag@mail.gmail.com>
-	<CA+icZUW+TB3q58bL+d=A355S4vtRhwMq8AV+tqjv6MgDtHRCaA@mail.gmail.com>
-	<1923819.6Nb81T2TR8@vostro.rjw.lan>
-	<CA+icZUXUGOjGUAFxgQk0780pcBB-YjiujDLXF+gJFegi+pd+dA@mail.gmail.com>
-	<516C25AE.4050503@intel.com>
-	<CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH RESEND 04/11] thermal: rename get_thermal_instance to
+ thermal_instance_get
+Date: Wed, 17 Apr 2013 23:09:35 +0800
+Message-ID: <1366211375.2091.52.camel@rzhang1-mobl4>
+References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
+	 <1365437258-31412-5-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=OOPBYCD_K6RLw2YrJxhMokwrOww4QM2t2T4SnGObyQQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:64516 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966486Ab3DQPJk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Apr 2013 11:09:40 -0400
+In-Reply-To: <1365437258-31412-5-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Apr 15, 2013 at 7:22 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 15 April 2013 21:37, Dirk Brandewie <dirk.brandewie@gmail.com> wrote:
->> If the intel_pstate driver is being used __cpufreq_governor() should NOT be
->> called intel_pstate does not implement the target() callback.
->>
->> Nathan's commit 5800043b2 changed the fence around the call to
->> __cpufreq_governor() in __cpufreq_remove_dev() here is the relevant hunk.
->
-> No it isn't.
->
->> +       if (has_target)
->>                 __cpufreq_governor(data, CPUFREQ_GOV_STOP);
->
-> As it has taken care of this limitation.
->
-> BUT some of my earlier patches haven't. :(
-> Here is the fix (Sedat please try this and give your tested-by, use the attached
-> patch as gmail might break what i am copying in mail)..
->
-> Sorry for being late in fixing this issue, i am still down with Tonsil infection
-> and fever.. Today only i got some power to fix it after seeing Dirk's mail.
->
-> Your tested-by may help me to recover quickly :)
->
-> @Rafael: I will probably be down for one more week and so not doing any
-> reviews for now... I do check important mails sent directly to me though.
->
+On Mon, 2013-04-08 at 12:07 -0400, Eduardo Valentin wrote:
+> To follow the prefix names used by the thermal exported functions,
+> this patch renames get_thermal_instance to thermal_instance_get.
+> 
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-Hi Viresh,
+NACK.
 
-can you sent a separate patch on this (with Reported/Tested-by#s)?
-AFAICS this is not in pm.git#linux-next?
+with the change of building all thermal governors into thermal_sys
+module, get_thermal_instance becomes an internally helper function,
+rather than external API.
+thus I think it is okay to use the current name get_thermal_instance.
+But you remind me a need a cleanup patch to remove these APIs. :)
 
-Regards,
-- Sedat -
-
-> ------------x----------------------x------------------
->
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Mon, 15 Apr 2013 22:43:57 +0530
-> Subject: [PATCH] cpufreq: Don't call __cpufreq_governor() for drivers without
->  target()
->
-> Some cpufreq drivers implement their own governor and so don't need us to call
-> generic governors interface via __cpufreq_governor(). Few recent commits haven't
-> obeyed this law well and we saw some regressions.
->
-> This patch tries to fix this issue.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+thanks,
+rui
 > ---
->  drivers/cpufreq/cpufreq.c | 18 +++++++++++++-----
->  1 file changed, 13 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 3564947..a6f6595 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -858,13 +858,18 @@ static int cpufreq_add_policy_cpu(unsigned int
-> cpu, unsigned int sibling,
->                                   struct device *dev)
+>  Documentation/thermal/sysfs-api.txt |    2 +-
+>  drivers/thermal/fair_share.c        |    2 +-
+>  drivers/thermal/thermal_sys.c       |    4 ++--
+>  include/linux/thermal.h             |    2 +-
+>  4 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> index 4b23190..059b3bf 100644
+> --- a/Documentation/thermal/sysfs-api.txt
+> +++ b/Documentation/thermal/sysfs-api.txt
+> @@ -358,7 +358,7 @@ are supposed to implement the callback. If they don't, the thermal
+>  framework calculated the trend by comparing the previous and the current
+>  temperature values.
+>  
+> -5.2:get_thermal_instance:
+> +5.2:thermal_instance_get:
+>  This function returns the thermal_instance corresponding to a given
+>  {thermal_zone, cooling_device, trip_point} combination. Returns NULL
+>  if such an instance does not exist.
+> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
+> index 792479f..f629446 100644
+> --- a/drivers/thermal/fair_share.c
+> +++ b/drivers/thermal/fair_share.c
+> @@ -95,7 +95,7 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+>  			continue;
+>  
+>  		cdev = tzp->tbp[i].cdev;
+> -		instance = get_thermal_instance(tz, cdev, trip);
+> +		instance = thermal_instance_get(tz, cdev, trip);
+>  		if (!instance)
+>  			continue;
+>  
+> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
+> index ffaf6d3..44e89c0 100644
+> --- a/drivers/thermal/thermal_sys.c
+> +++ b/drivers/thermal/thermal_sys.c
+> @@ -170,7 +170,7 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
+>  }
+>  EXPORT_SYMBOL(get_tz_trend);
+>  
+> -struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
+> +struct thermal_instance *thermal_instance_get(struct thermal_zone_device *tz,
+>  			struct thermal_cooling_device *cdev, int trip)
 >  {
->         struct cpufreq_policy *policy;
-> -       int ret = 0;
-> +       int ret = 0, has_target = 0;
->         unsigned long flags;
->
->         policy = cpufreq_cpu_get(sibling);
->         WARN_ON(!policy);
->
-> -       __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> +       rcu_read_lock();
-> +       has_target = !!rcu_dereference(cpufreq_driver)->target;
-> +       rcu_read_unlock();
-> +
-> +       if (has_target)
-> +               __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->
->         lock_policy_rwsem_write(sibling);
->
-> @@ -877,8 +882,10 @@ static int cpufreq_add_policy_cpu(unsigned int
-> cpu, unsigned int sibling,
->
->         unlock_policy_rwsem_write(sibling);
->
-> -       __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> -       __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +       if (has_target) {
-> +               __cpufreq_governor(policy, CPUFREQ_GOV_START);
-> +               __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
-> +       }
->
->         ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->         if (ret) {
-> @@ -1146,7 +1153,8 @@ static int __cpufreq_remove_dev(struct device
-> *dev, struct subsys_interface *sif
->
->         /* If cpu is last user of policy, free policy */
->         if (cpus == 1) {
-> -               __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
-> +               if (has_target)
-> +                       __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->
->                 lock_policy_rwsem_read(cpu);
->                 kobj = &data->kobj;
+>  	struct thermal_instance *pos = NULL;
+> @@ -191,7 +191,7 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
+>  
+>  	return target_instance;
+>  }
+> -EXPORT_SYMBOL(get_thermal_instance);
+> +EXPORT_SYMBOL(thermal_instance_get);
+>  
+>  static void print_bind_err_msg(struct thermal_zone_device *tz,
+>  			struct thermal_cooling_device *cdev, int ret)
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index e8ec9d8..e2a49e1 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -239,7 +239,7 @@ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+>  void thermal_cooling_device_unregister(struct thermal_cooling_device *);
+>  
+>  int get_tz_trend(struct thermal_zone_device *, int);
+> -struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+> +struct thermal_instance *thermal_instance_get(struct thermal_zone_device *,
+>  		struct thermal_cooling_device *, int);
+>  void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+
+
