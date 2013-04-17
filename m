@@ -1,52 +1,60 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 03/30] thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
-Date: Wed, 17 Apr 2013 13:11:56 -0400
-Message-ID: <1366218743-20841-4-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 04/30] thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
+Date: Wed, 17 Apr 2013 13:11:57 -0400
+Message-ID: <1366218743-20841-5-git-send-email-eduardo.valentin@ti.com>
 References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:41345 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965258Ab3DQRN7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Apr 2013 13:13:59 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:42229 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935968Ab3DQROX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2013 13:14:23 -0400
 In-Reply-To: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: amit.kachhap@linaro.org
 Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Simple fixes for making kernel_doc happy about
-struct cpufreq_cooling_device. Includes also a minor
-spelling fix.
+Restrict the usage to GPL modules.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/cpu_cooling.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/cpu_cooling.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index d0d6a0c..7c0c05b 100644
+index 7c0c05b..64dc4dd 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -28,11 +28,11 @@
- #include <linux/cpu_cooling.h>
+@@ -200,8 +200,7 @@ unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+ 		return THERMAL_CSTATE_INVALID;
+ 	return (unsigned long)val;
+ }
+-
+-EXPORT_SYMBOL(cpufreq_cooling_get_level);
++EXPORT_SYMBOL_GPL(cpufreq_cooling_get_level);
  
  /**
-- * struct cpufreq_cooling_device
-+ * struct cpufreq_cooling_device - data for cooling device with cpufreq
-  * @id: unique integer value corresponding to each cpufreq_cooling_device
-  *	registered.
-- * @cool_dev: thermal_cooling_device pointer to keep track of the the
-- *	egistered cooling device.
-+ * @cool_dev: thermal_cooling_device pointer to keep track of the
-+ *	registered cooling device.
-  * @cpufreq_state: integer value representing the current state of cpufreq
-  *	cooling	devices.
-  * @cpufreq_val: integer value representing the absolute value of the clipped
+  * get_cpu_frequency - get the absolute value of frequency from level.
+@@ -414,7 +413,7 @@ struct thermal_cooling_device *cpufreq_cooling_register(
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 	return cool_dev;
+ }
+-EXPORT_SYMBOL(cpufreq_cooling_register);
++EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
+ 
+ /**
+  * cpufreq_cooling_unregister - function to remove cpufreq cooling device.
+@@ -438,4 +437,4 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 	release_idr(&cpufreq_idr, cpufreq_dev->id);
+ 	kfree(cpufreq_dev);
+ }
+-EXPORT_SYMBOL(cpufreq_cooling_unregister);
++EXPORT_SYMBOL_GPL(cpufreq_cooling_unregister);
 -- 
 1.8.2.1.342.gfa7285d
 
