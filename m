@@ -1,88 +1,55 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 00/30] thermal: cpu_cooling: code improvements
-Date: Wed, 17 Apr 2013 16:32:53 -0400
-Message-ID: <516F06F5.9060200@ti.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Wed, 17 Apr 2013 17:53:50 -0400
+Message-ID: <516F19EE.5060309@kernel.org>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com>  <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com>  <20130412162348.GE2368@pd.tnic> <1365785311.5814.36.camel@marge.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:51547 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965318Ab3DQUdK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2013 16:33:10 -0400
-In-Reply-To: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-ve0-f175.google.com ([209.85.128.175]:32787 "EHLO
+	mail-ve0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966683Ab3DQVxy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Apr 2013 17:53:54 -0400
+In-Reply-To: <1365785311.5814.36.camel@marge.simpson.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: eduardo.valentin@ti.com, Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Borislav Petkov <bp@alien8.de>, Alex Shi <alex.shi@intel.com>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 17-04-2013 13:11, Eduardo Valentin wrote:
-> Rui,
+On 04/12/2013 12:48 PM, Mike Galbraith wrote:
+> On Fri, 2013-04-12 at 18:23 +0200, Borislav Petkov wrote: 
+>> On Fri, Apr 12, 2013 at 04:46:50PM +0800, Alex Shi wrote:
+>>> Thanks a lot for comments, Len!
+>>
+>> AFAICT, you kinda forgot to answer his most important question:
+>>
+>>> These numbers suggest that this patch series simultaneously
+>>> has a negative impact on performance and energy required
+>>> to retire the workload.  Why do it?
+> 
+> Hm.  When I tested AIM7 compute on a NUMA box, there was a marked
+> throughput increase at the low to moderate load end of the test spectrum
+> IIRC.  Fully repeatable.  There were also other benefits unrelated to
+> power, ie mitigation of the evil face of select_idle_sibling().  I
+> rather liked what I saw during ~big box test-drive.
+> 
+> (just saying there are other aspects besides joules in there)
 
+Mike,
 
-Looks like I forgot to add the lists on patch 00. Doing so..
->
-> This is a series of patches to improve the code for cpu_cooling.
-> Majority of these changes are actually kernel-doc updates, as
-> they required to be revised. A part from these, there are some
-> changes regarding code style and readiness.
->
-> Some may complain that these are a matter of taste, indeed.
-> But I tried to just be unbiased and just keep the changes related
-> to kernel-doc and checkpatch.pl. After this series, theses
-> tools should be generating decent output ;-).
->
-> The remaining changes are actually a couple of fixes for defensive
-> coding. A part from updating the MAINTAINERS entry to cover cpu_cooling.
->
-> This series has been tested on TI OMAP4430, together with the
-> thermal driver under staging tree.
->
-> All these patches are based on current linux-next/master.
->
-> They are also available here:
->
-> All best,
->
-> Eduardo Valentin (30):
->    thermal: cpu_cooling: remove unused headers
->    thermal: cpu_cooling: remove trailing white spaces
->    thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
->    thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
->    thermal: cpu_cooling: remove compiler warning
->    thermal: cpu_cooling: standardize end of function
->    thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
->    thermal: cpu_cooling: add documentation for get_property
->    thermal: cpu_cooling: standardize comment style
->    thermal: cpu_cooling: align on open parenthesis
->    thermal: cpu_cooling: remove trailing blank line
->    thermal: cpu_cooling: document cpufreq_get_cooling_level
->    thermal: cpu_cooling: remove checkpatch.pl warning
->    thermal: cpu_cooling: improve documentation for get_cpu_frequency
->    thermal: cpu_cooling: update documentation for cpufreq_apply_cooling
->    thermal: cpu_cooling: update documentation for
->      cpufreq_thermal_notifier
->    thermal: cpu_cooling: update Kconfig entry
->    thermal: cpu_cooling: alignment improvements
->    thermal: cpu_cooling: update documentation for cpufreq_get_max_state
->    thermal: cpu_cooling: update documentation for cpufreq_get_cur_state
->    thermal: cpu_cooling: update documentation for cpufreq_set_cur_state
->    thermal: cpu_cooling: update kernel-doc for cpufreq_cooling_register
->    thermal: cpu_cooling: update kernel-doc comment for
->      cpufreq_cooling_unregister
->    thermal: cpu_cooling: use snprintf instead of sprintf
->    thermal: cpu_cooling: remove not needed curl brackets
->    thermal: cpu_cooling: remove unused symbols
->    thermal: cpu_cooling: add needed header for cpu_cooling.h
->    MAINTAINERS: update thermal entry by adding file cpu_cooling.h
->    thermal: cpu_cooling: remove unused symbols on cpu_cooling.h
->    thermal: cpu_cooling: improve line breaking
->
->   MAINTAINERS                   |   1 +
->   drivers/thermal/Kconfig       |   5 +-
->   drivers/thermal/cpu_cooling.c | 156 ++++++++++++++++++++++++++++++------------
->   include/linux/cpu_cooling.h   |  20 +++---
->   4 files changed, 125 insertions(+), 57 deletions(-)
->
+Can you re-run your AIM7 measurement with turbo-mode and HT-mode disabled,
+and then independently re-enable them?
+
+If you still see the performance benefit, then that proves
+that the scheduler hacks are not about tricking into
+turbo mode, but something else.
+
+If the performance gains *are* about interactions with turbo-mode,
+then perhaps what we should really be doing here is making
+the scheduler explicitly turbo-aware?  Of course, that begs the question
+of how the scheduler should be aware of cpufreq in general...
+
+thanks,
+Len Brown, Intel Open Source Technology Center
 
