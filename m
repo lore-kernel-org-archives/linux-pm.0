@@ -1,92 +1,53 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH RESEND 03/11] thermal: rename notify_thermal_framework
- to thermal_notify_framework
-Date: Wed, 17 Apr 2013 23:37:21 +0800
-Message-ID: <1366213041.2091.68.camel@rzhang1-mobl4>
-References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
-	 <1365437258-31412-4-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [patch] Thermal: cpufreq cooling: endian bug in
+ cpufreq_get_max_state()
+Date: Wed, 17 Apr 2013 23:45:53 +0800
+Message-ID: <1366213553.2091.70.camel@rzhang1-mobl4>
+References: <20130417071828.GD7923@elgon.mountain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:30096 "EHLO mga09.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:11654 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964924Ab3DQPhe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Apr 2013 11:37:34 -0400
-In-Reply-To: <1365437258-31412-4-git-send-email-eduardo.valentin@ti.com>
+	id S965236Ab3DQPqE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Apr 2013 11:46:04 -0400
+In-Reply-To: <20130417071828.GD7923@elgon.mountain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Mon, 2013-04-08 at 12:07 -0400, Eduardo Valentin wrote:
-> To follow the prefix names used by the thermal exported functions,
-> this patch renames notify_thermal_framework to thermal_notify_framework.
+On Wed, 2013-04-17 at 10:18 +0300, Dan Carpenter wrote:
+> This code doesn't work on big endian systems because we're storing low
+> values in the high bits of the unsigned long.  It makes it a very high
+> value instead.
 > 
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Hmm, I'm okay with this one.
+applied to thermal -next.
 
 thanks,
 rui
-> ---
->  Documentation/thermal/sysfs-api.txt |    2 +-
->  drivers/thermal/thermal_sys.c       |    6 +++---
->  include/linux/thermal.h             |    2 +-
->  3 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index 6859661..4b23190 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -363,7 +363,7 @@ This function returns the thermal_instance corresponding to a given
->  {thermal_zone, cooling_device, trip_point} combination. Returns NULL
->  if such an instance does not exist.
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 5f5c780..768b508 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -303,12 +303,12 @@ static int cpufreq_get_max_state(struct thermal_cooling_device *cdev,
+>  	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+>  	struct cpumask *mask = &cpufreq_device->allowed_cpus;
+>  	unsigned int cpu;
+> -	unsigned long count = 0;
+> +	unsigned int count = 0;
+>  	int ret;
 >  
-> -5.3:notify_thermal_framework:
-> +5.3:thermal_notify_framework:
->  This function handles the trip events from sensor drivers. It starts
->  throttling the cooling devices according to the policy configured.
->  For CRITICAL and HOT trip points, this notifies the respective drivers,
-> diff --git a/drivers/thermal/thermal_sys.c b/drivers/thermal/thermal_sys.c
-> index 9542600..ffaf6d3 100644
-> --- a/drivers/thermal/thermal_sys.c
-> +++ b/drivers/thermal/thermal_sys.c
-> @@ -1420,7 +1420,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->  EXPORT_SYMBOL(thermal_cdev_update);
+>  	cpu = cpumask_any(mask);
 >  
->  /**
-> - * notify_thermal_framework - Sensor drivers use this API to notify framework
-> + * thermal_notify_framework - Sensor drivers use this API to notify framework
->   * @tz:		thermal zone device
->   * @trip:	indicates which trip point has been crossed
->   *
-> @@ -1431,11 +1431,11 @@ EXPORT_SYMBOL(thermal_cdev_update);
->   * The throttling policy is based on the configured platform data; if no
->   * platform data is provided, this uses the step_wise throttling policy.
->   */
-> -void notify_thermal_framework(struct thermal_zone_device *tz, int trip)
-> +void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
->  {
->  	handle_thermal_trip(tz, trip);
->  }
-> -EXPORT_SYMBOL(notify_thermal_framework);
-> +EXPORT_SYMBOL(thermal_notify_framework);
+> -	ret = get_property(cpu, 0, (unsigned int *)&count, GET_MAXL);
+> +	ret = get_property(cpu, 0, &count, GET_MAXL);
 >  
->  /**
->   * create_trip_attrs - create attributes for trip points
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index f0bd7f9..e8ec9d8 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -242,7 +242,7 @@ int get_tz_trend(struct thermal_zone_device *, int);
->  struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
->  		struct thermal_cooling_device *, int);
->  void thermal_cdev_update(struct thermal_cooling_device *);
-> -void notify_thermal_framework(struct thermal_zone_device *, int);
-> +void thermal_notify_framework(struct thermal_zone_device *, int);
->  
->  int thermal_register_governor(struct thermal_governor *);
->  void thermal_unregister_governor(struct thermal_governor *);
+>  	if (count > 0)
+>  		*state = count;
 
 
