@@ -1,39 +1,40 @@
-From: ren zhen <darwin.xupt@gmail.com>
-Subject: Re: [RFC]runtime pm:what does the runtime_usage really mean?
-Date: Thu, 18 Apr 2013 16:24:38 +0800
-Message-ID: <CACbbJyYot+VS4TeWPQPc1XezAtrtK_qs7ddZTB3zTVUizFs2JA@mail.gmail.com>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [V3 patch 03/19] ARM: OMAP3: remove cpuidle_wrap_enter
+Date: Thu, 18 Apr 2013 13:57:24 +0530
+Message-ID: <516FAE6C.3050002@ti.com>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365770165-27096-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f65.google.com ([209.85.212.65]:65328 "EHLO
-	mail-vb0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755831Ab3DRIYj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 04:24:39 -0400
-Received: by mail-vb0-f65.google.com with SMTP id 11so462916vbf.4
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 01:24:39 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1365770165-27096-4-git-send-email-daniel.lezcano@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: andrew@lunn.ch, khilman@deeprootsystems.com, linus.walleij@linaro.org, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-'runtime_usage' is an attribution of device power, which appears in
-/sys/devices/.../power/ directory.
-
-On Thu, Apr 18, 2013 at 4:18 PM, ren zhen <darwin.xupt@gmail.com> wrote:
-> Hi all:
->        The power management maillist says:
->                  " runtime_usage: the runtime PM usage count of a device".
->         What does 'runtime_usage' really mean? what situations should
-> we use it? And when increase it or decrease it?
->          Anyone who know about that, please give me a detailed account
-> of 'runtime_usage', a actual example cannot be more better!
->        I will appreciate any help.
->
-> --
-> Sincerely,
-> Ren Zhen
-
-
-
---
-Sincerely,
-Ren Zhen
+On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
+> In a previous commit the en_core_tk_irqen flag has been added but we missed
+> the cpuidle_wrap_enter which was doing the job to measure the time for the
+> 'omap3_enter_idle' function.
+> 
+> Actually, I don't see any reason to use this wrapper in the code. In the better
+> case, the time computation is not correctly done because of the different
+> operations done in omap3_enter_idle_bm which were not taken into account
+> before the en_core_tk_irqen flag was set.
+> 
+> As the time is reflected for the state overridden by the omap3_enter_idle_bm,
+> using the wrapper is pointless now, so removing it.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
