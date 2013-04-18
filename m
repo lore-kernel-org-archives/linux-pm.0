@@ -1,70 +1,71 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/9] ARM: cpuidle: remove useless declaration
-Date: Thu, 18 Apr 2013 17:47:05 +0200
-Message-ID: <51701579.1040603@linaro.org>
-References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <515C1F3B.5040008@linaro.org> <20130418141359.GT14496@n2100.arm.linux.org.uk> <517003CF.5090106@linaro.org> <20130418154236.GY14496@n2100.arm.linux.org.uk>
+From: Dave Hansen <dave@sr71.net>
+Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
+Date: Thu, 18 Apr 2013 10:10:09 -0700
+Message-ID: <517028F1.6000002@sr71.net>
+References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20130418154236.GY14496-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
-Cc: deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com>
+Sender: owner-linux-mm@kvack.org
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/18/2013 05:42 PM, Russell King - ARM Linux wrote:
-> On Thu, Apr 18, 2013 at 04:31:43PM +0200, Daniel Lezcano wrote:
->> On 04/18/2013 04:13 PM, Russell King - ARM Linux wrote:
->>> On Wed, Apr 03, 2013 at 02:23:23PM +0200, Daniel Lezcano wrote:
->>>> On 04/03/2013 02:15 PM, Daniel Lezcano wrote:
->>>>> The noop functions code is not necessary because the header file =
-is
->>>>> included in files which are compiled when CONFIG_CPU_IDLE is on.
->>>>>
->>>>> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>>>
->>>> I have been involved in the development of this file. I know Rob i=
-s no
->>>> longer working on this neither monitoring the code.
->>>>
->>>> Russell are you ok with this patch ? Rafael needs your ack to take=
- this
->>>> patch into its tree.
->>>
->>> I don't know - the description doesn't make it clear.  Surely, what=
- you
->>> checked was that this file is _not_ included in any file which is b=
-uilt
->>> when CONFIG_CPU_IDLE is disabled.  In other words, when CONFIG_CPU_=
-IDLE
->>> is not defined, arm_cpuidle_simple_enter() is never referenced.
->>>
->>> If that is the case, then it's just that the patch description is t=
-he
->>> opposite of what it should be for this patch - and then the patch a=
-nd
->>> description match and I don't see any reason to say no to it.
->>>
->>> Then comes the issue of who takes the patch.  It looks like Rafael
->>> would like me to.
->>
->> Actually Rafael was willing to take the patch if you ack it.
->=20
-> Well, I want to see a proper description on the patch which describes
-> what it _is_ doing before I ack it.  The existing description is just
-> plain confusing.
+On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
+> 2. Performance overhead is expected to be low: Since we retain the simplicity
+>    of the algorithm in the page allocation path, page allocation can
+>    potentially remain as fast as it would be without memory regions. The
+>    overhead is pushed to the page-freeing paths which are not that critical.
 
-Ok, I will resend.
+Numbers, please.  The problem with pushing the overhead to frees is that
+they, believe it or not, actually average out to the same as the number
+of allocs.  Think kernel compile, or a large dd.  Both of those churn
+through a lot of memory, and both do an awful lot of allocs _and_ frees.
+ We need to know both the overhead on a system that does *no* memory
+power management, and the overhead on a system which is carved and
+actually using this code.
 
-Thanks
-  -- Daniel
+> Kernbench results didn't show any noticeable performance degradation with
+> this patchset as compared to vanilla 3.9-rc5.
 
+Surely this code isn't magical and there's overhead _somewhere_, and
+such overhead can be quantified _somehow_.  Have you made an effort to
+find those cases, even with microbenchmarks?
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+I still also want to see some hard numbers on:
+> However, memory consumes a significant amount of power, potentially upto
+> more than a third of total system power on server systems.
+and
+> It had been demonstrated on a Samsung Exynos board
+> (with 2 GB RAM) that upto 6 percent of total system power can be saved by
+> making the Linux kernel MM subsystem power-aware[4]. 
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+That was *NOT* with this code, and it's nearing being two years old.
+What can *this* *patch* do?
+
+I think there are three scenarios to look at.  Let's say you have an 8GB
+system with 1GB regions:
+1. Normal unpatched kernel, booted with  mem=1G...8G (in 1GB increments
+   perhaps) running some benchmark which sees performance scale with
+   the amount of memory present in the system.
+2. Kernel patched with this set, running the same test, but with single
+   memory regions.
+3. Kernel patched with this set.  But, instead of using mem=, you run
+   it trying to evacuate equivalent amount of memory to the amounts you
+   removed using mem=.
+
+That will tell us both what the overhead is, and how effective it is.
+I'd much rather see actual numbers and a description of the test than
+some hand waving that it "didn't show any noticeable performance
+degradation".
+
+The amount of code here isn't huge.  But, it sucks that it's bloating
+the already quite plump page_alloc.c.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
