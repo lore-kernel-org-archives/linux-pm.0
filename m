@@ -1,46 +1,47 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
-Date: Thu, 18 Apr 2013 15:24:25 +0530
-Message-ID: <516FC2D1.9020809@linux.vnet.ibm.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <516ED378.2000406@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: bltk-game regressions on snb laptop
+Date: Thu, 18 Apr 2013 15:31:46 +0530
+Message-ID: <CAKohpo=NGYadRubvBDLsE=oO1wuDSxnutYfZLm9vu4B6tcUw-g@mail.gmail.com>
+References: <516CFA57.3060709@intel.com>
+	<CAKohponOVZgAxdX5yv9qmn_56mgTdXEBPr-7o7_pA5GRF09J0w@mail.gmail.com>
+	<516F42EE.6080802@intel.com>
+	<CAKohpokju79Fx7TXTD1hKoG0JUmCsRm8Us381bhHeUrBvyOv6w@mail.gmail.com>
+	<516F81BD.3030306@intel.com>
+	<CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com>
+	<516FB4AF.6060009@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <516ED378.2000406@linux.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:50325 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755184Ab3DRKBr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 06:01:47 -0400
+Received: by mail-oa0-f43.google.com with SMTP id l10so2564567oag.30
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 03:01:46 -0700 (PDT)
+In-Reply-To: <516FB4AF.6060009@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alex Shi <alex.shi@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>
 
-On 04/17/2013 10:23 PM, Srinivas Pandruvada wrote:
-> On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
->> [I know, this cover letter is a little too long, but I wanted to clearly
->> explain the overall goals and the high-level design of this patchset in
->> detail. I hope this helps more than it annoys, and makes it easier for
->> reviewers to relate to the background and the goals of this patchset.]
+On 18 April 2013 14:24, Alex Shi <alex.shi@intel.com> wrote:
+> On 04/18/2013 01:37 PM, Viresh Kumar wrote:
+>>>> About your system: Can you give output of cpufreq-info for v3.8 and
+>>>> >> v3.9-latestrc?
+>>>> >> Your cpus share a clock line or not?
+>>> >
+>>> > Yes our cpu shares a clock line. So the cpufreq-info is same. SNB CPU
+>>> > p-state is per cpu package, and hardware will coordinate the software
+>>> > asking, then decide which cpufreq should be.
+>> Can you paste cpufreq-info output, that will give us a better picture of your
+>> system.
 >>
->>
->> Overview of Memory Power Management and its implications to the Linux MM
->> ========================================================================
->>
-[...]
->>
-> One thing you need to prevent is boot time allocation. You have to make
-> sure that frequently accessed per node data stored at the end of memory
-> will keep all ranks of memory active.
-> 
+>
+> at the most of time with your patch cpufreq-info is 0.8GHz, without the
+> patch, the cpufreq is varied from 1.0 to 2.8 Ghz.
 
-I think you meant to say "... stored at the end of memory will NOT keep all
-ranks of memory active".
+I need full output of following command:
 
-Yep, that's a good point! I'll think about how to achieve that. Thanks!
+$ cpufreq-info
 
-Regards,
-Srivatsa S. Bhat
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+This has got lots of other details too.
