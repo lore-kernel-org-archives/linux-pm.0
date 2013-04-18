@@ -1,44 +1,43 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 2/2] Thermal: exynos: Add compatible string for exynos4412
-Date: Thu, 18 Apr 2013 17:07:59 +0530
-Message-ID: <1366285079-10395-2-git-send-email-sachin.kamat@linaro.org>
-References: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/4] SH: cpuidle: remove pointless initialization
+Date: Thu, 18 Apr 2013 22:34:08 +0900
+Message-ID: <20130418133408.GF20929@verge.net.au>
+References: <1366205577-11632-1-git-send-email-daniel.lezcano@linaro.org>
+ <20130418011816.GD4511@verge.net.au>
+ <516FBA4C.6020100@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f51.google.com ([209.85.210.51]:41934 "EHLO
-	mail-da0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967170Ab3DRLuX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 07:50:23 -0400
-Received: by mail-da0-f51.google.com with SMTP id g27so1324868dan.10
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 04:50:22 -0700 (PDT)
-In-Reply-To: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:55069 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755993Ab3DRNeI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 09:34:08 -0400
+Content-Disposition: inline
+In-Reply-To: <516FBA4C.6020100@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, sachin.kamat@linaro.org, kgene.kim@samsung.com, patches@linaro.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: lethal@linux-sh.org, rjw@sisk.pl, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-Added compatible string for Exynos4412 SoC.
+On Thu, Apr 18, 2013 at 11:18:04AM +0200, Daniel Lezcano wrote:
+> On 04/18/2013 03:18 AM, Simon Horman wrote:
+> > On Wed, Apr 17, 2013 at 03:32:54PM +0200, Daniel Lezcano wrote:
+> >> The driver is a global static variable automatically initialized to zero.
+> >>
+> >> Removing the useless initialization in the init function.
+> >>
+> >> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > 
+> > Hi Daniel,
+> > 
+> > All four patches in this series seem reasonable to me.
+> > 
+> > Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> > 
+> > Please let me know if I should take them through my renesas tree.
+> 
+> If you are ok with that, is it possible to take them through the
+> linux-pm tree ? So the cpuidle drivers are synced and I can continue the
+> code consolidation ?
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- drivers/thermal/exynos_thermal.c |    4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 9df96e5..d20ce9e 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -855,6 +855,10 @@ static const struct of_device_id exynos_tmu_match[] = {
- 		.data = (void *)EXYNOS4210_TMU_DRV_DATA,
- 	},
- 	{
-+		.compatible = "samsung,exynos4412-tmu",
-+		.data = (void *)EXYNOS_TMU_DRV_DATA,
-+	},
-+	{
- 		.compatible = "samsung,exynos5250-tmu",
- 		.data = (void *)EXYNOS_TMU_DRV_DATA,
- 	},
--- 
-1.7.9.5
-
+Yes, I am ok with them going through the linux-pm tree.
