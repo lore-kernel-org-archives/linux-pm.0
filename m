@@ -1,59 +1,56 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] intel_idle: additional Haswell CPU-id
-Date: Thu, 18 Apr 2013 11:11:08 +0200
-Message-ID: <516FB8AC.6070102@linaro.org>
-References: <1366238537-14443-1-git-send-email-lenb@kernel.org> <0b15841b0bbbde75134a777c543dc51fe6187108.1366238380.git.len.brown@intel.com>
+Subject: Re: [PATCH 1/4] SH: cpuidle: remove pointless initialization
+Date: Thu, 18 Apr 2013 11:18:04 +0200
+Message-ID: <516FBA4C.6020100@linaro.org>
+References: <1366205577-11632-1-git-send-email-daniel.lezcano@linaro.org> <20130418011816.GD4511@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f43.google.com ([209.85.214.43]:64617 "EHLO
-	mail-bk0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755831Ab3DRJLL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 05:11:11 -0400
-Received: by mail-bk0-f43.google.com with SMTP id jm2so591779bkc.30
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 02:11:09 -0700 (PDT)
-In-Reply-To: <0b15841b0bbbde75134a777c543dc51fe6187108.1366238380.git.len.brown@intel.com>
+Received: from mail-bk0-f42.google.com ([209.85.214.42]:55553 "EHLO
+	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758171Ab3DRJSH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 05:18:07 -0400
+Received: by mail-bk0-f42.google.com with SMTP id jc3so1162642bkc.1
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 02:18:06 -0700 (PDT)
+In-Reply-To: <20130418011816.GD4511@verge.net.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: lethal@linux-sh.org, rjw@sisk.pl, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-On 04/18/2013 12:42 AM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
+On 04/18/2013 03:18 AM, Simon Horman wrote:
+> On Wed, Apr 17, 2013 at 03:32:54PM +0200, Daniel Lezcano wrote:
+>> The driver is a global static variable automatically initialized to =
+zero.
+>>
+>> Removing the useless initialization in the init function.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >=20
-> There is an additional HSW CPU-id, 0x46,
-> which has C-states exactly like CPU-id 0x45.
+> Hi Daniel,
 >=20
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  drivers/idle/intel_idle.c | 1 +
->  1 file changed, 1 insertion(+)
+> All four patches in this series seem reasonable to me.
 >=20
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index 5d66750..1a38dd7 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -465,6 +465,7 @@ static const struct x86_cpu_id intel_idle_ids[] =3D=
- {
->  	ICPU(0x3c, idle_cpu_hsw),
->  	ICPU(0x3f, idle_cpu_hsw),
->  	ICPU(0x45, idle_cpu_hsw),
-> +	ICPU(0x46, idle_cpu_hsw),
->  	{}
->  };
->  MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+>=20
+> Please let me know if I should take them through my renesas tree.
 
-Hi Len,
+If you are ok with that, is it possible to take them through the
+linux-pm tree ? So the cpuidle drivers are synced and I can continue th=
+e
+code consolidation ?
 
-I jump on the opportunity to remind you, we are waiting for your
-ack/nack for the patch:
+Thanks for the review.
 
-http://permalink.gmane.org/gmane.linux.ports.tegra/10422
-
-Thanks
   -- Daniel
 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-sh" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
 
 
 --=20
