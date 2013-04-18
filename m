@@ -1,47 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: bltk-game regressions on snb laptop
-Date: Thu, 18 Apr 2013 15:31:46 +0530
-Message-ID: <CAKohpo=NGYadRubvBDLsE=oO1wuDSxnutYfZLm9vu4B6tcUw-g@mail.gmail.com>
-References: <516CFA57.3060709@intel.com>
-	<CAKohponOVZgAxdX5yv9qmn_56mgTdXEBPr-7o7_pA5GRF09J0w@mail.gmail.com>
-	<516F42EE.6080802@intel.com>
-	<CAKohpokju79Fx7TXTD1hKoG0JUmCsRm8Us381bhHeUrBvyOv6w@mail.gmail.com>
-	<516F81BD.3030306@intel.com>
-	<CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com>
-	<516FB4AF.6060009@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/2] Thermal: exynos: Add clk_{un}prepare APIs
+Date: Thu, 18 Apr 2013 17:07:58 +0530
+Message-ID: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f43.google.com ([209.85.219.43]:50325 "EHLO
-	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755184Ab3DRKBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 06:01:47 -0400
-Received: by mail-oa0-f43.google.com with SMTP id l10so2564567oag.30
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 03:01:46 -0700 (PDT)
-In-Reply-To: <516FB4AF.6060009@intel.com>
+Received: from mail-da0-f53.google.com ([209.85.210.53]:58017 "EHLO
+	mail-da0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967170Ab3DRLuT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 07:50:19 -0400
+Received: by mail-da0-f53.google.com with SMTP id n34so1328036dal.12
+        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 04:50:18 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Shi <alex.shi@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, sachin.kamat@linaro.org, kgene.kim@samsung.com, patches@linaro.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On 18 April 2013 14:24, Alex Shi <alex.shi@intel.com> wrote:
-> On 04/18/2013 01:37 PM, Viresh Kumar wrote:
->>>> About your system: Can you give output of cpufreq-info for v3.8 and
->>>> >> v3.9-latestrc?
->>>> >> Your cpus share a clock line or not?
->>> >
->>> > Yes our cpu shares a clock line. So the cpufreq-info is same. SNB CPU
->>> > p-state is per cpu package, and hardware will coordinate the software
->>> > asking, then decide which cpufreq should be.
->> Can you paste cpufreq-info output, that will give us a better picture of your
->> system.
->>
->
-> at the most of time with your patch cpufreq-info is 0.8GHz, without the
-> patch, the cpufreq is varied from 1.0 to 2.8 Ghz.
+clk_{un}prepare APIs are required to migrate to common
+clock framework. While at it convert to use devm_clk_get as
+it removes some cleanup code.
 
-I need full output of following command:
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+---
+ drivers/thermal/exynos_thermal.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-$ cpufreq-info
+diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+index e34d842..9df96e5 100644
+--- a/drivers/thermal/exynos_thermal.c
++++ b/drivers/thermal/exynos_thermal.c
+@@ -937,12 +937,16 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	data->clk = clk_get(NULL, "tmu_apbif");
++	data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+ 	if (IS_ERR(data->clk)) {
+ 		dev_err(&pdev->dev, "Failed to get clock\n");
+ 		return  PTR_ERR(data->clk);
+ 	}
+ 
++	ret = clk_prepare(data->clk);
++	if (ret)
++		return ret;
++
+ 	if (pdata->type == SOC_ARCH_EXYNOS ||
+ 				pdata->type == SOC_ARCH_EXYNOS4210)
+ 		data->soc = pdata->type;
+@@ -994,7 +998,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	return 0;
+ err_clk:
+ 	platform_set_drvdata(pdev, NULL);
+-	clk_put(data->clk);
++	clk_unprepare(data->clk);
+ 	return ret;
+ }
+ 
+@@ -1006,7 +1010,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	exynos_unregister_thermal();
+ 
+-	clk_put(data->clk);
++	clk_unprepare(data->clk);
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-- 
+1.7.9.5
 
-This has got lots of other details too.
