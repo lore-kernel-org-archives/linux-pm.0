@@ -1,26 +1,37 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [V3 patch 13/19] ARM: OMAP4: cpuidle: use init/exit common routine
-Date: Thu, 18 Apr 2013 14:20:42 +0530
-Message-ID: <516FB3E2.30106@ti.com>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-14-git-send-email-daniel.lezcano@linaro.org>
+From: Alex Shi <alex.shi@intel.com>
+Subject: Re: bltk-game regressions on snb laptop
+Date: Thu, 18 Apr 2013 16:54:07 +0800
+Message-ID: <516FB4AF.6060009@intel.com>
+References: <516CFA57.3060709@intel.com> <CAKohponOVZgAxdX5yv9qmn_56mgTdXEBPr-7o7_pA5GRF09J0w@mail.gmail.com> <516F42EE.6080802@intel.com> <CAKohpokju79Fx7TXTD1hKoG0JUmCsRm8Us381bhHeUrBvyOv6w@mail.gmail.com> <516F81BD.3030306@intel.com> <CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:34686 "EHLO bear.ext.ti.com"
+Received: from mga02.intel.com ([134.134.136.20]:35350 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965897Ab3DRIto (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Apr 2013 04:49:44 -0400
-In-Reply-To: <1365770165-27096-14-git-send-email-daniel.lezcano@linaro.org>
+	id S966803Ab3DRIyo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Apr 2013 04:54:44 -0400
+In-Reply-To: <CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>
 
-On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initialization.
+On 04/18/2013 01:37 PM, Viresh Kumar wrote:
+>>> About your system: Can you give output of cpufreq-info for v3.8 and
+>>> >> v3.9-latestrc?
+>>> >> Your cpus share a clock line or not?
+>> >
+>> > Yes our cpu shares a clock line. So the cpufreq-info is same. SNB CPU
+>> > p-state is per cpu package, and hardware will coordinate the software
+>> > asking, then decide which cpufreq should be.
+> Can you paste cpufreq-info output, that will give us a better picture of your
+> system.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
-Acked-by: Santosh Shilimkar <santosh.shilimkar@ti.com>
 
+at the most of time with your patch cpufreq-info is 0.8GHz, without the
+patch, the cpufreq is varied from 1.0 to 2.8 Ghz.
+
+
+-- 
+Thanks Alex
