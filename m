@@ -1,316 +1,51 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
-Date: Thu, 18 Apr 2013 08:13:54 -0700
-Message-ID: <51700DB2.5090506@linux.intel.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <516ED378.2000406@linux.intel.com> <516FC2D1.9020809@linux.vnet.ibm.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/9] ARM: cpuidle: remove useless declaration
+Date: Thu, 18 Apr 2013 16:42:36 +0100
+Message-ID: <20130418154236.GY14496@n2100.arm.linux.org.uk>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <515C1F3B.5040008@linaro.org> <20130418141359.GT14496@n2100.arm.linux.org.uk> <517003CF.5090106@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:32097 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966458Ab3DRPI6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Apr 2013 11:08:58 -0400
-In-Reply-To: <516FC2D1.9020809@linux.vnet.ibm.com>
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34188 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967558Ab3DRPof (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 11:44:35 -0400
+Content-Disposition: inline
+In-Reply-To: <517003CF.5090106@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: deepthi@linux.vnet.ibm.com, linaro-kernel@lists.linaro.org, swarren@wwwdotorg.org, linux-pm@vger.kernel.org, patches@linaro.org, nsekhar@ti.com, rjw@sisk.pl, rnayak@ti.com, josephl@nvidia.com, linux-tegra@vger.kernel.org, horms+renesas@verge.net.au, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
 
-On 04/18/2013 02:54 AM, Srivatsa S. Bhat wrote:
-> On 04/17/2013 10:23 PM, Srinivas Pandruvada wrote:
->> On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
->>> [I know, this cover letter is a little too long, but I wanted to clearly
->>> explain the overall goals and the high-level design of this patchset in
->>> detail. I hope this helps more than it annoys, and makes it easier for
->>> reviewers to relate to the background and the goals of this patchset.]
->>>
->>>
->>> Overview of Memory Power Management and its implications to the Linux MM
->>> ========================================================================
->>>
-> [...]
->> One thing you need to prevent is boot time allocation. You have to make
->> sure that frequently accessed per node data stored at the end of memory
->> will keep all ranks of memory active.
->>
-When I was experimenting I did something like this.
-/////////////////////////////////
+On Thu, Apr 18, 2013 at 04:31:43PM +0200, Daniel Lezcano wrote:
+> On 04/18/2013 04:13 PM, Russell King - ARM Linux wrote:
+> > On Wed, Apr 03, 2013 at 02:23:23PM +0200, Daniel Lezcano wrote:
+> >> On 04/03/2013 02:15 PM, Daniel Lezcano wrote:
+> >>> The noop functions code is not necessary because the header file is
+> >>> included in files which are compiled when CONFIG_CPU_IDLE is on.
+> >>>
+> >>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>
+> >> I have been involved in the development of this file. I know Rob is no
+> >> longer working on this neither monitoring the code.
+> >>
+> >> Russell are you ok with this patch ? Rafael needs your ack to take this
+> >> patch into its tree.
+> > 
+> > I don't know - the description doesn't make it clear.  Surely, what you
+> > checked was that this file is _not_ included in any file which is built
+> > when CONFIG_CPU_IDLE is disabled.  In other words, when CONFIG_CPU_IDLE
+> > is not defined, arm_cpuidle_simple_enter() is never referenced.
+> > 
+> > If that is the case, then it's just that the patch description is the
+> > opposite of what it should be for this patch - and then the patch and
+> > description match and I don't see any reason to say no to it.
+> > 
+> > Then comes the issue of who takes the patch.  It looks like Rafael
+> > would like me to.
+> 
+> Actually Rafael was willing to take the patch if you ack it.
 
-
-+/*
-+ * Experimental MPST implemenentation
-+ * Copyright (c) 2012, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public 
-License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License 
-along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+#include <linux/init.h>
-+#include <linux/kthread.h>
-+#include <linux/acpi.h>
-+#include <linux/export.h>
-+#include <linux/bootmem.h>
-+#include <linux/delay.h>
-+#include <linux/pfn.h>
-+#include <linux/suspend.h>
-+#include <linux/acpi.h>
-+#include <linux/memblock.h>
-+#include <linux/mm.h>
-+#include <linux/mmzone.h>
-+#include <linux/migrate.h>
-+#include <linux/mm_inline.h>
-+#include <linux/page-isolation.h>
-+#include <linux/vmalloc.h>
-+#include <linux/compaction.h>
-+#include "internal.h"
-+
-+#define phys_to_pfn(p) ((p) >> PAGE_SHIFT)
-+#define pfn_to_phys(p) ((p) << PAGE_SHIFT)
-+#define MAX_MPST_ZONES 16
-+/* Atleast 4G of non MPST memory. */
-+#define MINIMAL_NON_MPST_MEMORY_PFN (0x100000000 >> PAGE_SHIFT)
-+
-+struct mpst_mem_zone {
-+       phys_addr_t start_addr;
-+       phys_addr_t end_addr;
-+};
-+
-+static struct mpst_mem_zone mpst_zones[MAX_MPST_ZONES];
-+static int mpst_zone_cnt;
-+static unsigned long mpst_start_pfn;
-+static unsigned long mpst_end_pfn;
-+static bool mpst_enabled;
-+
-+/* Minimal parsing for just getting node ranges */
-+static int __init acpi_parse_mpst_table(struct acpi_table_header *table)
-+{
-+       struct acpi_table_mpst *mpst;
-+       struct acpi_mpst_power_node *node;
-+       u16 node_count;
-+       int i;
-+
-+       mpst = (struct acpi_table_mpst *)table;
-+       if (!mpst) {
-+               pr_warn("Unable to map MPST\n");
-+               return -ENODEV;
-+       }
-+       node_count = mpst->power_node_count;
-+       node = (struct acpi_mpst_power_node *)((u8 *)mpst + sizeof(*mpst));
-+
-+       for (i = mpst_zone_cnt; (i < node_count) && (i < MAX_MPST_ZONES);
-+ ++i) {
-+               if ((node->flags & ACPI_MPST_ENABLED) &&
-+                       (node->flags & ACPI_MPST_POWER_MANAGED)) {
-+                       mpst_zones[mpst_zone_cnt].start_addr =
-+                               node->range_address;
-+                       mpst_zones[mpst_zone_cnt].end_addr =
-+                               node->range_address + node->range_length;
-+                       ++mpst_zone_cnt;
-+               }
-+               ++node;
-+       }
-+
-+       return 0;
-+}
-+
-+static unsigned long local_ahex_to_long(const char *name)
-+{
-+       unsigned long val = 0;
-+
-+       for (;; name++) {
-+               switch (*name) {
-+               case '0' ... '9':
-+                       val = 16*val+(*name-'0');
-+                       break;
-+               case 'A' ... 'F':
-+                       val = 16*val+(*name-'A'+10);
-+                       break;
-+               case 'a' ... 'f':
-+                       val = 16*val+(*name-'a'+10);
-+                       break;
-+               default:
-+                       return val;
-+               }
-+       }
-+
-+       return val;
-+}
-+
-+/* Specify MPST range by command line for test till ACPI - MPST is 
-available */
-+static int __init parse_mpst_opt(char *str)
-+{
-+       char *ptr;
-+       phys_addr_t start_at = 0, end_at = 0;
-+       u64  mem_size = 0;
-+
-+       if (!str)
-+               return -EINVAL;
-+       ptr = str;
-+       while (1) {
-+               if (*str == '-') {
-+                       *str = '\0';
-+                       start_at = local_ahex_to_long(ptr);
-+                       ++str;
-+                       ptr = str;
-+               }
-+               if (start_at && (*str == '\0' || *str == ',' || *str == 
-' ')) {
-+                       *str = '\0';
-+                       end_at = local_ahex_to_long(ptr);
-+                       mem_size = end_at-start_at;
-+                       ++str;
-+                       ptr = str;
-+                       pr_info("-mpst[%#018Lx-%#018Lx size: %#018Lx]\n",
-+                                               start_at, end_at, mem_size);
-+                       if (IS_ALIGNED(phys_to_pfn(start_at),
-+                                       pageblock_nr_pages) &&
-+ IS_ALIGNED(phys_to_pfn(end_at),
-+                                       pageblock_nr_pages)) {
-+                               mpst_zones[mpst_zone_cnt].start_addr =
-+ start_at;
-+                               mpst_zones[mpst_zone_cnt].end_addr =
-+ end_at;
-+                       } else {
-+                               pr_err("mpst invalid range\n");
-+                               return -EINVAL;
-+                       }
-+                       mpst_zone_cnt++;
-+                       start_at = mem_size = end_at = 0;
-+               }
-+               if (*str == '\0')
-+                       break;
-+               else
-+                       ++str;
-+       }
-+
-+       return 0;
-+}
-+early_param("mpst_range", parse_mpst_opt);
-+
-+/* Specify MPST range by command line for test till ACPI - MPST is 
-available */
-+static int __init parse_mpst_enable_opt(char *str)
-+{
-+       long value;
-+       if (kstrtol(str, 10, &value))
-+               return -EINVAL;
-+       mpst_enabled = value ? true : false;
-+
-+       return 0;
-+}
-+early_param("mpst_enable", parse_mpst_enable_opt);
-+
-+/* Set the minimum and maximum PFN */
-+static void mpst_set_min_max_pfn(void)
-+{
-+       int i;
-+
-+       if (!mpst_zone_cnt)
-+               return;
-+
-+       mpst_start_pfn = phys_to_pfn(mpst_zones[0].start_addr);
-+       mpst_end_pfn = phys_to_pfn(mpst_zones[0].end_addr);
-+
-+       for (i = 1; i < mpst_zone_cnt; ++i) {
-+               if (mpst_start_pfn > phys_to_pfn(mpst_zones[i].start_addr))
-+                       mpst_start_pfn = 
-phys_to_pfn(mpst_zones[i].start_addr);
-+               if (mpst_end_pfn < phys_to_pfn(mpst_zones[i].end_addr))
-+                       mpst_end_pfn = phys_to_pfn(mpst_zones[i].end_addr);
-+       }
-+}
-+
-+/* Change migrate type for the MPST ranges */
-+int mpst_set_migrate_type(void)
-+{
-+       int i;
-+       struct page *page;
-+       unsigned long start_pfn, end_pfn;
-+
-+       if (!mpst_start_pfn || !mpst_end_pfn)
-+               return -EINVAL;
-+       if (!IS_ALIGNED(mpst_start_pfn, pageblock_nr_pages))
-+               return -EINVAL;
-+       if (!IS_ALIGNED(mpst_end_pfn, pageblock_nr_pages))
-+               return -EINVAL;
-+       memblock_free(pfn_to_phys(mpst_start_pfn),
-+               pfn_to_phys(mpst_end_pfn) - pfn_to_phys(mpst_start_pfn));
-+       for (i = 0; i < mpst_zone_cnt; ++i) {
-+               start_pfn = phys_to_pfn(mpst_zones[i].start_addr);
-+               end_pfn = phys_to_pfn(mpst_zones[i].end_addr);
-+               for (; start_pfn < end_pfn; ++start_pfn) {
-+                       page = pfn_to_page(start_pfn);
-+                       if (page)
-+                               set_pageblock_migratetype(page,
-+                                               MIGRATE_LP_MEMORY);
-+               }
-+       }
-+
-+       return 0;
-+}
-+
-+/* Parse ACPI table and find start and end of MPST zone.
-+Assuming zones are contiguous */
-+int mpst_init(void)
-+{
-+       if (!mpst_enabled) {
-+               pr_info("mpst not enabled in command line\n");
-+               return 0;
-+       }
-+
-+       acpi_table_parse(ACPI_SIG_MPST, acpi_parse_mpst_table);
-+       mpst_set_min_max_pfn();
-+       if (mpst_zone_cnt) {
-+
-+               if (mpst_start_pfn < MINIMAL_NON_MPST_MEMORY_PFN) {
-+                       pr_err("Not enough memory: Ignore MPST\n");
-+                       mpst_start_pfn = mpst_end_pfn = 0;
-+                       return -EINVAL;
-+               }
-+               memblock_reserve(pfn_to_phys(mpst_start_pfn),
-+                                       pfn_to_phys(mpst_end_pfn) -
-+ pfn_to_phys(mpst_start_pfn));
-+               pr_info("mpst_init memblock limit set to pfn %lu 
-0x%#018lx\n",
-+                       mpst_start_pfn, pfn_to_phys(mpst_start_pfn));
-+       }
-+
-+       return 0;
-+}
-
-
-
-
-
-/////////////////////////////
-> I think you meant to say "... stored at the end of memory will NOT keep all
-> ranks of memory active".
->
-> Yep, that's a good point! I'll think about how to achieve that. Thanks!
->
-> Regards,
-> Srivatsa S. Bhat
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
-
+Well, I want to see a proper description on the patch which describes
+what it _is_ doing before I ack it.  The existing description is just
+plain confusing.
