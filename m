@@ -1,63 +1,46 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/4] SH: cpuidle: remove pointless initialization
-Date: Thu, 18 Apr 2013 11:18:04 +0200
-Message-ID: <516FBA4C.6020100@linaro.org>
-References: <1366205577-11632-1-git-send-email-daniel.lezcano@linaro.org> <20130418011816.GD4511@verge.net.au>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
+Date: Thu, 18 Apr 2013 15:24:25 +0530
+Message-ID: <516FC2D1.9020809@linux.vnet.ibm.com>
+References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <516ED378.2000406@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f42.google.com ([209.85.214.42]:55553 "EHLO
-	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758171Ab3DRJSH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Apr 2013 05:18:07 -0400
-Received: by mail-bk0-f42.google.com with SMTP id jc3so1162642bkc.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Apr 2013 02:18:06 -0700 (PDT)
-In-Reply-To: <20130418011816.GD4511@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <516ED378.2000406@linux.intel.com>
+Sender: owner-linux-mm@kvack.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: lethal@linux-sh.org, rjw@sisk.pl, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org
 
-On 04/18/2013 03:18 AM, Simon Horman wrote:
-> On Wed, Apr 17, 2013 at 03:32:54PM +0200, Daniel Lezcano wrote:
->> The driver is a global static variable automatically initialized to =
-zero.
+On 04/17/2013 10:23 PM, Srinivas Pandruvada wrote:
+> On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
+>> [I know, this cover letter is a little too long, but I wanted to clearly
+>> explain the overall goals and the high-level design of this patchset in
+>> detail. I hope this helps more than it annoys, and makes it easier for
+>> reviewers to relate to the background and the goals of this patchset.]
 >>
->> Removing the useless initialization in the init function.
 >>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->=20
-> Hi Daniel,
->=20
-> All four patches in this series seem reasonable to me.
->=20
-> Acked-by: Simon Horman <horms+renesas@verge.net.au>
->=20
-> Please let me know if I should take them through my renesas tree.
-
-If you are ok with that, is it possible to take them through the
-linux-pm tree ? So the cpuidle drivers are synced and I can continue th=
-e
-code consolidation ?
-
-Thanks for the review.
-
-  -- Daniel
-
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-sh" =
-in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Overview of Memory Power Management and its implications to the Linux MM
+>> ========================================================================
 >>
+[...]
+>>
+> One thing you need to prevent is boot time allocation. You have to make
+> sure that frequently accessed per node data stored at the end of memory
+> will keep all ranks of memory active.
+> 
 
+I think you meant to say "... stored at the end of memory will NOT keep all
+ranks of memory active".
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Yep, that's a good point! I'll think about how to achieve that. Thanks!
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards,
+Srivatsa S. Bhat
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
