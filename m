@@ -1,14 +1,15 @@
 From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [V3 patch 03/19] ARM: OMAP3: remove cpuidle_wrap_enter
-Date: Thu, 18 Apr 2013 13:57:24 +0530
-Message-ID: <516FAE6C.3050002@ti.com>
+Subject: Re: [V3 patch 01/19] ARM: shmobile: cpuidle: remove shmobile_enter_wfi
+ function
+Date: Thu, 18 Apr 2013 13:58:30 +0530
+Message-ID: <516FAEAE.1060201@ti.com>
 References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org>
- <1365770165-27096-4-git-send-email-daniel.lezcano@linaro.org>
+ <1365770165-27096-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1365770165-27096-4-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1365770165-27096-2-git-send-email-daniel.lezcano@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,17 +24,9 @@ Cc: andrew@lunn.ch, khilman@deeprootsystems.com, linus.walleij@linaro.org, nsekh
 List-Id: linux-pm@vger.kernel.org
 
 On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
-> In a previous commit the en_core_tk_irqen flag has been added but we missed
-> the cpuidle_wrap_enter which was doing the job to measure the time for the
-> 'omap3_enter_idle' function.
-> 
-> Actually, I don't see any reason to use this wrapper in the code. In the better
-> case, the time computation is not correctly done because of the different
-> operations done in omap3_enter_idle_bm which were not taken into account
-> before the en_core_tk_irqen flag was set.
-> 
-> As the time is reflected for the state overridden by the omap3_enter_idle_bm,
-> using the wrapper is pointless now, so removing it.
+> Remove the shmobile_enter_wfi function which is the same as the
+> common WFI enter function from the arm cpuidle driver defined
+> with the ARM_CPUIDLE_WFI_STATE macro.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
