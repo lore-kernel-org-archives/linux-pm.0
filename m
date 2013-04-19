@@ -1,94 +1,80 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: [RFC PATCH 2/2] cpufreq: cpufreq-cpu0: Limit minimum voltage only
-Date: Fri, 19 Apr 2013 14:55:54 +0300
-Message-ID: <1366372554-20866-3-git-send-email-taras@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: bltk-game regressions on snb laptop
+Date: Fri, 19 Apr 2013 17:53:09 +0530
+Message-ID: <CAKohpongtqt0Sdc95TTrJ+s5A3Xt7df+SmtBZNyHzQKtARLxKA@mail.gmail.com>
+References: <516CFA57.3060709@intel.com>
+	<CAKohponOVZgAxdX5yv9qmn_56mgTdXEBPr-7o7_pA5GRF09J0w@mail.gmail.com>
+	<516F42EE.6080802@intel.com>
+	<CAKohpokju79Fx7TXTD1hKoG0JUmCsRm8Us381bhHeUrBvyOv6w@mail.gmail.com>
+	<516F81BD.3030306@intel.com>
+	<CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com>
+	<516FB4AF.6060009@intel.com>
+	<CAKohpo=NGYadRubvBDLsE=oO1wuDSxnutYfZLm9vu4B6tcUw-g@mail.gmail.com>
+	<517115D4.5020505@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1366372554-20866-1-git-send-email-taras@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lgirdwood@gmail.com, broonie@kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Taras Kondratiuk <taras@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Mark Langsdorf <mark.langsdorf@calxeda.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f43.google.com ([209.85.219.43]:43993 "EHLO
+	mail-oa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968238Ab3DSMXK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2013 08:23:10 -0400
+Received: by mail-oa0-f43.google.com with SMTP id k7so328453oag.30
+        for <linux-pm@vger.kernel.org>; Fri, 19 Apr 2013 05:23:09 -0700 (PDT)
+In-Reply-To: <517115D4.5020505@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alex Shi <alex.shi@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>
 
-cpufreq-cpu0 uses regulator_set_voltage_tol() API
-to set CPU regulator voltage to some narrow range around OPP voltage.
-It creates an issue if CPU regulator device has other consumers,
-because their request doesn't overlap with cpufreq's one.
-Normally cpufreq should constrain only lower voltage limit,
-so other consumers have a chance to set their own constraints.
+On 19 April 2013 15:30, Alex Shi <alex.shi@intel.com> wrote:
+> the following is cpufreq-info output at 3.9-rc4:
+> During bltk-game testing, most of time the cpu freq is 2.2G
+> ============
+> [root@lkp-sb01 cpufreq]#cpupower frequency-info
+> analyzing CPU 0:
+>   driver: acpi-cpufreq
+>   CPUs which run at the same hardware frequency: 0 1 2 3 4 5 6 7
+>   CPUs which need to have their frequency coordinated by software: 0 1 2
+> 3 4 5 6 7
+>   maximum transition latency: 10.0 us.
+>   hardware limits: 800 MHz - 2.20 GHz
+>   available frequency steps: 2.20 GHz, 2.20 GHz, 2.00 GHz, 1.90 GHz,
+> 1.80 GHz, 1.70 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz,
+> 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
+>   available cpufreq governors: ondemand, userspace, performance
+>   current policy: frequency should be within 800 MHz and 2.20 GHz.
+>                   The governor "ondemand" may decide which speed to use
+>                   within this range.
+>   current CPU frequency is 2.20 GHz (asserted by call to hardware).
+>   boost state support:
+>     Supported: no
+>     Active: no
+>
+> And this is the 3.9-rc5 kernel, with your patch:
+> During testing, most of time cpufreq is 0.8Ghz
+> ============
+> [root@lkp-sb01 ~]#cpupower frequency-info
+> analyzing CPU 0:
+>   driver: acpi-cpufreq
+>   CPUs which run at the same hardware frequency: 0
+>   CPUs which need to have their frequency coordinated by software: 0
+>   maximum transition latency: 10.0 us.
+>   hardware limits: 800 MHz - 2.20 GHz
+>   available frequency steps: 2.20 GHz, 2.20 GHz, 2.00 GHz, 1.90 GHz,
+> 1.80 GHz, 1.70 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz,
+> 1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
+>   available cpufreq governors: ondemand, userspace, performance
+>   current policy: frequency should be within 800 MHz and 2.20 GHz.
+>                   The governor "ondemand" may decide which speed to use
+>                   within this range.
+>   current CPU frequency is 800 MHz (asserted by call to hardware).
+>   boost state support:
+>     Supported: no
+>     Active: no
 
-Use regulator_set_voltage_min() API to limit minimum voltage.
-Remove a voltage tolerance parameter as redundant.
+So you get better performance without my patch because we don't allocate
+any struct cpufreq_policy for any of the cpus leaving first one. And so only
+manage freq change for it and all other cpus stay at max power..
 
-Signed-off-by: Taras Kondratiuk <taras@ti.com>
----
- drivers/cpufreq/cpufreq-cpu0.c |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 37d23a0..e494a97 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -22,7 +22,6 @@
- #include <linux/slab.h>
- 
- static unsigned int transition_latency;
--static unsigned int voltage_tolerance; /* in percentage */
- 
- static struct device *cpu_dev;
- static struct clk *cpu_clk;
-@@ -44,7 +43,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- {
- 	struct cpufreq_freqs freqs;
- 	struct opp *opp;
--	unsigned long freq_Hz, volt = 0, volt_old = 0, tol = 0;
-+	unsigned long freq_Hz, volt = 0, volt_old = 0;
- 	unsigned int index, cpu;
- 	int ret;
- 
-@@ -80,7 +79,6 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 		}
- 		volt = opp_get_voltage(opp);
- 		rcu_read_unlock();
--		tol = volt * voltage_tolerance / 100;
- 		volt_old = regulator_get_voltage(cpu_reg);
- 	}
- 
-@@ -90,7 +88,7 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 
- 	/* scaling up?  scale voltage before frequency */
- 	if (cpu_reg && freqs.new > freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+		ret = regulator_set_voltage_min(cpu_reg, volt);
- 		if (ret) {
- 			pr_err("failed to scale voltage up: %d\n", ret);
- 			freqs.new = freqs.old;
-@@ -102,13 +100,13 @@ static int cpu0_set_target(struct cpufreq_policy *policy,
- 	if (ret) {
- 		pr_err("failed to set clock rate: %d\n", ret);
- 		if (cpu_reg)
--			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
-+			regulator_set_voltage_min(cpu_reg, volt_old);
- 		return ret;
- 	}
- 
- 	/* scaling down?  scale voltage after frequency */
- 	if (cpu_reg && freqs.new < freqs.old) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
-+		ret = regulator_set_voltage_min(cpu_reg, volt);
- 		if (ret) {
- 			pr_err("failed to scale voltage down: %d\n", ret);
- 			clk_set_rate(cpu_clk, freqs.old * 1000);
-@@ -225,8 +223,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_node;
- 	}
- 
--	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
--
- 	if (of_property_read_u32(np, "clock-latency", &transition_latency))
- 		transition_latency = CPUFREQ_ETERNAL;
- 
--- 
-1.7.9.5
+So, we clearly need to know why don't we want to have all cpus set in
+policy->cpus, when they actually share clock line?
