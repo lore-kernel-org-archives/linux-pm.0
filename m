@@ -1,95 +1,498 @@
-From: Alex Shi <alex.shi@intel.com>
-Subject: Re: bltk-game regressions on snb laptop
-Date: Fri, 19 Apr 2013 18:00:52 +0800
-Message-ID: <517115D4.5020505@intel.com>
-References: <516CFA57.3060709@intel.com> <CAKohponOVZgAxdX5yv9qmn_56mgTdXEBPr-7o7_pA5GRF09J0w@mail.gmail.com> <516F42EE.6080802@intel.com> <CAKohpokju79Fx7TXTD1hKoG0JUmCsRm8Us381bhHeUrBvyOv6w@mail.gmail.com> <516F81BD.3030306@intel.com> <CAKohponG+F6ikVb2iY_Qg5E6NoCkPVj5VC12JqwXfamzsKLrXA@mail.gmail.com> <516FB4AF.6060009@intel.com> <CAKohpo=NGYadRubvBDLsE=oO1wuDSxnutYfZLm9vu4B6tcUw-g@mail.gmail.com>
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using
+ cpufreq interface
+Date: Fri, 19 Apr 2013 19:00:57 +0800
+Message-ID: <20130419110057.GC29421@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:34275 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783Ab3DSKAz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 19 Apr 2013 06:00:55 -0400
-In-Reply-To: <CAKohpo=NGYadRubvBDLsE=oO1wuDSxnutYfZLm9vu4B6tcUw-g@mail.gmail.com>
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:54023 "EHLO
+	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S968122Ab3DSLBW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2013 07:01:22 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, LKP ML <lkp@linux.intel.com>
+To: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-On 04/18/2013 06:01 PM, Viresh Kumar wrote:
-> On 18 April 2013 14:24, Alex Shi <alex.shi@intel.com> wrote:
->> On 04/18/2013 01:37 PM, Viresh Kumar wrote:
->>>>> About your system: Can you give output of cpufreq-info for v3.8 and
->>>>>>> v3.9-latestrc?
->>>>>>> Your cpus share a clock line or not?
->>>>>
->>>>> Yes our cpu shares a clock line. So the cpufreq-info is same. SNB CPU
->>>>> p-state is per cpu package, and hardware will coordinate the software
->>>>> asking, then decide which cpufreq should be.
->>> Can you paste cpufreq-info output, that will give us a better picture of your
->>> system.
->>>
->>
->> at the most of time with your patch cpufreq-info is 0.8GHz, without the
->> patch, the cpufreq is varied from 1.0 to 2.8 Ghz.
-> 
-> I need full output of following command:
-> 
-> $ cpufreq-info
+----- Forwarded message from Zhao Chenhui <chenhui.zhao@freescale.com> -----
 
-Sorry for replay late.
+Date: Fri, 19 Apr 2013 18:47:39 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: linuxppc-dev@lists.ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [linuxppc-release] [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using cpufreq interface
+X-Mailer: git-send-email 1.7.3
 
-the following is cpufreq-info output at 3.9-rc4:
-During bltk-game testing, most of time the cpu freq is 2.2G
-============
-[root@lkp-sb01 cpufreq]#cpupower frequency-info
-analyzing CPU 0:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0 1 2 3 4 5 6 7
-  CPUs which need to have their frequency coordinated by software: 0 1 2
-3 4 5 6 7
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.20 GHz
-  available frequency steps: 2.20 GHz, 2.20 GHz, 2.00 GHz, 1.90 GHz,
-1.80 GHz, 1.70 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz,
-1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: ondemand, userspace, performance
-  current policy: frequency should be within 800 MHz and 2.20 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 2.20 GHz (asserted by call to hardware).
-  boost state support:
-    Supported: no
-    Active: no
+From: chenhui zhao <chenhui.zhao@freescale.com>
 
-And this is the 3.9-rc5 kernel, with your patch:
-During testing, most of time cpufreq is 0.8Ghz
-============
-[root@lkp-sb01 ~]#cpupower frequency-info
-analyzing CPU 0:
-  driver: acpi-cpufreq
-  CPUs which run at the same hardware frequency: 0
-  CPUs which need to have their frequency coordinated by software: 0
-  maximum transition latency: 10.0 us.
-  hardware limits: 800 MHz - 2.20 GHz
-  available frequency steps: 2.20 GHz, 2.20 GHz, 2.00 GHz, 1.90 GHz,
-1.80 GHz, 1.70 GHz, 1.60 GHz, 1.50 GHz, 1.40 GHz, 1.30 GHz, 1.20 GHz,
-1.10 GHz, 1000 MHz, 900 MHz, 800 MHz
-  available cpufreq governors: ondemand, userspace, performance
-  current policy: frequency should be within 800 MHz and 2.20 GHz.
-                  The governor "ondemand" may decide which speed to use
-                  within this range.
-  current CPU frequency is 800 MHz (asserted by call to hardware).
-  boost state support:
-    Supported: no
-    Active: no
+Some 85xx silicons like MPC8536 and P1022 have a JOG feature, which provides
+a dynamic mechanism to lower or raise the CPU core clock at runtime.
 
-> 
-> This has got lots of other details too.
-> 
+This patch adds the support to change CPU frequency using the standard
+cpufreq interface. The ratio CORE to CCB can be 1:1(except MPC8536), 3:2,
+2:1, 5:2, 3:1, 7:2 and 4:1.
 
+Two CPU cores on P1022 must not in the low power state during the frequency
+transition. The driver uses a atomic counter to meet the requirement.
 
+The jog mode frequency transition process on the MPC8536 is similar to
+the deep sleep process. The driver need save the CPU state and restore
+it after CPU warm reset.
+
+Note:
+ * The I/O peripherals such as PCIe and eTSEC may lose packets during
+   the jog mode frequency transition.
+ * The driver doesn't support MPC8536 Rev 1.0 due to a JOG erratum.
+   Subsequent revisions of MPC8536 have corrected the erratum.
+
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+CC: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/platforms/85xx/Makefile |    1 +
+ drivers/cpufreq/Kconfig.powerpc      |   10 +
+ drivers/cpufreq/Makefile             |    1 +
+ drivers/cpufreq/mpc85xx-cpufreq.c    |  390 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 402 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/cpufreq/mpc85xx-cpufreq.c
+
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index a35bab7..da53bde 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -3,6 +3,7 @@
+ #
+ obj-$(CONFIG_SMP) += smp.o
+ obj-$(CONFIG_FSL_PMC)	+= sleep.o
++obj-$(CONFIG_CPU_FREQ_MPC85xx)	+= sleep.o
+ 
+ obj-y += common.o
+ 
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index e76992f..ba06a00 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -5,3 +5,13 @@ config CPU_FREQ_MAPLE
+ 	help
+ 	  This adds support for frequency switching on Maple 970FX
+ 	  Evaluation Board and compatible boards (IBM JS2x blades).
++
++config CPU_FREQ_MPC85xx
++	bool "Support for Freescale MPC85xx CPU freq"
++	depends on PPC_85xx && PPC32 && !PPC_E500MC
++	select CPU_FREQ_TABLE
++	help
++	  This adds support for dynamic frequency switching on
++	  Freescale MPC85xx by cpufreq interface. MPC8536 and P1022
++	  have a JOG feature, which provides a dynamic mechanism
++	  to lower or raise the CPU core clock at runtime.
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 863fd18..e7aecc5 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -61,3 +61,4 @@ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ ##################################################################################
+ # PowerPC platform drivers
+ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
++obj-$(CONFIG_CPU_FREQ_MPC85xx)		+= mpc85xx-cpufreq.o
+diff --git a/drivers/cpufreq/mpc85xx-cpufreq.c b/drivers/cpufreq/mpc85xx-cpufreq.c
+new file mode 100644
+index 0000000..f56c826
+--- /dev/null
++++ b/drivers/cpufreq/mpc85xx-cpufreq.c
+@@ -0,0 +1,390 @@
++/*
++ * Copyright (C) 2008-2012 Freescale Semiconductor, Inc.
++ * Author: Dave Liu <daveliu@freescale.com>
++ * Modifier: Chenhui Zhao <chenhui.zhao@freescale.com>
++ *
++ * The cpufreq driver is for Freescale 85xx processor,
++ * based on arch/powerpc/platforms/cell/cbe_cpufreq.c
++ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005-2007
++ *	Christian Krafft <krafft@de.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/cpufreq.h>
++#include <linux/of_platform.h>
++#include <linux/suspend.h>
++#include <linux/cpu.h>
++#include <linux/time.h>
++#include <linux/io.h>
++#include <linux/smp.h>
++
++#include <asm/prom.h>
++#include <asm/reg.h>
++#include <asm/machdep.h>
++
++#include <sysdev/fsl_soc.h>
++
++static DEFINE_MUTEX(mpc85xx_switch_mutex);
++static void __iomem *guts;
++
++static u32 sysfreq;
++static unsigned int max_pll[2];
++static atomic_t in_jog_process;
++static struct cpufreq_frequency_table *mpc85xx_freqs;
++static int (*set_pll)(unsigned int cpu, unsigned int pll);
++
++static struct cpufreq_frequency_table mpc8536_freqs_table[] = {
++	{3,	0},
++	{4,	0},
++	{5,	0},
++	{6,	0},
++	{7,	0},
++	{8,	0},
++	{0,	CPUFREQ_TABLE_END},
++};
++
++static struct cpufreq_frequency_table p1022_freqs_table[] = {
++	{2,	0},
++	{3,	0},
++	{4,	0},
++	{5,	0},
++	{6,	0},
++	{7,	0},
++	{8,	0},
++	{0,	CPUFREQ_TABLE_END},
++};
++
++#define FREQ_500MHz	500000000
++#define FREQ_800MHz	800000000
++
++#define CORE_RATIO_STRIDE	8
++#define CORE_RATIO_MASK		0x3f
++#define CORE_RATIO_SHIFT	16
++
++#define PORPLLSR	0x0	/* Power-On Reset PLL ratio status register */
++
++#define PMJCR		0x7c	/* Power Management Jog Control Register */
++#define PMJCR_CORE0_SPD	0x00001000
++#define PMJCR_CORE_SPD	0x00002000
++
++#define POWMGTCSR	0x80 /* Power management control and status register */
++#define POWMGTCSR_JOG		0x00200000
++#define POWMGTCSR_INT_MASK	0x00000f00
++
++static void spin_while_jogging(void *dummy)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++	atomic_inc(&in_jog_process);
++
++	while (atomic_read(&in_jog_process) != 0)
++		barrier();
++
++	local_irq_restore(flags);
++}
++
++static int get_pll(int hw_cpu)
++{
++	int shift;
++	u32 val = in_be32(guts + PORPLLSR);
++
++	shift = hw_cpu * CORE_RATIO_STRIDE + CORE_RATIO_SHIFT;
++
++	return (val >> shift) & CORE_RATIO_MASK;
++}
++
++static int mpc8536_set_pll(unsigned int cpu, unsigned int pll)
++{
++	u32 corefreq, val, mask;
++	unsigned int cur_pll = get_pll(0);
++	unsigned long flags;
++
++	if (pll == cur_pll)
++		return 0;
++
++	val = (pll & CORE_RATIO_MASK) << CORE_RATIO_SHIFT;
++
++	corefreq = sysfreq * pll / 2;
++	/*
++	 * Set the COREx_SPD bit if the requested core frequency
++	 * is larger than the threshold frequency.
++	 */
++	if (corefreq > FREQ_800MHz)
++			val |= PMJCR_CORE_SPD;
++
++	mask = (CORE_RATIO_MASK << CORE_RATIO_SHIFT) | PMJCR_CORE_SPD;
++	clrsetbits_be32(guts + PMJCR, mask, val);
++
++	/* readback to sync write */
++	in_be32(guts + PMJCR);
++
++	local_irq_save(flags);
++	mpc85xx_enter_deep_sleep(get_immrbase(), POWMGTCSR_JOG);
++	local_irq_restore(flags);
++
++	/* verify */
++	cur_pll =  get_pll(0);
++	if (cur_pll != pll) {
++		pr_err("%s: error. The current PLL is %d instead of %d.\n",
++				__func__, cur_pll, pll);
++		return -1;
++	}
++
++	return 0;
++}
++
++static int p1022_set_pll(unsigned int cpu, unsigned int pll)
++{
++	int index, hw_cpu = get_hard_smp_processor_id(cpu);
++	int shift;
++	u32 corefreq, val, mask = 0;
++	unsigned int cur_pll = get_pll(hw_cpu);
++	unsigned long flags;
++	int ret = 0;
++
++	if (pll == cur_pll)
++		return 0;
++
++	shift = hw_cpu * CORE_RATIO_STRIDE + CORE_RATIO_SHIFT;
++	val = (pll & CORE_RATIO_MASK) << shift;
++
++	corefreq = sysfreq * pll / 2;
++	/*
++	 * Set the COREx_SPD bit if the requested core frequency
++	 * is larger than the threshold frequency.
++	 */
++	if (corefreq > FREQ_500MHz)
++		val |= PMJCR_CORE0_SPD << hw_cpu;
++
++	mask = (CORE_RATIO_MASK << shift) | (PMJCR_CORE0_SPD << hw_cpu);
++	clrsetbits_be32(guts + PMJCR, mask, val);
++
++	/* readback to sync write */
++	in_be32(guts + PMJCR);
++
++	get_online_cpus();
++	/*
++	 * A Jog request can not be asserted when any core is in a low
++	 * power state on P1022. Before executing a jog request, any
++	 * core which is in a low power state must be waked by a
++	 * interrupt, and keep waking up until the sequence is
++	 * finished.
++	 */
++	for_each_present_cpu(index) {
++		if (!cpu_online(index)) {
++			put_online_cpus();
++			pr_err("%s: error, core%d is down.\n", __func__, index);
++			return -1;
++		}
++	}
++
++	atomic_set(&in_jog_process, 0);
++	smp_call_function(spin_while_jogging, NULL, 0);
++
++	local_irq_save(flags);
++
++	/* Wait for the other core to wake. */
++	if (!spin_event_timeout(atomic_read(&in_jog_process) == 1, 1000, 100)) {
++		pr_err("%s: timeout, the other core is not at running state.\n",
++					__func__);
++		ret = -1;
++		goto err;
++	}
++
++	out_be32(guts + POWMGTCSR, POWMGTCSR_JOG | POWMGTCSR_INT_MASK);
++
++	if (!spin_event_timeout(
++		(in_be32(guts + POWMGTCSR) & POWMGTCSR_JOG) == 0, 1000, 100)) {
++		pr_err("%s: timeout, fail to switch the core frequency.\n",
++				__func__);
++		ret = -1;
++		goto err;
++	}
++
++	clrbits32(guts + POWMGTCSR, POWMGTCSR_INT_MASK);
++	in_be32(guts + POWMGTCSR);
++
++	atomic_set(&in_jog_process, 0);
++err:
++	local_irq_restore(flags);
++	put_online_cpus();
++
++	/* verify */
++	cur_pll =  get_pll(hw_cpu);
++	if (cur_pll != pll) {
++		pr_err("%s: error, the current PLL of core %d is %d instead of %d.\n",
++				__func__, hw_cpu, cur_pll, pll);
++		return -1;
++	}
++
++	return ret;
++}
++
++/*
++ * cpufreq functions
++ */
++static int mpc85xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	unsigned int i, cur_pll;
++	int hw_cpu = get_hard_smp_processor_id(policy->cpu);
++
++	if (!cpu_present(policy->cpu))
++		return -ENODEV;
++
++	/* the latency of a transition, the unit is ns */
++	policy->cpuinfo.transition_latency = 2000;
++
++	cur_pll = get_pll(hw_cpu);
++
++	/* initialize frequency table */
++	pr_debug("core%d frequency table:\n", hw_cpu);
++	for (i = 0; mpc85xx_freqs[i].frequency != CPUFREQ_TABLE_END; i++) {
++		if (mpc85xx_freqs[i].index <= max_pll[hw_cpu]) {
++			/* The frequency unit is kHz. */
++			mpc85xx_freqs[i].frequency =
++				(sysfreq * mpc85xx_freqs[i].index / 2) / 1000;
++		} else {
++			mpc85xx_freqs[i].frequency = CPUFREQ_ENTRY_INVALID;
++		}
++
++		pr_debug("%d: %dkHz\n", i, mpc85xx_freqs[i].frequency);
++
++		if (mpc85xx_freqs[i].index == cur_pll)
++			policy->cur = mpc85xx_freqs[i].frequency;
++	}
++	pr_debug("current pll is at %d, and core freq is%d\n",
++			cur_pll, policy->cur);
++
++	cpufreq_frequency_table_get_attr(mpc85xx_freqs, policy->cpu);
++
++	/*
++	 * This ensures that policy->cpuinfo_min
++	 * and policy->cpuinfo_max are set correctly.
++	 */
++	return cpufreq_frequency_table_cpuinfo(policy, mpc85xx_freqs);
++}
++
++static int mpc85xx_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++
++	return 0;
++}
++
++static int mpc85xx_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, mpc85xx_freqs);
++}
++
++static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
++			      unsigned int target_freq,
++			      unsigned int relation)
++{
++	struct cpufreq_freqs freqs;
++	unsigned int new;
++	int ret = 0;
++
++	if (!set_pll)
++		return -ENODEV;
++
++	cpufreq_frequency_table_target(policy,
++				       mpc85xx_freqs,
++				       target_freq,
++				       relation,
++				       &new);
++
++	freqs.old = policy->cur;
++	freqs.new = mpc85xx_freqs[new].frequency;
++	freqs.cpu = policy->cpu;
++
++	mutex_lock(&mpc85xx_switch_mutex);
++	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
++
++	ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
++	if (!ret) {
++		pr_info("cpufreq: Setting core%d frequency to %d kHz and PLL ratio to %d:2\n",
++			 policy->cpu, mpc85xx_freqs[new].frequency,
++			 mpc85xx_freqs[new].index);
++
++		ppc_proc_freq = freqs.new * 1000ul;
++	}
++	cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
++	mutex_unlock(&mpc85xx_switch_mutex);
++
++	return ret;
++}
++
++static struct cpufreq_driver mpc85xx_cpufreq_driver = {
++	.verify		= mpc85xx_cpufreq_verify,
++	.target		= mpc85xx_cpufreq_target,
++	.init		= mpc85xx_cpufreq_cpu_init,
++	.exit		= mpc85xx_cpufreq_cpu_exit,
++	.name		= "mpc85xx-JOG",
++	.owner		= THIS_MODULE,
++	.flags		= CPUFREQ_CONST_LOOPS,
++};
++
++static struct of_device_id mpc85xx_jog_ids[] = {
++	{ .compatible = "fsl,mpc8536-guts", },
++	{ .compatible = "fsl,p1022-guts", },
++	{}
++};
++
++static int __init mpc85xx_jog_init(void)
++{
++	struct device_node *np;
++	unsigned int svr;
++
++	np = of_find_matching_node(NULL, mpc85xx_jog_ids);
++	if (!np)
++		return -ENODEV;
++
++	guts = of_iomap(np, 0);
++	if (!guts) {
++		of_node_put(np);
++		return -ENODEV;
++	}
++
++	sysfreq = fsl_get_sys_freq();
++
++	if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
++		svr = mfspr(SPRN_SVR);
++		if ((svr & 0x7fff) == 0x10) {
++			pr_err("MPC8536 Rev 1.0 does not support cpufreq(JOG).\n");
++			of_node_put(np);
++			return -ENODEV;
++		}
++		mpc85xx_freqs = mpc8536_freqs_table;
++		set_pll = mpc8536_set_pll;
++		max_pll[0] = get_pll(0);
++
++	} else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
++		mpc85xx_freqs = p1022_freqs_table;
++		set_pll = p1022_set_pll;
++		max_pll[0] = get_pll(0);
++		max_pll[1] = get_pll(1);
++	}
++
++	pr_info("Freescale MPC85xx cpufreq(JOG) driver\n");
++
++	of_node_put(np);
++	return cpufreq_register_driver(&mpc85xx_cpufreq_driver);
++}
++
++device_initcall(mpc85xx_jog_init);
 -- 
-Thanks
-    Alex
+1.7.3
