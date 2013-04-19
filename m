@@ -1,134 +1,191 @@
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
-Date: Fri, 19 Apr 2013 12:20:35 +0530
-Message-ID: <5170E93B.5090902@linux.vnet.ibm.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <517028F1.6000002@sr71.net>
+Date: Fri, 19 Apr 2013 12:42:15 +0530
+Message-ID: <5170EE4F.9030908@linux.vnet.ibm.com>
+References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <5170D781.3000102@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:33244 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903Ab3DSGxy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2013 02:53:54 -0400
-Received: from /spool/local
-	by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Fri, 19 Apr 2013 16:42:08 +1000
-In-Reply-To: <517028F1.6000002@sr71.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <5170D781.3000102@gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Simon Jeons <simon.jeons@gmail.com>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Hansen <dave@sr71.net>
-Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On 04/18/2013 10:40 PM, Dave Hansen wrote:
-> On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
->> 2. Performance overhead is expected to be low: Since we retain the simplicity
->>    of the algorithm in the page allocation path, page allocation can
->>    potentially remain as fast as it would be without memory regions. The
->>    overhead is pushed to the page-freeing paths which are not that critical.
+On 04/19/2013 11:04 AM, Simon Jeons wrote:
+> Hi Srivatsa,
+> On 04/10/2013 05:45 AM, Srivatsa S. Bhat wrote:
+>> [I know, this cover letter is a little too long, but I wanted to clearly
+>> explain the overall goals and the high-level design of this patchset in
+>> detail. I hope this helps more than it annoys, and makes it easier for
+>> reviewers to relate to the background and the goals of this patchset.]
+>>
+>>
+>> Overview of Memory Power Management and its implications to the Linux MM
+>> ========================================================================
+>>
+>> Today, we are increasingly seeing computer systems sporting larger and
+>> larger
+>> amounts of RAM, in order to meet workload demands. However, memory
+>> consumes a
+>> significant amount of power, potentially upto more than a third of
+>> total system
+>> power on server systems. So naturally, memory becomes the next big
+>> target for
+>> power management - on embedded systems and smartphones, and all the
+>> way upto
+>> large server systems.
+>>
+>> Power-management capabilities in modern memory hardware:
+>> -------------------------------------------------------
+>>
+>> Modern memory hardware such as DDR3 support a number of power management
+>> capabilities - for instance, the memory controller can automatically put
 > 
-> Numbers, please.  The problem with pushing the overhead to frees is that
-> they, believe it or not, actually average out to the same as the number
-> of allocs.  Think kernel compile, or a large dd.  Both of those churn
-> through a lot of memory, and both do an awful lot of allocs _and_ frees.
->  We need to know both the overhead on a system that does *no* memory
-> power management, and the overhead on a system which is carved and
-> actually using this code.
+> memory controller is integrated in cpu in NUMA system and mount on PCI-E
+> in UMA, correct? How can memory controller know which memory DIMMs/banks
+> it will control?
 > 
->> Kernbench results didn't show any noticeable performance degradation with
->> this patchset as compared to vanilla 3.9-rc5.
-> 
-> Surely this code isn't magical and there's overhead _somewhere_, and
-> such overhead can be quantified _somehow_.  Have you made an effort to
-> find those cases, even with microbenchmarks?
->
 
-Sorry for not posting the numbers explicitly. It really shows no difference in
-kernbench, see below.
+Um? That sounds like a strange question to me. If the memory controller
+itself doesn't know what it is controlling, then who will??
 
-[For the following run, I reverted patch 14, since it seems to be intermittently
-causing kernel-instability at high loads. So the numbers below show the effect
-of only the sorted-buddy part of the patchset, and not the compaction part.]
-
-Kernbench was run on a 2 socket 8 core machine (HT disabled) with 128 GB RAM,
-with allyesconfig on 3.9-rc5 kernel source. 
-
-Vanilla 3.9-rc5:
----------------
-Fri Apr 19 08:30:12 IST 2013
-3.9.0-rc5
-Average Optimal load -j 16 Run (std deviation):
-Elapsed Time 574.66 (2.31846)
-User Time 3919.12 (3.71256)
-System Time 339.296 (0.73694)
-Percent CPU 740.4 (2.50998)
-Context Switches 1.2183e+06 (4019.47)
-Sleeps 1.61239e+06 (2657.33)
-
-This patchset (minus patch 14): [Region size = 512 MB]
-------------------------------
-Fri Apr 19 09:42:38 IST 2013
-3.9.0-rc5-mpmv2-nowq
-Average Optimal load -j 16 Run (std deviation):
-Elapsed Time 575.668 (2.01583)
-User Time 3916.77 (3.48345)
-System Time 337.406 (0.701591)
-Percent CPU 738.4 (3.36155)
-Context Switches 1.21683e+06 (6980.13)
-Sleeps 1.61474e+06 (4906.23)
-
-
-So, that shows almost no degradation due to the sorted-buddy logic (considering
-the elapsed time).
- 
-> I still also want to see some hard numbers on:
->> However, memory consumes a significant amount of power, potentially upto
->> more than a third of total system power on server systems.
-> and
->> It had been demonstrated on a Samsung Exynos board
+>> memory DIMMs/banks into content-preserving low-power states, if it
+>> detects
+>> that that *entire* memory DIMM/bank has not been referenced for a
+>> threshold
+>> amount of time, thus reducing the energy consumption of the memory
+>> hardware.
+>> We term these power-manageable chunks of memory as "Memory Regions".
+>>
+>> Exporting memory region info of the platform to the OS:
+>> ------------------------------------------------------
+>>
+>> The OS needs to know about the granularity at which the hardware can
+>> perform
+>> automatic power-management of the memory banks (i.e., the address
+>> boundaries
+>> of the memory regions). On ARM platforms, the bootloader can be
+>> modified to
+>> pass on this info to the kernel via the device-tree. On x86 platforms,
+>> the
+>> new ACPI 5.0 spec has added support for exporting the power-management
+>> capabilities of the memory hardware to the OS in a standard way[5].
+>>
+>> Estimate of power-savings from power-aware Linux MM:
+>> ---------------------------------------------------
+>>
+>> Once the firmware/bootloader exports the required info to the OS, it
+>> is upto
+>> the kernel's MM subsystem to make the best use of these capabilities
+>> and manage
+>> memory power-efficiently. It had been demonstrated on a Samsung Exynos
+>> board
 >> (with 2 GB RAM) that upto 6 percent of total system power can be saved by
->> making the Linux kernel MM subsystem power-aware[4]. 
+>> making the Linux kernel MM subsystem power-aware[4]. (More savings can be
+>> expected on systems with larger amounts of memory, and perhaps
+>> improved further
+>> using better MM designs).
 > 
-> That was *NOT* with this code, and it's nearing being two years old.
-> What can *this* *patch* do?
-> 
-
-Please let me clarify that. My intention behind quoting that 6% power-savings
-number was _not_ to trick reviewers into believing that _this_ patchset provides
-that much power-savings. It was only to show that this whole effort of doing memory
-power management is not worthless, and we do have some valuable/tangible
-benefits to gain from it. IOW, it was only meant to show an _estimate_ of how
-much we can potentially save and thus justify the effort behind managing memory
-power-efficiently.
-
-As I had mentioned in the cover-letter, I don't have the the exact power-savings
-number for this particular patchset yet. I'll definitely work towards getting
-those numbers soon.
-
-> I think there are three scenarios to look at.  Let's say you have an 8GB
-> system with 1GB regions:
-> 1. Normal unpatched kernel, booted with  mem=1G...8G (in 1GB increments
->    perhaps) running some benchmark which sees performance scale with
->    the amount of memory present in the system.
-> 2. Kernel patched with this set, running the same test, but with single
->    memory regions.
-> 3. Kernel patched with this set.  But, instead of using mem=, you run
->    it trying to evacuate equivalent amount of memory to the amounts you
->    removed using mem=.
-> 
-> That will tell us both what the overhead is, and how effective it is.
-> I'd much rather see actual numbers and a description of the test than
-> some hand waving that it "didn't show any noticeable performance
-> degradation".
+> How to know there are 6 percent of total system power can be saved by
+> making the Linux kernel MM subsystem power-aware?
 > 
 
-Sure, I'll perform more extensive tests to evaluate the performance overhead
-more thoroughly. I'll first fix the compaction logic that seems to be buggy
-and run benchmarks again.
+By looking at the link I gave, I suppose? :-) Let me put it here again:
 
-Thanks a lot for your all invaluable inputs, Dave!
+[4]. Estimate of potential power savings on Samsung exynos board
+     http://article.gmane.org/gmane.linux.kernel.mm/65935
+
+That was measured by running the earlier patchset which implemented the
+"Hierarchy" design[2], with aggressive memory savings policies. But in any
+case, it gives an idea of the amount of power savings we can get by doing
+memory power management.
+
+>>
+>>
+>> Role of the Linux MM in enhancing memory power savings:
+>> ------------------------------------------------------
+>>
+>> Often, this simply translates to having the Linux MM understand the
+>> granularity
+>> at which RAM modules can be power-managed, and keeping the memory
+>> allocations
+>> and references consolidated to a minimum no. of these power-manageable
+>> "memory regions". It is of particular interest to note that most of
+>> these memory
+>> hardware have the intelligence to automatically save power, by putting
+>> memory
+>> banks into (content-preserving) low-power states when not referenced
+>> for a
+> 
+> How to know DIMM/bank is not referenced?
+> 
+
+That's upto the hardware to figure out. It would be engraved in the
+hardware logic. The kernel need not worry about it. The kernel has to
+simply understand the PFN ranges corresponding to independently
+power-manageable chunks of memory and try to keep the memory allocations
+consolidated to a minimum no. of such memory regions. That's because we
+never reference (access) unallocated memory. So keeping the allocations
+consolidated also indirectly keeps the references consolidated.
+
+But going further, as I had mentioned in my TODO list, we can be smarter
+than this while doing compaction to evacuate memory regions - we can
+choose to migrate only the active pages, and leave the inactive pages
+alone. Because, the goal is to actually consolidate the *references* and
+not necessarily the *allocations* themselves.
+
+>> threshold amount of time. All that the kernel has to do, is avoid
+>> wrecking
+>> the power-savings logic by scattering its allocations and references
+>> all over
+>> the system memory. (The kernel/MM doesn't have to perform the actual
+>> power-state
+>> transitions; its mostly done in the hardware automatically, and this
+>> is OK
+>> because these are *content-preserving* low-power states).
+>>
+>>
+>> Brief overview of the design/approach used in this patchset:
+>> -----------------------------------------------------------
+>>
+>> This patchset implements the 'Sorted-buddy design' for Memory Power
+>> Management,
+>> in which the buddy (page) allocator is altered to keep the buddy
+>> freelists
+>> region-sorted, which helps influence the page allocation paths to keep
+>> the
+> 
+> If this will impact normal zone based buddy freelists?
+> 
+
+The freelists continue to remain zone-based. No change in that. We are
+not fragmenting them further to be per-memory-region. Instead, we simply
+maintain pointers within the freelists to differentiate pageblocks belonging
+to different memory regions.
+
+>> allocations consolidated to a minimum no. of memory regions. This
+>> patchset also
+>> includes a light-weight targetted compaction/reclaim algorithm that works
+>> hand-in-hand with the page-allocator, to evacuate lightly-filled
+>> memory regions
+>> when memory gets fragmented, in order to further enhance memory power
+>> savings.
+>>
+>> This Sorted-buddy design was developed based on some of the suggestions
+>> received[1] during the review of the earlier patchset on Memory Power
+>> Management written by Ankita Garg ('Hierarchy design')[2].
+>> One of the key aspects of this Sorted-buddy design is that it avoids the
+>> zone-fragmentation problem that was present in the earlier design[3].
+>>
+>>
 
 Regards,
 Srivatsa S. Bhat
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
