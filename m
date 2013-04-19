@@ -1,63 +1,41 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [RFC PATCH 0/2] cpufreq/regulator: Limit minimum voltage only
-Date: Fri, 19 Apr 2013 11:21:53 -0500
-Message-ID: <20130419162153.GA24066@kahuna>
-References: <1366372554-20866-1-git-send-email-taras@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1366372554-20866-1-git-send-email-taras@ti.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Taras Kondratiuk <taras@ti.com>
-Cc: lgirdwood@gmail.com, broonie@kernel.org, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH 0/6] thermal:exynos4: Thermal Measurement Unit fixes for
+ Samsung SoCs
+Date: Fri, 19 Apr 2013 18:38:07 +0200
+Message-ID: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:51136 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030782Ab3DSQiZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Apr 2013 12:38:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, devicetree-discuss@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
 
-On 14:55-20130419, Taras Kondratiuk wrote:
-> Using a "voltage tolerance" for doing DVFS is not a proper way.
-> It leads to a few issues:
-> - voltage is limited to a narrow range near OPP voltage,
->   so other consumers of the same regulator can't set their own constraints
->   if they don't overlap with this narrow range. No ganged rails :(
-> - usually OPP voltage is an absolute minimum voltage
->   necessary for correct work (not taking into account AVS).
->   Applying plus/minus tolerance can lead to an unstable device.
->   For example omap-cpufreq has 4% tolerance configured,
->   so for OMAP4430 MPU OPP50 we get 0.984V instead of 1.025V. 
-there is a reason for this - board level IRDROP and the real PMIC
-accuracy compared to the SoC assumption about the PMIC accuracy.
+This patch series provide various fixes for TMU block.
+Namely, support for common clock framework and proper regulator VDD_TS has been 
+added.
+Moreover device tree definitions and documentation entry are now in place.
 
-That said, I had been always been a little confused with the usage
-in AM335x. For that matter, I dont even think this is constrainted to
-TI SoC usage, other SoCs also probably have the same pain.
+Lukasz Majewski (6):
+  clk:exynos4:TMU Thermal Measurement Unit clock added to common clock
+    framework
+  thermal:exynos4: TMU Common clock framework support for TMU (Thermal
+    Monitoring Unit)
+  thermal:exynos4: TMU device tree support for Exynos4412 targets
+  thermal: Support for TMU regulator defined at device tree
+  thermal:exynos4: Enable support for Exynos4412 SoCs
+  thermal:exynos4: Add documentation for Exynos SoC thermal bindings
 
-How does it actually work?
-
-Lets say ntarget/Vnom has PMIC tolerance of 5% (SoC tolerance assumed
-for OPP voltage documented in data manual for the SoC), say the
-OPP voltage is 1.2V - that translates to an voltage of 1.14V on a perfect
-PMIC (with 0 drop or perfect accuracy) for the SoC.
-Now, the real world is never perfect. So, lets take the following cases:
-a) PMIC with 2% variance
-b) PMIC with 5% variance (usually the reference PMIC we put on SoC
-   vendor platform)
-c) PMIC with 10% variance.
-
-How does this translate to dts definition? As you stated, with 5%
-variance(b), the call will become min_uV=1.14V max_uV=1.26V when
-the tolerance translation is done. with (a) and (c) tolernace value
-chooses a different value.
-
-In short,
-a) we need to be able to describe in some form the assumption for
-board variances in the OPP voltage in the SoC data manual.
-b) we need some way for board/PMIC definitions to be able to influence
-and adjust for assumption.
-
-This is what I believe is achieved using voltage_tolerance.
-
-regulator_set_voltage_min is not really the way to do it IMHO.
+ .../devicetree/bindings/clock/exynos4-clock.txt    |    1 +
+ .../devicetree/bindings/thermal/exynos-thermal.txt |   22 +++++++++++
+ arch/arm/boot/dts/exynos4x12.dtsi                  |   10 +++++
+ drivers/clk/samsung/clk-exynos4.c                  |    6 ++-
+ drivers/thermal/exynos_thermal.c                   |   41 +++++++++++++++-----
+ 5 files changed, 70 insertions(+), 10 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
 
 -- 
-Regards,
-Nishanth Menon
+1.7.10.4
+
