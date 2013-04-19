@@ -1,38 +1,24 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 5/6] thermal:exynos4: Enable support for Exynos4412 SoCs
-Date: Fri, 19 Apr 2013 23:56:02 +0530
-Message-ID: <CAK9yfHxPSHw3a=GO6QycXLFte7VT2MoF7xidGb=PONWc1eQtfA@mail.gmail.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
-	<1366389493-8239-6-git-send-email-l.majewski@samsung.com>
-	<CAK9yfHwV8=ocTFGiCDSzeWaZyzNst2F2B8e8SS2aQj0H-ZoQdw@mail.gmail.com>
-	<2873799.9rlNEYDlme@flatron>
+From: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 7/9] intel: cpuidle: remove stop/start critical timings
+Date: Fri, 19 Apr 2013 18:02:04 -0400
+Message-ID: <5171BEDC.8020205@kernel.org>
+References: <1364991322-20585-1-git-send-email-daniel.lezcano@linaro.org> <1364991322-20585-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <2873799.9rlNEYDlme@flatron>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, devicetree-discuss@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, eduardo.valentin@ti.com
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1364991322-20585-7-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: rjw-KKrjLPT3xs0@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patches-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, rnayak-l0cyMroinI0@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org, santosh.shilimkar-l0cyMroinI0@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, deepthi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19 April 2013 23:51, Tomasz Figa <tomasz.figa@gmail.com> wrote:
-> On Friday 19 of April 2013 23:41:29 Sachin Kamat wrote:
->> On 19 April 2013 22:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> > Enable TMU support for Exynos4412 based target with device tree.
->> >
->> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> > ---
->>
->> I have already submitted a similar patch for doing this:
->> http://permalink.gmane.org/gmane.linux.power-management.general/33311
->
-> Hmm, looks like we missed this series indeed. You haven't CC'ed linux-
-> samsung-soc mailing list, though. I guess this is the reason.
+On 04/03/2013 08:15 AM, Daniel Lezcano wrote:
+> The start/stop_critical_timings are called from arch/x86/kernel/process.c
+> in the cpu_idle loop function.
+> 
+> Remove the ones in the cpuidle driver.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Indeed I missed CCing  linux-samsung-soc mailing list; sorry about that.
-
-
--- 
-With warm regards,
-Sachin
+Acked-by: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
