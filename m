@@ -1,45 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: PM+ACPI material for v3.10
-Date: Mon, 22 Apr 2013 01:25:34 +0200
-Message-ID: <1416312.lSirPJDWF5@vostro.rjw.lan>
-References: <3222400.G8tzcaWZXV@vostro.rjw.lan> <51690B60.1050205@linaro.org>
+Subject: Re: [PATCH 1/4] SH: cpuidle: remove pointless initialization
+Date: Mon, 22 Apr 2013 01:28:59 +0200
+Message-ID: <170826456.rDBb7Co9qj@vostro.rjw.lan>
+References: <1366205577-11632-1-git-send-email-daniel.lezcano@linaro.org> <20130418133408.GF20929@verge.net.au> <516FF6B5.4070508@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <51690B60.1050205@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <516FF6B5.4070508@linaro.org>
+Sender: linux-sh-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "horms@verge.net.au" <horms@verge.net.au>, Kevin Hilman <khilman@deeprootsystems.com>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Simon Horman <horms@verge.net.au>, lethal@linux-sh.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, April 13, 2013 09:38:08 AM Daniel Lezcano wrote:
-> On 04/13/2013 02:17 AM, Rafael J. Wysocki wrote:
-> > Hi All,
+On Thursday, April 18, 2013 03:35:49 PM Daniel Lezcano wrote:
+> On 04/18/2013 03:34 PM, Simon Horman wrote:
+> > On Thu, Apr 18, 2013 at 11:18:04AM +0200, Daniel Lezcano wrote:
+> >> On 04/18/2013 03:18 AM, Simon Horman wrote:
+> >>> On Wed, Apr 17, 2013 at 03:32:54PM +0200, Daniel Lezcano wrote:
+> >>>> The driver is a global static variable automatically initialized to zero.
+> >>>>
+> >>>> Removing the useless initialization in the init function.
+> >>>>
+> >>>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >>>
+> >>> Hi Daniel,
+> >>>
+> >>> All four patches in this series seem reasonable to me.
+> >>>
+> >>> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> >>>
+> >>> Please let me know if I should take them through my renesas tree.
+> >>
+> >> If you are ok with that, is it possible to take them through the
+> >> linux-pm tree ? So the cpuidle drivers are synced and I can continue the
+> >> code consolidation ?
 > > 
-> > As some of you already know, I will be traveling through Apr. 20 and I'm not
-> > going to take any new material for v3.10 from now onwards until I'm back.
-> > 
-> > The summary of my current queue is appended and quite frankly I don't see any
-> > compelling reasons to add anything more to it at the moment (except for fixes,
-> > if any).  That said, if you really really need/want some new stuff (or generally
-> > something that is not a fix) to go into it, you may try to convince me, but
-> > that will cost you a beverage of my choice if successful.  So you have been
-> > warned.
+> > Yes, I am ok with them going through the linux-pm tree.
 > 
-> :)
-> 
-> For me it is ok to wait but there some patches, that should be taken
-> from the last series I sent because they are fixes:
-> 
-> http://www.spinics.net/lists/arm-kernel/msg237936.html
-> http://www.spinics.net/lists/arm-kernel/msg237938.html
-> http://www.spinics.net/lists/arm-kernel/msg237939.html
+> Thanks !
 
-All three applied.
+OK, applied.
 
-Since we seem to have a few extra days before final v3.9, please feel free to
-resend the other patches in the series that have been ACKed so far.
+Patch [3/4] had a merge conflict against the current Linus' tree, so I've fixed
+it up manually.  Please check the linux-next branch for the result (will
+probably conflict with the shmobile tree in linux-next, but that's not a big
+deal).
 
 Thanks,
 Rafael
