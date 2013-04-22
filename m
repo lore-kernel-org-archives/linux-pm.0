@@ -1,62 +1,105 @@
-From: amit kachhap <amit.kachhap@gmail.com>
-Subject: Re: [PATCH 03/30] thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
-Date: Mon, 22 Apr 2013 07:48:01 +0530
-Message-ID: <CADGdYn6BmqEw37NMUU9XyE7x+oi=k0c6EJHhVjtDbUvF66upjA@mail.gmail.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH 00/30] thermal: cpu_cooling: code improvements
+Date: Mon, 22 Apr 2013 08:04:30 +0530
+Message-ID: <CADGdYn7KxqLBtZAZSb0my7OSC_Q3As=G9vZuHVyB3zv=3TpxJg@mail.gmail.com>
 References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
-	<1366218743-20841-4-git-send-email-eduardo.valentin@ti.com>
+	<516F06F5.9060200@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f177.google.com ([209.85.223.177]:37301 "EHLO
-	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753684Ab3DVCSC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Apr 2013 22:18:02 -0400
-In-Reply-To: <1366218743-20841-4-git-send-email-eduardo.valentin@ti.com>
+Received: from mail-ia0-f176.google.com ([209.85.210.176]:41108 "EHLO
+	mail-ia0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754056Ab3DVCeb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 21 Apr 2013 22:34:31 -0400
+In-Reply-To: <516F06F5.9060200@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
 
-On Wed, Apr 17, 2013 at 10:41 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> Simple fixes for making kernel_doc happy about
-> struct cpufreq_cooling_device. Includes also a minor
-> spelling fix.
->
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Hi Eduardo,
 
-Reviewed-by: Amit Daniel Kachhap<amit.daniel@samsung.com>
+I looked at your whole series and they certainly looks useful, so for
+the entire series,
+Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
 Thanks,
-Amit Daniel
-> ---
->  drivers/thermal/cpu_cooling.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+Amit Daniel Kachhap
+
+On Thu, Apr 18, 2013 at 2:02 AM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> On 17-04-2013 13:11, Eduardo Valentin wrote:
+>>
+>> Rui,
 >
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index d0d6a0c..7c0c05b 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -28,11 +28,11 @@
->  #include <linux/cpu_cooling.h>
 >
->  /**
-> - * struct cpufreq_cooling_device
-> + * struct cpufreq_cooling_device - data for cooling device with cpufreq
->   * @id: unique integer value corresponding to each cpufreq_cooling_device
->   *     registered.
-> - * @cool_dev: thermal_cooling_device pointer to keep track of the the
-> - *     egistered cooling device.
-> + * @cool_dev: thermal_cooling_device pointer to keep track of the
-> + *     registered cooling device.
->   * @cpufreq_state: integer value representing the current state of cpufreq
->   *     cooling devices.
->   * @cpufreq_val: integer value representing the absolute value of the clipped
-> --
-> 1.8.2.1.342.gfa7285d
+>
+> Looks like I forgot to add the lists on patch 00. Doing so..
+>>
+>>
+>> This is a series of patches to improve the code for cpu_cooling.
+>> Majority of these changes are actually kernel-doc updates, as
+>> they required to be revised. A part from these, there are some
+>> changes regarding code style and readiness.
+>>
+>> Some may complain that these are a matter of taste, indeed.
+>> But I tried to just be unbiased and just keep the changes related
+>> to kernel-doc and checkpatch.pl. After this series, theses
+>> tools should be generating decent output ;-).
+>>
+>> The remaining changes are actually a couple of fixes for defensive
+>> coding. A part from updating the MAINTAINERS entry to cover cpu_cooling.
+>>
+>> This series has been tested on TI OMAP4430, together with the
+>> thermal driver under staging tree.
+>>
+>> All these patches are based on current linux-next/master.
+>>
+>> They are also available here:
+>>
+>> All best,
+>>
+>> Eduardo Valentin (30):
+>>    thermal: cpu_cooling: remove unused headers
+>>    thermal: cpu_cooling: remove trailing white spaces
+>>    thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
+>>    thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
+>>    thermal: cpu_cooling: remove compiler warning
+>>    thermal: cpu_cooling: standardize end of function
+>>    thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
+>>    thermal: cpu_cooling: add documentation for get_property
+>>    thermal: cpu_cooling: standardize comment style
+>>    thermal: cpu_cooling: align on open parenthesis
+>>    thermal: cpu_cooling: remove trailing blank line
+>>    thermal: cpu_cooling: document cpufreq_get_cooling_level
+>>    thermal: cpu_cooling: remove checkpatch.pl warning
+>>    thermal: cpu_cooling: improve documentation for get_cpu_frequency
+>>    thermal: cpu_cooling: update documentation for cpufreq_apply_cooling
+>>    thermal: cpu_cooling: update documentation for
+>>      cpufreq_thermal_notifier
+>>    thermal: cpu_cooling: update Kconfig entry
+>>    thermal: cpu_cooling: alignment improvements
+>>    thermal: cpu_cooling: update documentation for cpufreq_get_max_state
+>>    thermal: cpu_cooling: update documentation for cpufreq_get_cur_state
+>>    thermal: cpu_cooling: update documentation for cpufreq_set_cur_state
+>>    thermal: cpu_cooling: update kernel-doc for cpufreq_cooling_register
+>>    thermal: cpu_cooling: update kernel-doc comment for
+>>      cpufreq_cooling_unregister
+>>    thermal: cpu_cooling: use snprintf instead of sprintf
+>>    thermal: cpu_cooling: remove not needed curl brackets
+>>    thermal: cpu_cooling: remove unused symbols
+>>    thermal: cpu_cooling: add needed header for cpu_cooling.h
+>>    MAINTAINERS: update thermal entry by adding file cpu_cooling.h
+>>    thermal: cpu_cooling: remove unused symbols on cpu_cooling.h
+>>    thermal: cpu_cooling: improve line breaking
+>>
+>>   MAINTAINERS                   |   1 +
+>>   drivers/thermal/Kconfig       |   5 +-
+>>   drivers/thermal/cpu_cooling.c | 156
+>> ++++++++++++++++++++++++++++++------------
+>>   include/linux/cpu_cooling.h   |  20 +++---
+>>   4 files changed, 125 insertions(+), 57 deletions(-)
+>>
 >
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
