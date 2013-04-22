@@ -1,89 +1,74 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [V3 patch 10/19] ARM: s3c64xx: cpuidle: use init/exit common
- routine
-Date: Mon, 22 Apr 2013 08:32:13 +0200
-Message-ID: <5174D96D.40602@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-11-git-send-email-daniel.lezcano@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 5/6] thermal:exynos4: Enable support for Exynos4412 SoCs
+Date: Mon, 22 Apr 2013 08:35:28 +0200
+Message-ID: <20130422083528.4c97db3b@amdc308.digital.local>
+References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+ <1366389493-8239-6-git-send-email-l.majewski@samsung.com>
+ <CADGdYn5LTq7iwuP0Hx=7BpdgQBU=Q7L-3pnSyu8MfQ0v3vVS1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:39245 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753858Ab3DVGcW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 02:32:22 -0400
-Received: by mail-wi0-f172.google.com with SMTP id hm14so488078wib.11
-        for <linux-pm@vger.kernel.org>; Sun, 21 Apr 2013 23:32:21 -0700 (PDT)
-In-Reply-To: <1365770165-27096-11-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CADGdYn5LTq7iwuP0Hx=7BpdgQBU=Q7L-3pnSyu8MfQ0v3vVS1A@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: amit kachhap <amit.kachhap@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, devicetree-discuss@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: kgene.kim@samsung.com, Ben Dooks <ben-linux@fluff.org>
-Cc: rjw@sisk.pl, Andrew Lunn <andrew@lunn.ch>, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 
-On 04/12/2013 02:35 PM, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initia=
-lization.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
+Hi amit,
 
-Kim, Ben,
+> Hi,
+> 
+> I have one suggestion,
+> 
+> On Fri, Apr 19, 2013 at 10:08 PM, Lukasz Majewski
+> <l.majewski@samsung.com> wrote:
+> > Enable TMU support for Exynos4412 based target with device tree.
+> >
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > ---
+> >  drivers/thermal/exynos_thermal.c |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> >
+> > diff --git a/drivers/thermal/exynos_thermal.c
+> > b/drivers/thermal/exynos_thermal.c index e922fa4..f54066d 100644
+> > --- a/drivers/thermal/exynos_thermal.c
+> > +++ b/drivers/thermal/exynos_thermal.c
+> > @@ -819,6 +819,10 @@ static const struct of_device_id
+> > exynos_tmu_match[] = { .data = (void *)EXYNOS4210_TMU_DRV_DATA,
+> >         },
+> >         {
+> > +               .compatible = "samsung,exynos4412-tmu",
+> > +               .data = (void *)EXYNOS_TMU_DRV_DATA,
+> > +       },
+> Instead of adding a new compatible string, "exynos5250-tmu" name can
+> be re-used in the 4412 DT node file as 4412 and 5250 TMU controller
+> are same.
 
-is it possible you ack this patch if you are ok with it ?
+Good point.
 
-So it can go into the linux-pm tree before the merge windows [1]
-
-Thanks !
-
--- Daniel
-
-[1] http://www.spinics.net/lists/linux-acpi/msg43138.html
-
->  arch/arm/mach-s3c64xx/cpuidle.c |   14 +-------------
->  1 file changed, 1 insertion(+), 13 deletions(-)
->
-> diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/=
-cpuidle.c
-> index 852ff16..3c8ab07 100644
-> --- a/arch/arm/mach-s3c64xx/cpuidle.c
-> +++ b/arch/arm/mach-s3c64xx/cpuidle.c
-> @@ -40,8 +40,6 @@ static int s3c64xx_enter_idle(struct cpuidle_device=
- *dev,
->  	return index;
->  }
-> =20
-> -static DEFINE_PER_CPU(struct cpuidle_device, s3c64xx_cpuidle_device)=
-;
-> -
->  static struct cpuidle_driver s3c64xx_cpuidle_driver =3D {
->  	.name	=3D "s3c64xx_cpuidle",
->  	.owner  =3D THIS_MODULE,
-> @@ -60,16 +58,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_drive=
-r =3D {
-> =20
->  static int __init s3c64xx_init_cpuidle(void)
->  {
-> -	int ret;
-> -
-> -	cpuidle_register_driver(&s3c64xx_cpuidle_driver);
-> -
-> -	ret =3D cpuidle_register_device(&s3c64xx_cpuidle_device);
-> -	if (ret) {
-> -		pr_err("Failed to register cpuidle device: %d\n", ret);
-> -		return ret;
-> -	}
-> -
-> -	return 0;
-> +	return cpuidle_register(&s3c64xx_cpuidle_driver, NULL);
->  }
->  device_initcall(s3c64xx_init_cpuidle);
+> 
+> Thanks,
+> Amit Daniel
+> > +       {
+> >                 .compatible = "samsung,exynos5250-tmu",
+> >                 .data = (void *)EXYNOS_TMU_DRV_DATA,
+> >         },
+> > --
+> > 1.7.10.4
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-samsung-soc" in the body of a message to
+> > majordomo@vger.kernel.org More majordomo info at
+> > http://vger.kernel.org/majordomo-info.html
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-- 
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Poland (SRPOL) | Linux Platform Group
