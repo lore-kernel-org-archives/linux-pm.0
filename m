@@ -1,55 +1,56 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 5/6] thermal:exynos4: Enable support for Exynos4412 SoCs
-Date: Mon, 22 Apr 2013 12:10:06 +0530
-Message-ID: <CAK9yfHzbwOaSBuObhZEbX-CuZKNx7XRH++NbttKNYm-HB-mg-g@mail.gmail.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
-	<1366389493-8239-6-git-send-email-l.majewski@samsung.com>
-	<CADGdYn5LTq7iwuP0Hx=7BpdgQBU=Q7L-3pnSyu8MfQ0v3vVS1A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
+Date: Mon, 22 Apr 2013 12:19:27 +0530
+Message-ID: <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+	<CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CADGdYn5LTq7iwuP0Hx=7BpdgQBU=Q7L-3pnSyu8MfQ0v3vVS1A@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: amit kachhap <amit.kachhap@gmail.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, devicetree-discuss@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f48.google.com ([209.85.219.48]:49090 "EHLO
+	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560Ab3DVGt2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 02:49:28 -0400
+Received: by mail-oa0-f48.google.com with SMTP id f4so3840653oah.21
+        for <linux-pm@vger.kernel.org>; Sun, 21 Apr 2013 23:49:28 -0700 (PDT)
+In-Reply-To: <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 
-On 22 April 2013 11:55, amit kachhap <amit.kachhap@gmail.com> wrote:
-> Hi,
->
-> I have one suggestion,
->
-> On Fri, Apr 19, 2013 at 10:08 PM, Lukasz Majewski
-> <l.majewski@samsung.com> wrote:
->> Enable TMU support for Exynos4412 based target with device tree.
+On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Cc: Paul Mackerras <paulus@samba.org>
+>>> Cc: Olof Johansson <olof@lixom.net>
+>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>> Compile Tested only.
+>>>
+>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
 >>
->> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->> ---
->>  drivers/thermal/exynos_thermal.c |    4 ++++
->>  1 file changed, 4 insertions(+)
+>> Hi Deepthi,
 >>
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
->> index e922fa4..f54066d 100644
->> --- a/drivers/thermal/exynos_thermal.c
->> +++ b/drivers/thermal/exynos_thermal.c
->> @@ -819,6 +819,10 @@ static const struct of_device_id exynos_tmu_match[] = {
->>                 .data = (void *)EXYNOS4210_TMU_DRV_DATA,
->>         },
->>         {
->> +               .compatible = "samsung,exynos4412-tmu",
->> +               .data = (void *)EXYNOS_TMU_DRV_DATA,
->> +       },
-> Instead of adding a new compatible string, "exynos5250-tmu" name can
-> be re-used in the 4412 DT node file as 4412 and 5250 TMU controller
-> are same.
+>> Can you help testing this please?
+>
+> Ping!!
 
-In cases where they are the same, it was generally the previous
-version of SoC that was added to the compatible list and re-used in
-the higher ones. IIRC, in cases where exynos5 based string was already
-defined a separate compatible string was added for exynos4 too (even
-if they used same driver data).
-
--- 
-With warm regards,
-Sachin
+Ping!!
