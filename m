@@ -1,57 +1,66 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [V3 patch 17/19] ARM: kirkwood: cpuidle: use init/exit common
- routine
-Date: Mon, 22 Apr 2013 18:54:04 +0200
-Message-ID: <51756B2C.3080405@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-18-git-send-email-daniel.lezcano@linaro.org> <20130414151429.GF5061@lunn.ch> <5174E036.9090808@linaro.org> <20130422164756.GG29947@lunn.ch>
+From: Taras Kondratiuk <taras@ti.com>
+Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
+Date: Mon, 22 Apr 2013 19:49:37 +0300
+Message-ID: <51756A21.3020405@ti.com>
+References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:39976 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753642Ab3DVQyJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 12:54:09 -0400
-Received: by mail-wi0-f182.google.com with SMTP id m6so4768226wiv.3
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2013 09:54:08 -0700 (PDT)
-In-Reply-To: <20130422164756.GG29947@lunn.ch>
+Received: from comal.ext.ti.com ([198.47.26.152]:39362 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753244Ab3DVQzh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 22 Apr 2013 12:55:37 -0400
+In-Reply-To: <20130422131904.GL30351@opensource.wolfsonmicro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
+To: Mark Brown <broonie@kernel.org>
+Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>
 
-On 04/22/2013 06:47 PM, Andrew Lunn wrote:
-> On Mon, Apr 22, 2013 at 09:01:10AM +0200, Daniel Lezcano wrote:
->> On 04/14/2013 05:14 PM, Andrew Lunn wrote:
->>
->> [ ... ]
->>>  int kirkwood_cpuidle_remove(struct platform_device *pdev)
->>>  {
->>> -	cpuidle_unregister_device(device);
->>> -	cpuidle_unregister_driver(&kirkwood_idle_driver);
->>> -
->>> +	cpuidle_unregister(&kirkwood_idle_driver);
->>>  	return 0;
->>>  }
->>> =20
->>> --=20
->>> 1.7.9.5
->>>
->>> Tested-by: Andrew Lunn <andrew@lunn.ch>
->>
->> Hi Andrew,
->>
->> shall I consider it as acked-by also ?
->=20
-> Yes, please do.
+On 04/22/2013 04:19 PM, Mark Brown wrote:
+> On Fri, Apr 19, 2013 at 02:55:53PM +0300, Taras Kondratiuk wrote:
+>> Sometimes it is a need to constrain only a minimum voltage
+>> and let system constraints to limit maximum.
+>> Add a new function regulator_set_voltage_min() for this.
+> I don't believe you on this one.  It is going to be a very unusual
+> system which has a maximum supply voltage specified at over 4kV (or
+> more) which is what INT_MAX will come out as - there will be some
+> electrical specs for what voltages can be tolerated sustainably.
+Yeah. Sure 4kV is not a real request, but
+max will be limited by system constrains.
+According to regulator_set_voltage() documentation
+system constraints should be set before calling this function,
+so I assume I can rely on them. No?
 
-Thanks !
+Another possible implementation is below, but prefer initial one.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index e3661c2..28c1be3 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -2355,6 +2355,19 @@ out2:
+  }
+  EXPORT_SYMBOL_GPL(regulator_set_voltage);
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
++int regulator_set_voltage_min(struct regulator *regulator, int min_uV)
++{
++       struct regulator_dev *rdev = regulator->rdev;
++       int max_uV;
++
++       mutex_lock(&rdev->mutex);
++       max_uV = rdev->constraints->max_uV;
++       mutex_unlock(&rdev->mutex);
++       return regulator_set_voltage(regulator, min_uV, max_uV);
++}
++EXPORT_SYMBOL_GPL(regulator_set_voltage_min);
++
++
+  /**
+   * regulator_set_voltage_time - get raise/fall time
+   * @regulator: regulator source
+
+
+-- 
+BR
+Taras Kondratiuk | GlobalLogic
 
