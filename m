@@ -1,120 +1,48 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 00/30] thermal: cpu_cooling: code improvements
-Date: Mon, 22 Apr 2013 09:07:58 -0400
-Message-ID: <5175362E.4080602@ti.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com> <516F06F5.9060200@ti.com> <CADGdYn7KxqLBtZAZSb0my7OSC_Q3As=G9vZuHVyB3zv=3TpxJg@mail.gmail.com>
+Subject: Re: [PATCHv2 0/3] thermal: lookup temperature
+Date: Mon, 22 Apr 2013 09:11:15 -0400
+Message-ID: <517536F3.5050702@ti.com>
+References: <1365027197-2793-1-git-send-email-eduardo.valentin@ti.com> <20130422110647.GB24710@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:33500 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753422Ab3DVNIu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 09:08:50 -0400
-In-Reply-To: <CADGdYn7KxqLBtZAZSb0my7OSC_Q3As=G9vZuHVyB3zv=3TpxJg@mail.gmail.com>
+Received: from bear.ext.ti.com ([192.94.94.41]:45200 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752401Ab3DVNL0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 22 Apr 2013 09:11:26 -0400
+In-Reply-To: <20130422110647.GB24710@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org >> \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
 
-Amit,
+Hello Pavel,
 
-On 21-04-2013 22:34, amit daniel kachhap wrote:
-> Hi Eduardo,
+On 22-04-2013 07:06, Pavel Machek wrote:
+> Hi!
 >
-> I looked at your whole series and they certainly looks useful, so for
-> the entire series,
-> Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->
-
-Ok, thanks.
-
-Side note: Your Linaro email address is bouncing. Could you please send 
-a patch updating the files you have signed?
-
-> Thanks,
-> Amit Daniel Kachhap
->
-> On Thu, Apr 18, 2013 at 2:02 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> On 17-04-2013 13:11, Eduardo Valentin wrote:
->>>
->>> Rui,
+>> Here is V2 of temperature lookup helper function. This has been
+>> split into two API as suggested on V1.
+>>
+>> The usage of it is exemplified on patch 03.
 >>
 >>
->>
->> Looks like I forgot to add the lists on patch 00. Doing so..
->>>
->>>
->>> This is a series of patches to improve the code for cpu_cooling.
->>> Majority of these changes are actually kernel-doc updates, as
->>> they required to be revised. A part from these, there are some
->>> changes regarding code style and readiness.
->>>
->>> Some may complain that these are a matter of taste, indeed.
->>> But I tried to just be unbiased and just keep the changes related
->>> to kernel-doc and checkpatch.pl. After this series, theses
->>> tools should be generating decent output ;-).
->>>
->>> The remaining changes are actually a couple of fixes for defensive
->>> coding. A part from updating the MAINTAINERS entry to cover cpu_cooling.
->>>
->>> This series has been tested on TI OMAP4430, together with the
->>> thermal driver under staging tree.
->>>
->>> All these patches are based on current linux-next/master.
->>>
->>> They are also available here:
->>>
->>> All best,
->>>
->>> Eduardo Valentin (30):
->>>     thermal: cpu_cooling: remove unused headers
->>>     thermal: cpu_cooling: remove trailing white spaces
->>>     thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
->>>     thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
->>>     thermal: cpu_cooling: remove compiler warning
->>>     thermal: cpu_cooling: standardize end of function
->>>     thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
->>>     thermal: cpu_cooling: add documentation for get_property
->>>     thermal: cpu_cooling: standardize comment style
->>>     thermal: cpu_cooling: align on open parenthesis
->>>     thermal: cpu_cooling: remove trailing blank line
->>>     thermal: cpu_cooling: document cpufreq_get_cooling_level
->>>     thermal: cpu_cooling: remove checkpatch.pl warning
->>>     thermal: cpu_cooling: improve documentation for get_cpu_frequency
->>>     thermal: cpu_cooling: update documentation for cpufreq_apply_cooling
->>>     thermal: cpu_cooling: update documentation for
->>>       cpufreq_thermal_notifier
->>>     thermal: cpu_cooling: update Kconfig entry
->>>     thermal: cpu_cooling: alignment improvements
->>>     thermal: cpu_cooling: update documentation for cpufreq_get_max_state
->>>     thermal: cpu_cooling: update documentation for cpufreq_get_cur_state
->>>     thermal: cpu_cooling: update documentation for cpufreq_set_cur_state
->>>     thermal: cpu_cooling: update kernel-doc for cpufreq_cooling_register
->>>     thermal: cpu_cooling: update kernel-doc comment for
->>>       cpufreq_cooling_unregister
->>>     thermal: cpu_cooling: use snprintf instead of sprintf
->>>     thermal: cpu_cooling: remove not needed curl brackets
->>>     thermal: cpu_cooling: remove unused symbols
->>>     thermal: cpu_cooling: add needed header for cpu_cooling.h
->>>     MAINTAINERS: update thermal entry by adding file cpu_cooling.h
->>>     thermal: cpu_cooling: remove unused symbols on cpu_cooling.h
->>>     thermal: cpu_cooling: improve line breaking
->>>
->>>    MAINTAINERS                   |   1 +
->>>    drivers/thermal/Kconfig       |   5 +-
->>>    drivers/thermal/cpu_cooling.c | 156
->>> ++++++++++++++++++++++++++++++------------
->>>    include/linux/cpu_cooling.h   |  20 +++---
->>>    4 files changed, 125 insertions(+), 57 deletions(-)
->>>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
+>> Eduardo Valentin (3):
+>>    thermal: introduce thermal_zone_get_zone_by_name helper function
 >
+> Is the function name maybe a bit long? Perhaps using tz_ prefix
+> instead of "thermal_zone_" would help? or thermal_get_by_name? tz_get_by_name?
 >
+> 									Pavel
+>
+This patch follows the naming convention on this file. If we are  going 
+to use different prefixes, then I suggest sending a patch that changes 
+the functions that are exported by this file. Besides the names you 
+suggested do not reflect exactly the purpose of the introduced API.
 
+Thanks for your suggestion.
+
+All best,
+
+Thanks.
