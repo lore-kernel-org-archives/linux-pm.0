@@ -1,45 +1,184 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [V3 patch 17/19] ARM: kirkwood: cpuidle: use init/exit common
- routine
-Date: Mon, 22 Apr 2013 09:01:10 +0200
-Message-ID: <5174E036.9090808@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-18-git-send-email-daniel.lezcano@linaro.org> <20130414151429.GF5061@lunn.ch>
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v2 06/15] powerpc/85xx: add support to JOG feature using
+ cpufreq interface
+Date: Mon, 22 Apr 2013 18:56:01 +0800
+Message-ID: <20130422105601.GA32331@localhost.localdomain>
+References: <1366368468-29143-1-git-send-email-chenhui.zhao@freescale.com>
+ <1366368468-29143-6-git-send-email-chenhui.zhao@freescale.com>
+ <CAOh2x=mQt-GJa8Hc-zybKOKJBhi5jWVy5-UN57pGJDdE1PPx_g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:49289 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643Ab3DVHBR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 03:01:17 -0400
-Received: by mail-wi0-f174.google.com with SMTP id m6so3712079wiv.1
-        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2013 00:01:16 -0700 (PDT)
-In-Reply-To: <20130414151429.GF5061@lunn.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAOh2x=mQt-GJa8Hc-zybKOKJBhi5jWVy5-UN57pGJDdE1PPx_g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 
-On 04/14/2013 05:14 PM, Andrew Lunn wrote:
+On Mon, Apr 22, 2013 at 08:55:35AM +0530, Viresh Kumar wrote:
+> On Fri, Apr 19, 2013 at 4:17 PM, Zhao Chenhui
+> <chenhui.zhao@freescale.com> wrote:
+> > diff --git a/drivers/cpufreq/mpc85xx-cpufreq.c b/drivers/cpufreq/mpc85xx-cpufreq.c
+> 
+> > +#include <linux/module.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/of_platform.h>
+> > +#include <linux/suspend.h>
+> > +#include <linux/cpu.h>
+> > +#include <linux/time.h>
+> > +#include <linux/io.h>
+> > +#include <linux/smp.h>
+> 
+> Would be better to keep them in alphabetical order, so that we don't add
+> anything twice.
 
-[ ... ]
->  int kirkwood_cpuidle_remove(struct platform_device *pdev)
->  {
-> -	cpuidle_unregister_device(device);
-> -	cpuidle_unregister_driver(&kirkwood_idle_driver);
-> -
-> +	cpuidle_unregister(&kirkwood_idle_driver);
->  	return 0;
->  }
->  
-> -- 
-> 1.7.9.5
->
-> Tested-by: Andrew Lunn <andrew@lunn.ch>
+Good idea.
 
-Hi Andrew,
+> 
+> > +static int mpc85xx_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> > +{
+> > +       unsigned int i, cur_pll;
+> > +       int hw_cpu = get_hard_smp_processor_id(policy->cpu);
+> > +
+> > +       if (!cpu_present(policy->cpu))
+> 
+> This can't happen and so no need to check it.
+> 
+> > +               return -ENODEV;
+> > +
+> > +       /* the latency of a transition, the unit is ns */
+> > +       policy->cpuinfo.transition_latency = 2000;
+> > +
+> > +       cur_pll = get_pll(hw_cpu);
+> > +
+> > +       /* initialize frequency table */
+> > +       pr_debug("core%d frequency table:\n", hw_cpu);
+> > +       for (i = 0; mpc85xx_freqs[i].frequency != CPUFREQ_TABLE_END; i++) {
+> > +               if (mpc85xx_freqs[i].index <= max_pll[hw_cpu]) {
+> > +                       /* The frequency unit is kHz. */
+> > +                       mpc85xx_freqs[i].frequency =
+> > +                               (sysfreq * mpc85xx_freqs[i].index / 2) / 1000;
+> > +               } else {
+> > +                       mpc85xx_freqs[i].frequency = CPUFREQ_ENTRY_INVALID;
+> > +               }
+> > +
+> > +               pr_debug("%d: %dkHz\n", i, mpc85xx_freqs[i].frequency);
+> > +
+> > +               if (mpc85xx_freqs[i].index == cur_pll)
+> > +                       policy->cur = mpc85xx_freqs[i].frequency;
+> > +       }
+> > +       pr_debug("current pll is at %d, and core freq is%d\n",
+> > +                       cur_pll, policy->cur);
+> > +
+> > +       cpufreq_frequency_table_get_attr(mpc85xx_freqs, policy->cpu);
+> > +
+> > +       /*
+> > +        * This ensures that policy->cpuinfo_min
+> > +        * and policy->cpuinfo_max are set correctly.
+> > +        */
+> > +       return cpufreq_frequency_table_cpuinfo(policy, mpc85xx_freqs);
+> 
+> Call cpufreq_frequency_table_get_attr() at the end after above call is
+> successful.
+> 
+> > +}
+> 
+> > +static int mpc85xx_cpufreq_target(struct cpufreq_policy *policy,
+> > +                             unsigned int target_freq,
+> > +                             unsigned int relation)
+> 
+> merge above two lines.
+> 
+> > +{
+> > +       struct cpufreq_freqs freqs;
+> > +       unsigned int new;
+> > +       int ret = 0;
+> > +
+> > +       if (!set_pll)
+> > +               return -ENODEV;
+> > +
+> > +       cpufreq_frequency_table_target(policy,
+> > +                                      mpc85xx_freqs,
+> > +                                      target_freq,
+> > +                                      relation,
+> > +                                      &new);
+> 
+> same.. merge all above to put it in a single line.
+> 
+> > +       freqs.old = policy->cur;
+> > +       freqs.new = mpc85xx_freqs[new].frequency;
+> > +       freqs.cpu = policy->cpu;
+> 
+> not required now.
+> 
+> > +       mutex_lock(&mpc85xx_switch_mutex);
+> > +       cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+> 
+> ditto. Rebase over latest code from linux-next. This call has changed.
+> 
+> > +       ret = set_pll(policy->cpu, mpc85xx_freqs[new].index);
+> > +       if (!ret) {
+> > +               pr_info("cpufreq: Setting core%d frequency to %d kHz and PLL ratio to %d:2\n",
+> > +                        policy->cpu, mpc85xx_freqs[new].frequency,
+> > +                        mpc85xx_freqs[new].index);
+> > +
+> > +               ppc_proc_freq = freqs.new * 1000ul;
+> > +       }
+> > +       cpufreq_notify_transition(&freqs, CPUFREQ_POSTCHANGE);
+> > +       mutex_unlock(&mpc85xx_switch_mutex);
+> > +
+> > +       return ret;
+> > +}
+> 
+> > +static int __init mpc85xx_jog_init(void)
+> > +{
+> > +       struct device_node *np;
+> > +       unsigned int svr;
+> > +
+> > +       np = of_find_matching_node(NULL, mpc85xx_jog_ids);
+> > +       if (!np)
+> > +               return -ENODEV;
+> > +
+> > +       guts = of_iomap(np, 0);
+> > +       if (!guts) {
+> > +               of_node_put(np);
+> > +               return -ENODEV;
+> > +       }
+> > +
+> > +       sysfreq = fsl_get_sys_freq();
+> > +
+> > +       if (of_device_is_compatible(np, "fsl,mpc8536-guts")) {
+> > +               svr = mfspr(SPRN_SVR);
+> > +               if ((svr & 0x7fff) == 0x10) {
+> > +                       pr_err("MPC8536 Rev 1.0 does not support cpufreq(JOG).\n");
+> > +                       of_node_put(np);
+> 
+> unmap too??
+> 
+> > +                       return -ENODEV;
+> > +               }
+> > +               mpc85xx_freqs = mpc8536_freqs_table;
+> > +               set_pll = mpc8536_set_pll;
+> > +               max_pll[0] = get_pll(0);
+> > +
+> > +       } else if (of_device_is_compatible(np, "fsl,p1022-guts")) {
+> > +               mpc85xx_freqs = p1022_freqs_table;
+> > +               set_pll = p1022_set_pll;
+> > +               max_pll[0] = get_pll(0);
+> > +               max_pll[1] = get_pll(1);
+> > +       }
+> > +
+> > +       pr_info("Freescale MPC85xx cpufreq(JOG) driver\n");
+> > +
+> > +       of_node_put(np);
+> > +       return cpufreq_register_driver(&mpc85xx_cpufreq_driver);
+> > +}
+> > +
+> > +device_initcall(mpc85xx_jog_init);
+> 
 
-shall I consider it as acked-by also ?
+Thanks. I will fix them.
 
-Thanks
-  -- Daniel
+-Chenhui
+
