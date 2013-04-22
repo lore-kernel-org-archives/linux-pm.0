@@ -1,48 +1,55 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv2 0/3] thermal: lookup temperature
-Date: Mon, 22 Apr 2013 09:11:15 -0400
-Message-ID: <517536F3.5050702@ti.com>
-References: <1365027197-2793-1-git-send-email-eduardo.valentin@ti.com> <20130422110647.GB24710@amd.pavel.ucw.cz>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
+Date: Mon, 22 Apr 2013 14:19:04 +0100
+Message-ID: <20130422131904.GL30351@opensource.wolfsonmicro.com>
+References: <1366372554-20866-1-git-send-email-taras@ti.com>
+ <1366372554-20866-2-git-send-email-taras@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:45200 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401Ab3DVNL0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 22 Apr 2013 09:11:26 -0400
-In-Reply-To: <20130422110647.GB24710@amd.pavel.ucw.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nrM5Z5VIJgwP9LWp"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1366372554-20866-2-git-send-email-taras@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Taras Kondratiuk <taras@ti.com>
+Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, durgadoss.r@intel.com
 
-Hello Pavel,
 
-On 22-04-2013 07:06, Pavel Machek wrote:
-> Hi!
->
->> Here is V2 of temperature lookup helper function. This has been
->> split into two API as suggested on V1.
->>
->> The usage of it is exemplified on patch 03.
->>
->>
->> Eduardo Valentin (3):
->>    thermal: introduce thermal_zone_get_zone_by_name helper function
->
-> Is the function name maybe a bit long? Perhaps using tz_ prefix
-> instead of "thermal_zone_" would help? or thermal_get_by_name? tz_get_by_name?
->
-> 									Pavel
->
-This patch follows the naming convention on this file. If we are  going 
-to use different prefixes, then I suggest sending a patch that changes 
-the functions that are exported by this file. Besides the names you 
-suggested do not reflect exactly the purpose of the introduced API.
+--nrM5Z5VIJgwP9LWp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks for your suggestion.
+On Fri, Apr 19, 2013 at 02:55:53PM +0300, Taras Kondratiuk wrote:
+> Sometimes it is a need to constrain only a minimum voltage
+> and let system constraints to limit maximum.
+> Add a new function regulator_set_voltage_min() for this.
 
-All best,
+I don't believe you on this one.  It is going to be a very unusual
+system which has a maximum supply voltage specified at over 4kV (or
+more) which is what INT_MAX will come out as - there will be some
+electrical specs for what voltages can be tolerated sustainably.
 
-Thanks.
+--nrM5Z5VIJgwP9LWp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRdTjBAAoJELSic+t+oim9t8cP/3kE055Pw/JDlG9NDvqAKmzk
+3huv9JdVlfP6h4OOHf3q+iXeKveeubJdZRWabWg2wxseFQnHOu24Q5eawALZhgjy
+mFzBf9dMROfcNYWOi64mTuqRL01+RWmRg16H5wjclDUMLwTJ/oiKSICuNGUneHqr
+fC5FKpvSlWvFJzX5zxzEmcF0QOqGtZ9zx7XOZGskSPzK1LcLwVVNfD1YkHL4z4qy
+jomyCNsZKFcof3oeDQj/K1tlpC1em91eWHG3qnoePC4OT2kZkMxfU4XDSNktXXug
+ve9KyPgyOw6/LUX1H98yZlIO6E6YNmdgX0e+VpL5N/jOjrRBjV7bekYoWKMLbR7Q
+cBkioM3IfNjw+oJ+bYp+mJJ5g6rXfXZxXbGo5nI8zGRXudA6ucJ1iEmYqv9zJ96p
+PBdQgxVQjX4DxBtWKPyXwCjIM0h9TL3L8Ou+baU4ZXbju6grUX++GLPr9nPKmMOg
+KCEQjZ7YncGUsZZuLlrjVxJo+O0tB25ZyxGCZpSgQCsRKw0XttyJSdbsfsRMJOGv
+DXNe/A2boYSDCOTDirYIIh3vXQxeG1iZhANDEpf1Ql96Yt0OpfdjQRiS12uZv75C
+XVySD2s+7x/JE+HlJlhJJYC8/3747ERqoJMsUSYpp08V2nZ+LR70jsFSVRs8xyfF
+Ad8oNem1wgzlnXl+e6P6
+=d7iS
+-----END PGP SIGNATURE-----
+
+--nrM5Z5VIJgwP9LWp--
