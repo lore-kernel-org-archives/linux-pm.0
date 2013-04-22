@@ -1,66 +1,86 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
-Date: Mon, 22 Apr 2013 19:49:37 +0300
-Message-ID: <51756A21.3020405@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/2] Thermal: exynos: Add clk_{un}prepare APIs
+Date: Mon, 22 Apr 2013 23:44:00 +0530
+Message-ID: <CAK9yfHxun_x4ae0MTKJo6zgTrHNS855MFEh-1s=qY-0arfJunw@mail.gmail.com>
+References: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:39362 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753244Ab3DVQzh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 22 Apr 2013 12:55:37 -0400
-In-Reply-To: <20130422131904.GL30351@opensource.wolfsonmicro.com>
+Received: from mail-ob0-f169.google.com ([209.85.214.169]:51566 "EHLO
+	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754510Ab3DVSOB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 14:14:01 -0400
+Received: by mail-ob0-f169.google.com with SMTP id tb18so1542077obb.28
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2013 11:14:00 -0700 (PDT)
+In-Reply-To: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, sachin.kamat@linaro.org, kgene.kim@samsung.com, patches@linaro.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On 04/22/2013 04:19 PM, Mark Brown wrote:
-> On Fri, Apr 19, 2013 at 02:55:53PM +0300, Taras Kondratiuk wrote:
->> Sometimes it is a need to constrain only a minimum voltage
->> and let system constraints to limit maximum.
->> Add a new function regulator_set_voltage_min() for this.
-> I don't believe you on this one.  It is going to be a very unusual
-> system which has a maximum supply voltage specified at over 4kV (or
-> more) which is what INT_MAX will come out as - there will be some
-> electrical specs for what voltages can be tolerated sustainably.
-Yeah. Sure 4kV is not a real request, but
-max will be limited by system constrains.
-According to regulator_set_voltage() documentation
-system constraints should be set before calling this function,
-so I assume I can rely on them. No?
+Hi Eduardo,
 
-Another possible implementation is below, but prefer initial one.
+Any comments on this series? If possible would like to have this in
+3.10 itself as without this TMU support would be broken on exynos
+machines due to migration to common clock framework.
 
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index e3661c2..28c1be3 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -2355,6 +2355,19 @@ out2:
-  }
-  EXPORT_SYMBOL_GPL(regulator_set_voltage);
+On 18 April 2013 17:07, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> clk_{un}prepare APIs are required to migrate to common
+> clock framework. While at it convert to use devm_clk_get as
+> it removes some cleanup code.
+>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  drivers/thermal/exynos_thermal.c |   10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index e34d842..9df96e5 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -937,12 +937,16 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>                 return ret;
+>         }
+>
+> -       data->clk = clk_get(NULL, "tmu_apbif");
+> +       data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+>         if (IS_ERR(data->clk)) {
+>                 dev_err(&pdev->dev, "Failed to get clock\n");
+>                 return  PTR_ERR(data->clk);
+>         }
+>
+> +       ret = clk_prepare(data->clk);
+> +       if (ret)
+> +               return ret;
+> +
+>         if (pdata->type == SOC_ARCH_EXYNOS ||
+>                                 pdata->type == SOC_ARCH_EXYNOS4210)
+>                 data->soc = pdata->type;
+> @@ -994,7 +998,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>         return 0;
+>  err_clk:
+>         platform_set_drvdata(pdev, NULL);
+> -       clk_put(data->clk);
+> +       clk_unprepare(data->clk);
+>         return ret;
+>  }
+>
+> @@ -1006,7 +1010,7 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+>
+>         exynos_unregister_thermal();
+>
+> -       clk_put(data->clk);
+> +       clk_unprepare(data->clk);
+>
+>         platform_set_drvdata(pdev, NULL);
+>
+> --
+> 1.7.9.5
+>
 
-+int regulator_set_voltage_min(struct regulator *regulator, int min_uV)
-+{
-+       struct regulator_dev *rdev = regulator->rdev;
-+       int max_uV;
-+
-+       mutex_lock(&rdev->mutex);
-+       max_uV = rdev->constraints->max_uV;
-+       mutex_unlock(&rdev->mutex);
-+       return regulator_set_voltage(regulator, min_uV, max_uV);
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_voltage_min);
-+
-+
-  /**
-   * regulator_set_voltage_time - get raise/fall time
-   * @regulator: regulator source
 
 
 -- 
-BR
-Taras Kondratiuk | GlobalLogic
-
+With warm regards,
+Sachin
