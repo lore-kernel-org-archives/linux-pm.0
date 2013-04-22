@@ -1,56 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
-Date: Mon, 22 Apr 2013 12:19:27 +0530
-Message-ID: <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
-	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
-	<CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: PM+ACPI material for v3.10
+Date: Mon, 22 Apr 2013 08:55:19 +0200
+Message-ID: <5174DED7.4000400@linaro.org>
+References: <3222400.G8tzcaWZXV@vostro.rjw.lan> <51690B60.1050205@linaro.org> <1416312.lSirPJDWF5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:49090 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560Ab3DVGt2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 02:49:28 -0400
-Received: by mail-oa0-f48.google.com with SMTP id f4so3840653oah.21
-        for <linux-pm@vger.kernel.org>; Sun, 21 Apr 2013 23:49:28 -0700 (PDT)
-In-Reply-To: <CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1416312.lSirPJDWF5@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "horms@verge.net.au" <horms@verge.net.au>, Kevin Hilman <khilman@deeprootsystems.com>, Magnus Damm <magnus.damm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 
-On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+On 04/22/2013 01:25 AM, Rafael J. Wysocki wrote:
+> On Saturday, April 13, 2013 09:38:08 AM Daniel Lezcano wrote:
+>> On 04/13/2013 02:17 AM, Rafael J. Wysocki wrote:
+>>> Hi All,
 >>>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: Olof Johansson <olof@lixom.net>
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>> Compile Tested only.
+>>> As some of you already know, I will be traveling through Apr. 20 an=
+d I'm not
+>>> going to take any new material for v3.10 from now onwards until I'm=
+ back.
 >>>
->>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
->>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
->>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
->>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
->>>  drivers/cpufreq/Makefile                           |  3 +++
->>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
->>>  .../cpufreq/pmac32-cpufreq.c                       |  0
->>>  .../cpufreq/pmac64-cpufreq.c                       |  0
->>>  8 files changed, 29 insertions(+), 34 deletions(-)
->>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
->>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
->>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>> The summary of my current queue is appended and quite frankly I don=
+'t see any
+>>> compelling reasons to add anything more to it at the moment (except=
+ for fixes,
+>>> if any).  That said, if you really really need/want some new stuff =
+(or generally
+>>> something that is not a fix) to go into it, you may try to convince=
+ me, but
+>>> that will cost you a beverage of my choice if successful.  So you h=
+ave been
+>>> warned.
 >>
->> Hi Deepthi,
+>> :)
 >>
->> Can you help testing this please?
->
-> Ping!!
+>> For me it is ok to wait but there some patches, that should be taken
+>> from the last series I sent because they are fixes:
+>>
+>> http://www.spinics.net/lists/arm-kernel/msg237936.html
+>> http://www.spinics.net/lists/arm-kernel/msg237938.html
+>> http://www.spinics.net/lists/arm-kernel/msg237939.html
+>=20
+> All three applied.
+>=20
+> Since we seem to have a few extra days before final v3.9, please feel=
+ free to
+> resend the other patches in the series that have been ACKed so far.
 
-Ping!!
+Ok, cool.
+
+I will wait a few hours to see if Ben or Kim ack the s3c64 patch.
+
+Thanks !
+  -- Daniel
+
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
