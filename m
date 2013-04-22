@@ -1,62 +1,45 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 05/18] cpuidle: make a single register function for all
-Date: Mon, 22 Apr 2013 08:57:17 +0200
-Message-ID: <5174DF4D.5020701@linaro.org>
-References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
- <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org>
- <51657E61.9010701@gmail.com>
+Subject: Re: [V3 patch 17/19] ARM: kirkwood: cpuidle: use init/exit common
+ routine
+Date: Mon, 22 Apr 2013 09:01:10 +0200
+Message-ID: <5174E036.9090808@linaro.org>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-18-git-send-email-daniel.lezcano@linaro.org> <20130414151429.GF5061@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <51657E61.9010701@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, magnus.damm@gmail.com, tony@atomide.com, patches@linaro.org, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, lethal@linux-sh.org, kernel@pengutronix.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:49289 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643Ab3DVHBR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Apr 2013 03:01:17 -0400
+Received: by mail-wi0-f174.google.com with SMTP id m6so3712079wiv.1
+        for <linux-pm@vger.kernel.org>; Mon, 22 Apr 2013 00:01:16 -0700 (PDT)
+In-Reply-To: <20130414151429.GF5061@lunn.ch>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 
-T24gMDQvMTAvMjAxMyAwNDo1OSBQTSwgUm9iIEhlcnJpbmcgd3JvdGU6Cj4gT24gMDQvMTAvMjAx
-MyAwOToyMiBBTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IFRoZSB1c3VhbCBzY2hlbWUgdG8g
-aW5pdGlhbGl6ZSBhIGNwdWlkbGUgZHJpdmVyIG9uIGEgU01QIGlzOgo+Pgo+PiAJY3B1aWRsZV9y
-ZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPj4gCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpIHsKPj4g
-CQlkZXZpY2UgPSAmcGVyX2NwdShjcHVpZGxlX2RldiwgY3B1KTsKPj4gCQljcHVpZGxlX3JlZ2lz
-dGVyX2RldmljZShkZXZpY2UpOwo+PiAJfQo+Pgo+PiBUaGlzIGNvZGUgaXMgZHVwbGljYXRlZCBp
-biBlYWNoIGNwdWlkbGUgZHJpdmVyLgo+Pgo+PiBPbiBVUCBzeXN0ZW1zLCBpdCBpcyBkb25lIHRo
-aXMgd2F5Ogo+Pgo+PiAJY3B1aWRsZV9yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPj4gCWRldmljZSA9
-ICZwZXJfY3B1KGNwdWlkbGVfZGV2LCBjcHUpOwo+PiAJY3B1aWRsZV9yZWdpc3Rlcl9kZXZpY2Uo
-ZGV2aWNlKTsKPj4KPj4gT24gVVAsIHRoZSBtYWNybyAnZm9yX2VhY2hfY3B1JyBkb2VzIG9uZSBp
-dGVyYXRpb246Cj4+Cj4+ICNkZWZpbmUgZm9yX2VhY2hfY3B1KGNwdSwgbWFzaykgICAgICAgICAg
-ICAgICAgIFwKPj4gICAgICAgICBmb3IgKChjcHUpID0gMDsgKGNwdSkgPCAxOyAoY3B1KSsrLCAo
-dm9pZCltYXNrKQo+Pgo+PiBIZW5jZSwgdGhlIGluaXRpYWxpemF0aW9uIGxvb3AgaXMgdGhlIHNh
-bWUgZm9yIFVQIHRoYW4gU01QLgo+Pgo+PiBCZXNpZGUsIHdlIHNhdyBkaWZmZXJlbnQgYnVncyAv
-IG1pcy1pbml0aWFsaXphdGlvbiAvIHJldHVybiBjb2RlIHVuY2hlY2tlZCBpbgo+PiB0aGUgZGlm
-ZmVyZW50IGRyaXZlcnMsIHRoZSBjb2RlIGlzIGR1cGxpY2F0ZWQgaW5jbHVkaW5nIGJ1Z3MuIEFm
-dGVyIGZpeGluZyBhbGwKPj4gdGhlc2Ugb25lcywgaXQgYXBwZWFycyB0aGUgaW5pdGlhbGl6YXRp
-b24gcGF0dGVybiBpcyB0aGUgc2FtZSBmb3IgZXZlcnlvbmUuCj4+Cj4+IExldCdzIGFkZCBhIHdy
-YXBwZXIgZnVuY3Rpb24gZG9pbmcgdGhpcyBpbml0aWFsaXphdGlvbiB3aXRoIGEgY3B1bWFzayBw
-YXJhbWV0ZXIKPj4gZm9yIHRoZSBjb3VwbGVkIGlkbGUgc3RhdGVzIGFuZCB1c2UgaXQgZm9yIGFs
-bCB0aGUgZHJpdmVycy4KPj4KPj4gVGhhdCB3aWxsIHNhdmUgYSBsb3Qgb2YgTE9DLCBjb25zb2xp
-ZGF0ZSB0aGUgY29kZSwgYW5kIHRoZSBtb2RpZmljYXRpb25zIGluIHRoZQo+PiBmdXR1cmUgY291
-bGQgYmUgZG9uZSBpbiBhIHNpbmdsZSBwbGFjZS4gQW5vdGhlciBiZW5lZml0IGlzIHRoZSBjb25z
-b2xpZGF0aW9uIG9mCj4+IHRoZSBjcHVpZGxlX2RldmljZSB2YXJpYWJsZSB3aGljaCBpcyBub3cg
-aW4gdGhlIGNwdWlkbGUgZnJhbWV3b3JrIGFuZCBubyBsb25nZXIKPj4gc3ByZWFkIGFjY3Jvc3Mg
-dGhlIGRpZmZlcmVudCBhcmNoIHNwZWNpZmljIGRyaXZlcnMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6
-IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPgo+PiAtLS0KPiBQZXJo
-YXBzIG15IGFjayB3YXMgdG9vIHF1aWNrLi4uCgpIaSBSb2IsCgpub3cgdGhhdCBJIGhhdmUgZml4
-ZWQgdGhlIHJvdXRpbmUgaW4gVjMsIHNoYWxsIEkgY29uc2lkZXIgdGhlIHBhdGNoIGlzCmFja2Vk
-ID8KClRoYW5rcwotLSBEYW5pZWwKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
-by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFy
-bzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0
-dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5h
-cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
-bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
-YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On 04/14/2013 05:14 PM, Andrew Lunn wrote:
+
+[ ... ]
+>  int kirkwood_cpuidle_remove(struct platform_device *pdev)
+>  {
+> -	cpuidle_unregister_device(device);
+> -	cpuidle_unregister_driver(&kirkwood_idle_driver);
+> -
+> +	cpuidle_unregister(&kirkwood_idle_driver);
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.7.9.5
+>
+> Tested-by: Andrew Lunn <andrew@lunn.ch>
+
+Hi Andrew,
+
+shall I consider it as acked-by also ?
+
+Thanks
+  -- Daniel
