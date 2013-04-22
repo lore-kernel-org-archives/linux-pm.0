@@ -1,74 +1,62 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: PM+ACPI material for v3.10
-Date: Mon, 22 Apr 2013 08:55:19 +0200
-Message-ID: <5174DED7.4000400@linaro.org>
-References: <3222400.G8tzcaWZXV@vostro.rjw.lan> <51690B60.1050205@linaro.org> <1416312.lSirPJDWF5@vostro.rjw.lan>
+Subject: Re: [PATCH 05/18] cpuidle: make a single register function for all
+Date: Mon, 22 Apr 2013 08:57:17 +0200
+Message-ID: <5174DF4D.5020701@linaro.org>
+References: <1365603743-5618-1-git-send-email-daniel.lezcano@linaro.org>
+ <1365603743-5618-6-git-send-email-daniel.lezcano@linaro.org>
+ <51657E61.9010701@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1416312.lSirPJDWF5@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "horms@verge.net.au" <horms@verge.net.au>, Kevin Hilman <khilman@deeprootsystems.com>, Magnus Damm <magnus.damm@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <51657E61.9010701@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, magnus.damm@gmail.com, tony@atomide.com, patches@linaro.org, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, lethal@linux-sh.org, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On 04/22/2013 01:25 AM, Rafael J. Wysocki wrote:
-> On Saturday, April 13, 2013 09:38:08 AM Daniel Lezcano wrote:
->> On 04/13/2013 02:17 AM, Rafael J. Wysocki wrote:
->>> Hi All,
->>>
->>> As some of you already know, I will be traveling through Apr. 20 an=
-d I'm not
->>> going to take any new material for v3.10 from now onwards until I'm=
- back.
->>>
->>> The summary of my current queue is appended and quite frankly I don=
-'t see any
->>> compelling reasons to add anything more to it at the moment (except=
- for fixes,
->>> if any).  That said, if you really really need/want some new stuff =
-(or generally
->>> something that is not a fix) to go into it, you may try to convince=
- me, but
->>> that will cost you a beverage of my choice if successful.  So you h=
-ave been
->>> warned.
->>
->> :)
->>
->> For me it is ok to wait but there some patches, that should be taken
->> from the last series I sent because they are fixes:
->>
->> http://www.spinics.net/lists/arm-kernel/msg237936.html
->> http://www.spinics.net/lists/arm-kernel/msg237938.html
->> http://www.spinics.net/lists/arm-kernel/msg237939.html
->=20
-> All three applied.
->=20
-> Since we seem to have a few extra days before final v3.9, please feel=
- free to
-> resend the other patches in the series that have been ACKed so far.
-
-Ok, cool.
-
-I will wait a few hours to see if Ben or Kim ack the s3c64 patch.
-
-Thanks !
-  -- Daniel
-
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gMDQvMTAvMjAxMyAwNDo1OSBQTSwgUm9iIEhlcnJpbmcgd3JvdGU6Cj4gT24gMDQvMTAvMjAx
+MyAwOToyMiBBTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6Cj4+IFRoZSB1c3VhbCBzY2hlbWUgdG8g
+aW5pdGlhbGl6ZSBhIGNwdWlkbGUgZHJpdmVyIG9uIGEgU01QIGlzOgo+Pgo+PiAJY3B1aWRsZV9y
+ZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPj4gCWZvcl9lYWNoX3Bvc3NpYmxlX2NwdShjcHUpIHsKPj4g
+CQlkZXZpY2UgPSAmcGVyX2NwdShjcHVpZGxlX2RldiwgY3B1KTsKPj4gCQljcHVpZGxlX3JlZ2lz
+dGVyX2RldmljZShkZXZpY2UpOwo+PiAJfQo+Pgo+PiBUaGlzIGNvZGUgaXMgZHVwbGljYXRlZCBp
+biBlYWNoIGNwdWlkbGUgZHJpdmVyLgo+Pgo+PiBPbiBVUCBzeXN0ZW1zLCBpdCBpcyBkb25lIHRo
+aXMgd2F5Ogo+Pgo+PiAJY3B1aWRsZV9yZWdpc3Rlcl9kcml2ZXIoZHJ2KTsKPj4gCWRldmljZSA9
+ICZwZXJfY3B1KGNwdWlkbGVfZGV2LCBjcHUpOwo+PiAJY3B1aWRsZV9yZWdpc3Rlcl9kZXZpY2Uo
+ZGV2aWNlKTsKPj4KPj4gT24gVVAsIHRoZSBtYWNybyAnZm9yX2VhY2hfY3B1JyBkb2VzIG9uZSBp
+dGVyYXRpb246Cj4+Cj4+ICNkZWZpbmUgZm9yX2VhY2hfY3B1KGNwdSwgbWFzaykgICAgICAgICAg
+ICAgICAgIFwKPj4gICAgICAgICBmb3IgKChjcHUpID0gMDsgKGNwdSkgPCAxOyAoY3B1KSsrLCAo
+dm9pZCltYXNrKQo+Pgo+PiBIZW5jZSwgdGhlIGluaXRpYWxpemF0aW9uIGxvb3AgaXMgdGhlIHNh
+bWUgZm9yIFVQIHRoYW4gU01QLgo+Pgo+PiBCZXNpZGUsIHdlIHNhdyBkaWZmZXJlbnQgYnVncyAv
+IG1pcy1pbml0aWFsaXphdGlvbiAvIHJldHVybiBjb2RlIHVuY2hlY2tlZCBpbgo+PiB0aGUgZGlm
+ZmVyZW50IGRyaXZlcnMsIHRoZSBjb2RlIGlzIGR1cGxpY2F0ZWQgaW5jbHVkaW5nIGJ1Z3MuIEFm
+dGVyIGZpeGluZyBhbGwKPj4gdGhlc2Ugb25lcywgaXQgYXBwZWFycyB0aGUgaW5pdGlhbGl6YXRp
+b24gcGF0dGVybiBpcyB0aGUgc2FtZSBmb3IgZXZlcnlvbmUuCj4+Cj4+IExldCdzIGFkZCBhIHdy
+YXBwZXIgZnVuY3Rpb24gZG9pbmcgdGhpcyBpbml0aWFsaXphdGlvbiB3aXRoIGEgY3B1bWFzayBw
+YXJhbWV0ZXIKPj4gZm9yIHRoZSBjb3VwbGVkIGlkbGUgc3RhdGVzIGFuZCB1c2UgaXQgZm9yIGFs
+bCB0aGUgZHJpdmVycy4KPj4KPj4gVGhhdCB3aWxsIHNhdmUgYSBsb3Qgb2YgTE9DLCBjb25zb2xp
+ZGF0ZSB0aGUgY29kZSwgYW5kIHRoZSBtb2RpZmljYXRpb25zIGluIHRoZQo+PiBmdXR1cmUgY291
+bGQgYmUgZG9uZSBpbiBhIHNpbmdsZSBwbGFjZS4gQW5vdGhlciBiZW5lZml0IGlzIHRoZSBjb25z
+b2xpZGF0aW9uIG9mCj4+IHRoZSBjcHVpZGxlX2RldmljZSB2YXJpYWJsZSB3aGljaCBpcyBub3cg
+aW4gdGhlIGNwdWlkbGUgZnJhbWV3b3JrIGFuZCBubyBsb25nZXIKPj4gc3ByZWFkIGFjY3Jvc3Mg
+dGhlIGRpZmZlcmVudCBhcmNoIHNwZWNpZmljIGRyaXZlcnMuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6
+IERhbmllbCBMZXpjYW5vIDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPgo+PiAtLS0KPiBQZXJo
+YXBzIG15IGFjayB3YXMgdG9vIHF1aWNrLi4uCgpIaSBSb2IsCgpub3cgdGhhdCBJIGhhdmUgZml4
+ZWQgdGhlIHJvdXRpbmUgaW4gVjMsIHNoYWxsIEkgY29uc2lkZXIgdGhlIHBhdGNoIGlzCmFja2Vk
+ID8KClRoYW5rcwotLSBEYW5pZWwKCi0tIAogPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFy
+by5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwoKRm9sbG93IExpbmFy
+bzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwKPGh0
+dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfAo8aHR0cDovL3d3dy5saW5h
+cm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZwoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFy
+bS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9t
+YWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
