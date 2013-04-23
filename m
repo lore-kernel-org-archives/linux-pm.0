@@ -1,102 +1,84 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 4/6] thermal: Support for TMU regulator defined at device
- tree
-Date: Tue, 23 Apr 2013 08:23:12 +0200
-Message-ID: <20130423082312.3caf60e0@amdc308.digital.local>
+Subject: Re: [PATCH 6/6] thermal:exynos4: Add documentation for Exynos SoC
+ thermal bindings
+Date: Tue, 23 Apr 2013 08:25:33 +0200
+Message-ID: <20130423082533.369a580f@amdc308.digital.local>
 References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
- <1366389493-8239-5-git-send-email-l.majewski@samsung.com>
- <51717D89.3090303@ti.com>
+ <1366389493-8239-7-git-send-email-l.majewski@samsung.com>
+ <CAK9yfHz8GH90LO8gzVah_KLezZ=bNc3+pgX6O5QGt2+xJZsUqw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <51717D89.3090303@ti.com>
+In-reply-to: <CAK9yfHz8GH90LO8gzVah_KLezZ=bNc3+pgX6O5QGt2+xJZsUqw@mail.gmail.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
+To: Sachin Kamat <sachin.kamat@linaro.org>
 Cc: Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+Hi Sachin,
 
-> On 19-04-2013 12:38, Lukasz Majewski wrote:
-> > TMU probe function now checks for a device tree defined regulator.
-> > For compatibility reasons it is allowed to probe driver even without
-> > this regulator defined.
+> Hi Lukasz,
+> 
+> Thanks for adding this. Some comments inline.
+> 
+> On 19 April 2013 22:08, Lukasz Majewski <l.majewski@samsung.com>
+> wrote:
+> > Proper description for Exynos4 bindings added to
+> > Documentation/devicetree/ bindings
 > >
 > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
 > > Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 > > ---
-> >   drivers/thermal/exynos_thermal.c |   19 +++++++++++++++++++
-> >   1 file changed, 19 insertions(+)
+> >  .../devicetree/bindings/thermal/exynos-thermal.txt |   22
+> > ++++++++++++++++++++ 1 file changed, 22 insertions(+)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/thermal/exynos-thermal.txt
 > >
-> > diff --git a/drivers/thermal/exynos_thermal.c
-> > b/drivers/thermal/exynos_thermal.c index ba6094c..e922fa4 100644
-> > --- a/drivers/thermal/exynos_thermal.c
-> > +++ b/drivers/thermal/exynos_thermal.c
-> > @@ -38,6 +38,7 @@
-> >   #include <linux/cpufreq.h>
-> >   #include <linux/cpu_cooling.h>
-> >   #include <linux/of.h>
-> > +#include <linux/regulator/consumer.h>
-> >
-> >   #include <plat/cpu.h>
-> >
-> > @@ -119,6 +120,8 @@
-> >
-> >   #define EXYNOS_ZONE_COUNT	3
-> >
-> > +#define EXYNOS_TMU_REGULATOR "vdd_ts"
+> > diff --git
+> > a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> > b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt new
+> > file mode 100644 index 0000000..e994e1e --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> > @@ -0,0 +1,22 @@
+> > +* Exynos Thermal
+> 
+> How about "Exynos Thermal Management Unit (TMU)"?
+> 
 > > +
-> >   struct exynos_tmu_data {
-> >   	struct exynos_tmu_platform_data *pdata;
-> >   	struct resource *mem;
-> > @@ -944,6 +947,7 @@ static int exynos_tmu_probe(struct
-> > platform_device *pdev) {
-> >   	struct exynos_tmu_data *data;
-> >   	struct exynos_tmu_platform_data *pdata =
-> > pdev->dev.platform_data;
-> > +	struct regulator *reg;
-> >   	int ret, i;
-> >
-> >   	if (!pdata)
-> > @@ -953,6 +957,21 @@ static int exynos_tmu_probe(struct
-> > platform_device *pdev) dev_err(&pdev->dev, "No platform init data
-> > supplied.\n"); return -ENODEV;
-> >   	}
-> > +
-> > +	reg = regulator_get(&pdev->dev, EXYNOS_TMU_REGULATOR);
-> > +	if (!IS_ERR(reg)) {
-> > +		ret = regulator_enable(reg);
-> > +		if (ret) {
-> > +			dev_err(&pdev->dev, "Regulator %s not
-> > enabled.\n",
-> > +				EXYNOS_TMU_REGULATOR);
-> > +			return ret;
-> > +		}
-> > +	} else {
-> > +		dev_info(&pdev->dev,
-> > +			 "Regulator %s not defined at device
-> > tree.\n",
-> > +			 EXYNOS_TMU_REGULATOR);
-> Maybe a dev_warn would fit better?
+> > +Required properties:
+> > +- compatible : "samsung,exynos4412-tmu"
+> Should be one of the following:
+> "samsung,exynos4210-tmu"
+> "samsung,exynos4412-tmu"
 
-This is a bit tricky. I first wanted to return -ENODEV when regulator
-is not available. Then I understood, that some other SoCs (e.g.
-Exynos5) will not work. 
+So all thee names shall be added? Right?
 
-The info here shall give a clear warn signal, that providing a
-regulator for VDD_TS is crucial (since by default it can be connected
-to other PMIC outputs and when other device puts down this regulator
-the TMU will crash and shut down a system). 
+> "samsung,exynos5250-tmu"
+> 
 
 > 
-> > +	}
-> > +
-> >   	data = devm_kzalloc(&pdev->dev, sizeof(struct
-> > exynos_tmu_data), GFP_KERNEL);
-> >   	if (!data) {
-> >
+> > +- interrupts-parent : The phandle for the interrupt controller
+> 
+> s/interrupts-parent /interrupt-parent
+> 
+> 
+> > +- reg : Address range of the thermal registers
+> > +- interrupts : Should contain interrupt for thermal system
+> > +- clocks : The main clock for TMU device
+> > +- clocks-names : Thermal system clock name
+> 
+> s/clocks-names /clock-names
+> You may also choose to add "from common clock binding" for clocks and
+> clock-names properties above.
+> 
+> > +- status : Initial state of the device
+> You may remove this as it is quite obvious now. Even if you want to
+> retain this, it should be under 'Optional properties:'
+> 
+> 
 
+Ok, I will correct those names.
 
 
 -- 
