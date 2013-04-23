@@ -1,39 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] cpuidle: fix comment format
-Date: Tue, 23 Apr 2013 17:28:44 +0200
-Message-ID: <1366730924-20633-1-git-send-email-daniel.lezcano@linaro.org>
+From: Taras Kondratiuk <taras@ti.com>
+Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
+Date: Tue, 23 Apr 2013 21:45:09 +0300
+Message-ID: <5176D6B5.3070305@ti.com>
+References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com> <51756A21.3020405@ti.com> <20130423084838.GB5019@opensource.wolfsonmicro.com> <5176743A.9070201@ti.com> <20130423134512.GL5019@opensource.wolfsonmicro.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:46188 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756540Ab3DWP2x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 11:28:53 -0400
-Received: by mail-we0-f178.google.com with SMTP id z53so751132wey.9
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 08:28:52 -0700 (PDT)
+Received: from bear.ext.ti.com ([192.94.94.41]:41416 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757156Ab3DWSvT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Apr 2013 14:51:19 -0400
+In-Reply-To: <20130423134512.GL5019@opensource.wolfsonmicro.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: santosh.shilimkar@ti.com, linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
 
-Fix comment format for the kernel doc script.
+On 04/23/2013 04:45 PM, Mark Brown wrote:
+> On Tue, Apr 23, 2013 at 02:44:58PM +0300, Taras Kondratiuk wrote:
+>
+>> GPU voltage is regulated by some devfreq driver.
+>> CPU voltage is regulated by generic cpufreq-cpu0 driver.
+>> Both drivers know only about their operational points.
+>> They don't know anything about chip limits.
+> Clearly at least the lower bound is known to the drivers...
+Do you mean a voltage of the lowest operation point?
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>> I see two options here:
+>> 1. Pass somehow chip limits to drivers so they can limit their request.
+>>     Pros: No need for regulator_set_voltage_min()
+>>     Cons: a) Need to pass info about chip limits to driver. New API?
+> Why on earth would this need a new API?
+I think I'm missing something.
+How can I pass chip limits to a driver in some generic way?
+>
+>>           b) CPU and GPU may have different limits,
+>>              so after very first request voltage may violate
+>>              CPU or GPU range.
+> If the CPU and GPU drivers are trying to select incompatible
+> configurations then we really ought to be detecting that, ignoring it
+> seems like an obvious failure.  There's a bootstrapping problem but
+> that's also an issue with specifying only the minimum voltage...
+>
+>> 2. Define chip limits in Reg X constraints.
+>>     Pros: Limits will be applied to driver's request transparently.
+>>           No need to pass info about limits to driver.
+>>           Limits are set before the first request, so no violation.
+>>     Cons: regulator_set_voltage_min() is needed.
+>> IMHO option #2 is better.
+>> Do you see other ways?
+> Above you clearly say that this is all modelling operating points.  If
+> you're doing that then I would expect the drivers to be talking
+> operating points to an operating point abstraction.
+I went through several SoC datasheets and found that min approach
+won't work for some of them (like AM335x).
+The only safe way is to send max OPP voltage as a max_uV.
+So please skip this series.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 49e8d30..c3a93fe 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -454,7 +454,7 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
- 
- EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
- 
--/*
-+/**
-  * cpuidle_unregister: unregister a driver and the devices. This function
-  * can be used only if the driver has been previously registered through
-  * the cpuidle_register function.
 -- 
-1.7.9.5
+BR
+Taras Kondratiuk | GlobalLogic
 
