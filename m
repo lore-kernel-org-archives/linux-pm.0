@@ -1,65 +1,131 @@
-From: Taras Kondratiuk <taras@ti.com>
-Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
-Date: Tue, 23 Apr 2013 14:44:58 +0300
-Message-ID: <5176743A.9070201@ti.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com> <1366372554-20866-2-git-send-email-taras@ti.com> <20130422131904.GL30351@opensource.wolfsonmicro.com> <51756A21.3020405@ti.com> <20130423084838.GB5019@opensource.wolfsonmicro.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [V4 patch 00/15] cpuidle: code consolidation
+Date: Tue, 23 Apr 2013 14:00:26 +0200
+Message-ID: <1575993.FIabeJeWGY@vostro.rjw.lan>
+References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130423084838.GB5019@opensource.wolfsonmicro.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:41558 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755807Ab3DWLwa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Apr 2013 07:52:30 -0400
+In-Reply-To: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 
-On 04/23/2013 11:48 AM, Mark Brown wrote:
-> On Mon, Apr 22, 2013 at 07:49:37PM +0300, Taras Kondratiuk wrote:
->
->> Yeah. Sure 4kV is not a real request, but
->> max will be limited by system constrains.
->> According to regulator_set_voltage() documentation
->> system constraints should be set before calling this function,
->> so I assume I can rely on them. No?
->> Another possible implementation is below, but prefer initial one.
-> I just don't see any reason for this API.  The driver setting the
-> voltage ought to have some idea of what the chip limits are too for
-> safety.
-Let's take an example.
-One regulator supplies CPU and GPU inside of SoC.
-                       +-------------+
-                       | SoC         |
-               VDD_CPU |    +-----+  |
-             +------------->| CPU |  |
-+-------+   |         |    +-----+  |
-| Reg X |---+         |             |
-+------ +   | VDD_GPU |    +-----+  |
-             +------------->| GPU |  |
-                       |    +-----+  |
-                       +-------------+
+On Tuesday, April 23, 2013 10:54:30 AM Daniel Lezcano wrote:
+> This patchset series provide some code consolidation across the different
+> cpuidle drivers. It contains two parts, the first one is the removal of
+> the time keeping flag and the second one, is a common initialization routine.
+> 
+> All the drivers use the en_core_tk_irqen flag, which means it is not necessary
+> to make the time computation optional. We can remove this flag and assume the
+> cpuidle framework always manage this operation.
+> 
+> The cpuidle code initialization is duplicated across the different drivers in
+> the same manner.
+> 
+> The repeating pattern is:
+> 
+> SMP:
+> 
+> cpuidle_register_driver(drv);
+> for_each_possible_cpu(cpu) {
+>         dev = per_cpu(cpuidle_device, cpu);
+>         cpuidle_register_device(dev);
+> }
+> 
+> UP:
+> 
+> cpuidle_register_driver(drv);
+> cpuidle_register_device(dev);
+> 
+> As on a UP machine the macro 'for_each_cpu' is a one iteration loop, using the
+> initialization loop from SMP to UP works.
+> 
+> The patchset does some cleanup for different drivers in order to make the init
+> code the same. Then it introduces a generic function:
+> 
+>   cpuidle_register(struct cpuidle_driver *drv, struct cpumask *cpumask)
+> 
+> The cpumask is for the coupled idle states.
+> 
+> The drivers are then modified to take into account this new function and
+> to remove the duplicated code.
+> 
+> The benefit is observable in the diffstat: 332 lines of code removed.
+> 
+> Changelog:
+>  - V4:
+>    * Added the different Acked-by and Reviewed-by
+>    * Removed the patches already merged:
+>      * ARM: shmobile: cpuidle: remove shmobile_enter_wfi function
+>      * ARM: shmobile: cpuidle: remove shmobile_enter_wfi prototype
+>      * ARM: OMAP3: remove cpuidle_wrap_enter
+>    * Removed patch without acked-by (no answer from the maintainer)
+>      * ARM: s3c64xx: cpuidle: use init/exit common routine
+> 
+>  - V3:
+>    * folded patch 5/19 into 19/19, they were:
+>      * ARM: imx: cpuidle: use init/exit common routine
+>      * ARM: imx: cpuidle: create separate drivers for imx5/imx6
+>    * removed rule to make cpuidle.o in the imx's Makefile
+>    * splitted patch 1/19 into two, they are:
+>      * [V3 patch 01/19] ARM: shmobile: cpuidle: remove shmobile_enter_wfi
+>      * [V3 patch 02/19] ARM: shmobile: cpuidle: remove shmobile_enter_wfi prototype
+> 
+>  - V2:
+>    * fixed cpumask NULL test for coupled state in cpuidle_register
+>    * added comment about structure copy
+>    * changed printk by pr_err
+>    * folded splitted message
+>    * fixed return code in cpuidle_register
+>    * updated Documentation/cpuidle/drivers.txt
+>    * added in the changelog dev->state_count is filled by cpuidle_enable_device
+>    * fixed tag for tegra in the first line patch description
+>    * fixed tegra2 removed tegra_tear_down_cpu = tegra20_tear_down_cpu;
+> 
+>  - V1: Initial post
+> 
+> Tested-on: u8500
+> Tested-on: at91
+> Tested-on: intel i5
+> Tested-on: OMAP4
+> Tested-by: Kevin Hilman <khilman@linaro.org> # OMAP3, OMAP4
+> Tested-by: Andrew Lunn <andrew@lunn.ch> # Kirkwood
+> 
+> Compiled with and without CPU_IDLE for:
+>  u8500, at91, davinci, exynos, imx5, imx6, kirkwood, multi_v7 (for calxeda),
+>  omap2plus, s3c64, tegra1, tegra2, tegra3
+> 
+> Daniel Lezcano (15):
+>   cpuidle: remove en_core_tk_irqen flag
+>   ARM: ux500: cpuidle: replace for_each_online_cpu by
+>     for_each_possible_cpu
+>   cpuidle: make a single register function for all
+>   ARM: ux500: cpuidle: use init/exit common routine
+>   ARM: at91: cpuidle: use init/exit common routine
+>   ARM: OMAP3: cpuidle: use init/exit common routine
+>   ARM: tegra: cpuidle: use init/exit common routine
+>   ARM: shmobile: cpuidle: use init/exit common routine
+>   ARM: OMAP4: cpuidle: use init/exit common routine
+>   ARM: tegra: cpuidle: use init/exit common routine for tegra2
+>   ARM: tegra: cpuidle: use init/exit common routine for tegra3
+>   ARM: calxeda: cpuidle: use init/exit common routine
+>   ARM: kirkwood: cpuidle: use init/exit common routine
+>   ARM: davinci: cpuidle: use init/exit common routine
+>   ARM: imx: cpuidle: use init/exit common routine
 
-GPU voltage is regulated by some devfreq driver.
-CPU voltage is regulated by generic cpufreq-cpu0 driver.
-Both drivers know only about their operational points.
-They don't know anything about chip limits.
+Whole series applied.
 
-I see two options here:
-1. Pass somehow chip limits to drivers so they can limit their request.
-    Pros: No need for regulator_set_voltage_min()
-    Cons: a) Need to pass info about chip limits to driver. New API?
-          b) CPU and GPU may have different limits,
-             so after very first request voltage may violate
-             CPU or GPU range.
-2. Define chip limits in Reg X constraints.
-    Pros: Limits will be applied to driver's request transparently.
-          No need to pass info about limits to driver.
-          Limits are set before the first request, so no violation.
-    Cons: regulator_set_voltage_min() is needed.
+Thanks,
+Rafael
 
-IMHO option #2 is better.
-Do you see other ways?
 
 -- 
-BR
-Taras Kondratiuk | GlobalLogic
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
