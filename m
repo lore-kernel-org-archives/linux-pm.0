@@ -1,59 +1,108 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V4 patch 02/15] ARM: ux500: cpuidle: replace for_each_online_cpu by for_each_possible_cpu
-Date: Tue, 23 Apr 2013 10:54:32 +0200
-Message-ID: <1366707285-12179-3-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V4 patch 12/15] ARM: calxeda: cpuidle: use init/exit common routine
+Date: Tue, 23 Apr 2013 10:54:42 +0200
+Message-ID: <1366707285-12179-13-git-send-email-daniel.lezcano@linaro.org>
 References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:61145 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633Ab3DWIyz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:54:55 -0400
-Received: by mail-wi0-f182.google.com with SMTP id m6so425861wiv.15
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:54:53 -0700 (PDT)
+Received: from mail-we0-f174.google.com ([74.125.82.174]:54867 "EHLO
+	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756523Ab3DWIzV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:21 -0400
+Received: by mail-we0-f174.google.com with SMTP id u12so347317wey.19
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:20 -0700 (PDT)
 In-Reply-To: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@sisk.pl
 Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
 
-All the drivers are using, in their initialization function, the
-for_each_possible_cpu macro.
-
-Using for_each_online_cpu means the driver must handle the initialization
-of the cpuidle device when a cpu is up which is not the case here.
-
-Change the macro to for_each_possible_cpu as that fix the hotplug
-initialization and make the initialization routine consistent with the
-rest of the code in the different drivers.
+Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 ---
- arch/arm/mach-ux500/cpuidle.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpuidle/cpuidle-calxeda.c |   52 +------------------------------------
+ 1 file changed, 1 insertion(+), 51 deletions(-)
 
-diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
-index c29c1bf..5657d4a 100644
---- a/arch/arm/mach-ux500/cpuidle.c
-+++ b/arch/arm/mach-ux500/cpuidle.c
-@@ -125,7 +125,7 @@ int __init ux500_idle_init(void)
- 		return ret;
- 	}
+diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+index a3b56f5..e344b56 100644
+--- a/drivers/cpuidle/cpuidle-calxeda.c
++++ b/drivers/cpuidle/cpuidle-calxeda.c
+@@ -35,8 +35,6 @@
+ extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
+ extern void *scu_base_addr;
  
--	for_each_online_cpu(cpu) {
-+	for_each_possible(cpu) {
- 		device = &per_cpu(ux500_cpuidle_device, cpu);
- 		device->cpu = cpu;
- 		ret = cpuidle_register_device(device);
-@@ -139,7 +139,7 @@ out:
- 	return ret;
+-static struct cpuidle_device __percpu *calxeda_idle_cpuidle_devices;
+-
+ static inline unsigned int get_auxcr(void)
+ {
+ 	unsigned int val;
+@@ -85,19 +83,6 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
+ 	return index;
+ }
  
- out_unregister:
--	for_each_online_cpu(cpu) {
-+	for_each_possible_cpu(cpu) {
- 		device = &per_cpu(ux500_cpuidle_device, cpu);
- 		cpuidle_unregister_device(device);
- 	}
+-static void calxeda_idle_cpuidle_devices_uninit(void)
+-{
+-	int i;
+-	struct cpuidle_device *dev;
+-
+-	for_each_possible_cpu(i) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, i);
+-		cpuidle_unregister_device(dev);
+-	}
+-
+-	free_percpu(calxeda_idle_cpuidle_devices);
+-}
+-
+ static struct cpuidle_driver calxeda_idle_driver = {
+ 	.name = "calxeda_idle",
+ 	.states = {
+@@ -117,44 +102,9 @@ static struct cpuidle_driver calxeda_idle_driver = {
+ 
+ static int __init calxeda_cpuidle_init(void)
+ {
+-	int cpu_id;
+-	int ret;
+-	struct cpuidle_device *dev;
+-	struct cpuidle_driver *drv = &calxeda_idle_driver;
+-
+ 	if (!of_machine_is_compatible("calxeda,highbank"))
+ 		return -ENODEV;
+ 
+-	ret = cpuidle_register_driver(drv);
+-	if (ret)
+-		return ret;
+-
+-	calxeda_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+-	if (calxeda_idle_cpuidle_devices == NULL) {
+-		ret = -ENOMEM;
+-		goto unregister_drv;
+-	}
+-
+-	/* initialize state data for each cpuidle_device */
+-	for_each_possible_cpu(cpu_id) {
+-		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, cpu_id);
+-		dev->cpu = cpu_id;
+-		dev->state_count = drv->state_count;
+-
+-		ret = cpuidle_register_device(dev);
+-		if (ret) {
+-			pr_err("Failed to register cpu %u, error: %d\n",
+-			       cpu_id, ret);
+-			goto uninit;
+-		}
+-	}
+-
+-	return 0;
+-
+-uninit:
+-	calxeda_idle_cpuidle_devices_uninit();
+-unregister_drv:
+-	cpuidle_unregister_driver(drv);
+-	return ret;
++	return cpuidle_register(&calxeda_idle_driver, NULL);
+ }
+ module_init(calxeda_cpuidle_init);
 -- 
 1.7.9.5
 
