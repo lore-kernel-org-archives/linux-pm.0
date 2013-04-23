@@ -1,62 +1,116 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 1/2] Thermal: exynos: Add clk_{un}prepare APIs
-Date: Tue, 23 Apr 2013 08:44:03 -0400
-Message-ID: <51768213.5040602@ti.com>
-References: <1366285079-10395-1-git-send-email-sachin.kamat@linaro.org> <5175807C.4090005@ti.com> <CAK9yfHxs1E5aJtkWcS+DHY0J8REv8Mju=7LsYme0xxjzLYGmBg@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [V4 patch 03/15] cpuidle: make a single register function for
+ all
+Date: Tue, 23 Apr 2013 14:51:41 +0200
+Message-ID: <517683DD.6060805@linaro.org>
+References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org> <1366707285-12179-4-git-send-email-daniel.lezcano@linaro.org> <51767F57.7060809@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:38704 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755920Ab3DWMoS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 23 Apr 2013 08:44:18 -0400
-In-Reply-To: <CAK9yfHxs1E5aJtkWcS+DHY0J8REv8Mju=7LsYme0xxjzLYGmBg@mail.gmail.com>
+Received: from mail-ee0-f54.google.com ([74.125.83.54]:33997 "EHLO
+	mail-ee0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755463Ab3DWMvr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 08:51:47 -0400
+Received: by mail-ee0-f54.google.com with SMTP id e51so249528eek.13
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 05:51:45 -0700 (PDT)
+In-Reply-To: <51767F57.7060809@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, rui.zhang@intel.com, kgene.kim@samsung.com, patches@linaro.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: rjw@sisk.pl, andrew@lunn.ch, kgene.kim@samsung.com, jason@lakedaemon.net, horms@verge.net.au, patches@linaro.org, khilman@deeprootsystems.com, magnus.damm@gmail.com, linux-pm@vger.kernel.org, swarren@wwwdotorg.org, nsekhar@ti.com, rob.herring@calxeda.com, deepthi@linux.vnet.ibm.com, tony@atomide.com, lethal@linux-sh.org, linaro-kernel@lists.linaro.org, kernel@pengutronix.de, josephl@nvidia.com, jkosina@suse.cz, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
 
-Rui,
-
-On 22-04-2013 23:38, Sachin Kamat wrote:
-> On 22 April 2013 23:55, Eduardo Valentin <eduardo.valentin@ti.com> wrote:
->> On 18-04-2013 07:37, Sachin Kamat wrote:
->>>
->>> clk_{un}prepare APIs are required to migrate to common
->>> clock framework. While at it convert to use devm_clk_get as
->>> it removes some cleanup code.
->>>
->>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->>> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>> ---
->>>    drivers/thermal/exynos_thermal.c |   10 +++++++---
->>>    1 file changed, 7 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/thermal/exynos_thermal.c
->>> b/drivers/thermal/exynos_thermal.c
->>> index e34d842..9df96e5 100644
->>> --- a/drivers/thermal/exynos_thermal.c
->>> +++ b/drivers/thermal/exynos_thermal.c
->>> @@ -937,12 +937,16 @@ static int exynos_tmu_probe(struct platform_device
->>> *pdev)
->>>                  return ret;
->>>          }
->>>
->>> -       data->clk = clk_get(NULL, "tmu_apbif");
->>> +       data->clk = devm_clk_get(&pdev->dev, "tmu_apbif");
+On 04/23/2013 02:32 PM, Santosh Shilimkar wrote:
+> On Tuesday 23 April 2013 02:24 PM, Daniel Lezcano wrote:
+>> The usual scheme to initialize a cpuidle driver on a SMP is:
 >>
+>> 	cpuidle_register_driver(drv);
+>> 	for_each_possible_cpu(cpu) {
+>> 		device =3D &per_cpu(cpuidle_dev, cpu);
+>> 		cpuidle_register_device(device);
+>> 	}
 >>
->> Here you are also changing the sequence from clk_get(NULL, ...) to
->> clk_get(&pdev->dev, ...). Is your platform code ready to match to your
->> device node?
->
-> Yes. This has been tested on Exynos4 and 5 DT enabled boards (Origen
-> 4210, 4412 and Arndale).
+>> This code is duplicated in each cpuidle driver.
+>>
+>> On UP systems, it is done this way:
+>>
+>> 	cpuidle_register_driver(drv);
+>> 	device =3D &per_cpu(cpuidle_dev, cpu);
+>> 	cpuidle_register_device(device);
+>>
+>> On UP, the macro 'for_each_cpu' does one iteration:
+>>
+>> #define for_each_cpu(cpu, mask)                 \
+>>         for ((cpu) =3D 0; (cpu) < 1; (cpu)++, (void)mask)
+>>
+>> Hence, the initialization loop is the same for UP than SMP.
+>>
+>> Beside, we saw different bugs / mis-initialization / return code unc=
+hecked in
+>> the different drivers, the code is duplicated including bugs. After =
+fixing all
+>> these ones, it appears the initialization pattern is the same for ev=
+eryone.
+>>
+>> Please note, some drivers are doing dev->state_count =3D drv->state_=
+count. This is
+>> not necessary because it is done by the cpuidle_enable_device functi=
+on in the
+>> cpuidle framework. This is true, until you have the same states for =
+all your
+>> devices. Otherwise, the 'low level' API should be used instead with =
+the specific
+>> initialization for the driver.
+>>
+>> Let's add a wrapper function doing this initialization with a cpumas=
+k parameter
+>> for the coupled idle states and use it for all the drivers.
+>>
+>> That will save a lot of LOC, consolidate the code, and the modificat=
+ions in the
+>> future could be done in a single place. Another benefit is the conso=
+lidation of
+>> the cpuidle_device variable which is now in the cpuidle framework an=
+d no longer
+>> spread accross the different arch specific drivers.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>=20
+> I don't see you have addressed the comment on V3 [1] i gave for the s=
+ubject patch
+> Any reason ?
 
-In this case, this patch looks fine to me.
+Yes, sorry for not answering.
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+This modification should be handled in the __cpuidle_register_device
+function.
 
->
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 49e8d30..936d862 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -372,7 +372,7 @@ static int __cpuidle_register_device(struct
+cpuidle_device *dev)
+        int ret;
+        struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
+
+-       if (!try_module_get(drv->owner))
++       if (!drv || !try_module_get(drv->owner))
+                return -EINVAL;
+
+        per_cpu(cpuidle_devices, dev->cpu) =3D dev;
+
+Thus, the cpuidle_register function is not impacted by this as it will
+always do cpuidle_register_driver, followed by cpuidle_register_device.
+
+  -- Daniel
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
