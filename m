@@ -1,46 +1,39 @@
-From: John Blackwood <john.blackwood@ccur.com>
-Subject: Re: [PATCH] cpufreq_conservative: initialize the cpu_dbs_info_s cpu
- field
-Date: Tue, 23 Apr 2013 10:27:22 -0500
-Message-ID: <5176A85A.7090609@ccur.com>
-References: <51769DB3.7030404@ccur.com> <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle: fix comment format
+Date: Tue, 23 Apr 2013 17:28:44 +0200
+Message-ID: <1366730924-20633-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f178.google.com ([74.125.82.178]:46188 "EHLO
+	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756540Ab3DWP2x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 11:28:53 -0400
+Received: by mail-we0-f178.google.com with SMTP id z53so751132wey.9
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 08:28:52 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: santosh.shilimkar@ti.com, linux-pm@vger.kernel.org
 
-On 04/23/2013 10:19 AM, Viresh Kumar wrote:
-> On Tue, Apr 23, 2013 at 8:11 PM, John Blackwood <john.blackwood@ccur.com> wrote:
->> In the cpufreq conservative module, the cpu field in the cpu_dbs_info_s
->> structure was not being initialized, and thus all cpus were scheduling
->> their do_dbs_timer() delayed work processing on cpu 0.
->>
->> Signed-off-by: John Blackwood <john.blackwood@ccur.com>
->> Index: b/drivers/cpufreq/cpufreq_conservative.c
->> ===================================================================
->> --- a/drivers/cpufreq/cpufreq_conservative.c
->> +++ b/drivers/cpufreq/cpufreq_conservative.c
->> @@ -506,6 +506,7 @@ static int cpufreq_governor_dbs(struct c
->>                  }
->>                  this_dbs_info->down_skip = 0;
->>                  this_dbs_info->requested_freq = policy->cur;
->> +               this_dbs_info->cpu = cpu;
->>
->>                  mutex_init(&this_dbs_info->timer_mutex);
->>                  dbs_enable++;
->
-> What have you rebased this on? I don't think its the latest code and is probably
-> a bit old.
->
+Fix comment format for the kernel doc script.
 
-Hi Viresh,
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/cpuidle.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Yes, you are right.
-This has been fixed in a different way in the newer kernel source.
-My apologies.
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 49e8d30..c3a93fe 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -454,7 +454,7 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+ 
+ EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+ 
+-/*
++/**
+  * cpuidle_unregister: unregister a driver and the devices. This function
+  * can be used only if the driver has been previously registered through
+  * the cpuidle_register function.
+-- 
+1.7.9.5
 
