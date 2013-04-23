@@ -1,67 +1,87 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [V3 patch 06/19] cpuidle: make a single register function for
- all
-Date: Tue, 23 Apr 2013 15:43:45 +0200
-Message-ID: <51769011.7030608@linaro.org>
-References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-7-git-send-email-daniel.lezcano@linaro.org> <516FB35D.7000303@ti.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
+Date: Tue, 23 Apr 2013 14:45:12 +0100
+Message-ID: <20130423134512.GL5019@opensource.wolfsonmicro.com>
+References: <1366372554-20866-1-git-send-email-taras@ti.com>
+ <1366372554-20866-2-git-send-email-taras@ti.com>
+ <20130422131904.GL30351@opensource.wolfsonmicro.com>
+ <51756A21.3020405@ti.com>
+ <20130423084838.GB5019@opensource.wolfsonmicro.com>
+ <5176743A.9070201@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f45.google.com ([74.125.83.45]:43286 "EHLO
-	mail-ee0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755929Ab3DWNoD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 09:44:03 -0400
-Received: by mail-ee0-f45.google.com with SMTP id l10so265953eei.18
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 06:44:01 -0700 (PDT)
-In-Reply-To: <516FB35D.7000303@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7vAdt9JsdkkzRPKN"
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5176743A.9070201@ti.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Taras Kondratiuk <taras@ti.com>
+Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 04/18/2013 10:48 AM, Santosh Shilimkar wrote:
-> On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
->> The usual scheme to initialize a cpuidle driver on a SMP is:
->>
->> 	cpuidle_register_driver(drv);
->> 	for_each_possible_cpu(cpu) {
->> 		device =3D &per_cpu(cpuidle_dev, cpu);
->> 		cpuidle_register_device(device);
->> 	}
->>
-> Not exactly related to $subject patch but the driver should
-> be registered after all devices has been registered to avoid
-> devices start using the idle state data as soon as it is
-> registered. In multi CPU system, this race can easily happen.
 
-Could you elaborate what problems the system will be facing if a cpu
-starts using the idle state data as soon as it is registered ?
+--7vAdt9JsdkkzRPKN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Is there a bug related to this ?
+On Tue, Apr 23, 2013 at 02:44:58PM +0300, Taras Kondratiuk wrote:
 
-> Current CPUIDLE core layer is also written with the assumption
-> that driver will be registered first and then the devices which
-> is not mandatory as per typical drive/device model.
+> GPU voltage is regulated by some devfreq driver.
+> CPU voltage is regulated by generic cpufreq-cpu0 driver.
+> Both drivers know only about their operational points.
+> They don't know anything about chip limits.
 
-Yes, that's true. The framework assumes cpuidle_register_driver is
-called before cpuidle_register_device.
+Clearly at least the lower bound is known to the drivers...
 
-> May be you can fix that part while you are creating this common
-> wrapper.
+> I see two options here:
+> 1. Pass somehow chip limits to drivers so they can limit their request.
+>    Pros: No need for regulator_set_voltage_min()
+>    Cons: a) Need to pass info about chip limits to driver. New API?
 
-Personally, as that will modify the cpuidle core layer and the changes
-are not obvious (because of the design of the code) I prefer to do that
-in a separate patchset if it is worth to do it - if there is a bug
-related to it, then there is no discussion, we have to do it :)
+Why on earth would this need a new API?
 
-[ ... ]
+>          b) CPU and GPU may have different limits,
+>             so after very first request voltage may violate
+>             CPU or GPU range.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+If the CPU and GPU drivers are trying to select incompatible
+configurations then we really ought to be detecting that, ignoring it
+seems like an obvious failure.  There's a bootstrapping problem but
+that's also an issue with specifying only the minimum voltage...
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> 2. Define chip limits in Reg X constraints.
+>    Pros: Limits will be applied to driver's request transparently.
+>          No need to pass info about limits to driver.
+>          Limits are set before the first request, so no violation.
+>    Cons: regulator_set_voltage_min() is needed.
 
+> IMHO option #2 is better.
+> Do you see other ways?
+
+Above you clearly say that this is all modelling operating points.  If
+you're doing that then I would expect the drivers to be talking
+operating points to an operating point abstraction.
+
+--7vAdt9JsdkkzRPKN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRdpBgAAoJELSic+t+oim9YbMP/A4f4LzAN5ciPaE3kuL3aAfE
+ucvHyWpKUlJZYdoes3XmN5bAet2CLiCli9jhh5T/SVVzaJCOLuaVT9B3a/QMjyA1
+XdZ3zIbYGF5gnaLdVKEIeRriyKg/mnR7S7eabOL6sO5ri0kl82mQ0VG6hLFvXbeq
+vwj+YKexWmbnYsC5P7ghnsg/m2z7r3FnOHjIMuXJHrmTkkNouQ1G0emvpwVHCNjB
+M2ZFtIDx8hAje9tbmA2eBLNqRykN2df+fPE+6dVejas/43X10qya32gfqKiMLFz9
+RTXqhoPeHY5AN74TdfRZhj3mXWIkDGXAAKRVhsbGxh+PgUz1O7hQ0KL/xgo3Bd+p
+d9LKyd4q1TTGdr+FIyKjct8mQPPJMqJt6HZ0l9J5KfXViFuQvpUtnGiYOzdjuA2n
++GkDBZi+SGy2qWTBeW0SsRe4NKuhuDKchIlbx2KMMhpbN+9X/zrSctL91kwEah6y
+eVty6mc5KeTcXEfnxbkoDL95aloQc6jGC8SHyM0mByLgHn56S+ITffxkvO7tjISr
+ta/lZvm00M4TDmpn8Ho8KyjCzklwn/9FBJSbxLIqLy+pYdtxcVi4Uznyoe50LrsX
+Iu34UioTXBbP9Ht2id6qdRBo9g53q5AZyKfj9q/fZxQTrE6tCQnJpco51w6VM19Y
+Lxw+JIFky6UnJELh5ay5
+=Ey9Y
+-----END PGP SIGNATURE-----
+
+--7vAdt9JsdkkzRPKN--
