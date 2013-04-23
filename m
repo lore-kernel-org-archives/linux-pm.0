@@ -1,145 +1,67 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [V4 patch 03/15] cpuidle: make a single register function for all
-Date: Tue, 23 Apr 2013 18:34:11 +0530
-Message-ID: <517686CB.7080909@ti.com>
-References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
- <1366707285-12179-4-git-send-email-daniel.lezcano@linaro.org>
- <51767F57.7060809@ti.com> <517683DD.6060805@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [V3 patch 06/19] cpuidle: make a single register function for
+ all
+Date: Tue, 23 Apr 2013 15:43:45 +0200
+Message-ID: <51769011.7030608@linaro.org>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-7-git-send-email-daniel.lezcano@linaro.org> <516FB35D.7000303@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <517683DD.6060805@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.com, kgene.kim@samsung.com, patches@linaro.org, magnus.damm@gmail.com, tony@atomide.com, plagnioj@jcrosoft.com, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, swarren@wwwdotorg.org, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, deepthi@linux.vnet.ibm.com, jkosina@suse.cz, linux-pm@vger.kernel.org, lethal@linux-sh.org, kernel@pengutronix.de
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ee0-f45.google.com ([74.125.83.45]:43286 "EHLO
+	mail-ee0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929Ab3DWNoD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 09:44:03 -0400
+Received: by mail-ee0-f45.google.com with SMTP id l10so265953eei.18
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 06:44:01 -0700 (PDT)
+In-Reply-To: <516FB35D.7000303@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On Tuesday 23 April 2013 06:21 PM, Daniel Lezcano wrote:
-> On 04/23/2013 02:32 PM, Santosh Shilimkar wrote:
->> On Tuesday 23 April 2013 02:24 PM, Daniel Lezcano wrote:
->>> The usual scheme to initialize a cpuidle driver on a SMP is:
->>>
->>> 	cpuidle_register_driver(drv);
->>> 	for_each_possible_cpu(cpu) {
->>> 		device = &per_cpu(cpuidle_dev, cpu);
->>> 		cpuidle_register_device(device);
->>> 	}
->>>
->>> This code is duplicated in each cpuidle driver.
->>>
->>> On UP systems, it is done this way:
->>>
->>> 	cpuidle_register_driver(drv);
->>> 	device = &per_cpu(cpuidle_dev, cpu);
->>> 	cpuidle_register_device(device);
->>>
->>> On UP, the macro 'for_each_cpu' does one iteration:
->>>
->>> #define for_each_cpu(cpu, mask)                 \
->>>         for ((cpu) = 0; (cpu) < 1; (cpu)++, (void)mask)
->>>
->>> Hence, the initialization loop is the same for UP than SMP.
->>>
->>> Beside, we saw different bugs / mis-initialization / return code unchecked in
->>> the different drivers, the code is duplicated including bugs. After fixing all
->>> these ones, it appears the initialization pattern is the same for everyone.
->>>
->>> Please note, some drivers are doing dev->state_count = drv->state_count. This is
->>> not necessary because it is done by the cpuidle_enable_device function in the
->>> cpuidle framework. This is true, until you have the same states for all your
->>> devices. Otherwise, the 'low level' API should be used instead with the specific
->>> initialization for the driver.
->>>
->>> Let's add a wrapper function doing this initialization with a cpumask parameter
->>> for the coupled idle states and use it for all the drivers.
->>>
->>> That will save a lot of LOC, consolidate the code, and the modifications in the
->>> future could be done in a single place. Another benefit is the consolidation of
->>> the cpuidle_device variable which is now in the cpuidle framework and no longer
->>> spread accross the different arch specific drivers.
->>>
->>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> ---
+On 04/18/2013 10:48 AM, Santosh Shilimkar wrote:
+> On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
+>> The usual scheme to initialize a cpuidle driver on a SMP is:
 >>
->> I don't see you have addressed the comment on V3 [1] i gave for the subject patch
->> Any reason ?
-> 
-> Yes, sorry for not answering.
-> 
-> This modification should be handled in the __cpuidle_register_device
-> function.
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 49e8d30..936d862 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -372,7 +372,7 @@ static int __cpuidle_register_device(struct
-> cpuidle_device *dev)
->         int ret;
->         struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-> 
-> -       if (!try_module_get(drv->owner))
-> +       if (!drv || !try_module_get(drv->owner))
->                 return -EINVAL;
-> 
->         per_cpu(cpuidle_devices, dev->cpu) = dev;
-> 
-> Thus, the cpuidle_register function is not impacted by this as it will
-> always do cpuidle_register_driver, followed by cpuidle_register_device.
-> 
-I still don't follow you. I know the fix will be needed but in the subject
-patch sequence as well, the device registration should be done first and
-then the driver registration. Below hunk I mean.
+>> 	cpuidle_register_driver(drv);
+>> 	for_each_possible_cpu(cpu) {
+>> 		device =3D &per_cpu(cpuidle_dev, cpu);
+>> 		cpuidle_register_device(device);
+>> 	}
+>>
+> Not exactly related to $subject patch but the driver should
+> be registered after all devices has been registered to avoid
+> devices start using the idle state data as soon as it is
+> registered. In multi CPU system, this race can easily happen.
 
-----
-+int cpuidle_register(struct cpuidle_driver *drv,
-+		     const struct cpumask *const coupled_cpus)
-+{
-+	int ret, cpu;
-+	struct cpuidle_device *device;
-+
-+	ret = cpuidle_register_driver(drv);
-+	if (ret) {
-+		pr_err("failed to register cpuidle driver\n");
-+		return ret;
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		device = &per_cpu(cpuidle_dev, cpu);
-+		device->cpu = cpu;
-+
-+#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-+		/*
-+		 * On multiplatform for ARM, the coupled idle states could
-+		 * enabled in the kernel even if the cpuidle driver does not
-+		 * use it. Note, coupled_cpus is a struct copy.
-+		 */
-+		if (coupled_cpus)
-+			device->coupled_cpus = *coupled_cpus;
-+#endif
-+		ret = cpuidle_register_device(device);
-+		if (!ret)
-+			continue;
-+
-+		pr_err("Failed to register cpuidle device for cpu%d\n", cpu);
-+
-+		cpuidle_unregister(drv);
-+		break;
-+	}
-------
+Could you elaborate what problems the system will be facing if a cpu
+starts using the idle state data as soon as it is registered ?
 
-I also had a comment on kernel doc for both of these new functions.
-Out of curiosity I have seen this patch again o.w I would have assumed
-that you did address the comments.
+Is there a bug related to this ?
 
-Regards,
-Santosh
+> Current CPUIDLE core layer is also written with the assumption
+> that driver will be registered first and then the devices which
+> is not mandatory as per typical drive/device model.
+
+Yes, that's true. The framework assumes cpuidle_register_driver is
+called before cpuidle_register_device.
+
+> May be you can fix that part while you are creating this common
+> wrapper.
+
+Personally, as that will modify the cpuidle core layer and the changes
+are not obvious (because of the design of the code) I prefer to do that
+in a separate patchset if it is worth to do it - if there is a bug
+related to it, then there is no discussion, we have to do it :)
+
+[ ... ]
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
