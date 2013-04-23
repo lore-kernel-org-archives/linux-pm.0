@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V4 patch 10/15] ARM: tegra: cpuidle: use init/exit common routine for tegra2
-Date: Tue, 23 Apr 2013 10:54:40 +0200
-Message-ID: <1366707285-12179-11-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V4 patch 11/15] ARM: tegra: cpuidle: use init/exit common routine for tegra3
+Date: Tue, 23 Apr 2013 10:54:41 +0200
+Message-ID: <1366707285-12179-12-git-send-email-daniel.lezcano@linaro.org>
 References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f178.google.com ([74.125.82.178]:41996 "EHLO
-	mail-we0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756523Ab3DWIzP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:15 -0400
-Received: by mail-we0-f178.google.com with SMTP id z53so342661wey.37
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:14 -0700 (PDT)
+Received: from mail-we0-f179.google.com ([74.125.82.179]:65053 "EHLO
+	mail-we0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756534Ab3DWIzS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:18 -0400
+Received: by mail-we0-f179.google.com with SMTP id u3so352845wey.10
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:17 -0700 (PDT)
 In-Reply-To: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -21,25 +21,25 @@ Remove the duplicated code and use the cpuidle common code for initialization.
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Acked-by: Stephen Warren <swarren@nvidia.com>
 ---
- arch/arm/mach-tegra/cpuidle-tegra20.c |   30 +-----------------------------
- 1 file changed, 1 insertion(+), 29 deletions(-)
+ arch/arm/mach-tegra/cpuidle-tegra30.c |   27 +--------------------------
+ 1 file changed, 1 insertion(+), 26 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra20.c b/arch/arm/mach-tegra/cpuidle-tegra20.c
-index f1f6ac4..590ec25 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra20.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra20.c
-@@ -70,8 +70,6 @@ static struct cpuidle_driver tegra_idle_driver = {
- 	.safe_state_index = 0,
+diff --git a/arch/arm/mach-tegra/cpuidle-tegra30.c b/arch/arm/mach-tegra/cpuidle-tegra30.c
+index f6a0c72..36dc2be 100644
+--- a/arch/arm/mach-tegra/cpuidle-tegra30.c
++++ b/arch/arm/mach-tegra/cpuidle-tegra30.c
+@@ -64,8 +64,6 @@ static struct cpuidle_driver tegra_idle_driver = {
+ 	},
  };
  
 -static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
 -
  #ifdef CONFIG_PM_SLEEP
- #ifdef CONFIG_SMP
- static void __iomem *pmc = IO_ADDRESS(TEGRA_PMC_BASE);
-@@ -220,34 +218,8 @@ static int tegra20_idle_lp2_coupled(struct cpuidle_device *dev,
+ static bool tegra30_cpu_cluster_power_down(struct cpuidle_device *dev,
+ 					   struct cpuidle_driver *drv,
+@@ -156,31 +154,8 @@ static int tegra30_idle_lp2(struct cpuidle_device *dev,
  
- int __init tegra20_cpuidle_init(void)
+ int __init tegra30_cpuidle_init(void)
  {
 -	int ret;
 -	unsigned int cpu;
@@ -47,7 +47,7 @@ index f1f6ac4..590ec25 100644
 -	struct cpuidle_driver *drv = &tegra_idle_driver;
 -
  #ifdef CONFIG_PM_SLEEP
- 	tegra_tear_down_cpu = tegra20_tear_down_cpu;
+ 	tegra_tear_down_cpu = tegra30_tear_down_cpu;
  #endif
 -
 -	ret = cpuidle_register_driver(&tegra_idle_driver);
@@ -59,9 +59,6 @@ index f1f6ac4..590ec25 100644
 -	for_each_possible_cpu(cpu) {
 -		dev = &per_cpu(tegra_idle_device, cpu);
 -		dev->cpu = cpu;
--#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
--		dev->coupled_cpus = *cpu_possible_mask;
--#endif
 -
 -		ret = cpuidle_register_device(dev);
 -		if (ret) {
@@ -71,7 +68,7 @@ index f1f6ac4..590ec25 100644
 -		}
 -	}
 -	return 0;
-+	return cpuidle_register(&tegra_idle_driver, cpu_possible_mask);
++	return cpuidle_register(&tegra_idle_driver, NULL);
  }
 -- 
 1.7.9.5
