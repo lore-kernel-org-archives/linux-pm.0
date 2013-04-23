@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V4 patch 07/15] ARM: tegra: cpuidle: use init/exit common routine
-Date: Tue, 23 Apr 2013 10:54:37 +0200
-Message-ID: <1366707285-12179-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V4 patch 05/15] ARM: at91: cpuidle: use init/exit common routine
+Date: Tue, 23 Apr 2013 10:54:35 +0200
+Message-ID: <1366707285-12179-6-git-send-email-daniel.lezcano@linaro.org>
 References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f181.google.com ([74.125.82.181]:43577 "EHLO
-	mail-we0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756523Ab3DWIzI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:08 -0400
-Received: by mail-we0-f181.google.com with SMTP id m1so340592wea.26
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:06 -0700 (PDT)
+Received: from mail-we0-f173.google.com ([74.125.82.173]:43443 "EHLO
+	mail-we0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756492Ab3DWIzE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:04 -0400
+Received: by mail-we0-f173.google.com with SMTP id o7so331663wea.4
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:01 -0700 (PDT)
 In-Reply-To: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,48 +19,47 @@ Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.
 Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- arch/arm/mach-tegra/cpuidle-tegra114.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+ arch/arm/mach-at91/cpuidle.c |   17 ++---------------
+ 1 file changed, 2 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
-index c5fadf9..1d1c602 100644
---- a/arch/arm/mach-tegra/cpuidle-tegra114.c
-+++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
-@@ -29,31 +29,7 @@ static struct cpuidle_driver tegra_idle_driver = {
- 	},
+diff --git a/arch/arm/mach-at91/cpuidle.c b/arch/arm/mach-at91/cpuidle.c
+index 0130df7..48f1228 100644
+--- a/arch/arm/mach-at91/cpuidle.c
++++ b/arch/arm/mach-at91/cpuidle.c
+@@ -27,8 +27,6 @@
+ 
+ #define AT91_MAX_STATES	2
+ 
+-static DEFINE_PER_CPU(struct cpuidle_device, at91_cpuidle_device);
+-
+ /* Actual code that puts the SoC in different idle states */
+ static int at91_enter_idle(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+@@ -60,20 +58,9 @@ static struct cpuidle_driver at91_idle_driver = {
  };
  
--static DEFINE_PER_CPU(struct cpuidle_device, tegra_idle_device);
--
- int __init tegra114_cpuidle_init(void)
+ /* Initialize CPU idle by registering the idle states */
+-static int at91_init_cpuidle(void)
++static int __init at91_init_cpuidle(void)
  {
--	int ret;
--	unsigned int cpu;
--	struct cpuidle_device *dev;
--	struct cpuidle_driver *drv = &tegra_idle_driver;
+-	struct cpuidle_device *device;
 -
--	ret = cpuidle_register_driver(&tegra_idle_driver);
--	if (ret) {
--		pr_err("CPUidle driver registration failed\n");
--		return ret;
--	}
+-	device = &per_cpu(at91_cpuidle_device, smp_processor_id());
+-	device->state_count = AT91_MAX_STATES;
 -
--	for_each_possible_cpu(cpu) {
--		dev = &per_cpu(tegra_idle_device, cpu);
--		dev->cpu = cpu;
+-	cpuidle_register_driver(&at91_idle_driver);
 -
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("CPU%u: CPUidle device registration failed\n",
--				cpu);
--			return ret;
--		}
+-	if (cpuidle_register_device(device)) {
+-		printk(KERN_ERR "at91_init_cpuidle: Failed registering\n");
+-		return -EIO;
 -	}
 -	return 0;
-+	return cpuidle_register(&tegra_idle_driver, NULL);
++	return cpuidle_register(&at91_idle_driver, NULL);
  }
+ 
+ device_initcall(at91_init_cpuidle);
 -- 
 1.7.9.5
 
