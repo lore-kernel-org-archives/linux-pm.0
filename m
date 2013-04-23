@@ -1,15 +1,15 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [V4 patch 12/15] ARM: calxeda: cpuidle: use init/exit common routine
-Date: Tue, 23 Apr 2013 10:54:42 +0200
-Message-ID: <1366707285-12179-13-git-send-email-daniel.lezcano@linaro.org>
+Subject: [V4 patch 13/15] ARM: kirkwood: cpuidle: use init/exit common routine
+Date: Tue, 23 Apr 2013 10:54:43 +0200
+Message-ID: <1366707285-12179-14-git-send-email-daniel.lezcano@linaro.org>
 References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f174.google.com ([74.125.82.174]:54867 "EHLO
-	mail-we0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756523Ab3DWIzV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:21 -0400
-Received: by mail-we0-f174.google.com with SMTP id u12so347317wey.19
-        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:20 -0700 (PDT)
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:41182 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756283Ab3DWIzY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Apr 2013 04:55:24 -0400
+Received: by mail-wi0-f181.google.com with SMTP id c10so430885wiw.2
+        for <linux-pm@vger.kernel.org>; Tue, 23 Apr 2013 01:55:22 -0700 (PDT)
 In-Reply-To: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,90 +19,51 @@ Cc: andrew@lunn.ch, khilman@deeprootsystems.com, nsekhar@ti.com, josephl@nvidia.
 Remove the duplicated code and use the cpuidle common code for initialization.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Rob Herring <rob.herring@calxeda.com>
+Tested-by: Andrew Lunn <andrew@lunn.ch>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 ---
- drivers/cpuidle/cpuidle-calxeda.c |   52 +------------------------------------
- 1 file changed, 1 insertion(+), 51 deletions(-)
+ drivers/cpuidle/cpuidle-kirkwood.c |   17 ++---------------
+ 1 file changed, 2 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-index a3b56f5..e344b56 100644
---- a/drivers/cpuidle/cpuidle-calxeda.c
-+++ b/drivers/cpuidle/cpuidle-calxeda.c
-@@ -35,8 +35,6 @@
- extern void highbank_set_cpu_jump(int cpu, void *jump_addr);
- extern void *scu_base_addr;
- 
--static struct cpuidle_device __percpu *calxeda_idle_cpuidle_devices;
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index 6f31524..53290e1 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -52,9 +52,6 @@ static struct cpuidle_driver kirkwood_idle_driver = {
+ 	},
+ 	.state_count = KIRKWOOD_MAX_STATES,
+ };
+-static struct cpuidle_device *device;
 -
- static inline unsigned int get_auxcr(void)
- {
- 	unsigned int val;
-@@ -85,19 +83,6 @@ static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
- 	return index;
- }
+-static DEFINE_PER_CPU(struct cpuidle_device, kirkwood_cpuidle_device);
  
--static void calxeda_idle_cpuidle_devices_uninit(void)
--{
--	int i;
--	struct cpuidle_device *dev;
+ /* Initialize CPU idle by registering the idle states */
+ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+@@ -69,22 +66,12 @@ static int kirkwood_cpuidle_probe(struct platform_device *pdev)
+ 	if (IS_ERR(ddr_operation_base))
+ 		return PTR_ERR(ddr_operation_base);
+ 
+-	device = &per_cpu(kirkwood_cpuidle_device, smp_processor_id());
+-	device->state_count = KIRKWOOD_MAX_STATES;
 -
--	for_each_possible_cpu(i) {
--		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, i);
--		cpuidle_unregister_device(dev);
+-	cpuidle_register_driver(&kirkwood_idle_driver);
+-	if (cpuidle_register_device(device)) {
+-		pr_err("kirkwood_init_cpuidle: Failed registering\n");
+-		return -EIO;
 -	}
--
--	free_percpu(calxeda_idle_cpuidle_devices);
--}
--
- static struct cpuidle_driver calxeda_idle_driver = {
- 	.name = "calxeda_idle",
- 	.states = {
-@@ -117,44 +102,9 @@ static struct cpuidle_driver calxeda_idle_driver = {
- 
- static int __init calxeda_cpuidle_init(void)
- {
--	int cpu_id;
--	int ret;
--	struct cpuidle_device *dev;
--	struct cpuidle_driver *drv = &calxeda_idle_driver;
--
- 	if (!of_machine_is_compatible("calxeda,highbank"))
- 		return -ENODEV;
- 
--	ret = cpuidle_register_driver(drv);
--	if (ret)
--		return ret;
--
--	calxeda_idle_cpuidle_devices = alloc_percpu(struct cpuidle_device);
--	if (calxeda_idle_cpuidle_devices == NULL) {
--		ret = -ENOMEM;
--		goto unregister_drv;
--	}
--
--	/* initialize state data for each cpuidle_device */
--	for_each_possible_cpu(cpu_id) {
--		dev = per_cpu_ptr(calxeda_idle_cpuidle_devices, cpu_id);
--		dev->cpu = cpu_id;
--		dev->state_count = drv->state_count;
--
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("Failed to register cpu %u, error: %d\n",
--			       cpu_id, ret);
--			goto uninit;
--		}
--	}
--
 -	return 0;
--
--uninit:
--	calxeda_idle_cpuidle_devices_uninit();
--unregister_drv:
--	cpuidle_unregister_driver(drv);
--	return ret;
-+	return cpuidle_register(&calxeda_idle_driver, NULL);
++	return cpuidle_register(&kirkwood_idle_driver, NULL);
  }
- module_init(calxeda_cpuidle_init);
+ 
+ int kirkwood_cpuidle_remove(struct platform_device *pdev)
+ {
+-	cpuidle_unregister_device(device);
+-	cpuidle_unregister_driver(&kirkwood_idle_driver);
+-
++	cpuidle_unregister(&kirkwood_idle_driver);
+ 	return 0;
+ }
+ 
 -- 
 1.7.9.5
 
