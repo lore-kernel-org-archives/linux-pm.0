@@ -1,117 +1,112 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 4/6] thermal: Support for TMU regulator defined at device
- tree
-Date: Tue, 23 Apr 2013 11:01:36 -0400
-Message-ID: <5176A250.40209@ti.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com> <1366389493-8239-5-git-send-email-l.majewski@samsung.com> <51717D89.3090303@ti.com> <20130423082312.3caf60e0@amdc308.digital.local>
+From: Santosh Shilimkar <santosh.shilimkar@ti.com>
+Subject: Re: [V3 patch 06/19] cpuidle: make a single register function for
+ all
+Date: Tue, 23 Apr 2013 20:37:48 +0530
+Message-ID: <5176A3C4.2020008@ti.com>
+References: <1365770165-27096-1-git-send-email-daniel.lezcano@linaro.org> <1365770165-27096-7-git-send-email-daniel.lezcano@linaro.org> <516FB35D.7000303@ti.com> <51769011.7030608@linaro.org> <51769316.9090309@ti.com> <5176990F.5070605@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20130423082312.3caf60e0@amdc308.digital.local>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Zhang Rui <rui.zhang@intel.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:47195 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755948Ab3DWPIX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 23 Apr 2013 11:08:23 -0400
+In-Reply-To: <5176990F.5070605@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linus.walleij@linaro.org, jason@lakedaemon.net, andrew@lunn.ch, kernel@pengutronix.de, swarren@wwwdotorg.org, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, rob.herring@calxeda.com, nsekhar@ti.com, horms@verge.net.au, magnus.damm@gmail.com, deepthi@linux.vnet.ibm.com, lethal@linux-sh.org, jkosina@suse.cz, kgene.kim@samsung.com, khilman@deeprootsystems.com, tony@atomide.com, linux-pm@vger.kernel.org, patches@linaro.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, josephl@nvidia.com
 
-On 23-04-2013 02:23, Lukasz Majewski wrote:
-> Hi Eduardo,
->
->> On 19-04-2013 12:38, Lukasz Majewski wrote:
->>> TMU probe function now checks for a device tree defined regulator.
->>> For compatibility reasons it is allowed to probe driver even without
->>> this regulator defined.
+On Tuesday 23 April 2013 07:52 PM, Daniel Lezcano wrote:
+> On 04/23/2013 03:56 PM, Santosh Shilimkar wrote:
+>> On Tuesday 23 April 2013 07:13 PM, Daniel Lezcano wrote:
+>>> On 04/18/2013 10:48 AM, Santosh Shilimkar wrote:
+>>>> On Friday 12 April 2013 06:05 PM, Daniel Lezcano wrote:
+>>>>> The usual scheme to initialize a cpuidle driver on a SMP is:
+>>>>>
+>>>>> 	cpuidle_register_driver(drv);
+>>>>> 	for_each_possible_cpu(cpu) {
+>>>>> 		device = &per_cpu(cpuidle_dev, cpu);
+>>>>> 		cpuidle_register_device(device);
+>>>>> 	}
+>>>>>
+>>>> Not exactly related to $subject patch but the driver should
+>>>> be registered after all devices has been registered to avoid
+>>>> devices start using the idle state data as soon as it is
+>>>> registered. In multi CPU system, this race can easily happen.
 >>>
->>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->>> ---
->>>    drivers/thermal/exynos_thermal.c |   19 +++++++++++++++++++
->>>    1 file changed, 19 insertions(+)
+>>> Could you elaborate what problems the system will be facing if a cpu
+>>> starts using the idle state data as soon as it is registered ?
 >>>
->>> diff --git a/drivers/thermal/exynos_thermal.c
->>> b/drivers/thermal/exynos_thermal.c index ba6094c..e922fa4 100644
->>> --- a/drivers/thermal/exynos_thermal.c
->>> +++ b/drivers/thermal/exynos_thermal.c
->>> @@ -38,6 +38,7 @@
->>>    #include <linux/cpufreq.h>
->>>    #include <linux/cpu_cooling.h>
->>>    #include <linux/of.h>
->>> +#include <linux/regulator/consumer.h>
+>>> Is there a bug related to this ?
 >>>
->>>    #include <plat/cpu.h>
->>>
->>> @@ -119,6 +120,8 @@
->>>
->>>    #define EXYNOS_ZONE_COUNT	3
->>>
->>> +#define EXYNOS_TMU_REGULATOR "vdd_ts"
->>> +
->>>    struct exynos_tmu_data {
->>>    	struct exynos_tmu_platform_data *pdata;
->>>    	struct resource *mem;
->>> @@ -944,6 +947,7 @@ static int exynos_tmu_probe(struct
->>> platform_device *pdev) {
->>>    	struct exynos_tmu_data *data;
->>>    	struct exynos_tmu_platform_data *pdata =
->>> pdev->dev.platform_data;
->>> +	struct regulator *reg;
->>>    	int ret, i;
->>>
->>>    	if (!pdata)
->>> @@ -953,6 +957,21 @@ static int exynos_tmu_probe(struct
->>> platform_device *pdev) dev_err(&pdev->dev, "No platform init data
->>> supplied.\n"); return -ENODEV;
->>>    	}
->>> +
->>> +	reg = regulator_get(&pdev->dev, EXYNOS_TMU_REGULATOR);
->>> +	if (!IS_ERR(reg)) {
->>> +		ret = regulator_enable(reg);
->>> +		if (ret) {
->>> +			dev_err(&pdev->dev, "Regulator %s not
->>> enabled.\n",
->>> +				EXYNOS_TMU_REGULATOR);
->>> +			return ret;
->>> +		}
->>> +	} else {
->>> +		dev_info(&pdev->dev,
->>> +			 "Regulator %s not defined at device
->>> tree.\n",
->>> +			 EXYNOS_TMU_REGULATOR);
->> Maybe a dev_warn would fit better?
->
-> This is a bit tricky. I first wanted to return -ENODEV when regulator
-> is not available. Then I understood, that some other SoCs (e.g.
-> Exynos5) will not work.
->
-> The info here shall give a clear warn signal, that providing a
-> regulator for VDD_TS is crucial (since by default it can be connected
-> to other PMIC outputs and when other device puts down this regulator
-> the TMU will crash and shut down a system).
+>> Ofcouse. In multi-CPU scenario, where CPU C-states needs co-ordination
+>> can just lead into unknown issues if all the CPUs are not already part
+>> registered.
+> 
+> Hmm, ok. I don't see a scenario, with the current code, where that could
+> occurs. The coupled idle state will wait for the other cpus to enter
+> idle before initiating a shutdown sequence and, so far, the other sync
+> algorithm (last man standing) are doing the same.
+> 
+Its no just couple idle state usages. CPUs do share power domains, clock
+domains, clocks etc. One CPU going ahead and tampering/progarmming
+the low power states till the next one isn't registered yet
+can lead to issues.
 
-OK. I understand your point. Well, it depends on how you want to design 
-your driver. This is a clear case for having some sort of required 
-feature set bitmap, for instance. Each supported soc for your driver 
-would then have a bitmap indicating which features it actually supports. 
-Based on the bitmap you make it mandatory on your regulator_get 
-treatment. If it is mandatory, then you must clearly return an error 
-code. I have done a similar thing for the ti-soc-thermal driver 
-(drivers/staging/ti-soc-thermal/).
+> There are some systems with 1024 cpus, and I did not heard problems like
+> this.
+> 
+That is because todays CPUIDLe core code doesn't let that happen. Once
+you fix the ordering issue, there is window where the issue could happen.
 
-But again, this is your call, not sure if you want to go for that design 
-just for this item,
+> Do you know a system where this problem occurred ? Or is it something
+> you suspect that can happen ?
+> 
+See above. Its more prone to issues true for systems with higher
+number of CPUs. Not sure if that was the reason the core code, doesn't
+proceed without all the devices are registered ?
 
-Still, if you keep the code the way it is, I d request to change your 
-message level to dev_warn. And in case you have a way to determine it is 
-a mandatory entry, then to dev_err
+> That would be interesting to have a system where this race occurs in
+> order to check the modifications will solve the issue.
+> 
+I haven't see the issue myself but logically it could easily happen
+once the core code is fixed.
 
->
+>>>> Current CPUIDLE core layer is also written with the assumption
+>>>> that driver will be registered first and then the devices which
+>>>> is not mandatory as per typical drive/device model.
+>>>
+>>> Yes, that's true. The framework assumes cpuidle_register_driver is
+>>> called before cpuidle_register_device.
+>>>
+>>>> May be you can fix that part while you are creating this common
+>>>> wrapper.
+>>>
+>>> Personally, as that will modify the cpuidle core layer and the changes
+>>> are not obvious (because of the design of the code) I prefer to do that
+>>> in a separate patchset if it is worth to do it - if there is a bug
+>>> related to it, then there is no discussion, we have to do it :)
+>>>
+>> Sure. It would have been nice if you would have clarified that before
+>> posting the next version.
 >>
->>> +	}
->>> +
->>>    	data = devm_kzalloc(&pdev->dev, sizeof(struct
->>> exynos_tmu_data), GFP_KERNEL);
->>>    	if (!data) {
->>>
->
->
->
+>> You still need to fix the kernel doc in your v4 though.
+> 
+> Which one ? "s/accross/across" ?
+> 
+s/*/** below hunk in v4
+
++/*
++ * cpuidle_unregister: unregister a driver and the devices. This function
++ * can be used only if the driver has been previously registered through
++ * the cpuidle_register function.
++ *
++ * @drv: a valid pointer to a struct cpuidle_driver
++ */
++void cpuidle_unregister(struct cpuidle_driver *drv)
++{
++	int cpu;
++	struct cpuidle_device *device;
+
