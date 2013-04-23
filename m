@@ -1,53 +1,46 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
- drivers/cpufreq
-Date: Wed, 24 Apr 2013 00:25:59 +0900
-Message-ID: <5176A807.2090005@samsung.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
- <2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
- <CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
- <1769336.FkfMpuXqqb@vostro.rjw.lan>
+From: John Blackwood <john.blackwood@ccur.com>
+Subject: Re: [PATCH] cpufreq_conservative: initialize the cpu_dbs_info_s cpu
+ field
+Date: Tue, 23 Apr 2013 10:27:22 -0500
+Message-ID: <5176A85A.7090609@ccur.com>
+References: <51769DB3.7030404@ccur.com> <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1769336.FkfMpuXqqb@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: robin.randhawa@arm.com, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>, Steve.Bannister@arm.com, Kukjin Kim <kgene.kim@samsung.com>, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, charles.garcia-tobin@arm.com
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAOh2x=nZir=RohrbVJa1iWR47nmLKfG3it1UnWdt49oAKrBhWw@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/05/13 20:36, Rafael J. Wysocki wrote:
-> On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
->> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
->>> Basically, this moving looks good to me, but should be re-worked based on
->>> for-next of samsung tree because this touches too many samsung stuff so this
->>> should be sent to upstream via samsung tree.
+On 04/23/2013 10:19 AM, Viresh Kumar wrote:
+> On Tue, Apr 23, 2013 at 8:11 PM, John Blackwood <john.blackwood@ccur.com> wrote:
+>> In the cpufreq conservative module, the cpu field in the cpu_dbs_info_s
+>> structure was not being initialized, and thus all cpus were scheduling
+>> their do_dbs_timer() delayed work processing on cpu 0.
 >>
->> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
->> it can't be
->> moved to your tree if there is a issue.
+>> Signed-off-by: John Blackwood <john.blackwood@ccur.com>
+>> Index: b/drivers/cpufreq/cpufreq_conservative.c
+>> ===================================================================
+>> --- a/drivers/cpufreq/cpufreq_conservative.c
+>> +++ b/drivers/cpufreq/cpufreq_conservative.c
+>> @@ -506,6 +506,7 @@ static int cpufreq_governor_dbs(struct c
+>>                  }
+>>                  this_dbs_info->down_skip = 0;
+>>                  this_dbs_info->requested_freq = policy->cur;
+>> +               this_dbs_info->cpu = cpu;
+>>
+>>                  mutex_init(&this_dbs_info->timer_mutex);
+>>                  dbs_enable++;
 >
-> Well, I'm dropping it.  Please merge via the Samsung tree.
+> What have you rebased this on? I don't think its the latest code and is probably
+> a bit old.
 >
 
-Oops, I missed, maybe I have no more chance to send this to upstream for 
-upcoming merge window :-(
+Hi Viresh,
 
-Rafael, please take this patch with my ack in your tree, sorry for noise.
+Yes, you are right.
+This has been fixed in a different way in the newer kernel source.
+My apologies.
 
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-
-If any problems, please kindly let me know.
-
-Thanks.
-
-- Kukjin
