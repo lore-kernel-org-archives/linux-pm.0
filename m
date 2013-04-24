@@ -1,61 +1,109 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2] ARM: S5pv210: compiling issue, ARM_S5PV210_CPUFREQ need CONFIG_CPU_FREQ_TABLE=y
-Date: Wed, 24 Apr 2013 14:09:24 +0200
-Message-ID: <1486501.MMr8zrpiDO@vostro.rjw.lan>
-References: <5177B562.40400@asianux.com> <5177BC50.6050402@asianux.com> <CAOh2x==g96h5UhvBjtyrBTjxdkno3WBv5JEsqyT3jqv7x69V6A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x==g96h5UhvBjtyrBTjxdkno3WBv5JEsqyT3jqv7x69V6A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chen Gang <gang.chen@asianux.com>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle: add maintainer entry
+Date: Wed, 24 Apr 2013 15:34:23 +0200
+Message-ID: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-we0-f172.google.com ([74.125.82.172]:45742 "EHLO
+	mail-we0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753878Ab3DXNe1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 09:34:27 -0400
+Received: by mail-we0-f172.google.com with SMTP id r3so1689076wey.17
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2013 06:34:26 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, khilman@deeprootsystems.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, kernel@pengutronix.de, swarren@wwwdotorg.org, horms+renesas@verge.net.au, josephl@nvidia.com, arnd@arndb.de, linux-arm-kernel@lists.infradead.org, horms@verge.net.au, magnus.damm@gmail.com, benh@kernel.crashing.org, paulus@samba.org, kgene.kim@samsung.com, linus.walleij@linaro.org, viresh.kumar@linaro.org, lenb@kernel.org, nsekhar@ti.com, ben-linux@fluff.org
 
-On Wednesday, April 24, 2013 04:40:38 PM Viresh Kumar wrote:
-> On Wed, Apr 24, 2013 at 4:34 PM, Chen Gang <gang.chen@asianux.com> wrote:
-> >
-> > For arm S5pv210 with allmodconfig, ARM_S5PV210_CPUFREQ need
-> > CONFIG_CPU_FREQ_TABLE=y, or will cause compiling issue.
-> >
-> > The related operation:
-> > + arm-linux-gnu-ld -EL -p --no-undefined -X --build-id -X -o .tmp_vmlinux1 -T /root/linux-next/arch/arm/kernel/vmlinux.lds arch/arm/kernel/head.o init/built-in.o --start-group usr/built-in.o arch/arm/nwfpe/built-in.o arch/arm/vfp/built-in.o arch/arm/kernel/built-in.o arch/arm/mm/built-in.o arch/arm/common/built-in.o arch/arm/net/built-in.o arch/arm/crypto/built-in.o arch/arm/mach-s5pv210/built-in.o arch/arm/plat-samsung/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-in.o security/built-in.o crypto/built-in.o block/built-in.o arch/arm/lib/lib.a lib/lib.a arch/arm/lib/built-in.o lib/built-in.o drivers/built-in.o sound/built-in.o firmware/built-in.o net/built-in.o --end-group
-> >
-> > The related errors:
-> > drivers/built-in.o: In function `s5pv210_target':
-> > drivers/cpufreq/s5pv210-cpufreq.c:225: undefined reference to `cpufreq_frequency_table_target'
-> > drivers/cpufreq/s5pv210-cpufreq.c:237: undefined reference to `cpufreq_frequency_table_target'
-> > drivers/built-in.o: In function `s5pv210_verify_speed':
-> > drivers/cpufreq/s5pv210-cpufreq.c:182: undefined reference to `cpufreq_frequency_table_verify'
-> > drivers/built-in.o: In function `s5pv210_cpu_init':
-> > drivers/cpufreq/s5pv210-cpufreq.c:556: undefined reference to `cpufreq_frequency_table_get_attr'
-> > drivers/cpufreq/s5pv210-cpufreq.c:560: undefined reference to `cpufreq_frequency_table_cpuinfo'
-> > make: *** [vmlinux] Error 1
-> >
-> > Signed-off-by: Chen Gang <gang.chen@asianux.com>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index bce2195..bbcd719 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -187,6 +187,7 @@ config ARM_S3C64XX_CPUFREQ
-> >  config ARM_S5PV210_CPUFREQ
-> >         bool "Samsung S5PV210 and S5PC110"
-> >         depends on CPU_S5PV210
-> > +       select CPU_FREQ_TABLE
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Currently the cpuidle drivers are spread across the different archs.
 
-Applied.
+The patch submission for cpuidle are following different path: the cpuidle core
+code goes to linux-pm, the ARM drivers goes to arm-soc or the SoC specific
+tree, sh goes through sh arch tree, pseries goes through PowerPC and
+finally intel goes through Len's tree while acpi_idle goes under linux-pm.
 
-Thanks,
-Rafael
+That makes difficult to consolidate the code and to propagate modifications
+from the cpuidle core to the different drivers.
 
+Hopefully, a movement has initiated to put the cpuidle drivers into the
+drivers/cpuidle directory like cpuidle-calxeda.c and cpuidle-kirkwood.c
 
+Add an explicit maintainer entry in the MAINTAINER to clarify the situation
+and prevent new cpuidle drivers to goes to an arch directory.
+
+The upstreaming process is unchanged: Rafael takes the patches to merge them
+into its tree but with the acked-by from the driver's maintainer. So the header
+must contains the name of the maintainer.
+
+This organization will be the same than cpufreq.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ MAINTAINERS                        |    7 +++++++
+ drivers/cpuidle/cpuidle-calxeda.c  |    4 +++-
+ drivers/cpuidle/cpuidle-kirkwood.c |    5 +++--
+ 3 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 61677c3..effa0f3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2206,6 +2206,13 @@ S:	Maintained
+ F:	drivers/cpufreq/
+ F:	include/linux/cpufreq.h
+ 
++CPUIDLE DRIVERS
++M:	Rafael J. Wysocki <rjw@sisk.pl>
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	drivers/cpuidle/*
++F:	include/linux/cpuidle.h
++
+ CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+ M:	Viresh Kumar <viresh.kumar@linaro.org>
+ M:	Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+index e344b56..2378c39 100644
+--- a/drivers/cpuidle/cpuidle-calxeda.c
++++ b/drivers/cpuidle/cpuidle-calxeda.c
+@@ -1,7 +1,6 @@
+ /*
+  * Copyright 2012 Calxeda, Inc.
+  *
+- * Based on arch/arm/plat-mxc/cpuidle.c:
+  * Copyright 2012 Freescale Semiconductor, Inc.
+  * Copyright 2012 Linaro Ltd.
+  *
+@@ -16,6 +15,9 @@
+  *
+  * You should have received a copy of the GNU General Public License along with
+  * this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ * Author    : Rob Herring <rob.herring@calxeda.com>
++ * Maintainer: Rob Herring <rob.herring@calxeda.com>
+  */
+ 
+ #include <linux/cpuidle.h>
+diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+index 53290e1..521b0a7 100644
+--- a/drivers/cpuidle/cpuidle-kirkwood.c
++++ b/drivers/cpuidle/cpuidle-kirkwood.c
+@@ -1,6 +1,4 @@
+ /*
+- * arch/arm/mach-kirkwood/cpuidle.c
+- *
+  * CPU idle Marvell Kirkwood SoCs
+  *
+  * This file is licensed under the terms of the GNU General Public
+@@ -11,6 +9,9 @@
+  * to implement two idle states -
+  * #1 wait-for-interrupt
+  * #2 wait-for-interrupt and DDR self refresh
++ *
++ * Maintainer: Jason Cooper <jason@lakedaemon.net>
++ * Maintainer: Andrew Lunn <andrew@lunn.ch>
+  */
+ 
+ #include <linux/kernel.h>
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
+
