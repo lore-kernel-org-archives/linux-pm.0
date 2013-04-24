@@ -1,26 +1,21 @@
-From: Jason Cooper <jason@lakedaemon.net>
+From: Andrew Lunn <andrew@lunn.ch>
 Subject: Re: [PATCH] cpuidle: add maintainer entry
-Date: Wed, 24 Apr 2013 09:55:45 -0400
-Message-ID: <20130424135545.GE13884@titan.lakedaemon.net>
+Date: Wed, 24 Apr 2013 16:23:12 +0200
+Message-ID: <20130424142312.GA2824@lunn.ch>
 References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from londo.lunn.ch ([80.238.139.98]:42370 "EHLO londo.lunn.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753978Ab3DXOXa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Apr 2013 10:23:30 -0400
 Content-Disposition: inline
 In-Reply-To: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: andrew@lunn.ch, khilman@deeprootsystems.com, benh@kernel.crashing.org, linus.walleij@linaro.org, nicolas.ferre@atmel.com, paulus@samba.org, josephl@nvidia.com, kgene.kim@samsung.com, swarren@wwwdotorg.org, magnus.damm@gmail.com, viresh.kumar@linaro.org, plagnioj@jcrosoft.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, arnd@arndb.de, linux-pm@vger.kernel.org, nsekhar@ti.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, khilman@deeprootsystems.com, rob.herring@calxeda.com, jason@lakedaemon.net, andrew@lunn.ch, nicolas.ferre@atmel.com, plagnioj@jcrosoft.com, linux@maxim.org.za, kernel@pengutronix.de, swarren@wwwdotorg.org, horms+renesas@verge.net.au, josephl@nvidia.com, arnd@arndb.de, linux-arm-kernel@lists.infradead.org, horms@verge.net.au, magnus.damm@gmail.com, benh@kernel.crashing.org, paulus@samba.org, kgene.kim@samsung.com, linus.walleij@linaro.org, viresh.kumar@linaro.org, lenb@kernel.org, nsekhar@ti.com, ben-linux@fluff.org
 
 On Wed, Apr 24, 2013 at 03:34:23PM +0200, Daniel Lezcano wrote:
 > Currently the cpuidle drivers are spread across the different archs.
@@ -51,11 +46,70 @@ On Wed, Apr 24, 2013 at 03:34:23PM +0200, Daniel Lezcano wrote:
 >  drivers/cpuidle/cpuidle-calxeda.c  |    4 +++-
 >  drivers/cpuidle/cpuidle-kirkwood.c |    5 +++--
 >  3 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 61677c3..effa0f3 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2206,6 +2206,13 @@ S:	Maintained
+>  F:	drivers/cpufreq/
+>  F:	include/linux/cpufreq.h
+>  
+> +CPUIDLE DRIVERS
+> +M:	Rafael J. Wysocki <rjw@sisk.pl>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/cpuidle/*
+> +F:	include/linux/cpuidle.h
+> +
+>  CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+>  M:	Viresh Kumar <viresh.kumar@linaro.org>
+>  M:	Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+> index e344b56..2378c39 100644
+> --- a/drivers/cpuidle/cpuidle-calxeda.c
+> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+> @@ -1,7 +1,6 @@
+>  /*
+>   * Copyright 2012 Calxeda, Inc.
+>   *
+> - * Based on arch/arm/plat-mxc/cpuidle.c:
+>   * Copyright 2012 Freescale Semiconductor, Inc.
+>   * Copyright 2012 Linaro Ltd.
+>   *
+> @@ -16,6 +15,9 @@
+>   *
+>   * You should have received a copy of the GNU General Public License along with
+>   * this program.  If not, see <http://www.gnu.org/licenses/>.
+> + *
+> + * Author    : Rob Herring <rob.herring@calxeda.com>
+> + * Maintainer: Rob Herring <rob.herring@calxeda.com>
+>   */
+>  
+>  #include <linux/cpuidle.h>
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 53290e1..521b0a7 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -1,6 +1,4 @@
+>  /*
+> - * arch/arm/mach-kirkwood/cpuidle.c
+> - *
+>   * CPU idle Marvell Kirkwood SoCs
+>   *
+>   * This file is licensed under the terms of the GNU General Public
+> @@ -11,6 +9,9 @@
+>   * to implement two idle states -
+>   * #1 wait-for-interrupt
+>   * #2 wait-for-interrupt and DDR self refresh
+> + *
+> + * Maintainer: Jason Cooper <jason@lakedaemon.net>
+> + * Maintainer: Andrew Lunn <andrew@lunn.ch>
+>   */
+>  
 
-For the kirkwood bit:
+For the Kirkwood part
 
-Acked-by: Jason Cooper <jason@lakedaemon.net>
+Acked-by: Andrew Lunn <andrew@lunn.ch>
 
-thx,
-
-Jason.
+	  Andrew
