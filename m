@@ -1,81 +1,130 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 02/30] thermal: cpu_cooling: remove trailing white spaces
-Date: Wed, 24 Apr 2013 13:44:51 -0400
-Message-ID: <51781A13.50705@ti.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com> <1366218743-20841-3-git-send-email-eduardo.valentin@ti.com> <744357E9AAD1214791ACBA4B0B9092632C9F6D@SHSMSX101.ccr.corp.intel.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH] cpuidle: add maintainer entry
+Date: Wed, 24 Apr 2013 12:50:00 -0500
+Message-ID: <51781B48.30208@gmail.com>
+References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <744357E9AAD1214791ACBA4B0B9092632C9F6D@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f54.google.com ([209.85.219.54]:56338 "EHLO
+	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756776Ab3DXRuF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 13:50:05 -0400
+Received: by mail-oa0-f54.google.com with SMTP id l20so1990142oag.27
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2013 10:50:04 -0700 (PDT)
+In-Reply-To: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@sisk.pl, andrew@lunn.ch, khilman@deeprootsystems.com, benh@kernel.crashing.org, linus.walleij@linaro.org, nicolas.ferre@atmel.com, paulus@samba.org, josephl@nvidia.com, kgene.kim@samsung.com, swarren@wwwdotorg.org, magnus.damm@gmail.com, viresh.kumar@linaro.org, plagnioj@jcrosoft.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, arnd@arndb.de, linux-pm@vger.kernel.org, nsekhar@ti.com, rob.herring@calxeda.com, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 
-On 24-04-2013 10:48, Zhang, Rui wrote:
->
->
->> -----Original Message-----
->> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
->> Sent: Thursday, April 18, 2013 1:12 AM
->> To: amit.kachhap@linaro.org
->> Cc: Eduardo Valentin; Zhang, Rui; linux-pm@vger.kernel.org; linux-
->> kernel@vger.kernel.org
->> Subject: [PATCH 02/30] thermal: cpu_cooling: remove trailing white
->> spaces
->> Importance: High
->>
->> Remove unnecessary white spaces.
->>
-> The same comments for patch 02, 06, 09, 10, 11, 13, 18, and 30.
->
-> Can we run Lindent to fix all the coding style problem in one patch?
+On 04/24/2013 08:34 AM, Daniel Lezcano wrote:
+> Currently the cpuidle drivers are spread across the different archs.
+> 
+> The patch submission for cpuidle are following different path: the cpuidle core
+> code goes to linux-pm, the ARM drivers goes to arm-soc or the SoC specific
+> tree, sh goes through sh arch tree, pseries goes through PowerPC and
+> finally intel goes through Len's tree while acpi_idle goes under linux-pm.
+> 
+> That makes difficult to consolidate the code and to propagate modifications
+> from the cpuidle core to the different drivers.
+> 
+> Hopefully, a movement has initiated to put the cpuidle drivers into the
+> drivers/cpuidle directory like cpuidle-calxeda.c and cpuidle-kirkwood.c
+> 
+> Add an explicit maintainer entry in the MAINTAINER to clarify the situation
+> and prevent new cpuidle drivers to goes to an arch directory.
+> 
+> The upstreaming process is unchanged: Rafael takes the patches to merge them
+> into its tree but with the acked-by from the driver's maintainer. So the header
+> must contains the name of the maintainer.
 
+Shouldn't MAINTAINERS contain the driver maintainers too?
 
-Well, yes. The thing about Lindent is that it sometimes changes the code 
-in a way we do not want. It will change cpu-cooling in slightly 
-different way, but it will include most of the changes on the patches 
-above. It misses some of the changes and also does some other that are 
-not so nice.
+> 
+> This organization will be the same than cpufreq.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  MAINTAINERS                        |    7 +++++++
+>  drivers/cpuidle/cpuidle-calxeda.c  |    4 +++-
+>  drivers/cpuidle/cpuidle-kirkwood.c |    5 +++--
+>  3 files changed, 13 insertions(+), 3 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 61677c3..effa0f3 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2206,6 +2206,13 @@ S:	Maintained
+>  F:	drivers/cpufreq/
+>  F:	include/linux/cpufreq.h
+>  
+> +CPUIDLE DRIVERS
+> +M:	Rafael J. Wysocki <rjw@sisk.pl>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/cpuidle/*
+> +F:	include/linux/cpuidle.h
+> +
+>  CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+>  M:	Viresh Kumar <viresh.kumar@linaro.org>
+>  M:	Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+> index e344b56..2378c39 100644
+> --- a/drivers/cpuidle/cpuidle-calxeda.c
+> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+> @@ -1,7 +1,6 @@
+>  /*
+>   * Copyright 2012 Calxeda, Inc.
+>   *
+> - * Based on arch/arm/plat-mxc/cpuidle.c:
 
-I obviously would prefer to keep these patches, as, the patches are 
-already there. Let me know what is your call.
+This file may have moved, but it existed at the time this was committed.
+So the comment still applies and documents what part of the file the FSL
+and Linaro copyright applies to.
 
->
-> Thanks,
-> rui
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>   drivers/thermal/cpu_cooling.c | 3 +--
->>   1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/drivers/thermal/cpu_cooling.c
->> b/drivers/thermal/cpu_cooling.c index 778c43d..d0d6a0c 100644
->> --- a/drivers/thermal/cpu_cooling.c
->> +++ b/drivers/thermal/cpu_cooling.c
->> @@ -131,14 +131,13 @@ static int get_property(unsigned int cpu,
->> unsigned long input,
->>   	int descend = -1;
->>   	struct cpufreq_frequency_table *table =
->>   					cpufreq_frequency_get_table(cpu);
->> -
->> +
->>   	if (!output)
->>   		return -EINVAL;
->>
->>   	if (!table)
->>   		return -EINVAL;
->>
->> -
->>   	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->>   		/* ignore invalid entries */
->>   		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->> --
->> 1.8.2.1.342.gfa7285d
->
->
->
+Of course most of what was copied here was the boilerplate which your
+patch series removes. The heart of the functionality was developed by me.
+
+>   * Copyright 2012 Freescale Semiconductor, Inc.
+>   * Copyright 2012 Linaro Ltd.
+>   *
+> @@ -16,6 +15,9 @@
+>   *
+>   * You should have received a copy of the GNU General Public License along with
+>   * this program.  If not, see <http://www.gnu.org/licenses/>.
+> + *
+> + * Author    : Rob Herring <rob.herring@calxeda.com>
+> + * Maintainer: Rob Herring <rob.herring@calxeda.com>
+
+As mentioned above, this doesn't seem right.
+
+Rob
+
+>   */
+>  
+>  #include <linux/cpuidle.h>
+> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
+> index 53290e1..521b0a7 100644
+> --- a/drivers/cpuidle/cpuidle-kirkwood.c
+> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
+> @@ -1,6 +1,4 @@
+>  /*
+> - * arch/arm/mach-kirkwood/cpuidle.c
+> - *
+>   * CPU idle Marvell Kirkwood SoCs
+>   *
+>   * This file is licensed under the terms of the GNU General Public
+> @@ -11,6 +9,9 @@
+>   * to implement two idle states -
+>   * #1 wait-for-interrupt
+>   * #2 wait-for-interrupt and DDR self refresh
+> + *
+> + * Maintainer: Jason Cooper <jason@lakedaemon.net>
+> + * Maintainer: Andrew Lunn <andrew@lunn.ch>
+>   */
+>  
+>  #include <linux/kernel.h>
+> 
+
