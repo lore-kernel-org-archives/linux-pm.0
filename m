@@ -1,77 +1,46 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH 1/2] regulator: core: Add regulator_set_voltage_min()
-Date: Wed, 24 Apr 2013 10:38:53 +0100
-Message-ID: <20130424093852.GY5019@opensource.wolfsonmicro.com>
-References: <1366372554-20866-1-git-send-email-taras@ti.com>
- <1366372554-20866-2-git-send-email-taras@ti.com>
- <20130422131904.GL30351@opensource.wolfsonmicro.com>
- <51756A21.3020405@ti.com>
- <20130423084838.GB5019@opensource.wolfsonmicro.com>
- <5176743A.9070201@ti.com>
- <20130423134512.GL5019@opensource.wolfsonmicro.com>
- <5176D6B5.3070305@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Wed, 24 Apr 2013 15:44:47 +0530
+Message-ID: <CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
+References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VIFPKPeEU/ajvd6j"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37180 "EHLO
-	opensource.wolfsonmicro.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758179Ab3DXJi6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 05:38:58 -0400
-Content-Disposition: inline
-In-Reply-To: <5176D6B5.3070305@ti.com>
+Received: from mail-oa0-f49.google.com ([209.85.219.49]:63615 "EHLO
+	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758210Ab3DXKOr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 06:14:47 -0400
+Received: by mail-oa0-f49.google.com with SMTP id j1so1456584oag.22
+        for <linux-pm@vger.kernel.org>; Wed, 24 Apr 2013 03:14:47 -0700 (PDT)
+In-Reply-To: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Taras Kondratiuk <taras@ti.com>
-Cc: lgirdwood@gmail.com, rjw@sisk.pl, viresh.kumar@linaro.org, shawn.guo@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Philip Rakity <prakity@nvidia.com>, Eric Miao <eric.y.miao@gmail.com>, "grygorii.strashko" <grygorii.strashko@ti.com>, Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+To: Yuantian.Tang@freescale.com
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
+On 24 April 2013 13:58,  <Yuantian.Tang@freescale.com> wrote:
+> From: Tang Yuantian <yuantian.tang@freescale.com>
+>
+> The driver compiled as a module can not be unloaded if there
+> are more than one cpu in policy->cpus. That's caused by
+> cpufreq_cpu_get() in cpufreq_add_dev_symlink(); It keep increasing
+> the module reference count.
+> This patch splites the module and policy reference count. It keeps
+> the module reference count unchanged and uses the policy reference
+> count to track the resource.
+>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 16 +++-------------
+>  1 file changed, 3 insertions(+), 13 deletions(-)
 
---VIFPKPeEU/ajvd6j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I didn't quite get the problem you mentioned.. I haven't seen any issues
+with the core as of now.
 
-On Tue, Apr 23, 2013 at 09:45:09PM +0300, Taras Kondratiuk wrote:
+When we unload a module we must call cpufreq_unregister_driver(), which
+will eventually call subsys_interface_unregister() and so cpufreq_remove_dev()
+will be called for each cpu. And so all the counts should be fine and eventually
+module should get unloaded.
 
-To repeat, you should leave blank lines between paragraphs and delete
-irrelevant context to improve the legibility of your mails and help
-people find whatever content you're adding.
-
-> On 04/23/2013 04:45 PM, Mark Brown wrote:
-
-> >>They don't know anything about chip limits.
-
-> >Clearly at least the lower bound is known to the drivers...
-
-> Do you mean a voltage of the lowest operation point?
-
-Yes.
-
-> I think I'm missing something.
-> How can I pass chip limits to a driver in some generic way?
-
-That doesn't seem like a hard problem - just add a new property or two
-if there's no facility there.
-
---VIFPKPeEU/ajvd6j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJRd6glAAoJELSic+t+oim9kg4P/09XcBtUWhZ32kJZiZN5yGEc
-xtDLiCY2epd2Wz1wPeKmWabUlZ5QbtW+R7zvrO5muKJzSdMRePPk3igzMEA3LDTa
-ToOYry8QsHplrM/Lt3AUny7Y/qC0xPWmq4WtmkwqfdRBj+SMHt51LKgA9Fp02JU0
-cwLlG/Aw9IldF7IL9vF60wJW58AUQes0oPxMlwyLDPwigWxZnr0P3OWmVs29KDQz
-2qSmEWbo7qLWXYWxEa2KgMkUmPz5xJypFb99jOYds7TdPy0wCJCjAFfXTIsXO68M
-LApAaPSIIf3YtWXhVVMrxuAboiNsr53FA5ZG/RUGaV9HIOsMsTo4Iio/+6XUbQgR
-uYkHOXJ1Bsn27F+dzvYwJlrziUsCucA8YLoSLul3QrJxzFQ5Dd7EIGcTn/xh0z7g
-MHCY3So0F0V39r2wPHLhL/vRHLpsxOHT5G4qCqvR7xDOsdx92ho1qFvwS3BTBwFQ
-L4u/ewgYsR+rYgataMClrFJ9p8lNHr/E4x21CQbeDyEaAYMcz8HPArSQAUlb5YJS
-uew6WSSIv9LfbaN3mUmFerxa5FEOFRrGb0dK//3bK/KwxJYrZpcojup6Xq5xVbKo
-l1JHmc+Yig0p5WtyS+AaMGT/LNJnJ/AZ+iPf6rjicKenlH2qA9sXI69WBFvQYA++
-VpEz6nJKYLaSqvjEajlg
-=P/op
------END PGP SIGNATURE-----
-
---VIFPKPeEU/ajvd6j--
+--
+viresh
