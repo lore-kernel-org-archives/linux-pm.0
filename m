@@ -1,50 +1,81 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 28/30] MAINTAINERS: update thermal entry by adding file
- cpu_cooling.h
-Date: Wed, 24 Apr 2013 13:34:06 -0400
-Message-ID: <5178178E.5090605@ti.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com> <1366218743-20841-29-git-send-email-eduardo.valentin@ti.com>
+Subject: Re: [PATCH 02/30] thermal: cpu_cooling: remove trailing white spaces
+Date: Wed, 24 Apr 2013 13:44:51 -0400
+Message-ID: <51781A13.50705@ti.com>
+References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com> <1366218743-20841-3-git-send-email-eduardo.valentin@ti.com> <744357E9AAD1214791ACBA4B0B9092632C9F6D@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:55854 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755323Ab3DXReU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Apr 2013 13:34:20 -0400
-In-Reply-To: <1366218743-20841-29-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <744357E9AAD1214791ACBA4B0B9092632C9F6D@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: amit.kachhap@linaro.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Rui,
-
-On 17-04-2013 13:12, Eduardo Valentin wrote:
-> Add cpu_cooling.h to thermal entry in MAINTAINERS.
+On 24-04-2013 10:48, Zhang, Rui wrote:
 >
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->   MAINTAINERS | 1 +
->   1 file changed, 1 insertion(+)
 >
-
-This one didnt get in. Does it need to go in a different tree?
-
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 05dd187..3e075dc 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -8011,6 +8011,7 @@ T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
->   S:      Supported
->   F:      drivers/thermal/
->   F:      include/linux/thermal.h
-> +F:      include/linux/cpu_cooling.h
+>> -----Original Message-----
+>> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
+>> Sent: Thursday, April 18, 2013 1:12 AM
+>> To: amit.kachhap@linaro.org
+>> Cc: Eduardo Valentin; Zhang, Rui; linux-pm@vger.kernel.org; linux-
+>> kernel@vger.kernel.org
+>> Subject: [PATCH 02/30] thermal: cpu_cooling: remove trailing white
+>> spaces
+>> Importance: High
+>>
+>> Remove unnecessary white spaces.
+>>
+> The same comments for patch 02, 06, 09, 10, 11, 13, 18, and 30.
 >
->   THINGM BLINK(1) USB RGB LED DRIVER
->   M:	Vivien Didelot <vivien.didelot@savoirfairelinux.com>
->
+> Can we run Lindent to fix all the coding style problem in one patch?
 
+
+Well, yes. The thing about Lindent is that it sometimes changes the code 
+in a way we do not want. It will change cpu-cooling in slightly 
+different way, but it will include most of the changes on the patches 
+above. It misses some of the changes and also does some other that are 
+not so nice.
+
+I obviously would prefer to keep these patches, as, the patches are 
+already there. Let me know what is your call.
+
+>
+> Thanks,
+> rui
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>   drivers/thermal/cpu_cooling.c | 3 +--
+>>   1 file changed, 1 insertion(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c
+>> b/drivers/thermal/cpu_cooling.c index 778c43d..d0d6a0c 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -131,14 +131,13 @@ static int get_property(unsigned int cpu,
+>> unsigned long input,
+>>   	int descend = -1;
+>>   	struct cpufreq_frequency_table *table =
+>>   					cpufreq_frequency_get_table(cpu);
+>> -
+>> +
+>>   	if (!output)
+>>   		return -EINVAL;
+>>
+>>   	if (!table)
+>>   		return -EINVAL;
+>>
+>> -
+>>   	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+>>   		/* ignore invalid entries */
+>>   		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
+>> --
+>> 1.8.2.1.342.gfa7285d
+>
+>
+>
