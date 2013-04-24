@@ -1,62 +1,85 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] Thermal: update documentation for thermal_zone_device_register
-Date: Thu, 25 Apr 2013 00:59:22 +0800
-Message-ID: <1366822762-1290-1-git-send-email-rui.zhang@intel.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 26/30] thermal: cpu_cooling: remove unused symbols
+Date: Wed, 24 Apr 2013 13:33:23 -0400
+Message-ID: <51781763.60209@ti.com>
+References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com> <1366218743-20841-27-git-send-email-eduardo.valentin@ti.com> <744357E9AAD1214791ACBA4B0B9092632C9FCF@SHSMSX101.ccr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:18840 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753407Ab3DXQ7Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Apr 2013 12:59:25 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:37390 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323Ab3DXRdm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 13:33:42 -0400
+In-Reply-To: <744357E9AAD1214791ACBA4B0B9092632C9FCF@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: eduardo.valentin@ti.com, Zhang Rui <rui.zhang@intel.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Update kernel Documentation for thermal_zone_device_register.
+On 24-04-2013 10:52, Zhang, Rui wrote:
+>
+>
+>> -----Original Message-----
+>> From: Eduardo Valentin [mailto:eduardo.valentin@ti.com]
+>> Sent: Thursday, April 18, 2013 1:12 AM
+>> To: amit.kachhap@linaro.org
+>> Cc: Eduardo Valentin; Zhang, Rui; linux-pm@vger.kernel.org; linux-
+>> kernel@vger.kernel.org
+>> Subject: [PATCH 26/30] thermal: cpu_cooling: remove unused symbols
+>> Importance: High
+>>
+>> The list is needed so far. Thus removing it.
+>>
+> s/needed/not needed?
+>
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- Documentation/thermal/sysfs-api.txt |   14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+yes, thanks.
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index bb42266..a71bd5b 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -31,15 +31,17 @@ temperature) and throttle appropriate devices.
- 1. thermal sysfs driver interface functions
- 
- 1.1 thermal zone device interface
--1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *name,
-+1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *type,
- 		int trips, int mask, void *devdata,
--		struct thermal_zone_device_ops *ops)
-+		struct thermal_zone_device_ops *ops,
-+		const struct thermal_zone_params *tzp,
-+		int passive_delay, int polling_delay))
- 
-     This interface function adds a new thermal zone device (sensor) to
-     /sys/class/thermal folder as thermal_zone[0-*]. It tries to bind all the
-     thermal cooling devices registered at the same time.
- 
--    name: the thermal zone name.
-+    type: the thermal zone type.
-     trips: the total number of trip points this thermal zone supports.
-     mask: Bit string: If 'n'th bit is set, then trip point 'n' is writeable.
-     devdata: device private data
-@@ -57,6 +59,12 @@ temperature) and throttle appropriate devices.
- 			will be fired.
- 	.set_emul_temp: set the emulation temperature which helps in debugging
- 			different threshold temperature points.
-+    tzp: thermal zone platform parameters.
-+    passive_delay: number of milliseconds to wait between polls when
-+	performing passive cooling.
-+    polling_delay: number of milliseconds to wait between polls when checking
-+	whether trip points have been crossed (0 for interrupt driven systems).
-+
- 
- 1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 
--- 
-1.7.9.5
+> Thanks,
+> rui
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>   drivers/thermal/cpu_cooling.c | 6 +-----
+>>   1 file changed, 1 insertion(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c
+>> b/drivers/thermal/cpu_cooling.c index 3709274..825231f 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -38,11 +38,9 @@
+>>    * @cpufreq_val: integer value representing the absolute value of the
+>> clipped
+>>    *	frequency.
+>>    * @allowed_cpus: all the cpus involved for this
+>> cpufreq_cooling_device.
+>> - * @node: list_head to link all cpufreq_cooling_device together.
+>>    *
+>>    * This structure is required for keeping information of each
+>> - * cpufreq_cooling_device registered as a list whose head is
+>> represented by
+>> - * cooling_cpufreq_list. In order to prevent corruption of this list a
+>> + * cpufreq_cooling_device registered. In order to prevent corruption
+>> of
+>> + this a
+>>    * mutex lock cooling_cpufreq_lock is used.
+>>    */
+>>   struct cpufreq_cooling_device {
+>> @@ -51,9 +49,7 @@ struct cpufreq_cooling_device {
+>>   	unsigned int cpufreq_state;
+>>   	unsigned int cpufreq_val;
+>>   	struct cpumask allowed_cpus;
+>> -	struct list_head node;
+>>   };
+>> -static LIST_HEAD(cooling_cpufreq_list);  static
+>> DEFINE_IDR(cpufreq_idr);  static DEFINE_MUTEX(cooling_cpufreq_lock);
+>>
+>> --
+>> 1.8.2.1.342.gfa7285d
+>
+>
+>
 
