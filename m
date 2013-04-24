@@ -1,76 +1,67 @@
-From: Chen Gang <gang.chen@asianux.com>
-Subject: Re: [PATCH v2] ARM: S5pv210: compiling issue, ARM_S5PV210_CPUFREQ
- need CONFIG_CPU_FREQ_TABLE=y
-Date: Wed, 24 Apr 2013 19:11:47 +0800
-Message-ID: <5177BDF3.1080604@asianux.com>
-References: <5177B562.40400@asianux.com> <5177BBB4.4040600@asianux.com> <5177BC50.6050402@asianux.com> <CAOh2x==g96h5UhvBjtyrBTjxdkno3WBv5JEsqyT3jqv7x69V6A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] SH: cpuidle: use init/exit common routine
+Date: Wed, 24 Apr 2013 14:08:52 +0200
+Message-ID: <1913054.HRUbb7yvdy@vostro.rjw.lan>
+References: <1366728077-18988-1-git-send-email-daniel.lezcano@linaro.org> <1366728077-18988-2-git-send-email-daniel.lezcano@linaro.org> <20130424060214.GA7149@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAOh2x==g96h5UhvBjtyrBTjxdkno3WBv5JEsqyT3jqv7x69V6A@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:42704 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757633Ab3DXMAt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Apr 2013 08:00:49 -0400
+In-Reply-To: <20130424060214.GA7149@verge.net.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, ben-linux@fluff.org, kgene.kim@samsung.com, lethal@linux-sh.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B404=E6=9C=8824=E6=97=A5 19:10, Viresh Kumar wrote:
-> On Wed, Apr 24, 2013 at 4:34 PM, Chen Gang <gang.chen@asianux.com> wr=
-ote:
->> >
->> > For arm S5pv210 with allmodconfig, ARM_S5PV210_CPUFREQ need
->> > CONFIG_CPU_FREQ_TABLE=3Dy, or will cause compiling issue.
->> >
->> > The related operation:
->> > + arm-linux-gnu-ld -EL -p --no-undefined -X --build-id -X -o .tmp_=
-vmlinux1 -T /root/linux-next/arch/arm/kernel/vmlinux.lds arch/arm/kerne=
-l/head.o init/built-in.o --start-group usr/built-in.o arch/arm/nwfpe/bu=
-ilt-in.o arch/arm/vfp/built-in.o arch/arm/kernel/built-in.o arch/arm/mm=
-/built-in.o arch/arm/common/built-in.o arch/arm/net/built-in.o arch/arm=
-/crypto/built-in.o arch/arm/mach-s5pv210/built-in.o arch/arm/plat-samsu=
-ng/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/built-i=
-n.o security/built-in.o crypto/built-in.o block/built-in.o arch/arm/lib=
-/lib.a lib/lib.a arch/arm/lib/built-in.o lib/built-in.o drivers/built-i=
-n.o sound/built-in.o firmware/built-in.o net/built-in.o --end-group
->> >
->> > The related errors:
->> > drivers/built-in.o: In function `s5pv210_target':
->> > drivers/cpufreq/s5pv210-cpufreq.c:225: undefined reference to `cpu=
-freq_frequency_table_target'
->> > drivers/cpufreq/s5pv210-cpufreq.c:237: undefined reference to `cpu=
-freq_frequency_table_target'
->> > drivers/built-in.o: In function `s5pv210_verify_speed':
->> > drivers/cpufreq/s5pv210-cpufreq.c:182: undefined reference to `cpu=
-freq_frequency_table_verify'
->> > drivers/built-in.o: In function `s5pv210_cpu_init':
->> > drivers/cpufreq/s5pv210-cpufreq.c:556: undefined reference to `cpu=
-freq_frequency_table_get_attr'
->> > drivers/cpufreq/s5pv210-cpufreq.c:560: undefined reference to `cpu=
-freq_frequency_table_cpuinfo'
->> > make: *** [vmlinux] Error 1
->> >
->> > Signed-off-by: Chen Gang <gang.chen@asianux.com>
->> > ---
->> >  drivers/cpufreq/Kconfig.arm |    1 +
->> >  1 files changed, 1 insertions(+), 0 deletions(-)
->> >
->> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig=
-=2Earm
->> > index bce2195..bbcd719 100644
->> > --- a/drivers/cpufreq/Kconfig.arm
->> > +++ b/drivers/cpufreq/Kconfig.arm
->> > @@ -187,6 +187,7 @@ config ARM_S3C64XX_CPUFREQ
->> >  config ARM_S5PV210_CPUFREQ
->> >         bool "Samsung S5PV210 and S5PC110"
->> >         depends on CPU_S5PV210
->> > +       select CPU_FREQ_TABLE
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
->=20
+On Wednesday, April 24, 2013 03:02:15 PM Simon Horman wrote:
+> On Tue, Apr 23, 2013 at 04:41:17PM +0200, Daniel Lezcano wrote:
+> > Remove the duplicated code and use the cpuidle common code for initialization.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
 
-Thank you very much.
+Applied.
 
---=20
-Chen Gang
+Thanks,
+Rafael
 
-Asianux Corporation
+
+> > ---
+> >  arch/sh/kernel/cpu/shmobile/cpuidle.c |    7 +------
+> >  1 file changed, 1 insertion(+), 6 deletions(-)
+> > 
+> > diff --git a/arch/sh/kernel/cpu/shmobile/cpuidle.c b/arch/sh/kernel/cpu/shmobile/cpuidle.c
+> > index fdfe57f4..d306225 100644
+> > --- a/arch/sh/kernel/cpu/shmobile/cpuidle.c
+> > +++ b/arch/sh/kernel/cpu/shmobile/cpuidle.c
+> > @@ -51,7 +51,6 @@ static int cpuidle_sleep_enter(struct cpuidle_device *dev,
+> >  	return k;
+> >  }
+> >  
+> > -static struct cpuidle_device cpuidle_dev;
+> >  static struct cpuidle_driver cpuidle_driver = {
+> >  	.name   = "sh_idle",
+> >  	.owner  = THIS_MODULE,
+> > @@ -100,9 +99,5 @@ int __init sh_mobile_setup_cpuidle(void)
+> >  	if (sh_mobile_sleep_supported & SUSP_SH_STANDBY)
+> >  		cpuidle_driver.states[2].disabled = false;
+> >  
+> > -	ret = cpuidle_register_driver(&cpuidle_driver);
+> > -	if (ret)
+> > -		return ret;
+> > -
+> > -	return cpuidle_register_device(&cpuidle_dev);
+> > +	return cpuidle_register(&cpuidle_driver);
+> >  }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
