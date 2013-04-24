@@ -1,85 +1,52 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCHv2 0/9] thermal: clean ups on thermal code base
-Date: Wed, 24 Apr 2013 16:54:42 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092632CA11C@SHSMSX101.ccr.corp.intel.com>
-References: <1366753700-1412-1-git-send-email-eduardo.valentin@ti.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH] cpuidle: add maintainer entry
+Date: Wed, 24 Apr 2013 09:55:27 -0700
+Message-ID: <87k3nr50n4.fsf@linaro.org>
+References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:33287 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754978Ab3DXQyq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 12:54:46 -0400
-In-Reply-To: <1366753700-1412-1-git-send-email-eduardo.valentin@ti.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
+ (Daniel Lezcano's message of "Wed, 24 Apr 2013 15:34:23 +0200")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: andrew@lunn.ch, Daniel Lezcano <daniel.lezcano@linaro.org>, benh@kernel.crashing.org, linus.walleij@linaro.org, nicolas.ferre@atmel.com, paulus@samba.org, josephl@nvidia.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, magnus.damm@gmail.com, viresh.kumar@linaro.org, plagnioj@jcrosoft.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, arnd@arndb.de, swarren@wwwdotorg.org, nsekhar@ti.com, rob.herring@calxeda.com, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi, Eduardo,
+Rafael,
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Wednesday, April 24, 2013 5:48 AM
-> To: Zhang, Rui
-> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Eduardo
-> Valentin
-> Subject: [PATCHv2 0/9] thermal: clean ups on thermal code base
-> Importance: High
-> 
-> Hello Rui,
-> 
-> This is v2 of this series. I have worked on the comments you sent on
-> these patches. For your reference, v1 has been reviewed at [1].
-> 
-All the patches in this series has been applied.
+Daniel Lezcano <daniel.lezcano@linaro.org> writes:
 
-Thanks,
-rui
+[...]
 
-> Summary of changelog:
-> - Added your acked-by on those patches you granted.
-> - Fixed the comments regarding functions that are not going to be
-> exported.
-> - Removed patches that are touching functions that are not going to be
-> exported.
-> 
-> Also available, as usual, here:
-> git@gitorious.org:thermal-framework/thermal-framework.git
-> thermal_work/thermal_core/coding_style
-> https://git.gitorious.org/thermal-framework/thermal-framework.git
-> thermal_work/thermal_core/coding_style
-> 
-> The above branches are based on linux-next/master.
-> 
-> All best,
-> 
-> [1] - https://lkml.org/lkml/2013/4/8/471
-> 
-> Eduardo Valentin (9):
->   thermal: use strlcpy instead of strcpy
->   thermal: update driver license
->   thermal: rename notify_thermal_framework to thermal_notify_framework
->   thermal: use EXPORT_SYMBOL_GPL
->   thermal: update kernel-doc for thermal_zone_bind_cooling_device
->   thermal: update kernel-doc for thermal_zone_unbind_cooling_device
->   thermal: update kernel-doc for thermal_cooling_device_register
->   thermal: update kernel-doc for create_trip_attrs
->   thermal: update kernel-doc for thermal_zone_device_register
-> 
->  Documentation/thermal/sysfs-api.txt |  2 +-
->  drivers/thermal/thermal_core.c      | 80 ++++++++++++++++++++++++++---
-> --------
->  include/linux/thermal.h             |  2 +-
->  3 files changed, 59 insertions(+), 25 deletions(-)
-> 
-> --
-> 1.8.2.1.342.gfa7285d
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org More majordomo info
-> at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 61677c3..effa0f3 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2206,6 +2206,13 @@ S:	Maintained
+>  F:	drivers/cpufreq/
+>  F:	include/linux/cpufreq.h
+>  
+> +CPUIDLE DRIVERS
+> +M:	Rafael J. Wysocki <rjw@sisk.pl>
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/cpuidle/*
+> +F:	include/linux/cpuidle.h
+
+What do you think about having Daniel listed here as a co-maintainer?
+
+He has been driving a significant consolidation effort, and will
+continue to do that, so I think he should help take care of this area
+and ensure all drivers are moving in the right direction.
+
+Kevin
