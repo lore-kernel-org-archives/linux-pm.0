@@ -1,78 +1,85 @@
 From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH RESEND 11/11] thermal: update kernel-doc for
- thermal_zone_device_register
-Date: Wed, 24 Apr 2013 16:50:17 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092632CA0FC@SHSMSX101.ccr.corp.intel.com>
-References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
-  <1365437258-31412-12-git-send-email-eduardo.valentin@ti.com>
- <1366212281.2091.59.camel@rzhang1-mobl4> <516EF839.9090500@ti.com>
+Subject: RE: [PATCHv2 0/9] thermal: clean ups on thermal code base
+Date: Wed, 24 Apr 2013 16:54:42 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092632CA11C@SHSMSX101.ccr.corp.intel.com>
+References: <1366753700-1412-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:61273 "EHLO mga14.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:33287 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756140Ab3DXQuV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Apr 2013 12:50:21 -0400
-In-Reply-To: <516EF839.9090500@ti.com>
+	id S1754978Ab3DXQyq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 12:54:46 -0400
+In-Reply-To: <1366753700-1412-1-git-send-email-eduardo.valentin@ti.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRWR1YXJkbyBWYWxlbnRp
-biBbbWFpbHRvOmVkdWFyZG8udmFsZW50aW5AdGkuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgQXBy
-aWwgMTgsIDIwMTMgMzozMCBBTQ0KPiBUbzogWmhhbmcsIFJ1aQ0KPiBDYzogRWR1YXJkbyBWYWxl
-bnRpbjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2Vy
-bmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFJFU0VORCAxMS8xMV0gdGhlcm1hbDogdXBk
-YXRlIGtlcm5lbC1kb2MgZm9yDQo+IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXINCj4gSW1w
-b3J0YW5jZTogSGlnaA0KPiANCj4gT24gMTctMDQtMjAxMyAxMToyNCwgWmhhbmcgUnVpIHdyb3Rl
-Og0KPiA+IE9uIE1vbiwgMjAxMy0wNC0wOCBhdCAxMjowNyAtMDQwMCwgRWR1YXJkbyBWYWxlbnRp
-biB3cm90ZToNCj4gPj4gVGhpcyBwYXRjaCB1cGRhdGVzIHRoZSBkb2N1bWVudGF0aW9uIGZvcg0K
-PiB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyDQo+ID4NCj4gPiBpdCBpcyBub3QgZW5vdWdo
-Lg0KPiA+IHBhcmFtZXRlcnMgaW5jbHVkaW5nIGNvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfcGFy
-YW1zICp0enAsIGludA0KPiA+IHBhc3NpdmVfZGVsYXksIGFuZCBpbnQgcG9sbGluZ19kZWxheSBh
-cmUgbWlzc2luZyBpbiB0aGUgZG9jdW1lbnRhdGlvbi4NCj4gPg0KPiANCj4gbm8gUnVpLCBJIGd1
-ZXNzIHlvdSB3ZXJlIGFscmVhZHkgdG9vIHNsZWVweSBhcyB5b3Ugc2FpZC4gOi0pDQo+IA0KPiBU
-aGUgcGF0Y2ggaXMganVzdCBhbiB1cGRhdGUuIFRoZXJlIGFyZSBzb21lIGVudHJpZXMgYWxyZWFk
-eSBpbiB0aGUNCj4gY29tbWVudC4gVGhlIHBhcmFtZXRlcnMgeW91IG1lbnRpb25lZCBhcmUgYWxy
-ZWFkeSB0aGVyZSwgdGhhdHMgd2h5IHlvdQ0KPiBkb250IHNlZSBpbiBteSBwYXRjaC4uDQo+IA0K
-DQoNClNvcnJ5LCBJIHdhcyBub3QgY2xlYXIgZW5vdWdoLg0KSSBtZWFuIHdlIG5lZWQgdG8gdXBk
-YXRlIERvY3VtZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IGFzIHdlbGwsDQpmb3IgdGhl
-cm1hbF96b25lX2RldmljZV9yZWdpc3Rlci4NClBhdGNoIHdpbGwgYmUgc2VudCBvdXQgc29vbi4N
-Cg0KVGhhbmtzLA0KcnVpDQo+IA0KPiA+IHRoYW5rcywNCj4gPiBydWkNCj4gPj4gYW5kIHJlbW92
-ZXMgdGhlIHdhcm5pbmdzIGdlbmVyYXRlZCBieSBzY3JpcHRzL2tlcm5lbC1kb2MgLXYuDQo+ID4+
-DQo+ID4+IFNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdWFyZG8udmFsZW50aW5A
-dGkuY29tPg0KPiA+DQo+ID4NCj4gPj4gLS0tDQo+ID4+ICAgZHJpdmVycy90aGVybWFsL3RoZXJt
-YWxfc3lzLmMgfCAgICA5ICsrKysrKysrLQ0KPiA+PiAgIDEgZmlsZXMgY2hhbmdlZCwgOCBpbnNl
-cnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KPiA+Pg0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy90aGVybWFsL3RoZXJtYWxfc3lzLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMu
-Yw0KPiA+PiBpbmRleCA0Y2ZmMTk5Li41YmQ5NWQ0IDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJz
-L3RoZXJtYWwvdGhlcm1hbF9zeXMuYw0KPiA+PiArKysgYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1h
-bF9zeXMuYw0KPiA+PiBAQCAtMTU2OCw3ICsxNTY4LDcgQEAgc3RhdGljIHZvaWQgcmVtb3ZlX3Ry
-aXBfYXR0cnMoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQ0KPiA+PiAgIH0NCj4g
-Pj4NCj4gPj4gICAvKioNCj4gPj4gLSAqIHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIgLSBy
-ZWdpc3RlciBhIG5ldyB0aGVybWFsIHpvbmUNCj4gZGV2aWNlDQo+ID4+ICsgKiB0aGVybWFsX3pv
-bmVfZGV2aWNlX3JlZ2lzdGVyKCkgLSByZWdpc3RlciBhIG5ldyB0aGVybWFsIHpvbmUNCj4gZGV2
-aWNlDQo+ID4+ICAgICogQHR5cGU6CXRoZSB0aGVybWFsIHpvbmUgZGV2aWNlIHR5cGUNCj4gPj4g
-ICAgKiBAdHJpcHM6CXRoZSBudW1iZXIgb2YgdHJpcCBwb2ludHMgdGhlIHRoZXJtYWwgem9uZSBz
-dXBwb3J0DQo+ID4+ICAgICogQG1hc2s6CWEgYml0IHN0cmluZyBpbmRpY2F0aW5nIHRoZSB3cml0
-ZWFibGlsaXR5IG9mIHRyaXANCj4gcG9pbnRzDQo+ID4+IEBAIC0xNTgxLDggKzE1ODEsMTUgQEAg
-c3RhdGljIHZvaWQgcmVtb3ZlX3RyaXBfYXR0cnMoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZp
-Y2UgKnR6KQ0KPiA+PiAgICAqCQkgICB3aGV0aGVyIHRyaXAgcG9pbnRzIGhhdmUgYmVlbiBjcm9z
-c2VkICgwIGZvcg0KPiBpbnRlcnJ1cHQNCj4gPj4gICAgKgkJICAgZHJpdmVuIHN5c3RlbXMpDQo+
-ID4+ICAgICoNCj4gPj4gKyAqIFRoaXMgaW50ZXJmYWNlIGZ1bmN0aW9uIGFkZHMgYSBuZXcgdGhl
-cm1hbCB6b25lIGRldmljZSAoc2Vuc29yKQ0KPiB0bw0KPiA+PiArICogL3N5cy9jbGFzcy90aGVy
-bWFsIGZvbGRlciBhcyB0aGVybWFsX3pvbmVbMC0qXS4gSXQgdHJpZXMgdG8gYmluZA0KPiBhbGwg
-dGhlDQo+ID4+ICsgKiB0aGVybWFsIGNvb2xpbmcgZGV2aWNlcyByZWdpc3RlcmVkIGF0IHRoZSBz
-YW1lIHRpbWUuDQo+ID4+ICAgICogdGhlcm1hbF96b25lX2RldmljZV91bnJlZ2lzdGVyKCkgbXVz
-dCBiZSBjYWxsZWQgd2hlbiB0aGUgZGV2aWNlDQo+IGlzIG5vDQo+ID4+ICAgICogbG9uZ2VyIG5l
-ZWRlZC4gVGhlIHBhc3NpdmUgY29vbGluZyBkZXBlbmRzIG9uIHRoZSAuZ2V0X3RyZW5kKCkNCj4g
-cmV0dXJuIHZhbHVlLg0KPiA+PiArICoNCj4gPj4gKyAqIFJldHVybjogYSBwb2ludGVyIHRvIHRo
-ZSBjcmVhdGVkIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlIG9yDQo+IGFuDQo+ID4+ICsgKiBp
-biBjYXNlIG9mIGVycm9yLCBhbiBFUlJfUFRSLiBDYWxsZXIgbXVzdCBjaGVjayByZXR1cm4gdmFs
-dWUNCj4gd2l0aA0KPiA+PiArICogSVNfRVJSKigpIGhlbHBlcnMuDQo+ID4+ICAgICovDQo+ID4+
-ICAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0
-ZXIoY29uc3QNCj4gY2hhciAqdHlwZSwNCj4gPj4gICAJaW50IHRyaXBzLCBpbnQgbWFzaywgdm9p
-ZCAqZGV2ZGF0YSwNCj4gPg0KPiA+DQo+ID4NCj4gPg0KDQo=
+Hi, Eduardo,
+
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
+> Sent: Wednesday, April 24, 2013 5:48 AM
+> To: Zhang, Rui
+> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org; Eduardo
+> Valentin
+> Subject: [PATCHv2 0/9] thermal: clean ups on thermal code base
+> Importance: High
+> 
+> Hello Rui,
+> 
+> This is v2 of this series. I have worked on the comments you sent on
+> these patches. For your reference, v1 has been reviewed at [1].
+> 
+All the patches in this series has been applied.
+
+Thanks,
+rui
+
+> Summary of changelog:
+> - Added your acked-by on those patches you granted.
+> - Fixed the comments regarding functions that are not going to be
+> exported.
+> - Removed patches that are touching functions that are not going to be
+> exported.
+> 
+> Also available, as usual, here:
+> git@gitorious.org:thermal-framework/thermal-framework.git
+> thermal_work/thermal_core/coding_style
+> https://git.gitorious.org/thermal-framework/thermal-framework.git
+> thermal_work/thermal_core/coding_style
+> 
+> The above branches are based on linux-next/master.
+> 
+> All best,
+> 
+> [1] - https://lkml.org/lkml/2013/4/8/471
+> 
+> Eduardo Valentin (9):
+>   thermal: use strlcpy instead of strcpy
+>   thermal: update driver license
+>   thermal: rename notify_thermal_framework to thermal_notify_framework
+>   thermal: use EXPORT_SYMBOL_GPL
+>   thermal: update kernel-doc for thermal_zone_bind_cooling_device
+>   thermal: update kernel-doc for thermal_zone_unbind_cooling_device
+>   thermal: update kernel-doc for thermal_cooling_device_register
+>   thermal: update kernel-doc for create_trip_attrs
+>   thermal: update kernel-doc for thermal_zone_device_register
+> 
+>  Documentation/thermal/sysfs-api.txt |  2 +-
+>  drivers/thermal/thermal_core.c      | 80 ++++++++++++++++++++++++++---
+> --------
+>  include/linux/thermal.h             |  2 +-
+>  3 files changed, 59 insertions(+), 25 deletions(-)
+> 
+> --
+> 1.8.2.1.342.gfa7285d
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org More majordomo info
+> at  http://vger.kernel.org/majordomo-info.html
