@@ -1,114 +1,78 @@
 From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH 01/30] thermal: cpu_cooling: remove unused headers
-Date: Wed, 24 Apr 2013 16:38:30 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092632CA077@SHSMSX101.ccr.corp.intel.com>
-References: <1366218743-20841-1-git-send-email-eduardo.valentin@ti.com>
- <1366218743-20841-2-git-send-email-eduardo.valentin@ti.com>
- <744357E9AAD1214791ACBA4B0B9092632CA053@SHSMSX101.ccr.corp.intel.com>
+Subject: RE: [PATCH RESEND 11/11] thermal: update kernel-doc for
+ thermal_zone_device_register
+Date: Wed, 24 Apr 2013 16:50:17 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092632CA0FC@SHSMSX101.ccr.corp.intel.com>
+References: <1365437258-31412-1-git-send-email-eduardo.valentin@ti.com>
+  <1365437258-31412-12-git-send-email-eduardo.valentin@ti.com>
+ <1366212281.2091.59.camel@rzhang1-mobl4> <516EF839.9090500@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:63675 "EHLO mga09.intel.com"
+Received: from mga14.intel.com ([143.182.124.37]:61273 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755094Ab3DXQjs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Apr 2013 12:39:48 -0400
-In-Reply-To: <744357E9AAD1214791ACBA4B0B9092632CA053@SHSMSX101.ccr.corp.intel.com>
+	id S1756140Ab3DXQuV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Apr 2013 12:50:21 -0400
+In-Reply-To: <516EF839.9090500@ti.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, "amit.kachhap@linaro.org" <amit.kachhap@linaro.org>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-
-
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Zhang, Rui
-> Sent: Thursday, April 25, 2013 12:32 AM
-> To: Eduardo Valentin; amit.kachhap@linaro.org
-> Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: RE: [PATCH 01/30] thermal: cpu_cooling: remove unused headers
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> > Sent: Thursday, April 18, 2013 1:12 AM
-> > To: amit.kachhap@linaro.org
-> > Cc: Eduardo Valentin; Zhang, Rui; linux-pm@vger.kernel.org; linux-
-> > kernel@vger.kernel.org
-> > Subject: [PATCH 01/30] thermal: cpu_cooling: remove unused headers
-> > Importance: High
-> >
-> > As this code is not a module nor a platform device driver, this patch
-> > removes some unused header files.
-> >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: linux-pm@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> > ---
-> >  drivers/thermal/cpu_cooling.c | 3 ---
-> >  1 file changed, 3 deletions(-)
-> >
-> > diff --git a/drivers/thermal/cpu_cooling.c
-> > b/drivers/thermal/cpu_cooling.c index 5f5c780..778c43d 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -20,10 +20,7 @@
-> >   *
-> >   *
-> >
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> > ~
-> > ~~~
-> >   */
-> > -#include <linux/kernel.h>
-> > -#include <linux/module.h>
-> 
-> This is still needed because of EXPORT_SYMBOL.
-> Or else, I get:
-> drivers/thermal/cpu_cooling.c:225:1: warning: data definition has no
-> type or storage class [enabled by default]
-> drivers/thermal/cpu_cooling.c:225:1: warning: type defaults to int in
-> declaration of EXPORT_SYMBOL_GPL [-Wimplicit-int]
-> drivers/thermal/cpu_cooling.c:225:1: warning: parameter names (without
-> types) in function declaration [enabled by default]
-> drivers/thermal/cpu_cooling.c:479:1: warning: data definition has no
-> type or storage class [enabled by default]
-> drivers/thermal/cpu_cooling.c:479:1: warning: type defaults to int in
-> declaration of EXPORT_SYMBOL_GPL [-Wimplicit-int]
-> drivers/thermal/cpu_cooling.c:479:1: warning: parameter names (without
-> types) in function declaration [enabled by default]
-> drivers/thermal/cpu_cooling.c:505:1: warning: data definition has no
-> type or storage class [enabled by default]
-> drivers/thermal/cpu_cooling.c:505:1: warning: type defaults to int in
-> declaration of EXPORT_SYMBOL_GPL [-Wimplicit-int]
-> drivers/thermal/cpu_cooling.c:505:1: warning: parameter names (without
-> types) in function declaration [enabled by default]
-> 
-Patch refreshed with keeping "#include <linux/module.h>" and applied.
-
-> thanks,
-> rui
-> 
-> >  #include <linux/thermal.h>
-> > -#include <linux/platform_device.h>
-> >  #include <linux/cpufreq.h>
-> >  #include <linux/err.h>
-> >  #include <linux/slab.h>
-> > --
-> > 1.8.2.1.342.gfa7285d
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> > the body of a message to majordomo@vger.kernel.org More majordomo
-> info
-> > at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org More majordomo info
-> at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRWR1YXJkbyBWYWxlbnRp
+biBbbWFpbHRvOmVkdWFyZG8udmFsZW50aW5AdGkuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgQXBy
+aWwgMTgsIDIwMTMgMzozMCBBTQ0KPiBUbzogWmhhbmcsIFJ1aQ0KPiBDYzogRWR1YXJkbyBWYWxl
+bnRpbjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2Vy
+bmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFJFU0VORCAxMS8xMV0gdGhlcm1hbDogdXBk
+YXRlIGtlcm5lbC1kb2MgZm9yDQo+IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXINCj4gSW1w
+b3J0YW5jZTogSGlnaA0KPiANCj4gT24gMTctMDQtMjAxMyAxMToyNCwgWmhhbmcgUnVpIHdyb3Rl
+Og0KPiA+IE9uIE1vbiwgMjAxMy0wNC0wOCBhdCAxMjowNyAtMDQwMCwgRWR1YXJkbyBWYWxlbnRp
+biB3cm90ZToNCj4gPj4gVGhpcyBwYXRjaCB1cGRhdGVzIHRoZSBkb2N1bWVudGF0aW9uIGZvcg0K
+PiB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyDQo+ID4NCj4gPiBpdCBpcyBub3QgZW5vdWdo
+Lg0KPiA+IHBhcmFtZXRlcnMgaW5jbHVkaW5nIGNvbnN0IHN0cnVjdCB0aGVybWFsX3pvbmVfcGFy
+YW1zICp0enAsIGludA0KPiA+IHBhc3NpdmVfZGVsYXksIGFuZCBpbnQgcG9sbGluZ19kZWxheSBh
+cmUgbWlzc2luZyBpbiB0aGUgZG9jdW1lbnRhdGlvbi4NCj4gPg0KPiANCj4gbm8gUnVpLCBJIGd1
+ZXNzIHlvdSB3ZXJlIGFscmVhZHkgdG9vIHNsZWVweSBhcyB5b3Ugc2FpZC4gOi0pDQo+IA0KPiBU
+aGUgcGF0Y2ggaXMganVzdCBhbiB1cGRhdGUuIFRoZXJlIGFyZSBzb21lIGVudHJpZXMgYWxyZWFk
+eSBpbiB0aGUNCj4gY29tbWVudC4gVGhlIHBhcmFtZXRlcnMgeW91IG1lbnRpb25lZCBhcmUgYWxy
+ZWFkeSB0aGVyZSwgdGhhdHMgd2h5IHlvdQ0KPiBkb250IHNlZSBpbiBteSBwYXRjaC4uDQo+IA0K
+DQoNClNvcnJ5LCBJIHdhcyBub3QgY2xlYXIgZW5vdWdoLg0KSSBtZWFuIHdlIG5lZWQgdG8gdXBk
+YXRlIERvY3VtZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IGFzIHdlbGwsDQpmb3IgdGhl
+cm1hbF96b25lX2RldmljZV9yZWdpc3Rlci4NClBhdGNoIHdpbGwgYmUgc2VudCBvdXQgc29vbi4N
+Cg0KVGhhbmtzLA0KcnVpDQo+IA0KPiA+IHRoYW5rcywNCj4gPiBydWkNCj4gPj4gYW5kIHJlbW92
+ZXMgdGhlIHdhcm5pbmdzIGdlbmVyYXRlZCBieSBzY3JpcHRzL2tlcm5lbC1kb2MgLXYuDQo+ID4+
+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdWFyZG8udmFsZW50aW5A
+dGkuY29tPg0KPiA+DQo+ID4NCj4gPj4gLS0tDQo+ID4+ICAgZHJpdmVycy90aGVybWFsL3RoZXJt
+YWxfc3lzLmMgfCAgICA5ICsrKysrKysrLQ0KPiA+PiAgIDEgZmlsZXMgY2hhbmdlZCwgOCBpbnNl
+cnRpb25zKCspLCAxIGRlbGV0aW9ucygtKQ0KPiA+Pg0KPiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy90aGVybWFsL3RoZXJtYWxfc3lzLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXMu
+Yw0KPiA+PiBpbmRleCA0Y2ZmMTk5Li41YmQ5NWQ0IDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJz
+L3RoZXJtYWwvdGhlcm1hbF9zeXMuYw0KPiA+PiArKysgYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1h
+bF9zeXMuYw0KPiA+PiBAQCAtMTU2OCw3ICsxNTY4LDcgQEAgc3RhdGljIHZvaWQgcmVtb3ZlX3Ry
+aXBfYXR0cnMoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQ0KPiA+PiAgIH0NCj4g
+Pj4NCj4gPj4gICAvKioNCj4gPj4gLSAqIHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIgLSBy
+ZWdpc3RlciBhIG5ldyB0aGVybWFsIHpvbmUNCj4gZGV2aWNlDQo+ID4+ICsgKiB0aGVybWFsX3pv
+bmVfZGV2aWNlX3JlZ2lzdGVyKCkgLSByZWdpc3RlciBhIG5ldyB0aGVybWFsIHpvbmUNCj4gZGV2
+aWNlDQo+ID4+ICAgICogQHR5cGU6CXRoZSB0aGVybWFsIHpvbmUgZGV2aWNlIHR5cGUNCj4gPj4g
+ICAgKiBAdHJpcHM6CXRoZSBudW1iZXIgb2YgdHJpcCBwb2ludHMgdGhlIHRoZXJtYWwgem9uZSBz
+dXBwb3J0DQo+ID4+ICAgICogQG1hc2s6CWEgYml0IHN0cmluZyBpbmRpY2F0aW5nIHRoZSB3cml0
+ZWFibGlsaXR5IG9mIHRyaXANCj4gcG9pbnRzDQo+ID4+IEBAIC0xNTgxLDggKzE1ODEsMTUgQEAg
+c3RhdGljIHZvaWQgcmVtb3ZlX3RyaXBfYXR0cnMoc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZp
+Y2UgKnR6KQ0KPiA+PiAgICAqCQkgICB3aGV0aGVyIHRyaXAgcG9pbnRzIGhhdmUgYmVlbiBjcm9z
+c2VkICgwIGZvcg0KPiBpbnRlcnJ1cHQNCj4gPj4gICAgKgkJICAgZHJpdmVuIHN5c3RlbXMpDQo+
+ID4+ICAgICoNCj4gPj4gKyAqIFRoaXMgaW50ZXJmYWNlIGZ1bmN0aW9uIGFkZHMgYSBuZXcgdGhl
+cm1hbCB6b25lIGRldmljZSAoc2Vuc29yKQ0KPiB0bw0KPiA+PiArICogL3N5cy9jbGFzcy90aGVy
+bWFsIGZvbGRlciBhcyB0aGVybWFsX3pvbmVbMC0qXS4gSXQgdHJpZXMgdG8gYmluZA0KPiBhbGwg
+dGhlDQo+ID4+ICsgKiB0aGVybWFsIGNvb2xpbmcgZGV2aWNlcyByZWdpc3RlcmVkIGF0IHRoZSBz
+YW1lIHRpbWUuDQo+ID4+ICAgICogdGhlcm1hbF96b25lX2RldmljZV91bnJlZ2lzdGVyKCkgbXVz
+dCBiZSBjYWxsZWQgd2hlbiB0aGUgZGV2aWNlDQo+IGlzIG5vDQo+ID4+ICAgICogbG9uZ2VyIG5l
+ZWRlZC4gVGhlIHBhc3NpdmUgY29vbGluZyBkZXBlbmRzIG9uIHRoZSAuZ2V0X3RyZW5kKCkNCj4g
+cmV0dXJuIHZhbHVlLg0KPiA+PiArICoNCj4gPj4gKyAqIFJldHVybjogYSBwb2ludGVyIHRvIHRo
+ZSBjcmVhdGVkIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlIG9yDQo+IGFuDQo+ID4+ICsgKiBp
+biBjYXNlIG9mIGVycm9yLCBhbiBFUlJfUFRSLiBDYWxsZXIgbXVzdCBjaGVjayByZXR1cm4gdmFs
+dWUNCj4gd2l0aA0KPiA+PiArICogSVNfRVJSKigpIGhlbHBlcnMuDQo+ID4+ICAgICovDQo+ID4+
+ICAgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0
+ZXIoY29uc3QNCj4gY2hhciAqdHlwZSwNCj4gPj4gICAJaW50IHRyaXBzLCBpbnQgbWFzaywgdm9p
+ZCAqZGV2ZGF0YSwNCj4gPg0KPiA+DQo+ID4NCj4gPg0KDQo=
