@@ -1,52 +1,62 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH] cpuidle: add maintainer entry
-Date: Wed, 24 Apr 2013 09:55:27 -0700
-Message-ID: <87k3nr50n4.fsf@linaro.org>
-References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
- (Daniel Lezcano's message of "Wed, 24 Apr 2013 15:34:23 +0200")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: andrew@lunn.ch, Daniel Lezcano <daniel.lezcano@linaro.org>, benh@kernel.crashing.org, linus.walleij@linaro.org, nicolas.ferre@atmel.com, paulus@samba.org, josephl@nvidia.com, kgene.kim@samsung.com, linux-pm@vger.kernel.org, magnus.damm@gmail.com, viresh.kumar@linaro.org, plagnioj@jcrosoft.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, arnd@arndb.de, swarren@wwwdotorg.org, nsekhar@ti.com, rob.herring@calxeda.com, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH] Thermal: update documentation for thermal_zone_device_register
+Date: Thu, 25 Apr 2013 00:59:22 +0800
+Message-ID: <1366822762-1290-1-git-send-email-rui.zhang@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:18840 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753407Ab3DXQ7Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Apr 2013 12:59:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: eduardo.valentin@ti.com, Zhang Rui <rui.zhang@intel.com>
 
-Rafael,
+Update kernel Documentation for thermal_zone_device_register.
 
-Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ Documentation/thermal/sysfs-api.txt |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-[...]
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index bb42266..a71bd5b 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -31,15 +31,17 @@ temperature) and throttle appropriate devices.
+ 1. thermal sysfs driver interface functions
+ 
+ 1.1 thermal zone device interface
+-1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *name,
++1.1.1 struct thermal_zone_device *thermal_zone_device_register(char *type,
+ 		int trips, int mask, void *devdata,
+-		struct thermal_zone_device_ops *ops)
++		struct thermal_zone_device_ops *ops,
++		const struct thermal_zone_params *tzp,
++		int passive_delay, int polling_delay))
+ 
+     This interface function adds a new thermal zone device (sensor) to
+     /sys/class/thermal folder as thermal_zone[0-*]. It tries to bind all the
+     thermal cooling devices registered at the same time.
+ 
+-    name: the thermal zone name.
++    type: the thermal zone type.
+     trips: the total number of trip points this thermal zone supports.
+     mask: Bit string: If 'n'th bit is set, then trip point 'n' is writeable.
+     devdata: device private data
+@@ -57,6 +59,12 @@ temperature) and throttle appropriate devices.
+ 			will be fired.
+ 	.set_emul_temp: set the emulation temperature which helps in debugging
+ 			different threshold temperature points.
++    tzp: thermal zone platform parameters.
++    passive_delay: number of milliseconds to wait between polls when
++	performing passive cooling.
++    polling_delay: number of milliseconds to wait between polls when checking
++	whether trip points have been crossed (0 for interrupt driven systems).
++
+ 
+ 1.1.2 void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 
+-- 
+1.7.9.5
 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 61677c3..effa0f3 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2206,6 +2206,13 @@ S:	Maintained
->  F:	drivers/cpufreq/
->  F:	include/linux/cpufreq.h
->  
-> +CPUIDLE DRIVERS
-> +M:	Rafael J. Wysocki <rjw@sisk.pl>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +F:	drivers/cpuidle/*
-> +F:	include/linux/cpuidle.h
-
-What do you think about having Daniel listed here as a co-maintainer?
-
-He has been driving a significant consolidation effort, and will
-continue to do that, so I think he should help take care of this area
-and ensure all drivers are moving in the right direction.
-
-Kevin
