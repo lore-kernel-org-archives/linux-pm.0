@@ -1,69 +1,45 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Thu, 25 Apr 2013 10:38:00 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Thu, 25 Apr 2013 16:56:53 +0530
+Message-ID: <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
 References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
 	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
 	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
- <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe004.messaging.microsoft.com ([216.32.181.184]:43968
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754140Ab3DYKiH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 06:38:07 -0400
-In-Reply-To: <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Tang Yuantian-B29983 <B29983@freescale.com>
 Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-VGhhdCdzIHdpcmVkLiBJIHdpbGwgaGF2ZSBtb3JlIHRlc3RzIG9uIHRoaXMuIFRoYW5rcy4NCg0K
-SSBmb3VuZCBhbm90aGVyIGJ1ZyB5b3UgY2FuIHRyeS4NCkl0IGlzIGFsc28gZm91bmQgb24gbXVs
-dGlwbGUgY3B1cyBwZXIgY2x1c3Rlci4NClRlc3Qgc3RlcDoNCjEuIGNvbXBpbGUgdGhlIGRyaXZl
-ciBhcyBtb2R1bGUuDQoyLiBob3QtdW5wbHVnIG9uZSBjcHUoIGFueSBvbmUgaXMgT0spDQozLiBp
-bnNtb2QgbW9kdWxlDQo0LiBob3QtcGx1ZyB0aGUgY3B1IC0tLS0+IHdpbGwgY2F1c2UgZXJyb3Iu
-DQoNCk9yIHRlc3Qgc3RlcCBhbHNvIGNhbiBiZToNCjEuIGhvdC11bnBsdWcgYWxsIHRoZSBjcHVz
-IGluIG9uZSBjbHVzdGVyDQoyLiBob3QtcGx1ZyB0aGUgY3B1cyBpbiB0aGlzIGNsdXN0ZXIuIFdo
-ZW4gdGhlIHNlY29uZCBjcHUgZ2V0cyBob3QtcGx1Z2VkLCBlcnJvciB3aWxsIG9jY3VyLg0KDQpU
-aGF0J3MgYmVjYXVzZSB0aGUgc2Vjb25kIGNwdSB3aWxsIGNhbGwgdGhlIGNwdWZyZXFfYWRkX2Rl
-dl9zeW1saW5rKCkgdG8gDQpDcmVhdGUgdGhlIGZpcnN0IGNwdSdzICJjcHVmcmVxIGxpbmsiIHdo
-aWNoIGlzIGFscmVhZHkgY3JlYXRlZC4NClRoYXQgbmVlZHMgbW9yZSB3b3JrIHRvIG1ha2UgYSBw
-YXRjaCwgaG9wZSB5b3UgY2FuIGZpeCBpdC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KDQo+IC0t
-LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdlci5rZXJu
-ZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9uIEJlaGFs
-ZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqNNTCMjXI1SAxNTo0Nw0KPiBUbzogVGFu
-ZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0BzaXNrLnBsOyBjcHVmcmVxQHZnZXIua2VybmVs
-Lm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaXN0cw0KPiBsaW5hcm8ta2VybmVsDQo+
-IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IEZpeCB0aGUgZHJpdmVyIGNhbiBub3QgYmUg
-dW5sb2FkZWQgaXNzdWUNCj4gDQo+IE9uIDI1IEFwcmlsIDIwMTMgMDg6MTYsIFRhbmcgWXVhbnRp
-YW4tQjI5OTgzIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4gSXQgaGFwcGVuZWQg
-d2hlbiBwb2xpY3ktPmNwdXMgY29udGFpbnMgKk1PUkUgVEhFTiBPTkUgQ1BVKi4NCj4gPiBUYWtp
-bmcgbXkgYm9hcmQgVDQyNDAgZm9yIGV4YW1wbGUsIGl0IGhhcyAzIGNsdXN0ZXIsIDggQ1BVcyBm
-b3IgZWFjaA0KPiBjbHVzdGVyLg0KPiA+IFRoZSBsb2cgaXM6DQo+ID4gIyBpbnNtb2QgcHBjLWNv
-cmVuZXQtY3B1ZnJlcS5rbw0KPiA+IHBwY19jb3JlbmV0X2NwdWZyZXE6IEZyZWVzY2FsZSBQb3dl
-clBDIGNvcmVuZXQgQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nDQo+ID4gZHJpdmVyICMgcm1tb2QgcHBj
-LWNvcmVuZXQtY3B1ZnJlcS5rbw0KPiA+IEVSUk9SOiBNb2R1bGUgcHBjX2NvcmVuZXRfY3B1ZnJl
-cSBpcyBpbiB1c2UgIyBsc21vZA0KPiA+IE1vZHVsZSAgICAgICAgICAgICAgICAgIFNpemUgIFVz
-ZWQgYnkNCj4gPiBwcGNfY29yZW5ldF9jcHVmcmVxICAgICA2NTQyICA5DQo+ID4gIyB1bmFtZSAt
-YQ0KPiA+IExpbnV4IFQ0MjQwIDMuOS4wLXJjMS0xMTA4MS1nMzQ2NDJiYi1kaXJ0eSAjNDQgU01Q
-IFRodSBBcHIgMjUgMDg6NTg6MjYNCj4gPiBDU1QgMjAxMyBwcGM2NCB1bmtub3duDQo+ID4NCj4g
-PiBJIGFtIG5vdCB1c2luZyB0aGUgbmV3ZXN0IGtlcm5lbCAoc2luY2UgbmV3IHQ0MjQwIGJvYXJk
-IGhhcyBub3QNCj4gPiBpbmNsdWRlZCB5ZXQpLCBidXQgdGhlIGlzc3VlIGlzIHN0aWxsIHRoZXJl
-Lg0KPiA+IFRoZSByZWFzb24gaXMganVzdCBsaWtlIHdoYXQgSSBzYWlkIGluIHBhdGNoLg0KPiAN
-Cj4gSSBiZWxpZXZlZCB3aGF0IHlvdSBzYWlkIGlzIGNvcnJlY3QgYW5kIHdlbnQgb24gdGVzdGlu
-ZyB0aGlzIG9uIG15DQo+IHBsYXRmb3JtLg0KPiAyIGNsdXN0ZXJzIHdpdGggMiBhbmQgMyBjcHVz
-Li4uIEFuZCBzbyBpIGhhdmUgbXVsdGlwbGUgY3B1cyBwZXIgY2x1c3Rlcg0KPiBvciBwb2xpY3kg
-c3RydWN0dXJlLg0KPiANCj4gaW5zbW9kL3JtbW9kIHdvcmtlZCBhcyBleHBlY3RlZCB3aXRob3V0
-IGFueSBpc3N1ZXMuDQo+IA0KPiBTbywgZm9yIG1lIHRoZXJlIGFyZSBubyBzdWNoIGlzc3Vlcy4g
-QlRXLCBpIHRlc3RlZCB0aGlzIG9uIGxhdGVzdCByYyBmcm9tDQo+IExpbnVzIGFuZCBhbHNvIG9u
-IGxhdGVzdCBjb2RlIGZyb20gbGludXgtbmV4dC4NCj4gDQo+IEkgYW0gc3VyZSB0aGUgY291bnRz
-IGFyZSB2ZXJ5IHdlbGwgYmFsYW5jZWQgYW5kIHRoZXJlIGFyZSBubyBpc3N1ZXMgaW4NCj4gdGhl
-IGxhdGVzdCBjb2RlIEF0bGVhc3QuDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
-aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBv
-ZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBp
-bmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
+On 25 April 2013 16:08, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
+> That's wired. I will have more tests on this. Thanks.
+>
+> I found another bug you can try.
+> It is also found on multiple cpus per cluster.
+> Test step:
+> 1. compile the driver as module.
+> 2. hot-unplug one cpu( any one is OK)
+> 3. insmod module
+> 4. hot-plug the cpu ----> will cause error.
+>
+> Or test step also can be:
+> 1. hot-unplug all the cpus in one cluster
+> 2. hot-plug the cpus in this cluster. When the second cpu gets hot-pluged, error will occur.
+>
+> That's because the second cpu will call the cpufreq_add_dev_symlink() to
+> Create the first cpu's "cpufreq link" which is already created.
+> That needs more work to make a patch, hope you can fix it.
 
+Haven't tested it now but i know why that can happen. It will happen only if
+driver->init() isn't setting policy->cpus correctly. You need to set
+both online &
+offline cpus, but in your setup it looks you are setting only online cpus and
+so cpufreq core isn't able to use the earlier policy struct for offline cpus.
+
+And so it created a new struct cpufreq_policy for second cpu and trying to
+add links for all other cpus too... (which share this policy)..
