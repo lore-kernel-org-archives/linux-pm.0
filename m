@@ -1,32 +1,167 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Fri, 26 Apr 2013 01:48:19 +0900
-Message-ID: <51795E53.5030908@samsung.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <1769336.FkfMpuXqqb@vostro.rjw.lan> <5176A807.2090005@samsung.com> <2264237.NUtkmvZG3W@vostro.rjw.lan>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH 1/1] staging: ti-soc-thermal: remove usage of
+	IS_ERR_OR_NULL
+Date: Thu, 25 Apr 2013 18:44:45 +0100
+Message-ID: <20130425174445.GA25783@flint.arm.linux.org.uk>
+References: <1366897576-20423-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2264237.NUtkmvZG3W@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1366897576-20423-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, J Keerthy <j-keerthy@ti.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/24/13 07:59, Rafael J. Wysocki wrote:
+On Thu, Apr 25, 2013 at 09:46:16AM -0400, Eduardo Valentin wrote:
+> diff --git a/drivers/staging/ti-soc-thermal/ti-bandgap.c b/drivers/staging/ti-soc-thermal/ti-bandgap.c
+> index f20c1cf..5027833 100644
+> --- a/drivers/staging/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/staging/ti-soc-thermal/ti-bandgap.c
+> @@ -469,7 +469,7 @@ static inline int ti_bandgap_validate(struct ti_bandgap *bgp, int id)
+>  {
+>  	int ret = 0;
+>  
+> -	if (IS_ERR_OR_NULL(bgp)) {
+> +	if (!bgp || IS_ERR(bgp)) {
+>  		pr_err("%s: invalid bandgap pointer\n", __func__);
+>  		ret = -EINVAL;
 
-[...]
+We really don't need these kinds of "bad pointer passed to a function"
+checks in the kernel.  Just ensure that all callers have correctly
+error checked the return value.
 
->> Rafael, please take this patch with my ack in your tree, sorry for noise.
->>
->> Acked-by: Kukjin Kim<kgene.kim@samsung.com>
->>
->> If any problems, please kindly let me know.
->
-> Well, I suppose I can take the original patch, but then it will conflict with
-> your tree during merge.  Is that not a problem?
->
-I think, some conflicts can be occurred but if so, we can fix it before 
-merge window.
+>  		goto exit;
+> @@ -1191,7 +1191,7 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  	int clk_rate, ret = 0, i;
+>  
+>  	bgp = ti_bandgap_build(pdev);
+> -	if (IS_ERR_OR_NULL(bgp)) {
+> +	if (IS_ERR(bgp)) {
+>  		dev_err(&pdev->dev, "failed to fetch platform data\n");
+>  		return PTR_ERR(bgp);
 
-- Kukjin
+That was definitely a bug, good fix.
+
+>  	}
+> @@ -1207,14 +1207,14 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	bgp->fclock = clk_get(NULL, bgp->conf->fclock_name);
+> -	ret = IS_ERR_OR_NULL(bgp->fclock);
+> +	ret = IS_ERR(bgp->fclock);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "failed to request fclock reference\n");
+>  		goto free_irqs;
+>  	}
+
+I'm not sure that's correct.  If free_irqs ends up returning 'ret' then
+it will return 0 or 1, not the error code.
+
+	if (IS_ERR(bgp->fclock)) {
+		dev_err...
+		ret = PTR_ERR(bgp->fclock);
+		goto free_irqs;
+	}
+
+would be much better in that case.
+
+Also another fix - clk_get(&pdev->dev, "fclk") and arrange for the
+clkdev settings for this device.  Same for the one below but call
+it "div_clk" or something.
+
+>  
+>  	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
+> -	ret = IS_ERR_OR_NULL(bgp->div_clk);
+> +	ret = IS_ERR(bgp->div_clk);
+>  	if (ret) {
+
+Possibly the same problem here if 'ret' ends up being returned as-is.
+
+> diff --git a/drivers/staging/ti-soc-thermal/ti-thermal-common.c b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> index 8e67ebf..4c5f55c37 100644
+> --- a/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/staging/ti-soc-thermal/ti-thermal-common.c
+> @@ -101,7 +101,7 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
+>  
+>  	pcb_tz = data->pcb_tz;
+>  	/* In case pcb zone is available, use the extrapolation rule with it */
+> -	if (!IS_ERR_OR_NULL(pcb_tz)) {
+> +	if (!IS_ERR(pcb_tz)) {
+>  		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
+>  		if (!ret) {
+>  			tmp -= pcb_temp; /* got a valid PCB temp */
+> @@ -124,7 +124,7 @@ static int ti_thermal_bind(struct thermal_zone_device *thermal,
+>  	struct ti_thermal_data *data = thermal->devdata;
+>  	int id;
+>  
+> -	if (IS_ERR_OR_NULL(data))
+> +	if (!data || IS_ERR(data))
+>  		return -ENODEV;
+>  
+>  	/* check if this is the cooling device we registered */
+> @@ -146,7 +146,7 @@ static int ti_thermal_unbind(struct thermal_zone_device *thermal,
+>  {
+>  	struct ti_thermal_data *data = thermal->devdata;
+>  
+> -	if (IS_ERR_OR_NULL(data))
+> +	if (!data || IS_ERR(data))
+>  		return -ENODEV;
+>  
+>  	/* check if this is the cooling device we registered */
+> @@ -282,6 +282,7 @@ static struct ti_thermal_data
+>  	data->sensor_id = id;
+>  	data->bgp = bgp;
+>  	data->mode = THERMAL_DEVICE_ENABLED;
+> +	/* pcb_tz will be either valid or PTR_ERR() */
+>  	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
+>  	INIT_WORK(&data->thermal_wq, ti_thermal_work);
+>  
+> @@ -295,7 +296,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+>  
+> -	if (IS_ERR_OR_NULL(data))
+> +	if (!data || IS_ERR(data))
+>  		data = ti_thermal_build_data(bgp, id);
+>  
+>  	if (!data)
+> @@ -306,7 +307,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+>  				OMAP_TRIP_NUMBER, 0, data, &ti_thermal_ops,
+>  				NULL, FAST_TEMP_MONITORING_RATE,
+>  				FAST_TEMP_MONITORING_RATE);
+> -	if (IS_ERR_OR_NULL(data->ti_thermal)) {
+> +	if (IS_ERR(data->ti_thermal)) {
+>  		dev_err(bgp->dev, "thermal zone device is NULL\n");
+>  		return PTR_ERR(data->ti_thermal);
+>  	}
+> @@ -343,7 +344,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+>  	struct ti_thermal_data *data;
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+> -	if (IS_ERR_OR_NULL(data))
+> +	if (!data || IS_ERR(data))
+>  		data = ti_thermal_build_data(bgp, id);
+
+I can't tell whether the above are correct or not as I can't see the
+original code.
+
+>  
+>  	if (!data)
+> @@ -356,7 +357,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+>  
+>  	/* Register cooling device */
+>  	data->cool_dev = cpufreq_cooling_register(cpu_present_mask);
+> -	if (IS_ERR_OR_NULL(data->cool_dev)) {
+> +	if (IS_ERR(data->cool_dev)) {
+>  		dev_err(bgp->dev,
+>  			"Failed to register cpufreq cooling device\n");
+>  		return PTR_ERR(data->cool_dev);
+
+Definitely a bug - and another good fix.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
