@@ -1,81 +1,60 @@
-From: Chen Gang <gang.chen@asianux.com>
-Subject: Re: [PATCH v2] ARM: S5pv210: compiling issue, ARM_S5PV210_CPUFREQ
- need CONFIG_CPU_FREQ_TABLE=y
-Date: Thu, 25 Apr 2013 09:21:34 +0800
-Message-ID: <5178851E.3090204@asianux.com>
-References: <5177B562.40400@asianux.com> <5177BC50.6050402@asianux.com> <CAOh2x==g96h5UhvBjtyrBTjxdkno3WBv5JEsqyT3jqv7x69V6A@mail.gmail.com> <1486501.MMr8zrpiDO@vostro.rjw.lan>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Thu, 25 Apr 2013 02:46:59 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
+ <CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1486501.MMr8zrpiDO@vostro.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, Will Deacon <will.deacon@arm.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B404=E6=9C=8824=E6=97=A5 20:09, Rafael J. Wysocki wrote:
-> On Wednesday, April 24, 2013 04:40:38 PM Viresh Kumar wrote:
->> > On Wed, Apr 24, 2013 at 4:34 PM, Chen Gang <gang.chen@asianux.com>=
- wrote:
->>> > >
->>> > > For arm S5pv210 with allmodconfig, ARM_S5PV210_CPUFREQ need
->>> > > CONFIG_CPU_FREQ_TABLE=3Dy, or will cause compiling issue.
->>> > >
->>> > > The related operation:
->>> > > + arm-linux-gnu-ld -EL -p --no-undefined -X --build-id -X -o .t=
-mp_vmlinux1 -T /root/linux-next/arch/arm/kernel/vmlinux.lds arch/arm/ke=
-rnel/head.o init/built-in.o --start-group usr/built-in.o arch/arm/nwfpe=
-/built-in.o arch/arm/vfp/built-in.o arch/arm/kernel/built-in.o arch/arm=
-/mm/built-in.o arch/arm/common/built-in.o arch/arm/net/built-in.o arch/=
-arm/crypto/built-in.o arch/arm/mach-s5pv210/built-in.o arch/arm/plat-sa=
-msung/built-in.o kernel/built-in.o mm/built-in.o fs/built-in.o ipc/buil=
-t-in.o security/built-in.o crypto/built-in.o block/built-in.o arch/arm/=
-lib/lib.a lib/lib.a arch/arm/lib/built-in.o lib/built-in.o drivers/buil=
-t-in.o sound/built-in.o firmware/built-in.o net/built-in.o --end-group
->>> > >
->>> > > The related errors:
->>> > > drivers/built-in.o: In function `s5pv210_target':
->>> > > drivers/cpufreq/s5pv210-cpufreq.c:225: undefined reference to `=
-cpufreq_frequency_table_target'
->>> > > drivers/cpufreq/s5pv210-cpufreq.c:237: undefined reference to `=
-cpufreq_frequency_table_target'
->>> > > drivers/built-in.o: In function `s5pv210_verify_speed':
->>> > > drivers/cpufreq/s5pv210-cpufreq.c:182: undefined reference to `=
-cpufreq_frequency_table_verify'
->>> > > drivers/built-in.o: In function `s5pv210_cpu_init':
->>> > > drivers/cpufreq/s5pv210-cpufreq.c:556: undefined reference to `=
-cpufreq_frequency_table_get_attr'
->>> > > drivers/cpufreq/s5pv210-cpufreq.c:560: undefined reference to `=
-cpufreq_frequency_table_cpuinfo'
->>> > > make: *** [vmlinux] Error 1
->>> > >
->>> > > Signed-off-by: Chen Gang <gang.chen@asianux.com>
->>> > > ---
->>> > >  drivers/cpufreq/Kconfig.arm |    1 +
->>> > >  1 files changed, 1 insertions(+), 0 deletions(-)
->>> > >
->>> > > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kcon=
-fig.arm
->>> > > index bce2195..bbcd719 100644
->>> > > --- a/drivers/cpufreq/Kconfig.arm
->>> > > +++ b/drivers/cpufreq/Kconfig.arm
->>> > > @@ -187,6 +187,7 @@ config ARM_S3C64XX_CPUFREQ
->>> > >  config ARM_S5PV210_CPUFREQ
->>> > >         bool "Samsung S5PV210 and S5PC110"
->>> > >         depends on CPU_S5PV210
->>> > > +       select CPU_FREQ_TABLE
->> >=20
->> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Applied.
->=20
-> Thanks,
-> Rafael
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBjcHVmcmVxLW93bmVyQHZnZXIu
+a2VybmVsLm9yZyBbbWFpbHRvOmNwdWZyZXEtb3duZXJAdmdlci5rZXJuZWwub3JnXQ0KPiBPbiBC
+ZWhhbGYgT2YgVmlyZXNoIEt1bWFyDQo+IFNlbnQ6IDIwMTPE6jTUwjI0yNUgMTg6MTUNCj4gVG86
+IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+IENjOiByandAc2lzay5wbDsgY3B1ZnJlcUB2Z2VyLmtl
+cm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENI
+XSBjcHVmcmVxOiBGaXggdGhlIGRyaXZlciBjYW4gbm90IGJlIHVubG9hZGVkIGlzc3VlDQo+IA0K
+PiBPbiAyNCBBcHJpbCAyMDEzIDEzOjU4LCAgPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4g
+d3JvdGU6DQo+ID4gRnJvbTogVGFuZyBZdWFudGlhbiA8eXVhbnRpYW4udGFuZ0BmcmVlc2NhbGUu
+Y29tPg0KPiA+DQo+ID4gVGhlIGRyaXZlciBjb21waWxlZCBhcyBhIG1vZHVsZSBjYW4gbm90IGJl
+IHVubG9hZGVkIGlmIHRoZXJlIGFyZSBtb3JlDQo+ID4gdGhhbiBvbmUgY3B1IGluIHBvbGljeS0+
+Y3B1cy4gVGhhdCdzIGNhdXNlZCBieQ0KPiA+IGNwdWZyZXFfY3B1X2dldCgpIGluIGNwdWZyZXFf
+YWRkX2Rldl9zeW1saW5rKCk7IEl0IGtlZXAgaW5jcmVhc2luZyB0aGUNCj4gPiBtb2R1bGUgcmVm
+ZXJlbmNlIGNvdW50Lg0KPiA+IFRoaXMgcGF0Y2ggc3BsaXRlcyB0aGUgbW9kdWxlIGFuZCBwb2xp
+Y3kgcmVmZXJlbmNlIGNvdW50LiBJdCBrZWVwcyB0aGUNCj4gPiBtb2R1bGUgcmVmZXJlbmNlIGNv
+dW50IHVuY2hhbmdlZCBhbmQgdXNlcyB0aGUgcG9saWN5IHJlZmVyZW5jZSBjb3VudA0KPiA+IHRv
+IHRyYWNrIHRoZSByZXNvdXJjZS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFRhbmcgWXVhbnRp
+YW4gPFl1YW50aWFuLlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9j
+cHVmcmVxL2NwdWZyZXEuYyB8IDE2ICsrKy0tLS0tLS0tLS0tLS0NCj4gPiAgMSBmaWxlIGNoYW5n
+ZWQsIDMgaW5zZXJ0aW9ucygrKSwgMTMgZGVsZXRpb25zKC0pDQo+IA0KPiBJIGRpZG4ndCBxdWl0
+ZSBnZXQgdGhlIHByb2JsZW0geW91IG1lbnRpb25lZC4uIEkgaGF2ZW4ndCBzZWVuIGFueSBpc3N1
+ZXMNCj4gd2l0aCB0aGUgY29yZSBhcyBvZiBub3cuDQo+IA0KPiBXaGVuIHdlIHVubG9hZCBhIG1v
+ZHVsZSB3ZSBtdXN0IGNhbGwgY3B1ZnJlcV91bnJlZ2lzdGVyX2RyaXZlcigpLCB3aGljaA0KPiB3
+aWxsIGV2ZW50dWFsbHkgY2FsbCBzdWJzeXNfaW50ZXJmYWNlX3VucmVnaXN0ZXIoKSBhbmQgc28N
+Cj4gY3B1ZnJlcV9yZW1vdmVfZGV2KCkgd2lsbCBiZSBjYWxsZWQgZm9yIGVhY2ggY3B1LiBBbmQg
+c28gYWxsIHRoZSBjb3VudHMNCj4gc2hvdWxkIGJlIGZpbmUgYW5kIGV2ZW50dWFsbHkgbW9kdWxl
+IHNob3VsZCBnZXQgdW5sb2FkZWQuDQo+IA0KDQpJdCBoYXBwZW5lZCB3aGVuIHBvbGljeS0+Y3B1
+cyBjb250YWlucyAqTU9SRSBUSEVOIE9ORSBDUFUqLg0KVGFraW5nIG15IGJvYXJkIFQ0MjQwIGZv
+ciBleGFtcGxlLCBpdCBoYXMgMyBjbHVzdGVyLCA4IENQVXMgZm9yIGVhY2ggY2x1c3Rlci4NClRo
+ZSBsb2cgaXM6DQojIGluc21vZCBwcGMtY29yZW5ldC1jcHVmcmVxLmtvDQpwcGNfY29yZW5ldF9j
+cHVmcmVxOiBGcmVlc2NhbGUgUG93ZXJQQyBjb3JlbmV0IENQVSBmcmVxdWVuY3kgc2NhbGluZyBk
+cml2ZXINCiMgcm1tb2QgcHBjLWNvcmVuZXQtY3B1ZnJlcS5rbw0KRVJST1I6IE1vZHVsZSBwcGNf
+Y29yZW5ldF9jcHVmcmVxIGlzIGluIHVzZQ0KIyBsc21vZA0KTW9kdWxlICAgICAgICAgCQlTaXpl
+ICBVc2VkIGJ5DQpwcGNfY29yZW5ldF9jcHVmcmVxICAgICA2NTQyICA5DQojIHVuYW1lIC1hDQpM
+aW51eCBUNDI0MCAzLjkuMC1yYzEtMTEwODEtZzM0NjQyYmItZGlydHkgIzQ0IFNNUCBUaHUgQXBy
+IDI1IDA4OjU4OjI2IENTVCAyMDEzIHBwYzY0IHVua25vd24NCg0KSSBhbSBub3QgdXNpbmcgdGhl
+IG5ld2VzdCBrZXJuZWwgKHNpbmNlIG5ldyB0NDI0MCBib2FyZCBoYXMgbm90IGluY2x1ZGVkIHll
+dCksDQpidXQgdGhlIGlzc3VlIGlzIHN0aWxsIHRoZXJlLg0KVGhlIHJlYXNvbiBpcyBqdXN0IGxp
+a2Ugd2hhdCBJIHNhaWQgaW4gcGF0Y2guDQoNClJlZ2FyZHMsDQpZdWFudGlhbg0KDQo+IC0tDQo+
+IHZpcmVzaA0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUg
+bGluZSAidW5zdWJzY3JpYmUgY3B1ZnJlcSIgaW4gdGhlDQo+IGJvZHkgb2YgYSBtZXNzYWdlIHRv
+IG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5mbyBhdA0KPiBodHRw
+Oi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg0K
 
-Thanks, too.
-
-
---=20
-Chen Gang
-
-Asianux Corporation
