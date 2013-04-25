@@ -1,41 +1,84 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [PATCH 2/2] thermal: db8500_cpufreq_cooling: remove usage of
-	IS_ERR_OR_NULL()
-Date: Thu, 25 Apr 2013 18:46:35 +0100
-Message-ID: <20130425174635.GB25783@flint.arm.linux.org.uk>
-References: <1366899214-22639-1-git-send-email-eduardo.valentin@ti.com> <1366899214-22639-3-git-send-email-eduardo.valentin@ti.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
+Date: Thu, 25 Apr 2013 23:27:12 +0530
+Message-ID: <51796E78.20203@linux.vnet.ibm.com>
+References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <517028F1.6000002@sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38712 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932753Ab3DYRq5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 13:46:57 -0400
-Content-Disposition: inline
-In-Reply-To: <1366899214-22639-3-git-send-email-eduardo.valentin@ti.com>
+Received: from e28smtp04.in.ibm.com ([122.248.162.4]:34080 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933155Ab3DYSAU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 14:00:20 -0400
+Received: from /spool/local
+	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Thu, 25 Apr 2013 23:25:51 +0530
+In-Reply-To: <517028F1.6000002@sr71.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Hongbo Zhang <hongbo.zhang@stericsson.com>, devicetree-discuss@lists.ozlabs.org
+To: Dave Hansen <dave@sr71.net>
+Cc: akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
 
-On Thu, Apr 25, 2013 at 10:13:34AM -0400, Eduardo Valentin wrote:
-> diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
-> index 21419851..786d192 100644
-> --- a/drivers/thermal/db8500_cpufreq_cooling.c
-> +++ b/drivers/thermal/db8500_cpufreq_cooling.c
-> @@ -37,7 +37,7 @@ static int db8500_cpufreq_cooling_probe(struct platform_device *pdev)
->  	cpumask_set_cpu(0, &mask_val);
->  	cdev = cpufreq_cooling_register(&mask_val);
->  
-> -	if (IS_ERR_OR_NULL(cdev)) {
-> +	if (IS_ERR(cdev)) {
->  		dev_err(&pdev->dev, "Failed to register cooling device\n");
->  		return PTR_ERR(cdev);
+On 04/18/2013 10:40 PM, Dave Hansen wrote:
+> On 04/09/2013 02:45 PM, Srivatsa S. Bhat wrote:
+>> 2. Performance overhead is expected to be low: Since we retain the s=
+implicity
+>>    of the algorithm in the page allocation path, page allocation can
+>>    potentially remain as fast as it would be without memory regions.=
+ The
+>>    overhead is pushed to the page-freeing paths which are not that c=
+ritical.
+>=20
 
-Correct.  cpufreq_cooling_register() returns either an error-pointer or
-a valid pointer.
+[...]
+=20
+> I still also want to see some hard numbers on:
+>> However, memory consumes a significant amount of power, potentially =
+upto
+>> more than a third of total system power on server systems.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Please find below, the reference to the publicly available paper I had =
+in
+mind, when I made that statement:
+
+C. Lefurgy, K. Rajamani, F. Rawson, W. Felter, M. Kistler, and Tom Kell=
+er.
+Energy management for commercial servers. In IEEE Computer, pages 39=E2=
+=80=9348,
+Dec 2003.
+
+Here is a quick link to the paper:
+researcher.ibm.com/files/us-lefurgy/computer2003.pdf
+
+On page 40, the paper shows the power-consumption breakdown for an IBM =
+p670
+machine, which shows that as much as 40% of the system energy is consum=
+ed by
+the memory sub-system in a mid-range server.
+
+I admit that the paper is a little old (I'll see if I can find anything=
+ more
+recent that is publicly available, or perhaps you can verify the same i=
+f you
+have data-sheets for other platforms handy), but given the trend of inc=
+reasing
+memory speeds and increasing memory density/capacity in computer system=
+s, the
+power-consumption of memory is certainly not going to become insignific=
+ant all
+of a sudden.
+
+IOW, the above data supports the point I was trying to make - Memory ha=
+rdware
+contributes to a significant portion of the power consumption of a syst=
+em. And
+since the hardware is now exposing ways to reduce the power consumption=
+, it
+would be worthwhile to try and exploit it by doing memory power managem=
+ent.
+
+Regards,
+Srivatsa S. Bhat
+
