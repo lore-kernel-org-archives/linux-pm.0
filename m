@@ -1,67 +1,81 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v2 3/4] ARM: dts: thermal: exynos4: Add documentation
- for Exynos SoC thermal bindings
-Date: Thu, 25 Apr 2013 11:46:56 -0400
-Message-ID: <51794FF0.2050406@ti.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com> <1366893045-31586-1-git-send-email-l.majewski@samsung.com> <1366893045-31586-4-git-send-email-l.majewski@samsung.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH] cpuidle: add maintainer entry
+Date: Thu, 25 Apr 2013 10:50:27 -0500
+Message-ID: <CAL_Jsq+o1kF2GJNX5a01B9nPcq6uVLbpC-3RirU2uJAZ8C-jUg@mail.gmail.com>
+References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
+	<51781B48.30208@gmail.com>
+	<5178D0EF.3090004@linaro.org>
+	<CAKohpo=Ct7WCBSOqmgk8asVyXWa5o+jqpTwaQgxKVm_XNLfnMA@mail.gmail.com>
+	<5178D5EF.9090102@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1366893045-31586-4-git-send-email-l.majewski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, eduardo.valentin@ti.com
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qe0-f52.google.com ([209.85.128.52]:55528 "EHLO
+	mail-qe0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757199Ab3DYPu2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 11:50:28 -0400
+Received: by mail-qe0-f52.google.com with SMTP id q19so2130124qeb.11
+        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 08:50:27 -0700 (PDT)
+In-Reply-To: <5178D5EF.9090102@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl, Andrew Lunn <andrew@lunn.ch>, khilman@deeprootsystems.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linus Walleij <linus.walleij@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Paul Mackerras <paulus@samba.org>, josephl@nvidia.com, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, magnus.damm@gmail.com, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, lenb@kernel.org, linaro-kernel@lists.linaro.org, Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, nsekhar@ti.com, Rob Herring <rob.herring@calxeda.com>, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, kernel@pengutronix.de
 
-On 25-04-2013 08:30, Lukasz Majewski wrote:
-> Proper description for Exynos4 bindings added to Documentation/devicetree/
-> bindings
+On Thu, Apr 25, 2013 at 2:06 AM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 04/25/2013 08:49 AM, Viresh Kumar wrote:
+>> On 25 April 2013 12:15, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>>> On 04/24/2013 07:50 PM, Rob Herring wrote:
+>>
+>>>> Shouldn't MAINTAINERS contain the driver maintainers too?
+>>>
+>>> It should contains the upstream maintainer for the subsystem, and
+>>> optionally a co-maintainer.
+>>>
+>>> The MAINTAINERS file gives informations about the patch submission path.
+>>>
+>>> The file's header should contain the maintainer of the driver, so the
+>>> submitted patches will go to the subsystem maintainer for upstreaming
+>>> and to the driver maintainer for acked-by.
+>>>
+>>> If you add an entry in MAINTAINERS like:
+>>>
+>>> ARM/CALXEDA HIGHBANK ARCHITECTURE
+>>> M:      Rob Herring <rob.herring@calxeda.com>
+>>> L:      linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+>>> S:      Maintained
+>>> F:      arch/arm/mach-highbank/
+>>> +F:     drivers/cpuidle/cpuidle-calxeda.c
+>>>
+>>> That will add confusion while we are trying to clarify the situation
+>>> with a single entry point for the patches submission. If someone wants
+>>> to submit a patch for this driver, it will look at the MAINTAINERS file
+>>> and won't know if it should send the patch against arm-soc or linux-pm.
+>>
+>> I though otherwise. We can add entry in MAINTAINERS for any module.
+>> Module can be a framework/architecture or a single driver.
 >
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> IMO, there are too much drivers for that. It is simpler for someone to
+> read the MAINTAINERS file to find the cpuidle drivers goes through
+> linux-pm. I think we can trust Rafael to ask for the acked-by from the
+> maintainer of the driver before taking the patches.
 
-I am fine with this one too.
+It not a maintainer's job to solicit acks. It is the submitter's job
+to Cc the correct people. The maintainer should only check for
+necessary CC/acks and bitch at the submitter if they did not use
+get_maintainers.pl.
 
-Reviewed-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Perhaps the MAINTAINERS file needs to be distributed to scale better
+or we need a way to put the maintainer data into the source and be
+usable by get_maintainers.pl.
 
-> ---
-> Changes for v2:
-> - Documentation extension according to ML feedback
-> ---
->   .../devicetree/bindings/thermal/exynos-thermal.txt |   25 ++++++++++++++++++++
->   1 file changed, 25 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> Adding entry for cpuidle driver of a architecture as you wrote for calxeda is
+>> wrong as it adds to confusion and so there should be a separate entry for
+>> this driver rather than merging it with arch/ entries.
 >
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> new file mode 100644
-> index 0000000..535fd0e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -0,0 +1,25 @@
-> +* Exynos Thermal Management Unit (TMU)
-> +
-> +** Required properties:
-> +
-> +- compatible : One of the following:
-> +	       "samsung,exynos4412-tmu"
-> +	       "samsung,exynos4210-tmu"
-> +	       "samsung,exynos5250-tmu"
-> +- interrupt-parent : The phandle for the interrupt controller
-> +- reg : Address range of the thermal registers
-> +- interrupts : Should contain interrupt for thermal system
-> +- clocks : The main clock for TMU device
-> +- clock-names : Thermal system clock name
-> +
-> +Example:
-> +
-> +	tmu@100C0000 {
-> +		compatible = "samsung,exynos4412-tmu";
-> +		interrupt-parent = <&combiner>;
-> +		reg = <0x100C0000 0x100>;
-> +		interrupts = <2 4>;
-> +		clocks = <&clock 383>;
-> +		clock-names = "tmu_apbif";
-> +		status = "disabled";
-> +	};
->
+> Yes, actually it was an example to show the confusion we could be facing.
+
+I'm confused about what is the confusion...
+
+Rob
