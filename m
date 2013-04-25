@@ -1,86 +1,69 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] ARM: s3c64xx: cpuidle: use init/exit common routine
-Date: Thu, 25 Apr 2013 11:35:28 +0200
-Message-ID: <5178F8E0.6010606@linaro.org>
-References: <1366728077-18988-1-git-send-email-daniel.lezcano@linaro.org>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Thu, 25 Apr 2013 10:38:00 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
+	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+ <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f46.google.com ([74.125.83.46]:62100 "EHLO
-	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370Ab3DYJfc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 05:35:32 -0400
-Received: by mail-ee0-f46.google.com with SMTP id c13so1185311eek.33
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 02:35:31 -0700 (PDT)
-In-Reply-To: <1366728077-18988-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from ch1ehsobe004.messaging.microsoft.com ([216.32.181.184]:43968
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754140Ab3DYKiH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 06:38:07 -0400
+In-Reply-To: <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, lethal@linux-sh.org, kgene.kim@samsung.com, ben-linux@fluff.org, horms+renesas@verge.net.au, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 04/23/2013 04:41 PM, Daniel Lezcano wrote:
-> Remove the duplicated code and use the cpuidle common code for initia=
-lization.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
-
-Hi Kim and Ben,
-
-It is the last patch in the series which was not acked-by.
-Rafael is willing to take it in its tree if you ack it.
-
-Are you ok if this patch ?
-
-Thanks
--- Daniel
-
->  arch/arm/mach-s3c64xx/cpuidle.c |   14 +-------------
->  1 file changed, 1 insertion(+), 13 deletions(-)
->
-> diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/=
-cpuidle.c
-> index 852ff16..3c8ab07 100644
-> --- a/arch/arm/mach-s3c64xx/cpuidle.c
-> +++ b/arch/arm/mach-s3c64xx/cpuidle.c
-> @@ -40,8 +40,6 @@ static int s3c64xx_enter_idle(struct cpuidle_device=
- *dev,
->  	return index;
->  }
-> =20
-> -static DEFINE_PER_CPU(struct cpuidle_device, s3c64xx_cpuidle_device)=
-;
-> -
->  static struct cpuidle_driver s3c64xx_cpuidle_driver =3D {
->  	.name	=3D "s3c64xx_cpuidle",
->  	.owner  =3D THIS_MODULE,
-> @@ -60,16 +58,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_drive=
-r =3D {
-> =20
->  static int __init s3c64xx_init_cpuidle(void)
->  {
-> -	int ret;
-> -
-> -	cpuidle_register_driver(&s3c64xx_cpuidle_driver);
-> -
-> -	ret =3D cpuidle_register_device(&s3c64xx_cpuidle_device);
-> -	if (ret) {
-> -		pr_err("Failed to register cpuidle device: %d\n", ret);
-> -		return ret;
-> -	}
-> -
-> -	return 0;
-> +	return cpuidle_register(&s3c64xx_cpuidle_driver, NULL);
->  }
->  device_initcall(s3c64xx_init_cpuidle);
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+VGhhdCdzIHdpcmVkLiBJIHdpbGwgaGF2ZSBtb3JlIHRlc3RzIG9uIHRoaXMuIFRoYW5rcy4NCg0K
+SSBmb3VuZCBhbm90aGVyIGJ1ZyB5b3UgY2FuIHRyeS4NCkl0IGlzIGFsc28gZm91bmQgb24gbXVs
+dGlwbGUgY3B1cyBwZXIgY2x1c3Rlci4NClRlc3Qgc3RlcDoNCjEuIGNvbXBpbGUgdGhlIGRyaXZl
+ciBhcyBtb2R1bGUuDQoyLiBob3QtdW5wbHVnIG9uZSBjcHUoIGFueSBvbmUgaXMgT0spDQozLiBp
+bnNtb2QgbW9kdWxlDQo0LiBob3QtcGx1ZyB0aGUgY3B1IC0tLS0+IHdpbGwgY2F1c2UgZXJyb3Iu
+DQoNCk9yIHRlc3Qgc3RlcCBhbHNvIGNhbiBiZToNCjEuIGhvdC11bnBsdWcgYWxsIHRoZSBjcHVz
+IGluIG9uZSBjbHVzdGVyDQoyLiBob3QtcGx1ZyB0aGUgY3B1cyBpbiB0aGlzIGNsdXN0ZXIuIFdo
+ZW4gdGhlIHNlY29uZCBjcHUgZ2V0cyBob3QtcGx1Z2VkLCBlcnJvciB3aWxsIG9jY3VyLg0KDQpU
+aGF0J3MgYmVjYXVzZSB0aGUgc2Vjb25kIGNwdSB3aWxsIGNhbGwgdGhlIGNwdWZyZXFfYWRkX2Rl
+dl9zeW1saW5rKCkgdG8gDQpDcmVhdGUgdGhlIGZpcnN0IGNwdSdzICJjcHVmcmVxIGxpbmsiIHdo
+aWNoIGlzIGFscmVhZHkgY3JlYXRlZC4NClRoYXQgbmVlZHMgbW9yZSB3b3JrIHRvIG1ha2UgYSBw
+YXRjaCwgaG9wZSB5b3UgY2FuIGZpeCBpdC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KDQo+IC0t
+LS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdlci5rZXJu
+ZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9uIEJlaGFs
+ZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqNNTCMjXI1SAxNTo0Nw0KPiBUbzogVGFu
+ZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0BzaXNrLnBsOyBjcHVmcmVxQHZnZXIua2VybmVs
+Lm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaXN0cw0KPiBsaW5hcm8ta2VybmVsDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IEZpeCB0aGUgZHJpdmVyIGNhbiBub3QgYmUg
+dW5sb2FkZWQgaXNzdWUNCj4gDQo+IE9uIDI1IEFwcmlsIDIwMTMgMDg6MTYsIFRhbmcgWXVhbnRp
+YW4tQjI5OTgzIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4gSXQgaGFwcGVuZWQg
+d2hlbiBwb2xpY3ktPmNwdXMgY29udGFpbnMgKk1PUkUgVEhFTiBPTkUgQ1BVKi4NCj4gPiBUYWtp
+bmcgbXkgYm9hcmQgVDQyNDAgZm9yIGV4YW1wbGUsIGl0IGhhcyAzIGNsdXN0ZXIsIDggQ1BVcyBm
+b3IgZWFjaA0KPiBjbHVzdGVyLg0KPiA+IFRoZSBsb2cgaXM6DQo+ID4gIyBpbnNtb2QgcHBjLWNv
+cmVuZXQtY3B1ZnJlcS5rbw0KPiA+IHBwY19jb3JlbmV0X2NwdWZyZXE6IEZyZWVzY2FsZSBQb3dl
+clBDIGNvcmVuZXQgQ1BVIGZyZXF1ZW5jeSBzY2FsaW5nDQo+ID4gZHJpdmVyICMgcm1tb2QgcHBj
+LWNvcmVuZXQtY3B1ZnJlcS5rbw0KPiA+IEVSUk9SOiBNb2R1bGUgcHBjX2NvcmVuZXRfY3B1ZnJl
+cSBpcyBpbiB1c2UgIyBsc21vZA0KPiA+IE1vZHVsZSAgICAgICAgICAgICAgICAgIFNpemUgIFVz
+ZWQgYnkNCj4gPiBwcGNfY29yZW5ldF9jcHVmcmVxICAgICA2NTQyICA5DQo+ID4gIyB1bmFtZSAt
+YQ0KPiA+IExpbnV4IFQ0MjQwIDMuOS4wLXJjMS0xMTA4MS1nMzQ2NDJiYi1kaXJ0eSAjNDQgU01Q
+IFRodSBBcHIgMjUgMDg6NTg6MjYNCj4gPiBDU1QgMjAxMyBwcGM2NCB1bmtub3duDQo+ID4NCj4g
+PiBJIGFtIG5vdCB1c2luZyB0aGUgbmV3ZXN0IGtlcm5lbCAoc2luY2UgbmV3IHQ0MjQwIGJvYXJk
+IGhhcyBub3QNCj4gPiBpbmNsdWRlZCB5ZXQpLCBidXQgdGhlIGlzc3VlIGlzIHN0aWxsIHRoZXJl
+Lg0KPiA+IFRoZSByZWFzb24gaXMganVzdCBsaWtlIHdoYXQgSSBzYWlkIGluIHBhdGNoLg0KPiAN
+Cj4gSSBiZWxpZXZlZCB3aGF0IHlvdSBzYWlkIGlzIGNvcnJlY3QgYW5kIHdlbnQgb24gdGVzdGlu
+ZyB0aGlzIG9uIG15DQo+IHBsYXRmb3JtLg0KPiAyIGNsdXN0ZXJzIHdpdGggMiBhbmQgMyBjcHVz
+Li4uIEFuZCBzbyBpIGhhdmUgbXVsdGlwbGUgY3B1cyBwZXIgY2x1c3Rlcg0KPiBvciBwb2xpY3kg
+c3RydWN0dXJlLg0KPiANCj4gaW5zbW9kL3JtbW9kIHdvcmtlZCBhcyBleHBlY3RlZCB3aXRob3V0
+IGFueSBpc3N1ZXMuDQo+IA0KPiBTbywgZm9yIG1lIHRoZXJlIGFyZSBubyBzdWNoIGlzc3Vlcy4g
+QlRXLCBpIHRlc3RlZCB0aGlzIG9uIGxhdGVzdCByYyBmcm9tDQo+IExpbnVzIGFuZCBhbHNvIG9u
+IGxhdGVzdCBjb2RlIGZyb20gbGludXgtbmV4dC4NCj4gDQo+IEkgYW0gc3VyZSB0aGUgY291bnRz
+IGFyZSB2ZXJ5IHdlbGwgYmFsYW5jZWQgYW5kIHRoZXJlIGFyZSBubyBpc3N1ZXMgaW4NCj4gdGhl
+IGxhdGVzdCBjb2RlIEF0bGVhc3QuDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
+aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBv
+ZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBp
+bmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
 
