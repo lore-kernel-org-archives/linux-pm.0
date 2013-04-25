@@ -1,58 +1,99 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v2 4/4] ARM:TMU:fix: Avoid lockup when first frequency table
- entry is CPUFREQ_ENTRY_INVALID
-Date: Thu, 25 Apr 2013 14:30:45 +0200
-Message-ID: <1366893045-31586-5-git-send-email-l.majewski@samsung.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH v2 2/4] Thermal: exynos: Support for TMU regulator defined
+ at device tree
+Date: Thu, 25 Apr 2013 18:39:14 +0530
+Message-ID: <CADGdYn6g5Lggkcbq9WMMfbqN-NBb_14_b1bfcd=7+CJrxJcquA@mail.gmail.com>
 References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
- <1366893045-31586-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:31373 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755325Ab3DYMc4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 08:32:56 -0400
-In-reply-to: <1366893045-31586-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+	<1366893045-31586-1-git-send-email-l.majewski@samsung.com>
+	<1366893045-31586-3-git-send-email-l.majewski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1366893045-31586-3-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-With the while loop, when i=0 and first entry in the frequency table is
-CPUFREQ_ENTRY_INVALID, the code results in an endless loop (since i is not
-incremented).
+Hi Lukasz Majewski,
 
-To fix this problem the for loop has been chosen. Incrementing i in the for
-end block solves the problem.
+Sorry for late review but I am currently working on restructuring the
+whole exynos thermal driver and this support of LDO can be added as
+feature as not all socs support this. This is also suggested by
+Eduardo. All your other patches looks fine.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-Changes for v2:
-- New in v2
----
- drivers/thermal/cpu_cooling.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Thanks,
+Amit Daniel
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 8dc44cb..df79f5e8 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -124,7 +124,7 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- 	if (!table)
- 		return ret;
- 
--	while (table[i].frequency != CPUFREQ_TABLE_END) {
-+	for (; table[i].frequency != CPUFREQ_TABLE_END; i++) {
- 		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 
-@@ -138,7 +138,6 @@ static unsigned int get_cpu_frequency(unsigned int cpu, unsigned long level)
- 		/*return if level matched and table in descending order*/
- 		if (descend && i == level)
- 			return table[i].frequency;
--		i++;
- 	}
- 	i--;
- 
--- 
-1.7.10.4
-
+On Thu, Apr 25, 2013 at 6:00 PM, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> TMU probe function now checks for a device tree defined regulator.
+> For compatibility reasons it is allowed to probe driver even without
+> this regulator defined.
+>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+> Changes for v2:
+> - Change dev_info() to dev_warn()
+> ---
+>  drivers/thermal/exynos_thermal.c |   19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index 3d6e32a..328fe7e 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -38,6 +38,7 @@
+>  #include <linux/cpufreq.h>
+>  #include <linux/cpu_cooling.h>
+>  #include <linux/of.h>
+> +#include <linux/regulator/consumer.h>
+>
+>  #include <plat/cpu.h>
+>
+> @@ -119,6 +120,8 @@
+>
+>  #define EXYNOS_ZONE_COUNT      3
+>
+> +#define EXYNOS_TMU_REGULATOR "vdd_ts"
+> +
+>  struct exynos_tmu_data {
+>         struct exynos_tmu_platform_data *pdata;
+>         struct resource *mem;
+> @@ -948,6 +951,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>  {
+>         struct exynos_tmu_data *data;
+>         struct exynos_tmu_platform_data *pdata = pdev->dev.platform_data;
+> +       struct regulator *reg;
+>         int ret, i;
+>
+>         if (!pdata)
+> @@ -957,6 +961,21 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>                 dev_err(&pdev->dev, "No platform init data supplied.\n");
+>                 return -ENODEV;
+>         }
+> +
+> +       reg = regulator_get(&pdev->dev, EXYNOS_TMU_REGULATOR);
+> +       if (!IS_ERR(reg)) {
+> +               ret = regulator_enable(reg);
+> +               if (ret) {
+> +                       dev_err(&pdev->dev, "Regulator %s not enabled.\n",
+> +                               EXYNOS_TMU_REGULATOR);
+> +                       return ret;
+> +               }
+> +       } else {
+> +               dev_warn(&pdev->dev,
+> +                        "Regulator %s not defined at device tree.\n",
+> +                        EXYNOS_TMU_REGULATOR);
+> +       }
+> +
+>         data = devm_kzalloc(&pdev->dev, sizeof(struct exynos_tmu_data),
+>                                         GFP_KERNEL);
+>         if (!data) {
+> --
+> 1.7.10.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
