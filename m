@@ -1,52 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Thu, 25 Apr 2013 13:16:49 +0530
-Message-ID: <CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
-	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] ARM: s3c64xx: cpuidle: use init/exit common routine
+Date: Thu, 25 Apr 2013 11:35:28 +0200
+Message-ID: <5178F8E0.6010606@linaro.org>
+References: <1366728077-18988-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f52.google.com ([209.85.128.52]:41193 "EHLO
-	mail-qe0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755744Ab3DYHqu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 03:46:50 -0400
-Received: by mail-qe0-f52.google.com with SMTP id q19so1841560qeb.11
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 00:46:49 -0700 (PDT)
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+Received: from mail-ee0-f46.google.com ([74.125.83.46]:62100 "EHLO
+	mail-ee0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370Ab3DYJfc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 05:35:32 -0400
+Received: by mail-ee0-f46.google.com with SMTP id c13so1185311eek.33
+        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 02:35:31 -0700 (PDT)
+In-Reply-To: <1366728077-18988-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org, lethal@linux-sh.org, kgene.kim@samsung.com, ben-linux@fluff.org, horms+renesas@verge.net.au, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 25 April 2013 08:16, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> It happened when policy->cpus contains *MORE THEN ONE CPU*.
-> Taking my board T4240 for example, it has 3 cluster, 8 CPUs for each cluster.
-> The log is:
-> # insmod ppc-corenet-cpufreq.ko
-> ppc_corenet_cpufreq: Freescale PowerPC corenet CPU frequency scaling driver
-> # rmmod ppc-corenet-cpufreq.ko
-> ERROR: Module ppc_corenet_cpufreq is in use
-> # lsmod
-> Module                  Size  Used by
-> ppc_corenet_cpufreq     6542  9
-> # uname -a
-> Linux T4240 3.9.0-rc1-11081-g34642bb-dirty #44 SMP Thu Apr 25 08:58:26 CST 2013 ppc64 unknown
+On 04/23/2013 04:41 PM, Daniel Lezcano wrote:
+> Remove the duplicated code and use the cpuidle common code for initia=
+lization.
 >
-> I am not using the newest kernel (since new t4240 board has not included yet),
-> but the issue is still there.
-> The reason is just like what I said in patch.
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
 
-I believed what you said is correct and went on testing this on my platform.
-2 clusters with 2 and 3 cpus... And so i have multiple cpus per
-cluster or policy
-structure.
+Hi Kim and Ben,
 
-insmod/rmmod worked as expected without any issues.
+It is the last patch in the series which was not acked-by.
+Rafael is willing to take it in its tree if you ack it.
 
-So, for me there are no such issues. BTW, i tested this on latest rc from Linus
-and also on latest code from linux-next.
+Are you ok if this patch ?
 
-I am sure the counts are very well balanced and there are no issues in the
-latest code Atleast.
+Thanks
+-- Daniel
+
+>  arch/arm/mach-s3c64xx/cpuidle.c |   14 +-------------
+>  1 file changed, 1 insertion(+), 13 deletions(-)
+>
+> diff --git a/arch/arm/mach-s3c64xx/cpuidle.c b/arch/arm/mach-s3c64xx/=
+cpuidle.c
+> index 852ff16..3c8ab07 100644
+> --- a/arch/arm/mach-s3c64xx/cpuidle.c
+> +++ b/arch/arm/mach-s3c64xx/cpuidle.c
+> @@ -40,8 +40,6 @@ static int s3c64xx_enter_idle(struct cpuidle_device=
+ *dev,
+>  	return index;
+>  }
+> =20
+> -static DEFINE_PER_CPU(struct cpuidle_device, s3c64xx_cpuidle_device)=
+;
+> -
+>  static struct cpuidle_driver s3c64xx_cpuidle_driver =3D {
+>  	.name	=3D "s3c64xx_cpuidle",
+>  	.owner  =3D THIS_MODULE,
+> @@ -60,16 +58,6 @@ static struct cpuidle_driver s3c64xx_cpuidle_drive=
+r =3D {
+> =20
+>  static int __init s3c64xx_init_cpuidle(void)
+>  {
+> -	int ret;
+> -
+> -	cpuidle_register_driver(&s3c64xx_cpuidle_driver);
+> -
+> -	ret =3D cpuidle_register_device(&s3c64xx_cpuidle_device);
+> -	if (ret) {
+> -		pr_err("Failed to register cpuidle device: %d\n", ret);
+> -		return ret;
+> -	}
+> -
+> -	return 0;
+> +	return cpuidle_register(&s3c64xx_cpuidle_driver, NULL);
+>  }
+>  device_initcall(s3c64xx_init_cpuidle);
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
