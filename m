@@ -1,81 +1,92 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] cpuidle: add maintainer entry
-Date: Thu, 25 Apr 2013 10:50:27 -0500
-Message-ID: <CAL_Jsq+o1kF2GJNX5a01B9nPcq6uVLbpC-3RirU2uJAZ8C-jUg@mail.gmail.com>
-References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
-	<51781B48.30208@gmail.com>
-	<5178D0EF.3090004@linaro.org>
-	<CAKohpo=Ct7WCBSOqmgk8asVyXWa5o+jqpTwaQgxKVm_XNLfnMA@mail.gmail.com>
-	<5178D5EF.9090102@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 0/4] Thermal:exynos: Thermal Measurement Unit fix and
+ Samsung SoCs support
+Date: Thu, 25 Apr 2013 18:28:43 +0200
+Message-ID: <20130425182843.70a2d7d3@amdc308.digital.local>
+References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+ <1366893045-31586-1-git-send-email-l.majewski@samsung.com>
+ <51794E3A.10009@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f52.google.com ([209.85.128.52]:55528 "EHLO
-	mail-qe0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757199Ab3DYPu2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Apr 2013 11:50:28 -0400
-Received: by mail-qe0-f52.google.com with SMTP id q19so2130124qeb.11
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 08:50:27 -0700 (PDT)
-In-Reply-To: <5178D5EF.9090102@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <51794E3A.10009@ti.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Amit Daniel Kachhap <amit.kachhap@linaro.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl, Andrew Lunn <andrew@lunn.ch>, khilman@deeprootsystems.com, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linus Walleij <linus.walleij@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Paul Mackerras <paulus@samba.org>, josephl@nvidia.com, Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, magnus.damm@gmail.com, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, lenb@kernel.org, linaro-kernel@lists.linaro.org, Jason Cooper <jason@lakedaemon.net>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, nsekhar@ti.com, Rob Herring <rob.herring@calxeda.com>, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, kernel@pengutronix.de
 
-On Thu, Apr 25, 2013 at 2:06 AM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> On 04/25/2013 08:49 AM, Viresh Kumar wrote:
->> On 25 April 2013 12:15, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
->>> On 04/24/2013 07:50 PM, Rob Herring wrote:
->>
->>>> Shouldn't MAINTAINERS contain the driver maintainers too?
->>>
->>> It should contains the upstream maintainer for the subsystem, and
->>> optionally a co-maintainer.
->>>
->>> The MAINTAINERS file gives informations about the patch submission path.
->>>
->>> The file's header should contain the maintainer of the driver, so the
->>> submitted patches will go to the subsystem maintainer for upstreaming
->>> and to the driver maintainer for acked-by.
->>>
->>> If you add an entry in MAINTAINERS like:
->>>
->>> ARM/CALXEDA HIGHBANK ARCHITECTURE
->>> M:      Rob Herring <rob.herring@calxeda.com>
->>> L:      linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
->>> S:      Maintained
->>> F:      arch/arm/mach-highbank/
->>> +F:     drivers/cpuidle/cpuidle-calxeda.c
->>>
->>> That will add confusion while we are trying to clarify the situation
->>> with a single entry point for the patches submission. If someone wants
->>> to submit a patch for this driver, it will look at the MAINTAINERS file
->>> and won't know if it should send the patch against arm-soc or linux-pm.
->>
->> I though otherwise. We can add entry in MAINTAINERS for any module.
->> Module can be a framework/architecture or a single driver.
->
-> IMO, there are too much drivers for that. It is simpler for someone to
-> read the MAINTAINERS file to find the cpuidle drivers goes through
-> linux-pm. I think we can trust Rafael to ask for the acked-by from the
-> maintainer of the driver before taking the patches.
+Hi Eduardo,
 
-It not a maintainer's job to solicit acks. It is the submitter's job
-to Cc the correct people. The maintainer should only check for
-necessary CC/acks and bitch at the submitter if they did not use
-get_maintainers.pl.
+> Hello Lukasz,
+> 
+> On 25-04-2013 08:30, Lukasz Majewski wrote:
+> > This patch series provide various fixes for TMU block.
+> > First of all it fixes a problem with get_cpu_frequency() lockup at
+> > cpu_cooling.c.
+> >
+> > Secondly a proper regulator definition (VDD_TS) has been added.
+> > Moreover device tree definitions and documentation entry are now in
+> > place.
+> >
+> > Dependencies (those patches shall be applied on top of):
+> > - "clk: exynos4: Add clock entries for TMU"
+> 
+> Is this one same as  [1/6] clk:exynos4:TMU Thermal Measurement Unit 
+> clock added to common clock framework in your previous series?
 
-Perhaps the MAINTAINERS file needs to be distributed to scale better
-or we need a way to put the maintainer data into the source and be
-usable by get_maintainers.pl.
+Yes, this is a similar patch. However I've changed more clocks to
+clk_prepare_enable (clk_unprepare_disable). I've spoken about this with
+Sachin recently.
 
->> Adding entry for cpuidle driver of a architecture as you wrote for calxeda is
->> wrong as it adds to confusion and so there should be a separate entry for
->> this driver rather than merging it with arch/ entries.
->
-> Yes, actually it was an example to show the confusion we could be facing.
+> 
+> > - "Thermal: exynos: Add clk_{un}prepare APIs"
+> Same as
+> thermal:exynos4: TMU Common clock framework support for TMU (Thermal 
+> Monitoring Unit)
+> in your previous series?
 
-I'm confused about what is the confusion...
+Yes.
 
-Rob
+> 
+> > - "Thermal: exynos: Add compatible string for exynos4412"
+> >
+> This should be same as thermal:exynos4: Enable support for Exynos4412 
+> SoCs in your previous series?
+
+Yes.
+
+> 
+> 
+> >
+> > Lukasz Majewski (4):
+> >    ARM: dts: thermal: exynos4: TMU device tree support for
+> > Exynos4412 targets
+> >    Thermal: exynos: Support for TMU regulator defined at device tree
+> >    ARM: dts: thermal: exynos4: Add documentation for Exynos SoC
+> > thermal bindings
+> >    ARM:TMU:fix: Avoid lockup when first frequency table entry is
+> >      CPUFREQ_ENTRY_INVALID
+> 
+> The above, as stated at the patch may not be needed.
+> 
+> >
+> >   .../devicetree/bindings/thermal/exynos-thermal.txt |   25
+> > ++++++++++++++++++++
+> > arch/arm/boot/dts/exynos4x12.dtsi                  |   10 ++++++++
+> > drivers/thermal/cpu_cooling.c                      |    3 +--
+> > drivers/thermal/exynos_thermal.c                   |   19
+> > +++++++++++++++ 4 files changed, 55 insertions(+), 2 deletions(-)
+> > create mode 100644
+> > Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> >
+> 
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Poland (SRPOL) | Linux Platform Group
