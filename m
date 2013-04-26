@@ -1,34 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Fri, 26 Apr 2013 10:11:01 +0530
-Message-ID: <CAKohpon2PHFj4WuGd1wwBLnSC8Fc_VOvWmVoc04278gPKZWsrg@mail.gmail.com>
-References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
-	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH v2 0/4] Thermal:exynos: Thermal Measurement Unit fix and
+ Samsung SoCs support
+Date: Fri, 26 Apr 2013 10:35:21 +0530
+Message-ID: <CAK9yfHz63uGH+HwpmGQ9gzsqa4AsKEQ47QR8TrfJ4joUP2kZYw@mail.gmail.com>
+References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+	<1366893045-31586-1-git-send-email-l.majewski@samsung.com>
+	<51794E3A.10009@ti.com>
+	<20130425182843.70a2d7d3@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f176.google.com ([209.85.214.176]:46368 "EHLO
-	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750979Ab3DZElC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 00:41:02 -0400
-Received: by mail-ob0-f176.google.com with SMTP id wd20so3139720obb.7
-        for <linux-pm@vger.kernel.org>; Thu, 25 Apr 2013 21:41:01 -0700 (PDT)
-In-Reply-To: <D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20130425182843.70a2d7d3@amdc308.digital.local>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tang Yuantian-B29983 <B29983@freescale.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-On 26 April 2013 07:09, Tang Yuantian-B29983 <B29983@freescale.com> wrote:
-> Exactly.
-> Currently, we don't consider the offline cpus when setting policy->cpus.
-> Probably other platforms do the same thing.
+ Hi Eduardo,
 
-But this is a requirement of cpufreq framework and drivers must adapt to it.
-Let me know which drivers don't meet this requirement and i will get them
-fixed.
+On 25 April 2013 21:58, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Eduardo,
+>
+>> Hello Lukasz,
+>>
+>> On 25-04-2013 08:30, Lukasz Majewski wrote:
+>> > This patch series provide various fixes for TMU block.
+>> > First of all it fixes a problem with get_cpu_frequency() lockup at
+>> > cpu_cooling.c.
+>> >
+>> > Secondly a proper regulator definition (VDD_TS) has been added.
+>> > Moreover device tree definitions and documentation entry are now in
+>> > place.
+>> >
+>> > Dependencies (those patches shall be applied on top of):
+>> > - "clk: exynos4: Add clock entries for TMU"
+>>
+>> Is this one same as  [1/6] clk:exynos4:TMU Thermal Measurement Unit
+>> clock added to common clock framework in your previous series?
+
+The one sent by Lukasz has been dropped as an equivalent patch sent by
+me is already under review.
+
+>
+> Yes, this is a similar patch. However I've changed more clocks to
+> clk_prepare_enable (clk_unprepare_disable). I've spoken about this with
+> Sachin recently.
+
+The above description is actually for the below patch. Lukasz will
+test and see if additional changes are needed.
+If so he will send an incremental patch to address it.
+
+>
+>>
+>> > - "Thermal: exynos: Add clk_{un}prepare APIs"
+>> Same as
+>> thermal:exynos4: TMU Common clock framework support for TMU (Thermal
+>> Monitoring Unit)
+>> in your previous series?
+>
+
+>
+>>
+>> > - "Thermal: exynos: Add compatible string for exynos4412"
+
+These 2 have been merged in the thermal next tree.
+
+>> >
+>> This should be same as thermal:exynos4: Enable support for Exynos4412
+>> SoCs in your previous series?
+>
+> Yes.
+>
+
+-- 
+With warm regards,
+Sachin
