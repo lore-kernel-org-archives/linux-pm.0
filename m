@@ -1,127 +1,44 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [V2 PATCH] cpuidle: add maintainer entry
-Date: Fri, 26 Apr 2013 19:01:58 +0200
-Message-ID: <20130426170158.GA24282@game.jcrosoft.org>
-References: <1366974344-26064-1-git-send-email-daniel.lezcano@linaro.org>
+From: Simon Glass <sjg@chromium.org>
+Subject: Re: [PATCH v8 0/3] Runtime Interpreted Power Sequences
+Date: Fri, 26 Apr 2013 11:55:35 -0700
+Message-ID: <CAPnjgZ1P6dmRB0sO2qBUtd=WBiNcY339NAit2faaotAfEqQDeQ@mail.gmail.com>
+References: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1366974344-26064-1-git-send-email-daniel.lezcano@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: andrew@lunn.ch, khilman@deeprootsystems.com, benh@kernel.crashing.org, linus.walleij@linaro.org, nicolas.ferre@atmel.com, paulus@samba.org, josephl@nvidia.com, kgene.kim@samsung.com, swarren@wwwdotorg.org, magnus.damm@gmail.com, viresh.kumar@linaro.org, lenb@kernel.org, linaro-kernel@lists.linaro.org, jason@lakedaemon.net, arnd@arndb.de, linux-pm@vger.kernel.org, nsekhar@ti.com, rob.herring@calxeda.com, rjw@sisk.pl, horms@verge.net.au, ben-linux@fluff.org, horms+renesas@verge.net.au, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org, kernel@pengutronix.de
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:53171 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753986Ab3DZSzg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 14:55:36 -0400
+Received: by mail-oa0-f47.google.com with SMTP id n9so4371010oag.34
+        for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2013 11:55:35 -0700 (PDT)
+In-Reply-To: <1353047903-14363-1-git-send-email-acourbot@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Courbot <acourbot@nvidia.com>
+Cc: Anton Vorontsov <cbouatmailru@gmail.com>, Stephen Warren <swarren@nvidia.com>, Thierry Reding <thierry.reding@avionic-design.de>, Mark Zhang <markz@nvidia.com>, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Mark Brown <broonie@opensource.wolfsonmicro.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Leela Krishna Amudala <l.krishna@samsung.com>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, lk <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Devicetree Discuss <devicetree-discuss@lists.ozlabs.org>, linux-pm@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>
 
-On 13:05 Fri 26 Apr     , Daniel Lezcano wrote:
-> Currently the cpuidle drivers are spread across the different archs.
-> 
-> The patch submission for cpuidle are following different path: the cpuidle core
-> code goes to linux-pm, the ARM drivers goes to arm-soc or the SoC specific
-> tree, sh goes through sh arch tree, pseries goes through PowerPC and
-> finally intel goes through Len's tree while acpi_idle goes under linux-pm.
-> 
-> That makes difficult to consolidate the code and to propagate modifications
-> from the cpuidle core to the different drivers.
-> 
-> Hopefully, a movement has initiated to put the cpuidle drivers into the
-> drivers/cpuidle directory like cpuidle-calxeda.c and cpuidle-kirkwood.c
-> 
-> Add an explicit maintainer entry in the MAINTAINER to clarify the situation
-> and prevent new cpuidle drivers to goes to an arch directory.
-> 
-> The upstreaming process is unchanged: Rafael takes the patches to merge them
-> into its tree but with the acked-by from the driver's maintainer. So the header
-> must contains the name of the maintainer.
-> 
-> This organization will be the same than cpufreq.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> Acked-by: Andrew Lunn <andrew@lunn.ch>  #for kirkwood
-> Acked-by: Jason Cooper <jason@lakedaemon.net> #for kirkwood
-> ---
->  MAINTAINERS                        |    9 +++++++++
->  drivers/cpuidle/cpuidle-calxeda.c  |    4 +++-
->  drivers/cpuidle/cpuidle-kirkwood.c |    5 +++--
->  3 files changed, 15 insertions(+), 3 deletions(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 61677c3..45ee6dc 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2217,6 +2217,15 @@ F:	drivers/cpufreq/arm_big_little.h
->  F:	drivers/cpufreq/arm_big_little.c
->  F:	drivers/cpufreq/arm_big_little_dt.c
->  
-> +CPUIDLE DRIVERS
-> +M:	Rafael J. Wysocki <rjw@sisk.pl>
-> +M:	Daniel Lezcano <daniel.lezcano@linaro.org>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +T:	git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-> +F:	drivers/cpuidle/*
-> +F:	include/linux/cpuidle.h
-> +
->  CPUID/MSR DRIVER
->  M:	"H. Peter Anvin" <hpa@zytor.com>
->  S:	Maintained
-> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
-> index e344b56..2233791 100644
-> --- a/drivers/cpuidle/cpuidle-calxeda.c
-> +++ b/drivers/cpuidle/cpuidle-calxeda.c
-> @@ -1,7 +1,7 @@
->  /*
->   * Copyright 2012 Calxeda, Inc.
->   *
-> - * Based on arch/arm/plat-mxc/cpuidle.c:
-> + * Based on arch/arm/plat-mxc/cpuidle.c: #v3.7
->   * Copyright 2012 Freescale Semiconductor, Inc.
->   * Copyright 2012 Linaro Ltd.
->   *
-> @@ -16,6 +16,8 @@
->   *
->   * You should have received a copy of the GNU General Public License along with
->   * this program.  If not, see <http://www.gnu.org/licenses/>.
-> + *
-> + * Maintainer: Rob Herring <rob.herring@calxeda.com>
-this need to move to the MAINTAINER file
+Hi,
 
-so we get the e-mail get get_maintainer.pl
->   */
->  
->  #include <linux/cpuidle.h>
-> diff --git a/drivers/cpuidle/cpuidle-kirkwood.c b/drivers/cpuidle/cpuidle-kirkwood.c
-> index 53290e1..521b0a7 100644
-> --- a/drivers/cpuidle/cpuidle-kirkwood.c
-> +++ b/drivers/cpuidle/cpuidle-kirkwood.c
-> @@ -1,6 +1,4 @@
->  /*
-> - * arch/arm/mach-kirkwood/cpuidle.c
-> - *
->   * CPU idle Marvell Kirkwood SoCs
->   *
->   * This file is licensed under the terms of the GNU General Public
-> @@ -11,6 +9,9 @@
->   * to implement two idle states -
->   * #1 wait-for-interrupt
->   * #2 wait-for-interrupt and DDR self refresh
-> + *
-> + * Maintainer: Jason Cooper <jason@lakedaemon.net>
-> + * Maintainer: Andrew Lunn <andrew@lunn.ch>
-ditto
->   */
->  
->  #include <linux/kernel.h>
-> -- 
-> 1.7.9.5
-> 
+On Thu, Nov 15, 2012 at 10:38 PM, Alexandre Courbot <acourbot@nvidia.com> wrote:
+> Hopefully the final series before the feature gets merged. Anton Vorontsov
+> kindly accepted to take it into his tree, so this series is mostly a call for
+> acks, tests and reviews notices before the merge window for 3.8 opens. If you
+> are interested in seeing this feature, please add your name.
+>
+> This series also adds an entry for the subsystem into MAINTAINERS, setting me as
+> the person in charge.
+>
+> Changes from v7:
+> - fix bug reported by Tony Prisk
+> - add MAINTAINERS entry
+>
+> Alexandre Courbot (3):
+>   Runtime Interpreted Power Sequences
+>   pwm_backlight: use power sequences
+>   Take maintainership of power sequences
+
+Did this actually land? I can't see it in linux-next.
+
+Regards,
+Simon
