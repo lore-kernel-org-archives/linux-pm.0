@@ -1,61 +1,62 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
- CPU load to early increase frequency
-Date: Fri, 26 Apr 2013 17:41:18 +0300
-Message-ID: <517A920E.3000705@semaphore.gr>
-References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan> <515CBB98.4020607@semaphore.gr> <CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com> <515F2AF3.9050709@semaphore.gr> <51644855.1090300@semaphore.gr>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Fri, 26 Apr 2013 17:11:27 +0200
+Message-ID: <1366989087.30242.11.camel@marge.simpson.net>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com>
+	 <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com>
+	 <20130412162348.GE2368@pd.tnic>
+	 <1365785311.5814.36.camel@marge.simpson.net> <516F19EE.5060309@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51644855.1090300@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.15.18]:62981 "EHLO mout.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754571Ab3DZPLp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 26 Apr 2013 11:11:45 -0400
+Received: from mailout-de.gmx.net ([10.1.76.28]) by mrigmx.server.lan
+ (mrigmx001) with ESMTP (Nemesis) id 0MGDg9-1UJOVE1kdL-00FC2B for
+ <linux-pm@vger.kernel.org>; Fri, 26 Apr 2013 17:11:43 +0200
+In-Reply-To: <516F19EE.5060309@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Borislav Petkov <bp@alien8.de>, Alex Shi <alex.shi@intel.com>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 04/09/2013 07:56 PM, Stratos Karafotis wrote:
-> On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
->> Hi Viresh,
->>
->> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
->>> Hi Stratos,
->>>
->>> Yes, your results show some improvements. BUT if performance is the
->>> only thing
->>> we were looking for, then we will never use ondemand governor but
->>> performance
->>> governor.
->>>
->>> I suspect this little increase in performance must have increased
->>> power numbers
->>> too (significantly). So, if you can get numbers in the form of
->>> power/performance
->>> with and without your patch, it will be great.
->>>
->>> --
->>> viresh
->>>
->>
->> I run some more tests. I increased the number of iterations to 100
->> (from 20).
->> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us),
->> 15,000,000 (~30000us).
->>
->> This time, I also extracted statistics from cpufreq_stats driver. I
->> think this will be an
->> indication for power consumption. Below the results and attached the
->> program I used for to
->> get these numbers.
->
-> Any comments would be appreciated.
->
-> Thanks,
-> Stratos
->
->
+On Wed, 2013-04-17 at 17:53 -0400, Len Brown wrote: 
+> On 04/12/2013 12:48 PM, Mike Galbraith wrote:
+> > On Fri, 2013-04-12 at 18:23 +0200, Borislav Petkov wrote: 
+> >> On Fri, Apr 12, 2013 at 04:46:50PM +0800, Alex Shi wrote:
+> >>> Thanks a lot for comments, Len!
+> >>
+> >> AFAICT, you kinda forgot to answer his most important question:
+> >>
+> >>> These numbers suggest that this patch series simultaneously
+> >>> has a negative impact on performance and energy required
+> >>> to retire the workload.  Why do it?
+> > 
+> > Hm.  When I tested AIM7 compute on a NUMA box, there was a marked
+> > throughput increase at the low to moderate load end of the test spectrum
+> > IIRC.  Fully repeatable.  There were also other benefits unrelated to
+> > power, ie mitigation of the evil face of select_idle_sibling().  I
+> > rather liked what I saw during ~big box test-drive.
+> > 
+> > (just saying there are other aspects besides joules in there)
+> 
+> Mike,
+> 
+> Can you re-run your AIM7 measurement with turbo-mode and HT-mode disabled,
+> and then independently re-enable them?
+> 
+> If you still see the performance benefit, then that proves
+> that the scheduler hacks are not about tricking into
+> turbo mode, but something else.
 
-Ping.
+I did that today, neither turbo nor HT affected the performance gain.  I
+used the same box and patch set as tested before (v4), but plugged into
+linus HEAD.  "powersaving" AIM7 numbers are ~identical to those I posted
+before, "performance" is lower at the low end of AIM7 test spectrum, but
+as before, delta goes away once the load becomes hefty.
 
-Thanks,
-Stratos
+-Mike
+
