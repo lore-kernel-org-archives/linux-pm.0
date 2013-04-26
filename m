@@ -1,41 +1,58 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 2/2] thermal: db8500_cpufreq_cooling: remove usage of
- IS_ERR_OR_NULL()
-Date: Thu, 25 Apr 2013 16:17:21 -0400
-Message-ID: <51798F51.9010401@ti.com>
-References: <1366899214-22639-1-git-send-email-eduardo.valentin@ti.com> <1366899214-22639-3-git-send-email-eduardo.valentin@ti.com> <20130425174635.GB25783@flint.arm.linux.org.uk>
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
+Date: Fri, 26 Apr 2013 01:39:05 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
+	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
+	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
+	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
+ <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:59680 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932087Ab3DYURo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Apr 2013 16:17:44 -0400
-In-Reply-To: <20130425174635.GB25783@flint.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
+Content-Language: en-US
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@secretlab.ca>, Rob Herring <rob.herring@calxeda.com>, Hongbo Zhang <hongbo.zhang@stericsson.com>, devicetree-discuss@lists.ozlabs.org
 
-On 25-04-2013 13:46, Russell King wrote:
-> On Thu, Apr 25, 2013 at 10:13:34AM -0400, Eduardo Valentin wrote:
->> diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
->> index 21419851..786d192 100644
->> --- a/drivers/thermal/db8500_cpufreq_cooling.c
->> +++ b/drivers/thermal/db8500_cpufreq_cooling.c
->> @@ -37,7 +37,7 @@ static int db8500_cpufreq_cooling_probe(struct platform_device *pdev)
->>   	cpumask_set_cpu(0, &mask_val);
->>   	cdev = cpufreq_cooling_register(&mask_val);
->>
->> -	if (IS_ERR_OR_NULL(cdev)) {
->> +	if (IS_ERR(cdev)) {
->>   		dev_err(&pdev->dev, "Failed to register cooling device\n");
->>   		return PTR_ERR(cdev);
->
-> Correct.  cpufreq_cooling_register() returns either an error-pointer or
-> a valid pointer.
->
-
-Thanks for your review!
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGNwdWZyZXEtb3duZXJAdmdl
+ci5rZXJuZWwub3JnIFttYWlsdG86Y3B1ZnJlcS1vd25lckB2Z2VyLmtlcm5lbC5vcmddDQo+IE9u
+IEJlaGFsZiBPZiBWaXJlc2ggS3VtYXINCj4gU2VudDogMjAxM8TqNNTCMjXI1SAxOToyNw0KPiBU
+bzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IHJqd0BzaXNrLnBsOyBjcHVmcmVxQHZnZXIu
+a2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBMaXN0cw0KPiBsaW5hcm8ta2Vy
+bmVsDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGNwdWZyZXE6IEZpeCB0aGUgZHJpdmVyIGNhbiBu
+b3QgYmUgdW5sb2FkZWQgaXNzdWUNCj4gDQo+IE9uIDI1IEFwcmlsIDIwMTMgMTY6MDgsIFRhbmcg
+WXVhbnRpYW4tQjI5OTgzIDxCMjk5ODNAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4gVGhhdCdz
+IHdpcmVkLiBJIHdpbGwgaGF2ZSBtb3JlIHRlc3RzIG9uIHRoaXMuIFRoYW5rcy4NCj4gPg0KPiA+
+IEkgZm91bmQgYW5vdGhlciBidWcgeW91IGNhbiB0cnkuDQo+ID4gSXQgaXMgYWxzbyBmb3VuZCBv
+biBtdWx0aXBsZSBjcHVzIHBlciBjbHVzdGVyLg0KPiA+IFRlc3Qgc3RlcDoNCj4gPiAxLiBjb21w
+aWxlIHRoZSBkcml2ZXIgYXMgbW9kdWxlLg0KPiA+IDIuIGhvdC11bnBsdWcgb25lIGNwdSggYW55
+IG9uZSBpcyBPSykNCj4gPiAzLiBpbnNtb2QgbW9kdWxlDQo+ID4gNC4gaG90LXBsdWcgdGhlIGNw
+dSAtLS0tPiB3aWxsIGNhdXNlIGVycm9yLg0KPiA+DQo+ID4gT3IgdGVzdCBzdGVwIGFsc28gY2Fu
+IGJlOg0KPiA+IDEuIGhvdC11bnBsdWcgYWxsIHRoZSBjcHVzIGluIG9uZSBjbHVzdGVyIDIuIGhv
+dC1wbHVnIHRoZSBjcHVzIGluIHRoaXMNCj4gPiBjbHVzdGVyLiBXaGVuIHRoZSBzZWNvbmQgY3B1
+IGdldHMgaG90LXBsdWdlZCwgZXJyb3Igd2lsbCBvY2N1ci4NCj4gPg0KPiA+IFRoYXQncyBiZWNh
+dXNlIHRoZSBzZWNvbmQgY3B1IHdpbGwgY2FsbCB0aGUgY3B1ZnJlcV9hZGRfZGV2X3N5bWxpbmso
+KQ0KPiA+IHRvIENyZWF0ZSB0aGUgZmlyc3QgY3B1J3MgImNwdWZyZXEgbGluayIgd2hpY2ggaXMg
+YWxyZWFkeSBjcmVhdGVkLg0KPiA+IFRoYXQgbmVlZHMgbW9yZSB3b3JrIHRvIG1ha2UgYSBwYXRj
+aCwgaG9wZSB5b3UgY2FuIGZpeCBpdC4NCj4gDQo+IEhhdmVuJ3QgdGVzdGVkIGl0IG5vdyBidXQg
+aSBrbm93IHdoeSB0aGF0IGNhbiBoYXBwZW4uIEl0IHdpbGwgaGFwcGVuIG9ubHkNCj4gaWYNCj4g
+ZHJpdmVyLT5pbml0KCkgaXNuJ3Qgc2V0dGluZyBwb2xpY3ktPmNwdXMgY29ycmVjdGx5LiBZb3Ug
+bmVlZCB0byBzZXQNCj4gYm90aCBvbmxpbmUgJg0KPiBvZmZsaW5lIGNwdXMsIGJ1dCBpbiB5b3Vy
+IHNldHVwIGl0IGxvb2tzIHlvdSBhcmUgc2V0dGluZyBvbmx5IG9ubGluZSBjcHVzDQo+IGFuZCBz
+byBjcHVmcmVxIGNvcmUgaXNuJ3QgYWJsZSB0byB1c2UgdGhlIGVhcmxpZXIgcG9saWN5IHN0cnVj
+dCBmb3INCj4gb2ZmbGluZSBjcHVzLg0KPiANCj4gQW5kIHNvIGl0IGNyZWF0ZWQgYSBuZXcgc3Ry
+dWN0IGNwdWZyZXFfcG9saWN5IGZvciBzZWNvbmQgY3B1IGFuZCB0cnlpbmcNCj4gdG8gYWRkIGxp
+bmtzIGZvciBhbGwgb3RoZXIgY3B1cyB0b28uLi4gKHdoaWNoIHNoYXJlIHRoaXMgcG9saWN5KS4u
+DQpFeGFjdGx5Lg0KQ3VycmVudGx5LCB3ZSBkb24ndCBjb25zaWRlciB0aGUgb2ZmbGluZSBjcHVz
+IHdoZW4gc2V0dGluZyBwb2xpY3ktPmNwdXMuDQpQcm9iYWJseSBvdGhlciBwbGF0Zm9ybXMgZG8g
+dGhlIHNhbWUgdGhpbmcuDQoNClRoYW5rcywNCll1YW50aWFuDQo+IC0tDQo+IFRvIHVuc3Vic2Ny
+aWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBp
+biB0aGUNCj4gYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBN
+b3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21v
+LWluZm8uaHRtbA0KDQo=
 
