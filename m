@@ -1,52 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] cpufreq: MAINTAINERS: Add co-maintainer
-Date: Fri, 26 Apr 2013 18:23:16 +0530
-Message-ID: <d62f23f626eaf334236cb9694c83ee4619460b76.1366980696.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:53711 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756155Ab3DZMxa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 08:53:30 -0400
-Received: by mail-pa0-f53.google.com with SMTP id bh4so2487128pad.12
-        for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2013 05:53:29 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 linux-next] cpufreq: ondemand: Calculate gradient of
+ CPU load to early increase frequency
+Date: Fri, 26 Apr 2013 17:41:18 +0300
+Message-ID: <517A920E.3000705@semaphore.gr>
+References: <ore61p9gvaic2j0fc083dpbd.1364970699079@email.android.com> <CAKohponUuwiQ9EiKq66Mgf7zZxonxHs=DNbhx=uydDVB5bed6w@mail.gmail.com> <3060957.HxB12olH3c@vostro.rjw.lan> <515CBB98.4020607@semaphore.gr> <CAKohpomV7uSS1suFKGiGJfGvvqodKHhvc_uO3WsR4jzUg+1o9g@mail.gmail.com> <515F2AF3.9050709@semaphore.gr> <51644855.1090300@semaphore.gr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51644855.1090300@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, patches@linaro.org, arnd.bergmann@linaro.org, olof@lixom.net, Viresh Kumar <viresh.kumar@linaro.org>
 
-With prior discussions (Over private emails) with current Maintainer of cpufreq
-framework (Rafael), I am adding myself as a co-maintainer of cpufreq framework.
+On 04/09/2013 07:56 PM, Stratos Karafotis wrote:
+> On 04/05/2013 10:50 PM, Stratos Karafotis wrote:
+>> Hi Viresh,
+>>
+>> On 04/04/2013 07:54 AM, Viresh Kumar wrote:
+>>> Hi Stratos,
+>>>
+>>> Yes, your results show some improvements. BUT if performance is the
+>>> only thing
+>>> we were looking for, then we will never use ondemand governor but
+>>> performance
+>>> governor.
+>>>
+>>> I suspect this little increase in performance must have increased
+>>> power numbers
+>>> too (significantly). So, if you can get numbers in the form of
+>>> power/performance
+>>> with and without your patch, it will be great.
+>>>
+>>> --
+>>> viresh
+>>>
+>>
+>> I run some more tests. I increased the number of iterations to 100
+>> (from 20).
+>> I also test for counter 1,000,000 (~4200us), 5,000,000 (~10000us),
+>> 15,000,000 (~30000us).
+>>
+>> This time, I also extracted statistics from cpufreq_stats driver. I
+>> think this will be an
+>> indication for power consumption. Below the results and attached the
+>> program I used for to
+>> get these numbers.
+>
+> Any comments would be appreciated.
+>
+> Thanks,
+> Stratos
+>
+>
 
-This would mostly be for cpufreq core and ARM drivers but not restricted to
-them.
+Ping.
 
-This also adds path of the git tree where cpufreq patches are pulled in.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- Added path of git tree too.
-- Cc'd ARM SoC Maintainers.
-
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 68d376e..cbed63c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2211,9 +2211,11 @@ F:	drivers/net/ethernet/ti/cpmac.c
- 
- CPU FREQUENCY DRIVERS
- M:	Rafael J. Wysocki <rjw@sisk.pl>
-+M:	Viresh Kumar <viresh.kumar@linaro.org>
- L:	cpufreq@vger.kernel.org
- L:	linux-pm@vger.kernel.org
- S:	Maintained
-+T:	git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
- F:	drivers/cpufreq/
- F:	include/linux/cpufreq.h
- 
--- 
-1.7.12.rc2.18.g61b472e
-
+Thanks,
+Stratos
