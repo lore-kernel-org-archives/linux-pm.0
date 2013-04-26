@@ -1,94 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI thermal: do not always return THERMAL_TREND_RAISING for active trip points
-Date: Fri, 26 Apr 2013 14:07:45 +0200
-Message-ID: <2045208.arlEGZ66vS@vostro.rjw.lan>
-References: <1366967993-3812-1-git-send-email-rui.zhang@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle: simplify multiple driver support
+Date: Fri, 26 Apr 2013 14:13:48 +0200
+Message-ID: <517A6F7C.6080308@linaro.org>
+References: <1366976529-27731-1-git-send-email-daniel.lezcano@linaro.org> <1903930.d1Bbd950lY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:44979 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939Ab3DZL7h convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 07:59:37 -0400
-In-Reply-To: <1366967993-3812-1-git-send-email-rui.zhang@intel.com>
+Received: from mail-we0-f169.google.com ([74.125.82.169]:36393 "EHLO
+	mail-we0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755401Ab3DZMNu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 08:13:50 -0400
+Received: by mail-we0-f169.google.com with SMTP id p43so3538985wea.0
+        for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2013 05:13:49 -0700 (PDT)
+In-Reply-To: <1903930.d1Bbd950lY@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, lenb@kernel.org, eduardo.valentin@ti.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On Friday, April 26, 2013 05:19:53 PM Zhang Rui wrote:
-> Commit 4ae46befb49d4173122e0afa995c4e93d01948a2
-> introduces a regression that the fan is always on
-> even if the system is in idle state.
->=20
-> My original idea in that commit is that:
-> when the current temperature is above the trip point,
-> keep the fan on, even if the temperature is dropping.
-> when the current temperature is below the trip point,
-> turn on the fan when the temperature is raising,
-> turn off the fan when the temperature is dropping.
->=20
-> But this is what the code actually does:
-> when the current temperature is above the trip point,
-> the fan keeps on.
-> when the current temperature is below the trip point,
-> the fan is always on because thermal_get_trend()
-> in driver/acpi/thermal.c returns THERMAL_TREND_RAISING.
-> Thus the fan keeps running even if the system is idle.
->=20
-> Fix this in drivers/acpi/thermal.c.
->=20
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D56591
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D56601
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D50041#c45
->=20
-> Patch should be applied to 3.7 stable kernel and later.
->=20
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> Tested-by: Ville Syrj=C3=A4l=C3=A4 <syrjala@sci.fi>
-> Cc: <stable@vger.kernel.org> # v3.7+
+On 04/26/2013 02:07 PM, Rafael J. Wysocki wrote:
+> On Friday, April 26, 2013 01:42:09 PM Daniel Lezcano wrote:
+>> Commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 brought the multiple=
+ driver
+>> support. The code added a couple of new API to register the driver p=
+er cpu.
+>> That led to some code complexity to handle the kernel config options=
+ when
+>> the multiple driver support is enabled or not, which is not really n=
+ecessary.
+>> The code has to be compatible when the multiple driver support is no=
+t enabled,
+>> and the multiple driver support has to be compatible with the old ap=
+i.
+>>
+>> This patch removes this API, which is not yet used by any driver but=
+ needed
+>> for the HMP cpuidle drivers which will come soon, and replaces its u=
+sage
+>> by a cpumask pointer in the cpuidle driver structure telling what cp=
+us are
+>> handled by the driver. That let the API cpuidle_[un]register_driver =
+to be used
+>> for the multipled driver support.
+>>
+>> The current code, a bit poor in comments, has been commented and sim=
+plified.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Honestly, I'd prefer that to go into 3.11.  At this point I want thin=
+gs to
+> stabilize rather than to stir up.
 
-Applied.
+Yes, sure. That makes sense.
 
-Thanks,
-Rafael
+Thanks
+-- Daniel
 
 
-> ---
->  drivers/acpi/thermal.c |   16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 8470771..a33821c 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -723,9 +723,19 @@ static int thermal_get_trend(struct thermal_zone=
-_device *thermal,
->  		return -EINVAL;
-> =20
->  	if (type =3D=3D THERMAL_TRIP_ACTIVE) {
-> -		/* aggressive active cooling */
-> -		*trend =3D THERMAL_TREND_RAISING;
-> -		return 0;
-> +		unsigned long trip_temp;
-> +		unsigned long temp =3D KELVIN_TO_MILLICELSIUS(tz->temperature,
-> +							tz->kelvin_offset);
-> +		if (thermal_get_trip_temp(thermal, trip, &trip_temp))
-> +			return -EINVAL;
-> +
-> +		if (temp > trip_temp) {
-> +			*trend =3D THERMAL_TREND_RAISING;
-> +			return 0;
-> +		} else {
-> +			/* Fall back on default trend */
-> +			return -EINVAL;
-> +		}
->  	}
-> =20
->  	/*
->=20
 --=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
