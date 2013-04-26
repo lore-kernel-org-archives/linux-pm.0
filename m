@@ -1,42 +1,41 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH v2 0/4] Thermal:exynos: Thermal Measurement Unit fix and
- Samsung SoCs support
-Date: Fri, 26 Apr 2013 12:15:50 +0530
-Message-ID: <CAK9yfHzup+_HfJo49xDO=Ne_P66WoCvwu8aan-KVEtnhh9EkTQ@mail.gmail.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
-	<1366893045-31586-1-git-send-email-l.majewski@samsung.com>
-	<51794E3A.10009@ti.com>
-	<20130425182843.70a2d7d3@amdc308.digital.local>
-	<CAK9yfHz63uGH+HwpmGQ9gzsqa4AsKEQ47QR8TrfJ4joUP2kZYw@mail.gmail.com>
-	<20130426083917.0b40adda@amdc308.digital.local>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] cpuidle: add maintainer entry
+Date: Fri, 26 Apr 2013 10:32:38 +0200
+Message-ID: <CACRpkdbQcxXzySH70NHMQfQXqMc72GUwvj1KQaxmnLSAbJ17rw@mail.gmail.com>
+References: <1366810463-17495-1-git-send-email-daniel.lezcano@linaro.org>
+	<87k3nr50n4.fsf@linaro.org>
+	<CACRpkdaA8uG5jYyYTbuvzZNRr47EhWHFMLLz+jbiE3FPC1vjmA@mail.gmail.com>
+	<9935265.yXMiRQV8Yo@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20130426083917.0b40adda@amdc308.digital.local>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Myungjoo Ham <myungjoo.ham@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f179.google.com ([209.85.223.179]:62659 "EHLO
+	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755022Ab3DZIci (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 04:32:38 -0400
+Received: by mail-ie0-f179.google.com with SMTP id 16so4590441iea.38
+        for <linux-pm@vger.kernel.org>; Fri, 26 Apr 2013 01:32:38 -0700 (PDT)
+In-Reply-To: <9935265.yXMiRQV8Yo@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Rob Herring <rob.herring@calxeda.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Nicolas Ferre <nicolas.ferre@atmel.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>, Andrew Victor <linux@maxim.org.za>, Sascha Hauer <kernel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Simon Horman <horms+renesas@verge.net.au>, Joseph Lo <josephl@nvidia.com>, Arnd Bergmann <arnd@arndb.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Lukasz,
+On Thu, Apr 25, 2013 at 8:27 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday, April 25, 2013 02:09:11 PM Linus Walleij wrote:
+>> On Wed, Apr 24, 2013 at 6:55 PM, Kevin Hilman <khilman@linaro.org> wrote:
 
-On 26 April 2013 12:09, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Hi Sachin,
->
->> >
->> > Yes, this is a similar patch. However I've changed more clocks to
->> > clk_prepare_enable (clk_unprepare_disable). I've spoken about this
->> > with Sachin recently.
+>> > What do you think about having Daniel listed here as a co-maintainer?
 >>
->> The above description is actually for the below patch. Lukasz will
->> test and see if additional changes are needed.
->> If so he will send an incremental patch to address it.
+>> I second that. He will bring useful embedded knowledge to the
+>> subsystem.
 >
-> From tests, which I've done so far, TMU is working correctly.
+> I'd still like to have a say about the core, but if Daniel is willing to
+> maintain ARM cpuidle drivers and all of the relevant ARM people agree with
+> that, that'll be great.
 
-Thanks for the confirmation.
+OK Daniel can you post a v2 adding yourself as co-maintainer as well?
+Add my Acked-by if you wish.
 
-
--- 
-With warm regards,
-Sachin
+Yours,
+Linus Walleij
