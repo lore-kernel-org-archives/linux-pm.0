@@ -1,43 +1,42 @@
-From: Tang Yuantian-B29983 <B29983@freescale.com>
-Subject: RE: [PATCH] cpufreq: Fix the driver can not be unloaded issue
-Date: Fri, 26 Apr 2013 06:44:01 +0000
-Message-ID: <D07C73A334FF604B95B3CBD2A545D07B0B16585B@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1366792092-10407-1-git-send-email-Yuantian.Tang@freescale.com>
-	<CAKohpomcSP4HegdQfJYDe6UHa6CTuV-G9UCb8QFDxfDvcTzsYw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165120@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohpokWAKQDsf-6LrjDnjyKFuuZTsCYCOuiEqsv0wO0i5Ny-A@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B165358@039-SN2MPN1-011.039d.mgd.msft.net>
-	<CAKohponjJ-30omoXJM94TE2Zs=8zT1Vkgcptd6KcvdY_ztqRsw@mail.gmail.com>
-	<D07C73A334FF604B95B3CBD2A545D07B0B1656F0@039-SN2MPN1-011.039d.mgd.msft.net>
- <CAKohpon2PHFj4WuGd1wwBLnSC8Fc_VOvWmVoc04278gPKZWsrg@mail.gmail.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH v2 0/4] Thermal:exynos: Thermal Measurement Unit fix and
+ Samsung SoCs support
+Date: Fri, 26 Apr 2013 12:15:50 +0530
+Message-ID: <CAK9yfHzup+_HfJo49xDO=Ne_P66WoCvwu8aan-KVEtnhh9EkTQ@mail.gmail.com>
+References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+	<1366893045-31586-1-git-send-email-l.majewski@samsung.com>
+	<51794E3A.10009@ti.com>
+	<20130425182843.70a2d7d3@amdc308.digital.local>
+	<CAK9yfHz63uGH+HwpmGQ9gzsqa4AsKEQ47QR8TrfJ4joUP2kZYw@mail.gmail.com>
+	<20130426083917.0b40adda@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon2PHFj4WuGd1wwBLnSC8Fc_VOvWmVoc04278gPKZWsrg@mail.gmail.com>
-Content-Language: en-US
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20130426083917.0b40adda@amdc308.digital.local>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, Zhang Rui <rui.zhang@intel.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogY3B1ZnJlcS1vd25lckB2
-Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpjcHVmcmVxLW93bmVyQHZnZXIua2VybmVsLm9yZ10NCj4g
-T24gQmVoYWxmIE9mIFZpcmVzaCBLdW1hcg0KPiBTZW50OiAyMDEzxOo01MIyNsjVIDEyOjQxDQo+
-IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4Mw0KPiBDYzogcmp3QHNpc2sucGw7IGNwdWZyZXFAdmdl
-ci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IExpc3RzDQo+IGxpbmFyby1r
-ZXJuZWwNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gY3B1ZnJlcTogRml4IHRoZSBkcml2ZXIgY2Fu
-IG5vdCBiZSB1bmxvYWRlZCBpc3N1ZQ0KPiANCj4gT24gMjYgQXByaWwgMjAxMyAwNzowOSwgVGFu
-ZyBZdWFudGlhbi1CMjk5ODMgPEIyOTk4M0BmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPiBFeGFj
-dGx5Lg0KPiA+IEN1cnJlbnRseSwgd2UgZG9uJ3QgY29uc2lkZXIgdGhlIG9mZmxpbmUgY3B1cyB3
-aGVuIHNldHRpbmcgcG9saWN5LT5jcHVzLg0KPiA+IFByb2JhYmx5IG90aGVyIHBsYXRmb3JtcyBk
-byB0aGUgc2FtZSB0aGluZy4NCj4gDQo+IEJ1dCB0aGlzIGlzIGEgcmVxdWlyZW1lbnQgb2YgY3B1
-ZnJlcSBmcmFtZXdvcmsgYW5kIGRyaXZlcnMgbXVzdCBhZGFwdCB0bw0KPiBpdC4NCj4gTGV0IG1l
-IGtub3cgd2hpY2ggZHJpdmVycyBkb24ndCBtZWV0IHRoaXMgcmVxdWlyZW1lbnQgYW5kIGkgd2ls
-bCBnZXQgdGhlbQ0KPiBmaXhlZC4NCk9LLCBJIHdpbGwgdGFrZSBjYXJlIG9mIHRoaXMgaW4gbXkg
-ZHJpdmVyLg0KSSBoYXZlIG5vIGlkZWEgYWJvdXQgb3RoZXIgZHJpdmVycy4NCg0KUmVnYXJkcywN
-Cll1YW50aWFuDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRo
-ZSBsaW5lICJ1bnN1YnNjcmliZSBjcHVmcmVxIiBpbiB0aGUNCj4gYm9keSBvZiBhIG1lc3NhZ2Ug
-dG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9tbyBpbmZvIGF0DQo+IGh0
-dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
+Hi Lukasz,
 
+On 26 April 2013 12:09, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> Hi Sachin,
+>
+>> >
+>> > Yes, this is a similar patch. However I've changed more clocks to
+>> > clk_prepare_enable (clk_unprepare_disable). I've spoken about this
+>> > with Sachin recently.
+>>
+>> The above description is actually for the below patch. Lukasz will
+>> test and see if additional changes are needed.
+>> If so he will send an incremental patch to address it.
+>
+> From tests, which I've done so far, TMU is working correctly.
+
+Thanks for the confirmation.
+
+
+-- 
+With warm regards,
+Sachin
