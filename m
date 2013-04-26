@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2 05/20] thermal: exynos: Bifurcate exynos tmu driver and configuration data
-Date: Fri, 26 Apr 2013 16:07:36 +0530
-Message-ID: <1366972671-9227-6-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V2 08/20] thermal: exynos: Support thermal tripping
+Date: Fri, 26 Apr 2013 16:07:39 +0530
+Message-ID: <1366972671-9227-9-git-send-email-amit.daniel@samsung.com>
 References: <1366972671-9227-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1366972671-9227-1-git-send-email-amit.daniel@samsung.com>
@@ -10,275 +10,70 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This code splits the exynos tmu driver code into SOC specific data parts.
-This will simplify adding new SOC specific data to the same TMU controller.
+TMU urgently sends active-high signal (thermal trip) to PMU, and thermal
+tripping by hardware logic. Thermal tripping means that PMU cuts off the
+whole power of SoC by controlling external voltage regulator.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/Makefile                |    1 +
- drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
- drivers/thermal/samsung/exynos_tmu.c            |   67 +------------------
- drivers/thermal/samsung/exynos_tmu_data.c       |   78 +++++++++++++++++++++++
- drivers/thermal/samsung/exynos_tmu_data.h       |   40 ++++++++++++
- 5 files changed, 124 insertions(+), 64 deletions(-)
- create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
- create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+ drivers/thermal/samsung/exynos_tmu.c      |    8 +++++++-
+ drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+ 2 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-index 75e1f97..b133255 100644
---- a/drivers/thermal/samsung/Makefile
-+++ b/drivers/thermal/samsung/Makefile
-@@ -3,4 +3,5 @@
- #
- obj-$(CONFIG_EXYNOS_SOC_THERMAL)		+= exynos_soc_thermal.o
- exynos_soc_thermal-y				:= exynos_tmu.o
-+exynos_soc_thermal-y				+= exynos_tmu_data.o
- exynos_soc_thermal-$(CONFIG_EXYNOS_COMMON)	+= exynos_thermal_common.o
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-index 985b848..6ed9bd9 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.h
-+++ b/drivers/thermal/samsung/exynos_thermal_common.h
-@@ -62,7 +62,7 @@ struct freq_clip_table {
- struct	thermal_trip_point_conf {
- 	int trip_val[MAX_TRIP_COUNT];
- 	int trip_count;
--	u8 trigger_falling;
-+	unsigned char trigger_falling;
- };
- 
- struct	thermal_cooling_conf {
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index a02f2c9..05b5068 100644
+index 77b6a37..23baeeb 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -34,6 +34,7 @@
- #include <linux/workqueue.h>
- #include "exynos_thermal_common.h"
- #include "exynos_tmu.h"
-+#include "exynos_tmu_data.h"
+@@ -88,6 +88,7 @@
+ #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
+ #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+ #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
++#define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
  
- /* Exynos generic registers */
- #define EXYNOS_TMU_REG_TRIMINFO		0x0
-@@ -385,66 +386,6 @@ static struct thermal_sensor_conf exynos_sensor_conf = {
- 	.write_emul_temp	= exynos_tmu_set_emulation,
- };
+ #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
+ #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
+@@ -190,7 +191,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ {
+ 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+ 	struct exynos_tmu_platform_data *pdata = data->pdata;
+-	unsigned int status, trim_info;
++	unsigned int status, trim_info, con;
+ 	unsigned int rising_threshold = 0, falling_threshold = 0;
+ 	int ret = 0, threshold_code, i, trigger_levs = 0;
  
--#if defined(CONFIG_CPU_EXYNOS4210)
--static struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
--	.threshold = 80,
--	.trigger_levels[0] = 5,
--	.trigger_levels[1] = 20,
--	.trigger_levels[2] = 30,
--	.trigger_level0_en = 1,
--	.trigger_level1_en = 1,
--	.trigger_level2_en = 1,
--	.trigger_level3_en = 0,
--	.gain = 15,
--	.reference_voltage = 7,
--	.cal_type = TYPE_ONE_POINT_TRIMMING,
--	.freq_tab[0] = {
--		.freq_clip_max = 800 * 1000,
--		.temp_level = 85,
--	},
--	.freq_tab[1] = {
--		.freq_clip_max = 200 * 1000,
--		.temp_level = 100,
--	},
--	.freq_tab_count = 2,
--	.type = SOC_ARCH_EXYNOS4210,
--};
--#define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
--#else
--#define EXYNOS4210_TMU_DRV_DATA (NULL)
--#endif
--
--#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
--static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
--	.threshold_falling = 10,
--	.trigger_levels[0] = 85,
--	.trigger_levels[1] = 103,
--	.trigger_levels[2] = 110,
--	.trigger_level0_en = 1,
--	.trigger_level1_en = 1,
--	.trigger_level2_en = 1,
--	.trigger_level3_en = 0,
--	.gain = 8,
--	.reference_voltage = 16,
--	.noise_cancel_mode = 4,
--	.cal_type = TYPE_ONE_POINT_TRIMMING,
--	.efuse_value = 55,
--	.freq_tab[0] = {
--		.freq_clip_max = 800 * 1000,
--		.temp_level = 85,
--	},
--	.freq_tab[1] = {
--		.freq_clip_max = 200 * 1000,
--		.temp_level = 103,
--	},
--	.freq_tab_count = 2,
--	.type = SOC_ARCH_EXYNOS,
--};
--#define EXYNOS_TMU_DRV_DATA (&exynos_default_tmu_data)
--#else
--#define EXYNOS_TMU_DRV_DATA (NULL)
--#endif
--
- #ifdef CONFIG_OF
- static const struct of_device_id exynos_tmu_match[] = {
- 	{
-@@ -453,11 +394,11 @@ static const struct of_device_id exynos_tmu_match[] = {
- 	},
- 	{
- 		.compatible = "samsung,exynos4412-tmu",
--		.data = (void *)EXYNOS_TMU_DRV_DATA,
-+		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
- 	},
- 	{
- 		.compatible = "samsung,exynos5250-tmu",
--		.data = (void *)EXYNOS_TMU_DRV_DATA,
-+		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
- 	},
- 	{},
- };
-@@ -471,7 +412,7 @@ static struct platform_device_id exynos_tmu_driver_ids[] = {
- 	},
- 	{
- 		.name		= "exynos5250-tmu",
--		.driver_data    = (kernel_ulong_t)EXYNOS_TMU_DRV_DATA,
-+		.driver_data    = (kernel_ulong_t)EXYNOS5250_TMU_DRV_DATA,
- 	},
- 	{ },
- };
+@@ -255,6 +256,11 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+ 					falling_threshold |=
+ 						threshold_code << 8 * i;
+ 			}
++			if (pdata->trigger_type[i] != HW_TRIP)
++				continue;
++			con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
++			con |= (1 << EXYNOS_TMU_THERM_TRIP_EN_SHIFT);
++			writel(con, data->base + EXYNOS_TMU_REG_CONTROL);
+ 		}
+ 
+ 		writel(rising_threshold,
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-new file mode 100644
-index 0000000..13a60ca
---- /dev/null
+index ee6a3c9..6b937f5 100644
+--- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -0,0 +1,78 @@
-+/*
-+ * exynos_tmu_data.c - Samsung EXYNOS tmu data file
-+ *
-+ *  Copyright (C) 2013 Samsung Electronics
-+ *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ */
-+
-+#include "exynos_thermal_common.h"
-+#include "exynos_tmu.h"
-+
-+#if defined(CONFIG_CPU_EXYNOS4210)
-+struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
-+	.threshold = 80,
-+	.trigger_levels[0] = 5,
-+	.trigger_levels[1] = 20,
-+	.trigger_levels[2] = 30,
-+	.trigger_level0_en = 1,
-+	.trigger_level1_en = 1,
-+	.trigger_level2_en = 1,
-+	.trigger_level3_en = 0,
-+	.gain = 15,
-+	.reference_voltage = 7,
-+	.cal_type = TYPE_ONE_POINT_TRIMMING,
-+	.freq_tab[0] = {
-+		.freq_clip_max = 800 * 1000,
-+		.temp_level = 85,
-+	},
-+	.freq_tab[1] = {
-+		.freq_clip_max = 200 * 1000,
-+		.temp_level = 100,
-+	},
-+	.freq_tab_count = 2,
-+	.type = SOC_ARCH_EXYNOS4210,
-+};
-+#endif
-+
-+#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-+struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
-+	.threshold_falling = 10,
-+	.trigger_levels[0] = 85,
-+	.trigger_levels[1] = 103,
-+	.trigger_levels[2] = 110,
-+	.trigger_level0_en = 1,
-+	.trigger_level1_en = 1,
-+	.trigger_level2_en = 1,
-+	.trigger_level3_en = 0,
-+	.gain = 8,
-+	.reference_voltage = 16,
-+	.noise_cancel_mode = 4,
-+	.cal_type = TYPE_ONE_POINT_TRIMMING,
-+	.efuse_value = 55,
-+	.freq_tab[0] = {
-+		.freq_clip_max = 800 * 1000,
-+		.temp_level = 85,
-+	},
-+	.freq_tab[1] = {
-+		.freq_clip_max = 200 * 1000,
-+		.temp_level = 103,
-+	},
-+	.freq_tab_count = 2,
-+	.type = SOC_ARCH_EXYNOS,
-+};
-+#endif
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-new file mode 100644
-index 0000000..c8b0501
---- /dev/null
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -0,0 +1,40 @@
-+/*
-+ * exynos_tmu_data.h - Samsung EXYNOS tmu data header file
-+ *
-+ *  Copyright (C) 2013 Samsung Electronics
-+ *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ */
-+
-+#ifndef _LINUX_EXYNOS_TMU_DATA_H
-+#define _LINUX_EXYNOS_TMU_DATA_H
-+
-+#if defined(CONFIG_CPU_EXYNOS4210)
-+extern struct exynos_tmu_platform_data const exynos4210_default_tmu_data;
-+#define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
-+#else
-+#define EXYNOS4210_TMU_DRV_DATA (NULL)
-+#endif
-+
-+#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-+extern struct exynos_tmu_platform_data const exynos5250_default_tmu_data;
-+#define EXYNOS5250_TMU_DRV_DATA (&exynos5250_default_tmu_data)
-+#else
-+#define EXYNOS5250_TMU_DRV_DATA (NULL)
-+#endif
-+
-+#endif /*_LINUX_EXYNOS_TMU_DATA_H*/
+@@ -64,6 +64,7 @@ struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
+ 	.trigger_levels[0] = 85,
+ 	.trigger_levels[1] = 103,
+ 	.trigger_levels[2] = 110,
++	.trigger_levels[3] = 120,
+ 	.trigger_enable[0] = 1,
+ 	.trigger_enable[1] = 1,
+ 	.trigger_enable[2] = 1,
+@@ -71,6 +72,7 @@ struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
+ 	.trigger_type[0] = 0,
+ 	.trigger_type[1] = 0,
+ 	.trigger_type[2] = 1,
++	.trigger_type[3] = 2,
+ 	.gain = 8,
+ 	.reference_voltage = 16,
+ 	.noise_cancel_mode = 4,
 -- 
 1.7.1
