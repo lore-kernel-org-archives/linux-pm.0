@@ -1,61 +1,46 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 2/4] Thermal: exynos: Support for TMU regulator
- defined at device tree
-Date: Sat, 27 Apr 2013 08:50:52 +0800
-Message-ID: <1367023852.2196.2.camel@rzhang1-mobl4>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
-	 <1366893045-31586-1-git-send-email-l.majewski@samsung.com>
-	 <1366893045-31586-3-git-send-email-l.majewski@samsung.com>
-	 <CADGdYn6g5Lggkcbq9WMMfbqN-NBb_14_b1bfcd=7+CJrxJcquA@mail.gmail.com>
-	 <20130425152934.5041cc98@amdc308.digital.local> <51794F48.5040401@ti.com>
-	 <20130425182941.63ecff30@amdc308.digital.local>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: [PATCH] PM: Add pm_ops_ptr() macro
+Date: Sat, 27 Apr 2013 11:54:50 +0900
+Message-ID: <000001ce42f2$96128cc0$c237a640$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20130425182941.63ecff30@amdc308.digital.local>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, amit daniel kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:65239 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753894Ab3D0Cyw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Apr 2013 22:54:52 -0400
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, 'Len Brown' <len.brown@intel.com>, 'Pavel Machek' <pavel@ucw.cz>, "'Rafael J. Wysocki'" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-Hi, all,
+Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
+to be assigned without having an #define xxx NULL for the case that PM is
+not enabled.
 
-what is the status now?
-which one is preferred, this one or the one from Amit's patch set?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ include/linux/pm.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-thanks,
-rui
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a224c7f..bd50d15 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -55,8 +55,10 @@ struct device;
+ 
+ #ifdef CONFIG_PM
+ extern const char power_group_name[];		/* = "power" */
++#define pm_ops_ptr(_ptr)	(_ptr)
+ #else
+ #define power_group_name	NULL
++#define pm_ops_ptr(_ptr)	NULL
+ #endif
+ 
+ typedef struct pm_message {
+-- 
+1.7.2.5
 
 
-On Thu, 2013-04-25 at 18:29 +0200, Lukasz Majewski wrote:
-> Hi Eduardo,
-> 
-> > Amit, Lukasz,
-> > 
-> > On 25-04-2013 09:29, Lukasz Majewski wrote:
-> > > Hi Amit,
-> > >  
-> > >> Hi Lukasz Majewski,
-> > >>
-> > >> Sorry for late review but I am currently working on restructuring
-> > >> the whole exynos thermal driver and this support of LDO can be
-> > >> added as feature as not all socs support this. This is also
-> > >> suggested by Eduardo. All your other patches looks fine.  
-> > >
-> > > But this is how it is already done. The VDD_TS is optional, so
-> > > Exynos5440 and Exynos4210 will not be broken.
-> > >
-> > > This shall preserve the correct behavior of the thermal driver.
-> > >  
-> > 
-> > If you guys plan to move to feature based approach, like suggested in 
-> > V1, then Id recommend adding a /* TODO: */ entry in your driver.
-> 
-> Ok, nice idea.
-> 
-> > 
-> > Amit, are you including this LDO support on your rework?
-> 
-> 
-> 
