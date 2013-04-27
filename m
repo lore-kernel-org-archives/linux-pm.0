@@ -1,69 +1,63 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] ACPI thermal: do not always return
- THERMAL_TREND_RAISING for active trip points
-Date: Sat, 27 Apr 2013 20:32:30 +0800
-Message-ID: <1367065950.2128.11.camel@rzhang1-mobl4>
-References: <1366967993-3812-1-git-send-email-rui.zhang@intel.com>
-	 <20130427102346.GA30588@amd.pavel.ucw.cz>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: CONFIG_X86_INTEL_PSTATE disables CPU frequency transition stats, many governors and other standard features
+Date: Sat, 27 Apr 2013 16:35:59 +0200
+Message-ID: <1843018.F0kGJi5K1v@vostro.rjw.lan>
+References: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:22552 "EHLO mga14.intel.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:46357 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751975Ab3D0Mcf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 27 Apr 2013 08:32:35 -0400
-In-Reply-To: <20130427102346.GA30588@amd.pavel.ucw.cz>
+	id S1751975Ab3D0O1u (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 27 Apr 2013 10:27:50 -0400
+In-Reply-To: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl, lenb@kernel.org, eduardo.valentin@ti.com
+To: "Artem S. Tashkinov" <t.artem@lycos.com>
+Cc: linux-kernel@vger.kernel.org, dirk.j.brandewie@intel.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
 
-On Sat, 2013-04-27 at 12:23 +0200, Pavel Machek wrote:
-> Hi!
+On Saturday, April 27, 2013 04:58:53 AM Artem S. Tashkinov wrote:
+> Hello,
 > 
-> > Commit 4ae46befb49d4173122e0afa995c4e93d01948a2
-> > introduces a regression that the fan is always on
-> > even if the system is in idle state.
-> > 
-> > My original idea in that commit is that:
-> > when the current temperature is above the trip point,
-> > keep the fan on, even if the temperature is dropping.
-> > when the current temperature is below the trip point,
-> > turn on the fan when the temperature is raising,
-> > turn off the fan when the temperature is dropping.
+> Just wanted to let everyone know that CONFIG_X86_INTEL_PSTATE wreaks
+> havoc with the CPU frequency subsystem in the Linux kernel.
 > 
-> Is that even right algoritm?
+> With this option enabled:
 > 
-sorry the changelog is not clear enough here.
-I should say,
-"keep the fan on when the temperature is raising"
-"turn off the fan when the temperature is dropping"
+> 1) All governors except performance and powersave are gone, ondemand
+> userspace, conservative
+> 
+> 2) scaling_cur_freq is gone, thus user space utilities monitoring the CPU
+> frequency have stopped working
+> 
+> 3) CPU frequency transition stats are gone, there's no "stats" directory
+> anywhere
+> 
+> 4) scaling_available_frequencies is gone, so I cannot set the desired constant
+> CPU frequency (the userspace governor is not available anyway)
+> 
+> Is this an intended behavior? I shrivel to think that's the case.
+> 
+> The bug report is filed here: https://bugzilla.kernel.org/show_bug.cgi?id=57141
 
-> Assume I'm running at very cold room, lets say -10C. Assume idle CPU
-> will hover around 30C with no fan, or hover around 10C with fan
-> running, trip point being 50C.
-> 
-> You _could_ leave fan off until 50C, having silent, passively cooled
-> system.
-> 
-> What it will do instead is annoyingly pulse fan at 10C.
-> 
-First, fan will never spins on if the temperature never hits 50C.
+intel_pstate is not a usual cpufreq driver and from the cpufreq's perspective
+it contains its own governor.  That's the reason why the other scaling governors
+aren't available with it.
 
-let's see how ACPI 3.0 fan (just have on and off state) is supposed to
-work after overheat.
-1. temperature goes above 50C
-2. Fan starts to spin.
-3. a) if temperature goes higher (if possible), fan keeps on.
-   b) if temperature drops, but still above 50C. the fan keeps on.
-   c) if temperature drops below 50C, the last temperature is above 50C,
-thus the fan is turned off.
-   d) if the temperature goes higher again, the fan will not spin on
-until the temperature is higher than the trip point (50C) again.
+The sysfs attributes mentioned above are missing simply because they don't make
+sense with intel_pstate.
 
-is this behavior what you want?
+I'm only wondering which user space doesn't work correctly with intel_pstate as
+you said in the bug entry above.
+
+If you don't want to use intel_pstate (in which case the ACPI driver will be
+used instead), please append intel_pstate=disable to the kernel command line.
 
 Thanks,
-rui
+Rafael
 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
