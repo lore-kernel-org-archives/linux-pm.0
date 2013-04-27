@@ -1,40 +1,44 @@
-From: "Artem S. Tashkinov" <t.artem@lycos.com>
-Subject: CONFIG_X86_INTEL_PSTATE disables CPU frequency transition stats,
- many governors and other standard features
-Date: Sat, 27 Apr 2013 04:58:53 +0000 (UTC)
-Message-ID: <475427035.74642.1367038733183.JavaMail.mail@webmail08>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI thermal: do not always return
+ THERMAL_TREND_RAISING for active trip points
+Date: Sat, 27 Apr 2013 12:23:47 +0200
+Message-ID: <20130427102346.GA30588@amd.pavel.ucw.cz>
+References: <1366967993-3812-1-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: dirk.j.brandewie@intel.com, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1366967993-3812-1-git-send-email-rui.zhang@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, rjw@sisk.pl, lenb@kernel.org, eduardo.valentin@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+Hi!
 
-Just wanted to let everyone know that CONFIG_X86_INTEL_PSTATE wreaks
-havoc with the CPU frequency subsystem in the Linux kernel.
+> Commit 4ae46befb49d4173122e0afa995c4e93d01948a2
+> introduces a regression that the fan is always on
+> even if the system is in idle state.
+> 
+> My original idea in that commit is that:
+> when the current temperature is above the trip point,
+> keep the fan on, even if the temperature is dropping.
+> when the current temperature is below the trip point,
+> turn on the fan when the temperature is raising,
+> turn off the fan when the temperature is dropping.
 
-With this option enabled:
+Is that even right algoritm?
 
-1) All governors except performance and powersave are gone, ondemand
-userspace, conservative
+Assume I'm running at very cold room, lets say -10C. Assume idle CPU
+will hover around 30C with no fan, or hover around 10C with fan
+running, trip point being 50C.
 
-2) scaling_cur_freq is gone, thus user space utilities monitoring the CPU
-frequency have stopped working
+You _could_ leave fan off until 50C, having silent, passively cooled
+system.
 
-3) CPU frequency transition stats are gone, there's no "stats" directory
-anywhere
+What it will do instead is annoyingly pulse fan at 10C.
 
-4) scaling_available_frequencies is gone, so I cannot set the desired constant
-CPU frequency (the userspace governor is not available anyway)
-
-Is this an intended behavior? I shrivel to think that's the case.
-
-The bug report is filed here: https://bugzilla.kernel.org/show_bug.cgi?id=57141
-
-Best regards,
-
-Artem
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
