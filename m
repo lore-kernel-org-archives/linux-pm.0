@@ -1,102 +1,61 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] thermal: Can't set policy
-Date: Fri, 26 Apr 2013 17:21:04 -0400
-Message-ID: <517AEFC0.2010301@ti.com>
-References: <1367008557-12443-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2 2/4] Thermal: exynos: Support for TMU regulator
+ defined at device tree
+Date: Sat, 27 Apr 2013 08:50:52 +0800
+Message-ID: <1367023852.2196.2.camel@rzhang1-mobl4>
+References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
+	 <1366893045-31586-1-git-send-email-l.majewski@samsung.com>
+	 <1366893045-31586-3-git-send-email-l.majewski@samsung.com>
+	 <CADGdYn6g5Lggkcbq9WMMfbqN-NBb_14_b1bfcd=7+CJrxJcquA@mail.gmail.com>
+	 <20130425152934.5041cc98@amdc308.digital.local> <51794F48.5040401@ti.com>
+	 <20130425182941.63ecff30@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1367008557-12443-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-acpi@vger.kernel.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, eduardo.valentin@ti.com
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20130425182941.63ecff30@amdc308.digital.local>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, amit daniel kachhap <amit.daniel@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Srinivas,
+Hi, all,
 
-On 26-04-2013 16:35, Srinivas Pandruvada wrote:
-> Setting policy results in invalid value error.
-> 	>echo "step_wise" > policy
-> 	>echo: write error: Invalid argument
->
-> Need clean up of the buffer which "echo" may add based on the
-> arguments, before comparing aganist list of governor names.
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->   drivers/thermal/thermal_core.c | 19 +++++++++++++++----
->   1 file changed, 15 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 4cdc3e3..ed6904f 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -696,16 +696,27 @@ static ssize_t
->   policy_store(struct device *dev, struct device_attribute *attr,
->   		    const char *buf, size_t count)
->   {
-> -	int ret = -EINVAL;
-> +	int ret;
->   	struct thermal_zone_device *tz = to_thermal_zone(dev);
->   	struct thermal_governor *gov;
-> +	char str_gov[THERMAL_NAME_LENGTH];
-> +	char format[6]; /* enough for 3 digit format width */
-> +
-> +	ret = snprintf(format, sizeof(format), "%%%ds",
-> +					THERMAL_NAME_LENGTH - 1);
-> +	if (ret < 0)
-> +		return ret;
-> +	ret = sscanf(buf, format, str_gov);
-> +	if (ret <= 0)
-> +		return -EINVAL;
+what is the status now?
+which one is preferred, this one or the one from Amit's patch set?
+
+thanks,
+rui
 
 
-Is this due to trainling \n? Why not using sysfs_streq()? I believe it 
-is better approach. Can you please check if the following solves the issue?
-
-https://gitorious.org/thermal-framework/thermal-framework/commit/810a33a629b40adfa92a164883281bbdfad80516
-
-commit 810a33a629b40adfa92a164883281bbdfad80516
-Author: Eduardo Valentin <eduardo.valentin@ti.com>
-Date:   Fri Apr 26 17:12:30 2013 -0400
-
-     thermal: better string treatment while finding governors
-
-     To avoid returning error value just because of trailing
-     \n, this patch changes the function to find governors
-     by name to use sysfs_streq().
-
-     Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f36cd44..08ea62c 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -58,7 +58,7 @@ static struct thermal_governor *__find_governor(const 
-char *name)
-         struct thermal_governor *pos;
-
-         list_for_each_entry(pos, &thermal_governor_list, governor_list)
--               if (!strnicmp(name, pos->name, THERMAL_NAME_LENGTH))
-+               if (sysfs_streq(name, pos->name))
-                         return pos;
-
-         return NULL;
-
->
->   	mutex_lock(&thermal_governor_lock);
->
-> -	gov = __find_governor(buf);
-> -	if (!gov)
-> +	gov = __find_governor(str_gov);
-> +	if (!gov) {
-> +		ret = -EINVAL;
->   		goto exit;
-> -
-> +	}
->   	tz->governor = gov;
->   	ret = count;
->
->
-
+On Thu, 2013-04-25 at 18:29 +0200, Lukasz Majewski wrote:
+> Hi Eduardo,
+> 
+> > Amit, Lukasz,
+> > 
+> > On 25-04-2013 09:29, Lukasz Majewski wrote:
+> > > Hi Amit,
+> > >  
+> > >> Hi Lukasz Majewski,
+> > >>
+> > >> Sorry for late review but I am currently working on restructuring
+> > >> the whole exynos thermal driver and this support of LDO can be
+> > >> added as feature as not all socs support this. This is also
+> > >> suggested by Eduardo. All your other patches looks fine.  
+> > >
+> > > But this is how it is already done. The VDD_TS is optional, so
+> > > Exynos5440 and Exynos4210 will not be broken.
+> > >
+> > > This shall preserve the correct behavior of the thermal driver.
+> > >  
+> > 
+> > If you guys plan to move to feature based approach, like suggested in 
+> > V1, then Id recommend adding a /* TODO: */ entry in your driver.
+> 
+> Ok, nice idea.
+> 
+> > 
+> > Amit, are you including this LDO support on your rework?
+> 
+> 
+> 
