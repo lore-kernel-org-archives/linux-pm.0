@@ -1,174 +1,47 @@
-From: Bibek Basu <bbasu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: RE: [PATCH 2/2] ARM: DT: tegra: pinctrl suspend resume hook
-Date: Sun, 28 Apr 2013 19:12:28 +0530
-Message-ID: <77F7DB30C698A44DA22FB222C89DE941A6692E62BD@BGMAIL01.nvidia.com>
-References: <1366740542-26127-1-git-send-email-bbasu@nvidia.com>
- <1366740542-26127-2-git-send-email-bbasu@nvidia.com>
- <20130426194908.GA3302@avionic-0098.mockup.avionic-design.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH linux-next v8] cpufreq: convert the cpufreq_driver to use the rcu
+Date: Mon, 29 Apr 2013 00:22:32 +0200
+Message-ID: <3218775.0Qs2EbHdzR@vostro.rjw.lan>
+References: <515C5AB6.5090109@sgi.com> <1365087205-8708-1-git-send-email-nzimmer@sgi.com> <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20130426194908.GA3302-RM9K5IK7kjIQXX3q8xo1gnVAuStQJXxyR5q1nwbD4aMs9pC9oP6+/A@public.gmane.org>
-Content-Language: en-US
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, "linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org" <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>
+Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> -----Original Message-----
-> From: Thierry Reding [mailto:thierry.reding-RM9K5IK7kjKj5M59NBduVrNAH6kLmebB@public.gmane.org]
-> Sent: Saturday, April 27, 2013 1:19 AM
-> To: Bibek Basu
-> Cc: Rafael J. Wysocki; linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org; swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org;
-> linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-
-> pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Subject: Re: [PATCH 2/2] ARM: DT: tegra: pinctrl suspend resume hook
+On Thursday, April 04, 2013 09:57:19 PM Viresh Kumar wrote:
+> On 4 April 2013 20:23, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > We eventually would like to remove the rwlock cpufreq_driver_lock or convert
+> > it back to a spinlock and protect the read sections with RCU.  The first step in
+> > that is moving the cpufreq_driver to use the rcu.
+> > I don't see an easy wasy to protect the cpufreq_cpu_data structure with the
+> > RCU, so I am leaving it with the rwlock for now since under certain configs
+> > __cpufreq_cpu_get is hot spot with 256+ cores.
+> >
+> > v5: Go a different way and split up the lock and use the rcu
+> > v6: use bools instead of checking function pointers
+> >     covert the cpufreq_data_lock to a rwlock
+> > v7: Rebase to use the already accepted half
+> > v8: Correct have_governor_per_policy
+> >     Reviewed location of rcu_read_(un)lock in several spots
 > 
-> * PGP Signed by an unknown key
+> Sorry for long delay or too many versions of this patch :)
 > 
-> On Tue, Apr 23, 2013 at 11:39:02PM +0530, Bibek Basu wrote:
-> > Make pinmux as the first node of tegra DT so as to achieve pinctrl as
-> > last device to suspend and first device to resume.
-> 
-> I don't think this is a good idea. For one it encodes Linux specific
-> implementation details within the device tree. Furthermore I seem to
-> remember that the device tree makes no guarantees that the order of nodes
-> in the blob is the same as the order in the DTS.
-> 
-> That said I don't have a good alternative. Perhaps one solution would be to
-> use suspend_late() and resume_early() for the pinmux driver since they will
-> be called after and before the suspend() and resume() callbacks of all other
-> devices, respectively. Other than that I wasn't able to find anything about
-> forcing a particular order during suspend and resume.
-> 
-> Cc'ing Rafael and the linux-pm mailing list, maybe somebody among them
-> knows a proper solution.
-> 
-Stephen actually suggested me earlier to add dummy pinmux state on all dependent devices node. And that will make sure that dependency of driver prevails.
-I tried that but I was not getting the desired result.
-Can anyone tell me correct syntax for adding dummy state?
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Regards
-Bibek
+Unfortunately, I had to revert this one, because it is obviously buggy.  Why?
+Because it adds rcu_read_lock()/rcu_read_unlock() around sysfs_create_file()
+which may sleep due to a GFP_KERNEL memory allocation.  Sorry for failing to
+notice that earlier.
 
-> Thierry
-> 
-> >
-> > Signed-off-by: Bibek Basu <bbasu-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> > ---
-> >  arch/arm/boot/dts/tegra114.dtsi | 12 ++++++------
-> > arch/arm/boot/dts/tegra20.dtsi  | 16 ++++++++--------
-> > arch/arm/boot/dts/tegra30.dtsi  | 13 +++++++------
-> >  3 files changed, 21 insertions(+), 20 deletions(-)
-> >
-> > diff --git a/arch/arm/boot/dts/tegra114.dtsi
-> > b/arch/arm/boot/dts/tegra114.dtsi index a58a761..36596ae 100644
-> > --- a/arch/arm/boot/dts/tegra114.dtsi
-> > +++ b/arch/arm/boot/dts/tegra114.dtsi
-> > @@ -11,6 +11,12 @@
-> >  		serial3 = &uartd;
-> >  	};
-> >
-> > +	pinmux: pinmux {
-> > +		compatible = "nvidia,tegra114-pinmux";
-> > +		reg = <0x70000868 0x148		/* Pad control
-> registers */
-> > +		       0x70003000 0x40c>;	/* Mux registers */
-> > +	};
-> > +
-> >  	host1x {
-> >  		compatible = "nvidia,tegra114-host1x", "simple-bus";
-> >  		reg = <0x50000000 0x00028000>;
-> > @@ -165,12 +171,6 @@
-> >  		interrupt-controller;
-> >  	};
-> >
-> > -	pinmux: pinmux {
-> > -		compatible = "nvidia,tegra114-pinmux";
-> > -		reg = <0x70000868 0x148		/* Pad control
-> registers */
-> > -		       0x70003000 0x40c>;	/* Mux registers */
-> > -	};
-> > -
-> >  	/*
-> >  	 * There are two serial driver i.e. 8250 based simple serial
-> >  	 * driver and APB DMA based serial driver for higher baudrate diff
-> > --git a/arch/arm/boot/dts/tegra20.dtsi
-> > b/arch/arm/boot/dts/tegra20.dtsi index a5a9615..6d8a663 100644
-> > --- a/arch/arm/boot/dts/tegra20.dtsi
-> > +++ b/arch/arm/boot/dts/tegra20.dtsi
-> > @@ -12,6 +12,14 @@
-> >  		serial4 = &uarte;
-> >  	};
-> >
-> > +	pinmux: pinmux {
-> > +		compatible = "nvidia,tegra20-pinmux";
-> > +		reg = <0x70000014 0x10   /* Tri-state registers */
-> > +		       0x70000080 0x20   /* Mux registers */
-> > +		       0x700000a0 0x14   /* Pull-up/down registers */
-> > +		       0x70000868 0xa8>; /* Pad control registers */
-> > +	};
-> > +
-> >  	host1x {
-> >  		compatible = "nvidia,tegra20-host1x", "simple-bus";
-> >  		reg = <0x50000000 0x00024000>;
-> > @@ -196,14 +204,6 @@
-> >  		interrupt-controller;
-> >  	};
-> >
-> > -	pinmux: pinmux {
-> > -		compatible = "nvidia,tegra20-pinmux";
-> > -		reg = <0x70000014 0x10   /* Tri-state registers */
-> > -		       0x70000080 0x20   /* Mux registers */
-> > -		       0x700000a0 0x14   /* Pull-up/down registers */
-> > -		       0x70000868 0xa8>; /* Pad control registers */
-> > -	};
-> > -
-> >  	das {
-> >  		compatible = "nvidia,tegra20-das";
-> >  		reg = <0x70000c00 0x80>;
-> > diff --git a/arch/arm/boot/dts/tegra30.dtsi
-> > b/arch/arm/boot/dts/tegra30.dtsi index 9f33086..b4b79f0 100644
-> > --- a/arch/arm/boot/dts/tegra30.dtsi
-> > +++ b/arch/arm/boot/dts/tegra30.dtsi
-> > @@ -12,6 +12,13 @@
-> >  		serial4 = &uarte;
-> >  	};
-> >
-> > +	pinmux: pinmux {
-> > +		compatible = "nvidia,tegra30-pinmux";
-> > +		reg = <0x70000868 0xd4    /* Pad control registers */
-> > +		       0x70003000 0x3e4>; /* Mux registers */
-> > +	};
-> > +
-> > +
-> >  	host1x {
-> >  		compatible = "nvidia,tegra30-host1x", "simple-bus";
-> >  		reg = <0x50000000 0x00024000>;
-> > @@ -216,12 +223,6 @@
-> >  		interrupt-controller;
-> >  	};
-> >
-> > -	pinmux: pinmux {
-> > -		compatible = "nvidia,tegra30-pinmux";
-> > -		reg = <0x70000868 0xd4    /* Pad control registers */
-> > -		       0x70003000 0x3e4>; /* Mux registers */
-> > -	};
-> > -
-> >  	/*
-> >  	 * There are two serial driver i.e. 8250 based simple serial
-> >  	 * driver and APB DMA based serial driver for higher baudrate
-> > --
-> > 1.8.1.5
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-tegra"
-> > in the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org More
-> majordomo
-> > info at  http://vger.kernel.org/majordomo-info.html
-> >
-> >
-> 
-> * Unknown Key
-> * 0x7F3EB3A1
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
