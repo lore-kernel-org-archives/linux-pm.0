@@ -1,38 +1,44 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH 00/10] optimize freezing tasks by reducing task wakeups
-Date: Mon, 29 Apr 2013 14:45:36 -0700
-Message-ID: <1367271946-7239-1-git-send-email-ccross@android.com>
+Subject: [PATCH 06/10] select: use freezable blocking call
+Date: Mon, 29 Apr 2013 14:45:42 -0700
+Message-ID: <1367271946-7239-7-git-send-email-ccross@android.com>
+References: <1367271946-7239-1-git-send-email-ccross@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1367271946-7239-1-git-send-email-ccross@android.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Colin Cross <ccross@android.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Colin Cross <ccross@android.com>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On slow cpus the large number of task wakeups and context switches
-triggered by freezing and thawing tasks can take a significant amount
-of cpu time.  This patch series reduces the amount of work done during
-freezing tasks by avoiding waking up tasks that are already in a freezable
-state.
+Avoid waking up every thread sleeping in a select call during
+suspend and resume by calling a freezable blocking call.
 
-The first patch reduces the wasted time in try_to_freeze_tasks() by
-starting with a 1 ms sleep during the first loop and backing off
-up to an 8 ms sleep if all tasks are not frozen.
+Signed-off-by: Colin Cross <ccross@android.com>
+---
+ fs/select.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-The second patch modifies the try_to_freeze_tasks() loop to skip tasks
-that have set the PF_FREEZER_SKIP flag by calling freezer_do_not_count().
-These tasks will not enter the refrigerator during the suspend/resume
-cycle unless they woken up by something else, in which case they will
-enter the refrigerator in freezer_count() before they access any
-resources that would not be available in suspend or deadlock with
-another freezing/frozen task.
-
-The rest of the series adds a few more freezable helpers and converts the
-top call sites that userspace tasks are usually blocked at to freezable
-helpers.  The list of call sites was collected on a Nexus 10 (ARM Exynos
-5250 SoC), but all the top call sites other than binder show up at the
-top of the list on Ubuntu x86-64 as well.
-
-This series cuts the time for freezing tasks from 50 ms to 5 ms when
-the cpu speed is locked at its lowest setting (200MHz), and reduces
-the number of context switches and restarted syscalls from 1000 to
-25.
+diff --git a/fs/select.c b/fs/select.c
+index 8c1c96c..6b14dc7 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -27,6 +27,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/hrtimer.h>
+ #include <linux/sched/rt.h>
++#include <linux/freezer.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -236,7 +237,8 @@ int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
+ 
+ 	set_current_state(state);
+ 	if (!pwq->triggered)
+-		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
++		rc = freezable_schedule_hrtimeout_range(expires, slack,
++							HRTIMER_MODE_ABS);
+ 	__set_current_state(TASK_RUNNING);
+ 
+ 	/*
+-- 
+1.8.2.1
