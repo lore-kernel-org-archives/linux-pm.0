@@ -1,73 +1,67 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH] PM: Add pm_ops_ptr() macro
-Date: Mon, 29 Apr 2013 14:12:56 +0200
-Message-ID: <517E63C8.6040809@metafoo.de>
-References: <000001ce42f2$96128cc0$c237a640$@samsung.com> <20119404.Sfu5WntByi@vostro.rjw.lan> <000001ce449c$3e1ce0f0$ba56a2d0$@samsung.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH V2 03/12] PM / Domains: Add on-off notifiers
+Date: Mon, 29 Apr 2013 14:14:55 +0200
+Message-ID: <CACRpkdb+JrnrQgzZ5xdtFDubexNRm2WsrLXv+5zfjN1wdowaNg@mail.gmail.com>
+References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
+	<1364487098-10319-4-git-send-email-rickard.andersson@stericsson.com>
+	<3261022.s2M99fPNjC@vostro.rjw.lan>
+	<51767DE2.7050203@stericsson.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000001ce449c$3e1ce0f0$ba56a2d0$@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Andrew Morton' <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, 'Len Brown' <len.brown@intel.com>, 'Pavel Machek' <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ia0-f180.google.com ([209.85.210.180]:50404 "EHLO
+	mail-ia0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757214Ab3D2MO4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 08:14:56 -0400
+Received: by mail-ia0-f180.google.com with SMTP id t4so4575328iag.11
+        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2013 05:14:56 -0700 (PDT)
+In-Reply-To: <51767DE2.7050203@stericsson.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rickard Andersson <rickard.andersson@stericsson.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Linus WALLEIJ <linus.walleij@stericsson.com>
 
-On 04/29/2013 07:41 AM, Jingoo Han wrote:
-> On Saturday, April 27, 2013 11:41 PM, Rafael J. Wysocki:
->>
->> On Saturday, April 27, 2013 11:54:50 AM Jingoo Han wrote:
->>> Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
->>> to be assigned without having an #define xxx NULL for the case that PM is
->>> not enabled.
->>>
->>> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
->>
->> First, I'm not taking any more PM patches for v3.10 (that don't fix recent
->> regressions).
->>
->> Second, please add that macro along with a user.
-> 
-> Hi Rafael,
-> 
-> This macro can be used as below:
-> This macro cannot affect the procedure of suspend/resume
-> calls; thus, there is no side effect.
-> It just reduces the code size of each drivers.
-> In this way, of_match_ptr() macro has been already used.
-> 
-> 
-> --- a/drivers/i2c/busses/i2c-s3c2410.c
-> +++ b/drivers/i2c/busses/i2c-s3c2410.c
-> @@ -1218,7 +1218,6 @@ static int s3c24xx_i2c_resume(struct device *dev)
->  }
->  #endif
-> 
-> -#ifdef CONFIG_PM
->  static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
->  #ifdef CONFIG_PM_SLEEP
->         .suspend_noirq = s3c24xx_i2c_suspend_noirq,
-> @@ -1226,11 +1225,6 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
->  #endif
->  };
-> 
-> -#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
-> -#else
-> -#define S3C24XX_DEV_PM_OPS NULL
-> -#endif
-> -
->  /* device driver for platform bus bits */
-> 
->  static struct platform_driver s3c24xx_i2c_driver = {
-> @@ -1240,7 +1234,7 @@ static struct platform_driver s3c24xx_i2c_driver = {
->         .driver         = {
->                 .owner  = THIS_MODULE,
->                 .name   = "s3c-i2c",
-> -               .pm     = S3C24XX_DEV_PM_OPS,
-> +               .pm     = pm_ops_ptr(&s3c24xx_i2c_dev_pm_ops),
->                 .of_match_table = of_match_ptr(s3c24xx_i2c_match),
->         },
->  };
+On Tue, Apr 23, 2013 at 2:26 PM, Rickard Andersson
+<rickard.andersson@stericsson.com> wrote:
+> On 03/31/2013 12:17 AM, Rafael J. Wysocki wrote:
+>> On Thursday, March 28, 2013 05:11:29 PM Rickard Andersson wrote:
 
-Won't that generate a warning about an unused s3c24xx_i2c_dev_pm_ops when
-CONFIG_PM is not enabled?
+>>> I believe notifiers are the best solution to the problem of
+>>> restoring context early when waking up after sleep.
+>>
+>> I don't.
+>
+> Some motivation would be good.
+(...)
+>> Well, quite frankly, it is hard to say what problem this is supposed to
+>> address from your description.  Care to give some more details?
+>
+> The problem is that some hardware blocks needs to be restored as early as
+> possible after leaving the U8500 CPU coupled sleep state ApSleep (APE power
+> domain being off).
+
+(APE = Application Processor Environment, on embedded)
+
+I just have this vague feeling that this is one of those embedded SoC
+vs desktop things where worlds collide.
+
+Isn't it so that on common x86 (desktop, server, laptop) the context of
+the system is saved by some BIOS/ACPI call, and then the ROM
+takes you back up with all devices put back into context?
+
+On embedded SoC's we don't have this, all states in the hardware
+has to be saved and restored with kernel code.
+
+Then there is a question about whether this shall be done centrally
+(there is one piece of code that knows all volatile registers of all
+hardware blocks in the system) which is close to what the desktop
+BIOS may do, or whether you want to do this in a distributed manner,
+so that each driver saves and restores the context of it's particular
+hardware.
+
+The suggested mechanism is useful for the latter design pattern,
+where drivers know for themselves how to save and restore their
+contexts.
+
+Yours,
+Linus Walleij
