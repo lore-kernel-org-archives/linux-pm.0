@@ -1,46 +1,71 @@
-From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 02/10] freezer: skip waking up tasks with PF_FREEZER_SKIP
-	set
-Date: Mon, 29 Apr 2013 15:16:24 -0700
-Message-ID: <20130429221624.GD2395@htj.dyndns.org>
-References: <1367271946-7239-1-git-send-email-ccross@android.com>
-	<1367271946-7239-3-git-send-email-ccross@android.com>
-	<20130429215157.GA2395@htj.dyndns.org>
-	<20130429215745.GB2395@htj.dyndns.org>
-	<CAMbhsRQHkm=XTYtummEZq1h4sa-tRGwLpk8Uyhpj9D3+jQF3dg@mail.gmail.com>
-	<20130429220831.GC2395@htj.dyndns.org>
+From: Darren Hart <dvhart@linux.intel.com>
+Subject: Re: [PATCH 07/10] futex: use freezable blocking call
+Date: Mon, 29 Apr 2013 15:52:27 -0700
+Message-ID: <517EF9AB.8080508@linux.intel.com>
+References: <1367271946-7239-1-git-send-email-ccross@android.com> <1367271946-7239-8-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20130429220831.GC2395-Gd/HAXX7CRxy/B6EtB590w@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
-List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
-	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:28140 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758190Ab3D2Ww3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Apr 2013 18:52:29 -0400
+In-Reply-To: <1367271946-7239-8-git-send-email-ccross@android.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>, Matthew Helsley <matthltc@us.ibm.com>
 
-On Mon, Apr 29, 2013 at 03:08:31PM -0700, Tejun Heo wrote:
-> > spent freezing by a factor of 5.  It will have a similar effect on a
-> > non-Android system, although those generally don't care about
-> > suspend/resume optimization.
+Colin,
+
+I don't know anything about when or when not to use freezable*, and I
+suspect that may be true for others as well. A more complete
+description of why it's acceptable here in the commit log might help
+expedite acceptance.
+
+
+Matt,
+
+I have a vague memory of discussing something similar to this with you.
+Do you see any potential problems here?
+
+--
+Darren
+
+On 04/29/2013 02:45 PM, Colin Cross wrote:
+> Avoid waking up every thread sleeping in a futex_wait call during
+> suspend and resume by calling a freezable blocking call.
 > 
-> Yeah, if it's something which makes actual difference rather than
-> "this seems to be a good idea" thing, sure, let's find a way.
-
-And a probably better approach would be rolling should_skip test into
-freeze_task() with a comment explaining the interlocking rather than
-adding should_skip test in its callers.
-
-Thanks.
+> Signed-off-by: Colin Cross <ccross@android.com>
+> ---
+>  kernel/futex.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index b26dcfc..d710fae 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -61,6 +61,7 @@
+>  #include <linux/nsproxy.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/sched/rt.h>
+> +#include <linux/freezer.h>
+>  
+>  #include <asm/futex.h>
+>  
+> @@ -1807,7 +1808,7 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+>  		 * is no timeout, or if it has yet to expire.
+>  		 */
+>  		if (!timeout || timeout->task)
+> -			schedule();
+> +			freezable_schedule();
+>  	}
+>  	__set_current_state(TASK_RUNNING);
+>  }
+> 
 
 -- 
-tejun
+Darren Hart
+Intel Open Source Technology Center
+Yocto Project - Technical Lead - Linux Kernel
