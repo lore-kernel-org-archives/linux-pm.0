@@ -1,51 +1,38 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH 05/10] epoll: use freezable blocking call
-Date: Mon, 29 Apr 2013 14:45:41 -0700
-Message-ID: <1367271946-7239-6-git-send-email-ccross@android.com>
-References: <1367271946-7239-1-git-send-email-ccross@android.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f201.google.com ([209.85.216.201]:33772 "EHLO
-	mail-qc0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932453Ab3D2Vp5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 17:45:57 -0400
-Received: by mail-qc0-f201.google.com with SMTP id o22so712369qcr.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2013 14:45:57 -0700 (PDT)
-In-Reply-To: <1367271946-7239-1-git-send-email-ccross@android.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 00/10] optimize freezing tasks by reducing task wakeups
+Date: Mon, 29 Apr 2013 14:45:36 -0700
+Message-ID: <1367271946-7239-1-git-send-email-ccross@android.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Colin Cross <ccross@android.com>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Colin Cross <ccross@android.com>
+List-Id: linux-pm@vger.kernel.org
 
-Avoid waking up every thread sleeping in an epoll_wait call during
-suspend and resume by calling a freezable blocking call.
+On slow cpus the large number of task wakeups and context switches
+triggered by freezing and thawing tasks can take a significant amount
+of cpu time.  This patch series reduces the amount of work done during
+freezing tasks by avoiding waking up tasks that are already in a freezable
+state.
 
-Signed-off-by: Colin Cross <ccross@android.com>
----
- fs/eventpoll.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+The first patch reduces the wasted time in try_to_freeze_tasks() by
+starting with a 1 ms sleep during the first loop and backing off
+up to an 8 ms sleep if all tasks are not frozen.
 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 9fec183..65245e7 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -34,6 +34,7 @@
- #include <linux/mutex.h>
- #include <linux/anon_inodes.h>
- #include <linux/device.h>
-+#include <linux/freezer.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include <asm/mman.h>
-@@ -1543,7 +1544,8 @@ fetch_events:
- 			}
- 
- 			spin_unlock_irqrestore(&ep->lock, flags);
--			if (!schedule_hrtimeout_range(to, slack, HRTIMER_MODE_ABS))
-+			if (!freezable_schedule_hrtimeout_range(to, slack,
-+								HRTIMER_MODE_ABS))
- 				timed_out = 1;
- 
- 			spin_lock_irqsave(&ep->lock, flags);
--- 
-1.8.2.1
+The second patch modifies the try_to_freeze_tasks() loop to skip tasks
+that have set the PF_FREEZER_SKIP flag by calling freezer_do_not_count().
+These tasks will not enter the refrigerator during the suspend/resume
+cycle unless they woken up by something else, in which case they will
+enter the refrigerator in freezer_count() before they access any
+resources that would not be available in suspend or deadlock with
+another freezing/frozen task.
 
+The rest of the series adds a few more freezable helpers and converts the
+top call sites that userspace tasks are usually blocked at to freezable
+helpers.  The list of call sites was collected on a Nexus 10 (ARM Exynos
+5250 SoC), but all the top call sites other than binder show up at the
+top of the list on Ubuntu x86-64 as well.
+
+This series cuts the time for freezing tasks from 50 ms to 5 ms when
+the cpu speed is locked at its lowest setting (200MHz), and reduces
+the number of context switches and restarted syscalls from 1000 to
+25.
