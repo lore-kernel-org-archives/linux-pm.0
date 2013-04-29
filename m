@@ -1,38 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 5/5] cpufreq: ARM big LITTLE: Improve print message
-Date: Mon, 29 Apr 2013 18:54:48 +0530
-Message-ID: <61da22c0f40fb46dc31f0ad5183b4ea51dda518c.1367241503.git.viresh.kumar@linaro.org>
-References: <cover.1367241503.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1367241503.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1367241503.git.viresh.kumar@linaro.org>
-References: <cover.1367241503.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH linux-next v8] cpufreq: convert the cpufreq_driver to use
+ the rcu
+Date: Mon, 29 Apr 2013 14:37:28 -0700
+Message-ID: <20130429213728.GR3780@linux.vnet.ibm.com>
+References: <515C5AB6.5090109@sgi.com>
+ <1365087205-8708-1-git-send-email-nzimmer@sgi.com>
+ <CAKohponJ3s_cpGmHv8MtqB0SCDXi_16=QYocLxOY-ZeLtj-5uA@mail.gmail.com>
+ <3218775.0Qs2EbHdzR@vostro.rjw.lan>
+Reply-To: paulmck@linux.vnet.ibm.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:59037 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757992Ab3D2Vhf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Apr 2013 17:37:35 -0400
+Received: from /spool/local
+	by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Mon, 29 Apr 2013 17:37:33 -0400
+Content-Disposition: inline
+In-Reply-To: <3218775.0Qs2EbHdzR@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nathan Zimmer <nzimmer@sgi.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Print message at the end of driver->init() doesn't carry "cpufreq" string at all
-and so is difficult to find in dmesg. Add function name in message to clearly
-state where the message is coming from.
+On Mon, Apr 29, 2013 at 12:22:32AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, April 04, 2013 09:57:19 PM Viresh Kumar wrote:
+> > On 4 April 2013 20:23, Nathan Zimmer <nzimmer@sgi.com> wrote:
+> > > We eventually would like to remove the rwlock cpufreq_driver_lock or convert
+> > > it back to a spinlock and protect the read sections with RCU.  The first step in
+> > > that is moving the cpufreq_driver to use the rcu.
+> > > I don't see an easy wasy to protect the cpufreq_cpu_data structure with the
+> > > RCU, so I am leaving it with the rwlock for now since under certain configs
+> > > __cpufreq_cpu_get is hot spot with 256+ cores.
+> > >
+> > > v5: Go a different way and split up the lock and use the rcu
+> > > v6: use bools instead of checking function pointers
+> > >     covert the cpufreq_data_lock to a rwlock
+> > > v7: Rebase to use the already accepted half
+> > > v8: Correct have_governor_per_policy
+> > >     Reviewed location of rcu_read_(un)lock in several spots
+> > 
+> > Sorry for long delay or too many versions of this patch :)
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Unfortunately, I had to revert this one, because it is obviously buggy.  Why?
+> Because it adds rcu_read_lock()/rcu_read_unlock() around sysfs_create_file()
+> which may sleep due to a GFP_KERNEL memory allocation.  Sorry for failing to
+> notice that earlier.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/arm_big_little.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+One workaround might be to use SRCU, which allows sleeping in its
+critical sections.
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index fd7beed..5d7f53f 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -187,7 +187,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 
- 	cpumask_copy(policy->cpus, topology_core_cpumask(policy->cpu));
- 
--	dev_info(cpu_dev, "CPU %d initialized\n", policy->cpu);
-+	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
- 	return 0;
- }
- 
--- 
-1.7.12.rc2.18.g61b472e
+							Thanx, Paul
+
