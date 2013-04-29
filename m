@@ -1,67 +1,41 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH V2 03/12] PM / Domains: Add on-off notifiers
-Date: Mon, 29 Apr 2013 14:14:55 +0200
-Message-ID: <CACRpkdb+JrnrQgzZ5xdtFDubexNRm2WsrLXv+5zfjN1wdowaNg@mail.gmail.com>
-References: <1364487098-10319-1-git-send-email-rickard.andersson@stericsson.com>
-	<1364487098-10319-4-git-send-email-rickard.andersson@stericsson.com>
-	<3261022.s2M99fPNjC@vostro.rjw.lan>
-	<51767DE2.7050203@stericsson.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/5] CPUFreq: ARM big LITTLE Fixes
+Date: Mon, 29 Apr 2013 18:54:43 +0530
+Message-ID: <cover.1367241503.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f180.google.com ([209.85.210.180]:50404 "EHLO
-	mail-ia0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757214Ab3D2MO4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 08:14:56 -0400
-Received: by mail-ia0-f180.google.com with SMTP id t4so4575328iag.11
-        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2013 05:14:56 -0700 (PDT)
-In-Reply-To: <51767DE2.7050203@stericsson.com>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:43550 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758002Ab3D2NZJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 09:25:09 -0400
+Received: by mail-pd0-f171.google.com with SMTP id t10so819916pdi.30
+        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2013 06:25:09 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rickard Andersson <rickard.andersson@stericsson.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "hongbo.zhang@linaro.org" <hongbo.zhang@linaro.org>, "khilman@linaro.org" <khilman@linaro.org>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Linus WALLEIJ <linus.walleij@stericsson.com>
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Apr 23, 2013 at 2:26 PM, Rickard Andersson
-<rickard.andersson@stericsson.com> wrote:
-> On 03/31/2013 12:17 AM, Rafael J. Wysocki wrote:
->> On Thursday, March 28, 2013 05:11:29 PM Rickard Andersson wrote:
+Hi Rafael,
 
->>> I believe notifiers are the best solution to the problem of
->>> restoring context early when waking up after sleep.
->>
->> I don't.
->
-> Some motivation would be good.
-(...)
->> Well, quite frankly, it is hard to say what problem this is supposed to
->> address from your description.  Care to give some more details?
->
-> The problem is that some hardware blocks needs to be restored as early as
-> possible after leaving the U8500 CPU coupled sleep state ApSleep (APE power
-> domain being off).
+I know I am late for this merge window and you have already closed the gates :)
+If you can still take them, its good, otherwise we will push this for v3.10-rc2.
 
-(APE = Application Processor Environment, on embedded)
+These are minor fixes for ARM big LITTLE cpufreq driver. It doesn't impact any
+other driver or cpufreq core and are fairly independent.
 
-I just have this vague feeling that this is one of those embedded SoC
-vs desktop things where worlds collide.
+Viresh Kumar (5):
+  cpufreq: ARM big LITTLE: Select PM_OPP
+  cpufreq: ARM big LITTLE DT: Return correct transition latency
+  cpufreq: ARM big LITTLE DT: Return CPUFREQ_ETERNAL if clock-latency
+    isn't found
+  cpufreq: ARM big LITTLE: Move cpu_to_cluster() to arm_big_little.h
+  cpufreq: ARM big LITTLE: Improve print message
 
-Isn't it so that on common x86 (desktop, server, laptop) the context of
-the system is saved by some BIOS/ACPI call, and then the ROM
-takes you back up with all devices put back into context?
+ drivers/cpufreq/Kconfig.arm         | 1 +
+ drivers/cpufreq/arm_big_little.c    | 7 +------
+ drivers/cpufreq/arm_big_little.h    | 5 +++++
+ drivers/cpufreq/arm_big_little_dt.c | 9 +++++----
+ 4 files changed, 12 insertions(+), 10 deletions(-)
 
-On embedded SoC's we don't have this, all states in the hardware
-has to be saved and restored with kernel code.
+-- 
+1.7.12.rc2.18.g61b472e
 
-Then there is a question about whether this shall be done centrally
-(there is one piece of code that knows all volatile registers of all
-hardware blocks in the system) which is close to what the desktop
-BIOS may do, or whether you want to do this in a distributed manner,
-so that each driver saves and restores the context of it's particular
-hardware.
-
-The suggested mechanism is useful for the latter design pattern,
-where drivers know for themselves how to save and restore their
-contexts.
-
-Yours,
-Linus Walleij
