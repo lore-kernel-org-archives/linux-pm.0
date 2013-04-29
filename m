@@ -1,94 +1,109 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH v2 3/4] ARM: dts: thermal: exynos4: Add documentation for
- Exynos SoC thermal bindings
-Date: Mon, 29 Apr 2013 10:31:13 +0530
-Message-ID: <CADGdYn6HorcBE1Aa9q7+JFcoZzYgTZE7WcNbFpPjEE-QW2f3Dg@mail.gmail.com>
-References: <1366389493-8239-1-git-send-email-l.majewski@samsung.com>
-	<1366893045-31586-1-git-send-email-l.majewski@samsung.com>
-	<1366893045-31586-4-git-send-email-l.majewski@samsung.com>
-	<51794FF0.2050406@ti.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: Re: [PATCH] PM: Add pm_ops_ptr() macro
+Date: Mon, 29 Apr 2013 14:41:48 +0900
+Message-ID: <000001ce449c$3e1ce0f0$ba56a2d0$@samsung.com>
+References: <000001ce42f2$96128cc0$c237a640$@samsung.com>
+ <20119404.Sfu5WntByi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ia0-f177.google.com ([209.85.210.177]:42416 "EHLO
-	mail-ia0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696Ab3D2FBO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 01:01:14 -0400
-In-Reply-To: <51794FF0.2050406@ti.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:37157 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801Ab3D2Flu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 01:41:50 -0400
+In-reply-to: <20119404.Sfu5WntByi@vostro.rjw.lan>
+Content-language: ko
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, t.figa@samsung.com, Sachin Kamat <sachin.kamat@linaro.org>, Myungjoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Andrew Morton' <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, 'Len Brown' <len.brown@intel.com>, 'Pavel Machek' <pavel@ucw.cz>, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-Hi Rui,
+On Saturday, April 27, 2013 11:41 PM, Rafael J. Wysocki:
+> 
+> On Saturday, April 27, 2013 11:54:50 AM Jingoo Han wrote:
+> > Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
+> > to be assigned without having an #define xxx NULL for the case that PM is
+> > not enabled.
+> >
+> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> 
+> First, I'm not taking any more PM patches for v3.10 (that don't fix recent
+> regressions).
+> 
+> Second, please add that macro along with a user.
 
-On Thu, Apr 25, 2013 at 9:16 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> On 25-04-2013 08:30, Lukasz Majewski wrote:
->>
->> Proper description for Exynos4 bindings added to Documentation/devicetree/
->> bindings
->>
->> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
->
->
-> I am fine with this one too.
->
-> Reviewed-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Hi Rafael,
 
-This patch looks fine and can be merged.
-Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+This macro can be used as below:
+This macro cannot affect the procedure of suspend/resume
+calls; thus, there is no side effect.
+It just reduces the code size of each drivers.
+In this way, of_match_ptr() macro has been already used.
 
-Thanks,
-Amit Daniel
->
->
->> ---
->> Changes for v2:
->> - Documentation extension according to ML feedback
->> ---
->>   .../devicetree/bindings/thermal/exynos-thermal.txt |   25
->> ++++++++++++++++++++
->>   1 file changed, 25 insertions(+)
->>   create mode 100644
->> Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> new file mode 100644
->> index 0000000..535fd0e
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> @@ -0,0 +1,25 @@
->> +* Exynos Thermal Management Unit (TMU)
->> +
->> +** Required properties:
->> +
->> +- compatible : One of the following:
->> +              "samsung,exynos4412-tmu"
->> +              "samsung,exynos4210-tmu"
->> +              "samsung,exynos5250-tmu"
->> +- interrupt-parent : The phandle for the interrupt controller
->> +- reg : Address range of the thermal registers
->> +- interrupts : Should contain interrupt for thermal system
->> +- clocks : The main clock for TMU device
->> +- clock-names : Thermal system clock name
->> +
->> +Example:
->> +
->> +       tmu@100C0000 {
->> +               compatible = "samsung,exynos4412-tmu";
->> +               interrupt-parent = <&combiner>;
->> +               reg = <0x100C0000 0x100>;
->> +               interrupts = <2 4>;
->> +               clocks = <&clock 383>;
->> +               clock-names = "tmu_apbif";
->> +               status = "disabled";
->> +       };
->>
->
+
+--- a/drivers/i2c/busses/i2c-s3c2410.c
++++ b/drivers/i2c/busses/i2c-s3c2410.c
+@@ -1218,7 +1218,6 @@ static int s3c24xx_i2c_resume(struct device *dev)
+ }
+ #endif
+
+-#ifdef CONFIG_PM
+ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+ #ifdef CONFIG_PM_SLEEP
+        .suspend_noirq = s3c24xx_i2c_suspend_noirq,
+@@ -1226,11 +1225,6 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+ #endif
+ };
+
+-#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
+-#else
+-#define S3C24XX_DEV_PM_OPS NULL
+-#endif
+-
+ /* device driver for platform bus bits */
+
+ static struct platform_driver s3c24xx_i2c_driver = {
+@@ -1240,7 +1234,7 @@ static struct platform_driver s3c24xx_i2c_driver = {
+        .driver         = {
+                .owner  = THIS_MODULE,
+                .name   = "s3c-i2c",
+-               .pm     = S3C24XX_DEV_PM_OPS,
++               .pm     = pm_ops_ptr(&s3c24xx_i2c_dev_pm_ops),
+                .of_match_table = of_match_ptr(s3c24xx_i2c_match),
+        },
+ };
+
+Best regards,
+Jingoo Han
+
+
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> > ---
+> >  include/linux/pm.h |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > index a224c7f..bd50d15 100644
+> > --- a/include/linux/pm.h
+> > +++ b/include/linux/pm.h
+> > @@ -55,8 +55,10 @@ struct device;
+> >
+> >  #ifdef CONFIG_PM
+> >  extern const char power_group_name[];		/* = "power" */
+> > +#define pm_ops_ptr(_ptr)	(_ptr)
+> >  #else
+> >  #define power_group_name	NULL
+> > +#define pm_ops_ptr(_ptr)	NULL
+> >  #endif
+> >
+> >  typedef struct pm_message {
+> >
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
