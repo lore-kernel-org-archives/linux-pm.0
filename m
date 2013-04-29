@@ -1,57 +1,69 @@
-From: Colin Cross <ccross@android.com>
-Subject: [PATCH 04/10] binder: use freezable blocking calls
-Date: Mon, 29 Apr 2013 14:45:40 -0700
-Message-ID: <1367271946-7239-5-git-send-email-ccross@android.com>
+From: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 02/10] freezer: skip waking up tasks with PF_FREEZER_SKIP set
+Date: Mon, 29 Apr 2013 14:45:38 -0700
+Message-ID: <1367271946-7239-3-git-send-email-ccross@android.com>
 References: <1367271946-7239-1-git-send-email-ccross@android.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f74.google.com ([209.85.128.74]:49961 "EHLO
-	mail-qe0-f74.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758199Ab3D2Vpw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Apr 2013 17:45:52 -0400
-Received: by mail-qe0-f74.google.com with SMTP id a11so145756qen.1
-        for <linux-pm@vger.kernel.org>; Mon, 29 Apr 2013 14:45:52 -0700 (PDT)
-In-Reply-To: <1367271946-7239-1-git-send-email-ccross@android.com>
-Sender: linux-pm-owner@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <1367271946-7239-1-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/containers/>
+List-Post: <mailto:containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/containers>,
+	<mailto:containers-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: containers-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, containers-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, arve-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Colin Cross <ccross@android.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Sachin Kamat <sachin.kamat@linaro.org>, devel@driverdev.osuosl.org
 
-Avoid waking up every thread sleeping in a binder call during
-suspend and resume by calling a freezable blocking call.
+If a task has called freezer_do_not_count(), don't bother waking it
+up.  If it happens to wake up later it will call freezer_count() and
+immediately enter the refrigerator.
 
-Signed-off-by: Colin Cross <ccross@android.com>
+Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/staging/android/binder.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/cgroup_freezer.c | 5 ++++-
+ kernel/power/process.c  | 4 ++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index 24456a0..af8fba4 100644
---- a/drivers/staging/android/binder.c
-+++ b/drivers/staging/android/binder.c
-@@ -20,6 +20,7 @@
- #include <asm/cacheflush.h>
- #include <linux/fdtable.h>
- #include <linux/file.h>
-+#include <linux/freezer.h>
- #include <linux/fs.h>
- #include <linux/list.h>
- #include <linux/miscdevice.h>
-@@ -2140,13 +2141,13 @@ retry:
- 			if (!binder_has_proc_work(proc, thread))
- 				ret = -EAGAIN;
- 		} else
--			ret = wait_event_interruptible_exclusive(proc->wait, binder_has_proc_work(proc, thread));
-+			ret = wait_event_freezable_exclusive(proc->wait, binder_has_proc_work(proc, thread));
- 	} else {
- 		if (non_block) {
- 			if (!binder_has_thread_work(thread))
- 				ret = -EAGAIN;
- 		} else
--			ret = wait_event_interruptible(thread->wait, binder_has_thread_work(thread));
-+			ret = wait_event_freezable(thread->wait, binder_has_thread_work(thread));
- 	}
+diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
+index 75dda1e..406dd71 100644
+--- a/kernel/cgroup_freezer.c
++++ b/kernel/cgroup_freezer.c
+@@ -331,8 +331,11 @@ static void freeze_cgroup(struct freezer *freezer)
+ 	struct task_struct *task;
  
- 	binder_lock(__func__);
+ 	cgroup_iter_start(cgroup, &it);
+-	while ((task = cgroup_iter_next(cgroup, &it)))
++	while ((task = cgroup_iter_next(cgroup, &it))) {
++		if (freezer_should_skip(task))
++			continue;
+ 		freeze_task(task);
++	}
+ 	cgroup_iter_end(cgroup, &it);
+ }
+ 
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index eb7e6c1..0680be2 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -46,10 +46,10 @@ static int try_to_freeze_tasks(bool user_only)
+ 		todo = 0;
+ 		read_lock(&tasklist_lock);
+ 		do_each_thread(g, p) {
+-			if (p == current || !freeze_task(p))
++			if (p == current || freezer_should_skip(p))
+ 				continue;
+ 
+-			if (!freezer_should_skip(p))
++			if (freeze_task(p))
+ 				todo++;
+ 		} while_each_thread(g, p);
+ 		read_unlock(&tasklist_lock);
 -- 
 1.8.2.1
-
