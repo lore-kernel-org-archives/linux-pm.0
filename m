@@ -1,161 +1,143 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Move processor suspend/resume to syscore_ops
-Date: Wed, 01 May 2013 00:18:29 +0200
-Message-ID: <31808229.7gRo8k980M@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: [RFC PATCH] drivers: power: Add watchdog timer to catch drivers which lockup during suspend.
+Date: Tue, 30 Apr 2013 15:28:33 -0700
+Message-ID: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f44.google.com ([209.85.160.44]:62141 "EHLO
+	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933600Ab3D3W3g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 18:29:36 -0400
+Received: by mail-pb0-f44.google.com with SMTP id wz17so478598pbc.31
+        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 15:29:36 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Benoit Goby <benoit@android.com>
 
-The system suspend routine of the ACPI processor driver saves
-the BUS_MASTER_RLD register and its resume routine restores it.
-However, there can be only one such register in the system and it
-really should be saved after non-boot CPUs have been offlined and
-restored before they are put back online during resume.
+Below is a patch from android kernel that detects a driver suspend
+lockup and captures dump in the kernel log. Please review and provide
+comments.
 
-For this reason, move the saving and restoration of BUS_MASTER_RLD
-to syscore suspend and syscore resume, respectively, and drop the no
-longer necessary suspend/resume callbacks from the ACPI processor
-driver.
+Rather than hard-lock the kernel, dump the suspend thread stack and
+BUG() when a driver takes too long to suspend.  The timeout is set to
+12 seconds to be longer than the usbhid 10 second timeout.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Exclude from the watchdog the time spent waiting for children that
+are resumed asynchronously and time every device, whether or not they
+resumed synchronously.
+
+Cc: Android Kernel Team <kernel-team@android.com>
+Cc: Colin Cross <ccross@android.com>
+Cc: Todd Poynor <toddpoynor@google.com>
+Cc: San Mehat <san@google.com>
+Cc: Benoit Goby <benoit@android.com>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Original-author: San Mehat <san@google.com>
+Signed-off-by: Benoit Goby <benoit@android.com>
+[zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
+tweaked commit message.]
+Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
 ---
- drivers/acpi/processor_driver.c |    8 ++++----
- drivers/acpi/processor_idle.c   |   29 +++++++++++++++++++----------
- include/acpi/processor.h        |   10 ++++++++--
- 3 files changed, 31 insertions(+), 16 deletions(-)
+ drivers/base/power/main.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-Index: linux-pm/drivers/acpi/processor_driver.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_driver.c
-+++ linux-pm/drivers/acpi/processor_driver.c
-@@ -95,9 +95,6 @@ static const struct acpi_device_id proce
- };
- MODULE_DEVICE_TABLE(acpi, processor_device_ids);
- 
--static SIMPLE_DEV_PM_OPS(acpi_processor_pm,
--			 acpi_processor_suspend, acpi_processor_resume);
--
- static struct acpi_driver acpi_processor_driver = {
- 	.name = "processor",
- 	.class = ACPI_PROCESSOR_CLASS,
-@@ -107,7 +104,6 @@ static struct acpi_driver acpi_processor
- 		.remove = acpi_processor_remove,
- 		.notify = acpi_processor_notify,
- 		},
--	.drv.pm = &acpi_processor_pm,
- };
- 
- #define INSTALL_NOTIFY_HANDLER		1
-@@ -934,6 +930,8 @@ static int __init acpi_processor_init(vo
- 	if (result < 0)
- 		return result;
- 
-+	acpi_processor_syscore_init();
-+
- 	acpi_processor_install_hotplug_notify();
- 
- 	acpi_thermal_cpufreq_init();
-@@ -956,6 +954,8 @@ static void __exit acpi_processor_exit(v
- 
- 	acpi_processor_uninstall_hotplug_notify();
- 
-+	acpi_processor_syscore_exit();
-+
- 	acpi_bus_unregister_driver(&acpi_processor_driver);
- 
- 	return;
-Index: linux-pm/drivers/acpi/processor_idle.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_idle.c
-+++ linux-pm/drivers/acpi/processor_idle.c
-@@ -34,6 +34,7 @@
- #include <linux/sched.h>       /* need_resched() */
- #include <linux/clockchips.h>
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 15beb50..eb70c0e 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -29,6 +29,8 @@
+ #include <linux/async.h>
+ #include <linux/suspend.h>
  #include <linux/cpuidle.h>
-+#include <linux/syscore_ops.h>
- 
- /*
-  * Include the apic definitions for x86 to have the APIC timer related defines
-@@ -210,33 +211,41 @@ static void lapic_timer_state_broadcast(
- 
- #endif
- 
-+#ifdef CONFIG_PM_SLEEP
- static u32 saved_bm_rld;
- 
--static void acpi_idle_bm_rld_save(void)
-+int acpi_processor_suspend(void)
- {
- 	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &saved_bm_rld);
-+	return 0;
- }
--static void acpi_idle_bm_rld_restore(void)
++#include <linux/timer.h>
 +
-+void acpi_processor_resume(void)
- {
- 	u32 resumed_bm_rld;
+ #include "../base.h"
+ #include "power.h"
  
- 	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &resumed_bm_rld);
-+	if (resumed_bm_rld == saved_bm_rld)
-+		return;
+@@ -54,6 +56,12 @@ struct suspend_stats suspend_stats;
+ static DEFINE_MUTEX(dpm_list_mtx);
+ static pm_message_t pm_transition;
  
--	if (resumed_bm_rld != saved_bm_rld)
--		acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
-+	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
- }
- 
--int acpi_processor_suspend(struct device *dev)
-+static struct syscore_ops acpi_processor_syscore_ops = {
-+	.suspend = acpi_processor_suspend,
-+	.resume = acpi_processor_resume,
++static void dpm_drv_timeout(unsigned long data);
++struct dpm_drv_wd_data {
++	struct device *dev;
++	struct task_struct *tsk;
 +};
 +
-+void acpi_processor_syscore_init(void)
- {
--	acpi_idle_bm_rld_save();
--	return 0;
-+	register_syscore_ops(&acpi_processor_syscore_ops);
+ static int async_error;
+ 
+ /**
+@@ -663,6 +671,30 @@ static bool is_async(struct device *dev)
  }
  
--int acpi_processor_resume(struct device *dev)
-+void acpi_processor_syscore_exit(void)
- {
--	acpi_idle_bm_rld_restore();
--	return 0;
-+	unregister_syscore_ops(&acpi_processor_syscore_ops);
- }
-+#endif /* CONFIG_PM_SLEEP */
- 
- #if defined(CONFIG_X86)
- static void tsc_check_state(int state)
-Index: linux-pm/include/acpi/processor.h
-===================================================================
---- linux-pm.orig/include/acpi/processor.h
-+++ linux-pm/include/acpi/processor.h
-@@ -329,10 +329,16 @@ int acpi_processor_power_init(struct acp
- int acpi_processor_power_exit(struct acpi_processor *pr);
- int acpi_processor_cst_has_changed(struct acpi_processor *pr);
- int acpi_processor_hotplug(struct acpi_processor *pr);
--int acpi_processor_suspend(struct device *dev);
--int acpi_processor_resume(struct device *dev);
- extern struct cpuidle_driver acpi_idle_driver;
- 
-+#ifdef CONFIG_PM_SLEEP
-+void acpi_processor_syscore_init(void);
-+void acpi_processor_syscore_exit(void);
-+#else
-+static inline void acpi_processor_syscore_init(void) {}
-+static inline void acpi_processor_syscore_exit(void) {}
-+#endif
+ /**
++ *     dpm_drv_timeout - Driver suspend / resume watchdog handler
++ *     @data: struct device which timed out
++ *
++ *     Called when a driver has timed out suspending or resuming.
++ *     There's not much we can do here to recover so
++ *     BUG() out for a crash-dump
++ *
++ */
++static void dpm_drv_timeout(unsigned long data)
++{
++	struct dpm_drv_wd_data *wd_data = (void *)data;
++	struct device *dev = wd_data->dev;
++	struct task_struct *tsk = wd_data->tsk;
 +
- /* in processor_thermal.c */
- int acpi_processor_get_limit_info(struct acpi_processor *pr);
- extern const struct thermal_cooling_device_ops processor_cooling_ops;
++	pr_emerg("**** DPM device timeout: %s (%s)\n", dev_name(dev),
++		(dev->driver ? dev->driver->name : "no driver"));
++
++	pr_emerg("dpm suspend stack:\n");
++	show_stack(tsk, NULL);
++
++	BUG();
++}
++
++/**
+  * dpm_resume - Execute "resume" callbacks for non-sysdev devices.
+  * @state: PM transition of the system being carried out.
+  *
+@@ -1053,6 +1085,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	pm_callback_t callback = NULL;
+ 	char *info = NULL;
+ 	int error = 0;
++	struct timer_list timer;
++	struct dpm_drv_wd_data data;
+ 
+ 	dpm_wait_for_children(dev, async);
+ 
+@@ -1076,6 +1110,14 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
++	data.dev = dev;
++	data.tsk = get_current();
++	init_timer_on_stack(&timer);
++	timer.expires = jiffies + HZ * 12;
++	timer.function = dpm_drv_timeout;
++	timer.data = (unsigned long)&data;
++	add_timer(&timer);
++
+ 	device_lock(dev);
+ 
+ 	if (dev->pm_domain) {
+@@ -1131,6 +1173,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 
+ 	device_unlock(dev);
+ 
++	del_timer_sync(&timer);
++	destroy_timer_on_stack(&timer);
++
+  Complete:
+ 	complete_all(&dev->power.completion);
+ 	if (error)
+-- 
+1.7.9.5
 
