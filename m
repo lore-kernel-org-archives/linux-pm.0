@@ -1,103 +1,117 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V2] cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
-Date: Tue, 30 Apr 2013 10:13:02 -0500
-Message-ID: <1367334782-32484-1-git-send-email-nm@ti.com>
+From: Dirk Brandewie <dirk.brandewie@gmail.com>
+Subject: Re: CONFIG_X86_INTEL_PSTATE disables CPU frequency transition stats,
+ many governors and other standard features
+Date: Tue, 30 Apr 2013 08:54:28 -0700
+Message-ID: <517FE934.60501@intel.com>
+References: <475427035.74642.1367038733183.JavaMail.mail@webmail08> <1843018.F0kGJi5K1v@vostro.rjw.lan> <517F2A9E.9040209@amacapital.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <517F2A9E.9040209@amacapital.net>
 Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Artem S. Tashkinov" <t.artem@lycos.com>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, dirk.brandewie@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-With commit 1e4b545, regulator_get will now return -EPROBE_DEFER
-when the cpu0-supply node is present, but the regulator is not yet
-registered.
+On 04/29/2013 07:21 PM, Andy Lutomirski wrote:
+>
+> Out of curiosity, what is this driver doing?
+>
+> It uses aperf/mperf magic to (I think) estimate how busy the CPU has
+> been recently.  (This is clearly somewhat Intel-specific, but a similar
+> estimate could be made using knowledge of the programmed frequency and
+> the scheduler's idle time on any CPU.)
+>
 
-It is possible for this to occur when the regulator registration
-by itself might be defered due to some dependent interface not yet
-instantiated. For example: an regulator which uses I2C and GPIO might
-need both systems available before proceeding, in this case, the
-regulator might defer it's registration.
+Not really magic aperf/mperf gives you the a ratio of how busy the core
+is. From section 14-2 of vol 3 of the software developers manual.
 
-However, the cpufreq-cpu0 driver assumes that any un-successful return
-result is equivalent of failure.
+   IA32_MPERF MSR (0xE7) increments in proportion to a fixed frequency, which is
+   configured when the processor is booted.
 
-When the regulator_get returns failure other than -EPROBE_DEFER, it
-makes sense to assume that supply node is not present and proceed with
-the assumption that only clock control is necessary in the platform.
+   IA32_APERF MSR (0xE8) increments in proportion to actual performance, while
+   accounting for hardware coordination of P-state and TM1/TM2; or software
+   initiated throttling.
 
-With this change, we can now handle the following conditions:
-a) cpu0-supply binding is not present, regulator_get will return
-appropriate error result, resulting in cpufreq-cpu0 driver controlling
-just the clock.
-b) cpu0-supply binding is present, regulator_get returns
--EPROBE_DEFER, we retry resulting in cpufreq-cpu0 driver registering
-later once the regulator is available.
-c) cpu0-supply binding is present, regulator_get returns
--EPROBE_DEFER, however, regulator never registers, we retry until
-cpufreq-cpu0 driver fails to register pointing at device tree
-information bug. However, in this case, the fact that cpufreq-cpu0
-operates with clock only when the DT binding clearly indicates need of
-a supply is a bug of it's own.
-d) cpu0-supply gets an regulator at probe - cpufreq-cpu0 driver
-controls both the clock and regulator
+   The MSRs are per logical processor; they measure performance only when the
+   targeted processor is in the C0 state.
 
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
-V2: Changes since V1 (for 3.10-rc2?)
-Now that regulator patch https://patchwork.kernel.org/patch/2451211/
-has been merged to master
-based on git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.10-rc1
-picked up Acks from:
-	http://marc.info/?l=linux-kernel&m=136514242716876&w=2
-	http://marc.info/?l=linux-pm&m=136513879016003&w=2
+   Only the IA32_APERF/IA32_MPERF ratio is architecturally defined; software
+   should not attach meaning to the content of the individual of IA32_APERF or
+   IA32_MPERF MSRs.
 
-V1: https://patchwork.kernel.org/patch/2396541/
- drivers/cpufreq/cpufreq-cpu0.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-index 37d23a0..e472167 100644
---- a/drivers/cpufreq/cpufreq-cpu0.c
-+++ b/drivers/cpufreq/cpufreq-cpu0.c
-@@ -200,6 +200,20 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 	cpu_dev = &pdev->dev;
- 	cpu_dev->of_node = np;
- 
-+	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
-+	if (IS_ERR(cpu_reg)) {
-+		/*
-+		 * If cpu0 regulator supply node is present, but regulator is
-+		 * not yet registered, we should try defering probe.
-+		 */
-+		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
-+			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
-+			return -EPROBE_DEFER;
-+		}
-+		pr_err("failed to get cpu0 regulator: %ld\n", PTR_ERR(cpu_reg));
-+		cpu_reg = NULL;
-+	}
-+
- 	cpu_clk = devm_clk_get(cpu_dev, NULL);
- 	if (IS_ERR(cpu_clk)) {
- 		ret = PTR_ERR(cpu_clk);
-@@ -207,12 +221,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
- 		goto out_put_node;
- 	}
- 
--	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
--	if (IS_ERR(cpu_reg)) {
--		pr_warn("failed to get cpu0 regulator\n");
--		cpu_reg = NULL;
--	}
--
- 	ret = of_init_opp_table(cpu_dev);
- 	if (ret) {
- 		pr_err("failed to init OPP table: %d\n", ret);
--- 
-1.7.9.5
+
+> It samples that estimate every 10 ms (why is this even remotely
+> acceptable in a driver that's supposed to save power?).
+
+The goal of the driver as to have better power efficiency that the
+existing governors with out breaking anything including performance.
+
+The 10 ms interval was chosen because that is what the ondemand governor
+uses as a sample time.
+
+In my testing I did not see a significant power benefit by increasing
+the sample time and the impact on performance was noticeable since
+the driver reacted slower to changes in load.
+
+The timer is a deferrable timer so we are not waking idle cores to find
+out how busy they are.  Also the amount of work done in the timer is pretty
+small.
+
+The 10 ms number is likely not the optimal number but is good enough to
+not break anything (that I know of) and should be a good starting point
+for real world use/testing/tuning.
+
+The sample time can be adjusted via /sys/kernel/debug/pstate_snb/sample_rate_ms
+if you would like to play with it.
+
+>
+> Using that sample, it updates one of two PID controllers to bring the
+> busy or idle fraction (which one depends on the choice of controller) to
+> a target value of 109/256 or 75/256.  In practice, it seems like once it
+> starts using the busy controller, it never goes back unless XPERF_FIX is
+> #defined, which it isn't.
+>
+
+The busy PID is the only one being used and idle PID will be removed in an 
+upcoming patch removing the code associated with idle_mode. This code was
+there to deal with a situation where you have two threads on separate cores
+that depend on the progress of the thread on the other core to make progress
+and ping-pong much faster than the sample time.  So it appears that neither
+thread is very busy and is getting all the cpu that they want but they are not.
+This was not completely solid that is why it is in the #ifdef block.
+
+The new patch fixes the issue and is much easier to see what is going
+on by looking at the code.
+
+> It then adjusts the pstate as decreed by the PID controller.
+>
+> At least this has the property that, the busier the CPU, the higher the
+> pstate.
+>
+Correct (mostly).
+
+Each sample time the core is sampled to see how busy it is (aperf/mperf),
+this is scaled to current requested p-state to get the scaled_busy value
+which is handed to the PID that calculates the amount the pstate needs to be 
+adjusted *UP/DOWN* based on the difference between the scaled busy value
+and the setpoint of the PID.
+
+>
+>
+>
+> Not to sidetrack the discussion, but (wearing my HFT hat for a moment)
+> has anyone else noticed that C1E is an absolute disaster for
+> performance?  IMO the kernel should turn off C1E in case the BIOS is
+> malicious enough to turn it on, and then the kernel should treat
+> all-cores-idle as an extra, kind of strange idle state with very high
+> exit latency and use it (and adjust frequency) accordingly?
+>
+
+I will let Len take this one :-)
+--Dirk
+> --Andy
+>
 
