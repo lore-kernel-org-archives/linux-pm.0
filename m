@@ -1,77 +1,94 @@
-From: Chander Kashyap <chander.kashyap@linaro.org>
-Subject: Re: [V4 patch 02/15] ARM: ux500: cpuidle: replace for_each_online_cpu
- by for_each_possible_cpu
-Date: Tue, 30 Apr 2013 14:46:55 +0530
-Message-ID: <CANuQgHF9x2g=nybwEKMwihd0M9ps9rOaGw_zJM6a46m5-GKT0w@mail.gmail.com>
-References: <1366707285-12179-1-git-send-email-daniel.lezcano@linaro.org>
-	<1366707285-12179-3-git-send-email-daniel.lezcano@linaro.org>
+From: Mike Galbraith <bitbucket@online.de>
+Subject: Re: [patch v7 0/21] sched: power aware scheduling
+Date: Tue, 30 Apr 2013 11:35:39 +0200
+Message-ID: <1367314539.4616.88.camel@marge.simpson.net>
+References: <1365040862-8390-1-git-send-email-alex.shi@intel.com>
+	 <516724F5.20504@kernel.org> <5167C9FA.8050406@intel.com>
+	 <20130412162348.GE2368@pd.tnic>
+	 <1365785311.5814.36.camel@marge.simpson.net> <516F19EE.5060309@kernel.org>
+	 <1366989087.30242.11.camel@marge.simpson.net>
+	 <1367298972.4616.41.camel@marge.simpson.net>
+	 <1367310625.4616.71.camel@marge.simpson.net>
+	 <20130430084135.GA21473@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:42876 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759102Ab3D3JQz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 05:16:55 -0400
-Received: by mail-ob0-f178.google.com with SMTP id 16so252639obc.9
-        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 02:16:55 -0700 (PDT)
-In-Reply-To: <1366707285-12179-3-git-send-email-daniel.lezcano@linaro.org>
+Received: from moutng.kundenserver.de ([212.227.126.187]:61045 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898Ab3D3Jgm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 05:36:42 -0400
+In-Reply-To: <20130430084135.GA21473@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, andrew@lunn.ch, kgene.kim@samsung.com, jason@lakedaemon.net, horms@verge.net.au, Patch Tracking <patches@linaro.org>, khilman@deeprootsystems.com, magnus.damm@gmail.com, linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, nsekhar@ti.com, rob.herring@calxeda.com, deepthi@linux.vnet.ibm.com, tony@atomide.com, lethal@linux-sh.org, linaro-kernel@lists.linaro.org, kernel@pengutronix.de, josephl@nvidia.com, jkosina@suse.cz, plagnioj@jcrosoft.com, linux@maxim.org.za, linux-arm-kernel@lists.infradead.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Borislav Petkov <bp@alien8.de>, Alex Shi <alex.shi@intel.com>, mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org, arjan@linux.intel.com, pjt@google.com, namhyung@kernel.org, morten.rasmussen@arm.com, vincent.guittot@linaro.org, gregkh@linuxfoundation.org, preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, len.brown@intel.com, rafael.j.wysocki@intel.com, jkosina@suse.cz, clark.williams@gmail.com, tony.luck@intel.com, keescook@chromium.org, mgorman@suse.de, riel@redhat.com, Linux PM list <linux-pm@vger.kernel.org>
 
-On 23 April 2013 14:24, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
-> All the drivers are using, in their initialization function, the
-> for_each_possible_cpu macro.
->
-> Using for_each_online_cpu means the driver must handle the initialization
-> of the cpuidle device when a cpu is up which is not the case here.
->
-> Change the macro to for_each_possible_cpu as that fix the hotplug
-> initialization and make the initialization routine consistent with the
-> rest of the code in the different drivers.
->
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  arch/arm/mach-ux500/cpuidle.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/arm/mach-ux500/cpuidle.c b/arch/arm/mach-ux500/cpuidle.c
-> index c29c1bf..5657d4a 100644
-> --- a/arch/arm/mach-ux500/cpuidle.c
-> +++ b/arch/arm/mach-ux500/cpuidle.c
-> @@ -125,7 +125,7 @@ int __init ux500_idle_init(void)
->                 return ret;
->         }
->
-> -       for_each_online_cpu(cpu) {
-> +       for_each_possible(cpu) {
+On Tue, 2013-04-30 at 10:41 +0200, Ingo Molnar wrote: 
+> * Mike Galbraith <bitbucket@online.de> wrote:
+> 
+> > On Tue, 2013-04-30 at 07:16 +0200, Mike Galbraith wrote:
+> > 
+> > > Well now, that's not exactly what I expected to see for AIM7 compute.
+> > > Filesystem is munching cycles otherwise used for compute when load is
+> > > spread across the whole box vs consolidated.
+> > 
+> > So AIM7 compute performance delta boils down to: powersaving stacks
+> > tasks, so they pat single bit of spinning rust sequentially/gently.
+> 
+> So AIM7 with real block IO improved, due to sequentiality. Does it improve 
+> if AIM7 works on an SSD, or into ramdisk?
 
-for_each_possible(cpu) or for_each_possible_cpu(cpu) ?
->                 device = &per_cpu(ux500_cpuidle_device, cpu);
->                 device->cpu = cpu;
->                 ret = cpuidle_register_device(device);
-> @@ -139,7 +139,7 @@ out:
->         return ret;
->
->  out_unregister:
-> -       for_each_online_cpu(cpu) {
-> +       for_each_possible_cpu(cpu) {
->                 device = &per_cpu(ux500_cpuidle_device, cpu);
->                 cpuidle_unregister_device(device);
->         }
-> --
-> 1.7.9.5
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Seriously doubt it, but I suppose I can try tmpfs.
 
+performance 
+Tasks    jobs/min  jti  jobs/min/task      real       cpu
+   20    11170.51   99       558.5253     10.85     15.19   Tue Apr 30 11:21:46 2013
+   20    11078.61   99       553.9305     10.94     15.59   Tue Apr 30 11:21:57 2013
+   20    11191.14   99       559.5568     10.83     15.29   Tue Apr 30 11:22:08 2013
 
+powersaving
+Tasks    jobs/min  jti  jobs/min/task      real       cpu
+   20    10978.26   99       548.9130     11.04     19.25   Tue Apr 30 11:22:38 2013
+   20    10988.21   99       549.4107     11.03     18.71   Tue Apr 30 11:22:49 2013
+   20    11008.17   99       550.4087     11.01     18.85   Tue Apr 30 11:23:00 2013
 
---
-with warm regards,
-Chander Kashyap
+Nope.
+
+> Which are the workloads where 'powersaving' mode hurts workload 
+> performance measurably?
+
+Well, it'll lose throughput any time there's parallel execution
+potential but it's serialized instead.. using average will inevitably
+stack tasks sometimes, but that's its goal.  Hackbench shows it.
+
+performance 
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 0.487
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 0.487
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 0.497
+
+powersaving
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 0.702
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 0.679
+monteverdi:/abuild/mike/aim7/:[0]# hackbench -l 1000
+Running in process mode with 10 groups using 40 file descriptors each (== 400 tasks)
+Each sender will pass 1000 messages of 100 bytes
+Time: 1.137
+
+	-Mike
+
