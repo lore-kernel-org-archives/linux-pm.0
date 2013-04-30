@@ -1,78 +1,64 @@
-From: Colin Cross <ccross@android.com>
+From: Oleg Nesterov <oleg@redhat.com>
 Subject: Re: [PATCH 09/10] sigtimedwait: use freezable blocking call
-Date: Tue, 30 Apr 2013 09:58:29 -0700
-Message-ID: <CAMbhsRTABgbWgFca03nVWVmVeK5Ci9BPon-zQwanM16LrN=fog@mail.gmail.com>
-References: <1367271946-7239-1-git-send-email-ccross@android.com>
-	<1367271946-7239-10-git-send-email-ccross@android.com>
-	<20130430163817.GA27304@redhat.com>
+Date: Tue, 30 Apr 2013 18:56:13 +0200
+Message-ID: <20130430165613.GA27962@redhat.com>
+References: <1367271946-7239-1-git-send-email-ccross@android.com> <1367271946-7239-10-git-send-email-ccross@android.com> <20130430163817.GA27304@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f182.google.com ([209.85.128.182]:50102 "EHLO
-	mail-ve0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761300Ab3D3Q6b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 12:58:31 -0400
-Received: by mail-ve0-f182.google.com with SMTP id da11so584750veb.27
-        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 09:58:30 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <20130430163817.GA27304@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Serge Hallyn <serge.hallyn@canonical.com>
 List-Id: linux-pm@vger.kernel.org
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>, Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Serge Hallyn <serge.hallyn@canonical.com>
 
-On Tue, Apr 30, 2013 at 9:38 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+On 04/30, Oleg Nesterov wrote:
+>
 > On 04/29, Colin Cross wrote:
->>
->> Avoid waking up every thread sleeping in a sigtimedwait call during
->> suspend and resume by calling a freezable blocking call.
+> >
+> > Avoid waking up every thread sleeping in a sigtimedwait call during
+> > suspend and resume by calling a freezable blocking call.
 >
 > This doesn't explain why do want this change...
 >
 > OK, probably to avoid -EAGAIN from sigtimedwait() if the freezer wakes
 > up the caller.
-
-See http://marc.info/?l=linux-pm&m=136727197819593&w=2 for the full
-justification.  I will include a fuller description of the reason for
-this patch in the next version.
-
->> --- a/kernel/signal.c
->> +++ b/kernel/signal.c
->> @@ -2845,7 +2845,7 @@ int do_sigtimedwait(const sigset_t *which, siginfo_t *info,
->>               recalc_sigpending();
->>               spin_unlock_irq(&tsk->sighand->siglock);
->>
->> -             timeout = schedule_timeout_interruptible(timeout);
->> +             timeout = freezable_schedule_timeout_interruptible(timeout);
+>
+> > --- a/kernel/signal.c
+> > +++ b/kernel/signal.c
+> > @@ -2845,7 +2845,7 @@ int do_sigtimedwait(const sigset_t *which, siginfo_t *info,
+> >  		recalc_sigpending();
+> >  		spin_unlock_irq(&tsk->sighand->siglock);
+> >
+> > -		timeout = schedule_timeout_interruptible(timeout);
+> > +		timeout = freezable_schedule_timeout_interruptible(timeout);
 >
 > And I guess freezable_schedule_timeout_interruptible() is added by
 > http://marc.info/?l=linux-kernel&m=136727195719575 ...
 >
->         +#define freezable_schedule_timeout_interruptible(timeout)              \
->         +({                                                                     \
->         +       long __retval;                                                  \
->         +       freezer_do_not_count();                                         \
->         +       __retval = schedule_timeout_interruptible(timeout);             \
->         +       freezer_count();                                                \
->         +       __retval;                                                       \
->         +})
+> 	+#define freezable_schedule_timeout_interruptible(timeout)		\
+> 	+({									\
+> 	+	long __retval;							\
+> 	+	freezer_do_not_count();						\
+> 	+	__retval = schedule_timeout_interruptible(timeout);		\
+> 	+	freezer_count();						\
+> 	+	__retval;							\
+> 	+})
 >
 > How this can help?
 >
 > The task will be interrupted anyway and the syscall will return
 > -EAGAIN, this only changes the time when try_to_freeze() is called.
->
+
+OK, I wasn't cced, I have found another patch
+http://marc.info/?l=linux-kernel&m=136727200519602 which should make
+a difference, it won't be woken if PF_FREEZER_SKIP was already set.
+
+This is racy, but it seems that "avoid -EAGAIN" was not your goal...
+
 > For what? The task will call do_signal/try_to_freeze really "soon".
 
-See http://marc.info/?l=linux-pm&m=136727204919622&w=2, which removes
-the wakeup sent to skipped tasks, so schedule_timeout_interruptible()
-will only return if the timeout finishes or another task (not the
-freezer) calls wake_up on the task.  If that happens during freezing
-or while frozen freezer_count() will freeze.  If another task does not
-wake up this task while frozen, this task will not need to run at all
-during suspend or resume, saving cpu cycles, context switches, and
-power.
+It seems that you want to speed up the freezing.
 
-> Confused...
->
-> Oleg.
->
+Oleg.
