@@ -1,60 +1,108 @@
-From: Sudeep.KarkadaNagesha@arm.com
-Subject: [PATCH 2/2] PM / OPP: check for existing OPP list when initialising from device tree
-Date: Wed,  1 May 2013 12:11:19 +0100
-Message-ID: <1367406679-21603-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: quoted-printable
+From: Nishanth Menon <nm@ti.com>
+Subject: [PATCH V3] cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
+Date: Wed, 1 May 2013 08:38:12 -0500
+Message-ID: <1367415492-20956-1-git-send-email-nm@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48998 "EHLO
-	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760401Ab3EALLc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 07:11:32 -0400
-In-Reply-To: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:44626 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753970Ab3EANiS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 May 2013 09:38:18 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
 
-From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+With commit 1e4b545, regulator_get will now return -EPROBE_DEFER
+when the cpu0-supply node is present, but the regulator is not yet
+registered.
 
-CPUs are registered as devices and their OPPs can be initialised from
-the device tree. Whenever CPUs can be hotplugged out, the corresponding
-cpu devices are not removed. As a result all their OPPs remain intact
-even when they are offlined.
+It is possible for this to occur when the regulator registration
+by itself might be defered due to some dependent interface not yet
+instantiated. For example: an regulator which uses I2C and GPIO might
+need both systems available before proceeding, in this case, the
+regulator might defer it's registration.
 
-But when they are hotplugged back-in, the cpufreq along with other cpu
-related subsystem gets re-initialised. Since its almost same as secondary
-cpu being brought up, no special consideration is taken in the hotplug
-path. As a result of this the cpufreq will try to initialise the OPPs
-again though the cpu device already contains the OPPs.
+However, the cpufreq-cpu0 driver assumes that any un-successful return
+result is equivalent of failure.
 
-This patch checks if there exist an OPP list associated with the device,
-before attempting to initialise it.
+When the regulator_get returns failure other than -EPROBE_DEFER, it
+makes sense to assume that supply node is not present and proceed with
+the assumption that only clock control is necessary in the platform.
 
-Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+With this change, we can now handle the following conditions:
+a) cpu0-supply binding is not present, regulator_get will return
+appropriate error result, resulting in cpufreq-cpu0 driver controlling
+just the clock.
+b) cpu0-supply binding is present, regulator_get returns
+-EPROBE_DEFER, we retry resulting in cpufreq-cpu0 driver registering
+later once the regulator is available.
+c) cpu0-supply binding is present, regulator_get returns
+-EPROBE_DEFER, however, regulator never registers, we retry until
+cpufreq-cpu0 driver fails to register pointing at device tree
+information bug. However, in this case, the fact that cpufreq-cpu0
+operates with clock only when the DT binding clearly indicates need of
+a supply is a bug of it's own.
+d) cpu0-supply gets an regulator at probe - cpufreq-cpu0 driver
+controls both the clock and regulator
+
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Acked-by: Shawn Guo <shawn.guo@linaro.org>
+Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
- drivers/base/power/opp.c |    5 +++++
- 1 file changed, 5 insertions(+)
+V3: Changes since V1 (for 3.10-rc2?)
+	review comment updates (and dropped Viresh's original ack ;) ).
+   	Now that regulator patch https://patchwork.kernel.org/patch/2451211/
+	has been merged to master
+	based on git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.10-rc1
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 4dfdc01..66d52d2 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -706,6 +706,11 @@ static int of_init_opp_table_from_ofnode(struct device=
- *dev,
- =09const __be32 *val;
- =09int nr;
-=20
-+=09/* Check for existing list for 'dev' */
-+=09dev_opp =3D find_device_opp(dev);
-+=09if (!IS_ERR(dev_opp))
-+=09=09return 0; /* Device OPP already initialized */
+V2: https://patchwork.kernel.org/patch/2505311/
+V1: https://patchwork.kernel.org/patch/2396541/
+
+ drivers/cpufreq/cpufreq-cpu0.c |   22 ++++++++++++++++------
+ 1 file changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 3ab8294..ecd8af9 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -195,6 +195,22 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 	cpu_dev = &pdev->dev;
+ 	cpu_dev->of_node = np;
+ 
++	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
++	if (IS_ERR(cpu_reg)) {
++		/*
++		 * If cpu0 regulator supply node is present, but regulator is
++		 * not yet registered, we should try defering probe.
++		 */
++		if (PTR_ERR(cpu_reg) == -EPROBE_DEFER) {
++			dev_err(cpu_dev, "cpu0 regulator not ready, retry\n");
++			ret = -EPROBE_DEFER;
++			goto out_put_node;
++		}
++		pr_warn("failed to get cpu0 regulator: %ld\n",
++			PTR_ERR(cpu_reg));
++		cpu_reg = NULL;
++	}
 +
- =09prop =3D of_find_property(of_node, "operating-points", NULL);
- =09if (!prop)
- =09=09return -ENODEV;
---=20
-1.7.10.4
-
+ 	cpu_clk = devm_clk_get(cpu_dev, NULL);
+ 	if (IS_ERR(cpu_clk)) {
+ 		ret = PTR_ERR(cpu_clk);
+@@ -202,12 +218,6 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 		goto out_put_node;
+ 	}
+ 
+-	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+-	if (IS_ERR(cpu_reg)) {
+-		pr_warn("failed to get cpu0 regulator\n");
+-		cpu_reg = NULL;
+-	}
+-
+ 	ret = of_init_opp_table(cpu_dev);
+ 	if (ret) {
+ 		pr_err("failed to init OPP table: %d\n", ret);
+-- 
+1.7.9.5
 
