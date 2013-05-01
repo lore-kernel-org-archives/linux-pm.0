@@ -1,14 +1,14 @@
 From: Sudeep.KarkadaNagesha@arm.com
-Subject: [PATCH 1/2] PM / OPP: add support to specify phandle of another node for OPP
-Date: Wed,  1 May 2013 12:11:18 +0100
-Message-ID: <1367406679-21603-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+Subject: [PATCH 2/2] PM / OPP: check for existing OPP list when initialising from device tree
+Date: Wed,  1 May 2013 12:11:19 +0100
+Message-ID: <1367406679-21603-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from service87.mimecast.com ([91.220.42.44]:48968 "EHLO
+Received: from service87.mimecast.com ([91.220.42.44]:48998 "EHLO
 	service87.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758441Ab3EALLc (ORCPT
+	with ESMTP id S1760401Ab3EALLc (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 07:11:32 -0400
 In-Reply-To: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -18,139 +18,42 @@ Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com
 
 From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 
-If more than one similar devices share the same OPPs, currently we
-need to replicate the OPP entries in all the nodes.
+CPUs are registered as devices and their OPPs can be initialised from
+the device tree. Whenever CPUs can be hotplugged out, the corresponding
+cpu devices are not removed. As a result all their OPPs remain intact
+even when they are offlined.
 
-Few drivers like cpufreq depend on physical cpu0 node to specify the
-OPPs and only that node is referred irrespective of the logical cpu
-accessing it. Alternatively to support cpuhotplug path, few drivers
-parse all the cpu nodes for OPPs. Instead we can specify the phandle
-of the node with which the current node shares the operating points.
+But when they are hotplugged back-in, the cpufreq along with other cpu
+related subsystem gets re-initialised. Since its almost same as secondary
+cpu being brought up, no special consideration is taken in the hotplug
+path. As a result of this the cpufreq will try to initialise the OPPs
+again though the cpu device already contains the OPPs.
 
-This patch adds support to specify the phandle in the operating points
-of any device node, where the node specified by the phandle holds the
-actual OPPs.
+This patch checks if there exist an OPP list associated with the device,
+before attempting to initialise it.
 
 Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 ---
- Documentation/devicetree/bindings/power/opp.txt |   41 +++++++++++++++++++=
-++++
- drivers/base/power/opp.c                        |   30 ++++++++++++-----
- 2 files changed, 63 insertions(+), 8 deletions(-)
+ drivers/base/power/opp.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentatio=
-n/devicetree/bindings/power/opp.txt
-index 74499e5..a659da4 100644
---- a/Documentation/devicetree/bindings/power/opp.txt
-+++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -23,3 +23,44 @@ cpu@0 {
- =09=09198000  850000
- =09>;
- };
-+
-+If more than one device of same type share the same OPPs, e.g. all the CPU=
-s on
-+a SoC or in a single cluster on a SoC, then we need to avoid replicating t=
-he
-+OPPs in all the nodes. We can specify the phandle of the node with which t=
-he
-+current node shares the operating points instead.
-+
-+Examples:
-+Consider an SMP with 4 CPUs all sharing the same OPPs.
-+
-+cpu0: cpu@0 {
-+=09compatible =3D "arm,cortex-a9";
-+=09reg =3D <0>;
-+=09next-level-cache =3D <&L2>;
-+=09operating-points =3D <
-+=09=09/* kHz    uV */
-+=09=09792000  1100000
-+=09=09396000  950000
-+=09=09198000  850000
-+=09>;
-+};
-+
-+cpu1: cpu@1 {
-+=09compatible =3D "arm,cortex-a9";
-+=09reg =3D <1>;
-+=09next-level-cache =3D <&L2>;
-+=09operating-points =3D <&cpu0>;
-+};
-+
-+cpu2: cpu@2 {
-+=09compatible =3D "arm,cortex-a9";
-+=09reg =3D <2>;
-+=09next-level-cache =3D <&L2>;
-+=09operating-points =3D <&cpu0>;
-+};
-+
-+cpu3: cpu@3 {
-+=09compatible =3D "arm,cortex-a9";
-+=09reg =3D <3>;
-+=09next-level-cache =3D <&L2>;
-+=09operating-points =3D <&cpu0>;
-+};
 diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index f0077cb..4dfdc01 100644
+index 4dfdc01..66d52d2 100644
 --- a/drivers/base/power/opp.c
 +++ b/drivers/base/power/opp.c
-@@ -698,19 +698,15 @@ struct srcu_notifier_head *opp_get_notifier(struct de=
-vice *dev)
- }
-=20
- #ifdef CONFIG_OF
--/**
-- * of_init_opp_table() - Initialize opp table from device tree
-- * @dev:=09device pointer used to lookup device OPPs.
-- *
-- * Register the initial OPP table with the OPP library for given device.
-- */
--int of_init_opp_table(struct device *dev)
-+static int of_init_opp_table_from_ofnode(struct device *dev,
-+=09=09=09=09=09struct device_node *of_node)
- {
-+=09struct device_opp *dev_opp =3D NULL;
- =09const struct property *prop;
+@@ -706,6 +706,11 @@ static int of_init_opp_table_from_ofnode(struct device=
+ *dev,
  =09const __be32 *val;
  =09int nr;
 =20
--=09prop =3D of_find_property(dev->of_node, "operating-points", NULL);
-+=09prop =3D of_find_property(of_node, "operating-points", NULL);
++=09/* Check for existing list for 'dev' */
++=09dev_opp =3D find_device_opp(dev);
++=09if (!IS_ERR(dev_opp))
++=09=09return 0; /* Device OPP already initialized */
++
+ =09prop =3D of_find_property(of_node, "operating-points", NULL);
  =09if (!prop)
  =09=09return -ENODEV;
- =09if (!prop->value)
-@@ -722,6 +718,14 @@ int of_init_opp_table(struct device *dev)
- =09 */
- =09nr =3D prop->length / sizeof(u32);
- =09if (nr % 2) {
-+=09=09if (nr =3D=3D 1) {
-+=09=09=09struct device_node *opp_node;
-+=09=09=09opp_node =3D of_parse_phandle(dev->of_node,
-+=09=09=09=09=09=09"operating-points", 0);
-+=09=09=09if (opp_node)
-+=09=09=09=09return of_init_opp_table_from_ofnode(dev,
-+=09=09=09=09=09=09=09=09opp_node);
-+=09=09}
- =09=09dev_err(dev, "%s: Invalid OPP list\n", __func__);
- =09=09return -EINVAL;
- =09}
-@@ -741,5 +745,15 @@ int of_init_opp_table(struct device *dev)
-=20
- =09return 0;
- }
-+/**
-+ * of_init_opp_table() - Initialize opp table from device tree
-+ * @dev:=09device pointer used to lookup device OPPs.
-+ *
-+ * Register the initial OPP table with the OPP library for given device.
-+ */
-+int of_init_opp_table(struct device *dev)
-+{
-+=09return of_init_opp_table_from_ofnode(dev, dev->of_node);
-+}
- EXPORT_SYMBOL_GPL(of_init_opp_table);
- #endif
 --=20
 1.7.10.4
 
