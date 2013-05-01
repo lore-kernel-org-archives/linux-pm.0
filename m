@@ -1,19 +1,19 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 1/2] PM / OPP: add support to specify phandle of another
- node for OPP
-Date: Wed, 1 May 2013 09:41:20 -0500
-Message-ID: <20130501144120.GA17385@kahuna>
+Subject: Re: [PATCH 2/2] PM / OPP: check for existing OPP list when
+ initialising from device tree
+Date: Wed, 1 May 2013 10:04:03 -0500
+Message-ID: <20130501150403.GA20488@kahuna>
 References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
- <1367406679-21603-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+ <1367406679-21603-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:39446 "EHLO comal.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:40697 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754859Ab3EAOlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 May 2013 10:41:36 -0400
+	id S1755370Ab3EAPEP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 May 2013 11:04:15 -0400
 Content-Disposition: inline
-In-Reply-To: <1367406679-21603-2-git-send-email-Sudeep.KarkadaNagesha@arm.com>
+In-Reply-To: <1367406679-21603-3-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sudeep.KarkadaNagesha@arm.com
@@ -22,154 +22,45 @@ Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Grant Likely <grant.
 On 12:11-20130501, Sudeep.KarkadaNagesha@arm.com wrote:
 > From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > 
-> If more than one similar devices share the same OPPs, currently we
-> need to replicate the OPP entries in all the nodes.
-Nice, thanks.
+> CPUs are registered as devices and their OPPs can be initialised from
+> the device tree. Whenever CPUs can be hotplugged out, the corresponding
+> cpu devices are not removed. As a result all their OPPs remain intact
+> even when they are offlined.
 > 
-> Few drivers like cpufreq depend on physical cpu0 node to specify the
-cpufreq-cpu0?
-> OPPs and only that node is referred irrespective of the logical cpu
-> accessing it. Alternatively to support cpuhotplug path, few drivers
-> parse all the cpu nodes for OPPs. Instead we can specify the phandle
-> of the node with which the current node shares the operating points.
+> But when they are hotplugged back-in, the cpufreq along with other cpu
+> related subsystem gets re-initialised. Since its almost same as secondary
+> cpu being brought up, no special consideration is taken in the hotplug
+> path. As a result of this the cpufreq will try to initialise the OPPs
+> again though the cpu device already contains the OPPs.
 > 
-> This patch adds support to specify the phandle in the operating points
-> of any device node, where the node specified by the phandle holds the
-> actual OPPs.
+> This patch checks if there exist an OPP list associated with the device,
+> before attempting to initialise it.
 > 
 > Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
 > ---
->  Documentation/devicetree/bindings/power/opp.txt |   41 +++++++++++++++++++++++
->  drivers/base/power/opp.c                        |   30 ++++++++++++-----
->  2 files changed, 63 insertions(+), 8 deletions(-)
+>  drivers/base/power/opp.c |    5 +++++
+>  1 file changed, 5 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> index 74499e5..a659da4 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -23,3 +23,44 @@ cpu@0 {
->  		198000  850000
->  	>;
->  };
-> +
-Definition of operating-points is now a little different in the
-original description - it still indicates tuple {freq,voltage}, where
-as, this patch allows phandle to a different device's operating-points
-to be used. - we might want to rephrase the description.
-
-btw, to device-tree folks, I am not sure if it is OK to have different formats
-for the same property like operating-points. At least I don't seem to
-quickly be able to find any precedence.
-
-> +If more than one device of same type share the same OPPs, e.g. all the CPUs on
-s/e.g/example?
-> +a SoC or in a single cluster on a SoC, then we need to avoid replicating the
-> +OPPs in all the nodes. We can specify the phandle of the node with which the
-> +current node shares the operating points instead.
-> +
-> +Examples:
-> +Consider an SMP with 4 CPUs all sharing the same OPPs.
-We might want to descr
-> +
-> +cpu0: cpu@0 {
-> +	compatible = "arm,cortex-a9";
-> +	reg = <0>;
-> +	next-level-cache = <&L2>;
-> +	operating-points = <
-> +		/* kHz    uV */
-> +		792000  1100000
-> +		396000  950000
-> +		198000  850000
-> +	>;
-> +};
-> +
-> +cpu1: cpu@1 {
-> +	compatible = "arm,cortex-a9";
-> +	reg = <1>;
-> +	next-level-cache = <&L2>;
-> +	operating-points = <&cpu0>;
-> +};
-> +
-> +cpu2: cpu@2 {
-> +	compatible = "arm,cortex-a9";
-> +	reg = <2>;
-> +	next-level-cache = <&L2>;
-> +	operating-points = <&cpu0>;
-> +};
-> +
-> +cpu3: cpu@3 {
-> +	compatible = "arm,cortex-a9";
-> +	reg = <3>;
-> +	next-level-cache = <&L2>;
-> +	operating-points = <&cpu0>;
-> +};
 > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index f0077cb..4dfdc01 100644
+> index 4dfdc01..66d52d2 100644
 > --- a/drivers/base/power/opp.c
 > +++ b/drivers/base/power/opp.c
-> @@ -698,19 +698,15 @@ struct srcu_notifier_head *opp_get_notifier(struct device *dev)
->  }
->  
->  #ifdef CONFIG_OF
-> -/**
-> - * of_init_opp_table() - Initialize opp table from device tree
-> - * @dev:	device pointer used to lookup device OPPs.
-> - *
-> - * Register the initial OPP table with the OPP library for given device.
-> - */
-> -int of_init_opp_table(struct device *dev)
-> +static int of_init_opp_table_from_ofnode(struct device *dev,
-> +					struct device_node *of_node)
-please provide kernel-doc documentation for static function as well -
-this is inline with the rest of the file.
->  {
-> +	struct device_opp *dev_opp = NULL;
-dev_opp is not used until patch #2 - please introduce it in that patch.
->  	const struct property *prop;
+> @@ -706,6 +706,11 @@ static int of_init_opp_table_from_ofnode(struct device *dev,
 >  	const __be32 *val;
 >  	int nr;
 >  
-> -	prop = of_find_property(dev->of_node, "operating-points", NULL);
-> +	prop = of_find_property(of_node, "operating-points", NULL);
+> +	/* Check for existing list for 'dev' */
+> +	dev_opp = find_device_opp(dev);
+> +	if (!IS_ERR(dev_opp))
+> +		return 0; /* Device OPP already initialized */
+> +
+It gets a little touchy here -> the normal expectation is for the OPP
+entries to be populated onetime at boot.
+For example - driver bug where same device was attempted twice Vs the
+usecase you mention here - how'd we differentiate between the two?
+>  	prop = of_find_property(of_node, "operating-points", NULL);
 >  	if (!prop)
 >  		return -ENODEV;
->  	if (!prop->value)
-> @@ -722,6 +718,14 @@ int of_init_opp_table(struct device *dev)
->  	 */
->  	nr = prop->length / sizeof(u32);
->  	if (nr % 2) {
-> +		if (nr == 1) {
-> +			struct device_node *opp_node;
-> +			opp_node = of_parse_phandle(dev->of_node,
-> +						"operating-points", 0);
-> +			if (opp_node)
-> +				return of_init_opp_table_from_ofnode(dev,
-> +								opp_node);
-> +		}
-if operating-points=<100000>, then we return Invalid OPP list
-if operating-points=<&uart3>; (some phandle that does not have
-operating-points), there is no helpful warning in log except -ENODEV is
-returned - we might want to add some info here?
->  		dev_err(dev, "%s: Invalid OPP list\n", __func__);
->  		return -EINVAL;
->  	}
-> @@ -741,5 +745,15 @@ int of_init_opp_table(struct device *dev)
->  
->  	return 0;
->  }
-missing EOL?
-> +/**
-> + * of_init_opp_table() - Initialize opp table from device tree
-> + * @dev:	device pointer used to lookup device OPPs.
-> + *
-> + * Register the initial OPP table with the OPP library for given device.
-> + */
-> +int of_init_opp_table(struct device *dev)
-> +{
-> +	return of_init_opp_table_from_ofnode(dev, dev->of_node);
-> +}
->  EXPORT_SYMBOL_GPL(of_init_opp_table);
->  #endif
 > -- 
 > 1.7.10.4
 > 
