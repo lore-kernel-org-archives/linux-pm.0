@@ -1,121 +1,112 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] drivers: power: Add watchdog timer to catch
- drivers which lockup during suspend.
-Date: Wed, 1 May 2013 02:30:58 +0200
-Message-ID: <20130501003058.GB20042@amd.pavel.ucw.cz>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [RFC PATCH] power: Add option to log time spent in suspend
+Date: Tue, 30 Apr 2013 20:29:17 -0700
+Message-ID: <CAMbhsRRisa15fH9AodepfRJUv6t6dipqb6CMbOOrtzVsMUCoxQ@mail.gmail.com>
 References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
+	<1367360914-23389-2-git-send-email-zoran.markovic@linaro.org>
+	<20130501002929.GA20042@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49248 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933840Ab3EAAbA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 20:31:00 -0400
-Content-Disposition: inline
-In-Reply-To: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
+Received: from mail-vc0-f169.google.com ([209.85.220.169]:60559 "EHLO
+	mail-vc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758801Ab3EAD3S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 23:29:18 -0400
+Received: by mail-vc0-f169.google.com with SMTP id gd11so1016482vcb.14
+        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 20:29:18 -0700 (PDT)
+In-Reply-To: <20130501002929.GA20042@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zoran Markovic <zoran.markovic@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
 
-Hi!
+On Tue, Apr 30, 2013 at 5:29 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> From: Colin Cross <ccross@android.com>
+>>
+>> Below is a patch from android kernel that maintains a histogram of
+>> suspend times. Please review and provide feedback.
+>>
+>> Prints the time spent in suspend in the kernel log, and keeps statistics
+>> on the time spent in suspend in /sys/kernel/debug/suspend_time
+>>
+>> Cc: Android Kernel Team <kernel-team@android.com>
+>> Cc: Colin Cross <ccross@android.com>
+>> Cc: Todd Poynor <toddpoynor@google.com>
+>> Cc: San Mehat <san@google.com>
+>> Cc: Benoit Goby <benoit@android.com>
+>> Cc: John Stultz <john.stultz@linaro.org>
+>> Cc: Pavel Machek <pavel@ucw.cz>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>> Cc: Len Brown <len.brown@intel.com>
+>> Signed-off-by: Colin Cross <ccross@android.com>
+>> Signed-off-by: Todd Poynor <toddpoynor@google.com>
+>> [zoran.markovic@linaro.org: Re-formatted suspend time table to better fit
+>> expected values, tweaked commit message]
+>> Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
+>
+>> +++ b/kernel/power/suspend_time.c
+>> @@ -0,0 +1,111 @@
+>> +/*
+>> + * debugfs file to track time spent in suspend
+>> + *
+>> + * Copyright (c) 2011, Google, Inc.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License as published by
+>> + * the Free Software Foundation; either version 2 of the License, or
+>> + * (at your option) any later version.
+>> + *
+>> + * This program is distributed in the hope that it will be useful, but WITHOUT
+>> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+>> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+>> + * more details.
+>> + */
+>> +
+>> +#include <linux/debugfs.h>
+>> +#include <linux/err.h>
+>> +#include <linux/init.h>
+>> +#include <linux/kernel.h>
+>> +#include <linux/seq_file.h>
+>> +#include <linux/syscore_ops.h>
+>> +#include <linux/time.h>
+>> +
+>> +static struct timespec suspend_time_before;
+>> +static unsigned int time_in_suspend_bins[32];
+>> +
+>> +#ifdef CONFIG_DEBUG_FS
+>> +static int suspend_time_debug_show(struct seq_file *s, void *data)
+>> +{
+>> +     unsigned int bin;
+>> +     seq_printf(s, "      time (secs)        count\n");
+>> +     seq_printf(s, "------------------------------\n");
+>> +     for (bin = 0; bin < 32; bin++) {
+>> +             if (time_in_suspend_bins[bin] == 0)
+>> +                     continue;
+>> +             seq_printf(s, "%10u - %-10u %4u\n",
+>> +                     bin ? 1 << (bin - 1) : 0, 1 << bin,
+>> +                             time_in_suspend_bins[bin]);
+>> +     }
+>> +     return 0;
+>> +}
+>> +
+>> +static int suspend_time_debug_open(struct inode *inode, struct file *file)
+>> +{
+>> +     return single_open(file, suspend_time_debug_show, NULL);
+>> +}
+>
+> Ok, whole new driver to get timing info... As we already have times in
+> printk, can't existing printks() get the same info? Maybe
+> Documentation/ file describing how to get that info from dmesg would
+> be enough?
 
-> Below is a patch from android kernel that detects a driver suspend
-> lockup and captures dump in the kernel log. Please review and provide
-> comments.
-> 
-> Rather than hard-lock the kernel, dump the suspend thread stack and
-> BUG() when a driver takes too long to suspend.  The timeout is set to
-> 12 seconds to be longer than the usbhid 10 second timeout.
-> 
-> Exclude from the watchdog the time spent waiting for children that
-> are resumed asynchronously and time every device, whether or not they
-> resumed synchronously.
-> 
-> Cc: Android Kernel Team <kernel-team@android.com>
-> Cc: Colin Cross <ccross@android.com>
-> Cc: Todd Poynor <toddpoynor@google.com>
-> Cc: San Mehat <san@google.com>
-> Cc: Benoit Goby <benoit@android.com>
-> Cc: John Stultz <john.stultz@linaro.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Original-author: San Mehat <san@google.com>
-> Signed-off-by: Benoit Goby <benoit@android.com>
-> [zoran.markovic@linaro.org: Changed printk(KERN_EMERG,...) to pr_emerg(...),
-> tweaked commit message.]
-> Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
-> ---
->  drivers/base/power/main.c |   45 +++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 15beb50..eb70c0e 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -29,6 +29,8 @@
->  #include <linux/async.h>
->  #include <linux/suspend.h>
->  #include <linux/cpuidle.h>
-> +#include <linux/timer.h>
-> +
->  #include "../base.h"
->  #include "power.h"
->  
-> @@ -54,6 +56,12 @@ struct suspend_stats suspend_stats;
->  static DEFINE_MUTEX(dpm_list_mtx);
->  static pm_message_t pm_transition;
->  
-> +static void dpm_drv_timeout(unsigned long data);
-> +struct dpm_drv_wd_data {
-> +	struct device *dev;
-> +	struct task_struct *tsk;
-> +};
-> +
->  static int async_error;
->  
->  /**
-> @@ -663,6 +671,30 @@ static bool is_async(struct device *dev)
->  }
->  
->  /**
-> + *     dpm_drv_timeout - Driver suspend / resume watchdog handler
-> + *     @data: struct device which timed out
-> + *
-> + *     Called when a driver has timed out suspending or resuming.
-> + *     There's not much we can do here to recover so
-> + *     BUG() out for a crash-dump
-> + *
-> + */
-> +static void dpm_drv_timeout(unsigned long data)
-> +{
-> +	struct dpm_drv_wd_data *wd_data = (void *)data;
-> +	struct device *dev = wd_data->dev;
-> +	struct task_struct *tsk = wd_data->tsk;
-> +
-> +	pr_emerg("**** DPM device timeout: %s (%s)\n", dev_name(dev),
-> +		(dev->driver ? dev->driver->name : "no driver"));
-> +
-> +	pr_emerg("dpm suspend stack:\n");
-> +	show_stack(tsk, NULL);
-> +
-> +	BUG();
-> +}
+If this were to be merged I assume it would be rewritten directly into
+kernel/power/suspend.c instead of using syscore ops.  That was just
+done to ease future merges while it was out of tree.
 
-So you:
-
-dump stack of the suspend task
-
-do BUG which
-   dumps stack of current task
-   kills current task
-
-Current task may very well be idle task; in such case you kill the
-machine. Sounds like you should be doing something else, like kill -9
-instead of BUG()?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+dmesg is not the solution, it's not a stable api, it would require
+constant parsing to make sure you didn't miss data before it fell out
+of the ringbuffer, and sched_clock often does not (and should not)
+tick during suspend, so printk times don't show the time spent
+suspended.
