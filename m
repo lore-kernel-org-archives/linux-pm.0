@@ -1,46 +1,102 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH] drivers: power: Add watchdog timer to catch drivers
- which lockup during suspend.
-Date: Tue, 30 Apr 2013 16:30:31 -0700
-Message-ID: <20130430233031.GA32310@kroah.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH] power: Add option to log time spent in suspend
+Date: Wed, 1 May 2013 02:29:29 +0200
+Message-ID: <20130501002929.GA20042@amd.pavel.ucw.cz>
 References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
+ <1367360914-23389-2-git-send-email-zoran.markovic@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f43.google.com ([209.85.160.43]:55898 "EHLO
-	mail-pb0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933785Ab3D3Xae (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 19:30:34 -0400
-Received: by mail-pb0-f43.google.com with SMTP id ma3so500178pbc.30
-        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 16:30:34 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49221 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933840Ab3EAA3b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Apr 2013 20:29:31 -0400
 Content-Disposition: inline
-In-Reply-To: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
+In-Reply-To: <1367360914-23389-2-git-send-email-zoran.markovic@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Zoran Markovic <zoran.markovic@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Colin Cross <ccross@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
 
-On Tue, Apr 30, 2013 at 03:28:33PM -0700, Zoran Markovic wrote:
-> From: Benoit Goby <benoit@android.com>
+Hi!
+
+> From: Colin Cross <ccross@android.com>
 > 
-> Below is a patch from android kernel that detects a driver suspend
-> lockup and captures dump in the kernel log. Please review and provide
-> comments.
-
-There's this really cool thing called a watchdog driver that does stuff
-like this :)
-
-> Rather than hard-lock the kernel, dump the suspend thread stack and
-> BUG() when a driver takes too long to suspend.  The timeout is set to
-> 12 seconds to be longer than the usbhid 10 second timeout.
+> Below is a patch from android kernel that maintains a histogram of
+> suspend times. Please review and provide feedback.
 > 
-> Exclude from the watchdog the time spent waiting for children that
-> are resumed asynchronously and time every device, whether or not they
-> resumed synchronously.
+> Prints the time spent in suspend in the kernel log, and keeps statistics
+> on the time spent in suspend in /sys/kernel/debug/suspend_time
+> 
+> Cc: Android Kernel Team <kernel-team@android.com>
+> Cc: Colin Cross <ccross@android.com>
+> Cc: Todd Poynor <toddpoynor@google.com>
+> Cc: San Mehat <san@google.com>
+> Cc: Benoit Goby <benoit@android.com>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Len Brown <len.brown@intel.com>
+> Signed-off-by: Colin Cross <ccross@android.com>
+> Signed-off-by: Todd Poynor <toddpoynor@google.com>
+> [zoran.markovic@linaro.org: Re-formatted suspend time table to better fit
+> expected values, tweaked commit message]
+> Signed-off-by: Zoran Markovic <zoran.markovic@linaro.org>
 
-No, don't add a driver-core-only timer, use the existing watchdog timers
-if you are worried about the kernel locking up.
+> +++ b/kernel/power/suspend_time.c
+> @@ -0,0 +1,111 @@
+> +/*
+> + * debugfs file to track time spent in suspend
+> + *
+> + * Copyright (c) 2011, Google, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + */
+> +
+> +#include <linux/debugfs.h>
+> +#include <linux/err.h>
+> +#include <linux/init.h>
+> +#include <linux/kernel.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/syscore_ops.h>
+> +#include <linux/time.h>
+> +
+> +static struct timespec suspend_time_before;
+> +static unsigned int time_in_suspend_bins[32];
+> +
+> +#ifdef CONFIG_DEBUG_FS
+> +static int suspend_time_debug_show(struct seq_file *s, void *data)
+> +{
+> +	unsigned int bin;
+> +	seq_printf(s, "      time (secs)        count\n");
+> +	seq_printf(s, "------------------------------\n");
+> +	for (bin = 0; bin < 32; bin++) {
+> +		if (time_in_suspend_bins[bin] == 0)
+> +			continue;
+> +		seq_printf(s, "%10u - %-10u %4u\n",
+> +			bin ? 1 << (bin - 1) : 0, 1 << bin,
+> +				time_in_suspend_bins[bin]);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int suspend_time_debug_open(struct inode *inode, struct file *file)
+> +{
+> +	return single_open(file, suspend_time_debug_show, NULL);
+> +}
 
-thanks,
-
-greg k-h
+Ok, whole new driver to get timing info... As we already have times in
+printk, can't existing printks() get the same info? Maybe
+Documentation/ file describing how to get that info from dmesg would
+be enough?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
