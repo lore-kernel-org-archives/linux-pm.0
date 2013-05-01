@@ -1,124 +1,82 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [RFC PATCH] drivers: power: Add watchdog timer to catch drivers
- which lockup during suspend.
-Date: Tue, 30 Apr 2013 22:14:56 -0700
-Message-ID: <CAMbhsRSgHTwF3eTL5ODTH6yksQRLB5JT8_YRid8Ch5Y6EL+Z+g@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH] drivers: power: Add watchdog timer to catch
+ drivers which lockup during suspend.
+Date: Wed, 1 May 2013 12:56:30 +0200
+Message-ID: <20130501105630.GA22552@amd.pavel.ucw.cz>
 References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
-	<20130430233031.GA32310@kroah.com>
-	<CAMbhsRSV+om7w2f1ht6hLmK_BrgjjQZ91iBJzR5ySTytQdndBg@mail.gmail.com>
-	<20130501041731.GA24128@kroah.com>
-	<CAMbhsRT2eCKCuF1PbYY-NhGLCocE+809eZEkQYZWh42EB+SwBg@mail.gmail.com>
-	<CAK7N6voYXxJKWDwSj5T9Y2fKK+Y5JqN9Wm8Qoffi9N7nRnsYhw@mail.gmail.com>
+ <20130501003058.GB20042@amd.pavel.ucw.cz>
+ <CAMbhsRQkYFvOzDDn4zmbZAEsVs6iSy4mPVq5w=MzQ7p9STBDew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f180.google.com ([209.85.128.180]:51037 "EHLO
-	mail-ve0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769Ab3EAFO5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 01:14:57 -0400
-Received: by mail-ve0-f180.google.com with SMTP id pb11so1017623veb.11
-        for <linux-pm@vger.kernel.org>; Tue, 30 Apr 2013 22:14:56 -0700 (PDT)
-In-Reply-To: <CAK7N6voYXxJKWDwSj5T9Y2fKK+Y5JqN9Wm8Qoffi9N7nRnsYhw@mail.gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60977 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756263Ab3EAK4c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 06:56:32 -0400
+Content-Disposition: inline
+In-Reply-To: <CAMbhsRQkYFvOzDDn4zmbZAEsVs6iSy4mPVq5w=MzQ7p9STBDew@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: anish singh <anish198519851985@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
+To: Colin Cross <ccross@android.com>
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Tue, Apr 30, 2013 at 9:57 PM, anish singh
-<anish198519851985@gmail.com> wrote:
->
->
->
-> On Wed, May 1, 2013 at 10:09 AM, Colin Cross <ccross@android.com> wrote:
->>
->> On Tue, Apr 30, 2013 at 9:17 PM, Greg Kroah-Hartman
->> <gregkh@linuxfoundation.org> wrote:
->> > On Tue, Apr 30, 2013 at 08:36:21PM -0700, Colin Cross wrote:
->> >> On Tue, Apr 30, 2013 at 4:30 PM, Greg Kroah-Hartman
->> >> <gregkh@linuxfoundation.org> wrote:
->> >> > On Tue, Apr 30, 2013 at 03:28:33PM -0700, Zoran Markovic wrote:
->> >> >> From: Benoit Goby <benoit@android.com>
->> >> >>
->> >> >> Below is a patch from android kernel that detects a driver suspend
->> >> >> lockup and captures dump in the kernel log. Please review and
->> >> >> provide
->> >> >> comments.
->> >> >
->> >> > There's this really cool thing called a watchdog driver that does
->> >> > stuff
->> >> > like this :)
->> >>
->> >> If the watchdog driver worked in this case this patch wouldn't exist.
->> >
->> > Great, let's fix the watchdog timer then :)
->> >
->> > What's wrong with it?
->> >
->> >> >> Rather than hard-lock the kernel, dump the suspend thread stack and
->> >> >> BUG() when a driver takes too long to suspend.  The timeout is set
->> >> >> to
->> >> >> 12 seconds to be longer than the usbhid 10 second timeout.
->> >> >>
->> >> >> Exclude from the watchdog the time spent waiting for children that
->> >> >> are resumed asynchronously and time every device, whether or not
->> >> >> they
->> >> >> resumed synchronously.
->> >> >
->> >> > No, don't add a driver-core-only timer, use the existing watchdog
->> >> > timers
->> >> > if you are worried about the kernel locking up.
->> >>
->> >> The watchdog timers are useless here.  For one, they generally stop
->> >> when their driver suspend op is called, so you may not even have one
->> >> running when you lock up.
->> >
->> > But you can fix that, right?
->>
->> Ah, you're talking about the lockup detectors, and not drivers/watchdog.
->>
->> The hardlockup detector can tell you if timer interrupts are not
->> firing, which is unaffected by this patch since the timer wouldn't
->> fire any way.  The softlockup detector could eventually tell you that
->
-> I was wondering if timers don't fire then how is your dpm_drv_timeout
-> function gets called?
+Hi!
 
-That's what I meant - this patch doesn't do anything if timers are not firing.
+> >> @@ -663,6 +671,30 @@ static bool is_async(struct device *dev)
+> >>  }
+> >>
+> >>  /**
+> >> + *     dpm_drv_timeout - Driver suspend / resume watchdog handler
+> >> + *     @data: struct device which timed out
+> >> + *
+> >> + *     Called when a driver has timed out suspending or resuming.
+> >> + *     There's not much we can do here to recover so
+> >> + *     BUG() out for a crash-dump
+> >> + *
+> >> + */
+> >> +static void dpm_drv_timeout(unsigned long data)
+> >> +{
+> >> +     struct dpm_drv_wd_data *wd_data = (void *)data;
+> >> +     struct device *dev = wd_data->dev;
+> >> +     struct task_struct *tsk = wd_data->tsk;
+> >> +
+> >> +     pr_emerg("**** DPM device timeout: %s (%s)\n", dev_name(dev),
+> >> +             (dev->driver ? dev->driver->name : "no driver"));
+> >> +
+> >> +     pr_emerg("dpm suspend stack:\n");
+> >> +     show_stack(tsk, NULL);
+> >> +
+> >> +     BUG();
+> >> +}
+> >
+> > So you:
+> >
+> > dump stack of the suspend task
+> It dumps the stack of the suspend task if the suspend callback is run
+> synchronously, or the async task if the suspend op is run
+> asynchronously.
 
->>
->> tasks were not being scheduled, but not why.  Even panic on softlockup
->> will only get you the stack trace of the current task, which will be
->> the locked up task if it is spinning, but is likely to be the idle
->> task if the suspend task is blocked on a wait_event.  This patch will
->> give the stack trace of the suspend operation that is blocked, even if
->> it is an asynchronous suspend callback.
->
-> ......but not when timers itself is not firing right?
->>
->> ...but not when ti
->> >> More importantly, the purpose of this patch is to tell you which
->> >> driver locked up and hopefully why, and the watchdog driver will
->> >> usually result in a silent reset.
->> >
->> > I thought it was an option as to what the watchdog does when it
->> > triggers.
->> >
->> >> This patch will cause a stack trace of the driver suspend op that is
->> >> blocking suspend progress, even if that call does not happen in the
->> >> suspend thread.
->> >
->> > But who can see this, the machine is now dead.
->>
->> I'm not sure what might still be working in this situation on x86, but
->> on ARM the machine is dead anyways.  Some random subset of drivers are
->> suspended, so you probably have no hardware watchdog, no console, no
->> video.  kexec on panic, kgdb on panic, console messages saved in
->> pstore, or jtag are the only options I know of.  This patch is very
->> useful in conjunction with pstore console.
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+Lets call that [a]suspend task.
+
+> > do BUG which
+> >    dumps stack of current task
+> >    kills current task
+> >
+> > Current task may very well be idle task; in such case you kill the
+> > machine. Sounds like you should be doing something else, like kill -9
+> > instead of BUG()?
+> 
+> Not much else you can do, you are stuck part way into suspend with a
+> driver's suspend callback half executed.  All userspace tasks are
+> frozen, and the suspend task is blocked indefinitely.
+
+Yes, there's better option. Attempt killing the [a]suspend task,
+instead of killing the current task.
+
+Try putting mdelay(100000) into suspend path. Your patch will do the
+wrong thing in that case (actually turning debuggable problem into
+undebuggable one).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
