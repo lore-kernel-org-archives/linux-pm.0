@@ -1,65 +1,36 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH, RFC 03/22] cpuidle: calxeda: select ARM_CPU_SUSPEND
-Date: Thu, 02 May 2013 23:31:01 +0200
-Message-ID: <5182DB15.2060006@linaro.org>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de> <1367507786-505303-4-git-send-email-arnd@arndb.de>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2 01/10] freezer: shorten freezer sleep time using
+ exponential backoff
+Date: Thu, 2 May 2013 16:20:34 -0700
+Message-ID: <20130502232034.GU19814@mtj.dyndns.org>
+References: <1367458508-9133-1-git-send-email-ccross@android.com>
+ <1367458508-9133-2-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f177.google.com ([74.125.82.177]:39164 "EHLO
-	mail-we0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758797Ab3EBVbL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 17:31:11 -0400
-Received: by mail-we0-f177.google.com with SMTP id u3so837438wey.36
-        for <linux-pm@vger.kernel.org>; Thu, 02 May 2013 14:31:09 -0700 (PDT)
-In-Reply-To: <1367507786-505303-4-git-send-email-arnd@arndb.de>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:55314 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202Ab3EBXUk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 19:20:40 -0400
+Content-Disposition: inline
+In-Reply-To: <1367458508-9133-2-git-send-email-ccross@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 
-On 05/02/2013 05:16 PM, Arnd Bergmann wrote:
-> Like other ARM specific drivers, this one requires ARM_CPU_SUSPEND,
-> as shown by this linker error:
->=20
-> drivers/built-in.o: In function `calxeda_pwrdown_idle':
-> drivers/cpuidle/cpuidle-calxeda.c:84: undefined reference to `cpu_sus=
-pend'
-> drivers/cpuidle/cpuidle-calxeda.c:86: undefined reference to `cpu_res=
-ume'
->=20
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Hello,
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Wed, May 01, 2013 at 06:34:59PM -0700, Colin Cross wrote:
+> All tasks can easily be frozen in under 10 ms, switch to using
+> an initial 1 ms sleep followed by exponential backoff until
+> 8 ms.  Also convert the printed time to ms instead of centiseconds.
 
-> ---
->  drivers/cpuidle/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index c4cc27e..e21cdfa 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -36,6 +36,7 @@ if CPU_IDLE
->  config CPU_IDLE_CALXEDA
->  	bool "CPU Idle Driver for Calxeda processors"
->  	depends on ARCH_HIGHBANK
-> +	select ARM_CPU_SUSPEND
->  	help
->  	  Select this to enable cpuidle on Calxeda processors.
-> =20
->=20
+Can you please put the above as comment in the code?  Other than that,
 
+Acked-by: Tejun Heo <tj@kernel.org>
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Thanks.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+-- 
+tejun
