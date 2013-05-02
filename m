@@ -1,46 +1,69 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: 3.9.0 + CONFIG_X86_INTEL_PSTATE=y  -> ThinkPad T420 with i5 lost
- ACPI functionality
-Date: Fri, 03 May 2013 14:43:11 -0700
-Message-ID: <51842F6F.1050005@intel.com>
-References: <5183EC09.9080208@gmx.de> <3715884.H8PIhhjRXL@vostro.rjw.lan> <518427D4.3050104@gmail.com> <51842B79.8060302@gmx.de>
+From: Matt Helsley <matthltc@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/10] futex: use freezable blocking call
+Date: Thu, 2 May 2013 12:52:33 -0700
+Message-ID: <20130502195233.GC24627@us.ibm.com>
+References: <1367271946-7239-1-git-send-email-ccross@android.com>
+ <1367271946-7239-8-git-send-email-ccross@android.com>
+ <517EF9AB.8080508@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:56843 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760475Ab3ECVnO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2013 17:43:14 -0400
-In-Reply-To: <51842B79.8060302@gmx.de>
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:37032 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760289Ab3ECW6O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 May 2013 18:58:14 -0400
+Received: from /spool/local
+	by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <matthltc@linux.vnet.ibm.com>;
+	Fri, 3 May 2013 18:58:13 -0400
+Content-Disposition: inline
+In-Reply-To: <517EF9AB.8080508@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Darren Hart <dvhart@linux.intel.com>
+Cc: Colin Cross <ccross@android.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>, Matthew Helsley <matthltc@us.ibm.com>
 
-On 05/03/2013 02:26 PM, Toralf F=C3=B6rster wrote:
-> On 05/03/2013 11:10 PM, Dirk Brandewie wrote:
->>
->> ignore_nice_load is a feature of the ondemand governor.
->> The intel_pstate driver is seeing the load presented by the BOINC cl=
-ient
->> and is adjusting the pstate accordingly.
->
-> Is the intel_pstate driver a choice for a notebook and friends where =
-a
-> grid software is running as a low-prio back ground job ?
->
+On Mon, Apr 29, 2013 at 03:52:27PM -0700, Darren Hart wrote:
+> Colin,
+> 
+> I don't know anything about when or when not to use freezable*, and I
+> suspect that may be true for others as well. A more complete
+> description of why it's acceptable here in the commit log might help
+> expedite acceptance.
+> 
+> 
+> Matt,
+> 
+> I have a vague memory of discussing something similar to this with you.
+> Do you see any potential problems here?
 
-Probably not.
+Re: vague memories: We discussed futexes in the context of the old
+checkpoint/restart patch series (<= 2.6.32).
 
-> Because the CPU will be running mostly at high(er) frequency - which
-> always results in a high temperature and short battery time.
->
+This change looks correct to me.
 
-It would be better IMHO if the client software limited the resources
-it uses when the system is not on wall power but that is a seperate
-discussion :-)
+> --
+> Darren
+> 
+> On 04/29/2013 02:45 PM, Colin Cross wrote:
+> > Avoid waking up every thread sleeping in a futex_wait call during
+> > suspend and resume by calling a freezable blocking call.
 
---Dirk
+(in addition to suspend/resume: freeze/thaw via the cgroup freezer.
+I'm going to call it freeze/thaw since that should cover both cases..)
+
+Here's my shot at explaining what I *think* the commit is supposed fix:
+
+I imagine that before this patch on a highly-contended futex there
+could be a thundering herd during freeze/thaw -- the wakeups are
+*likely* to be painful because lots of tasks could be woken from the
+schedule() call by the freezer only to find that the futex state hasn't
+changed.
+
+With this change the freezer won't wake these tasks up because the
+FREEZER_SKIP flag is set while in the schedule() call and thus the
+thundering herd won't be triggered by the freezer.
+
+Cheers,
+	-Matt Helsley
 
