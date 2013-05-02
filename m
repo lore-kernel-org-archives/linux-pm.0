@@ -1,121 +1,82 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V2] thermal: exynos: Support for TMU regulator defined at device tree
-Date: Thu,  2 May 2013 15:48:57 +0530
-Message-ID: <1367489937-30725-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: cpu0: Free parent node for error cases
+Date: Thu, 02 May 2013 13:58:09 +0200
+Message-ID: <2882677.ddYllFuZlK@vostro.rjw.lan>
+References: <ad5f8a25684dbdd6fcb385fb420da0b4709e7392.1367384647.git.viresh.kumar@linaro.org> <20130502024849.GF3442@S2101-09.ap.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130502024849.GF3442@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, nm@ti.com
 List-Id: linux-pm@vger.kernel.org
 
-TMU probe function now checks for a device tree defined regulator.
-For compatibility reasons it is allowed to probe driver even without
-this regulator defined.
+On Thursday, May 02, 2013 10:48:50 AM Shawn Guo wrote:
+> On Wed, May 01, 2013 at 10:34:43AM +0530, Viresh Kumar wrote:
+> > We are freeing parent node in success cases but not in failure cases. Lets do
+> > it.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq-cpu0.c | 13 ++++++++-----
+> >  1 file changed, 8 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> > index 3ab8294..c025714 100644
+> > --- a/drivers/cpufreq/cpufreq-cpu0.c
+> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> > @@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >  
+> >  	if (!np) {
+> >  		pr_err("failed to find cpu0 node\n");
+> > -		return -ENOENT;
+> > +		ret = -ENOENT;
+> > +		goto out_put_parent;
+> >  	}
+> >  
+> >  	cpu_dev = &pdev->dev;
+> > @@ -199,7 +200,7 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >  	if (IS_ERR(cpu_clk)) {
+> >  		ret = PTR_ERR(cpu_clk);
+> >  		pr_err("failed to get cpu0 clock: %d\n", ret);
+> > -		goto out_put_node;
+> > +		goto out_put_np;
+> >  	}
+> >  
+> >  	cpu_reg = devm_regulator_get(cpu_dev, "cpu0");
+> > @@ -211,13 +212,13 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >  	ret = of_init_opp_table(cpu_dev);
+> >  	if (ret) {
+> >  		pr_err("failed to init OPP table: %d\n", ret);
+> > -		goto out_put_node;
+> > +		goto out_put_np;
+> >  	}
+> >  
+> >  	ret = opp_init_cpufreq_table(cpu_dev, &freq_table);
+> >  	if (ret) {
+> >  		pr_err("failed to init cpufreq table: %d\n", ret);
+> > -		goto out_put_node;
+> > +		goto out_put_np;
+> >  	}
+> >  
+> >  	of_property_read_u32(np, "voltage-tolerance", &voltage_tolerance);
+> > @@ -262,8 +263,10 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >  
+> >  out_free_table:
+> >  	opp_free_cpufreq_table(cpu_dev, &freq_table);
+> > -out_put_node:
+> > +out_put_np:
+> 
+> Unnecessary renaming brings unnecessary diffstat?
 
-Signed-off-by: Luk asz Majewski <l.majewski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
+Yeah, I'd prefer only changes that are essential here.
 
-Changes in V2:
-* Added log message in regulator_get failure as suggested by Sylwester.
-* Used IS_ERR for checking regulator pointer as suggested by Sylwester.
+Thanks,
+Rafael
 
-This patch is repost of the patch posted by Lukasz Majewski
-(https://patchwork.kernel.org/patch/2488211/). I have rebased this
-patch on top of my TMU re-structured patch series
-(http://lwn.net/Articles/548634/). Although I thought of handling
-regulator as one type of feature (newly added) but could not do
-so as regulator is a board/platform property and not SOC property so
-leaving the device tree to define and handle it.
 
- .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++++
- drivers/thermal/samsung/exynos_tmu.c               |   19 +++++++++++++++++++
- 2 files changed, 23 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-index 970eeba..ff62f7a 100644
---- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -14,6 +14,9 @@
- - interrupts : Should contain interrupt for thermal system
- - clocks : The main clock for TMU device
- - clock-names : Thermal system clock name
-+- vtmu-supply: This entry is optional and provides the regulator node supplying
-+		voltage to TMU. If needed this entry can be placed inside
-+		board/platform specific dts file.
- 
- Example 1):
- 
-@@ -25,6 +28,7 @@ Example 1):
- 		clocks = <&clock 383>;
- 		clock-names = "tmu_apbif";
- 		status = "disabled";
-+		vtmu-supply = <&tmu_regulator_node>;
- 	};
- 
- Example 2):
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 72446c9..b7c609a 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -32,6 +32,7 @@
- #include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/slab.h>
- #include <linux/workqueue.h>
- #include "exynos_thermal_common.h"
-@@ -52,6 +53,7 @@
-  * @clk: pointer to the clock structure.
-  * @temp_error1: fused value of the first point trim.
-  * @temp_error2: fused value of the second point trim.
-+ * @regulator: pointer to the TMU regulator structure.
-  * @reg_conf: pointer to structure to register with core thermal.
-  */
- struct exynos_tmu_data {
-@@ -65,6 +67,7 @@ struct exynos_tmu_data {
- 	struct mutex lock;
- 	struct clk *clk;
- 	u8 temp_error1, temp_error2;
-+	struct regulator *regulator;
- 	struct thermal_sensor_conf *reg_conf;
- };
- 
-@@ -501,10 +504,23 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
- 	struct resource res;
-+	int ret;
- 
- 	if (!data)
- 		return -ENODEV;
- 
-+	/* Try enabling the regulator if found */
-+	data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
-+	if (!IS_ERR(data->regulator)) {
-+		ret = regulator_enable(data->regulator);
-+		if (ret) {
-+			dev_err(&pdev->dev, "failed to enable vtmu\n");
-+			return ret;
-+		}
-+	} else {
-+		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
-+	}
-+
- 	data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
- 	if (data->id < 0)
- 		data->id = 0;
-@@ -669,6 +685,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
- 
- 	clk_unprepare(data->clk);
- 
-+	if (!IS_ERR(data->regulator))
-+		regulator_disable(data->regulator);
-+
- 	platform_set_drvdata(pdev, NULL);
- 
- 	return 0;
 -- 
-1.7.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
