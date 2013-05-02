@@ -1,97 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH, RFC 00/22] ARM randconfig bugs
-Date: Thu, 02 May 2013 20:53:44 +0200
-Message-ID: <2710056.LHQ0Ee0x8t@vostro.rjw.lan>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [RFC PATCH] power: Add option to log time spent in suspend
+Date: Thu, 02 May 2013 11:58:22 -0700
+Message-ID: <5182B74E.8060909@linaro.org>
+References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org> <1367360914-23389-2-git-send-email-zoran.markovic@linaro.org> <20130501002929.GA20042@amd.pavel.ucw.cz> <CAMbhsRRisa15fH9AodepfRJUv6t6dipqb6CMbOOrtzVsMUCoxQ@mail.gmail.com> <20130502122747.GA22618@amd.pavel.ucw.cz> <CAMbhsRQ4tCQtSxA-5tqydKp-xQf1bnrsq7GNw5q0gk3NdPZyaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org>
-In-Reply-To: <1367507786-505303-1-git-send-email-arnd@arndb.de>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Sender: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-Errors-To: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, dri-devel@lists.freedesktop.org, oprofile-list@lists.sf.net, Samuel Ortiz <sameo@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, cpufreq@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alan Stern <stern@rowland.harvard.edu>, Dave Airlie <airlied@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-media@vger.kernel.org, Robert Richter <rric@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, "John W. Linville" <linville@tuxdriver.com>, linux-can@vger.kernel.org, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.hengli.com.au>, Oliver Hartkopp <socketcan@hartkopp.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:59632 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932368Ab3EBS6Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 14:58:25 -0400
+Received: by mail-pd0-f170.google.com with SMTP id 10so510536pdi.29
+        for <linux-pm@vger.kernel.org>; Thu, 02 May 2013 11:58:25 -0700 (PDT)
+In-Reply-To: <CAMbhsRQ4tCQtSxA-5tqydKp-xQf1bnrsq7GNw5q0gk3NdPZyaA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
 
-On Thursday, May 02, 2013 05:16:04 PM Arnd Bergmann wrote:
-> Hi subsystem maintainers,
-> 
-> This is a set of patches to to fix build errors I hit while trying to
-> build lots of randconfig kernels on linux-next.
-> 
-> Most of them are simple missing dependencies in Kconfig, but some are
-> more substantial. I would like to see at least the obvious patches
-> get merged for 3.10. If you are happy with the patches, feel free
-> to apply them directly, otherwise please provide feedback.
-> 
-> No single patch out of these is very important though, most of them
-> only concern corner cases and don't matter in practice.
+On 05/02/2013 11:29 AM, Colin Cross wrote:
+> On Thu, May 2, 2013 at 5:27 AM, Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>>> dmesg is not the solution, it's not a stable api, it would require
+>>> constant parsing to make sure you didn't miss data before it fell out
+>>> of the ringbuffer, and sched_clock often does not (and should not)
+>>> tick during suspend, so printk times don't show the time spent
+>>> suspended.
+>> If timing info printed is invalid, that should be fixed.
+> It's not invalid, its just not measuring the time that is useful here.
+>   printk is measuring something similar to (but not exactly the same
+> as) CLOCK_MONOTONIC, but this is measuring something similar to
+> CLOCK_BOOTTIME.
 
-For cpufreq and cpuidle:
+One thing I'm curious about with this patch, since we measure and keep 
+track of suspend time in the timekeeping core, there may be enough 
+justification to adding this sort of debugging info the timekeeping core 
+itself.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Although what is being tracked with this driver isn't just total time in 
+suspend, but looks like more of a logarithmic histogram of suspend 
+times. Is there any context you can provide as to why that particular 
+format was chosen (which would could be added to help improve the commit 
+message)?
 
-> Arnd Bergmann (22):
->   can: move CONFIG_HAVE_CAN_FLEXCAN out of CAN_DEV
->   cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
->   cpuidle: calxeda: select ARM_CPU_SUSPEND
->   staging/drm: imx: add missing dependencies
->   drm: always provide debugfs function prototypes
->   gpu/drm: host1x: add dependency on Tegra
->   drm/tilcd: select BACKLIGHT_LCD_SUPPORT
->   OMAPDSS: DPI needs DSI
->   crypto: lz4: don't build on ARM
->   mfd: ab8500: debugfs code depends on gpadc
->   iwlegacy: il_pm_ops is only provided for PM_SLEEP
->   thermal: cpu_cooling: fix stub function
->   staging/logger: use kuid_t internally
->   oprofile: always enable IRQ_WORK
->   USB: EHCI: remove bogus #error
->   USB: UHCI: clarify Kconfig dependencies
->   USB: OHCI: clarify Kconfig dependencies
->   Xen: SWIOTLB is only used on x86
->   staging/solo6x10: depend on CONFIG_FONTS
->   media: coda: select GENERIC_ALLOCATOR
->   davinci: vpfe_capture needs i2c
->   radio-si4713: depend on SND_SOC
-> 
->  arch/Kconfig                           |  1 +
->  crypto/Kconfig                         |  2 ++
->  drivers/cpufreq/Kconfig.arm            |  1 +
->  drivers/cpuidle/Kconfig                |  1 +
->  drivers/gpu/drm/tilcdc/Kconfig         |  1 +
->  drivers/gpu/host1x/drm/Kconfig         |  1 +
->  drivers/media/platform/Kconfig         |  1 +
->  drivers/media/platform/davinci/Kconfig |  3 ++
->  drivers/media/radio/Kconfig            |  1 +
->  drivers/mfd/Kconfig                    |  2 +-
->  drivers/net/can/Kconfig                |  6 ++--
->  drivers/net/wireless/iwlegacy/common.h |  2 +-
->  drivers/staging/android/logger.c       |  4 +--
->  drivers/staging/android/logger.h       |  2 +-
->  drivers/staging/imx-drm/Kconfig        |  4 +++
->  drivers/staging/media/solo6x10/Kconfig |  1 +
->  drivers/usb/host/Kconfig               | 65 +++++++++++++++++++++++++++++-----
->  drivers/usb/host/Makefile              |  4 +--
->  drivers/usb/host/ehci-hcd.c            | 17 ---------
->  drivers/usb/host/ohci-hcd.c            | 19 ----------
->  drivers/usb/host/uhci-hcd.c            |  4 +--
->  drivers/video/console/Makefile         |  2 ++
->  drivers/video/omap2/dss/Kconfig        |  1 +
->  drivers/xen/Kconfig                    |  2 +-
->  include/drm/drmP.h                     |  3 +-
->  include/linux/cpu_cooling.h            |  2 +-
->  26 files changed, 91 insertions(+), 61 deletions(-)
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+thanks
+-john
+
