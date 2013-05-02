@@ -1,56 +1,161 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v2 02/10] freezer: skip waking up tasks with PF_FREEZER_SKIP set
-Date: Wed,  1 May 2013 18:35:00 -0700
-Message-ID: <1367458508-9133-3-git-send-email-ccross@android.com>
+Subject: [PATCH v2 03/10] freezer: add new freezable helpers using freezer_do_not_count()
+Date: Wed,  1 May 2013 18:35:01 -0700
+Message-ID: <1367458508-9133-4-git-send-email-ccross@android.com>
 References: <1367458508-9133-1-git-send-email-ccross@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1367458508-9133-1-git-send-email-ccross@android.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Colin Cross <ccross@android.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Colin Cross <ccross@android.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Android goes through suspend/resume very often (every few seconds when
-on a busy wifi network with the screen off), and a significant portion
-of the energy used to go in and out of suspend is spent in the
-freezer.  If a task has called freezer_do_not_count(), don't bother
-waking it up.  If it happens to wake up later it will call
-freezer_count() and immediately enter the refrigerator.
+Freezing tasks will wake up almost every userspace task from
+where it is blocking and force it to run until it hits a
+call to try_to_sleep(), generally on the exit path from the syscall
+it is blocking in.  On resume each task will run again, usually
+restarting the syscall and running until it hits the same
+blocking call as it was originally blocked in.
 
-Combined with patches to convert freezable helpers to use
-freezer_do_not_count() and convert common sites where idle userspace
-tasks are blocked to use the freezable helpers, this reduces the
-time and energy required to suspend and resume.
+To allow tasks to avoid running on every suspend/resume cycle,
+this patch adds additional freezable wrappers around blocking calls
+that call freezer_do_not_count().  Combined with the previous patch,
+these tasks will not run during suspend or resume unless they wake
+up for another reason, in which case they will run until they hit
+the try_to_freeze() in freezer_count(), and then continue processing
+the wakeup after tasks are thawed.  This patch also converts the
+existing wait_event_freezable* wrappers to use freezer_do_not_count().
+
+Additional patches will convert the most common locations that
+userspace blocks in to use freezable helpers.
 
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
-v2:  move check to freeze_task()
+ include/linux/freezer.h | 72 +++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 58 insertions(+), 14 deletions(-)
 
- kernel/freezer.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index c38893b..8b2afc1 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -110,6 +110,18 @@ bool freeze_task(struct task_struct *p)
- {
- 	unsigned long flags;
+diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+index e70df40..b239f45 100644
+--- a/include/linux/freezer.h
++++ b/include/linux/freezer.h
+@@ -152,6 +152,26 @@ static inline bool freezer_should_skip(struct task_struct *p)
+ 	freezer_count();						\
+ })
  
-+	/*
-+	 * This check can race with freezer_do_not_count, but worst case that
-+	 * will result in an extra wakeup being sent to the task.  It does not
-+	 * race with freezer_count(), the barriers in freezer_count() and
-+	 * freezer_should_skip() ensure that either freezer_count() sees
-+	 * freezing == true in try_to_freeze() and freezes, or
-+	 * freezer_should_skip() sees !PF_FREEZE_SKIP and freezes the task
-+	 * normally.
-+	 */
-+	if (freezer_should_skip(p))
-+		return false;
++/* Like schedule_timeout(), but should not block the freezer. */
++#define freezable_schedule_timeout(timeout)				\
++({									\
++	long __retval;							\
++	freezer_do_not_count();						\
++	__retval = schedule_timeout(timeout);				\
++	freezer_count();						\
++	__retval;							\
++})
 +
- 	spin_lock_irqsave(&freezer_lock, flags);
- 	if (!freezing(p) || frozen(p)) {
- 		spin_unlock_irqrestore(&freezer_lock, flags);
++/* Like schedule_timeout_interruptible(), but should not block the freezer. */
++#define freezable_schedule_timeout_interruptible(timeout)		\
++({									\
++	long __retval;							\
++	freezer_do_not_count();						\
++	__retval = schedule_timeout_interruptible(timeout);		\
++	freezer_count();						\
++	__retval;							\
++})
++
+ /* Like schedule_timeout_killable(), but should not block the freezer. */
+ #define freezable_schedule_timeout_killable(timeout)			\
+ ({									\
+@@ -162,6 +182,17 @@ static inline bool freezer_should_skip(struct task_struct *p)
+ 	__retval;							\
+ })
+ 
++/* Like schedule_hrtimeout_range(), but should not block the freezer. */
++#define freezable_schedule_hrtimeout_range(expires, delta, mode)	\
++({									\
++	int __retval;							\
++	freezer_do_not_count();						\
++	__retval = schedule_hrtimeout_range(expires, delta, mode);	\
++	freezer_count();						\
++	__retval;							\
++})
++
++
+ /*
+  * Freezer-friendly wrappers around wait_event_interruptible(),
+  * wait_event_killable() and wait_event_interruptible_timeout(), originally
+@@ -180,30 +211,32 @@ static inline bool freezer_should_skip(struct task_struct *p)
+ #define wait_event_freezable(wq, condition)				\
+ ({									\
+ 	int __retval;							\
+-	for (;;) {							\
+-		__retval = wait_event_interruptible(wq, 		\
+-				(condition) || freezing(current));	\
+-		if (__retval || (condition))				\
+-			break;						\
+-		try_to_freeze();					\
+-	}								\
++	freezer_do_not_count();						\
++	__retval = wait_event_interruptible(wq, (condition));		\
++	freezer_count();						\
+ 	__retval;							\
+ })
+ 
+ #define wait_event_freezable_timeout(wq, condition, timeout)		\
+ ({									\
+ 	long __retval = timeout;					\
+-	for (;;) {							\
+-		__retval = wait_event_interruptible_timeout(wq,		\
+-				(condition) || freezing(current),	\
++	freezer_do_not_count();						\
++	__retval = wait_event_interruptible_timeout(wq,	(condition),	\
+ 				__retval); 				\
+-		if (__retval <= 0 || (condition))			\
+-			break;						\
+-		try_to_freeze();					\
+-	}								\
++	freezer_count();						\
+ 	__retval;							\
+ })
+ 
++#define wait_event_freezable_exclusive(wq, condition)		\
++({									\
++	int __retval;							\
++	freezer_do_not_count();						\
++	__retval = wait_event_interruptible_exclusive(wq, condition);	\
++	freezer_count();						\
++	__retval;							\
++})
++
++
+ #else /* !CONFIG_FREEZER */
+ static inline bool frozen(struct task_struct *p) { return false; }
+ static inline bool freezing(struct task_struct *p) { return false; }
+@@ -225,15 +258,26 @@ static inline void set_freezable(void) {}
+ 
+ #define freezable_schedule()  schedule()
+ 
++#define freezable_schedule_timeout(timeout)  schedule_timeout(timeout)
++
++#define freezable_schedule_timeout_interruptible(timeout)		\
++	schedule_timeout_interruptible(timeout)
++
+ #define freezable_schedule_timeout_killable(timeout)			\
+ 	schedule_timeout_killable(timeout)
+ 
++#define freezable_schedule_hrtimeout_range(expires, delta, mode)	\
++	schedule_hrtimeout_range(expires, delta, mode)
++
+ #define wait_event_freezable(wq, condition)				\
+ 		wait_event_interruptible(wq, condition)
+ 
+ #define wait_event_freezable_timeout(wq, condition, timeout)		\
+ 		wait_event_interruptible_timeout(wq, condition, timeout)
+ 
++#define wait_event_freezable_exclusive(wq, condition)			\
++		wait_event_interruptible_exclusive(wq, condition)
++
+ #define wait_event_freezekillable(wq, condition)		\
+ 		wait_event_killable(wq, condition)
+ 
 -- 
 1.8.2.1
