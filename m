@@ -1,57 +1,60 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [RFC PATCH] power: Add option to log time spent in suspend
-Date: Thu, 2 May 2013 12:11:50 -0700
-Message-ID: <CAMbhsRS+23ghorOS-dDdpTJDV_3PxDOoZ=k5ZCfH6i7H7QB-Bw@mail.gmail.com>
-References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
-	<1367360914-23389-2-git-send-email-zoran.markovic@linaro.org>
-	<20130501002929.GA20042@amd.pavel.ucw.cz>
-	<CAMbhsRRisa15fH9AodepfRJUv6t6dipqb6CMbOOrtzVsMUCoxQ@mail.gmail.com>
-	<20130502122747.GA22618@amd.pavel.ucw.cz>
-	<CAMbhsRQ4tCQtSxA-5tqydKp-xQf1bnrsq7GNw5q0gk3NdPZyaA@mail.gmail.com>
-	<5182B74E.8060909@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 07/10] futex: use freezable blocking call
+Date: Thu, 2 May 2013 21:45:56 +0200 (CEST)
+Message-ID: <alpine.LFD.2.02.1305022145300.2891@ionos>
+References: <1367458508-9133-1-git-send-email-ccross@android.com> <1367458508-9133-8-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve0-f173.google.com ([209.85.128.173]:36948 "EHLO
-	mail-ve0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761871Ab3EBTLv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 15:11:51 -0400
-Received: by mail-ve0-f173.google.com with SMTP id ox1so855455veb.4
-        for <linux-pm@vger.kernel.org>; Thu, 02 May 2013 12:11:50 -0700 (PDT)
-In-Reply-To: <5182B74E.8060909@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1367458508-9133-8-git-send-email-ccross@android.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Darren Hart <dvhart@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>
 
-On Thu, May 2, 2013 at 11:58 AM, John Stultz <john.stultz@linaro.org> wrote:
-> On 05/02/2013 11:29 AM, Colin Cross wrote:
->>
->> On Thu, May 2, 2013 at 5:27 AM, Pavel Machek <pavel@ucw.cz> wrote:
->>>
->>>
->>>> dmesg is not the solution, it's not a stable api, it would require
->>>> constant parsing to make sure you didn't miss data before it fell out
->>>> of the ringbuffer, and sched_clock often does not (and should not)
->>>> tick during suspend, so printk times don't show the time spent
->>>> suspended.
->>>
->>> If timing info printed is invalid, that should be fixed.
->>
->> It's not invalid, its just not measuring the time that is useful here.
->>   printk is measuring something similar to (but not exactly the same
->> as) CLOCK_MONOTONIC, but this is measuring something similar to
->> CLOCK_BOOTTIME.
->
->
-> One thing I'm curious about with this patch, since we measure and keep track
-> of suspend time in the timekeeping core, there may be enough justification
-> to adding this sort of debugging info the timekeeping core itself.
->
-> Although what is being tracked with this driver isn't just total time in
-> suspend, but looks like more of a logarithmic histogram of suspend times. Is
-> there any context you can provide as to why that particular format was
-> chosen (which would could be added to help improve the commit message)?
+On Wed, 1 May 2013, Colin Cross wrote:
 
-The idea was to keep a minimal amount of data while still being able
-to see how often the device is waking up.
+> Avoid waking up every thread sleeping in a futex_wait call during
+> suspend and resume by calling a freezable blocking call.  Previous
+> patches modified the freezer to avoid sending wakeups to threads
+> that are blocked in freezable blocking calls.
+> 
+> This call was selected to be converted to a freezable call because
+> it doesn't hold any locks or release any resources when interrupted
+> that might be needed by another freezing task or a kernel driver
+> during suspend, and is a common site where idle userspace tasks are
+> blocked.
+> 
+> Signed-off-by: Colin Cross <ccross@android.com>
+
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+
+> ---
+>  kernel/futex.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index b26dcfc..d710fae 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -61,6 +61,7 @@
+>  #include <linux/nsproxy.h>
+>  #include <linux/ptrace.h>
+>  #include <linux/sched/rt.h>
+> +#include <linux/freezer.h>
+>  
+>  #include <asm/futex.h>
+>  
+> @@ -1807,7 +1808,7 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
+>  		 * is no timeout, or if it has yet to expire.
+>  		 */
+>  		if (!timeout || timeout->task)
+> -			schedule();
+> +			freezable_schedule();
+>  	}
+>  	__set_current_state(TASK_RUNNING);
+>  }
+> -- 
+> 1.8.2.1
+> 
+> 
