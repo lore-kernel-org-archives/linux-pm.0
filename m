@@ -1,57 +1,71 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 03/10] freezer: add new freezable helpers using
- freezer_do_not_count()
-Date: Thu, 2 May 2013 14:48:26 +0200
-Message-ID: <20130502124826.GE22618@amd.pavel.ucw.cz>
-References: <1367271946-7239-1-git-send-email-ccross@android.com>
- <1367271946-7239-4-git-send-email-ccross@android.com>
+From: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Subject: Re: [PATCH] x86, x86-64, gdt, hibernate: Store/load GDT for
+ hibernate path.
+Date: Thu, 2 May 2013 08:50:00 -0400
+Message-ID: <20130502125000.GA5824@konrad-lan.dumpdata.com>
+References: <1367459610-9656-1-git-send-email-konrad.wilk@oracle.com>
+ <1367459610-9656-2-git-send-email-konrad.wilk@oracle.com>
+ <20130502123438.GD22618@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35759 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756867Ab3EBMs2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 08:48:28 -0400
+Received: from aserp1040.oracle.com ([141.146.126.69]:23133 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755077Ab3EBMu2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 08:50:28 -0400
 Content-Disposition: inline
-In-Reply-To: <1367271946-7239-4-git-send-email-ccross@android.com>
+In-Reply-To: <20130502123438.GD22618@amd.pavel.ucw.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Len Brown <len.brown@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
 
-On Mon 2013-04-29 14:45:39, Colin Cross wrote:
-> Freezing tasks will wake up almost every userspace task from
-> where it is blocking and force it to run until it hits a
-> call to try_to_sleep(), generally on the exit path from the syscall
-> it is blocking in.  On resume each task will run again, usually
-> restarting the syscall and running until it hits the same
-> blocking call as it was originally blocked in.
+On Thu, May 02, 2013 at 02:34:38PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > The git commite7a5cd063c7b4c58417f674821d63f5eb6747e37
+> > ("x86-64, gdt: Store/load GDT for ACPI S3 or hibernate/resume path
+> > is not needed.") assumes that for the hibernate path the booting
+> > kernel and the resuming kernel MUST be the same. That is certainly
+> > the case for a 32-bit kernel (see check_image_kernel and
+> > CONFIG_ARCH_HIBERNATION_HEADER config option).
+> > 
+> > However for 64-bit kernels it is OK to have a different kernel
+> > version (and size of the image) of the booting and resuming kernels.
+> > Hence the above mentioned git commit introduces an regression.
+> 
+> Ok.
+> 
+> > This patch fixes it by introducing a 'struct desc_ptr gdt_desc'
+> > back in the 'struct saved_context'. However instead of having in the
+> > 'save_processor_state' and 'restore_processor_state' the
+> > store/load_gdt calls, we are only saving the GDT in the
+> > save_processor_state.
+> > 
+> > For the restore path the lgdt operation is done in
+> > hibernate_asm_[32|64].S in the 'restore_registers' path.
+> 
+> So the on-disk format changed and we need to bump the version number
+> somewhere?
 
-Ok, so you are optimizing suspend at the cost of runtime operations,
-right?
+Fortunatly not. The patch (7a5cd063c7b4c58417f674821d63f5eb6747e37) that
+just just landed in Linus a couple of days ago did change it a bit
+(as the 'saved_context' struct shrunk), but this patch brings it back
+to what it was before. But I don't know if the 'saved_context' structure
+is actually somewhere specifically mentioned as 'on-disk' or in the
+kernel.
 
-Would it make sense to do suspends entirely without freezer in your
-configurations? With the right drivers, it should work ok.
+Looking at the code, I think the on-disk structure you are referring to
+is the 'struct restore_data_record' (please correct me if I am
+incorrect) which has not been affected by any of these patches.
 
-Actually, would it make sense to simply enter deep idle and do runtime
-powersaving in the drivers... n900 does that rather successfully and
-it is certainly cleaner design.
+> 
+> I guess we should add big fat warning to the affected structures.
 
-> +/* Like schedule_timeout(), but should not block the freezer. */
-> +#define freezable_schedule_timeout(timeout)				\
-> +({									\
-> +	long __retval;							\
-> +	freezer_do_not_count();						\
-> +	__retval = schedule_timeout(timeout);				\
-> +	freezer_count();						\
-> +	__retval;							\
-> +})
-
-You plan to use this a lot during normal operation, right? Is it going
-to have some measureable impact?
-
-Also, why not static inline?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+We certainly can. I can prep a patch to that affect on Friday or Monday.
+> 
+> 								Pavel
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
