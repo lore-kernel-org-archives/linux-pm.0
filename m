@@ -1,32 +1,69 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
-Date: Wed, 01 May 2013 11:55:10 -0700
-Message-ID: <5181650E.1060805@zytor.com>
-References: <20130218155439.GA902@onny> <cfd96a3d-5834-4687-b9de-9f044f43b588@email.android.com> <20130223131856.GA682@onny> <51293A8B.5060107@zytor.com> <20130320143257.GA473@onny> <20130501170118.GB488@onny> <518151DD.106@zytor.com> <20130501185104.GC488@onny>
+Date: Thu, 02 May 2013 02:45:43 +0200
+Message-ID: <1682771.1PVxk2VyJS@vostro.rjw.lan>
+References: <20130218155439.GA902@onny> <20130501185104.GC488@onny> <5181650E.1060805@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from terminus.zytor.com ([198.137.202.10]:46950 "EHLO mail.zytor.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:54340 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755349Ab3EASzd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 May 2013 14:55:33 -0400
-In-Reply-To: <20130501185104.GC488@onny>
+	id S1757893Ab3EBAh3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 May 2013 20:37:29 -0400
+In-Reply-To: <5181650E.1060805@zytor.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonas Heinrich <onny@project-insanity.org>
-Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "H. Peter Anvin" <hpa@zytor.com>, Jonas Heinrich <onny@project-insanity.org>
+Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@intel.com>
 
-On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
-> Well, you could give me instructions on how to debug this (I'll do 
-> everything ;)) or I could ship you the Thinkpad T43. I guess this
-> would worth the effort since this bug is somehow critical.
+On Wednesday, May 01, 2013 11:55:10 AM H. Peter Anvin wrote:
+> On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
+> > Well, you could give me instructions on how to debug this (I'll do 
+> > everything ;)) or I could ship you the Thinkpad T43. I guess this
+> > would worth the effort since this bug is somehow critical.
+> > 
+> > Best regards, Jonas
 > 
-> Best regards, Jonas
+> I'll put together a debug patch unless I can trick Rafael into doing
+> it first...
 
-I'll put together a debug patch unless I can trick Rafael into doing
-it first...
+I'm afraid that code has changed quite a bit since I looked at it last time.
+[Jarkko Sakkinen seems to have worked on it lately, CCed.]
 
-	-hpa
+Jonas, I wonder what happens if you drop the first hunk of the patch (it just
+uses a different register, which shouldn't matter)?  Does it still help then?
+
+If so, there are still a few things you can do to it, e.g:
+(1) drop the
+
+-       btl     $WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
+-       jnc     1f
+
+lines,
+(2) drop the
+
+-       btl     $WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
+-       jnc     1f
+
+lines,
+(3) drop the
+
++       jecxz   1f
+
+line,
+(4) drop the
+
++       movl    %eax, %ecx
++       orl     %edx, %ecx
++       jz      1f
+
+lines and see what the minimal patch needed for things to work again is.
+
+Thanks,
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
