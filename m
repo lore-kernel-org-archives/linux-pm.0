@@ -1,55 +1,57 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86, x86-64, gdt, hibernate: Store/load GDT for
- hibernate path.
-Date: Thu, 2 May 2013 14:34:38 +0200
-Message-ID: <20130502123438.GD22618@amd.pavel.ucw.cz>
-References: <1367459610-9656-1-git-send-email-konrad.wilk@oracle.com>
- <1367459610-9656-2-git-send-email-konrad.wilk@oracle.com>
+Subject: Re: [PATCH 03/10] freezer: add new freezable helpers using
+ freezer_do_not_count()
+Date: Thu, 2 May 2013 14:48:26 +0200
+Message-ID: <20130502124826.GE22618@amd.pavel.ucw.cz>
+References: <1367271946-7239-1-git-send-email-ccross@android.com>
+ <1367271946-7239-4-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35388 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35759 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757512Ab3EBMek (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 08:34:40 -0400
+	with ESMTP id S1756867Ab3EBMs2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 08:48:28 -0400
 Content-Disposition: inline
-In-Reply-To: <1367459610-9656-2-git-send-email-konrad.wilk@oracle.com>
+In-Reply-To: <1367271946-7239-4-git-send-email-ccross@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Len Brown <len.brown@intel.com>
 
-Hi!
+On Mon 2013-04-29 14:45:39, Colin Cross wrote:
+> Freezing tasks will wake up almost every userspace task from
+> where it is blocking and force it to run until it hits a
+> call to try_to_sleep(), generally on the exit path from the syscall
+> it is blocking in.  On resume each task will run again, usually
+> restarting the syscall and running until it hits the same
+> blocking call as it was originally blocked in.
 
-> The git commite7a5cd063c7b4c58417f674821d63f5eb6747e37
-> ("x86-64, gdt: Store/load GDT for ACPI S3 or hibernate/resume path
-> is not needed.") assumes that for the hibernate path the booting
-> kernel and the resuming kernel MUST be the same. That is certainly
-> the case for a 32-bit kernel (see check_image_kernel and
-> CONFIG_ARCH_HIBERNATION_HEADER config option).
-> 
-> However for 64-bit kernels it is OK to have a different kernel
-> version (and size of the image) of the booting and resuming kernels.
-> Hence the above mentioned git commit introduces an regression.
+Ok, so you are optimizing suspend at the cost of runtime operations,
+right?
 
-Ok.
+Would it make sense to do suspends entirely without freezer in your
+configurations? With the right drivers, it should work ok.
 
-> This patch fixes it by introducing a 'struct desc_ptr gdt_desc'
-> back in the 'struct saved_context'. However instead of having in the
-> 'save_processor_state' and 'restore_processor_state' the
-> store/load_gdt calls, we are only saving the GDT in the
-> save_processor_state.
-> 
-> For the restore path the lgdt operation is done in
-> hibernate_asm_[32|64].S in the 'restore_registers' path.
+Actually, would it make sense to simply enter deep idle and do runtime
+powersaving in the drivers... n900 does that rather successfully and
+it is certainly cleaner design.
 
-So the on-disk format changed and we need to bump the version number
-somewhere?
+> +/* Like schedule_timeout(), but should not block the freezer. */
+> +#define freezable_schedule_timeout(timeout)				\
+> +({									\
+> +	long __retval;							\
+> +	freezer_do_not_count();						\
+> +	__retval = schedule_timeout(timeout);				\
+> +	freezer_count();						\
+> +	__retval;							\
+> +})
 
-I guess we should add big fat warning to the affected structures.
+You plan to use this a lot during normal operation, right? Is it going
+to have some measureable impact?
 
-								Pavel
-
+Also, why not static inline?
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
