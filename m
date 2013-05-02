@@ -1,51 +1,55 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] drivers: power: Add watchdog timer to catch
- drivers which lockup during suspend.
-Date: Thu, 2 May 2013 14:30:33 +0200
-Message-ID: <20130502123033.GC22618@amd.pavel.ucw.cz>
-References: <1367360914-23389-1-git-send-email-zoran.markovic@linaro.org>
- <20130501003058.GB20042@amd.pavel.ucw.cz>
- <CAMbhsRQkYFvOzDDn4zmbZAEsVs6iSy4mPVq5w=MzQ7p9STBDew@mail.gmail.com>
- <20130501105630.GA22552@amd.pavel.ucw.cz>
- <CAMbhsRTtYSLpAmB0hsanBH3ez4bm8BgbcH1xEBQsZSj4dc069g@mail.gmail.com>
+Subject: Re: [PATCH] x86, x86-64, gdt, hibernate: Store/load GDT for
+ hibernate path.
+Date: Thu, 2 May 2013 14:34:38 +0200
+Message-ID: <20130502123438.GD22618@amd.pavel.ucw.cz>
+References: <1367459610-9656-1-git-send-email-konrad.wilk@oracle.com>
+ <1367459610-9656-2-git-send-email-konrad.wilk@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35388 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757512Ab3EBMek (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 08:34:40 -0400
 Content-Disposition: inline
-In-Reply-To: <CAMbhsRTtYSLpAmB0hsanBH3ez4bm8BgbcH1xEBQsZSj4dc069g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+In-Reply-To: <1367459610-9656-2-git-send-email-konrad.wilk@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@sisk.pl, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org
 
 Hi!
 
-> >> > do BUG which
-> >> >    dumps stack of current task
-> >> >    kills current task
-> >> >
-> >> > Current task may very well be idle task; in such case you kill the
-> >> > machine. Sounds like you should be doing something else, like kill -9
-> >> > instead of BUG()?
-> >>
-> >> Not much else you can do, you are stuck part way into suspend with a
-> >> driver's suspend callback half executed.  All userspace tasks are
-> >> frozen, and the suspend task is blocked indefinitely.
-> >
-> > Yes, there's better option. Attempt killing the [a]suspend task,
-> > instead of killing the current task.
+> The git commite7a5cd063c7b4c58417f674821d63f5eb6747e37
+> ("x86-64, gdt: Store/load GDT for ACPI S3 or hibernate/resume path
+> is not needed.") assumes that for the hibernate path the booting
+> kernel and the resuming kernel MUST be the same. That is certainly
+> the case for a 32-bit kernel (see check_image_kernel and
+> CONFIG_ARCH_HIBERNATION_HEADER config option).
 > 
-> That will leave you in a completely undefined state.  If you just kill
-> the task, you are likely to kill the synchronous suspend task, which
-> is the task that would resume your drivers and unfreeze tasks.  That
-> will leave you with no userspace tasks running, and much of your
-> hardware suspended.  How is that a useful result?  If you somehow
+> However for 64-bit kernels it is OK to have a different kernel
+> version (and size of the image) of the booting and resuming kernels.
+> Hence the above mentioned git commit introduces an regression.
 
-So instead you kill random task? (BUG() from timer kills pretty much
-random task, right?)
+Ok.
 
-If you want to do panic(), do panic().
-									Pavel
+> This patch fixes it by introducing a 'struct desc_ptr gdt_desc'
+> back in the 'struct saved_context'. However instead of having in the
+> 'save_processor_state' and 'restore_processor_state' the
+> store/load_gdt calls, we are only saving the GDT in the
+> save_processor_state.
+> 
+> For the restore path the lgdt operation is done in
+> hibernate_asm_[32|64].S in the 'restore_registers' path.
+
+So the on-disk format changed and we need to bump the version number
+somewhere?
+
+I guess we should add big fat warning to the affected structures.
+
+								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
