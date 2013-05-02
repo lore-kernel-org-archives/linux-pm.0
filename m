@@ -1,87 +1,56 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v2 01/10] freezer: shorten freezer sleep time using exponential backoff
-Date: Wed,  1 May 2013 18:34:59 -0700
-Message-ID: <1367458508-9133-2-git-send-email-ccross@android.com>
+Subject: [PATCH v2 02/10] freezer: skip waking up tasks with PF_FREEZER_SKIP set
+Date: Wed,  1 May 2013 18:35:00 -0700
+Message-ID: <1367458508-9133-3-git-send-email-ccross@android.com>
 References: <1367458508-9133-1-git-send-email-ccross@android.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f74.google.com ([209.85.216.74]:59180 "EHLO
-	mail-qa0-f74.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758176Ab3EBBfQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 21:35:16 -0400
-Received: by mail-qa0-f74.google.com with SMTP id i13so14423qae.5
-        for <linux-pm@vger.kernel.org>; Wed, 01 May 2013 18:35:15 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1367458508-9133-1-git-send-email-ccross@android.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Colin Cross <ccross@android.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Colin Cross <ccross@android.com>, Pavel Machek <pavel@ucw.cz>
+List-Id: linux-pm@vger.kernel.org
 
-All tasks can easily be frozen in under 10 ms, switch to using
-an initial 1 ms sleep followed by exponential backoff until
-8 ms.  Also convert the printed time to ms instead of centiseconds.
+Android goes through suspend/resume very often (every few seconds when
+on a busy wifi network with the screen off), and a significant portion
+of the energy used to go in and out of suspend is spent in the
+freezer.  If a task has called freezer_do_not_count(), don't bother
+waking it up.  If it happens to wake up later it will call
+freezer_count() and immediately enter the refrigerator.
+
+Combined with patches to convert freezable helpers to use
+freezer_do_not_count() and convert common sites where idle userspace
+tasks are blocked to use the freezable helpers, this reduces the
+time and energy required to suspend and resume.
 
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- kernel/power/process.c | 23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+v2:  move check to freeze_task()
 
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 98088e0..eb7e6c1 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -30,9 +30,10 @@ static int try_to_freeze_tasks(bool user_only)
- 	unsigned int todo;
- 	bool wq_busy = false;
- 	struct timeval start, end;
--	u64 elapsed_csecs64;
--	unsigned int elapsed_csecs;
-+	u64 elapsed_msecs64;
-+	unsigned int elapsed_msecs;
- 	bool wakeup = false;
-+	int sleep_usecs = USEC_PER_MSEC;
+ kernel/freezer.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/kernel/freezer.c b/kernel/freezer.c
+index c38893b..8b2afc1 100644
+--- a/kernel/freezer.c
++++ b/kernel/freezer.c
+@@ -110,6 +110,18 @@ bool freeze_task(struct task_struct *p)
+ {
+ 	unsigned long flags;
  
- 	do_gettimeofday(&start);
- 
-@@ -70,20 +71,22 @@ static int try_to_freeze_tasks(bool user_only)
- 		 * We need to retry, but first give the freezing tasks some
- 		 * time to enter the refrigerator.
- 		 */
--		msleep(10);
-+		usleep_range(sleep_usecs / 2, sleep_usecs);
-+		if (sleep_usecs < 8 * USEC_PER_MSEC)
-+			sleep_usecs *= 2;
- 	}
- 
- 	do_gettimeofday(&end);
--	elapsed_csecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
--	do_div(elapsed_csecs64, NSEC_PER_SEC / 100);
--	elapsed_csecs = elapsed_csecs64;
-+	elapsed_msecs64 = timeval_to_ns(&end) - timeval_to_ns(&start);
-+	do_div(elapsed_msecs64, NSEC_PER_MSEC);
-+	elapsed_msecs = elapsed_msecs64;
- 
- 	if (todo) {
- 		printk("\n");
--		printk(KERN_ERR "Freezing of tasks %s after %d.%02d seconds "
-+		printk(KERN_ERR "Freezing of tasks %s after %d.%03d seconds "
- 		       "(%d tasks refusing to freeze, wq_busy=%d):\n",
- 		       wakeup ? "aborted" : "failed",
--		       elapsed_csecs / 100, elapsed_csecs % 100,
-+		       elapsed_msecs / 1000, elapsed_msecs % 1000,
- 		       todo - wq_busy, wq_busy);
- 
- 		if (!wakeup) {
-@@ -96,8 +99,8 @@ static int try_to_freeze_tasks(bool user_only)
- 			read_unlock(&tasklist_lock);
- 		}
- 	} else {
--		printk("(elapsed %d.%02d seconds) ", elapsed_csecs / 100,
--			elapsed_csecs % 100);
-+		printk("(elapsed %d.%03d seconds) ", elapsed_msecs / 1000,
-+			elapsed_msecs % 1000);
- 	}
- 
- 	return todo ? -EBUSY : 0;
++	/*
++	 * This check can race with freezer_do_not_count, but worst case that
++	 * will result in an extra wakeup being sent to the task.  It does not
++	 * race with freezer_count(), the barriers in freezer_count() and
++	 * freezer_should_skip() ensure that either freezer_count() sees
++	 * freezing == true in try_to_freeze() and freezes, or
++	 * freezer_should_skip() sees !PF_FREEZE_SKIP and freezes the task
++	 * normally.
++	 */
++	if (freezer_should_skip(p))
++		return false;
++
+ 	spin_lock_irqsave(&freezer_lock, flags);
+ 	if (!freezing(p) || frozen(p)) {
+ 		spin_unlock_irqrestore(&freezer_lock, flags);
 -- 
 1.8.2.1
-
