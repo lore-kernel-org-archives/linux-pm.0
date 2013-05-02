@@ -1,27 +1,22 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v2 04/10] binder: use freezable blocking calls
-Date: Wed,  1 May 2013 18:35:02 -0700
-Message-ID: <1367458508-9133-5-git-send-email-ccross@android.com>
+Subject: [PATCH v2 09/10] sigtimedwait: use freezable blocking call
+Date: Wed,  1 May 2013 18:35:07 -0700
+Message-ID: <1367458508-9133-10-git-send-email-ccross@android.com>
 References: <1367458508-9133-1-git-send-email-ccross@android.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devel-bounces@linuxdriverproject.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-gg0-f202.google.com ([209.85.161.202]:45980 "EHLO
+	mail-gg0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758997Ab3EBBfX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 May 2013 21:35:23 -0400
+Received: by mail-gg0-f202.google.com with SMTP id 4so14281ggm.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 May 2013 18:35:22 -0700 (PDT)
 In-Reply-To: <1367458508-9133-1-git-send-email-ccross@android.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/devel>,
- <mailto:devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/devel/>
-List-Post: <mailto:devel@linuxdriverproject.org>
-List-Help: <mailto:devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/devel>,
- <mailto:devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: devel-bounces@linuxdriverproject.org
-Sender: "devel" <devel-bounces@linuxdriverproject.org>
-To: linux-pm@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, Sachin Kamat <sachin.kamat@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Al Viro <viro@zeniv.linux.org.uk>, Colin Cross <ccross@android.com>, Tejun Heo <tj@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Colin Cross <ccross@android.com>, Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, "Eric W. Biederman" <ebiederm@xmission.com>, Serge Hallyn <serge.hallyn@canonical.com>
 
-Avoid waking up every thread sleeping in a binder call during
+Avoid waking up every thread sleeping in a sigtimedwait call during
 suspend and resume by calling a freezable blocking call.  Previous
 patches modified the freezer to avoid sending wakeups to threads
 that are blocked in freezable blocking calls.
@@ -34,36 +29,22 @@ blocked.
 
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- drivers/staging/android/binder.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ kernel/signal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
-index 24456a0..af8fba4 100644
---- a/drivers/staging/android/binder.c
-+++ b/drivers/staging/android/binder.c
-@@ -20,6 +20,7 @@
- #include <asm/cacheflush.h>
- #include <linux/fdtable.h>
- #include <linux/file.h>
-+#include <linux/freezer.h>
- #include <linux/fs.h>
- #include <linux/list.h>
- #include <linux/miscdevice.h>
-@@ -2140,13 +2141,13 @@ retry:
- 			if (!binder_has_proc_work(proc, thread))
- 				ret = -EAGAIN;
- 		} else
--			ret = wait_event_interruptible_exclusive(proc->wait, binder_has_proc_work(proc, thread));
-+			ret = wait_event_freezable_exclusive(proc->wait, binder_has_proc_work(proc, thread));
- 	} else {
- 		if (non_block) {
- 			if (!binder_has_thread_work(thread))
- 				ret = -EAGAIN;
- 		} else
--			ret = wait_event_interruptible(thread->wait, binder_has_thread_work(thread));
-+			ret = wait_event_freezable(thread->wait, binder_has_thread_work(thread));
- 	}
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 598dc06..10a70a0 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2845,7 +2845,7 @@ int do_sigtimedwait(const sigset_t *which, siginfo_t *info,
+ 		recalc_sigpending();
+ 		spin_unlock_irq(&tsk->sighand->siglock);
  
- 	binder_lock(__func__);
+-		timeout = schedule_timeout_interruptible(timeout);
++		timeout = freezable_schedule_timeout_interruptible(timeout);
+ 
+ 		spin_lock_irq(&tsk->sighand->siglock);
+ 		__set_task_blocked(tsk, &tsk->real_blocked);
 -- 
 1.8.2.1
+
