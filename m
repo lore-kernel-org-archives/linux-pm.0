@@ -1,306 +1,62 @@
-From: Jonas Heinrich <onny@project-insanity.org>
-Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
-Date: Thu, 2 May 2013 20:32:30 +0000
-Message-ID: <20130502203229.GA433@onny.intranet.entropia.de>
-References: <20130218155439.GA902@onny>
- <20130501185104.GC488@onny>
- <5181650E.1060805@zytor.com>
- <1682771.1PVxk2VyJS@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 00/10] optimize freezing tasks by reducing task wakeups
+Date: Thu, 02 May 2013 23:06:35 +0200
+Message-ID: <1678114.cijx7evM08@vostro.rjw.lan>
+References: <1367458508-9133-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zx4FCpZtqtKETZ7O"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from static.52.99.9.5.clients.your-server.de ([5.9.99.52]:51236 "EHLO
-	mail1.project-insanity.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932210Ab3EBUe1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 16:34:27 -0400
-Content-Disposition: inline
-In-Reply-To: <1682771.1PVxk2VyJS@vostro.rjw.lan>
+Received: from hydra.sisk.pl ([212.160.235.94]:55551 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750757Ab3EBU6T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 May 2013 16:58:19 -0400
+In-Reply-To: <1367458508-9133-1-git-send-email-ccross@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@intel.com>
+To: Colin Cross <ccross@android.com>, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arve@android.com
+
+On Wednesday, May 01, 2013 06:34:58 PM Colin Cross wrote:
+> On slow cpus the large number of task wakeups and context switches
+> triggered by freezing and thawing tasks can take a significant amount
+> of cpu time.  This patch series reduces the amount of work done during
+> freezing tasks by avoiding waking up tasks that are already in a freezable
+> state.
+> 
+> The first patch reduces the wasted time in try_to_freeze_tasks() by
+> starting with a 1 ms sleep during the first loop and backing off
+> up to an 8 ms sleep if all tasks are not frozen.
+> 
+> The second patch modifies the freeze_task() function to skip tasks
+> that have set the PF_FREEZER_SKIP flag by calling freezer_do_not_count().
+> These tasks will not enter the refrigerator during the suspend/resume
+> cycle unless they woken up by something else, in which case they will
+> enter the refrigerator in freezer_count() before they access any
+> resources that would not be available in suspend or deadlock with
+> another freezing/frozen task.
+> 
+> The rest of the series adds a few more freezable helpers and converts the
+> top call sites that userspace tasks are usually blocked at to freezable
+> helpers.  The list of call sites was collected on a Nexus 10 (ARM Exynos
+> 5250 SoC), but all the top call sites other than binder show up at the
+> top of the list on Ubuntu x86-64 as well.
+> 
+> This series cuts the time for freezing tasks from 50 ms to 5 ms when
+> the cpu speed is locked at its lowest setting (200MHz), and reduces
+> the number of context switches and restarted syscalls from 1000 to
+> 25.
+> 
+> v2 moves the skip check to freeze_task(), and expands the commit
+> messages.
+
+The entire series makes sense to me, so are there any objections?
+
+Tejun, Oleg??
+
+Rafael
 
 
---zx4FCpZtqtKETZ7O
-Content-Type: multipart/mixed; boundary="ew6BAiZeqk4r7MaW"
-Content-Disposition: inline
-
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On 05-02 02:45, Rafael J. Wysocki wrote:
-> On Wednesday, May 01, 2013 11:55:10 AM H. Peter Anvin wrote:
-> > On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
-> > > Well, you could give me instructions on how to debug this (I'll do=20
-> > > everything ;)) or I could ship you the Thinkpad T43. I guess this
-> > > would worth the effort since this bug is somehow critical.
-> > >=20
-> > > Best regards, Jonas
-> >=20
-> > I'll put together a debug patch unless I can trick Rafael into doing
-> > it first...
->=20
-> I'm afraid that code has changed quite a bit since I looked at it last ti=
-me.
-> [Jarkko Sakkinen seems to have worked on it lately, CCed.]
->=20
-> Jonas, I wonder what happens if you drop the first hunk of the patch (it =
-just
-> uses a different register, which shouldn't matter)?  Does it still help t=
-hen?
-
-Hello Rafel, first of all, thank you for helping me out :)
-You're right, the patch still solves the suspend bug, after removing the fi=
-rst=20
-hunk of the patch and applying it (see attachement:
-suspendfix_first_hunk_dropped.patch).
-
->=20
-> If so, there are still a few things you can do to it, e.g:
-> (1) drop the
->=20
-> -       btl     $WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
-> -       jnc     1f
->=20
-
-Still works :) (used suspendfix_1.patch)
-
-> lines,
-> (2) drop the
->=20
-> -       btl     $WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
-> -       jnc     1f
->=20
-> lines,
-
-Still works :) (used suspendfix_2.patch)
-
-> (3) drop the
->=20
-> +       jecxz   1f
->=20
-
-Still works :) (used suspendfix_3.patch)
-
-> line,
-> (4) drop the
->=20
-> +       movl    %eax, %ecx
-> +       orl     %edx, %ecx
-> +       jz      1f
->=20
-
-At this point, the bug reoccurs (used suspendfix_4.patch)!=20
-But that doesn't mean these lines are the only critical, because the more
-minimal patch
-
-@@ -119,6 +119,9 @@
-        jnc     1f
-        movl    pmode_efer, %eax
-        movl    pmode_efer + 4, %edx
-+       movl    %eax, %ecx
-+       orl     %edx, %ecx
-+       jz      1f
-        movl    $MSR_EFER, %ecx
-        wrmsr
- 1:
-
-
-with removing this part
-
--       movl    pmode_cr4, %eax
--       movl    %eax, %cr4
-+       movl    pmode_cr4, %ecx
-+       movl    %ecx, %cr4
-
-also doesn't fix the issue (see suspendfix_5.patch).
-
-> lines and see what the minimal patch needed for things to work again is.
->=20
-
-So the most minimal working patch is suspendfix_3.patch.
-
-> Thanks,
-> Rafael
-
-Thank you and best regards,
-Jonas
-
->=20
->=20
-> --=20
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_first_hunk_dropped.patch"
-Content-Transfer-Encoding: quoted-printable
-
---- a/arch/x86/realmode/rm/wakeup_asm.S	2013-04-29 02:36:01.000000000 +0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-01 11:42:07.359999895 +0200
-@@ -110,15 +110,15 @@
- 	movl	pmode_cr3, %eax
- 	movl	%eax, %cr3
-=20
--	btl	$WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
--	jnc	1f
--	movl	pmode_cr4, %eax
--	movl	%eax, %cr4
-+	movl	pmode_cr4, %ecx
-+	jecxz	1f
-+	movl	%ecx, %cr4
- 1:
--	btl	$WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
--	jnc	1f
- 	movl	pmode_efer, %eax
- 	movl	pmode_efer + 4, %edx
-+	movl	%eax, %ecx
-+	orl	%edx, %ecx
-+	jz	1f
- 	movl	$MSR_EFER, %ecx
- 	wrmsr
- 1:
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_1.patch"
-Content-Transfer-Encoding: quoted-printable
-
---- a/arch/x86/realmode/rm/wakeup_asm.S 2013-05-02 17:20:25.266667541 +0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 17:22:51.880000874 +0200
-@@ -112,13 +112,15 @@
-=20
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
- 	jnc	1f
--	movl	pmode_cr4, %eax
--	movl	%eax, %cr4
-+	movl	pmode_cr4, %ecx
-+	jecxz	1f
-+	movl	%ecx, %cr4
- 1:
--	btl	$WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
--	jnc	1f
- 	movl	pmode_efer, %eax
- 	movl	pmode_efer + 4, %edx
-+	movl	%eax, %ecx
-+	orl	%edx, %ecx
-+	jz	1f
- 	movl	$MSR_EFER, %ecx
- 	wrmsr
- 1:
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_2.patch"
-Content-Transfer-Encoding: quoted-printable
-
---- a/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 17:20:25.266667541 +0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 18:54:49.176667541 +0200
-@@ -112,13 +112,17 @@
-=20
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
- 	jnc	1f
--	movl	pmode_cr4, %eax
--	movl	%eax, %cr4
-+	movl	pmode_cr4, %ecx
-+	jecxz	1f
-+	movl	%ecx, %cr4
- 1:
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
- 	jnc	1f
- 	movl	pmode_efer, %eax
- 	movl	pmode_efer + 4, %edx
-+	movl	%eax, %ecx
-+	orl	%edx, %ecx
-+	jz	1f
- 	movl	$MSR_EFER, %ecx
- 	wrmsr
- 1:
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_3.patch"
-Content-Transfer-Encoding: quoted-printable
-
---- a/arch/x86/realmode/rm/wakeup_asm.S.org	2013-05-02 17:20:25.266667541 +=
-0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 19:56:58.083334207 +0200
-@@ -112,13 +112,16 @@
-=20
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
- 	jnc	1f
--	movl	pmode_cr4, %eax
--	movl	%eax, %cr4
-+	movl	pmode_cr4, %ecx
-+	movl	%ecx, %cr4
- 1:
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
- 	jnc	1f
- 	movl	pmode_efer, %eax
- 	movl	pmode_efer + 4, %edx
-+	movl	%eax, %ecx
-+	orl	%edx, %ecx
-+	jz	1f
- 	movl	$MSR_EFER, %ecx
- 	wrmsr
- 1:
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_4.patch"
-Content-Transfer-Encoding: quoted-printable
-
---- a/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 17:20:25.266667541 +0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 20:43:40.623334207 +0200
-@@ -112,8 +112,8 @@
-=20
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
- 	jnc	1f
--	movl	pmode_cr4, %eax
--	movl	%eax, %cr4
-+	movl	pmode_cr4, %ecx
-+	movl	%ecx, %cr4
- 1:
- 	btl	$WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
- 	jnc	1f
-
---ew6BAiZeqk4r7MaW
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="suspendfix_5.patch"
-
---- a/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 17:20:25.266667541 +0200
-+++ b/arch/x86/realmode/rm/wakeup_asm.S	2013-05-02 21:44:57.973334207 +0200
-@@ -119,6 +119,9 @@
- 	jnc	1f
- 	movl	pmode_efer, %eax
- 	movl	pmode_efer + 4, %edx
-+	movl	%eax, %ecx
-+	orl	%edx, %ecx
-+	jz	1f
- 	movl	$MSR_EFER, %ecx
- 	wrmsr
- 1:
-
---ew6BAiZeqk4r7MaW--
-
---zx4FCpZtqtKETZ7O
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQEcBAEBAgAGBQJRgs1dAAoJEPFqEBdQ3ykkb9oIAJW15ieog4MZ2y5BSImrfAxg
-rb7LYp165znGIVUPCWL2qw1wrxsGRhmBudvtB83G5x+pFqAMhSj9eD6lwJ8j37DG
-xkwm3GIPxDmLkCRvNN/dvVS2FrrvPoyPeAiK9MVrWfn22IBdox3s/Lsr0Ji16+So
-9XIDtTEZRaOuif6A7/NjIJmYKuBv9PYu7zlxtcbPHm4WwTE3zn0NL0F4Y+/vYDMv
-eD6d8pENZqXOf06o8IXa5ADv43WeF272hfpqSb7IMY2gHoK68lx4s9CrtCy9m4IJ
-H+GUfJ+RmR66uQJ627mHfUn/1ZP6QDhqdvKJE2e/qfLy61pUOU/SLyQJa0g5O+8=
-=quAG
------END PGP SIGNATURE-----
-
---zx4FCpZtqtKETZ7O--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
