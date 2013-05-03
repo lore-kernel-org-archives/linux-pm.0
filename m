@@ -1,54 +1,57 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: cpu0: Free parent node for error cases
-Date: Fri, 3 May 2013 14:03:29 +0800
-Message-ID: <20130503060327.GA19902@S2101-09.ap.freescale.net>
-References: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: Add pm_ops_ptr() macro
+Date: Fri, 3 May 2013 11:23:11 +0200
+Message-ID: <20130503092311.GA13832@amd.pavel.ucw.cz>
+References: <000201ce453f$5ce4fc90$16aef5b0$@samsung.com>
+ <1474315.q4folvZv3e@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34275 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518Ab3ECJXO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2013 05:23:14 -0400
 Content-Disposition: inline
-In-Reply-To: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+In-Reply-To: <1474315.q4folvZv3e@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jingoo Han <jg1.han@samsung.com>, linux-pm@vger.kernel.org, 'Len Brown' <len.brown@intel.com>, 'Andrew Morton' <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
 
-On Fri, May 03, 2013 at 10:14:25AM +0530, Viresh Kumar wrote:
-> We are freeing parent node in success cases but not in failure cases. Lets do
-> it.
+Hi!
+
+> > Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
+> > to be assigned without having an #define xxx NULL for the case that PM is
+> > not enabled.
+> > 
+> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> I've queued this up as v3.11 material.
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+> > --- a/drivers/i2c/busses/i2c-s3c2410.c
+> > +++ b/drivers/i2c/busses/i2c-s3c2410.c
+> > @@ -1218,7 +1218,6 @@ static int s3c24xx_i2c_resume(struct device *dev)
+> >  }
+> >  #endif
+> >  
+> > -#ifdef CONFIG_PM
+> >  static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+> >  #ifdef CONFIG_PM_SLEEP
+> >  	.suspend_noirq = s3c24xx_i2c_suspend_noirq,
+> > @@ -1226,11 +1225,6 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+> >  #endif
+> >  };
+> >  
+> > -#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
+> > -#else
+> > -#define S3C24XX_DEV_PM_OPS NULL
+> > -#endif
+> > -
+> >  /* device driver for platform bus bits */
 
-> ---
->  drivers/cpufreq/cpufreq-cpu0.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
-> index 3ab8294..8565d41 100644
-> --- a/drivers/cpufreq/cpufreq-cpu0.c
-> +++ b/drivers/cpufreq/cpufreq-cpu0.c
-> @@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
->  
->  	if (!np) {
->  		pr_err("failed to find cpu0 node\n");
-> -		return -ENOENT;
-> +		ret = -ENOENT;
-> +		goto out_put_parent;
->  	}
->  
->  	cpu_dev = &pdev->dev;
-> @@ -264,6 +265,8 @@ out_free_table:
->  	opp_free_cpufreq_table(cpu_dev, &freq_table);
->  out_put_node:
->  	of_node_put(np);
-> +out_put_parent:
-> +	of_node_put(parent);
->  	return ret;
->  }
->  
-> -- 
-> 1.7.12.rc2.18.g61b472e
-> 
+Will not this enlarge .data by sizeof(struct dev_pm_ops)?
 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
