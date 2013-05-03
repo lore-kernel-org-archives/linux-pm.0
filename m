@@ -1,42 +1,44 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 03/10] freezer: add new freezable helpers using
- freezer_do_not_count()
-Date: Thu, 2 May 2013 21:20:13 -0700
-Message-ID: <20130503042013.GC16968@mtj.dyndns.org>
-References: <1367458508-9133-1-git-send-email-ccross@android.com>
- <1367458508-9133-4-git-send-email-ccross@android.com>
- <20130502235505.GW19814@mtj.dyndns.org>
- <20130503000358.GX19814@mtj.dyndns.org>
- <CAMbhsRSFjUvkXq66pYs_nYN5At7yB4sFM+cpxLgUF_Yns54J5A@mail.gmail.com>
- <CAMbhsRTSCW3WOxTgw8btk2yWAucqNmyY-Sc+CHsHmZzf6ZsTNA@mail.gmail.com>
- <20130503040934.GA16968@mtj.dyndns.org>
- <CAMbhsRQ=zyop6ubouHAsb9CYV9Pdqo5x0fsga7wuuedj1mio4g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:56247 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751230Ab3ECEUT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2013 00:20:19 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMbhsRQ=zyop6ubouHAsb9CYV9Pdqo5x0fsga7wuuedj1mio4g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: cpu0: Free parent node for error cases
+Date: Fri,  3 May 2013 10:14:25 +0530
+Message-ID: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, shawn.guo@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jeff Layton <jlayton@redhat.com>, Mandeep Baines <msb@chromium.org>
 
-On Thu, May 02, 2013 at 09:17:21PM -0700, Colin Cross wrote:
-> > And I *hope* the lockdep annotation is stricter than what was added
-> > before.  I think it better be "no lock ever should be held at this
-> > point" rather than "consider this a big lock".
-> 
-> The previous patch (6aa9707099c4b25700940eb3d016f16c4434360d in Linus'
-> tree) already required that no locks be held, it wasn't using a lock
-> annotation.
+We are freeing parent node in success cases but not in failure cases. Lets do
+it.
 
-Ooh, cool.  Thanks for the pointer.  Forget about my rambling and
-let's just add an unsafe version of try_to_freeze() and be done with
-it.  :)
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-cpu0.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+index 3ab8294..8565d41 100644
+--- a/drivers/cpufreq/cpufreq-cpu0.c
++++ b/drivers/cpufreq/cpufreq-cpu0.c
+@@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+ 
+ 	if (!np) {
+ 		pr_err("failed to find cpu0 node\n");
+-		return -ENOENT;
++		ret = -ENOENT;
++		goto out_put_parent;
+ 	}
+ 
+ 	cpu_dev = &pdev->dev;
+@@ -264,6 +265,8 @@ out_free_table:
+ 	opp_free_cpufreq_table(cpu_dev, &freq_table);
+ out_put_node:
+ 	of_node_put(np);
++out_put_parent:
++	of_node_put(parent);
+ 	return ret;
+ }
+ 
 -- 
-tejun
+1.7.12.rc2.18.g61b472e
+
