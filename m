@@ -1,78 +1,87 @@
-From: Darren Hart <dvhart@linux.intel.com>
-Subject: Re: [PATCH v2 07/10] futex: use freezable blocking call
-Date: Thu, 02 May 2013 20:12:58 -0700
-Message-ID: <51832B3A.4070703@linux.intel.com>
-References: <1367458508-9133-1-git-send-email-ccross@android.com> <1367458508-9133-8-git-send-email-ccross@android.com> <alpine.LFD.2.02.1305022145300.2891@ionos>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v2 03/10] freezer: add new freezable helpers using
+ freezer_do_not_count()
+Date: Thu, 2 May 2013 21:09:34 -0700
+Message-ID: <20130503040934.GA16968@mtj.dyndns.org>
+References: <1367458508-9133-1-git-send-email-ccross@android.com>
+ <1367458508-9133-4-git-send-email-ccross@android.com>
+ <20130502235505.GW19814@mtj.dyndns.org>
+ <20130503000358.GX19814@mtj.dyndns.org>
+ <CAMbhsRSFjUvkXq66pYs_nYN5At7yB4sFM+cpxLgUF_Yns54J5A@mail.gmail.com>
+ <CAMbhsRTSCW3WOxTgw8btk2yWAucqNmyY-Sc+CHsHmZzf6ZsTNA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:51930 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758906Ab3ECDNA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 May 2013 23:13:00 -0400
-In-Reply-To: <alpine.LFD.2.02.1305022145300.2891@ionos>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:49299 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739Ab3ECEJj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 May 2013 00:09:39 -0400
+Content-Disposition: inline
+In-Reply-To: <CAMbhsRTSCW3WOxTgw8btk2yWAucqNmyY-Sc+CHsHmZzf6ZsTNA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Colin Cross <ccross@android.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Tejun Heo <tj@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>
+To: Colin Cross <ccross@android.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jeff Layton <jlayton@redhat.com>, Mandeep Baines <msb@chromium.org>
 
+Hello,
 
+On Thu, May 02, 2013 at 07:41:39PM -0700, Colin Cross wrote:
+> On Thu, May 2, 2013 at 7:16 PM, Colin Cross <ccross@android.com> wrote:
+> > This sounds the same as what ended up getting reverted in
+> > https://lkml.org/lkml/2013/3/4/221
+> > I can add the WARN_ON_ONCE to all my new calls, and leave them out of
+> > existing calls, but that seems a little odd, and will be redundant if
+> > the lockdep call in try_to_freeze goes back in in 3.11.  Do you still
+> > want it in the new apis?
+...
+> I could also put the lockdep check that was reveted back into
+> try_to_freeze(), and add a freezable_schedule_unsafe() that skips it
+> for use in the known-unsafe users in nfs, with a big comment not to
+> add new users of it.
 
-On 05/02/2013 12:45 PM, Thomas Gleixner wrote:
-> On Wed, 1 May 2013, Colin Cross wrote:
-> 
->> Avoid waking up every thread sleeping in a futex_wait call during
->> suspend and resume by calling a freezable blocking call.  Previous
->> patches modified the freezer to avoid sending wakeups to threads
->> that are blocked in freezable blocking calls.
->>
->> This call was selected to be converted to a freezable call because
->> it doesn't hold any locks or release any resources when interrupted
->> that might be needed by another freezing task or a kernel driver
->> during suspend, and is a common site where idle userspace tasks are
->> blocked.
->>
->> Signed-off-by: Colin Cross <ccross@android.com>
-> 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Oh yeah, that sounds like a good idea, and as for the non-ugly
+variants, at least in the mid/long term, I think it'd be best to add
+the lockdep annotation to try_to_freeze() with
+__try_to_freeze_unsafe_youre_gonna_burn_in_hell_if_you_use_this() for
+the existing users which should be gradually converted, but if that's
+too burdensome, adding warnings to the wrappers should do for now, I
+guess.
 
-Beat me to it :-) Also agreed.
+And I *hope* the lockdep annotation is stricter than what was added
+before.  I think it better be "no lock ever should be held at this
+point" rather than "consider this a big lock".  I'm not sure how much
+consensus we have on this but I'd like to, in the longer term, merge
+freezer into job control stop so that frozen tasks don't appear as
+being in uninterruptible sleep.  Currently, the frozen tasks are
+essentially in UNINTERRUPTIBLE sleep which is okay for suspend but for
+cgroup freezer, it sucks.  You end up with tasks which you can't even
+kill.
 
-Acked-by: Darren Hart <dvhart@linux.intel.com>
+Combined with the locking problems, I was planning to update the
+freezer such that the frozen state is implemented as a form of jobctl
+stop, so that things like ptrace / kill -9 could work on them and we
+also have the clear definition of the frozen state rather than the
+current "it may get stuck somewhere in the kernel".
 
-> 
->> ---
->>  kernel/futex.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/kernel/futex.c b/kernel/futex.c
->> index b26dcfc..d710fae 100644
->> --- a/kernel/futex.c
->> +++ b/kernel/futex.c
->> @@ -61,6 +61,7 @@
->>  #include <linux/nsproxy.h>
->>  #include <linux/ptrace.h>
->>  #include <linux/sched/rt.h>
->> +#include <linux/freezer.h>
->>  
->>  #include <asm/futex.h>
->>  
->> @@ -1807,7 +1808,7 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
->>  		 * is no timeout, or if it has yet to expire.
->>  		 */
->>  		if (!timeout || timeout->task)
->> -			schedule();
->> +			freezable_schedule();
->>  	}
->>  	__set_current_state(TASK_RUNNING);
->>  }
->> -- 
->> 1.8.2.1
->>
->>
+But that conflicts with what you're doing here which seems pretty
+useful, so, to satisfy both goals, when somebody needs to put a
+pseudo-frozen task into the actual frozen jobctl stop, those spots
+which are currently using try_to_stop() would have to return an error,
+most likely -EINTR with TIF_SIGPENDING set, and the control should
+return towards userland so that signal handling path can be invoked.
+ie. It should be possible to steer the tasks which are considered
+frozen but not in the frozen jobctl stop into the jobctl stop without
+any side effect.  To do that, those spots basically have to be pretty
+close to the userland boundary where it can easily leave the kernel
+with -EINTR and AFAICS all the spots that you converted are like that
+(which I think is natural).  While not holding any locks doesn't
+guarantee that, I think there'd be a fairly high correlation at least
+and it'd be able to drive people towards finding out what's going on.
+
+So, that's my agenda.  Not sure how many actually agree with it.
+Rafael, Oleg, Jeff?
+
+Thanks.
 
 -- 
-Darren Hart
-Intel Open Source Technology Center
-Yocto Project - Technical Lead - Linux Kernel
+tejun
