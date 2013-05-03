@@ -1,141 +1,65 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@intel.com>
-Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
-Date: Fri, 3 May 2013 15:15:55 +0300
-Message-ID: <201305031515.55595.jarkko.sakkinen@intel.com>
-References: <20130218155439.GA902@onny> <1487368.CBCgti1nd5@vostro.rjw.lan> <20130503110705.GA3828@onny.Speedport_W_700V>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH V2] cpufreq: cpu0: Free parent node for error cases
+Date: Fri, 03 May 2013 14:47:58 +0200
+Message-ID: <455891364.DU1qQaFqNq@vostro.rjw.lan>
+References: <03c6b0e0f41238c1b4346b4186040ff69e369b4a.1367556239.git.viresh.kumar@linaro.org> <20130503060327.GA19902@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:29443 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925Ab3ECMQ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 May 2013 08:16:27 -0400
-In-Reply-To: <20130503110705.GA3828@onny.Speedport_W_700V>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130503060327.GA19902@S2101-09.ap.freescale.net>
+Sender: cpufreq-owner@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Jonas Heinrich <onny@project-insanity.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi
-
-On Friday, May 03, 2013 02:07:05 PM Jonas Heinrich wrote:
-> On 05-03 01:29, Rafael J. Wysocki wrote:
-> > On Thursday, May 02, 2013 08:32:30 PM Jonas Heinrich wrote:
-> > > On 05-02 02:45, Rafael J. Wysocki wrote:
-> > > > On Wednesday, May 01, 2013 11:55:10 AM H. Peter Anvin wrote:
-> > > > > On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
-> > > > > > Well, you could give me instructions on how to debug this (I'll
-> > > > > > do everything ;)) or I could ship you the Thinkpad T43. I guess
-> > > > > > this would worth the effort since this bug is somehow critical.
-> > > > > > 
-> > > > > > Best regards, Jonas
-> > > > > 
-> > > > > I'll put together a debug patch unless I can trick Rafael into
-> > > > > doing it first...
-> > > > 
-> > > > I'm afraid that code has changed quite a bit since I looked at it
-> > > > last time. [Jarkko Sakkinen seems to have worked on it lately,
-> > > > CCed.]
-> > > > 
-> > > > Jonas, I wonder what happens if you drop the first hunk of the patch
-> > > > (it just uses a different register, which shouldn't matter)?  Does
-> > > > it still help then?
-> > > 
-> > > Hello Rafel, first of all, thank you for helping me out :)
-> > > You're right, the patch still solves the suspend bug, after removing
-> > > the first hunk of the patch and applying it (see attachement:
-> > > suspendfix_first_hunk_dropped.patch).
-> > > 
-> > > > If so, there are still a few things you can do to it, e.g:
-> > > > (1) drop the
-> > > > 
-> > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
-> > > > -       jnc     1f
-> > > 
-> > > Still works :) (used suspendfix_1.patch)
-> > > 
-> > > > lines,
-> > > > (2) drop the
-> > > > 
-> > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
-> > > > -       jnc     1f
-> > > > 
-> > > > lines,
-> > > 
-> > > Still works :) (used suspendfix_2.patch)
-> > > 
-> > > > (3) drop the
-> > > > 
-> > > > +       jecxz   1f
-> > > 
-> > > Still works :) (used suspendfix_3.patch)
-> > > 
-> > > > line,
-> > > > (4) drop the
-> > > > 
-> > > > +       movl    %eax, %ecx
-> > > > +       orl     %edx, %ecx
-> > > > +       jz      1f
-> > > 
-> > > At this point, the bug reoccurs (used suspendfix_4.patch)!
-> > > But that doesn't mean these lines are the only critical, because the
-> > > more minimal patch
-> > > 
-> > > @@ -119,6 +119,9 @@
-> > > 
-> > >         jnc     1f
-> > >         movl    pmode_efer, %eax
-> > >         movl    pmode_efer + 4, %edx
-> > > 
-> > > +       movl    %eax, %ecx
-> > > +       orl     %edx, %ecx
-> > > +       jz      1f
-> > > 
-> > >         movl    $MSR_EFER, %ecx
-> > >         wrmsr
-> > >  
-> > >  1:
-> > > with removing this part
-> > > 
-> > > -       movl    pmode_cr4, %eax
-> > > -       movl    %eax, %cr4
-> > > +       movl    pmode_cr4, %ecx
-> > > +       movl    %ecx, %cr4
-> > > 
-> > > also doesn't fix the issue (see suspendfix_5.patch).
-> > > 
-> > > > lines and see what the minimal patch needed for things to work again
-> > > > is.
-> > > 
-> > > So the most minimal working patch is suspendfix_3.patch.
+On Friday, May 03, 2013 02:03:29 PM Shawn Guo wrote:
+> On Fri, May 03, 2013 at 10:14:25AM +0530, Viresh Kumar wrote:
+> > We are freeing parent node in success cases but not in failure cases. Lets do
+> > it.
 > > 
-> > Thanks for doing that detective work!
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Acked-by: Shawn Guo <shawn.guo@linaro.org>
+
+OK, queued up for the v3.10-rc2 push.
+
+Thanks,
+Rafael
+
+
+> > ---
+> >  drivers/cpufreq/cpufreq-cpu0.c | 5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
 > > 
-> > The only explanation of why this particular patch can help that seems
-> > viable to us at the moment is that we have a memory corruption in the
-> > code region modified by it and the patch simply changes the alignment of
-> > the instructions that don't get corrupted.
-> > 
-> > It looks like this may be verified by putting a bunch of nops into the
-> > region in question, so can you please check if the attached patch helps
-> > too?
+> > diff --git a/drivers/cpufreq/cpufreq-cpu0.c b/drivers/cpufreq/cpufreq-cpu0.c
+> > index 3ab8294..8565d41 100644
+> > --- a/drivers/cpufreq/cpufreq-cpu0.c
+> > +++ b/drivers/cpufreq/cpufreq-cpu0.c
+> > @@ -189,7 +189,8 @@ static int cpu0_cpufreq_probe(struct platform_device *pdev)
+> >  
+> >  	if (!np) {
+> >  		pr_err("failed to find cpu0 node\n");
+> > -		return -ENOENT;
+> > +		ret = -ENOENT;
+> > +		goto out_put_parent;
+> >  	}
+> >  
+> >  	cpu_dev = &pdev->dev;
+> > @@ -264,6 +265,8 @@ out_free_table:
+> >  	opp_free_cpufreq_table(cpu_dev, &freq_table);
+> >  out_put_node:
+> >  	of_node_put(np);
+> > +out_put_parent:
+> > +	of_node_put(parent);
+> >  	return ret;
+> >  }
+> >  
 > 
-> Unfortunately, your attached patch doesn't seem to fix the bug.
-> Hope you still have some ideas to address this issue :)
-
-Kind of had to experiment with this since I don't have access to
-T43. Did you already try:
-
-- EFER handling only is reverted as it was before 73201dbe.
-- CR4 handling only is reverted as it was before 73201dbe.
-
-Thanks.
-
-/Jarkko
-
-> 
-> - Jonas
-> 
-> > Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
