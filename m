@@ -1,34 +1,37 @@
 From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v2 03/10] freezer: add new freezable helpers using
- freezer_do_not_count()
-Date: Thu, 2 May 2013 17:03:58 -0700
-Message-ID: <20130503000358.GX19814@mtj.dyndns.org>
+Subject: Re: [PATCH v2 10/10] af_unix: use freezable blocking calls in read
+Date: Thu, 2 May 2013 17:08:12 -0700
+Message-ID: <20130503000812.GY19814@mtj.dyndns.org>
 References: <1367458508-9133-1-git-send-email-ccross@android.com>
- <1367458508-9133-4-git-send-email-ccross@android.com>
- <20130502235505.GW19814@mtj.dyndns.org>
+ <1367458508-9133-11-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20130502235505.GW19814@mtj.dyndns.org>
+In-Reply-To: <1367458508-9133-11-git-send-email-ccross@android.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Colin Cross <ccross@android.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jeff Layton <jlayton@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, arve@android.com, Oleg Nesterov <oleg@redhat.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Gao feng <gaofeng@cn.fujitsu.com>, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 02, 2013 at 04:55:05PM -0700, Tejun Heo wrote:
-> So, the freezable interface can't be something that people can use
-> casually.  It is something which should be carefully and strategically
-> deployed where we *know* that lock dependency risks don't exist or at
-> least are acceptable.  I'm a bit weary that this patch is expanding
-> the interface a lot that they now look like the equivalents of normal
-> schedule calls.  Not exactly sure what to do here but can we please at
-> least have RED BOLD BLINKING comments which scream to people not to
-> use these unless they know what they're doing?
+On Wed, May 01, 2013 at 06:35:08PM -0700, Colin Cross wrote:
+> Avoid waking up every thread sleeping in read call on an AF_UNIX
+> socket during suspend and resume by calling a freezable blocking
+> call.  Previous patches modified the freezer to avoid sending
+> wakeups to threads that are blocked in freezable blocking calls.
+> 
+> This call was selected to be converted to a freezable call because
+> it doesn't hold any locks or release any resources when interrupted
+> that might be needed by another freezing task or a kernel driver
+> during suspend, and is a common site where idle userspace tasks are
+> blocked.
 
-Maybe we should trigger WARN_ON_ONCE() if lockdep_depth() > 0 by
-default and have ugly variants which can be used if the caller is sure
-that it's okay possibly with list of locks which are held?
+Heh, so you are aware of the deadlock possibilities.  Good selection
+of spots.  For all the conversion patches.
+
+ Acked-by: Tejun Heo <tj@kernel.org>
+
+Thanks.
 
 -- 
 tejun
