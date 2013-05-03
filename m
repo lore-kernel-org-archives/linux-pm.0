@@ -1,47 +1,56 @@
 From: Colin Cross <ccross@android.com>
 Subject: Re: [PATCH v2 03/10] freezer: add new freezable helpers using freezer_do_not_count()
-Date: Thu, 2 May 2013 19:16:59 -0700
-Message-ID: <CAMbhsRSFjUvkXq66pYs_nYN5At7yB4sFM+cpxLgUF_Yns54J5A@mail.gmail.com>
+Date: Thu, 2 May 2013 19:41:39 -0700
+Message-ID: <CAMbhsRTSCW3WOxTgw8btk2yWAucqNmyY-Sc+CHsHmZzf6ZsTNA@mail.gmail.com>
 References: <1367458508-9133-1-git-send-email-ccross@android.com>
 	<1367458508-9133-4-git-send-email-ccross@android.com>
 	<20130502235505.GW19814@mtj.dyndns.org>
 	<20130503000358.GX19814@mtj.dyndns.org>
+	<CAMbhsRSFjUvkXq66pYs_nYN5At7yB4sFM+cpxLgUF_Yns54J5A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f169.google.com ([209.85.220.169]:53988 "EHLO
-	mail-vc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757804Ab3ECCRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 22:17:00 -0400
-Received: by mail-vc0-f169.google.com with SMTP id gd11so1116368vcb.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 May 2013 19:17:00 -0700 (PDT)
-In-Reply-To: <20130503000358.GX19814@mtj.dyndns.org>
+Received: from mail-vb0-f54.google.com ([209.85.212.54]:60899 "EHLO
+	mail-vb0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760816Ab3ECClk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 May 2013 22:41:40 -0400
+Received: by mail-vb0-f54.google.com with SMTP id f12so1035259vbg.41
+        for <linux-pm@vger.kernel.org>; Thu, 02 May 2013 19:41:39 -0700 (PDT)
+In-Reply-To: <CAMbhsRSFjUvkXq66pYs_nYN5At7yB4sFM+cpxLgUF_Yns54J5A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tejun Heo <tj@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jeff Layton <jlayton@redhat.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jeff Layton <jlayton@redhat.com>, Mandeep Baines <msb@chromium.org>
 
-This sounds the same as what ended up getting reverted in
-https://lkml.org/lkml/2013/3/4/221
-I can add the WARN_ON_ONCE to all my new calls, and leave them out of
-existing calls, but that seems a little odd, and will be redundant if
-the lockdep call in try_to_freeze goes back in in 3.11.  Do you still
-want it in the new apis?
+On Thu, May 2, 2013 at 7:16 PM, Colin Cross <ccross@android.com> wrote:
+> This sounds the same as what ended up getting reverted in
+> https://lkml.org/lkml/2013/3/4/221
+> I can add the WARN_ON_ONCE to all my new calls, and leave them out of
+> existing calls, but that seems a little odd, and will be redundant if
+> the lockdep call in try_to_freeze goes back in in 3.11.  Do you still
+> want it in the new apis?
+>
+> On Thu, May 2, 2013 at 5:03 PM, Tejun Heo <tj@kernel.org> wrote:
+>> On Thu, May 02, 2013 at 04:55:05PM -0700, Tejun Heo wrote:
+>>> So, the freezable interface can't be something that people can use
+>>> casually.  It is something which should be carefully and strategically
+>>> deployed where we *know* that lock dependency risks don't exist or at
+>>> least are acceptable.  I'm a bit weary that this patch is expanding
+>>> the interface a lot that they now look like the equivalents of normal
+>>> schedule calls.  Not exactly sure what to do here but can we please at
+>>> least have RED BOLD BLINKING comments which scream to people not to
+>>> use these unless they know what they're doing?
+>>
+>> Maybe we should trigger WARN_ON_ONCE() if lockdep_depth() > 0 by
+>> default and have ugly variants which can be used if the caller is sure
+>> that it's okay possibly with list of locks which are held?
+>>
+>> --
+>> tejun
 
-On Thu, May 2, 2013 at 5:03 PM, Tejun Heo <tj@kernel.org> wrote:
-> On Thu, May 02, 2013 at 04:55:05PM -0700, Tejun Heo wrote:
->> So, the freezable interface can't be something that people can use
->> casually.  It is something which should be carefully and strategically
->> deployed where we *know* that lock dependency risks don't exist or at
->> least are acceptable.  I'm a bit weary that this patch is expanding
->> the interface a lot that they now look like the equivalents of normal
->> schedule calls.  Not exactly sure what to do here but can we please at
->> least have RED BOLD BLINKING comments which scream to people not to
->> use these unless they know what they're doing?
->
-> Maybe we should trigger WARN_ON_ONCE() if lockdep_depth() > 0 by
-> default and have ugly variants which can be used if the caller is sure
-> that it's okay possibly with list of locks which are held?
->
-> --
-> tejun
+(sorry for the top post)
+
+I could also put the lockdep check that was reveted back into
+try_to_freeze(), and add a freezable_schedule_unsafe() that skips it
+for use in the known-unsafe users in nfs, with a big comment not to
+add new users of it.
