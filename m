@@ -1,45 +1,80 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 00/10] optimize freezing tasks by reducing task wakeups
-Date: Fri, 03 May 2013 13:43:46 +0200
-Message-ID: <6539209.phsENQLmv5@vostro.rjw.lan>
-References: <1367458508-9133-1-git-send-email-ccross@android.com> <1678114.cijx7evM08@vostro.rjw.lan> <20130503001026.GZ19814@mtj.dyndns.org>
+Subject: Re: [PATCH, RFC 02/22] cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
+Date: Fri, 03 May 2013 14:15:57 +0200
+Message-ID: <5563691.6kxbXZTjH5@vostro.rjw.lan>
+References: <1367507786-505303-1-git-send-email-arnd@arndb.de> <1367507786-505303-3-git-send-email-arnd@arndb.de> <CAKohpomBKuaxk+sSF63cu6JKut1uV7J7Sj2o85c3wQ=fodx+Ow@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56368 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:56420 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763228Ab3ECLf1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 May 2013 07:35:27 -0400
-In-Reply-To: <20130503001026.GZ19814@mtj.dyndns.org>
+	id S1751700Ab3ECMHj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 May 2013 08:07:39 -0400
+In-Reply-To: <CAKohpomBKuaxk+sSF63cu6JKut1uV7J7Sj2o85c3wQ=fodx+Ow@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arve@android.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, May 02, 2013 05:10:26 PM Tejun Heo wrote:
-> Hey, Rafael.
+On Friday, May 03, 2013 10:21:45 AM Viresh Kumar wrote:
+> On 2 May 2013 20:46, Arnd Bergmann <arnd@arndb.de> wrote:
+> > The big.LITTLE cpufreq driver uses the CPU topology API, which
+> > needs to be reflected in Kconfig to prevent broken configurations.
+> >
+> > warning: (ARM_DT_BL_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which
+> > has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && ARM && ARM_CPU_TOPOLOGY)
+> >
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: cpufreq@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> >  drivers/cpufreq/Kconfig.arm | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> > index f3af18b..3fd6bdf 100644
+> > --- a/drivers/cpufreq/Kconfig.arm
+> > +++ b/drivers/cpufreq/Kconfig.arm
+> > @@ -10,6 +10,7 @@ config ARM_DT_BL_CPUFREQ
+> >         tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
+> >         select ARM_BIG_LITTLE_CPUFREQ
+> >         depends on OF && HAVE_CLK
+> > +       depends on ARM_CPU_TOPOLOGY
+> >         help
+> >           This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
+> >           This gets frequency tables from DT.
 > 
-> On Thu, May 02, 2013 at 11:06:35PM +0200, Rafael J. Wysocki wrote:
-> > > v2 moves the skip check to freeze_task(), and expands the commit
-> > > messages.
-> > 
-> > The entire series makes sense to me, so are there any objections?
-> > 
-> > Tejun, Oleg??
+> This Kconfig thing has always been confusing to me. This is how the code looks
+> currently.
 > 
-> Generally looks good to me.  I'm a bit uncomfortable with the
-> generic-looking expansion of the freezable API as it can't be
-> something which can be used in any generic manner.  It'd be great if
-> we just add only the used ones (do we already?)
+> config ARM_BIG_LITTLE_CPUFREQ
+>         tristate
+>         depends on ARM_CPU_TOPOLOGY
+> 
+> config ARM_DT_BL_CPUFREQ
+>         tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
+>         select ARM_BIG_LITTLE_CPUFREQ
+>         depends on OF && HAVE_CLK
+>         help
+>           This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
+>           This gets frequency tables from DT.
+> 
+> Because all ARM big LITTLE cpufreq stuff have dependency on
+> ARM_CPU_TOPOLOGY, i have added dependency at a common place. So that
+> we don't end up adding this in every glue layer driver. How should this be done?
 
-I'm not sure about that, unfortunately.
+First, there's no rule of thumb here as far as I can say.
 
-> and add some sort of lockdep annotation so that people don't use them while
-> holding any locks.
+In this particular case I think it is OK to make both ARM_DT_BL_CPUFREQ and
+ARM_BIG_LITTLE_CPUFREQ depend on ARM_CPU_TOPOLOGY, because (in theory?) the
+latter may be set without the former (unless you want to make ARM_DT_BL_CPUFREQ
+depend on ARM_BIG_LITTLE_CPUFREQ, but then it may be kind of confusing to
+users).
 
-I guess we can add that anyway?
-
+Thanks,
 Rafael
 
 
