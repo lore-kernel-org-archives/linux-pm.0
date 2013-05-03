@@ -1,83 +1,141 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH, RFC 02/22] cpufreq: ARM_DT_BL_CPUFREQ needs ARM_CPU_TOPOLOGY
-Date: Fri, 03 May 2013 14:15:57 +0200
-Message-ID: <5563691.6kxbXZTjH5@vostro.rjw.lan>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de> <1367507786-505303-3-git-send-email-arnd@arndb.de> <CAKohpomBKuaxk+sSF63cu6JKut1uV7J7Sj2o85c3wQ=fodx+Ow@mail.gmail.com>
+From: Jarkko Sakkinen <jarkko.sakkinen@intel.com>
+Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
+Date: Fri, 3 May 2013 15:15:55 +0300
+Message-ID: <201305031515.55595.jarkko.sakkinen@intel.com>
+References: <20130218155439.GA902@onny> <1487368.CBCgti1nd5@vostro.rjw.lan> <20130503110705.GA3828@onny.Speedport_W_700V>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:56420 "EHLO hydra.sisk.pl"
+Received: from mga01.intel.com ([192.55.52.88]:29443 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700Ab3ECMHj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 May 2013 08:07:39 -0400
-In-Reply-To: <CAKohpomBKuaxk+sSF63cu6JKut1uV7J7Sj2o85c3wQ=fodx+Ow@mail.gmail.com>
+	id S1753925Ab3ECMQ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 May 2013 08:16:27 -0400
+In-Reply-To: <20130503110705.GA3828@onny.Speedport_W_700V>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jonas Heinrich <onny@project-insanity.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, May 03, 2013 10:21:45 AM Viresh Kumar wrote:
-> On 2 May 2013 20:46, Arnd Bergmann <arnd@arndb.de> wrote:
-> > The big.LITTLE cpufreq driver uses the CPU topology API, which
-> > needs to be reflected in Kconfig to prevent broken configurations.
-> >
-> > warning: (ARM_DT_BL_CPUFREQ) selects ARM_BIG_LITTLE_CPUFREQ which
-> > has unmet direct dependencies (ARCH_HAS_CPUFREQ && CPU_FREQ && ARM && ARM_CPU_TOPOLOGY)
-> >
-> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: cpufreq@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm | 1 +
-> >  1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index f3af18b..3fd6bdf 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -10,6 +10,7 @@ config ARM_DT_BL_CPUFREQ
-> >         tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
-> >         select ARM_BIG_LITTLE_CPUFREQ
-> >         depends on OF && HAVE_CLK
-> > +       depends on ARM_CPU_TOPOLOGY
-> >         help
-> >           This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
-> >           This gets frequency tables from DT.
+Hi
+
+On Friday, May 03, 2013 02:07:05 PM Jonas Heinrich wrote:
+> On 05-03 01:29, Rafael J. Wysocki wrote:
+> > On Thursday, May 02, 2013 08:32:30 PM Jonas Heinrich wrote:
+> > > On 05-02 02:45, Rafael J. Wysocki wrote:
+> > > > On Wednesday, May 01, 2013 11:55:10 AM H. Peter Anvin wrote:
+> > > > > On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
+> > > > > > Well, you could give me instructions on how to debug this (I'll
+> > > > > > do everything ;)) or I could ship you the Thinkpad T43. I guess
+> > > > > > this would worth the effort since this bug is somehow critical.
+> > > > > > 
+> > > > > > Best regards, Jonas
+> > > > > 
+> > > > > I'll put together a debug patch unless I can trick Rafael into
+> > > > > doing it first...
+> > > > 
+> > > > I'm afraid that code has changed quite a bit since I looked at it
+> > > > last time. [Jarkko Sakkinen seems to have worked on it lately,
+> > > > CCed.]
+> > > > 
+> > > > Jonas, I wonder what happens if you drop the first hunk of the patch
+> > > > (it just uses a different register, which shouldn't matter)?  Does
+> > > > it still help then?
+> > > 
+> > > Hello Rafel, first of all, thank you for helping me out :)
+> > > You're right, the patch still solves the suspend bug, after removing
+> > > the first hunk of the patch and applying it (see attachement:
+> > > suspendfix_first_hunk_dropped.patch).
+> > > 
+> > > > If so, there are still a few things you can do to it, e.g:
+> > > > (1) drop the
+> > > > 
+> > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
+> > > > -       jnc     1f
+> > > 
+> > > Still works :) (used suspendfix_1.patch)
+> > > 
+> > > > lines,
+> > > > (2) drop the
+> > > > 
+> > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
+> > > > -       jnc     1f
+> > > > 
+> > > > lines,
+> > > 
+> > > Still works :) (used suspendfix_2.patch)
+> > > 
+> > > > (3) drop the
+> > > > 
+> > > > +       jecxz   1f
+> > > 
+> > > Still works :) (used suspendfix_3.patch)
+> > > 
+> > > > line,
+> > > > (4) drop the
+> > > > 
+> > > > +       movl    %eax, %ecx
+> > > > +       orl     %edx, %ecx
+> > > > +       jz      1f
+> > > 
+> > > At this point, the bug reoccurs (used suspendfix_4.patch)!
+> > > But that doesn't mean these lines are the only critical, because the
+> > > more minimal patch
+> > > 
+> > > @@ -119,6 +119,9 @@
+> > > 
+> > >         jnc     1f
+> > >         movl    pmode_efer, %eax
+> > >         movl    pmode_efer + 4, %edx
+> > > 
+> > > +       movl    %eax, %ecx
+> > > +       orl     %edx, %ecx
+> > > +       jz      1f
+> > > 
+> > >         movl    $MSR_EFER, %ecx
+> > >         wrmsr
+> > >  
+> > >  1:
+> > > with removing this part
+> > > 
+> > > -       movl    pmode_cr4, %eax
+> > > -       movl    %eax, %cr4
+> > > +       movl    pmode_cr4, %ecx
+> > > +       movl    %ecx, %cr4
+> > > 
+> > > also doesn't fix the issue (see suspendfix_5.patch).
+> > > 
+> > > > lines and see what the minimal patch needed for things to work again
+> > > > is.
+> > > 
+> > > So the most minimal working patch is suspendfix_3.patch.
+> > 
+> > Thanks for doing that detective work!
+> > 
+> > The only explanation of why this particular patch can help that seems
+> > viable to us at the moment is that we have a memory corruption in the
+> > code region modified by it and the patch simply changes the alignment of
+> > the instructions that don't get corrupted.
+> > 
+> > It looks like this may be verified by putting a bunch of nops into the
+> > region in question, so can you please check if the attached patch helps
+> > too?
 > 
-> This Kconfig thing has always been confusing to me. This is how the code looks
-> currently.
+> Unfortunately, your attached patch doesn't seem to fix the bug.
+> Hope you still have some ideas to address this issue :)
+
+Kind of had to experiment with this since I don't have access to
+T43. Did you already try:
+
+- EFER handling only is reverted as it was before 73201dbe.
+- CR4 handling only is reverted as it was before 73201dbe.
+
+Thanks.
+
+/Jarkko
+
 > 
-> config ARM_BIG_LITTLE_CPUFREQ
->         tristate
->         depends on ARM_CPU_TOPOLOGY
+> - Jonas
 > 
-> config ARM_DT_BL_CPUFREQ
->         tristate "Generic ARM big LITTLE CPUfreq driver probed via DT"
->         select ARM_BIG_LITTLE_CPUFREQ
->         depends on OF && HAVE_CLK
->         help
->           This enables the Generic CPUfreq driver for ARM big.LITTLE platform.
->           This gets frequency tables from DT.
-> 
-> Because all ARM big LITTLE cpufreq stuff have dependency on
-> ARM_CPU_TOPOLOGY, i have added dependency at a common place. So that
-> we don't end up adding this in every glue layer driver. How should this be done?
-
-First, there's no rule of thumb here as far as I can say.
-
-In this particular case I think it is OK to make both ARM_DT_BL_CPUFREQ and
-ARM_BIG_LITTLE_CPUFREQ depend on ARM_CPU_TOPOLOGY, because (in theory?) the
-latter may be set without the former (unless you want to make ARM_DT_BL_CPUFREQ
-depend on ARM_BIG_LITTLE_CPUFREQ, but then it may be kind of confusing to
-users).
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> > Rafael
