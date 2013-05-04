@@ -1,60 +1,45 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
-Date: Sat, 4 May 2013 15:04:40 +0200
-Message-ID: <20130504130440.GC13770@amd.pavel.ucw.cz>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
- <1367615050-3894-2-git-send-email-ccross@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 10/10] af_unix: use freezable blocking calls in read
+Date: Sat, 04 May 2013 21:19:49 +0200
+Message-ID: <85487641.pdFCOjE3G7@vostro.rjw.lan>
+References: <1367458508-9133-1-git-send-email-ccross@android.com> <1367458508-9133-11-git-send-email-ccross@android.com> <20130503000812.GY19814@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1367615050-3894-2-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Trond Myklebust <Trond.Myklebust-HgOvQuBEEgTQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "J. Bruce Fields" <bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, "Eric W. Biederman" <ebiederm-aS9lmoZGLiVWk0Htik3J/w@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ben Chan <benchan-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:58742 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938Ab3EDTL3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 4 May 2013 15:11:29 -0400
+In-Reply-To: <20130503000812.GY19814@mtj.dyndns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: Colin Cross <ccross@android.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, arve@android.com, Oleg Nesterov <oleg@redhat.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Gao feng <gaofeng@cn.fujitsu.com>, netdev@vger.kernel.org
 
-On Fri 2013-05-03 14:04:10, Colin Cross wrote:
-> From: Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+On Thursday, May 02, 2013 05:08:12 PM Tejun Heo wrote:
+> On Wed, May 01, 2013 at 06:35:08PM -0700, Colin Cross wrote:
+> > Avoid waking up every thread sleeping in read call on an AF_UNIX
+> > socket during suspend and resume by calling a freezable blocking
+> > call.  Previous patches modified the freezer to avoid sending
+> > wakeups to threads that are blocked in freezable blocking calls.
+> > 
+> > This call was selected to be converted to a freezable call because
+> > it doesn't hold any locks or release any resources when interrupted
+> > that might be needed by another freezing task or a kernel driver
+> > during suspend, and is a common site where idle userspace tasks are
+> > blocked.
 > 
-> We shouldn't try_to_freeze if locks are held.  Holding a lock can cause a
-> deadlock if the lock is later acquired in the suspend or hibernate path
-> (e.g.  by dpm).  Holding a lock can also cause a deadlock in the case of
-> cgroup_freezer if a lock is held inside a frozen cgroup that is later
-> acquired by a process outside that group.
+> Heh, so you are aware of the deadlock possibilities.  Good selection
+> of spots.  For all the conversion patches.
+> 
+>  Acked-by: Tejun Heo <tj@kernel.org>
 
-Ok, but this does not explain why
+I wonder if that includes [3/10] (just to get the record straight)?
 
-> --- a/include/linux/debug_locks.h
-> +++ b/include/linux/debug_locks.h
-> @@ -51,7 +51,7 @@ struct task_struct;
->  extern void debug_show_all_locks(void);
->  extern void debug_show_held_locks(struct task_struct *task);
->  extern void debug_check_no_locks_freed(const void *from, unsigned long len);
-> -extern void debug_check_no_locks_held(struct task_struct *task);
-> +extern void debug_check_no_locks_held(void);
->  #else
->  static inline void debug_show_all_locks(void)
->  {
+Rafael
 
-Removing task_struct argument from  those functions is good idea?
 
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -835,7 +835,7 @@ void do_exit(long code)
->  	/*
->  	 * Make sure we are holding no locks:
->  	 */
-> -	debug_check_no_locks_held(tsk);
-> +	debug_check_no_locks_held();
-
-Is task guaranteed == current?
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
