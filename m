@@ -1,34 +1,66 @@
-From: Ilia Mirkin <imirkin@alum.mit.edu>
-Subject: Why is there a requirement to suspend to a swap device (and not any device)?
-Date: Sat, 4 May 2013 15:15:53 -0400
-Message-ID: <CAKb7UvhTEiee-p8-3OVaAXMBPWL0F7SBAHzyLEpUYCq_o_u2RA@mail.gmail.com>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
+Date: Sat, 4 May 2013 13:23:54 -0700
+Message-ID: <CAMbhsRS6+hjTmrihVzgu3Dtyp8XAhJJ4VKMj=28G6xH3H73=6Q@mail.gmail.com>
+References: <1367615050-3894-1-git-send-email-ccross@android.com>
+	<20130504130033.GB13770@amd.pavel.ucw.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:46161 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751335Ab3EDTPy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 May 2013 15:15:54 -0400
-Received: by mail-bk0-f46.google.com with SMTP id w5so1125809bku.33
-        for <linux-pm@vger.kernel.org>; Sat, 04 May 2013 12:15:53 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <20130504130033.GB13770@amd.pavel.ucw.cz>
+Sender: netdev-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Hello,
+On Sat, May 4, 2013 at 6:00 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> NFS calls the freezable helpers with locks held, which is unsafe
+>> and caused lockdep warnings when 6aa9707 "lockdep: check that no
+>> locks held at freeze time" was applied (reverted in dbf520a).
+>> Add new *_unsafe versions of the helpers that will not run the
+>> lockdep test when 6aa9707 is reapplied, and call them from NFS.
+>>
+>> Signed-off-by: Colin Cross <ccross@android.com>
+>
+> Looks mostly good.
+>
+>> @@ -152,6 +169,14 @@ static inline bool freezer_should_skip(struct task_struct *p)
+>>       freezer_count();                                                \
+>>  })
+>>
+>> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
+>> +#define freezable_schedule_unsafe()                                  \
+>> +({                                                                   \
+>> +     freezer_do_not_count();                                         \
+>> +     schedule();                                                     \
+>> +     freezer_count_unsafe();                                         \
+>> +})
+>> +
+>
+> Make it inline function? :-). Add short explanation why it is good
+> idea?
 
-I haven't really dived into the code too deeply, but why is there a
-requirement to suspend to a swap device in swsusp_swap_check? I don't
-have any swap devices, and I had prepared a device precisely for the
-purpose of suspending to disk. But even if I did have a swap device,
-it seems like the process should allow for me to pick some random
-other device. (The reason I'm avoiding swap devices is because I'm
-concerned with wearing out the SSD unnecessarily.)
+These are exact copies of the existing non-unsafe versions, except
+they call freezer_count_unsafe() instead of freezer_count().  The next
+version of my other patch stack that goes on top of this has a patch
+to convert the macros in this file to static inline functions (at
+least the ones that can be).  I'd rather not mix it in with this patch
+for ease of comparison with the existing calls.
 
-Is it just a simple limitation in one or two places for safety, or is
-the assumption that it's a swap device throughout the suspend-to-disk
-logic? Would a patch to remove the limitation be considered?
-
-Thanks,
-
-  -ilia
+>> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
+>> +#define freezable_schedule_timeout_killable_unsafe(timeout)          \
+>> +({                                                                   \
+>> +     long __retval;                                                  \
+>> +     freezer_do_not_count();                                         \
+>> +     __retval = schedule_timeout_killable(timeout);                  \
+>> +     freezer_count_unsafe();                                         \
+>> +     __retval;                                                       \
+>> +})
+>
+> Function too?
+>                                                                         Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
