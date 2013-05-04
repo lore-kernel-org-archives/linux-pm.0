@@ -1,71 +1,58 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM: Fix dev_pm_put_subsys_data() to not call kfree()
- while holding device power lock
-Date: Sat, 4 May 2013 14:51:16 +0200
-Message-ID: <20130504125116.GA13770@amd.pavel.ucw.cz>
-References: <1367614010.8452.2.camel@lorien>
+Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
+Date: Sat, 4 May 2013 15:00:33 +0200
+Message-ID: <20130504130033.GB13770@amd.pavel.ucw.cz>
+References: <1367615050-3894-1-git-send-email-ccross@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1367614010.8452.2.camel@lorien>
+In-Reply-To: <1367615050-3894-1-git-send-email-ccross@android.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
+To: Colin Cross <ccross@android.com>
+Cc: linux-kernel@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> dev_pm_put_subsys_data() calls kfree() while holding device power lock, when
-> the reference count is 0. Fix it to call kfree() after releasing the lock.
+> NFS calls the freezable helpers with locks held, which is unsafe
+> and caused lockdep warnings when 6aa9707 "lockdep: check that no
+> locks held at freeze time" was applied (reverted in dbf520a).
+> Add new *_unsafe versions of the helpers that will not run the
+> lockdep test when 6aa9707 is reapplied, and call them from NFS.
 > 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> ---
->  drivers/base/power/common.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-w> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index 39c3252..da05fe2 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
+> Signed-off-by: Colin Cross <ccross@android.com>
+
+Looks mostly good.
+
+> @@ -152,6 +169,14 @@ static inline bool freezer_should_skip(struct task_struct *p)
+>  	freezer_count();						\
+>  })
 >  
->  	if (--psd->refcount == 0) {
->  		dev->power.subsys_data = NULL;
-> -		kfree(psd);
->  		ret = 1;
->  	}
->  
->   out:
->  	spin_unlock_irq(&dev->power.lock);
->  
-> +	if (ret == 1) {
-> +		/* kfree() verifies that its argument is nonzero. */
-> +		kfree(psd);
-> +	}
+> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
+> +#define freezable_schedule_unsafe()					\
+> +({									\
+> +	freezer_do_not_count();						\
+> +	schedule();							\
+> +	freezer_count_unsafe();						\
+> +})
 > +
->  	return ret;
->  }
 
-Wow, that function is fragile. It returns 0/1/-EINVAL, while being
-documented for 0/1...
+Make it inline function? :-). Add short explanation why it is good
+idea?
 
-Patch does not look obviously wrong, but maybe 
+> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
+> +#define freezable_schedule_timeout_killable_unsafe(timeout)		\
+> +({									\
+> +	long __retval;							\
+> +	freezer_do_not_count();						\
+> +	__retval = schedule_timeout_killable(timeout);			\
+> +	freezer_count_unsafe();						\
+> +	__retval;							\
+> +})
 
-@@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
- 
- 	if (--psd->refcount == 0) {
- 		dev->power.subsys_data = NULL;
-+		spin_unlock_irq(&dev->power.lock);
--		kfree(psd);
-- 		ret = 1;
-+		return 1;
- 	}
-
-Would be cleaner.
+Function too?
 									Pavel
-
-
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
