@@ -1,59 +1,71 @@
-From: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster-Mmb7MZpHnFY@public.gmane.org>
-Subject: Re: 3.9.0 + CONFIG_X86_INTEL_PSTATE=y -> ThinkPad T420
- with i5 lost ACPI functionality
-Date: Sat, 04 May 2013 09:57:54 +0200
-Message-ID: <5184BF82.4070700@gmx.de>
-References: <5183EC09.9080208@gmx.de> <3715884.H8PIhhjRXL@vostro.rjw.lan>
-	<518427D4.3050104@gmail.com> <51842B79.8060302@gmx.de>
-	<51842F6F.1050005@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM: Fix dev_pm_put_subsys_data() to not call kfree()
+ while holding device power lock
+Date: Sat, 4 May 2013 14:51:16 +0200
+Message-ID: <20130504125116.GA13770@amd.pavel.ucw.cz>
+References: <1367614010.8452.2.camel@lorien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <boinc_dev-bounces-C9EgComYM8RUAgJt6FLh2g@public.gmane.org>
-In-Reply-To: <51842F6F.1050005-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <http://lists.ssl.berkeley.edu/mailman/options/boinc_dev>,
-	<mailto:boinc_dev-request-C9EgComYM8RUAgJt6FLh2g@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.ssl.berkeley.edu/pipermail/boinc_dev/>
-List-Post: <mailto:boinc_dev-C9EgComYM8RUAgJt6FLh2g@public.gmane.org>
-List-Help: <mailto:boinc_dev-request-C9EgComYM8RUAgJt6FLh2g@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.ssl.berkeley.edu/mailman/listinfo/boinc_dev>,
-	<mailto:boinc_dev-request-C9EgComYM8RUAgJt6FLh2g@public.gmane.org?subject=subscribe>
-Errors-To: boinc_dev-bounces-C9EgComYM8RUAgJt6FLh2g@public.gmane.org
-Sender: "boinc_dev" <boinc_dev-bounces-C9EgComYM8RUAgJt6FLh2g@public.gmane.org>
-To: Dirk Brandewie <dirk.brandewie-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, boinc_dev-C9EgComYM8RUAgJt6FLh2g@public.gmane.org, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1367614010.8452.2.camel@lorien>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDUvMDMvMjAxMyAxMTo0MyBQTSwgRGlyayBCcmFuZGV3aWUgd3JvdGU6Cj4gT24gMDUvMDMv
-MjAxMyAwMjoyNiBQTSwgVG9yYWxmIEbDtnJzdGVyIHdyb3RlOgo+PiBPbiAwNS8wMy8yMDEzIDEx
-OjEwIFBNLCBEaXJrIEJyYW5kZXdpZSB3cm90ZToKPj4+Cj4+PiBpZ25vcmVfbmljZV9sb2FkIGlz
-IGEgZmVhdHVyZSBvZiB0aGUgb25kZW1hbmQgZ292ZXJub3IuCj4+PiBUaGUgaW50ZWxfcHN0YXRl
-IGRyaXZlciBpcyBzZWVpbmcgdGhlIGxvYWQgcHJlc2VudGVkIGJ5IHRoZSBCT0lOQyBjbGllbnQK
-Pj4+IGFuZCBpcyBhZGp1c3RpbmcgdGhlIHBzdGF0ZSBhY2NvcmRpbmdseS4KPj4KPj4gSXMgdGhl
-IGludGVsX3BzdGF0ZSBkcml2ZXIgYSBjaG9pY2UgZm9yIGEgbm90ZWJvb2sgYW5kIGZyaWVuZHMg
-d2hlcmUgYQo+PiBncmlkIHNvZnR3YXJlIGlzIHJ1bm5pbmcgYXMgYSBsb3ctcHJpbyBiYWNrIGdy
-b3VuZCBqb2IgPwo+Pgo+IAo+IFByb2JhYmx5IG5vdC4KCkhobS4KClRoZSBrZXJuZWwgbWVudWNv
-bmZpZyBzYXlzIDoKCiBUaGlzIGRyaXZlciBwcm92aWRlcyBhIFAgc3RhdGUgZm9yIEludGVsIGNv
-cmUgcHJvY2Vzc29ycwogVGhlIGRyaXZlciBpbXBsZW1lbnRzIGFuIGludGVybmFsIGdvdmVybm9y
-IGFuZCB3aWxsIGJlY29tZQogdGhlIHNjYWxpbmcgZHJpdmVyIGFuZCBnb3Zlcm5vciBmb3IgU2Fu
-ZHkgYnJpZGdlIHByb2Nlc3NvcnMuCgoKV2hhdCBzaGFsbCBhIGNvbXBhbnkgbGlrZSBJQk0gd2l0
-aCBhIGxvdCBvZiBub3RlYm9vayBpbnN0YWxsYXRpb24gcnVubmluZyBCT0lOQwppbiB0aGUgYmFj
-ayBncm91bmQgcHJvY2VzcyAoV29ybGQgQ29tbXVuaXR5IEdyaWQpIGRvIC0gd2hhdCdzIHRoZSBj
-b25zZXF1ZW5jZSBmb3IKdGhvc2UgaW5zdGFsbGF0aW9ucyBpZiB0aGV5IHdpbGwgaGF2ZSB0aGF0
-IGEgcHJvY2Vzc29yID8KCkluIHRoZSBwYXN0IChmZXcgeWVhcnMgYWdvIGFuZCByZWxhdGVkIHRv
-IHRoZSBvbmRlbWFuZCBnb3Zlcm5vciBJSVJDKSB0aGVyZSB3ZXJlCmFscmVhZHkgYSBsb25nZXIg
-ZGlzY3Vzc2lvbiBhYm91dCB0aGUgIm5pY2UgLW4gMTkiIHRvcGljIGFuZCB0aGUgcmVzdWx0IHdh
-cwp0byBzdXBwb3J0IGl0LgoKL21lIENjOidpbmcgYm9pbmMgZGV2cywgdGhlIHRvcGljIG1pZ2h0
-IGJlIGludGVyZXN0aW5nIGZvciB0aGVtIHRvby4KCgo+PiBCZWNhdXNlIHRoZSBDUFUgd2lsbCBi
-ZSBydW5uaW5nIG1vc3RseSBhdCBoaWdoKGVyKSBmcmVxdWVuY3kgLSB3aGljaAo+PiBhbHdheXMg
-cmVzdWx0cyBpbiBhIGhpZ2ggdGVtcGVyYXR1cmUgYW5kIHNob3J0IGJhdHRlcnkgdGltZS4KPj4K
-PiAKPiBJdCB3b3VsZCBiZSBiZXR0ZXIgSU1ITyBpZiB0aGUgY2xpZW50IHNvZnR3YXJlIGxpbWl0
-ZWQgdGhlIHJlc291cmNlcwo+IGl0IHVzZXMgd2hlbiB0aGUgc3lzdGVtIGlzIG5vdCBvbiB3YWxs
-IHBvd2VyIGJ1dCB0aGF0IGlzIGEgc2VwZXJhdGUKPiBkaXNjdXNzaW9uIDotKQo+IAo+IC0tRGly
-awo+IAo+IAoKCi0tIApNZkcvU2luY2VyZWx5ClRvcmFsZiBGw7Zyc3RlcgpwZ3AgZmluZ2VyIHBy
-aW50OiA3QjFBIDA3RjQgRUM4MiAwRjkwIEQ0QzIgODkzNiA4NzJBIEU1MDggN0RCNiA5REEzCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmJvaW5jX2RldiBt
-YWlsaW5nIGxpc3QKYm9pbmNfZGV2QHNzbC5iZXJrZWxleS5lZHUKaHR0cDovL2xpc3RzLnNzbC5i
-ZXJrZWxleS5lZHUvbWFpbG1hbi9saXN0aW5mby9ib2luY19kZXYKVG8gdW5zdWJzY3JpYmUsIHZp
-c2l0IHRoZSBhYm92ZSBVUkwgYW5kCihuZWFyIGJvdHRvbSBvZiBwYWdlKSBlbnRlciB5b3VyIGVt
-YWlsIGFkZHJlc3Mu
+Hi!
+
+> dev_pm_put_subsys_data() calls kfree() while holding device power lock, when
+> the reference count is 0. Fix it to call kfree() after releasing the lock.
+> 
+> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> ---
+>  drivers/base/power/common.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+w> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+> index 39c3252..da05fe2 100644
+> --- a/drivers/base/power/common.c
+> +++ b/drivers/base/power/common.c
+> @@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
+>  
+>  	if (--psd->refcount == 0) {
+>  		dev->power.subsys_data = NULL;
+> -		kfree(psd);
+>  		ret = 1;
+>  	}
+>  
+>   out:
+>  	spin_unlock_irq(&dev->power.lock);
+>  
+> +	if (ret == 1) {
+> +		/* kfree() verifies that its argument is nonzero. */
+> +		kfree(psd);
+> +	}
+> +
+>  	return ret;
+>  }
+
+Wow, that function is fragile. It returns 0/1/-EINVAL, while being
+documented for 0/1...
+
+Patch does not look obviously wrong, but maybe 
+
+@@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
+ 
+ 	if (--psd->refcount == 0) {
+ 		dev->power.subsys_data = NULL;
++		spin_unlock_irq(&dev->power.lock);
+-		kfree(psd);
+- 		ret = 1;
++		return 1;
+ 	}
+
+Would be cleaner.
+									Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
