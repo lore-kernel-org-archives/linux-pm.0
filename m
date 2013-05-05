@@ -1,40 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v2 10/10] af_unix: use freezable blocking calls in read
-Date: Sun, 05 May 2013 13:23:30 +0200
-Message-ID: <1391819.HieY1Y9pgd@vostro.rjw.lan>
-References: <1367458508-9133-1-git-send-email-ccross@android.com> <CAOS58YO2b=zFGUVqrV1dHV6gDouNJpN2Wnwo_D6f5V7G9Wz9Vg@mail.gmail.com> <CAMbhsRSm74tsqXT7TG1h8L1DoKQV0_wKd3asxvHPR7bttWkxag@mail.gmail.com>
+Subject: Re: Why is there a requirement to suspend to a swap device (and not any device)?
+Date: Sun, 05 May 2013 13:35:52 +0200
+Message-ID: <1404546.uCVdAbM0si@vostro.rjw.lan>
+References: <CAKb7UvhTEiee-p8-3OVaAXMBPWL0F7SBAHzyLEpUYCq_o_u2RA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <CAMbhsRSm74tsqXT7TG1h8L1DoKQV0_wKd3asxvHPR7bttWkxag@mail.gmail.com>
-Sender: netdev-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Tejun Heo <tj@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Gao feng <gaofeng@cn.fujitsu.com>, netdev <netdev@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:59400 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051Ab3EEL1b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 5 May 2013 07:27:31 -0400
+In-Reply-To: <CAKb7UvhTEiee-p8-3OVaAXMBPWL0F7SBAHzyLEpUYCq_o_u2RA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ilia Mirkin <imirkin@alum.mit.edu>
+Cc: linux-pm@vger.kernel.org
 
-On Saturday, May 04, 2013 03:23:30 PM Colin Cross wrote:
-> On Sat, May 4, 2013 at 1:39 PM, Tejun Heo <tj@kernel.org> wrote:
-> > Hello, Rafael.
-> >
-> > On Sat, May 4, 2013 at 12:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >>> Heh, so you are aware of the deadlock possibilities.  Good selection
-> >>> of spots.  For all the conversion patches.
-> >>>
-> >>>  Acked-by: Tejun Heo <tj@kernel.org>
-> >>
-> >> I wonder if that includes [3/10] (just to get the record straight)?
-> >
-> > I think we want the lockdep annotations before these go in. I'll
-> > review Colin's new series later today.
-> 
-> Just to make sure the merge order is clear, the two patches I posted
-> yesterday to reintroduce the lockdep warning in try_to_freeze()
-> (https://lkml.org/lkml/2013/5/3/488) need to be merged first, then I
-> will repost this series on top of that one.
+On Saturday, May 04, 2013 03:15:53 PM Ilia Mirkin wrote:
+> Hello,
 
-OK, thanks for the clarification.
+Hi,
 
+> I haven't really dived into the code too deeply, but why is there a
+> requirement to suspend to a swap device in swsusp_swap_check? I don't
+> have any swap devices, and I had prepared a device precisely for the
+> purpose of suspending to disk. But even if I did have a swap device,
+> it seems like the process should allow for me to pick some random
+> other device. (The reason I'm avoiding swap devices is because I'm
+> concerned with wearing out the SSD unnecessarily.)
+
+You can hibernate to either a swap device or a swap file, see
+Documentation/power/swsusp-and-swap-files.txt.
+
+> Is it just a simple limitation in one or two places for safety, or is
+> the assumption that it's a swap device throughout the suspend-to-disk
+> logic? Would a patch to remove the limitation be considered?
+
+The requirement to use swap is actually essential and wouldn't be easy to
+change.  Also there isn't much reason for that, as you can use swap files
+anyway.
+
+Thanks,
 Rafael
 
 
