@@ -1,62 +1,43 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
-Date: Sun, 5 May 2013 11:23:18 +0200
-Message-ID: <20130505092318.GD22239@gmail.com>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 10/10] af_unix: use freezable blocking calls in read
+Date: Sun, 05 May 2013 13:23:30 +0200
+Message-ID: <1391819.HieY1Y9pgd@vostro.rjw.lan>
+References: <1367458508-9133-1-git-send-email-ccross@android.com> <CAOS58YO2b=zFGUVqrV1dHV6gDouNJpN2Wnwo_D6f5V7G9Wz9Vg@mail.gmail.com> <CAMbhsRSm74tsqXT7TG1h8L1DoKQV0_wKd3asxvHPR7bttWkxag@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ee0-f45.google.com ([74.125.83.45]:41334 "EHLO
-	mail-ee0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757Ab3EEJXX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 May 2013 05:23:23 -0400
-Content-Disposition: inline
-In-Reply-To: <1367615050-3894-1-git-send-email-ccross@android.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <CAMbhsRSm74tsqXT7TG1h8L1DoKQV0_wKd3asxvHPR7bttWkxag@mail.gmail.com>
+Sender: netdev-owner@vger.kernel.org
 To: Colin Cross <ccross@android.com>
-Cc: linux-kernel@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
+Cc: Tejun Heo <tj@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>, Oleg Nesterov <oleg@redhat.com>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Gao feng <gaofeng@cn.fujitsu.com>, netdev <netdev@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-
-* Colin Cross <ccross@android.com> wrote:
-
-> NFS calls the freezable helpers with locks held, which is unsafe
-> and caused lockdep warnings when 6aa9707 "lockdep: check that no
-> locks held at freeze time" was applied (reverted in dbf520a).
-> Add new *_unsafe versions of the helpers that will not run the
-> lockdep test when 6aa9707 is reapplied, and call them from NFS.
+On Saturday, May 04, 2013 03:23:30 PM Colin Cross wrote:
+> On Sat, May 4, 2013 at 1:39 PM, Tejun Heo <tj@kernel.org> wrote:
+> > Hello, Rafael.
+> >
+> > On Sat, May 4, 2013 at 12:19 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >>> Heh, so you are aware of the deadlock possibilities.  Good selection
+> >>> of spots.  For all the conversion patches.
+> >>>
+> >>>  Acked-by: Tejun Heo <tj@kernel.org>
+> >>
+> >> I wonder if that includes [3/10] (just to get the record straight)?
+> >
+> > I think we want the lockdep annotations before these go in. I'll
+> > review Colin's new series later today.
 > 
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  fs/nfs/inode.c          |  2 +-
->  fs/nfs/nfs3proc.c       |  2 +-
->  fs/nfs/nfs4proc.c       |  4 ++--
->  include/linux/freezer.h | 42 +++++++++++++++++++++++++++++++++++++++++-
->  net/sunrpc/sched.c      |  2 +-
->  5 files changed, 46 insertions(+), 6 deletions(-)
-> 
-> diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-> index 1f94167..53cbee5 100644
-> --- a/fs/nfs/inode.c
-> +++ b/fs/nfs/inode.c
-> @@ -79,7 +79,7 @@ int nfs_wait_bit_killable(void *word)
->  {
->  	if (fatal_signal_pending(current))
->  		return -ERESTARTSYS;
-> -	freezable_schedule();
-> +	freezable_schedule_unsafe();
+> Just to make sure the merge order is clear, the two patches I posted
+> yesterday to reintroduce the lockdep warning in try_to_freeze()
+> (https://lkml.org/lkml/2013/5/3/488) need to be merged first, then I
+> will repost this series on top of that one.
 
-I'd suggest naming such variants _unkillable() instead of _unsafe().
+OK, thanks for the clarification.
 
-There's nothing inherently 'unsafe' about it: the user asked for a hard 
-NFS mount and is getting it: with the side effect that it exposes the 
-machine to network delays in a 'hard' way as well. Which means suspend may 
-block indefinitely as well on network failure.
+Rafael
 
-So it's two conflicting user requirements: 'hard NFS mount' and 'suspend 
-now'. We pick the lesser evil, the requirement that is considered higher 
-prio: the hard NFS mount in this case.
 
-Thanks,
-
-	Ingo
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
