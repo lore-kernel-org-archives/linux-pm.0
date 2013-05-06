@@ -1,293 +1,46 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V2 05/20] thermal: exynos: Bifurcate exynos tmu driver
- and configuration data
-Date: Mon, 06 May 2013 23:28:36 +0800
-Message-ID: <1367854116.2079.67.camel@rzhang1-mobl4>
-References: <1366972671-9227-1-git-send-email-amit.daniel@samsung.com>
-	 <1366972671-9227-6-git-send-email-amit.daniel@samsung.com>
+From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
+Date: Mon, 6 May 2013 12:01:15 -0700
+Message-ID: <20130506190115.GB800@mtj.dyndns.org>
+References: <1367615050-3894-1-git-send-email-ccross@android.com>
+ <1367615050-3894-2-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1366972671-9227-6-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1367615050-3894-2-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Trond Myklebust <Trond.Myklebust-HgOvQuBEEgTQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "J. Bruce Fields" <bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, "Eric W. Biederman" <ebiederm-aS9lmoZGLiVWk0Htik3J/w@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Ben Chan <benchan-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2013-04-26 at 16:07 +0530, Amit Daniel Kachhap wrote:
-> This code splits the exynos tmu driver code into SOC specific data parts.
-> This will simplify adding new SOC specific data to the same TMU controller.
+On Fri, May 03, 2013 at 02:04:10PM -0700, Colin Cross wrote:
+> From: Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 > 
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-
-I'm okay with all the rest patches in this patch series.
-
-thanks,
-rui
-> ---
->  drivers/thermal/samsung/Makefile                |    1 +
->  drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
->  drivers/thermal/samsung/exynos_tmu.c            |   67 +------------------
->  drivers/thermal/samsung/exynos_tmu_data.c       |   78 +++++++++++++++++++++++
->  drivers/thermal/samsung/exynos_tmu_data.h       |   40 ++++++++++++
->  5 files changed, 124 insertions(+), 64 deletions(-)
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
->  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+> We shouldn't try_to_freeze if locks are held.  Holding a lock can cause a
+> deadlock if the lock is later acquired in the suspend or hibernate path
+> (e.g.  by dpm).  Holding a lock can also cause a deadlock in the case of
+> cgroup_freezer if a lock is held inside a frozen cgroup that is later
+> acquired by a process outside that group.
 > 
-> diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-> index 75e1f97..b133255 100644
-> --- a/drivers/thermal/samsung/Makefile
-> +++ b/drivers/thermal/samsung/Makefile
-> @@ -3,4 +3,5 @@
->  #
->  obj-$(CONFIG_EXYNOS_SOC_THERMAL)		+= exynos_soc_thermal.o
->  exynos_soc_thermal-y				:= exynos_tmu.o
-> +exynos_soc_thermal-y				+= exynos_tmu_data.o
->  exynos_soc_thermal-$(CONFIG_EXYNOS_COMMON)	+= exynos_thermal_common.o
-> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-> index 985b848..6ed9bd9 100644
-> --- a/drivers/thermal/samsung/exynos_thermal_common.h
-> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
-> @@ -62,7 +62,7 @@ struct freq_clip_table {
->  struct	thermal_trip_point_conf {
->  	int trip_val[MAX_TRIP_COUNT];
->  	int trip_count;
-> -	u8 trigger_falling;
-> +	unsigned char trigger_falling;
->  };
->  
->  struct	thermal_cooling_conf {
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index a02f2c9..05b5068 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -34,6 +34,7 @@
->  #include <linux/workqueue.h>
->  #include "exynos_thermal_common.h"
->  #include "exynos_tmu.h"
-> +#include "exynos_tmu_data.h"
->  
->  /* Exynos generic registers */
->  #define EXYNOS_TMU_REG_TRIMINFO		0x0
-> @@ -385,66 +386,6 @@ static struct thermal_sensor_conf exynos_sensor_conf = {
->  	.write_emul_temp	= exynos_tmu_set_emulation,
->  };
->  
-> -#if defined(CONFIG_CPU_EXYNOS4210)
-> -static struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
-> -	.threshold = 80,
-> -	.trigger_levels[0] = 5,
-> -	.trigger_levels[1] = 20,
-> -	.trigger_levels[2] = 30,
-> -	.trigger_level0_en = 1,
-> -	.trigger_level1_en = 1,
-> -	.trigger_level2_en = 1,
-> -	.trigger_level3_en = 0,
-> -	.gain = 15,
-> -	.reference_voltage = 7,
-> -	.cal_type = TYPE_ONE_POINT_TRIMMING,
-> -	.freq_tab[0] = {
-> -		.freq_clip_max = 800 * 1000,
-> -		.temp_level = 85,
-> -	},
-> -	.freq_tab[1] = {
-> -		.freq_clip_max = 200 * 1000,
-> -		.temp_level = 100,
-> -	},
-> -	.freq_tab_count = 2,
-> -	.type = SOC_ARCH_EXYNOS4210,
-> -};
-> -#define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
-> -#else
-> -#define EXYNOS4210_TMU_DRV_DATA (NULL)
-> -#endif
-> -
-> -#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-> -static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
-> -	.threshold_falling = 10,
-> -	.trigger_levels[0] = 85,
-> -	.trigger_levels[1] = 103,
-> -	.trigger_levels[2] = 110,
-> -	.trigger_level0_en = 1,
-> -	.trigger_level1_en = 1,
-> -	.trigger_level2_en = 1,
-> -	.trigger_level3_en = 0,
-> -	.gain = 8,
-> -	.reference_voltage = 16,
-> -	.noise_cancel_mode = 4,
-> -	.cal_type = TYPE_ONE_POINT_TRIMMING,
-> -	.efuse_value = 55,
-> -	.freq_tab[0] = {
-> -		.freq_clip_max = 800 * 1000,
-> -		.temp_level = 85,
-> -	},
-> -	.freq_tab[1] = {
-> -		.freq_clip_max = 200 * 1000,
-> -		.temp_level = 103,
-> -	},
-> -	.freq_tab_count = 2,
-> -	.type = SOC_ARCH_EXYNOS,
-> -};
-> -#define EXYNOS_TMU_DRV_DATA (&exynos_default_tmu_data)
-> -#else
-> -#define EXYNOS_TMU_DRV_DATA (NULL)
-> -#endif
-> -
->  #ifdef CONFIG_OF
->  static const struct of_device_id exynos_tmu_match[] = {
->  	{
-> @@ -453,11 +394,11 @@ static const struct of_device_id exynos_tmu_match[] = {
->  	},
->  	{
->  		.compatible = "samsung,exynos4412-tmu",
-> -		.data = (void *)EXYNOS_TMU_DRV_DATA,
-> +		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
->  	},
->  	{
->  		.compatible = "samsung,exynos5250-tmu",
-> -		.data = (void *)EXYNOS_TMU_DRV_DATA,
-> +		.data = (void *)EXYNOS5250_TMU_DRV_DATA,
->  	},
->  	{},
->  };
-> @@ -471,7 +412,7 @@ static struct platform_device_id exynos_tmu_driver_ids[] = {
->  	},
->  	{
->  		.name		= "exynos5250-tmu",
-> -		.driver_data    = (kernel_ulong_t)EXYNOS_TMU_DRV_DATA,
-> +		.driver_data    = (kernel_ulong_t)EXYNOS5250_TMU_DRV_DATA,
->  	},
->  	{ },
->  };
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-> new file mode 100644
-> index 0000000..13a60ca
-> --- /dev/null
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -0,0 +1,78 @@
-> +/*
-> + * exynos_tmu_data.c - Samsung EXYNOS tmu data file
-> + *
-> + *  Copyright (C) 2013 Samsung Electronics
-> + *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + *
-> + */
-> +
-> +#include "exynos_thermal_common.h"
-> +#include "exynos_tmu.h"
-> +
-> +#if defined(CONFIG_CPU_EXYNOS4210)
-> +struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
-> +	.threshold = 80,
-> +	.trigger_levels[0] = 5,
-> +	.trigger_levels[1] = 20,
-> +	.trigger_levels[2] = 30,
-> +	.trigger_level0_en = 1,
-> +	.trigger_level1_en = 1,
-> +	.trigger_level2_en = 1,
-> +	.trigger_level3_en = 0,
-> +	.gain = 15,
-> +	.reference_voltage = 7,
-> +	.cal_type = TYPE_ONE_POINT_TRIMMING,
-> +	.freq_tab[0] = {
-> +		.freq_clip_max = 800 * 1000,
-> +		.temp_level = 85,
-> +	},
-> +	.freq_tab[1] = {
-> +		.freq_clip_max = 200 * 1000,
-> +		.temp_level = 100,
-> +	},
-> +	.freq_tab_count = 2,
-> +	.type = SOC_ARCH_EXYNOS4210,
-> +};
-> +#endif
-> +
-> +#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-> +struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
-> +	.threshold_falling = 10,
-> +	.trigger_levels[0] = 85,
-> +	.trigger_levels[1] = 103,
-> +	.trigger_levels[2] = 110,
-> +	.trigger_level0_en = 1,
-> +	.trigger_level1_en = 1,
-> +	.trigger_level2_en = 1,
-> +	.trigger_level3_en = 0,
-> +	.gain = 8,
-> +	.reference_voltage = 16,
-> +	.noise_cancel_mode = 4,
-> +	.cal_type = TYPE_ONE_POINT_TRIMMING,
-> +	.efuse_value = 55,
-> +	.freq_tab[0] = {
-> +		.freq_clip_max = 800 * 1000,
-> +		.temp_level = 85,
-> +	},
-> +	.freq_tab[1] = {
-> +		.freq_clip_max = 200 * 1000,
-> +		.temp_level = 103,
-> +	},
-> +	.freq_tab_count = 2,
-> +	.type = SOC_ARCH_EXYNOS,
-> +};
-> +#endif
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-> new file mode 100644
-> index 0000000..c8b0501
-> --- /dev/null
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -0,0 +1,40 @@
-> +/*
-> + * exynos_tmu_data.h - Samsung EXYNOS tmu data header file
-> + *
-> + *  Copyright (C) 2013 Samsung Electronics
-> + *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + *
-> + */
-> +
-> +#ifndef _LINUX_EXYNOS_TMU_DATA_H
-> +#define _LINUX_EXYNOS_TMU_DATA_H
-> +
-> +#if defined(CONFIG_CPU_EXYNOS4210)
-> +extern struct exynos_tmu_platform_data const exynos4210_default_tmu_data;
-> +#define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
-> +#else
-> +#define EXYNOS4210_TMU_DRV_DATA (NULL)
-> +#endif
-> +
-> +#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-> +extern struct exynos_tmu_platform_data const exynos5250_default_tmu_data;
-> +#define EXYNOS5250_TMU_DRV_DATA (&exynos5250_default_tmu_data)
-> +#else
-> +#define EXYNOS5250_TMU_DRV_DATA (NULL)
-> +#endif
-> +
-> +#endif /*_LINUX_EXYNOS_TMU_DATA_H*/
+> History:
+> This patch was originally applied as 6aa9707099c and reverted in
+> dbf520a9d7d4 because NFS was freezing with locks held.  It was
+> deemed better to keep the bad freeze point in NFS to allow laptops
+> to suspend consistently.  The previous patch in this series converts
+> NFS to call _unsafe versions of the freezable helpers so that
+> lockdep doesn't complain about them until a more correct fix
+> can be applied.
+
+I don't care about %current change, especially given that it's a debug
+interface but that really should be a separate patch, so please split
+it out if you want it (and I think we want it).
+
+Thanks.
+
+-- 
+tejun
+--
+To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
