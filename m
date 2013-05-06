@@ -1,45 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
-Date: Mon, 06 May 2013 22:06:05 +0200
-Message-ID: <2307385.H0igaKqWJi@vostro.rjw.lan>
-References: <1367615050-3894-1-git-send-email-ccross@android.com> <CAMbhsRRcfpXBGAPThjrmB_judgn85TioR_6A6qwh_fBQCent7A@mail.gmail.com> <20130506193307.GD800@mtj.dyndns.org>
+From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] PM: Fix dev_pm_put_subsys_data() to not call kfree()
+ while holding device power lock
+Date: Mon, 6 May 2013 13:33:30 -0700
+Message-ID: <20130506203330.GA11756@kroah.com>
+References: <1367614010.8452.2.camel@lorien>
+ <1367867093.2953.49.camel@lorien>
+ <20130506194119.GA15886@kroah.com>
+ <455957427.Z7qXDbUWjg@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130506193307.GD800@mtj.dyndns.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>, Colin Cross <ccross@android.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ben Chan <benchan@chromium.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:58377 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755971Ab3EFUdb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 16:33:31 -0400
+Content-Disposition: inline
+In-Reply-To: <455957427.Z7qXDbUWjg@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Shuah Khan <shuah.kh@samsung.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 
-On Monday, May 06, 2013 12:33:07 PM Tejun Heo wrote:
-> Hello,
-> 
-> On Mon, May 06, 2013 at 12:30:19PM -0700, Colin Cross wrote:
-> > > I don't care about %current change, especially given that it's a debug
-> > > interface but that really should be a separate patch, so please split
-> > > it out if you want it (and I think we want it).
+On Mon, May 06, 2013 at 09:56:56PM +0200, Rafael J. Wysocki wrote:
+> On Monday, May 06, 2013 12:41:19 PM gregkh@linuxfoundation.org wrote:
+> > On Mon, May 06, 2013 at 07:04:53PM +0000, Shuah Khan wrote:
+> > > dev_pm_put_subsys_data() calls kfree() while holding device power lock, when
+> > > the reference count is 0. Fix it to call kfree() after releasing the lock.
+> > > 
+> > > Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> > > Reviewed-by: Pavel Machek <pavel@ucw.cz>
+> > > Reviewed-by: Rafael Wysocki <rafael.j.wysocki@intel.com>
+> > > ---
+> > >  drivers/base/power/common.c |    8 +++++---
+> > >  1 file changed, 5 insertions(+), 3 deletions(-)
 > > 
-> > The current change was requested by akpm and was part of the original
-> > patch.  Is it really worth confusing the history of this patch even
-> > more, applying it the first time, reverting it, and then applying it
-> > again in two parts?
+> > Is this causing a problem now, and it should go into 3.10 and earlier
+> > kernels (if so, which ones?), or can it just wait until 3.11 as it's
+> > just a cleanup fix?
 > 
-> I don't know.  The patch seems confusing to me.  It really is about
-> adding single lockdep annotation but comes with other changes.  I
-> don't think it's a big deal either way but at least we wouldn't be
-> having this %current vs. @tsk conversation which is mostly irrelevant
-> to the actual proposed change, right?  It really should have been a
-> separate patch from the beginning.  Just refer to the original commit
-> and explain what happened?
+> I think it's OK to push the fix for 3.10, but I'll take care of this (I have
+> a bunch of fixes for 3.10 anyway, but I'll send a pull request after -rc1,
+> because people are sending me fixes pretty much continuously ATM).
 
-Yeah.  I'd prefer that very much.
+Ok, feel free to add:
 
-Thanks,
-Rafael
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
