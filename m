@@ -1,16 +1,16 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v3 13/16] futex: use freezable blocking call
-Date: Mon,  6 May 2013 16:50:18 -0700
-Message-ID: <1367884221-20462-14-git-send-email-ccross@android.com>
+Subject: [PATCH v3 12/16] select: use freezable blocking call
+Date: Mon,  6 May 2013 16:50:17 -0700
+Message-ID: <1367884221-20462-13-git-send-email-ccross@android.com>
 References: <1367884221-20462-1-git-send-email-ccross@android.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <netdev-owner@vger.kernel.org>
 In-Reply-To: <1367884221-20462-1-git-send-email-ccross@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: netdev-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Darren Hart <dvhart@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Randy Dunlap <rdunlap@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Avoid waking up every thread sleeping in a futex_wait call during
+Avoid waking up every thread sleeping in a select call during
 suspend and resume by calling a freezable blocking call.  Previous
 patches modified the freezer to avoid sending wakeups to threads
 that are blocked in freezable blocking calls.
@@ -22,33 +22,32 @@ during suspend, and is a common site where idle userspace tasks are
 blocked.
 
 Acked-by: Tejun Heo <tj@kernel.org>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Darren Hart <dvhart@linux.intel.com>
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- kernel/futex.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/select.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index b26dcfc..d710fae 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -61,6 +61,7 @@
- #include <linux/nsproxy.h>
- #include <linux/ptrace.h>
+diff --git a/fs/select.c b/fs/select.c
+index 8c1c96c..6b14dc7 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -27,6 +27,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/hrtimer.h>
  #include <linux/sched/rt.h>
 +#include <linux/freezer.h>
  
- #include <asm/futex.h>
+ #include <asm/uaccess.h>
  
-@@ -1807,7 +1808,7 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
- 		 * is no timeout, or if it has yet to expire.
- 		 */
- 		if (!timeout || timeout->task)
--			schedule();
-+			freezable_schedule();
- 	}
+@@ -236,7 +237,8 @@ int poll_schedule_timeout(struct poll_wqueues *pwq, int state,
+ 
+ 	set_current_state(state);
+ 	if (!pwq->triggered)
+-		rc = schedule_hrtimeout_range(expires, slack, HRTIMER_MODE_ABS);
++		rc = freezable_schedule_hrtimeout_range(expires, slack,
++							HRTIMER_MODE_ABS);
  	__set_current_state(TASK_RUNNING);
- }
+ 
+ 	/*
 -- 
 1.8.2.1
