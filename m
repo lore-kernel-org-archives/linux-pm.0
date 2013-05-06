@@ -1,63 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Immediate wakeup after suspend
-Date: Tue, 07 May 2013 01:56:08 +0200
-Message-ID: <1612326.XDA8n1le4S@vostro.rjw.lan>
-References: <CAOULuObQq+WPf97LdsD5kN6cq=E9TvaHzqGzdKSWRme-Nk+WQQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Colin Cross <ccross@android.com>
+Subject: [PATCH v2 00/10] optimize freezing tasks by reducing task wakeups
+Date: Mon,  6 May 2013 16:50:05 -0700
+Message-ID: <1367884221-20462-1-git-send-email-ccross@android.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOULuObQq+WPf97LdsD5kN6cq=E9TvaHzqGzdKSWRme-Nk+WQQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Parag Warudkar <parag.lkml@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, May 06, 2013 06:22:47 PM Parag Warudkar wrote:
-> Sometime after 3.9 my iMac has started to resume almost immediately
-> after suspend.  Even with 3.9 it was all working as expected.
+On slow cpus the large number of task wakeups and context switches
+triggered by freezing and thawing tasks can take a significant amount
+of cpu time.  This patch series reduces the amount of work done during
+freezing tasks by avoiding waking up tasks that are already in a freezable
+state.
 
-It'd be good to know something more precise, like for example which merge
-introduced the problem.  I'm not aware of anything that might result is this
-kind of breakage.
+The first 4 patches reintroduce 6aa9707099c (lockdep: check that no locks
+held at freeze time) which was reverted in dbf520a9d7d4, and fix up the
+known callers with locks held in NFS and CIFS to skip the lockdep check
+for now.  The lockdep check will warn any future incorrect users of the
+freezable helpers.
 
-> Relevant dmesg output below. Any way to find out the source of the wakeup?
+The fifth patch reduces the wasted time in try_to_freeze_tasks() by
+starting with a 1 ms sleep during the first loop and backing off
+up to an 8 ms sleep if all tasks are not frozen.
 
-Not really.
+The sixth patch modifies the freeze_task() function to skip tasks
+that have set the PF_FREEZER_SKIP flag by calling freezer_do_not_count().
+These tasks will not enter the refrigerator during the suspend/resume
+cycle unless they woken up by something else, in which case they will
+enter the refrigerator in freezer_count() before they access any
+resources that would not be available in suspend or deadlock with
+another freezing/frozen task.
 
-You can play with the wakeup settings of various devices.
+The rest of the series adds a few more freezable helpers and converts the
+top call sites that userspace tasks are usually blocked at to freezable
+helpers.  The list of call sites was collected on a Nexus 10 (ARM Exynos
+5250 SoC), but all the top call sites other than binder show up at the
+top of the list on Ubuntu x86-64 as well.
 
-Can you send the contents of /proc/acpi/wakeup from the machine?
+This series cuts the time for freezing tasks from 50 ms to 5 ms when
+the cpu speed is locked at its lowest setting (200MHz), and reduces
+the number of context switches and restarted syscalls from 1000 to
+25.
 
-Rafael
+v2 moves the skip check to freeze_task(), and expands the commit
+messages.
 
-
-> Linux parag-iMac 3.9.0+ #5 SMP PREEMPT Mon May 6 17:01:19 EDT 2013
-> x86_64 x86_64 x86_64 GNU/Linux
-> 
-> [ 3631.441257] PM: Entering mem sleep
-> [ 3631.441274] Suspending console(s) (use no_console_suspend to debug)
-> [ 3631.441825] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> [ 3631.442003] sd 0:0:0:0: [sda] Stopping disk
-> [ 3631.755076] PM: suspend of devices complete after 313.257 msecs
-> [ 3631.755219] PM: late suspend of devices complete after 0.134 msecs
-> [ 3631.795185] PM: noirq suspend of devices complete after 39.904 msecs
-> [ 3631.821922] pcieport 0000:00:1c.1: power state changed by ACPI to D0
-> [ 3631.915378] PM: noirq resume of devices complete after 119.999 msecs
-> [ 3631.915459] PM: early resume of devices complete after 0.062 msecs
-> [ 3631.915525] ahci 0000:00:1f.2: setting latency timer to 64
-> [ 3631.915609] ehci-pci 0000:00:1a.7: setting latency timer to 64
-> [ 3631.915654] uhci_hcd 0000:00:1a.0: setting latency timer to 64
-> [ 3631.915690] usb usb1: root hub lost power or was reset
-> [ 3631.915709] snd_hda_intel 0000:00:1b.0: irq 46 for MSI/MSI-X
-> [ 3631.915770] uhci_hcd 0000:00:1d.0: setting latency timer to 64
-> [ 3631.915792] usb usb2: root hub lost power or was reset
-> [ 3631.915804] ehci-pci 0000:00:1d.7: setting latency timer to 64
-> [ 3631.915821] snd_hda_intel 0000:01:00.1: irq 48 for MSI/MSI-X
-> [ 3631.918662] [drm] probing gen 2 caps for device 8086:101 = 2212d02/0
-> [ 3631.918665] [drm] PCIE gen 2 link speeds already enabled
-> [ 3631.921479] [drm] PCIE GART of 512M enabled (table at 0x0000000000040000).
-> [ 3631.921584] radeon 0000:01:00.0: WB enabled
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+v3 adds the patches to reintroduce the lockdep check to this patchset,
+adds a patch to convert the freezable helpers to static inlines when
+possible, and splits the patch that adds the new helpers out of the one
+that converts the existing helpers to use freezer_do_not_count.
