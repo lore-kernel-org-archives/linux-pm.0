@@ -1,19 +1,25 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v3 16/16] af_unix: use freezable blocking calls in read
-Date: Mon,  6 May 2013 16:50:21 -0700
-Message-ID: <1367884221-20462-17-git-send-email-ccross@android.com>
+Subject: [PATCH v3 15/16] sigtimedwait: use freezable blocking call
+Date: Mon,  6 May 2013 16:50:20 -0700
+Message-ID: <1367884221-20462-16-git-send-email-ccross@android.com>
 References: <1367884221-20462-1-git-send-email-ccross@android.com>
-Return-path: <netdev-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vc0-f202.google.com ([209.85.220.202]:43698 "EHLO
+	mail-vc0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932557Ab3EFXug (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 19:50:36 -0400
+Received: by mail-vc0-f202.google.com with SMTP id gf12so447584vcb.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 May 2013 16:50:35 -0700 (PDT)
 In-Reply-To: <1367884221-20462-1-git-send-email-ccross@android.com>
-Sender: netdev-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Gao feng <gaofeng@cn.fujitsu.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Kees Cook <keescook@chromium.org>
 
-Avoid waking up every thread sleeping in read call on an AF_UNIX
-socket during suspend and resume by calling a freezable blocking
-call.  Previous patches modified the freezer to avoid sending
-wakeups to threads that are blocked in freezable blocking calls.
+Avoid waking up every thread sleeping in a sigtimedwait call during
+suspend and resume by calling a freezable blocking call.  Previous
+patches modified the freezer to avoid sending wakeups to threads
+that are blocked in freezable blocking calls.
 
 This call was selected to be converted to a freezable call because
 it doesn't hold any locks or release any resources when interrupted
@@ -24,29 +30,22 @@ blocked.
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- net/unix/af_unix.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ kernel/signal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/unix/af_unix.c b/net/unix/af_unix.c
-index 2db702d..2bcac57 100644
---- a/net/unix/af_unix.c
-+++ b/net/unix/af_unix.c
-@@ -114,6 +114,7 @@
- #include <linux/mount.h>
- #include <net/checksum.h>
- #include <linux/security.h>
-+#include <linux/freezer.h>
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 598dc06..10a70a0 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2845,7 +2845,7 @@ int do_sigtimedwait(const sigset_t *which, siginfo_t *info,
+ 		recalc_sigpending();
+ 		spin_unlock_irq(&tsk->sighand->siglock);
  
- struct hlist_head unix_socket_table[2 * UNIX_HASH_SIZE];
- EXPORT_SYMBOL_GPL(unix_socket_table);
-@@ -1880,7 +1881,7 @@ static long unix_stream_data_wait(struct sock *sk, long timeo)
+-		timeout = schedule_timeout_interruptible(timeout);
++		timeout = freezable_schedule_timeout_interruptible(timeout);
  
- 		set_bit(SOCK_ASYNC_WAITDATA, &sk->sk_socket->flags);
- 		unix_state_unlock(sk);
--		timeo = schedule_timeout(timeo);
-+		timeo = freezable_schedule_timeout(timeo);
- 		unix_state_lock(sk);
- 		clear_bit(SOCK_ASYNC_WAITDATA, &sk->sk_socket->flags);
- 	}
+ 		spin_lock_irq(&tsk->sighand->siglock);
+ 		__set_task_blocked(tsk, &tsk->real_blocked);
 -- 
 1.8.2.1
+
