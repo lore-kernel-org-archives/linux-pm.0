@@ -1,46 +1,82 @@
-From: Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
-Date: Mon, 6 May 2013 06:58:42 -0400
-Message-ID: <20130506065842.25a018f6@tlielax.poochiereds.net>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
-	<20130506085025.GB13861@dyad.programming.kicks-ass.net>
+From: "myungjoo.ham" <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH V3] PM / devfreq: tie suspend/resume to runtime-pm
+Date: Mon, 06 May 2013 20:42:14 +0900
+Message-ID: <003601ce4a4e$c0bb54d0$4231fe70$@samsung.com>
+References: <1366205301-4249-1-git-send-email-rajagopal.venkat@linaro.org>
+ <8888976.pxWaKvWiK0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130506085025.GB13861@dyad.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Colin Cross <ccross@android.com>, linux-kernel@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:52498 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752381Ab3EFLmQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 07:42:16 -0400
+In-reply-to: <8888976.pxWaKvWiK0@vostro.rjw.lan>
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Rajagopal Venkat' <rajagopal.venkat@linaro.org>
+Cc: 'Kevin Hilman' <khilman@linaro.org>, 'Alan Stern' <stern@rowland.harvard.edu>, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 6 May 2013 10:50:25 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Fri, May 03, 2013 at 02:04:09PM -0700, Colin Cross wrote:
-> > NFS calls the freezable helpers with locks held, which is unsafe
-> > and caused lockdep warnings when 6aa9707 "lockdep: check that no
-> > locks held at freeze time" was applied (reverted in dbf520a).
-> > Add new *_unsafe versions of the helpers that will not run the
-> > lockdep test when 6aa9707 is reapplied, and call them from NFS.
+From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+> On Wednesday, April 17, 2013 06:58:21 PM Rajagopal Venkat wrote:
+> > Devfreq core runtime suspend/resume of a device is explicitly handled 
+> > by devfreq driver using devfreq_suspend_device() and
+> > devfreq_resume_device() apis typically called from runtime 
+> > suspend/resume callbacks. This patch aims to take away this from 
+> > devfreq drivers and handle it from runtime-pm core. So that devfreq 
+> > core runtime suspend/resume of a device is automatically done with 
+> > runtime pm suspend/resume. The devfreq drivers shouldn't be concerned 
+> > on when to suspend/resume the devfreq.
 > 
-> Am I the only one that would like a bit more information about why NFS does
-> this and why we need to work around it?
+> I agree, but perhaps there's a better way to achieve that than fumbling in the PM core?
 > 
+> Did you consider using a PM domain for that?
 
-NFS does this because this is how we initially "fixed" it to not block
-the freezer. It sucks and is prone to deadlocking if you selectively
-freeze processes via the cgroup freezer. It does basically "work" in
-most cases though if the freezer is running to suspend the whole system.
+As genpd_add_device seems to allow a device to register multiple domains, it seems fine. We need to ensure that there is only one device for the devfreq domain though.
 
-I'm looking at fixing this by instead setting points within the NFS/RPC
-layers that cause these calls to return something like ERESTARTSYS
-instead when a freeze event comes in, depending on whether a call has
-already been transmitted to the server.
+pm_domain seems to be an overkill; however, the excessive overhead seems to be there only for register/unregister and that seems acceptable.
 
-That's likely to take a while though, and in the meantime we don't want
-lockdep complaining every time someone fires off a RPC call with locks
-held. So for now, we'd like to "opt out" of these lockdep warnings.
+> 
+> > This patch is targeted to handle devfreq core load monitoring runtime 
+> > suspend/resume only. Not the actual hardware itself.
+> > All the resources like clocks and regulators must still be handled by 
+> > device driver using runtime-pm. The sequence of devfreq and device 
+> > runtime suspend/resume is,
+> > 
+> > pm_runtime_suspend(dev) will first suspend device devfreq (if 
+> > available) before device is suspended to ensure devfreq load 
+> > monitoring is stopped and no device resources like clocks are accessed 
+> > while device suspend is in progress.
+> > 
+> > pm_runtime_resume(dev) will resume device devfreq(if available) after 
+> > device is resumed to ensure device resources like clocks are ready for 
+> > use.
+> > 
+> > As devfreq runtime suspend/resume is done automatically from runtime 
+> > core, this patch removes the existing devfreq_suspend_device() and
+> > devfreq_resume_device() apis.
+> > 
+> > Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+> 
+> I'm having a problem with this patch, because it's adding overhead into
+> rpm_suspend() and rpm_resume() for all devices, even though many of them may not use devfreq.  Worse yet, there are systems in which devfreq will never be used at all.
+> 
+> Thanks,
+> Rafael
 
--- 
-Jeff Layton <jlayton@redhat.com>
+I thought about having the polling loop to check if the device is running or not before getting usage statistics. But we still need something to notify resume.
+
+
+> 
+> 
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+>
+
+Cheers,
+MyungJoo
+
+
