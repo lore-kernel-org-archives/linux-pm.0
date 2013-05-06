@@ -1,16 +1,16 @@
 From: Colin Cross <ccross@android.com>
-Subject: [PATCH v3 11/16] epoll: use freezable blocking call
-Date: Mon,  6 May 2013 16:50:16 -0700
-Message-ID: <1367884221-20462-12-git-send-email-ccross@android.com>
+Subject: [PATCH v3 10/16] binder: use freezable blocking calls
+Date: Mon,  6 May 2013 16:50:15 -0700
+Message-ID: <1367884221-20462-11-git-send-email-ccross@android.com>
 References: <1367884221-20462-1-git-send-email-ccross@android.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <netdev-owner@vger.kernel.org>
 In-Reply-To: <1367884221-20462-1-git-send-email-ccross@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: netdev-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Colin Cross <ccross@android.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Al Viro <viro@zeniv.linux.org.uk>, =?UTF-8?q?Arve=20Hj=C3=B8nnev=C3=A5g?= <arve@android.com>, "Eric W. Biederman" <ebiederm@xmission.com>, Sachin Kamat <sachin.kamat@linaro.org>, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
-Avoid waking up every thread sleeping in an epoll_wait call during
+Avoid waking up every thread sleeping in a binder call during
 suspend and resume by calling a freezable blocking call.  Previous
 patches modified the freezer to avoid sending wakeups to threads
 that are blocked in freezable blocking calls.
@@ -24,30 +24,36 @@ blocked.
 Acked-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Colin Cross <ccross@android.com>
 ---
- fs/eventpoll.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/staging/android/binder.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index 9fec183..65245e7 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -34,6 +34,7 @@
- #include <linux/mutex.h>
- #include <linux/anon_inodes.h>
- #include <linux/device.h>
+diff --git a/drivers/staging/android/binder.c b/drivers/staging/android/binder.c
+index 24456a0..af8fba4 100644
+--- a/drivers/staging/android/binder.c
++++ b/drivers/staging/android/binder.c
+@@ -20,6 +20,7 @@
+ #include <asm/cacheflush.h>
+ #include <linux/fdtable.h>
+ #include <linux/file.h>
 +#include <linux/freezer.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include <asm/mman.h>
-@@ -1543,7 +1544,8 @@ fetch_events:
- 			}
+ #include <linux/fs.h>
+ #include <linux/list.h>
+ #include <linux/miscdevice.h>
+@@ -2140,13 +2141,13 @@ retry:
+ 			if (!binder_has_proc_work(proc, thread))
+ 				ret = -EAGAIN;
+ 		} else
+-			ret = wait_event_interruptible_exclusive(proc->wait, binder_has_proc_work(proc, thread));
++			ret = wait_event_freezable_exclusive(proc->wait, binder_has_proc_work(proc, thread));
+ 	} else {
+ 		if (non_block) {
+ 			if (!binder_has_thread_work(thread))
+ 				ret = -EAGAIN;
+ 		} else
+-			ret = wait_event_interruptible(thread->wait, binder_has_thread_work(thread));
++			ret = wait_event_freezable(thread->wait, binder_has_thread_work(thread));
+ 	}
  
- 			spin_unlock_irqrestore(&ep->lock, flags);
--			if (!schedule_hrtimeout_range(to, slack, HRTIMER_MODE_ABS))
-+			if (!freezable_schedule_hrtimeout_range(to, slack,
-+								HRTIMER_MODE_ABS))
- 				timed_out = 1;
- 
- 			spin_lock_irqsave(&ep->lock, flags);
+ 	binder_lock(__func__);
 -- 
 1.8.2.1
