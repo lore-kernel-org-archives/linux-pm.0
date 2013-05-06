@@ -1,41 +1,63 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
-Date: Mon, 6 May 2013 15:14:20 -0700
-Message-ID: <20130506221420.GH800@mtj.dyndns.org>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
- <20130506065605.6e5ed5e2@tlielax.poochiereds.net>
- <CAMbhsRQsFT2j_CuPL45J03itymcp3PNP8ckt3fAAo+hzavNrbw@mail.gmail.com>
- <20130506174336.447d0d75@tlielax.poochiereds.net>
- <CAMbhsRQP+NFwn8C9-mXUVCZNi_oE+TCK1L1NgdGUA_CTw0eiMA@mail.gmail.com>
- <CA+55aFwbXk_r-4p37YiMTQj2HNRA94xohr6DADuQXpHsKSA7NQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Immediate wakeup after suspend
+Date: Tue, 07 May 2013 01:56:08 +0200
+Message-ID: <1612326.XDA8n1le4S@vostro.rjw.lan>
+References: <CAOULuObQq+WPf97LdsD5kN6cq=E9TvaHzqGzdKSWRme-Nk+WQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFwbXk_r-4p37YiMTQj2HNRA94xohr6DADuQXpHsKSA7NQ@mail.gmail.com>
+In-Reply-To: <CAOULuObQq+WPf97LdsD5kN6cq=E9TvaHzqGzdKSWRme-Nk+WQQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Colin Cross <ccross@android.com>, Jeff Layton <jlayton@redhat.com>, lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Ben Chan <benchan@chromium.org>, Steve French <smfrench@gmail.com>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello, Linus.
+On Monday, May 06, 2013 06:22:47 PM Parag Warudkar wrote:
+> Sometime after 3.9 my iMac has started to resume almost immediately
+> after suspend.  Even with 3.9 it was all working as expected.
 
-On Mon, May 06, 2013 at 02:58:31PM -0700, Linus Torvalds wrote:
-> Quite frankly, is it worth resurrecting these patches at all?
+It'd be good to know something more precise, like for example which merge
+introduced the problem.  I'm not aware of anything that might result is this
+kind of breakage.
+
+> Relevant dmesg output below. Any way to find out the source of the wakeup?
+
+Not really.
+
+You can play with the wakeup settings of various devices.
+
+Can you send the contents of /proc/acpi/wakeup from the machine?
+
+Rafael
+
+
+> Linux parag-iMac 3.9.0+ #5 SMP PREEMPT Mon May 6 17:01:19 EDT 2013
+> x86_64 x86_64 x86_64 GNU/Linux
 > 
-> The only things it actually complained about are not worth the pain
-> fixing and are getting explicitly not warned about - is there any
-> reason to believe the patches are worth maintaining and the extra
-> complexity is worth it?
-
-It might not be too useful for nfs but Colin has a patchset spreading
-the use of the freezable schedules in a number of places in an attempt
-to reduce freeze latency for android, which includes introducing a lot
-of schedule_*_freezable() constructs, so I think we need these
-warnings one way or the other so that we don't end up with more
-problems like nfs currently has.
-
-Thakns.
-
+> [ 3631.441257] PM: Entering mem sleep
+> [ 3631.441274] Suspending console(s) (use no_console_suspend to debug)
+> [ 3631.441825] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> [ 3631.442003] sd 0:0:0:0: [sda] Stopping disk
+> [ 3631.755076] PM: suspend of devices complete after 313.257 msecs
+> [ 3631.755219] PM: late suspend of devices complete after 0.134 msecs
+> [ 3631.795185] PM: noirq suspend of devices complete after 39.904 msecs
+> [ 3631.821922] pcieport 0000:00:1c.1: power state changed by ACPI to D0
+> [ 3631.915378] PM: noirq resume of devices complete after 119.999 msecs
+> [ 3631.915459] PM: early resume of devices complete after 0.062 msecs
+> [ 3631.915525] ahci 0000:00:1f.2: setting latency timer to 64
+> [ 3631.915609] ehci-pci 0000:00:1a.7: setting latency timer to 64
+> [ 3631.915654] uhci_hcd 0000:00:1a.0: setting latency timer to 64
+> [ 3631.915690] usb usb1: root hub lost power or was reset
+> [ 3631.915709] snd_hda_intel 0000:00:1b.0: irq 46 for MSI/MSI-X
+> [ 3631.915770] uhci_hcd 0000:00:1d.0: setting latency timer to 64
+> [ 3631.915792] usb usb2: root hub lost power or was reset
+> [ 3631.915804] ehci-pci 0000:00:1d.7: setting latency timer to 64
+> [ 3631.915821] snd_hda_intel 0000:01:00.1: irq 48 for MSI/MSI-X
+> [ 3631.918662] [drm] probing gen 2 caps for device 8086:101 = 2212d02/0
+> [ 3631.918665] [drm] PCIE gen 2 link speeds already enabled
+> [ 3631.921479] [drm] PCIE GART of 512M enabled (table at 0x0000000000040000).
+> [ 3631.921584] radeon 0000:01:00.0: WB enabled
 -- 
-tejun
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
