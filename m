@@ -1,34 +1,42 @@
-From: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
-Date: Mon, 6 May 2013 11:55:13 -0700
-Message-ID: <20130506185513.GA800@mtj.dyndns.org>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v2] PM: Fix dev_pm_put_subsys_data() to not call kfree()
+ while holding device power lock
+Date: Mon, 6 May 2013 19:04:53 +0000
+Message-ID: <1367867093.2953.49.camel@lorien>
+References: <1367614010.8452.2.camel@lorien>
+	 <20130504125116.GA13770@amd.pavel.ucw.cz>
+	 <1882177.s6zpHZ6crc@vostro.rjw.lan>
+	 <20130506120925.GA25542@amd.pavel.ucw.cz>
+Reply-To: Shuah Khan <shuah.kh@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1367615050-3894-1-git-send-email-ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Trond Myklebust <Trond.Myklebust-HgOvQuBEEgTQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "J. Bruce Fields" <bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, "Eric W. Biederman" <ebiederm-aS9lmoZGLiVWk0Htik3J/w@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Ben Chan <benchan-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130506120925.GA25542@amd.pavel.ucw.cz>
+Content-Language: en-US
+Content-ID: <7579030CCEDC2A4EAE54A207B29DC6E0@sisa.samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 03, 2013 at 02:04:09PM -0700, Colin Cross wrote:
-> NFS calls the freezable helpers with locks held, which is unsafe
-> and caused lockdep warnings when 6aa9707 "lockdep: check that no
-> locks held at freeze time" was applied (reverted in dbf520a).
-> Add new *_unsafe versions of the helpers that will not run the
-> lockdep test when 6aa9707 is reapplied, and call them from NFS.
-> 
-> Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-
-Acked-by: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-
-Thanks.
-
--- 
-tejun
---
-To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ZGV2X3BtX3B1dF9zdWJzeXNfZGF0YSgpIGNhbGxzIGtmcmVlKCkgd2hpbGUgaG9sZGluZyBkZXZp
+Y2UgcG93ZXIgbG9jaywgd2hlbg0KdGhlIHJlZmVyZW5jZSBjb3VudCBpcyAwLiBGaXggaXQgdG8g
+Y2FsbCBrZnJlZSgpIGFmdGVyIHJlbGVhc2luZyB0aGUgbG9jay4NCg0KU2lnbmVkLW9mZi1ieTog
+U2h1YWggS2hhbiA8c2h1YWgua2hAc2Ftc3VuZy5jb20+DQpSZXZpZXdlZC1ieTogUGF2ZWwgTWFj
+aGVrIDxwYXZlbEB1Y3cuY3o+DQpSZXZpZXdlZC1ieTogUmFmYWVsIFd5c29ja2kgPHJhZmFlbC5q
+Lnd5c29ja2lAaW50ZWwuY29tPg0KLS0tDQogZHJpdmVycy9iYXNlL3Bvd2VyL2NvbW1vbi5jIHwg
+ICAgOCArKysrKy0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCA1IGluc2VydGlvbnMoKyksIDMgZGVsZXRp
+b25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMgYi9kcml2
+ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMNCmluZGV4IDM5YzMyNTIuLmU1Yjk5ZjcgMTAwNjQ0DQot
+LS0gYS9kcml2ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmMNCisrKyBiL2RyaXZlcnMvYmFzZS9wb3dl
+ci9jb21tb24uYw0KQEAgLTYxLDI0ICs2MSwyNiBAQCBFWFBPUlRfU1lNQk9MX0dQTChkZXZfcG1f
+Z2V0X3N1YnN5c19kYXRhKTsNCiBpbnQgZGV2X3BtX3B1dF9zdWJzeXNfZGF0YShzdHJ1Y3QgZGV2
+aWNlICpkZXYpDQogew0KIAlzdHJ1Y3QgcG1fc3Vic3lzX2RhdGEgKnBzZDsNCi0JaW50IHJldCA9
+IDA7DQorCWludCByZXQgPSAxOw0KIA0KIAlzcGluX2xvY2tfaXJxKCZkZXYtPnBvd2VyLmxvY2sp
+Ow0KIA0KIAlwc2QgPSBkZXZfdG9fcHNkKGRldik7DQogCWlmICghcHNkKSB7DQotCQlyZXQgPSAt
+RUlOVkFMOw0KIAkJZ290byBvdXQ7DQogCX0NCiANCiAJaWYgKC0tcHNkLT5yZWZjb3VudCA9PSAw
+KSB7DQogCQlkZXYtPnBvd2VyLnN1YnN5c19kYXRhID0gTlVMTDsNCi0JCWtmcmVlKHBzZCk7DQog
+CQlyZXQgPSAxOw0KKwl9IGVsc2Ugew0KKwkJcHNkID0gTlVMTDsNCisJCXJldCA9IDA7DQogCX0N
+CiANCiAgb3V0Og0KIAlzcGluX3VubG9ja19pcnEoJmRldi0+cG93ZXIubG9jayk7DQorCWtmcmVl
+KHBzZCk7DQogDQogCXJldHVybiByZXQ7DQogfQ0KLS0gDQoxLjcuMTAuNA0K
