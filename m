@@ -1,65 +1,50 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH 1/2] freezer: add unsafe versions of freezable helpers
-Date: Mon, 6 May 2013 00:12:34 +0200
-Message-ID: <20130505221234.GA18470@amd.pavel.ucw.cz>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
- <20130505092318.GD22239@gmail.com>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: [PATCH 1/6] thermal: armada: remove unnecessary platform_set_drvdata()
+Date: Mon, 06 May 2013 13:26:29 +0900
+Message-ID: <003e01ce4a11$e1134900$a339db00$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20130505092318.GD22239-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: linux-nfs-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ingo Molnar <mingo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Trond Myklebust <Trond.Myklebust-HgOvQuBEEgTQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "J. Bruce Fields" <bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org>, "David S. Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mandeep Singh Baines <msb-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, "Eric W. Biederman" <ebiederm-aS9lmoZGLiVWk0Htik3J/w@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-nfs-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Torvalds <torvalds-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ben Chan <benchan-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:32764 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461Ab3EFE0e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 00:26:34 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MMD00KUF0C3UXJ0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 06 May 2013 13:26:29 +0900 (KST)
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Zhang Rui' <rui.zhang@intel.com>
+Cc: 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>, 'Ezequiel Garcia' <ezequiel.garcia@free-electrons.com>
 
-Hi!
+The driver core clears the driver data to NULL after device_release
+or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+(device-core: Ensure drvdata = NULL when no driver is bound).
+Thus, it is not needed to manually clear the device driver data to NULL.
 
-> > NFS calls the freezable helpers with locks held, which is unsafe
-> > and caused lockdep warnings when 6aa9707 "lockdep: check that no
-> > locks held at freeze time" was applied (reverted in dbf520a).
-> > Add new *_unsafe versions of the helpers that will not run the
-> > lockdep test when 6aa9707 is reapplied, and call them from NFS.
-> > 
-> > Signed-off-by: Colin Cross <ccross-z5hGa2qSFaRBDgjK7y7TUQ@public.gmane.org>
-> > ---
-> >  fs/nfs/inode.c          |  2 +-
-> >  fs/nfs/nfs3proc.c       |  2 +-
-> >  fs/nfs/nfs4proc.c       |  4 ++--
-> >  include/linux/freezer.h | 42 +++++++++++++++++++++++++++++++++++++++++-
-> >  net/sunrpc/sched.c      |  2 +-
-> >  5 files changed, 46 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
-> > index 1f94167..53cbee5 100644
-> > --- a/fs/nfs/inode.c
-> > +++ b/fs/nfs/inode.c
-> > @@ -79,7 +79,7 @@ int nfs_wait_bit_killable(void *word)
-> >  {
-> >  	if (fatal_signal_pending(current))
-> >  		return -ERESTARTSYS;
-> > -	freezable_schedule();
-> > +	freezable_schedule_unsafe();
-> 
-> I'd suggest naming such variants _unkillable() instead of _unsafe().
-> 
-> There's nothing inherently 'unsafe' about it: the user asked for a hard 
-> NFS mount and is getting it: with the side effect that it exposes the 
-> machine to network delays in a 'hard' way as well. Which means suspend may 
-> block indefinitely as well on network failure.
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/thermal/armada_thermal.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-You only want to use _unsafe() variants when you enter refrigerator
-with locks held.
-
-And entering refrigerator with locks is tricky... and unsafe :-). It
-is not directly related to killability.
-
-									Pavel
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 5b4d75f..0d02d4e 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -210,7 +210,6 @@ static int armada_thermal_exit(struct platform_device *pdev)
+ 		platform_get_drvdata(pdev);
+ 
+ 	thermal_zone_device_unregister(armada_thermal);
+-	platform_set_drvdata(pdev, NULL);
+ 
+ 	return 0;
+ }
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
---
-To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+1.7.2.5
+
+
