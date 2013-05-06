@@ -1,51 +1,43 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/6] thermal: armada: remove unnecessary
- platform_set_drvdata()
-Date: Mon, 06 May 2013 22:32:34 +0800
-Message-ID: <1367850754.2079.50.camel@rzhang1-mobl4>
-References: <003e01ce4a11$e1134900$a339db00$@samsung.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
+Date: Mon, 6 May 2013 07:33:28 -0700
+Message-ID: <CA+55aFzVNwCJhvp4f0EcHK3Vk1ZVKY0fAeu-6FdjhCFiafTAPQ@mail.gmail.com>
+References: <1367615050-3894-1-git-send-email-ccross@android.com>
+	<1367615050-3894-2-git-send-email-ccross@android.com>
+	<20130504130440.GC13770@amd.pavel.ucw.cz>
+	<CAMbhsRScr+3Zk5Bi6390bGRbtE4oh2H-mHrGHS0wew5hdkivUg@mail.gmail.com>
+	<20130504225715.GB24276@amd.pavel.ucw.cz>
+	<CAMbhsRS_cF7kF-QZ9BMBUS3ytU0ukRCbC3D549HW_XOsQbEZhg@mail.gmail.com>
+	<20130505000528.GA25454@amd.pavel.ucw.cz>
+	<20130505091844.GC22239@gmail.com>
+	<20130506085547.GC13861@dyad.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:37926 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753825Ab3EFOcj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 May 2013 10:32:39 -0400
-In-Reply-To: <003e01ce4a11$e1134900$a339db00$@samsung.com>
+Received: from mail-vc0-f177.google.com ([209.85.220.177]:50888 "EHLO
+	mail-vc0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120Ab3EFOdb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 10:33:31 -0400
+In-Reply-To: <20130506085547.GC13861@dyad.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, 'Ezequiel Garcia' <ezequiel.garcia@free-electrons.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@kernel.org>, Pavel Machek <pavel@ucw.cz>, Colin Cross <ccross@android.com>, Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, Linux NFS Mailing List <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
 
-On Mon, 2013-05-06 at 13:26 +0900, Jingoo Han wrote:
-> The driver core clears the driver data to NULL after device_release
-> or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-> (device-core: Ensure drvdata = NULL when no driver is bound).
-> Thus, it is not needed to manually clear the device driver data to NULL.
-> 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+On Mon, May 6, 2013 at 1:55 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> Doesn't i386 have all the funny per-cpu stuff too? So the only reason it still
+> does the fugly stack based thing is because nobody could be arsed to do the
+> work of converting it.
 
-it seems that we already have a patchset for this issue.
-please check https://patchwork.kernel.org/patch/2516651/
+Umm. That "fugly stack-based" thing is better than the per-cpu crap.
 
-thanks,
-rui
-> ---
->  drivers/thermal/armada_thermal.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index 5b4d75f..0d02d4e 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -210,7 +210,6 @@ static int armada_thermal_exit(struct platform_device *pdev)
->  		platform_get_drvdata(pdev);
->  
->  	thermal_zone_device_unregister(armada_thermal);
-> -	platform_set_drvdata(pdev, NULL);
->  
->  	return 0;
->  }
+The percpu stuff implies a memory load. The stack based thing gets
+thread_info with pure register accesses. Much better.
 
+For "current()" the per-cpu thing may be better, but if you actually
+need the thread-info (not the case here, but in other places), the
+stack masking is superior when it works (ie when you don't have
+multi-stack issues due to irq's etc)
 
+                Linus
