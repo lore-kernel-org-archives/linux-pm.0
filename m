@@ -1,48 +1,54 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 2/6] thermal: dove: remove unnecessary
- platform_set_drvdata()
-Date: Mon, 6 May 2013 07:12:17 +0200
-Message-ID: <20130506051217.GE2824@lunn.ch>
-References: <003f01ce4a11$fc1b9a90$f452cfb0$@samsung.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH] thermal: cut the spaces when user sets policy
+Date: Mon, 06 May 2013 10:39:07 +0300
+Message-ID: <1367825947.8465.14.camel@smile>
+References: <1367589128-19787-1-git-send-email-andriy.shevchenko@linux.intel.com>
+	 <5183D8E7.8040708@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from londo.lunn.ch ([80.238.139.98]:51708 "EHLO londo.lunn.ch"
+Received: from mga01.intel.com ([192.55.52.88]:28909 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973Ab3EFFM0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 May 2013 01:12:26 -0400
-Content-Disposition: inline
-In-Reply-To: <003f01ce4a11$fc1b9a90$f452cfb0$@samsung.com>
+	id S1751542Ab3EFHjR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 03:39:17 -0400
+In-Reply-To: <5183D8E7.8040708@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Andrew Lunn <andrew@lunn.ch>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On Mon, May 06, 2013 at 01:27:14PM +0900, Jingoo Han wrote:
-> The driver core clears the driver data to NULL after device_release
-> or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-> (device-core: Ensure drvdata = NULL when no driver is bound).
-> Thus, it is not needed to manually clear the device driver data to NULL.
+On Fri, 2013-05-03 at 11:33 -0400, Eduardo Valentin wrote: 
+> On 03-05-2013 09:52, Andy Shevchenko wrote:
+> > Setting policy results in invalid value error.
+> > 	% echo "step_wise" > policy
+> > 	% echo: write error: Invalid argument
+> > 
+> > Need clean up of the buffer which "echo" may add based on the arguments, before
+> > comparing aganist list of governor names.
+
+> > @@ -716,7 +717,7 @@ policy_store(struct device *dev, struct device_attribute *attr,
+> >  
+> >  	mutex_lock(&thermal_governor_lock);
+> >  
+> > -	gov = __find_governor(buf);
+> > +	gov = __find_governor(strim(buf));
 > 
-> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> ---
->  drivers/thermal/dove_thermal.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+> I am much happier with this approach, much cleaner and does the job. On
+> the other hand, this patch introduces a compilation warning that we want
+> to avoid:
+> drivers/thermal/thermal_sys.c: In function 'policy_store':
+> drivers/thermal/thermal_sys.c:708: warning: passing argument 1 of
+> 'strim' discards qualifiers from pointer target type
+> include/linux/string.h:63: note: expected 'char *' but argument is of
+> type 'const char *'
 > 
-> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-> index 4b15a5f..900479e 100644
-> --- a/drivers/thermal/dove_thermal.c
-> +++ b/drivers/thermal/dove_thermal.c
-> @@ -182,7 +182,6 @@ static int dove_thermal_exit(struct platform_device *pdev)
->  		platform_get_drvdata(pdev);
->  
->  	thermal_zone_device_unregister(dove_thermal);
-> -	platform_set_drvdata(pdev, NULL);
->  
->  	return 0;
->  }
-> -- 
-> 1.7.2.5
-> 
-> 
-Acked-by: Andrew Lunn <andrew@lunn.ch>
+
+Oops.
+What about introduce temporary variable and pass it as a parameter?
+It seems explicit casting looks not good, though it makes the job.
+
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
