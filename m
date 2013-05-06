@@ -1,49 +1,49 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH] PM: Fix dev_pm_put_subsys_data() to not call kfree()
- while holding device power lock
-Date: Mon, 6 May 2013 19:10:47 +0000
-Message-ID: <1367867448.2953.52.camel@lorien>
-References: <1367614010.8452.2.camel@lorien>
-	 <20130504125116.GA13770@amd.pavel.ucw.cz>
-	 <1882177.s6zpHZ6crc@vostro.rjw.lan>
-	 <20130506120925.GA25542@amd.pavel.ucw.cz> <1367848858.2953.1.camel@lorien>
-Reply-To: Shuah Khan <shuah.kh@samsung.com>
+From: Colin Cross <ccross@android.com>
+Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
+Date: Mon, 6 May 2013 12:30:19 -0700
+Message-ID: <CAMbhsRRcfpXBGAPThjrmB_judgn85TioR_6A6qwh_fBQCent7A@mail.gmail.com>
+References: <1367615050-3894-1-git-send-email-ccross@android.com>
+	<1367615050-3894-2-git-send-email-ccross@android.com>
+	<20130506190115.GB800@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.sisa.samsung.com ([63.166.156.249]:58056 "EHLO
-	mx1.sisa.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755573Ab3EFTKu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 15:10:50 -0400
-In-Reply-To: <1367848858.2953.1.camel@lorien>
-Content-Language: en-US
-Content-ID: <73C7366FA079764D84C1949EDE0B10DC@sisa.samsung.com>
+Received: from mail-ve0-f174.google.com ([209.85.128.174]:53914 "EHLO
+	mail-ve0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755822Ab3EFTaU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 15:30:20 -0400
+Received: by mail-ve0-f174.google.com with SMTP id pb11so3534156veb.5
+        for <linux-pm@vger.kernel.org>; Mon, 06 May 2013 12:30:19 -0700 (PDT)
+In-Reply-To: <20130506190115.GB800@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs <linux-nfs@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Ben Chan <benchan@chromium.org>
 
-T24gTW9uLCAyMDEzLTA1LTA2IGF0IDA4OjAwIC0wNjAwLCBTaHVhaCBLaGFuIHdyb3RlOg0KPiBP
-biBNb24sIDIwMTMtMDUtMDYgYXQgMTQ6MDkgKzAyMDAsIFBhdmVsIE1hY2hlayB3cm90ZToNCj4g
-PiBIaSENCj4gPiANCj4gPiA+ID4gV293LCB0aGF0IGZ1bmN0aW9uIGlzIGZyYWdpbGUuIEl0IHJl
-dHVybnMgMC8xLy1FSU5WQUwsIHdoaWxlIGJlaW5nDQo+ID4gPiA+IGRvY3VtZW50ZWQgZm9yIDAv
-MS4uLg0KPiA+ID4gDQo+ID4gPiBPaCwgaXQgZ2VuZXJhbGx5IHNob3VsZCByZXR1cm4gMSBmb3Ig
-IXBzZC4NCj4gPiA+IA0KPiA+ID4gPiBQYXRjaCBkb2VzIG5vdCBsb29rIG9idmlvdXNseSB3cm9u
-ZywgYnV0IG1heWJlIA0KPiA+ID4gPiANCj4gPiA+ID4gQEAgLTczLDEzICs3MywxNyBAQCBpbnQg
-ZGV2X3BtX3B1dF9zdWJzeXNfZGF0YShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gPiA+ICANCj4g
-PiA+ID4gIAlpZiAoLS1wc2QtPnJlZmNvdW50ID09IDApIHsNCj4gPiA+ID4gIAkJZGV2LT5wb3dl
-ci5zdWJzeXNfZGF0YSA9IE5VTEw7DQo+ID4gPiA+ICsJCXNwaW5fdW5sb2NrX2lycSgmZGV2LT5w
-b3dlci5sb2NrKTsNCj4gPiA+ID4gLQkJa2ZyZWUocHNkKTsNCj4gPiA+ID4gLSAJCXJldCA9IDE7
-DQo+ID4gPiA+ICsJCXJldHVybiAxOw0KPiA+ID4gPiAgCX0NCj4gPiA+ID4gDQo+ID4gPiA+IFdv
-dWxkIGJlIGNsZWFuZXIuDQo+ID4gPiANCj4gPiA+IFdoYXQgYWJvdXQgdGhpczoNCj4gPiANCj4g
-PiBMb29rcyBnb29kIHRvIG1lLg0KPiA+IA0KPiA+IFJldmlld2VkLWJ5OiBQYXZlbCBNYWNoZWsg
-PHBhdmVsQHVjdy5jej4NCj4gDQo+IFJhZmFlbC9QYXZlbCwNCj4gDQo+IEkgcmVkaWQgdGhlIHBh
-dGNoIGJhc2VkIG9uIFBhdmVsJ3MgY29tbWVudHMgYW5kIGp1c3QgYWJvdXQgdG8gc2VuZCBpdA0K
-PiBhbmQgdGhlbiBJIHNhdyB5b3VyIGV4Y2hhbmdlLiBUaGlzIHZlcnNpb24gbG9va3MgZ29vZCB0
-byBtZS4gRG8geW91IHdhbnQNCj4gbWUgdG8gdGVzdCB0aGUgcGF0Y2ggYW5kIHJlc2VuZD8NCj4g
-DQo+IHRoYW5rcywNCj4gLS0gU2h1YWgNCg0KSSBzZW50IHYyIHBhdGNoIHRoYXQgaW5jb3Jwb3Jh
-dGVzIHRoZSBjb21tZW50cyBmcm9tIFJhZmFlbCBhbmQgUGF2ZWwuDQoNCnRoYW5rcywNCg0KLS0g
-U2h1YWgNCg0KU2h1YWggS2hhbiBMZWFkIEtlcm5lbCBEZXZlbG9wZXIgLSBPcGVuIFNvdXJjZSBH
-cm91cCANClNhbXN1bmcgUmVzZWFyY2ggQW1lcmljYSAoU2lsaWNvbiBWYWxsZXkpDQpzaHVhaC5r
-aEBzYW1zdW5nLmNvbSB8ICg5NzApIDY3Mi0wNjU4DQo=
+On Mon, May 6, 2013 at 12:01 PM, Tejun Heo <tj@kernel.org> wrote:
+> On Fri, May 03, 2013 at 02:04:10PM -0700, Colin Cross wrote:
+>> From: Mandeep Singh Baines <msb@chromium.org>
+>>
+>> We shouldn't try_to_freeze if locks are held.  Holding a lock can cause a
+>> deadlock if the lock is later acquired in the suspend or hibernate path
+>> (e.g.  by dpm).  Holding a lock can also cause a deadlock in the case of
+>> cgroup_freezer if a lock is held inside a frozen cgroup that is later
+>> acquired by a process outside that group.
+>>
+>> History:
+>> This patch was originally applied as 6aa9707099c and reverted in
+>> dbf520a9d7d4 because NFS was freezing with locks held.  It was
+>> deemed better to keep the bad freeze point in NFS to allow laptops
+>> to suspend consistently.  The previous patch in this series converts
+>> NFS to call _unsafe versions of the freezable helpers so that
+>> lockdep doesn't complain about them until a more correct fix
+>> can be applied.
+>
+> I don't care about %current change, especially given that it's a debug
+> interface but that really should be a separate patch, so please split
+> it out if you want it (and I think we want it).
+
+The current change was requested by akpm and was part of the original
+patch.  Is it really worth confusing the history of this patch even
+more, applying it the first time, reverting it, and then applying it
+again in two parts?
