@@ -1,45 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/2] lockdep: check that no locks held at freeze time
-Date: Mon, 6 May 2013 14:11:06 +0200
-Message-ID: <20130506121106.GA25615@amd.pavel.ucw.cz>
-References: <1367615050-3894-1-git-send-email-ccross@android.com>
- <1367615050-3894-2-git-send-email-ccross@android.com>
- <20130504130440.GC13770@amd.pavel.ucw.cz>
- <CAMbhsRScr+3Zk5Bi6390bGRbtE4oh2H-mHrGHS0wew5hdkivUg@mail.gmail.com>
- <20130504225715.GB24276@amd.pavel.ucw.cz>
- <CAMbhsRS_cF7kF-QZ9BMBUS3ytU0ukRCbC3D549HW_XOsQbEZhg@mail.gmail.com>
- <20130505000528.GA25454@amd.pavel.ucw.cz>
- <20130505091844.GC22239@gmail.com>
- <20130506085547.GC13861@dyad.programming.kicks-ass.net>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: Re: [PATCH] PM: Fix dev_pm_put_subsys_data() to not call kfree()
+ while holding device power lock
+Date: Mon, 6 May 2013 14:01:03 +0000
+Message-ID: <1367848858.2953.1.camel@lorien>
+References: <1367614010.8452.2.camel@lorien>
+	 <20130504125116.GA13770@amd.pavel.ucw.cz>
+	 <1882177.s6zpHZ6crc@vostro.rjw.lan>
+	 <20130506120925.GA25542@amd.pavel.ucw.cz>
+Reply-To: Shuah Khan <shuah.kh@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35715 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751525Ab3EFMLI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 08:11:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20130506085547.GC13861@dyad.programming.kicks-ass.net>
+Received: from mx1.sisa.samsung.com ([63.166.156.249]:51279 "EHLO
+	mx1.sisa.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923Ab3EFOBK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 10:01:10 -0400
+In-Reply-To: <20130506120925.GA25542@amd.pavel.ucw.cz>
+Content-Language: en-US
+Content-ID: <92158966F363BD40ACCD5DAAB0E255EF@sisa.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@kernel.org>, Colin Cross <ccross@android.com>, Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>, Trond Myklebust <Trond.Myklebust@netapp.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@redhat.com>, "J. Bruce Fields" <bfields@fieldses.org>, "David S. Miller" <davem@davemloft.net>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Paul Walmsley <paul@pwsan.com>, Al Viro <viro@zeniv.linux.org.uk>, "Eric W. Biederman" <ebiederm@xmission.com>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Ben Chan <benchan@chromium.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 
-1;2403;0cOn Mon 2013-05-06 10:55:47, Peter Zijlstra wrote:
-> On Sun, May 05, 2013 at 11:18:44AM +0200, Ingo Molnar wrote:
-> > That's the old 32-bit x86 trick to compute 'current' from the kernel stack 
-> > pointer.
-> > 
-> > It can be done better - for example on platforms with optimized percpu 
-> > variables (x86-64) it looks like this:
-> 
-> Doesn't i386 have all the funny per-cpu stuff too? So the only reason it still
-> does the fugly stack based thing is because nobody could be arsed to do the
-> work of converting it.
-
-(Note that the quoted example was from ARM. But also note that the
-percpu stuff requires memory access, so...)
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+T24gTW9uLCAyMDEzLTA1LTA2IGF0IDE0OjA5ICswMjAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
+IEhpIQ0KPiANCj4gPiA+IFdvdywgdGhhdCBmdW5jdGlvbiBpcyBmcmFnaWxlLiBJdCByZXR1cm5z
+IDAvMS8tRUlOVkFMLCB3aGlsZSBiZWluZw0KPiA+ID4gZG9jdW1lbnRlZCBmb3IgMC8xLi4uDQo+
+ID4gDQo+ID4gT2gsIGl0IGdlbmVyYWxseSBzaG91bGQgcmV0dXJuIDEgZm9yICFwc2QuDQo+ID4g
+DQo+ID4gPiBQYXRjaCBkb2VzIG5vdCBsb29rIG9idmlvdXNseSB3cm9uZywgYnV0IG1heWJlIA0K
+PiA+ID4gDQo+ID4gPiBAQCAtNzMsMTMgKzczLDE3IEBAIGludCBkZXZfcG1fcHV0X3N1YnN5c19k
+YXRhKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gPiA+ICANCj4gPiA+ICAJaWYgKC0tcHNkLT5yZWZj
+b3VudCA9PSAwKSB7DQo+ID4gPiAgCQlkZXYtPnBvd2VyLnN1YnN5c19kYXRhID0gTlVMTDsNCj4g
+PiA+ICsJCXNwaW5fdW5sb2NrX2lycSgmZGV2LT5wb3dlci5sb2NrKTsNCj4gPiA+IC0JCWtmcmVl
+KHBzZCk7DQo+ID4gPiAtIAkJcmV0ID0gMTsNCj4gPiA+ICsJCXJldHVybiAxOw0KPiA+ID4gIAl9
+DQo+ID4gPiANCj4gPiA+IFdvdWxkIGJlIGNsZWFuZXIuDQo+ID4gDQo+ID4gV2hhdCBhYm91dCB0
+aGlzOg0KPiANCj4gTG9va3MgZ29vZCB0byBtZS4NCj4gDQo+IFJldmlld2VkLWJ5OiBQYXZlbCBN
+YWNoZWsgPHBhdmVsQHVjdy5jej4NCg0KUmFmYWVsL1BhdmVsLA0KDQpJIHJlZGlkIHRoZSBwYXRj
+aCBiYXNlZCBvbiBQYXZlbCdzIGNvbW1lbnRzIGFuZCBqdXN0IGFib3V0IHRvIHNlbmQgaXQNCmFu
+ZCB0aGVuIEkgc2F3IHlvdXIgZXhjaGFuZ2UuIFRoaXMgdmVyc2lvbiBsb29rcyBnb29kIHRvIG1l
+LiBEbyB5b3Ugd2FudA0KbWUgdG8gdGVzdCB0aGUgcGF0Y2ggYW5kIHJlc2VuZD8NCg0KdGhhbmtz
+LA0KLS0gU2h1YWgNCg==
