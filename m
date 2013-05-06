@@ -1,82 +1,114 @@
-From: "myungjoo.ham" <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH V3] PM / devfreq: tie suspend/resume to runtime-pm
-Date: Mon, 06 May 2013 20:42:14 +0900
-Message-ID: <003601ce4a4e$c0bb54d0$4231fe70$@samsung.com>
-References: <1366205301-4249-1-git-send-email-rajagopal.venkat@linaro.org>
- <8888976.pxWaKvWiK0@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM: Fix dev_pm_put_subsys_data() to not call kfree() while holding device power lock
+Date: Mon, 06 May 2013 14:07:21 +0200
+Message-ID: <1882177.s6zpHZ6crc@vostro.rjw.lan>
+References: <1367614010.8452.2.camel@lorien> <20130504125116.GA13770@amd.pavel.ucw.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:52498 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752381Ab3EFLmQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 07:42:16 -0400
-In-reply-to: <8888976.pxWaKvWiK0@vostro.rjw.lan>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130504125116.GA13770@amd.pavel.ucw.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Shuah Khan <shuah.kh@samsung.com>, "len.brown@intel.com" <len.brown@intel.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Rajagopal Venkat' <rajagopal.venkat@linaro.org>
-Cc: 'Kevin Hilman' <khilman@linaro.org>, 'Alan Stern' <stern@rowland.harvard.edu>, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-> On Wednesday, April 17, 2013 06:58:21 PM Rajagopal Venkat wrote:
-> > Devfreq core runtime suspend/resume of a device is explicitly handled 
-> > by devfreq driver using devfreq_suspend_device() and
-> > devfreq_resume_device() apis typically called from runtime 
-> > suspend/resume callbacks. This patch aims to take away this from 
-> > devfreq drivers and handle it from runtime-pm core. So that devfreq 
-> > core runtime suspend/resume of a device is automatically done with 
-> > runtime pm suspend/resume. The devfreq drivers shouldn't be concerned 
-> > on when to suspend/resume the devfreq.
+On Saturday, May 04, 2013 02:51:16 PM Pavel Machek wrote:
+> Hi!
 > 
-> I agree, but perhaps there's a better way to achieve that than fumbling in the PM core?
-> 
-> Did you consider using a PM domain for that?
-
-As genpd_add_device seems to allow a device to register multiple domains, it seems fine. We need to ensure that there is only one device for the devfreq domain though.
-
-pm_domain seems to be an overkill; however, the excessive overhead seems to be there only for register/unregister and that seems acceptable.
-
-> 
-> > This patch is targeted to handle devfreq core load monitoring runtime 
-> > suspend/resume only. Not the actual hardware itself.
-> > All the resources like clocks and regulators must still be handled by 
-> > device driver using runtime-pm. The sequence of devfreq and device 
-> > runtime suspend/resume is,
+> > dev_pm_put_subsys_data() calls kfree() while holding device power lock, when
+> > the reference count is 0. Fix it to call kfree() after releasing the lock.
 > > 
-> > pm_runtime_suspend(dev) will first suspend device devfreq (if 
-> > available) before device is suspended to ensure devfreq load 
-> > monitoring is stopped and no device resources like clocks are accessed 
-> > while device suspend is in progress.
+> > Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> > ---
+> >  drivers/base/power/common.c |    6 +++++-
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
 > > 
-> > pm_runtime_resume(dev) will resume device devfreq(if available) after 
-> > device is resumed to ensure device resources like clocks are ready for 
-> > use.
-> > 
-> > As devfreq runtime suspend/resume is done automatically from runtime 
-> > core, this patch removes the existing devfreq_suspend_device() and
-> > devfreq_resume_device() apis.
-> > 
-> > Signed-off-by: Rajagopal Venkat <rajagopal.venkat@linaro.org>
+> w> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+> > index 39c3252..da05fe2 100644
+> > --- a/drivers/base/power/common.c
+> > +++ b/drivers/base/power/common.c
+> > @@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
+> >  
+> >  	if (--psd->refcount == 0) {
+> >  		dev->power.subsys_data = NULL;
+> > -		kfree(psd);
+> >  		ret = 1;
+> >  	}
+> >  
+> >   out:
+> >  	spin_unlock_irq(&dev->power.lock);
+> >  
+> > +	if (ret == 1) {
+> > +		/* kfree() verifies that its argument is nonzero. */
+> > +		kfree(psd);
+> > +	}
+> > +
+> >  	return ret;
+> >  }
 > 
-> I'm having a problem with this patch, because it's adding overhead into
-> rpm_suspend() and rpm_resume() for all devices, even though many of them may not use devfreq.  Worse yet, there are systems in which devfreq will never be used at all.
+> Wow, that function is fragile. It returns 0/1/-EINVAL, while being
+> documented for 0/1...
+
+Oh, it generally should return 1 for !psd.
+
+> Patch does not look obviously wrong, but maybe 
 > 
-> Thanks,
-> Rafael
-
-I thought about having the polling loop to check if the device is running or not before getting usage statistics. But we still need something to notify resume.
-
-
+> @@ -73,13 +73,17 @@ int dev_pm_put_subsys_data(struct device *dev)
+>  
+>  	if (--psd->refcount == 0) {
+>  		dev->power.subsys_data = NULL;
+> +		spin_unlock_irq(&dev->power.lock);
+> -		kfree(psd);
+> - 		ret = 1;
+> +		return 1;
+>  	}
 > 
-> 
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
->
+> Would be cleaner.
 
-Cheers,
-MyungJoo
+What about this:
+
+---
+ drivers/base/power/common.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+Index: linux-pm/drivers/base/power/common.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/common.c
++++ linux-pm/drivers/base/power/common.c
+@@ -61,24 +61,24 @@ EXPORT_SYMBOL_GPL(dev_pm_get_subsys_data
+ int dev_pm_put_subsys_data(struct device *dev)
+ {
+ 	struct pm_subsys_data *psd;
+-	int ret = 0;
++	int ret = 1;
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+ 	psd = dev_to_psd(dev);
+-	if (!psd) {
+-		ret = -EINVAL;
++	if (!psd)
+ 		goto out;
+-	}
+ 
+ 	if (--psd->refcount == 0) {
+ 		dev->power.subsys_data = NULL;
+-		kfree(psd);
+-		ret = 1;
++	} else {
++		psd = NULL;
++		ret = 0;
+ 	}
+ 
+  out:
+ 	spin_unlock_irq(&dev->power.lock);
++	kfree(psd);
+ 
+ 	return ret;
+ }
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
