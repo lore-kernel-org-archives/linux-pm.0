@@ -1,86 +1,81 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: Re: [PATCH 5/6] thermal: rcar: remove unnecessary
- platform_set_drvdata()
-Date: Tue, 07 May 2013 10:36:37 +0900
-Message-ID: <000801ce4ac3$50c048a0$f240d9e0$@samsung.com>
-References: <004201ce4a12$816b9060$8442b120$@samsung.com>
- <uehdjeib4.wl%kuninori.morimoto.gx@renesas.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH v3 02/16] freezer: add unsafe versions of freezable
+ helpers for CIFS
+Date: Tue, 7 May 2013 06:07:30 -0400
+Message-ID: <20130507060730.03364687@tlielax.poochiereds.net>
+References: <1367884221-20462-1-git-send-email-ccross@android.com>
+	<1367884221-20462-3-git-send-email-ccross@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:28106 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758214Ab3EGBgj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 May 2013 21:36:39 -0400
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MME00M9AN510HJ0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 07 May 2013 10:36:37 +0900 (KST)
-In-reply-to: <uehdjeib4.wl%kuninori.morimoto.gx@renesas.com>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1367884221-20462-3-git-send-email-ccross@android.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin Cross <ccross@android.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: 'Kuninori Morimoto' <kuninori.morimoto.gx@renesas.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>
-Cc: 'Zhang Rui' <rui.zhang@intel.com>, 'Eduardo Valentin' <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-On Tuesday, May 07, 2013 9:38 AM, Kuninori Morimoto wrote:
-> 
-> Dear Jingoo, Sachin
-> 
-> > The driver core clears the driver data to NULL after device_release
-> > or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
-> > (device-core: Ensure drvdata = NULL when no driver is bound).
-> > Thus, it is not needed to manually clear the device driver data to NULL.
-> >
-> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> > ---
-> >  drivers/thermal/rcar_thermal.c |    2 --
-> >  1 files changed, 0 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> > index 8d7edd4..63c7c13 100644
-> > --- a/drivers/thermal/rcar_thermal.c
-> > +++ b/drivers/thermal/rcar_thermal.c
-> > @@ -487,8 +487,6 @@ static int rcar_thermal_remove(struct platform_device *pdev)
-> >  			rcar_thermal_irq_disable(priv);
-> >  	}
-> >
-> > -	platform_set_drvdata(pdev, NULL);
-> > -
-> >  	pm_runtime_put_sync(dev);
-> >  	pm_runtime_disable(dev);
-> 
-> I got very similar patch for rcar_thermal.c
-> from Jingoo and Sachin
-> 
-> Subject: [PATCH 5/6] thermal: rcar: remove unnecessary platform_set_drvdata()
-> From: Jingoo Han <jg1.han@samsung.com>
-> 
-> Subject: [PATCH 5/6] Thermal: rcar: Remove redundant platform_set_drvdata()
-> From: Sachin Kamat <sachin.kamat@linaro.org>
-> 
-> I'm not sure which one will be applied, but, for both patch,
-> 
-> Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+On Mon,  6 May 2013 16:50:07 -0700
+Colin Cross <ccross@android.com> wrote:
 
-Hi Kuninori Morimoto,
-
-In this case, Sachin submitted the patchset before I did;
-thus, Sachin's patch will be merged.
-
-Sachin, thank you for your job.
-Without you, cleaning cannot be done. :)
-
-
-Best regards,
-Jingoo Han
-
+> CIFS calls wait_event_freezekillable_unsafe with a VFS lock held,
+> which is unsafe and will cause lockdep warnings when 6aa9707
+> "lockdep: check that no locks held at freeze time" is reapplied
+> (it was reverted in dbf520a).  CIFS shouldn't be doing this, but
+> it has long-running syscalls that must hold a lock but also
+> shouldn't block suspend.  Until CIFS freeze handling is rewritten
+> to use a signal to exit out of the critical section, add a new
+> wait_event_freezekillable_unsafe helper that will not run the
+> lockdep test when 6aa9707 is reapplied, and call it from CIFS.
 > 
-> Best regards
-> --
-> Kuninori Morimoto
+> In practice the likley result of holding the lock while freezing
+> is that a second task blocked on the lock will never freeze,
+> aborting suspend, but it is possible to manufacture a case using
+> the cgroup freezer, the lock, and the suspend freezer to create
+> a deadlock.  Silencing the lockdep warning here will allow
+> problems to be found in other drivers that may have a more
+> serious deadlock risk, and prevent new problems from being added.
 > 
+> Signed-off-by: Colin Cross <ccross@android.com>
+> ---
+>  include/linux/freezer.h | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
+> index 5b31e21c..d3c038e 100644
+> --- a/include/linux/freezer.h
+> +++ b/include/linux/freezer.h
+> @@ -212,6 +212,16 @@ static inline bool freezer_should_skip(struct task_struct *p)
+>  	__retval;							\
+>  })
+>  
+> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
+> +#define wait_event_freezekillable_unsafe(wq, condition)			\
+> +({									\
+> +	int __retval;							\
+> +	freezer_do_not_count();						\
+> +	__retval = wait_event_killable(wq, (condition));		\
+> +	freezer_count_unsafe();						\
+> +	__retval;							\
+> +})
+> +
+>  #define wait_event_freezable(wq, condition)				\
+>  ({									\
+>  	int __retval;							\
+> @@ -277,6 +287,9 @@ static inline void set_freezable(void) {}
+>  #define wait_event_freezekillable(wq, condition)		\
+>  		wait_event_killable(wq, condition)
+>  
+> +#define wait_event_freezekillable_unsafe(wq, condition)			\
+> +		wait_event_killable(wq, condition)
+> +
+>  #endif /* !CONFIG_FREEZER */
+>  
+>  #endif	/* FREEZER_H_INCLUDED */
 
+I think you also need to convert wait_for_response in the cifs code to
+use this helper. While it's a pretty straightforward change, you should
+probably cc linux-cifs@vger.kernel.org as well.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
