@@ -1,101 +1,74 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V3 19/21] Documentation: thermal: Explain the exynos thermal driver model
-Date: Tue,  7 May 2013 18:31:09 +0530
-Message-ID: <1367931671-3906-20-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V3 12/21] thermal: exynos: Modify private_data to appropriate name driver_data
+Date: Tue,  7 May 2013 18:31:02 +0530
+Message-ID: <1367931671-3906-13-git-send-email-amit.daniel@samsung.com>
 References: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f44.google.com ([209.85.160.44]:49202 "EHLO
-	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932649Ab3EGNDG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2013 09:03:06 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch updates the documentation to explain the driver model
-and file layout.
+This patch renames member private_data to driver_data of the thermal
+zone registration structure as this item stores the driver related
+data and uses it to call the driver related callbacks.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- Documentation/thermal/exynos_thermal |   43 ++++++++++++++++++++++++++-------
- 1 files changed, 34 insertions(+), 9 deletions(-)
+ drivers/thermal/samsung/exynos_thermal_common.c |    4 ++--
+ drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
+ drivers/thermal/samsung/exynos_tmu.c            |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/thermal/exynos_thermal b/Documentation/thermal/exynos_thermal
-index 2b46f67..9010c44 100644
---- a/Documentation/thermal/exynos_thermal
-+++ b/Documentation/thermal/exynos_thermal
-@@ -1,17 +1,17 @@
--Kernel driver exynos4_tmu
-+Kernel driver exynos_tmu
- =================
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+index d4cd5ec..c0e4bdb 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -226,7 +226,7 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
+ 		pr_info("Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+-	data = th_zone->sensor_conf->private_data;
++	data = th_zone->sensor_conf->driver_data;
+ 	*temp = th_zone->sensor_conf->read_temperature(data);
+ 	/* convert the temperature into millicelsius */
+ 	*temp = *temp * MCELSIUS;
+@@ -245,7 +245,7 @@ static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
+ 		pr_info("Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+-	data = th_zone->sensor_conf->private_data;
++	data = th_zone->sensor_conf->driver_data;
+ 	if (th_zone->sensor_conf->write_emul_temp)
+ 		ret = th_zone->sensor_conf->write_emul_temp(data, temp);
+ 	return ret;
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+index 1105ecd..0acde95 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.h
++++ b/drivers/thermal/samsung/exynos_thermal_common.h
+@@ -76,7 +76,7 @@ struct thermal_sensor_conf {
+ 	int (*write_emul_temp)(void *drv_data, unsigned long temp);
+ 	struct thermal_trip_point_conf trip_data;
+ 	struct thermal_cooling_conf cooling_data;
+-	void *private_data;
++	void *driver_data;
+ 	void *pzone_data;
+ };
  
- Supported chips:
--* ARM SAMSUNG EXYNOS4 series of SoC
--  Prefix: 'exynos4-tmu'
-+* ARM SAMSUNG EXYNOS4, EXYNOS5 series of SoC
-   Datasheet: Not publicly available
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 133d3f5..bdf40ef 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -482,7 +482,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	exynos_tmu_control(pdev, true);
  
- Authors: Donggeun Kim <dg77.kim@samsung.com>
-+Authors: Amit Daniel <amit.daniel@samsung.com>
- 
--Description
-------------
-+TMU controller Description:
-+---------------------------
- 
--This driver allows to read temperature inside SAMSUNG EXYNOS4 series of SoC.
-+This driver allows to read temperature inside SAMSUNG EXYNOS4/5 series of SoC.
- 
- The chip only exposes the measured 8-bit temperature code value
- through a register.
-@@ -34,9 +34,9 @@ The three equations are:
-   TI2: Trimming info for 85 degree Celsius (stored at TRIMINFO register)
-        Temperature code measured at 85 degree Celsius which is unchanged
- 
--TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
-+TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
- when temperature exceeds pre-defined levels.
--The maximum number of configurable threshold is four.
-+The maximum number of configurable threshold is five.
- The threshold levels are defined as follows:
-   Level_0: current temperature > trigger_level_0 + threshold
-   Level_1: current temperature > trigger_level_1 + threshold
-@@ -47,6 +47,31 @@ The threshold levels are defined as follows:
-   through the corresponding registers.
- 
- When an interrupt occurs, this driver notify kernel thermal framework
--with the function exynos4_report_trigger.
-+with the function exynos_report_trigger.
- Although an interrupt condition for level_0 can be set,
- it can be used to synchronize the cooling action.
-+
-+TMU driver description:
-+-----------------------
-+
-+The exynos thermal driver is structured as,
-+
-+					Kernel Core thermal framework
-+				(thermal_core.c, step_wise.c, cpu_cooling.c)
-+								^
-+								|
-+								|
-+TMU configuration data -------> TMU Driver  <------> Exynos Core thermal wrapper
-+(exynos_tmu_data.c)	      (exynos_tmu.c)	   (exynos_thermal_common.c)
-+(exynos_tmu_data.h)	      (exynos_tmu.h)	   (exynos_thermal_common.h)
-+
-+a) TMU configuration data: This consist of TMU register offsets/bitfields
-+		described through structure exynos_tmu_registers. Also several
-+		other platform data (struct exynos_tmu_platform_data) members
-+		are used to configure the TMU.
-+b) TMU driver: This component initialises the TMU controller and sets different
-+		thresholds. It invokes core thermal implementation with the call
-+		exynos_report_trigger.
-+c) Exynos Core thermal wrapper: This provides 3 wrapper function to use the
-+		Kernel core thermal framework. They are exynos_unregister_thermal,
-+		exynos_register_thermal and exynos_report_trigger.
+ 	/* Register the sensor with thermal management interface */
+-	(&exynos_sensor_conf)->private_data = data;
++	(&exynos_sensor_conf)->driver_data = data;
+ 	exynos_sensor_conf.trip_data.trip_count = pdata->trigger_enable[0] +
+ 			pdata->trigger_enable[1] + pdata->trigger_enable[2]+
+ 			pdata->trigger_enable[3];
 -- 
 1.7.1
-
