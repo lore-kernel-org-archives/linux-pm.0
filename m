@@ -1,81 +1,148 @@
-From: Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH v3 02/16] freezer: add unsafe versions of freezable
- helpers for CIFS
-Date: Tue, 7 May 2013 06:07:30 -0400
-Message-ID: <20130507060730.03364687@tlielax.poochiereds.net>
-References: <1367884221-20462-1-git-send-email-ccross@android.com>
-	<1367884221-20462-3-git-send-email-ccross@android.com>
+From: Tomasz Figa <t.figa@samsung.com>
+Subject: Re: [PATCH V2 01/20] thermal: exynos: Moving exynos thermal files into
+ samsung directory
+Date: Tue, 07 May 2013 12:21:42 +0200
+Message-ID: <1927845.etOFu5Zfbm@amdc1227>
+References: <1366972671-9227-1-git-send-email-amit.daniel@samsung.com>
+ <1366972671-9227-2-git-send-email-amit.daniel@samsung.com>
+ <1367852706.2079.57.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1367884221-20462-3-git-send-email-ccross@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Tejun Heo <tj@kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1367852706.2079.57.camel@rzhang1-mobl4>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon,  6 May 2013 16:50:07 -0700
-Colin Cross <ccross@android.com> wrote:
-
-> CIFS calls wait_event_freezekillable_unsafe with a VFS lock held,
-> which is unsafe and will cause lockdep warnings when 6aa9707
-> "lockdep: check that no locks held at freeze time" is reapplied
-> (it was reverted in dbf520a).  CIFS shouldn't be doing this, but
-> it has long-running syscalls that must hold a lock but also
-> shouldn't block suspend.  Until CIFS freeze handling is rewritten
-> to use a signal to exit out of the critical section, add a new
-> wait_event_freezekillable_unsafe helper that will not run the
-> lockdep test when 6aa9707 is reapplied, and call it from CIFS.
+On Monday 06 of May 2013 23:05:06 Zhang Rui wrote:
+> On Fri, 2013-04-26 at 16:07 +0530, Amit Daniel Kachhap wrote:
+> > This movement of files is done for easy maintenance and adding more
+> > new sensor's support for exynos platform easily . This will also help in
+> > bifurcating exynos common, sensor driver and sensor data related parts.
+> > 
+> > Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> > ---
+> > 
+> >  drivers/thermal/Kconfig                        |   13 +++++--------
+> >  drivers/thermal/Makefile                       |    2 +-
+> >  drivers/thermal/samsung/Kconfig                |    9 +++++++++
+> >  drivers/thermal/samsung/Makefile               |    4 ++++
+> >  drivers/thermal/{ => samsung}/exynos_thermal.c |    0
+> >  5 files changed, 19 insertions(+), 9 deletions(-)
+> >  create mode 100644 drivers/thermal/samsung/Kconfig
+> >  create mode 100644 drivers/thermal/samsung/Makefile
+> >  rename drivers/thermal/{ => samsung}/exynos_thermal.c (100%)
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index 5e3c025..081ddc5 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -114,14 +114,6 @@ config KIRKWOOD_THERMAL
+> > 
+> >  	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+> >  	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
+> > 
+> > -config EXYNOS_THERMAL
+> > -	tristate "Temperature sensor on Samsung EXYNOS"
+> > -	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+> > -	depends on CPU_THERMAL
+> > -	help
+> > -	  If you say yes here you get support for TMU (Thermal Management
+> > -	  Unit) on SAMSUNG EXYNOS series of SoC.
+> > -
+> > 
+> >  config DOVE_THERMAL
+> >  
+> >  	tristate "Temperature sensor on Marvell Dove SoCs"
+> >  	depends on ARCH_DOVE
+> > 
+> > @@ -169,4 +161,9 @@ config INTEL_POWERCLAMP
+> > 
+> >  	  enforce idle time which results in more package C-state residency. The
+> >  	  user interface is exposed via generic thermal framework.
+> > 
+> > +menu "Exynos thermal drivers"
 > 
-> In practice the likley result of holding the lock while freezing
-> is that a second task blocked on the lock will never freeze,
-> aborting suspend, but it is possible to manufacture a case using
-> the cgroup freezer, the lock, and the suspend freezer to create
-> a deadlock.  Silencing the lockdep warning here will allow
-> problems to be found in other drivers that may have a more
-> serious deadlock risk, and prevent new problems from being added.
-> 
-> Signed-off-by: Colin Cross <ccross@android.com>
-> ---
->  include/linux/freezer.h | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> index 5b31e21c..d3c038e 100644
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -212,6 +212,16 @@ static inline bool freezer_should_skip(struct task_struct *p)
->  	__retval;							\
->  })
->  
-> +/* DO NOT ADD ANY NEW CALLERS OF THIS FUNCTION */
-> +#define wait_event_freezekillable_unsafe(wq, condition)			\
-> +({									\
-> +	int __retval;							\
-> +	freezer_do_not_count();						\
-> +	__retval = wait_event_killable(wq, (condition));		\
-> +	freezer_count_unsafe();						\
-> +	__retval;							\
-> +})
-> +
->  #define wait_event_freezable(wq, condition)				\
->  ({									\
->  	int __retval;							\
-> @@ -277,6 +287,9 @@ static inline void set_freezable(void) {}
->  #define wait_event_freezekillable(wq, condition)		\
->  		wait_event_killable(wq, condition)
->  
-> +#define wait_event_freezekillable_unsafe(wq, condition)			\
-> +		wait_event_killable(wq, condition)
-> +
->  #endif /* !CONFIG_FREEZER */
->  
->  #endif	/* FREEZER_H_INCLUDED */
+> would it be more proper to use "Samsung thermal drivers" or "Samsung
+> Exynos thermal drivers" instead?
 
-I think you also need to convert wait_for_response in the cifs code to
-use this helper. While it's a pretty straightforward change, you should
-probably cc linux-cifs@vger.kernel.org as well.
++1
 
+Still, I wonder if it really makes sense to create a separate directory and 
+submenu for this.
+
+> > +depends on PLAT_SAMSUNG
+> > +source "drivers/thermal/samsung/Kconfig"
+> > +endmenu
+> > +
+> 
+> sorry I know few about arm,
+> could you tell me the difference between
+> CONFIG_ARCH_EXYNOS4/CONFIG_ARCH_EXYNOS5 and CONFIG_PLAT_SAMSUNG please,
+> I do not see the dependency between these in Kconfig file?
+
+If those files were kept at thermal/, there would be no need for this check. 
+Just particular drivers would depend on platform they are for.
+
+Best regards,
 -- 
-Jeff Layton <jlayton@redhat.com>
+Tomasz Figa
+Samsung Poland R&D Center
+SW Solution Development, Kernel and System Framework
+> 
+> >  endif
+> > 
+> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > index c054d41..b3063a9 100644
+> > --- a/drivers/thermal/Makefile
+> > +++ b/drivers/thermal/Makefile
+> > @@ -17,7 +17,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
+> > 
+> >  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+> >  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+> >  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+> > 
+> > -obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+> > +obj-y				+= samsung/
+> > 
+> >  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+> >  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+> >  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+> > 
+> > diff --git a/drivers/thermal/samsung/Kconfig
+> > b/drivers/thermal/samsung/Kconfig new file mode 100644
+> > index 0000000..2d3d9dc
+> > --- /dev/null
+> > +++ b/drivers/thermal/samsung/Kconfig
+> > @@ -0,0 +1,9 @@
+> > +config EXYNOS_THERMAL
+> > +	tristate "Temperature sensor on Samsung EXYNOS"
+> > +	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+> > +	depends on CPU_THERMAL
+> > +	help
+> > +	  If you say yes here you get support for TMU (Thermal Management
+> > +	  Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
+> > +	  the exynos thermal driver with the core thermal layer and cpu
+> > +	  cooling API's.
+> > diff --git a/drivers/thermal/samsung/Makefile
+> > b/drivers/thermal/samsung/Makefile new file mode 100644
+> > index 0000000..1fe6d93
+> > --- /dev/null
+> > +++ b/drivers/thermal/samsung/Makefile
+> > @@ -0,0 +1,4 @@
+> > +#
+> > +# Samsung thermal specific Makefile
+> > +#
+> > +obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+> > diff --git a/drivers/thermal/exynos_thermal.c
+> > b/drivers/thermal/samsung/exynos_thermal.c similarity index 100%
+> > rename from drivers/thermal/exynos_thermal.c
+> > rename to drivers/thermal/samsung/exynos_thermal.c
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc"
+> in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
