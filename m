@@ -1,52 +1,52 @@
-From: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: Immediate wakeup after suspend
-Date: Tue, 7 May 2013 17:18:05 -0400
-Message-ID: <CAOULuOZ9gX_iZSN+oZGVq7tkTjbGA+28LnY4stZXRzsvqry+Ug@mail.gmail.com>
-References: <CAOULuObQq+WPf97LdsD5kN6cq=E9TvaHzqGzdKSWRme-Nk+WQQ@mail.gmail.com>
-	<1612326.XDA8n1le4S@vostro.rjw.lan>
-	<CAOULuObvuy_iTWp3sgqcvk39eF3KN2X77St=2A6w-BaeokFr2Q@mail.gmail.com>
-	<2183106.5nsY0q0PTD@vostro.rjw.lan>
-	<CAOULuObmovvZQDibCJto-KN8DbpQpBwMsmFh1nmXj+hFwE1CaQ@mail.gmail.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH, RFC 03/22] cpuidle: calxeda: select ARM_CPU_SUSPEND
+Date: Tue, 07 May 2013 16:42:07 -0500
+Message-ID: <5189752F.8030405@gmail.com>
+References: <1367507786-505303-1-git-send-email-arnd@arndb.de> <1367507786-505303-4-git-send-email-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:34286 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756585Ab3EGVSH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2013 17:18:07 -0400
-In-Reply-To: <CAOULuObmovvZQDibCJto-KN8DbpQpBwMsmFh1nmXj+hFwE1CaQ@mail.gmail.com>
+Received: from mail-qe0-f44.google.com ([209.85.128.44]:37764 "EHLO
+	mail-qe0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752601Ab3EGVmK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2013 17:42:10 -0400
+In-Reply-To: <1367507786-505303-4-git-send-email-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Mon, May 6, 2013 at 8:57 PM, Parag Warudkar <parag.lkml@gmail.com> wrote:
-> On Mon, May 6, 2013 at 8:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>> I have tried disabling EHC1 and EHC2 without any difference.
->>
->> That may mean one of two things: (1) After you'd tried that they appeared as
->> disabled, but the immediate wakeup still happened or (2) you'd tried to
->> disable them, but they still appeared as enabled.
->>
->> Which one of them is it?
->>
->
-> #1 - that is they appeared disabled but the wakeup was still
-> immediate. I tried that at least twice before sending the initial
-> email and got the immediate wakeups both times but  when I tried to
-> recreate this right now with the same kernel and now I get a bunch of
-> WARN_ON()s but no immediate wakeups. (I can still wake it up by
-> pressing power button.)
-> I will test more and also bisect to see what is going on.
+On 05/02/2013 10:16 AM, Arnd Bergmann wrote:
+> Like other ARM specific drivers, this one requires ARM_CPU_SUSPEND,
+> as shown by this linker error:
+> 
+> drivers/built-in.o: In function `calxeda_pwrdown_idle':
+> drivers/cpuidle/cpuidle-calxeda.c:84: undefined reference to `cpu_suspend'
+> drivers/cpuidle/cpuidle-calxeda.c:86: undefined reference to `cpu_resume'
+> 
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-So on a hunch I removed radeon UVD firmware to disable UVD from
-initializing and the problem goes away.
-Turns out, earlier when the problem did not reproduce I was running a
-kernel with a local patch that disables UVD.
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 
-I have tested this 3 times each - with UVD loaded the machine resumes
-instantly. Without it, it works as expected.
-I let the radeon/dri people know about it.
+> ---
+>  drivers/cpuidle/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> index c4cc27e..e21cdfa 100644
+> --- a/drivers/cpuidle/Kconfig
+> +++ b/drivers/cpuidle/Kconfig
+> @@ -36,6 +36,7 @@ if CPU_IDLE
+>  config CPU_IDLE_CALXEDA
+>  	bool "CPU Idle Driver for Calxeda processors"
+>  	depends on ARCH_HIGHBANK
+> +	select ARM_CPU_SUSPEND
+>  	help
+>  	  Select this to enable cpuidle on Calxeda processors.
+>  
+> 
 
-Thanks,
-Parag
