@@ -1,69 +1,101 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V3 21/21] ARM: dts: Add device tree node for exynos5440 TMU controller
-Date: Tue,  7 May 2013 18:31:11 +0530
-Message-ID: <1367931671-3906-22-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V3 19/21] Documentation: thermal: Explain the exynos thermal driver model
+Date: Tue,  7 May 2013 18:31:09 +0530
+Message-ID: <1367931671-3906-20-git-send-email-amit.daniel@samsung.com>
 References: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f44.google.com ([209.85.160.44]:49202 "EHLO
+	mail-pb0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932649Ab3EGNDG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2013 09:03:06 -0400
 In-Reply-To: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds device node for TMU controller. There are 3
-instances of the controllers so 3 nodes are created.
+This patch updates the documentation to explain the driver model
+and file layout.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- arch/arm/boot/dts/exynos5440.dtsi |   30 ++++++++++++++++++++++++++++++
- 1 files changed, 30 insertions(+), 0 deletions(-)
+ Documentation/thermal/exynos_thermal |   43 ++++++++++++++++++++++++++-------
+ 1 files changed, 34 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
-index 9a99755..433e92e 100644
---- a/arch/arm/boot/dts/exynos5440.dtsi
-+++ b/arch/arm/boot/dts/exynos5440.dtsi
-@@ -16,6 +16,12 @@
+diff --git a/Documentation/thermal/exynos_thermal b/Documentation/thermal/exynos_thermal
+index 2b46f67..9010c44 100644
+--- a/Documentation/thermal/exynos_thermal
++++ b/Documentation/thermal/exynos_thermal
+@@ -1,17 +1,17 @@
+-Kernel driver exynos4_tmu
++Kernel driver exynos_tmu
+ =================
  
- 	interrupt-parent = <&gic>;
+ Supported chips:
+-* ARM SAMSUNG EXYNOS4 series of SoC
+-  Prefix: 'exynos4-tmu'
++* ARM SAMSUNG EXYNOS4, EXYNOS5 series of SoC
+   Datasheet: Not publicly available
  
-+	aliases {
-+		tmuctrl0 = &tmuctrl_0;
-+		tmuctrl1 = &tmuctrl_1;
-+		tmuctrl2 = &tmuctrl_2;
-+	};
+ Authors: Donggeun Kim <dg77.kim@samsung.com>
++Authors: Amit Daniel <amit.daniel@samsung.com>
+ 
+-Description
+------------
++TMU controller Description:
++---------------------------
+ 
+-This driver allows to read temperature inside SAMSUNG EXYNOS4 series of SoC.
++This driver allows to read temperature inside SAMSUNG EXYNOS4/5 series of SoC.
+ 
+ The chip only exposes the measured 8-bit temperature code value
+ through a register.
+@@ -34,9 +34,9 @@ The three equations are:
+   TI2: Trimming info for 85 degree Celsius (stored at TRIMINFO register)
+        Temperature code measured at 85 degree Celsius which is unchanged
+ 
+-TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
++TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
+ when temperature exceeds pre-defined levels.
+-The maximum number of configurable threshold is four.
++The maximum number of configurable threshold is five.
+ The threshold levels are defined as follows:
+   Level_0: current temperature > trigger_level_0 + threshold
+   Level_1: current temperature > trigger_level_1 + threshold
+@@ -47,6 +47,31 @@ The threshold levels are defined as follows:
+   through the corresponding registers.
+ 
+ When an interrupt occurs, this driver notify kernel thermal framework
+-with the function exynos4_report_trigger.
++with the function exynos_report_trigger.
+ Although an interrupt condition for level_0 can be set,
+ it can be used to synchronize the cooling action.
 +
- 	gic:interrupt-controller@2E0000 {
- 		compatible = "arm,cortex-a15-gic";
- 		#interrupt-cells = <3>;
-@@ -162,4 +168,28 @@
- 		reg = <0x130000 0x1000>;
- 		interrupts = <0 17 0>, <0 16 0>;
- 	};
++TMU driver description:
++-----------------------
 +
-+	tmuctrl_0: tmuctrl@160118 {
-+		compatible = "samsung,exynos5440-tmu";
-+		reg = <0x160118 0x230>, <0x160368 0x10>;
-+		interrupts = <0 58 0>;
-+		clocks = <&clock 21>;
-+		clock-names = "tmu_apbif";
-+	};
++The exynos thermal driver is structured as,
 +
-+	tmuctrl_1: tmuctrl@16011C {
-+		compatible = "samsung,exynos5440-tmu";
-+		reg = <0x16011C 0x230>, <0x160368 0x10>;
-+		interrupts = <0 58 0>;
-+		clocks = <&clock 21>;
-+		clock-names = "tmu_apbif";
-+	};
++					Kernel Core thermal framework
++				(thermal_core.c, step_wise.c, cpu_cooling.c)
++								^
++								|
++								|
++TMU configuration data -------> TMU Driver  <------> Exynos Core thermal wrapper
++(exynos_tmu_data.c)	      (exynos_tmu.c)	   (exynos_thermal_common.c)
++(exynos_tmu_data.h)	      (exynos_tmu.h)	   (exynos_thermal_common.h)
 +
-+	tmuctrl_2: tmuctrl@160120 {
-+		compatible = "samsung,exynos5440-tmu";
-+		reg = <0x160120 0x230>, <0x160368 0x10>;
-+		interrupts = <0 58 0>;
-+		clocks = <&clock 21>;
-+		clock-names = "tmu_apbif";
-+	};
- };
++a) TMU configuration data: This consist of TMU register offsets/bitfields
++		described through structure exynos_tmu_registers. Also several
++		other platform data (struct exynos_tmu_platform_data) members
++		are used to configure the TMU.
++b) TMU driver: This component initialises the TMU controller and sets different
++		thresholds. It invokes core thermal implementation with the call
++		exynos_report_trigger.
++c) Exynos Core thermal wrapper: This provides 3 wrapper function to use the
++		Kernel core thermal framework. They are exynos_unregister_thermal,
++		exynos_register_thermal and exynos_report_trigger.
 -- 
 1.7.1
+
