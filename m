@@ -1,179 +1,49 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v3.10-rc1
-Date: Thu, 09 May 2013 00:16:25 +0800
-Message-ID: <1368029785.2076.7.camel@rzhang1-mobl4>
+From: Ilia Mirkin <imirkin@alum.mit.edu>
+Subject: 50-second delay when resuming from disk with 3.7.10
+Date: Wed, 8 May 2013 16:01:12 -0400
+Message-ID: <CAKb7UvgV8O_qtOYjz7_mMu-78Q4od_p3G0A_+R44_+LnEXRqUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:23682 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757271Ab3EHQQ2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 May 2013 12:16:28 -0400
+Received: from mail-bk0-f54.google.com ([209.85.214.54]:39409 "EHLO
+	mail-bk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143Ab3EHUBO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 May 2013 16:01:14 -0400
+Received: by mail-bk0-f54.google.com with SMTP id y8so1119318bkt.13
+        for <linux-pm@vger.kernel.org>; Wed, 08 May 2013 13:01:12 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Hi, Linus,
+Hello,
 
-The following changes since commit
-3912a677f68f6084e0a7b6a1a29310ac1b083713:
+I've recently started using swsusp functionality on my laptop
+(Thinkpad T420s, most recent BIOS - 1.36). I use a custom initrd, (and
+luks-based encryption), the script does something like decrypt;
+vgchange -ay; crazy-command-to-find-block-dev > /sys/power/resume.
+Once that happens, I get switched to a blank tty (but I can Alt-F1 to
+get back to the original). It then sits there for for about 50 seconds
+before printing something along the lines of
 
-  Merge tag 'pinctrl-fixes-for-v3.9' of
-git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl
-(2013-03-24 10:11:29 -0700)
+[60.x] freezing user processes
+restoring image 10%
+etc
 
-are available in the git repository at:
+which all takes about 5s, at which point the system resumes as
+expected. I do not see any HD activity (via the LED) during the ~50s
+until I see the first message about resuming.
 
+Glancing at software_resume(), when it's called from resume_store() it
+will jump to the resuming immediately since resume_store will have set
+swsusp_resume_device. The only thing that makes sense is that
+lock_system_sleep() takes 50s to complete... which means that
+something else is holding the pm_mutex.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+Does this make sense? My next step is to start sticking printk's all
+over the place... anything else I should be looking at? I know it's an
+old-ish kernel, if this is something that was likely fixed in newer
+kernels, please let me know.
 
-for you to fetch changes up to de6558dc964f6a3243218f17d8032ad810864e2b:
+Thanks,
 
-  Merge branch 'MAINTAINERS-update' of .git into next (2013-04-27
-20:48:57 +0800)
-
-----------------------------------------------------------------
-
-Amit Daniel Kachhap (1):
-      thermal: exynos: Adapt to temperature emulation core thermal
-framework
-
-Andrew Bresticker (1):
-      thermal: step_wise: set throttle target within thermal instance
-limits
-
-Arnd Bergmann (1):
-      Thermal: exynos: remove unnecessary header inclusions
-
-Axel Lin (2):
-      thermal: db8500: Fix checking return value of
-thermal_zone_device_register
-      thermal: db8500: Fix missing mutex_unlock() in probe error paths
-
-Dan Carpenter (1):
-      Thermal: cpufreq cooling: endian bug in cpufreq_get_max_state()
-
-Eduardo Valentin (46):
-      thermal: add a warning for temperature emulation feature
-      thermal: introduce thermal_zone_get_zone_by_name helper function
-      thermal: expose thermal_zone_get_temp API
-      MAINTAINERS: Add Thermal subsystem co-maintainer
-      MAINTAINERS: Add patchwork entry for Thermal subsystem
-      MAINTAINERS: update thermal entry by adding file cpu_cooling.h
-      thermal: cpu_cooling: remove unused headers
-      thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
-      thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
-      thermal: cpu_cooling: remove compiler warning
-      thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
-      thermal: cpu_cooling: add documentation for get_property
-      thermal: cpu_cooling: document cpufreq_get_cooling_level
-      thermal: cpu_cooling: improve documentation for get_cpu_frequency
-      thermal: cpu_cooling: update documentation for
-cpufreq_apply_cooling
-      thermal: cpu_cooling: update documentation for
-cpufreq_thermal_notifier
-      thermal: cpu_cooling: update Kconfig entry
-      thermal: cpu_cooling: update documentation for
-cpufreq_get_max_state
-      thermal: cpu_cooling: update documentation for
-cpufreq_get_cur_state
-      thermal: cpu_cooling: update documentation for
-cpufreq_set_cur_state
-      thermal: cpu_cooling: update kernel-doc for
-cpufreq_cooling_register
-      thermal: cpu_cooling: update kernel-doc comment for
-cpufreq_cooling_unregister
-      thermal: cpu_cooling: use snprintf instead of sprintf
-      thermal: cpu_cooling: remove not needed curl brackets
-      thermal: cpu_cooling: remove unused symbols
-      thermal: cpu_cooling: add needed header for cpu_cooling.h
-      thermal: cpu_cooling: remove unused symbols on cpu_cooling.h
-      thermal: use strlcpy instead of strcpy
-      thermal: update driver license
-      thermal: rename notify_thermal_framework to
-thermal_notify_framework
-      thermal: use EXPORT_SYMBOL_GPL
-      thermal: update kernel-doc for thermal_zone_bind_cooling_device
-      thermal: update kernel-doc for thermal_zone_unbind_cooling_device
-      thermal: update kernel-doc for thermal_cooling_device_register
-      thermal: update kernel-doc for create_trip_attrs
-      thermal: update kernel-doc for thermal_zone_device_register
-      thermal: cpu_cooling: remove trailing white spaces
-      thermal: cpu_cooling: standardize end of function
-      thermal: cpu_cooling: standardize comment style
-      thermal: cpu_cooling: align on open parenthesis
-      thermal: cpu_cooling: remove trailing blank line
-      thermal: cpu_cooling: remove checkpatch.pl warning
-      thermal: cpu_cooling: alignment improvements
-      thermal: cpu_cooling: improve line breaking
-      thermal: thermal_core: remove usage of IS_ERR_OR_NULL
-      thermal: db8500_cpufreq_cooling: remove usage of IS_ERR_OR_NULL()
-
-Ezequiel Garcia (5):
-      thermal: Fix compiler warning
-      thermal: kirkwood: Fix valid check for thermal register
-      thermal: kirkwood: Fix thermal sensor formula
-      thermal: dove: Fix thermal sensor formula
-      thermal: Add driver for Armada 370/XP SoC thermal management
-
-Kuninori Morimoto (2):
-      thermal: rcar: tidyup registration failure case
-      thermal: rcar: add pm_runtime_xxx() support
-
-Laurent Navet [Mali] (1):
-      drivers: thermal: cpu_cooling: fix checkpatch warning
-
-Sachin Kamat (2):
-      Thermal: exynos: Add clk_{un}prepare APIs
-      Thermal: exynos: Add compatible string for exynos4412
-
-Zhang Rui (14):
-      Thermal: cpufreq cooling: fix parsing per_cpu
-cpufreq_frequency_table
-      Thermal: exynos: fix cooling state translation
-      Thermal: rename thermal_sys.c to thermal_core.c
-      Thermal: build thermal governors into thermal_sys module
-      Thermal: build cpu_cooling code into thermal_sys module
-      Merge branch 'thermal' of git://git.kernel.org/.../rzhang/linux
-into next
-      Merge branch 'eduardo-1' of .git into next
-      Merge branch 'exynos-fix' of .git into next
-      Merge branch 'thermal_core-doc-comments-update' of .git into next
-      Merge branch 'cpu_cooling-doc-comments-update' of .git into next
-      Thermal: update documentation for thermal_zone_device_register
-      Merge branch 'thermal_core-doc-comments-update' of .git into next
-      Merge branch 'cpu_cooling-doc-comments-update' of .git into next
-      Merge branch 'MAINTAINERS-update' of .git into next
-
- .../devicetree/bindings/thermal/armada-thermal.txt |   22 ++
- Documentation/thermal/exynos_thermal_emulation     |    8 +-
- Documentation/thermal/sysfs-api.txt                |   28 +-
- MAINTAINERS                                        |    3 +
- drivers/thermal/Kconfig                            |   28 +-
- drivers/thermal/Makefile                           |   10 +-
- drivers/thermal/armada_thermal.c                   |  232
-+++++++++++++++
- drivers/thermal/cpu_cooling.c                      |  295
-++++++++++++++------
- drivers/thermal/db8500_cpufreq_cooling.c           |    2 +-
- drivers/thermal/db8500_thermal.c                   |   19 +-
- drivers/thermal/dove_thermal.c                     |    7 +-
- drivers/thermal/exynos_thermal.c                   |  198 +++++--------
- drivers/thermal/fair_share.c                       |   15 +-
- drivers/thermal/kirkwood_thermal.c                 |   12 +-
- drivers/thermal/rcar_thermal.c                     |   34 ++-
- drivers/thermal/step_wise.c                        |   26 +-
- drivers/thermal/{thermal_sys.c => thermal_core.c}  |  197 ++++++++++---
- drivers/thermal/thermal_core.h                     |   27 ++
- drivers/thermal/user_space.c                       |   15 +-
- include/linux/cpu_cooling.h                        |   25 +-
- include/linux/thermal.h                            |   15 +-
- 21 files changed, 858 insertions(+), 360 deletions(-)
- create mode 100644
-Documentation/devicetree/bindings/thermal/armada-thermal.txt
- create mode 100644 drivers/thermal/armada_thermal.c
- rename drivers/thermal/{thermal_sys.c => thermal_core.c} (89%)
-
-
+  -ilia
