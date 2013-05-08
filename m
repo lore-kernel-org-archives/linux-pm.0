@@ -1,52 +1,44 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH, RFC 03/22] cpuidle: calxeda: select ARM_CPU_SUSPEND
-Date: Tue, 07 May 2013 16:42:07 -0500
-Message-ID: <5189752F.8030405@gmail.com>
-References: <1367507786-505303-1-git-send-email-arnd@arndb.de> <1367507786-505303-4-git-send-email-arnd@arndb.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 00/10] optimize freezing tasks by reducing task wakeups
+Date: Wed, 08 May 2013 02:02:24 +0200
+Message-ID: <8514381.qPm240gC5h@vostro.rjw.lan>
+References: <1367884221-20462-1-git-send-email-ccross@android.com> <20130507181237.GE5531@mtj.dyndns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qe0-f44.google.com ([209.85.128.44]:37764 "EHLO
-	mail-qe0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752601Ab3EGVmK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 May 2013 17:42:10 -0400
-In-Reply-To: <1367507786-505303-4-git-send-email-arnd@arndb.de>
+Received: from hydra.sisk.pl ([212.160.235.94]:37720 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753375Ab3EGXyA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 May 2013 19:54:00 -0400
+In-Reply-To: <20130507181237.GE5531@mtj.dyndns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>, Colin Cross <ccross@android.com>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Mandeep Singh Baines <msb@chromium.org>, Oleg Nesterov <oleg@redhat.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 
-On 05/02/2013 10:16 AM, Arnd Bergmann wrote:
-> Like other ARM specific drivers, this one requires ARM_CPU_SUSPEND,
-> as shown by this linker error:
+On Tuesday, May 07, 2013 11:12:37 AM Tejun Heo wrote:
+> Hello,
 > 
-> drivers/built-in.o: In function `calxeda_pwrdown_idle':
-> drivers/cpuidle/cpuidle-calxeda.c:84: undefined reference to `cpu_suspend'
-> drivers/cpuidle/cpuidle-calxeda.c:86: undefined reference to `cpu_resume'
+> On Mon, May 06, 2013 at 04:50:05PM -0700, Colin Cross wrote:
+> > On slow cpus the large number of task wakeups and context switches
+> > triggered by freezing and thawing tasks can take a significant amount
+> > of cpu time.  This patch series reduces the amount of work done during
+> > freezing tasks by avoiding waking up tasks that are already in a freezable
+> > state.
 > 
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> For the whole series,
+> 
+>  Acked-by: Tejun Heo <tj@kernel.org>
+> 
+> Thanks a lot!
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
+All 16 patches queued up as v3.11 material.
 
-> ---
->  drivers/cpuidle/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> index c4cc27e..e21cdfa 100644
-> --- a/drivers/cpuidle/Kconfig
-> +++ b/drivers/cpuidle/Kconfig
-> @@ -36,6 +36,7 @@ if CPU_IDLE
->  config CPU_IDLE_CALXEDA
->  	bool "CPU Idle Driver for Calxeda processors"
->  	depends on ARCH_HIGHBANK
-> +	select ARM_CPU_SUSPEND
->  	help
->  	  Select this to enable cpuidle on Calxeda processors.
->  
-> 
+Many thanks to everyone involved,
+Rafael
 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
