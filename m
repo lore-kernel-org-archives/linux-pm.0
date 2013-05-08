@@ -1,42 +1,53 @@
-From: "John P. Goldman" <gliceaga@mendoza-conicet.gob.ar>
-Subject: dringender Vorschlag
-Date: Wed, 8 May 2013 05:46:28 -0300 (ART)
-Message-ID: <351326728.69416.1368002788604.JavaMail.root__3316.05725591562$1368004095$gmane$org@correo.mendoza-conicet.gob.ar>
-Reply-To: "John P. Goldman" <johnp.goldman@yahoo.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/6] Intel pstate driver update
+Date: Wed, 08 May 2013 13:56:16 +0200
+Message-ID: <3678383.f41mhRL7NJ@vostro.rjw.lan>
+References: <1367940030-19311-1-git-send-email-dirk.j.brandewie@gmail.com> <4686510.A1KmKYg1tS@vostro.rjw.lan> <51899AA7.4030106@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.mendoza-conicet.gob.ar ([200.69.149.90]:40948 "EHLO
-	mx2.mendoza-conicet.gob.ar" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751190Ab3EHJG6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 May 2013 05:06:58 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51899AA7.4030106@gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Dirk Brandewie <dirk.brandewie@gmail.com>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, May 07, 2013 05:21:59 PM Dirk Brandewie wrote:
+> On 05/07/2013 05:07 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, May 07, 2013 08:20:24 AM dirk.brandewie@gmail.com wrote:
+> >> From: dirk <dirk.brandewie@gmail.com>
+> >>
+> > All queued up for a post-3.10-rc1 push as 3.10 material, but I have a couple
+> > of comments.
+> >
+> > First, the patches didn't apply for me cleanly.  I needed to fix up one of
+> > them manually to make it apply and patch [5/6] didn't appear to be necessary
+> > at all (it made changes that had been made previously).  Please check the
+> > bleeding-edge branch of my tree to see if the code is what you wanted and
+> > let me know (either way).
+> >
+> Srinivas's commit d1b6848 collided with my 5/6 patch. my patches were based off 
+> of v3.9. Which branch of yours should I base my submissions on?
+
+Usually, linux-next is a safe bet.
+
+> linux-pm/bleeding-edge is correct.
+
+Good.
+
+> > Second, can you please CC your cpufreq submissions to linux-pm@vger.kernel.org?
+> > That will allow me to use Patchwork for managing them, which is much more
+> > convenient than plain email.
+> >
+> 
+> No problem
+
+Thanks!
+
+Rafael
 
 
-Entschuldigungen f=C3=BCr kommen in Ihre Privatsph=C3=A4re! Ich bin Rec=
-htsanwalt
-Werner Erich Zeller; Ich habe einen meiner einflussreichen und
-wohlhabenden Kunden zum Tode; und er hatte eine sehr geheime und privat=
-e
-Investitionen von =E2=82=AC15,000,000.00 bei einer privaten Bank in Gro=
-=C3=9Fbritannien
-hier zu Lebzeiten. Diese Investition wurde ohne einen deklarierten
-n=C3=A4chsten Angeh=C3=B6rigen und beg=C3=BCnstigte. Jetzt brauche ich =
-Sie arbeiten mit
-mir als mein Partner zu erholen und zu je 50 % Aktienfonds. Alle Dokume=
-nte
-werden rechtlich beantragt und beschafft, und in 5 Werktage, wird diese
-Transaktion auftreten. Aber ich brauche einen ernsten, treuen und
-glaubw=C3=BCrdigen Partner.
-
-Bitte senden Sie mir eine vertrauliche Antwort, wenn Sie denken, Sie
-vertraut werden k=C3=B6nnen und sind von den Qualit=C3=A4ten! Ich warte=
- auf Ihre
-schnelle Antwort.
-
-Werner Erich Zeller (Rechtsanwalt)
-Rufen Sie + 44-702-409-0820 (Office)
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
