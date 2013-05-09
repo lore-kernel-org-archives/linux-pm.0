@@ -1,97 +1,143 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V3 10/21] thermal: exynos: Fix to clear only the generated
- interrupts
-Date: Thu, 9 May 2013 10:33:59 -0400
-Message-ID: <518BB3D7.3010205@ti.com>
-References: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com> <1367931671-3906-11-git-send-email-amit.daniel@samsung.com>
+Subject: Re: [PATCH V3 20/21] thermal: exynos: Support for TMU regulator defined
+ at device tree
+Date: Thu, 9 May 2013 10:44:14 -0400
+Message-ID: <518BB63E.4050006@ti.com>
+References: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com> <1367931671-3906-21-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2BRCKLKSBSBFKIRPVUSWS"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1367931671-3906-11-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+	boundary="----enig2TEQTVBUDMNCGSLQGPGXQ"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:39233 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752821Ab3EIOo3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 May 2013 10:44:29 -0400
+In-Reply-To: <1367931671-3906-21-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Amit Daniel Kachhap <amit.daniel@samsung.com>
 Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-------enig2BRCKLKSBSBFKIRPVUSWS
+------enig2TEQTVBUDMNCGSLQGPGXQ
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
 On 07-05-2013 09:01, Amit Daniel Kachhap wrote:
-> This patch uses the TMU status register to know the generated interrupt=
-s
-> and only clear them in the interrupt handler.
+> TMU probe function now checks for a device tree defined regulator.
+> For compatibility reasons it is allowed to probe driver even without
+> this regulator defined.
 >=20
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 > ---
->  drivers/thermal/samsung/exynos_tmu.c      |   10 ++++------
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->  2 files changed, 6 insertions(+), 6 deletions(-)
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++++
+>  drivers/thermal/samsung/exynos_tmu.c               |   19 ++++++++++++=
++++++++
+>  2 files changed, 23 insertions(+), 0 deletions(-)
 >=20
+> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.t=
+xt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> index 970eeba..ff62f7a 100644
+> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> @@ -14,6 +14,9 @@
+>  - interrupts : Should contain interrupt for thermal system
+>  - clocks : The main clock for TMU device
+>  - clock-names : Thermal system clock name
+> +- vtmu-supply: This entry is optional and provides the regulator node =
+supplying
+> +		voltage to TMU. If needed this entry can be placed inside
+> +		board/platform specific dts file.
+> =20
+>  Example 1):
+> =20
+> @@ -25,6 +28,7 @@ Example 1):
+>  		clocks =3D <&clock 383>;
+>  		clock-names =3D "tmu_apbif";
+>  		status =3D "disabled";
+> +		vtmu-supply =3D <&tmu_regulator_node>;
+>  	};
+> =20
+>  Example 2):
 > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
 sung/exynos_tmu.c
-> index 97b87aa..082d5a2 100644
+> index 72446c9..b7c609a 100644
 > --- a/drivers/thermal/samsung/exynos_tmu.c
 > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -325,17 +325,15 @@ static void exynos_tmu_work(struct work_struct *w=
-ork)
->  			struct exynos_tmu_data, irq_work);
->  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
->  	struct exynos_tmu_registers *reg =3D pdata->registers;
-> +	unsigned int val_irq;
-> =20
->  	exynos_report_trigger();
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
-> =20
-> -	if (data->soc =3D=3D SOC_ARCH_EXYNOS)
-> -		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
-> -			(reg->inten_fall_mask << reg->inten_fall_shift),
-> -				data->base + reg->tmu_intclear);
-> -	else
-> -		writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
-> +	val_irq =3D readl(data->base + reg->tmu_intstat);
-> +	/* clear the interrupts */
-> +	writel(val_irq, data->base + reg->tmu_intclear);
-> =20
-
-hmmm.. Don t you need to act accordingly depending on what is in your
-int status?
-
->  	clk_disable(data->clk);
->  	mutex_unlock(&data->lock);
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index 3a1ded1..7322597 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -45,6 +45,7 @@ static struct exynos_tmu_registers exynos4210_tmu_reg=
-isters =3D {
->  	.inten_rise1_shift =3D EXYNOS_TMU_INTEN_RISE1_SHIFT,
->  	.inten_rise2_shift =3D EXYNOS_TMU_INTEN_RISE2_SHIFT,
->  	.inten_rise3_shift =3D EXYNOS_TMU_INTEN_RISE3_SHIFT,
-> +	.tmu_intstat =3D EXYNOS_TMU_REG_INTSTAT,
->  	.tmu_intclear =3D EXYNOS_TMU_REG_INTCLEAR,
+> @@ -32,6 +32,7 @@
+>  #include <linux/of_address.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/regulator/consumer.h>
+>  #include <linux/slab.h>
+>  #include <linux/workqueue.h>
+>  #include "exynos_thermal_common.h"
+> @@ -52,6 +53,7 @@
+>   * @clk: pointer to the clock structure.
+>   * @temp_error1: fused value of the first point trim.
+>   * @temp_error2: fused value of the second point trim.
+> + * @regulator: pointer to the TMU regulator structure.
+>   * @reg_conf: pointer to structure to register with core thermal.
+>   */
+>  struct exynos_tmu_data {
+> @@ -65,6 +67,7 @@ struct exynos_tmu_data {
+>  	struct mutex lock;
+>  	struct clk *clk;
+>  	u8 temp_error1, temp_error2;
+> +	struct regulator *regulator;
+>  	struct thermal_sensor_conf *reg_conf;
 >  };
->  struct exynos_tmu_platform_data const exynos4210_default_tmu_data =3D =
-{
-> @@ -111,6 +112,7 @@ static struct exynos_tmu_registers exynos5250_tmu_r=
-egisters =3D {
->  	.inten_rise2_shift =3D EXYNOS_TMU_INTEN_RISE2_SHIFT,
->  	.inten_rise3_shift =3D EXYNOS_TMU_INTEN_RISE3_SHIFT,
->  	.inten_fall0_shift =3D EXYNOS_TMU_INTEN_FALL0_SHIFT,
-> +	.tmu_intstat =3D EXYNOS_TMU_REG_INTSTAT,
->  	.tmu_intclear =3D EXYNOS_TMU_REG_INTCLEAR,
->  	.emul_con =3D EXYNOS_EMUL_CON,
->  	.emul_temp_shift =3D EXYNOS_EMUL_DATA_SHIFT,
+> =20
+> @@ -501,10 +504,23 @@ static int exynos_map_dt_data(struct platform_dev=
+ice *pdev)
+>  	struct exynos_tmu_data *data =3D platform_get_drvdata(pdev);
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	struct resource res;
+> +	int ret;
+> =20
+>  	if (!data)
+>  		return -ENODEV;
+> =20
+> +	/* Try enabling the regulator if found */
+> +	data->regulator =3D devm_regulator_get(&pdev->dev, "vtmu");
+> +	if (!IS_ERR(data->regulator)) {
+> +		ret =3D regulator_enable(data->regulator);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to enable vtmu\n");
+> +			return ret;
+> +		}
+> +	} else {
+> +		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
+
+Now that you have a bitfield for your features, shouldnt this become a
+check? If the SoC requires the regulator, then it has to return a valid
+regulator (regulator_get). Meaning, if your SoC version requires this
+feature and the regulator_get returns an error, you must treat as an
+error an not continue gracefuly.
+
+> +	}
+> +
+>  	data->id =3D of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+>  	if (data->id < 0)
+>  		data->id =3D 0;
+> @@ -669,6 +685,9 @@ static int exynos_tmu_remove(struct platform_device=
+ *pdev)
+> =20
+>  	clk_unprepare(data->clk);
+> =20
+> +	if (!IS_ERR(data->regulator))
+> +		regulator_disable(data->regulator);
+> +
+>  	platform_set_drvdata(pdev, NULL);
+> =20
+>  	return 0;
 >=20
 
 
 
-------enig2BRCKLKSBSBFKIRPVUSWS
+------enig2TEQTVBUDMNCGSLQGPGXQ
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -100,9 +146,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlGLs9cACgkQCXcVR3XQvP2MVgD/RJdxxs+P25ePJ5UFje6aV4oB
-460DQqwP3w1nj2SXH9IBAP4GgY9f+VOQpKSgaonWttsWPn0aKS4bshbW6PfMp8pm
-=BDKx
+iF4EAREIAAYFAlGLtj4ACgkQCXcVR3XQvP02/QD/XjlpNSOeXCJj3+EAMnlwfvOU
+G2rls7XIQ1C+M6K/nK0A/3Imb/eU9VxW9g7M8R6+M0+xcaHsX0PIRQ7UVXHgSVGD
+=OtVT
 -----END PGP SIGNATURE-----
 
-------enig2BRCKLKSBSBFKIRPVUSWS--
+------enig2TEQTVBUDMNCGSLQGPGXQ--
