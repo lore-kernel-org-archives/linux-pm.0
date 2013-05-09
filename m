@@ -1,23 +1,72 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 0/3] pm: Introduce __pm to mark power management code
-Date: Thu,  9 May 2013 10:09:23 -0700
-Message-ID: <1368119366-8716-1-git-send-email-linux@roeck-us.net>
+Subject: [PATCH 2/3] hwmon: (tmp102) Convert to use __pm instead of #ifdef CONFIG_PM
+Date: Thu,  9 May 2013 10:09:50 -0700
+Message-ID: <1368119391-13837-3-git-send-email-linux@roeck-us.net>
+References: <1368119391-13837-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1368119391-13837-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jingoo Han <jg1.han@samsung.com>, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-The following patch series introduces a marker for power management functions
-and data. This this marker, #ifdef CONFIG_PM and #ifdef CONFIG_PM_SLEEP
-can be removed from most of the code. This ensures that the conditional code
-still compiles but is not included in the object file.
+With this change, code only needed is power management is active still
+compiles if it is disabled, but does not consume space in the object file.
 
-As a side effect, drivers declaring struct dev_pm_ops unconditionally
-get a bit smaller if CONFIG_PM_SLEEP is not configured.
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ drivers/hwmon/tmp102.c |   14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-The first patch in the series introduces the marker, the following
-two patches introduce the marker in two drivers to demonstrate its use.
-
-The patch series depends on the "PM: Add pm_ops_ptr() macro" patch
-submitted by Jingoo Han.
+diff --git a/drivers/hwmon/tmp102.c b/drivers/hwmon/tmp102.c
+index 523dd89..8e5d267 100644
+--- a/drivers/hwmon/tmp102.c
++++ b/drivers/hwmon/tmp102.c
+@@ -236,8 +236,7 @@ static int tmp102_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_PM
+-static int tmp102_suspend(struct device *dev)
++static int __pm tmp102_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	int config;
+@@ -250,7 +249,7 @@ static int tmp102_suspend(struct device *dev)
+ 	return i2c_smbus_write_word_swapped(client, TMP102_CONF_REG, config);
+ }
+ 
+-static int tmp102_resume(struct device *dev)
++static int __pm tmp102_resume(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	int config;
+@@ -263,16 +262,11 @@ static int tmp102_resume(struct device *dev)
+ 	return i2c_smbus_write_word_swapped(client, TMP102_CONF_REG, config);
+ }
+ 
+-static const struct dev_pm_ops tmp102_dev_pm_ops = {
++static const struct dev_pm_ops __pm tmp102_dev_pm_ops = {
+ 	.suspend	= tmp102_suspend,
+ 	.resume		= tmp102_resume,
+ };
+ 
+-#define TMP102_DEV_PM_OPS (&tmp102_dev_pm_ops)
+-#else
+-#define	TMP102_DEV_PM_OPS NULL
+-#endif /* CONFIG_PM */
+-
+ static const struct i2c_device_id tmp102_id[] = {
+ 	{ "tmp102", 0 },
+ 	{ }
+@@ -281,7 +275,7 @@ MODULE_DEVICE_TABLE(i2c, tmp102_id);
+ 
+ static struct i2c_driver tmp102_driver = {
+ 	.driver.name	= DRIVER_NAME,
+-	.driver.pm	= TMP102_DEV_PM_OPS,
++	.driver.pm	= pm_ops_ptr(&tmp102_dev_pm_ops),
+ 	.probe		= tmp102_probe,
+ 	.remove		= tmp102_remove,
+ 	.id_table	= tmp102_id,
+-- 
+1.7.9.7
