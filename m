@@ -1,129 +1,215 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [RESEND PATCH V3 01/21] thermal: exynos: Moving exynos thermal
- files into samsung directory
-Date: Thu, 9 May 2013 07:45:05 +0530
-Message-ID: <CADGdYn7C-DukJC=eCY9+WJQuZKsQzaRpxb_hWEPSDBOxc71+Pg@mail.gmail.com>
-References: <1367931671-3906-2-git-send-email-amit.daniel@samsung.com>
-	<1367932062-3974-1-git-send-email-amit.daniel@samsung.com>
-	<518A7410.3090605@ti.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [GIT PULL] Thermal management updates for v3.10-rc1
+Date: Thu, 09 May 2013 11:45:21 +0800
+Message-ID: <1368071121.2062.29.camel@rzhang1-mobl4>
+References: <1368029785.2076.7.camel@rzhang1-mobl4>
+	 <CA+55aFws4kr8gdFxRbLzXR=EMw8p1uhrZicyjvqtQm+VumRixg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <518A7410.3090605@ti.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([143.182.124.37]:51819 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753353Ab3EIDp1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 May 2013 23:45:27 -0400
+In-Reply-To: <CA+55aFws4kr8gdFxRbLzXR=EMw8p1uhrZicyjvqtQm+VumRixg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Eduardo,
+Hi, Linus,
 
-On Wed, May 8, 2013 at 9:19 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> On 07-05-2013 09:07, Amit Daniel Kachhap wrote:
->> This movement of files is done for easy maintenance and adding more
->> new sensor's support for exynos platform easily . This will also help in
->> bifurcating exynos common, sensor driver and sensor data related parts.
->>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  drivers/thermal/Kconfig                        |   13 +++++--------
->>  drivers/thermal/Makefile                       |    2 +-
->>  drivers/thermal/samsung/Kconfig                |    9 +++++++++
->>  drivers/thermal/samsung/Makefile               |    4 ++++
->>  drivers/thermal/{ => samsung}/exynos_thermal.c |    0
->>  5 files changed, 19 insertions(+), 9 deletions(-)
->>  create mode 100644 drivers/thermal/samsung/Kconfig
->>  create mode 100644 drivers/thermal/samsung/Makefile
->>  rename drivers/thermal/{ => samsung}/exynos_thermal.c (100%)
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 5e3c025..081ddc5 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -114,14 +114,6 @@ config KIRKWOOD_THERMAL
->>         Support for the Kirkwood thermal sensor driver into the Linux thermal
->>         framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
->>
->> -config EXYNOS_THERMAL
->> -     tristate "Temperature sensor on Samsung EXYNOS"
->> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
->> -     depends on CPU_THERMAL
->> -     help
->> -       If you say yes here you get support for TMU (Thermal Management
->> -       Unit) on SAMSUNG EXYNOS series of SoC.
->> -
->>  config DOVE_THERMAL
->>       tristate "Temperature sensor on Marvell Dove SoCs"
->>       depends on ARCH_DOVE
->> @@ -169,4 +161,9 @@ config INTEL_POWERCLAMP
->>         enforce idle time which results in more package C-state residency. The
->>         user interface is exposed via generic thermal framework.
->>
->> +menu "Samsung thermal drivers"
->> +depends on PLAT_SAMSUNG
->> +source "drivers/thermal/samsung/Kconfig"
->> +endmenu
->> +
->>  endif
->> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->> index c054d41..b3063a9 100644
->> --- a/drivers/thermal/Makefile
->> +++ b/drivers/thermal/Makefile
->> @@ -17,7 +17,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)   += cpu_cooling.o
->>  obj-$(CONFIG_SPEAR_THERMAL)  += spear_thermal.o
->>  obj-$(CONFIG_RCAR_THERMAL)   += rcar_thermal.o
->>  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->> -obj-$(CONFIG_EXYNOS_THERMAL) += exynos_thermal.o
->> +obj-y                                += samsung/
->>  obj-$(CONFIG_DOVE_THERMAL)   += dove_thermal.o
->>  obj-$(CONFIG_DB8500_THERMAL) += db8500_thermal.o
->>  obj-$(CONFIG_ARMADA_THERMAL) += armada_thermal.o
->> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
->> new file mode 100644
->> index 0000000..2d3d9dc
->> --- /dev/null
->> +++ b/drivers/thermal/samsung/Kconfig
->> @@ -0,0 +1,9 @@
->> +config EXYNOS_THERMAL
->> +     tristate "Temperature sensor on Samsung EXYNOS"
->> +     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
->
-> Do you really want to keep a list of Kconfig dependency here?
->
-> I was suggested to have a config entry (like ARCH_HAS_BANDBAP) and then
-> in the driver use:
->         depends on ARCH_HAS_BANDGAP
->
-> And the arch/ code would just selects ARCH_HAS_BANDGAP (like
-> ARCH_HAS_CPUFREQ).
+On Wed, 2013-05-08 at 15:22 -0700, Linus Torvalds wrote:
+> On Wed, May 8, 2013 at 9:16 AM, Zhang Rui <rui.zhang@intel.com> wrote:
+> > Hi, Linus,
+> >
+> > The following changes since commit
+> > 3912a677f68f6084e0a7b6a1a29310ac1b083713:
+> 
+> Hmm? You used to give human-readable explanations too. Please?
+> 
+sure. sorry about that.
 
-yes your suggestion looks good and then no need to change this Kconfig
-for new SOC. Will incorporate this in new version.
+Hi, Linus,
 
-Regards,
-Amit Daniel
->
->> +     depends on CPU_THERMAL
->> +     help
->> +       If you say yes here you get support for TMU (Thermal Management
->> +       Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
->> +       the exynos thermal driver with the core thermal layer and cpu
->> +       cooling API's.
->> diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
->> new file mode 100644
->> index 0000000..1fe6d93
->> --- /dev/null
->> +++ b/drivers/thermal/samsung/Makefile
->> @@ -0,0 +1,4 @@
->> +#
->> +# Samsung thermal specific Makefile
->> +#
->> +obj-$(CONFIG_EXYNOS_THERMAL) += exynos_thermal.o
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/samsung/exynos_thermal.c
->> similarity index 100%
->> rename from drivers/thermal/exynos_thermal.c
->> rename to drivers/thermal/samsung/exynos_thermal.c
->>
->
->
+Please pull from the git repository at
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+
+to receive Thermal management updates for v3.10 with top-most commit
+de6558dc964f6a3243218f17d8032ad810864e2b:
+
+  Merge branch 'MAINTAINERS-update' of .git into next
+
+on top of commit 3912a677f68f6084e0a7b6a1a29310ac1b083713:
+
+  Merge tag 'pinctrl-fixes-for-v3.9' of
+git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl
+
+The most important one is to build thermal core and governor and cpu
+cooling code into one module. This fixes a regression that thermal core
+does not work if it is built as module, since 3.7. I'll backport them to
+stable kernel once those changes are in upstream.
+
+The largest batch is the thermal kernel-doc & coding style
+updates/cleanups from Eduardo.
+
+Highlights:
+
+- build all thermal framework code into one module to fix a regression
+that thermal does not work if it is built as module.
+
+- Marvell Armada 370/XP thermal sensor driver
+
+- thermal core/cpu cooling kernel-doc & coding style updates/cleanups.
+
+- Add Eduardo Valentin as thermal sub-maintainer, both in mailing list
+and patchwork. He will help me on arm thermal drivers.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+
+Amit Daniel Kachhap (1):
+      thermal: exynos: Adapt to temperature emulation core thermal
+framework
+
+Andrew Bresticker (1):
+      thermal: step_wise: set throttle target within thermal instance
+limits
+
+Arnd Bergmann (1):
+      Thermal: exynos: remove unnecessary header inclusions
+
+Axel Lin (2):
+      thermal: db8500: Fix checking return value of
+thermal_zone_device_register
+      thermal: db8500: Fix missing mutex_unlock() in probe error paths
+
+Dan Carpenter (1):
+      Thermal: cpufreq cooling: endian bug in cpufreq_get_max_state()
+
+Eduardo Valentin (46):
+      thermal: add a warning for temperature emulation feature
+      thermal: introduce thermal_zone_get_zone_by_name helper function
+      thermal: expose thermal_zone_get_temp API
+      MAINTAINERS: Add Thermal subsystem co-maintainer
+      MAINTAINERS: Add patchwork entry for Thermal subsystem
+      MAINTAINERS: update thermal entry by adding file cpu_cooling.h
+      thermal: cpu_cooling: remove unused headers
+      thermal: cpu_cooling: fix kernel_doc for cpufreq_cooling_device
+      thermal: cpu_cooling: use EXPORT_SYMBOL_GPL
+      thermal: cpu_cooling: remove compiler warning
+      thermal: cpu_cooling: fix kernel doc for is_cpufreq_valid
+      thermal: cpu_cooling: add documentation for get_property
+      thermal: cpu_cooling: document cpufreq_get_cooling_level
+      thermal: cpu_cooling: improve documentation for get_cpu_frequency
+      thermal: cpu_cooling: update documentation for
+cpufreq_apply_cooling
+      thermal: cpu_cooling: update documentation for
+cpufreq_thermal_notifier
+      thermal: cpu_cooling: update Kconfig entry
+      thermal: cpu_cooling: update documentation for
+cpufreq_get_max_state
+      thermal: cpu_cooling: update documentation for
+cpufreq_get_cur_state
+      thermal: cpu_cooling: update documentation for
+cpufreq_set_cur_state
+      thermal: cpu_cooling: update kernel-doc for
+cpufreq_cooling_register
+      thermal: cpu_cooling: update kernel-doc comment for
+cpufreq_cooling_unregister
+      thermal: cpu_cooling: use snprintf instead of sprintf
+      thermal: cpu_cooling: remove not needed curl brackets
+      thermal: cpu_cooling: remove unused symbols
+      thermal: cpu_cooling: add needed header for cpu_cooling.h
+      thermal: cpu_cooling: remove unused symbols on cpu_cooling.h
+      thermal: use strlcpy instead of strcpy
+      thermal: update driver license
+      thermal: rename notify_thermal_framework to
+thermal_notify_framework
+      thermal: use EXPORT_SYMBOL_GPL
+      thermal: update kernel-doc for thermal_zone_bind_cooling_device
+      thermal: update kernel-doc for thermal_zone_unbind_cooling_device
+      thermal: update kernel-doc for thermal_cooling_device_register
+      thermal: update kernel-doc for create_trip_attrs
+      thermal: update kernel-doc for thermal_zone_device_register
+      thermal: cpu_cooling: remove trailing white spaces
+      thermal: cpu_cooling: standardize end of function
+      thermal: cpu_cooling: standardize comment style
+      thermal: cpu_cooling: align on open parenthesis
+      thermal: cpu_cooling: remove trailing blank line
+      thermal: cpu_cooling: remove checkpatch.pl warning
+      thermal: cpu_cooling: alignment improvements
+      thermal: cpu_cooling: improve line breaking
+      thermal: thermal_core: remove usage of IS_ERR_OR_NULL
+      thermal: db8500_cpufreq_cooling: remove usage of IS_ERR_OR_NULL()
+
+Ezequiel Garcia (5):
+      thermal: Fix compiler warning
+      thermal: kirkwood: Fix valid check for thermal register
+      thermal: kirkwood: Fix thermal sensor formula
+      thermal: dove: Fix thermal sensor formula
+      thermal: Add driver for Armada 370/XP SoC thermal management
+
+Kuninori Morimoto (2):
+      thermal: rcar: tidyup registration failure case
+      thermal: rcar: add pm_runtime_xxx() support
+
+Laurent Navet [Mali] (1):
+      drivers: thermal: cpu_cooling: fix checkpatch warning
+
+Sachin Kamat (2):
+      Thermal: exynos: Add clk_{un}prepare APIs
+      Thermal: exynos: Add compatible string for exynos4412
+
+Zhang Rui (14):
+      Thermal: cpufreq cooling: fix parsing per_cpu
+cpufreq_frequency_table
+      Thermal: exynos: fix cooling state translation
+      Thermal: rename thermal_sys.c to thermal_core.c
+      Thermal: build thermal governors into thermal_sys module
+      Thermal: build cpu_cooling code into thermal_sys module
+      Merge branch 'thermal' of git://git.kernel.org/.../rzhang/linux
+into next
+      Merge branch 'eduardo-1' of .git into next
+      Merge branch 'exynos-fix' of .git into next
+      Merge branch 'thermal_core-doc-comments-update' of .git into next
+      Merge branch 'cpu_cooling-doc-comments-update' of .git into next
+      Thermal: update documentation for thermal_zone_device_register
+      Merge branch 'thermal_core-doc-comments-update' of .git into next
+      Merge branch 'cpu_cooling-doc-comments-update' of .git into next
+      Merge branch 'MAINTAINERS-update' of .git into next
+
+ .../devicetree/bindings/thermal/armada-thermal.txt |   22 ++
+ Documentation/thermal/exynos_thermal_emulation     |    8 +-
+ Documentation/thermal/sysfs-api.txt                |   28 +-
+ MAINTAINERS                                        |    3 +
+ drivers/thermal/Kconfig                            |   28 +-
+ drivers/thermal/Makefile                           |   10 +-
+ drivers/thermal/armada_thermal.c                   |  232
++++++++++++++++
+ drivers/thermal/cpu_cooling.c                      |  295
+++++++++++++++------
+ drivers/thermal/db8500_cpufreq_cooling.c           |    2 +-
+ drivers/thermal/db8500_thermal.c                   |   19 +-
+ drivers/thermal/dove_thermal.c                     |    7 +-
+ drivers/thermal/exynos_thermal.c                   |  198 +++++--------
+ drivers/thermal/fair_share.c                       |   15 +-
+ drivers/thermal/kirkwood_thermal.c                 |   12 +-
+ drivers/thermal/rcar_thermal.c                     |   34 ++-
+ drivers/thermal/step_wise.c                        |   26 +-
+ drivers/thermal/{thermal_sys.c => thermal_core.c}  |  197 ++++++++++---
+ drivers/thermal/thermal_core.h                     |   27 ++
+ drivers/thermal/user_space.c                       |   15 +-
+ include/linux/cpu_cooling.h                        |   25 +-
+ include/linux/thermal.h                            |   15 +-
+ 21 files changed, 858 insertions(+), 360 deletions(-)
+ create mode 100644
+Documentation/devicetree/bindings/thermal/armada-thermal.txt
+ create mode 100644 drivers/thermal/armada_thermal.c
+ rename drivers/thermal/{thermal_sys.c => thermal_core.c} (89%)
+
+
