@@ -1,38 +1,141 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 0/3] pm: Introduce __pm to mark power management code
-Date: Thu, 9 May 2013 13:30:07 -0700
-Message-ID: <20130509203007.GA31769@roeck-us.net>
-References: <1368119366-8716-1-git-send-email-linux@roeck-us.net>
- <1728768.gTkBc2iT1V@vostro.rjw.lan>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V3 04/21] thermal: exynos: Move exynos_thermal.h from
+ include/* to driver/* folder
+Date: Fri, 10 May 2013 07:23:43 +0530
+Message-ID: <CADGdYn5ps6zqgPUEvf40+z3P17Y4tXxK+KqxPGu2y75vjVTmrA@mail.gmail.com>
+References: <1367931671-3906-1-git-send-email-amit.daniel@samsung.com>
+	<1367931671-3906-5-git-send-email-amit.daniel@samsung.com>
+	<518BA478.5050706@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1728768.gTkBc2iT1V@vostro.rjw.lan>
+In-Reply-To: <518BA478.5050706@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jingoo Han <jg1.han@samsung.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 09, 2013 at 09:15:00PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, May 09, 2013 10:09:23 AM Guenter Roeck wrote:
-> > The following patch series introduces a marker for power management functions
-> > and data. This this marker, #ifdef CONFIG_PM and #ifdef CONFIG_PM_SLEEP
-> > can be removed from most of the code. This ensures that the conditional code
-> > still compiles but is not included in the object file.
-> > 
-> > As a side effect, drivers declaring struct dev_pm_ops unconditionally
-> > get a bit smaller if CONFIG_PM_SLEEP is not configured.
-> > 
-> > The first patch in the series introduces the marker, the following
-> > two patches introduce the marker in two drivers to demonstrate its use.
-> > 
-> > The patch series depends on the "PM: Add pm_ops_ptr() macro" patch
-> > submitted by Jingoo Han.
-> 
-> What about CCing a PM core maintainer?
-> 
-Actually, that was the idea. Somehow my send script got screwed up.
-No idea what happened. Sorry for that.
+Hi,
 
-Guenter
+On Thu, May 9, 2013 at 6:58 PM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> Hello Amit,
+>
+> On 07-05-2013 09:00, Amit Daniel Kachhap wrote:
+>> This patch renames and moves  include/linux/platform_data/exynos_thermal.h to
+>> drivers/thermal/samsung/exynos_tmu.h. This file movement is needed as exynos
+>> SOC's are not supporting non-DT based platforms. Also the rename is needed as this
+>> file now just contains exynos tmu driver related definations.
+>>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  drivers/thermal/samsung/exynos_thermal_common.c    |    1 -
+>>  drivers/thermal/samsung/exynos_thermal_common.h    |   15 +++++++++++++++
+>>  drivers/thermal/samsung/exynos_tmu.c               |    2 +-
+>>  .../thermal/samsung/exynos_tmu.h                   |   15 ---------------
+>>  4 files changed, 16 insertions(+), 17 deletions(-)
+>>  rename include/linux/platform_data/exynos_thermal.h => drivers/thermal/samsung/exynos_tmu.h (88%)
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+>> index 9a57606..dae5476 100644
+>> --- a/drivers/thermal/samsung/exynos_thermal_common.c
+>> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+>> @@ -27,7 +27,6 @@
+>>  #include <linux/kernel.h>
+>>  #include <linux/kobject.h>
+>>  #include <linux/mutex.h>
+>> -#include <linux/platform_data/exynos_thermal.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/thermal.h>
+>>  #include "exynos_thermal_common.h"
+>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+>> index da2add0..1c3f8b7 100644
+>> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+>> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+>> @@ -44,6 +44,21 @@
+>>
+>>  #define EXYNOS_ZONE_COUNT    3
+>>
+>> +/**
+>> + * struct freq_clip_table
+>> + * @freq_clip_max: maximum frequency allowed for this cooling state.
+>> + * @temp_level: Temperature level at which the temperature clipping will
+>> + *   happen.
+>> + * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
+>> + *
+>> + * This structure is required to be filled and passed to the
+>> + * cpufreq_cooling_unregister function.
+>> + */
+>> +struct freq_clip_table {
+>> +     unsigned int freq_clip_max;
+>> +     unsigned int temp_level;
+>> +     const struct cpumask *mask_val;
+>> +};
+>>  struct       thermal_trip_point_conf {
+>>       int trip_val[MAX_TRIP_COUNT];
+>>       int trip_count;
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index 3de3e61..a02f2c9 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -30,10 +30,10 @@
+>>  #include <linux/mutex.h>
+>>  #include <linux/of.h>
+>>  #include <linux/platform_device.h>
+>> -#include <linux/platform_data/exynos_thermal.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/workqueue.h>
+>>  #include "exynos_thermal_common.h"
+>> +#include "exynos_tmu.h"
+>>
+>>  /* Exynos generic registers */
+>>  #define EXYNOS_TMU_REG_TRIMINFO              0x0
+>> diff --git a/include/linux/platform_data/exynos_thermal.h b/drivers/thermal/samsung/exynos_tmu.h
+>> similarity index 88%
+>> rename from include/linux/platform_data/exynos_thermal.h
+>> rename to drivers/thermal/samsung/exynos_tmu.h
+>> index da7e627..342fb1f 100644
+>> --- a/include/linux/platform_data/exynos_thermal.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -33,21 +33,6 @@ enum soc_type {
+>>       SOC_ARCH_EXYNOS4210 = 1,
+>>       SOC_ARCH_EXYNOS,
+>>  };
+>> -/**
+>> - * struct freq_clip_table
+>> - * @freq_clip_max: maximum frequency allowed for this cooling state.
+>> - * @temp_level: Temperature level at which the temperature clipping will
+>> - *   happen.
+>> - * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
+>> - *
+>> - * This structure is required to be filled and passed to the
+>> - * cpufreq_cooling_unregister function.
+>> - */
+>> -struct freq_clip_table {
+>> -     unsigned int freq_clip_max;
+>> -     unsigned int temp_level;
+>> -     const struct cpumask *mask_val;
+>> -};
+>>
+>
+> You explain why you need to rename the header, and thats what you do in
+> this patch. On the other hand, you also move the freq_clip_table
+> structure definition. This change is present in this patch, I dont see
+> the connection with the file rename, and you also do not explain why it
+> is needed. Can you please consider, either split this change to other
+> (new) patch or explain it also in this patch?
+Yes I forgot to add explanation here. This is done to fix compilation
+issue when this header is moved. Basically struct freq_clip_table is a
+candidate of common header and I have not included exynos_tmu.h into
+exynos_thermal_common.h. Will provide a detailed explanation.
+
+Thanks,
+Amit
+>
+>
+>>  /**
+>>   * struct exynos_tmu_platform_data
+>>
+>
+>
