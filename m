@@ -1,71 +1,167 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.9.0 + CONFIG_X86_INTEL_PSTATE=y  -> ThinkPad T420 with i5 lost ACPI functionality
-Date: Fri, 10 May 2013 15:10:12 +0200
-Message-ID: <4720627.g9zHkFYIDJ@vostro.rjw.lan>
-References: <5183EC09.9080208@gmx.de> <51842F6F.1050005@intel.com> <5184BF82.4070700@gmx.de>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFC 26/42] drivers/thermal: don't check resource with devm_ioremap_resource
+Date: Fri, 10 May 2013 09:50:29 -0400
+Message-ID: <518CFB25.3040603@ti.com>
+References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de> <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <5184BF82.4070700@gmx.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, linux-acpi@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, boinc_dev@ssl.berkeley.edu
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2THEHHFVQTUAICTMNLNAU"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:45848 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752273Ab3EJNum (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 May 2013 09:50:42 -0400
+In-Reply-To: <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, eduardo.valentin@ti.com
 
-On Saturday, May 04, 2013 09:57:54 AM Toralf F=C3=B6rster wrote:
-> On 05/03/2013 11:43 PM, Dirk Brandewie wrote:
-> > On 05/03/2013 02:26 PM, Toralf F=C3=B6rster wrote:
-> >> On 05/03/2013 11:10 PM, Dirk Brandewie wrote:
-> >>>
-> >>> ignore_nice_load is a feature of the ondemand governor.
-> >>> The intel_pstate driver is seeing the load presented by the BOINC=
- client
-> >>> and is adjusting the pstate accordingly.
-> >>
-> >> Is the intel_pstate driver a choice for a notebook and friends whe=
-re a
-> >> grid software is running as a low-prio back ground job ?
-> >>
-> >=20
-> > Probably not.
->=20
-> Hhm.
->=20
-> The kernel menuconfig says :
->=20
->  This driver provides a P state for Intel core processors
->  The driver implements an internal governor and will become
->  the scaling driver and governor for Sandy bridge processors.
->=20
->=20
-> What shall a company like IBM with a lot of notebook installation run=
-ning BOINC
-> in the back ground process (World Community Grid) do - what's the con=
-sequence for
-> those installations if they will have that a processor ?
->=20
-> In the past (few years ago and related to the ondemand governor IIRC)=
- there were
-> already a longer discussion about the "nice -n 19" topic and the resu=
-lt was
-> to support it.
->=20
-> /me Cc:'ing boinc devs, the topic might be interesting for them too.
+------enig2THEHHFVQTUAICTMNLNAU
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-One option might be to use the powerclamp driver along with intel_pstat=
-e to
-reduce the heat dissipation.
+Wolfram,
 
-Thanks,
-Rafael
+On 10-05-2013 04:17, Wolfram Sang wrote:
+> devm_ioremap_resource does sanity checks on the given resource. No need=
+ to
+> duplicate this in the driver.
+>=20
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> ---
+>  drivers/thermal/dove_thermal.c     |   11 +----------
+>  drivers/thermal/exynos_thermal.c   |    5 -----
+>  drivers/thermal/kirkwood_thermal.c |    7 +------
+>  drivers/thermal/rcar_thermal.c     |    6 +-----
+
+You missed drivers/thermal/armada_thermal.c ?
+
+For the changes below:
+
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+>  4 files changed, 3 insertions(+), 26 deletions(-)
+>=20
+> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_ther=
+mal.c
+> index 3078c40..5c53c53 100644
+> --- a/drivers/thermal/dove_thermal.c
+> +++ b/drivers/thermal/dove_thermal.c
+> @@ -133,25 +133,16 @@ static int dove_thermal_probe(struct platform_dev=
+ice *pdev)
+>  	struct resource *res;
+>  	int ret;
+> =20
+> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
+> -
+>  	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+> =20
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	priv->sensor =3D devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->sensor))
+>  		return PTR_ERR(priv->sensor);
+> =20
+>  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
+>  	priv->control =3D devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->control))
+>  		return PTR_ERR(priv->control);
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_=
+thermal.c
+> index b777ae6..a7bef42 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -967,11 +967,6 @@ static int exynos_tmu_probe(struct platform_device=
+ *pdev)
+>  	INIT_WORK(&data->irq_work, exynos_tmu_work);
+> =20
+>  	data->mem =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!data->mem) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENOENT;
+> -	}
+> -
+>  	data->base =3D devm_ioremap_resource(&pdev->dev, data->mem);
+>  	if (IS_ERR(data->base))
+>  		return PTR_ERR(data->base);
+> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkw=
+ood_thermal.c
+> index e5500ed..e3ca1b4 100644
+> --- a/drivers/thermal/kirkwood_thermal.c
+> +++ b/drivers/thermal/kirkwood_thermal.c
+> @@ -75,16 +75,11 @@ static int kirkwood_thermal_probe(struct platform_d=
+evice *pdev)
+>  	struct kirkwood_thermal_priv *priv;
+>  	struct resource *res;
+> =20
+> -	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
+> -
+>  	priv =3D devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+> =20
+> +	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	priv->sensor =3D devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->sensor))
+>  		return PTR_ERR(priv->sensor);
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_ther=
+mal.c
+> index 2cc5b61..b2217b3 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -385,11 +385,6 @@ static int rcar_thermal_probe(struct platform_devi=
+ce *pdev)
+>  		 * platform has IRQ support.
+>  		 * Then, drier use common register
+>  		 */
+> -		res =3D platform_get_resource(pdev, IORESOURCE_MEM, mres++);
+> -		if (!res) {
+> -			dev_err(dev, "Could not get platform resource\n");
+> -			return -ENODEV;
+> -		}
+> =20
+>  		ret =3D devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
+>  				       dev_name(dev), common);
+> @@ -401,6 +396,7 @@ static int rcar_thermal_probe(struct platform_devic=
+e *pdev)
+>  		/*
+>  		 * rcar_has_irq_support() will be enabled
+>  		 */
+> +		res =3D platform_get_resource(pdev, IORESOURCE_MEM, mres++);
+>  		common->base =3D devm_ioremap_resource(dev, res);
+>  		if (IS_ERR(common->base))
+>  			return PTR_ERR(common->base);
+>=20
 
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+------enig2THEHHFVQTUAICTMNLNAU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGM+yUACgkQCXcVR3XQvP2zfgEA9NkKKRPIc7SF2WuecCpoRxxm
+XXfFS7e7MJ1jUNL/oFQBAPhGVoA8OEd7O6TBRwqqghKbqC3R3H3X81RMQlednoKc
+=dVVD
+-----END PGP SIGNATURE-----
+
+------enig2THEHHFVQTUAICTMNLNAU--
