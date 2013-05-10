@@ -1,50 +1,53 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] idle patches for Linux-3.10 merge
-Date: Fri, 10 May 2013 16:41:24 -0400
-Message-ID: <518D5B74.6050500@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: [RFC PATCHv2 0/2] power: device suspend/resume watchdog
+Date: Fri, 10 May 2013 14:28:47 -0700
+Message-ID: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vc0-f176.google.com ([209.85.220.176]:49300 "EHLO
-	mail-vc0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753276Ab3EJUl1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 May 2013 16:41:27 -0400
-Received: by mail-vc0-f176.google.com with SMTP id ib11so3987578vcb.21
-        for <linux-pm@vger.kernel.org>; Fri, 10 May 2013 13:41:26 -0700 (PDT)
+Received: from mail-pb0-f49.google.com ([209.85.160.49]:52876 "EHLO
+	mail-pb0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753858Ab3EJV3a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 May 2013 17:29:30 -0400
+Received: by mail-pb0-f49.google.com with SMTP id rp2so354214pbb.36
+        for <linux-pm@vger.kernel.org>; Fri, 10 May 2013 14:29:29 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Zoran Markovic <zoran.markovic@linaro.org>, Android Kernel Team <kernel-team@android.com>, Colin Cross <ccross@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-Hi Linus,
+Hi all,
+Attached are two patches addressing comments on the implementation
+of device suspend (and resume) watchdogs from the android kernel. I have
+squashed changes for the suspend and resume watchdogs as they address
+pretty much the same functionality, and also added compile-time
+configurability of the watchdogs.
 
-Please pull these patches to add support for new Haswell-ULT CPU idle power states.
+Please be kind to review and comment if it is ready for upstreaming.
 
-thanks!
-Len Brown, Intel Open Source Technology Center
+Best regards,
+Zoran
 
-The following changes since commit 149c2319c6316d979de90ce2c8665e9c02d5927b:
+Cc: Android Kernel Team <kernel-team@android.com>
+Cc: Colin Cross <ccross@android.com>
+Cc: Todd Poynor <toddpoynor@google.com>
+Cc: San Mehat <san@google.com>
+Cc: Benoit Goby <benoit@android.com>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-  tools/power turbostat: additional Haswell CPU-id (2013-03-15 11:05:26 -0400)
+Benoit Goby (1):
+  drivers: power: Add watchdog timer to catch drivers which lockup
+    during suspend/resume.
 
-are available in the git repository at:
+Zoran Markovic (1):
+  PM: compile-time configuration of device suspend/resume watchdogs.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git release
+ drivers/base/power/main.c |   87 +++++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/Kconfig      |   48 +++++++++++++++++++++++++
+ 2 files changed, 135 insertions(+)
 
-for you to fetch changes up to 86239ceb33b0d8480b0f0ca0eec08e7f7a807374:
+-- 
+1.7.9.5
 
-  intel_idle: initial C8, C9, C10 support (2013-04-17 19:23:32 -0400)
-
-----------------------------------------------------------------
-Kristen Carlson Accardi (1):
-      tools/power turbostat: display C8, C9, C10 residency
-
-Len Brown (1):
-      intel_idle: initial C8, C9, C10 support
-
- arch/x86/include/uapi/asm/msr-index.h |  3 ++
- drivers/idle/intel_idle.c             | 21 ++++++++++++++
- include/linux/cpuidle.h               |  2 +-
- tools/power/x86/turbostat/turbostat.c | 54 ++++++++++++++++++++++++++++++++++-
- 4 files changed, 78 insertions(+), 2 deletions(-)
