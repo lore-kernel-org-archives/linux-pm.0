@@ -1,37 +1,33 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: [RFC 03/42] drivers/cpufreq: don't check resource with devm_ioremap_resource
-Date: Fri, 10 May 2013 10:16:48 +0200
-Message-ID: <1368173847-5661-4-git-send-email-wsa@the-dreams.de>
-References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] pm: Introduce __pm to mark power management code
+Date: Fri, 10 May 2013 12:54:46 +0200
+Message-ID: <20130510105446.GA6107@amd.pavel.ucw.cz>
+References: <1368119391-13837-1-git-send-email-linux@roeck-us.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+Content-Disposition: inline
+In-Reply-To: <1368119391-13837-1-git-send-email-linux@roeck-us.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Jean Delvare <khali@linux-fr.org>, Len Brown <len.brown@intel.com>, Jingoo Han <jg1.han@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-devm_ioremap_resource does sanity checks on the given resource. No need to
-duplicate this in the driver.
+On Thu 2013-05-09 10:09:48, Guenter Roeck wrote:
+> The following patch series introduces a marker for power management functions
+> and data. This this marker, #ifdef CONFIG_PM and #ifdef CONFIG_PM_SLEEP
+> can be removed from most of the code. This ensures that the conditional code
+> still compiles but is not included in the object file.
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
----
- drivers/cpufreq/kirkwood-cpufreq.c |    4 ----
- 1 file changed, 4 deletions(-)
+Was it compile-tested for both PM_SLEEP and !PM_SLEEP cases?
 
-diff --git a/drivers/cpufreq/kirkwood-cpufreq.c b/drivers/cpufreq/kirkwood-cpufreq.c
-index d36ea8d..b2644af 100644
---- a/drivers/cpufreq/kirkwood-cpufreq.c
-+++ b/drivers/cpufreq/kirkwood-cpufreq.c
-@@ -171,10 +171,6 @@ static int kirkwood_cpufreq_probe(struct platform_device *pdev)
- 	priv.dev = &pdev->dev;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!res) {
--		dev_err(&pdev->dev, "Cannot get memory resource\n");
--		return -ENODEV;
--	}
- 	priv.base = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(priv.base))
- 		return PTR_ERR(priv.base);
+If driver wants to have pm-specific fields in its structures, this
+will make it harder.
+
+Ifdefs are ugly, and this has better compiler coverage in !PM_SLEEP
+case. Good. OTOH most people are running with PM_SLEEP, so advantage
+is not great...
+									Pavel
 -- 
-1.7.10.4
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
