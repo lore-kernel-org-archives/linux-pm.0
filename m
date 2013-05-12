@@ -1,36 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Cpufreq: Fix incorrect dependecies for ARM SA11xx drivers
-Date: Sun, 12 May 2013 20:34:56 +0530
-Message-ID: <CAOh2x=mL-_fm8pxUCJCM1MWQxca2ygJWpDS_OTnOfcLS4ZHC1g@mail.gmail.com>
-References: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
+Subject: Re: [PATCH 6/6] thermal: spear: remove unnecessary platform_set_drvdata()
+Date: Sun, 12 May 2013 20:35:20 +0530
+Message-ID: <CAOh2x=n-t+UEe_bW+H_fi2LEAd4RzPPnJU3e+-1gNh3N_oDPZA@mail.gmail.com>
+References: <004401ce4a13$0a2e3ec0$1e8abc40$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1367756288-13422-1-git-send-email-shc_work@mail.ru>
-Sender: cpufreq-owner@vger.kernel.org
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve0-f175.google.com ([209.85.128.175]:36719 "EHLO
+	mail-ve0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753135Ab3ELPFV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 May 2013 11:05:21 -0400
+Received: by mail-ve0-f175.google.com with SMTP id cz11so2433797veb.6
+        for <linux-pm@vger.kernel.org>; Sun, 12 May 2013 08:05:20 -0700 (PDT)
+In-Reply-To: <004401ce4a13$0a2e3ec0$1e8abc40$@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Vincenzo Frascino <vincenzo.frascino@st.com>
 
-On Sun, May 5, 2013 at 5:48 PM, Alexander Shiyan <shc_work@mail.ru> wrote:
+On Mon, May 6, 2013 at 10:04 AM, Jingoo Han <jg1.han@samsung.com> wrote:
+> The driver core clears the driver data to NULL after device_release
+> or on probe failure, since commit 0998d0631001288a5974afc0b2a5f568bcdecb4d
+> (device-core: Ensure drvdata = NULL when no driver is bound).
+> Thus, it is not needed to manually clear the device driver data to NULL.
 >
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
 > ---
->  drivers/cpufreq/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/thermal/spear_thermal.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 >
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index a1488f5..534fcb8 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -47,7 +47,7 @@ config CPU_FREQ_STAT_DETAILS
+> diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_thermal.c
+> index 3c5ee56..1a14eaa 100644
+> --- a/drivers/thermal/spear_thermal.c
+> +++ b/drivers/thermal/spear_thermal.c
+> @@ -174,7 +174,6 @@ static int spear_thermal_exit(struct platform_device *pdev)
+>         struct spear_thermal_dev *stdev = spear_thermal->devdata;
 >
->  choice
->         prompt "Default CPUFreq governor"
-> -       default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-> +       default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
->         default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
->         help
->           This option sets which CPUFreq governor shall be loaded at
+>         thermal_zone_device_unregister(spear_thermal);
+> -       platform_set_drvdata(pdev, NULL);
+>
+>         /* Disable SPEAr Thermal Sensor */
+>         actual_mask = readl_relaxed(stdev->thermal_base);
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
