@@ -1,54 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Why rpm_idle called in rpm_resume ?
-Date: Mon, 13 May 2013 13:55:31 +0200
-Message-ID: <4976623.KzG9Mg72uv@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com> <E62404B31D39064FBDD0B843ADF05A7D2DF42CF662@SC-VEXCH4.marvell.com>
+From: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>
+Subject: Re: Kobject_uevent in cpufreq.c
+Date: Mon, 13 May 2013 04:58:01 -0700
+Message-ID: <20130513115801.GA11433@kroah.com>
+References: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:44455 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752617Ab3EMLq6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 May 2013 07:46:58 -0400
-In-Reply-To: <E62404B31D39064FBDD0B843ADF05A7D2DF42CF662@SC-VEXCH4.marvell.com>
+Received: from mail-da0-f49.google.com ([209.85.210.49]:59426 "EHLO
+	mail-da0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331Ab3EML5u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 07:57:50 -0400
+Received: by mail-da0-f49.google.com with SMTP id p5so849148dak.36
+        for <linux-pm@vger.kernel.org>; Mon, 13 May 2013 04:57:50 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Feng Hong <hongfeng@marvell.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-On Monday, May 13, 2013 12:18:31 AM Feng Hong wrote:
-> Hi, All,
+On Mon, May 13, 2013 at 11:31:57AM +0000, R, Durgadoss wrote:
+> Hi,
 > 
-> Recently, I'm reviewing the runtime implementation, there is one logical puzzle me
-> a lot, can you help to explain ?
+> I am observing an UEvent issue in cpufreq.c. 
+> The cpufreq_add_dev() function is called whenever a core is 'onlined'.
+> we expect the kobject_uevent() method in cpufreq_add_dev() to
+> send an UEvent with KOBJ_ADD as the action parameter.
+> 
+> But this call fails because of the 'filter function' inside kobject_uevent_env
+> inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
+> drivers/base/core.c, where the check for 'device_ktype' fails.
+> 
+> Error message:
+> kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
+> filter function caused the event to drop!
+> 
+> As far as I can see, we need a kset, and associated filter function
+> inside cpufreq.c to get this working. Is this the right way to go ?
+> Any other easy/correct ways to get it working ? Please advise.
 
-That's because the resume may be spurious and in fact it may be possible to suspend
-the device again, which we want to happen if so.
+What exactly are you trying to do, and want the kernel to do?  You
+already get on/offline events for CPUs, why do you want them for cpufreq
+devices as well?
 
-Thanks,
-Rafael
+thanks,
 
-
-> See below, if rpm_callback called with successful return in rpm_resume, rpm_idle will be called, what's the purpose on it ? The device just comeback to active, why call rpm_idle to try to suspend it ?  
-> static int rpm_resume(struct device *dev, int rpmflags)
-> {
->     ...
->     retval = rpm_callback(callback, dev);
->     if (retval) {
->         ...
->     } else {
->         __update_runtime_status(dev, RPM_ACTIVE)
->         ...
->     }
->     if (!retval)
->         rpm_idle(dev, RPM_ASYNC);
->     ....
-> }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+greg k-h
