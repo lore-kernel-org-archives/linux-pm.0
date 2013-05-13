@@ -1,48 +1,57 @@
-From: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>
-Subject: Re: Kobject_uevent in cpufreq.c
-Date: Mon, 13 May 2013 04:58:01 -0700
-Message-ID: <20130513115801.GA11433@kroah.com>
-References: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: [PATCH] hibernate: Correct documentation
+Date: Mon, 13 May 2013 14:00:03 +0200
+Message-ID: <1368446403-4896-1-git-send-email-bp@alien8.de>
+References: <136862945.66DBfZPmr6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-da0-f49.google.com ([209.85.210.49]:59426 "EHLO
-	mail-da0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331Ab3EML5u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 07:57:50 -0400
-Received: by mail-da0-f49.google.com with SMTP id p5so849148dak.36
-        for <linux-pm@vger.kernel.org>; Mon, 13 May 2013 04:57:50 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
+Received: from mail.skyhub.de ([78.46.96.112]:56441 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751251Ab3EMMAH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 May 2013 08:00:07 -0400
+In-Reply-To: <136862945.66DBfZPmr6@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, paulmck@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@suse.de>, =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
 
-On Mon, May 13, 2013 at 11:31:57AM +0000, R, Durgadoss wrote:
-> Hi,
-> 
-> I am observing an UEvent issue in cpufreq.c. 
-> The cpufreq_add_dev() function is called whenever a core is 'onlined'.
-> we expect the kobject_uevent() method in cpufreq_add_dev() to
-> send an UEvent with KOBJ_ADD as the action parameter.
-> 
-> But this call fails because of the 'filter function' inside kobject_uevent_env
-> inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
-> drivers/base/core.c, where the check for 'device_ktype' fails.
-> 
-> Error message:
-> kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
-> filter function caused the event to drop!
-> 
-> As far as I can see, we need a kset, and associated filter function
-> inside cpufreq.c to get this working. Is this the right way to go ?
-> Any other easy/correct ways to get it working ? Please advise.
+=46rom: Borislav Petkov <bp@suse.de>
 
-What exactly are you trying to do, and want the kernel to do?  You
-already get on/offline events for CPUs, why do you want them for cpufreq
-devices as well?
+Correct the meaning of PM_HIBERNATION_PREPARE in the docs, as per
+Rafael.
 
-thanks,
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bj=C3=B8rn Mork <bjorn@mork.no>
+Link: http://lkml.kernel.org/r/20130512162717.GA6305@pd.tnic
+Signed-off-by: Borislav Petkov <bp@suse.de>
+---
+ Documentation/power/notifiers.txt | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-greg k-h
+diff --git a/Documentation/power/notifiers.txt b/Documentation/power/no=
+tifiers.txt
+index c2a4a346c0d9..a81fa254303d 100644
+--- a/Documentation/power/notifiers.txt
++++ b/Documentation/power/notifiers.txt
+@@ -15,8 +15,10 @@ A suspend/hibernation notifier may be used for this =
+purpose.
+ The subsystems or drivers having such needs can register suspend notif=
+iers that
+ will be called upon the following events by the PM core:
+=20
+-PM_HIBERNATION_PREPARE	The system is going to hibernate or suspend, ta=
+sks will
+-			be frozen immediately.
++PM_HIBERNATION_PREPARE	The system is going to hibernate, tasks will be=
+ frozen
++			immediately. This is different from PM_SUSPEND_PREPARE
++			below because here we do additional work between notifiers
++			and drivers freezing.
+=20
+ PM_POST_HIBERNATION	The system memory state has been restored from a
+ 			hibernation image or an error occurred during
+--=20
+1.8.3.rc0
+
