@@ -1,43 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq / intel_pstate: use vzalloc() instead of vmalloc()/memset(0)
-Date: Mon, 13 May 2013 13:49:47 +0530
-Message-ID: <CAKohpom8JB5MSUW=q7FFFm8SOC8d5RbvGpgmw1JZQANJVFq1Dw@mail.gmail.com>
-References: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: [PATCH] cpufreq: rename references to CPU_FREQ_SA11x0
+Date: Mon, 13 May 2013 11:23:45 +0200
+Message-ID: <1368437025.1350.35.camel@x61.thuisdomein>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: rjw@sisk.pl, yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13 May 2013 13:33, Wei Yongjun <weiyj.lk@gmail.com> wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->
-> Use vzalloc() instead of vmalloc() and memset(0).
->
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
-> ---
->  drivers/cpufreq/intel_pstate.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index cc3a8e6..f59aecb 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -788,10 +788,9 @@ static int __init intel_pstate_init(void)
->
->         pr_info("Intel P-state driver initializing.\n");
->
-> -       all_cpu_data = vmalloc(sizeof(void *) * num_possible_cpus());
-> +       all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
->         if (!all_cpu_data)
->                 return -ENOMEM;
-> -       memset(all_cpu_data, 0, sizeof(void *) * num_possible_cpus());
->
->         rc = cpufreq_register_driver(&intel_pstate_driver);
->         if (rc)
->
+The Kconfig symbols CPU_FREQ_SA1100 and CPU_FREQ_SA1110 were renamed in
+commit 59a2e613d0 ("cpufreq: sa11x0: move cpufreq driver to
+drivers/cpufreq"). Rename the last references to those symbols too.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+---
+Untested.
+
+ drivers/cpufreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index a1488f5..534fcb8 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -47,7 +47,7 @@ config CPU_FREQ_STAT_DETAILS
+ 
+ choice
+ 	prompt "Default CPUFreq governor"
+-	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
++	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+ 	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+ 	help
+ 	  This option sets which CPUFreq governor shall be loaded at
+-- 
+1.7.11.7
