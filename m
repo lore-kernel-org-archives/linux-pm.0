@@ -1,43 +1,38 @@
-From: Feng Hong <hongfeng@marvell.com>
-Subject: Why rpm_idle called in rpm_resume ?
-Date: Mon, 13 May 2013 00:18:31 -0700
-Message-ID: <E62404B31D39064FBDD0B843ADF05A7D2DF42CF662@SC-VEXCH4.marvell.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
-	<CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
-	<1769336.FkfMpuXqqb@vostro.rjw.lan>	<5176A807.2090005@samsung.com>
- <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH] cpufreq / intel_pstate: use vzalloc() instead of vmalloc()/memset(0)
+Date: Mon, 13 May 2013 16:03:43 +0800
+Message-ID: <CAPgLHd9Z99KvdBghVqr++9G5eBx5hKA13LmPUpc=K_X3N+uhiQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog129.obsmtp.com ([74.125.149.142]:45469 "EHLO
-	na3sys009aog129.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753276Ab3EMHWT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 May 2013 03:22:19 -0400
-In-Reply-To: <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org
+Cc: yongjun_wei@trendmicro.com.cn, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi, All,
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Recently, I'm reviewing the runtime implementation, there is one logical puzzle me a lot, can you help to explain ?
+Use vzalloc() instead of vmalloc() and memset(0).
 
-See below, if rpm_callback called with successful return in rpm_resume, rpm_idle will be called, what's the purpose on it ? The device just comeback to active, why call rpm_idle to try to suspend it ?  
-static int rpm_resume(struct device *dev, int rpmflags)
-{
-    ...
-    retval = rpm_callback(callback, dev);
-    if (retval) {
-        ...
-    } else {
-        __update_runtime_status(dev, RPM_ACTIVE)
-        ...
-    }
-    if (!retval)
-        rpm_idle(dev, RPM_ASYNC);
-    ....
-}
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ drivers/cpufreq/intel_pstate.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index cc3a8e6..f59aecb 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -788,10 +788,9 @@ static int __init intel_pstate_init(void)
+ 
+ 	pr_info("Intel P-state driver initializing.\n");
+ 
+-	all_cpu_data = vmalloc(sizeof(void *) * num_possible_cpus());
++	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+ 	if (!all_cpu_data)
+ 		return -ENOMEM;
+-	memset(all_cpu_data, 0, sizeof(void *) * num_possible_cpus());
+ 
+ 	rc = cpufreq_register_driver(&intel_pstate_driver);
+ 	if (rc)
+
