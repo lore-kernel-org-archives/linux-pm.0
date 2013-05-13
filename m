@@ -1,71 +1,37 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: 3.9.0 + CONFIG_X86_INTEL_PSTATE=y  -> ThinkPad T420 with i5 lost
- ACPI functionality
-Date: Mon, 13 May 2013 09:43:18 -0700
-Message-ID: <51911826.907@gmail.com>
-References: <5183EC09.9080208@gmx.de> <3715884.H8PIhhjRXL@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V1 resend] cpufreq: Raname index as data in cpufreq_frequency_table
+Date: Mon, 13 May 2013 22:15:25 +0530
+Message-ID: <CAKohpo=hNaWF6kMLv5uQTM4sSHqozKySE31rDgQR+Dq6H6Mb9A@mail.gmail.com>
+References: <7e12acada8adcba5f4eb72f6c49e38aaf00a294f.1368434974.git.viresh.kumar@linaro.org>
+	<5191148E.7050205@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3715884.H8PIhhjRXL@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?UTF-8?B?VG9yYWxmIEbDtnJzdGVy?= <toralf.foerster@gmx.de>, Dirk Brandewie <dirk.brandewie@gmail.com>, linux-acpi@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Dirk Brandewie <dirk.j.brandewie@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5191148E.7050205@wwwdotorg.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/03/2013 12:36 PM, Rafael J. Wysocki wrote:
-> On Friday, May 03, 2013 06:55:37 PM Toralf F=C3=B6rster wrote:
->> The following file doesn't exists at my Gentoo Linux
->> /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice_load
->> in 3.9.0 if I activate CONFIG_X86_INTEL_PSTATE=3Dy
+On 13 May 2013 21:57, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> On 05/13/2013 06:57 AM, Viresh Kumar wrote:
+>> "Index" field of struct cpufreq_frequency_table was never index and isn't used
+>> at all by cpufreq core. And is only useful for cpufreq drivers for their
+>> personal use.
 >>
->> That means, that a command like
+>> Many people now a days blindly set it in ascending order with the assumption
+>> that core is using it for some work.
 >>
->> $> echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/ignore_nice_loa=
-d
->>
->> in /etc/rc.local is now no longer working.
->> A high fan +  high temperature are the result, even if just the BOIN=
-C client
->> is run with low prio (nice 19) in the back ground.
->>
->> Manually loading the missing module won't work too :
->>
->> $> modprobe acpi_cpufreq
->> modprobe: ERROR: could not insert 'acpi_cpufreq': Device or resource=
- busy
->>
->> Is the behaviour a bug or a feature ?
+>> This patch renames it to "data" as that's what its purpose it. All users of the
+>> same are fixed too.
 >
-> The thermal management problem is not an intentional outcome, definit=
-ely.
+>> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
 >
->> In the later case: How can I achieve the previous behaviour back ?
->>
+>> -/* Frequency table index must be sequential starting at 0 */
+>> +/* Frequency table data must be sequential starting at 0 */
+>
+> I assume that comment is due to the assumption you're trying to remove.
+> Should the comment be removed/corrected now? Perhaps the .data field
+> isn't even needed any more in this driver?
 
-I spent some more time looking for a solution to this you can get same =
-behavior
-by setting a config option in BOINC  "Use at most X % CPU time"
-see: http://boinc.berkeley.edu/wiki/Local_preferences
-
-
->> This issue might affect the RH EL kernel too [1] where I observed a =
-similar behaviour.
->>
->>
->> [1] http://elrepo.org/bugs/view.php?id=3D379
->
-> Dirk, is this the problem we were talking about recently or something=
- else?
->
-> Rafael
->
->
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Probably removed and that too in a separate patch.
