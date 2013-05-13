@@ -1,56 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
-Date: Mon, 13 May 2013 11:34:16 +0530
-Message-ID: <CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Mon, 13 May 2013 11:35:22 +0530
+Message-ID: <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
 References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
-	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
-	<CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
-	<CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+	<2a5901ce31c9$95160980$bf421c80$%kim@samsung.com>
+	<CAKohpokk1Q+0gRpeW=ts0a8D+rGAUpHu62X+7ejdpfom_B6FYA@mail.gmail.com>
+	<1769336.FkfMpuXqqb@vostro.rjw.lan>
+	<5176A807.2090005@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com
-Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5176A807.2090005@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Kukjin Kim <kgene.kim@samsung.com>
+Cc: robin.randhawa@arm.com, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
->>>>
->>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>> Cc: Paul Mackerras <paulus@samba.org>
->>>> Cc: Olof Johansson <olof@lixom.net>
->>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>> ---
->>>> Compile Tested only.
->>>>
->>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
->>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
->>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
->>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
->>>>  drivers/cpufreq/Makefile                           |  3 +++
->>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
->>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
->>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
->>>>  8 files changed, 29 insertions(+), 34 deletions(-)
->>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
->>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
->>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
->>>
->>> Hi Deepthi,
->>>
->>> Can you help testing this please?
+On 23 April 2013 20:55, Kukjin Kim <kgene.kim@samsung.com> wrote:
+> On 04/05/13 20:36, Rafael J. Wysocki wrote:
 >>
->> Ping!!
+>> On Friday, April 05, 2013 12:36:34 PM Viresh Kumar wrote:
+>>>
+>>> On 5 April 2013 12:18, Kukjin Kim<kgene.kim@samsung.com>  wrote:
+>>>>
+>>>> Basically, this moving looks good to me, but should be re-worked based
+>>>> on
+>>>> for-next of samsung tree because this touches too many samsung stuff so
+>>>> this
+>>>> should be sent to upstream via samsung tree.
+>>>
+>>>
+>>> Hmm... Its already applied in Rafael's tree. But it doesn't mean that
+>>> it can't be
+>>> moved to your tree if there is a issue.
+>>
+>>
+>> Well, I'm dropping it.  Please merge via the Samsung tree.
+>>
 >
-> Ping!!
+> Oops, I missed, maybe I have no more chance to send this to upstream for
+> upcoming merge window :-(
+>
+> Rafael, please take this patch with my ack in your tree, sorry for noise.
+>
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>
+> If any problems, please kindly let me know.
 
-Hi Benjamin,
-
-Hope you are back from your vacations. Can you give it a try now?
+Who is going to pick this patch now for next merge window?
