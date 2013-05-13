@@ -1,57 +1,86 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [RFC PATCHv2 2/2] PM: compile-time configuration of device suspend/resume
- watchdogs.
-Date: Mon, 13 May 2013 09:03:14 -0700
-Message-ID: <51910EC2.8090501@linaro.org>
-References: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org> <1368221329-1841-3-git-send-email-zoran.markovic@linaro.org> <CAMbhsRT2rc5A3zeKA2Om+y-Kv2HVh0pa6YjQ9BLC2jBBfWfxsA@mail.gmail.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: Kobject_uevent in cpufreq.c
+Date: Mon, 13 May 2013 16:08:19 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C8D936@BGSMSX101.gar.corp.intel.com>
+References: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
+ <20130513115801.GA11433@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f45.google.com ([209.85.160.45]:59184 "EHLO
-	mail-pb0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755047Ab3EMQDS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 12:03:18 -0400
-Received: by mail-pb0-f45.google.com with SMTP id mc8so2670886pbc.4
-        for <linux-pm@vger.kernel.org>; Mon, 13 May 2013 09:03:17 -0700 (PDT)
-In-Reply-To: <CAMbhsRT2rc5A3zeKA2Om+y-Kv2HVh0pa6YjQ9BLC2jBBfWfxsA@mail.gmail.com>
+Received: from mga03.intel.com ([143.182.124.21]:48781 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750992Ab3EMQIY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 12:08:24 -0400
+In-Reply-To: <20130513115801.GA11433@kroah.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Colin Cross <ccross@android.com>
-Cc: Zoran Markovic <zoran.markovic@linaro.org>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, Benoit Goby <benoit@android.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-On 05/10/2013 11:23 PM, Colin Cross wrote:
-> On Fri, May 10, 2013 at 2:28 PM, Zoran Markovic
-> <zoran.markovic@linaro.org> wrote:
->> +#ifdef CONFIG_DPM_WD
->> +/**
->> + * dpm_wd_action - recovery from suspend/resume watchdog timeout
->> + * @wd: Watchdog. Must be allocated on the stack.
->> + */
->> +#if defined(CONFIG_DPM_WD_ACTION_STACKTRACE)
->> +static inline void dpm_wd_action(struct dpm_watchdog *wd)
->> +{
->> +       show_stack(wd->tsk, NULL);
->> +}
->> +#elif defined(CONFIG_DPM_WD_ACTION_PANIC)
->> +static inline void dpm_wd_action(struct dpm_watchdog *wd)
->> +{
->> +       panic("%s: unrecoverable failure\n", dev_name(wd->dev));
-> The panic here is not very useful, it's going to print the stack of
-> the task that was running when the timer fired which is likely to be
-> the idle task if the suspend task is deadlocked.  This should call
-> show_stack and panic.  If you take out the log action, then all this
-> can stay inline with the handler and be:
->
-> dev_emerg(wd->dev, "**** DPM device timeout ****\n");
-> show_stack(wd->tsk, NULL);
-> #ifdef CONFIG_DPM_WD_ACTION_PANIC
-> panic("%s: unrecoverable failure\n", dev_name(wd->dev));
-> #endif
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Greg KH
+> (gregkh@linuxfoundation.org)
+> Sent: Monday, May 13, 2013 5:28 PM
+> To: R, Durgadoss
+> Cc: linux-kernel@vger.kernel.org; Linux PM list (linux-pm@vger.kernel.org);
+> Wysocki, Rafael J
+> Subject: Re: Kobject_uevent in cpufreq.c
+> 
+> On Mon, May 13, 2013 at 11:31:57AM +0000, R, Durgadoss wrote:
+> > Hi,
+> >
+> > I am observing an UEvent issue in cpufreq.c.
+> > The cpufreq_add_dev() function is called whenever a core is 'onlined'.
+> > we expect the kobject_uevent() method in cpufreq_add_dev() to
+> > send an UEvent with KOBJ_ADD as the action parameter.
+> >
+> > But this call fails because of the 'filter function' inside kobject_uevent_env
+> > inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
+> > drivers/base/core.c, where the check for 'device_ktype' fails.
+> >
+> > Error message:
+> > kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
+> > filter function caused the event to drop!
+> >
+> > As far as I can see, we need a kset, and associated filter function
+> > inside cpufreq.c to get this working. Is this the right way to go ?
+> > Any other easy/correct ways to get it working ? Please advise.
+> 
+> What exactly are you trying to do, and want the kernel to do?  You
+> already get on/offline events for CPUs, why do you want them for cpufreq
+> devices as well?
 
-#ifdefs in functions are usually to be avoided. Thus why I suggested he 
-use the config dependent dpm_wd_action() function to handle this.
+I want to update the permission of a cpufreq sysfs interface (scaling_*)
+of a cpu (say cpu1) when the cpu resumes from suspend (s3).
+I am trying to do this by listening to the uevent (sent by cpufreq.c,
+when a cpu resumes) through udev.
 
-thanks
--john
+For example,
+chmod user:user /sys/devices/system/cpu1/cpufreq/scaling_max_freq
 
+But I am not able to receive this event in udev, because kobject_uevent()
+call fails due to the above-mentioned reason (i.e filter function)
+I am trying to see how to make the kobject_uevent() call succeed,
+so that I can change the permission as mentioned above.
+
+The on/offline events come only when I manually do a
+echo 0 > /sys/devices/system/cpu/cpu1/online
+They don't come when the cpu resumes from suspend(s3)
+
+[I checked this in code. Looks like during resume, the call flow
+does not hit cpu.c, where this KOBJ_ONLINE is being sent]
+
+Thanks,
+Durga
+
+> 
+> thanks,
+> 
+> greg k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
