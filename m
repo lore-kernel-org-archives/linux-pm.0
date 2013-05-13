@@ -1,86 +1,69 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: Kobject_uevent in cpufreq.c
-Date: Mon, 13 May 2013 16:08:19 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C8D936@BGSMSX101.gar.corp.intel.com>
-References: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
- <20130513115801.GA11433@kroah.com>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>
+Subject: Re: [PATCH 1/2] PM / OPP: add support to specify phandle of another
+ node for OPP
+Date: Mon, 13 May 2013 17:12:15 +0100
+Message-ID: <519110DF.9070403@arm.com>
+References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com> <1367406679-21603-2-git-send-email-Sudeep.KarkadaNagesha@arm.com> <20130501144120.GA17385@kahuna>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:48781 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992Ab3EMQIY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 12:08:24 -0400
-In-Reply-To: <20130513115801.GA11433@kroah.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20130501144120.GA17385@kahuna>
+Sender: linux-doc-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "rob.herring@calxeda.com" <rob.herring@calxeda.com>, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>
+Cc: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Landley <rob@landley.net>, "Rafael J. Wysocki" <rjw@sisk.pl>, Shawn Guo <shawn.guo@linaro.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Greg KH
-> (gregkh@linuxfoundation.org)
-> Sent: Monday, May 13, 2013 5:28 PM
-> To: R, Durgadoss
-> Cc: linux-kernel@vger.kernel.org; Linux PM list (linux-pm@vger.kernel.org);
-> Wysocki, Rafael J
-> Subject: Re: Kobject_uevent in cpufreq.c
-> 
-> On Mon, May 13, 2013 at 11:31:57AM +0000, R, Durgadoss wrote:
-> > Hi,
-> >
-> > I am observing an UEvent issue in cpufreq.c.
-> > The cpufreq_add_dev() function is called whenever a core is 'onlined'.
-> > we expect the kobject_uevent() method in cpufreq_add_dev() to
-> > send an UEvent with KOBJ_ADD as the action parameter.
-> >
-> > But this call fails because of the 'filter function' inside kobject_uevent_env
-> > inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
-> > drivers/base/core.c, where the check for 'device_ktype' fails.
-> >
-> > Error message:
-> > kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
-> > filter function caused the event to drop!
-> >
-> > As far as I can see, we need a kset, and associated filter function
-> > inside cpufreq.c to get this working. Is this the right way to go ?
-> > Any other easy/correct ways to get it working ? Please advise.
-> 
-> What exactly are you trying to do, and want the kernel to do?  You
-> already get on/offline events for CPUs, why do you want them for cpufreq
-> devices as well?
+Hi device-tree folks,
 
-I want to update the permission of a cpufreq sysfs interface (scaling_*)
-of a cpu (say cpu1) when the cpu resumes from suspend (s3).
-I am trying to do this by listening to the uevent (sent by cpufreq.c,
-when a cpu resumes) through udev.
+On 01/05/13 15:41, Nishanth Menon wrote:
+> On 12:11-20130501, Sudeep.KarkadaNagesha@arm.com wrote:
+>> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>>
+>> If more than one similar devices share the same OPPs, currently we
+>> need to replicate the OPP entries in all the nodes.
+> Nice, thanks.
+>>
+>> Few drivers like cpufreq depend on physical cpu0 node to specify the
+> cpufreq-cpu0?
+>> OPPs and only that node is referred irrespective of the logical cpu
+>> accessing it. Alternatively to support cpuhotplug path, few drivers
+>> parse all the cpu nodes for OPPs. Instead we can specify the phandle
+>> of the node with which the current node shares the operating points.
+>>
+>> This patch adds support to specify the phandle in the operating points
+>> of any device node, where the node specified by the phandle holds the
+>> actual OPPs.
+>>
+>> Signed-off-by: Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>
+>> ---
+>>  Documentation/devicetree/bindings/power/opp.txt |   41 +++++++++++++++++++++++
+>>  drivers/base/power/opp.c                        |   30 ++++++++++++-----
+>>  2 files changed, 63 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+>> index 74499e5..a659da4 100644
+>> --- a/Documentation/devicetree/bindings/power/opp.txt
+>> +++ b/Documentation/devicetree/bindings/power/opp.txt
+>> @@ -23,3 +23,44 @@ cpu@0 {
+>>              198000  850000
+>>      >;
+>>  };
+>> +
+> Definition of operating-points is now a little different in the
+> original description - it still indicates tuple {freq,voltage}, where
+> as, this patch allows phandle to a different device's operating-points
+> to be used. - we might want to rephrase the description.
+>
+> btw, to device-tree folks, I am not sure if it is OK to have different formats
+> for the same property like operating-points. At least I don't seem to
+> quickly be able to find any precedence.
+>
+Any directions on this to proceed ? Is proposed option of phandle for
+OPP acceptable ?
 
-For example,
-chmod user:user /sys/devices/system/cpu1/cpufreq/scaling_max_freq
+Regards,
+Sudeep
 
-But I am not able to receive this event in udev, because kobject_uevent()
-call fails due to the above-mentioned reason (i.e filter function)
-I am trying to see how to make the kobject_uevent() call succeed,
-so that I can change the permission as mentioned above.
+-- IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium.  Thank you.
 
-The on/offline events come only when I manually do a
-echo 0 > /sys/devices/system/cpu/cpu1/online
-They don't come when the cpu resumes from suspend(s3)
-
-[I checked this in code. Looks like during resume, the call flow
-does not hit cpu.c, where this KOBJ_ONLINE is being sent]
-
-Thanks,
-Durga
-
-> 
-> thanks,
-> 
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
