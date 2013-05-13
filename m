@@ -1,39 +1,65 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: Kobject_uevent in cpufreq.c
-Date: Mon, 13 May 2013 11:31:57 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in pm_generic_runtime_idle()
+Date: Mon, 13 May 2013 13:50:18 +0200
+Message-ID: <14273128.qrOYeDHLlu@vostro.rjw.lan>
+References: <1368443127-9636-1-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:63059 "EHLO mga03.intel.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:44449 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933Ab3EMLcC convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 May 2013 07:32:02 -0400
-Content-Language: en-US
+	id S1754110Ab3EMLlq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 May 2013 07:41:46 -0400
+In-Reply-To: <1368443127-9636-1-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>
-Cc: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 
-Hi,
+On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
+> If the device is using autosuspend we should honor that and call
+> pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
+> causes the device to be suspended immediately even though it expects to be
+> suspended only when the autosuspend delay is expired.
+> 
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> ---
+>  drivers/base/power/generic_ops.c |    5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> index bfd898b..19786ca 100644
+> --- a/drivers/base/power/generic_ops.c
+> +++ b/drivers/base/power/generic_ops.c
+> @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
+>  			return ret;
+>  	}
+>  
+> -	pm_runtime_suspend(dev);
+> +	if (dev->power.use_autosuspend)
+> +		pm_runtime_autosuspend(dev);
+> +	else
+> +		pm_runtime_suspend(dev);
+>  	return 0;
 
-I am observing an UEvent issue in cpufreq.c. 
-The cpufreq_add_dev() function is called whenever a core is 'onlined'.
-we expect the kobject_uevent() method in cpufreq_add_dev() to
-send an UEvent with KOBJ_ADD as the action parameter.
+First of all, this is racy (power.use_autosuspend shoud be accessed under
+power.lock).
 
-But this call fails because of the 'filter function' inside kobject_uevent_env
-inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
-drivers/base/core.c, where the check for 'device_ktype' fails.
+Second, this is not the only place we'd need to make this change (the analogous
+function for PCI is one example, but there may be others).
 
-Error message:
-kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
-filter function caused the event to drop!
+Finally, I'm not sure how to address this problem in general.  It may be better
+to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
 
-As far as I can see, we need a kset, and associated filter function
-inside cpufreq.c to get this working. Is this the right way to go ?
-Any other easy/correct ways to get it working ? Please advise.
+I'll have a look at that, thanks for pointing out the problem.
 
-Thanks,
-Durga
+Rafael
+
+
+>  }
+>  EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
