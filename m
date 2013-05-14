@@ -1,142 +1,89 @@
-From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 06/30] thermal: exynos: Move exynos_thermal.h from include/* to driver/* folder
-Date: Tue, 14 May 2013 15:28:36 +0530
-Message-ID: <1368525540-15034-7-git-send-email-amit.daniel@samsung.com>
-References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 15:39:47 +0530
+Message-ID: <51920D6B.7030904@linux.vnet.ibm.com>
+References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <51914FC3.7080003@linux.vnet.ibm.com> <2474384.pn7hhNIAGR@vostro.rjw.lan> <65F5F98566038744B1B43C8FD3B7549F191199BC@IRSMSX104.ger.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:32955 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914Ab3ENKN6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 May 2013 06:13:58 -0400
+Received: from /spool/local
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+	Tue, 14 May 2013 20:02:47 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 814862CE8055
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 20:12:49 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id r4E9we3L19726512
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 19:58:41 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id r4EACl7W029705
+	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 20:12:48 +1000
+In-Reply-To: <65F5F98566038744B1B43C8FD3B7549F191199BC@IRSMSX104.ger.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Jarzmik, Robert" <robert.jarzmik@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-This patch renames and moves include/linux/platform_data/exynos_thermal.h to
-drivers/thermal/samsung/exynos_tmu.h. This file movement is needed as exynos
-SOC's are not supporting non-DT based platforms and this file now just contains
-exynos tmu driver related definations.
-Also struct freq_clip_table is now moved to exynos_thermal_common.c as it fixes
-the compilation issue occuring because now this new tmu header file is included
-in tmu driver c file and not in the common thermal header file.
+On 05/14/2013 02:36 PM, Jarzmik, Robert wrote:
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
+> Sent: Tuesday, May 14, 2013 1:33 AM
+> To: Srivatsa S. Bhat; Jarzmik, Robert
+> Cc: linux-pm@vger.kernel.org
+> Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+> 
+>>> So my question is : is it intended behavior that no udev offline/online event happens on S3 for non-boot CPUs, or is it something I should try to fix ?
+>>
+>> IMHO, using CPU hotplug (offline/online of CPUs) in the S3 path is 
+>> supposed to be totally internal to the suspend/resume code.
+>> It is not intended for userspace to know that we are internally 
+>> offlining/onlining CPUs. So I'm not surprised that udev events are not 
+>> triggered for hotplug in S3 path. And that's not a bug, if you ask me. 
+>> (And yes, even code-wise, we use a slightly different path in the S3 
+>> code, to initiate hotplug. That's why the uevents are by-passed.)
+>>
+>> The user initiated an S3 operation, not CPU hotplug. So there is no 
+>> reason to surprise the user with unexpected events.
+> Hi Srivatsa,
+> 
+> But the user actually *is* very surprised to have "lost" his
+> permissions to write to scaling_max_freq.
 
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
----
- drivers/thermal/samsung/exynos_thermal_common.c    |    1 -
- drivers/thermal/samsung/exynos_thermal_common.h    |   15 ++++++++++++
- drivers/thermal/samsung/exynos_tmu.c               |    2 +-
- .../thermal/samsung/exynos_tmu.h                   |   24 ++++---------------
- 4 files changed, 21 insertions(+), 21 deletions(-)
- rename include/linux/platform_data/exynos_thermal.h => drivers/thermal/samsung/exynos_tmu.h (84%)
+And losing permissions isn't specific to suspend-to-ram right?
+You said that yourself, that on regular cpu online/offline you lose
+the changed permissions. So just write a resume hook to restore whatever
+permissions you want after suspend-resume. See /usr/lib64/pm-utils/sleep.d
+for some sample resume scripts.
 
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
-index 92e50bc..dd49c9f 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.c
-+++ b/drivers/thermal/samsung/exynos_thermal_common.c
-@@ -21,7 +21,6 @@
-  */
- 
- #include <linux/cpu_cooling.h>
--#include <linux/platform_data/exynos_thermal.h>
- #include <linux/slab.h>
- #include <linux/thermal.h>
- 
-diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
-index 8df1848..068f56c 100644
---- a/drivers/thermal/samsung/exynos_thermal_common.h
-+++ b/drivers/thermal/samsung/exynos_thermal_common.h
-@@ -44,6 +44,21 @@
- 
- #define EXYNOS_ZONE_COUNT	3
- 
-+/**
-+ * struct freq_clip_table
-+ * @freq_clip_max: maximum frequency allowed for this cooling state.
-+ * @temp_level: Temperature level at which the temperature clipping will
-+ *	happen.
-+ * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
-+ *
-+ * This structure is required to be filled and passed to the
-+ * cpufreq_cooling_unregister function.
-+ */
-+struct freq_clip_table {
-+	unsigned int freq_clip_max;
-+	unsigned int temp_level;
-+	const struct cpumask *mask_val;
-+};
- struct	thermal_trip_point_conf {
- 	int trip_val[MAX_TRIP_COUNT];
- 	int trip_count;
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 5948f3c..50952e2 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -27,9 +27,9 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/platform_device.h>
--#include <linux/platform_data/exynos_thermal.h>
- 
- #include "exynos_thermal_common.h"
-+#include "exynos_tmu.h"
- 
- /* Exynos generic registers */
- #define EXYNOS_TMU_REG_TRIMINFO		0x0
-diff --git a/include/linux/platform_data/exynos_thermal.h b/drivers/thermal/samsung/exynos_tmu.h
-similarity index 84%
-rename from include/linux/platform_data/exynos_thermal.h
-rename to drivers/thermal/samsung/exynos_tmu.h
-index da7e627..9e0f887 100644
---- a/include/linux/platform_data/exynos_thermal.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -1,8 +1,9 @@
- /*
-- * exynos_thermal.h - Samsung EXYNOS TMU (Thermal Management Unit)
-+ * exynos_tmu.h - Samsung EXYNOS TMU (Thermal Management Unit)
-  *
-  *  Copyright (C) 2011 Samsung Electronics
-  *  Donggeun Kim <dg77.kim@samsung.com>
-+ *  Amit Daniel Kachhap <amit.daniel@samsung.com>
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -19,8 +20,8 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
- 
--#ifndef _LINUX_EXYNOS_THERMAL_H
--#define _LINUX_EXYNOS_THERMAL_H
-+#ifndef _EXYNOS_TMU_H
-+#define _EXYNOS_TMU_H
- #include <linux/cpu_cooling.h>
- 
- enum calibration_type {
-@@ -33,21 +34,6 @@ enum soc_type {
- 	SOC_ARCH_EXYNOS4210 = 1,
- 	SOC_ARCH_EXYNOS,
- };
--/**
-- * struct freq_clip_table
-- * @freq_clip_max: maximum frequency allowed for this cooling state.
-- * @temp_level: Temperature level at which the temperature clipping will
-- *	happen.
-- * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
-- *
-- * This structure is required to be filled and passed to the
-- * cpufreq_cooling_unregister function.
-- */
--struct freq_clip_table {
--	unsigned int freq_clip_max;
--	unsigned int temp_level;
--	const struct cpumask *mask_val;
--};
- 
- /**
-  * struct exynos_tmu_platform_data
-@@ -116,4 +102,4 @@ struct exynos_tmu_platform_data {
- 	struct freq_clip_table freq_tab[4];
- 	unsigned int freq_tab_count;
- };
--#endif /* _LINUX_EXYNOS_THERMAL_H */
-+#endif /* _EXYNOS_TMU_H */
--- 
-1.7.1
+> Or, told differently,
+> if a userspace process handles this scaling_max_freq based on
+> thermal values for example, a suspend/resume will impede his
+> capacity to throttle the CPU, and the CPU will overheat.
+> 
+> A good example is an Android phone : imagine the thermal will not
+> be able anymore to throttle the CPU, the phone will become hot
+> and possibly burn the user (yeah, that's not very probable but
+> still ...).
+> 
+> So you say "there is no reason to surprise the user with
+> unexpected events", and I say "this is a bug that permissions of
+> a /sys file change because a suspend/resume happened". Now if I'm
+> right, what could be done to keep these permissions, other than
+> adding a udev event ?
+> 
+
+The point I was trying to make is that expecting udev events for
+CPU online/offline during S3 is wrong. Nobody is supposed to know that
+we are offlining/onlining CPUs under-the-hood.
+If you want to do something special on resume, use a resume script
+that is automatically invoked for you upon system resume.
+
+Regards,
+Srivatsa S. Bhat
+
