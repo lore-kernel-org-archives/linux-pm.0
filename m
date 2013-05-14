@@ -1,87 +1,130 @@
-From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
-Subject: RE: S3, SMP non boot cpus and
- /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 09:06:34 +0000
-Message-ID: <65F5F98566038744B1B43C8FD3B7549F191199BC@IRSMSX104.ger.corp.intel.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
- <51914FC3.7080003@linux.vnet.ibm.com> <2474384.pn7hhNIAGR@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:59849 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756288Ab3ENJGi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 May 2013 05:06:38 -0400
-In-Reply-To: <2474384.pn7hhNIAGR@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH V4 00/30] thermal: exynos: Add thermal driver for exynos5440
+Date: Tue, 14 May 2013 15:28:30 +0530
+Message-ID: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
------Original Message-----
-From: Rafael J. Wysocki [mailto:rjw@sisk.pl] 
-Sent: Tuesday, May 14, 2013 1:33 AM
-To: Srivatsa S. Bhat; Jarzmik, Robert
-Cc: linux-pm@vger.kernel.org
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Changes in V4:
+ Almost all the changes in this version is as per suggestion from Eduardo.The
+ major ones are listed below,
+* Added kconfig symbol ARCH_HAS_TMU which needs to be enabled by platform. With
+  this change existing symbol EXYNOS_TMU_DATA is not needed.
+* Movement of freq_clip_table from exynos_tmu.h to exynos_thermal_common.h is
+  explained in the commit logs.
+* Wrote all register description documentation.
+* Split 5440 TMU support patch into controller change, configuration data and
+  feature addition patches.
+* Remove all *LINUX_* in the header files.
+* Still regulator enable is kept optional but a TODO: comment is added to fix
+  it later.
 
-> > So my question is : is it intended behavior that no udev offline/online event happens on S3 for non-boot CPUs, or is it something I should try to fix ?
-> 
-> IMHO, using CPU hotplug (offline/online of CPUs) in the S3 path is 
-> supposed to be totally internal to the suspend/resume code.
-> It is not intended for userspace to know that we are internally 
-> offlining/onlining CPUs. So I'm not surprised that udev events are not 
-> triggered for hotplug in S3 path. And that's not a bug, if you ask me. 
-> (And yes, even code-wise, we use a slightly different path in the S3 
-> code, to initiate hotplug. That's why the uevents are by-passed.)
-> 
-> The user initiated an S3 operation, not CPU hotplug. So there is no 
-> reason to surprise the user with unexpected events.
-Hi Srivatsa,
+Changes in V3:
+* Added proper dependency of different exynos thermal Kconfig symbols. Basically 3
+ Kconfig can be enabled now and corresponds to tmu driver. exynos common part
+ and exynos configuration data. This issue was raised by Rui Zhang.
 
-But the user actually *is* very surprised to have "lost" his
-permissions to write to scaling_max_freq. Or, told differently,
-if a userspace process handles this scaling_max_freq based on
-thermal values for example, a suspend/resume will impede his
-capacity to throttle the CPU, and the CPU will overheat.
+Changes in V2:
+* Separated SOC data from TMU driver. This is as per suggestion from Eduardo.
+* Merged the new file created for exynos5440 TMU controller with the existing
+ TMU controller code.
+* Removed the DT parsing code as now the SOC specific data are cleanly put
+ inside the data specific file.
+* Even the register definations/bitfields are treated as data as there is
+ some variation across SOC's.
 
-A good example is an Android phone : imagine the thermal will not
-be able anymore to throttle the CPU, the phone will become hot
-and possibly burn the user (yeah, that's not very probable but
-still ...).
+This patchset adds TMU(Thermal management Unit) driver support for
+exynos5440 platform. There are 3 instances of the TMU controllers so
+necessary cleanup/re-structure is done to handle multiple thermal zone.
 
-So you say "there is no reason to surprise the user with
-unexpected events", and I say "this is a bug that permissions of
-a /sys file change because a suspend/resume happened". Now if I'm
-right, what could be done to keep these permissions, other than
-adding a udev event ?
+Patch (exynos4: Add documentation for Exynos SoC thermal bindings) from
+Lukasz Majewski is already posted to mainline. Adding it here for completeness.
+(http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg17817.html)
 
-> Put another way, in the future, if we change the kernel code to do S3 
-> without using hotplug, then there should be no visible change in 
-> userspace, because how S3 is handled in the kernel is intended to be 
-> an "internal" operation.
-Yep.
+Patch (thermal: exynos: Support thermal tripping ) from Jonghwan Choi is
+added here with some changes.
+(https://patchwork.kernel.org/patch/1668371/)
 
+Patch (thermal: exynos: Support for TMU regulator defined at device tree)
+is a repost of my earlier patch(https://patchwork-mail1.kernel.org/patch/2510771/) 
+and adds regulator support.
 
-Cheers.
+Patch (ARM: dts: Add device tree node for exynos5440 TMU controller) and
+patch (arm: exynos: enable ARCH_HAS_TMU) can be merged through exynos platform
+maintainer as this can cause merge conflict.
 
---
-Robert
+All these patches are based on thermal maintainers git tree,
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next.
 
-PS: My first experience with Outlook instead of my usual Gnus doesn't
-promise a great future cooperation. I'm sorry for mail formatting ...
+Amit Daniel Kachhap (29):
+  thermal: exynos: Moving exynos thermal files into samsung directory
+  thermal: exynos: Add ARCH_HAS_TMU config to know the supported soc's
+  thermal: exynos: Remove CPU_THERMAL dependency for using TMU driver
+  thermal: exynos: Bifurcate exynos thermal common and tmu controller
+    code
+  thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
+  thermal: exynos: Move exynos_thermal.h from include/* to driver/*
+    folder
+  thermal: exynos: Bifurcate exynos tmu driver and configuration data
+  thermal: exynos: Add missing definations and code cleanup
+  thermal: exynos: Add extra entries in the tmu platform data
+  thermal: exynos: Support thermal tripping
+  thermal: exynos: Move register definitions from driver file to data
+    file
+  thermal: exynos: Fix to clear only the generated interrupts
+  thermal: exynos: Add support for instance based register/unregister
+  thermal: exynos: Modify private_data to appropriate name driver_data
+  thermal: exynos: Return success even if no cooling data supplied
+  thermal: exynos: Make the zone handling dependent on trip count
+  thermal: exynos: Add support to handle many instances of TMU
+  thermal: exynos: Add TMU features to check instead of using SOC type
+  thermal: exynos: use device resource management infrastructure
+  thermal: exynos: Add support to access common register for
+    multistance
+  thermal: exynos: Add support for exynos5440 TMU sensor.
+  thermal: exynos: Fix to set the second point correction value
+    properly
+  thermal: exynos: Add thermal configuration data for exynos5440 TMU
+    sensor
+  thermal: exynos: Add a compensation logic on swapped e-fuse values
+  thermal: exynos: Add hardware mode thermal calibration support
+  Documentation: thermal: Explain the exynos thermal driver model
+  thermal: exynos: Support for TMU regulator defined at device tree
+  ARM: dts: Add device tree node for exynos5440 TMU controller
+  arm: exynos: enable ARCH_HAS_TMU
 
----------------------------------------------------------------------
-Intel Corporation SAS (French simplified joint stock company)
-Registered headquarters: "Les Montalets"- 2, rue de Paris, 
-92196 Meudon Cedex, France
-Registration Number:  302 456 199 R.C.S. NANTERRE
-Capital: 4,572,000 Euros
+Lukasz Majewski (1):
+  ARM: dts: thermal: exynos4: Add documentation for Exynos SoC thermal
+    bindings
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+ .../devicetree/bindings/thermal/exynos-thermal.txt |   53 +
+ Documentation/thermal/exynos_thermal               |   43 +-
+ arch/arm/boot/dts/exynos5440.dtsi                  |   30 +
+ arch/arm/mach-exynos/Kconfig                       |    5 +
+ drivers/thermal/Kconfig                            |   13 +-
+ drivers/thermal/Makefile                           |    2 +-
+ drivers/thermal/exynos_thermal.c                   | 1066 --------------------
+ drivers/thermal/samsung/Kconfig                    |   21 +
+ drivers/thermal/samsung/Makefile                   |    7 +
+ drivers/thermal/samsung/exynos_thermal_common.c    |  407 ++++++++
+ drivers/thermal/samsung/exynos_thermal_common.h    |   98 ++
+ drivers/thermal/samsung/exynos_tmu.c               |  741 ++++++++++++++
+ drivers/thermal/samsung/exynos_tmu.h               |  294 ++++++
+ drivers/thermal/samsung/exynos_tmu_data.c          |  225 ++++
+ drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
+ include/linux/platform_data/exynos_thermal.h       |  119 ---
+ 16 files changed, 2076 insertions(+), 1203 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+ delete mode 100644 drivers/thermal/exynos_thermal.c
+ create mode 100644 drivers/thermal/samsung/Kconfig
+ create mode 100644 drivers/thermal/samsung/Makefile
+ create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+ create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+ create mode 100644 drivers/thermal/samsung/exynos_tmu.c
+ create mode 100644 drivers/thermal/samsung/exynos_tmu.h
+ create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+ create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+ delete mode 100644 include/linux/platform_data/exynos_thermal.h
