@@ -1,57 +1,71 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 20/30] ARM: dts: thermal: exynos4: Add documentation for Exynos SoC thermal bindings
-Date: Tue, 14 May 2013 15:28:50 +0530
-Message-ID: <1368525540-15034-21-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V4 30/30] arm: exynos: enable ARCH_HAS_TMU
+Date: Tue, 14 May 2013 15:29:00 +0530
+Message-ID: <1368525540-15034-31-git-send-email-amit.daniel@samsung.com>
 References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-da0-f42.google.com ([209.85.210.42]:60846 "EHLO
+	mail-da0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932313Ab3ENKBi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 May 2013 06:01:38 -0400
 In-Reply-To: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Lukasz Majewski <l.majewski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 
-From: Lukasz Majewski <l.majewski@samsung.com>
+This patch enables ARCH_HAS_TMU config for exynos4210, 4212, 4412, 5250
+and 5440 SOC.
 
-Proper description for Exynos4 bindings added to Documentation/devicetree/
-bindings
-
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- .../devicetree/bindings/thermal/exynos-thermal.txt |   25 ++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+ arch/arm/mach-exynos/Kconfig |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-new file mode 100644
-index 0000000..535fd0e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-@@ -0,0 +1,25 @@
-+* Exynos Thermal Management Unit (TMU)
-+
-+** Required properties:
-+
-+- compatible : One of the following:
-+	       "samsung,exynos4412-tmu"
-+	       "samsung,exynos4210-tmu"
-+	       "samsung,exynos5250-tmu"
-+- interrupt-parent : The phandle for the interrupt controller
-+- reg : Address range of the thermal registers
-+- interrupts : Should contain interrupt for thermal system
-+- clocks : The main clock for TMU device
-+- clock-names : Thermal system clock name
-+
-+Example:
-+
-+	tmu@100C0000 {
-+		compatible = "samsung,exynos4412-tmu";
-+		interrupt-parent = <&combiner>;
-+		reg = <0x100C0000 0x100>;
-+		interrupts = <2 4>;
-+		clocks = <&clock 383>;
-+		clock-names = "tmu_apbif";
-+		status = "disabled";
-+	};
+diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
+index 70f94c8..919a2f2 100644
+--- a/arch/arm/mach-exynos/Kconfig
++++ b/arch/arm/mach-exynos/Kconfig
+@@ -31,6 +31,7 @@ config CPU_EXYNOS4210
+ 	bool "SAMSUNG EXYNOS4210"
+ 	default y
+ 	depends on ARCH_EXYNOS4
++	select ARCH_HAS_TMU
+ 	select ARM_CPU_SUSPEND if PM
+ 	select PM_GENERIC_DOMAINS
+ 	select S5P_PM if PM
+@@ -43,6 +44,7 @@ config SOC_EXYNOS4212
+ 	bool "SAMSUNG EXYNOS4212"
+ 	default y
+ 	depends on ARCH_EXYNOS4
++	select ARCH_HAS_TMU
+ 	select S5P_PM if PM
+ 	select S5P_SLEEP if PM
+ 	select SAMSUNG_DMADEV
+@@ -53,6 +55,7 @@ config SOC_EXYNOS4412
+ 	bool "SAMSUNG EXYNOS4412"
+ 	default y
+ 	depends on ARCH_EXYNOS4
++	select ARCH_HAS_TMU
+ 	select SAMSUNG_DMADEV
+ 	help
+ 	  Enable EXYNOS4412 SoC support
+@@ -61,6 +64,7 @@ config SOC_EXYNOS5250
+ 	bool "SAMSUNG EXYNOS5250"
+ 	default y
+ 	depends on ARCH_EXYNOS5
++	select ARCH_HAS_TMU
+ 	select S5P_PM if PM
+ 	select S5P_SLEEP if PM
+ 	select S5P_DEV_MFC
+@@ -72,6 +76,7 @@ config SOC_EXYNOS5440
+ 	bool "SAMSUNG EXYNOS5440"
+ 	default y
+ 	depends on ARCH_EXYNOS5
++	select ARCH_HAS_TMU
+ 	select ARM_ARCH_TIMER
+ 	select AUTO_ZRELADDR
+ 	select PINCTRL
 -- 
 1.7.1
+
