@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 03/30] thermal: exynos: Remove CPU_THERMAL dependency for using TMU driver
-Date: Tue, 14 May 2013 15:28:33 +0530
-Message-ID: <1368525540-15034-4-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V4 02/30] thermal: exynos: Add ARCH_HAS_TMU config to know the supported soc's
+Date: Tue, 14 May 2013 15:28:32 +0530
+Message-ID: <1368525540-15034-3-git-send-email-amit.daniel@samsung.com>
 References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
@@ -10,27 +10,30 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch removes the dependency on CPU_THERMAL for compiling TMU driver.
-This is useful for cases when only TMU controller needs to be initialised
-without cpu cooling action.
+This patch adds config sybmol ARCH_HAS_TMU to enable the TMU driver.
+This will allow adding support for new soc easily as now it is the
+platform responsibility to enable this config symbol.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+ drivers/thermal/samsung/Kconfig |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-index 145a55d..b5ab971 100644
+index 2d3d9dc..145a55d 100644
 --- a/drivers/thermal/samsung/Kconfig
 +++ b/drivers/thermal/samsung/Kconfig
-@@ -4,7 +4,6 @@ config ARCH_HAS_TMU
+@@ -1,6 +1,9 @@
++config ARCH_HAS_TMU
++	bool
++
  config EXYNOS_THERMAL
  	tristate "Temperature sensor on Samsung EXYNOS"
- 	depends on ARCH_HAS_TMU
--	depends on CPU_THERMAL
+-	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
++	depends on ARCH_HAS_TMU
+ 	depends on CPU_THERMAL
  	help
  	  If you say yes here you get support for TMU (Thermal Management
- 	  Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
 -- 
 1.7.1
