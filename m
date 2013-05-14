@@ -1,67 +1,88 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: S3, SMP non boot cpus and
- /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 11:20:30 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
- <CAKohponfQ11Ak9Q-HmSK83g1XB5_KF0UDHaSQh_jiEZBNtSUMw@mail.gmail.com>
- <5192119B.4020009@linux.vnet.ibm.com> <1598695.llKRKEsWfA@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 13:33:01 +0200
+Message-ID: <2172262.yzQn9gFeOZ@vostro.rjw.lan>
+References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <1598695.llKRKEsWfA@vostro.rjw.lan> <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:49305 "EHLO mga02.intel.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:45702 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138Ab3ENLUj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 May 2013 07:20:39 -0400
-In-Reply-To: <1598695.llKRKEsWfA@vostro.rjw.lan>
-Content-Language: en-US
+	id S1750830Ab3ENLY1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 May 2013 07:24:27 -0400
+In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
-Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
-biBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogVHVlc2RheSwgTWF5IDE0LCAy
-MDEzIDQ6NTMgUE0NCj4gVG86IFNyaXZhdHNhIFMuIEJoYXQNCj4gQ2M6IFZpcmVzaCBLdW1hcjsg
-SmFyem1paywgUm9iZXJ0OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6
-IFMzLCBTTVAgbm9uIGJvb3QgY3B1cyBhbmQgL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHVbMS0NCj4g
-OV0vY3B1ZnJlcS9zY2FsaW5nX21heF9mcmVxDQo+IA0KPiBPbiBUdWVzZGF5LCBNYXkgMTQsIDIw
-MTMgMDM6NTc6MzkgUE0gU3JpdmF0c2EgUy4gQmhhdCB3cm90ZToNCj4gPiBPbiAwNS8xNC8yMDEz
-IDAzOjUyIFBNLCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+ID4gPiBPbiAxNCBNYXkgMjAxMyAxNToz
-OSwgU3JpdmF0c2EgUy4gQmhhdA0KPiA8c3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb20+
-IHdyb3RlOg0KPiA+ID4+IEFuZCBsb3NpbmcgcGVybWlzc2lvbnMgaXNuJ3Qgc3BlY2lmaWMgdG8g
-c3VzcGVuZC10by1yYW0gcmlnaHQ/DQo+ID4gPj4gWW91IHNhaWQgdGhhdCB5b3Vyc2VsZiwgdGhh
-dCBvbiByZWd1bGFyIGNwdSBvbmxpbmUvb2ZmbGluZSB5b3UgbG9zZQ0KPiA+ID4+IHRoZSBjaGFu
-Z2VkIHBlcm1pc3Npb25zLiBTbyBqdXN0IHdyaXRlIGEgcmVzdW1lIGhvb2sgdG8gcmVzdG9yZQ0K
-PiB3aGF0ZXZlcg0KPiA+ID4+IHBlcm1pc3Npb25zIHlvdSB3YW50IGFmdGVyIHN1c3BlbmQtcmVz
-dW1lLiBTZWUgL3Vzci9saWI2NC9wbS0NCj4gdXRpbHMvc2xlZXAuZA0KPiA+ID4+IGZvciBzb21l
-IHNhbXBsZSByZXN1bWUgc2NyaXB0cy4NCj4gPiA+DQo+ID4gPiBUaGlzIGlzIHdoYXQgaSBmZWVs
-IGFib3V0IGxvc2luZyBjaGFnZXMgb24gY3B1IGhvdHBsdWcvdW5wbHVnOg0KPiA+ID4gLSBPbiBu
-b3JtYWwgb25saW5lL29mZmxpbmUsIHdlIGFyZW4ndCByZXF1aXJlZCB0byBwcmVzZXJ2ZSBlYXJs
-aWVyDQo+IHNldHRpbmdzLg0KPiA+DQo+ID4gRnJvbSBSb2JlcnQncyBkZXNjcmlwdGlvbnMsIHdl
-IF9hcmVfIHJlcXVpcmVkIHRvIHByZXNlcnZlIHRoZSBzZXR0aW5ncy4NCj4gQnV0DQo+ID4gdGhp
-cyBpcyBzb21ld2hhdCBhY2NlcHRhYmxlIGJlY2F1c2UgdGhlIHVzZXIgX2tub3dzXyBoZSBpcyBk
-b2luZw0KPiBob3RwbHVnLg0KPiA+DQo+ID4gPiAtIEJ1dCBvbiBzdXNwZW5kL3Jlc3VtZSwgdXNl
-ciBzaG91bGRuJ3Qga25vdyB0aGF0IGNwdXMgaGF2ZSBiZWVuDQo+ID4gPiAgIHJlbW92ZWQvYWRk
-ZWQgYW5kIHNvIHBlcm1pc3Npb25zIHNob3VsZCBzdGF5IGFzIGlzLg0KPiA+ID4NCj4gPg0KPiA+
-IEhtbSwgeW91IGFyZSByaWdodC4gSXQgaXMgd3JvbmcgZm9yIHVzIHRvIGV4cGVjdCB0aGUgdXNl
-ciB0byB1c2UgY3VzdG9tDQo+IHNjcmlwdHMNCj4gPiB0byBwcmVzZXJ2ZSBwZXJtaXNzaW9ucyBh
-Y3Jvc3MgUzMsIHNpbmNlIGhlIGlzIHN1cHBvc2VkIHRvIHJlbWFpbiBpZ25vcmFudA0KPiBvZg0K
-PiA+IENQVSBob3RwbHVnIGluIHRoaXMgcGF0aC4NCj4gPg0KPiA+ID4gV2hhdCBkbyB5b3Ugc2F5
-Pw0KPiA+ID4NCj4gPg0KPiA+IEkgYWdyZWUsIHdlIHNob3VsZCB0cnkgdG8gZml4IGl0IGZvciB0
-aGUgUzMvUzQgY2FzZS4gUm9iZXJ0LCBJJ20gc29ycnksIHlvdQ0KPiB3ZXJlDQo+ID4gcmlnaHQg
-LSBpZiBTMyBpcyBzdXBwb3NlZCB0byBoaWRlIENQVSBob3RwbHVnLCBpdCBzaG91bGQgaGlkZSBp
-dCBjb21wbGV0ZWx5IG9yDQo+ID4gbm90IGF0IGFsbC4gQW5kIHNpbmNlIHdlIGdvIHdpdGggdGhl
-IGZvcm1lciBvcHRpb24sIGEgZml4IGZvciB0aGUgcGVybWlzc2lvbnMNCj4gPiBpcyBpbiBvcmRl
-ciwgSU1ITy4NCj4gDQo+IEkgYWdyZWUuDQoNCk5vdyB0aGF0IHdlIGFncmVlIG9uIHRoaXMsIGhv
-dyBzaG91bGQgZ28gYWJvdXQgdGhlIGZpeCA/DQpJIHdhcyBkZWJ1Z2dpbmcgdGhpcyB0byBhbiBl
-eHRlbnQsIGFuZCBhc2tlZCBhIHF1ZXN0aW9uIG9uIFsxXS4NCg0KVGhhbmtzLA0KRHVyZ2ENClsx
-XSBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxMy81LzEzLzE5MA0KDQo+IA0KPiBUaGFua3MsDQo+
-IFJhZmFlbA0KPiANCj4gDQo+IC0tDQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZh
-ZWwgSi4gV3lzb2NraSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IC0t
-DQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNj
-cmliZSBsaW51eC1wbSIgaW4NCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2
-Z2VyLmtlcm5lbC5vcmcNCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2Vy
-bmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo=
+On Tuesday, May 14, 2013 11:20:30 AM R, Durgadoss wrote:
+> > -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > Sent: Tuesday, May 14, 2013 4:53 PM
+> > To: Srivatsa S. Bhat
+> > Cc: Viresh Kumar; Jarzmik, Robert; linux-pm@vger.kernel.org
+> > Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-
+> > 9]/cpufreq/scaling_max_freq
+> > 
+> > On Tuesday, May 14, 2013 03:57:39 PM Srivatsa S. Bhat wrote:
+> > > On 05/14/2013 03:52 PM, Viresh Kumar wrote:
+> > > > On 14 May 2013 15:39, Srivatsa S. Bhat
+> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> > > >> And losing permissions isn't specific to suspend-to-ram right?
+> > > >> You said that yourself, that on regular cpu online/offline you lose
+> > > >> the changed permissions. So just write a resume hook to restore
+> > whatever
+> > > >> permissions you want after suspend-resume. See /usr/lib64/pm-
+> > utils/sleep.d
+> > > >> for some sample resume scripts.
+> > > >
+> > > > This is what i feel about losing chages on cpu hotplug/unplug:
+> > > > - On normal online/offline, we aren't required to preserve earlier
+> > settings.
+> > >
+> > > From Robert's descriptions, we _are_ required to preserve the settings.
+> > But
+> > > this is somewhat acceptable because the user _knows_ he is doing
+> > hotplug.
+> > >
+> > > > - But on suspend/resume, user shouldn't know that cpus have been
+> > > >   removed/added and so permissions should stay as is.
+> > > >
+> > >
+> > > Hmm, you are right. It is wrong for us to expect the user to use custom
+> > scripts
+> > > to preserve permissions across S3, since he is supposed to remain ignorant
+> > of
+> > > CPU hotplug in this path.
+> > >
+> > > > What do you say?
+> > > >
+> > >
+> > > I agree, we should try to fix it for the S3/S4 case. Robert, I'm sorry, you
+> > were
+> > > right - if S3 is supposed to hide CPU hotplug, it should hide it completely or
+> > > not at all. And since we go with the former option, a fix for the permissions
+> > > is in order, IMHO.
+> > 
+> > I agree.
+> 
+> Now that we agree on this, how should go about the fix ?
+> I was debugging this to an extent, and asked a question on [1].
+
+This wasn't the right question to ask.  We need the permissions to be preserved
+by the kernel, not to be restored by user space.
+
+Thanks,
+Rafael
+
+
+> Thanks,
+> Durga
+> [1] https://lkml.org/lkml/2013/5/13/190
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
