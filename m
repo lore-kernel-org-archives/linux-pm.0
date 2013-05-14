@@ -1,54 +1,39 @@
-From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
-Subject: RE: S3, SMP non boot cpus and
- /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 11:54:23 +0000
-Message-ID: <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
- <1598695.llKRKEsWfA@vostro.rjw.lan>
- <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
- <2172262.yzQn9gFeOZ@vostro.rjw.lan>
- <4D68720C2E767A4AA6A8796D42C8EB59C8E7D8@BGSMSX101.gar.corp.intel.com>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: RE: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to
+ drivers/cpufreq
+Date: Tue, 14 May 2013 21:36:42 +0900
+Message-ID: <093901ce509f$afe92f40$0fbb8dc0$%kim@samsung.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+ <5176A807.2090005@samsung.com>
+ <CAKohpomV9-JEbuHWdmp6N+bKYt+83hXXcqg4aKXSY1a5zwpW9Q@mail.gmail.com>
+ <105283277.osOpfTKkgk@vostro.rjw.lan>
+ <CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:7330 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753680Ab3ENLzw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 May 2013 07:55:52 -0400
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8E7D8@BGSMSX101.gar.corp.intel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>
+Content-language: ko
+Sender: cpufreq-owner@vger.kernel.org
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@sisk.pl>
+Cc: robin.randhawa@arm.com, 'Ben Dooks' <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiBPa2F5LCBhZ3JlZWQgYWZ0ZXIgbG9va2luZyBhdCB0aGlzIGRpc2N1c3Npb24gOykgSSBhbSBm
-aW5lIHdpdGggdGhlIGFwcHJvYWNoIG9mIGtlcm5lbCBwcmVzZXJ2aW5nIHBlcm1pc3Npb25zIHRv
-by4NCg0KT2ssIHRoYXQncyBncmVhdCwgeWV0IEkgZG9uJ3Qgc2VlIGEgY2xlYW4gc29sdXRpb24g
-aGVyZS4gIFRoaXMgaXMNCnRoZSBwYXRoIEkgc2VlIGFuZCB0aGF0IGJvdGhlcnMgbWUgaW4gdGhl
-IFMzIHN1c3BlbmQgcGF0aDoNCmNwdWZyZXFfc3lzZnNfcmVsZWFzZQ0KICBrb2JqZWN0X2NsZWFu
-dXANCiAgICBrb2JqZWN0X3JlbGVhc2UNCiAgICAgIGtvYmplY3RfcHV0DQogICAgICAgIF9fY3B1
-ZnJlcV9yZW1vdmVfZGV2DQogICAgICAgICAgY3B1ZnJlcV9jcHVfY2FsbGJhY2sNCiAgICAgICAg
-ICAgIG5vdGlmaWVyX2NhbGxfY2hhaW4NCiAgICAgICAgICAgICAgX19yYXdfbm90aWZpZXJfY2Fs
-bF9jaGFpbg0KICAgICAgICAgICAgICAgIF9fY3B1X25vdGlmeQ0KICAgICAgICAgICAgICAgICAg
-X2NwdV9kb3duDQoNCkhlcmUgdGhlIHN5c2ZzIGF0dHJpYnV0ZXMgYXJlIGRlc3Ryb3llZC4gQ3B1
-IG9ubGluaW5nIHdpbGwNCnJlY3JlYXRlIHRoZW0gd2l0aCByb290IHBlcm1pc3Npb25zLiBJIGRv
-bid0IHNlZSBhIGdvb2QgY2xlYW4gd2F5DQp0byBwcmVzZXJ2ZSBwZXJtaXNzaW9ucyBpbiBzeXNm
-cyBhY3Jvc3Mgc3VzcGVuZC9yZXN1bWUgZm9yDQpkZWxldGVkIG5vZGVzLiBEbyB5b3UgPw0KDQpB
-bmQgaGVyZSB3ZSBjb21lIHRvIG15IGFjdHVhbCB3b3JyeSA6IHdoYXQgaXMgdGhlIHRlY2huaWNh
-bCBjbGVhbg0Kd2F5IHRvIHNvbHZlIHRoaXMgcHJvYmxlbSA/DQoNClNvIGZhciBJIGhhdmUgbm8g
-aWRlYSAodGhlIGNwdWZyZXEgZXhhbXBsZSBpcyBvbmx5IGEgc3Vic2V0IG9mDQp0aGUgY2FzZXMg
-d2hlcmUgaXQgY291bGQgaGFwcGVuKS4gU28gaWYgc29tZW9uZSBjb21lcyB1cCB3aXRoIGENCmdv
-b2QgaWRlYSBJJ2xsIHZvbHVudGVlciB0byBpbXBsZW1lbnQgaXQgOikNCg0KQ2hlZXJzLg0KDQot
-LQ0KUm9iZXJ0DQoNCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpJbnRlbCBDb3Jwb3JhdGlvbiBTQVMgKEZyZW5jaCBz
-aW1wbGlmaWVkIGpvaW50IHN0b2NrIGNvbXBhbnkpClJlZ2lzdGVyZWQgaGVhZHF1YXJ0ZXJzOiAi
-TGVzIE1vbnRhbGV0cyItIDIsIHJ1ZSBkZSBQYXJpcywgCjkyMTk2IE1ldWRvbiBDZWRleCwgRnJh
-bmNlClJlZ2lzdHJhdGlvbiBOdW1iZXI6ICAzMDIgNDU2IDE5OSBSLkMuUy4gTkFOVEVSUkUKQ2Fw
-aXRhbDogNCw1NzIsMDAwIEV1cm9zCgpUaGlzIGUtbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIG1h
-eSBjb250YWluIGNvbmZpZGVudGlhbCBtYXRlcmlhbCBmb3IKdGhlIHNvbGUgdXNlIG9mIHRoZSBp
-bnRlbmRlZCByZWNpcGllbnQocykuIEFueSByZXZpZXcgb3IgZGlzdHJpYnV0aW9uCmJ5IG90aGVy
-cyBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQKcmVj
-aXBpZW50LCBwbGVhc2UgY29udGFjdCB0aGUgc2VuZGVyIGFuZCBkZWxldGUgYWxsIGNvcGllcy4K
+Viresh Kumar wrote:
+> 
+> On 13 May 2013 16:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > That doesn't matter I suppose.  I can take it, but please rebase it on
+> top
+> > of current linux-next.
+> 
+> I have already done that (attached). But i wasn't sure what Kukjin wants
+> as
+> he may report conflicts again and i will ask the same question for 3.12 :)
+> 
+Since this missed last time, this would be sent to upstream via samsung tree
+again. It means the conflicts should be handled by myself.
+
+Rafael, if you don't mind, let me take this into Samsung tree for v3.11.
+
+- Kukjin
 
