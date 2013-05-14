@@ -1,104 +1,154 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.10-rc1 system starts regular boot when waking from s2ram
-Date: Tue, 14 May 2013 22:09:34 +0200
-Message-ID: <1368567715.t1rym2H3RB@vostro.rjw.lan>
-References: <20130514160108.GA5055@dhcp22.suse.cz>
+Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 22:22:37 +0200
+Message-ID: <1496350.BND5JuTDIG@vostro.rjw.lan>
+References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <2396135.fo7RrTTQCl@vostro.rjw.lan> <51924221.2080707@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:46737 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:46786 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499Ab3ENUBD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 May 2013 16:01:03 -0400
-In-Reply-To: <20130514160108.GA5055@dhcp22.suse.cz>
+	id S1755376Ab3ENUOE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 May 2013 16:14:04 -0400
+In-Reply-To: <51924221.2080707@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, May 14, 2013 06:01:08 PM Michal Hocko wrote:
-> Hi,
-> I am not able to make my system wake up from s2ram with 3.10-rc1. The
-> system simply starts booting as if it wasn't suspended. 3.9 works
-> without any issues.
+On Tuesday, May 14, 2013 07:24:41 PM Srivatsa S. Bhat wrote:
+> On 05/14/2013 06:30 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, May 14, 2013 06:04:48 PM Srivatsa S. Bhat wrote:
+> >> On 05/14/2013 05:24 PM, Jarzmik, Robert wrote:
+> >>>> Okay, agreed after looking at this discussion ;) I am fine with the approach of kernel preserving permissions too.
+> >>>
+> >>> Ok, that's great, yet I don't see a clean solution here.  This is
+> >>> the path I see and that bothers me in the S3 suspend path:
+> >>> cpufreq_sysfs_release
+> >>>   kobject_cleanup
+> >>>     kobject_release
+> >>>       kobject_put
+> >>>         __cpufreq_remove_dev
+> >>>           cpufreq_cpu_callback
+> >>>             notifier_call_chain
+> >>>               __raw_notifier_call_chain
+> >>>                 __cpu_notify
+> >>>                   _cpu_down
+> >>>
+> >>> Here the sysfs attributes are destroyed. Cpu onlining will
+> >>> recreate them with root permissions. I don't see a good clean way
+> >>> to preserve permissions in sysfs across suspend/resume for
+> >>> deleted nodes. Do you ?
+> >>>
+> >>> And here we come to my actual worry : what is the technical clean
+> >>> way to solve this problem ?
+> >>>
+> >>> So far I have no idea (the cpufreq example is only a subset of
+> >>> the cases where it could happen). So if someone comes up with a
+> >>> good idea I'll volunteer to implement it :)
+> >>>
+> >>
+> >> Does the below (untested) patch help? I haven't spent time investigating
+> >> whether not doing the add_dev/remove_dev stuff during CPU hotplug in S3 path
+> >> will break something else. But it would be great if this works, since
+> >> its the simplest solution that I can think of.
+> > 
+> > Well, what if the CPU doesn't come up during resume?
+> > 
 > 
-> pm_test testing (with no_console_suspend) shows that platform is the
-> last mode which wakes up normally. processors mode already starts with a
-> regular boot. The log doesn't say anything interesting:
+> Hmm, that's a good point. We will need to remove the sysfs files in that
+> case. The updated patch below uses CPU_UP_CANCELED_FROZEN notification
+> to do that.
 > 
-> $ echo processors > /sys/power/pm_test
-> $ echo mem > /sys/power/state
-> [   61.012533] PM: Syncing filesystems ... done.
-> [   61.017944] Freezing user space processes ... (elapsed 0.01 seconds) done.
-> [   61.033050] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-> [   61.081647] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> [   61.081724] sd 0:0:0:0: [sda] Stopping disk
+> Regards,
+> Srivatsa S. Bhat
 > 
-> then it waits for 5s as expected and starts booting from scratch without
-> anything in the log.
+> ----------------------------------------------------------------------->
 > 
-> Same test with
-> $ echo platform > /sys/power/pm_test
-> $ echo mem > /sys/power/state
-> [   34.960477] PM: Syncing filesystems ... done.
-> [   34.967624] Freezing user space processes ... (elapsed 0.01 seconds) done.
-> [   34.983936] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
-> [   35.056655] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> [   35.056800] sd 0:0:0:0: [sda] Stopping disk
-> [   41.255957] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
-> [   41.316267] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [   41.316354] ata5: SATA link down (SStatus 0 SControl 300)
-> [   41.316428] ata4: SATA link down (SStatus 0 SControl 300)
-> [   41.316507] ata6: SATA link down (SStatus 0 SControl 300)
-> [   41.316958] ata1.00: ACPI cmd 00/00:00:00:00:00:a0 (NOP) rejected by device (Stat=0x51 Err=0x04)
-> [   41.388315] ata1.00: ACPI cmd 00/00:00:00:00:00:a0 (NOP) rejected by device (Stat=0x51 Err=0x04)
-> [   41.389142] ata1.00: configured for UDMA/133
-> [   41.391172] ata2.00: configured for UDMA/100
-> [   41.396198] sd 0:0:0:0: [sda] Starting disk
-> [   41.396533] iwlwifi 0000:02:00.0: L1 Enabled; Disabling L0S
-> [   41.396767] iwlwifi 0000:02:00.0: Radio type=0x0-0x3-0x1
-> [   41.638698] PM: resume of devices complete after 724.548 msecs
-> [   41.638835] Restarting tasks ... done.
-> [   41.640747] video LNXVIDEO:00: Restoring backlight state
-> [   42.848988] [drm] Enabling RC6 states: RC6 on, RC6p off, RC6pp off
-> [   42.850380] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
-> [   42.850380]   TDH                  <0>
-> [   42.850380]   TDT                  <11>
-> [   42.850380]   next_to_use          <11>
-> [   42.850380]   next_to_clean        <0>
-> [   42.850380] buffer_info[next_to_clean]:
-> [   42.850380]   time_stamp           <ffff034b>
-> [   42.850380]   next_to_watch        <0>
-> [   42.850380]   jiffies              <ffff04d9>
-> [   42.850380]   next_to_watch.status <0>
-> [   42.850380] MAC Status             <80000>
-> [   42.850380] PHY Status             <7949>
-> [   42.850380] PHY 1000BASE-T Status  <0>
-> [   42.850380] PHY Extended Status    <3000>
-> [   42.850380] PCI Status             <10>
-> [   44.066855] e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
+> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Subject: [PATCH v2] cpufreq: Preserve sysfs file permissions across suspend/resume
 > 
-> Is the issue known?
+> The file permissions of cpufreq per-cpu sysfs files are not preserved across
+> suspend/resume because we internally go through the CPU Hotplug path which
+> reinitializes the file permissions on CPU online.
+> 
+> But the user is not supposed to know that we are using CPU hotplug
+> internally within suspend/resume (IOW, the kernel should not silently wreck
+> the user-set file permissions across a suspend cycle). Therefore, we need to
+> preserve the file permissions as it is, across suspend/resume.
+> 
+> The simplest way to achieve that is to just not touch the sysfs files at
+> all - ie., just ignore the CPU hotplug events in the suspend/resume path
+> (_FROZEN) in the cpufreq hotplug callback.
+> 
+> Reported-by: Robert Jarzmik <robert.jarzmik@intel.com>
+> Reported-by: Durgadoss R <durgadoss.r@intel.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-No.
+It makes sense to me.
 
-> Can I provide more information to help with debugging this issue.
+Robert, Durga, does this work for you?
 
-I'm not sure.
-
-> I am quite busy to bisect this ATM but can do it
-> if this is the only choice left.
-
-Well, it probably is.  I'll try to reproduce it, but if I can't ...
-
-Anyway, the general PM changes essentially are not so invasive as to cause
-something like this to happen, so I'm kind of suspecting x86.
-
-Thanks,
 Rafael
 
 
+> ---
+> v2: Use UP_CANCELED_FROZEN notification to delete the sysfs files if the
+> CPUs don't come up during resume.
+> 
+>  drivers/cpufreq/cpufreq.c       |    4 +---
+>  drivers/cpufreq/cpufreq_stats.c |    7 ++++---
+>  2 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 1b8a48e..284ba63 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1832,15 +1832,13 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+>  	if (dev) {
+>  		switch (action) {
+>  		case CPU_ONLINE:
+> -		case CPU_ONLINE_FROZEN:
+>  			cpufreq_add_dev(dev, NULL);
+>  			break;
+>  		case CPU_DOWN_PREPARE:
+> -		case CPU_DOWN_PREPARE_FROZEN:
+> +		case CPU_UP_CANCELED_FROZEN:
+>  			__cpufreq_remove_dev(dev, NULL);
+>  			break;
+>  		case CPU_DOWN_FAILED:
+> -		case CPU_DOWN_FAILED_FROZEN:
+>  			cpufreq_add_dev(dev, NULL);
+>  			break;
+>  		}
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index bfd6273..fb65dec 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -349,15 +349,16 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+>  
+>  	switch (action) {
+>  	case CPU_ONLINE:
+> -	case CPU_ONLINE_FROZEN:
+>  		cpufreq_update_policy(cpu);
+>  		break;
+>  	case CPU_DOWN_PREPARE:
+> -	case CPU_DOWN_PREPARE_FROZEN:
+>  		cpufreq_stats_free_sysfs(cpu);
+>  		break;
+>  	case CPU_DEAD:
+> -	case CPU_DEAD_FROZEN:
+> +		cpufreq_stats_free_table(cpu);
+> +		break;
+> +	case CPU_UP_CANCELED_FROZEN:
+> +		cpufreq_stats_free_sysfs(cpu);
+>  		cpufreq_stats_free_table(cpu);
+>  		break;
+>  	}
+> 
+> 
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
