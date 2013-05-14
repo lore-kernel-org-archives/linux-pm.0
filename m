@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V4 27/30] Documentation: thermal: Explain the exynos thermal driver model
-Date: Tue, 14 May 2013 15:28:57 +0530
-Message-ID: <1368525540-15034-28-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V4 29/30] ARM: dts: Add device tree node for exynos5440 TMU controller
+Date: Tue, 14 May 2013 15:28:59 +0530
+Message-ID: <1368525540-15034-30-git-send-email-amit.daniel@samsung.com>
 References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
@@ -10,87 +10,60 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch updates the documentation to explain the driver model
-and file layout.
+This patch adds device node for TMU controller. There are 3
+instances of the controllers so 3 nodes are created.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- Documentation/thermal/exynos_thermal |   43 ++++++++++++++++++++++++++-------
- 1 files changed, 34 insertions(+), 9 deletions(-)
+ arch/arm/boot/dts/exynos5440.dtsi |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/thermal/exynos_thermal b/Documentation/thermal/exynos_thermal
-index 2b46f67..9010c44 100644
---- a/Documentation/thermal/exynos_thermal
-+++ b/Documentation/thermal/exynos_thermal
-@@ -1,17 +1,17 @@
--Kernel driver exynos4_tmu
-+Kernel driver exynos_tmu
- =================
+diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+index 9a99755..433e92e 100644
+--- a/arch/arm/boot/dts/exynos5440.dtsi
++++ b/arch/arm/boot/dts/exynos5440.dtsi
+@@ -16,6 +16,12 @@
  
- Supported chips:
--* ARM SAMSUNG EXYNOS4 series of SoC
--  Prefix: 'exynos4-tmu'
-+* ARM SAMSUNG EXYNOS4, EXYNOS5 series of SoC
-   Datasheet: Not publicly available
+ 	interrupt-parent = <&gic>;
  
- Authors: Donggeun Kim <dg77.kim@samsung.com>
-+Authors: Amit Daniel <amit.daniel@samsung.com>
- 
--Description
-------------
-+TMU controller Description:
-+---------------------------
- 
--This driver allows to read temperature inside SAMSUNG EXYNOS4 series of SoC.
-+This driver allows to read temperature inside SAMSUNG EXYNOS4/5 series of SoC.
- 
- The chip only exposes the measured 8-bit temperature code value
- through a register.
-@@ -34,9 +34,9 @@ The three equations are:
-   TI2: Trimming info for 85 degree Celsius (stored at TRIMINFO register)
-        Temperature code measured at 85 degree Celsius which is unchanged
- 
--TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
-+TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
- when temperature exceeds pre-defined levels.
--The maximum number of configurable threshold is four.
-+The maximum number of configurable threshold is five.
- The threshold levels are defined as follows:
-   Level_0: current temperature > trigger_level_0 + threshold
-   Level_1: current temperature > trigger_level_1 + threshold
-@@ -47,6 +47,31 @@ The threshold levels are defined as follows:
-   through the corresponding registers.
- 
- When an interrupt occurs, this driver notify kernel thermal framework
--with the function exynos4_report_trigger.
-+with the function exynos_report_trigger.
- Although an interrupt condition for level_0 can be set,
- it can be used to synchronize the cooling action.
++	aliases {
++		tmuctrl0 = &tmuctrl_0;
++		tmuctrl1 = &tmuctrl_1;
++		tmuctrl2 = &tmuctrl_2;
++	};
 +
-+TMU driver description:
-+-----------------------
+ 	gic:interrupt-controller@2E0000 {
+ 		compatible = "arm,cortex-a15-gic";
+ 		#interrupt-cells = <3>;
+@@ -162,4 +168,28 @@
+ 		reg = <0x130000 0x1000>;
+ 		interrupts = <0 17 0>, <0 16 0>;
+ 	};
 +
-+The exynos thermal driver is structured as,
++	tmuctrl_0: tmuctrl@160118 {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x160118 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
 +
-+					Kernel Core thermal framework
-+				(thermal_core.c, step_wise.c, cpu_cooling.c)
-+								^
-+								|
-+								|
-+TMU configuration data -------> TMU Driver  <------> Exynos Core thermal wrapper
-+(exynos_tmu_data.c)	      (exynos_tmu.c)	   (exynos_thermal_common.c)
-+(exynos_tmu_data.h)	      (exynos_tmu.h)	   (exynos_thermal_common.h)
++	tmuctrl_1: tmuctrl@16011C {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x16011C 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
 +
-+a) TMU configuration data: This consist of TMU register offsets/bitfields
-+		described through structure exynos_tmu_registers. Also several
-+		other platform data (struct exynos_tmu_platform_data) members
-+		are used to configure the TMU.
-+b) TMU driver: This component initialises the TMU controller and sets different
-+		thresholds. It invokes core thermal implementation with the call
-+		exynos_report_trigger.
-+c) Exynos Core thermal wrapper: This provides 3 wrapper function to use the
-+		Kernel core thermal framework. They are exynos_unregister_thermal,
-+		exynos_register_thermal and exynos_report_trigger.
++	tmuctrl_2: tmuctrl@160120 {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x160120 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
+ };
 -- 
 1.7.1
