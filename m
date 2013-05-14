@@ -1,88 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 13:33:01 +0200
-Message-ID: <2172262.yzQn9gFeOZ@vostro.rjw.lan>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <1598695.llKRKEsWfA@vostro.rjw.lan> <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: S3, SMP non boot cpus and
+ /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 11:36:27 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C8E7D8@BGSMSX101.gar.corp.intel.com>
+References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
+ <1598695.llKRKEsWfA@vostro.rjw.lan>
+ <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
+ <2172262.yzQn9gFeOZ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:45702 "EHLO hydra.sisk.pl"
+Received: from mga03.intel.com ([143.182.124.21]:39074 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750830Ab3ENLY1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 May 2013 07:24:27 -0400
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8E7AD@BGSMSX101.gar.corp.intel.com>
+	id S1751191Ab3ENLgc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 May 2013 07:36:32 -0400
+In-Reply-To: <2172262.yzQn9gFeOZ@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tuesday, May 14, 2013 11:20:30 AM R, Durgadoss wrote:
-> > -----Original Message-----
-> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
-> > Sent: Tuesday, May 14, 2013 4:53 PM
-> > To: Srivatsa S. Bhat
-> > Cc: Viresh Kumar; Jarzmik, Robert; linux-pm@vger.kernel.org
-> > Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-
-> > 9]/cpufreq/scaling_max_freq
-> > 
-> > On Tuesday, May 14, 2013 03:57:39 PM Srivatsa S. Bhat wrote:
-> > > On 05/14/2013 03:52 PM, Viresh Kumar wrote:
-> > > > On 14 May 2013 15:39, Srivatsa S. Bhat
-> > <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> > > >> And losing permissions isn't specific to suspend-to-ram right?
-> > > >> You said that yourself, that on regular cpu online/offline you lose
-> > > >> the changed permissions. So just write a resume hook to restore
-> > whatever
-> > > >> permissions you want after suspend-resume. See /usr/lib64/pm-
-> > utils/sleep.d
-> > > >> for some sample resume scripts.
-> > > >
-> > > > This is what i feel about losing chages on cpu hotplug/unplug:
-> > > > - On normal online/offline, we aren't required to preserve earlier
-> > settings.
-> > >
-> > > From Robert's descriptions, we _are_ required to preserve the settings.
-> > But
-> > > this is somewhat acceptable because the user _knows_ he is doing
-> > hotplug.
-> > >
-> > > > - But on suspend/resume, user shouldn't know that cpus have been
-> > > >   removed/added and so permissions should stay as is.
-> > > >
-> > >
-> > > Hmm, you are right. It is wrong for us to expect the user to use custom
-> > scripts
-> > > to preserve permissions across S3, since he is supposed to remain ignorant
-> > of
-> > > CPU hotplug in this path.
-> > >
-> > > > What do you say?
-> > > >
-> > >
-> > > I agree, we should try to fix it for the S3/S4 case. Robert, I'm sorry, you
-> > were
-> > > right - if S3 is supposed to hide CPU hotplug, it should hide it completely or
-> > > not at all. And since we go with the former option, a fix for the permissions
-> > > is in order, IMHO.
-> > 
-> > I agree.
-> 
-> Now that we agree on this, how should go about the fix ?
-> I was debugging this to an extent, and asked a question on [1].
-
-This wasn't the right question to ask.  We need the permissions to be preserved
-by the kernel, not to be restored by user space.
-
-Thanks,
-Rafael
-
-
-> Thanks,
-> Durga
-> [1] https://lkml.org/lkml/2013/5/13/190
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2Vy
+Lmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBP
+biBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogVHVlc2RheSwgTWF5IDE0LCAy
+MDEzIDU6MDMgUE0NCj4gVG86IFIsIER1cmdhZG9zcw0KPiBDYzogU3JpdmF0c2EgUy4gQmhhdDsg
+VmlyZXNoIEt1bWFyOyBKYXJ6bWlrLCBSb2JlcnQ7IGxpbnV4LQ0KPiBwbUB2Z2VyLmtlcm5lbC5v
+cmcNCj4gU3ViamVjdDogUmU6IFMzLCBTTVAgbm9uIGJvb3QgY3B1cyBhbmQgL3N5cy9kZXZpY2Vz
+L3N5c3RlbS9jcHVbMS0NCj4gOV0vY3B1ZnJlcS9zY2FsaW5nX21heF9mcmVxDQo+IA0KPiBPbiBU
+dWVzZGF5LCBNYXkgMTQsIDIwMTMgMTE6MjA6MzAgQU0gUiwgRHVyZ2Fkb3NzIHdyb3RlOg0KPiA+
+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IGxpbnV4LXBtLW93bmVy
+QHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBtLQ0KPiA+ID4gb3duZXJAdmdlci5rZXJu
+ZWwub3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gPiA+IFNlbnQ6IFR1ZXNk
+YXksIE1heSAxNCwgMjAxMyA0OjUzIFBNDQo+ID4gPiBUbzogU3JpdmF0c2EgUy4gQmhhdA0KPiA+
+ID4gQ2M6IFZpcmVzaCBLdW1hcjsgSmFyem1paywgUm9iZXJ0OyBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBTMywgU01QIG5vbiBib290IGNwdXMgYW5kIC9zeXMv
+ZGV2aWNlcy9zeXN0ZW0vY3B1WzEtDQo+ID4gPiA5XS9jcHVmcmVxL3NjYWxpbmdfbWF4X2ZyZXEN
+Cj4gPiA+DQo+ID4gPiBPbiBUdWVzZGF5LCBNYXkgMTQsIDIwMTMgMDM6NTc6MzkgUE0gU3JpdmF0
+c2EgUy4gQmhhdCB3cm90ZToNCj4gPiA+ID4gT24gMDUvMTQvMjAxMyAwMzo1MiBQTSwgVmlyZXNo
+IEt1bWFyIHdyb3RlOg0KPiA+ID4gPiA+IE9uIDE0IE1heSAyMDEzIDE1OjM5LCBTcml2YXRzYSBT
+LiBCaGF0DQo+ID4gPiA8c3JpdmF0c2EuYmhhdEBsaW51eC52bmV0LmlibS5jb20+IHdyb3RlOg0K
+PiA+ID4gPiA+PiBBbmQgbG9zaW5nIHBlcm1pc3Npb25zIGlzbid0IHNwZWNpZmljIHRvIHN1c3Bl
+bmQtdG8tcmFtIHJpZ2h0Pw0KPiA+ID4gPiA+PiBZb3Ugc2FpZCB0aGF0IHlvdXJzZWxmLCB0aGF0
+IG9uIHJlZ3VsYXIgY3B1IG9ubGluZS9vZmZsaW5lIHlvdSBsb3NlDQo+ID4gPiA+ID4+IHRoZSBj
+aGFuZ2VkIHBlcm1pc3Npb25zLiBTbyBqdXN0IHdyaXRlIGEgcmVzdW1lIGhvb2sgdG8gcmVzdG9y
+ZQ0KPiA+ID4gd2hhdGV2ZXINCj4gPiA+ID4gPj4gcGVybWlzc2lvbnMgeW91IHdhbnQgYWZ0ZXIg
+c3VzcGVuZC1yZXN1bWUuIFNlZSAvdXNyL2xpYjY0L3BtLQ0KPiA+ID4gdXRpbHMvc2xlZXAuZA0K
+PiA+ID4gPiA+PiBmb3Igc29tZSBzYW1wbGUgcmVzdW1lIHNjcmlwdHMuDQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPiBUaGlzIGlzIHdoYXQgaSBmZWVsIGFib3V0IGxvc2luZyBjaGFnZXMgb24gY3B1IGhv
+dHBsdWcvdW5wbHVnOg0KPiA+ID4gPiA+IC0gT24gbm9ybWFsIG9ubGluZS9vZmZsaW5lLCB3ZSBh
+cmVuJ3QgcmVxdWlyZWQgdG8gcHJlc2VydmUgZWFybGllcg0KPiA+ID4gc2V0dGluZ3MuDQo+ID4g
+PiA+DQo+ID4gPiA+IEZyb20gUm9iZXJ0J3MgZGVzY3JpcHRpb25zLCB3ZSBfYXJlXyByZXF1aXJl
+ZCB0byBwcmVzZXJ2ZSB0aGUgc2V0dGluZ3MuDQo+ID4gPiBCdXQNCj4gPiA+ID4gdGhpcyBpcyBz
+b21ld2hhdCBhY2NlcHRhYmxlIGJlY2F1c2UgdGhlIHVzZXIgX2tub3dzXyBoZSBpcyBkb2luZw0K
+PiA+ID4gaG90cGx1Zy4NCj4gPiA+ID4NCj4gPiA+ID4gPiAtIEJ1dCBvbiBzdXNwZW5kL3Jlc3Vt
+ZSwgdXNlciBzaG91bGRuJ3Qga25vdyB0aGF0IGNwdXMgaGF2ZSBiZWVuDQo+ID4gPiA+ID4gICBy
+ZW1vdmVkL2FkZGVkIGFuZCBzbyBwZXJtaXNzaW9ucyBzaG91bGQgc3RheSBhcyBpcy4NCj4gPiA+
+ID4gPg0KPiA+ID4gPg0KPiA+ID4gPiBIbW0sIHlvdSBhcmUgcmlnaHQuIEl0IGlzIHdyb25nIGZv
+ciB1cyB0byBleHBlY3QgdGhlIHVzZXIgdG8gdXNlIGN1c3RvbQ0KPiA+ID4gc2NyaXB0cw0KPiA+
+ID4gPiB0byBwcmVzZXJ2ZSBwZXJtaXNzaW9ucyBhY3Jvc3MgUzMsIHNpbmNlIGhlIGlzIHN1cHBv
+c2VkIHRvIHJlbWFpbg0KPiBpZ25vcmFudA0KPiA+ID4gb2YNCj4gPiA+ID4gQ1BVIGhvdHBsdWcg
+aW4gdGhpcyBwYXRoLg0KPiA+ID4gPg0KPiA+ID4gPiA+IFdoYXQgZG8geW91IHNheT8NCj4gPiA+
+ID4gPg0KPiA+ID4gPg0KPiA+ID4gPiBJIGFncmVlLCB3ZSBzaG91bGQgdHJ5IHRvIGZpeCBpdCBm
+b3IgdGhlIFMzL1M0IGNhc2UuIFJvYmVydCwgSSdtIHNvcnJ5LCB5b3UNCj4gPiA+IHdlcmUNCj4g
+PiA+ID4gcmlnaHQgLSBpZiBTMyBpcyBzdXBwb3NlZCB0byBoaWRlIENQVSBob3RwbHVnLCBpdCBz
+aG91bGQgaGlkZSBpdCBjb21wbGV0ZWx5DQo+IG9yDQo+ID4gPiA+IG5vdCBhdCBhbGwuIEFuZCBz
+aW5jZSB3ZSBnbyB3aXRoIHRoZSBmb3JtZXIgb3B0aW9uLCBhIGZpeCBmb3IgdGhlDQo+IHBlcm1p
+c3Npb25zDQo+ID4gPiA+IGlzIGluIG9yZGVyLCBJTUhPLg0KPiA+ID4NCj4gPiA+IEkgYWdyZWUu
+DQo+ID4NCj4gPiBOb3cgdGhhdCB3ZSBhZ3JlZSBvbiB0aGlzLCBob3cgc2hvdWxkIGdvIGFib3V0
+IHRoZSBmaXggPw0KPiA+IEkgd2FzIGRlYnVnZ2luZyB0aGlzIHRvIGFuIGV4dGVudCwgYW5kIGFz
+a2VkIGEgcXVlc3Rpb24gb24gWzFdLg0KPiANCj4gVGhpcyB3YXNuJ3QgdGhlIHJpZ2h0IHF1ZXN0
+aW9uIHRvIGFzay4gIFdlIG5lZWQgdGhlIHBlcm1pc3Npb25zIHRvIGJlDQo+IHByZXNlcnZlZA0K
+PiBieSB0aGUga2VybmVsLCBub3QgdG8gYmUgcmVzdG9yZWQgYnkgdXNlciBzcGFjZS4NCg0KT2th
+eSwgYWdyZWVkIGFmdGVyIGxvb2tpbmcgYXQgdGhpcyBkaXNjdXNzaW9uIDspDQpJIGFtIGZpbmUg
+d2l0aCB0aGUgYXBwcm9hY2ggb2Yga2VybmVsIHByZXNlcnZpbmcgcGVybWlzc2lvbnMgdG9vLg0K
+DQpUaGFua3MsDQpEdXJnYQ0KDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KPiANCj4gDQo+ID4g
+VGhhbmtzLA0KPiA+IER1cmdhDQo+ID4gWzFdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDEzLzUv
+MTMvMTkwDQo+IA0KPiAtLQ0KPiBJIHNwZWFrIG9ubHkgZm9yIG15c2VsZi4NCj4gUmFmYWVsIEou
+IFd5c29ja2ksIEludGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyLg0KPiAtLQ0KPiBU
+byB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUg
+bGludXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
+ZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5v
+cmcvbWFqb3Jkb21vLWluZm8uaHRtbA0K
