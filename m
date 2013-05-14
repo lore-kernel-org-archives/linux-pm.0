@@ -1,86 +1,56 @@
-From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
-Subject: RE: S3, SMP non boot cpus and
- /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 14:01:49 +0000
-Message-ID: <65F5F98566038744B1B43C8FD3B7549F1911A4A2@IRSMSX104.ger.corp.intel.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
- <4D68720C2E767A4AA6A8796D42C8EB59C8E7D8@BGSMSX101.gar.corp.intel.com>
- <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
- <2258179.54N0npf6HW@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 10:05:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1305141001400.1130-100000@iolanthe.rowland.org>
+References: <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:38709 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850Ab3ENODy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 May 2013 10:03:54 -0400
-In-Reply-To: <2258179.54N0npf6HW@vostro.rjw.lan>
-Content-Language: en-US
+Received: from iolanthe.rowland.org ([192.131.102.54]:56412 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757475Ab3ENOFD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 May 2013 10:05:03 -0400
+In-Reply-To: <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "R, Durgadoss" <durgadoss.r@intel.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Jarzmik, Robert" <robert.jarzmik@intel.com>
+Cc: "R, Durgadoss" <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWls
-dG86cmp3QHNpc2sucGxdIA0KU2VudDogVHVlc2RheSwgTWF5IDE0LCAyMDEzIDI6NTkgUE0NClRv
-OiBKYXJ6bWlrLCBSb2JlcnQNCkNjOiBSLCBEdXJnYWRvc3M7IFNyaXZhdHNhIFMuIEJoYXQ7IFZp
-cmVzaCBLdW1hcjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBHcmVnIEtyb2FoLUhhcnRtYW4N
-ClN1YmplY3Q6IFJlOiBTMywgU01QIG5vbiBib290IGNwdXMgYW5kIC9zeXMvZGV2aWNlcy9zeXN0
-ZW0vY3B1WzEtOV0vY3B1ZnJlcS9zY2FsaW5nX21heF9mcmVxDQoNCj4+IEhlcmUgdGhlIHN5c2Zz
-IGF0dHJpYnV0ZXMgYXJlIGRlc3Ryb3llZC4gQ3B1IG9ubGluaW5nIHdpbGwgcmVjcmVhdGUgDQo+
-PiB0aGVtIHdpdGggcm9vdCBwZXJtaXNzaW9ucy4gSSBkb24ndCBzZWUgYSBnb29kIGNsZWFuIHdh
-eSB0byBwcmVzZXJ2ZSANCj4+IHBlcm1pc3Npb25zIGluIHN5c2ZzIGFjcm9zcyBzdXNwZW5kL3Jl
-c3VtZSBmb3IgZGVsZXRlZCBub2Rlcy4gRG8geW91ID8NCg0KPk5vLCB5b3UgY2FuJ3QgcHJlc2Vy
-dmUgcGVybWlzc2lvbnMgZm9yIGEgZGVsZXRlZCBub2RlLiAgW0kgc3VwcG9zZSBpdCdzIGdlbmVy
-YWxseSB0cnVlIGZvciBhbGwgZmlsZXN5c3RlbXMuXSAgWW91IGNhbiBvbmx5IGNyZWF0ZSBhIG5l
-dyBub2RlIHdpdGggdGhlIHNhbWUgcGVybWlzc2lvbnMgYXMgdGhlIG9sZCBvbmUgaGFkICpvciog
-eW91IGNhbiBhdm9pZCBkZWxldGluZyB0aGUgb3JpZ2luYWwgbm9kZSBpbiB0aGUgZmlyc3QgcGxh
-Y2UuICA+V2hpY2hldmVyIGlzIHNpbXBsZXIgdG8gaW1wbGVtZW50Lg0KSSB0aGluayBTcml2YXRz
-YSBhbHJlYWR5IHJlcGxpZWQgd2hpY2ggb25lIHdhcyBzaW1wbGVyIDopIEFuZCBJDQpyZWFsbHkg
-cmVhbGx5IGxpa2UgaGlzIHNvbHV0aW9uIGlmIGl0IGlzIGNvcnJlY3QgKHdlbGwgaXQgd29ya3Mg
-Zm9yIG1lLA0KaXQncyB0aGUgY29ybmVyIGNhc2VzIHRoYXQgY291bGQgYmUgbmFzdHkpLg0KDQo+
-IFdlbGwsIGZpcnN0LCBhIGZhaXIgcXVlc3Rpb24gdG8gYXNrIGlzIHdoZXRoZXIgb3Igbm90IHRo
-aXMgaXMgYSByZWFsIHByb2JsZW0uDQo+IEl0IGlzIGtpbmQgb2YgdWdseSwgYnV0IHdobyBob25l
-c3RseSBjaGFuZ2VzIHRoZSBvd25lcnNoaXAvcGVybWlzc2lvbnMgb2YgY3B1ZnJlcSBkaXJlY3Rv
-cmllcyBpbiBub24tZXhvdGljIHVzYWdlIHNjZW5hcmlvcz8gSXMgaXQgbmVlZGVkIGZvciBhbnl0
-aGluZyBhY3R1YWxseSB1c2VmdWw/DQpJdCBpcyAoYSByZWFsIHByb2JsZW0gYW5kIHJlYWxseSB1
-Z2x5KS4gVGhlIGV4YW1wbGUgSSBnYXZlIHdpdGgNCnRoZXJtYWwgY29uZGl0aW9ucyBpbXBseWlu
-ZyBhIHVzZXJzcGFjZSBwcm9jZXNzIChub3Qgcm9vdCkNCnN0b3JpbmcgYSBuZXcgdmFsdWUgaW4g
-c2NhbGluZ19tYXhfZnJlcSBpcyBzb21ldGhpbmcgZG9uZSBpbg0KQW5kcm9pZCdzIHRoZXJtYWwg
-bWFuYWdlbWVudCwgd2hlbiBhIHRoZXJtYWwgdHJpcCBwb2ludCBpcw0KcmVhY2hlZC4gQ1BVIGlz
-IHRocm90dGxlZCBieSBpbnB1dGluZyBhIHNjYWxpbmdfbWF4X2ZyZXEgdmFsdWUNCmxvd2VyIHRo
-YW4gdGhlIENQVSdzIG1heCBwb3NzaWJsZSBmcmVxdWVuY3kuDQoNCklmIHRoZSBwaG9uZSB0aGVu
-IGVudGVycyBTMyBhbmQgZXhpc3RzIHNldmVyYWwgc2Vjb25kcw0KbGF0ZXIgKGllLiBpdCBkb2Vz
-bid0IGhhdmUgdGhlIHRpbWUgdG8gY29vbCBkb3duKSwgdGhlDQpzY2FsaW5nX21heF9mcmVxIGNh
-bid0IGJlIG1vZGlmaWVkIGFueW1vcmUgYnkgdGhlciB1c2Vyc3BhY2UNCnByb2Nlc3MsIGFuZCB3
-aWxsIGtlZXAgaXRzIG1heGltYWwgdmFsdWUuIFRoZXJlZm9yZSwgdGhlIHBob25lDQp3aWxsIG92
-ZXJoZWF0LCBhc3N1bWluZyB0aGUgb3JpZ2luYWwgaGVhdGluZyB3YXMgZHVlIHRvIHNvbWV0aGlu
-Zw0Kc2lsbHkgKGxpa2UgIndoaWxlICgxKTsiIGluIGEgdXNlcnNwYWNlIHByb2Nlc3MpLg0KDQpT
-byB0aGUgIndobyBjaGFuZ2VzIiB3aWxsIGJlICJhbmRyb2lkIGluaXQgcHJvY2VzcyIsDQp0aGUg
-Im5vbi1leG90aWMgdXNhZ2Ugc2NlbmFyaW8iIGlzIGEgYml0IC4uLiBleG90aWMsIGFuZA0KdGhl
-ICJ1c2VmdWwiIHBhcnQgaXMgYSBxdWVzdGlvbiBvZiBwb2ludCBvZiB2aWV3Lg0KDQo+IE9uZSBj
-YW4gYXJndWUgdGhhdCB3ZSdyZSBkb2luZyB0b28gbXVjaCBkdXJpbmcgc3lzdGVtIHN1c3BlbmQs
-IGJlY2F1c2Ugd2hhdCB3ZSByZWFsbHkgbmVlZCBpcyB0aGUgX2NwdV9kb3duKCkgZG93biB0aGUg
-cm9hZC4gIFRoYXQgc2FpZCB3ZSBuZWVkIHRvIGxldCBjcHVmcmVxIChhbmQgb3RoZXIgc3Vic3lz
-dGVtcyB0b28pIGtub3cgdGhhdCB0aGlzIENQVSBpcyBnb25lIHRlbXBvcmFyaWx5IGFuZCBpdCBp
-cyBnb29kIHRvIGhhdmUgYSBjbGVhbiBzdGF0ZSBpbiBjYXNlIGl0IGRvZXNuJ3QgY29tZSB1cCBs
-YXRlci4NCkFncmVlZC4NCg0KPiBTbyBJIHRoaW5rIHRoYXQgdGhlIGNsZWFuZXN0IHdheSB0byBh
-ZGRyZXNzIHRoaXMgaXNzdWUgd291bGQgYmUgdG8gcmVhcnJhbmdlIHRoZSBjb2RlIHNvIHRoYXQg
-dGhlIHN5c2ZzIGlzIG5vdCBtb2RpZmllZCBieSBzdXNwZW5kL3Jlc3VtZSBhdCBhbGwsIHVubGVz
-cyB0aGUgcmVzdW1lIGZhaWxzLCBidXQgSSBkb24ndCB0aGluayBpdCdzIGdvaW5nIHRvIGJlIGVh
-c3kgdG8gbWFrZSB0aGF0IGhhcHBlbi4NCkkgdGhpbmsgSSBtaXNzIHRoZSBwb2ludCBpbiB0aGVy
-ZSwgYXMgYSBmYWlsaW5nIHJlc3VtZSBwYXRoDQpzaG91bGQgYmUgY2F0Y2hhYmxlIGluIHRoZSBj
-cHVmcmVxIGZyYW1ld29yay4gV2VsbCwNCkkgc2hvdWxkIGhhdmUgYSBjbG9zZXIgbG9vayBpbiBo
-ZXJlLg0KDQpDaGVlcnMuDQoNCi0tDQpSb2JlcnQNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkludGVsIENvcnBv
-cmF0aW9uIFNBUyAoRnJlbmNoIHNpbXBsaWZpZWQgam9pbnQgc3RvY2sgY29tcGFueSkKUmVnaXN0
-ZXJlZCBoZWFkcXVhcnRlcnM6ICJMZXMgTW9udGFsZXRzIi0gMiwgcnVlIGRlIFBhcmlzLCAKOTIx
-OTYgTWV1ZG9uIENlZGV4LCBGcmFuY2UKUmVnaXN0cmF0aW9uIE51bWJlcjogIDMwMiA0NTYgMTk5
-IFIuQy5TLiBOQU5URVJSRQpDYXBpdGFsOiA0LDU3MiwwMDAgRXVyb3MKClRoaXMgZS1tYWlsIGFu
-ZCBhbnkgYXR0YWNobWVudHMgbWF5IGNvbnRhaW4gY29uZmlkZW50aWFsIG1hdGVyaWFsIGZvcgp0
-aGUgc29sZSB1c2Ugb2YgdGhlIGludGVuZGVkIHJlY2lwaWVudChzKS4gQW55IHJldmlldyBvciBk
-aXN0cmlidXRpb24KYnkgb3RoZXJzIGlzIHN0cmljdGx5IHByb2hpYml0ZWQuIElmIHlvdSBhcmUg
-bm90IHRoZSBpbnRlbmRlZApyZWNpcGllbnQsIHBsZWFzZSBjb250YWN0IHRoZSBzZW5kZXIgYW5k
-IGRlbGV0ZSBhbGwgY29waWVzLgo=
+On Tue, 14 May 2013, Jarzmik, Robert wrote:
+
+> > Okay, agreed after looking at this discussion ;) I am fine with the approach of kernel preserving permissions too.
+> 
+> Ok, that's great, yet I don't see a clean solution here.  This is
+> the path I see and that bothers me in the S3 suspend path:
+> cpufreq_sysfs_release
+>   kobject_cleanup
+>     kobject_release
+>       kobject_put
+>         __cpufreq_remove_dev
+>           cpufreq_cpu_callback
+>             notifier_call_chain
+>               __raw_notifier_call_chain
+>                 __cpu_notify
+>                   _cpu_down
+> 
+> Here the sysfs attributes are destroyed. Cpu onlining will
+> recreate them with root permissions. I don't see a good clean way
+> to preserve permissions in sysfs across suspend/resume for
+> deleted nodes. Do you ?
+> 
+> And here we come to my actual worry : what is the technical clean
+> way to solve this problem ?
+> 
+> So far I have no idea (the cpufreq example is only a subset of
+> the cases where it could happen). So if someone comes up with a
+> good idea I'll volunteer to implement it :)
+
+The right way to solve this problem is to add a new state.  As I
+understand it, right now CPUs can be either present (active) or not
+present (inactive).  What you want is a third state in which the CPU is
+present but inactive.  Then all the device-core stuff (including sysfs
+attributes) can remain unchanged, and eventually the CPU is either
+reactivated or removed.
+
+Alan Stern
 
