@@ -1,155 +1,86 @@
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Tue, 14 May 2013 19:24:41 +0530
-Message-ID: <51924221.2080707@linux.vnet.ibm.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com> <51922F68.2010404@linux.vnet.ibm.com> <2396135.fo7RrTTQCl@vostro.rjw.lan>
+From: "Jarzmik, Robert" <robert.jarzmik@intel.com>
+Subject: RE: S3, SMP non boot cpus and
+ /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Tue, 14 May 2013 14:01:49 +0000
+Message-ID: <65F5F98566038744B1B43C8FD3B7549F1911A4A2@IRSMSX104.ger.corp.intel.com>
+References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
+ <4D68720C2E767A4AA6A8796D42C8EB59C8E7D8@BGSMSX101.gar.corp.intel.com>
+ <65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
+ <2258179.54N0npf6HW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52483 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439Ab3ENN5r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 May 2013 09:57:47 -0400
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
-	Tue, 14 May 2013 23:47:38 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
-	by d23dlp03.au.ibm.com (Postfix) with ESMTP id 580973578018
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 23:57:38 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
-	by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id r4EDhc5S21823584
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 23:43:39 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id r4EDvaqp001898
-	for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 23:57:37 +1000
-In-Reply-To: <2396135.fo7RrTTQCl@vostro.rjw.lan>
+Received: from mga01.intel.com ([192.55.52.88]:38709 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754850Ab3ENODy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 May 2013 10:03:54 -0400
+In-Reply-To: <2258179.54N0npf6HW@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "R, Durgadoss" <durgadoss.r@intel.com>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 05/14/2013 06:30 PM, Rafael J. Wysocki wrote:
-> On Tuesday, May 14, 2013 06:04:48 PM Srivatsa S. Bhat wrote:
->> On 05/14/2013 05:24 PM, Jarzmik, Robert wrote:
->>>> Okay, agreed after looking at this discussion ;) I am fine with the approach of kernel preserving permissions too.
->>>
->>> Ok, that's great, yet I don't see a clean solution here.  This is
->>> the path I see and that bothers me in the S3 suspend path:
->>> cpufreq_sysfs_release
->>>   kobject_cleanup
->>>     kobject_release
->>>       kobject_put
->>>         __cpufreq_remove_dev
->>>           cpufreq_cpu_callback
->>>             notifier_call_chain
->>>               __raw_notifier_call_chain
->>>                 __cpu_notify
->>>                   _cpu_down
->>>
->>> Here the sysfs attributes are destroyed. Cpu onlining will
->>> recreate them with root permissions. I don't see a good clean way
->>> to preserve permissions in sysfs across suspend/resume for
->>> deleted nodes. Do you ?
->>>
->>> And here we come to my actual worry : what is the technical clean
->>> way to solve this problem ?
->>>
->>> So far I have no idea (the cpufreq example is only a subset of
->>> the cases where it could happen). So if someone comes up with a
->>> good idea I'll volunteer to implement it :)
->>>
->>
->> Does the below (untested) patch help? I haven't spent time investigating
->> whether not doing the add_dev/remove_dev stuff during CPU hotplug in S3 path
->> will break something else. But it would be great if this works, since
->> its the simplest solution that I can think of.
-> 
-> Well, what if the CPU doesn't come up during resume?
-> 
-
-Hmm, that's a good point. We will need to remove the sysfs files in that
-case. The updated patch below uses CPU_UP_CANCELED_FROZEN notification
-to do that.
-
-Regards,
-Srivatsa S. Bhat
-
------------------------------------------------------------------------>
-
-From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpufreq: Preserve sysfs file permissions across suspend/resume
-
-The file permissions of cpufreq per-cpu sysfs files are not preserved across
-suspend/resume because we internally go through the CPU Hotplug path which
-reinitializes the file permissions on CPU online.
-
-But the user is not supposed to know that we are using CPU hotplug
-internally within suspend/resume (IOW, the kernel should not silently wreck
-the user-set file permissions across a suspend cycle). Therefore, we need to
-preserve the file permissions as it is, across suspend/resume.
-
-The simplest way to achieve that is to just not touch the sysfs files at
-all - ie., just ignore the CPU hotplug events in the suspend/resume path
-(_FROZEN) in the cpufreq hotplug callback.
-
-Reported-by: Robert Jarzmik <robert.jarzmik@intel.com>
-Reported-by: Durgadoss R <durgadoss.r@intel.com>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-v2: Use UP_CANCELED_FROZEN notification to delete the sysfs files if the
-CPUs don't come up during resume.
-
- drivers/cpufreq/cpufreq.c       |    4 +---
- drivers/cpufreq/cpufreq_stats.c |    7 ++++---
- 2 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 1b8a48e..284ba63 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1832,15 +1832,13 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
- 	if (dev) {
- 		switch (action) {
- 		case CPU_ONLINE:
--		case CPU_ONLINE_FROZEN:
- 			cpufreq_add_dev(dev, NULL);
- 			break;
- 		case CPU_DOWN_PREPARE:
--		case CPU_DOWN_PREPARE_FROZEN:
-+		case CPU_UP_CANCELED_FROZEN:
- 			__cpufreq_remove_dev(dev, NULL);
- 			break;
- 		case CPU_DOWN_FAILED:
--		case CPU_DOWN_FAILED_FROZEN:
- 			cpufreq_add_dev(dev, NULL);
- 			break;
- 		}
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index bfd6273..fb65dec 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -349,15 +349,16 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 
- 	switch (action) {
- 	case CPU_ONLINE:
--	case CPU_ONLINE_FROZEN:
- 		cpufreq_update_policy(cpu);
- 		break;
- 	case CPU_DOWN_PREPARE:
--	case CPU_DOWN_PREPARE_FROZEN:
- 		cpufreq_stats_free_sysfs(cpu);
- 		break;
- 	case CPU_DEAD:
--	case CPU_DEAD_FROZEN:
-+		cpufreq_stats_free_table(cpu);
-+		break;
-+	case CPU_UP_CANCELED_FROZEN:
-+		cpufreq_stats_free_sysfs(cpu);
- 		cpufreq_stats_free_table(cpu);
- 		break;
- 	}
-
-
+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWls
+dG86cmp3QHNpc2sucGxdIA0KU2VudDogVHVlc2RheSwgTWF5IDE0LCAyMDEzIDI6NTkgUE0NClRv
+OiBKYXJ6bWlrLCBSb2JlcnQNCkNjOiBSLCBEdXJnYWRvc3M7IFNyaXZhdHNhIFMuIEJoYXQ7IFZp
+cmVzaCBLdW1hcjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBHcmVnIEtyb2FoLUhhcnRtYW4N
+ClN1YmplY3Q6IFJlOiBTMywgU01QIG5vbiBib290IGNwdXMgYW5kIC9zeXMvZGV2aWNlcy9zeXN0
+ZW0vY3B1WzEtOV0vY3B1ZnJlcS9zY2FsaW5nX21heF9mcmVxDQoNCj4+IEhlcmUgdGhlIHN5c2Zz
+IGF0dHJpYnV0ZXMgYXJlIGRlc3Ryb3llZC4gQ3B1IG9ubGluaW5nIHdpbGwgcmVjcmVhdGUgDQo+
+PiB0aGVtIHdpdGggcm9vdCBwZXJtaXNzaW9ucy4gSSBkb24ndCBzZWUgYSBnb29kIGNsZWFuIHdh
+eSB0byBwcmVzZXJ2ZSANCj4+IHBlcm1pc3Npb25zIGluIHN5c2ZzIGFjcm9zcyBzdXNwZW5kL3Jl
+c3VtZSBmb3IgZGVsZXRlZCBub2Rlcy4gRG8geW91ID8NCg0KPk5vLCB5b3UgY2FuJ3QgcHJlc2Vy
+dmUgcGVybWlzc2lvbnMgZm9yIGEgZGVsZXRlZCBub2RlLiAgW0kgc3VwcG9zZSBpdCdzIGdlbmVy
+YWxseSB0cnVlIGZvciBhbGwgZmlsZXN5c3RlbXMuXSAgWW91IGNhbiBvbmx5IGNyZWF0ZSBhIG5l
+dyBub2RlIHdpdGggdGhlIHNhbWUgcGVybWlzc2lvbnMgYXMgdGhlIG9sZCBvbmUgaGFkICpvciog
+eW91IGNhbiBhdm9pZCBkZWxldGluZyB0aGUgb3JpZ2luYWwgbm9kZSBpbiB0aGUgZmlyc3QgcGxh
+Y2UuICA+V2hpY2hldmVyIGlzIHNpbXBsZXIgdG8gaW1wbGVtZW50Lg0KSSB0aGluayBTcml2YXRz
+YSBhbHJlYWR5IHJlcGxpZWQgd2hpY2ggb25lIHdhcyBzaW1wbGVyIDopIEFuZCBJDQpyZWFsbHkg
+cmVhbGx5IGxpa2UgaGlzIHNvbHV0aW9uIGlmIGl0IGlzIGNvcnJlY3QgKHdlbGwgaXQgd29ya3Mg
+Zm9yIG1lLA0KaXQncyB0aGUgY29ybmVyIGNhc2VzIHRoYXQgY291bGQgYmUgbmFzdHkpLg0KDQo+
+IFdlbGwsIGZpcnN0LCBhIGZhaXIgcXVlc3Rpb24gdG8gYXNrIGlzIHdoZXRoZXIgb3Igbm90IHRo
+aXMgaXMgYSByZWFsIHByb2JsZW0uDQo+IEl0IGlzIGtpbmQgb2YgdWdseSwgYnV0IHdobyBob25l
+c3RseSBjaGFuZ2VzIHRoZSBvd25lcnNoaXAvcGVybWlzc2lvbnMgb2YgY3B1ZnJlcSBkaXJlY3Rv
+cmllcyBpbiBub24tZXhvdGljIHVzYWdlIHNjZW5hcmlvcz8gSXMgaXQgbmVlZGVkIGZvciBhbnl0
+aGluZyBhY3R1YWxseSB1c2VmdWw/DQpJdCBpcyAoYSByZWFsIHByb2JsZW0gYW5kIHJlYWxseSB1
+Z2x5KS4gVGhlIGV4YW1wbGUgSSBnYXZlIHdpdGgNCnRoZXJtYWwgY29uZGl0aW9ucyBpbXBseWlu
+ZyBhIHVzZXJzcGFjZSBwcm9jZXNzIChub3Qgcm9vdCkNCnN0b3JpbmcgYSBuZXcgdmFsdWUgaW4g
+c2NhbGluZ19tYXhfZnJlcSBpcyBzb21ldGhpbmcgZG9uZSBpbg0KQW5kcm9pZCdzIHRoZXJtYWwg
+bWFuYWdlbWVudCwgd2hlbiBhIHRoZXJtYWwgdHJpcCBwb2ludCBpcw0KcmVhY2hlZC4gQ1BVIGlz
+IHRocm90dGxlZCBieSBpbnB1dGluZyBhIHNjYWxpbmdfbWF4X2ZyZXEgdmFsdWUNCmxvd2VyIHRo
+YW4gdGhlIENQVSdzIG1heCBwb3NzaWJsZSBmcmVxdWVuY3kuDQoNCklmIHRoZSBwaG9uZSB0aGVu
+IGVudGVycyBTMyBhbmQgZXhpc3RzIHNldmVyYWwgc2Vjb25kcw0KbGF0ZXIgKGllLiBpdCBkb2Vz
+bid0IGhhdmUgdGhlIHRpbWUgdG8gY29vbCBkb3duKSwgdGhlDQpzY2FsaW5nX21heF9mcmVxIGNh
+bid0IGJlIG1vZGlmaWVkIGFueW1vcmUgYnkgdGhlciB1c2Vyc3BhY2UNCnByb2Nlc3MsIGFuZCB3
+aWxsIGtlZXAgaXRzIG1heGltYWwgdmFsdWUuIFRoZXJlZm9yZSwgdGhlIHBob25lDQp3aWxsIG92
+ZXJoZWF0LCBhc3N1bWluZyB0aGUgb3JpZ2luYWwgaGVhdGluZyB3YXMgZHVlIHRvIHNvbWV0aGlu
+Zw0Kc2lsbHkgKGxpa2UgIndoaWxlICgxKTsiIGluIGEgdXNlcnNwYWNlIHByb2Nlc3MpLg0KDQpT
+byB0aGUgIndobyBjaGFuZ2VzIiB3aWxsIGJlICJhbmRyb2lkIGluaXQgcHJvY2VzcyIsDQp0aGUg
+Im5vbi1leG90aWMgdXNhZ2Ugc2NlbmFyaW8iIGlzIGEgYml0IC4uLiBleG90aWMsIGFuZA0KdGhl
+ICJ1c2VmdWwiIHBhcnQgaXMgYSBxdWVzdGlvbiBvZiBwb2ludCBvZiB2aWV3Lg0KDQo+IE9uZSBj
+YW4gYXJndWUgdGhhdCB3ZSdyZSBkb2luZyB0b28gbXVjaCBkdXJpbmcgc3lzdGVtIHN1c3BlbmQs
+IGJlY2F1c2Ugd2hhdCB3ZSByZWFsbHkgbmVlZCBpcyB0aGUgX2NwdV9kb3duKCkgZG93biB0aGUg
+cm9hZC4gIFRoYXQgc2FpZCB3ZSBuZWVkIHRvIGxldCBjcHVmcmVxIChhbmQgb3RoZXIgc3Vic3lz
+dGVtcyB0b28pIGtub3cgdGhhdCB0aGlzIENQVSBpcyBnb25lIHRlbXBvcmFyaWx5IGFuZCBpdCBp
+cyBnb29kIHRvIGhhdmUgYSBjbGVhbiBzdGF0ZSBpbiBjYXNlIGl0IGRvZXNuJ3QgY29tZSB1cCBs
+YXRlci4NCkFncmVlZC4NCg0KPiBTbyBJIHRoaW5rIHRoYXQgdGhlIGNsZWFuZXN0IHdheSB0byBh
+ZGRyZXNzIHRoaXMgaXNzdWUgd291bGQgYmUgdG8gcmVhcnJhbmdlIHRoZSBjb2RlIHNvIHRoYXQg
+dGhlIHN5c2ZzIGlzIG5vdCBtb2RpZmllZCBieSBzdXNwZW5kL3Jlc3VtZSBhdCBhbGwsIHVubGVz
+cyB0aGUgcmVzdW1lIGZhaWxzLCBidXQgSSBkb24ndCB0aGluayBpdCdzIGdvaW5nIHRvIGJlIGVh
+c3kgdG8gbWFrZSB0aGF0IGhhcHBlbi4NCkkgdGhpbmsgSSBtaXNzIHRoZSBwb2ludCBpbiB0aGVy
+ZSwgYXMgYSBmYWlsaW5nIHJlc3VtZSBwYXRoDQpzaG91bGQgYmUgY2F0Y2hhYmxlIGluIHRoZSBj
+cHVmcmVxIGZyYW1ld29yay4gV2VsbCwNCkkgc2hvdWxkIGhhdmUgYSBjbG9zZXIgbG9vayBpbiBo
+ZXJlLg0KDQpDaGVlcnMuDQoNCi0tDQpSb2JlcnQNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCkludGVsIENvcnBv
+cmF0aW9uIFNBUyAoRnJlbmNoIHNpbXBsaWZpZWQgam9pbnQgc3RvY2sgY29tcGFueSkKUmVnaXN0
+ZXJlZCBoZWFkcXVhcnRlcnM6ICJMZXMgTW9udGFsZXRzIi0gMiwgcnVlIGRlIFBhcmlzLCAKOTIx
+OTYgTWV1ZG9uIENlZGV4LCBGcmFuY2UKUmVnaXN0cmF0aW9uIE51bWJlcjogIDMwMiA0NTYgMTk5
+IFIuQy5TLiBOQU5URVJSRQpDYXBpdGFsOiA0LDU3MiwwMDAgRXVyb3MKClRoaXMgZS1tYWlsIGFu
+ZCBhbnkgYXR0YWNobWVudHMgbWF5IGNvbnRhaW4gY29uZmlkZW50aWFsIG1hdGVyaWFsIGZvcgp0
+aGUgc29sZSB1c2Ugb2YgdGhlIGludGVuZGVkIHJlY2lwaWVudChzKS4gQW55IHJldmlldyBvciBk
+aXN0cmlidXRpb24KYnkgb3RoZXJzIGlzIHN0cmljdGx5IHByb2hpYml0ZWQuIElmIHlvdSBhcmUg
+bm90IHRoZSBpbnRlbmRlZApyZWNpcGllbnQsIHBsZWFzZSBjb250YWN0IHRoZSBzZW5kZXIgYW5k
+IGRlbGV0ZSBhbGwgY29waWVzLgo=
 
