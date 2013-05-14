@@ -1,76 +1,109 @@
-From: "Greg KH (gregkh@linuxfoundation.org)" <gregkh@linuxfoundation.org>
-Subject: Re: Kobject_uevent in cpufreq.c
-Date: Tue, 14 May 2013 10:50:22 -0400
-Message-ID: <20130514145022.GD14462@kroah.com>
-References: <4D68720C2E767A4AA6A8796D42C8EB59C8D667@BGSMSX101.gar.corp.intel.com>
- <20130513115801.GA11433@kroah.com>
- <4D68720C2E767A4AA6A8796D42C8EB59C8D936@BGSMSX101.gar.corp.intel.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/2] CPU Package temperarure thermal driver
+Date: Tue, 14 May 2013 08:12:04 -0700
+Message-ID: <51925444.9010902@linux.intel.com>
+References: <1367953065-2729-1-git-send-email-srinivas.pandruvada@linux.intel.com> <51913A47.9080206@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C8D936@BGSMSX101.gar.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Linux PM list (linux-pm@vger.kernel.org)" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:64819 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757932Ab3ENPHk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 May 2013 11:07:40 -0400
+In-Reply-To: <51913A47.9080206@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, tony.luck@intel.com, linux-edac@vger.kernel.org
 
-On Mon, May 13, 2013 at 04:08:19PM +0000, R, Durgadoss wrote:
-> > -----Original Message-----
-> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > owner@vger.kernel.org] On Behalf Of Greg KH
-> > (gregkh@linuxfoundation.org)
-> > Sent: Monday, May 13, 2013 5:28 PM
-> > To: R, Durgadoss
-> > Cc: linux-kernel@vger.kernel.org; Linux PM list (linux-pm@vger.kernel.org);
-> > Wysocki, Rafael J
-> > Subject: Re: Kobject_uevent in cpufreq.c
-> > 
-> > On Mon, May 13, 2013 at 11:31:57AM +0000, R, Durgadoss wrote:
-> > > Hi,
-> > >
-> > > I am observing an UEvent issue in cpufreq.c.
-> > > The cpufreq_add_dev() function is called whenever a core is 'onlined'.
-> > > we expect the kobject_uevent() method in cpufreq_add_dev() to
-> > > send an UEvent with KOBJ_ADD as the action parameter.
-> > >
-> > > But this call fails because of the 'filter function' inside kobject_uevent_env
-> > > inside lib/kobject_uevent.c. The ->filter points to 'dev_uevent_filter' in
-> > > drivers/base/core.c, where the check for 'device_ktype' fails.
-> > >
-> > > Error message:
-> > > kobject: 'cpufreq' (e5bbf290): kobject_uevent_env:
-> > > filter function caused the event to drop!
-> > >
-> > > As far as I can see, we need a kset, and associated filter function
-> > > inside cpufreq.c to get this working. Is this the right way to go ?
-> > > Any other easy/correct ways to get it working ? Please advise.
-> > 
-> > What exactly are you trying to do, and want the kernel to do?  You
-> > already get on/offline events for CPUs, why do you want them for cpufreq
-> > devices as well?
-> 
-> I want to update the permission of a cpufreq sysfs interface (scaling_*)
-> of a cpu (say cpu1) when the cpu resumes from suspend (s3).
-> I am trying to do this by listening to the uevent (sent by cpufreq.c,
-> when a cpu resumes) through udev.
-> 
-> For example,
-> chmod user:user /sys/devices/system/cpu1/cpufreq/scaling_max_freq
-> 
-> But I am not able to receive this event in udev, because kobject_uevent()
-> call fails due to the above-mentioned reason (i.e filter function)
-> I am trying to see how to make the kobject_uevent() call succeed,
-> so that I can change the permission as mentioned above.
-> 
-> The on/offline events come only when I manually do a
-> echo 0 > /sys/devices/system/cpu/cpu1/online
-> They don't come when the cpu resumes from suspend(s3)
+Hi Valentin,
 
-Why not fix this?  My kernel log says that the cpu is being taken
-offline and then online when resuming.  So fix that and you should be
-fine, right?
+Thanks for the review.
 
-thanks,
+On 05/13/2013 12:08 PM, Eduardo Valentin wrote:
+> On 07-05-2013 14:57, Srinivas Pandruvada wrote:
+>> This driver register CPU digital temperature package level sensor as a
+>> thermal zone with two user mode configurable trip points. Once
+>> the trip point is violated, user mode can receive notification via thermal
+>> notification mechanism and can take any action to control temperature.
+>
+> So, you have an IRQ that will be translated into a thermal event to
+> userland. Userland takes care of cooling the device. Is that correct?
+<Yes.>
+>> Background:
+>> This set of changes were done to coretemp driver and posted to lm_sensors
+>> mailing list on 04/04/2013. This was reviewed by Guenter Roeck from lm-sensors
+>> and Zhang Rui (thermal maintainer). They were in agreement not to add notification
+>> mechanism to coretemp driver but use thermal sysfs.
+>> Guenter Roeck suggested to use approach like "db8500_thermal driver in drivers/thermal".
+>> So resubmitting the driver as a thermal zone driver.
+>> Previous discussion link:
+>> http://comments.gmane.org/gmane.linux.drivers.sensors/32182
+>> "
+>> This is clear that there is reluctance in adding thresholds in coretemp sysfs,
+>> during previous attempts. Probably because of lake of use cases.
+>> But this time use case may be more compelling.
+>>
+>> We have many small form factor devices like ultrabooks, slate PCs in the market.
+>> Unfortunately these devices reach maximum temperature with relatively less
+>> workloads, causing BIOS to do thermal throttling. There are real performance
+>> issues due to aggressive BIOS action to control thermals and also thermal breakdown
+>> in some cases.
+>>
+>> Even the most expensive laptops, don't have correct ACPI thermal configuration,
+>> so that kernel thermal driver can act. In some case even the trip point is higher
+>> than critical temperature setting.
+>>
+> So, this driver is meant for ACPI capable systems, but with incorrect
+> ACPI thermal configuration. Is my understanding correct? Does it apply
+> to other types of systems?
+>
+> <This doesn't limit usage in non ACPI acpi systems. This is one of the problem scenerio. >
+>
+>> Intel has developed several drivers, which can be used to cool the system very efficiently.
+>> They include RAPL based cooling driver, Powerclamp driver and P state driver.
+>> To utilize these cooling device a closed loop user mode program is required, which
+>> will utilize these method and dynamically compensate for high CPU temperatures,
+>> without relying on any configuration data.
+>> One such solution is developed is "Linux thermal daemon". More details can be
+>> obtained from
+>> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
+>> This daemon polls for cpu temperature and apply compensation once the CPU reach target
+>> temperature.
+>>
+>> This polling can be mostly avoided, by getting notification for the temperature, where
+>> it needs to wake up and get ready for apply compensation. In most of the normal use
+>> cases, there may not be any threshold events. So very minimal number of user space
+>> notification for thermal thresholds.
+>> "
+>>
+> IMO, interrupt based TDM can be extended to non ACPI systems in most
+> cases. This is based on the fact that most temperature sensors for
+> embedded systems provide int high/low thresholds for triggering IRQs.
+> Not only Bandgaps but also I2C devices. Thus, avoiding polling is a
+> common target.
+>
+> If the design can be generalized enough to cope with improving the
+> framework, I believe is a better way to go.
+>
+<Basically we need some interface to: Get/Set thresholds, notifications 
+mechanism from client drivers.
+If these are provided, this can be generalized. So there can be common 
+notification driver and client drivers using this interface. You already 
+have a thermal framework. This will add another level.
+Rui and Durga may have more thoughts in expanding thermal APIs. >
+>> Srinivas Pandruvada (2):
+>>    x86, mcheck, therm_throt: Process package thresholds
+>>    Thermal: CPU Package temperature thermal
+>>
+>>   arch/x86/include/asm/mce.h               |   7 +
+>>   arch/x86/kernel/cpu/mcheck/therm_throt.c |  63 ++-
+>>   drivers/thermal/Kconfig                  |  12 +
+>>   drivers/thermal/Makefile                 |   2 +-
+>>   drivers/thermal/x86_pkg_temp_thermal.c   | 633 +++++++++++++++++++++++++++++++
+>>   5 files changed, 712 insertions(+), 5 deletions(-)
+>>   create mode 100644 drivers/thermal/x86_pkg_temp_thermal.c
+>>
+>
 
-greg k-h
