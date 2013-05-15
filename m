@@ -1,47 +1,61 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Wed, 15 May 2013 10:15:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1305151012110.1711-100000@iolanthe.rowland.org>
-References: <65F5F98566038744B1B43C8FD3B7549F1911B599@IRSMSX104.ger.corp.intel.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: CONFIG_HYPERVISOR_GUEST=y   {-- replace --
+ CONFIG_PARAVIRT_GUEST=y {= { # CONFIG_HYPERVISOR_GUEST is not set } Re:
+ 3.10-rc1 Fw: [PATCH 2/2] x86: Make Linux guest support optional
+Date: Wed, 15 May 2013 16:21:26 +0200
+Message-ID: <20130515142126.GA11783@pd.tnic>
+References: <20130514160108.GA5055@dhcp22.suse.cz>
+ <925E2E537ECB4D0C8EA18467A4D20174@local.st.by>
+ <20130515133405.GC5455@dhcp22.suse.cz>
+ <293D65E8F6CE48768FF47E438C57ECD2@local.st.by>
+ <20130515134656.GF5455@dhcp22.suse.cz>
+ <FC7F5007EF934194A48587DB6A0DBCC0@local.st.by>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:39375 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756609Ab3EOOPm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 10:15:42 -0400
-In-Reply-To: <65F5F98566038744B1B43C8FD3B7549F1911B599@IRSMSX104.ger.corp.intel.com>
+Received: from mail.skyhub.de ([78.46.96.112]:34684 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757852Ab3EOOVb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 May 2013 10:21:31 -0400
+Content-Disposition: inline
+In-Reply-To: <FC7F5007EF934194A48587DB6A0DBCC0@local.st.by>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Jarzmik, Robert" <robert.jarzmik@intel.com>
-Cc: "R, Durgadoss" <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Tony Luck <tony.luck@intel.com>
+Cc: Victor Miasnikov <vvm@tut.by>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@linuxdriverproject.org, olaf@aepfle.de, "\"Andy Whitcroft\"" <apw@canonical.com>, jasowang@redhat.com, Thomas Gleixner <tglx@linutronix.de>, JBeulich@suse.com, Michal Hocko <mhocko@suse.cz>
 
-On Wed, 15 May 2013, Jarzmik, Robert wrote:
-
-> -----Original Message-----
-> From: Alan Stern [mailto:stern@rowland.harvard.edu] 
+On Wed, May 15, 2013 at 05:05:42PM +0300, Victor Miasnikov wrote:
+> CONFIG_PARAVIRT_GUEST in arch/ia64 :
 > 
-> > The right way to solve this problem is to add a new state.  As I understand it, right now CPUs can be either present (active) or not present (inactive).  What you want is a third state in which the CPU is present but inactive.  Then all the device-core stuff (including sysfs
-> > attributes) can remain unchanged, and eventually the CPU is either reactivated or removed.
-> 
-> Ah, my understanding is much more fuzzy unfortunately.
+> ./linux-3.10-rc1/arch/ia64/include/asm/native/
+> inst.h
+> ./linux-3.10-rc1/arch/ia64/configs/
+> xen_domu_defconfig
+> ./linux-3.10-rc1/arch/ia64/include/asm/
+> hw_irq.h
+> iosapic.h
+> paravirt.h
 
-You probably understand the situation better than I do, though.
+This is only an issue if hyperv or vmware balloon is designed to work on
+ia64.
 
-> The way I understand CPU states is that each cpu has the following flags (stolen from include/linux/cpumask.h) :
->  - cpu_present
->    If I understand that one, it's when the CPU is physically inserted into the system bus (as when a blade with CPUs is inserted)
->  - cpu_online
->   This one represents if the CPU "has power connected" (or another sentence would be if it can service interrupts and schedule tasks)
->  - cpu_active
->   I think this one is related to the scheduler, which marks a cpu is "active" upon CPU_STARTING notification
-> 
-> From these 3 masks tuple (present, online, active) I think we can find out if the CPU is really removed or reactivated.
-> Of course, if you were speaking about the notifications (ie. include/linu/cpu.h, CPU_*), then I didn't see the distinction between "cpu removal" and "cpu activation". Yet I feel that I'm missing something in your "third state" proposition ... 
+However, both hyperv and vmware balloon depend on X86 so they are never
+enabled on ia64.
 
-Then a suspended CPU should have the cpu_present flag set and the other
-two flags clear, right?  And as long as the cpu_present flag is set,
-there's no need to remove device- or sysfs-related structures.
+So the way I see it, it doesn't matter.
 
-Alan Stern
+Tony, what's your take on this - CONFIG_PARAVIRT_GUEST is
+present in ia64 and I recently changed the Kconfig symbol to
+CONFIG_HYPERVISOR_GUEST on x86. I can fix it for correctness but is
+hyperv and vmware balloon even attempted on ia64?
 
+Btw, it depends on BROKEN on ia64 so I'm already sceptical.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
