@@ -1,66 +1,99 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] thermal: rcar: Fix typo in probe information message
-Date: Tue, 14 May 2013 19:42:15 -0400
-Message-ID: <5192CBD7.50200@ti.com>
-References: <1368572432-3943-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+From: Sonny Rao <sonnyrao@chromium.org>
+Subject: Fans at full speed after resume
+Date: Tue, 14 May 2013 21:18:39 -0700
+Message-ID: <CAPz6YkWr_D504UdeqXB0FXxgqOt3GYnF09ctoMaZ8P-znbVMGQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2TJVKGVBIDUSBVNOHCHIH"
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1368572432-3943-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, eduardo.valentin@ti.com
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Sameer Nanda <snanda@chromium.org>, "Triplett, Josh" <josh.triplett@intel.com>, Olof <olofj@chromium.org>, len.brown@intel.com, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-------enig2TJVKGVBIDUSBVNOHCHIH
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi, I've seen a regression in kernels since 3.7 on x86 devices where
+the kernel turns the system fans on to max speed after resuming from
+ram.  Other people have noticed it as well, for example see
+https://bugzilla.redhat.com/show_bug.cgi?id=895276
 
-Rui,
+For example on the Samsung 550 Chromebook, we have one thermal zone
+and have 5 cooling_devices, 0-4, which correspond to 5 possible fan
+speeds.  Under typical idle, only cooling_device4 and maybe
+cooling_device3 are active, depending on temperature:
 
-On 14-05-2013 19:00, Laurent Pinchart wrote:
-> Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.=
-com>
-> ---
+cat /sys/class/thermal/cooling_device[01234]/cur_state
+/sys/class/thermal/thermal_zone0/temp
+0
+0
+0
+0
+1
+57000
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+however after a suspend/resume, we see that cooling_devices 0 and 1
+become active:
+cat /sys/class/thermal/cooling_device[01234]/cur_state
+/sys/class/thermal/thermal_zone0/temp
+1
+1
+0
+0
+1
+54000
 
->  drivers/thermal/rcar_thermal.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_ther=
-mal.c
-> index 28f0919..6138949 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -452,7 +452,7 @@ static int rcar_thermal_probe(struct platform_devic=
-e *pdev)
-> =20
->  	platform_set_drvdata(pdev, common);
-> =20
-> -	dev_info(dev, "%d sensor proved\n", i);
-> +	dev_info(dev, "%d sensor probed\n", i);
-> =20
->  	return 0;
-> =20
->=20
+and it seems to stay that way, even though the temperature is low
+enough that the fan shouldn't be running at that speed.  If I manually
+disable cooling_devices 0 and 1 then fan control works normally again.
 
+I started bisecting it and was able to do so up until this commit:
+commit 29b19e250434c6193c8b8e4c34c9c6284dd4f101
+Merge: 125c4c7 c072fed
+Author:     Len Brown <len.brown@intel.com>
+AuthorDate: Tue Oct 9 01:35:52 2012 -0400
+Commit:     Len Brown <len.brown@intel.com>
+CommitDate: Tue Oct 9 01:35:52 2012 -0400
 
+    Merge branch 'release' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux into
+thermal
 
-------enig2TJVKGVBIDUSBVNOHCHIH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+unfortunately, I'm not able to successfully do a suspend/resume on the
+commits in that merge, so I wasn't able to bisect down to the exact
+commit.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+I did confirm that one parent of the merge is okay: commit
+125c4c706b680c7831f0966ff873c1ad0354ec25 idr: rename MAX_LEVEL to
+MAX_IDR_LEVEL
 
-iF4EAREIAAYFAlGSy9cACgkQCXcVR3XQvP2MUQD/S4Kv1OmSMHmWEilSVzpZX/kd
-EITfX489U4p2OoYEoigBAKfNjbI/oQmNiZALzGqYhagMPZ1xEx4xjyOXBTE4jfZP
-=ukWT
------END PGP SIGNATURE-----
+so I think it falls somewhere in this list of commits:
+c072fed95c9855a920c114d7fa3351f0f54ea06e...e3f25e6e5836c4790fbe395ff42e241f372d859d
 
-------enig2TJVKGVBIDUSBVNOHCHIH--
+c072fed9 thermal: Exynos: Fix NULL pointer dereference in
+exynos_unregister_thermal()
+a4b6fec9 Thermal: Fix bug on cpu_cooling, cooling device's id conflict problem.
+79e093c3 thermal: exynos: Use devm_* functions
+17be868e ARM: exynos: add thermal sensor driver platform data support
+7e0b55e6 thermal: exynos: register the tmu sensor with the kernel thermal layer
+f22d9c03c thermal: exynos5: add exynos5250 thermal sensor driver support
+c48cbba6 hwmon: exynos4: move thermal sensor driver to driver/thermal directory
+02361418 thermal: add generic cpufreq cooling implementation
+a7a3b8c8 Fix a build error.
+204dd1d3 thermal: Fix potential NULL pointer accesses
+1e426ffdd thermal: add Renesas R-Car thermal sensor support
+79a49168 thermal: fix potential out-of-bounds memory access
+f4a821ce6 Thermal: Introduce locking for cdev.thermal_instances list.
+908b9fb79 Thermal: Unify the code for both active and passive cooling
+ce119f832 Thermal: Introduce simple arbitrator for setting device cooling state
+b5e4ae62 Thermal: List thermal_instance in thermal_cooling_device.
+cddf31b3b Thermal: Rename thermal_instance.node to thermal_instance.tz_node.
+2d374139 Thermal: Rename thermal_zone_device.cooling_devices
+b81b6ba3 Thermal: rename structure thermal_cooling_device_instance to
+thermal_instance
+4ae46befb Thermal: Introduce thermal_zone_trip_update()
+1b7ddb84 Thermal: Remove tc1/tc2 in generic thermal layer.
+601f3d424 Thermal: Introduce .get_trend() callback.
+9d99842f9 Thermal: set upper and lower limits
+74051ba5 Thermal: Introduce cooling states range support
+
+When I get time, I'll try to rebase those commits onto the IDR commit
+and see if I can get a better bisect.  Any insights into the problem
+would be appreciated, thanks.
