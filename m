@@ -1,31 +1,112 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Wed, 15 May 2013 13:14:26 +0530
-Message-ID: <CAKohpokwKUo5OHF9tkkox6bRa-nUhBvj4yB4tMCnV5Mc9bnznQ@mail.gmail.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
-	<65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
-	<51922F68.2010404@linux.vnet.ibm.com>
-	<2396135.fo7RrTTQCl@vostro.rjw.lan>
-	<51924221.2080707@linux.vnet.ibm.com>
-	<CAKohpongKq7Oi0Gm2-xfh5yQMDtTDEy2COuB6MNekUcDd2-X5w@mail.gmail.com>
-	<51933A59.2000205@linux.vnet.ibm.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: 3.10-rc1 system starts regular boot when waking from s2ram
+Date: Wed, 15 May 2013 10:01:22 +0200
+Message-ID: <20130515080122.GC8625@dhcp22.suse.cz>
+References: <20130514160108.GA5055@dhcp22.suse.cz>
+ <1368567715.t1rym2H3RB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f44.google.com ([209.85.219.44]:62473 "EHLO
-	mail-oa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755440Ab3EOHo1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 03:44:27 -0400
-Received: by mail-oa0-f44.google.com with SMTP id n12so1783696oag.17
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2013 00:44:26 -0700 (PDT)
-In-Reply-To: <51933A59.2000205@linux.vnet.ibm.com>
+Received: from cantor2.suse.de ([195.135.220.15]:47760 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756677Ab3EOIB0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 May 2013 04:01:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1368567715.t1rym2H3RB@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>
 
-On 15 May 2013 13:03, Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> Thank you! I wish you had ACKed it more happily though ;-)
+On Tue 14-05-13 22:09:34, Rafael J. Wysocki wrote:
+> On Tuesday, May 14, 2013 06:01:08 PM Michal Hocko wrote:
+> > Hi,
+> > I am not able to make my system wake up from s2ram with 3.10-rc1. The
+> > system simply starts booting as if it wasn't suspended. 3.9 works
+> > without any issues.
+> > 
+> > pm_test testing (with no_console_suspend) shows that platform is the
+> > last mode which wakes up normally. processors mode already starts with a
+> > regular boot. The log doesn't say anything interesting:
+> > 
+> > $ echo processors > /sys/power/pm_test
+> > $ echo mem > /sys/power/state
+> > [   61.012533] PM: Syncing filesystems ... done.
+> > [   61.017944] Freezing user space processes ... (elapsed 0.01 seconds) done.
+> > [   61.033050] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+> > [   61.081647] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> > [   61.081724] sd 0:0:0:0: [sda] Stopping disk
+> > 
+> > then it waits for 5s as expected and starts booting from scratch without
+> > anything in the log.
+> > 
+> > Same test with
+> > $ echo platform > /sys/power/pm_test
+> > $ echo mem > /sys/power/state
+> > [   34.960477] PM: Syncing filesystems ... done.
+> > [   34.967624] Freezing user space processes ... (elapsed 0.01 seconds) done.
+> > [   34.983936] Freezing remaining freezable tasks ... (elapsed 0.01 seconds) done.
+> > [   35.056655] sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> > [   35.056800] sd 0:0:0:0: [sda] Stopping disk
+> > [   41.255957] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
+> > [   41.316267] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > [   41.316354] ata5: SATA link down (SStatus 0 SControl 300)
+> > [   41.316428] ata4: SATA link down (SStatus 0 SControl 300)
+> > [   41.316507] ata6: SATA link down (SStatus 0 SControl 300)
+> > [   41.316958] ata1.00: ACPI cmd 00/00:00:00:00:00:a0 (NOP) rejected by device (Stat=0x51 Err=0x04)
+> > [   41.388315] ata1.00: ACPI cmd 00/00:00:00:00:00:a0 (NOP) rejected by device (Stat=0x51 Err=0x04)
+> > [   41.389142] ata1.00: configured for UDMA/133
+> > [   41.391172] ata2.00: configured for UDMA/100
+> > [   41.396198] sd 0:0:0:0: [sda] Starting disk
+> > [   41.396533] iwlwifi 0000:02:00.0: L1 Enabled; Disabling L0S
+> > [   41.396767] iwlwifi 0000:02:00.0: Radio type=0x0-0x3-0x1
+> > [   41.638698] PM: resume of devices complete after 724.548 msecs
+> > [   41.638835] Restarting tasks ... done.
+> > [   41.640747] video LNXVIDEO:00: Restoring backlight state
+> > [   42.848988] [drm] Enabling RC6 states: RC6 on, RC6p off, RC6pp off
+> > [   42.850380] e1000e 0000:00:19.0 eth0: Detected Hardware Unit Hang:
+> > [   42.850380]   TDH                  <0>
+> > [   42.850380]   TDT                  <11>
+> > [   42.850380]   next_to_use          <11>
+> > [   42.850380]   next_to_clean        <0>
+> > [   42.850380] buffer_info[next_to_clean]:
+> > [   42.850380]   time_stamp           <ffff034b>
+> > [   42.850380]   next_to_watch        <0>
+> > [   42.850380]   jiffies              <ffff04d9>
+> > [   42.850380]   next_to_watch.status <0>
+> > [   42.850380] MAC Status             <80000>
+> > [   42.850380] PHY Status             <7949>
+> > [   42.850380] PHY 1000BASE-T Status  <0>
+> > [   42.850380] PHY Extended Status    <3000>
+> > [   42.850380] PCI Status             <10>
+> > [   44.066855] e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
+> > 
+> > Is the issue known?
+> 
+> No.
+> 
+> > Can I provide more information to help with debugging this issue.
+> 
+> I'm not sure.
+> 
+> > I am quite busy to bisect this ATM but can do it
+> > if this is the only choice left.
+> 
+> Well, it probably is.  I'll try to reproduce it, but if I can't ...
 
-Hmm.. Your reasoning looks valid and mine wasn't right. So, consider it
-a very happy Ack :)
+OK, I am bisecting now. 6 iterations left...
+
+> Anyway, the general PM changes essentially are not so invasive as to cause
+> something like this to happen, so I'm kind of suspecting x86.
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
+-- 
+Michal Hocko
+SUSE Labs
