@@ -1,57 +1,93 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: CONFIG_HYPERVISOR_GUEST=y   {-- replace --
- CONFIG_PARAVIRT_GUEST=y {= { # CONFIG_HYPERVISOR_GUEST is not set } Re:
- 3.10-rc1 system starts regular boot when waking from s2ram Fw: [PATCH 2/2]
- x86: Make Linux guest support optional
-Date: Wed, 15 May 2013 15:46:56 +0200
-Message-ID: <20130515134656.GF5455@dhcp22.suse.cz>
-References: <20130514160108.GA5055@dhcp22.suse.cz>
- <925E2E537ECB4D0C8EA18467A4D20174@local.st.by>
- <20130515133405.GC5455@dhcp22.suse.cz>
- <293D65E8F6CE48768FF47E438C57ECD2@local.st.by>
+From: "Victor Miasnikov" <vvm@tut.by>
+Subject: Re: CONFIG_HYPERVISOR_GUEST=y   {-- replace -- CONFIG_PARAVIRT_GUEST=y {= { # CONFIG_HYPERVISOR_GUEST is not set } Re: 3.10-rc1 Fw: [PATCH 2/2] x86: Make Linux guest support optional
+Date: Wed, 15 May 2013 17:05:42 +0300
+Message-ID: <FC7F5007EF934194A48587DB6A0DBCC0@local.st.by>
+References: <20130514160108.GA5055@dhcp22.suse.cz> <925E2E537ECB4D0C8EA18467A4D20174@local.st.by> <20130515133405.GC5455@dhcp22.suse.cz> <293D65E8F6CE48768FF47E438C57ECD2@local.st.by> <20130515134656.GF5455@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	format=flowed;
+	charset="ISO-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:59699 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754709Ab3EONq6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 May 2013 09:46:58 -0400
-Content-Disposition: inline
-In-Reply-To: <293D65E8F6CE48768FF47E438C57ECD2@local.st.by>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:65008 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757275Ab3EOOFr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 10:05:47 -0400
+Received: by mail-bk0-f46.google.com with SMTP id my1so1043174bkb.33
+        for <linux-pm@vger.kernel.org>; Wed, 15 May 2013 07:05:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Victor Miasnikov <vvm@tut.by>
-Cc: Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@linuxdriverproject.org, olaf@aepfle.de, "\"Andy Whitcroft\"" <apw@canonical.com>, jasowang@redhat.com, Thomas Gleixner <tglx@linutronix.de>, JBeulich@suse.com
+To: Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@linuxdriverproject.org, olaf@aepfle.de, "\"Andy Whitcroft\"" <apw@canonical.com>, jasowang@redhat.com, Thomas Gleixner <tglx@linutronix.de>, JBeulich@suse.com
+Cc: Michal Hocko <mhocko@suse.cz>
 
-On Wed 15-05-13 16:44:05, Victor Miasnikov wrote:
-> 
-> Hi!
-> 
-> >>>- select PARAVIRT_GUEST
-> >>>+ select HYPERVISOR_GUEST
-> >
-> >I might have missed the previous discussion but how does this relate to
-> >the original problem reported to this (https://lkml.org/lkml/2013/5/14/398)
-> >thread?
-> 
-> As example:
-> 
-> https://lkml.org/lkml/2013/5/14/398
-> ==
-> . . .
-> # CONFIG_HYPERVISOR_GUEST is not set
-> . . .
-> ==
-> 
-> >For record:
-> >$grep HYPERVISOR_GUEST .config
-> ># CONFIG_HYPERVISOR_GUEST is not set
-> 
-> 
-> Why not
-> CONFIG_HYPERVISOR_GUEST=y
+Hi!
 
-This is unrelated to the issue discussed in this thread.
--- 
-Michal Hocko
-SUSE Labs
+>> >>>- select PARAVIRT_GUEST
+>> >>>+ select HYPERVISOR_GUEST
+>> >
+>> >I might have missed the previous discussion but how does this relate to
+>> >the original problem reported to this (https://lkml.org/lkml/2013/5/14/398)
+>> >thread?
+>> 
+>> As example:
+>> 
+>> https://lkml.org/lkml/2013/5/14/398
+>> ==
+>> . . .
+>> # CONFIG_HYPERVISOR_GUEST is not set
+>> . . .
+>> ==
+>> 
+>> >For record:
+>> >$grep HYPERVISOR_GUEST .config
+>> ># CONFIG_HYPERVISOR_GUEST is not set
+>> 
+>> 
+>> Why not
+>> CONFIG_HYPERVISOR_GUEST=y
+> 
+> This is unrelated to the issue discussed in this thread.
+
+ Yes: Is another 1-2 problem[s], but is problem[s]:
+
+
+==
+TO All:
+
+ Please, replace
+CONFIG_PARAVIRT_GUEST=y
+ with
+CONFIG_HYPERVISOR_GUEST=y
+==
+
+==
+Is good?
+
+CONFIG_PARAVIRT_GUEST in arch/ia64 :
+
+./linux-3.10-rc1/arch/ia64/include/asm/native/
+inst.h
+./linux-3.10-rc1/arch/ia64/configs/
+xen_domu_defconfig
+./linux-3.10-rc1/arch/ia64/include/asm/
+hw_irq.h
+iosapic.h
+paravirt.h
+
+==
+ . . .
+#ifdef CONFIG_PARAVIRT_GUEST
+
+#define PARAVIRT_HYPERVISOR_TYPE_DEFAULT 0
+#define PARAVIRT_HYPERVISOR_TYPE_XEN  1
+ . . .
+==
+
+==
+
+ Comments ?
+
+Best regards, Victor Miasnikov
+Blog:  http://vvm.blog.tut.by/
+
