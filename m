@@ -1,157 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Wed, 15 May 2013 22:50:25 +0200
-Message-ID: <48891656.zvgiBQ9eul@vostro.rjw.lan>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com> <2396135.fo7RrTTQCl@vostro.rjw.lan> <51924221.2080707@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: "Fenghua Yu" <fenghua.yu@intel.com>
+Subject: [PATCH 0/2]  Quiet power limit notification
+Date: Wed, 15 May 2013 06:36:55 -0700
+Message-ID: <1368625017-6835-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49580 "EHLO hydra.sisk.pl"
+Received: from mga03.intel.com ([143.182.124.21]:58326 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932295Ab3EOUlu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 May 2013 16:41:50 -0400
-In-Reply-To: <51924221.2080707@linux.vnet.ibm.com>
+	id S932193Ab3EOUoE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 May 2013 16:44:04 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rafal.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, x86 <x86@kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Fenghua Yu <fenghua.yu@intel.com>
 
-On Tuesday, May 14, 2013 07:24:41 PM Srivatsa S. Bhat wrote:
-> On 05/14/2013 06:30 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, May 14, 2013 06:04:48 PM Srivatsa S. Bhat wrote:
-> >> On 05/14/2013 05:24 PM, Jarzmik, Robert wrote:
-> >>>> Okay, agreed after looking at this discussion ;) I am fine with the approach of kernel preserving permissions too.
-> >>>
-> >>> Ok, that's great, yet I don't see a clean solution here.  This is
-> >>> the path I see and that bothers me in the S3 suspend path:
-> >>> cpufreq_sysfs_release
-> >>>   kobject_cleanup
-> >>>     kobject_release
-> >>>       kobject_put
-> >>>         __cpufreq_remove_dev
-> >>>           cpufreq_cpu_callback
-> >>>             notifier_call_chain
-> >>>               __raw_notifier_call_chain
-> >>>                 __cpu_notify
-> >>>                   _cpu_down
-> >>>
-> >>> Here the sysfs attributes are destroyed. Cpu onlining will
-> >>> recreate them with root permissions. I don't see a good clean way
-> >>> to preserve permissions in sysfs across suspend/resume for
-> >>> deleted nodes. Do you ?
-> >>>
-> >>> And here we come to my actual worry : what is the technical clean
-> >>> way to solve this problem ?
-> >>>
-> >>> So far I have no idea (the cpufreq example is only a subset of
-> >>> the cases where it could happen). So if someone comes up with a
-> >>> good idea I'll volunteer to implement it :)
-> >>>
-> >>
-> >> Does the below (untested) patch help? I haven't spent time investigating
-> >> whether not doing the add_dev/remove_dev stuff during CPU hotplug in S3 path
-> >> will break something else. But it would be great if this works, since
-> >> its the simplest solution that I can think of.
-> > 
-> > Well, what if the CPU doesn't come up during resume?
-> > 
-> 
-> Hmm, that's a good point. We will need to remove the sysfs files in that
-> case. The updated patch below uses CPU_UP_CANCELED_FROZEN notification
-> to do that.
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
-> ----------------------------------------------------------------------->
-> 
-> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Subject: [PATCH v2] cpufreq: Preserve sysfs file permissions across suspend/resume
-> 
-> The file permissions of cpufreq per-cpu sysfs files are not preserved across
-> suspend/resume because we internally go through the CPU Hotplug path which
-> reinitializes the file permissions on CPU online.
-> 
-> But the user is not supposed to know that we are using CPU hotplug
-> internally within suspend/resume (IOW, the kernel should not silently wreck
-> the user-set file permissions across a suspend cycle). Therefore, we need to
-> preserve the file permissions as it is, across suspend/resume.
-> 
-> The simplest way to achieve that is to just not touch the sysfs files at
-> all - ie., just ignore the CPU hotplug events in the suspend/resume path
-> (_FROZEN) in the cpufreq hotplug callback.
-> 
-> Reported-by: Robert Jarzmik <robert.jarzmik@intel.com>
-> Reported-by: Durgadoss R <durgadoss.r@intel.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+From: Fenghua Yu <fenghua.yu@intel.com>
 
-Applied to linux-pm.git/linux-next as v3.10-rc2 material.
+Power Limit Notification (X86_FEATURE_PLN) was added in Sandy Bridge
+to give the OS the option of knowing when the package has reached
+a configured power threshold.
 
-Thanks,
-Rafael
+Linux-2.6.36 enabled this feature:
+0199114c31798af5b83841b21759b64171060d9b
+(x86, hwmon: Package Level Thermal/Power: power limit)
 
+It enabld the interrupt, and the interrupt hander
+added to the MCE log and printed to the console:
 
-> ---
-> v2: Use UP_CANCELED_FROZEN notification to delete the sysfs files if the
-> CPUs don't come up during resume.
-> 
->  drivers/cpufreq/cpufreq.c       |    4 +---
->  drivers/cpufreq/cpufreq_stats.c |    7 ++++---
->  2 files changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1b8a48e..284ba63 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1832,15 +1832,13 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
->  	if (dev) {
->  		switch (action) {
->  		case CPU_ONLINE:
-> -		case CPU_ONLINE_FROZEN:
->  			cpufreq_add_dev(dev, NULL);
->  			break;
->  		case CPU_DOWN_PREPARE:
-> -		case CPU_DOWN_PREPARE_FROZEN:
-> +		case CPU_UP_CANCELED_FROZEN:
->  			__cpufreq_remove_dev(dev, NULL);
->  			break;
->  		case CPU_DOWN_FAILED:
-> -		case CPU_DOWN_FAILED_FROZEN:
->  			cpufreq_add_dev(dev, NULL);
->  			break;
->  		}
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index bfd6273..fb65dec 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -349,15 +349,16 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
->  
->  	switch (action) {
->  	case CPU_ONLINE:
-> -	case CPU_ONLINE_FROZEN:
->  		cpufreq_update_policy(cpu);
->  		break;
->  	case CPU_DOWN_PREPARE:
-> -	case CPU_DOWN_PREPARE_FROZEN:
->  		cpufreq_stats_free_sysfs(cpu);
->  		break;
->  	case CPU_DEAD:
-> -	case CPU_DEAD_FROZEN:
-> +		cpufreq_stats_free_table(cpu);
-> +		break;
-> +	case CPU_UP_CANCELED_FROZEN:
-> +		cpufreq_stats_free_sysfs(cpu);
->  		cpufreq_stats_free_table(cpu);
->  		break;
->  	}
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+printk(KERN_CRIT "CPU%d: %s power limit notification (total events = %lu)
+printk(KERN_INFO "CPU%d: %s power limit normal\n"
+
+However, these events are quite routine on some systems under some conditions,
+alarming customers and provoking un-necessary customer support calls.
+
+So the MCE log entry was deleted in Linux-3.3:
+
+29e9bf1841e4f9df13b4992a716fece7087dd237
+(x86, mce, therm_throt: Don't report power limit and package level thermal throttle events in mcelog)
+
+Here we delete the corresponding kernel console messages,
+and then we disable the interrupt by default -- allowing it
+to be enabled by cmdline for diagnosis purposes.
+
+https://bugzilla.kernel.org/show_bug.cgi?id=36182
+
+This pair of patches applies cleanly back to Linux-3.3.
+
