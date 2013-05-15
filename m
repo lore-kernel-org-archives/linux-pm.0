@@ -1,93 +1,47 @@
-From: "Victor Miasnikov" <vvm@tut.by>
-Subject: Re: CONFIG_HYPERVISOR_GUEST=y   {-- replace -- CONFIG_PARAVIRT_GUEST=y {= { # CONFIG_HYPERVISOR_GUEST is not set } Re: 3.10-rc1 Fw: [PATCH 2/2] x86: Make Linux guest support optional
-Date: Wed, 15 May 2013 17:05:42 +0300
-Message-ID: <FC7F5007EF934194A48587DB6A0DBCC0@local.st.by>
-References: <20130514160108.GA5055@dhcp22.suse.cz> <925E2E537ECB4D0C8EA18467A4D20174@local.st.by> <20130515133405.GC5455@dhcp22.suse.cz> <293D65E8F6CE48768FF47E438C57ECD2@local.st.by> <20130515134656.GF5455@dhcp22.suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
+Date: Wed, 15 May 2013 10:15:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1305151012110.1711-100000@iolanthe.rowland.org>
+References: <65F5F98566038744B1B43C8FD3B7549F1911B599@IRSMSX104.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="ISO-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:65008 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757275Ab3EOOFr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 10:05:47 -0400
-Received: by mail-bk0-f46.google.com with SMTP id my1so1043174bkb.33
-        for <linux-pm@vger.kernel.org>; Wed, 15 May 2013 07:05:45 -0700 (PDT)
+Received: from iolanthe.rowland.org ([192.131.102.54]:39375 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756609Ab3EOOPm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 10:15:42 -0400
+In-Reply-To: <65F5F98566038744B1B43C8FD3B7549F1911B599@IRSMSX104.ger.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>, X86 ML <x86@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@linuxdriverproject.org, olaf@aepfle.de, "\"Andy Whitcroft\"" <apw@canonical.com>, jasowang@redhat.com, Thomas Gleixner <tglx@linutronix.de>, JBeulich@suse.com
-Cc: Michal Hocko <mhocko@suse.cz>
+To: "Jarzmik, Robert" <robert.jarzmik@intel.com>
+Cc: "R, Durgadoss" <durgadoss.r@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi!
+On Wed, 15 May 2013, Jarzmik, Robert wrote:
 
->> >>>- select PARAVIRT_GUEST
->> >>>+ select HYPERVISOR_GUEST
->> >
->> >I might have missed the previous discussion but how does this relate to
->> >the original problem reported to this (https://lkml.org/lkml/2013/5/14/398)
->> >thread?
->> 
->> As example:
->> 
->> https://lkml.org/lkml/2013/5/14/398
->> ==
->> . . .
->> # CONFIG_HYPERVISOR_GUEST is not set
->> . . .
->> ==
->> 
->> >For record:
->> >$grep HYPERVISOR_GUEST .config
->> ># CONFIG_HYPERVISOR_GUEST is not set
->> 
->> 
->> Why not
->> CONFIG_HYPERVISOR_GUEST=y
+> -----Original Message-----
+> From: Alan Stern [mailto:stern@rowland.harvard.edu] 
 > 
-> This is unrelated to the issue discussed in this thread.
+> > The right way to solve this problem is to add a new state.  As I understand it, right now CPUs can be either present (active) or not present (inactive).  What you want is a third state in which the CPU is present but inactive.  Then all the device-core stuff (including sysfs
+> > attributes) can remain unchanged, and eventually the CPU is either reactivated or removed.
+> 
+> Ah, my understanding is much more fuzzy unfortunately.
 
- Yes: Is another 1-2 problem[s], but is problem[s]:
+You probably understand the situation better than I do, though.
 
+> The way I understand CPU states is that each cpu has the following flags (stolen from include/linux/cpumask.h) :
+>  - cpu_present
+>    If I understand that one, it's when the CPU is physically inserted into the system bus (as when a blade with CPUs is inserted)
+>  - cpu_online
+>   This one represents if the CPU "has power connected" (or another sentence would be if it can service interrupts and schedule tasks)
+>  - cpu_active
+>   I think this one is related to the scheduler, which marks a cpu is "active" upon CPU_STARTING notification
+> 
+> From these 3 masks tuple (present, online, active) I think we can find out if the CPU is really removed or reactivated.
+> Of course, if you were speaking about the notifications (ie. include/linu/cpu.h, CPU_*), then I didn't see the distinction between "cpu removal" and "cpu activation". Yet I feel that I'm missing something in your "third state" proposition ... 
 
-==
-TO All:
+Then a suspended CPU should have the cpu_present flag set and the other
+two flags clear, right?  And as long as the cpu_present flag is set,
+there's no need to remove device- or sysfs-related structures.
 
- Please, replace
-CONFIG_PARAVIRT_GUEST=y
- with
-CONFIG_HYPERVISOR_GUEST=y
-==
-
-==
-Is good?
-
-CONFIG_PARAVIRT_GUEST in arch/ia64 :
-
-./linux-3.10-rc1/arch/ia64/include/asm/native/
-inst.h
-./linux-3.10-rc1/arch/ia64/configs/
-xen_domu_defconfig
-./linux-3.10-rc1/arch/ia64/include/asm/
-hw_irq.h
-iosapic.h
-paravirt.h
-
-==
- . . .
-#ifdef CONFIG_PARAVIRT_GUEST
-
-#define PARAVIRT_HYPERVISOR_TYPE_DEFAULT 0
-#define PARAVIRT_HYPERVISOR_TYPE_XEN  1
- . . .
-==
-
-==
-
- Comments ?
-
-Best regards, Victor Miasnikov
-Blog:  http://vvm.blog.tut.by/
+Alan Stern
 
