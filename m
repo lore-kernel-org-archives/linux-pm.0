@@ -1,80 +1,136 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: S3, SMP non boot cpus and /sys/devices/system/cpu[1-9]/cpufreq/scaling_max_freq
-Date: Wed, 15 May 2013 11:46:59 +0530
-Message-ID: <CAKohpomxpPGtLU6ud816CqZtH=aFEK88FZSPL4aUNbusGiomvQ@mail.gmail.com>
-References: <65F5F98566038744B1B43C8FD3B7549F191101C4@IRSMSX104.ger.corp.intel.com>
-	<65F5F98566038744B1B43C8FD3B7549F1911A240@IRSMSX104.ger.corp.intel.com>
-	<51922F68.2010404@linux.vnet.ibm.com>
-	<2396135.fo7RrTTQCl@vostro.rjw.lan>
-	<51924221.2080707@linux.vnet.ibm.com>
+Subject: Re: [PATCH V1 resend] cpufreq: Raname index as data in cpufreq_frequency_table
+Date: Wed, 15 May 2013 11:55:36 +0530
+Message-ID: <CAKohponZaka9MCfnHAq602oQ42+SR7D1oM6ggODHAzQy==Y4WQ@mail.gmail.com>
+References: <7e12acada8adcba5f4eb72f6c49e38aaf00a294f.1368434974.git.viresh.kumar@linaro.org>
+	<5191148E.7050205@wwwdotorg.org>
+	<CAKohpo=MS6D9DGiZDUPPYA47c=tqWXUMC6bdssD5xL=7GEcDvw@mail.gmail.com>
+	<51926325.2050805@wwwdotorg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/mixed; boundary=089e013d07585d774604dcbbd131
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f180.google.com ([209.85.214.180]:40038 "EHLO
-	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753609Ab3EOGRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 02:17:00 -0400
-Received: by mail-ob0-f180.google.com with SMTP id xk17so1502205obc.25
-        for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 23:17:00 -0700 (PDT)
-In-Reply-To: <51924221.2080707@linux.vnet.ibm.com>
+Received: from mail-oa0-f53.google.com ([209.85.219.53]:53529 "EHLO
+	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754684Ab3EOGZg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 May 2013 02:25:36 -0400
+Received: by mail-oa0-f53.google.com with SMTP id g12so1715811oah.12
+        for <linux-pm@vger.kernel.org>; Tue, 14 May 2013 23:25:36 -0700 (PDT)
+In-Reply-To: <51926325.2050805@wwwdotorg.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Jarzmik, Robert" <robert.jarzmik@intel.com>, "R, Durgadoss" <durgadoss.r@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Stephen Warren <swarren@wwwdotorg.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Sekhar Nori <nsekhar@ti.com>, Ben Dooks <ben-linux@fluff.org>, Kukjin Kim <kgene.kim@samsung.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, Srinidhi Kasagar <srinidhi.kasagar@stericsson.com>, Linus Walleij <linus.walleij@linaro.org>
 
-On 14 May 2013 19:24, Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> Subject: [PATCH v2] cpufreq: Preserve sysfs file permissions across suspend/resume
->
-> The file permissions of cpufreq per-cpu sysfs files are not preserved across
-> suspend/resume because we internally go through the CPU Hotplug path which
-> reinitializes the file permissions on CPU online.
->
-> But the user is not supposed to know that we are using CPU hotplug
-> internally within suspend/resume (IOW, the kernel should not silently wreck
-> the user-set file permissions across a suspend cycle). Therefore, we need to
-> preserve the file permissions as it is, across suspend/resume.
->
-> The simplest way to achieve that is to just not touch the sysfs files at
-> all - ie., just ignore the CPU hotplug events in the suspend/resume path
-> (_FROZEN) in the cpufreq hotplug callback.
->
-> Reported-by: Robert Jarzmik <robert.jarzmik@intel.com>
-> Reported-by: Durgadoss R <durgadoss.r@intel.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
-> v2: Use UP_CANCELED_FROZEN notification to delete the sysfs files if the
-> CPUs don't come up during resume.
+--089e013d07585d774604dcbbd131
+Content-Type: text/plain; charset=ISO-8859-1
 
-Is it also possible that more cpus come up after resume? i.e. we had 2 cpus
-at suspend and 3 at resume?
-
->  drivers/cpufreq/cpufreq.c       |    4 +---
->  drivers/cpufreq/cpufreq_stats.c |    7 ++++---
->  2 files changed, 5 insertions(+), 6 deletions(-)
+On 14 May 2013 21:45, Stephen Warren <swarren@wwwdotorg.org> wrote:
+> On 05/14/2013 07:46 AM, Viresh Kumar wrote:
+> ...
+>> This must address your concerns:
+>> @Rafael: I have attached both patches now for you to apply.
+>>
+>> From: Viresh Kumar <viresh.kumar@linaro.org>
+>> Date: Tue, 14 May 2013 19:08:50 +0530
+>> Subject: [PATCH 1/2] cpufreq: tegra: Remove irrelevant comment
+>>
+>> Tegra cpufreq driver doesn't use .index field of cpufreq_frequency_table and so
+>> comment mentioning order of .index is irrelevant. Remove it.
 >
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1b8a48e..284ba63 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1832,15 +1832,13 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
->         if (dev) {
->                 switch (action) {
->                 case CPU_ONLINE:
-> -               case CPU_ONLINE_FROZEN:
->                         cpufreq_add_dev(dev, NULL);
->                         break;
->                 case CPU_DOWN_PREPARE:
-> -               case CPU_DOWN_PREPARE_FROZEN:
-> +               case CPU_UP_CANCELED_FROZEN:
->                         __cpufreq_remove_dev(dev, NULL);
->                         break;
->                 case CPU_DOWN_FAILED:
-> -               case CPU_DOWN_FAILED_FROZEN:
->                         cpufreq_add_dev(dev, NULL);
->                         break;
+>> diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+>
+>> -/* Frequency table index must be sequential starting at 0 */
+>>  static struct cpufreq_frequency_table freq_table[] = {
+>>       { 0, 216000 },
+>>       { 1, 312000 },
+>
+> Does the .index/.data field even need to be filled in any more?
 
-I have forgotten meaning of these flags now :(
-So, CPU_ONLINE, CPU_DOWN_PREPARE and CPU_DOWN_FAILED
-are called when cpus are added/removed (but not for cpu_down in suspend
-resume)? and _FROZEN ones are only used for s2r/s2d?
+No. But i didn't wanted to write following code: { .frequency = *** }, as
+earlier one was fine too.
+
+Ack whichever version you want (Attached too):
+
+-----------x-----------------x-----------------
+
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 14 May 2013 19:08:50 +0530
+Subject: [PATCH] cpufreq: tegra: Don't initialize .index field of
+ cpufreq_frequency_table
+
+Tegra cpufreq driver doesn't use .index field of cpufreq_frequency_table and so
+we don't need to initialize it. Don't initialize it.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/tegra-cpufreq.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
+index c74c0e1..81561be 100644
+--- a/drivers/cpufreq/tegra-cpufreq.c
++++ b/drivers/cpufreq/tegra-cpufreq.c
+@@ -28,17 +28,16 @@
+ #include <linux/io.h>
+ #include <linux/suspend.h>
+
+-/* Frequency table index must be sequential starting at 0 */
+ static struct cpufreq_frequency_table freq_table[] = {
+-	{ 0, 216000 },
+-	{ 1, 312000 },
+-	{ 2, 456000 },
+-	{ 3, 608000 },
+-	{ 4, 760000 },
+-	{ 5, 816000 },
+-	{ 6, 912000 },
+-	{ 7, 1000000 },
+-	{ 8, CPUFREQ_TABLE_END },
++	{ .frequency = 216000 },
++	{ .frequency = 312000 },
++	{ .frequency = 456000 },
++	{ .frequency = 608000 },
++	{ .frequency = 760000 },
++	{ .frequency = 816000 },
++	{ .frequency = 912000 },
++	{ .frequency = 1000000 },
++	{ .frequency = CPUFREQ_TABLE_END },
+ };
+
+ #define NUM_CPUS	2
+
+--089e013d07585d774604dcbbd131
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-tegra-Don-t-initialize-.index-field-of-cpufr.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-tegra-Don-t-initialize-.index-field-of-cpufr.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hgq4kobx0
+
+RnJvbSA0ZjUyMDY3ZTNiYjBmNDQ4ZDdhMzc5ZmYyNzFjNmY4MzBkNDk2YjM4IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8NGY1MjA2N2UzYmIwZjQ0OGQ3YTM3OWZmMjcxYzZm
+ODMwZDQ5NmIzOC4xMzY4NTk5MDMwLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVHVlLCAxNCBNYXkg
+MjAxMyAxOTowODo1MCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IHRlZ3JhOiBEb24n
+dCBpbml0aWFsaXplIC5pbmRleCBmaWVsZCBvZgogY3B1ZnJlcV9mcmVxdWVuY3lfdGFibGUKClRl
+Z3JhIGNwdWZyZXEgZHJpdmVyIGRvZXNuJ3QgdXNlIC5pbmRleCBmaWVsZCBvZiBjcHVmcmVxX2Zy
+ZXF1ZW5jeV90YWJsZSBhbmQgc28Kd2UgZG9uJ3QgbmVlZCB0byBpbml0aWFsaXplIGl0LiBEb24n
+dCBpbml0aWFsaXplIGl0LgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3Vt
+YXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvdGVncmEtY3B1ZnJlcS5jIHwgMTkg
+KysrKysrKysrLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMTAg
+ZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL3RlZ3JhLWNwdWZyZXEu
+YyBiL2RyaXZlcnMvY3B1ZnJlcS90ZWdyYS1jcHVmcmVxLmMKaW5kZXggYzc0YzBlMS4uODE1NjFi
+ZSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL3RlZ3JhLWNwdWZyZXEuYworKysgYi9kcml2
+ZXJzL2NwdWZyZXEvdGVncmEtY3B1ZnJlcS5jCkBAIC0yOCwxNyArMjgsMTYgQEAKICNpbmNsdWRl
+IDxsaW51eC9pby5oPgogI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4KIAotLyogRnJlcXVlbmN5
+IHRhYmxlIGluZGV4IG11c3QgYmUgc2VxdWVudGlhbCBzdGFydGluZyBhdCAwICovCiBzdGF0aWMg
+c3RydWN0IGNwdWZyZXFfZnJlcXVlbmN5X3RhYmxlIGZyZXFfdGFibGVbXSA9IHsKLQl7IDAsIDIx
+NjAwMCB9LAotCXsgMSwgMzEyMDAwIH0sCi0JeyAyLCA0NTYwMDAgfSwKLQl7IDMsIDYwODAwMCB9
+LAotCXsgNCwgNzYwMDAwIH0sCi0JeyA1LCA4MTYwMDAgfSwKLQl7IDYsIDkxMjAwMCB9LAotCXsg
+NywgMTAwMDAwMCB9LAotCXsgOCwgQ1BVRlJFUV9UQUJMRV9FTkQgfSwKKwl7IC5mcmVxdWVuY3kg
+PSAyMTYwMDAgfSwKKwl7IC5mcmVxdWVuY3kgPSAzMTIwMDAgfSwKKwl7IC5mcmVxdWVuY3kgPSA0
+NTYwMDAgfSwKKwl7IC5mcmVxdWVuY3kgPSA2MDgwMDAgfSwKKwl7IC5mcmVxdWVuY3kgPSA3NjAw
+MDAgfSwKKwl7IC5mcmVxdWVuY3kgPSA4MTYwMDAgfSwKKwl7IC5mcmVxdWVuY3kgPSA5MTIwMDAg
+fSwKKwl7IC5mcmVxdWVuY3kgPSAxMDAwMDAwIH0sCisJeyAuZnJlcXVlbmN5ID0gQ1BVRlJFUV9U
+QUJMRV9FTkQgfSwKIH07CiAKICNkZWZpbmUgTlVNX0NQVVMJMgotLSAKMS43LjEyLnJjMi4xOC5n
+NjFiNDcyZQoK
+--089e013d07585d774604dcbbd131--
