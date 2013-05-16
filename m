@@ -1,163 +1,133 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: Re: [PATCH] cpufreq: fix governor start/stop race condition
-Date: Thu, 16 May 2013 14:14:13 +0800
-Message-ID: <51947935.50607@marvell.com>
-References: <1368442050-16548-1-git-send-email-chenxg@marvell.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC 26/42] drivers/thermal: don't check resource with
+ devm_ioremap_resource
+Date: Thu, 16 May 2013 15:22:57 +0800
+Message-ID: <1368688977.2063.35.camel@rzhang1-mobl4>
+References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
+	 <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog128.obsmtp.com ([74.125.149.141]:58942 "EHLO
-	na3sys009aog128.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751866Ab3EPGRD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 02:17:03 -0400
-In-Reply-To: <1368442050-16548-1-git-send-email-chenxg@marvell.com>
+Received: from mga03.intel.com ([143.182.124.21]:32360 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752738Ab3EPHXG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 May 2013 03:23:06 -0400
+In-Reply-To: <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Yilu Mao <ylmao@marvell.com>, Zhoujie Wu <zjwu@marvell.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 05/13/2013 06:47 PM, Xiaoguang Chen wrote:
-> cpufreq governor stop and start should be kept in sequence.
-> If not, there will be unexpected behavior, for example:
->
-> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
-> the normal sequence is as below:
->
-> 1) Current governor is userspace, one application tries to set
-> governor to ondemand. it will call __cpufreq_set_policy in which it
-> will stop userspace governor and then start ondemand governor.
->
-> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-> call cpufreq_add_policy_cpu. on which it first stops userspace
-> governor, and then starts userspace governor.
->
-> Now if the sequence of above two cases interleaves, it becames
-> below sequence:
->
-> 1) application stops userspace governor
-> 2)                                      hotplug stops userspace governor
-> 3) application starts ondemand governor
-> 4)                                      hotplug starts a governor
->
-> in step 4, hotplug is supposed to start userspace governor, but now
-> the governor has been changed by application to ondemand, so hotplug
-> starts ondemand governor again !!!!
->
-> The solution is as below:
-> cpufreq policy has a rwsem to protect the read and write of policy.
-> make the scope of the rwsem to contain cpufreq governor stop/start
-> sequence, so that after the stop governor has started, other threads
-> will not stop governor, they have to wait the current thread starts
-> the governor and then do their job.
->
-> Change-Id: I054bb52789fc8abdcf80bdcc1caebd429c182bb0
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+On Fri, 2013-05-10 at 10:17 +0200, Wolfram Sang wrote:
+> devm_ioremap_resource does sanity checks on the given resource. No need to
+> duplicate this in the driver.
+> 
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+
+applied to thermal -next.
+
+thanks,
+rui
 > ---
->   drivers/cpufreq/cpufreq.c | 19 ++++++++-----------
->   1 file changed, 8 insertions(+), 11 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 1b8a48e..935f750 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -811,14 +811,14 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
->   	int ret = 0, has_target = !!cpufreq_driver->target;
->   	unsigned long flags;
->   
-> +	lock_policy_rwsem_write(sibling);
-> +
->   	policy = cpufreq_cpu_get(sibling);
->   	WARN_ON(!policy);
->   
->   	if (has_target)
->   		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
->   
-> -	lock_policy_rwsem_write(sibling);
+>  drivers/thermal/dove_thermal.c     |   11 +----------
+>  drivers/thermal/exynos_thermal.c   |    5 -----
+>  drivers/thermal/kirkwood_thermal.c |    7 +------
+>  drivers/thermal/rcar_thermal.c     |    6 +-----
+>  4 files changed, 3 insertions(+), 26 deletions(-)
+> 
+> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
+> index 3078c40..5c53c53 100644
+> --- a/drivers/thermal/dove_thermal.c
+> +++ b/drivers/thermal/dove_thermal.c
+> @@ -133,25 +133,16 @@ static int dove_thermal_probe(struct platform_device *pdev)
+>  	struct resource *res;
+>  	int ret;
+>  
+> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
 > -
->   	write_lock_irqsave(&cpufreq_driver_lock, flags);
->   
->   	cpumask_set_cpu(cpu, policy->cpus);
-> @@ -826,13 +826,13 @@ static int cpufreq_add_policy_cpu(unsigned int cpu, unsigned int sibling,
->   	per_cpu(cpufreq_cpu_data, cpu) = policy;
->   	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->   
-> -	unlock_policy_rwsem_write(sibling);
+>  	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->sensor))
+>  		return PTR_ERR(priv->sensor);
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
+>  	priv->control = devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->control))
+>  		return PTR_ERR(priv->control);
+> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
+> index b777ae6..a7bef42 100644
+> --- a/drivers/thermal/exynos_thermal.c
+> +++ b/drivers/thermal/exynos_thermal.c
+> @@ -967,11 +967,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>  	INIT_WORK(&data->irq_work, exynos_tmu_work);
+>  
+>  	data->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!data->mem) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENOENT;
+> -	}
 > -
->   	if (has_target) {
->   		__cpufreq_governor(policy, CPUFREQ_GOV_START);
->   		__cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
->   	}
->   
-> +	unlock_policy_rwsem_write(sibling);
-> +
->   	ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
->   	if (ret) {
->   		cpufreq_cpu_put(policy);
-> @@ -1028,6 +1028,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   		return -EINVAL;
->   	}
->   
-> +	WARN_ON(lock_policy_rwsem_write(cpu));
-> +
->   	if (cpufreq_driver->target)
->   		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
->   
-> @@ -1037,12 +1039,10 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   			data->governor->name, CPUFREQ_NAME_LEN);
->   #endif
->   
-> -	WARN_ON(lock_policy_rwsem_write(cpu));
->   	cpus = cpumask_weight(data->cpus);
->   
->   	if (cpus > 1)
->   		cpumask_clear_cpu(cpu, data->cpus);
-> -	unlock_policy_rwsem_write(cpu);
->   
->   	if (cpu != data->cpu) {
->   		sysfs_remove_link(&dev->kobj, "cpufreq");
-> @@ -1054,7 +1054,6 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   		if (ret) {
->   			pr_err("%s: Failed to move kobj: %d", __func__, ret);
->   
-> -			WARN_ON(lock_policy_rwsem_write(cpu));
->   			cpumask_set_cpu(cpu, data->cpus);
->   
->   			write_lock_irqsave(&cpufreq_driver_lock, flags);
-> @@ -1068,9 +1067,7 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   			return -EINVAL;
->   		}
->   
-> -		WARN_ON(lock_policy_rwsem_write(cpu));
->   		update_policy_cpu(data, cpu_dev->id);
-> -		unlock_policy_rwsem_write(cpu);
->   		pr_debug("%s: policy Kobject moved to cpu: %d from: %d\n",
->   				__func__, cpu_dev->id, cpu);
->   	}
-> @@ -1083,10 +1080,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   		if (cpufreq_driver->target)
->   			__cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
->   
-> -		lock_policy_rwsem_read(cpu);
->   		kobj = &data->kobj;
->   		cmp = &data->kobj_unregister;
-> -		unlock_policy_rwsem_read(cpu);
->   		kobject_put(kobj);
->   
->   		/* we need to make sure that the underlying kobj is actually
-> @@ -1108,6 +1103,8 @@ static int __cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif
->   		__cpufreq_governor(data, CPUFREQ_GOV_LIMITS);
->   	}
->   
-> +	unlock_policy_rwsem_write(cpu);
-> +
->   	per_cpu(cpufreq_policy_cpu, cpu) = -1;
->   	return 0;
->   }
-Hi, Guys
-What's your opinion about this patch?
+>  	data->base = devm_ioremap_resource(&pdev->dev, data->mem);
+>  	if (IS_ERR(data->base))
+>  		return PTR_ERR(data->base);
+> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
+> index e5500ed..e3ca1b4 100644
+> --- a/drivers/thermal/kirkwood_thermal.c
+> +++ b/drivers/thermal/kirkwood_thermal.c
+> @@ -75,16 +75,11 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
+>  	struct kirkwood_thermal_priv *priv;
+>  	struct resource *res;
+>  
+> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (!res) {
+> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
+> -		return -ENODEV;
+> -	}
+> -
+>  	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+>  	if (!priv)
+>  		return -ENOMEM;
+>  
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+>  	if (IS_ERR(priv->sensor))
+>  		return PTR_ERR(priv->sensor);
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 2cc5b61..b2217b3 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -385,11 +385,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		 * platform has IRQ support.
+>  		 * Then, drier use common register
+>  		 */
+> -		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
+> -		if (!res) {
+> -			dev_err(dev, "Could not get platform resource\n");
+> -			return -ENODEV;
+> -		}
+>  
+>  		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
+>  				       dev_name(dev), common);
+> @@ -401,6 +396,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		/*
+>  		 * rcar_has_irq_support() will be enabled
+>  		 */
+> +		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
+>  		common->base = devm_ioremap_resource(dev, res);
+>  		if (IS_ERR(common->base))
+>  			return PTR_ERR(common->base);
 
--- 
-Thanks
-Xiaoguang
 
