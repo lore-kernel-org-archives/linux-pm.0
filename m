@@ -1,60 +1,30 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [RESEND] [PATCH 0/2]  Quiet power limit notification
-Date: Thu, 16 May 2013 17:54:04 -0400
-Message-ID: <1368741246-3998-1-git-send-email-lenb@kernel.org>
-References: <1368625017-6835-1-git-send-email-fenghua.yu@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ye0-f170.google.com ([209.85.213.170]:33070 "EHLO
-	mail-ye0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751868Ab3EPVyU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 17:54:20 -0400
-In-Reply-To: <1368625017-6835-1-git-send-email-fenghua.yu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] Power management and ACPI fixes for v3.10-rc2
+Date: Thu, 16 May 2013 15:25:35 -0700
+Message-ID: <CA+55aFxhDO0D1nQgTFWSiZT9AJMSF9oOUoxWj=Y=5en0nWC92g@mail.gmail.com>
+References: <68458966.ga8OpWyZtA@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <68458966.ga8OpWyZtA@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Dirk Brandewie <dirk.j.brandewie@intel.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-[Re-sending for Fenghua, as his e-mail seems to have got lost.
- In case you receive multiple copies, the patches are unchanged.]
+On Thu, May 16, 2013 at 1:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>
+> - intel_pstate driver fixes and cleanups from Dirk Brandewie and
+>   Wei Yongjun.
 
-thanks,
--Len Brown
-Intel Open Source Technology Center
----
+Btw, is there some fundamental reason why the pstate driver is limited
+to so few models?
 
-Power Limit Notification (X86_FEATURE_PLN) was added in Sandy Bridge
-to give the OS the option of knowing when the package has reached
-a configured power threshold.
+I've tested it on models 0x25 (i5-670) and 0x3a (i5-3427U), and it
+seems to work. But neither model is listed. (only 0x2a and 0x2d are).
 
-Linux-2.6.36 enabled this feature:
-0199114c31798af5b83841b21759b64171060d9b
-(x86, hwmon: Package Level Thermal/Power: power limit)
+I understand that people want to be careful, but it's not actually
+getting very much *testing* right now, is it? Are models 0x2a/0x2d
+actually special in any way?
 
-It enabld the interrupt, and the interrupt hander
-added to the MCE log and printed to the console:
-
-printk(KERN_CRIT "CPU%d: %s power limit notification (total events = %lu)
-printk(KERN_INFO "CPU%d: %s power limit normal\n"
-
-However, these events are quite routine on some systems under some conditions,
-alarming customers and provoking un-necessary customer support calls.
-
-So the MCE log entry was deleted in Linux-3.3:
-
-29e9bf1841e4f9df13b4992a716fece7087dd237
-(x86, mce, therm_throt: Don't report power limit and package level thermal throttle events in mcelog)
-
-Here we delete the corresponding kernel console messages,
-and then we disable the interrupt by default -- allowing it
-to be enabled by cmdline for diagnosis purposes.
-
-https://bugzilla.kernel.org/show_bug.cgi?id=36182
-
-This pair of patches applies cleanly back to Linux-3.3.
-
-Documentation/kernel-parameters.txt      |  2 ++
-arch/x86/kernel/cpu/mcheck/therm_throt.c | 43 ++++++++++++++++++++++++++-----------------
- 2 files changed, 28 insertions(+), 17 deletions(-)
-
-[1/2] x86 thermal: Disable power limit notification interrupt by default
-[2/2] x86 thermal: Delete power-limit-notification console messages
+                  Linus
