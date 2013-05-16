@@ -1,257 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Allow device power states to be used for CONFIG_PM unset
-Date: Thu, 16 May 2013 01:04:27 +0200
-Message-ID: <6756211.Qs5Byrr4Re@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: rcar: Fix typo in probe information message
+Date: Thu, 16 May 2013 09:27:09 +0800
+Message-ID: <1368667629.2063.25.camel@rzhang1-mobl4>
+References: <1368572432-3943-1-git-send-email-laurent.pinchart+renesas@ideasonboard.com>
+	 <5192CBD7.50200@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <5192CBD7.50200@ti.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, 2013-05-14 at 19:42 -0400, Eduardo Valentin wrote:
+> Rui,
+> 
+> On 14-05-2013 19:00, Laurent Pinchart wrote:
+> > Signed-off-by: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>
+> > ---
+> 
+> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> 
+applied to thermal -next.
 
-Currently, drivers/acpi/device_pm.c depends on CONFIG_PM and all of
-the functions defined in there are replaced with static inline stubs
-if that option is unset.  However, CONFIG_PM means, roughly, "runtime
-PM or suspend/hibernation support" and some of those functions are
-useful regardless of that.  For example, they are used by the ACPI
-fan driver for controlling fans and acpi_device_set_power() is called
-during device removal.  Moreover, device initialization may depend on
-setting device power states properly.
+thanks,
+rui
 
-For these reasons, make the routines manipulating ACPI device power
-states defined in drivers/acpi/device_pm.c available for CONFIG_PM
-unset too.
+> >  drivers/thermal/rcar_thermal.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> > index 28f0919..6138949 100644
+> > --- a/drivers/thermal/rcar_thermal.c
+> > +++ b/drivers/thermal/rcar_thermal.c
+> > @@ -452,7 +452,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+> >  
+> >  	platform_set_drvdata(pdev, common);
+> >  
+> > -	dev_info(dev, "%d sensor proved\n", i);
+> > +	dev_info(dev, "%d sensor probed\n", i);
+> >  
+> >  	return 0;
+> >  
+> > 
+> 
+> 
 
-Reported-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/Makefile    |    2 
- drivers/acpi/device_pm.c |  126 +++++++++++++++++++++++------------------------
- include/acpi/acpi_bus.h  |   40 +-------------
- 3 files changed, 70 insertions(+), 98 deletions(-)
-
-Index: linux-pm/drivers/acpi/Makefile
-===================================================================
---- linux-pm.orig/drivers/acpi/Makefile
-+++ linux-pm/drivers/acpi/Makefile
-@@ -24,7 +24,7 @@ acpi-y				+= nvs.o
- # Power management related files
- acpi-y				+= wakeup.o
- acpi-y				+= sleep.o
--acpi-$(CONFIG_PM)		+= device_pm.o
-+acpi-y				+= device_pm.o
- acpi-$(CONFIG_ACPI_SLEEP)	+= proc.o
- 
- 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -37,68 +37,6 @@
- #define _COMPONENT	ACPI_POWER_COMPONENT
- ACPI_MODULE_NAME("device_pm");
- 
--static DEFINE_MUTEX(acpi_pm_notifier_lock);
--
--/**
-- * acpi_add_pm_notifier - Register PM notifier for given ACPI device.
-- * @adev: ACPI device to add the notifier for.
-- * @context: Context information to pass to the notifier routine.
-- *
-- * NOTE: @adev need not be a run-wake or wakeup device to be a valid source of
-- * PM wakeup events.  For example, wakeup events may be generated for bridges
-- * if one of the devices below the bridge is signaling wakeup, even if the
-- * bridge itself doesn't have a wakeup GPE associated with it.
-- */
--acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
--				 acpi_notify_handler handler, void *context)
--{
--	acpi_status status = AE_ALREADY_EXISTS;
--
--	mutex_lock(&acpi_pm_notifier_lock);
--
--	if (adev->wakeup.flags.notifier_present)
--		goto out;
--
--	status = acpi_install_notify_handler(adev->handle,
--					     ACPI_SYSTEM_NOTIFY,
--					     handler, context);
--	if (ACPI_FAILURE(status))
--		goto out;
--
--	adev->wakeup.flags.notifier_present = true;
--
-- out:
--	mutex_unlock(&acpi_pm_notifier_lock);
--	return status;
--}
--
--/**
-- * acpi_remove_pm_notifier - Unregister PM notifier from given ACPI device.
-- * @adev: ACPI device to remove the notifier from.
-- */
--acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
--				    acpi_notify_handler handler)
--{
--	acpi_status status = AE_BAD_PARAMETER;
--
--	mutex_lock(&acpi_pm_notifier_lock);
--
--	if (!adev->wakeup.flags.notifier_present)
--		goto out;
--
--	status = acpi_remove_notify_handler(adev->handle,
--					    ACPI_SYSTEM_NOTIFY,
--					    handler);
--	if (ACPI_FAILURE(status))
--		goto out;
--
--	adev->wakeup.flags.notifier_present = false;
--
-- out:
--	mutex_unlock(&acpi_pm_notifier_lock);
--	return status;
--}
--
- /**
-  * acpi_power_state_string - String representation of ACPI device power state.
-  * @state: ACPI device power state to return the string representation of.
-@@ -385,6 +323,69 @@ bool acpi_bus_power_manageable(acpi_hand
- }
- EXPORT_SYMBOL(acpi_bus_power_manageable);
- 
-+#ifdef CONFIG_PM
-+static DEFINE_MUTEX(acpi_pm_notifier_lock);
-+
-+/**
-+ * acpi_add_pm_notifier - Register PM notifier for given ACPI device.
-+ * @adev: ACPI device to add the notifier for.
-+ * @context: Context information to pass to the notifier routine.
-+ *
-+ * NOTE: @adev need not be a run-wake or wakeup device to be a valid source of
-+ * PM wakeup events.  For example, wakeup events may be generated for bridges
-+ * if one of the devices below the bridge is signaling wakeup, even if the
-+ * bridge itself doesn't have a wakeup GPE associated with it.
-+ */
-+acpi_status acpi_add_pm_notifier(struct acpi_device *adev,
-+				 acpi_notify_handler handler, void *context)
-+{
-+	acpi_status status = AE_ALREADY_EXISTS;
-+
-+	mutex_lock(&acpi_pm_notifier_lock);
-+
-+	if (adev->wakeup.flags.notifier_present)
-+		goto out;
-+
-+	status = acpi_install_notify_handler(adev->handle,
-+					     ACPI_SYSTEM_NOTIFY,
-+					     handler, context);
-+	if (ACPI_FAILURE(status))
-+		goto out;
-+
-+	adev->wakeup.flags.notifier_present = true;
-+
-+ out:
-+	mutex_unlock(&acpi_pm_notifier_lock);
-+	return status;
-+}
-+
-+/**
-+ * acpi_remove_pm_notifier - Unregister PM notifier from given ACPI device.
-+ * @adev: ACPI device to remove the notifier from.
-+ */
-+acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
-+				    acpi_notify_handler handler)
-+{
-+	acpi_status status = AE_BAD_PARAMETER;
-+
-+	mutex_lock(&acpi_pm_notifier_lock);
-+
-+	if (!adev->wakeup.flags.notifier_present)
-+		goto out;
-+
-+	status = acpi_remove_notify_handler(adev->handle,
-+					    ACPI_SYSTEM_NOTIFY,
-+					    handler);
-+	if (ACPI_FAILURE(status))
-+		goto out;
-+
-+	adev->wakeup.flags.notifier_present = false;
-+
-+ out:
-+	mutex_unlock(&acpi_pm_notifier_lock);
-+	return status;
-+}
-+
- bool acpi_bus_can_wakeup(acpi_handle handle)
- {
- 	struct acpi_device *device;
-@@ -1023,3 +1024,4 @@ void acpi_dev_pm_remove_dependent(acpi_h
- 	mutex_unlock(&adev->physical_node_lock);
- }
- EXPORT_SYMBOL_GPL(acpi_dev_pm_remove_dependent);
-+#endif /* CONFIG_PM */
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -370,7 +370,6 @@ acpi_status acpi_bus_get_status_handle(a
- 				       unsigned long long *sta);
- int acpi_bus_get_status(struct acpi_device *device);
- 
--#ifdef CONFIG_PM
- int acpi_bus_set_power(acpi_handle handle, int state);
- const char *acpi_power_state_string(int state);
- int acpi_device_get_power(struct acpi_device *device, int *state);
-@@ -378,41 +377,12 @@ int acpi_device_set_power(struct acpi_de
- int acpi_bus_init_power(struct acpi_device *device);
- int acpi_bus_update_power(acpi_handle handle, int *state_p);
- bool acpi_bus_power_manageable(acpi_handle handle);
-+
-+#ifdef CONFIG_PM
- bool acpi_bus_can_wakeup(acpi_handle handle);
--#else /* !CONFIG_PM */
--static inline int acpi_bus_set_power(acpi_handle handle, int state)
--{
--	return 0;
--}
--static inline const char *acpi_power_state_string(int state)
--{
--	return "D0";
--}
--static inline int acpi_device_get_power(struct acpi_device *device, int *state)
--{
--	return 0;
--}
--static inline int acpi_device_set_power(struct acpi_device *device, int state)
--{
--	return 0;
--}
--static inline int acpi_bus_init_power(struct acpi_device *device)
--{
--	return 0;
--}
--static inline int acpi_bus_update_power(acpi_handle handle, int *state_p)
--{
--	return 0;
--}
--static inline bool acpi_bus_power_manageable(acpi_handle handle)
--{
--	return false;
--}
--static inline bool acpi_bus_can_wakeup(acpi_handle handle)
--{
--	return false;
--}
--#endif /* !CONFIG_PM */
-+#else
-+static inline bool acpi_bus_can_wakeup(acpi_handle handle) { return false; }
-+#endif
- 
- #ifdef CONFIG_ACPI_PROC_EVENT
- int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
 
