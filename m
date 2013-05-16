@@ -1,26 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
-Date: Thu, 16 May 2013 14:09:46 +0530
-Message-ID: <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
-References: <cover.1368679353.git.viresh.kumar@linaro.org>
-	<6691801.RqjZrI7EgH@vostro.rjw.lan>
+From: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Subject: Re: [PATCH 2/2] Thermal: don't check resource with
+ devm_ioremap_resource
+Date: Thu, 16 May 2013 05:46:19 -0300
+Message-ID: <20130516084618.GB2342@localhost>
+References: <1368670581-4846-1-git-send-email-rui.zhang@intel.com>
+ <1368670581-4846-2-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <6691801.RqjZrI7EgH@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([94.23.35.102]:58079 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755788Ab3EPIqY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 04:46:24 -0400
+Content-Disposition: inline
+In-Reply-To: <1368670581-4846-2-git-send-email-rui.zhang@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, Vincenzo Frascino <vincenzo.frascino@st.com>
 
-On 16 May 2013 14:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Thursday, May 16, 2013 10:39:55 AM Viresh Kumar wrote:
->> Hi Rafael,
->
-> Hi,
->
->> Here are few more fixes for 3.10-rc2.
->
-> I'm actually going to sent the for-rc2 request today, so these are for -rc3.
+On Thu, May 16, 2013 at 10:16:21AM +0800, Zhang Rui wrote:
+> devm_ioremap_resource does sanity checks on the given resource.
+> No need to duplicate this in the driver.
+>=20
+> CC: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> CC: Vincenzo Frascino <vincenzo.frascino@st.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 
-Okay. No issues.
+Acked-by: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+
+Thanks,
+--=20
+Ezequiel Garc=C3=ADa, Free Electrons
+Embedded Linux, Kernel and Android Engineering
+http://free-electrons.com
