@@ -1,39 +1,40 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: Re: [PATCH 1/6] Thermal: armada_thermal: Remove redundant platform_set_drvdata()
-Date: Thu, 16 May 2013 13:39:19 +0530
-Message-ID: <CAK9yfHy0fjYt3h4-E5rspARJGAfA1rtvGGiHrNhhbWuQ-fbkwg@mail.gmail.com>
-References: <1367575034-18432-1-git-send-email-sachin.kamat@linaro.org>
-	<5183B1B0.5030806@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Thu, 16 May 2013 10:46:26 +0200
+Message-ID: <6691801.RqjZrI7EgH@vostro.rjw.lan>
+References: <cover.1368679353.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:52228 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755704Ab3EPIJU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 04:09:20 -0400
-Received: by mail-ob0-f174.google.com with SMTP id un3so3075957obb.19
-        for <linux-pm@vger.kernel.org>; Thu, 16 May 2013 01:09:19 -0700 (PDT)
-In-Reply-To: <5183B1B0.5030806@ti.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:50715 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755577Ab3EPIhx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 May 2013 04:37:53 -0400
+In-Reply-To: <cover.1368679353.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 
-On 3 May 2013 18:16, Eduardo Valentin <eduardo.valentin@ti.com> wrote:
-> On 03-05-2013 05:57, Sachin Kamat wrote:
->> Commit 0998d06310 (device-core: Ensure drvdata = NULL when no
->> driver is bound) removes the need to set driver data field to
->> NULL.
->>
->> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
->> Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
->
-> I am fine with this patch.
->
-> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+On Thursday, May 16, 2013 10:39:55 AM Viresh Kumar wrote:
+> Hi Rafael,
 
-Ping on this series Rui :)
+Hi,
+
+> Here are few more fixes for 3.10-rc2.
+
+I'm actually going to sent the for-rc2 request today, so these are for -rc3.
+
+> Viresh Kumar (3):
+>   cpufreq: Add EXPORT_SYMBOL_GPL for have_governor_per_policy
+>   cpufreq: governors: Move get_governor_parent_kobj() to cpufreq.c
+>   cpufreq: Drop rwsem lock around CPUFREQ_GOV_POLICY_EXIT
+
+Thanks,
+Rafael
+
 
 -- 
-With warm regards,
-Sachin
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
