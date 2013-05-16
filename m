@@ -1,160 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management and ACPI fixes for v3.10-rc2
-Date: Thu, 16 May 2013 22:07:58 +0200
-Message-ID: <68458966.ga8OpWyZtA@vostro.rjw.lan>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Thu, 16 May 2013 22:51:25 +0200
+Message-ID: <4482296.g7Mb85DDVP@vostro.rjw.lan>
+References: <cover.1368679353.git.viresh.kumar@linaro.org> <6691801.RqjZrI7EgH@vostro.rjw.lan> <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:52166 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:52283 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753209Ab3EPT7W convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 15:59:22 -0400
+	id S1752831Ab3EPUmu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 May 2013 16:42:50 -0400
+In-Reply-To: <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 
-Hi Linus,
+On Thursday, May 16, 2013 02:09:46 PM Viresh Kumar wrote:
+> On 16 May 2013 14:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday, May 16, 2013 10:39:55 AM Viresh Kumar wrote:
+> >> Hi Rafael,
+> >
+> > Hi,
+> >
+> >> Here are few more fixes for 3.10-rc2.
+> >
+> > I'm actually going to sent the for-rc2 request today, so these are for -rc3.
+> 
+> Okay. No issues.
 
-Please pull from the git repository at
+While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
+about the other two patches.  Why exactly are they needed now?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+=
-acpi-3.10-rc2
+And speaking of patch [3/3], if you paste kernel logs into changelogs, please
+remove the time stamps (unless they are relevant to the problem being fixed).
 
-to receive power management and ACPI fixes for v3.10-rc2 with top-most
-commit 49a9e4315d40e1ba1d3258ea33f3948254038455
+Thanks,
+Rafael
 
-  Merge branch 'acpi-fixes'
 
-on top of commit f722406faae2d073cc1d01063d1123c35425939e
-
-  Linux 3.10-rc1
-
-These mostly are fixes that have emerged recently, the majority in cpuf=
-req,
-some in ACPI and PM in general as well.
-
-Included are:
-
-- intel_pstate driver fixes and cleanups from Dirk Brandewie and
-  Wei Yongjun.
-
-- cpufreq fixes related to ARM big.LITTLE support and the
-  cpufreq-cpu0 driver from Viresh Kumar.
-
-- Assorted cpufreq fixes from Srivatsa S. Bhat, Borislav Petkov,
-  Wolfram Sang, Alexander Shiyan, and Nishanth Menon.
-
-- Assorted ACPI fixes from Catalin Marinas, Lan Tianyu, Alex Hung,
-  Jan-Simon M=C3=B6ller, and yours truly.
-
-- Fix for a kfree() under spinlock in the PM core from Shuah Khan.
-
-- PM documentation updates from Borislav Petkov and Zhang Rui.
-
----------------
-
-Alex Hung (1):
-      ACPI video: ignore BIOS initial backlight value for HP 1000
-
-Alexander Shiyan (1):
-      cpufreq: Fix incorrect dependecies for ARM SA11xx drivers
-
-Borislav Petkov (2):
-      cpufreq, ondemand: Remove leftover debug line
-      PM / hibernate: Correct documentation
-
-Catalin Marinas (1):
-      ACPI / scan: Fix memory leak on acpi_scan_init_hotplug() error pa=
-th
-
-Dirk Brandewie (5):
-      cpufreq / intel_pstate: remove idle time and duration from sample=
- and calculations
-      cpufreq / intel_pstate: use lowest requested max performance
-      cpufreq / intel_pstate: fix ffmpeg regression
-      cpufreq / intel_pstate: Remove idle mode PID
-      cpufreq / intel_pstate: remove #ifdef MODULE compile fence
-
-Jan-Simon M=C3=B6ller (1):
-      ACPI: Fix section to __init. Align with usage in acpixf.h
-
-Lan Tianyu (2):
-      ACPI / EC: Restart transaction even when the IBF flag set
-      ACPI / AC: Add sleep quirk for Thinkpad e530
-
-Nishanth Menon (1):
-      cpufreq: cpufreq-cpu0: defer probe when regulator is not ready
-
-Rafael J. Wysocki (1):
-      ACPI / PM: Move processor suspend/resume to syscore_ops
-
-Shuah Khan (1):
-      PM: Avoid calling kfree() under spinlock in dev_pm_put_subsys_dat=
-a()
-
-Srivatsa S. Bhat (1):
-      cpufreq: Preserve sysfs files across suspend/resume
-
-Viresh Kumar (9):
-      cpufreq: ARM big LITTLE: Select PM_OPP
-      cpufreq: ARM big LITTLE DT: Return correct transition latency
-      cpufreq: ARM big LITTLE DT: Return CPUFREQ_ETERNAL if clock-laten=
-cy isn't found
-      cpufreq: ARM big LITTLE: Move cpu_to_cluster() to arm_big_little.=
-h
-      cpufreq: ARM big LITTLE: Improve print message
-      cpufreq: governors: Fix CPUFREQ_GOV_POLICY_{INIT|EXIT} notifiers
-      cpufreq: Issue CPUFREQ_GOV_POLICY_EXIT notifier before dropping p=
-olicy refcount
-      cpufreq: cpufreq-cpu0: Free parent node for error cases
-      cpufreq: ARM big LITTLE: Fix Kconfig entries
-
-Wei Yongjun (1):
-      cpufreq / intel_pstate: use vzalloc() instead of vmalloc()/memset=
-(0)
-
-Wolfram Sang (1):
-      cpufreq / kirkwood: don't check resource with devm_ioremap_resour=
-ce
-
-Zhang Rui (2):
-      PM: Documentation update for freeze state
-      PM / Documentation: remove inaccurate suspend/hibernate transitio=
-n lantency statement
-
----------------
-
- Documentation/power/devices.txt     |   15 +++---
- Documentation/power/interface.txt   |    4 +-
- Documentation/power/notifiers.txt   |    6 ++-
- Documentation/power/states.txt      |   30 ++++++-----
- drivers/acpi/ac.c                   |   33 ++++++++++++
- drivers/acpi/ec.c                   |    4 +-
- drivers/acpi/processor_driver.c     |    8 +--
- drivers/acpi/processor_idle.c       |   29 ++++++----
- drivers/acpi/scan.c                 |    3 +-
- drivers/acpi/video.c                |    8 +++
- drivers/base/power/common.c         |   12 ++---
- drivers/cpufreq/Kconfig             |    2 +-
- drivers/cpufreq/Kconfig.arm         |   15 +++---
- drivers/cpufreq/arm_big_little.c    |    7 +--
- drivers/cpufreq/arm_big_little.h    |    5 ++
- drivers/cpufreq/arm_big_little_dt.c |    9 ++--
- drivers/cpufreq/cpufreq-cpu0.c      |   27 +++++++---
- drivers/cpufreq/cpufreq.c           |   10 ++--
- drivers/cpufreq/cpufreq_governor.c  |   11 ++--
- drivers/cpufreq/cpufreq_governor.h  |    1 +
- drivers/cpufreq/cpufreq_ondemand.c  |    1 -
- drivers/cpufreq/cpufreq_stats.c     |    7 +--
- drivers/cpufreq/intel_pstate.c      |  122 ++++++++-------------------=
-----------------
- drivers/cpufreq/kirkwood-cpufreq.c  |    4 --
- include/acpi/acpiosxf.h             |    2 +-
- include/acpi/processor.h            |   10 +++-
- 26 files changed, 190 insertions(+), 195 deletions(-)
-
---=20
+-- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
