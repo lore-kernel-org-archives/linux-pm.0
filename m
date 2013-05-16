@@ -1,133 +1,39 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [RFC 26/42] drivers/thermal: don't check resource with
- devm_ioremap_resource
-Date: Thu, 16 May 2013 15:22:57 +0800
-Message-ID: <1368688977.2063.35.camel@rzhang1-mobl4>
-References: <1368173847-5661-1-git-send-email-wsa@the-dreams.de>
-	 <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/6] Thermal: armada_thermal: Remove redundant platform_set_drvdata()
+Date: Thu, 16 May 2013 13:39:19 +0530
+Message-ID: <CAK9yfHy0fjYt3h4-E5rspARJGAfA1rtvGGiHrNhhbWuQ-fbkwg@mail.gmail.com>
+References: <1367575034-18432-1-git-send-email-sachin.kamat@linaro.org>
+	<5183B1B0.5030806@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:32360 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752738Ab3EPHXG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 May 2013 03:23:06 -0400
-In-Reply-To: <1368173847-5661-27-git-send-email-wsa@the-dreams.de>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:52228 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755704Ab3EPIJU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 04:09:20 -0400
+Received: by mail-ob0-f174.google.com with SMTP id un3so3075957obb.19
+        for <linux-pm@vger.kernel.org>; Thu, 16 May 2013 01:09:19 -0700 (PDT)
+In-Reply-To: <5183B1B0.5030806@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com
 
-On Fri, 2013-05-10 at 10:17 +0200, Wolfram Sang wrote:
-> devm_ioremap_resource does sanity checks on the given resource. No need to
-> duplicate this in the driver.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+On 3 May 2013 18:16, Eduardo Valentin <eduardo.valentin@ti.com> wrote:
+> On 03-05-2013 05:57, Sachin Kamat wrote:
+>> Commit 0998d06310 (device-core: Ensure drvdata = NULL when no
+>> driver is bound) removes the need to set driver data field to
+>> NULL.
+>>
+>> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+>> Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+>
+> I am fine with this patch.
+>
+> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-applied to thermal -next.
+Ping on this series Rui :)
 
-thanks,
-rui
-> ---
->  drivers/thermal/dove_thermal.c     |   11 +----------
->  drivers/thermal/exynos_thermal.c   |    5 -----
->  drivers/thermal/kirkwood_thermal.c |    7 +------
->  drivers/thermal/rcar_thermal.c     |    6 +-----
->  4 files changed, 3 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/thermal/dove_thermal.c b/drivers/thermal/dove_thermal.c
-> index 3078c40..5c53c53 100644
-> --- a/drivers/thermal/dove_thermal.c
-> +++ b/drivers/thermal/dove_thermal.c
-> @@ -133,25 +133,16 @@ static int dove_thermal_probe(struct platform_device *pdev)
->  	struct resource *res;
->  	int ret;
->  
-> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
-> -		return -ENODEV;
-> -	}
-> -
->  	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
->  	if (!priv)
->  		return -ENOMEM;
->  
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(priv->sensor))
->  		return PTR_ERR(priv->sensor);
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
-> -		return -ENODEV;
-> -	}
->  	priv->control = devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(priv->control))
->  		return PTR_ERR(priv->control);
-> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-> index b777ae6..a7bef42 100644
-> --- a/drivers/thermal/exynos_thermal.c
-> +++ b/drivers/thermal/exynos_thermal.c
-> @@ -967,11 +967,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->  	INIT_WORK(&data->irq_work, exynos_tmu_work);
->  
->  	data->mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!data->mem) {
-> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
-> -		return -ENOENT;
-> -	}
-> -
->  	data->base = devm_ioremap_resource(&pdev->dev, data->mem);
->  	if (IS_ERR(data->base))
->  		return PTR_ERR(data->base);
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> index e5500ed..e3ca1b4 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -75,16 +75,11 @@ static int kirkwood_thermal_probe(struct platform_device *pdev)
->  	struct kirkwood_thermal_priv *priv;
->  	struct resource *res;
->  
-> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (!res) {
-> -		dev_err(&pdev->dev, "Failed to get platform resource\n");
-> -		return -ENODEV;
-> -	}
-> -
->  	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
->  	if (!priv)
->  		return -ENOMEM;
->  
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
->  	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
->  	if (IS_ERR(priv->sensor))
->  		return PTR_ERR(priv->sensor);
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 2cc5b61..b2217b3 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -385,11 +385,6 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		 * platform has IRQ support.
->  		 * Then, drier use common register
->  		 */
-> -		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
-> -		if (!res) {
-> -			dev_err(dev, "Could not get platform resource\n");
-> -			return -ENODEV;
-> -		}
->  
->  		ret = devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
->  				       dev_name(dev), common);
-> @@ -401,6 +396,7 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		/*
->  		 * rcar_has_irq_support() will be enabled
->  		 */
-> +		res = platform_get_resource(pdev, IORESOURCE_MEM, mres++);
->  		common->base = devm_ioremap_resource(dev, res);
->  		if (IS_ERR(common->base))
->  			return PTR_ERR(common->base);
-
-
+-- 
+With warm regards,
+Sachin
