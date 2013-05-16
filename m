@@ -1,45 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
-Date: Thu, 16 May 2013 22:51:25 +0200
-Message-ID: <4482296.g7Mb85DDVP@vostro.rjw.lan>
-References: <cover.1368679353.git.viresh.kumar@linaro.org> <6691801.RqjZrI7EgH@vostro.rjw.lan> <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Len Brown <lenb@kernel.org>
+Subject: [RESEND] [PATCH 0/2]  Quiet power limit notification
+Date: Thu, 16 May 2013 17:54:04 -0400
+Message-ID: <1368741246-3998-1-git-send-email-lenb@kernel.org>
+References: <1368625017-6835-1-git-send-email-fenghua.yu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:52283 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831Ab3EPUmu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 May 2013 16:42:50 -0400
-In-Reply-To: <CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
+Received: from mail-ye0-f170.google.com ([209.85.213.170]:33070 "EHLO
+	mail-ye0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751868Ab3EPVyU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 May 2013 17:54:20 -0400
+In-Reply-To: <1368625017-6835-1-git-send-email-fenghua.yu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, May 16, 2013 02:09:46 PM Viresh Kumar wrote:
-> On 16 May 2013 14:16, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Thursday, May 16, 2013 10:39:55 AM Viresh Kumar wrote:
-> >> Hi Rafael,
-> >
-> > Hi,
-> >
-> >> Here are few more fixes for 3.10-rc2.
-> >
-> > I'm actually going to sent the for-rc2 request today, so these are for -rc3.
-> 
-> Okay. No issues.
+[Re-sending for Fenghua, as his e-mail seems to have got lost.
+ In case you receive multiple copies, the patches are unchanged.]
 
-While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
-about the other two patches.  Why exactly are they needed now?
+thanks,
+-Len Brown
+Intel Open Source Technology Center
+---
 
-And speaking of patch [3/3], if you paste kernel logs into changelogs, please
-remove the time stamps (unless they are relevant to the problem being fixed).
+Power Limit Notification (X86_FEATURE_PLN) was added in Sandy Bridge
+to give the OS the option of knowing when the package has reached
+a configured power threshold.
 
-Thanks,
-Rafael
+Linux-2.6.36 enabled this feature:
+0199114c31798af5b83841b21759b64171060d9b
+(x86, hwmon: Package Level Thermal/Power: power limit)
 
+It enabld the interrupt, and the interrupt hander
+added to the MCE log and printed to the console:
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+printk(KERN_CRIT "CPU%d: %s power limit notification (total events = %lu)
+printk(KERN_INFO "CPU%d: %s power limit normal\n"
+
+However, these events are quite routine on some systems under some conditions,
+alarming customers and provoking un-necessary customer support calls.
+
+So the MCE log entry was deleted in Linux-3.3:
+
+29e9bf1841e4f9df13b4992a716fece7087dd237
+(x86, mce, therm_throt: Don't report power limit and package level thermal throttle events in mcelog)
+
+Here we delete the corresponding kernel console messages,
+and then we disable the interrupt by default -- allowing it
+to be enabled by cmdline for diagnosis purposes.
+
+https://bugzilla.kernel.org/show_bug.cgi?id=36182
+
+This pair of patches applies cleanly back to Linux-3.3.
+
+Documentation/kernel-parameters.txt      |  2 ++
+arch/x86/kernel/cpu/mcheck/therm_throt.c | 43 ++++++++++++++++++++++++++-----------------
+ 2 files changed, 28 insertions(+), 17 deletions(-)
+
+[1/2] x86 thermal: Disable power limit notification interrupt by default
+[2/2] x86 thermal: Delete power-limit-notification console messages
