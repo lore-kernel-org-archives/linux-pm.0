@@ -1,88 +1,170 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 0/3] CPU Package temperarure thermal driver (v02)
-Date: Fri, 17 May 2013 16:42:00 -0700
-Message-ID: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/3] x86, mcheck, therm_throt: Process package thresholds
+Date: Fri, 17 May 2013 16:42:01 -0700
+Message-ID: <1368834123-9591-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga02.intel.com ([134.134.136.20]:36763 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438Ab3EQXhR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 May 2013 19:37:17 -0400
+	id S1753428Ab3EQXhQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 May 2013 19:37:16 -0400
+In-Reply-To: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, tony.luck@intel.com, linux-edac@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-This driver register CPU digital temperature package level sensor as a
-thermal zone with two user mode configurable trip points. Once
-the trip point is violated, user mode can receive notification via thermal
-notification mechanism and can take any action to control temperature.
+Added callback registration for package threshold reports. Also added
+a callback to check the rate control implemented in callback or not.
+If there is no rate control implemented, then there is a default rate
+control similar to core threshold notification by delaying for
+CHECK_INTERVAL (5 minutes) between reports.
 
-Changes:
-v02:
-Did majority of changes suggested by Eduardo Valentin. Main changes are:
-- Module parameters for rate control delay
-- Removed user space gov parameter in thermal_zone_register
-- Changes related to returning of errors values
-- Error code return values
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ arch/x86/include/asm/mce.h               |  7 ++++
+ arch/x86/kernel/cpu/mcheck/therm_throt.c | 63 ++++++++++++++++++++++++++++++--
+ 2 files changed, 66 insertions(+), 4 deletions(-)
 
-v01:
-First version for review
-
-Background:
-This set of changes were done to coretemp driver and posted to lm_sensors
-mailing list on 04/04/2013. This was reviewed by Guenter Roeck from lm-sensors
-and Zhang Rui (thermal maintainer). They were in agreement not to add notification
-mechanism to coretemp driver but use thermal sysfs.
-Guenter Roeck suggested to use approach like "db8500_thermal driver in drivers/thermal".
-So resubmitting the driver as a thermal zone driver.
-Previous discussion link:
-http://comments.gmane.org/gmane.linux.drivers.sensors/32182
-" 
-This is clear that there is reluctance in adding thresholds in coretemp sysfs,
-during previous attempts. Probably because of lake of use cases.
-But this time use case may be more compelling.
-
-We have many small form factor devices like ultrabooks, slate PCs in the market.
-Unfortunately these devices reach maximum temperature with relatively less
-workloads, causing BIOS to do thermal throttling. There are real performance
-issues due to aggressive BIOS action to control thermals and also thermal breakdown
-in some cases.
-
-Even the most expensive laptops, don't have correct ACPI thermal configuration,
-so that kernel thermal driver can act. In some case even the trip point is higher
-than critical temperature setting.
-
-Intel has developed several drivers, which can be used to cool the system very efficiently.
-They include RAPL based cooling driver, Powerclamp driver and P state driver.
-To utilize these cooling device a closed loop user mode program is required, which
-will utilize these method and dynamically compensate for high CPU temperatures,
-without relying on any configuration data.
-One such solution is developed is "Linux thermal daemon". More details can be
-obtained from 
-"https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
-This daemon polls for cpu temperature and apply compensation once the CPU reach target
-temperature. 
-
-This polling can be mostly avoided, by getting notification for the temperature, where
-it needs to wake up and get ready for apply compensation. In most of the normal use 
-cases, there may not be any threshold events. So very minimal number of user space
-notification for thermal thresholds.
-
-Srinivas Pandruvada (3):
-  x86, mcheck, therm_throt: Process package thresholds
-  Thermal: CPU Package temperature thermal
-  Thermal: Documentation for x86 package temperature thermal driver
-
- Documentation/thermal/x86_pkg_temperature_thermal |  47 ++
- arch/x86/include/asm/mce.h                        |   7 +
- arch/x86/kernel/cpu/mcheck/therm_throt.c          |  63 ++-
- drivers/thermal/Kconfig                           |  12 +
- drivers/thermal/Makefile                          |   2 +-
- drivers/thermal/x86_pkg_temp_thermal.c            | 642 ++++++++++++++++++++++
- 6 files changed, 768 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/thermal/x86_pkg_temperature_thermal
- create mode 100644 drivers/thermal/x86_pkg_temp_thermal.c
-
+diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
+index f4076af..4c619bf 100644
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -214,6 +214,13 @@ void mce_log_therm_throt_event(__u64 status);
+ /* Interrupt Handler for core thermal thresholds */
+ extern int (*platform_thermal_notify)(__u64 msr_val);
+ 
++/* Interrupt Handler for package thermal thresholds */
++extern int (*platform_thermal_package_notify)(__u64 msr_val);
++
++/* Callback support of rate control, return true, if
++ * callback has rate control */
++extern bool (*platform_thermal_package_rate_control)(void);
++
+ #ifdef CONFIG_X86_THERMAL_VECTOR
+ extern void mcheck_intel_therm_init(void);
+ #else
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 47a1870..4131c03 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -54,12 +54,24 @@ struct thermal_state {
+ 	struct _thermal_state package_power_limit;
+ 	struct _thermal_state core_thresh0;
+ 	struct _thermal_state core_thresh1;
++	struct _thermal_state pkg_thresh0;
++	struct _thermal_state pkg_thresh1;
+ };
+ 
+ /* Callback to handle core threshold interrupts */
+ int (*platform_thermal_notify)(__u64 msr_val);
+ EXPORT_SYMBOL(platform_thermal_notify);
+ 
++/* Callback to handle core package threshold_interrupts */
++int (*platform_thermal_package_notify)(__u64 msr_val);
++EXPORT_SYMBOL_GPL(platform_thermal_package_notify);
++
++/* Callback support of rate control, return true, if
++ * callback has rate control */
++bool (*platform_thermal_package_rate_control)(void);
++EXPORT_SYMBOL_GPL(platform_thermal_package_rate_control);
++
++
+ static DEFINE_PER_CPU(struct thermal_state, thermal_state);
+ 
+ static atomic_t therm_throt_en	= ATOMIC_INIT(0);
+@@ -203,19 +215,25 @@ static int therm_throt_process(bool new_event, int event, int level)
+ 	return 0;
+ }
+ 
+-static int thresh_event_valid(int event)
++static int thresh_event_valid(int level, int event)
+ {
+ 	struct _thermal_state *state;
+ 	unsigned int this_cpu = smp_processor_id();
+ 	struct thermal_state *pstate = &per_cpu(thermal_state, this_cpu);
+ 	u64 now = get_jiffies_64();
+ 
+-	state = (event == 0) ? &pstate->core_thresh0 : &pstate->core_thresh1;
++	if (level == PACKAGE_LEVEL)
++		state = (event == 0) ? &pstate->pkg_thresh0 :
++						&pstate->pkg_thresh1;
++	else
++		state = (event == 0) ? &pstate->core_thresh0 :
++						&pstate->core_thresh1;
+ 
+ 	if (time_before64(now, state->next_check))
+ 		return 0;
+ 
+ 	state->next_check = now + CHECK_INTERVAL;
++
+ 	return 1;
+ }
+ 
+@@ -321,6 +339,39 @@ device_initcall(thermal_throttle_init_device);
+ 
+ #endif /* CONFIG_SYSFS */
+ 
++static void notify_package_thresholds(__u64 msr_val)
++{
++	bool notify_thres_0 = false;
++	bool notify_thres_1 = false;
++
++	if (!platform_thermal_package_notify)
++		return;
++
++	/* lower threshold check */
++	if (msr_val & THERM_LOG_THRESHOLD0)
++		notify_thres_0 = true;
++	/* higher threshold check */
++	if (msr_val & THERM_LOG_THRESHOLD1)
++		notify_thres_1 = true;
++
++	if (!notify_thres_0 && !notify_thres_1)
++		return;
++
++	if (platform_thermal_package_rate_control &&
++		platform_thermal_package_rate_control()) {
++		/* Rate control is implemented in callback */
++		platform_thermal_package_notify(msr_val);
++		return;
++	}
++
++	/* lower threshold reached */
++	if (notify_thres_0 && thresh_event_valid(PACKAGE_LEVEL, 0))
++		platform_thermal_package_notify(msr_val);
++	/* higher threshold reached */
++	if (notify_thres_1 && thresh_event_valid(PACKAGE_LEVEL, 1))
++		platform_thermal_package_notify(msr_val);
++}
++
+ static void notify_thresholds(__u64 msr_val)
+ {
+ 	/* check whether the interrupt handler is defined;
+@@ -330,10 +381,12 @@ static void notify_thresholds(__u64 msr_val)
+ 		return;
+ 
+ 	/* lower threshold reached */
+-	if ((msr_val & THERM_LOG_THRESHOLD0) &&	thresh_event_valid(0))
++	if ((msr_val & THERM_LOG_THRESHOLD0) &&
++			thresh_event_valid(CORE_LEVEL, 0))
+ 		platform_thermal_notify(msr_val);
+ 	/* higher threshold reached */
+-	if ((msr_val & THERM_LOG_THRESHOLD1) && thresh_event_valid(1))
++	if ((msr_val & THERM_LOG_THRESHOLD1) &&
++			thresh_event_valid(CORE_LEVEL, 1))
+ 		platform_thermal_notify(msr_val);
+ }
+ 
+@@ -359,6 +412,8 @@ static void intel_thermal_interrupt(void)
+ 
+ 	if (this_cpu_has(X86_FEATURE_PTS)) {
+ 		rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
++		/* check violations of package thermal thresholds */
++		notify_package_thresholds(msr_val);
+ 		therm_throt_process(msr_val & PACKAGE_THERM_STATUS_PROCHOT,
+ 					THERMAL_THROTTLING_EVENT,
+ 					PACKAGE_LEVEL);
 -- 
 1.7.11.7
 
