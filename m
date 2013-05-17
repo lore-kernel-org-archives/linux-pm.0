@@ -1,35 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
-Date: Fri, 17 May 2013 19:22:05 +0530
-Message-ID: <CAKohpo=bNzYw5ire+6XnM+cv6fnPBDN-CX0DRonc5qhpKC01yA@mail.gmail.com>
-References: <cover.1368679353.git.viresh.kumar@linaro.org>
-	<4482296.g7Mb85DDVP@vostro.rjw.lan>
-	<CAKohpomOzeHsv=ZDBJGQKAiFWHDczweWF1wZuQDMRZE-0U3=2A@mail.gmail.com>
-	<10164364.7LZaY8si4T@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <10164364.7LZaY8si4T@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+From: dirk.brandewie@gmail.com
+Subject: [PATCH] cpufreq/intel_pstate: Add additional supported CPU ID's
+Date: Fri, 17 May 2013 07:38:17 -0700
+Message-ID: <1368801497-13072-1-git-send-email-dirk.j.brandewie@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, rjw@sisk.pl, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>, torvalds@linux-foundation.org
 List-Id: linux-pm@vger.kernel.org
 
-On 17 May 2013 17:46, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, May 17, 2013 10:13:37 AM Viresh Kumar wrote:
->> On 17 May 2013 02:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
->> > about the other two patches.  Why exactly are they needed now?
->>
->> First one:
->>
->>   cpufreq: Add EXPORT_SYMBOL_GPL for have_governor_per_policy
->>
->> is required so that governors can be compiled as module. Otherwise they
->> may break.. I haven't tried that but I believe that is the case.
->
-> Did you try to build them as modules?
+From: Dirk Brandewie <dirk.j.brandewie@intel.com>
 
-That's what: "I haven't tried that but I believe that is the case."..
-Modules need variables to be exported with EXPORT_SYMBOL_GPL
-to be used by them.. And I thought this is pretty straight forward.
+Add CPU ID's for supported Sandybridge and Ivybrigde processors.
+
+Cc: torvalds@linux-foundation.org
+Signed-off-by: Dirk Brandewie <dirk.j.brandewie@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1813311..85b1fd8 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -520,7 +520,9 @@ static void intel_pstate_timer_func(unsigned long __data)
+ 
+ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x2a, default_policy),
++	ICPU(0x25, default_policy),
+ 	ICPU(0x2d, default_policy),
++	ICPU(0x3a, default_policy),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+-- 
+1.7.7.6
