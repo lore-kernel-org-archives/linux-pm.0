@@ -1,60 +1,170 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 3.10-rc1 system starts regular boot when waking from s2ram
-Date: Fri, 17 May 2013 14:23:51 +0200
-Message-ID: <12938302.tF5W4zpWEQ@vostro.rjw.lan>
-References: <20130514160108.GA5055@dhcp22.suse.cz> <1795910.x0krlBPTaf@vostro.rjw.lan> <20130517120930.GD5048@dhcp22.suse.cz>
+From: jonghwa3.lee@samsung.com
+Subject: Re: [PATCH V4 16/30] thermal: exynos: Make the zone handling dependent
+ on trip count
+Date: Fri, 17 May 2013 21:17:40 +0900
+Message-ID: <51961FE4.60105@samsung.com>
+References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
+ <1368525540-15034-17-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:55075 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755753Ab3EQMPN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 May 2013 08:15:13 -0400
-In-Reply-To: <20130517120930.GD5048@dhcp22.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1368525540-15034-17-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: "H. Peter Anvin" <hpa@linux.intel.com>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>, Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>, x86@kernel.org, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Friday, May 17, 2013 02:09:30 PM Michal Hocko wrote:
-> On Fri 17-05-13 14:11:26, Rafael J. Wysocki wrote:
-> > On Friday, May 17, 2013 09:54:46 AM Michal Hocko wrote:
-> > > On Wed 15-05-13 11:56:08, Michal Hocko wrote:
-> > > > OK, I have bisected it to 78d77df7 (x86-64, init: Do not set NX bits on
-> > > > non-NX capable hardware). Reverting the patch on top of 3.10-rc1 fixes
-> > > > the issue for me and the machine resumes just fine.
-> > > > 
-> > > > Let's add involved people to the CC.
-> > > > 
-> > > > The original message with the confing and dmesg is bellow.
-> > > 
-> > > Anybody had chance to look at this? I am quite surprised that something
-> > > that is in init code might influence resume from suspend path. Or is it
-> > > just a side effect of some other changes in that area?
-> > > 
-> > > <goes and checks the latest 3.9 stable which has the backport of the patch>
-> > > 
-> > > Yes the latest stable is affected as well!
-> > 
-> > Well, I suppose there will be more response if you send a revert request to
-> > Linus.
-> 
-> Maybe the patch should be reverted in the stable tree right now
+On 2013=EB=85=84 05=EC=9B=94 14=EC=9D=BC 18:58, Amit Daniel Kachhap wro=
+te:
 
-No, it doesn't work like that.  It won't be reverted in -stable before it is
-reverted in the Linus' tree.
+> This code simplifies the zone handling to use the trip count passed
+> by the TMU driver. This also helps in adding more zone support.
+>=20
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  drivers/thermal/samsung/exynos_thermal_common.c |   55 ++++++++++++-=
+----------
+>  drivers/thermal/samsung/exynos_thermal_common.h |    2 -
+>  2 files changed, 29 insertions(+), 28 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/driver=
+s/thermal/samsung/exynos_thermal_common.c
+> index 86d39aa..2369417 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.c
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+> @@ -78,17 +78,16 @@ static int exynos_set_mode(struct thermal_zone_de=
+vice *thermal,
+>  static int exynos_get_trip_type(struct thermal_zone_device *thermal,=
+ int trip,
+>  				 enum thermal_trip_type *type)
+>  {
+> -	switch (GET_ZONE(trip)) {
+> -	case MONITOR_ZONE:
+> -	case WARN_ZONE:
+> -		*type =3D THERMAL_TRIP_ACTIVE;
+> -		break;
+> -	case PANIC_ZONE:
+> -		*type =3D THERMAL_TRIP_CRITICAL;
+> -		break;
+> -	default:
+> +	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
+> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
+> +
+> +	if (trip < 0 || trip >=3D max_trip)
+>  		return -EINVAL;
+> -	}
+> +	else if (trip =3D=3D (max_trip - 1))
+> +		*type =3D THERMAL_TRIP_CRITICAL;
+> +	else
+> +		*type =3D THERMAL_TRIP_ACTIVE;
+> +
 
-> - I am not sure about all the consequences as from reading the changelog
-> I do not understand which bug the patch is supposed to fix.
 
-That really doesn't matter.  If it breaks things, it is a revert candidate
-regardless.
+ In current exynos_thermal driver, it is hard to set various trip type =
+for each
+trip, especially passive type. (not impossible, but complicated)
+
+What do you think we just keep trip information with trip temperature i=
+n private
+data? I mean if we just make trip level information to driver's private=
+ data
+(like exynos_thermal_zone), it might be helpful to control trip type an=
+d trip
+temperature. Like this,
+
+struct exynos_thermal_trip_info {
+	int trip_temp;
+	enum thermal_trip_type type;
+};
+struct exynos_thermal_device {=09
+	.
+	struct exynos_thermal_trip_info *trips;
+	int num_trips;
+};
 
 Thanks,
-Rafael
+Jonghwa
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>  	return 0;
+>  }
+> =20
+> @@ -97,8 +96,9 @@ static int exynos_get_trip_temp(struct thermal_zone=
+_device *thermal, int trip,
+>  				unsigned long *temp)
+>  {
+>  	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
+> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
+> =20
+> -	if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
+> +	if (trip < 0 || trip >=3D max_trip)
+>  		return -EINVAL;
+> =20
+>  	*temp =3D th_zone->sensor_conf->trip_data.trip_val[trip];
+> @@ -112,10 +112,10 @@ static int exynos_get_trip_temp(struct thermal_=
+zone_device *thermal, int trip,
+>  static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
+>  				unsigned long *temp)
+>  {
+> -	int ret;
+> -	/* Panic zone */
+> -	ret =3D exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
+> -	return ret;
+> +	struct exynos_thermal_zone *th_zone =3D thermal->devdata;
+> +	int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
+> +	/* Get the temp of highest trip*/
+> +	return exynos_get_trip_temp(thermal, max_trip - 1, temp);
+>  }
+> =20
+>  /* Bind callback functions for thermal zone */
+> @@ -340,19 +340,22 @@ int exynos_register_thermal(struct thermal_sens=
+or_conf *sensor_conf)
+>  		return -ENOMEM;
+> =20
+>  	th_zone->sensor_conf =3D sensor_conf;
+> -	cpumask_set_cpu(0, &mask_val);
+> -	th_zone->cool_dev[0] =3D cpufreq_cooling_register(&mask_val);
+> -	if (IS_ERR(th_zone->cool_dev[0])) {
+> -		pr_err("Failed to register cpufreq cooling device\n");
+> -		ret =3D -EINVAL;
+> -		goto err_unregister;
+> +	if (sensor_conf->cooling_data.freq_clip_count > 0) {
+> +		cpumask_set_cpu(0, &mask_val);
+> +		th_zone->cool_dev[0] =3D cpufreq_cooling_register(&mask_val);
+> +		if (IS_ERR(th_zone->cool_dev[0])) {
+> +			pr_err("Failed to register cpufreq cooling device\n");
+> +			ret =3D -EINVAL;
+> +			goto err_unregister;
+> +		}
+> +		th_zone->cool_dev_size++;
+>  	}
+> -	th_zone->cool_dev_size++;
+> =20
+> -	th_zone->therm_dev =3D thermal_zone_device_register(sensor_conf->na=
+me,
+> -			EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops, NULL, 0,
+> -			sensor_conf->trip_data.trigger_falling ?
+> -			0 : IDLE_INTERVAL);
+> +	th_zone->therm_dev =3D thermal_zone_device_register(
+> +			sensor_conf->name, sensor_conf->trip_data.trip_count,
+> +			0, th_zone, &exynos_dev_ops, NULL, 0,
+> +			sensor_conf->trip_data.trigger_falling ? 0 :
+> +			IDLE_INTERVAL);
+> =20
+>  	if (IS_ERR(th_zone->therm_dev)) {
+>  		pr_err("Failed to register thermal zone device\n");
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/driver=
+s/thermal/samsung/exynos_thermal_common.h
+> index 59138ae..7b938e1 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+> @@ -42,8 +42,6 @@
+>  #define GET_ZONE(trip) (trip + 2)
+>  #define GET_TRIP(zone) (zone - 2)
+> =20
+> -#define EXYNOS_ZONE_COUNT	3
+> -
+>  /**
+>   * struct freq_clip_table
+>   * @freq_clip_max: maximum frequency allowed for this cooling state.
