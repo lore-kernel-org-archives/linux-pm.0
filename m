@@ -1,37 +1,47 @@
-From: Dirk Brandewie <dirk.brandewie@gmail.com>
-Subject: Re: [GIT PULL] Power management and ACPI fixes for v3.10-rc2
-Date: Thu, 16 May 2013 16:36:12 -0700
-Message-ID: <51956D6C.7090005@intel.com>
-References: <68458966.ga8OpWyZtA@vostro.rjw.lan> <CA+55aFxhDO0D1nQgTFWSiZT9AJMSF9oOUoxWj=Y=5en0nWC92g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Fri, 17 May 2013 10:13:37 +0530
+Message-ID: <CAKohpomOzeHsv=ZDBJGQKAiFWHDczweWF1wZuQDMRZE-0U3=2A@mail.gmail.com>
+References: <cover.1368679353.git.viresh.kumar@linaro.org>
+	<6691801.RqjZrI7EgH@vostro.rjw.lan>
+	<CAKohpom=_i8MgWy7eoa+wBtaRZ288CMfcYsGBi-4qzu4ZqR3uw@mail.gmail.com>
+	<4482296.g7Mb85DDVP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFxhDO0D1nQgTFWSiZT9AJMSF9oOUoxWj=Y=5en0nWC92g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <4482296.g7Mb85DDVP@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 05/16/2013 03:25 PM, Linus Torvalds wrote:
-> On Thu, May 16, 2013 at 1:07 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>
->> - intel_pstate driver fixes and cleanups from Dirk Brandewie and
->>    Wei Yongjun.
->
-> Btw, is there some fundamental reason why the pstate driver is limited
-> to so few models?
->
-> I've tested it on models 0x25 (i5-670) and 0x3a (i5-3427U), and it
-> seems to work. But neither model is listed. (only 0x2a and 0x2d are).
->
-> I understand that people want to be careful, but it's not actually
-> getting very much *testing* right now, is it? Are models 0x2a/0x2d
-> actually special in any way?
->
+On 17 May 2013 02:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> While I kind of understand why you want [3/3] to go into 3.10, I'm wondering
+> about the other two patches.  Why exactly are they needed now?
 
-No they are not I will send the patch out in the morning.
+First one:
 
->                    Linus
->
+  cpufreq: Add EXPORT_SYMBOL_GPL for have_governor_per_policy
 
+is required so that governors can be compiled as module. Otherwise they
+may break.. I haven't tried that but I believe that is the case.
+
+
+For second one:
+
+  cpufreq: governors: Move get_governor_parent_kobj() to cpufreq.c
+
+I was actually working on Android's Interactive governor (Where I enabled
+same per-policy-instance of governor support), And i required this patch
+for its working. Then I thought other platform specific governors present
+in mainline might also use this routine and so must be pushed to cpufreq.c.
+
+Now, because this patch is around due to something which got
+added in 3.10-rc1, its better to fix it in rcs only rather than fixing
+it in 3.11.
+I will trust your judgement here, push it for 3.10-rc if it looks okay to you.
+
+> And speaking of patch [3/3], if you paste kernel logs into changelogs, please
+> remove the time stamps (unless they are relevant to the problem being fixed).
+
+Okay.. Will keep that in mind.
