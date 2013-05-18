@@ -1,127 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: spurious bL cpufreq driver messages
-Date: Sat, 18 May 2013 07:33:48 +0530
-Message-ID: <CAKohpom0cGfWvsCf-jaMyu0cQJi2hVk9_0wskEDH2X7MaeHDLw@mail.gmail.com>
-References: <519686BC.3090101@gmail.com>
+Subject: Re: [PATCH 0/3] CPUFreq Fixes for 3.10-rc2
+Date: Sat, 18 May 2013 07:45:45 +0530
+Message-ID: <CAKohponks5tAHGt6wYP13W8y6JiVVAhNW2wTK4GH=MSWe7wcEQ@mail.gmail.com>
+References: <cover.1368679353.git.viresh.kumar@linaro.org>
+	<10164364.7LZaY8si4T@vostro.rjw.lan>
+	<CAKohpo=bNzYw5ire+6XnM+cv6fnPBDN-CX0DRonc5qhpKC01yA@mail.gmail.com>
+	<3949011.nZfu3g41l4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=f46d0447878db01d3704dcf482aa
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f41.google.com ([209.85.219.41]:46607 "EHLO
-	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751340Ab3ERCDu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 May 2013 22:03:50 -0400
-Received: by mail-oa0-f41.google.com with SMTP id n9so5940954oag.14
-        for <linux-pm@vger.kernel.org>; Fri, 17 May 2013 19:03:49 -0700 (PDT)
-In-Reply-To: <519686BC.3090101@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
-
---f46d0447878db01d3704dcf482aa
 Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3949011.nZfu3g41l4@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-On 18 May 2013 01:06, Rob Herring <robherring2@gmail.com> wrote:
-> The bL cpufreq driver appears to collide with the cpufreq-cpu0 driver.
-> There doesn't appear to be a functional problem, but just spurious
-> prints which indicate it is trying to do something. I think it needs
-> better checking whether the chip is actually multi-cluster. This is what
-> I get when I hotplug cpus:
+On 18 May 2013 05:10, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Well, I actually meant "can you please verify your belief?". :-)
 >
-> [  909.372319] CPU1: Booted secondary processor
-> [  909.372616] cpu cpu1: get_cluster_clk_and_freq_table: init_opp_table
-> failed, cpu: 1, err: -61
-> [  909.385411] cpu cpu1: get_cluster_clk_and_freq_table: Failed to get
-> data for cluster: 9
-> [  909.394161] CPU2: shutdown
-> [  909.400957] CPU2: Booted secondary processor
-> [  909.401253] cpu cpu2: get_cluster_clk_and_freq_table: init_opp_table
-> failed, cpu: 2, err: -61
-> [  909.414044] cpu cpu2: get_cluster_clk_and_freq_table: Failed to get
-> data for cluster: 9
+> And that's because I'm wondering why the zero-day build testing doesn't
+> catch this problem.  Apparently, it doesn't build .configs with cpufreq
+> governors configured as modules, although I believe it does test
+> "make allmodconfig" for a couple of architectures at least.  What gives?
 
-See if this fixes your issue.
+My assumption was wrong. Actually cpufreq_governor.c is never compiled
+as module, but cpufreq_ondemand is...
 
-https://groups.google.com/forum/?fromgroups#!topic/linux.kernel/XJF-82rad4o
+And this routine isn't used from cpufreq_ondemand but cpufreq_governor..
 
-Attached too.
-
---f46d0447878db01d3704dcf482aa
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-arm_big_little_dt-Register-driver-only-if-DT.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-arm_big_little_dt-Register-driver-only-if-DT.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hgu5k0aq0
-
-RnJvbSA5NGE1MTRjYmY4ZWRhYjBmMjUzZTBhZGIxYWUwZTJlNzYxMjAzYmE2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8OTRhNTE0Y2JmOGVkYWIwZjI1M2UwYWRiMWFlMGUy
-ZTc2MTIwM2JhNi4xMzY4ODQyNjEyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAxNiBNYXkg
-MjAxMyAxOToxOTozNyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFybV9iaWdfbGl0
-dGxlX2R0OiBSZWdpc3RlciBkcml2ZXIgb25seSBpZiBEVCBoYXMKIHZhbGlkIGRhdGEKCklmIGFy
-bV9iaWdfbGl0dGxlX2R0IGRyaXZlciBpcyBlbmFibGVkLCB0aGVuIGl0IHdpbGwgYWx3YXlzIHRy
-eSB0byByZWdpc3RlciB3aXRoCmJpZyBMSVRUTEUgY3B1ZnJlcSBjb3JlIGRyaXZlci4gSW4gY2Fz
-ZSBEVCBkb2Vzbid0IGhhdmUgcmVsZXZhbnQgZGF0YSBmb3IgY3B1Cm5vZGVzLCBpLmUuIG9wZXJh
-dGluZyBwb2ludHMgYXJlbid0IHByZXNlbnQsIHRoZW4gd2Ugc2hvdWxkIGV4aXQgZWFybHkgYW5k
-CnNob3VsZG4ndCByZWdpc3RlciB3aXRoIGJpZyBMSVRUTEUgY3B1ZnJlcSBjb3JlIGRyaXZlci4g
-T3RoZXJ3aXNlIHdlIHdpbGwgZmFpbApjb250aW51b3VzbHkgZnJvbSB0aGUgZHJpdmVyLT5pbml0
-KCkgcm91dGluZS4KClRoaXMgcGF0Y2ggZml4ZXMgdGhpcyBpc3N1ZS4KClJlcG9ydGVkLWJ5OiBK
-b24gTWVkaHVyc3QgPHRpeHlAbGluYXJvLm9yZz4KUmV2aWV3ZWQtYnk6IEpvbiBNZWRodXJzdCA8
-dGl4eUBsaW5hcm8ub3JnPgpUZXN0ZWQtYnk6IEpvbiBNZWRodXJzdCA8dGl4eUBsaW5hcm8ub3Jn
-PgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgot
-LS0KIGRyaXZlcnMvY3B1ZnJlcS9hcm1fYmlnX2xpdHRsZV9kdC5jIHwgNzMgKysrKysrKysrKysr
-KysrKysrKysrLS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDQyIGluc2VydGlvbnMo
-KyksIDMxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9hcm1fYmln
-X2xpdHRsZV9kdC5jIGIvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0dGxlX2R0LmMKaW5kZXgg
-MTczZWQwNS4uMjdlMmY0NSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0
-dGxlX2R0LmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0dGxlX2R0LmMKQEAgLTE5
-LDYgKzE5LDcgQEAKIAogI2RlZmluZSBwcl9mbXQoZm10KSBLQlVJTERfTU9ETkFNRSAiOiAiIGZt
-dAogCisjaW5jbHVkZSA8bGludXgvY3B1Lmg+CiAjaW5jbHVkZSA8bGludXgvY3B1ZnJlcS5oPgog
-I2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPgogI2luY2x1ZGUgPGxpbnV4L2V4cG9ydC5oPgpAQCAt
-MjksNjAgKzMwLDYzIEBACiAjaW5jbHVkZSA8bGludXgvdHlwZXMuaD4KICNpbmNsdWRlICJhcm1f
-YmlnX2xpdHRsZS5oIgogCi1zdGF0aWMgaW50IGR0X2luaXRfb3BwX3RhYmxlKHN0cnVjdCBkZXZp
-Y2UgKmNwdV9kZXYpCisvKiBnZXQgY3B1IG5vZGUgd2l0aCB2YWxpZCBvcGVyYXRpbmctcG9pbnRz
-ICovCitzdGF0aWMgc3RydWN0IGRldmljZV9ub2RlICpnZXRfY3B1X25vZGVfd2l0aF92YWxpZF9v
-cChpbnQgY3B1KQogewotCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsICpwYXJlbnQ7Ci0JaW50IGNv
-dW50ID0gMCwgcmV0OworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAgPSBOVUxMLCAqcGFyZW50Owor
-CWludCBjb3VudCA9IDA7CiAKIAlwYXJlbnQgPSBvZl9maW5kX25vZGVfYnlfcGF0aCgiL2NwdXMi
-KTsKIAlpZiAoIXBhcmVudCkgewogCQlwcl9lcnIoImZhaWxlZCB0byBmaW5kIE9GIC9jcHVzXG4i
-KTsKLQkJcmV0dXJuIC1FTk9FTlQ7CisJCXJldHVybiBOVUxMOwogCX0KIAogCWZvcl9lYWNoX2No
-aWxkX29mX25vZGUocGFyZW50LCBucCkgewotCQlpZiAoY291bnQrKyAhPSBjcHVfZGV2LT5pZCkK
-KwkJaWYgKGNvdW50KysgIT0gY3B1KQogCQkJY29udGludWU7CiAJCWlmICghb2ZfZ2V0X3Byb3Bl
-cnR5KG5wLCAib3BlcmF0aW5nLXBvaW50cyIsIE5VTEwpKSB7Ci0JCQlyZXQgPSAtRU5PREFUQTsK
-LQkJfSBlbHNlIHsKLQkJCWNwdV9kZXYtPm9mX25vZGUgPSBucDsKLQkJCXJldCA9IG9mX2luaXRf
-b3BwX3RhYmxlKGNwdV9kZXYpOworCQkJb2Zfbm9kZV9wdXQobnApOworCQkJbnAgPSBOVUxMOwog
-CQl9Ci0JCW9mX25vZGVfcHV0KG5wKTsKLQkJb2Zfbm9kZV9wdXQocGFyZW50KTsKIAotCQlyZXR1
-cm4gcmV0OworCQlicmVhazsKIAl9CiAKLQlyZXR1cm4gLUVOT0RFVjsKKwlvZl9ub2RlX3B1dChw
-YXJlbnQpOworCXJldHVybiBucDsKK30KKworc3RhdGljIGludCBkdF9pbml0X29wcF90YWJsZShz
-dHJ1Y3QgZGV2aWNlICpjcHVfZGV2KQoreworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CisJaW50
-IHJldDsKKworCW5wID0gZ2V0X2NwdV9ub2RlX3dpdGhfdmFsaWRfb3AoY3B1X2Rldi0+aWQpOwor
-CWlmICghbnApCisJCXJldHVybiAtRU5PREFUQTsKKworCWNwdV9kZXYtPm9mX25vZGUgPSBucDsK
-KwlyZXQgPSBvZl9pbml0X29wcF90YWJsZShjcHVfZGV2KTsKKwlvZl9ub2RlX3B1dChucCk7CisK
-KwlyZXR1cm4gcmV0OwogfQogCiBzdGF0aWMgaW50IGR0X2dldF90cmFuc2l0aW9uX2xhdGVuY3ko
-c3RydWN0IGRldmljZSAqY3B1X2RldikKIHsKLQlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLCAqcGFy
-ZW50OworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CiAJdTMyIHRyYW5zaXRpb25fbGF0ZW5jeSA9
-IENQVUZSRVFfRVRFUk5BTDsKLQlpbnQgY291bnQgPSAwOwogCi0JcGFyZW50ID0gb2ZfZmluZF9u
-b2RlX2J5X3BhdGgoIi9jcHVzIik7Ci0JaWYgKCFwYXJlbnQpIHsKLQkJcHJfaW5mbygiRmFpbGVk
-IHRvIGZpbmQgT0YgL2NwdXMuIFVzZSBDUFVGUkVRX0VURVJOQUwgdHJhbnNpdGlvbiBsYXRlbmN5
-XG4iKTsKKwlucCA9IGdldF9jcHVfbm9kZV93aXRoX3ZhbGlkX29wKGNwdV9kZXYtPmlkKTsKKwlp
-ZiAoIW5wKQogCQlyZXR1cm4gQ1BVRlJFUV9FVEVSTkFMOwotCX0KLQotCWZvcl9lYWNoX2NoaWxk
-X29mX25vZGUocGFyZW50LCBucCkgewotCQlpZiAoY291bnQrKyAhPSBjcHVfZGV2LT5pZCkKLQkJ
-CWNvbnRpbnVlOwotCi0JCW9mX3Byb3BlcnR5X3JlYWRfdTMyKG5wLCAiY2xvY2stbGF0ZW5jeSIs
-ICZ0cmFuc2l0aW9uX2xhdGVuY3kpOwotCQlvZl9ub2RlX3B1dChucCk7Ci0JCW9mX25vZGVfcHV0
-KHBhcmVudCk7CiAKLQkJcmV0dXJuIHRyYW5zaXRpb25fbGF0ZW5jeTsKLQl9CisJb2ZfcHJvcGVy
-dHlfcmVhZF91MzIobnAsICJjbG9jay1sYXRlbmN5IiwgJnRyYW5zaXRpb25fbGF0ZW5jeSk7CisJ
-b2Zfbm9kZV9wdXQobnApOwogCi0JcHJfaW5mbygiY2xvY2stbGF0ZW5jeSBpc24ndCBmb3VuZCwg
-dXNlIENQVUZSRVFfRVRFUk5BTCB0cmFuc2l0aW9uIGxhdGVuY3lcbiIpOwotCXJldHVybiBDUFVG
-UkVRX0VURVJOQUw7CisJcHJfZGVidWcoIiVzOiBjbG9jay1sYXRlbmN5OiAlZFxuIiwgX19mdW5j
-X18sIHRyYW5zaXRpb25fbGF0ZW5jeSk7CisJcmV0dXJuIHRyYW5zaXRpb25fbGF0ZW5jeTsKIH0K
-IAogc3RhdGljIHN0cnVjdCBjcHVmcmVxX2FybV9iTF9vcHMgZHRfYkxfb3BzID0gewpAQCAtOTMs
-NiArOTcsMTMgQEAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2FybV9iTF9vcHMgZHRfYkxfb3BzID0g
-ewogCiBzdGF0aWMgaW50IGdlbmVyaWNfYkxfaW5pdCh2b2lkKQogeworCXN0cnVjdCBkZXZpY2Vf
-bm9kZSAqbnA7CisKKwlucCA9IGdldF9jcHVfbm9kZV93aXRoX3ZhbGlkX29wKDApOworCWlmICgh
-bnApCisJCXJldHVybiAtRU5PREVWOworCisJb2Zfbm9kZV9wdXQobnApOwogCXJldHVybiBiTF9j
-cHVmcmVxX3JlZ2lzdGVyKCZkdF9iTF9vcHMpOwogfQogbW9kdWxlX2luaXQoZ2VuZXJpY19iTF9p
-bml0KTsKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---f46d0447878db01d3704dcf482aa--
+But we were lucky that we didn't get a error here and EXPORT_SYMBOL
+is still required :)
