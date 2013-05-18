@@ -1,132 +1,127 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Performance issue since 3.2.6
-Date: Sat, 18 May 2013 01:51:11 +0200
-Message-ID: <1426477.y1e3fnLN2J@vostro.rjw.lan>
-References: <CAPPqfY1-sYT8rcPoJ6BD0axq=oczq+xbGFSQj=uth4wc_cvkGw@mail.gmail.com> <CAPPqfY2ba5M27omZBwe0h26Eutyd+2KkLXht6uLN5VdjEKT_Ug@mail.gmail.com> <519689F2.5070207@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: spurious bL cpufreq driver messages
+Date: Sat, 18 May 2013 07:33:48 +0530
+Message-ID: <CAKohpom0cGfWvsCf-jaMyu0cQJi2hVk9_0wskEDH2X7MaeHDLw@mail.gmail.com>
+References: <519686BC.3090101@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/mixed; boundary=f46d0447878db01d3704dcf482aa
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57782 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032Ab3EQXme (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 May 2013 19:42:34 -0400
-In-Reply-To: <519689F2.5070207@linux.vnet.ibm.com>
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:46607 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340Ab3ERCDu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 May 2013 22:03:50 -0400
+Received: by mail-oa0-f41.google.com with SMTP id n9so5940954oag.14
+        for <linux-pm@vger.kernel.org>; Fri, 17 May 2013 19:03:49 -0700 (PDT)
+In-Reply-To: <519686BC.3090101@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Olivier Doucet <webmaster@ajeux.com>, Borislav Petkov <bp@alien8.de>, linux-kernel@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: Rob Herring <robherring2@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
 
-On Saturday, May 18, 2013 01:20:10 AM Srivatsa S. Bhat wrote:
-> On 05/17/2013 11:47 PM, Olivier Doucet wrote:
-> > Hello,
-> > 
-> > This performance penalty is still present in kernel 3.9.2. And
-> > CONFIG_PM cannot be deactivated anymore.
-> > 
-> > I was able to make a working 3.9.2 (meaning with no penalty)  with
-> > following config and patch :
-> > CONFIG_PM=y
-> > CONFIG_PM_SLEEP=y
-> > CONFIG_PM_SLEEP_SMP=y
-> > CONFIG_CPU_IDLE=y
-> > CONFIG_ACPI=y
-> > CONFIG_ACPI_PROCESSOR=y
-> > 
-> > Patch : https://gist.github.com/odoucet/5600630
-> > 
-> > I know this patch is not perfect because it is just equivalent to
-> > rollback commit f51d67a64f32cd81ea8b67ca964fb7cf7e783b2e ;
-> > 
-> > I really want this to be fixed in kernel, so I would be glad to test
-> > any patch / config file you want.
-> >
-> 
-> I went through your previous mails and here is what I think:
-> I think this is not a regression that needs to be fixed. Instead it
-> occurs to me that you started depending on the _flaw_ introduced by
-> commit e8db0be124 (PM QoS: Move and rename the implementation files).
-> 
-> Your requirement is very simple: you don't want CPUs to go to deep
-> idle states, since your benchmark is very performance critical.
-> 
-> Commit e8db0be124 made the mistake of returning 0 in pm_qos_request()
-> when CONFIG_PM was unset. And that has the effect of disabling deeper
-> idle states, which is exactly what you wanted.
-> 
-> But, as noted by commit d020283d (PM / QoS: CPU C-state breakage with
-> PM Qos change), this is quite a bit wrong, because it makes the system
-> consume a *lot* of CPU power, because the CPUs never go to idle states
-> and instead keep polling.
-> 
-> Now, you might ask why is it wrong to set the default value to 0
-> (IOW, disable deep idle states) when CONFIG_PM is unset? Again, commit
-> d020283d answers that indirectly - not every power-management
-> configuration falls under CONFIG_PM, like CONFIG_CPU_IDLE,
-> CONFIG_INTEL_IDLE etc. So we need a sane default for pm_qos_request()
-> when CONFIG_PM is unset, to prevent the power usage from shooting
-> through the roof and surprising the user.
-> 
-> You started your comparisons with 3.2.0 which had commit e8db0be124
-> included. If you had tried any previous kernel, I'm pretty sure that
-> you would have found "performance penalties" too.
-> 
-> So, to summarize my thoughts:
->  - IMHO there is no regression here, you just depended on a bug included
->    in 3.2.0 (which made it behave like idle=poll with CONFIG_PM=n) and
->    started your comparisons from there. The later kernels (3.2.6+) got
->    that bug fixed which is why you saw "performance drops".
-> 
->  - As much as we would like to do it, we can't set the value of
->    PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE to 0 when CONFIG_PM=n, because
->    CONFIG_PM doesn't encompass all power-management features (which is
->    a pity). Doing that would need a big overhaul of all the relevant
->    Kconfigs, which might or might not be worth the effort. (Because, who
->    says that CONFIG_PM=n kernels are supposed to eat power like crazy??)
+--f46d0447878db01d3704dcf482aa
+Content-Type: text/plain; charset=ISO-8859-1
 
-I think it *is* worth the effort.  We could drop some CONFIG_PM* options in the
-process which would simplify things quite a bit too.
+On 18 May 2013 01:06, Rob Herring <robherring2@gmail.com> wrote:
+> The bL cpufreq driver appears to collide with the cpufreq-cpu0 driver.
+> There doesn't appear to be a functional problem, but just spurious
+> prints which indicate it is trying to do something. I think it needs
+> better checking whether the chip is actually multi-cluster. This is what
+> I get when I hotplug cpus:
+>
+> [  909.372319] CPU1: Booted secondary processor
+> [  909.372616] cpu cpu1: get_cluster_clk_and_freq_table: init_opp_table
+> failed, cpu: 1, err: -61
+> [  909.385411] cpu cpu1: get_cluster_clk_and_freq_table: Failed to get
+> data for cluster: 9
+> [  909.394161] CPU2: shutdown
+> [  909.400957] CPU2: Booted secondary processor
+> [  909.401253] cpu cpu2: get_cluster_clk_and_freq_table: init_opp_table
+> failed, cpu: 2, err: -61
+> [  909.414044] cpu cpu2: get_cluster_clk_and_freq_table: Failed to get
+> data for cluster: 9
 
-> So here is my suggestion - use the interfaces provided by the kernel to
-> fix your problem:
->    - you can give idle=poll in the kernel command line,
->    - OR you can echo 0 > /dev/cpu_dma_latency
-> 
-> Irrespective of your kernel configuration options (CONFIG_PM=y/n), the
-> CPUs will not enter deep idle states, giving you the performance
-> improvement that you are looking for.
+See if this fixes your issue.
 
-Thanks a lot for the very clear explanation of this!
+https://groups.google.com/forum/?fromgroups#!topic/linux.kernel/XJF-82rad4o
 
-Rafael
+Attached too.
 
+--f46d0447878db01d3704dcf482aa
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-arm_big_little_dt-Register-driver-only-if-DT.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-arm_big_little_dt-Register-driver-only-if-DT.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hgu5k0aq0
 
-> > 2013/2/12 Olivier Doucet <webmaster@ajeux.com>
-> >>
-> >> Hello,
-> >>
-> >> A quick update on my latest tests :
-> >> I was able to compile a working 3.7.1 kernel (by 'working', I mean
-> >> with no performance penalty). I'm sure 3.7.7 will be OK also (do you
-> >> want me to test latest RC of 3.8 ?)
-> >>
-> >> I had to disable CONFIG_ACPI_PROCESSOR to disable power management.
-> >> So now these two options are unset :
-> >> CONFIG_CPU_IDLE
-> >> CONFIG_ACPI_PROCESSOR
-> >>
-> >> I've posted the whole .config file here :
-> >> https://gist.github.com/odoucet/4773390
-> >>
-> >> I'll be glad to test any patch that may help reactivate PM on my
-> >> system (CPU Intel Xeon L5630)
-> >>
-> >> Olivier
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+RnJvbSA5NGE1MTRjYmY4ZWRhYjBmMjUzZTBhZGIxYWUwZTJlNzYxMjAzYmE2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8OTRhNTE0Y2JmOGVkYWIwZjI1M2UwYWRiMWFlMGUy
+ZTc2MTIwM2JhNi4xMzY4ODQyNjEyLmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogVGh1LCAxNiBNYXkg
+MjAxMyAxOToxOTozNyArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IGFybV9iaWdfbGl0
+dGxlX2R0OiBSZWdpc3RlciBkcml2ZXIgb25seSBpZiBEVCBoYXMKIHZhbGlkIGRhdGEKCklmIGFy
+bV9iaWdfbGl0dGxlX2R0IGRyaXZlciBpcyBlbmFibGVkLCB0aGVuIGl0IHdpbGwgYWx3YXlzIHRy
+eSB0byByZWdpc3RlciB3aXRoCmJpZyBMSVRUTEUgY3B1ZnJlcSBjb3JlIGRyaXZlci4gSW4gY2Fz
+ZSBEVCBkb2Vzbid0IGhhdmUgcmVsZXZhbnQgZGF0YSBmb3IgY3B1Cm5vZGVzLCBpLmUuIG9wZXJh
+dGluZyBwb2ludHMgYXJlbid0IHByZXNlbnQsIHRoZW4gd2Ugc2hvdWxkIGV4aXQgZWFybHkgYW5k
+CnNob3VsZG4ndCByZWdpc3RlciB3aXRoIGJpZyBMSVRUTEUgY3B1ZnJlcSBjb3JlIGRyaXZlci4g
+T3RoZXJ3aXNlIHdlIHdpbGwgZmFpbApjb250aW51b3VzbHkgZnJvbSB0aGUgZHJpdmVyLT5pbml0
+KCkgcm91dGluZS4KClRoaXMgcGF0Y2ggZml4ZXMgdGhpcyBpc3N1ZS4KClJlcG9ydGVkLWJ5OiBK
+b24gTWVkaHVyc3QgPHRpeHlAbGluYXJvLm9yZz4KUmV2aWV3ZWQtYnk6IEpvbiBNZWRodXJzdCA8
+dGl4eUBsaW5hcm8ub3JnPgpUZXN0ZWQtYnk6IEpvbiBNZWRodXJzdCA8dGl4eUBsaW5hcm8ub3Jn
+PgpTaWduZWQtb2ZmLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgot
+LS0KIGRyaXZlcnMvY3B1ZnJlcS9hcm1fYmlnX2xpdHRsZV9kdC5jIHwgNzMgKysrKysrKysrKysr
+KysrKysrKysrLS0tLS0tLS0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDQyIGluc2VydGlvbnMo
+KyksIDMxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9hcm1fYmln
+X2xpdHRsZV9kdC5jIGIvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0dGxlX2R0LmMKaW5kZXgg
+MTczZWQwNS4uMjdlMmY0NSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0
+dGxlX2R0LmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2FybV9iaWdfbGl0dGxlX2R0LmMKQEAgLTE5
+LDYgKzE5LDcgQEAKIAogI2RlZmluZSBwcl9mbXQoZm10KSBLQlVJTERfTU9ETkFNRSAiOiAiIGZt
+dAogCisjaW5jbHVkZSA8bGludXgvY3B1Lmg+CiAjaW5jbHVkZSA8bGludXgvY3B1ZnJlcS5oPgog
+I2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPgogI2luY2x1ZGUgPGxpbnV4L2V4cG9ydC5oPgpAQCAt
+MjksNjAgKzMwLDYzIEBACiAjaW5jbHVkZSA8bGludXgvdHlwZXMuaD4KICNpbmNsdWRlICJhcm1f
+YmlnX2xpdHRsZS5oIgogCi1zdGF0aWMgaW50IGR0X2luaXRfb3BwX3RhYmxlKHN0cnVjdCBkZXZp
+Y2UgKmNwdV9kZXYpCisvKiBnZXQgY3B1IG5vZGUgd2l0aCB2YWxpZCBvcGVyYXRpbmctcG9pbnRz
+ICovCitzdGF0aWMgc3RydWN0IGRldmljZV9ub2RlICpnZXRfY3B1X25vZGVfd2l0aF92YWxpZF9v
+cChpbnQgY3B1KQogewotCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsICpwYXJlbnQ7Ci0JaW50IGNv
+dW50ID0gMCwgcmV0OworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAgPSBOVUxMLCAqcGFyZW50Owor
+CWludCBjb3VudCA9IDA7CiAKIAlwYXJlbnQgPSBvZl9maW5kX25vZGVfYnlfcGF0aCgiL2NwdXMi
+KTsKIAlpZiAoIXBhcmVudCkgewogCQlwcl9lcnIoImZhaWxlZCB0byBmaW5kIE9GIC9jcHVzXG4i
+KTsKLQkJcmV0dXJuIC1FTk9FTlQ7CisJCXJldHVybiBOVUxMOwogCX0KIAogCWZvcl9lYWNoX2No
+aWxkX29mX25vZGUocGFyZW50LCBucCkgewotCQlpZiAoY291bnQrKyAhPSBjcHVfZGV2LT5pZCkK
+KwkJaWYgKGNvdW50KysgIT0gY3B1KQogCQkJY29udGludWU7CiAJCWlmICghb2ZfZ2V0X3Byb3Bl
+cnR5KG5wLCAib3BlcmF0aW5nLXBvaW50cyIsIE5VTEwpKSB7Ci0JCQlyZXQgPSAtRU5PREFUQTsK
+LQkJfSBlbHNlIHsKLQkJCWNwdV9kZXYtPm9mX25vZGUgPSBucDsKLQkJCXJldCA9IG9mX2luaXRf
+b3BwX3RhYmxlKGNwdV9kZXYpOworCQkJb2Zfbm9kZV9wdXQobnApOworCQkJbnAgPSBOVUxMOwog
+CQl9Ci0JCW9mX25vZGVfcHV0KG5wKTsKLQkJb2Zfbm9kZV9wdXQocGFyZW50KTsKIAotCQlyZXR1
+cm4gcmV0OworCQlicmVhazsKIAl9CiAKLQlyZXR1cm4gLUVOT0RFVjsKKwlvZl9ub2RlX3B1dChw
+YXJlbnQpOworCXJldHVybiBucDsKK30KKworc3RhdGljIGludCBkdF9pbml0X29wcF90YWJsZShz
+dHJ1Y3QgZGV2aWNlICpjcHVfZGV2KQoreworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CisJaW50
+IHJldDsKKworCW5wID0gZ2V0X2NwdV9ub2RlX3dpdGhfdmFsaWRfb3AoY3B1X2Rldi0+aWQpOwor
+CWlmICghbnApCisJCXJldHVybiAtRU5PREFUQTsKKworCWNwdV9kZXYtPm9mX25vZGUgPSBucDsK
+KwlyZXQgPSBvZl9pbml0X29wcF90YWJsZShjcHVfZGV2KTsKKwlvZl9ub2RlX3B1dChucCk7CisK
+KwlyZXR1cm4gcmV0OwogfQogCiBzdGF0aWMgaW50IGR0X2dldF90cmFuc2l0aW9uX2xhdGVuY3ko
+c3RydWN0IGRldmljZSAqY3B1X2RldikKIHsKLQlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wLCAqcGFy
+ZW50OworCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7CiAJdTMyIHRyYW5zaXRpb25fbGF0ZW5jeSA9
+IENQVUZSRVFfRVRFUk5BTDsKLQlpbnQgY291bnQgPSAwOwogCi0JcGFyZW50ID0gb2ZfZmluZF9u
+b2RlX2J5X3BhdGgoIi9jcHVzIik7Ci0JaWYgKCFwYXJlbnQpIHsKLQkJcHJfaW5mbygiRmFpbGVk
+IHRvIGZpbmQgT0YgL2NwdXMuIFVzZSBDUFVGUkVRX0VURVJOQUwgdHJhbnNpdGlvbiBsYXRlbmN5
+XG4iKTsKKwlucCA9IGdldF9jcHVfbm9kZV93aXRoX3ZhbGlkX29wKGNwdV9kZXYtPmlkKTsKKwlp
+ZiAoIW5wKQogCQlyZXR1cm4gQ1BVRlJFUV9FVEVSTkFMOwotCX0KLQotCWZvcl9lYWNoX2NoaWxk
+X29mX25vZGUocGFyZW50LCBucCkgewotCQlpZiAoY291bnQrKyAhPSBjcHVfZGV2LT5pZCkKLQkJ
+CWNvbnRpbnVlOwotCi0JCW9mX3Byb3BlcnR5X3JlYWRfdTMyKG5wLCAiY2xvY2stbGF0ZW5jeSIs
+ICZ0cmFuc2l0aW9uX2xhdGVuY3kpOwotCQlvZl9ub2RlX3B1dChucCk7Ci0JCW9mX25vZGVfcHV0
+KHBhcmVudCk7CiAKLQkJcmV0dXJuIHRyYW5zaXRpb25fbGF0ZW5jeTsKLQl9CisJb2ZfcHJvcGVy
+dHlfcmVhZF91MzIobnAsICJjbG9jay1sYXRlbmN5IiwgJnRyYW5zaXRpb25fbGF0ZW5jeSk7CisJ
+b2Zfbm9kZV9wdXQobnApOwogCi0JcHJfaW5mbygiY2xvY2stbGF0ZW5jeSBpc24ndCBmb3VuZCwg
+dXNlIENQVUZSRVFfRVRFUk5BTCB0cmFuc2l0aW9uIGxhdGVuY3lcbiIpOwotCXJldHVybiBDUFVG
+UkVRX0VURVJOQUw7CisJcHJfZGVidWcoIiVzOiBjbG9jay1sYXRlbmN5OiAlZFxuIiwgX19mdW5j
+X18sIHRyYW5zaXRpb25fbGF0ZW5jeSk7CisJcmV0dXJuIHRyYW5zaXRpb25fbGF0ZW5jeTsKIH0K
+IAogc3RhdGljIHN0cnVjdCBjcHVmcmVxX2FybV9iTF9vcHMgZHRfYkxfb3BzID0gewpAQCAtOTMs
+NiArOTcsMTMgQEAgc3RhdGljIHN0cnVjdCBjcHVmcmVxX2FybV9iTF9vcHMgZHRfYkxfb3BzID0g
+ewogCiBzdGF0aWMgaW50IGdlbmVyaWNfYkxfaW5pdCh2b2lkKQogeworCXN0cnVjdCBkZXZpY2Vf
+bm9kZSAqbnA7CisKKwlucCA9IGdldF9jcHVfbm9kZV93aXRoX3ZhbGlkX29wKDApOworCWlmICgh
+bnApCisJCXJldHVybiAtRU5PREVWOworCisJb2Zfbm9kZV9wdXQobnApOwogCXJldHVybiBiTF9j
+cHVmcmVxX3JlZ2lzdGVyKCZkdF9iTF9vcHMpOwogfQogbW9kdWxlX2luaXQoZ2VuZXJpY19iTF9p
+bml0KTsKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
+--f46d0447878db01d3704dcf482aa--
