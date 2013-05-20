@@ -1,33 +1,68 @@
-From: Kukjin Kim <kgene.kim@samsung.com>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Mon, 20 May 2013 22:47:59 +0900
-Message-ID: <519A298F.2040605@samsung.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>	<CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>	<093901ce509f$afe92f40$0fbb8dc0$%kim@samsung.com>	<2001452.Fn2HjLbNED@vostro.rjw.lan> <CAKohpon97dbLDF0xU7vhf5V+UVeJv7WdeMuZ1jXLUTey2+gD2A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon97dbLDF0xU7vhf5V+UVeJv7WdeMuZ1jXLUTey2+gD2A@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+From: Michal Hocko <mhocko@suse.cz>
+Subject: [PATCH] Revert "x86-64, init: Do not set NX bits on non-NX capable hardware"
+Date: Mon, 20 May 2013 17:03:12 +0200
+Message-ID: <1369062192-7066-1-git-send-email-mhocko@suse.cz>
+References: <20130514160108.GA5055@dhcp22.suse.cz>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:49620 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755608Ab3ETPDb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 May 2013 11:03:31 -0400
+In-Reply-To: <20130514160108.GA5055@dhcp22.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@linux.intel.com>, =?UTF-8?q?Fernando=20Luis=20V=C3=A1zquez=20Cao?= <fernando@oss.ntt.co.jp>, "Rafael J. Wysocki" <rjw@sisk.pl>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/20/13 14:29, Viresh Kumar wrote:
+This reverts commit 78d77df71510a96e042de7ba6dbd7998103642cb because
+it breaks resume from suspend to ram. Git bisect pointed to this patch
+and the revert fixes the problem.
 
-[...]
+There are no error messages neither during suspend not on resume when
+the machine simply starts booting as if it wasn't suspended in RAM at
+all.
 
->>> Rafael, if you don't mind, let me take this into Samsung tree for v3.11.
->>
->> Sure, please go ahead.
->
-> Kukjin,
->
-> I hope you have already applied this for linux-next?
+References: https://lkml.org/lkml/2013/5/14/398
+Cc: stable@vger.kernel.org # 3.9
+Signed-off-by: Michal Hocko <mhocko@suse.cz>
+---
+ arch/x86/kernel/head64.c  |    3 +--
+ arch/x86/kernel/head_64.S |    1 -
+ 2 files changed, 1 insertion(+), 3 deletions(-)
 
-Yeah, already done in my local and you can see it in my public tree in a 
-couple of hours :-)
+diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+index dab95a8..101ac1a9 100644
+--- a/arch/x86/kernel/head64.c
++++ b/arch/x86/kernel/head64.c
+@@ -34,7 +34,6 @@
+ extern pgd_t early_level4_pgt[PTRS_PER_PGD];
+ extern pmd_t early_dynamic_pgts[EARLY_DYNAMIC_PAGE_TABLES][PTRS_PER_PMD];
+ static unsigned int __initdata next_early_pgt = 2;
+-pmdval_t __initdata early_pmd_flags = __PAGE_KERNEL_LARGE & ~(_PAGE_GLOBAL | _PAGE_NX);
+ 
+ /* Wipe all early page tables except for the kernel symbol map */
+ static void __init reset_early_page_tables(void)
+@@ -100,7 +99,7 @@ again:
+ 			pmd_p[i] = 0;
+ 		*pud_p = (pudval_t)pmd_p - __START_KERNEL_map + phys_base + _KERNPG_TABLE;
+ 	}
+-	pmd = (physaddr & PMD_MASK) + early_pmd_flags;
++	pmd = (physaddr & PMD_MASK) + (__PAGE_KERNEL_LARGE & ~_PAGE_GLOBAL);
+ 	pmd_p[pmd_index(address)] = pmd;
+ 
+ 	return 0;
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index 08f7e80..6859e96 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -200,7 +200,6 @@ ENTRY(secondary_startup_64)
+ 	btl	$20,%edi		/* No Execute supported? */
+ 	jnc     1f
+ 	btsl	$_EFER_NX, %eax
+-	btsq	$_PAGE_BIT_NX,early_pmd_flags(%rip)
+ 1:	wrmsr				/* Make changes effective */
+ 
+ 	/* Setup cr0 */
+-- 
+1.7.10.4
 
-Thanks.
-
-- Kukjin
