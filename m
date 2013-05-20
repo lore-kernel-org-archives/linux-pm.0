@@ -1,71 +1,93 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/3] Thermal: core: Ask .get_trip_temp() to register
- thermal zone device.
-Date: Mon, 20 May 2013 06:44:05 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C9203B@BGSMSX101.gar.corp.intel.com>
-References: <1368870627-1143-1-git-send-email-jonghwa3.lee@samsung.com>
+From: Michael Wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
+ round 2
+Date: Mon, 20 May 2013 15:06:01 +0800
+Message-ID: <5199CB59.1020309@linux.vnet.ibm.com>
+References: <alpine.LNX.2.00.1305091423460.23038@pobox.suse.cz> <20130509125040.GF27333@pd.tnic> <20130509125859.GG27333@pd.tnic> <20130515184528.GO4442@linux.vnet.ibm.com> <20130515224358.GF11783@pd.tnic> <20130515235512.GT4442@linux.vnet.ibm.com> <20130517135641.GF23035@pd.tnic> <51999591.8030401@linux.vnet.ibm.com> <20130520045023.GA12690@pd.tnic> <5199C169.7060504@linux.vnet.ibm.com> <20130520064727.GD12690@pd.tnic> <5199C990.3020602@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:20811 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752515Ab3ETGoM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2013 02:44:12 -0400
-In-Reply-To: <1368870627-1143-1-git-send-email-jonghwa3.lee@samsung.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <5199C990.3020602@linux.vnet.ibm.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Jonghwa Lee
-> Sent: Saturday, May 18, 2013 3:20 PM
-> To: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org; Zhang, Rui; Eduardo Valentin; Amit Dinel
-> Kachhap; Jonghwa Lee; MyungJoo Ham
-> Subject: [PATCH 1/3] Thermal: core: Ask .get_trip_temp() to register thermal
-> zone device.
+On 05/20/2013 02:58 PM, Michael Wang wrote:
+> On 05/20/2013 02:47 PM, Borislav Petkov wrote:
+>> On Mon, May 20, 2013 at 02:23:37PM +0800, Michael Wang wrote:
+>>> On 05/20/2013 12:50 PM, Borislav Petkov wrote:
+>>>> On Mon, May 20, 2013 at 11:16:33AM +0800, Michael Wang wrote:
+>>>>> I suppose the reason is that the cpu we passed to
+>>>>> mod_delayed_work_on() has a chance to become offline before we
+>>>>> disabled irq, what about check it before send resched ipi? like:
+>>>>
+>>>> I think this is only addressing the symptoms - what we should be doing
+>>>> instead is asking ourselves why are we even scheduling work on a cpu if
+>>>> the machine goes offline?
+>>>>
+>>>> I don't know though who should be responsible for killing all that
+>>>> work - the workqueue itself or the guy who created it, i.e. cpufreq
+>>>> governor...
+>>>
+>>> So there are two questions here:
+>>> 1. Is gov_queue_work() want to queue the work on offline cpu?
+>>> 2. Is mod_delayed_work_on() allow offline cpu?
+>>>
+>>> I guess both should be false?
+>>
+>> Well, if we don't allow queueing work on a cpu which goes offline, i.e.
+>> #2, the problem should be solved.
 > 
-> This patch adds a requirement needing .get_trip_temp() callback
-> function for registering thermal zone device. This function is
-> used when thermal zone is updated and essential where thermal core
-> handles thermal trip based only polling way not hw interrupt.
+> I've take a look at the usage of queue_delayed_work_on() and
+> mod_delayed_work_on(), mostly passed this_cpu, or those in online mask,
+> I think offline cpu is not by designed.
+> 
+> Besides, the cpu gov_queue_work() is using 'policy->cpus' which seems to
+> be updated during UP DOWN notify, I think they are supposed to be online.
+> 
+> But we need expert in cpufreq to confirm all these...
 
-Nice catch. Looks fine,
-Acked-by: Durgadoss R <durgadoss.r@intel.com>
+And I guess this may help to reduce the chance to trigger WARN:
 
-Thanks,
-Durga
+diff --git a/drivers/cpufreq/cpufreq_governor.c
+b/drivers/cpufreq/cpufreq_governor.c
+index 443442d..0f96013 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -180,7 +180,7 @@ void gov_queue_work(struct dbs_data *dbs_data,
+struct cpufreq_policy *policy,
+        if (!all_cpus) {
+                __gov_queue_work(smp_processor_id(), dbs_data, delay);
+        } else {
+-               for_each_cpu(i, policy->cpus)
++               for_each_cpu_and(i, policy->cpus, cpu_online_mask)
+                        __gov_queue_work(i, dbs_data, delay);
+        }
+ }
+
+Well, disable irq will be better, anyway...still need folks who own that
+driver to make the decision, so let's CC them :)
+
+Regards,
+Michael Wang
+
 
 > 
-> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> ---
->  drivers/thermal/thermal_core.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Regards,
+> Michael Wang
 > 
-> diff --git a/drivers/thermal/thermal_core.c
-> b/drivers/thermal/thermal_core.c
-> index d755440..f753f48 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1624,7 +1624,7 @@ struct thermal_zone_device
-> *thermal_zone_device_register(const char *type,
->  	if (!ops || !ops->get_temp)
->  		return ERR_PTR(-EINVAL);
+>>
+>> Tejun?
+>>
+>> Here are the splats: http://marc.info/?l=linux-kernel&m=136879901425951
+>>
 > 
-> -	if (trips > 0 && !ops->get_trip_type)
-> +	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
->  		return ERR_PTR(-EINVAL);
-> 
->  	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
 > --
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
