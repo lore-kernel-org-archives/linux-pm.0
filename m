@@ -1,46 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
-Date: Mon, 20 May 2013 10:59:42 +0530
-Message-ID: <CAKohpon97dbLDF0xU7vhf5V+UVeJv7WdeMuZ1jXLUTey2+gD2A@mail.gmail.com>
-References: <cover.1365079581.git.viresh.kumar@linaro.org>
-	<CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>
-	<093901ce509f$afe92f40$0fbb8dc0$%kim@samsung.com>
-	<2001452.Fn2HjLbNED@vostro.rjw.lan>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 1/3] Thermal: core: Ask .get_trip_temp() to register
+ thermal zone device.
+Date: Mon, 20 May 2013 06:44:05 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C9203B@BGSMSX101.gar.corp.intel.com>
+References: <1368870627-1143-1-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f45.google.com ([209.85.219.45]:37781 "EHLO
-	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443Ab3ETF3m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2013 01:29:42 -0400
-Received: by mail-oa0-f45.google.com with SMTP id j6so7287399oag.18
-        for <linux-pm@vger.kernel.org>; Sun, 19 May 2013 22:29:42 -0700 (PDT)
-In-Reply-To: <2001452.Fn2HjLbNED@vostro.rjw.lan>
+Received: from mga03.intel.com ([143.182.124.21]:20811 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752515Ab3ETGoM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2013 02:44:12 -0400
+In-Reply-To: <1368870627-1143-1-git-send-email-jonghwa3.lee@samsung.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene.kim@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On 14 May 2013 18:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, May 14, 2013 09:36:42 PM Kukjin Kim wrote:
->> Viresh Kumar wrote:
->> >
->> > On 13 May 2013 16:21, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > > That doesn't matter I suppose.  I can take it, but please rebase it on
->> > top
->> > > of current linux-next.
->> >
->> > I have already done that (attached). But i wasn't sure what Kukjin wants
->> > as
->> > he may report conflicts again and i will ask the same question for 3.12 :)
->> >
->> Since this missed last time, this would be sent to upstream via samsung tree
->> again. It means the conflicts should be handled by myself.
->>
->> Rafael, if you don't mind, let me take this into Samsung tree for v3.11.
->
-> Sure, please go ahead.
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Jonghwa Lee
+> Sent: Saturday, May 18, 2013 3:20 PM
+> To: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org; Zhang, Rui; Eduardo Valentin; Amit Dinel
+> Kachhap; Jonghwa Lee; MyungJoo Ham
+> Subject: [PATCH 1/3] Thermal: core: Ask .get_trip_temp() to register thermal
+> zone device.
+> 
+> This patch adds a requirement needing .get_trip_temp() callback
+> function for registering thermal zone device. This function is
+> used when thermal zone is updated and essential where thermal core
+> handles thermal trip based only polling way not hw interrupt.
 
-Kukjin,
+Nice catch. Looks fine,
+Acked-by: Durgadoss R <durgadoss.r@intel.com>
 
-I hope you have already applied this for linux-next?
+Thanks,
+Durga
+
+> 
+> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> ---
+>  drivers/thermal/thermal_core.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c
+> b/drivers/thermal/thermal_core.c
+> index d755440..f753f48 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -1624,7 +1624,7 @@ struct thermal_zone_device
+> *thermal_zone_device_register(const char *type,
+>  	if (!ops || !ops->get_temp)
+>  		return ERR_PTR(-EINVAL);
+> 
+> -	if (trips > 0 && !ops->get_trip_type)
+> +	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
+>  		return ERR_PTR(-EINVAL);
+> 
+>  	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
+> --
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
