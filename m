@@ -1,86 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
- round 2
-Date: Mon, 20 May 2013 19:13:08 +0530
-Message-ID: <CAKohpokEdnmR4wsAqZgxnLOd5MAn6RNEFYwJQ8Xv1EdRbX1tkQ@mail.gmail.com>
-References: <20130520045023.GA12690@pd.tnic>
-	<5199C169.7060504@linux.vnet.ibm.com>
-	<20130520064727.GD12690@pd.tnic>
-	<5199C990.3020602@linux.vnet.ibm.com>
-	<5199CB59.1020309@linux.vnet.ibm.com>
-	<CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com>
-	<5199CFD0.9030101@linux.vnet.ibm.com>
-	<5199E54D.7030407@linux.vnet.ibm.com>
-	<CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
-	<5199EBB5.7060209@linux.vnet.ibm.com>
-	<20130520132355.GF12690@pd.tnic>
+From: Kukjin Kim <kgene.kim@samsung.com>
+Subject: Re: [PATCH 07/18] cpufreq: s3c24xx: move cpufreq driver to drivers/cpufreq
+Date: Mon, 20 May 2013 22:47:59 +0900
+Message-ID: <519A298F.2040605@samsung.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>	<CAKohponkFB7ND38jv5oGnQLx8cq0b=uHTCmL3EERe6P54ijYhw@mail.gmail.com>	<093901ce509f$afe92f40$0fbb8dc0$%kim@samsung.com>	<2001452.Fn2HjLbNED@vostro.rjw.lan> <CAKohpon97dbLDF0xU7vhf5V+UVeJv7WdeMuZ1jXLUTey2+gD2A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130520132355.GF12690@pd.tnic>
+In-Reply-To: <CAKohpon97dbLDF0xU7vhf5V+UVeJv7WdeMuZ1jXLUTey2+gD2A@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Michael Wang <wangyun@linux.vnet.ibm.com>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Robin Randhawa <robin.randhawa@arm.com>, Ben Dooks <ben-linux@fluff.org>, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Steve.Bannister@arm.com, arvind.chauhan@arm.com, linaro-kernel@lists.linaro.org, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 20 May 2013 18:53, Borislav Petkov <bp@alien8.de> wrote:
-> I just confirmed that policy->cpus contains offlined cores with this:
->
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 5af40ad82d23..e8c25f71e9b6 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -169,6 +169,9 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->  {
->         struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
->
-> +       if (WARN_ON(!cpu_online(cpu)))
-> +               return;
-> +
->         mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
->  }
+On 05/20/13 14:29, Viresh Kumar wrote:
 
-Hmm, so for sure there is some locking issue there.
-Have you tried my patch? I am not sure if it will fix everything but may
-fix it.
+[...]
 
-> see splats collection below.
+>>> Rafael, if you don't mind, let me take this into Samsung tree for v3.11.
+>>
+>> Sure, please go ahead.
 >
-> And I don't think your fix above addresses the issue for the simple
-> reason that if cpus go offline *before* you do get_online_cpus(), then
-> policy->cpus will already contain offlined cpus.
+> Kukjin,
 >
-> Rather, a better fix would be, IMHO, to do this (it works here, of course):
->
-> ---
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 5af40ad82d23..58541b164494 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -17,6 +17,7 @@
->  #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->
->  #include <asm/cputime.h>
-> +#include <linux/cpu.h>
->  #include <linux/cpufreq.h>
->  #include <linux/cpumask.h>
->  #include <linux/export.h>
-> @@ -169,7 +170,15 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->  {
->         struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
->
-> +       get_online_cpus();
-> +
-> +       if (!cpu_online(cpu))
-> +               goto out;
-> +
->         mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
-> +
-> + out:
-> +       put_online_cpus();
->  }
->
->  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> I hope you have already applied this for linux-next?
 
-This looks fine, but I want to fix the locking rather than just
-hiding the issue. :)
+Yeah, already done in my local and you can see it in my public tree in a 
+couple of hours :-)
+
+Thanks.
+
+- Kukjin
