@@ -1,23 +1,38 @@
-From: mohamed haneef <linuxdevel.haneef@gmail.com>
-Subject: linux power management
-Date: Mon, 20 May 2013 22:09:33 +0530
-Message-ID: <CAFQgz0qng=6sEEgK_keskpx96RheYmPpoqf0qFfa4DHUpoQhAg@mail.gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] Revert "x86-64, init: Do not set NX bits on non-NX
+ capable hardware"
+Date: Mon, 20 May 2013 10:21:09 -0700
+Message-ID: <CA+55aFzxdGOW=7-x+41U4SZB5par7jKU9vuuhFdsQfZOuLiLtw@mail.gmail.com>
+References: <20130514160108.GA5055@dhcp22.suse.cz>
+	<1369062192-7066-1-git-send-email-mhocko@suse.cz>
+	<519A483F.7070400@zytor.com>
+	<20130520164335.GA9441@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-we0-f194.google.com ([74.125.82.194]:48977 "EHLO
-	mail-we0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732Ab3ETQzq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2013 12:55:46 -0400
-Received: by mail-we0-f194.google.com with SMTP id u57so311216wes.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 May 2013 09:55:45 -0700 (PDT)
+Received: from mail-ve0-f177.google.com ([209.85.128.177]:60354 "EHLO
+	mail-ve0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455Ab3ETRVK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 May 2013 13:21:10 -0400
+In-Reply-To: <20130520164335.GA9441@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "H. Peter Anvin" <hpa@linux.intel.com>, =?UTF-8?Q?Fernando_Luis_V=C3=A1zquez_Cao?= <fernando@oss.ntt.co.jp>, "Rafael J. Wysocki" <rjw@sisk.pl>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi, I would like to learn power management module programming, any
-suggestions other than the kernel documentation and googling. like
-books specific to power management it would be ok even if the book is
-not related to linux power mangement ( I would relate it no problem )
+On Mon, May 20, 2013 at 9:43 AM, Michal Hocko <mhocko@suse.cz> wrote:
+>
+> The configuration has been posted in the referenced thread:
+> https://lkml.org/lkml/2013/5/14/398
 
-thanks in advance.
+Hmm. That's a regular intel i5 Sandybridge CPU. Which certainly has NX.
+
+Hmm. secondary_startup_64 isn't __initcode, is it? I think it's used
+for resuming the other CPU's too and for CPU hotplug. Yes/no?
+
+If so early_pmd_flags shouldn't be __initdata, I think.
+
+Michal, does it work if you don't do the revert, but just remove the
+__initdata instead?
+
+              Linus
