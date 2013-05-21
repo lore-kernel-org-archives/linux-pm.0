@@ -1,150 +1,112 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] x86 thermal: Disable power limit notification interrupt by default
-Date: Tue, 21 May 2013 15:35:17 -0400
-Message-ID: <23719540e936bae5539df52172ada2cf208f6440.1368740425.git.len.brown@intel.com>
-References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
- <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: spurious bL cpufreq driver messages
+Date: Wed, 22 May 2013 01:45:46 +0200
+Message-ID: <11917612.jOVuLqOMKF@vostro.rjw.lan>
+References: <519686BC.3090101@gmail.com> <CAL_JsqLEv38DwnL4=ToXtEKNrDbgYv_0qiOc+cXZSjnfKVbeNg@mail.gmail.com> <CAKohpomG5E2FAeZGnX3eBw8fOiX3K8sWEeHgb5NT_FT3y+Cg1w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:45519 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079Ab3EUTfb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 15:35:31 -0400
-Received: by mail-qc0-f174.google.com with SMTP id m16so590103qcq.5
-        for <linux-pm@vger.kernel.org>; Tue, 21 May 2013 12:35:30 -0700 (PDT)
-In-Reply-To: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
-In-Reply-To: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
-References: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:44131 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972Ab3EUXhH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 21 May 2013 19:37:07 -0400
+In-Reply-To: <CAKohpomG5E2FAeZGnX3eBw8fOiX3K8sWEeHgb5NT_FT3y+Cg1w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
 
-From: Fenghua Yu <fenghua.yu@intel.com>
+On Monday, May 20, 2013 10:06:49 AM Viresh Kumar wrote:
+> On 19 May 2013 01:21, Rob Herring <robherring2@gmail.com> wrote:
+> > No, it still registers the bL driver. The problem is not that DT data
+> > is missing, but it is present on a single cluster system.
+> 
+> I misread your mail.. I got the problem now.. Below should fix your
+> issue (It is rebased on the patch I pointed to you earlier):
+> 
+> Attached too for testing as gmail copy-paste will break it.
+> 
+> @Rafael: Once Rob gives his Tested-by, please queue it for 3.10-rcs
+> 
+> ------------x-----------------x-----------------
+> 
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Mon, 20 May 2013 09:57:17 +0530
+> Subject: [PATCH] cpufreq: arm_big_little_dt: Instantiate as platform_driver
+> 
+> As multiplatform build is being adopted by more and more ARM platforms, initcall
+> function should be used very carefully. For example, when both arm_big_little_dt
+> and cpufreq-cpu0 drivers are compiled in, arm_big_little_dt driver may try to
+> register even if we had platform device for cpufreq-cpu0 registered.
+> 
+> To eliminate this undesired the effect, the patch changes arm_big_little_dt
+> driver to have it instantiated as a platform_driver. Then it will only run on
+> platforms that create the platform_device "arm-bL-cpufreq-dt".
+> 
+> Reported-by: Rob Herring <robherring2@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-The package power limit notification interrupt is primarily for
-system diagnosis, and should not be blindly enabled on every
-system by default -- particuarly since Linux does nothing in the
-handler except count how many times it has been called...
+The patch (from the attachment) didn't apply for me.  Please check the
+bleeding-edge branch.
 
-Add a new kernel cmdline parameter "int_pln_enable" for situations where
-users want to oberve these events via existing system counters:
+Thanks,
+Rafael
 
-$ grep TRM /proc/interrupts
 
-$ grep . /sys/devices/system/cpu/cpu*/thermal_throttle/*
-
-https://bugzilla.kernel.org/show_bug.cgi?id=36182
-
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- Documentation/kernel-parameters.txt      |  2 ++
- arch/x86/kernel/cpu/mcheck/therm_throt.c | 34 ++++++++++++++++++++++++--------
- 2 files changed, 28 insertions(+), 8 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 8ccbf27..217165b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1130,6 +1130,8 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	inport.irq=	[HW] Inport (ATI XL and Microsoft) busmouse driver
- 			Format: <irq>
- 
-+	int_pln_enable  [x86] Enable power limit notification interrupt
-+
- 	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
- 		on
- 			Enable intel iommu driver.
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index 68fa890..f7feb2e 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -210,6 +210,15 @@ static int thresh_event_valid(int event)
- 	return 1;
- }
- 
-+static bool int_pln_enable;
-+static int __init int_pln_enable_setup(char *s)
-+{
-+	int_pln_enable = true;
-+
-+	return 1;
-+}
-+__setup("int_pln_enable", int_pln_enable_setup);
-+
- #ifdef CONFIG_SYSFS
- /* Add/Remove thermal_throttle interface for CPU device: */
- static __cpuinit int thermal_throttle_add_dev(struct device *dev,
-@@ -222,7 +231,7 @@ static __cpuinit int thermal_throttle_add_dev(struct device *dev,
- 	if (err)
- 		return err;
- 
--	if (cpu_has(c, X86_FEATURE_PLN))
-+	if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
- 		err = sysfs_add_file_to_group(&dev->kobj,
- 					      &dev_attr_core_power_limit_count.attr,
- 					      thermal_attr_group.name);
-@@ -230,7 +239,7 @@ static __cpuinit int thermal_throttle_add_dev(struct device *dev,
- 		err = sysfs_add_file_to_group(&dev->kobj,
- 					      &dev_attr_package_throttle_count.attr,
- 					      thermal_attr_group.name);
--		if (cpu_has(c, X86_FEATURE_PLN))
-+		if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
- 			err = sysfs_add_file_to_group(&dev->kobj,
- 					&dev_attr_package_power_limit_count.attr,
- 					thermal_attr_group.name);
-@@ -343,7 +352,7 @@ static void intel_thermal_interrupt(void)
- 				CORE_LEVEL) != 0)
- 		mce_log_therm_throt_event(msr_val);
- 
--	if (this_cpu_has(X86_FEATURE_PLN))
-+	if (this_cpu_has(X86_FEATURE_PLN) && int_pln_enable)
- 		therm_throt_process(msr_val & THERM_STATUS_POWER_LIMIT,
- 					POWER_LIMIT_EVENT,
- 					CORE_LEVEL);
-@@ -353,7 +362,7 @@ static void intel_thermal_interrupt(void)
- 		therm_throt_process(msr_val & PACKAGE_THERM_STATUS_PROCHOT,
- 					THERMAL_THROTTLING_EVENT,
- 					PACKAGE_LEVEL);
--		if (this_cpu_has(X86_FEATURE_PLN))
-+		if (this_cpu_has(X86_FEATURE_PLN) && int_pln_enable)
- 			therm_throt_process(msr_val &
- 					PACKAGE_THERM_STATUS_POWER_LIMIT,
- 					POWER_LIMIT_EVENT,
-@@ -461,9 +470,13 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 	apic_write(APIC_LVTTHMR, h);
- 
- 	rdmsr(MSR_IA32_THERM_INTERRUPT, l, h);
--	if (cpu_has(c, X86_FEATURE_PLN))
-+	if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable)
-+		wrmsr(MSR_IA32_THERM_INTERRUPT,
-+			(l | (THERM_INT_LOW_ENABLE
-+			| THERM_INT_HIGH_ENABLE)) & ~THERM_INT_PLN_ENABLE, h);
-+	else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
- 		wrmsr(MSR_IA32_THERM_INTERRUPT,
--		      l | (THERM_INT_LOW_ENABLE
-+			l | (THERM_INT_LOW_ENABLE
- 			| THERM_INT_HIGH_ENABLE | THERM_INT_PLN_ENABLE), h);
- 	else
- 		wrmsr(MSR_IA32_THERM_INTERRUPT,
-@@ -471,9 +484,14 @@ void intel_init_thermal(struct cpuinfo_x86 *c)
- 
- 	if (cpu_has(c, X86_FEATURE_PTS)) {
- 		rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
--		if (cpu_has(c, X86_FEATURE_PLN))
-+		if (cpu_has(c, X86_FEATURE_PLN) && !int_pln_enable)
- 			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
--			      l | (PACKAGE_THERM_INT_LOW_ENABLE
-+				(l | (PACKAGE_THERM_INT_LOW_ENABLE
-+				| PACKAGE_THERM_INT_HIGH_ENABLE))
-+				& ~PACKAGE_THERM_INT_PLN_ENABLE, h);
-+		else if (cpu_has(c, X86_FEATURE_PLN) && int_pln_enable)
-+			wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+				l | (PACKAGE_THERM_INT_LOW_ENABLE
- 				| PACKAGE_THERM_INT_HIGH_ENABLE
- 				| PACKAGE_THERM_INT_PLN_ENABLE), h);
- 		else
+> ---
+>  drivers/cpufreq/arm_big_little_dt.c | 20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/arm_big_little_dt.c
+> b/drivers/cpufreq/arm_big_little_dt.c
+> index 27e2f45..fd9e3ea 100644
+> --- a/drivers/cpufreq/arm_big_little_dt.c
+> +++ b/drivers/cpufreq/arm_big_little_dt.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/opp.h>
+> +#include <linux/platform_device.h>
+>  #include <linux/slab.h>
+>  #include <linux/types.h>
+>  #include "arm_big_little.h"
+> @@ -95,7 +96,7 @@ static struct cpufreq_arm_bL_ops dt_bL_ops = {
+>  	.init_opp_table = dt_init_opp_table,
+>  };
+> 
+> -static int generic_bL_init(void)
+> +static int generic_bL_probe(struct platform_device *pdev)
+>  {
+>  	struct device_node *np;
+> 
+> @@ -106,13 +107,22 @@ static int generic_bL_init(void)
+>  	of_node_put(np);
+>  	return bL_cpufreq_register(&dt_bL_ops);
+>  }
+> -module_init(generic_bL_init);
+> 
+> -static void generic_bL_exit(void)
+> +static int generic_bL_remove(struct platform_device *pdev)
+>  {
+> -	return bL_cpufreq_unregister(&dt_bL_ops);
+> +	bL_cpufreq_unregister(&dt_bL_ops);
+> +	return 0;
+>  }
+> -module_exit(generic_bL_exit);
+> +
+> +static struct platform_driver generic_bL_platdrv = {
+> +	.driver = {
+> +		.name	= "arm-bL-cpufreq-dt",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe		= generic_bL_probe,
+> +	.remove		= generic_bL_remove,
+> +};
+> +module_platform_driver(generic_bL_platdrv);
+> 
+>  MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
+>  MODULE_DESCRIPTION("Generic ARM big LITTLE cpufreq driver via DT");
 -- 
-1.8.3.rc2
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
