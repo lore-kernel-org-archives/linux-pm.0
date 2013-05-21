@@ -1,43 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] Thermal: spear: Fix compilation error
-Date: Tue, 21 May 2013 15:05:16 +0530
-Message-ID: <CAKohpomWx3OtGF=iUJumkPHEg9ykTX_L5tpYd4+wGxZHOUFytQ@mail.gmail.com>
-References: <1369128041-23403-1-git-send-email-sachin.kamat@linaro.org>
+From: Sudeep KarkadaNagesha <Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH 0/2] PM / OPP: updates to enable sharing OPPs info
+Date: Tue, 21 May 2013 11:00:35 +0100
+Message-ID: <519B45C3.8050700@arm.com>
+References: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f49.google.com ([209.85.219.49]:37478 "EHLO
-	mail-oa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531Ab3EUJfR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 05:35:17 -0400
-Received: by mail-oa0-f49.google.com with SMTP id k14so490079oag.8
-        for <linux-pm@vger.kernel.org>; Tue, 21 May 2013 02:35:16 -0700 (PDT)
-In-Reply-To: <1369128041-23403-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+In-Reply-To: <1367406679-21603-1-git-send-email-Sudeep.KarkadaNagesha-5wv7dgnIgG8@public.gmane.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/devicetree-discuss/>
+List-Post: <mailto:devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+List-Help: <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/devicetree-discuss>,
+ <mailto:devicetree-discuss-request-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org?subject=subscribe>
+Errors-To: devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
+Sender: "devicetree-discuss"
+ <devicetree-discuss-bounces+gldd-devicetree-discuss=m.gmane.org-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+To: "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org" <rob.herring-bsGFqQB8/DxBDgjK7y7TUQ@public.gmane.org>, "devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <devicetree-discuss-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>
+Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com, Vincenzo Frascino <vincenzo.frascino@st.com>
 
-On 21 May 2013 14:50, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> Fixes the following compilation error introduced by commit 253e3ae170
-> (Thermal: spear_thermal: convert to devm_ioremap_resource).
-> drivers/thermal/spear_thermal.c: In function =91spear_thermal_probe=92=
-:
-> drivers/thermal/spear_thermal.c:123:46: error: =91dev=92 undeclared
-> (first use in this function)
-> stdev->thermal_base =3D devm_ioremap_resource(dev, res);
->
-> While at it also remove the error message as devm_ioremap_resource()
-> provides its own error messages.
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Vincenzo Frascino <vincenzo.frascino@st.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Compile tested and based on linux-next (20130521).
-> ---
->  drivers/thermal/spear_thermal.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
+Hi Rob, Grant,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 01/05/13 12:11, Sudeep KarkadaNagesha wrote:
+> From: Sudeep KarkadaNagesha <sudeep.karkadanagesha-5wv7dgnIgG8@public.gmane.org>
+> 
+> These are couple of updates to existing PM/OPP library to support
+> sharing of OPPs between different device nodes.
+> 
+> Currently all the cpu nodes are parsed until the OPPs are found. This
+> is essential to support cpuhotplug without having to replicate OPP
+> information in all the cpu nodes.
+> 
+> However in systems with multiple cpu power domain, its better to have
+> OPP entry for each cpu. To avoid replication, phandle can be specified
+> to the node which contains the full OPP information.
+> 
+Is proposed option of phandle for OPP acceptable to avoid replication ?
+Any suggestions to proceed on this ? This is needed to support CPU
+hotplug on big LITTLE system where current methods like parsing all the
+nodes or just CPU0 node will not work.
+
+Regards,
+Sudeep
