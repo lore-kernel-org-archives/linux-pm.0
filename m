@@ -1,67 +1,63 @@
-From: Michael Wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123 native_smp_send_reschedule,
- round 2
-Date: Tue, 21 May 2013 15:58:39 +0800
-Message-ID: <519B292F.5020603@linux.vnet.ibm.com>
-References: <20130520064727.GD12690@pd.tnic> <5199C990.3020602@linux.vnet.ibm.com> <5199CB59.1020309@linux.vnet.ibm.com> <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com> <5199CFD0.9030101@linux.vnet.ibm.com> <5199E54D.7030407@linux.vnet.ibm.com> <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com> <5199EBB5.7060209@linux.vnet.ibm.com> <20130520132355.GF12690@pd.tnic> <519ADA03.5060206@linux.vnet.ibm.com> <20130521072140.GA4866@pd.tnic>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] Thermal: spear: Fix compilation error
+Date: Tue, 21 May 2013 14:50:41 +0530
+Message-ID: <1369128041-23403-1-git-send-email-sachin.kamat@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130521072140.GA4866@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:63789 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507Ab3EUJeV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 05:34:21 -0400
+Received: by mail-pa0-f52.google.com with SMTP id bg2so513942pad.25
+        for <linux-pm@vger.kernel.org>; Tue, 21 May 2013 02:34:21 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, sachin.kamat@linaro.org, Vincenzo Frascino <vincenzo.frascino@st.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 05/21/2013 03:21 PM, Borislav Petkov wrote:
-> On Tue, May 21, 2013 at 10:20:51AM +0800, Michael Wang wrote:
->> This is not enough to prove that policy->cpus is wrong, the cpu could
->> be online when get from policy->cpus, but offline when checked here,
->> since hotplug is able to happen during the period.
-> 
-> Strictly speaking you're correct but I don't do any hotplug besides the
-> one-time thing which is part of halting the box.
+=46ixes the following compilation error introduced by commit 253e3ae170
+(Thermal: spear_thermal: convert to devm_ioremap_resource).
+drivers/thermal/spear_thermal.c: In function =E2=80=98spear_thermal_pro=
+be=E2=80=99:
+drivers/thermal/spear_thermal.c:123:46: error: =E2=80=98dev=E2=80=99 un=
+declared
+(first use in this function)
+stdev->thermal_base =3D devm_ioremap_resource(dev, res);
 
-Well, they share the same cpu_down() I suppose...
+While at it also remove the error message as devm_ioremap_resource()
+provides its own error messages.
 
-> 
->> I don't get it...
->>
->> get_online_cpus() is just stop hotplug happen after it was invoked, so
->> unless policy->cpus is really wrong, otherwise all the cpu it masked
->> won't go offline any more.
-> 
-> Yes, that's my impression too - at the point we do gov_queue_work,
-> policy->cpus already contains offline cpus.
-> 
->> This protect nothing...before we go here, the cpu could already
->> offline, nothing changed...
-> 
-> Yes, but I don't want to schedule work on an offlined cpu and that is
-> ensured here.
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Vincenzo Frascino <vincenzo.frascino@st.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+---
+Compile tested and based on linux-next (20130521).
+---
+ drivers/thermal/spear_thermal.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-IMHO, the problem seems mostly like the wrong usage of policy->cpus,
-it's providing the right info, but just at that time, we don't need
-worry about work on offlined cpu if we don't allow cpu disappear.
-
-Your approach could be good respect to performance, but if we could
-prove that policy->cpus is correct firstly, than we could fix the
-problem without any concern, don't we?
-
-> 
->> If you really want to confirm the policy->cpus was wrong, the way
->> should be apply the fix I suggested, than check online in here.
-> 
-> Sure, feel free to get a box, enable NO_HZ_FULL and do all the
-> experimentations you desire. I surely cannot be the only one who
-> triggers this.
-
-I'm fine if the problem get solved, that means your box doesn't show
-WARN any more :)
-
-Regards,
-Michael Wang
-
-> 
+diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_th=
+ermal.c
+index fa30918..813add6 100644
+--- a/drivers/thermal/spear_thermal.c
++++ b/drivers/thermal/spear_thermal.c
+@@ -120,11 +120,9 @@ static int spear_thermal_probe(struct platform_dev=
+ice *pdev)
+=20
+ 	/* Enable thermal sensor */
+ 	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	stdev->thermal_base =3D devm_ioremap_resource(dev, res);
+-	if (IS_ERR(stdev->thermal_base)) {
+-		dev_err(&pdev->dev, "ioremap failed\n");
++	stdev->thermal_base =3D devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(stdev->thermal_base))
+ 		return PTR_ERR(stdev->thermal_base);
+-	}
+=20
+ 	stdev->clk =3D devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(stdev->clk)) {
+--=20
+1.7.9.5
 
