@@ -1,68 +1,76 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 0/2] staging -> thermal: move ti-soc-thermal to drivers/thermal
-Date: Tue, 21 May 2013 14:16:07 -0400
-Message-ID: <519BB9E7.8080401@ti.com>
-References: <1368632761-10528-1-git-send-email-eduardo.valentin@ti.com> <20130521170302.GC20464@kroah.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2OIKCPWXLFPRQFBALQIGP"
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/2] x86 thermal: Delete power-limit-notification console messages
+Date: Tue, 21 May 2013 15:35:16 -0400
+Message-ID: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
+References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:47470 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754964Ab3EUSQX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 14:16:23 -0400
-In-Reply-To: <20130521170302.GC20464@kroah.com>
+Received: from mail-qa0-f50.google.com ([209.85.216.50]:58719 "EHLO
+	mail-qa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068Ab3EUTfa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 15:35:30 -0400
+Received: by mail-qa0-f50.google.com with SMTP id bn16so618696qab.9
+        for <linux-pm@vger.kernel.org>; Tue, 21 May 2013 12:35:29 -0700 (PDT)
+In-Reply-To: <1368741246-3998-1-git-send-email-lenb@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>
 
-------enig2OIKCPWXLFPRQFBALQIGP
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Fenghua Yu <fenghua.yu@intel.com>
 
-Hello Greg,
+Package power limits are common on some systems under some conditions --
+so printing console messages when limits are reached
+causes unnecessary customer concern and support calls.
 
-On 21-05-2013 13:03, Greg KH wrote:
-> On Wed, May 15, 2013 at 11:45:59AM -0400, Eduardo Valentin wrote:
->>
->> Hello Greg and Rui,
->>
->> I am proposing to move the ti-soc-thermal driver from drivers/stating/=
+Note that even with these console messages gone,
+the events can still be observed via system counters:
 
->> to drivers/thermal. It has been some time that we have been fixing and=
+$ grep TRM /proc/interrupts
 
->> improving the code under staging tree.
->=20
-> This is up to review from the thermal maintainer and developers to
-> accept this.
+Shows total thermal interrupts, which includes both power
+limit notifications and thermal throttling interrupts.
 
-Thanks for your feedback.
+$ grep . /sys/devices/system/cpu/cpu*/thermal_throttle/*
 
-Rui?
+Will show what caused those interrupts, core and package
+throttling and power limit notifications.
 
->=20
-> thanks,
->=20
-> greg k-h
->=20
->=20
+https://bugzilla.kernel.org/show_bug.cgi?id=36182
 
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/kernel/cpu/mcheck/therm_throt.c | 9 ---------
+ 1 file changed, 9 deletions(-)
 
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 47a1870..68fa890 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -181,11 +181,6 @@ static int therm_throt_process(bool new_event, int event, int level)
+ 				this_cpu,
+ 				level == CORE_LEVEL ? "Core" : "Package",
+ 				state->count);
+-		else
+-			printk(KERN_CRIT "CPU%d: %s power limit notification (total events = %lu)\n",
+-				this_cpu,
+-				level == CORE_LEVEL ? "Core" : "Package",
+-				state->count);
+ 		return 1;
+ 	}
+ 	if (old_event) {
+@@ -193,10 +188,6 @@ static int therm_throt_process(bool new_event, int event, int level)
+ 			printk(KERN_INFO "CPU%d: %s temperature/speed normal\n",
+ 				this_cpu,
+ 				level == CORE_LEVEL ? "Core" : "Package");
+-		else
+-			printk(KERN_INFO "CPU%d: %s power limit normal\n",
+-				this_cpu,
+-				level == CORE_LEVEL ? "Core" : "Package");
+ 		return 1;
+ 	}
+ 
+-- 
+1.8.3.rc2
 
-------enig2OIKCPWXLFPRQFBALQIGP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGbuecACgkQCXcVR3XQvP0sygD/UlZZcCjus5q1bsDORqd4iUuH
-emOSLT6nwgZ888wfcmoA/3BlJtakRvs81OJa780z5gnDGq8CIVoWCZ/Z7jx3dtE0
-=zB75
------END PGP SIGNATURE-----
-
-------enig2OIKCPWXLFPRQFBALQIGP--
