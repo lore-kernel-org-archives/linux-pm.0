@@ -1,49 +1,42 @@
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH] Finally eradicate CONFIG_HOTPLUG
-Date: Tue, 21 May 2013 07:21:49 -0300
-Message-ID: <20130521072149.0dac0d9e@redhat.com>
-References: <20130521134935.d18c3f5c23485fb5ddabc365@canb.auug.org.au>
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: [PATCH 3/2] ARM: shmobile: r8a7790: add a "cpufreq-cpu0" platform
+ device
+Date: Tue, 21 May 2013 12:37:42 +0200 (CEST)
+Message-ID: <Pine.LNX.4.64.1305211236180.2863@axis700.grange>
+References: <Pine.LNX.4.64.1305211202380.2863@axis700.grange>
+ <Pine.LNX.4.64.1305211206570.2863@axis700.grange>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:17971 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864Ab3EUKXp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 May 2013 06:23:45 -0400
-In-Reply-To: <20130521134935.d18c3f5c23485fb5ddabc365@canb.auug.org.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.1305211206570.2863@axis700.grange>
+Sender: linux-sh-owner@vger.kernel.org
+To: linux-sh@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, linux-pcmcia@lists.infradead.org, Hans Verkuil <hans.verkuil@cisco.com>, Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-Em Tue, 21 May 2013 13:49:35 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> escreveu:
+Add a "cpufreq-cpu0" platform device, needed to activate the equally named
+CPUFreq driver.
 
-> Ever since commit 45f035ab9b8f ("CONFIG_HOTPLUG should be always on"),
-> it has been basically impossible to build a kernel with CONFIG_HOTPLUG
-> turned off.  Remove all the remaining references to it.
-> 
-> Cc: linux-arch@vger.kernel.org
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: Doug Thompson <dougthompson@xmission.com>
-> Cc: linux-edac@vger.kernel.org
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: linux-pci@vger.kernel.org
-> Cc: linux-pcmcia@lists.infradead.org
-> Cc: Hans Verkuil <hans.verkuil@cisco.com>
-> Cc: Steven Whitehouse <swhiteho@redhat.com>
-> Cc: cluster-devel@redhat.com
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: linux-mm@kvack.org
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Guennadi Liakhovetski <g.liakhovetski+renesas@gmail.com>
+---
 
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+It can actually be merged with patch 1 from this series
 
-Cheers,
-Mauro
+ arch/arm/mach-shmobile/setup-r8a7790.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/setup-r8a7790.c b/arch/arm/mach-shmobile/setup-r8a7790.c
+index eeef5f6..49c3166 100644
+--- a/arch/arm/mach-shmobile/setup-r8a7790.c
++++ b/arch/arm/mach-shmobile/setup-r8a7790.c
+@@ -166,6 +166,7 @@ void __init r8a7790_timer_init(void)
+ #ifdef CONFIG_USE_OF
+ void __init r8a7790_add_standard_devices_dt(void)
+ {
++	platform_device_register_simple("cpufreq-cpu0", -1, NULL, 0);
+ 	of_platform_populate(NULL, of_default_bus_match_table, NULL, NULL);
+ }
+ 
+-- 
+1.7.2.5
+
