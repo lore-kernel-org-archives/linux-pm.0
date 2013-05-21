@@ -1,61 +1,53 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: NOHZ: WARNING: at arch/x86/kernel/smp.c:123
- native_smp_send_reschedule, round 2
-Date: Tue, 21 May 2013 09:21:40 +0200
-Message-ID: <20130521072140.GA4866@pd.tnic>
-References: <20130520064727.GD12690@pd.tnic>
- <5199C990.3020602@linux.vnet.ibm.com>
- <5199CB59.1020309@linux.vnet.ibm.com>
- <CAKohponk-FQpHOx407FL63ZCYVgz2C-ScvZQBQFVxddbL+fS=A@mail.gmail.com>
- <5199CFD0.9030101@linux.vnet.ibm.com>
- <5199E54D.7030407@linux.vnet.ibm.com>
- <CAKohponS+tCkZyVpDO9fEMQCfsn5h=N235sj5sBGUkD2qKY=cQ@mail.gmail.com>
- <5199EBB5.7060209@linux.vnet.ibm.com>
- <20130520132355.GF12690@pd.tnic>
- <519ADA03.5060206@linux.vnet.ibm.com>
+From: Hans Verkuil <hansverk@cisco.com>
+Subject: Re: [PATCH] Finally eradicate CONFIG_HOTPLUG
+Date: Tue, 21 May 2013 09:38:42 +0200
+Message-ID: <201305210938.43064.hansverk@cisco.com>
+References: <20130521134935.d18c3f5c23485fb5ddabc365@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <519ADA03.5060206@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Michael Wang <wangyun@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Tejun Heo <tj@kernel.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Jiri Kosina <jkosina@suse.cz>, Frederic Weisbecker <fweisbec@gmail.com>, Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130521134935.d18c3f5c23485fb5ddabc365@canb.auug.org.au>
+Sender: owner-linux-mm@kvack.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org, linux-pcmcia@lists.infradead.org, Hans Verkuil <hans.verkuil@cisco.com>, Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com, Arnd Bergmann <arnd@arndb.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 21, 2013 at 10:20:51AM +0800, Michael Wang wrote:
-> This is not enough to prove that policy->cpus is wrong, the cpu could
-> be online when get from policy->cpus, but offline when checked here,
-> since hotplug is able to happen during the period.
-
-Strictly speaking you're correct but I don't do any hotplug besides the
-one-time thing which is part of halting the box.
-
-> I don't get it...
+On Tue 21 May 2013 05:49:35 Stephen Rothwell wrote:
+> Ever since commit 45f035ab9b8f ("CONFIG_HOTPLUG should be always on"),
+> it has been basically impossible to build a kernel with CONFIG_HOTPLUG
+> turned off.  Remove all the remaining references to it.
 > 
-> get_online_cpus() is just stop hotplug happen after it was invoked, so
-> unless policy->cpus is really wrong, otherwise all the cpu it masked
-> won't go offline any more.
+> Cc: linux-arch@vger.kernel.org
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: Doug Thompson <dougthompson@xmission.com>
+> Cc: linux-edac@vger.kernel.org
+> Cc: Bjorn Helgaas <bhelgaas@google.com>
+> Cc: linux-pci@vger.kernel.org
+> Cc: linux-pcmcia@lists.infradead.org
+> Cc: Hans Verkuil <hans.verkuil@cisco.com>
+> Cc: Steven Whitehouse <swhiteho@redhat.com>
+> Cc: cluster-devel@redhat.com
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: linux-mm@kvack.org
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Yes, that's my impression too - at the point we do gov_queue_work,
-policy->cpus already contains offline cpus.
+For drivers/staging/media/go7007/go7007.txt:
 
-> This protect nothing...before we go here, the cpu could already
-> offline, nothing changed...
+Acked-by: Hans Verkuil <hans.verkuil@cisco.com>
 
-Yes, but I don't want to schedule work on an offlined cpu and that is
-ensured here.
+Regards,
 
-> If you really want to confirm the policy->cpus was wrong, the way
-> should be apply the fix I suggested, than check online in here.
+	Hans
 
-Sure, feel free to get a box, enable NO_HZ_FULL and do all the
-experimentations you desire. I surely cannot be the only one who
-triggers this.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
 --
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
