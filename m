@@ -1,62 +1,120 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: spurious bL cpufreq driver messages
-Date: Wed, 22 May 2013 06:44:20 +0530
-Message-ID: <CAKohpokkMvEhotcow8qfCGP0SxNfRsxw7swo-ZFbTSKE-F8Xtw@mail.gmail.com>
-References: <519686BC.3090101@gmail.com>
-	<CAL_JsqLEv38DwnL4=ToXtEKNrDbgYv_0qiOc+cXZSjnfKVbeNg@mail.gmail.com>
-	<CAKohpomG5E2FAeZGnX3eBw8fOiX3K8sWEeHgb5NT_FT3y+Cg1w@mail.gmail.com>
-	<11917612.jOVuLqOMKF@vostro.rjw.lan>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: [PATCH 1/2] x86 thermal: Delete power-limit-notification
+ console messages
+Date: Wed, 22 May 2013 04:54:15 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C9371C@BGSMSX101.gar.corp.intel.com>
+References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
+ <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f41.google.com ([209.85.219.41]:35327 "EHLO
-	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850Ab3EVBOW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 May 2013 21:14:22 -0400
-Received: by mail-oa0-f41.google.com with SMTP id n9so1769873oag.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 May 2013 18:14:20 -0700 (PDT)
-In-Reply-To: <11917612.jOVuLqOMKF@vostro.rjw.lan>
+Received: from mga14.intel.com ([143.182.124.37]:7643 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073Ab3EVEyU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2013 00:54:20 -0400
+In-Reply-To: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Rob Herring <robherring2@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
+To: Len Brown <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Yu, Fenghua" <fenghua.yu@intel.com>
 
-On 22 May 2013 05:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday, May 20, 2013 10:06:49 AM Viresh Kumar wrote:
->> On 19 May 2013 01:21, Rob Herring <robherring2@gmail.com> wrote:
->> > No, it still registers the bL driver. The problem is not that DT data
->> > is missing, but it is present on a single cluster system.
->>
->> I misread your mail.. I got the problem now.. Below should fix your
->> issue (It is rebased on the patch I pointed to you earlier):
->>
->> Attached too for testing as gmail copy-paste will break it.
->>
->> @Rafael: Once Rob gives his Tested-by, please queue it for 3.10-rcs
->>
->> ------------x-----------------x-----------------
->>
->> From: Viresh Kumar <viresh.kumar@linaro.org>
->> Date: Mon, 20 May 2013 09:57:17 +0530
->> Subject: [PATCH] cpufreq: arm_big_little_dt: Instantiate as platform_driver
->>
->> As multiplatform build is being adopted by more and more ARM platforms, initcall
->> function should be used very carefully. For example, when both arm_big_little_dt
->> and cpufreq-cpu0 drivers are compiled in, arm_big_little_dt driver may try to
->> register even if we had platform device for cpufreq-cpu0 registered.
->>
->> To eliminate this undesired the effect, the patch changes arm_big_little_dt
->> driver to have it instantiated as a platform_driver. Then it will only run on
->> platforms that create the platform_device "arm-bL-cpufreq-dt".
->>
->> Reported-by: Rob Herring <robherring2@gmail.com>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> The patch (from the attachment) didn't apply for me.  Please check the
-> bleeding-edge branch.
+Hi Len/Fenghua,
 
-Have you tried applying this before it (As written in my last mail)?
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Len Brown
+> Sent: Wednesday, May 22, 2013 1:05 AM
+> To: Zhang, Rui
+> Cc: linux-pm@vger.kernel.org; Yu, Fenghua
+> Subject: [PATCH 1/2] x86 thermal: Delete power-limit-notification console
+> messages
+> 
+> From: Fenghua Yu <fenghua.yu@intel.com>
+> 
+> Package power limits are common on some systems under some conditions -
+> -
+> so printing console messages when limits are reached
+> causes unnecessary customer concern and support calls.
 
-https://groups.google.com/forum/?fromgroups#!topic/linux.kernel/XJF-82rad4o
+We are facing the exact similar situation here, but on the
+Thermal throttling events. So, basically I am in support of
+this removal patch.
 
-Above is also required fix for 3.10-rc3
+> 
+> Note that even with these console messages gone,
+> the events can still be observed via system counters:
+> 
+> $ grep TRM /proc/interrupts
+> 
+> Shows total thermal interrupts, which includes both power
+> limit notifications and thermal throttling interrupts.
+
+Yes, On the other hand, we can use these counters, and not
+print those console messages.
+
+> 
+> $ grep . /sys/devices/system/cpu/cpu*/thermal_throttle/*
+> 
+> Will show what caused those interrupts, core and package
+> throttling and power limit notifications.
+> 
+> https://bugzilla.kernel.org/show_bug.cgi?id=36182
+
+Thanks for the link ;)
+
+> 
+> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/cpu/mcheck/therm_throt.c | 9 ---------
+>  1 file changed, 9 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> index 47a1870..68fa890 100644
+> --- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> +++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+> @@ -181,11 +181,6 @@ static int therm_throt_process(bool new_event, int
+> event, int level)
+>  				this_cpu,
+>  				level == CORE_LEVEL ? "Core" : "Package",
+>  				state->count);
+
+Here, can we remove the other print also ?
+(The thermal throttling prints)
+
+Thanks,
+Durga
+
+> -		else
+> -			printk(KERN_CRIT "CPU%d: %s power limit
+> notification (total events = %lu)\n",
+> -				this_cpu,
+> -				level == CORE_LEVEL ? "Core" : "Package",
+> -				state->count);
+>  		return 1;
+>  	}
+>  	if (old_event) {
+> @@ -193,10 +188,6 @@ static int therm_throt_process(bool new_event, int
+> event, int level)
+>  			printk(KERN_INFO "CPU%d: %s temperature/speed
+> normal\n",
+>  				this_cpu,
+>  				level == CORE_LEVEL ? "Core" : "Package");
+> -		else
+> -			printk(KERN_INFO "CPU%d: %s power limit
+> normal\n",
+> -				this_cpu,
+> -				level == CORE_LEVEL ? "Core" : "Package");
+>  		return 1;
+>  	}
+> 
+> --
+> 1.8.3.rc2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
