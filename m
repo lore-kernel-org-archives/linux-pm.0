@@ -1,95 +1,75 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3] LAB: Support for Legacy Application Booster governor
-Date: Wed, 22 May 2013 12:27:00 +0200
-Message-ID: <20130522122700.104ca5cd@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: spurious bL cpufreq driver messages
+Date: Wed, 22 May 2013 12:54:18 +0200
+Message-ID: <2544320.us1o8zUn7V@vostro.rjw.lan>
+References: <519686BC.3090101@gmail.com> <11917612.jOVuLqOMKF@vostro.rjw.lan> <CAKohpokkMvEhotcow8qfCGP0SxNfRsxw7swo-ZFbTSKE-F8Xtw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:45249 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238Ab3EVKpd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 May 2013 06:45:33 -0400
+In-Reply-To: <CAKohpokkMvEhotcow8qfCGP0SxNfRsxw7swo-ZFbTSKE-F8Xtw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>
 
-Hi Viresh,
-
-Thanks for reply.
-
-> On 3 May 2013 19:37, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
-> > From: Lukasz Majewski <l.majewski@samsung.com>
+On Wednesday, May 22, 2013 06:44:20 AM Viresh Kumar wrote:
+> On 22 May 2013 05:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday, May 20, 2013 10:06:49 AM Viresh Kumar wrote:
+> >> On 19 May 2013 01:21, Rob Herring <robherring2@gmail.com> wrote:
+> >> > No, it still registers the bL driver. The problem is not that DT data
+> >> > is missing, but it is present on a single cluster system.
+> >>
+> >> I misread your mail.. I got the problem now.. Below should fix your
+> >> issue (It is rebased on the patch I pointed to you earlier):
+> >>
+> >> Attached too for testing as gmail copy-paste will break it.
+> >>
+> >> @Rafael: Once Rob gives his Tested-by, please queue it for 3.10-rcs
+> >>
+> >> ------------x-----------------x-----------------
+> >>
+> >> From: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Date: Mon, 20 May 2013 09:57:17 +0530
+> >> Subject: [PATCH] cpufreq: arm_big_little_dt: Instantiate as platform_driver
+> >>
+> >> As multiplatform build is being adopted by more and more ARM platforms, initcall
+> >> function should be used very carefully. For example, when both arm_big_little_dt
+> >> and cpufreq-cpu0 drivers are compiled in, arm_big_little_dt driver may try to
+> >> register even if we had platform device for cpufreq-cpu0 registered.
+> >>
+> >> To eliminate this undesired the effect, the patch changes arm_big_little_dt
+> >> driver to have it instantiated as a platform_driver. Then it will only run on
+> >> platforms that create the platform_device "arm-bL-cpufreq-dt".
+> >>
+> >> Reported-by: Rob Herring <robherring2@gmail.com>
+> >> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >
+> > The patch (from the attachment) didn't apply for me.  Please check the
+> > bleeding-edge branch.
 > 
-> > 2. New LAB governor.
-> > It calculates number of idle CPUs (based on scheduler data). On
-> > this basis it chose proper first level polynomial function for
-> > approximation. Moreover it enables overclocking when single, heavy
-> > loaded CPU is running.
-> 
-> Hi Lukasz,
-> 
-> I am still not sure about this governor. Do you have some results
-> with which you can tell how is it better than ondemand/conservative?
+> Have you tried applying this before it (As written in my last mail)?
 
-I will provide proper test results. As a test platform I've used
-Exynos4 CPU (4 cores) with TIZEN OS on it.
+No and I'm not sure which mail you're referring to.  There's been quite
+a number of them recently. :-)
 
-> 
-> With or without overclocking. i.e. Apply only overclocking support to
-> ondemand/conservative..
+> https://groups.google.com/forum/?fromgroups#!topic/linux.kernel/XJF-82rad4o
+>
+> Above is also required fix for 3.10-rc3
 
-I think, that overclocking support is crucial here. As you pointed out
-- ondemand and conservative benefit from it. Therefore, I would urge
-  for its mainline acceptance.
+OK, that worked.
 
-(code for reference)
-http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+Please check the bleeding-edge branch now and see if anything for-3.10-rc is
+still missing.
 
-In this RFC (patch 1/3), I've decided to put the burden of overclocking
-support to platform code (cpufreq/exynos-cpufreq.c and
-cpufreq/exynos4x12-cpufreq.c). 
+Thanks,
+Rafael
 
-Those changes aren't intrusive for other boards/archs. Moreover
-overclocking is closely related to processor clocking/power dissipation
-capabilities, so SoC specific code is a good place for it.
-
-
-What DO need a broad acceptance is the overclocking API proposed at:
-include/linux/cpufreq.h 
-
-This introduces interface to which others will be bind. It shouldn't be
-difficult to implement overclocking at other SoCs (as it was proposed
-for Exynos).
-
-Feedback is welcome, since I might have overlooked oddities present at
-other SoCs.
-
-
-
-> 
-> If you are using Android, maybe check Interactive too (Though it
-> itsn't mainlined yet).
-
-I will also delve into "Interactive" governor.
-
-
-
-
-As a side note:
-
-The "core" cpufreq code modification (patch 3/3) counts only 22 lines,
-so this patch series definitely is not intrusive.
-
-> 
-> @Rafael: What do you think about this patchset?
-> 
-> --
-> viresh
 
 -- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Poland (SRPOL) | Linux Platform Group
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
