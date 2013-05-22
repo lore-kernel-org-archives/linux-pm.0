@@ -1,120 +1,80 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/2] x86 thermal: Delete power-limit-notification
- console messages
-Date: Wed, 22 May 2013 04:54:15 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59C9371C@BGSMSX101.gar.corp.intel.com>
-References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
- <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: fix governor start/stop race condition
+Date: Wed, 22 May 2013 14:16:24 +0530
+Message-ID: <CAKohpokR0igX3Z4P9eyoJikmBwnG90eN003wAaJW-Ynu7zU7Aw@mail.gmail.com>
+References: <1368442050-16548-1-git-send-email-chenxg@marvell.com>
+	<51947935.50607@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:7643 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073Ab3EVEyU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2013 00:54:20 -0400
-In-Reply-To: <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51947935.50607@marvell.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Yilu Mao <ylmao@marvell.com>, Zhoujie Wu <zjwu@marvell.com>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Yu, Fenghua" <fenghua.yu@intel.com>
 
-Hi Len/Fenghua,
+Sorry for being late buddy..
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Len Brown
-> Sent: Wednesday, May 22, 2013 1:05 AM
-> To: Zhang, Rui
-> Cc: linux-pm@vger.kernel.org; Yu, Fenghua
-> Subject: [PATCH 1/2] x86 thermal: Delete power-limit-notification console
-> messages
-> 
-> From: Fenghua Yu <fenghua.yu@intel.com>
-> 
-> Package power limits are common on some systems under some conditions -
-> -
-> so printing console messages when limits are reached
-> causes unnecessary customer concern and support calls.
+On 16 May 2013 11:44, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> On 05/13/2013 06:47 PM, Xiaoguang Chen wrote:
+>>
 
-We are facing the exact similar situation here, but on the
-Thermal throttling events. So, basically I am in support of
-this removal patch.
+Why is the mail came this way.. You forwarded it?
 
-> 
-> Note that even with these console messages gone,
-> the events can still be observed via system counters:
-> 
-> $ grep TRM /proc/interrupts
-> 
-> Shows total thermal interrupts, which includes both power
-> limit notifications and thermal throttling interrupts.
+>> cpufreq governor stop and start should be kept in sequence.
+>> If not, there will be unexpected behavior, for example:
+>>
+>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+>> the normal sequence is as below:
+>>
+>> 1) Current governor is userspace, one application tries to set
+>> governor to ondemand. it will call __cpufreq_set_policy in which it
+>> will stop userspace governor and then start ondemand governor.
+>>
+>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+>> call cpufreq_add_policy_cpu. on which it first stops userspace
+>> governor, and then starts userspace governor.
+>>
+>> Now if the sequence of above two cases interleaves, it becames
+>> below sequence:
+>>
+>> 1) application stops userspace governor
+>> 2)                                      hotplug stops userspace governor
+>> 3) application starts ondemand governor
+>> 4)                                      hotplug starts a governor
+>>
+>> in step 4, hotplug is supposed to start userspace governor, but now
+>> the governor has been changed by application to ondemand, so hotplug
+>> starts ondemand governor again !!!!
+>>
+>> The solution is as below:
+>> cpufreq policy has a rwsem to protect the read and write of policy.
+>> make the scope of the rwsem to contain cpufreq governor stop/start
+>> sequence, so that after the stop governor has started, other threads
+>> will not stop governor, they have to wait the current thread starts
+>> the governor and then do their job.
+>>
+>> Change-Id: I054bb52789fc8abdcf80bdcc1caebd429c182bb0
+>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+>> ---
+>>   drivers/cpufreq/cpufreq.c | 19 ++++++++-----------
+>>   1 file changed, 8 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>> index 1b8a48e..935f750 100644
+>> --- a/drivers/cpufreq/cpufreq.c
+>> +++ b/drivers/cpufreq/cpufreq.c
+>> @@ -811,14 +811,14 @@ static int cpufreq_add_policy_cpu(unsigned int cpu,
+>> unsigned int sibling,
+>>         int ret = 0, has_target = !!cpufreq_driver->target;
+>>         unsigned long flags;
+>>   +     lock_policy_rwsem_write(sibling);
+>> +
+>>         policy = cpufreq_cpu_get(sibling);
+>>         WARN_ON(!policy);
+>>         if (has_target)
+>>                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
 
-Yes, On the other hand, we can use these counters, and not
-print those console messages.
-
-> 
-> $ grep . /sys/devices/system/cpu/cpu*/thermal_throttle/*
-> 
-> Will show what caused those interrupts, core and package
-> throttling and power limit notifications.
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=36182
-
-Thanks for the link ;)
-
-> 
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/kernel/cpu/mcheck/therm_throt.c | 9 ---------
->  1 file changed, 9 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> index 47a1870..68fa890 100644
-> --- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> +++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> @@ -181,11 +181,6 @@ static int therm_throt_process(bool new_event, int
-> event, int level)
->  				this_cpu,
->  				level == CORE_LEVEL ? "Core" : "Package",
->  				state->count);
-
-Here, can we remove the other print also ?
-(The thermal throttling prints)
-
-Thanks,
-Durga
-
-> -		else
-> -			printk(KERN_CRIT "CPU%d: %s power limit
-> notification (total events = %lu)\n",
-> -				this_cpu,
-> -				level == CORE_LEVEL ? "Core" : "Package",
-> -				state->count);
->  		return 1;
->  	}
->  	if (old_event) {
-> @@ -193,10 +188,6 @@ static int therm_throt_process(bool new_event, int
-> event, int level)
->  			printk(KERN_INFO "CPU%d: %s temperature/speed
-> normal\n",
->  				this_cpu,
->  				level == CORE_LEVEL ? "Core" : "Package");
-> -		else
-> -			printk(KERN_INFO "CPU%d: %s power limit
-> normal\n",
-> -				this_cpu,
-> -				level == CORE_LEVEL ? "Core" : "Package");
->  		return 1;
->  	}
-> 
-> --
-> 1.8.3.rc2
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+We can't have locks are GOV_STOP earlier.. And now we can't have it
+across *_EXIT.. Check latest code... As this gives some circular dependency
+to locking and it fails.
