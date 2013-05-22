@@ -1,80 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: fix governor start/stop race condition
-Date: Wed, 22 May 2013 14:16:24 +0530
-Message-ID: <CAKohpokR0igX3Z4P9eyoJikmBwnG90eN003wAaJW-Ynu7zU7Aw@mail.gmail.com>
-References: <1368442050-16548-1-git-send-email-chenxg@marvell.com>
-	<51947935.50607@marvell.com>
+Subject: Re: [RFC v2 0/3] LAB: Support for Legacy Application Booster governor
+Date: Wed, 22 May 2013 14:37:33 +0530
+Message-ID: <CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51947935.50607@marvell.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Yilu Mao <ylmao@marvell.com>, Zhoujie Wu <zjwu@marvell.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f45.google.com ([209.85.219.45]:41687 "EHLO
+	mail-oa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753238Ab3EVJHe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2013 05:07:34 -0400
+Received: by mail-oa0-f45.google.com with SMTP id j6so2187147oag.18
+        for <linux-pm@vger.kernel.org>; Wed, 22 May 2013 02:07:33 -0700 (PDT)
+In-Reply-To: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>
 
-Sorry for being late buddy..
+On 3 May 2013 19:37, Jonghwa Lee <jonghwa3.lee@samsung.com> wrote:
+> From: Lukasz Majewski <l.majewski@samsung.com>
 
-On 16 May 2013 11:44, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> On 05/13/2013 06:47 PM, Xiaoguang Chen wrote:
->>
+> 2. New LAB governor.
+> It calculates number of idle CPUs (based on scheduler data). On this basis it
+> chose proper first level polynomial function for approximation.
+> Moreover it enables overclocking when single, heavy loaded CPU is running.
 
-Why is the mail came this way.. You forwarded it?
+Hi Lukasz,
 
->> cpufreq governor stop and start should be kept in sequence.
->> If not, there will be unexpected behavior, for example:
->>
->> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
->> the normal sequence is as below:
->>
->> 1) Current governor is userspace, one application tries to set
->> governor to ondemand. it will call __cpufreq_set_policy in which it
->> will stop userspace governor and then start ondemand governor.
->>
->> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
->> call cpufreq_add_policy_cpu. on which it first stops userspace
->> governor, and then starts userspace governor.
->>
->> Now if the sequence of above two cases interleaves, it becames
->> below sequence:
->>
->> 1) application stops userspace governor
->> 2)                                      hotplug stops userspace governor
->> 3) application starts ondemand governor
->> 4)                                      hotplug starts a governor
->>
->> in step 4, hotplug is supposed to start userspace governor, but now
->> the governor has been changed by application to ondemand, so hotplug
->> starts ondemand governor again !!!!
->>
->> The solution is as below:
->> cpufreq policy has a rwsem to protect the read and write of policy.
->> make the scope of the rwsem to contain cpufreq governor stop/start
->> sequence, so that after the stop governor has started, other threads
->> will not stop governor, they have to wait the current thread starts
->> the governor and then do their job.
->>
->> Change-Id: I054bb52789fc8abdcf80bdcc1caebd429c182bb0
->> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
->> ---
->>   drivers/cpufreq/cpufreq.c | 19 ++++++++-----------
->>   1 file changed, 8 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->> index 1b8a48e..935f750 100644
->> --- a/drivers/cpufreq/cpufreq.c
->> +++ b/drivers/cpufreq/cpufreq.c
->> @@ -811,14 +811,14 @@ static int cpufreq_add_policy_cpu(unsigned int cpu,
->> unsigned int sibling,
->>         int ret = 0, has_target = !!cpufreq_driver->target;
->>         unsigned long flags;
->>   +     lock_policy_rwsem_write(sibling);
->> +
->>         policy = cpufreq_cpu_get(sibling);
->>         WARN_ON(!policy);
->>         if (has_target)
->>                 __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+I am still not sure about this governor. Do you have some results with which
+you can tell how is it better than ondemand/conservative?
 
-We can't have locks are GOV_STOP earlier.. And now we can't have it
-across *_EXIT.. Check latest code... As this gives some circular dependency
-to locking and it fails.
+With or without overclocking. i.e. Apply only overclocking support to
+ondemand/conservative..
+
+If you are using Android, maybe check Interactive too (Though it itsn't
+mainlined yet).
+
+@Rafael: What do you think about this patchset?
+
+--
+viresh
