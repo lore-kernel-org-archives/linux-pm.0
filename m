@@ -1,93 +1,68 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 1/1] Thermal: spear: Fix compilation error
-Date: Thu, 23 May 2013 11:10:02 -0400
-Message-ID: <519E314A.80401@ti.com>
-References: <1369128041-23403-1-git-send-email-sachin.kamat@linaro.org>
+From: Michael =?UTF-8?B?R3Jvw59ow6R1c2Vy?=
+	<michael.grosshaeuser@t-online.de>
+Subject: Re: Fans at full speed after resume
+Date: Thu, 23 May 2013 22:22:04 +0200
+Message-ID: <knltmt$76t$1@ger.gmane.org>
+References: <CAPz6YkWr_D504UdeqXB0FXxgqOt3GYnF09ctoMaZ8P-znbVMGQ@mail.gmail.com> <1368591999.5890.9.camel@rzhang1-mobl4> <1368592193.5890.10.camel@rzhang1-mobl4> <knj3oe$h88$1@ger.gmane.org> <1369275908.2036.11.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2RFVOXXLKELKQEDETATDV"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:55928 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756992Ab3EWPKQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 May 2013 11:10:16 -0400
-In-Reply-To: <1369128041-23403-1-git-send-email-sachin.kamat@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, rui.zhang@intel.com, Vincenzo Frascino <vincenzo.frascino@st.com>, Viresh Kumar <viresh.kumar@linaro.org>
-
-------enig2RFVOXXLKELKQEDETATDV
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 21-05-2013 05:20, Sachin Kamat wrote:
-> Fixes the following compilation error introduced by commit 253e3ae170
-> (Thermal: spear_thermal: convert to devm_ioremap_resource).
-> drivers/thermal/spear_thermal.c: In function =E2=80=98spear_thermal_pro=
-be=E2=80=99:
-> drivers/thermal/spear_thermal.c:123:46: error: =E2=80=98dev=E2=80=99 un=
-declared
-> (first use in this function)
-> stdev->thermal_base =3D devm_ioremap_resource(dev, res);
+Zhang Rui wrote:
+
+> On Wed, 2013-05-22 at 20:46 +0200, Michael Gro=C3=9Fh=C3=A4user wrote=
+:
+>> Zhang Rui wrote:
+>>=20
+>> > On Wed, 2013-05-15 at 12:26 +0800, Zhang Rui wrote:
+>> >> please
+>> >>=20
+>> >> On Tue, 2013-05-14 at 21:18 -0700, Sonny Rao wrote:
+>> >> > Hi, I've seen a regression in kernels since 3.7 on x86 devices =
+where
+>> >> > the kernel turns the system fans on to max speed after resuming=
+ from
+>> >> > ram.  Other people have noticed it as well, for example see
+>> >> > https://bugzilla.redhat.com/show_bug.cgi?id=3D895276
+>> >> >=20
+>> >> please check if this is a duplicate of bug
+>> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D56591
+>> > or you can try 3.10-rc1 to see if the problem still exists or not.
+>> >=20
+>> > thanks,
+>> > rui
+>>=20
+>>=20
+>> Hi,
+>>=20
+>> I can confirm the same problem on a HP/Compaq 2510p with 3.10-rc2.
+>>=20
+> please check if this is a duplicate of bug
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D58301
 >=20
-> While at it also remove the error message as devm_ioremap_resource()
-> provides its own error messages.
+> please try the patch at comment #7 and see if it helps or not.
 >=20
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Vincenzo Frascino <vincenzo.frascino@st.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> thanks,
+> rui
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Hi,
 
-> ---
-> Compile tested and based on linux-next (20130521).
+the patch fixes the problem for me.
 
-Also compiled tested on same linux-next.
-
-Tested-by: Eduardo Valentin <eduardo.valentin@ti.com>
-
-> ---
->  drivers/thermal/spear_thermal.c |    6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/thermal/spear_thermal.c b/drivers/thermal/spear_th=
-ermal.c
-> index fa30918..813add6 100644
-> --- a/drivers/thermal/spear_thermal.c
-> +++ b/drivers/thermal/spear_thermal.c
-> @@ -120,11 +120,9 @@ static int spear_thermal_probe(struct platform_dev=
-ice *pdev)
-> =20
->  	/* Enable thermal sensor */
->  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	stdev->thermal_base =3D devm_ioremap_resource(dev, res);
-> -	if (IS_ERR(stdev->thermal_base)) {
-> -		dev_err(&pdev->dev, "ioremap failed\n");
-> +	stdev->thermal_base =3D devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(stdev->thermal_base))
->  		return PTR_ERR(stdev->thermal_base);
-> -	}
-> =20
->  	stdev->clk =3D devm_clk_get(&pdev->dev, NULL);
->  	if (IS_ERR(stdev->clk)) {
->=20
+Thanks,
+Michael=20
 
 
-
-------enig2RFVOXXLKELKQEDETATDV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGeMUoACgkQCXcVR3XQvP05EwEAsG9gkfyZlV7pJiyXd+pW1jos
-JK5dOtGke8+yn32aHHQA/joDXxZ6bzW+S8zgVJcdRy1nokHC1jgEzLy8P65otZus
-=VI+z
------END PGP SIGNATURE-----
-
-------enig2RFVOXXLKELKQEDETATDV--
+>> Best Regards,
+>> Michael
+>>=20
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" =
+in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
