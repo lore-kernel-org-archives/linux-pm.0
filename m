@@ -1,59 +1,48 @@
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-Subject: RE: [PATCH 1/2] x86 thermal: Delete power-limit-notification
- console messages
-Date: Wed, 22 May 2013 23:31:12 +0000
-Message-ID: <3E5A0FA7E9CA944F9D5414FEC6C712205633D379@ORSMSX106.amr.corp.intel.com>
-References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
- <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
- <4D68720C2E767A4AA6A8796D42C8EB59C9371C@BGSMSX101.gar.corp.intel.com>
+From: li guang <lig.fnst@cn.fujitsu.com>
+Subject: Re: [PATCH] drivers: idle: comment DEBUG
+Date: Thu, 23 May 2013 08:27:36 +0800
+Message-ID: <1369268856.5142.157.camel@liguang.fnst.cn.fujitsu.com>
+References: <1366873227-920-1-git-send-email-lig.fnst@cn.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46829 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754549Ab3EVXbN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2013 19:31:13 -0400
-In-Reply-To: <4D68720C2E767A4AA6A8796D42C8EB59C9371C@BGSMSX101.gar.corp.intel.com>
-Content-Language: en-US
+Received: from cn.fujitsu.com ([222.73.24.84]:42918 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751457Ab3EWA1l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 May 2013 20:27:41 -0400
+In-Reply-To: <1366873227-920-1-git-send-email-lig.fnst@cn.fujitsu.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "R, Durgadoss" <durgadoss.r@intel.com>, Len Brown <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Andi Kleen <ak@linux.intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-> From: R, Durgadoss
-> Hi Len/Fenghua,
-> 
-> > -----Original Message-----
-> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > owner@vger.kernel.org] On Behalf Of Len Brown
-> > Sent: Wednesday, May 22, 2013 1:05 AM
-> > To: Zhang, Rui
-> > Cc: linux-pm@vger.kernel.org; Yu, Fenghua
-> > Subject: [PATCH 1/2] x86 thermal: Delete power-limit-notification
-> console
-> > messages
-> >
-> > From: Fenghua Yu <fenghua.yu@intel.com>
-> >
-> > diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> > b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> > index 47a1870..68fa890 100644
-> > --- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> > +++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-> > @@ -181,11 +181,6 @@ static int therm_throt_process(bool new_event,
-> int
-> > event, int level)
-> >  				this_cpu,
-> >  				level == CORE_LEVEL ? "Core" : "Package",
-> >  				state->count);
-> 
-> Here, can we remove the other print also ?
-> (The thermal throttling prints)
+ping ...
 
-The thermal throttling is legacy code and users could use the printed info already. Adding Andi who wrote the thermal throttling code and may have more insight.
+=E5=9C=A8 2013-04-25=E5=9B=9B=E7=9A=84 15:00 +0800=EF=BC=8Cliguang=E5=86=
+=99=E9=81=93=EF=BC=9A
+> seems we should comment DEBUG as above comment said:
+> "/* un-comment DEBUG to enable pr_debug() statements */"
+>=20
+> now, pr_debug is already enabled as DEBUG been defined.
+>=20
+> Signed-off-by: liguang <lig.fnst@cn.fujitsu.com>
+> ---
+>  drivers/idle/intel_idle.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 5d66750..9618586 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -51,7 +51,7 @@
+>   */
+> =20
+>  /* un-comment DEBUG to enable pr_debug() statements */
+> -#define DEBUG
+> +/* #define DEBUG */
+> =20
+>  #include <linux/kernel.h>
+>  #include <linux/cpuidle.h>
 
-Thanks.
-
--Fenghua
 
