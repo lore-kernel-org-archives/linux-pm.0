@@ -1,49 +1,53 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH 2/2] sched:fix: Signed overflow prevention for vacancy
- calculation
-Date: Thu, 23 May 2013 10:34:24 +0200
-Message-ID: <1369298064-14998-2-git-send-email-l.majewski@samsung.com>
-References: <1369298064-14998-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1369298064-14998-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alex Shi <alex.shi@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: Re: [PATCH 1/4] Thermal: armada: Remove redundant use of of_match_ptr
+Date: Thu, 23 May 2013 17:10:03 +0530
+Message-ID: <CAK9yfHyBcuGyYSfEwb+H8Na3OeS5O7iZgKth3-dO7d7oQh+i7g@mail.gmail.com>
+References: <1368700091-6084-1-git-send-email-sachin.kamat@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:38145 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758176Ab3EWLkE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 May 2013 07:40:04 -0400
+Received: by mail-ob0-f178.google.com with SMTP id v19so3752816obq.37
+        for <linux-pm@vger.kernel.org>; Thu, 23 May 2013 04:40:03 -0700 (PDT)
+In-Reply-To: <1368700091-6084-1-git-send-email-sachin.kamat@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: eduardo.valentin@ti.com, rui.zhang@intel.com, sachin.kamat@linaro.org
 
-Nasty bug with vacancy calculation has been fixed.
-In the if statement the FULL_UTIL is a large constant, max_cfs_util()
-returns unsigned and putil is also defined as unsigned. The outcome
-is that this condition is always true.
+On 16 May 2013 15:58, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> 'armada_thermal_id_table' is always compiled in and the driver
+> is dependent on OF. Hence use of of_match_ptr is unnecessary.
+>
+> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+> ---
+>  drivers/thermal/armada_thermal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> index 0d02d4e..9426bbd 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -220,7 +220,7 @@ static struct platform_driver armada_thermal_driver = {
+>         .driver = {
+>                 .name = "armada_thermal",
+>                 .owner = THIS_MODULE,
+> -               .of_match_table = of_match_ptr(armada_thermal_id_table),
+> +               .of_match_table = armada_thermal_id_table,
+>         },
+>  };
+>
+> --
+> 1.7.9.5
+>
 
-As observed, this was the reason for frequent jumps of processes between
-CPUs.
 
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
----
-This patch was developed on top of the following Alex's repository:
-https://github.com/alexshi/power-scheduling/commits/power-scheduling
----
- kernel/sched/fair.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Ping.. Any comments on this series?
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 14d29b3..8b07f6c 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3476,9 +3476,10 @@ find_leader_cpu(struct sched_group *group, struct task_struct *p, int this_cpu,
- 	do_div(tmp, (p->se.avg.runnable_avg_period + 1));
- 	putil = (unsigned) tmp;
- 
-+	vacancy = (int) (FULL_UTIL - max_cfs_util(this_cpu, wakeup) -
-+			 (putil << 2));
- 	/* bias toward local cpu */
--	if (cpumask_test_cpu(this_cpu, tsk_cpus_allowed(p)) &&
--		FULL_UTIL - max_cfs_util(this_cpu, wakeup) - (putil << 2) > 0)
-+	if (cpumask_test_cpu(this_cpu, tsk_cpus_allowed(p)) && vacancy > 0)
- 		return this_cpu;
- 
- 	/* Traverse only the allowed CPUs */
 -- 
-1.7.10.4
+With warm regards,
+Sachin
