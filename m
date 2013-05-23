@@ -1,27 +1,27 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 3/3] Thermal:core: Handle trips focused on current trip
- point only.
-Date: Thu, 23 May 2013 10:10:16 +0800
-Message-ID: <1369275016.2036.3.camel@rzhang1-mobl4>
-References: <1368870663-1225-1-git-send-email-jonghwa3.lee@samsung.com>
-	 <744357E9AAD1214791ACBA4B0B90926301102442@SHSMSX101.ccr.corp.intel.com>
-	 <519AECBD.9060202@samsung.com>
+Subject: Re: [PATCH 2/3] Thermal: core: Modify temp_crit_show() to use
+ proper callback function.
+Date: Thu, 23 May 2013 10:19:44 +0800
+Message-ID: <1369275584.2036.10.camel@rzhang1-mobl4>
+References: <1368870656-1183-1-git-send-email-jonghwa3.lee@samsung.com>
+	 <744357E9AAD1214791ACBA4B0B9092630110240D@SHSMSX101.ccr.corp.intel.com>
+	 <519ACE88.3090503@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:49460 "EHLO mga09.intel.com"
+Received: from mga03.intel.com ([143.182.124.21]:45971 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756606Ab3EWCKU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 May 2013 22:10:20 -0400
-In-Reply-To: <519AECBD.9060202@samsung.com>
+	id S1756474Ab3EWCTs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 May 2013 22:19:48 -0400
+In-Reply-To: <519ACE88.3090503@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: jonghwa3.lee@samsung.com
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <eduardo.valentin@ti.com>, Amit Dinel Kachhap <amit.kachhap@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On Tue, 2013-05-21 at 12:40 +0900, jonghwa3.lee@samsung.com wrote:
-> On 2013=EB=85=84 05=EC=9B=94 21=EC=9D=BC 01:00, Zhang, Rui wrote:
+On Tue, 2013-05-21 at 10:31 +0900, jonghwa3.lee@samsung.com wrote:
+> On 2013=EB=85=84 05=EC=9B=94 21=EC=9D=BC 00:57, Zhang, Rui wrote:
 >=20
 > >=20
 > >=20
@@ -32,127 +32,70 @@ On Tue, 2013-05-21 at 12:40 +0900, jonghwa3.lee@samsung.com wrote:
 > >> Cc: linux-kernel@vger.kernel.org; Zhang, Rui; Eduardo Valentin; Am=
 it
 > >> Dinel Kachhap; Jonghwa Lee; MyungJoo Ham
-> >> Subject: [PATCH 3/3] Thermal:core: Handle trips focused on current=
- trip
-> >> point only.
+> >> Subject: [PATCH 2/3] Thermal: core: Modify temp_crit_show() to use
+> >> proper callback function.
 > >> Importance: High
 > >>
-> >> When thermal zone device is updated, it doesn't need to check ever=
-y
-> >> trip points and its handling mathod even current temperature doesn=
-'t
-> >> exceed the trip's temperature. To modify those dissipatve mechanis=
-m,
-> >> this patch introduces the way to get current thermal trip point to=
- call
-> >> only correspond trip point handling.
+> >> This patch modifies temp_crit_show() which is used to create hwmon=
+'s
+> >> sysfs node to use .get_crit_temp callback function of thermal zone
+> >> device rather than .get_trip_temp.
 > >>
 > >> Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 > >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 > >=20
-> > NAK.
-> >=20
-> >> ---
-> >>  drivers/thermal/thermal_core.c |   28 +++++++++++++++++----------=
--
-> >>  1 file changed, 17 insertions(+), 11 deletions(-)
-> >>
-> >> diff --git a/drivers/thermal/thermal_core.c
-> >> b/drivers/thermal/thermal_core.c index ce4384a..1cc4825 100644
-> >> --- a/drivers/thermal/thermal_core.c
-> >> +++ b/drivers/thermal/thermal_core.c
-> >> @@ -333,14 +333,6 @@ static void handle_non_critical_trips(struct
-> >> thermal_zone_device *tz,  static void handle_critical_trips(struct
-> >> thermal_zone_device *tz,
-> >>  				int trip, enum thermal_trip_type trip_type)  {
-> >> -	long trip_temp;
-> >> -
-> >> -	tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> >> -
-> >> -	/* If we have not crossed the trip_temp, we do not care. */
-> >> -	if (tz->temperature < trip_temp)
-> >> -		return;
-> >> -
-> >>  	if (tz->ops->notify)
-> >>  		tz->ops->notify(tz, trip, trip_type);
-> >>
-> >> @@ -437,14 +429,28 @@ static void update_temperature(struct
-> >> thermal_zone_device *tz)
-> >>  	mutex_unlock(&tz->lock);
-> >>  }
-> >>
-> >> +static int thermal_zone_get_current_trip(struct thermal_zone_devi=
-ce
-> >> +*tz) {
-> >> +	int trip;
-> >> +	long trip_temp;
-> >> +
-> >> +	for (trip =3D tz->trips - 1; trip > 0; trip--) {
-> >> +		tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> >> +		if (tz->temperature > trip_temp)
-> >> +			continue;
-> >> +	}
-> >> +	return trip;
-> >> +}
-> >> +
-> >>  void thermal_zone_device_update(struct thermal_zone_device *tz)  =
-{
-> >> -	int count;
-> >> +	int trip;
-> >>
-> >>  	update_temperature(tz);
-> >>
-> >> -	for (count =3D 0; count < tz->trips; count++)
-> >> -		handle_thermal_trip(tz, count);
-> >> +	trip =3D thermal_zone_get_current_trip(tz);
-> >> +
-> >> +	handle_thermal_trip(tz, trip);
-> >=20
-> > Say, trip point 1 for thermal zone 0 is 60C,
-> > The system is running above 60C for somethime,
-> > thus the thermal_instance for this trip point is running at upper_l=
-imit.
-> > When the temperature suddenly drops below 60C,
-> > we still need to handle trip point 1 to deactivate it.
-> >=20
+> > The problem is that .get_crit_temp is optional for thermal drivers
+> > that has a critical trip point.
 >=20
 >=20
-> Okay, I understood. I missed the point that governor will handle a co=
-oling
-> device within certain trip point described in thermal instance.
-> But still I don't think this is the best behaviour. Let say we were i=
-n trip
-> level 2nd and moving to trip level 1st then we should call governor t=
-wice for
-> applying trip 1 level.
-
-Right.
-IMO, the governor is used to get the next proper cooling state for each
-referred thermal instance.
-So I think it is okay to call it twice.
-
->  Why don't we just call once? And whenever we call
-> handle_thermal_trip() with all trips, monitor_thermal_work() will als=
-o be called
-> at the same time.
-
-hmm, what is your question about this?
-
->  I think we can make this work more clearly and intuitively.
-> let me think of it more,,,
+> Actually, this is a interface for hwmon not generic thermal framework=
+=2E And when
+> we create this node through the thermal_add_hwmon_sysfs(), we've alre=
+ady checked
+> whether call back function is available. So the problem won't happen.
 >=20
-sure.
+Oh, I see.
+
+But back to my question, still take rcar driver for example,
+it has a critical trip point but this is not shown in hwmon, which IMO
+is still a problem.
+So we should either make .get_crit_temp() mandatory for thermal drivers
+with critical trip point or remove this callback and register hwmon
+crit_temp interface via checking .get_trip_type().
 
 thanks,
 rui
 
-> Thanks,
-> Jonghwa.
+> Thanks
+> Jonghwa
 >=20
+> > At least we do not have such kind of check in thermal core.
+> > Take rcar_thermal driver for example,
+> > It supports critical trip point but it does not have .get_crit_type=
+=2E
+> >=20
+> > So I'd like to see a fix in rcar thermal driver and thermal core
+> > for this issue, together with this patch.
+> >=20
 > > Thanks,
 > > rui
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+> >> ---
+> >>  drivers/thermal/thermal_core.c |    2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/thermal/thermal_core.c
+> >> b/drivers/thermal/thermal_core.c index f753f48..ce4384a 100644
+> >> --- a/drivers/thermal/thermal_core.c
+> >> +++ b/drivers/thermal/thermal_core.c
+> >> @@ -924,7 +924,7 @@ temp_crit_show(struct device *dev, struct
+> >> device_attribute *attr,
+> >>  	long temperature;
+> >>  	int ret;
+> >>
+> >> -	ret =3D tz->ops->get_trip_temp(tz, 0, &temperature);
+> >> +	ret =3D tz->ops->get_crit_temp(tz, &temperature);
+> >>  	if (ret)
+> >>  		return ret;
 > >>
 > >> --
 > >> 1.7.9.5
