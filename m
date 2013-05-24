@@ -1,93 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Fri, 24 May 2013 13:22:15 +0530
-Message-ID: <CAKohpoksymD76rDvg_+PwU7r3JXp1oydHBbJE4-y6TBHOomZHg@mail.gmail.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
-	<CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
-	<20130522122700.104ca5cd@amdc308.digital.local>
-	<CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
-	<20130522164453.29cd3a7d@amdc308.digital.local>
-	<20130524075640.0a5b80ff@amdc308.digital.local>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application
+ Booster governor - tests results
+Date: Fri, 24 May 2013 08:16:31 +0000 (GMT)
+Message-ID: <27081278.28361369383389496.JavaMail.weblogic@epml20>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130524075640.0a5b80ff@amdc308.digital.local>
+MIME-version: 1.0
 Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: =?euc-kr?Q?=C0=CC=C1=BE=C8=AD?= <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lukasz Majewski <l.majewski@majess.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On 24 May 2013 11:26, Lukasz Majewski <l.majewski@samsung.com> wrote:
->> > On 22 May 2013 15:57, Lukasz Majewski <l.majewski@samsung.com>
-> As you wished, I've provided relevant data for overclocking.
->
-> Would you be so kind and comment on them?
+PiBPbiAyNCBNYXkgMjAxMyAxMToyNiwgTHVrYXN6IE1hamV3c2tpIDxsLm1hamV3c2tpQHNhbXN1
+bmcuY29tPiB3cm90ZToNCj4gPj4gPiBPbiAyMiBNYXkgMjAxMyAxNTo1NywgTHVrYXN6IE1hamV3
+c2tpIDxsLm1hamV3c2tpQHNhbXN1bmcuY29tPg0KPiA+IEFzIHlvdSB3aXNoZWQsIEkndmUgcHJv
+dmlkZWQgcmVsZXZhbnQgZGF0YSBmb3Igb3ZlcmNsb2NraW5nLg0KPiA+DQo+ID4gV291bGQgeW91
+IGJlIHNvIGtpbmQgYW5kIGNvbW1lbnQgb24gdGhlbT8NCj4gDQo+IEkgd2FzIGFib3V0IHRvIHJl
+cGx5IC4uLiB3YXMgYnVzeSB3aXRoIHNvbWUgb3RoZXIgYmFja2xvZyA6KQ0KPiANCj4gPj4gVGVz
+dCBIVyBFeHlub3M0NDEyICg0IENvcmVzKToNCj4gPj4gS2VybmVsIDMuOC4zDQo+ID4+DQo+ID4+
+IE9uZGVtYW5kIG1heCBmcmVxOiAxLjQgR0h6DQo+ID4+IE92ZXJjbG9jayBtYXggZnJlcTogMS41
+IEdIeg0KPiA+Pg0KPiA+Pg0KPiA+PiBPbmRlbWFuZCBpbXByb3ZlbWVudCB3aXRoIGFuZCB3aXRo
+b3V0IG92ZXJjbG9ja2luZyAoY2FsbGVkIGJ5IHVzDQo+ID4+IFR1cmJvQm9vc3QgLSBUQik6DQo+
+ID4+DQo+ID4+IERocnlzdG9uZSBoYXMgYmVlbiBidWlsdCBhY2NvcmRpbmcgdG86DQo+ID4+IGh0
+dHA6Ly96ZW5pdC5zZW5lY2FjLm9uLmNhL3dpa2kvaW5kZXgucGhwL0RocnlzdG9uZV9ob3d0bw0K
+PiA+PiBJdCdzIE1ha2VmaWxlIGlzIGFsc28gYXR0YWNoZWQuDQo+ID4+IC0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KPiA+Pg0KPiA+PiBEaHJ5c3RvbmUg
+ICAgICMgb2YgVGhyZWFkcw0KPiA+PiAgICAgICAgICAgICAgIDEgICAgICAgMiAgICAgICAzICAg
+ICAgIDQNCj4gPj4gb25kZW1hbmQgICAgICAyMDU0Nzk0IDIwNjE4NTUgMjA5NzkwMiAyMDkwNTky
+DQo+ID4+IG9uZGVtYW5kICsgVEIgMjI5MDA3NiAyMjA1ODgyIDIyODEzNjggMjI5MDA3Ng0KPiA+
+Pg0KPiA+PiBJbXByb3ZlbWVudDogIDEwJSAgICAgNyUgICAgICA4JSAgICAgIDklDQo+ID4+IC0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPj4NCj4g
+Pj4gRWxlY3RyaWMgY2hhcmdlIFtDXQ0KPiA+PiAoQXZnKSBbQV0gKiBbc2Vjb25kXSAgIyBvZiBU
+aHJlYWRzDQo+ID4+ICAgICAgICAgICAgICAgMSAgICAgICAyICAgICAgIDMgICAgICAgNA0KPiA+
+PiBvbmRlbWFuZCAgICAgIDEsMzM0ICAgMSw4MzcgICAyLDI5NiAgIDMsMDk2DQo+ID4+IG9uZGVt
+YW5kICsgVEIgMSw0MDEgICAyLDIwMjUgIDIsOTA3ICAgNCwzNDk3Ng0KPiA+Pg0KPiA+PiBQb3dl
+ciBjb3N0OiAgIDUlICAgICAgMTclICAgICAyMSUgICAgIDI5JQ0KPiA+PiAtLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4+DQo+ID4+IEV4ZWN1dGlv
+biB0aW1lIFtzZWNvbmRdICAgICAgICMgb2YgVGhyZWFkcw0KPiA+PiAgICAgICAgICAgICAgIDEg
+ICAgICAgMiAgICAgICAzICAgICAgIDQNCj4gPj4gb25kZW1hbmQgICAgICAyLDgyNyAgIDIsOCAg
+ICAgMiw3ODcgICAyLDg3Mg0KPiA+PiBvbmRlbWFuZCArIFRCIDIsNjIyICAgMiw2OTQgICAyLDY2
+NyAgIDIsNzYNCj4gPj4NCj4gPj4NCj4gPj4gU3BlZWR1cDogICAgICAtNyUgICAgIC00JSAgICAg
+LTQlICAgICAtNCUNCj4gPj4NCj4gPj4gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLQ0KPiA+Pg0KPiA+PiAiUmVhbCBsaWZlIiBleGFtcGxlOg0KPiA+PiB0
+aW1lIHRhciAtY3pmIGxpbnV4LTMuOS4xLnRhci5neiBsaW51eC0zLjkuMS8NCj4gPj4NCj4gPj4g
+ICAgICAgICAgICAgICBBdmcgY3VycmVudFttQV0gICAgICAgICBUaW1lW3NdDQo+ID4+IE9uZGVt
+YW5kOiAgICAgNDYwICAgICAgICAgICAgICAgICAgICAgMTUzDQo+ID4+IE9uZGVtYW5kICsgVEI6
+ICAgICAgICA1MTIgICAgICAgICAgICAgICAgICAgICAxNDQNCj4gPj4NCj4gPj4gUmVzdWx0OiAg
+ICAgICAgICAgICAgICsxMCUgICAgICAgICAgICAgICAgICAgIC02JQ0KPiA+Pg0KPiA+PiBDb25j
+bHVzaW9uOg0KPiA+Pg0KPiA+PiBUaGUgbWFpbiB1c2UgY2FzZSBmb3IgVEIgaXMgdG8gc3BlZWQg
+dXAgZXhlY3V0aW9uIG9mIHRhc2tzIHBhY2tlZCB0bw0KPiA+PiBvbmUgY29yZS4gT3RoZXIgY29y
+ZXMgYXJlIHRoZW4gaW4gSURMRSBzdGF0ZS4NCj4gPj4NCj4gPj4gRm9yIGEgc2luZ2xlIGNvcmUg
+d2UgY2FuIHNhZmVseSBvdmVyY2xvY2ssIHNpbmNlIHdlIHdpbGwgbm90IGV4Y2VlZA0KPiA+PiBp
+dHMgcG93ZXIgY29uc3VtcHRpb24gYW5kIHRoZXJtYWwgbGltaXRzLg0KPiANCj4gSG1tLi4uIFNv
+IGl0cyB1bHRyYWNsZWFyIHRoYXQgaGlnaGVyIGNsb2NrIHJhdGVzIGhhdmUgZ2l2ZW4gdXMgYmV0
+dGVyDQo+IHBlcmZvcm1hbmNlIG51bWJlcnMsIG9idmlvdXNseSBhdCB0aGUgY29zdCBvZiBwb3dl
+ci4NCj4gDQo+IE5vdywgd2h5IGRvbid0IHdlIHNpbXBseSBhZGQgdGhpcyBoaWdoIGVuZCBmcmVx
+dWVuY3kgaW4gdGhlIGF2YWlsYWJsZQ0KPiBmcmVxdWVuY2llcyBsaXN0PyBBbmQgdGhlbiBvbmRl
+bWFuZCBjYW4gc2V0IGl0IHdoZW5ldmVyIHRoZSBsb2FkIGlzDQo+IGhpZ2g/IFdoeSBkbyB3ZSBu
+ZWVkIGFkZGl0aW9uYWwgY29yZSBzdXBwb3J0IGZvciBpdD8NCg0KDQpJdCBpcyBiZWNhdXNlIHdl
+IGNhbm5vdCB1c2UgdGhlIGZyZXF1ZW5jeSBpZiB0aGVyZSBhcmUgbW9yZSBydW5uaW5nIGNvcmVz
+Lg0KV2UgY2FuIHVzZSBzdWNoIGZyZXF1ZW5jaWVzIG9ubHkgaWYgdGhlICMgY29yZXMgaXMgbGlt
+aXRlZC4NCihXZSBkbyBub3Qgd2FudCBjb252ZW50aW9uYWwgcGVyZm9ybWFuY2Uvb25kZW1hbmQv
+Y29uc2VydmF0aXZlIHRvIHVzZQ0Kc3VjaCBmcmVxdWVuY2llcy4pDQoNCg0KQ2hlZXJzLA0KTXl1
+bmdKb28NCg0K
 
-I was about to reply ... was busy with some other backlog :)
 
->> Test HW Exynos4412 (4 Cores):
->> Kernel 3.8.3
->>
->> Ondemand max freq: 1.4 GHz
->> Overclock max freq: 1.5 GHz
->>
->>
->> Ondemand improvement with and without overclocking (called by us
->> TurboBoost - TB):
->>
->> Dhrystone has been built according to:
->> http://zenit.senecac.on.ca/wiki/index.php/Dhrystone_howto
->> It's Makefile is also attached.
->> ------------------------------------------------
->>
->> Dhrystone     # of Threads
->>               1       2       3       4
->> ondemand      2054794 2061855 2097902 2090592
->> ondemand + TB 2290076 2205882 2281368 2290076
->>
->> Improvement:  10%     7%      8%      9%
->> -------------------------------------------------
->>
->> Electric charge [C]
->> (Avg) [A] * [second]  # of Threads
->>               1       2       3       4
->> ondemand      1,334   1,837   2,296   3,096
->> ondemand + TB 1,401   2,2025  2,907   4,34976
->>
->> Power cost:   5%      17%     21%     29%
->> -------------------------------------------------
->>
->> Execution time [second]       # of Threads
->>               1       2       3       4
->> ondemand      2,827   2,8     2,787   2,872
->> ondemand + TB 2,622   2,694   2,667   2,76
->>
->>
->> Speedup:      -7%     -4%     -4%     -4%
->>
->> -------------------------------------------------
->>
->> "Real life" example:
->> time tar -czf linux-3.9.1.tar.gz linux-3.9.1/
->>
->>               Avg current[mA]         Time[s]
->> Ondemand:     460                     153
->> Ondemand + TB:        512                     144
->>
->> Result:               +10%                    -6%
->>
->> Conclusion:
->>
->> The main use case for TB is to speed up execution of tasks packed to
->> one core. Other cores are then in IDLE state.
->>
->> For a single core we can safely overclock, since we will not exceed
->> its power consumption and thermal limits.
-
-Hmm... So its ultraclear that higher clock rates have given us better
-performance numbers, obviously at the cost of power.
-
-Now, why don't we simply add this high end frequency in the available
-frequencies list? And then ondemand can set it whenever the load is
-high? Why do we need additional core support for it?
