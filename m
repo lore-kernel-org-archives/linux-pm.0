@@ -1,99 +1,76 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
- broken in 3.9.x
-Date: Mon, 27 May 2013 13:07:06 +0800
-Message-ID: <1369631226.2159.5.camel@rzhang1-mobl4>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Mon, 27 May 2013 11:03:38 +0530
+Message-ID: <CAKohpo=Kw4RsDJL8BdH1uE7Aj-X=K5A7af5NRqJXyjRUNvv5ag@mail.gmail.com>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+	<CAKohpokXNUmMbk0KOh58-0=sAs7yzD=cQe24eaoArpRSwM__Gg@mail.gmail.com>
+	<20130522122700.104ca5cd@amdc308.digital.local>
+	<CAKohpo=9dRXb1jjauvhzuje9rOgH82k-3DeL2zqiwHDHOwSo4g@mail.gmail.com>
+	<20130522164453.29cd3a7d@amdc308.digital.local>
+	<20130524075640.0a5b80ff@amdc308.digital.local>
+	<CAKohpoksymD76rDvg_+PwU7r3JXp1oydHBbJE4-y6TBHOomZHg@mail.gmail.com>
+	<20130524103007.7bb206ee@amdc308.digital.local>
+	<CAKohponbX7u_k9ZYQ7KyBeyKh93Qu+niGZj60t9c1n+AmaA6pg@mail.gmail.com>
+	<20130524132036.7e7d5ffe@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Giacomo Perale <giacomo.perale@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f180.google.com ([209.85.214.180]:44849 "EHLO
+	mail-ob0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752268Ab3E0Fdj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 May 2013 01:33:39 -0400
+Received: by mail-ob0-f180.google.com with SMTP id xk17so7663971obc.11
+        for <linux-pm@vger.kernel.org>; Sun, 26 May 2013 22:33:39 -0700 (PDT)
+In-Reply-To: <20130524132036.7e7d5ffe@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "Rafael J. Wysocky" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
-On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
-> Hello,
-> 
-> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
-> delays when resuming from suspend-to-disk and a few new error messages
-> in the logs:
-> 
-> ata1: link is slow to respond, please be patient (ready=0)
-> ata3: link is slow to respond, please be patient (ready=0)
-> ata1: SRST failed (errno=-16)
-> ata3: SRST failed (errno=-16)
-> ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> ata1.00: ACPI cmd ef/03:46:00:00:00:a0 (SET FEATURES) filtered out
-> ata1.00: configured for UDMA/133
-> sd 0:0:0:0: [sda] Starting disk
-> ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> ata3.00: ACPI cmd ef/03:46:00:00:00:a0 (SET FEATURES) filtered out
-> ata3.00: configured for UDMA/133
-> sd 2:0:0:0: [sdc] Starting disk
-> PM: restore of devices complete after 11448.044 msecs
-> 
-> (compared to ~2900 msecs with 3.8.x).
-> 
-> I didn't mind the messages since things were working anyway, but
-> lately in a couple of cases some disks were dropped and disabled, with
-> the obvious consequences for the functionality of the system:
-> 
-> ata2: link is slow to respond, please be patient (ready=0)
-> ata2: SRST failed (errno=-16)
-> ata2: link is slow to respond, please be patient (ready=0)
-> ata2: SRST failed (errno=-16)
-> ata2: link is slow to respond, please be patient (ready=0)
-> ata2: SRST failed (errno=-16)
-> ata2: limiting SATA link speed to 1.5 Gbps
-> ata2: SRST failed (errno=-16)
-> ata2: reset failed, giving up
-> ata2.00: disabled
-> sd 1:0:0:0: [sdb] Starting disk
-> sd 1:0:0:0: [sdb] START_STOP FAILED
-> sd 1:0:0:0: [sdb]
-> Result: hostbyte=0x04 driverbyte=0x00
-> dpm_run_callback(): scsi_bus_restore+0x0/0x20 returns 262144
-> PM: Device 1:0:0:0 failed to restore async: error 262144
-> PM: restore of devices complete after 61130.778 msecs
-> ...
-> sd 1:0:0:0: [sdb] Unhandled error code
-> sd 1:0:0:0: [sdb]
-> Result: hostbyte=0x04 driverbyte=0x00
-> sd 1:0:0:0: [sdb] CDB:
-> cdb[0]=0x28: 28 00 00 00 00 6f 00 00 08 00
-> end_request: I/O error, dev sdb, sector 111
-> XFS (sdb1): metadata I/O error: block 0x30 ("xfs_trans_read_buf_map")
-> error 5 numblks 8
-> ffff88006f710000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> ................
-> XFS (sdb1): Internal error xfs_dir2_leaf_verify at line 62 of file
-> fs/xfs/xfs_dir2_leaf.c.  Caller 0xffffffff811d17d8
-> 
-> 
-> Not having connected the issue with the previous error messages I
-> initially blamed the disk and replaced it with a new one thinking it
-> was broken, but the problem persisted so I started a bisection run
-> that pointed to this commit:
-> 
-> 
-> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
-> commit b8bb6cb999858043489c1ddef08eed2127559169
-> Author: Zhang Rui <rui.zhang@intel.com>
-> Date:   Thu Nov 22 15:45:02 2012 +0800
-> 
->     step_wise: Unify the code for both throttle and dethrottle
-> 
->     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> 
-I do not see how this would affect the sata hibernation/resume.
-but anyway, would you please try the four patches in comment #10, #11,
-#12 and #13 in
-https://bugzilla.kernel.org/show_bug.cgi?id=58301
-and check if they help?
+On 24 May 2013 16:50, Lukasz Majewski <l.majewski@samsung.com> wrote:
+>> On 24 May 2013 14:00, Lukasz Majewski <l.majewski@samsung.com> wrote:
 
-thanks,
-rui
+> This is not safe IMHO to add permanently overclocked frequency to the
+> freq table. Since, for example, thermal framework also asks for
+> reference to this table.
 
+Yes, its wrong. Even adding it permanently this way would be a problem
+if governor is changed to performance. :)
+
+> The idea beneath overclocking is to add "dangerous" frequency to the
+> frequency table only when necessary (and remove it when not needed).
+
+Hmm.. probably the idea beneath is to use dangerous frequency only
+when we are assured that we will not break system.. It doesn't have
+anything to do with cpufreq table entries :)
+
+> In this way, the thermal framework (as it is done at our platform) will
+> decrease the frequency (according to thermal governor :-) ) to safe
+> level.
+>
+> Overclocking is disabled in 2 ways (at our setup):
+> - thermal framework is here to help us
+> - lab governor disables the overclocking when favorable conditions are
+>   gone.
+
+I don't want to discuss OR think about LAB for now.. Want to get
+overclocking feature in first.
+
+> One more remark - enabling tb_en_over_clk at sysfs (echo 1
+>> /sys/devices/system/cpu/cpu0/cpufreq/tb_en_over_clk)
+> adds overclock frequency to frequency table and updates policy.
+
+What if it is enabled and governor is changed to performance
+without disabling it... Who will take care of disabling dangerous
+frequencies?
+
+One thing I am certain about is to make overclocking a generic and
+core feature, rather than platform specific...
+
+What about adding overdrive frequencies in freq table permanently
+but with .index field as: CPUFREQ_ENTRY_OVERDRIVE ??
+
+This way we will use frequencies marked with
+CPUFREQ_ENTRY_OVERDRIVE only when we have overclocking
+enabled. And not at other times?
