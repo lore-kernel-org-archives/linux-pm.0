@@ -1,89 +1,99 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: Fans at full speed after resume
-Date: Mon, 27 May 2013 13:04:28 +0800
-Message-ID: <1369631068.2159.2.camel@rzhang1-mobl4>
-References: <CAPz6YkWr_D504UdeqXB0FXxgqOt3GYnF09ctoMaZ8P-znbVMGQ@mail.gmail.com>
-	 <1368591999.5890.9.camel@rzhang1-mobl4>
-	 <1368592193.5890.10.camel@rzhang1-mobl4> <knj3oe$h88$1@ger.gmane.org>
-	 <1369275908.2036.11.camel@rzhang1-mobl4> <1Ufc0I-09RzDk0@fwd03.t-online.de>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Mon, 27 May 2013 13:07:06 +0800
+Message-ID: <1369631226.2159.5.camel@rzhang1-mobl4>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:24271 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751261Ab3E0FEz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 May 2013 01:04:55 -0400
-In-Reply-To: <1Ufc0I-09RzDk0@fwd03.t-online.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Giacomo Perale <giacomo.perale@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael =?ISO-8859-1?Q?Gro=DFh=E4user?= <michael.grosshaeuser@t-online.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, 2013-05-23 at 22:22 +0200, Michael Gro=C3=9Fh=C3=A4user wrote:
-> Zhang Rui wrote:
->=20
-> > On Wed, 2013-05-22 at 20:46 +0200, Michael Gro=C3=9Fh=C3=A4user wro=
-te:
-> >> Zhang Rui wrote:
-> >>=20
-> >> > On Wed, 2013-05-15 at 12:26 +0800, Zhang Rui wrote:
-> >> >> please
-> >> >>=20
-> >> >> On Tue, 2013-05-14 at 21:18 -0700, Sonny Rao wrote:
-> >> >> > Hi, I've seen a regression in kernels since 3.7 on x86 device=
-s where
-> >> >> > the kernel turns the system fans on to max speed after resumi=
-ng from
-> >> >> > ram.  Other people have noticed it as well, for example see
-> >> >> > https://bugzilla.redhat.com/show_bug.cgi?id=3D895276
-> >> >> >=20
-> >> >> please check if this is a duplicate of bug
-> >> >> https://bugzilla.kernel.org/show_bug.cgi?id=3D56591
-> >> > or you can try 3.10-rc1 to see if the problem still exists or no=
-t.
-> >> >=20
-> >> > thanks,
-> >> > rui
-> >>=20
-> >>=20
-> >> Hi,
-> >>=20
-> >> I can confirm the same problem on a HP/Compaq 2510p with 3.10-rc2.
-> >>=20
-> > please check if this is a duplicate of bug
-> > https://bugzilla.kernel.org/show_bug.cgi?id=3D58301
-> >=20
-> > please try the patch at comment #7 and see if it helps or not.
-> >=20
-Good to know.
-then could you please try the four patches in comment #10, #11, #12 and
-#13 in
-https://bugzilla.kernel.org/show_bug.cgi?id=3D58301
-without the previous patch and check if they help?
-
-These four patches are the fixes that I would push for upstream.
+On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+> Hello,
+> 
+> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
+> delays when resuming from suspend-to-disk and a few new error messages
+> in the logs:
+> 
+> ata1: link is slow to respond, please be patient (ready=0)
+> ata3: link is slow to respond, please be patient (ready=0)
+> ata1: SRST failed (errno=-16)
+> ata3: SRST failed (errno=-16)
+> ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> ata1.00: ACPI cmd ef/03:46:00:00:00:a0 (SET FEATURES) filtered out
+> ata1.00: configured for UDMA/133
+> sd 0:0:0:0: [sda] Starting disk
+> ata3: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> ata3.00: ACPI cmd ef/03:46:00:00:00:a0 (SET FEATURES) filtered out
+> ata3.00: configured for UDMA/133
+> sd 2:0:0:0: [sdc] Starting disk
+> PM: restore of devices complete after 11448.044 msecs
+> 
+> (compared to ~2900 msecs with 3.8.x).
+> 
+> I didn't mind the messages since things were working anyway, but
+> lately in a couple of cases some disks were dropped and disabled, with
+> the obvious consequences for the functionality of the system:
+> 
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: SRST failed (errno=-16)
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: SRST failed (errno=-16)
+> ata2: link is slow to respond, please be patient (ready=0)
+> ata2: SRST failed (errno=-16)
+> ata2: limiting SATA link speed to 1.5 Gbps
+> ata2: SRST failed (errno=-16)
+> ata2: reset failed, giving up
+> ata2.00: disabled
+> sd 1:0:0:0: [sdb] Starting disk
+> sd 1:0:0:0: [sdb] START_STOP FAILED
+> sd 1:0:0:0: [sdb]
+> Result: hostbyte=0x04 driverbyte=0x00
+> dpm_run_callback(): scsi_bus_restore+0x0/0x20 returns 262144
+> PM: Device 1:0:0:0 failed to restore async: error 262144
+> PM: restore of devices complete after 61130.778 msecs
+> ...
+> sd 1:0:0:0: [sdb] Unhandled error code
+> sd 1:0:0:0: [sdb]
+> Result: hostbyte=0x04 driverbyte=0x00
+> sd 1:0:0:0: [sdb] CDB:
+> cdb[0]=0x28: 28 00 00 00 00 6f 00 00 08 00
+> end_request: I/O error, dev sdb, sector 111
+> XFS (sdb1): metadata I/O error: block 0x30 ("xfs_trans_read_buf_map")
+> error 5 numblks 8
+> ffff88006f710000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> ................
+> XFS (sdb1): Internal error xfs_dir2_leaf_verify at line 62 of file
+> fs/xfs/xfs_dir2_leaf.c.  Caller 0xffffffff811d17d8
+> 
+> 
+> Not having connected the issue with the previous error messages I
+> initially blamed the disk and replaced it with a new one thinking it
+> was broken, but the problem persisted so I started a bisection run
+> that pointed to this commit:
+> 
+> 
+> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
+> commit b8bb6cb999858043489c1ddef08eed2127559169
+> Author: Zhang Rui <rui.zhang@intel.com>
+> Date:   Thu Nov 22 15:45:02 2012 +0800
+> 
+>     step_wise: Unify the code for both throttle and dethrottle
+> 
+>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> 
+I do not see how this would affect the sata hibernation/resume.
+but anyway, would you please try the four patches in comment #10, #11,
+#12 and #13 in
+https://bugzilla.kernel.org/show_bug.cgi?id=58301
+and check if they help?
 
 thanks,
 rui
-> > thanks,
-> > rui
->=20
-> Hi,
->=20
-> the patch fixes the problem for me.
->=20
-> Thanks,
-> Michael=20
->=20
->=20
-> >> Best Regards,
-> >> Michael
-> >>=20
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-pm=
-" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
 
