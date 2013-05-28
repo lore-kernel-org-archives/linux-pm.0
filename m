@@ -1,113 +1,101 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 0/3] CPU Package temperarure thermal driver (v02)
-Date: Tue, 28 May 2013 08:17:38 -0700
-Message-ID: <51A4CA92.5090203@linux.intel.com>
-References: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1369708711.1913.4.camel@rzhang1-mobl4>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2] cpuidle: improve governor Kconfig options
+Date: Tue, 28 May 2013 17:51:54 +0200
+Message-ID: <1369756314-20792-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:57076 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934389Ab3E1PMu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 May 2013 11:12:50 -0400
-In-Reply-To: <1369708711.1913.4.camel@rzhang1-mobl4>
+Received: from mail-we0-f170.google.com ([74.125.82.170]:45614 "EHLO
+	mail-we0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934575Ab3E1Pv7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 11:51:59 -0400
+Received: by mail-we0-f170.google.com with SMTP id u59so5063024wes.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 08:51:58 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, tony.luck@intel.com
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, linux-edac@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org
 
-Tony Luck is the maintainer and he did review once and gave comments.
+Each governor is suitable for different kernel configurations: the menu
+governor suits better for a tickless system, while the ladder governor fits
+better for a periodic timer tick system.
 
-Hi Tony,
+The Kconfig does not allow to [un]select a governor, thus both are compiled in
+the kernel but the init order makes the menu governor to be the last one to be
+registered, so becoming the default. The only way to switch back to the ladder
+governor is to enable the sysfs governor switch in the kernel command line.
 
-Do you have further comments?
+Because it seems nobody complained about this, the menu governor is used by
+default most of the time on the system, having both governors is not really
+necessary on a tickless system but there isn't a config option to disable one
+or another governor.
 
-Thanks,
-Srinivas
+Create a submenu for cpuidle and add a label for each governor, so we can see
+the option in the menu config and enable/disable it.
 
-On 05/27/2013 07:38 PM, Zhang Rui wrote:
-> On Fri, 2013-05-17 at 16:42 -0700, Srinivas Pandruvada wrote:
->> This driver register CPU digital temperature package level sensor as a
->> thermal zone with two user mode configurable trip points. Once
->> the trip point is violated, user mode can receive notification via thermal
->> notification mechanism and can take any action to control temperature.
->>
-> I'm okay with this patch set.
-> But I'm wondering who should take patch 1/3?
->
-> thanks,
-> rui
->> Changes:
->> v02:
->> Did majority of changes suggested by Eduardo Valentin. Main changes are:
->> - Module parameters for rate control delay
->> - Removed user space gov parameter in thermal_zone_register
->> - Changes related to returning of errors values
->> - Error code return values
->>
->> v01:
->> First version for review
->>
->> Background:
->> This set of changes were done to coretemp driver and posted to lm_sensors
->> mailing list on 04/04/2013. This was reviewed by Guenter Roeck from lm-sensors
->> and Zhang Rui (thermal maintainer). They were in agreement not to add notification
->> mechanism to coretemp driver but use thermal sysfs.
->> Guenter Roeck suggested to use approach like "db8500_thermal driver in drivers/thermal".
->> So resubmitting the driver as a thermal zone driver.
->> Previous discussion link:
->> http://comments.gmane.org/gmane.linux.drivers.sensors/32182
->> "
->> This is clear that there is reluctance in adding thresholds in coretemp sysfs,
->> during previous attempts. Probably because of lake of use cases.
->> But this time use case may be more compelling.
->>
->> We have many small form factor devices like ultrabooks, slate PCs in the market.
->> Unfortunately these devices reach maximum temperature with relatively less
->> workloads, causing BIOS to do thermal throttling. There are real performance
->> issues due to aggressive BIOS action to control thermals and also thermal breakdown
->> in some cases.
->>
->> Even the most expensive laptops, don't have correct ACPI thermal configuration,
->> so that kernel thermal driver can act. In some case even the trip point is higher
->> than critical temperature setting.
->>
->> Intel has developed several drivers, which can be used to cool the system very efficiently.
->> They include RAPL based cooling driver, Powerclamp driver and P state driver.
->> To utilize these cooling device a closed loop user mode program is required, which
->> will utilize these method and dynamically compensate for high CPU temperatures,
->> without relying on any configuration data.
->> One such solution is developed is "Linux thermal daemon". More details can be
->> obtained from
->> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
->> This daemon polls for cpu temperature and apply compensation once the CPU reach target
->> temperature.
->>
->> This polling can be mostly avoided, by getting notification for the temperature, where
->> it needs to wake up and get ready for apply compensation. In most of the normal use
->> cases, there may not be any threshold events. So very minimal number of user space
->> notification for thermal thresholds.
->>
->> Srinivas Pandruvada (3):
->>    x86, mcheck, therm_throt: Process package thresholds
->>    Thermal: CPU Package temperature thermal
->>    Thermal: Documentation for x86 package temperature thermal driver
->>
->>   Documentation/thermal/x86_pkg_temperature_thermal |  47 ++
->>   arch/x86/include/asm/mce.h                        |   7 +
->>   arch/x86/kernel/cpu/mcheck/therm_throt.c          |  63 ++-
->>   drivers/thermal/Kconfig                           |  12 +
->>   drivers/thermal/Makefile                          |   2 +-
->>   drivers/thermal/x86_pkg_temp_thermal.c            | 642 ++++++++++++++++++++++
->>   6 files changed, 768 insertions(+), 5 deletions(-)
->>   create mode 100644 Documentation/thermal/x86_pkg_temperature_thermal
->>   create mode 100644 drivers/thermal/x86_pkg_temp_thermal.c
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+The governors will be enabled depending on the CONFIG_NO_HZ option:
+ - If CONFIG_NO_HZ is set, then the menu governor is selected and the ladder
+   governor is optional, defaulting to 'yes'
+ - If CONFIG_NO_HZ is not set, then the ladder governor is selected and the
+   menu governor is optional, defaulting to 'yes'
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/Kconfig |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index c4cc27e..e997f15 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -1,7 +1,9 @@
+ 
+-config CPU_IDLE
++menuconfig CPU_IDLE
+ 	bool "CPU idle PM support"
+ 	default y if ACPI || PPC_PSERIES
++	select CPU_IDLE_GOV_LADDER if (!NO_HZ && !NO_HZ_IDLE)
++	select CPU_IDLE_GOV_MENU if (NO_HZ || NO_HZ_IDLE)
+ 	help
+ 	  CPU idle is a generic framework for supporting software-controlled
+ 	  idle processor power management.  It includes modular cross-platform
+@@ -9,9 +11,10 @@ config CPU_IDLE
+ 
+ 	  If you're using an ACPI-enabled platform, you should say Y here.
+ 
++if CPU_IDLE
++
+ config CPU_IDLE_MULTIPLE_DRIVERS
+         bool "Support multiple cpuidle drivers"
+-        depends on CPU_IDLE
+         default n
+         help
+          Allows the cpuidle framework to use different drivers for each CPU.
+@@ -19,24 +22,19 @@ config CPU_IDLE_MULTIPLE_DRIVERS
+          states. If unsure say N.
+ 
+ config CPU_IDLE_GOV_LADDER
+-	bool
+-	depends on CPU_IDLE
++	bool "Ladder governor (for periodic timer tick)"
+ 	default y
+ 
+ config CPU_IDLE_GOV_MENU
+-	bool
+-	depends on CPU_IDLE && NO_HZ
++	bool "Menu governor (for tickless system)"
+ 	default y
+ 
+ config ARCH_NEEDS_CPU_IDLE_COUPLED
+ 	def_bool n
+ 
+-if CPU_IDLE
+-
+ config CPU_IDLE_CALXEDA
+ 	bool "CPU Idle Driver for Calxeda processors"
+ 	depends on ARCH_HIGHBANK
+ 	help
+ 	  Select this to enable cpuidle on Calxeda processors.
+-
+ endif
+-- 
+1.7.9.5
 
