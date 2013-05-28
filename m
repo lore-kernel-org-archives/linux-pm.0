@@ -1,139 +1,123 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: improve governor Kconfig options
-Date: Tue, 28 May 2013 15:23:37 +0200
-Message-ID: <51A4AFD9.3020109@linaro.org>
-References: <1369688458-9114-1-git-send-email-daniel.lezcano@linaro.org> <1578834.dvFIpyCvrt@vostro.rjw.lan> <51A4A1A4.1070008@linaro.org> <5938372.bcA6BTeOGP@vostro.rjw.lan>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Tue, 28 May 2013 15:26:25 +0200
+Message-ID: <20130528152625.1b7833e5@amdc308.digital.local>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+ <20130528084035.13afa583@amdc308.digital.local>
+ <CAKohpo=6Tk3NmcJw_fqnePu_skHKNB0rFBOUzEsCDyeLqxg4xA@mail.gmail.com>
+ <2272781.tC3OqoQmKI@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f46.google.com ([209.85.214.46]:38105 "EHLO
-	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932491Ab3E1NXl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 09:23:41 -0400
-Received: by mail-bk0-f46.google.com with SMTP id my13so4260591bkb.19
-        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 06:23:40 -0700 (PDT)
-In-Reply-To: <5938372.bcA6BTeOGP@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-reply-to: <2272781.tC3OqoQmKI@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 05/28/2013 02:42 PM, Rafael J. Wysocki wrote:
-> On Tuesday, May 28, 2013 02:23:00 PM Daniel Lezcano wrote:
->> On 05/28/2013 01:46 PM, Rafael J. Wysocki wrote:
->>> On Monday, May 27, 2013 11:00:58 PM Daniel Lezcano wrote:
->>>> Each governor is suitable for different kernel configurations: the=
- menu
->>>> governor suits better for a tickless system, while the ladder gove=
-rnor fits
->>>> better for a periodic timer tick system.
->>>>
->>>> The Kconfig does not allow to [un]select a governor, thus both are=
- compiled in
->>>> the kernel but the init order makes the menu governor to be the la=
-st one to be
->>>> registered, so becoming the default. The only way to switch back t=
-o the ladder
->>>> governor is to enable the sysfs governor switch in the kernel comm=
-and line.
->>>>
->>>> Because it seems nobody complained about this, the menu governor i=
-s used by
->>>> default most of the time on the system, having both governors is n=
-ot really
->>>> necessary on a tickless system but there isn't a config option to =
-disable one
->>>> or another governor.
->>>>
->>>> Create a submenu for cpuidle and add a label for each governor, so=
- we can see
->>>> the option in the menu config and enable/disable it.
->>>>
->>>> The governors will be enabled depending on the CONFIG_NO_HZ option=
-:
->>>>  - If CONFIG_NO_HZ is set, then the menu governor is selected and =
-the ladder
->>>>    governor is optional, defaulting to 'no'
->>>
->>> Why not defaulting to 'yes'?  That'd be backwards compatible, would=
-n't it?
->>
->> Yes, that wouldn't be backward compatible but who wants the ladder
->> governor which is less efficient with a tickless system ?
->=20
-> I don't know and this isn't the right question to ask I think.
->=20
-> You need to ask who uses the ladder governor with CONFIG_NO_HZ and yo=
-u need to
-> avoid making changes that aren't backwards compatible if you don't kn=
-ow the
-> answer (which I'm pretty sure is the case).
->=20
-> I'd prefer to default to 'yes' to start with and then to change the
-> default to 'no' after a couple of cycles, possibly.
->=20
->>>>  - If CONFIG_NO_HZ is not set, then the ladder governor is selecte=
-d and the
->>>>    menu governor is optional, defaulting to 'no'
->>>
->>> Are you sure this is not going to introduce regressions with CONFIG=
-_NO_HZ
->>> unset?
->>
->> Yes, a system configured with a periodic tick will use the ladder
->> instead of the menu governor (which is less efficient on this
->> configuration).
->=20
-> Well, "less efficient" meaning what exactly?  Less power-efficient or=
- less
-> efficient performance-wise?
+Hi Viresh, Rafael,
 
-less power efficient.
-
->> Currently the default is the menu governor with a periodic tick syst=
-em
->> because both governors are compiled in and the init order makes the =
-menu
->> governor to be enabled instead of the 'ladder'.
->=20
-> I understand that.
->=20
->> We can set both to 'yes' by default but in this case, I suggest to a=
-dd
->> in the code a 'preferred' governor depending on tickless or not, so =
-the
->> right governor is chosen at boot time depending on CONFIG_NO_HZ.
->>
->> Otherwise, I am not sure people running servers (with a periodic tic=
-k)
->> will change their kernel command line option to enable the sysfs
->> governor switch to change the governor to ladder, neither they are a=
-ware
->> ladder is better for their system.
->>
->> I am open to any suggestion.
->=20
-> I think the change to make the governor preference depend on CONFIG_N=
-O_HZ
-> kind of makes sense.  However, I'd default to 'yes' for both governor=
-s in both
-> configurations to start with (which basically means that the ordering=
- will now
-> depend on CONFIG_NO_HZ).
-
-Ok, no problem. I will respin the patch.
-
-Thanks for the review
-
-  -- Daniel
+> On Tuesday, May 28, 2013 03:14:26 PM Viresh Kumar wrote:
+> > On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com>
+> > wrote:
+> > > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > <manually added by viresh>
+> > >> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
+> > >> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > >> I was talking about /sys/devices/system/cpu/cpufreq/boost that
+> > >> appears to have been added by commit 615b730 (acpi-cpufreq: Add
+> > >> support for disabling dynamic overclocking).
+> > >>
+> > >> That's in acpi-cpufreq, but since that setting seems to be
+> > >> generally useful, it may be a good idea to move it to the core
+> > >> somehow.
+> > 
+> > Problem is in breaking existing cpufreq userspace for this driver.
+> > Is this allowed?
+> > 
+> > > I think that Viresh wanted to add "boost" option to
+> > > /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
+> > > at separate cores (policies).
+> > >
+> > > The localization, which you have proposed:
+> > > /sys/devices/system/cpu/cpufreq/boost
+> > >
+> > > implies, that boost is a global feature (enabled for all cores
+> > > and for all available policies).
+> > >
+> > > Which approach shall be used then?
+> > 
+> > We can use: get_governor_parent_kobj() to get the best location
+> > for boost. But I had some other issues in mind:
+> > - boost is governor dependent.. i.e. It is only required for
+> > ondemand governor (And LAB if it makes it to mainline :) ).. Other
+> > governors doesn't need it. So, it would be better to add it in
+> > governor's directory.
+> 
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+> I'm not sure about that.  On x86 boost will be used with all
+> governors if enabled (as currently defined in acpi-cpufreq).
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+All governors can benefit from the overclocking code.
 
+
+> 
+> Also it looks like this depends on the driver too, because if the
+> driver doesn't have "turbo" frequencies, the governor won't be able
+> use "turbo" anyway.
+> 
+
+Rafael is correct here. The overclocking framework depends on
+cpufreq_driver (exynos-cpufreq in my case) to switch to overclocked
+frequency.
+
+
+> > - This will break existing users of acpi-cpufreq driver.
+> > 
+> > @Rafael: Please suggest what to do here.
+> 
+> So first, it would make sense to use a per-driver "boost" attribute
+> indicating whether or not the given driver should present any "turbo"
+> frequencies to the governor.
+
+Now I'm using a device tree's cpufreq section (defined at
+exynos4412-redwood.dts) with overclocking = "okay" attribute defined.
+Then, on this basis, we could decide at cpufreq init time if we will
+export any overclocking related sysfs entries (or init overclocking at
+all). It would assure clearer code.
+
+
+>  That'd work along the lines of the
+> acpi-cpufreq "boost", but I don't think that the global_boost
+> attribute should be created by the driver (it'd be better if the
+> driver provided methods to the core for handling that).
+
+I think that global cpufreq device tree attribute shall be defined. The
+overclocking will be an integral part of the cpufreq framework.
+
+> 
+> Second, I'm not sure if an additional knob for the governor is
+> necessary.  It may just use the turbo frequencies if available (and
+> if the governor cannot use them, it simply won't use them).
+
+I cannot agree. It is welcome to be able to enable/disable the feature
+when needed. Turbo frequencies shall not be "available" for use all the
+time. For me this situation is far more dangerous.
+
+> 
+> Thanks,
+> Rafael
+> 
+> 
+
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Poland (SRPOL) | Linux Platform Group
