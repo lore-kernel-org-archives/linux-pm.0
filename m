@@ -1,132 +1,126 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected] 3.7-rc1 can't resume (still present in 3.9)
-Date: Tue, 28 May 2013 23:36:37 +0200
-Message-ID: <2675025.1aYjLKmY02@vostro.rjw.lan>
-References: <20130218155439.GA902@onny> <20130503110705.GA3828@onny.Speedport_W_700V> <1536388.1prjkW6Efo@vostro.rjw.lan>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster governor - tests results
+Date: Tue, 28 May 2013 23:48:14 +0200
+Message-ID: <76114024.UaPHgm94jK@vostro.rjw.lan>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com> <2272781.tC3OqoQmKI@vostro.rjw.lan> <20130528152625.1b7833e5@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1536388.1prjkW6Efo@vostro.rjw.lan>
+In-Reply-To: <20130528152625.1b7833e5@amdc308.digital.local>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jonas Heinrich <onny@project-insanity.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@intel.com>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 03, 2013 01:37:45 PM Rafael J. Wysocki wrote:
-> On Friday, May 03, 2013 11:07:05 AM Jonas Heinrich wrote:
-> > On 05-03 01:29, Rafael J. Wysocki wrote:
-> > > On Thursday, May 02, 2013 08:32:30 PM Jonas Heinrich wrote:
-> > > > On 05-02 02:45, Rafael J. Wysocki wrote:
-> > > > > On Wednesday, May 01, 2013 11:55:10 AM H. Peter Anvin wrote:
-> > > > > > On 05/01/2013 11:51 AM, Jonas Heinrich wrote:
-> > > > > > > Well, you could give me instructions on how to debug this (I'll do 
-> > > > > > > everything ;)) or I could ship you the Thinkpad T43. I guess this
-> > > > > > > would worth the effort since this bug is somehow critical.
-> > > > > > > 
-> > > > > > > Best regards, Jonas
-> > > > > > 
-> > > > > > I'll put together a debug patch unless I can trick Rafael into doing
-> > > > > > it first...
-> > > > > 
-> > > > > I'm afraid that code has changed quite a bit since I looked at it last time.
-> > > > > [Jarkko Sakkinen seems to have worked on it lately, CCed.]
-> > > > > 
-> > > > > Jonas, I wonder what happens if you drop the first hunk of the patch (it just
-> > > > > uses a different register, which shouldn't matter)?  Does it still help then?
-> > > > 
-> > > > Hello Rafel, first of all, thank you for helping me out :)
-> > > > You're right, the patch still solves the suspend bug, after removing the first 
-> > > > hunk of the patch and applying it (see attachement:
-> > > > suspendfix_first_hunk_dropped.patch).
-> > > > 
-> > > > > 
-> > > > > If so, there are still a few things you can do to it, e.g:
-> > > > > (1) drop the
-> > > > > 
-> > > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_CR4, %edi
-> > > > > -       jnc     1f
-> > > > > 
-> > > > 
-> > > > Still works :) (used suspendfix_1.patch)
-> > > > 
-> > > > > lines,
-> > > > > (2) drop the
-> > > > > 
-> > > > > -       btl     $WAKEUP_BEHAVIOR_RESTORE_EFER, %edi
-> > > > > -       jnc     1f
-> > > > > 
-> > > > > lines,
-> > > > 
-> > > > Still works :) (used suspendfix_2.patch)
-> > > > 
-> > > > > (3) drop the
-> > > > > 
-> > > > > +       jecxz   1f
-> > > > > 
-> > > > 
-> > > > Still works :) (used suspendfix_3.patch)
-> > > > 
-> > > > > line,
-> > > > > (4) drop the
-> > > > > 
-> > > > > +       movl    %eax, %ecx
-> > > > > +       orl     %edx, %ecx
-> > > > > +       jz      1f
-> > > > > 
-> > > > 
-> > > > At this point, the bug reoccurs (used suspendfix_4.patch)! 
-> > > > But that doesn't mean these lines are the only critical, because the more
-> > > > minimal patch
-> > > > 
-> > > > @@ -119,6 +119,9 @@
-> > > >         jnc     1f
-> > > >         movl    pmode_efer, %eax
-> > > >         movl    pmode_efer + 4, %edx
-> > > > +       movl    %eax, %ecx
-> > > > +       orl     %edx, %ecx
-> > > > +       jz      1f
-> > > >         movl    $MSR_EFER, %ecx
-> > > >         wrmsr
-> > > >  1:
-> > > > 
-> > > > 
-> > > > with removing this part
-> > > > 
-> > > > -       movl    pmode_cr4, %eax
-> > > > -       movl    %eax, %cr4
-> > > > +       movl    pmode_cr4, %ecx
-> > > > +       movl    %ecx, %cr4
-> > > > 
-> > > > also doesn't fix the issue (see suspendfix_5.patch).
-> > > > 
-> > > > > lines and see what the minimal patch needed for things to work again is.
-> > > > > 
-> > > > 
-> > > > So the most minimal working patch is suspendfix_3.patch.
+On Tuesday, May 28, 2013 03:26:25 PM Lukasz Majewski wrote:
+> Hi Viresh, Rafael,
+> 
+> > On Tuesday, May 28, 2013 03:14:26 PM Viresh Kumar wrote:
+> > > On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com>
+> > > wrote:
+> > > > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > <manually added by viresh>
+> > > >> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
+> > > >> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > >> I was talking about /sys/devices/system/cpu/cpufreq/boost that
+> > > >> appears to have been added by commit 615b730 (acpi-cpufreq: Add
+> > > >> support for disabling dynamic overclocking).
+> > > >>
+> > > >> That's in acpi-cpufreq, but since that setting seems to be
+> > > >> generally useful, it may be a good idea to move it to the core
+> > > >> somehow.
 > > > 
-> > > Thanks for doing that detective work!
+> > > Problem is in breaking existing cpufreq userspace for this driver.
+> > > Is this allowed?
 > > > 
-> > > The only explanation of why this particular patch can help that seems viable to
-> > > us at the moment is that we have a memory corruption in the code region modified
-> > > by it and the patch simply changes the alignment of the instructions that don't
-> > > get corrupted.
+> > > > I think that Viresh wanted to add "boost" option to
+> > > > /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
+> > > > at separate cores (policies).
+> > > >
+> > > > The localization, which you have proposed:
+> > > > /sys/devices/system/cpu/cpufreq/boost
+> > > >
+> > > > implies, that boost is a global feature (enabled for all cores
+> > > > and for all available policies).
+> > > >
+> > > > Which approach shall be used then?
 > > > 
-> > > It looks like this may be verified by putting a bunch of nops into the region
-> > > in question, so can you please check if the attached patch helps too?
+> > > We can use: get_governor_parent_kobj() to get the best location
+> > > for boost. But I had some other issues in mind:
+> > > - boost is governor dependent.. i.e. It is only required for
+> > > ondemand governor (And LAB if it makes it to mainline :) ).. Other
+> > > governors doesn't need it. So, it would be better to add it in
+> > > governor's directory.
 > > 
-> > Unfortunately, your attached patch doesn't seem to fix the bug. 
-> > Hope you still have some ideas to address this issue :)
 > 
-> Well, not really.
 > 
-> We'll need a dump of the wakeup structure from your system I suppose.
-> I'll try to write a patch to get that over the weekend.
+> > I'm not sure about that.  On x86 boost will be used with all
+> > governors if enabled (as currently defined in acpi-cpufreq).
+> 
+> All governors can benefit from the overclocking code.
+> 
+> 
+> > 
+> > Also it looks like this depends on the driver too, because if the
+> > driver doesn't have "turbo" frequencies, the governor won't be able
+> > use "turbo" anyway.
+> > 
+> 
+> Rafael is correct here. The overclocking framework depends on
+> cpufreq_driver (exynos-cpufreq in my case) to switch to overclocked
+> frequency.
+> 
+> 
+> > > - This will break existing users of acpi-cpufreq driver.
+> > > 
+> > > @Rafael: Please suggest what to do here.
+> > 
+> > So first, it would make sense to use a per-driver "boost" attribute
+> > indicating whether or not the given driver should present any "turbo"
+> > frequencies to the governor.
+> 
+> Now I'm using a device tree's cpufreq section (defined at
+> exynos4412-redwood.dts) with overclocking = "okay" attribute defined.
+> Then, on this basis, we could decide at cpufreq init time if we will
+> export any overclocking related sysfs entries (or init overclocking at
+> all). It would assure clearer code.
 
-Can you try 3.10-rc3 by the way?  There is a fix in there that *might* make
-a difference (although the odds are quite significant).
+Well, what about users?  Don't you want them to be able to decide whether
+or not to use "turbo"?
 
-Thanks,
+> >  That'd work along the lines of the
+> > acpi-cpufreq "boost", but I don't think that the global_boost
+> > attribute should be created by the driver (it'd be better if the
+> > driver provided methods to the core for handling that).
+> 
+> I think that global cpufreq device tree attribute shall be defined.
+
+What do you mean by "device tree attribute"?  If you mean FDTs as used by
+ARM for system configuration description, that wouldn't be portable, because
+DTs aren't used for that on the (majority of) x86 systems.
+
+> The overclocking will be an integral part of the cpufreq framework.
+
+Well, to be precise, I was thinking about moving the management of the
+/sys/devices/system/cpu/cpufreq/boost attribute from acpi-cpufreq to the
+code so that other drivers may use it too.  Does that make sense to you?
+
+> > 
+> > Second, I'm not sure if an additional knob for the governor is
+> > necessary.  It may just use the turbo frequencies if available (and
+> > if the governor cannot use them, it simply won't use them).
+> 
+> I cannot agree. It is welcome to be able to enable/disable the feature
+> when needed. Turbo frequencies shall not be "available" for use all the
+> time.
+
+Well, they won't.  The "boost" attribute above may be used to turn "turbo"
+off in that case.  I'm not sure why one more attribute is needed here.
+
+Can you please explain how you the whole mechanism is supposed to work on
+your platform, in general terms?
+
 Rafael
 
 
