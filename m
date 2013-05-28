@@ -1,59 +1,196 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Tue, 28 May 2013 15:14:26 +0530
-Message-ID: <CAKohpo=6Tk3NmcJw_fqnePu_skHKNB0rFBOUzEsCDyeLqxg4xA@mail.gmail.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
-	<8856294.KaD55h4g0a@vostro.rjw.lan>
-	<CAKohpom4sSwJG7r67+aNMjAdr7CToAqCbdcbd+vSCTEQkiTkcg@mail.gmail.com>
-	<41528879.GuKxJgVhIe@vostro.rjw.lan>
-	<20130528084035.13afa583@amdc308.digital.local>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value proportional to load
+Date: Tue, 28 May 2013 13:43:55 +0200
+Message-ID: <1733890.jTHBU7EacK@vostro.rjw.lan>
+References: <51A3C6CF.6080104@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f47.google.com ([209.85.219.47]:49623 "EHLO
-	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933768Ab3E1Jo0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 05:44:26 -0400
-Received: by mail-oa0-f47.google.com with SMTP id m1so9550509oag.6
-        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 02:44:26 -0700 (PDT)
-In-Reply-To: <20130528084035.13afa583@amdc308.digital.local>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51A3C6CF.6080104@semaphore.gr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
-On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote: <manually added by viresh>
->> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
->> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> I was talking about /sys/devices/system/cpu/cpufreq/boost that
->> appears to have been added by commit 615b730 (acpi-cpufreq: Add
->> support for disabling dynamic overclocking).
->>
->> That's in acpi-cpufreq, but since that setting seems to be generally
->> useful, it may be a good idea to move it to the core somehow.
+On Monday, May 27, 2013 11:49:19 PM Stratos Karafotis wrote:
+> Ondemand increases frequency only if the load_freq is greater than
+> up_threshold. This seems to produce oscillations of frequency between
+> min and max because a relatively small load can easily saturate minimum
+> frequency and lead the CPU to max. Then, the CPU will decrease back to
+> min due to a small load_freq.
 
-Problem is in breaking existing cpufreq userspace for this driver.
-Is this allowed?
+I think this is a correct observation.
 
-> I think that Viresh wanted to add "boost" option to
-> /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
-> at separate cores (policies).
->
-> The localization, which you have proposed:
-> /sys/devices/system/cpu/cpufreq/boost
->
-> implies, that boost is a global feature (enabled for all cores and for
-> all available policies).
->
-> Which approach shall be used then?
+> With this patch the frequency can be increased to any value,
 
-We can use: get_governor_parent_kobj() to get the best location
-for boost. But I had some other issues in mind:
-- boost is governor dependent.. i.e. It is only required for ondemand
-governor (And LAB if it makes it to mainline :) ).. Other governors
-doesn't need it. So, it would be better to add it in governor's directory.
-- This will break existing users of acpi-cpufreq driver.
+What exactly does "any value" mean here?
 
-@Rafael: Please suggest what to do here.
+> proportional to load, if the load is below up_threshold. Thus, middle
+> frequencies are used more. Absolute load is used for the calculation of
+> frequency.
+> 
+> Phoronix benchmark results of Linux Kernel Compilation 3.1 tests are
+> attached with and without this patch. cpufreq_stats (time_in_state) are
+> also included. Tested on Intel i7-3770 CPU @ 3.40GH and on 
+> Quad core 1500 MHz Krait.
+
+Can you please comment the results in the changelog?  Attachments don't
+show up in git logs. :-)
+
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 10 +---------
+>  drivers/cpufreq/cpufreq_governor.h |  1 -
+>  drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++++------------------------------
+>  3 files changed, 9 insertions(+), 41 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 5af40ad..eeab30a 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -97,7 +97,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  
+>  	policy = cdbs->cur_policy;
+>  
+> -	/* Get Absolute Load (in terms of freq for ondemand gov) */
+> +	/* Get Absolute Load */
+>  	for_each_cpu(j, policy->cpus) {
+>  		struct cpu_dbs_common_info *j_cdbs;
+>  		u64 cur_wall_time, cur_idle_time;
+> @@ -148,14 +148,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  
+>  		load = 100 * (wall_time - idle_time) / wall_time;
+>  
+> -		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+> -			int freq_avg = __cpufreq_driver_getavg(policy, j);
+> -			if (freq_avg <= 0)
+> -				freq_avg = policy->cur;
+> -
+> -			load *= freq_avg;
+> -		}
+> -
+>  		if (load > max_load)
+>  			max_load = load;
+>  	}
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index e16a961..e899c11 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -169,7 +169,6 @@ struct od_dbs_tuners {
+>  	unsigned int sampling_rate;
+>  	unsigned int sampling_down_factor;
+>  	unsigned int up_threshold;
+> -	unsigned int adj_up_threshold;
+>  	unsigned int powersave_bias;
+>  	unsigned int io_is_busy;
+>  };
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 4b9bb5d..bf2ae64 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -29,11 +29,9 @@
+>  #include "cpufreq_governor.h"
+>  
+>  /* On-demand governor macros */
+> -#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
+>  #define DEF_FREQUENCY_UP_THRESHOLD		(80)
+>  #define DEF_SAMPLING_DOWN_FACTOR		(1)
+>  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
+> -#define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
+>  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+>  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
+>  #define MIN_FREQUENCY_UP_THRESHOLD		(11)
+> @@ -159,14 +157,12 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
+>  
+>  /*
+>   * Every sampling_rate, we check, if current idle time is less than 20%
+> - * (default), then we try to increase frequency. Every sampling_rate, we look
+> - * for the lowest frequency which can sustain the load while keeping idle time
+> - * over 30%. If such a frequency exist, we try to decrease to this frequency.
+> + * (default), then we try to increase frequency. Else, we adjust the frequency
+> + * proportional to load.
+>   *
+> - * Any frequency increase takes it to the maximum frequency. Frequency reduction
+> - * happens at minimum steps of 5% (default) of current frequency
+> + * Any frequency increase takes it to the maximum frequency.
+>   */
+> -static void od_check_cpu(int cpu, unsigned int load_freq)
+> +static void od_check_cpu(int cpu, unsigned int load)
+>  {
+>  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+>  	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+> @@ -176,29 +172,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+>  	dbs_info->freq_lo = 0;
+>  
+>  	/* Check for frequency increase */
+> -	if (load_freq > od_tuners->up_threshold * policy->cur) {
+> +	if (load > od_tuners->up_threshold) {
+>  		/* If switching to max speed, apply sampling_down_factor */
+>  		if (policy->cur < policy->max)
+>  			dbs_info->rate_mult =
+>  				od_tuners->sampling_down_factor;
+>  		dbs_freq_increase(policy, policy->max);
+>  		return;
+> -	}
+> -
+> -	/* Check for frequency decrease */
+> -	/* if we cannot reduce the frequency anymore, break out early */
+> -	if (policy->cur == policy->min)
+> -		return;
+> -
+> -	/*
+> -	 * The optimal frequency is the frequency that is the lowest that can
+> -	 * support the current CPU usage without triggering the up policy. To be
+> -	 * safe, we focus 10 points under the threshold.
+> -	 */
+> -	if (load_freq < od_tuners->adj_up_threshold
+> -			* policy->cur) {
+> +	} else {
+> +		/* Calculate the next frequency proportional to load */
+>  		unsigned int freq_next;
+> -		freq_next = load_freq / od_tuners->adj_up_threshold;
+> +		freq_next = load * policy->max / 100;
+
+Can you please explain why this is the right formula?
+
+>  		/* No longer fully busy, reset rate_mult */
+>  		dbs_info->rate_mult = 1;
+> @@ -372,9 +356,6 @@ static ssize_t store_up_threshold(struct dbs_data *dbs_data, const char *buf,
+>  			input < MIN_FREQUENCY_UP_THRESHOLD) {
+>  		return -EINVAL;
+>  	}
+> -	/* Calculate the new adj_up_threshold */
+> -	od_tuners->adj_up_threshold += input;
+> -	od_tuners->adj_up_threshold -= od_tuners->up_threshold;
+>  
+>  	od_tuners->up_threshold = input;
+>  	return count;
+> @@ -523,8 +504,6 @@ static int od_init(struct dbs_data *dbs_data)
+>  	if (idle_time != -1ULL) {
+>  		/* Idle micro accounting is supported. Use finer thresholds */
+>  		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+> -		tuners->adj_up_threshold = MICRO_FREQUENCY_UP_THRESHOLD -
+> -			MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
+>  		/*
+>  		 * In nohz/micro accounting case we set the minimum frequency
+>  		 * not depending on HZ, but fixed (very low). The deferred
+> @@ -533,8 +512,6 @@ static int od_init(struct dbs_data *dbs_data)
+>  		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+>  	} else {
+>  		tuners->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
+> -		tuners->adj_up_threshold = DEF_FREQUENCY_UP_THRESHOLD -
+> -			DEF_FREQUENCY_DOWN_DIFFERENTIAL;
+>  
+>  		/* For correct statistics, we need 10 ticks for each measure */
+>  		dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
+
+Overall it looks like an improvement.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
