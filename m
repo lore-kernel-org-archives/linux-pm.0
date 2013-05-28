@@ -1,44 +1,59 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH] thermal: step_wise: cdev only needs update on a new target state
-Date: Tue, 28 May 2013 14:55:48 +0800
-Message-ID: <1369724148-15087-1-git-send-email-shawn.guo@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Tue, 28 May 2013 15:14:26 +0530
+Message-ID: <CAKohpo=6Tk3NmcJw_fqnePu_skHKNB0rFBOUzEsCDyeLqxg4xA@mail.gmail.com>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+	<8856294.KaD55h4g0a@vostro.rjw.lan>
+	<CAKohpom4sSwJG7r67+aNMjAdr7CToAqCbdcbd+vSCTEQkiTkcg@mail.gmail.com>
+	<41528879.GuKxJgVhIe@vostro.rjw.lan>
+	<20130528084035.13afa583@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe005.messaging.microsoft.com ([216.32.181.185]:27644
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932984Ab3E1G5M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 02:57:12 -0400
+Received: from mail-oa0-f47.google.com ([209.85.219.47]:49623 "EHLO
+	mail-oa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933768Ab3E1Jo0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 05:44:26 -0400
+Received: by mail-oa0-f47.google.com with SMTP id m1so9550509oag.6
+        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 02:44:26 -0700 (PDT)
+In-Reply-To: <20130528084035.13afa583@amdc308.digital.local>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawn.guo@linaro.org>
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
-The cooling device only needs update on a new target state.  Since we
-already check old target in thermal_zone_trip_update(), we can do one
-more check to see if it's a new target state.  If not, we can reasonably
-save some uncecesary code execution.
+On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote: <manually added by viresh>
+>> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
+>> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> I was talking about /sys/devices/system/cpu/cpufreq/boost that
+>> appears to have been added by commit 615b730 (acpi-cpufreq: Add
+>> support for disabling dynamic overclocking).
+>>
+>> That's in acpi-cpufreq, but since that setting seems to be generally
+>> useful, it may be a good idea to move it to the core somehow.
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- drivers/thermal/step_wise.c |    3 +++
- 1 file changed, 3 insertions(+)
+Problem is in breaking existing cpufreq userspace for this driver.
+Is this allowed?
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 4d4ddae..0afbd86 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -133,6 +133,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		old_target = instance->target;
- 		instance->target = get_target_state(instance, trend, throttle);
- 
-+		if (old_target == instance->target)
-+			continue;
-+
- 		/* Activate a passive thermal instance */
- 		if (old_target == THERMAL_NO_TARGET &&
- 			instance->target != THERMAL_NO_TARGET)
--- 
-1.7.9.5
+> I think that Viresh wanted to add "boost" option to
+> /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
+> at separate cores (policies).
+>
+> The localization, which you have proposed:
+> /sys/devices/system/cpu/cpufreq/boost
+>
+> implies, that boost is a global feature (enabled for all cores and for
+> all available policies).
+>
+> Which approach shall be used then?
 
+We can use: get_governor_parent_kobj() to get the best location
+for boost. But I had some other issues in mind:
+- boost is governor dependent.. i.e. It is only required for ondemand
+governor (And LAB if it makes it to mainline :) ).. Other governors
+doesn't need it. So, it would be better to add it in governor's directory.
+- This will break existing users of acpi-cpufreq driver.
 
+@Rafael: Please suggest what to do here.
