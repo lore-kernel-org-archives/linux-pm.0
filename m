@@ -1,133 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [regression,bisected] restore of disks after suspend-to-disk broken in 3.9.x
-Date: Tue, 28 May 2013 23:21:07 +0200
-Message-ID: <2311399.dRVpqHHLQS@vostro.rjw.lan>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com> <1569319.PChVOz05me@vostro.rjw.lan> <CAPm-kmu45=uqR2TXmHKjtNcvRCmOpu7cpOzi6WyWmsTdw-QPPw@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: improve governor Kconfig options
+Date: Tue, 28 May 2013 23:26:44 +0200
+Message-ID: <1687661.MEWgzcOBGL@vostro.rjw.lan>
+References: <1369688458-9114-1-git-send-email-daniel.lezcano@linaro.org> <5938372.bcA6BTeOGP@vostro.rjw.lan> <51A4AFD9.3020109@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPm-kmu45=uqR2TXmHKjtNcvRCmOpu7cpOzi6WyWmsTdw-QPPw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Giacomo Perale <giacomo.perale@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:53580 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755235Ab3E1VRv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 May 2013 17:17:51 -0400
+In-Reply-To: <51A4AFD9.3020109@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On Tuesday, May 28, 2013 03:47:30 PM Giacomo Perale wrote:
-> 2013/5/28 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Tuesday, May 28, 2013 02:59:25 PM Giacomo Perale wrote:
-> >> 2013/5/28 Rafael J. Wysocki <rjw@sisk.pl>:
-> >> > On Monday, May 27, 2013 10:07:18 PM Giacomo Perale wrote:
-> >> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
-> >> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
-> >> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
-> >> >> >> delays when resuming from suspend-to-disk and a few new error messages
-> >> >> >> in the logs:
-> >> >> >>
-> >> >> >>
-> >> >> >> Not having connected the issue with the previous error messages I
-> >> >> >> initially blamed the disk and replaced it with a new one thinking it
-> >> >> >> was broken, but the problem persisted so I started a bisection run
-> >> >> >> that pointed to this commit:
-> >> >> >>
-> >> >> >>
-> >> >> >> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
-> >> >> >> commit b8bb6cb999858043489c1ddef08eed2127559169
-> >> >> >> Author: Zhang Rui <rui.zhang@intel.com>
-> >> >> >> Date:   Thu Nov 22 15:45:02 2012 +0800
-> >> >> >>
-> >> >> >>     step_wise: Unify the code for both throttle and dethrottle
-> >> >> >>
-> >> >> >>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> >> >> >>
-> >> >> > I do not see how this would affect the sata hibernation/resume.
-> >> >> > but anyway, would you please try the four patches in comment #10, #11,
-> >> >> > #12 and #13 in
-> >> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
-> >> >> > and check if they help?
-> >> >> >
-> >> >> > thanks,
-> >> >> > rui
-> >> >> >
-> >> >>
-> >> >> No luck, with git head and those four patches hibernation is
-> >> >> completely broken, the system doesn't even shut down, it just loses
-> >> >> the disks (I'm attaching what I could get from /proc/kmsg to this
-> >> >> email).
-> >> >>
-> >> >> With the fair_share governor or with step_wise _and_ commit
-> >> >> b8bb6cb999858043489c1ddef08eed2127559169 reverted everything is ok
-> >> >> again.
-> >> >>
-> >> >
-> >> > Can you please attach the output of acpidump from your system?
-> >> >
-> >> > Rafael
-> >> >
-> >> >
+On Tuesday, May 28, 2013 03:23:37 PM Daniel Lezcano wrote:
+> On 05/28/2013 02:42 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, May 28, 2013 02:23:00 PM Daniel Lezcano wrote:
+> >> On 05/28/2013 01:46 PM, Rafael J. Wysocki wrote:
+> >>> On Monday, May 27, 2013 11:00:58 PM Daniel Lezcano wrote:
+> >>>> Each governor is suitable for different kernel configurations: the menu
+> >>>> governor suits better for a tickless system, while the ladder governor fits
+> >>>> better for a periodic timer tick system.
+> >>>>
+> >>>> The Kconfig does not allow to [un]select a governor, thus both are compiled in
+> >>>> the kernel but the init order makes the menu governor to be the last one to be
+> >>>> registered, so becoming the default. The only way to switch back to the ladder
+> >>>> governor is to enable the sysfs governor switch in the kernel command line.
+> >>>>
+> >>>> Because it seems nobody complained about this, the menu governor is used by
+> >>>> default most of the time on the system, having both governors is not really
+> >>>> necessary on a tickless system but there isn't a config option to disable one
+> >>>> or another governor.
+> >>>>
+> >>>> Create a submenu for cpuidle and add a label for each governor, so we can see
+> >>>> the option in the menu config and enable/disable it.
+> >>>>
+> >>>> The governors will be enabled depending on the CONFIG_NO_HZ option:
+> >>>>  - If CONFIG_NO_HZ is set, then the menu governor is selected and the ladder
+> >>>>    governor is optional, defaulting to 'no'
+> >>>
+> >>> Why not defaulting to 'yes'?  That'd be backwards compatible, wouldn't it?
 > >>
-> >> Sure, here it is.
-> >
-> > Thanks!
-> >
-> > Can you please also check if the patch below makes any difference?
-> >
-> > Rafael
-> >
-> >
+> >> Yes, that wouldn't be backward compatible but who wants the ladder
+> >> governor which is less efficient with a tickless system ?
+> > 
+> > I don't know and this isn't the right question to ask I think.
+> > 
+> > You need to ask who uses the ladder governor with CONFIG_NO_HZ and you need to
+> > avoid making changes that aren't backwards compatible if you don't know the
+> > answer (which I'm pretty sure is the case).
+> > 
+> > I'd prefer to default to 'yes' to start with and then to change the
+> > default to 'no' after a couple of cycles, possibly.
+> > 
+> >>>>  - If CONFIG_NO_HZ is not set, then the ladder governor is selected and the
+> >>>>    menu governor is optional, defaulting to 'no'
+> >>>
+> >>> Are you sure this is not going to introduce regressions with CONFIG_NO_HZ
+> >>> unset?
+> >>
+> >> Yes, a system configured with a periodic tick will use the ladder
+> >> instead of the menu governor (which is less efficient on this
+> >> configuration).
+> > 
+> > Well, "less efficient" meaning what exactly?  Less power-efficient or less
+> > efficient performance-wise?
 > 
-> With that patch hibernation is working again on git head and on 3.9.2.
-> 
-> Thank you!
+> less power efficient.
 
-Thanks for testing.  It seems to me, though, that we need to do something
-more radical here.  Can you please test the one below too and report back?
+I thought so, but that's really important, because some people *do* care about
+performance.  In the context of changes like this one we always need to talk
+about both power and performance.  For example, when you're saying that
+changing something may lead to better energy saving behavior, you should also
+say what the impact of that change on performance is going to be.
 
+Thanks,
 Rafael
 
-
----
- drivers/thermal/step_wise.c |   18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
-
-Index: linux-pm/drivers/thermal/step_wise.c
-===================================================================
---- linux-pm.orig/drivers/thermal/step_wise.c
-+++ linux-pm/drivers/thermal/step_wise.c
-@@ -109,7 +109,6 @@ static void thermal_zone_trip_update(str
- 	enum thermal_trend trend;
- 	struct thermal_instance *instance;
- 	bool throttle = false;
--	int old_target;
- 
- 	if (trip == THERMAL_TRIPS_NONE) {
- 		trip_temp = tz->forced_passive;
-@@ -130,18 +129,15 @@ static void thermal_zone_trip_update(str
- 		if (instance->trip != trip)
- 			continue;
- 
--		old_target = instance->target;
--		instance->target = get_target_state(instance, trend, throttle);
-+		if (!throttle && instance->target == THERMAL_NO_TARGET)
-+			continue;
- 
--		/* Activate a passive thermal instance */
--		if (old_target == THERMAL_NO_TARGET &&
--			instance->target != THERMAL_NO_TARGET)
--			update_passive_instance(tz, trip_type, 1);
--		/* Deactivate a passive thermal instance */
--		else if (old_target != THERMAL_NO_TARGET &&
--			instance->target == THERMAL_NO_TARGET)
--			update_passive_instance(tz, trip_type, -1);
-+		instance->target = get_target_state(instance, trend, throttle);
- 
-+		/* Activate or deactivate a passive thermal instance */
-+		if (instance->target == THERMAL_NO_TARGET)
-+			update_passive_instance(tz, trip_type,
-+						throttle ? 1 : -1);
- 
- 		instance->cdev->updated = false; /* cdev needs update */
- 	}
 
 -- 
 I speak only for myself.
