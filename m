@@ -1,123 +1,74 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Tue, 28 May 2013 15:26:25 +0200
-Message-ID: <20130528152625.1b7833e5@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <20130528084035.13afa583@amdc308.digital.local>
- <CAKohpo=6Tk3NmcJw_fqnePu_skHKNB0rFBOUzEsCDyeLqxg4xA@mail.gmail.com>
- <2272781.tC3OqoQmKI@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in
+ pm_generic_runtime_idle()
+Date: Tue, 28 May 2013 10:13:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
+References: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <2272781.tC3OqoQmKI@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:52137 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S934122Ab3E1ONg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 10:13:36 -0400
+In-Reply-To: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 
-Hi Viresh, Rafael,
+On Tue, 28 May 2013, Rafael J. Wysocki wrote:
 
-> On Tuesday, May 28, 2013 03:14:26 PM Viresh Kumar wrote:
-> > On 28 May 2013 12:10, Lukasz Majewski <l.majewski@samsung.com>
-> > wrote:
-> > > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > <manually added by viresh>
-> > >> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
-> > >> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > >> I was talking about /sys/devices/system/cpu/cpufreq/boost that
-> > >> appears to have been added by commit 615b730 (acpi-cpufreq: Add
-> > >> support for disabling dynamic overclocking).
-> > >>
-> > >> That's in acpi-cpufreq, but since that setting seems to be
-> > >> generally useful, it may be a good idea to move it to the core
-> > >> somehow.
+> On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
+> > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
+> > > If the device is using autosuspend we should honor that and call
+> > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
+> > > causes the device to be suspended immediately even though it expects to be
+> > > suspended only when the autosuspend delay is expired.
+> > > 
+> > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > > ---
+> > >  drivers/base/power/generic_ops.c |    5 ++++-
+> > >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> > > index bfd898b..19786ca 100644
+> > > --- a/drivers/base/power/generic_ops.c
+> > > +++ b/drivers/base/power/generic_ops.c
+> > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
+> > >  			return ret;
+> > >  	}
+> > >  
+> > > -	pm_runtime_suspend(dev);
+> > > +	if (dev->power.use_autosuspend)
+> > > +		pm_runtime_autosuspend(dev);
+> > > +	else
+> > > +		pm_runtime_suspend(dev);
+> > >  	return 0;
 > > 
-> > Problem is in breaking existing cpufreq userspace for this driver.
-> > Is this allowed?
+> > First of all, this is racy (power.use_autosuspend shoud be accessed under
+> > power.lock).
 > > 
-> > > I think that Viresh wanted to add "boost" option to
-> > > /sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
-> > > at separate cores (policies).
-> > >
-> > > The localization, which you have proposed:
-> > > /sys/devices/system/cpu/cpufreq/boost
-> > >
-> > > implies, that boost is a global feature (enabled for all cores
-> > > and for all available policies).
-> > >
-> > > Which approach shall be used then?
+> > Second, this is not the only place we'd need to make this change (the analogous
+> > function for PCI is one example, but there may be others).
 > > 
-> > We can use: get_governor_parent_kobj() to get the best location
-> > for boost. But I had some other issues in mind:
-> > - boost is governor dependent.. i.e. It is only required for
-> > ondemand governor (And LAB if it makes it to mainline :) ).. Other
-> > governors doesn't need it. So, it would be better to add it in
-> > governor's directory.
-> 
-
-
-> I'm not sure about that.  On x86 boost will be used with all
-> governors if enabled (as currently defined in acpi-cpufreq).
-
-All governors can benefit from the overclocking code.
-
-
-> 
-> Also it looks like this depends on the driver too, because if the
-> driver doesn't have "turbo" frequencies, the governor won't be able
-> use "turbo" anyway.
-> 
-
-Rafael is correct here. The overclocking framework depends on
-cpufreq_driver (exynos-cpufreq in my case) to switch to overclocked
-frequency.
-
-
-> > - This will break existing users of acpi-cpufreq driver.
+> > Finally, I'm not sure how to address this problem in general.  It may be better
+> > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
 > > 
-> > @Rafael: Please suggest what to do here.
+> > I'll have a look at that, thanks for pointing out the problem.
 > 
-> So first, it would make sense to use a per-driver "boost" attribute
-> indicating whether or not the given driver should present any "turbo"
-> frequencies to the governor.
-
-Now I'm using a device tree's cpufreq section (defined at
-exynos4412-redwood.dts) with overclocking = "okay" attribute defined.
-Then, on this basis, we could decide at cpufreq init time if we will
-export any overclocking related sysfs entries (or init overclocking at
-all). It would assure clearer code.
-
-
->  That'd work along the lines of the
-> acpi-cpufreq "boost", but I don't think that the global_boost
-> attribute should be created by the driver (it'd be better if the
-> driver provided methods to the core for handling that).
-
-I think that global cpufreq device tree attribute shall be defined. The
-overclocking will be an integral part of the cpufreq framework.
-
+> I'm not sure if the core is the right place to address this, because it's
+> not entirely clear if all drivers using autosuspend will have the same policy
+> with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
+> the suspend delay timer is active).
 > 
-> Second, I'm not sure if an additional knob for the governor is
-> necessary.  It may just use the turbo frequencies if available (and
-> if the governor cannot use them, it simply won't use them).
+> In my opinion it'd be better to address that in the driver by adding a
+> .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
+> -EBUSY.
 
-I cannot agree. It is welcome to be able to enable/disable the feature
-when needed. Turbo frequencies shall not be "available" for use all the
-time. For me this situation is far more dangerous.
+Remember that the return value from the runtime_idle callback is 
+ignored.  Are you suggesting that the PM core should start paying 
+attention to it?
 
-> 
-> Thanks,
-> Rafael
-> 
-> 
+Alan Stern
 
-
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Poland (SRPOL) | Linux Platform Group
