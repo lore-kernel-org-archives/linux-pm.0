@@ -1,83 +1,70 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in pm_generic_runtime_idle()
-Date: Tue, 28 May 2013 22:59:07 +0200
-Message-ID: <1569680.9YlRWcdIrx@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH][V2] cpuidle: simplify multiple driver support
+Date: Tue, 28 May 2013 23:08:13 +0200
+Message-ID: <51A51CBD.5060301@linaro.org>
+References: <1369227904-16234-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f43.google.com ([74.125.82.43]:49948 "EHLO
+	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755044Ab3E1VIR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 17:08:17 -0400
+Received: by mail-wg0-f43.google.com with SMTP id x12so3566890wgg.10
+        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 14:08:16 -0700 (PDT)
+In-Reply-To: <1369227904-16234-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@sisk.pl
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Francesco Lavra <francescolavra.fl@gmail.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On Tuesday, May 28, 2013 10:13:35 AM Alan Stern wrote:
-> On Tue, 28 May 2013, Rafael J. Wysocki wrote:
-> 
-> > On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
-> > > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
-> > > > If the device is using autosuspend we should honor that and call
-> > > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
-> > > > causes the device to be suspended immediately even though it expects to be
-> > > > suspended only when the autosuspend delay is expired.
-> > > > 
-> > > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > > > ---
-> > > >  drivers/base/power/generic_ops.c |    5 ++++-
-> > > >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > > > 
-> > > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> > > > index bfd898b..19786ca 100644
-> > > > --- a/drivers/base/power/generic_ops.c
-> > > > +++ b/drivers/base/power/generic_ops.c
-> > > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
-> > > >  			return ret;
-> > > >  	}
-> > > >  
-> > > > -	pm_runtime_suspend(dev);
-> > > > +	if (dev->power.use_autosuspend)
-> > > > +		pm_runtime_autosuspend(dev);
-> > > > +	else
-> > > > +		pm_runtime_suspend(dev);
-> > > >  	return 0;
-> > > 
-> > > First of all, this is racy (power.use_autosuspend shoud be accessed under
-> > > power.lock).
-> > > 
-> > > Second, this is not the only place we'd need to make this change (the analogous
-> > > function for PCI is one example, but there may be others).
-> > > 
-> > > Finally, I'm not sure how to address this problem in general.  It may be better
-> > > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
-> > > 
-> > > I'll have a look at that, thanks for pointing out the problem.
-> > 
-> > I'm not sure if the core is the right place to address this, because it's
-> > not entirely clear if all drivers using autosuspend will have the same policy
-> > with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
-> > the suspend delay timer is active).
-> > 
-> > In my opinion it'd be better to address that in the driver by adding a
-> > .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
-> > -EBUSY.
-> 
-> Remember that the return value from the runtime_idle callback is ignored.
+On 05/22/2013 03:05 PM, Daniel Lezcano wrote:
+> Commit bf4d1b5ddb78f86078ac6ae0415802d5f0c68f92 brought the multiple =
+driver
+> support. The code added a couple of new API to register the driver pe=
+r cpu.
+> That led to some code complexity to handle the kernel config options =
+when
+> the multiple driver support is enabled or not, which is not really ne=
+cessary.
+> The code has to be compatible when the multiple driver support is not=
+ enabled,
+> and the multiple driver support has to be compatible with the old api=
+=2E
+>
+> This patch removes this API, which is not yet used by any driver but =
+needed
+> for the HMP cpuidle drivers which will come soon, and replaces its us=
+age
+> by a cpumask pointer in the cpuidle driver structure telling what cpu=
+s are
+> handled by the driver. That let the API cpuidle_[un]register_driver t=
+o be used
+> for the multipled driver support and also the cpuidle_[un]register fu=
+nctions,
+> added recently in the cpuidle framework.
+>
+> The current code, a bit poor in comments, has been commented and simp=
+lified.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>
+> [V2]:
+>  - fixed bad refcount check
+>  - inverted clockevent notify off order at unregister time
 
-It is ignored by the core, but some subsystems (those using
-pm_generic_runtime_idle() in particular) take it into account.
+Hi Rafael,
 
-> Are you suggesting that the PM core should start paying attention to it?
+could you consider this patch for merging ? I took into account
+=46rancesco's comments.
 
-In fact, I was pondering posting a patch making that change. :-)
+Thanks
+-- Daniel
 
-Perhaps I'll just post it for discussion later today ...
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
+or ARM
+SoCs Follow Linaro: <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
