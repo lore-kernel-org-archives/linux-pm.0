@@ -1,137 +1,343 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle: improve governor Kconfig options
-Date: Tue, 28 May 2013 23:39:28 +0200
-Message-ID: <51A52410.8090608@linaro.org>
-References: <1369688458-9114-1-git-send-email-daniel.lezcano@linaro.org> <5938372.bcA6BTeOGP@vostro.rjw.lan> <51A4AFD9.3020109@linaro.org> <1687661.MEWgzcOBGL@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper routine
+Date: Wed, 29 May 2013 01:29:06 +0200
+Message-ID: <1463685.qFyr66vqF2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:54544 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932260Ab3E1Vjc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 17:39:32 -0400
-Received: by mail-wi0-f182.google.com with SMTP id c10so2934828wiw.9
-        for <linux-pm@vger.kernel.org>; Tue, 28 May 2013 14:39:30 -0700 (PDT)
-In-Reply-To: <1687661.MEWgzcOBGL@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Gleixner <tglx@linutronix.de>
 
-On 05/28/2013 11:26 PM, Rafael J. Wysocki wrote:
-> On Tuesday, May 28, 2013 03:23:37 PM Daniel Lezcano wrote:
->> On 05/28/2013 02:42 PM, Rafael J. Wysocki wrote:
->>> On Tuesday, May 28, 2013 02:23:00 PM Daniel Lezcano wrote:
->>>> On 05/28/2013 01:46 PM, Rafael J. Wysocki wrote:
->>>>> On Monday, May 27, 2013 11:00:58 PM Daniel Lezcano wrote:
->>>>>> Each governor is suitable for different kernel configurations: t=
-he menu
->>>>>> governor suits better for a tickless system, while the ladder go=
-vernor fits
->>>>>> better for a periodic timer tick system.
->>>>>>
->>>>>> The Kconfig does not allow to [un]select a governor, thus both a=
-re compiled in
->>>>>> the kernel but the init order makes the menu governor to be the =
-last one to be
->>>>>> registered, so becoming the default. The only way to switch back=
- to the ladder
->>>>>> governor is to enable the sysfs governor switch in the kernel co=
-mmand line.
->>>>>>
->>>>>> Because it seems nobody complained about this, the menu governor=
- is used by
->>>>>> default most of the time on the system, having both governors is=
- not really
->>>>>> necessary on a tickless system but there isn't a config option t=
-o disable one
->>>>>> or another governor.
->>>>>>
->>>>>> Create a submenu for cpuidle and add a label for each governor, =
-so we can see
->>>>>> the option in the menu config and enable/disable it.
->>>>>>
->>>>>> The governors will be enabled depending on the CONFIG_NO_HZ opti=
-on:
->>>>>>  - If CONFIG_NO_HZ is set, then the menu governor is selected an=
-d the ladder
->>>>>>    governor is optional, defaulting to 'no'
->>>>>
->>>>> Why not defaulting to 'yes'?  That'd be backwards compatible, wou=
-ldn't it?
->>>>
->>>> Yes, that wouldn't be backward compatible but who wants the ladder
->>>> governor which is less efficient with a tickless system ?
->>>
->>> I don't know and this isn't the right question to ask I think.
->>>
->>> You need to ask who uses the ladder governor with CONFIG_NO_HZ and =
-you need to
->>> avoid making changes that aren't backwards compatible if you don't =
-know the
->>> answer (which I'm pretty sure is the case).
->>>
->>> I'd prefer to default to 'yes' to start with and then to change the
->>> default to 'no' after a couple of cycles, possibly.
->>>
->>>>>>  - If CONFIG_NO_HZ is not set, then the ladder governor is selec=
-ted and the
->>>>>>    menu governor is optional, defaulting to 'no'
->>>>>
->>>>> Are you sure this is not going to introduce regressions with CONF=
-IG_NO_HZ
->>>>> unset?
->>>>
->>>> Yes, a system configured with a periodic tick will use the ladder
->>>> instead of the menu governor (which is less efficient on this
->>>> configuration).
->>>
->>> Well, "less efficient" meaning what exactly?  Less power-efficient =
-or less
->>> efficient performance-wise?
->>
->> less power efficient.
->=20
-> I thought so, but that's really important, because some people *do* c=
-are about
-> performance.  In the context of changes like this one we always need =
-to talk
-> about both power and performance.  For example, when you're saying th=
-at
-> changing something may lead to better energy saving behavior, you sho=
-uld also
-> say what the impact of that change on performance is going to be
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I fully agree with you but with this very specific case, when the
-cpuidle is enabled in the system, it is to have the best trade-off
-between performance and power saving. Using the ladder governor on a
-tickless system is not power efficient and the performance is not
-significantly improved. If the governor is too agressive in power savin=
-g
-and impacts the performance the pm_qos will guarantee the needed
-performance.
+The "runtime idle" helper routine, rpm_idle(), currently ignores
+return values from .runtime_idle() callbacks executed by it.
 
-Desktop will use tickless system because they want power saving, thus
-cpuidle and the menu governor is the best trade-off.
+However, it turns out that many subsystems use the generic idle
+callback routine pm_generic_runtime_idle() which checks the return
+value of the driver's callback and executes pm_runtime_suspend() for
+the device unless that value is different from 0.  If that logic is
+moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
+and its users will not need any .runtime_idle() callbacks any more.
 
-Server will want more responsiveness and will use a periodic timer tick
-system, the cpuidle and the ladder suits better.
+Moreover, the PCI subsystem's .runtime_idle() routine,
+pci_pm_runtime_idle(), works in analogy with the generic one and if
+rpm_idle() calls rpm_suspend() after 0 has been returned by the
+.runtime_idle() callback executed by it, that routine will not be
+necessary any more and may be dropped.
 
-The pm_qos will ensure a latency for both governors.
+To reduce overall code duplication make the changes described above.
 
-But again I agree 100% with you and keeping the old behavior makes sens=
-e
-until we sort this out clearly in the next cycles.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Thanks
-  -- Daniel
+The patch doesn't break compilation for me, but it hasn't been tested
+otherwise.  It applies on top of the linux-pm.git tree's linux-next branch.
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Thanks,
+Rafael
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+---
+ Documentation/power/runtime_pm.txt |    5 -----
+ arch/arm/mach-omap2/omap_device.c  |    7 +------
+ drivers/acpi/device_pm.c           |    1 -
+ drivers/amba/bus.c                 |    2 +-
+ drivers/base/platform.c            |    1 -
+ drivers/base/power/domain.c        |    1 -
+ drivers/base/power/generic_ops.c   |   23 -----------------------
+ drivers/base/power/runtime.c       |   12 +++++-------
+ drivers/i2c/i2c-core.c             |    2 +-
+ drivers/mmc/core/sdio_bus.c        |    2 +-
+ drivers/pci/pci-driver.c           |   27 ---------------------------
+ drivers/spi/spi.c                  |    2 +-
+ drivers/usb/core/port.c            |    1 -
+ include/linux/pm_runtime.h         |    2 --
+ 14 files changed, 10 insertions(+), 78 deletions(-)
 
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -293,11 +293,8 @@ static int rpm_idle(struct device *dev,
+ 	/* Pending requests need to be canceled. */
+ 	dev->power.request = RPM_REQ_NONE;
+ 
+-	if (dev->power.no_callbacks) {
+-		/* Assume ->runtime_idle() callback would have suspended. */
+-		retval = rpm_suspend(dev, rpmflags);
++	if (dev->power.no_callbacks)
+ 		goto out;
+-	}
+ 
+ 	/* Carry out an asynchronous or a synchronous idle notification. */
+ 	if (rpmflags & RPM_ASYNC) {
+@@ -306,7 +303,8 @@ static int rpm_idle(struct device *dev,
+ 			dev->power.request_pending = true;
+ 			queue_work(pm_wq, &dev->power.work);
+ 		}
+-		goto out;
++		trace_rpm_return_int(dev, _THIS_IP_, 0);
++		return 0;
+ 	}
+ 
+ 	dev->power.idle_notification = true;
+@@ -326,14 +324,14 @@ static int rpm_idle(struct device *dev,
+ 		callback = dev->driver->pm->runtime_idle;
+ 
+ 	if (callback)
+-		__rpm_callback(callback, dev);
++		retval = __rpm_callback(callback, dev);
+ 
+ 	dev->power.idle_notification = false;
+ 	wake_up_all(&dev->power.wait_queue);
+ 
+  out:
+ 	trace_rpm_return_int(dev, _THIS_IP_, retval);
+-	return retval;
++	return retval ? retval : rpm_suspend(dev, rpmflags);
+ }
+ 
+ /**
+Index: linux-pm/drivers/base/power/generic_ops.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/generic_ops.c
++++ linux-pm/drivers/base/power/generic_ops.c
+@@ -12,29 +12,6 @@
+ 
+ #ifdef CONFIG_PM_RUNTIME
+ /**
+- * pm_generic_runtime_idle - Generic runtime idle callback for subsystems.
+- * @dev: Device to handle.
+- *
+- * If PM operations are defined for the @dev's driver and they include
+- * ->runtime_idle(), execute it and return its error code, if nonzero.
+- * Otherwise, execute pm_runtime_suspend() for the device and return 0.
+- */
+-int pm_generic_runtime_idle(struct device *dev)
+-{
+-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-
+-	if (pm && pm->runtime_idle) {
+-		int ret = pm->runtime_idle(dev);
+-		if (ret)
+-			return ret;
+-	}
+-
+-	pm_runtime_suspend(dev);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
+-
+-/**
+  * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
+  * @dev: Device to suspend.
+  *
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -37,7 +37,6 @@ extern void pm_runtime_enable(struct dev
+ extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+ extern void pm_runtime_allow(struct device *dev);
+ extern void pm_runtime_forbid(struct device *dev);
+-extern int pm_generic_runtime_idle(struct device *dev);
+ extern int pm_generic_runtime_suspend(struct device *dev);
+ extern int pm_generic_runtime_resume(struct device *dev);
+ extern void pm_runtime_no_callbacks(struct device *dev);
+@@ -143,7 +142,6 @@ static inline bool pm_runtime_active(str
+ static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+-static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+ static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+Index: linux-pm/arch/arm/mach-omap2/omap_device.c
+===================================================================
+--- linux-pm.orig/arch/arm/mach-omap2/omap_device.c
++++ linux-pm/arch/arm/mach-omap2/omap_device.c
+@@ -591,11 +591,6 @@ static int _od_runtime_suspend(struct de
+ 	return ret;
+ }
+ 
+-static int _od_runtime_idle(struct device *dev)
+-{
+-	return pm_generic_runtime_idle(dev);
+-}
+-
+ static int _od_runtime_resume(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -653,7 +648,7 @@ static int _od_resume_noirq(struct devic
+ struct dev_pm_domain omap_device_pm_domain = {
+ 	.ops = {
+ 		SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
+-				   _od_runtime_idle)
++				   NULL)
+ 		USE_PLATFORM_PM_SLEEP_OPS
+ 		.suspend_noirq = _od_suspend_noirq,
+ 		.resume_noirq = _od_resume_noirq,
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -886,7 +886,6 @@ static struct dev_pm_domain acpi_general
+ #ifdef CONFIG_PM_RUNTIME
+ 		.runtime_suspend = acpi_subsys_runtime_suspend,
+ 		.runtime_resume = acpi_subsys_runtime_resume,
+-		.runtime_idle = pm_generic_runtime_idle,
+ #endif
+ #ifdef CONFIG_PM_SLEEP
+ 		.prepare = acpi_subsys_prepare,
+Index: linux-pm/drivers/amba/bus.c
+===================================================================
+--- linux-pm.orig/drivers/amba/bus.c
++++ linux-pm/drivers/amba/bus.c
+@@ -284,7 +284,7 @@ static const struct dev_pm_ops amba_pm =
+ 	SET_RUNTIME_PM_OPS(
+ 		amba_pm_runtime_suspend,
+ 		amba_pm_runtime_resume,
+-		pm_generic_runtime_idle
++		NULL
+ 	)
+ };
+ 
+Index: linux-pm/drivers/base/power/domain.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/domain.c
++++ linux-pm/drivers/base/power/domain.c
+@@ -2143,7 +2143,6 @@ void pm_genpd_init(struct generic_pm_dom
+ 	genpd->max_off_time_changed = true;
+ 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
+ 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
+-	genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
+ 	genpd->domain.ops.prepare = pm_genpd_prepare;
+ 	genpd->domain.ops.suspend = pm_genpd_suspend;
+ 	genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
+Index: linux-pm/drivers/base/platform.c
+===================================================================
+--- linux-pm.orig/drivers/base/platform.c
++++ linux-pm/drivers/base/platform.c
+@@ -888,7 +888,6 @@ int platform_pm_restore(struct device *d
+ static const struct dev_pm_ops platform_dev_pm_ops = {
+ 	.runtime_suspend = pm_generic_runtime_suspend,
+ 	.runtime_resume = pm_generic_runtime_resume,
+-	.runtime_idle = pm_generic_runtime_idle,
+ 	USE_PLATFORM_PM_SLEEP_OPS
+ };
+ 
+Index: linux-pm/drivers/i2c/i2c-core.c
+===================================================================
+--- linux-pm.orig/drivers/i2c/i2c-core.c
++++ linux-pm/drivers/i2c/i2c-core.c
+@@ -435,7 +435,7 @@ static const struct dev_pm_ops i2c_devic
+ 	SET_RUNTIME_PM_OPS(
+ 		pm_generic_runtime_suspend,
+ 		pm_generic_runtime_resume,
+-		pm_generic_runtime_idle
++		NULL
+ 	)
+ };
+ 
+Index: linux-pm/drivers/mmc/core/sdio_bus.c
+===================================================================
+--- linux-pm.orig/drivers/mmc/core/sdio_bus.c
++++ linux-pm/drivers/mmc/core/sdio_bus.c
+@@ -211,7 +211,7 @@ static const struct dev_pm_ops sdio_bus_
+ 	SET_RUNTIME_PM_OPS(
+ 		pm_generic_runtime_suspend,
+ 		pm_generic_runtime_resume,
+-		pm_generic_runtime_idle
++		NULL
+ 	)
+ };
+ 
+Index: linux-pm/drivers/spi/spi.c
+===================================================================
+--- linux-pm.orig/drivers/spi/spi.c
++++ linux-pm/drivers/spi/spi.c
+@@ -223,7 +223,7 @@ static const struct dev_pm_ops spi_pm =
+ 	SET_RUNTIME_PM_OPS(
+ 		pm_generic_runtime_suspend,
+ 		pm_generic_runtime_resume,
+-		pm_generic_runtime_idle
++		NULL
+ 	)
+ };
+ 
+Index: linux-pm/drivers/usb/core/port.c
+===================================================================
+--- linux-pm.orig/drivers/usb/core/port.c
++++ linux-pm/drivers/usb/core/port.c
+@@ -141,7 +141,6 @@ static const struct dev_pm_ops usb_port_
+ #ifdef CONFIG_PM_RUNTIME
+ 	.runtime_suspend =	usb_port_runtime_suspend,
+ 	.runtime_resume =	usb_port_runtime_resume,
+-	.runtime_idle =		pm_generic_runtime_idle,
+ #endif
+ };
+ 
+Index: linux-pm/Documentation/power/runtime_pm.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/runtime_pm.txt
++++ linux-pm/Documentation/power/runtime_pm.txt
+@@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
+ management callbacks provided by the PM core, defined in
+ driver/base/power/generic_ops.c:
+ 
+-  int pm_generic_runtime_idle(struct device *dev);
+-    - invoke the ->runtime_idle() callback provided by the driver of this
+-      device, if defined, and call pm_runtime_suspend() for this device if the
+-      return value is 0 or the callback is not defined
+-
+   int pm_generic_runtime_suspend(struct device *dev);
+     - invoke the ->runtime_suspend() callback provided by the driver of this
+       device and return its result, or return -EINVAL if not defined
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1046,32 +1046,6 @@ static int pci_pm_runtime_resume(struct
+ 	return rc;
+ }
+ 
+-static int pci_pm_runtime_idle(struct device *dev)
+-{
+-	struct pci_dev *pci_dev = to_pci_dev(dev);
+-	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+-
+-	/*
+-	 * If pci_dev->driver is not set (unbound), the device should
+-	 * always remain in D0 regardless of the runtime PM status
+-	 */
+-	if (!pci_dev->driver)
+-		goto out;
+-
+-	if (!pm)
+-		return -ENOSYS;
+-
+-	if (pm->runtime_idle) {
+-		int ret = pm->runtime_idle(dev);
+-		if (ret)
+-			return ret;
+-	}
+-
+-out:
+-	pm_runtime_suspend(dev);
+-	return 0;
+-}
+-
+ #else /* !CONFIG_PM_RUNTIME */
+ 
+ #define pci_pm_runtime_suspend	NULL
+@@ -1099,7 +1073,6 @@ const struct dev_pm_ops pci_dev_pm_ops =
+ 	.restore_noirq = pci_pm_restore_noirq,
+ 	.runtime_suspend = pci_pm_runtime_suspend,
+ 	.runtime_resume = pci_pm_runtime_resume,
+-	.runtime_idle = pci_pm_runtime_idle,
+ };
+ 
+ #define PCI_PM_OPS_PTR	(&pci_dev_pm_ops)
