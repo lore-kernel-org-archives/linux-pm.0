@@ -1,161 +1,43 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 0/2] staging -> thermal: move ti-soc-thermal to drivers/thermal
-Date: Tue, 28 May 2013 10:30:23 -0400
-Message-ID: <51A4BF7F.4010705@ti.com>
-References: <1368632761-10528-1-git-send-email-eduardo.valentin@ti.com> <1369708896.1913.5.camel@rzhang1-mobl4>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH v4 8/8] reset: Add driver for gpio-controlled reset pins
+Date: Tue, 28 May 2013 17:05:46 +0200
+Message-ID: <1369753546.4000.4.camel@pizza.hi.pengutronix.de>
+References: <1361878774-6382-1-git-send-email-p.zabel@pengutronix.de>
+	 <1361878774-6382-9-git-send-email-p.zabel@pengutronix.de>
+	 <CAOMZO5BJ7h=_cqSUG6X25SHTMe5ym1_nToj5P_PMR9bxN+B2Ow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2QQGEWGQFANADHFKJIDIV"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:47071 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934279Ab3E1Oac (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 10:30:32 -0400
-In-Reply-To: <1369708896.1913.5.camel@rzhang1-mobl4>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57705 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934491Ab3E1PHG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 11:07:06 -0400
+In-Reply-To: <CAOMZO5BJ7h=_cqSUG6X25SHTMe5ym1_nToj5P_PMR9bxN+B2Ow@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: linux-arm-kernel@lists.infradead.org, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@freescale.com>, Mike Turquette <mturquette@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, kernel@pengutronix.de, Shawn Guo <shawn.guo@linaro.org>, devicetree-discuss@lists.ozlabs.org
 
-------enig2QQGEWGQFANADHFKJIDIV
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Fabio,
 
-On 27-05-2013 22:41, Zhang Rui wrote:
-> On Wed, 2013-05-15 at 11:45 -0400, Eduardo Valentin wrote:
->> Hello Greg and Rui,
->>
->> I am proposing to move the ti-soc-thermal driver from drivers/stating/=
+Am Montag, den 27.05.2013, 13:25 -0300 schrieb Fabio Estevam:
+> On Tue, Feb 26, 2013 at 8:39 AM, Philipp Zabel <p.zabel@pengutronix.de> wrote:
+> > This driver implements a reset controller device that toggles gpios
+> > connected to reset pins of peripheral ICs. The delay between assertion
+> > and de-assertion of the reset signal can be configured.
+> >
+> > Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
+> 
+> Looks good and it is a very useful binding.
+> 
+> Will anyone apply this?
 
->> to drivers/thermal. It has been some time that we have been fixing and=
+I have tried to address Olof's concerns by making the gpio-reset driver
+only handle a single gpio per device.
 
->> improving the code under staging tree.
->>
->> I believe it is time to move on. The driver now has a better code
->> organization (split between code and data), DT support, better coding
->> style, it supports TI OMAP chips 4430, 4460, 4470 and 5430, and it is
->> ready for easy addition of other SoC chips containing the bandgap IP.
->> Besides, this driver required some major changes in the thermal framew=
-ork,
->> before it could provide basic functionality using the device capabilit=
-y.
->> These changes have been already merged in previous merge windows,
->> so there is no pending dependencies.
->>
->> The remaining items in the TODO list are actually not a blocker for th=
-is
->> move, IMO. The PM support is not fully completed on all supported OMAP=
- chips.
->> The locking so far has not caused any issues, and I believe that most =
-of
->> the interesting data is protected by the thermal framework.
->>
->> I am sending this patch for your appreciation and also to get wider re=
-view.
->>
->=20
-> patch applied to thermal -next tree and targeted for 3.11.
+I'll send a new patch for review.
 
+regards
+Philipp
 
-Thanks Rui,
-
-I am going to send the usual ti soc thermal fixes patch set to you now.
-I ve been sending it anyway to linux-pm. Only thing is that it should go
-via your tree now.
-
-Next set should contain some fixes identified during internal testing.
-
->=20
-> thanks,
-> rui
->> All best,
->>
->> Eduardo Valentin (2):
->>   thermal: introduce TI SoC thermal driver
->>   MAINTAINERS: update TI SoC thermal driver entry
->>
->>  .../devicetree/bindings/thermal}/ti_soc_thermal.txt                  =
- | 0
->>  MAINTAINERS                                                          =
- | 4 ++--
->>  drivers/staging/Kconfig                                              =
- | 2 --
->>  drivers/staging/Makefile                                             =
- | 1 -
->>  drivers/thermal/Kconfig                                              =
- | 3 +++
->>  drivers/thermal/Makefile                                             =
- | 2 +-
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/Kconfig                =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/Makefile               =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/TODO                   =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap4-thermal-data.c   =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap4xxx-bandgap.h     =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap5-thermal-data.c   =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap5xxx-bandgap.h     =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.c           =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.h           =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal-common.c    =
-   | 0
->>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal.h           =
-   | 0
->>  17 files changed, 6 insertions(+), 6 deletions(-)
->>  rename {drivers/staging/ti-soc-thermal =3D> Documentation/devicetree/=
-bindings/thermal}/ti_soc_thermal.txt (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/Kconfig (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/Makefile (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/TODO (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap4-thermal-da=
-ta.c (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap4xxx-bandgap=
-=2Eh (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap5-thermal-da=
-ta.c (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap5xxx-bandgap=
-=2Eh (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.c (10=
-0%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.h (10=
-0%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal-commo=
-n.c (100%)
->>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal.h (10=
-0%)
->>
->=20
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2QQGEWGQFANADHFKJIDIV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGkv38ACgkQCXcVR3XQvP2dhgEAlmEDiidoxF8jcUNCWakEjp9Q
-5rPVqPIuksXoh7BbFdgA+wSgTzP9w+c7Bg/kHC1lcABd9QJE72J4xp/H8lbQgdQS
-=of1p
------END PGP SIGNATURE-----
-
-------enig2QQGEWGQFANADHFKJIDIV--
