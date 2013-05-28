@@ -1,74 +1,161 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in
- pm_generic_runtime_idle()
-Date: Tue, 28 May 2013 10:13:35 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
-References: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 0/2] staging -> thermal: move ti-soc-thermal to drivers/thermal
+Date: Tue, 28 May 2013 10:30:23 -0400
+Message-ID: <51A4BF7F.4010705@ti.com>
+References: <1368632761-10528-1-git-send-email-eduardo.valentin@ti.com> <1369708896.1913.5.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2QQGEWGQFANADHFKJIDIV"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:52137 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934122Ab3E1ONg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 10:13:36 -0400
-In-Reply-To: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
+Received: from devils.ext.ti.com ([198.47.26.153]:47071 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934279Ab3E1Oac (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 10:30:32 -0400
+In-Reply-To: <1369708896.1913.5.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 
-On Tue, 28 May 2013, Rafael J. Wysocki wrote:
+------enig2QQGEWGQFANADHFKJIDIV
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
-> > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
-> > > If the device is using autosuspend we should honor that and call
-> > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
-> > > causes the device to be suspended immediately even though it expects to be
-> > > suspended only when the autosuspend delay is expired.
-> > > 
-> > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > > ---
-> > >  drivers/base/power/generic_ops.c |    5 ++++-
-> > >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> > > index bfd898b..19786ca 100644
-> > > --- a/drivers/base/power/generic_ops.c
-> > > +++ b/drivers/base/power/generic_ops.c
-> > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
-> > >  			return ret;
-> > >  	}
-> > >  
-> > > -	pm_runtime_suspend(dev);
-> > > +	if (dev->power.use_autosuspend)
-> > > +		pm_runtime_autosuspend(dev);
-> > > +	else
-> > > +		pm_runtime_suspend(dev);
-> > >  	return 0;
-> > 
-> > First of all, this is racy (power.use_autosuspend shoud be accessed under
-> > power.lock).
-> > 
-> > Second, this is not the only place we'd need to make this change (the analogous
-> > function for PCI is one example, but there may be others).
-> > 
-> > Finally, I'm not sure how to address this problem in general.  It may be better
-> > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
-> > 
-> > I'll have a look at that, thanks for pointing out the problem.
-> 
-> I'm not sure if the core is the right place to address this, because it's
-> not entirely clear if all drivers using autosuspend will have the same policy
-> with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
-> the suspend delay timer is active).
-> 
-> In my opinion it'd be better to address that in the driver by adding a
-> .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
-> -EBUSY.
+On 27-05-2013 22:41, Zhang Rui wrote:
+> On Wed, 2013-05-15 at 11:45 -0400, Eduardo Valentin wrote:
+>> Hello Greg and Rui,
+>>
+>> I am proposing to move the ti-soc-thermal driver from drivers/stating/=
 
-Remember that the return value from the runtime_idle callback is 
-ignored.  Are you suggesting that the PM core should start paying 
-attention to it?
+>> to drivers/thermal. It has been some time that we have been fixing and=
 
-Alan Stern
+>> improving the code under staging tree.
+>>
+>> I believe it is time to move on. The driver now has a better code
+>> organization (split between code and data), DT support, better coding
+>> style, it supports TI OMAP chips 4430, 4460, 4470 and 5430, and it is
+>> ready for easy addition of other SoC chips containing the bandgap IP.
+>> Besides, this driver required some major changes in the thermal framew=
+ork,
+>> before it could provide basic functionality using the device capabilit=
+y.
+>> These changes have been already merged in previous merge windows,
+>> so there is no pending dependencies.
+>>
+>> The remaining items in the TODO list are actually not a blocker for th=
+is
+>> move, IMO. The PM support is not fully completed on all supported OMAP=
+ chips.
+>> The locking so far has not caused any issues, and I believe that most =
+of
+>> the interesting data is protected by the thermal framework.
+>>
+>> I am sending this patch for your appreciation and also to get wider re=
+view.
+>>
+>=20
+> patch applied to thermal -next tree and targeted for 3.11.
 
+
+Thanks Rui,
+
+I am going to send the usual ti soc thermal fixes patch set to you now.
+I ve been sending it anyway to linux-pm. Only thing is that it should go
+via your tree now.
+
+Next set should contain some fixes identified during internal testing.
+
+>=20
+> thanks,
+> rui
+>> All best,
+>>
+>> Eduardo Valentin (2):
+>>   thermal: introduce TI SoC thermal driver
+>>   MAINTAINERS: update TI SoC thermal driver entry
+>>
+>>  .../devicetree/bindings/thermal}/ti_soc_thermal.txt                  =
+ | 0
+>>  MAINTAINERS                                                          =
+ | 4 ++--
+>>  drivers/staging/Kconfig                                              =
+ | 2 --
+>>  drivers/staging/Makefile                                             =
+ | 1 -
+>>  drivers/thermal/Kconfig                                              =
+ | 3 +++
+>>  drivers/thermal/Makefile                                             =
+ | 2 +-
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/Kconfig                =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/Makefile               =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/TODO                   =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap4-thermal-data.c   =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap4xxx-bandgap.h     =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap5-thermal-data.c   =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/omap5xxx-bandgap.h     =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.c           =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.h           =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal-common.c    =
+   | 0
+>>  drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal.h           =
+   | 0
+>>  17 files changed, 6 insertions(+), 6 deletions(-)
+>>  rename {drivers/staging/ti-soc-thermal =3D> Documentation/devicetree/=
+bindings/thermal}/ti_soc_thermal.txt (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/Kconfig (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/Makefile (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/TODO (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap4-thermal-da=
+ta.c (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap4xxx-bandgap=
+=2Eh (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap5-thermal-da=
+ta.c (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/omap5xxx-bandgap=
+=2Eh (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.c (10=
+0%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-bandgap.h (10=
+0%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal-commo=
+n.c (100%)
+>>  rename drivers/{staging =3D> thermal}/ti-soc-thermal/ti-thermal.h (10=
+0%)
+>>
+>=20
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2QQGEWGQFANADHFKJIDIV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGkv38ACgkQCXcVR3XQvP2dhgEAlmEDiidoxF8jcUNCWakEjp9Q
+5rPVqPIuksXoh7BbFdgA+wSgTzP9w+c7Bg/kHC1lcABd9QJE72J4xp/H8lbQgdQS
+=of1p
+-----END PGP SIGNATURE-----
+
+------enig2QQGEWGQFANADHFKJIDIV--
