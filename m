@@ -1,48 +1,78 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH] thermal: cpu_cooling: fix 'descend' check in get_property()
-Date: Tue, 28 May 2013 14:22:32 +0800
-Message-ID: <1369722152-9732-1-git-send-email-shawn.guo@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Tue, 28 May 2013 08:40:35 +0200
+Message-ID: <20130528084035.13afa583@amdc308.digital.local>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+ <8856294.KaD55h4g0a@vostro.rjw.lan>
+ <CAKohpom4sSwJG7r67+aNMjAdr7CToAqCbdcbd+vSCTEQkiTkcg@mail.gmail.com>
+ <41528879.GuKxJgVhIe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe002.messaging.microsoft.com ([216.32.181.182]:17978
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932985Ab3E1GWX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 02:22:23 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:16170 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932464Ab3E1Gkz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 May 2013 02:40:55 -0400
+In-reply-to: <41528879.GuKxJgVhIe@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawn.guo@linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
-The variable 'descend' is initialized as -1 in function get_property(),
-and will never get any chance to be updated by the following code.
+Hi Rafael,
 
-	if (freq != CPUFREQ_ENTRY_INVALID && descend != -1)
-		descend = !!(freq > table[i].frequency);
+> On Monday, May 27, 2013 06:54:49 PM Viresh Kumar wrote:
+> > On 27 May 2013 17:30, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > Well, this really looks like software turbo modes, so let's call
+> > > them "TURBO" instead of "OVERDRIVE"
+> > 
+> > Yes, it looks better.
+> > 
+> > > and I seem to remember having a switch for
+> > > disabling/enabling turbo modes already.
+> > 
+> > This was added in intel_pstate driver and shows up in
+> > /sys/devices/system/cpu/cpufreq/ directory..
+> > 
+> > But this feature belongs to a governor instance and so
+> > will be present inside governor directory..
+> > 
+> > Specially for big LITTLE we want it to be per policy
+> > specific. So may need to add a new one.
+> 
+> I was talking about /sys/devices/system/cpu/cpufreq/boost that
+> appears to have been added by commit 615b730 (acpi-cpufreq: Add
+> support for disabling dynamic overclocking).
+> 
+> That's in acpi-cpufreq, but since that setting seems to be generally
+> useful, it may be a good idea to move it to the core somehow.
 
-This makes function get_property() return the wrong frequency for given
-cooling level if the frequency table is sorted in ascending.  Fix it
-by correcting the 'descend' check in if-condition to 'descend == -1'.
+I think that Viresh wanted to add "boost" option to 
+/sys/devices/system/cpu/cpuX/cpufreq/ to be able to control boost
+at separate cores (policies).
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- drivers/thermal/cpu_cooling.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The localization, which you have proposed:
+/sys/devices/system/cpu/cpufreq/boost
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index c94bf2e..82e15db 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -167,7 +167,7 @@ static int get_property(unsigned int cpu, unsigned long input,
- 			continue;
- 
- 		/* get the frequency order */
--		if (freq != CPUFREQ_ENTRY_INVALID && descend != -1)
-+		if (freq != CPUFREQ_ENTRY_INVALID && descend == -1)
- 			descend = !!(freq > table[i].frequency);
- 
- 		freq = table[i].frequency;
+implies, that boost is a global feature (enabled for all cores and for
+all available policies).
+
+Which approach shall be used then? 
+
+
+> 
+> Thanks,
+> Rafael
+> 
+> 
+
+
+
 -- 
-1.7.9.5
+Best regards,
 
+Lukasz Majewski
 
+Samsung R&D Poland (SRPOL) | Linux Platform Group
