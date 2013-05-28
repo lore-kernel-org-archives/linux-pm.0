@@ -1,48 +1,62 @@
-From: Phillip Susi <psusi@ubuntu.com>
-Subject: Re: [RFC PATCH v2 00/15][Sorted-buddy] mm: Memory Power Management
-Date: Tue, 28 May 2013 16:08:36 -0400
-Message-ID: <51A50EC4.4090108@ubuntu.com>
-References: <20130409214443.4500.44168.stgit@srivatsabhat.in.ibm.com> <5170D781.3000102@gmail.com> <5170EE4F.9030908@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCHv2 1/2] drivers: power: Add watchdog timer to catch drivers which lockup during suspend/resume.
+Date: Tue, 28 May 2013 22:49:26 +0200
+Message-ID: <1515063.BZy7p4GtyV@vostro.rjw.lan>
+References: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org> <3006354.hOxNuWCXu4@vostro.rjw.lan> <CAME+o4kJYD2K_aL4xNi-jNP1Q8R+seDNZDwsGBhvU00ArR0Skg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <5170EE4F.9030908@linux.vnet.ibm.com>
-Sender: owner-linux-mm@kvack.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: Simon Jeons <simon.jeons@gmail.com>, akpm@linux-foundation.org, mgorman@suse.de, matthew.garrett@nebula.com, dave@sr71.net, rientjes@google.com, riel@redhat.com, arjan@linux.intel.com, srinivas.pandruvada@linux.intel.com, maxime.coquelin@stericsson.com, loic.pallardy@stericsson.com, kamezawa.hiroyu@jp.fujitsu.com, lenb@kernel.org, rjw@sisk.pl, gargankita@gmail.com, paulmck@linux.vnet.ibm.com, amit.kachhap@linaro.org, svaidy@linux.vnet.ibm.com, andi@firstfloor.org, wujianguo@huawei.com, kmpark@infradead.org, thomas.abraham@linaro.org, santosh.shilimkar@ti.com, linux-pm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:53548 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755938Ab3E1Ukg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 May 2013 16:40:36 -0400
+In-Reply-To: <CAME+o4kJYD2K_aL4xNi-jNP1Q8R+seDNZDwsGBhvU00ArR0Skg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zoran Markovic <zoran.markovic@linaro.org>
+Cc: Colin Cross <ccross@android.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Tuesday, May 28, 2013 11:26:09 AM Zoran Markovic wrote:
+> > What about this:
+> >  - Add one more list_head to struct dev_pm_info.
+> >  - Make dpm_prepare() create a new list for the next steps instead of moving
+> >    devices out of dpm_list.
+> >  - Start an async work to carry out dpm_suspend() and make the main thread
+> >    do wait_for_completion_timeout() for every device in dpm_list (in the
+> >    reverse order).
+> >  - If it times out, mark the device in question as unusable, possibly resume
+> >    the already suspended devices (except for descendants of the failed one)
+> >    and abort the suspend.  Return a specific error code to user space so that
+> >    it knows what happened.  [You can make this step configurable to BUG()
+> >    instead of doing all those things if you think that will be more useful for
+> >    platforms you care about.]
+> >  - Disable future suspends.
+> > And analogously for resume.
+> >
+> > That should allow people to investigate what happened on a system that
+> > (hopefully) is not completely dead and you still can have your "reboot if
+> > suspend hangs" feature if you like.
+> 
+> I looked into implementing this. The problem that I encountered is
+> that there is no reliable way of canceling an async task, and hence
+> the asynchronous __device_suspend() would be left racing with a
+> recovery from a suspend timeout.
 
-On 4/19/2013 3:12 AM, Srivatsa S. Bhat wrote:
-> But going further, as I had mentioned in my TODO list, we can be
-> smarter than this while doing compaction to evacuate memory regions
-> - we can choose to migrate only the active pages, and leave the
-> inactive pages alone. Because, the goal is to actually consolidate
-> the *references* and not necessarily the *allocations* themselves.
+Why exactly would it be racing?  We wouldn't call device_resume() for
+the device that timed out (and its descendants).
 
-That would help with keeping references compact to allow use of the
-low power states, but it would also be nice to keep allocations
-compact, and completely power off a bank of ram with no allocations.
+> We could do cancel_work_sync() as a recovery, but that call blocks until the
+> running async task is flushed, which might never happen. So doing a panic()
+> is pretty much the only option for recovering.
+
+Well, its usefulness is quite limited, then.  That said I'm still not convinced
+that this actually is the case.
+
+Thanks,
+Rafael
 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (MingW32)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iQEcBAEBAgAGBQJRpQ7EAAoJEJrBOlT6nu75wqYH/Aq18xGwk3QCJPEBb3BQX4be
-NY0JfHH9sHE7CFH4t13qpwNj/+N73xBg+TumY2qekUxqfwYSRo3hDhPRonlW/eDI
-X2AaEGDs8+aQT+QY8bAZnZFHFX8ZayNYOsNCewEV8djZDll2l+fOaFjVfZAwuQLK
-KtsMxjhlTzqMleRxVpZFLtVPG4GzLRITifKlBRQ+ffrO1zTTMI7glvM+IygIa5vS
-ajOCI0Nis1Rst2cOsrxfWc+DKN+gnI6c/qTsHarPD5zda1AFwe9DzWQ7EGiqnbJq
-39vJmGIsspwrEPbaK0VX5dVYp85Bvd03EudeEish4EHVmH+hphpFokxoypRJePg=
-=Flf3
------END PGP SIGNATURE-----
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
