@@ -1,73 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in pm_generic_runtime_idle()
-Date: Tue, 28 May 2013 14:53:47 +0200
-Message-ID: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
-References: <1368443127-9636-1-git-send-email-mika.westerberg@linux.intel.com> <14273128.qrOYeDHLlu@vostro.rjw.lan>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk broken in 3.9.x
+Date: Tue, 28 May 2013 15:01:58 +0200
+Message-ID: <2552290.9fhTfGPlAk@vostro.rjw.lan>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com> <1369631226.2159.5.camel@rzhang1-mobl4> <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:53269 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:53277 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759083Ab3E1Moz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 May 2013 08:44:55 -0400
-In-Reply-To: <14273128.qrOYeDHLlu@vostro.rjw.lan>
+	id S933886Ab3E1MxF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 May 2013 08:53:05 -0400
+In-Reply-To: <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+To: Giacomo Perale <giacomo.perale@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
-> On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
-> > If the device is using autosuspend we should honor that and call
-> > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
-> > causes the device to be suspended immediately even though it expects to be
-> > suspended only when the autosuspend delay is expired.
-> > 
-> > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > ---
-> >  drivers/base/power/generic_ops.c |    5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> > index bfd898b..19786ca 100644
-> > --- a/drivers/base/power/generic_ops.c
-> > +++ b/drivers/base/power/generic_ops.c
-> > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
-> >  			return ret;
-> >  	}
-> >  
-> > -	pm_runtime_suspend(dev);
-> > +	if (dev->power.use_autosuspend)
-> > +		pm_runtime_autosuspend(dev);
-> > +	else
-> > +		pm_runtime_suspend(dev);
-> >  	return 0;
+On Monday, May 27, 2013 10:07:18 PM Giacomo Perale wrote:
+> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+> >> Hello,
+> >>
+> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
+> >> delays when resuming from suspend-to-disk and a few new error messages
+> >> in the logs:
+> >>
+> >>
+> >> Not having connected the issue with the previous error messages I
+> >> initially blamed the disk and replaced it with a new one thinking it
+> >> was broken, but the problem persisted so I started a bisection run
+> >> that pointed to this commit:
+> >>
+> >>
+> >> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
+> >> commit b8bb6cb999858043489c1ddef08eed2127559169
+> >> Author: Zhang Rui <rui.zhang@intel.com>
+> >> Date:   Thu Nov 22 15:45:02 2012 +0800
+> >>
+> >>     step_wise: Unify the code for both throttle and dethrottle
+> >>
+> >>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> >>
+> > I do not see how this would affect the sata hibernation/resume.
+> > but anyway, would you please try the four patches in comment #10, #11,
+> > #12 and #13 in
+> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+> > and check if they help?
+> >
+> > thanks,
+> > rui
+> >
 > 
-> First of all, this is racy (power.use_autosuspend shoud be accessed under
-> power.lock).
+> No luck, with git head and those four patches hibernation is
+> completely broken, the system doesn't even shut down, it just loses
+> the disks (I'm attaching what I could get from /proc/kmsg to this
+> email).
 > 
-> Second, this is not the only place we'd need to make this change (the analogous
-> function for PCI is one example, but there may be others).
+> With the fair_share governor or with step_wise _and_ commit
+> b8bb6cb999858043489c1ddef08eed2127559169 reverted everything is ok
+> again.
 > 
-> Finally, I'm not sure how to address this problem in general.  It may be better
-> to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
-> 
-> I'll have a look at that, thanks for pointing out the problem.
+> I think there's something wrong in the commit logic (for example, why
+> are you checking for "instance->target != THERMAL_NO_TARGET" when
+> update_instance_for_throttle checked for "instance->target ==
+> THERMAL_NO_TARGET"?) but my attempts to fix it failed, probably
+> because I'm not sure of what 'continue;' does inside a
+> list_for_each_entry macro.
 
-I'm not sure if the core is the right place to address this, because it's
-not entirely clear if all drivers using autosuspend will have the same policy
-with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
-the suspend delay timer is active).
+Can you please attach the output of acpidump from your system?
 
-In my opinion it'd be better to address that in the driver by adding a
-.runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
--EBUSY.
-
-If all (or at least the majority of) drivers using autosuspend end up doing
-that, *then* we can move that to the core.
-
-Thanks,
 Rafael
 
 
