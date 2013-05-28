@@ -1,87 +1,56 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/2] staging -> thermal: move ti-soc-thermal to
- drivers/thermal
-Date: Tue, 28 May 2013 10:41:36 +0800
-Message-ID: <1369708896.1913.5.camel@rzhang1-mobl4>
-References: <1368632761-10528-1-git-send-email-eduardo.valentin@ti.com>
+From: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 10/12] ARM: shmobile: r8a7740: Add CPUIdle
+Date: Mon, 27 May 2013 20:54:46 -0700
+Message-ID: <20130528035446.GJ13532@quad.lixom.net>
+References: <1369645193-3595-1-git-send-email-horms+renesas@verge.net.au>
+ <1369645193-3595-11-git-send-email-horms+renesas@verge.net.au>
+ <51A33D83.905@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:28334 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758630Ab3E1Cll (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 May 2013 22:41:41 -0400
-In-Reply-To: <1368632761-10528-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <51A33D83.905@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "rafael >> \"'Rafael J. Wysocki'\"" <rafael.j.wysocki@intel.com>, Arnd Bergmann <arnd@arndb.de>, linux-sh@vger.kernel.org, Linux PM mailing list <linux-pm@vger.kernel.org>, Bastian Hecht <hechtb+renesas@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, Bastian Hecht <hechtb@gmail.com>, arm@kernel.org, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 
-On Wed, 2013-05-15 at 11:45 -0400, Eduardo Valentin wrote:
-> Hello Greg and Rui,
+On Mon, May 27, 2013 at 01:03:31PM +0200, Daniel Lezcano wrote:
+> On 05/27/2013 10:59 AM, Simon Horman wrote:
+> > From: Bastian Hecht <hechtb@gmail.com>
+> > 
+> > We make use of the r8a7740 Suspend To Ram code to plug together a
+> > CPUIdle driver.
+> > 
+> > Signed-off-by: Bastian Hecht <hechtb+renesas@gmail.com>
+> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
 > 
-> I am proposing to move the ti-soc-thermal driver from drivers/stating/
-> to drivers/thermal. It has been some time that we have been fixing and
-> improving the code under staging tree.
-> 
-> I believe it is time to move on. The driver now has a better code
-> organization (split between code and data), DT support, better coding
-> style, it supports TI OMAP chips 4430, 4460, 4470 and 5430, and it is
-> ready for easy addition of other SoC chips containing the bandgap IP.
-> Besides, this driver required some major changes in the thermal framework,
-> before it could provide basic functionality using the device capability.
-> These changes have been already merged in previous merge windows,
-> so there is no pending dependencies.
-> 
-> The remaining items in the TODO list are actually not a blocker for this
-> move, IMO. The PM support is not fully completed on all supported OMAP chips.
-> The locking so far has not caused any issues, and I believe that most of
-> the interesting data is protected by the thermal framework.
-> 
-> I am sending this patch for your appreciation and also to get wider review.
-> 
+> Shouldn't it go through Rafael's tree ? Or does the patch contains some
+> dependencies on a code only visible in the ARM tree ?
 
-patch applied to thermal -next tree and targeted for 3.11.
+Missing S-o-b from Simon. But this patch clearly builds on the preceding
+one in the series, so merging them independently might not make much
+sense. Getting an ack from Rafael would be nice though.
 
-thanks,
-rui
-> All best,
-> 
-> Eduardo Valentin (2):
->   thermal: introduce TI SoC thermal driver
->   MAINTAINERS: update TI SoC thermal driver entry
-> 
->  .../devicetree/bindings/thermal}/ti_soc_thermal.txt                   | 0
->  MAINTAINERS                                                           | 4 ++--
->  drivers/staging/Kconfig                                               | 2 --
->  drivers/staging/Makefile                                              | 1 -
->  drivers/thermal/Kconfig                                               | 3 +++
->  drivers/thermal/Makefile                                              | 2 +-
->  drivers/{staging => thermal}/ti-soc-thermal/Kconfig                   | 0
->  drivers/{staging => thermal}/ti-soc-thermal/Makefile                  | 0
->  drivers/{staging => thermal}/ti-soc-thermal/TODO                      | 0
->  drivers/{staging => thermal}/ti-soc-thermal/omap4-thermal-data.c      | 0
->  drivers/{staging => thermal}/ti-soc-thermal/omap4xxx-bandgap.h        | 0
->  drivers/{staging => thermal}/ti-soc-thermal/omap5-thermal-data.c      | 0
->  drivers/{staging => thermal}/ti-soc-thermal/omap5xxx-bandgap.h        | 0
->  drivers/{staging => thermal}/ti-soc-thermal/ti-bandgap.c              | 0
->  drivers/{staging => thermal}/ti-soc-thermal/ti-bandgap.h              | 0
->  drivers/{staging => thermal}/ti-soc-thermal/ti-thermal-common.c       | 0
->  drivers/{staging => thermal}/ti-soc-thermal/ti-thermal.h              | 0
->  17 files changed, 6 insertions(+), 6 deletions(-)
->  rename {drivers/staging/ti-soc-thermal => Documentation/devicetree/bindings/thermal}/ti_soc_thermal.txt (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/Kconfig (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/Makefile (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/TODO (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/omap4-thermal-data.c (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/omap4xxx-bandgap.h (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/omap5-thermal-data.c (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/omap5xxx-bandgap.h (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/ti-bandgap.c (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/ti-bandgap.h (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/ti-thermal-common.c (100%)
->  rename drivers/{staging => thermal}/ti-soc-thermal/ti-thermal.h (100%)
-> 
+I was going to say that it should probably go under drivers/cpuidle as
+well, but that just seems silly -- there is practically no code to share
+with any other platform in this small driver, AND there's not really
+any subsystem-internal data exposed. So it might just make more sense
+to keep it under arch/arm instead.
+
+Likewise, looking at the kirkwood and calxeda drivers under drivers/cpuidle,
+I'm wondering why we thought it was a good idea to merge them there, besides
+getting caught up in the "nothing can live under arch/arm any more" frenzy.
 
 
+-Olof
