@@ -1,237 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value proportional to load
-Date: Tue, 28 May 2013 22:54:28 +0200
-Message-ID: <1567913.u8NiyqJmvF@vostro.rjw.lan>
-References: <51A3C6CF.6080104@semaphore.gr> <1733890.jTHBU7EacK@vostro.rjw.lan> <51A4E357.5020509@semaphore.gr>
+Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in pm_generic_runtime_idle()
+Date: Tue, 28 May 2013 22:59:07 +0200
+Message-ID: <1569680.9YlRWcdIrx@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51A4E357.5020509@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1305281009080.1030-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
-> Hi Rafael,
+On Tuesday, May 28, 2013 10:13:35 AM Alan Stern wrote:
+> On Tue, 28 May 2013, Rafael J. Wysocki wrote:
 > 
-> Thank you for your prompt reply and your comments!
-> 
-> On 05/28/2013 02:43 PM, Rafael J. Wysocki wrote:
-> >> With this patch the frequency can be increased to any value,
+> > On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
+> > > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
+> > > > If the device is using autosuspend we should honor that and call
+> > > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
+> > > > causes the device to be suspended immediately even though it expects to be
+> > > > suspended only when the autosuspend delay is expired.
+> > > > 
+> > > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > > > ---
+> > > >  drivers/base/power/generic_ops.c |    5 ++++-
+> > > >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > > > 
+> > > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> > > > index bfd898b..19786ca 100644
+> > > > --- a/drivers/base/power/generic_ops.c
+> > > > +++ b/drivers/base/power/generic_ops.c
+> > > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
+> > > >  			return ret;
+> > > >  	}
+> > > >  
+> > > > -	pm_runtime_suspend(dev);
+> > > > +	if (dev->power.use_autosuspend)
+> > > > +		pm_runtime_autosuspend(dev);
+> > > > +	else
+> > > > +		pm_runtime_suspend(dev);
+> > > >  	return 0;
+> > > 
+> > > First of all, this is racy (power.use_autosuspend shoud be accessed under
+> > > power.lock).
+> > > 
+> > > Second, this is not the only place we'd need to make this change (the analogous
+> > > function for PCI is one example, but there may be others).
+> > > 
+> > > Finally, I'm not sure how to address this problem in general.  It may be better
+> > > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
+> > > 
+> > > I'll have a look at that, thanks for pointing out the problem.
 > > 
-> > What exactly does "any value" mean here?
+> > I'm not sure if the core is the right place to address this, because it's
+> > not entirely clear if all drivers using autosuspend will have the same policy
+> > with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
+> > the suspend delay timer is active).
 > > 
+> > In my opinion it'd be better to address that in the driver by adding a
+> > .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
+> > -EBUSY.
 > 
-> I mean any value of freq table. Please let me know if you want me to rephrase
-> it in description.
+> Remember that the return value from the runtime_idle callback is ignored.
 
-Yes, it would be nice to be more precise.
+It is ignored by the core, but some subsystems (those using
+pm_generic_runtime_idle() in particular) take it into account.
 
-> > Can you please comment the results in the changelog?  Attachments don't
-> > show up in git logs. :-)
-> 
-> I'm sorry, you are right. I added comments in the patch description.
-> 
-> > 
-> > Can you please explain why this is the right formula?
-> > 
-> 
-> 
-> Without this patch, we compare load_freq with up_threshold to decide about
-> the max frequency.
-> 	load_freq = load * freq_avg
-> 
-> In most cpufreq drivers getavg function is not implemented (I found that
-> it's implemented only in acpi-cpufreq). Therefore:
-> 	freq_avg = policy->cur. 
+> Are you suggesting that the PM core should start paying attention to it?
 
-Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
-may be removed (but the patch doesn't do that and I wonder why?), but surely
-the developer who added it wouldn't agree.
+In fact, I was pondering posting a patch making that change. :-)
 
-So, please explain: why can we drop __cpufreq_driver_getavg()?
-
-> Thus, in the comparison with up_threshold to increase frequency we actually
-> do this (in cases that getavg is not implemented):
-> if (load > up_theshold)
-> 	increase to max
-> 
-> So, after the patch we keep the same comparison to decide about the max frequency.
-> I thought, that below up_threshold is 'fair' to decide about the next 
-> frequency with formula that frequency is proportional to load.
-> For example in a CPU with min freq 100MHz and max 1000MHz with a 
-> load 50 target frequency should be 500MHz. 
-
-Well, that sounds reasonable, but the patch actually does more than that.
+Perhaps I'll just post it for discussion later today ...
 
 Thanks,
 Rafael
 
 
-> -----------------------8<---------------------------------------------
-> Ondemand increases frequency only if the load_freq is greater than
-> up_threshold. This seems to produce oscillations of frequency between
-> min and max because a relatively small load can easily saturate minimum
-> frequency and lead the CPU to max. Then, the CPU will decrease back to
-> min due to a small load_freq.
-> 
-> With this patch the frequency can be increased to any value,
-> proportional to load, if the load is below up_threshold. Thus, middle
-> frequencies are used more. Absolute load is used for the calculation of
-> frequency.
-> 
-> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
-> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-> increase 1.5% to performance. cpufreq_stats (time_in_state) shows
-> that middle frequencies are used more, with this patch. Highest 
-> and lowest frequencies were used less by ~9% 
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 10 +---------
->  drivers/cpufreq/cpufreq_governor.h |  1 -
->  drivers/cpufreq/cpufreq_ondemand.c | 39 +++++++-------------------------------
->  3 files changed, 8 insertions(+), 42 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 5af40ad..eeab30a 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -97,7 +97,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  
->  	policy = cdbs->cur_policy;
->  
-> -	/* Get Absolute Load (in terms of freq for ondemand gov) */
-> +	/* Get Absolute Load */
->  	for_each_cpu(j, policy->cpus) {
->  		struct cpu_dbs_common_info *j_cdbs;
->  		u64 cur_wall_time, cur_idle_time;
-> @@ -148,14 +148,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  
->  		load = 100 * (wall_time - idle_time) / wall_time;
->  
-> -		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
-> -			int freq_avg = __cpufreq_driver_getavg(policy, j);
-> -			if (freq_avg <= 0)
-> -				freq_avg = policy->cur;
-> -
-> -			load *= freq_avg;
-> -		}
-> -
->  		if (load > max_load)
->  			max_load = load;
->  	}
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index e16a961..e899c11 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -169,7 +169,6 @@ struct od_dbs_tuners {
->  	unsigned int sampling_rate;
->  	unsigned int sampling_down_factor;
->  	unsigned int up_threshold;
-> -	unsigned int adj_up_threshold;
->  	unsigned int powersave_bias;
->  	unsigned int io_is_busy;
->  };
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 4b9bb5d..c1e6d3e 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -29,11 +29,9 @@
->  #include "cpufreq_governor.h"
->  
->  /* On-demand governor macros */
-> -#define DEF_FREQUENCY_DOWN_DIFFERENTIAL		(10)
->  #define DEF_FREQUENCY_UP_THRESHOLD		(80)
->  #define DEF_SAMPLING_DOWN_FACTOR		(1)
->  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
-> -#define MICRO_FREQUENCY_DOWN_DIFFERENTIAL	(3)
->  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
->  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
->  #define MIN_FREQUENCY_UP_THRESHOLD		(11)
-> @@ -159,14 +157,10 @@ static void dbs_freq_increase(struct cpufreq_policy *p, unsigned int freq)
->  
->  /*
->   * Every sampling_rate, we check, if current idle time is less than 20%
-> - * (default), then we try to increase frequency. Every sampling_rate, we look
-> - * for the lowest frequency which can sustain the load while keeping idle time
-> - * over 30%. If such a frequency exist, we try to decrease to this frequency.
-> - *
-> - * Any frequency increase takes it to the maximum frequency. Frequency reduction
-> - * happens at minimum steps of 5% (default) of current frequency
-> + * (default), then we try to increase frequency. Else, we adjust the frequency
-> + * proportional to load.
->   */
-> -static void od_check_cpu(int cpu, unsigned int load_freq)
-> +static void od_check_cpu(int cpu, unsigned int load)
->  {
->  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->  	struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> @@ -176,29 +170,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
->  	dbs_info->freq_lo = 0;
->  
->  	/* Check for frequency increase */
-> -	if (load_freq > od_tuners->up_threshold * policy->cur) {
-> +	if (load > od_tuners->up_threshold) {
->  		/* If switching to max speed, apply sampling_down_factor */
->  		if (policy->cur < policy->max)
->  			dbs_info->rate_mult =
->  				od_tuners->sampling_down_factor;
->  		dbs_freq_increase(policy, policy->max);
->  		return;
-> -	}
-> -
-> -	/* Check for frequency decrease */
-> -	/* if we cannot reduce the frequency anymore, break out early */
-> -	if (policy->cur == policy->min)
-> -		return;
-> -
-> -	/*
-> -	 * The optimal frequency is the frequency that is the lowest that can
-> -	 * support the current CPU usage without triggering the up policy. To be
-> -	 * safe, we focus 10 points under the threshold.
-> -	 */
-> -	if (load_freq < od_tuners->adj_up_threshold
-> -			* policy->cur) {
-> +	} else {
-> +		/* Calculate the next frequency proportional to load */
->  		unsigned int freq_next;
-> -		freq_next = load_freq / od_tuners->adj_up_threshold;
-> +		freq_next = load * policy->max / 100;
->  
->  		/* No longer fully busy, reset rate_mult */
->  		dbs_info->rate_mult = 1;
-> @@ -372,9 +354,6 @@ static ssize_t store_up_threshold(struct dbs_data *dbs_data, const char *buf,
->  			input < MIN_FREQUENCY_UP_THRESHOLD) {
->  		return -EINVAL;
->  	}
-> -	/* Calculate the new adj_up_threshold */
-> -	od_tuners->adj_up_threshold += input;
-> -	od_tuners->adj_up_threshold -= od_tuners->up_threshold;
->  
->  	od_tuners->up_threshold = input;
->  	return count;
-> @@ -523,8 +502,6 @@ static int od_init(struct dbs_data *dbs_data)
->  	if (idle_time != -1ULL) {
->  		/* Idle micro accounting is supported. Use finer thresholds */
->  		tuners->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
-> -		tuners->adj_up_threshold = MICRO_FREQUENCY_UP_THRESHOLD -
-> -			MICRO_FREQUENCY_DOWN_DIFFERENTIAL;
->  		/*
->  		 * In nohz/micro accounting case we set the minimum frequency
->  		 * not depending on HZ, but fixed (very low). The deferred
-> @@ -533,8 +510,6 @@ static int od_init(struct dbs_data *dbs_data)
->  		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
->  	} else {
->  		tuners->up_threshold = DEF_FREQUENCY_UP_THRESHOLD;
-> -		tuners->adj_up_threshold = DEF_FREQUENCY_UP_THRESHOLD -
-> -			DEF_FREQUENCY_DOWN_DIFFERENTIAL;
->  
->  		/* For correct statistics, we need 10 ticks for each measure */
->  		dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
