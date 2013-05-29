@@ -1,87 +1,84 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH] thermal: step_wise: cdev only needs update on a new target
- state
-Date: Wed, 29 May 2013 18:11:51 -0400
-Message-ID: <51A67D27.9050502@ti.com>
-References: <1369724148-15087-1-git-send-email-shawn.guo@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value proportional to load
+Date: Thu, 30 May 2013 00:29:49 +0200
+Message-ID: <3000308.Hi6zX8my0D@vostro.rjw.lan>
+References: <51A3C6CF.6080104@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan> <51A61BAC.2050203@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2QSPGKFNVJSWHFMLWBTUN"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:41563 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935228Ab3E2WMX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 May 2013 18:12:23 -0400
-In-Reply-To: <1369724148-15087-1-git-send-email-shawn.guo@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51A61BAC.2050203@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawn.guo@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, eduardo.valentin@ti.com
 
-------enig2QSPGKFNVJSWHFMLWBTUN
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday, May 29, 2013 06:15:56 PM Stratos Karafotis wrote:
+> On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
+> > On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
+> >> I mean any value of freq table. Please let me know if you want me to rephrase
+> >> it in description.
+> > 
+> > Yes, it would be nice to be more precise.
+> 
+> OK sure, I will add a more precise description.
+> 
+> 
+> > Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
+> > may be removed (but the patch doesn't do that and I wonder why?), but surely
+> > the developer who added it wouldn't agree.
+> > 
+> > So, please explain: why can we drop __cpufreq_driver_getavg()?
+> > 
+> 
+> With the new proposed method the next frequency is not dependent from current
+> or average frequency. The next frequency is dependent only from load.
+> So, we don't need support for freq feedback from hardware anymore.
 
-Rui,
+OK, but that's a more significant change than the changelog suggests.
+The changelog should tell the whole story and explain the rationale. :-)
 
-On 28-05-2013 02:55, Shawn Guo wrote:
-> The cooling device only needs update on a new target state.  Since we
-> already check old target in thermal_zone_trip_update(), we can do one
-> more check to see if it's a new target state.  If not, we can reasonabl=
-y
-> save some uncecesary code execution.
->=20
+So, please explain that in fact it is not necessary to use the current or
+average frequency to compute the target and why that is the case.
 
-typo above:
-s/uncecesary/unnecessary
+Also the patch should remove __cpufreq_driver_getavg() and the callback used by
+it, since that code will be dead after applying it anyway.
 
-> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
-> ---
+> Even if, due to underlying hardware coordination mechanism, CPU runs in different 
+> frequency than the actual, the calculation of load and of target frequency will
+> remain the unaffected, with this patch.
+> 
+> With full respect to ondemand coauthor, and if the new method is acceptable,
+> I could send a patch to revert the original one about the IA32_APERF and
+> IA32_MPERF MSR support.
 
-A part from the above typo, I believe we must have this change in:
+I'm not sure what you mean by "revert", but please do as I said above.
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+> >> Thus, in the comparison with up_threshold to increase frequency we actually
+> >> do this (in cases that getavg is not implemented):
+> >> if (load > up_theshold)
+> >> 	increase to max
+> >>
+> >> So, after the patch we keep the same comparison to decide about the max frequency.
+> >> I thought, that below up_threshold is 'fair' to decide about the next
+> >> frequency with formula that frequency is proportional to load.
+> >> For example in a CPU with min freq 100MHz and max 1000MHz with a
+> >> load 50 target frequency should be 500MHz.
+> > 
+> > Well, that sounds reasonable, but the patch actually does more than that.
+> 
+> I'm sorry, but I didn't understand your last point.
 
->  drivers/thermal/step_wise.c |    3 +++
->  1 file changed, 3 insertions(+)
->=20
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index 4d4ddae..0afbd86 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -133,6 +133,9 @@ static void thermal_zone_trip_update(struct thermal=
-_zone_device *tz, int trip)
->  		old_target =3D instance->target;
->  		instance->target =3D get_target_state(instance, trend, throttle);
-> =20
-> +		if (old_target =3D=3D instance->target)
-> +			continue;
-> +
->  		/* Activate a passive thermal instance */
->  		if (old_target =3D=3D THERMAL_NO_TARGET &&
->  			instance->target !=3D THERMAL_NO_TARGET)
->=20
+Please see above.
 
+The changelog doesn't even mention that the code is being switched from using
+measured past frequencies to not using them, because you think that there's a
+better way of computing the target (which by the way I can agree with :-)).
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
+Thanks,
+Rafael
 
 
-------enig2QSPGKFNVJSWHFMLWBTUN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGmfScACgkQCXcVR3XQvP2AsQEAhgJg1O6Ua4c2wgxRmWVuce2c
-DamC0/k92EJw/uC/W28BAPHEvrmc4dEmyapbimcBxaY9+Ts1IdaOGmJ99NHqOCdB
-=yyp4
------END PGP SIGNATURE-----
-
-------enig2QSPGKFNVJSWHFMLWBTUN--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
