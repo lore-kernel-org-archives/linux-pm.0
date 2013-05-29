@@ -1,61 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Wed, 29 May 2013 13:09:41 +0530
-Message-ID: <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
-	<2272781.tC3OqoQmKI@vostro.rjw.lan>
-	<20130528152625.1b7833e5@amdc308.digital.local>
-	<76114024.UaPHgm94jK@vostro.rjw.lan>
-	<CAKohpon8CScv_GgXL4eTvKqPo1oC67TujMH4WdOQCit7jz+FeQ@mail.gmail.com>
-	<20130529090902.66c29c26@amdc308.digital.local>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in
+ pm_generic_runtime_idle()
+Date: Wed, 29 May 2013 11:23:28 +0300
+Message-ID: <20130529082328.GV11878@intel.com>
+References: <1368443127-9636-1-git-send-email-mika.westerberg@linux.intel.com>
+ <14273128.qrOYeDHLlu@vostro.rjw.lan>
+ <1563745.Xy6YCbJQjl@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130529090902.66c29c26@amdc308.digital.local>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29 May 2013 12:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> I also agree. Moreover, I think that there should be only one set of
-> "boost" sysfs entries either it is supported by HW (Intel) or SW (ARM).
+On Tue, May 28, 2013 at 02:53:47PM +0200, Rafael J. Wysocki wrote:
+> On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
+> > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
+> > > If the device is using autosuspend we should honor that and call
+> > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
+> > > causes the device to be suspended immediately even though it expects to be
+> > > suspended only when the autosuspend delay is expired.
+> > > 
+> > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > > ---
+> > >  drivers/base/power/generic_ops.c |    5 ++++-
+> > >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> > > index bfd898b..19786ca 100644
+> > > --- a/drivers/base/power/generic_ops.c
+> > > +++ b/drivers/base/power/generic_ops.c
+> > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
+> > >  			return ret;
+> > >  	}
+> > >  
+> > > -	pm_runtime_suspend(dev);
+> > > +	if (dev->power.use_autosuspend)
+> > > +		pm_runtime_autosuspend(dev);
+> > > +	else
+> > > +		pm_runtime_suspend(dev);
+> > >  	return 0;
+> > 
+> > First of all, this is racy (power.use_autosuspend shoud be accessed under
+> > power.lock).
+> > 
+> > Second, this is not the only place we'd need to make this change (the analogous
+> > function for PCI is one example, but there may be others).
+> > 
+> > Finally, I'm not sure how to address this problem in general.  It may be better
+> > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
+> > 
+> > I'll have a look at that, thanks for pointing out the problem.
+> 
+> I'm not sure if the core is the right place to address this, because it's
+> not entirely clear if all drivers using autosuspend will have the same policy
+> with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
+> the suspend delay timer is active).
+> 
+> In my opinion it'd be better to address that in the driver by adding a
+> .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
+> -EBUSY.
 
-Yes, you need to change acpi-cpufreq driver too to use this common
-infrastructure.
+Makes sense. I did a quick test with following patch and it seems to fix
+the issue for i2c-designware driver.
 
-> I can think of two "basic" one:
-> - max_turbo_freq (ro)
-
-This is surely per policy as two separate clusters can have separate values.
-And probably a better one would be scaling_boost_frequencies, that will
-list all boost frequencies.
-
-> - turbo_mode/boost (rw)
-
-I am confused with these two names: boost and turbo.. Probably we
-should use a single name everywhere. Because acpi-cpufreq is already
-using boost, we might shift to that.
-
-> - /sys/devices/system/cpu/cpufreq/boost
-
-Obviously this one.
-
-> On the other hand first option would be used with systems, where
-> per-core (or core sets) frequency setting is possible (b.L, Snapdragon
-> S4)
-
-For now this feature would be enabled on all clusters and controlled
-by cpu/cpufreq/boost.
-
-> To sum up - the idea is as follow:
->
-> 1. cpufreq_driver exports turbo_mode=1 when it supports overclocking
-> (this support can be hardcoded or read from device tree)
->
-> 2. Then proper entries are exported to sysfs.
->
-> 3. User via sysfs (at [*]) can enable/disable the feature on demand
-
-Bingo!!
+diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+index 966a554..af8be8f 100644
+--- a/drivers/i2c/busses/i2c-designware-platdrv.c
++++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+@@ -267,7 +267,22 @@ static int dw_i2c_resume(struct device *dev)
+ }
+ #endif
+ 
+-static SIMPLE_DEV_PM_OPS(dw_i2c_dev_pm_ops, dw_i2c_suspend, dw_i2c_resume);
++#ifdef CONFIG_PM_RUNTIME
++static int dw_i2c_runtime_idle(struct device *dev)
++{
++	/*
++	 * Always schedule autosuspend regardless of what runtime PM the
++	 * client devices use.
++	 */
++	pm_runtime_autosuspend(dev);
++	return -EBUSY;
++}
++#endif
++
++static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_suspend, dw_i2c_resume)
++	SET_RUNTIME_PM_OPS(NULL, NULL, dw_i2c_runtime_idle)
++};
+ 
+ /* work with hotplug and coldplug */
+ MODULE_ALIAS("platform:i2c_designware");
