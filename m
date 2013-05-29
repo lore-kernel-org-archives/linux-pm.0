@@ -1,14 +1,14 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: [PATCH 0/7] thermal: ti-soc-thermal: fixes and DRA752 support
-Date: Wed, 29 May 2013 11:07:01 -0400
-Message-ID: <1369840028-20241-1-git-send-email-eduardo.valentin@ti.com>
+Date: Wed, 29 May 2013 11:07:39 -0400
+Message-ID: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:53878 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966410Ab3E2PHY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 May 2013 11:07:24 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:38068 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966095Ab3E2PIA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 11:08:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com
