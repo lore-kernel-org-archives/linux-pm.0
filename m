@@ -1,121 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: MAINTAINERS: Add git tree path for ARM specific updates
-Date: Wed, 29 May 2013 16:24:55 +0530
-Message-ID: <CAKohpomz4qOmhy-VRb2n0CY7YOr0vP3EGo88iXBhm2MzsJ8rrw@mail.gmail.com>
-References: <aab5b5dc92b960e81e8fd1975eba81234a4ecac8.1369817795.git.viresh.kumar@linaro.org>
-	<1369824422.22004.101.camel@joe-AO722>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
+ governor - tests results
+Date: Wed, 29 May 2013 15:45:23 +0200
+Message-ID: <20130529154523.60a3cb5b@amdc308.digital.local>
+References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
+ <2272781.tC3OqoQmKI@vostro.rjw.lan>
+ <20130528152625.1b7833e5@amdc308.digital.local>
+ <76114024.UaPHgm94jK@vostro.rjw.lan>
+ <CAKohpon8CScv_GgXL4eTvKqPo1oC67TujMH4WdOQCit7jz+FeQ@mail.gmail.com>
+ <20130529090902.66c29c26@amdc308.digital.local>
+ <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=047d7b6da78252e25404ddd93691
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qa0-f42.google.com ([209.85.216.42]:58200 "EHLO
-	mail-qa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965612Ab3E2Ky4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 06:54:56 -0400
-Received: by mail-qa0-f42.google.com with SMTP id bs12so2110688qab.1
-        for <linux-pm@vger.kernel.org>; Wed, 29 May 2013 03:54:55 -0700 (PDT)
-In-Reply-To: <1369824422.22004.101.camel@joe-AO722>
+Received: from mailout3.samsung.com ([203.254.224.33]:54896 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759457Ab3E2Np7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 09:45:59 -0400
+In-reply-to: <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
 
---047d7b6da78252e25404ddd93691
-Content-Type: text/plain; charset=ISO-8859-1
+Hi Viresh,
 
-On 29 May 2013 16:17, Joe Perches <joe@perches.com> wrote:
-> On Wed, 2013-05-29 at 16:10 +0530, Viresh Kumar wrote:
->> ARM specific patches would be
->> Applied by me now. Rafael will pull in these changes from time to time (at
->> rc's).
-> []
->> diff --git a/MAINTAINERS b/MAINTAINERS
-> []
->> @@ -2216,6 +2216,7 @@ L:      cpufreq@vger.kernel.org
-> []
->>  T:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
->> +T:   git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
->
-> please prefix these with git
->
-> T:      git git://git.etc...
->
-> Every other T: git entry does.
->
+> On 29 May 2013 12:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > I also agree. Moreover, I think that there should be only one set of
+> > "boost" sysfs entries either it is supported by HW (Intel) or SW
+> > (ARM).
+> 
+> Yes, you need to change acpi-cpufreq driver too to use this common
+> infrastructure.
 
-Thanks for reporting it.. below commit must be fixing it..
-@Rafael: attached for you to apply.
+Ok, thanks for pointing out.
 
-----------x-------------------x------------------
+> 
+> > I can think of two "basic" one:
+> > - max_turbo_freq (ro)
+> 
+> This is surely per policy as two separate clusters can have separate
+> values. And probably a better one would be scaling_boost_frequencies,
+> that will list all boost frequencies.
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 29 May 2013 12:23:14 +0530
-Subject: [PATCH] cpufreq: MAINTAINERS: Add git tree path for ARM specific
- updates
+Ok,
 
-To reduce cpufreq maintenance load on Rafael, ARM specific patches would be
-Applied by me now. Rafael will pull in these changes from time to time (at
-rc's). Additionally I would be sending him pull request for every merge window
-and rc's (for fixes).
+> 
+> > - turbo_mode/boost (rw)
+> 
+> I am confused with these two names: boost and turbo.. Probably we
+> should use a single name everywhere. Because acpi-cpufreq is already
+> using boost, we might shift to that.
+> 
+> > - /sys/devices/system/cpu/cpufreq/boost
+> 
+> Obviously this one.
+> 
+> > On the other hand first option would be used with systems, where
+> > per-core (or core sets) frequency setting is possible (b.L,
+> > Snapdragon S4)
+> 
+> For now this feature would be enabled on all clusters and controlled
+> by cpu/cpufreq/boost.
 
-Web interface of my tree is present here:
+This will simplify considerably the driver code.
 
-https://git.linaro.org/gitweb?p=people/vireshk/linux.git;a=summary
+> 
+> > To sum up - the idea is as follow:
+> >
+> > 1. cpufreq_driver exports turbo_mode=1 when it supports overclocking
+> > (this support can be hardcoded or read from device tree)
+> >
+> > 2. Then proper entries are exported to sysfs.
+> >
+> > 3. User via sysfs (at [*]) can enable/disable the feature on demand
+> 
+> Bingo!!
 
-Branch names would be: cpufreq-next and cpufreq-fixes.
+Thanks for suggestions. I'm now working on a prototype code. I plan to
+post it at the beginning of next week.
 
-This also prefixes tree path with "git ".
+-- 
+Best regards,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- MAINTAINERS | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Lukasz Majewski
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index fd3a495..92a6624 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2215,7 +2215,8 @@ M:	Viresh Kumar <viresh.kumar@linaro.org>
- L:	cpufreq@vger.kernel.org
- L:	linux-pm@vger.kernel.org
- S:	Maintained
--T:	git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-+T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
- F:	drivers/cpufreq/
- F:	include/linux/cpufreq.h
-
---047d7b6da78252e25404ddd93691
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-MAINTAINERS-Add-git-tree-path-for-ARM-specif.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-MAINTAINERS-Add-git-tree-path-for-ARM-specif.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hhaecwv30
-
-RnJvbSBhMWZjNGI3MDM0OTYwMjgwMGExYjg0ZjhlZTRiYWI3ZTA1ZmJlMjRmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8YTFmYzRiNzAzNDk2MDI4MDBhMWI4NGY4ZWU0YmFi
-N2UwNWZiZTI0Zi4xMzY5ODI0ODE1LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogV2VkLCAyOSBNYXkg
-MjAxMyAxMjoyMzoxNCArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IE1BSU5UQUlORVJT
-OiBBZGQgZ2l0IHRyZWUgcGF0aCBmb3IgQVJNIHNwZWNpZmljCiB1cGRhdGVzCgpUbyByZWR1Y2Ug
-Y3B1ZnJlcSBtYWludGVuYW5jZSBsb2FkIG9uIFJhZmFlbCwgQVJNIHNwZWNpZmljIHBhdGNoZXMg
-d291bGQgYmUKQXBwbGllZCBieSBtZSBub3cuIFJhZmFlbCB3aWxsIHB1bGwgaW4gdGhlc2UgY2hh
-bmdlcyBmcm9tIHRpbWUgdG8gdGltZSAoYXQKcmMncykuIEFkZGl0aW9uYWxseSBJIHdvdWxkIGJl
-IHNlbmRpbmcgaGltIHB1bGwgcmVxdWVzdCBmb3IgZXZlcnkgbWVyZ2Ugd2luZG93CmFuZCByYydz
-IChmb3IgZml4ZXMpLgoKV2ViIGludGVyZmFjZSBvZiBteSB0cmVlIGlzIHByZXNlbnQgaGVyZToK
-Cmh0dHBzOi8vZ2l0LmxpbmFyby5vcmcvZ2l0d2ViP3A9cGVvcGxlL3ZpcmVzaGsvbGludXguZ2l0
-O2E9c3VtbWFyeQoKQnJhbmNoIG5hbWVzIHdvdWxkIGJlOiBjcHVmcmVxLW5leHQgYW5kIGNwdWZy
-ZXEtZml4ZXMuCgpUaGlzIGFsc28gcHJlZml4ZXMgdHJlZSBwYXRoIHdpdGggImdpdCAiLgoKU2ln
-bmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KLS0tCiBN
-QUlOVEFJTkVSUyB8IDMgKystCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAxIGRl
-bGV0aW9uKC0pCgpkaWZmIC0tZ2l0IGEvTUFJTlRBSU5FUlMgYi9NQUlOVEFJTkVSUwppbmRleCBm
-ZDNhNDk1Li45MmE2NjI0IDEwMDY0NAotLS0gYS9NQUlOVEFJTkVSUworKysgYi9NQUlOVEFJTkVS
-UwpAQCAtMjIxNSw3ICsyMjE1LDggQEAgTToJVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGlu
-YXJvLm9yZz4KIEw6CWNwdWZyZXFAdmdlci5rZXJuZWwub3JnCiBMOglsaW51eC1wbUB2Z2VyLmtl
-cm5lbC5vcmcKIFM6CU1haW50YWluZWQKLVQ6CWdpdDovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20v
-bGludXgva2VybmVsL2dpdC9yYWZhZWwvbGludXgtcG0uZ2l0CitUOglnaXQgZ2l0Oi8vZ2l0Lmtl
-cm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3JhZmFlbC9saW51eC1wbS5naXQKK1Q6
-CWdpdCBnaXQ6Ly9naXQubGluYXJvLm9yZy9wZW9wbGUvdmlyZXNoay9saW51eC5naXQgKEZvciBB
-Uk0gVXBkYXRlcykKIEY6CWRyaXZlcnMvY3B1ZnJlcS8KIEY6CWluY2x1ZGUvbGludXgvY3B1ZnJl
-cS5oCiAKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---047d7b6da78252e25404ddd93691--
+Samsung R&D Poland (SRPOL) | Linux Platform Group
