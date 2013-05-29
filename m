@@ -1,142 +1,87 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper routine
-Date: Thu, 30 May 2013 00:18:16 +0200
-Message-ID: <1645401.1grgttHPMR@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1305291023170.1473-100000@iolanthe.rowland.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] thermal: step_wise: cdev only needs update on a new target
+ state
+Date: Wed, 29 May 2013 18:11:51 -0400
+Message-ID: <51A67D27.9050502@ti.com>
+References: <1369724148-15087-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1305291023170.1473-100000@iolanthe.rowland.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2QSPGKFNVJSWHFMLWBTUN"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:41563 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935228Ab3E2WMX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 May 2013 18:12:23 -0400
+In-Reply-To: <1369724148-15087-1-git-send-email-shawn.guo@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, eduardo.valentin@ti.com
 
-On Wednesday, May 29, 2013 10:51:11 AM Alan Stern wrote:
-> On Wed, 29 May 2013, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The "runtime idle" helper routine, rpm_idle(), currently ignores
-> > return values from .runtime_idle() callbacks executed by it.
-> > 
-> > However, it turns out that many subsystems use the generic idle
-> > callback routine pm_generic_runtime_idle() which checks the return
-> > value of the driver's callback and executes pm_runtime_suspend() for
-> > the device unless that value is different from 0.  If that logic is
-> > moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
-> > and its users will not need any .runtime_idle() callbacks any more.
-> 
-> Since you're making this change, wouldn't it be a good idea to adopt
-> Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
-> when the use_autosuspend flag is set?
+------enig2QSPGKFNVJSWHFMLWBTUN
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I'm not actually sure.  It can be done, but I'd prefer to do that as a separate
-change in any case.
+Rui,
 
-> > Moreover, the PCI subsystem's .runtime_idle() routine,
-> > pci_pm_runtime_idle(), works in analogy with the generic one and if
-> > rpm_idle() calls rpm_suspend() after 0 has been returned by the
-> > .runtime_idle() callback executed by it, that routine will not be
-> > necessary any more and may be dropped.
-> 
-> See below.
-> 
-> What about cases where the runtime-idle callback does
-> rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
-> that it returns -EBUSY in such cases.  Did you audit for this?
+On 28-05-2013 02:55, Shawn Guo wrote:
+> The cooling device only needs update on a new target state.  Since we
+> already check old target in thermal_zone_trip_update(), we can do one
+> more check to see if it's a new target state.  If not, we can reasonabl=
+y
+> save some uncecesary code execution.
+>=20
 
-As far as I could.
+typo above:
+s/uncecesary/unnecessary
 
-I'm not worried about the subsystems modified by this patch, because the
-functionality there won't change (except for PCI, that is).
+> Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+> ---
 
-> > Index: linux-pm/Documentation/power/runtime_pm.txt
-> > ===================================================================
-> > --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> > +++ linux-pm/Documentation/power/runtime_pm.txt
-> > @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
-> >  management callbacks provided by the PM core, defined in
-> >  driver/base/power/generic_ops.c:
-> >  
-> > -  int pm_generic_runtime_idle(struct device *dev);
-> > -    - invoke the ->runtime_idle() callback provided by the driver of this
-> > -      device, if defined, and call pm_runtime_suspend() for this device if the
-> > -      return value is 0 or the callback is not defined
-> > -
-> 
-> The documentation for the runtime-idle callback needs to be updated too.
+A part from the above typo, I believe we must have this change in:
 
-Well, I actually couldn't find the part of it that would need to be updated. :-)
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-> > Index: linux-pm/drivers/pci/pci-driver.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/pci/pci-driver.c
-> > +++ linux-pm/drivers/pci/pci-driver.c
-> > @@ -1046,32 +1046,6 @@ static int pci_pm_runtime_resume(struct
-> >  	return rc;
-> >  }
-> >  
-> > -static int pci_pm_runtime_idle(struct device *dev)
-> > -{
-> > -	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> > -
-> > -	/*
-> > -	 * If pci_dev->driver is not set (unbound), the device should
-> > -	 * always remain in D0 regardless of the runtime PM status
-> > -	 */
-> > -	if (!pci_dev->driver)
-> > -		goto out;
-> > -
-> > -	if (!pm)
-> > -		return -ENOSYS;
-> > -
-> > -	if (pm->runtime_idle) {
-> > -		int ret = pm->runtime_idle(dev);
-> > -		if (ret)
-> > -			return ret;
-> > -	}
-> > -
-> > -out:
-> > -	pm_runtime_suspend(dev);
-> > -	return 0;
-> > -}
-> 
-> This may not be a safe change, because now the behavior is different
-> in the case where dev->driver is set but pci_dev->driver isn't.
-
-That's a good point.  I think I'll drop the PCI change, then.
-Or rather, I'll just remove the pm_runtime_suspend() call from
-pci_pm_runtime_idle(). :-)
-
-> The difference is that you will now call the driver's runtime-idle
-> handler, whereas the existing code doesn't.
-> 
-> In fact, this may turn out to be a more widespread problem.  
-> dev->driver gets set before the probe routine is called, and it gets
-> cleared after the remove routine is called.  A runtime PM callback to
-> the driver during these windows isn't a good idea.  Erasing subsystems'
-> runtime_idle handlers, as this patch does, makes it impossible for the
-> subsystems to protect against this.
-
-Except for PCI it only removes the ones that point to
-pm_generic_runtime_idle(), which obviously doesn't check that.
-
-> The patch also needs to update
-> drivers/usb/core/driver.c:usb_runtime_idle().
-
-Yes, it does.
-
-> If you include Mika's suggestion, the routine can be removed entirely.
-
-Later. :-)
-
-Thanks,
-Rafael
+>  drivers/thermal/step_wise.c |    3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 4d4ddae..0afbd86 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -133,6 +133,9 @@ static void thermal_zone_trip_update(struct thermal=
+_zone_device *tz, int trip)
+>  		old_target =3D instance->target;
+>  		instance->target =3D get_target_state(instance, trend, throttle);
+> =20
+> +		if (old_target =3D=3D instance->target)
+> +			continue;
+> +
+>  		/* Activate a passive thermal instance */
+>  		if (old_target =3D=3D THERMAL_NO_TARGET &&
+>  			instance->target !=3D THERMAL_NO_TARGET)
+>=20
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2QSPGKFNVJSWHFMLWBTUN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGmfScACgkQCXcVR3XQvP2AsQEAhgJg1O6Ua4c2wgxRmWVuce2c
+DamC0/k92EJw/uC/W28BAPHEvrmc4dEmyapbimcBxaY9+Ts1IdaOGmJ99NHqOCdB
+=yyp4
+-----END PGP SIGNATURE-----
+
+------enig2QSPGKFNVJSWHFMLWBTUN--
