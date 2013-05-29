@@ -1,89 +1,117 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [RFC v2 0/3][TESTS] LAB: Support for Legacy Application Booster
- governor - tests results
-Date: Wed, 29 May 2013 15:45:23 +0200
-Message-ID: <20130529154523.60a3cb5b@amdc308.digital.local>
-References: <1367590072-10496-1-git-send-email-jonghwa3.lee@samsung.com>
- <2272781.tC3OqoQmKI@vostro.rjw.lan>
- <20130528152625.1b7833e5@amdc308.digital.local>
- <76114024.UaPHgm94jK@vostro.rjw.lan>
- <CAKohpon8CScv_GgXL4eTvKqPo1oC67TujMH4WdOQCit7jz+FeQ@mail.gmail.com>
- <20130529090902.66c29c26@amdc308.digital.local>
- <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper
+ routine
+Date: Wed, 29 May 2013 10:51:11 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1305291023170.1473-100000@iolanthe.rowland.org>
+References: <1463685.qFyr66vqF2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:54896 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759457Ab3E2Np7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 09:45:59 -0400
-In-reply-to: <CAKohpo=xuasNEaOBajze2nGVX48_8AE+3eWwbmhXcG9r7PG+EA@mail.gmail.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:38955 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S966300Ab3E2OvM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 10:51:12 -0400
+In-Reply-To: <1463685.qFyr66vqF2@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonghwa Lee <jonghwa3.lee@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vicent Guittot <vincent.guittot@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Hi Viresh,
+On Wed, 29 May 2013, Rafael J. Wysocki wrote:
 
-> On 29 May 2013 12:39, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > I also agree. Moreover, I think that there should be only one set of
-> > "boost" sysfs entries either it is supported by HW (Intel) or SW
-> > (ARM).
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Yes, you need to change acpi-cpufreq driver too to use this common
-> infrastructure.
-
-Ok, thanks for pointing out.
-
+> The "runtime idle" helper routine, rpm_idle(), currently ignores
+> return values from .runtime_idle() callbacks executed by it.
 > 
-> > I can think of two "basic" one:
-> > - max_turbo_freq (ro)
-> 
-> This is surely per policy as two separate clusters can have separate
-> values. And probably a better one would be scaling_boost_frequencies,
-> that will list all boost frequencies.
+> However, it turns out that many subsystems use the generic idle
+> callback routine pm_generic_runtime_idle() which checks the return
+> value of the driver's callback and executes pm_runtime_suspend() for
+> the device unless that value is different from 0.  If that logic is
+> moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
+> and its users will not need any .runtime_idle() callbacks any more.
 
-Ok,
+Since you're making this change, wouldn't it be a good idea to adopt
+Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
+when the use_autosuspend flag is set?
 
-> 
-> > - turbo_mode/boost (rw)
-> 
-> I am confused with these two names: boost and turbo.. Probably we
-> should use a single name everywhere. Because acpi-cpufreq is already
-> using boost, we might shift to that.
-> 
-> > - /sys/devices/system/cpu/cpufreq/boost
-> 
-> Obviously this one.
-> 
-> > On the other hand first option would be used with systems, where
-> > per-core (or core sets) frequency setting is possible (b.L,
-> > Snapdragon S4)
-> 
-> For now this feature would be enabled on all clusters and controlled
-> by cpu/cpufreq/boost.
+> Moreover, the PCI subsystem's .runtime_idle() routine,
+> pci_pm_runtime_idle(), works in analogy with the generic one and if
+> rpm_idle() calls rpm_suspend() after 0 has been returned by the
+> .runtime_idle() callback executed by it, that routine will not be
+> necessary any more and may be dropped.
 
-This will simplify considerably the driver code.
+See below.
 
-> 
-> > To sum up - the idea is as follow:
-> >
-> > 1. cpufreq_driver exports turbo_mode=1 when it supports overclocking
-> > (this support can be hardcoded or read from device tree)
-> >
-> > 2. Then proper entries are exported to sysfs.
-> >
-> > 3. User via sysfs (at [*]) can enable/disable the feature on demand
-> 
-> Bingo!!
+What about cases where the runtime-idle callback does
+rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
+that it returns -EBUSY in such cases.  Did you audit for this?
 
-Thanks for suggestions. I'm now working on a prototype code. I plan to
-post it at the beginning of next week.
+> Index: linux-pm/Documentation/power/runtime_pm.txt
+> ===================================================================
+> --- linux-pm.orig/Documentation/power/runtime_pm.txt
+> +++ linux-pm/Documentation/power/runtime_pm.txt
+> @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
+>  management callbacks provided by the PM core, defined in
+>  driver/base/power/generic_ops.c:
+>  
+> -  int pm_generic_runtime_idle(struct device *dev);
+> -    - invoke the ->runtime_idle() callback provided by the driver of this
+> -      device, if defined, and call pm_runtime_suspend() for this device if the
+> -      return value is 0 or the callback is not defined
+> -
 
--- 
-Best regards,
+The documentation for the runtime-idle callback needs to be updated too.
 
-Lukasz Majewski
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1046,32 +1046,6 @@ static int pci_pm_runtime_resume(struct
+>  	return rc;
+>  }
+>  
+> -static int pci_pm_runtime_idle(struct device *dev)
+> -{
+> -	struct pci_dev *pci_dev = to_pci_dev(dev);
+> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> -
+> -	/*
+> -	 * If pci_dev->driver is not set (unbound), the device should
+> -	 * always remain in D0 regardless of the runtime PM status
+> -	 */
+> -	if (!pci_dev->driver)
+> -		goto out;
+> -
+> -	if (!pm)
+> -		return -ENOSYS;
+> -
+> -	if (pm->runtime_idle) {
+> -		int ret = pm->runtime_idle(dev);
+> -		if (ret)
+> -			return ret;
+> -	}
+> -
+> -out:
+> -	pm_runtime_suspend(dev);
+> -	return 0;
+> -}
 
-Samsung R&D Poland (SRPOL) | Linux Platform Group
+This may not be a safe change, because now the behavior is different
+in the case where dev->driver is set but pci_dev->driver isn't.  The
+difference is that you will now call the driver's runtime-idle
+handler, whereas the existing code doesn't.
+
+In fact, this may turn out to be a more widespread problem.  
+dev->driver gets set before the probe routine is called, and it gets
+cleared after the remove routine is called.  A runtime PM callback to
+the driver during these windows isn't a good idea.  Erasing subsystems'
+runtime_idle handlers, as this patch does, makes it impossible for the
+subsystems to protect against this.
+
+The patch also needs to update
+drivers/usb/core/driver.c:usb_runtime_idle().  If you include Mika's
+suggestion, the routine can be removed entirely.
+
+Alan Stern
+
