@@ -1,84 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value proportional to load
-Date: Thu, 30 May 2013 00:29:49 +0200
-Message-ID: <3000308.Hi6zX8my0D@vostro.rjw.lan>
-References: <51A3C6CF.6080104@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan> <51A61BAC.2050203@semaphore.gr>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [RFT][PATCH 1/1] thermal: step_wise: return instance->target by default
+Date: Wed, 29 May 2013 18:58:05 -0400
+Message-ID: <1369868285-18049-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51A61BAC.2050203@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:43381 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966998Ab3E2W6U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 May 2013 18:58:20 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: ruslan.ruslichenko@ti.com, Eduardo Valentin <eduardo.valentin@ti.com>, Durgadoss R <durgadoss.r@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, May 29, 2013 06:15:56 PM Stratos Karafotis wrote:
-> On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
-> > On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
-> >> I mean any value of freq table. Please let me know if you want me to rephrase
-> >> it in description.
-> > 
-> > Yes, it would be nice to be more precise.
-> 
-> OK sure, I will add a more precise description.
-> 
-> 
-> > Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
-> > may be removed (but the patch doesn't do that and I wonder why?), but surely
-> > the developer who added it wouldn't agree.
-> > 
-> > So, please explain: why can we drop __cpufreq_driver_getavg()?
-> > 
-> 
-> With the new proposed method the next frequency is not dependent from current
-> or average frequency. The next frequency is dependent only from load.
-> So, we don't need support for freq feedback from hardware anymore.
+In case the trend is not changing or when there is no
+request for throttling, it is expected that the instance
+would not change its requested target. This patch improves
+the code implementation to cover for this expected behavior.
 
-OK, but that's a more significant change than the changelog suggests.
-The changelog should tell the whole story and explain the rationale. :-)
+With current implementation, the instance will always
+reset to cdev.cur_state, even in not expected cases,
+like those mentioned above.
 
-So, please explain that in fact it is not necessary to use the current or
-average frequency to compute the target and why that is the case.
+This patch changes the step_wise governor implementation
+of get_target so that we accomplish:
+(a) - default value will be current instance->target, so
+we do not change the thermal instance target unnecessarily.
+(b) - the code now it is clear about what is the intention.
+There is a clear statement of what are the expected outcomes
+(c) - removal of hardcoded constants, now it is put in use
+the THERMAL_NO_TARGET macro.
+(d) - variable names are also improved so that reader can
+clearly understand the difference between instance cur target,
+next target and cdev cur_state.
 
-Also the patch should remove __cpufreq_driver_getavg() and the callback used by
-it, since that code will be dead after applying it anyway.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Durgadoss R <durgadoss.r@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reported-by: Ruslan Ruslichenko <ruslan.ruslichenko@ti.com>
+Signed-of-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/step_wise.c | 29 ++++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
+---
 
-> Even if, due to underlying hardware coordination mechanism, CPU runs in different 
-> frequency than the actual, the calculation of load and of target frequency will
-> remain the unaffected, with this patch.
-> 
-> With full respect to ondemand coauthor, and if the new method is acceptable,
-> I could send a patch to revert the original one about the IA32_APERF and
-> IA32_MPERF MSR support.
+Hello all,
 
-I'm not sure what you mean by "revert", but please do as I said above.
+I am requesting for tests on this patch. Based on an internal
+discussion with Ruslan, I concluded that this code needs improvement.
 
-> >> Thus, in the comparison with up_threshold to increase frequency we actually
-> >> do this (in cases that getavg is not implemented):
-> >> if (load > up_theshold)
-> >> 	increase to max
-> >>
-> >> So, after the patch we keep the same comparison to decide about the max frequency.
-> >> I thought, that below up_threshold is 'fair' to decide about the next
-> >> frequency with formula that frequency is proportional to load.
-> >> For example in a CPU with min freq 100MHz and max 1000MHz with a
-> >> load 50 target frequency should be 500MHz.
-> > 
-> > Well, that sounds reasonable, but the patch actually does more than that.
-> 
-> I'm sorry, but I didn't understand your last point.
+Ruslan, I did not keep your original code because I believe the
+get_target_state needs a better implementation for code readiness.
+Besides, I also believe we are facing the bug of emul_temp in your case [1],
+so this patch is not really fixing anything, but improving the
+code quality and making sure the instance behaves as expected.
+The fact you see the cooling device stuck at 1 is most probably because
+the thermal core uses trend computed by the driver, not by emul_temp.
 
-Please see above.
+I have implemented a different improvement as you may find below. But
+I kept a Reported-by under your name.
 
-The changelog doesn't even mention that the code is being switched from using
-measured past frequencies to not using them, because you think that there's a
-better way of computing the target (which by the way I can agree with :-)).
+In any case, because I believe this change in step_wise is significant,
+I am sending this patch for broader review and I kindly ask interested
+audience for testing it.
 
-Thanks,
-Rafael
+[1] - https://patchwork.kernel.org/patch/2632831/
 
-
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index 4d4ddae..769bfa3 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -51,44 +51,51 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+ {
+ 	struct thermal_cooling_device *cdev = instance->cdev;
+ 	unsigned long cur_state;
++	unsigned long next_target;
+ 
++	/*
++	 * We keep this instance the way it is by default.
++	 * Otherwise, we use the current state of the
++	 * cdev in use to determine the next_target.
++	 */
+ 	cdev->ops->get_cur_state(cdev, &cur_state);
++	next_target = instance->target;
+ 
+ 	switch (trend) {
+ 	case THERMAL_TREND_RAISING:
+ 		if (throttle) {
+-			cur_state = cur_state < instance->upper ?
++			next_target = cur_state < instance->upper ?
+ 				    (cur_state + 1) : instance->upper;
+-			if (cur_state < instance->lower)
+-				cur_state = instance->lower;
++			if (next_target < instance->lower)
++				next_target = instance->lower;
+ 		}
+ 		break;
+ 	case THERMAL_TREND_RAISE_FULL:
+ 		if (throttle)
+-			cur_state = instance->upper;
++			next_target = instance->upper;
+ 		break;
+ 	case THERMAL_TREND_DROPPING:
+ 		if (cur_state == instance->lower) {
+ 			if (!throttle)
+-				cur_state = -1;
++				next_target = THERMAL_NO_TARGET;
+ 		} else {
+-			cur_state -= 1;
+-			if (cur_state > instance->upper)
+-				cur_state = instance->upper;
++			next_target = cur_state - 1;
++			if (next_target > instance->upper)
++				next_target = instance->upper;
+ 		}
+ 		break;
+ 	case THERMAL_TREND_DROP_FULL:
+ 		if (cur_state == instance->lower) {
+ 			if (!throttle)
+-				cur_state = -1;
++				next_target = THERMAL_NO_TARGET;
+ 		} else
+-			cur_state = instance->lower;
++			next_target = instance->lower;
+ 		break;
+ 	default:
+ 		break;
+ 	}
+ 
+-	return cur_state;
++	return next_target;
+ }
+ 
+ static void update_passive_instance(struct thermal_zone_device *tz,
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.2.1.342.gfa7285d
+
