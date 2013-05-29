@@ -1,117 +1,67 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper
- routine
-Date: Wed, 29 May 2013 10:51:11 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1305291023170.1473-100000@iolanthe.rowland.org>
-References: <1463685.qFyr66vqF2@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCH 0/7] thermal: ti-soc-thermal: fixes and DRA752 support
+Date: Wed, 29 May 2013 11:07:01 -0400
+Message-ID: <1369840028-20241-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:38955 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S966300Ab3E2OvM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 10:51:12 -0400
-In-Reply-To: <1463685.qFyr66vqF2@vostro.rjw.lan>
+Received: from bear.ext.ti.com ([192.94.94.41]:53878 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966410Ab3E2PHY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 May 2013 11:07:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 
-On Wed, 29 May 2013, Rafael J. Wysocki wrote:
+Hello Rui,
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The "runtime idle" helper routine, rpm_idle(), currently ignores
-> return values from .runtime_idle() callbacks executed by it.
-> 
-> However, it turns out that many subsystems use the generic idle
-> callback routine pm_generic_runtime_idle() which checks the return
-> value of the driver's callback and executes pm_runtime_suspend() for
-> the device unless that value is different from 0.  If that logic is
-> moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
-> and its users will not need any .runtime_idle() callbacks any more.
+Here is a patch set for your consideration on ti-soc-thermal driver.
 
-Since you're making this change, wouldn't it be a good idea to adopt
-Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
-when the use_autosuspend flag is set?
+This patch set is mix of:
 
-> Moreover, the PCI subsystem's .runtime_idle() routine,
-> pci_pm_runtime_idle(), works in analogy with the generic one and if
-> rpm_idle() calls rpm_suspend() after 0 has been returned by the
-> .runtime_idle() callback executed by it, that routine will not be
-> necessary any more and may be dropped.
+(a) patches that were added to the staging tree post 3.10-rc1 but
+were not included after the move from staging to thermal. This is
+because your thermal tree is based of 3.10-rc1 and not staging/next
+or linux-next/master. Thus the first two patches make sure the driver
+under drivers/thermal/ti-soc-thermal has also the needed fixes.
 
-See below.
+(b) patches containing fixes found during the addition of DRA752
+chip support.
 
-What about cases where the runtime-idle callback does
-rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
-that it returns -EBUSY in such cases.  Did you audit for this?
+(c) patches adding the support to DRA752 chips.
 
-> Index: linux-pm/Documentation/power/runtime_pm.txt
-> ===================================================================
-> --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> +++ linux-pm/Documentation/power/runtime_pm.txt
-> @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
->  management callbacks provided by the PM core, defined in
->  driver/base/power/generic_ops.c:
->  
-> -  int pm_generic_runtime_idle(struct device *dev);
-> -    - invoke the ->runtime_idle() callback provided by the driver of this
-> -      device, if defined, and call pm_runtime_suspend() for this device if the
-> -      return value is 0 or the callback is not defined
-> -
+Please consider these too for 3.11.
 
-The documentation for the runtime-idle callback needs to be updated too.
+For those people interested in testing this patch set, it is based
+on thermal/next and can also be found here:
+https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/ti-soc-thermal/fixes+dra752
 
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -1046,32 +1046,6 @@ static int pci_pm_runtime_resume(struct
->  	return rc;
->  }
->  
-> -static int pci_pm_runtime_idle(struct device *dev)
-> -{
-> -	struct pci_dev *pci_dev = to_pci_dev(dev);
-> -	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> -
-> -	/*
-> -	 * If pci_dev->driver is not set (unbound), the device should
-> -	 * always remain in D0 regardless of the runtime PM status
-> -	 */
-> -	if (!pci_dev->driver)
-> -		goto out;
-> -
-> -	if (!pm)
-> -		return -ENOSYS;
-> -
-> -	if (pm->runtime_idle) {
-> -		int ret = pm->runtime_idle(dev);
-> -		if (ret)
-> -			return ret;
-> -	}
-> -
-> -out:
-> -	pm_runtime_suspend(dev);
-> -	return 0;
-> -}
+All best,
 
-This may not be a safe change, because now the behavior is different
-in the case where dev->driver is set but pci_dev->driver isn't.  The
-difference is that you will now call the driver's runtime-idle
-handler, whereas the existing code doesn't.
+Eduardo Valentin (7):
+  thermal: ti-soc-thermal: update DT reference for OMAP5430
+  thermal: ti-soc-thermal: remove external heat while extrapolating
+    hotspot
+  thermal: ti-soc-thermal: freeze FSM while computing trend
+  thermal: ti-soc-thermal: remove usage of IS_ERR_OR_NULL
+  thermal: ti-soc-thermal: add thermal data for DRA752 chips
+  thermal: ti-soc-thermal: add dra752 chip to device table
+  thermal: ti-soc-thermal: add DT example for DRA752 chip
 
-In fact, this may turn out to be a more widespread problem.  
-dev->driver gets set before the probe routine is called, and it gets
-cleared after the remove routine is called.  A runtime PM callback to
-the driver during these windows isn't a good idea.  Erasing subsystems'
-runtime_idle handlers, as this patch does, makes it impossible for the
-subsystems to protect against this.
+ .../devicetree/bindings/thermal/ti_soc_thermal.txt |  13 +
+ drivers/staging/ti-soc-thermal/dra752-bandgap.h    | 280 ++++++++++++
+ .../staging/ti-soc-thermal/dra752-thermal-data.c   | 476 +++++++++++++++++++++
+ drivers/thermal/ti-soc-thermal/Kconfig             |  12 +
+ drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  29 +-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   5 +
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  43 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal.h        |   6 +
+ 9 files changed, 842 insertions(+), 23 deletions(-)
+ create mode 100644 drivers/staging/ti-soc-thermal/dra752-bandgap.h
+ create mode 100644 drivers/staging/ti-soc-thermal/dra752-thermal-data.c
 
-The patch also needs to update
-drivers/usb/core/driver.c:usb_runtime_idle().  If you include Mika's
-suggestion, the routine can be removed entirely.
-
-Alan Stern
+-- 
+1.8.2.1.342.gfa7285d
 
