@@ -1,97 +1,71 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PM / Runtime: honor device autosuspend in
- pm_generic_runtime_idle()
-Date: Wed, 29 May 2013 11:23:28 +0300
-Message-ID: <20130529082328.GV11878@intel.com>
-References: <1368443127-9636-1-git-send-email-mika.westerberg@linux.intel.com>
- <14273128.qrOYeDHLlu@vostro.rjw.lan>
- <1563745.Xy6YCbJQjl@vostro.rjw.lan>
+Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper
+ routine
+Date: Wed, 29 May 2013 11:29:59 +0300
+Message-ID: <20130529082959.GW11878@intel.com>
+References: <1463685.qFyr66vqF2@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1563745.Xy6YCbJQjl@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1463685.qFyr66vqF2@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 28, 2013 at 02:53:47PM +0200, Rafael J. Wysocki wrote:
-> On Monday, May 13, 2013 01:50:18 PM Rafael J. Wysocki wrote:
-> > On Monday, May 13, 2013 02:05:27 PM Mika Westerberg wrote:
-> > > If the device is using autosuspend we should honor that and call
-> > > pm_runtime_autosuspend() instead of pm_runtime_suspend(). Failing to do so
-> > > causes the device to be suspended immediately even though it expects to be
-> > > suspended only when the autosuspend delay is expired.
-> > > 
-> > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > > ---
-> > >  drivers/base/power/generic_ops.c |    5 ++++-
-> > >  1 file changed, 4 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> > > index bfd898b..19786ca 100644
-> > > --- a/drivers/base/power/generic_ops.c
-> > > +++ b/drivers/base/power/generic_ops.c
-> > > @@ -29,7 +29,10 @@ int pm_generic_runtime_idle(struct device *dev)
-> > >  			return ret;
-> > >  	}
-> > >  
-> > > -	pm_runtime_suspend(dev);
-> > > +	if (dev->power.use_autosuspend)
-> > > +		pm_runtime_autosuspend(dev);
-> > > +	else
-> > > +		pm_runtime_suspend(dev);
-> > >  	return 0;
-> > 
-> > First of all, this is racy (power.use_autosuspend shoud be accessed under
-> > power.lock).
-> > 
-> > Second, this is not the only place we'd need to make this change (the analogous
-> > function for PCI is one example, but there may be others).
-> > 
-> > Finally, I'm not sure how to address this problem in general.  It may be better
-> > to simply modify rpm_idle() and remove pm_generic_runtime_idle() etc. entirely.
-> > 
-> > I'll have a look at that, thanks for pointing out the problem.
+On Wed, May 29, 2013 at 01:29:06AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I'm not sure if the core is the right place to address this, because it's
-> not entirely clear if all drivers using autosuspend will have the same policy
-> with respect to pm_runtime_idle() (i.e. to avoid suspending immediately if
-> the suspend delay timer is active).
+> The "runtime idle" helper routine, rpm_idle(), currently ignores
+> return values from .runtime_idle() callbacks executed by it.
 > 
-> In my opinion it'd be better to address that in the driver by adding a
-> .runtime_idle() callback executing pm_runtime_autosuspend(dev) and returning
-> -EBUSY.
+> However, it turns out that many subsystems use the generic idle
+> callback routine pm_generic_runtime_idle() which checks the return
+> value of the driver's callback and executes pm_runtime_suspend() for
+> the device unless that value is different from 0.  If that logic is
+> moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
+> and its users will not need any .runtime_idle() callbacks any more.
+> 
+> Moreover, the PCI subsystem's .runtime_idle() routine,
+> pci_pm_runtime_idle(), works in analogy with the generic one and if
+> rpm_idle() calls rpm_suspend() after 0 has been returned by the
+> .runtime_idle() callback executed by it, that routine will not be
+> necessary any more and may be dropped.
+> 
+> To reduce overall code duplication make the changes described above.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> The patch doesn't break compilation for me, but it hasn't been tested
+> otherwise.  It applies on top of the linux-pm.git tree's linux-next branch.
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+>  Documentation/power/runtime_pm.txt |    5 -----
+>  arch/arm/mach-omap2/omap_device.c  |    7 +------
+>  drivers/acpi/device_pm.c           |    1 -
+>  drivers/amba/bus.c                 |    2 +-
+>  drivers/base/platform.c            |    1 -
+>  drivers/base/power/domain.c        |    1 -
+>  drivers/base/power/generic_ops.c   |   23 -----------------------
+>  drivers/base/power/runtime.c       |   12 +++++-------
+>  drivers/i2c/i2c-core.c             |    2 +-
 
-Makes sense. I did a quick test with following patch and it seems to fix
-the issue for i2c-designware driver.
+i2c-core runtime PM idle still works with this patch :-)
 
-diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
-index 966a554..af8be8f 100644
---- a/drivers/i2c/busses/i2c-designware-platdrv.c
-+++ b/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -267,7 +267,22 @@ static int dw_i2c_resume(struct device *dev)
- }
- #endif
- 
--static SIMPLE_DEV_PM_OPS(dw_i2c_dev_pm_ops, dw_i2c_suspend, dw_i2c_resume);
-+#ifdef CONFIG_PM_RUNTIME
-+static int dw_i2c_runtime_idle(struct device *dev)
-+{
-+	/*
-+	 * Always schedule autosuspend regardless of what runtime PM the
-+	 * client devices use.
-+	 */
-+	pm_runtime_autosuspend(dev);
-+	return -EBUSY;
-+}
-+#endif
-+
-+static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_suspend, dw_i2c_resume)
-+	SET_RUNTIME_PM_OPS(NULL, NULL, dw_i2c_runtime_idle)
-+};
- 
- /* work with hotplug and coldplug */
- MODULE_ALIAS("platform:i2c_designware");
+You can add my
+
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+
+for the i2c parts if you like.
+
+>  drivers/mmc/core/sdio_bus.c        |    2 +-
+>  drivers/pci/pci-driver.c           |   27 ---------------------------
+>  drivers/spi/spi.c                  |    2 +-
+>  drivers/usb/core/port.c            |    1 -
+>  include/linux/pm_runtime.h         |    2 --
+>  14 files changed, 10 insertions(+), 78 deletions(-)
