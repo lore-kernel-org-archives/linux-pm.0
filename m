@@ -1,67 +1,76 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 0/7] thermal: ti-soc-thermal: fixes and DRA752 support
-Date: Wed, 29 May 2013 11:07:39 -0400
-Message-ID: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 3/7] thermal: ti-soc-thermal: freeze FSM while computing trend
+Date: Wed, 29 May 2013 11:07:42 -0400
+Message-ID: <1369840066-20357-4-git-send-email-eduardo.valentin@ti.com>
+References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:38068 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966095Ab3E2PIA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 May 2013 11:08:00 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hello Rui,
+In order to read the history buffer, it is required to
+freeze BG FSM. This patch adds the missing piece of code
+to freeze the FSM and also a contention area to avoid
+other parts of the code to access the DTEMPs.
 
-Here is a patch set for your consideration on ti-soc-thermal driver.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+---
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-This patch set is mix of:
-
-(a) patches that were added to the staging tree post 3.10-rc1 but
-were not included after the move from staging to thermal. This is
-because your thermal tree is based of 3.10-rc1 and not staging/next
-or linux-next/master. Thus the first two patches make sure the driver
-under drivers/thermal/ti-soc-thermal has also the needed fixes.
-
-(b) patches containing fixes found during the addition of DRA752
-chip support.
-
-(c) patches adding the support to DRA752 chips.
-
-Please consider these too for 3.11.
-
-For those people interested in testing this patch set, it is based
-on thermal/next and can also be found here:
-https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/ti-soc-thermal/fixes+dra752
-
-All best,
-
-Eduardo Valentin (7):
-  thermal: ti-soc-thermal: update DT reference for OMAP5430
-  thermal: ti-soc-thermal: remove external heat while extrapolating
-    hotspot
-  thermal: ti-soc-thermal: freeze FSM while computing trend
-  thermal: ti-soc-thermal: remove usage of IS_ERR_OR_NULL
-  thermal: ti-soc-thermal: add thermal data for DRA752 chips
-  thermal: ti-soc-thermal: add dra752 chip to device table
-  thermal: ti-soc-thermal: add DT example for DRA752 chip
-
- .../devicetree/bindings/thermal/ti_soc_thermal.txt |  13 +
- drivers/staging/ti-soc-thermal/dra752-bandgap.h    | 280 ++++++++++++
- .../staging/ti-soc-thermal/dra752-thermal-data.c   | 476 +++++++++++++++++++++
- drivers/thermal/ti-soc-thermal/Kconfig             |  12 +
- drivers/thermal/ti-soc-thermal/Makefile            |   1 +
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  29 +-
- drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   5 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  43 +-
- drivers/thermal/ti-soc-thermal/ti-thermal.h        |   6 +
- 9 files changed, 842 insertions(+), 23 deletions(-)
- create mode 100644 drivers/staging/ti-soc-thermal/dra752-bandgap.h
- create mode 100644 drivers/staging/ti-soc-thermal/dra752-thermal-data.c
-
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index f20c1cf..be9dba5 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -992,9 +992,12 @@ int ti_bandgap_get_trend(struct ti_bandgap *bgp, int id, int *trend)
+ 		goto exit;
+ 	}
+ 
++	spin_lock(&bgp->lock);
++
+ 	tsr = bgp->conf->sensors[id].registers;
+ 
+ 	/* Freeze and read the last 2 valid readings */
++	RMW_BITS(bgp, id, bgap_mask_ctrl, mask_freeze_mask, 1);
+ 	reg1 = tsr->ctrl_dtemp_1;
+ 	reg2 = tsr->ctrl_dtemp_2;
+ 
+@@ -1008,22 +1011,26 @@ int ti_bandgap_get_trend(struct ti_bandgap *bgp, int id, int *trend)
+ 	/* Convert from adc values to mCelsius temperature */
+ 	ret = ti_bandgap_adc_to_mcelsius(bgp, temp1, &t1);
+ 	if (ret)
+-		goto exit;
++		goto unfreeze;
+ 
+ 	ret = ti_bandgap_adc_to_mcelsius(bgp, temp2, &t2);
+ 	if (ret)
+-		goto exit;
++		goto unfreeze;
+ 
+ 	/* Fetch the update interval */
+ 	ret = ti_bandgap_read_update_interval(bgp, id, &interval);
+ 	if (ret || !interval)
+-		goto exit;
++		goto unfreeze;
+ 
+ 	*trend = (t1 - t2) / interval;
+ 
+ 	dev_dbg(bgp->dev, "The temperatures are t1 = %d and t2 = %d and trend =%d\n",
+ 		t1, t2, *trend);
+ 
++unfreeze:
++	RMW_BITS(bgp, id, bgap_mask_ctrl, mask_freeze_mask, 0);
++unlock:
++	spin_unlock(&bgp->lock);
+ exit:
+ 	return ret;
+ }
 -- 
 1.8.2.1.342.gfa7285d
-
