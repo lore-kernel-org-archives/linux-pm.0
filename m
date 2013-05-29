@@ -1,7 +1,7 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCH 4/7] thermal: ti-soc-thermal: remove usage of IS_ERR_OR_NULL
-Date: Wed, 29 May 2013 11:07:43 -0400
-Message-ID: <1369840066-20357-5-git-send-email-eduardo.valentin@ti.com>
+Subject: [PATCH 2/7] thermal: ti-soc-thermal: remove external heat while extrapolating hotspot
+Date: Wed, 29 May 2013 11:07:41 -0400
+Message-ID: <1369840066-20357-3-git-send-email-eduardo.valentin@ti.com>
 References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,145 +12,94 @@ To: rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch changes the driver to avoid the usage of IS_ERR_OR_NULL()
-macro. This macro can lead to dangerous results, like returning
-success (0) during a failure scenario (NULL pointer handling).
+For boards that provide a PCB sensor close to SoC junction
+temperature, it is possible to remove the cumulative heat
+reported by the SoC temperature sensor.
 
-For this reason this patch is changing the driver after
-revisiting the code. These are the cases:
-i. For cases in which IS_ERR_OR_NULL() is used for checking
-return values of functions that returns either PTR_ERR()
-or a valid pointer, it has been translated to IS_ERR() check only.
-ii. For cases that a NULL check is still needed, it has been
-translated to if (!ptr || IS_ERR(ptr)).
+This patch changes the extrapolation computation to consider
+an external sensor in the extrapolation equations.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 10 ++++++----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 15 ++++++++-------
- 2 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 30 ++++++++++++++--------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
+---
+This patch was added to the staging tree post 3.10-rc1 but
+is not included after the move from staging to thermal. This is
+because the thermal tree is based of 3.10-rc1 and not staging/next
+or linux-next/master.
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index be9dba5..f72695f 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -469,7 +469,7 @@ static inline int ti_bandgap_validate(struct ti_bandgap *bgp, int id)
- {
- 	int ret = 0;
- 
--	if (IS_ERR_OR_NULL(bgp)) {
-+	if (!bgp || IS_ERR(bgp)) {
- 		pr_err("%s: invalid bandgap pointer\n", __func__);
- 		ret = -EINVAL;
- 		goto exit;
-@@ -1198,7 +1198,7 @@ int ti_bandgap_probe(struct platform_device *pdev)
- 	int clk_rate, ret = 0, i;
- 
- 	bgp = ti_bandgap_build(pdev);
--	if (IS_ERR_OR_NULL(bgp)) {
-+	if (IS_ERR(bgp)) {
- 		dev_err(&pdev->dev, "failed to fetch platform data\n");
- 		return PTR_ERR(bgp);
- 	}
-@@ -1214,17 +1214,19 @@ int ti_bandgap_probe(struct platform_device *pdev)
- 	}
- 
- 	bgp->fclock = clk_get(NULL, bgp->conf->fclock_name);
--	ret = IS_ERR_OR_NULL(bgp->fclock);
-+	ret = IS_ERR(bgp->fclock);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to request fclock reference\n");
-+		ret = PTR_ERR(bgp->fclock);
- 		goto free_irqs;
- 	}
- 
- 	bgp->div_clk = clk_get(NULL,  bgp->conf->div_ck_name);
--	ret = IS_ERR_OR_NULL(bgp->div_clk);
-+	ret = IS_ERR(bgp->div_clk);
- 	if (ret) {
- 		dev_err(&pdev->dev,
- 			"failed to request div_ts_ck clock ref\n");
-+		ret = PTR_ERR(bgp->div_clk);
- 		goto free_irqs;
- 	}
- 
+For your reference:
+https://git.kernel.org/cgit/linux/kernel/git/gregkh/staging.git/commit/drivers/staging/ti-soc-thermal?h=staging-next&id=a85fd2c8fdefa0d504882f0e110d68e564903fcb
+
 diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 8e67ebf..4c5f55c37 100644
+index e3c5e67..8e67ebf 100644
 --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
 +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -101,7 +101,7 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
- 
- 	pcb_tz = data->pcb_tz;
- 	/* In case pcb zone is available, use the extrapolation rule with it */
--	if (!IS_ERR_OR_NULL(pcb_tz)) {
-+	if (!IS_ERR(pcb_tz)) {
- 		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
- 		if (!ret) {
- 			tmp -= pcb_temp; /* got a valid PCB temp */
-@@ -124,7 +124,7 @@ static int ti_thermal_bind(struct thermal_zone_device *thermal,
- 	struct ti_thermal_data *data = thermal->devdata;
- 	int id;
- 
--	if (IS_ERR_OR_NULL(data))
-+	if (!data || IS_ERR(data))
- 		return -ENODEV;
- 
- 	/* check if this is the cooling device we registered */
-@@ -146,7 +146,7 @@ static int ti_thermal_unbind(struct thermal_zone_device *thermal,
+@@ -38,6 +38,7 @@
+ /* common data structures */
+ struct ti_thermal_data {
+ 	struct thermal_zone_device *ti_thermal;
++	struct thermal_zone_device *pcb_tz;
+ 	struct thermal_cooling_device *cool_dev;
+ 	struct ti_bandgap *bgp;
+ 	enum thermal_device_mode mode;
+@@ -77,10 +78,12 @@ static inline int ti_thermal_hotspot_temperature(int t, int s, int c)
+ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
+ 				      unsigned long *temp)
  {
++	struct thermal_zone_device *pcb_tz = NULL;
  	struct ti_thermal_data *data = thermal->devdata;
+ 	struct ti_bandgap *bgp;
+ 	const struct ti_temp_sensor *s;
+-	int ret, tmp, pcb_temp, slope, constant;
++	int ret, tmp, slope, constant;
++	unsigned long pcb_temp;
  
--	if (IS_ERR_OR_NULL(data))
-+	if (!data || IS_ERR(data))
- 		return -ENODEV;
+ 	if (!data)
+ 		return 0;
+@@ -92,16 +95,22 @@ static inline int ti_thermal_get_temp(struct thermal_zone_device *thermal,
+ 	if (ret)
+ 		return ret;
  
- 	/* check if this is the cooling device we registered */
-@@ -282,6 +282,7 @@ static struct ti_thermal_data
+-	pcb_temp = 0;
+-	/* TODO: Introduce pcb temperature lookup */
++	/* Default constants */
++	slope = s->slope;
++	constant = s->constant;
++
++	pcb_tz = data->pcb_tz;
+ 	/* In case pcb zone is available, use the extrapolation rule with it */
+-	if (pcb_temp) {
+-		tmp -= pcb_temp;
+-		slope = s->slope_pcb;
+-		constant = s->constant_pcb;
+-	} else {
+-		slope = s->slope;
+-		constant = s->constant;
++	if (!IS_ERR_OR_NULL(pcb_tz)) {
++		ret = thermal_zone_get_temp(pcb_tz, &pcb_temp);
++		if (!ret) {
++			tmp -= pcb_temp; /* got a valid PCB temp */
++			slope = s->slope_pcb;
++			constant = s->constant_pcb;
++		} else {
++			dev_err(bgp->dev,
++				"Failed to read PCB state. Using defaults\n");
++		}
+ 	}
+ 	*temp = ti_thermal_hotspot_temperature(tmp, slope, constant);
+ 
+@@ -273,6 +282,7 @@ static struct ti_thermal_data
  	data->sensor_id = id;
  	data->bgp = bgp;
  	data->mode = THERMAL_DEVICE_ENABLED;
-+	/* pcb_tz will be either valid or PTR_ERR() */
- 	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
++	data->pcb_tz = thermal_zone_get_zone_by_name("pcb");
  	INIT_WORK(&data->thermal_wq, ti_thermal_work);
  
-@@ -295,7 +296,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
- 
--	if (IS_ERR_OR_NULL(data))
-+	if (!data || IS_ERR(data))
- 		data = ti_thermal_build_data(bgp, id);
- 
- 	if (!data)
-@@ -306,7 +307,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 				OMAP_TRIP_NUMBER, 0, data, &ti_thermal_ops,
- 				NULL, FAST_TEMP_MONITORING_RATE,
- 				FAST_TEMP_MONITORING_RATE);
--	if (IS_ERR_OR_NULL(data->ti_thermal)) {
-+	if (IS_ERR(data->ti_thermal)) {
- 		dev_err(bgp->dev, "thermal zone device is NULL\n");
- 		return PTR_ERR(data->ti_thermal);
- 	}
-@@ -343,7 +344,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
- 	struct ti_thermal_data *data;
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
--	if (IS_ERR_OR_NULL(data))
-+	if (!data || IS_ERR(data))
- 		data = ti_thermal_build_data(bgp, id);
- 
- 	if (!data)
-@@ -356,7 +357,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
- 
- 	/* Register cooling device */
- 	data->cool_dev = cpufreq_cooling_register(cpu_present_mask);
--	if (IS_ERR_OR_NULL(data->cool_dev)) {
-+	if (IS_ERR(data->cool_dev)) {
- 		dev_err(bgp->dev,
- 			"Failed to register cpufreq cooling device\n");
- 		return PTR_ERR(data->cool_dev);
+ 	return data;
 -- 
 1.8.2.1.342.gfa7285d
