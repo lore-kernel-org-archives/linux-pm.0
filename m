@@ -1,103 +1,144 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [resend] cpuidle: ACPI processor idle regression
-Date: Thu, 30 May 2013 16:56:18 +0200
-Message-ID: <41543089.RHFiQpfZdy@vostro.rjw.lan>
-References: <51A75830.30007@linaro.org>
+From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
+Date: Thu, 30 May 2013 09:14:13 +0200
+Message-ID: <20130530071413.GC19468@game.jcrosoft.org>
+References: <1369829859-13405-1-git-send-email-lars@metafoo.de>
+ <51A60F83.7070403@analog.com>
+ <20130529192013.GA19468@game.jcrosoft.org>
+ <001801ce5ccd$2dd30be0$897923a0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:54933 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932733Ab3E3OrW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 May 2013 10:47:22 -0400
-In-Reply-To: <51A75830.30007@linaro.org>
+Received: from 10.mo4.mail-out.ovh.net ([188.165.33.109]:59876 "EHLO
+	mo4.mail-out.ovh.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933826Ab3E3Pel (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 11:34:41 -0400
+Received: from mail182.ha.ovh.net (gw6.ovh.net [213.251.189.206])
+	by mo4.mail-out.ovh.net (Postfix) with SMTP id EA8851054296
+	for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 09:18:21 +0200 (CEST)
+Content-Disposition: inline
+In-Reply-To: <001801ce5ccd$2dd30be0$897923a0$@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, toshi.kani@hp.com, linux-pm@vger.kernel.org, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Michael Hennerich' <michael.hennerich@analog.com>, "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thursday, May 30, 2013 03:46:24 PM Daniel Lezcano wrote:
+On 09:32 Thu 30 May     , Jingoo Han wrote:
+> On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
+> > On 16:24 Wed 29 May     , Michael Hennerich wrote:
+> > > On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
+> > > >Use dev_pm_ops instead of the legacy suspend/resume callbacks.
+> > > >
+> > > >Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+> > > Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+> > > >---
+> > > >  drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
+> > > >  1 file changed, 14 insertions(+), 8 deletions(-)
+> > > >
+> > > >diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+> > > >index 29d8c04..6084c17 100644
+> > > >--- a/drivers/video/bfin-lq035q1-fb.c
+> > > >+++ b/drivers/video/bfin-lq035q1-fb.c
+> > > >@@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+> > > >  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+> > > >  }
+> > > >-#ifdef CONFIG_PM
+> > > >-static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
+> > > >+#ifdef CONFIG_PM_SLEEP
+> > > >+static int lq035q1_spidev_suspend(struct device *dev)
+> > > >  {
+> > > >+	struct spi_device *spi = to_spi_device(dev);
+> > > >+
+> > > >  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+> > > >  }
+> > > >-static int lq035q1_spidev_resume(struct spi_device *spi)
+> > > >+static int lq035q1_spidev_resume(struct device *dev)
+> > > >  {
+> > > >-	int ret;
+> > > >+	struct spi_device *spi = to_spi_device(dev);
+> > > >  	struct spi_control *ctl = spi_get_drvdata(spi);
+> > > >+	int ret;
+> > > >  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+> > > >  	if (ret)
+> > > >@@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+> > > >  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+> > > >  }
+> > > >+
+> > > >+static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
+> > > >+	lq035q1_spidev_resume);
+> > > >+#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
+> > > >+
+> > > >  #else
+> > > >-# define lq035q1_spidev_suspend NULL
+> > > >-# define lq035q1_spidev_resume  NULL
+> > > >+#define LQ035Q1_SPIDEV_PM_OPS NULL
+> > > >  #endif
+> > we really need to ahve a macro like for DT of_match_ptr to drop the #else
 > 
-> Sorry, a bad copy/paste address for Rafael.
+> Hi Jean-Christophe PLAGNIOL-VILLARD,
 > 
-> ----
+> I submitted the following patch. :)
+> (https://patchwork.kernel.org/patch/2502971/)
 > 
-> Hi all,
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -55,8 +55,10 @@  struct device;
+>  
+>  #ifdef CONFIG_PM
+>  extern const char power_group_name[];		/* = "power" */
+> +#define pm_ops_ptr(_ptr)	(_ptr)
+>  #else
+>  #define power_group_name	NULL
+> +#define pm_ops_ptr(_ptr)	NULL
+>  #endif
 > 
-> while testing the processor_idle for ACPI, I noticed the states usage is
-> not used for cpuidle in sysfs.
 > 
-> Reproduced on Lenovo x230, with a i7-3520M CPU @ 2.90GHz without the
-> intel_idle driver.
+> This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
 > 
-> After git-bisecting, the commit where this regression occurs is:
+Lars-Peter please update with and
+Acked-by: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
-Reproduced and investigating that.
 
-Thanks,
-Rafael
+Rafael can you  take this one via pm tree
 
-
-> ac212b6980d8d5eda705864fc5a8ecddc6d6eacc is the first bad commit
-> commit ac212b6980d8d5eda705864fc5a8ecddc6d6eacc
-> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Date:   Fri May 3 00:26:22 2013 +0200
+Best Regards,
+J.
 > 
->     ACPI / processor: Use common hotplug infrastructure
+> Best regards,
+> Jingoo Han
 > 
->     Split the ACPI processor driver into two parts, one that is
->     non-modular, resides in the ACPI core and handles the enumeration
->     and hotplug of processors and one that implements the rest of the
->     existing processor driver functionality.
+> > 
+> > I known it's related to this patch but someone should do it
+> > 
+> > Rafael what do you think
+> > 
+> > Best Regards,
+> > J.
+> > > >  /* Power down all displays on reboot, poweroff or halt */
+> > > >@@ -708,8 +715,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+> > > >  	info->spidrv.probe    = lq035q1_spidev_probe;
+> > > >  	info->spidrv.remove   = lq035q1_spidev_remove;
+> > > >  	info->spidrv.shutdown = lq035q1_spidev_shutdown;
+> > > >-	info->spidrv.suspend  = lq035q1_spidev_suspend;
+> > > >-	info->spidrv.resume   = lq035q1_spidev_resume;
+> > > >+	info->spidrv.driver.pm = LQ035Q1_SPIDEV_PM_OPS;
+> > > >  	ret = spi_register_driver(&info->spidrv);
+> > > >  	if (ret < 0) {
+> > >
+> > >
+> > > --
+> > > Greetings,
+> > > Michael
+> > >
+> > > --
+> > > Analog Devices GmbH      Wilhelm-Wagenfeld-Str. 6      80807 Muenchen
+> > > Sitz der Gesellschaft: Muenchen; Registergericht: Muenchen HRB 40368;
+> > > Geschaeftsfuehrer:Dr.Carsten Suckrow, Thomas Wessel, William A. Martin,
+> > > Margaret Seif
+> > >
+> > >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
->     The non-modular part uses an ACPI scan handler object to enumerate
->     processors on the basis of information provided by the ACPI namespace
->     and to hook up with the common ACPI hotplug infrastructure.  It also
->     populates the ACPI handle of each processor device having a
->     corresponding object in the ACPI namespace, which allows the driver
->     proper to bind to those devices, and makes the driver bind to them
->     if it is readily available (i.e. loaded) when the scan handler's
->     .attach() routine is running.
-> 
->     There are a few reasons to make this change.
-> 
->     First, switching the ACPI processor driver to using the common ACPI
->     hotplug infrastructure reduces code duplication and size considerably,
->     even though a new file is created along with a header comment etc.
-> 
->     Second, since the common hotplug code attempts to offline devices
->     before starting the (non-reversible) removal procedure, it will abort
->     (and possibly roll back) hot-remove operations involving processors
->     if cpu_down() returns an error code for one of them instead of
->     continuing them blindly (if /sys/firmware/acpi/hotplug/force_remove
->     is unset).  That is a more desirable behavior than what the current
->     code does.
-> 
->     Finally, the separation of the scan/hotplug part from the driver
->     proper makes it possible to simplify the driver's .remove() routine,
->     because it doesn't need to worry about the possible cleanup related
->     to processor removal any more (the scan/hotplug part is responsible
->     for that now) and can handle device removal and driver removal
->     symmetricaly (i.e. as appropriate).
-> 
->     Some user-visible changes in sysfs are made (for example, the
->     'sysdev' link from the ACPI device node to the processor device's
->     directory is gone and a 'physical_node' link is present instead
->     and a corresponding 'firmware_node' is present in the processor
->     device's directory, the processor driver is now visible under
->     /sys/bus/cpu/drivers/ and bound to the processor device), but
->     that shouldn't affect the functionality that users care about
->     (frequency scaling, C-states and thermal management).
-> 
->     Tested on my venerable Toshiba Portege R500.
-> 
->     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->     Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->     Reviewed-by: Toshi Kani <toshi.kani@hp.com>
-> 
-> 
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
