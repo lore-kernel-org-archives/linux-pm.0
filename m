@@ -1,90 +1,74 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value
- proportional to load
-Date: Thu, 30 May 2013 20:14:51 +0300
-Message-ID: <51A7890B.8080002@semaphore.gr>
-References: <51A3C6CF.6080104@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan> <51A61BAC.2050203@semaphore.gr> <3000308.Hi6zX8my0D@vostro.rjw.lan>
+From: Giacomo Perale <giacomo.perale@gmail.com>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Thu, 30 May 2013 19:19:32 +0200
+Message-ID: <CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+	<1369631226.2159.5.camel@rzhang1-mobl4>
+	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	<1369878386.3368.16.camel@rzhang1-mobl4>
+	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
+	<1369911036.2636.5.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <3000308.Hi6zX8my0D@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1369911036.2636.5.camel@rzhang1-mobl4>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 05/30/2013 01:29 AM, Rafael J. Wysocki wrote:
-> On Wednesday, May 29, 2013 06:15:56 PM Stratos Karafotis wrote:
->> On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
->>> On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
->>>> I mean any value of freq table. Please let me know if you want me to rephrase
->>>> it in description.
->>>
->>> Yes, it would be nice to be more precise.
+2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
+>> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+>> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
+>> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+>> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+>> >> >> Hello,
+>> >> >>
+>> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
+>> >> >> delays when resuming from suspend-to-disk and a few new error messages
+>> >> >> in the logs:
+>> >> >>
+>> >> >>
+>> >> >> Not having connected the issue with the previous error messages I
+>> >> >> initially blamed the disk and replaced it with a new one thinking it
+>> >> >> was broken, but the problem persisted so I started a bisection run
+>> >> >> that pointed to this commit:
+>> >> >>
+>> >> >>
+>> >> > I do not see how this would affect the sata hibernation/resume.
+>> >> > but anyway, would you please try the four patches in comment #10, #11,
+>> >> > #12 and #13 in
+>> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+>> >> > and check if they help?
+>> >> >
+>> >> > thanks,
+>> >> > rui
+>> >> >
+>> >>
+>> >> No luck, with git head and those four patches hibernation is
+>> >> completely broken, the system doesn't even shut down, it just loses
+>> >> the disks (I'm attaching what I could get from /proc/kmsg to this
+>> >> email).
+>> >>
+>> > then can you please try the patch at
+>> > https://patchwork.kernel.org/patch/2633071/
+>> > on top of the four patches and see if it helps?
+>> >
+>> > thanks,
+>> > rui
+>> >
 >>
->> OK sure, I will add a more precise description.
+>> Do you mean without Rafael's patch?
 >>
->>
->>> Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
->>> may be removed (but the patch doesn't do that and I wonder why?), but surely
->>> the developer who added it wouldn't agree.
->>>
->>> So, please explain: why can we drop __cpufreq_driver_getavg()?
->>>
->>
->> With the new proposed method the next frequency is not dependent from current
->> or average frequency. The next frequency is dependent only from load.
->> So, we don't need support for freq feedback from hardware anymore.
+> right.
 >
-> OK, but that's a more significant change than the changelog suggests.
-> The changelog should tell the whole story and explain the rationale. :-)
->
-> So, please explain that in fact it is not necessary to use the current or
-> average frequency to compute the target and why that is the case.
->
-> Also the patch should remove __cpufreq_driver_getavg() and the callback used by
-> it, since that code will be dead after applying it anyway.
->
->> Even if, due to underlying hardware coordination mechanism, CPU runs in different
->> frequency than the actual, the calculation of load and of target frequency will
->> remain the unaffected, with this patch.
->>
->> With full respect to ondemand coauthor, and if the new method is acceptable,
->> I could send a patch to revert the original one about the IA32_APERF and
->> IA32_MPERF MSR support.
->
-> I'm not sure what you mean by "revert", but please do as I said above.
->
->>>> Thus, in the comparison with up_threshold to increase frequency we actually
->>>> do this (in cases that getavg is not implemented):
->>>> if (load > up_theshold)
->>>> 	increase to max
->>>>
->>>> So, after the patch we keep the same comparison to decide about the max frequency.
->>>> I thought, that below up_threshold is 'fair' to decide about the next
->>>> frequency with formula that frequency is proportional to load.
->>>> For example in a CPU with min freq 100MHz and max 1000MHz with a
->>>> load 50 target frequency should be 500MHz.
->>>
->>> Well, that sounds reasonable, but the patch actually does more than that.
->>
->> I'm sorry, but I didn't understand your last point.
->
-> Please see above.
->
-> The changelog doesn't even mention that the code is being switched from using
-> measured past frequencies to not using them, because you think that there's a
-> better way of computing the target (which by the way I can agree with :-)).
->
-> Thanks,
-> Rafael
->
->
+> thanks,
+> rui
 
-OK, I will send a new patch that includes your corrections and suggestions.
+[cc-ing list]
 
-Thanks so much for your time and your comments!
+No difference, system doesn't shut down and disks become unavailable.
 
-Stratos
-
+Giacomo
