@@ -1,74 +1,109 @@
-From: Giacomo Perale <giacomo.perale@gmail.com>
-Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
- broken in 3.9.x
-Date: Thu, 30 May 2013 19:19:32 +0200
-Message-ID: <CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
-	<1369631226.2159.5.camel@rzhang1-mobl4>
-	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
-	<1369878386.3368.16.camel@rzhang1-mobl4>
-	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
-	<1369911036.2636.5.camel@rzhang1-mobl4>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper routine
+Date: Thu, 30 May 2013 21:55:03 +0200
+Message-ID: <5291416.b4M4MTrzPC@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1369911036.2636.5.camel@rzhang1-mobl4>
+In-Reply-To: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-2013/5/30 Zhang Rui <rui.zhang@intel.com>:
-> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
->> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
->> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
->> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
->> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
->> >> >> Hello,
->> >> >>
->> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
->> >> >> delays when resuming from suspend-to-disk and a few new error messages
->> >> >> in the logs:
->> >> >>
->> >> >>
->> >> >> Not having connected the issue with the previous error messages I
->> >> >> initially blamed the disk and replaced it with a new one thinking it
->> >> >> was broken, but the problem persisted so I started a bisection run
->> >> >> that pointed to this commit:
->> >> >>
->> >> >>
->> >> > I do not see how this would affect the sata hibernation/resume.
->> >> > but anyway, would you please try the four patches in comment #10, #11,
->> >> > #12 and #13 in
->> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
->> >> > and check if they help?
->> >> >
->> >> > thanks,
->> >> > rui
->> >> >
->> >>
->> >> No luck, with git head and those four patches hibernation is
->> >> completely broken, the system doesn't even shut down, it just loses
->> >> the disks (I'm attaching what I could get from /proc/kmsg to this
->> >> email).
->> >>
->> > then can you please try the patch at
->> > https://patchwork.kernel.org/patch/2633071/
->> > on top of the four patches and see if it helps?
->> >
->> > thanks,
->> > rui
->> >
->>
->> Do you mean without Rafael's patch?
->>
-> right.
->
-> thanks,
-> rui
+On Thursday, May 30, 2013 01:08:08 PM Alan Stern wrote:
+> On Thu, 30 May 2013, Rafael J. Wysocki wrote:
+> 
+> > > Since you're making this change, wouldn't it be a good idea to adopt
+> > > Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
+> > > when the use_autosuspend flag is set?
+> > 
+> > I'm not actually sure.  It can be done, but I'd prefer to do that as a separate
+> > change in any case.
+> 
+> That makes sense.
+> 
+> > > What about cases where the runtime-idle callback does
+> > > rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
+> > > that it returns -EBUSY in such cases.  Did you audit for this?
+> > 
+> > As far as I could.
+> > 
+> > I'm not worried about the subsystems modified by this patch, because the
+> > functionality there won't change (except for PCI, that is).
+> 
+> Right.  The subsystems that _aren't_ modified are the ones to worry 
+> about -- like the USB callback.  They are the ones where the behavior 
+> might change.
 
-[cc-ing list]
+Right.
 
-No difference, system doesn't shut down and disks become unavailable.
+> > > > Index: linux-pm/Documentation/power/runtime_pm.txt
+> > > > ===================================================================
+> > > > --- linux-pm.orig/Documentation/power/runtime_pm.txt
+> > > > +++ linux-pm/Documentation/power/runtime_pm.txt
+> > > > @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
+> > > >  management callbacks provided by the PM core, defined in
+> > > >  driver/base/power/generic_ops.c:
+> > > >  
+> > > > -  int pm_generic_runtime_idle(struct device *dev);
+> > > > -    - invoke the ->runtime_idle() callback provided by the driver of this
+> > > > -      device, if defined, and call pm_runtime_suspend() for this device if the
+> > > > -      return value is 0 or the callback is not defined
+> > > > -
+> > > 
+> > > The documentation for the runtime-idle callback needs to be updated too.
+> > 
+> > Well, I actually couldn't find the part of it that would need to be updated. :-)
+> 
+> How about this?
 
-Giacomo
+Looks good! :-)
+
+May I add your sign-off to it?
+
+Rafael
+
+
+> Index: usb-3.10/Documentation/power/runtime_pm.txt
+> ===================================================================
+> --- usb-3.10.orig/Documentation/power/runtime_pm.txt
+> +++ usb-3.10/Documentation/power/runtime_pm.txt
+> @@ -144,8 +144,12 @@ The action performed by the idle callbac
+>  (or driver) in question, but the expected and recommended action is to check
+>  if the device can be suspended (i.e. if all of the conditions necessary for
+>  suspending the device are satisfied) and to queue up a suspend request for the
+> -device in that case.  The value returned by this callback is ignored by the PM
+> -core.
+> +device in that case.  If there is no idle callback, or if the callback returns
+> +0, then the PM core will attempt to carry out a runtime suspend of the device;
+> +in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
+> +example, if the callback routine has started a delayed suspend), the routine
+> +should return a non-zero value.  Negative error return codes are ignored by the
+> +PM core.
+>  
+>  The helper functions provided by the PM core, described in Section 4, guarantee
+>  that the following constraints are met with respect to runtime PM callbacks for
+> @@ -301,9 +305,10 @@ drivers/base/power/runtime.c and include
+>        removing the device from device hierarchy
+>  
+>    int pm_runtime_idle(struct device *dev);
+> -    - execute the subsystem-level idle callback for the device; returns 0 on
+> -      success or error code on failure, where -EINPROGRESS means that
+> -      ->runtime_idle() is already being executed
+> +    - execute the subsystem-level idle callback for the device; returns an
+> +      error code on failure, where -EINPROGRESS means that ->runtime_idle() is
+> +      already being executed; if there is no callback or the callback returns 0
+> +      then run pm_runtime_suspend(dev) and return its result
+>  
+>    int pm_runtime_suspend(struct device *dev);
+>      - execute the subsystem-level suspend callback for the device; returns 0 on
+> 
+> 
+> Alan Stern
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
