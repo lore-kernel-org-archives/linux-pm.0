@@ -1,62 +1,106 @@
-From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
-Subject: Re: [PATCH] PM: Add pm_ops_ptr() macro
-Date: Thu, 30 May 2013 15:54:20 +0200
-Message-ID: <4119506.fLP8mVnrTk@vostro.rjw.lan>
-References: <000201ce453f$5ce4fc90$16aef5b0$@samsung.com> <20130503092311.GA13832@amd.pavel.ucw.cz> <20130530105644.GA3595@katana>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [resend] cpuidle: ACPI processor idle regression
+Date: Thu, 30 May 2013 15:46:24 +0200
+Message-ID: <51A75830.30007@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20130530105644.GA3595@katana>
-Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, 'Len Brown' <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, 'Andrew Morton' <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f48.google.com ([209.85.214.48]:63165 "EHLO
+	mail-bk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756470Ab3E3Nq2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 09:46:28 -0400
+Received: by mail-bk0-f48.google.com with SMTP id jf20so157610bkc.35
+        for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 06:46:26 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Thursday, May 30, 2013 12:56:45 PM Wolfram Sang wrote:
-> On Fri, May 03, 2013 at 11:23:11AM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
-> > > > to be assigned without having an #define xxx NULL for the case that PM is
-> > > > not enabled.
-> > > > 
-> > > > Signed-off-by: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> > > 
-> > > I've queued this up as v3.11 material.
-> > 
-> > > > --- a/drivers/i2c/busses/i2c-s3c2410.c
-> > > > +++ b/drivers/i2c/busses/i2c-s3c2410.c
-> > > > @@ -1218,7 +1218,6 @@ static int s3c24xx_i2c_resume(struct device *dev)
-> > > >  }
-> > > >  #endif
-> > > >  
-> > > > -#ifdef CONFIG_PM
-> > > >  static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
-> > > >  #ifdef CONFIG_PM_SLEEP
-> > > >  	.suspend_noirq = s3c24xx_i2c_suspend_noirq,
-> > > > @@ -1226,11 +1225,6 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
-> > > >  #endif
-> > > >  };
-> > > >  
-> > > > -#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
-> > > > -#else
-> > > > -#define S3C24XX_DEV_PM_OPS NULL
-> > > > -#endif
-> > > > -
-> > > >  /* device driver for platform bus bits */
-> > 
-> > Will not this enlarge .data by sizeof(struct dev_pm_ops)?
-> 
-> Same question here. Is it the preferred way now to use this new macro
-> although having the cost of having an empty dev_pm_ops?
-
-No, it isn't, but if someone wants to use it, I don't really care that much.
-
-Thanks,
-Rafael
+To: "rafae >> \"'Rafael J. Wysocki'\"" <rafael.j.wysocki@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, toshi.kani@hp.com, linux-pm@vger.kernel.org
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Sorry, a bad copy/paste address for Rafael.
+
+----
+
+Hi all,
+
+while testing the processor_idle for ACPI, I noticed the states usage i=
+s
+not used for cpuidle in sysfs.
+
+Reproduced on Lenovo x230, with a i7-3520M CPU @ 2.90GHz without the
+intel_idle driver.
+
+After git-bisecting, the commit where this regression occurs is:
+
+ac212b6980d8d5eda705864fc5a8ecddc6d6eacc is the first bad commit
+commit ac212b6980d8d5eda705864fc5a8ecddc6d6eacc
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Fri May 3 00:26:22 2013 +0200
+
+    ACPI / processor: Use common hotplug infrastructure
+
+    Split the ACPI processor driver into two parts, one that is
+    non-modular, resides in the ACPI core and handles the enumeration
+    and hotplug of processors and one that implements the rest of the
+    existing processor driver functionality.
+
+    The non-modular part uses an ACPI scan handler object to enumerate
+    processors on the basis of information provided by the ACPI namespa=
+ce
+    and to hook up with the common ACPI hotplug infrastructure.  It als=
+o
+    populates the ACPI handle of each processor device having a
+    corresponding object in the ACPI namespace, which allows the driver
+    proper to bind to those devices, and makes the driver bind to them
+    if it is readily available (i.e. loaded) when the scan handler's
+    .attach() routine is running.
+
+    There are a few reasons to make this change.
+
+    First, switching the ACPI processor driver to using the common ACPI
+    hotplug infrastructure reduces code duplication and size considerab=
+ly,
+    even though a new file is created along with a header comment etc.
+
+    Second, since the common hotplug code attempts to offline devices
+    before starting the (non-reversible) removal procedure, it will abo=
+rt
+    (and possibly roll back) hot-remove operations involving processors
+    if cpu_down() returns an error code for one of them instead of
+    continuing them blindly (if /sys/firmware/acpi/hotplug/force_remove
+    is unset).  That is a more desirable behavior than what the current
+    code does.
+
+    Finally, the separation of the scan/hotplug part from the driver
+    proper makes it possible to simplify the driver's .remove() routine=
+,
+    because it doesn't need to worry about the possible cleanup related
+    to processor removal any more (the scan/hotplug part is responsible
+    for that now) and can handle device removal and driver removal
+    symmetricaly (i.e. as appropriate).
+
+    Some user-visible changes in sysfs are made (for example, the
+    'sysdev' link from the ACPI device node to the processor device's
+    directory is gone and a 'physical_node' link is present instead
+    and a corresponding 'firmware_node' is present in the processor
+    device's directory, the processor driver is now visible under
+    /sys/bus/cpu/drivers/ and bound to the processor device), but
+    that shouldn't affect the functionality that users care about
+    (frequency scaling, C-states and thermal management).
+
+    Tested on my venerable Toshiba Portege R500.
+
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+    Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+    Reviewed-by: Toshi Kani <toshi.kani@hp.com>
+
+
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
