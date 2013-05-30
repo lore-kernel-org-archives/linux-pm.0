@@ -1,122 +1,96 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [resend] cpuidle: ACPI processor idle regression
-Date: Thu, 30 May 2013 18:56:59 +0200
-Message-ID: <51A784DB.9040805@linaro.org>
-References: <51A75830.30007@linaro.org> <41543089.RHFiQpfZdy@vostro.rjw.lan> <2514002.nHT3FtHL0W@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper
+ routine
+Date: Thu, 30 May 2013 13:08:08 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
+References: <1645401.1grgttHPMR@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:35028 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756144Ab3E3Q5G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 12:57:06 -0400
-Received: by mail-wi0-f176.google.com with SMTP id hr14so4768919wib.9
-        for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 09:57:03 -0700 (PDT)
-In-Reply-To: <2514002.nHT3FtHL0W@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1645401.1grgttHPMR@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, toshi.kani@hp.com, linux-pm@vger.kernel.org, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 05/30/2013 06:35 PM, Rafael J. Wysocki wrote:
-> On Thursday, May 30, 2013 04:56:18 PM Rafael J. Wysocki wrote:
->> On Thursday, May 30, 2013 03:46:24 PM Daniel Lezcano wrote:
->>>
->>> Sorry, a bad copy/paste address for Rafael.
->>>
->>> ----
->>>
->>> Hi all,
->>>
->>> while testing the processor_idle for ACPI, I noticed the states usa=
-ge is
->>> not used for cpuidle in sysfs.
->>>
->>> Reproduced on Lenovo x230, with a i7-3520M CPU @ 2.90GHz without th=
-e
->>> intel_idle driver.
->>>
->>> After git-bisecting, the commit where this regression occurs is:
->>
->> Reproduced and investigating that.
->=20
-> The appended patch fixes this for me.  Can you please verify?
+On Thu, 30 May 2013, Rafael J. Wysocki wrote:
 
-Yes, verified. It fixes the issue for me too.
+> > Since you're making this change, wouldn't it be a good idea to adopt
+> > Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
+> > when the use_autosuspend flag is set?
+> 
+> I'm not actually sure.  It can be done, but I'd prefer to do that as a separate
+> change in any case.
 
-Thanks !
+That makes sense.
 
-> ---
->  drivers/acpi/acpi_processor.c   |    5 +++++
->  drivers/acpi/processor_driver.c |    3 ---
->  2 files changed, 5 insertions(+), 3 deletions(-)
->=20
-> Index: linux-pm/drivers/acpi/processor_driver.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/acpi/processor_driver.c
-> +++ linux-pm/drivers/acpi/processor_driver.c
-> @@ -78,9 +78,6 @@ static struct device_driver acpi_process
->  	.remove =3D acpi_processor_stop,
->  };
-> =20
-> -DEFINE_PER_CPU(struct acpi_processor *, processors);
-> -EXPORT_PER_CPU_SYMBOL(processors);
-> -
->  static void acpi_processor_notify(acpi_handle handle, u32 event, voi=
-d *data)
->  {
->  	struct acpi_device *device =3D data;
-> Index: linux-pm/drivers/acpi/acpi_processor.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/acpi/acpi_processor.c
-> +++ linux-pm/drivers/acpi/acpi_processor.c
-> @@ -29,6 +29,9 @@
-> =20
->  ACPI_MODULE_NAME("processor");
-> =20
-> +DEFINE_PER_CPU(struct acpi_processor *, processors);
-> +EXPORT_PER_CPU_SYMBOL(processors);
-> +
->  /* -----------------------------------------------------------------=
----------
->                                  Errata Handling
->     -----------------------------------------------------------------=
---------- */
-> @@ -387,6 +390,7 @@ static int __cpuinit acpi_processor_add(
->  	 * checks.
->  	 */
->  	per_cpu(processor_device_array, pr->id) =3D device;
-> +	per_cpu(processors, pr->id) =3D pr;
-> =20
->  	dev =3D get_cpu_device(pr->id);
->  	result =3D acpi_bind_one(dev, pr->handle);
-> @@ -406,6 +410,7 @@ static int __cpuinit acpi_processor_add(
->   err:
->  	free_cpumask_var(pr->throttling.shared_cpu_map);
->  	device->driver_data =3D NULL;
-> +	per_cpu(processors, pr->id) =3D NULL;
->   err_free_pr:
->  	kfree(pr);
->  	return result;
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
+> > What about cases where the runtime-idle callback does
+> > rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
+> > that it returns -EBUSY in such cases.  Did you audit for this?
+> 
+> As far as I could.
+> 
+> I'm not worried about the subsystems modified by this patch, because the
+> functionality there won't change (except for PCI, that is).
+
+Right.  The subsystems that _aren't_ modified are the ones to worry 
+about -- like the USB callback.  They are the ones where the behavior 
+might change.
+
+> > > Index: linux-pm/Documentation/power/runtime_pm.txt
+> > > ===================================================================
+> > > --- linux-pm.orig/Documentation/power/runtime_pm.txt
+> > > +++ linux-pm/Documentation/power/runtime_pm.txt
+> > > @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
+> > >  management callbacks provided by the PM core, defined in
+> > >  driver/base/power/generic_ops.c:
+> > >  
+> > > -  int pm_generic_runtime_idle(struct device *dev);
+> > > -    - invoke the ->runtime_idle() callback provided by the driver of this
+> > > -      device, if defined, and call pm_runtime_suspend() for this device if the
+> > > -      return value is 0 or the callback is not defined
+> > > -
+> > 
+> > The documentation for the runtime-idle callback needs to be updated too.
+> 
+> Well, I actually couldn't find the part of it that would need to be updated. :-)
+
+How about this?
 
 
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+Index: usb-3.10/Documentation/power/runtime_pm.txt
+===================================================================
+--- usb-3.10.orig/Documentation/power/runtime_pm.txt
++++ usb-3.10/Documentation/power/runtime_pm.txt
+@@ -144,8 +144,12 @@ The action performed by the idle callbac
+ (or driver) in question, but the expected and recommended action is to check
+ if the device can be suspended (i.e. if all of the conditions necessary for
+ suspending the device are satisfied) and to queue up a suspend request for the
+-device in that case.  The value returned by this callback is ignored by the PM
+-core.
++device in that case.  If there is no idle callback, or if the callback returns
++0, then the PM core will attempt to carry out a runtime suspend of the device;
++in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
++example, if the callback routine has started a delayed suspend), the routine
++should return a non-zero value.  Negative error return codes are ignored by the
++PM core.
+ 
+ The helper functions provided by the PM core, described in Section 4, guarantee
+ that the following constraints are met with respect to runtime PM callbacks for
+@@ -301,9 +305,10 @@ drivers/base/power/runtime.c and include
+       removing the device from device hierarchy
+ 
+   int pm_runtime_idle(struct device *dev);
+-    - execute the subsystem-level idle callback for the device; returns 0 on
+-      success or error code on failure, where -EINPROGRESS means that
+-      ->runtime_idle() is already being executed
++    - execute the subsystem-level idle callback for the device; returns an
++      error code on failure, where -EINPROGRESS means that ->runtime_idle() is
++      already being executed; if there is no callback or the callback returns 0
++      then run pm_runtime_suspend(dev) and return its result
+ 
+   int pm_runtime_suspend(struct device *dev);
+     - execute the subsystem-level suspend callback for the device; returns 0 on
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
+Alan Stern
