@@ -1,82 +1,204 @@
-From: Alex Shi <alex.shi@intel.com>
-Subject: Re: [PATCH 2/2] sched:fix: Signed overflow prevention for vacancy
- calculation
-Date: Thu, 30 May 2013 09:50:52 +0800
-Message-ID: <51A6B07C.4060108@intel.com>
-References: <1369298064-14998-1-git-send-email-l.majewski@samsung.com> <1369298064-14998-2-git-send-email-l.majewski@samsung.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [RFT][PATCH 1/1] thermal: step_wise: return instance->target
+ by default
+Date: Wed, 29 May 2013 23:37:42 -0400
+Message-ID: <51A6C986.2000700@ti.com>
+References: <1369868285-18049-1-git-send-email-eduardo.valentin@ti.com> <1369878129.3368.15.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2WXPJHUHBEGLPNEMMGPCO"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:9907 "EHLO mga01.intel.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:54774 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759777Ab3E3Bv2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 May 2013 21:51:28 -0400
-In-Reply-To: <1369298064-14998-2-git-send-email-l.majewski@samsung.com>
+	id S967382Ab3E3Dhv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 May 2013 23:37:51 -0400
+In-Reply-To: <1369878129.3368.15.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, ruslan.ruslichenko@ti.com, Durgadoss R <durgadoss.r@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/23/2013 04:34 PM, Lukasz Majewski wrote:
-> Nasty bug with vacancy calculation has been fixed.
-> In the if statement the FULL_UTIL is a large constant, max_cfs_util()
-> returns unsigned and putil is also defined as unsigned. The outcome
-> is that this condition is always true.
-> 
-> As observed, this was the reason for frequent jumps of processes between
-> CPUs.
-> 
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+------enig2WXPJHUHBEGLPNEMMGPCO
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Thanks for the catching!
-I do a little change, would you like to keep the authorship?
+On 29-05-2013 21:42, Zhang Rui wrote:
+> On Wed, 2013-05-29 at 18:58 -0400, Eduardo Valentin wrote:
+>> In case the trend is not changing or when there is no
+>> request for throttling, it is expected that the instance
+>> would not change its requested target. This patch improves
+>> the code implementation to cover for this expected behavior.
+>>
+> right. agreed.
+>=20
+>> With current implementation, the instance will always
+>> reset to cdev.cur_state, even in not expected cases,
+>> like those mentioned above.
+>>
+>> This patch changes the step_wise governor implementation
+>> of get_target so that we accomplish:
+>> (a) - default value will be current instance->target, so
+>> we do not change the thermal instance target unnecessarily.
+>=20
+>> (b) - the code now it is clear about what is the intention.
+>> There is a clear statement of what are the expected outcomes
+>> (c) - removal of hardcoded constants, now it is put in use
+>> the THERMAL_NO_TARGET macro.
+>=20
+>> (d) - variable names are also improved so that reader can
+>> clearly understand the difference between instance cur target,
+>> next target and cdev cur_state.
+>>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: Durgadoss R <durgadoss.r@intel.com>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Reported-by: Ruslan Ruslichenko <ruslan.ruslichenko@ti.com>
+>> Signed-of-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  drivers/thermal/step_wise.c | 29 ++++++++++++++++++-----------
+>>  1 file changed, 18 insertions(+), 11 deletions(-)
+>> ---
+>>
+>> Hello all,
+>>
+>> I am requesting for tests on this patch. Based on an internal
+>> discussion with Ruslan, I concluded that this code needs improvement.
+>>
+>> Ruslan, I did not keep your original code because I believe the
+>> get_target_state needs a better implementation for code readiness.
+>> Besides, I also believe we are facing the bug of emul_temp in your cas=
+e [1],
+>> so this patch is not really fixing anything, but improving the
+>> code quality and making sure the instance behaves as expected.
+>> The fact you see the cooling device stuck at 1 is most probably becaus=
+e
+>> the thermal core uses trend computed by the driver, not by emul_temp.
+>>
+>> I have implemented a different improvement as you may find below. But
+>> I kept a Reported-by under your name.
+>>
+> it would be good to let me know what the problem is.
+> As I'm fixing a couple of thermal bugs recently.
+> Most of them are suspend/hibernate related, and I've been changing this=
 
----
-
->From 4f7f2d091b7210e0be689d3e063d3cc82da1b1af Mon Sep 17 00:00:00 2001
-From: Lukasz Majewski <l.majewski@samsung.com>
-Date: Thu, 30 May 2013 09:21:46 +0800
-Subject: [PATCH 2/2] sched:fix: Signed overflow prevention for vacancy
- calculation
-
-Nasty bug with vacancy calculation has been fixed.
-In the if statement the FULL_UTIL is a large constant, max_cfs_util()
-returns unsigned and putil is also defined as unsigned. The outcome
-is that this condition is always true.
-
-As observed, this was the reason for frequent jumps of processes between
-CPUs.
-
-Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Alex Shi <alex.shi@intel.com>
----
- kernel/sched/fair.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 3a4917c..56a9d16 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3468,10 +3468,10 @@ find_leader_cpu(struct sched_group *group, struct task_struct *p, int this_cpu,
- 	unsigned putil;
- 	putil = div_u64(((u64)p->se.avg.runnable_avg_sum << SCHED_POWER_SHIFT),
- 				p->se.avg.runnable_avg_period + 1);
-+	vacancy = FULL_UTIL - max_cfs_util(this_cpu, wakeup) - (putil << 2);
- 
- 	/* bias toward local cpu */
--	if (cpumask_test_cpu(this_cpu, tsk_cpus_allowed(p)) &&
--		FULL_UTIL - max_cfs_util(this_cpu, wakeup) - (putil << 2) > 0)
-+	if (cpumask_test_cpu(this_cpu, tsk_cpus_allowed(p)) && vacancy > 0)
- 		return this_cpu;
- 
- 	/* Traverse only the allowed CPUs */
--- 
-1.7.12
+> piece of code a lot.
 
 
--- 
-Thanks
-    Alex
+Rui,
+
+This specific patch does not address a bug per si. Just makes sure that
+we avoid changing the target state of an instance when it is not
+necessary to change it.
+
+>=20
+> thanks,
+> rui
+>> In any case, because I believe this change in step_wise is significant=
+,
+>> I am sending this patch for broader review and I kindly ask interested=
+
+>> audience for testing it.
+>>
+>> [1] - https://patchwork.kernel.org/patch/2632831/
+
+The patch above, on the other hand, does fix a bug.
+
+>>
+>> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c=
+
+>> index 4d4ddae..769bfa3 100644
+>> --- a/drivers/thermal/step_wise.c
+>> +++ b/drivers/thermal/step_wise.c
+>> @@ -51,44 +51,51 @@ static unsigned long get_target_state(struct therm=
+al_instance *instance,
+>>  {
+>>  	struct thermal_cooling_device *cdev =3D instance->cdev;
+>>  	unsigned long cur_state;
+>> +	unsigned long next_target;
+>> =20
+>> +	/*
+>> +	 * We keep this instance the way it is by default.
+>> +	 * Otherwise, we use the current state of the
+>> +	 * cdev in use to determine the next_target.
+>> +	 */
+>>  	cdev->ops->get_cur_state(cdev, &cur_state);
+>> +	next_target =3D instance->target;
+>> =20
+>>  	switch (trend) {
+>>  	case THERMAL_TREND_RAISING:
+>>  		if (throttle) {
+>> -			cur_state =3D cur_state < instance->upper ?
+>> +			next_target =3D cur_state < instance->upper ?
+>>  				    (cur_state + 1) : instance->upper;
+>> -			if (cur_state < instance->lower)
+>> -				cur_state =3D instance->lower;
+>> +			if (next_target < instance->lower)
+>> +				next_target =3D instance->lower;
+>>  		}
+>>  		break;
+>>  	case THERMAL_TREND_RAISE_FULL:
+>>  		if (throttle)
+>> -			cur_state =3D instance->upper;
+>> +			next_target =3D instance->upper;
+>>  		break;
+>>  	case THERMAL_TREND_DROPPING:
+>>  		if (cur_state =3D=3D instance->lower) {
+>>  			if (!throttle)
+>> -				cur_state =3D -1;
+>> +				next_target =3D THERMAL_NO_TARGET;
+>>  		} else {
+>> -			cur_state -=3D 1;
+>> -			if (cur_state > instance->upper)
+>> -				cur_state =3D instance->upper;
+>> +			next_target =3D cur_state - 1;
+>> +			if (next_target > instance->upper)
+>> +				next_target =3D instance->upper;
+>>  		}
+>>  		break;
+>>  	case THERMAL_TREND_DROP_FULL:
+>>  		if (cur_state =3D=3D instance->lower) {
+>>  			if (!throttle)
+>> -				cur_state =3D -1;
+>> +				next_target =3D THERMAL_NO_TARGET;
+>>  		} else
+>> -			cur_state =3D instance->lower;
+>> +			next_target =3D instance->lower;
+>>  		break;
+>>  	default:
+>>  		break;
+>>  	}
+>> =20
+>> -	return cur_state;
+>> +	return next_target;
+>>  }
+>> =20
+>>  static void update_passive_instance(struct thermal_zone_device *tz,
+>=20
+>=20
+>=20
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2WXPJHUHBEGLPNEMMGPCO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGmyYYACgkQCXcVR3XQvP2wNwD/fOnPFuHMY1puxr6dFRcNDJl8
+fLSAkhv/YDfLrxwwXhoA/i3fhr9uVu/BPzs2gMxRcktRpLt7hwuvWhrOrQkpBTVh
+=5PSO
+-----END PGP SIGNATURE-----
+
+------enig2WXPJHUHBEGLPNEMMGPCO--
