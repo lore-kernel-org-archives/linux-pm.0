@@ -1,114 +1,62 @@
-From: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
-Date: Thu, 30 May 2013 12:45:35 +0200
-Message-ID: <20130530104535.GF19468@game.jcrosoft.org>
-References: <1369829859-13405-1-git-send-email-lars@metafoo.de>
- <51A60F83.7070403@analog.com>
- <20130529192013.GA19468@game.jcrosoft.org>
- <001801ce5ccd$2dd30be0$897923a0$@samsung.com>
- <20130530071413.GC19468@game.jcrosoft.org>
- <51A70532.3070502@metafoo.de>
+From: "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>
+Subject: Re: [PATCH] PM: Add pm_ops_ptr() macro
+Date: Thu, 30 May 2013 15:54:20 +0200
+Message-ID: <4119506.fLP8mVnrTk@vostro.rjw.lan>
+References: <000201ce453f$5ce4fc90$16aef5b0$@samsung.com> <20130503092311.GA13832@amd.pavel.ucw.cz> <20130530105644.GA3595@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo5.mail-out.ovh.net ([178.32.228.5]:51891 "EHLO
-	mo5.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751588Ab3E3MJC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 08:09:02 -0400
-Received: from mail624.ha.ovh.net (b6.ovh.net [213.186.33.56])
-	by mo5.mail-out.ovh.net (Postfix) with SMTP id CC4B3FFA76A
-	for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 12:49:42 +0200 (CEST)
-Content-Disposition: inline
-In-Reply-To: <51A70532.3070502@metafoo.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20130530105644.GA3595@katana>
+Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, 'Len Brown' <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, 'Andrew Morton' <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Jingoo Han <jg1.han@samsung.com>, 'Michael Hennerich' <michael.hennerich@analog.com>, "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 09:52 Thu 30 May     , Lars-Peter Clausen wrote:
-> On 05/30/2013 09:14 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > On 09:32 Thu 30 May     , Jingoo Han wrote:
-> >> On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> >>> On 16:24 Wed 29 May     , Michael Hennerich wrote:
-> >>>> On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
-> >>>>> Use dev_pm_ops instead of the legacy suspend/resume callbacks.
-> >>>>>
-> >>>>> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> >>>> Acked-by: Michael Hennerich <michael.hennerich@analog.com>
-> >>>>> ---
-> >>>>>  drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
-> >>>>>  1 file changed, 14 insertions(+), 8 deletions(-)
-> >>>>>
-> >>>>> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-> >>>>> index 29d8c04..6084c17 100644
-> >>>>> --- a/drivers/video/bfin-lq035q1-fb.c
-> >>>>> +++ b/drivers/video/bfin-lq035q1-fb.c
-> >>>>> @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
-> >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >>>>>  }
-> >>>>> -#ifdef CONFIG_PM
-> >>>>> -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
-> >>>>> +#ifdef CONFIG_PM_SLEEP
-> >>>>> +static int lq035q1_spidev_suspend(struct device *dev)
-> >>>>>  {
-> >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> >>>>> +
-> >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >>>>>  }
-> >>>>> -static int lq035q1_spidev_resume(struct spi_device *spi)
-> >>>>> +static int lq035q1_spidev_resume(struct device *dev)
-> >>>>>  {
-> >>>>> -	int ret;
-> >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> >>>>>  	struct spi_control *ctl = spi_get_drvdata(spi);
-> >>>>> +	int ret;
-> >>>>>  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
-> >>>>>  	if (ret)
-> >>>>> @@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
-> >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
-> >>>>>  }
-> >>>>> +
-> >>>>> +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
-> >>>>> +	lq035q1_spidev_resume);
-> >>>>> +#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
-> >>>>> +
-> >>>>>  #else
-> >>>>> -# define lq035q1_spidev_suspend NULL
-> >>>>> -# define lq035q1_spidev_resume  NULL
-> >>>>> +#define LQ035Q1_SPIDEV_PM_OPS NULL
-> >>>>>  #endif
-> >>> we really need to ahve a macro like for DT of_match_ptr to drop the #else
-> >>
-> >> Hi Jean-Christophe PLAGNIOL-VILLARD,
-> >>
-> >> I submitted the following patch. :)
-> >> (https://patchwork.kernel.org/patch/2502971/)
-> >>
-> >> --- a/include/linux/pm.h
-> >> +++ b/include/linux/pm.h
-> >> @@ -55,8 +55,10 @@  struct device;
-> >>  
-> >>  #ifdef CONFIG_PM
-> >>  extern const char power_group_name[];		/* = "power" */
-> >> +#define pm_ops_ptr(_ptr)	(_ptr)
-> >>  #else
-> >>  #define power_group_name	NULL
-> >> +#define pm_ops_ptr(_ptr)	NULL
-> >>  #endif
-> >>
-> >>
-> >> This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
-> >>
-> > Lars-Peter please update with and
+On Thursday, May 30, 2013 12:56:45 PM Wolfram Sang wrote:
+> On Fri, May 03, 2013 at 11:23:11AM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > Add pm_ops_ptr() macro that allows the .pm entry in the driver structures
+> > > > to be assigned without having an #define xxx NULL for the case that PM is
+> > > > not enabled.
+> > > > 
+> > > > Signed-off-by: Jingoo Han <jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> > > 
+> > > I've queued this up as v3.11 material.
+> > 
+> > > > --- a/drivers/i2c/busses/i2c-s3c2410.c
+> > > > +++ b/drivers/i2c/busses/i2c-s3c2410.c
+> > > > @@ -1218,7 +1218,6 @@ static int s3c24xx_i2c_resume(struct device *dev)
+> > > >  }
+> > > >  #endif
+> > > >  
+> > > > -#ifdef CONFIG_PM
+> > > >  static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+> > > >  #ifdef CONFIG_PM_SLEEP
+> > > >  	.suspend_noirq = s3c24xx_i2c_suspend_noirq,
+> > > > @@ -1226,11 +1225,6 @@ static const struct dev_pm_ops s3c24xx_i2c_dev_pm_ops = {
+> > > >  #endif
+> > > >  };
+> > > >  
+> > > > -#define S3C24XX_DEV_PM_OPS (&s3c24xx_i2c_dev_pm_ops)
+> > > > -#else
+> > > > -#define S3C24XX_DEV_PM_OPS NULL
+> > > > -#endif
+> > > > -
+> > > >  /* device driver for platform bus bits */
+> > 
+> > Will not this enlarge .data by sizeof(struct dev_pm_ops)?
 > 
-> Since the code depends on CONFIG_PM_SLEEP and not CONFIG_PM I don't think
-> the macro will work.
+> Same question here. Is it the preferred way now to use this new macro
+> although having the cost of having an empty dev_pm_ops?
 
-se please ad a similar macros too
+No, it isn't, but if someone wants to use it, I don't really care that much.
+
+Thanks,
+Rafael
 
 
-Best Regards,
-J.
-> 
-> - Lars
-> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
