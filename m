@@ -1,75 +1,83 @@
-From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
-Subject: [PATCH v1 2/2] PM / AVS: SmartReflex/class3: Fix order of initialization of SR class and SR driver
-Date: Thu, 30 May 2013 13:43:57 +0300
-Message-ID: <1369910637-19100-3-git-send-email-andrii.tseglytskyi@ti.com>
-References: <1369910637-19100-1-git-send-email-andrii.tseglytskyi@ti.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Thu, 30 May 2013 18:50:36 +0800
+Message-ID: <1369911036.2636.5.camel@rzhang1-mobl4>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+	 <1369631226.2159.5.camel@rzhang1-mobl4>
+	 <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	 <1369878386.3368.16.camel@rzhang1-mobl4>
+	 <CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:40331 "EHLO comal.ext.ti.com"
+Received: from mga01.intel.com ([192.55.52.88]:6938 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030476Ab3E3KoD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 May 2013 06:44:03 -0400
-In-Reply-To: <1369910637-19100-1-git-send-email-andrii.tseglytskyi@ti.com>
+	id S968108Ab3E3Kuj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 May 2013 06:50:39 -0400
+In-Reply-To: <CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@linaro.org, j-keerthy@ti.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+To: Giacomo Perale <giacomo.perale@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-SmartReflex consists of three entities: SR device, SR class and
-SR driver. SmartReflex driver depends on SmartReflex class, but
-order of their initialization is not clear. They both use
-late_initcall(), and order depends on Makefile calls.
-Patch moves initialization of SR class to device_initcall(),
-and removes redundant call of sr_late_init().
+On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
+> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
+> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+> >> >> Hello,
+> >> >>
+> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
+> >> >> delays when resuming from suspend-to-disk and a few new error messages
+> >> >> in the logs:
+> >> >>
+> >> >>
+> >> >> Not having connected the issue with the previous error messages I
+> >> >> initially blamed the disk and replaced it with a new one thinking it
+> >> >> was broken, but the problem persisted so I started a bisection run
+> >> >> that pointed to this commit:
+> >> >>
+> >> >>
+> >> >> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
+> >> >> commit b8bb6cb999858043489c1ddef08eed2127559169
+> >> >> Author: Zhang Rui <rui.zhang@intel.com>
+> >> >> Date:   Thu Nov 22 15:45:02 2012 +0800
+> >> >>
+> >> >>     step_wise: Unify the code for both throttle and dethrottle
+> >> >>
+> >> >>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> >> >>
+> >> > I do not see how this would affect the sata hibernation/resume.
+> >> > but anyway, would you please try the four patches in comment #10, #11,
+> >> > #12 and #13 in
+> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+> >> > and check if they help?
+> >> >
+> >> > thanks,
+> >> > rui
+> >> >
+> >>
+> >> No luck, with git head and those four patches hibernation is
+> >> completely broken, the system doesn't even shut down, it just loses
+> >> the disks (I'm attaching what I could get from /proc/kmsg to this
+> >> email).
+> >>
+> > then can you please try the patch at
+> > https://patchwork.kernel.org/patch/2633071/
+> > on top of the four patches and see if it helps?
+> >
+> > thanks,
+> > rui
+> >
+> 
+> Do you mean without Rafael's patch?
+> 
+right.
 
-This provides predictable order of SmartReflex initcalls:
-1. device_initcall() -> SmartReflex class init
-2. late_initcall() -> SmartReflex driver init
+thanks,
+rui
+> Giacomo
 
-Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
----
- arch/arm/mach-omap2/smartreflex-class3.c |    2 +-
- drivers/power/avs/smartreflex.c          |    9 ---------
- 2 files changed, 1 insertion(+), 10 deletions(-)
-
-diff --git a/arch/arm/mach-omap2/smartreflex-class3.c b/arch/arm/mach-omap2/smartreflex-class3.c
-index aee3c89..50523b8 100644
---- a/arch/arm/mach-omap2/smartreflex-class3.c
-+++ b/arch/arm/mach-omap2/smartreflex-class3.c
-@@ -59,4 +59,4 @@ static int __init sr_class3_init(void)
- 	pr_info("SmartReflex Class3 initialized\n");
- 	return sr_register_class(&class3_data);
- }
--omap_late_initcall(sr_class3_init);
-+omap_device_initcall(sr_class3_init);
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index 60cf0ee..8a68b4f 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -651,8 +651,6 @@ void sr_disable(struct voltagedomain *voltdm)
-  */
- int sr_register_class(struct omap_sr_class_data *class_data)
- {
--	struct omap_sr *sr_info;
--
- 	if (!class_data) {
- 		pr_warning("%s:, Smartreflex class data passed is NULL\n",
- 			__func__);
-@@ -667,13 +665,6 @@ int sr_register_class(struct omap_sr_class_data *class_data)
- 
- 	sr_class = class_data;
- 
--	/*
--	 * Call into late init to do intializations that require
--	 * both sr driver and sr class driver to be initiallized.
--	 */
--	list_for_each_entry(sr_info, &sr_list, node)
--		sr_late_init(sr_info);
--
- 	return 0;
- }
- 
--- 
-1.7.9.5
 
