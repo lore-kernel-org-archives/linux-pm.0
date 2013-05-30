@@ -1,74 +1,49 @@
-From: keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH 7/7] thermal: ti-soc-thermal: add DT example for DRA752
- chip
-Date: Thu, 30 May 2013 14:26:53 +0530
-Message-ID: <51A71455.9000002@ti.com>
-References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com> <1369840066-20357-8-git-send-email-eduardo.valentin@ti.com>
+From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Subject: [PATCH v2 0/3] PM / AVS: SmartReflex: driver misc fixes
+Date: Thu, 30 May 2013 13:08:33 +0300
+Message-ID: <1369908516-26573-1-git-send-email-andrii.tseglytskyi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <1369840066-20357-8-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:38902 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968064Ab3E3KIi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 May 2013 06:08:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: khilman@linaro.org, j-keerthy@ti.com
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Eduardo,
+The following patch series contain several misc fixes to SmartReflex driver:
 
-On 05/29/2013 08:37 PM, Eduardo Valentin wrote:
+1. disable errgen before vpbound disable. Critical fix, needed for
+proper work of AVS-VP communicaton protocol.
 
-> Update documentation by adding an example for DRA752 on DT description.
-> 
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Grant Likely <grant.likely@linaro.org>
-> Cc: Rob Herring <rob.herring@calxeda.com>
-> Cc: Rob Landley <rob@landley.net>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: J Keerthy <j-keerthy@ti.com>
-> Cc: devicetree-discuss@lists.ozlabs.org
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-> index 1629652..1953b33 100644
-> --- a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
-> @@ -59,3 +59,15 @@ bandgap {
->  	compatible = "ti,omap5430-bandgap";
->  	interrupts = <0 126 4>; /* talert */
->  };
-> +
-> +DRA752:
-> +bandgap {
-> +	reg = <0x4a0021e0 0xc
-> +		0x4a00232c 0xc
-> +		0x4a002380 0x2c
-> +		0x4a0023C0 0x3c
-> +		0x4a002564 0x8
-> +		0x4a002574 0x50>;
-> +	compatible = "ti,dra752-bandgap";
+2. disable runtime PM on driver remove. Trivial - runtime PM cleanup.
 
+3. fix driver name. Trivial - proper DRIVER_NAME was not defined
+since SmartReflex driver was introduced with initial commit.
 
-The general convention seems to be keeping it as dra7xx or dra7.
-Why add specific nodes like dra752? We can always reuse for
-forthcoming dra7 processors if the same address mapping and IP
-is retained right?
+Patches are based on:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+tag: v3.10-rc3
 
-> +	interrupts = <0 126 4>; /* talert */
+Verified on OMAP4430. Boot - OK. SmartReflex registers debug dump - OK
 
+Changes in v2:
+- rebased to v3.10-rc3
+- minor comment update in "disable errgen before vpbound disable" patch
 
-The TRM does not have any term called talert. Can the comment
-be /* thermal_alert */ so it is easy to figure out what it is.
+Andrii Tseglytskyi (2):
+  PM / AVS: SmartReflex: disable runtime PM on driver remove
+  PM / AVS: SmartReflex: fix driver name
 
-> +};
+Nishanth Menon (1):
+  PM / AVS: SmartReflex: disable errgen before vpbound disable
 
+ drivers/power/avs/smartreflex.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-Regards,
-Keerthy
+-- 
+1.7.9.5
+
