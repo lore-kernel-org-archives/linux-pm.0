@@ -1,106 +1,140 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [resend] cpuidle: ACPI processor idle regression
-Date: Thu, 30 May 2013 15:46:24 +0200
-Message-ID: <51A75830.30007@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 7/7] thermal: ti-soc-thermal: add DT example for DRA752
+ chip
+Date: Thu, 30 May 2013 09:52:40 -0400
+Message-ID: <51A759A8.1040705@ti.com>
+References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com> <1369840066-20357-8-git-send-email-eduardo.valentin@ti.com> <51A71455.9000002@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f48.google.com ([209.85.214.48]:63165 "EHLO
-	mail-bk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756470Ab3E3Nq2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 09:46:28 -0400
-Received: by mail-bk0-f48.google.com with SMTP id jf20so157610bkc.35
-        for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 06:46:26 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2DOJICIONRFSMSMTKDJGQ"
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <51A71455.9000002@ti.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: keerthy <j-keerthy@ti.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rafae >> \"'Rafael J. Wysocki'\"" <rafael.j.wysocki@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, toshi.kani@hp.com, linux-pm@vger.kernel.org
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+
+------enig2DOJICIONRFSMSMTKDJGQ
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+On 30-05-2013 04:56, keerthy wrote:
+> Hi Eduardo,
+>=20
+> On 05/29/2013 08:37 PM, Eduardo Valentin wrote:
+>=20
+>> Update documentation by adding an example for DRA752 on DT description=
+=2E
+>>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> Cc: Rob Herring <rob.herring@calxeda.com>
+>> Cc: Rob Landley <rob@landley.net>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Cc: Zhang Rui <rui.zhang@intel.com>
+>> Cc: J Keerthy <j-keerthy@ti.com>
+>> Cc: devicetree-discuss@lists.ozlabs.org
+>> Cc: linux-doc@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>> ---
+>>  Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt | 12 +++=
++++++++++
+>>  1 file changed, 12 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.=
+txt b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+>> index 1629652..1953b33 100644
+>> --- a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+>> @@ -59,3 +59,15 @@ bandgap {
+>>  	compatible =3D "ti,omap5430-bandgap";
+>>  	interrupts =3D <0 126 4>; /* talert */
+>>  };
+>> +
+>> +DRA752:
+>> +bandgap {
+>> +	reg =3D <0x4a0021e0 0xc
+>> +		0x4a00232c 0xc
+>> +		0x4a002380 0x2c
+>> +		0x4a0023C0 0x3c
+>> +		0x4a002564 0x8
+>> +		0x4a002574 0x50>;
+>> +	compatible =3D "ti,dra752-bandgap";
+>=20
+>=20
+> The general convention seems to be keeping it as dra7xx or dra7.
+> Why add specific nodes like dra752? We can always reuse for
+> forthcoming dra7 processors if the same address mapping and IP
+> is retained right?
+>=20
+>>
 
 
-Sorry, a bad copy/paste address for Rafael.
+In fact, I must agree with you that using a node such as dra752 is
+restrictive. And I must also admit my original plan was to use dra7xx
+naming convention. Not only on DT nodes, but in driver source code
+symbols too. Well, this is about re-usability, right?
 
-----
+However, I took a step back and thought about the bandgap IP history.
+Take that in mind, just look to the source code. We never succeed to
+reuse nodes fully and it is because bandgap IPs do change from chip
+version to chip version. That is also understandable as every chip has
+its own thermal peculiarities. For instance, we do not have a omap4xxx
+node because each OMAP4 chip has a different bandgap IP, with different
+features.
 
-Hi all,
+I really would like to use a dra7xxx node, but that would contradict the
+IP history :-). If we are trying to avoid patching the driver in the
+future, I would say it is more likely to have a patch for another dra7
+chip with specifics different from the current one than having a patch
+reusing the existing dra752 node. This statement is obviously based on
+driver and IP history (I might be wrong of course and the IP could
+actually have reached a development stabilization point).
 
-while testing the processor_idle for ACPI, I noticed the states usage i=
-s
-not used for cpuidle in sysfs.
+ +	interrupts =3D <0 126 4>; /* talert */
+>=20
+>=20
+> The TRM does not have any term called talert. Can the comment
+> be /* thermal_alert */ so it is easy to figure out what it is.
+>=20
 
-Reproduced on Lenovo x230, with a i7-3520M CPU @ 2.90GHz without the
-intel_idle driver.
 
-After git-bisecting, the commit where this regression occurs is:
+Indeed, TRM does not, in fact! But the TI thermal engineering community
+have coined this term and I think it is quite common used (within that
+community) and if you look to the driver code too, it is all over. I
+believe there is no doubt that talert stands for thermal alert. The
+driver code does have documentation about that.
 
-ac212b6980d8d5eda705864fc5a8ecddc6d6eacc is the first bad commit
-commit ac212b6980d8d5eda705864fc5a8ecddc6d6eacc
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Fri May 3 00:26:22 2013 +0200
-
-    ACPI / processor: Use common hotplug infrastructure
-
-    Split the ACPI processor driver into two parts, one that is
-    non-modular, resides in the ACPI core and handles the enumeration
-    and hotplug of processors and one that implements the rest of the
-    existing processor driver functionality.
-
-    The non-modular part uses an ACPI scan handler object to enumerate
-    processors on the basis of information provided by the ACPI namespa=
-ce
-    and to hook up with the common ACPI hotplug infrastructure.  It als=
-o
-    populates the ACPI handle of each processor device having a
-    corresponding object in the ACPI namespace, which allows the driver
-    proper to bind to those devices, and makes the driver bind to them
-    if it is readily available (i.e. loaded) when the scan handler's
-    .attach() routine is running.
-
-    There are a few reasons to make this change.
-
-    First, switching the ACPI processor driver to using the common ACPI
-    hotplug infrastructure reduces code duplication and size considerab=
-ly,
-    even though a new file is created along with a header comment etc.
-
-    Second, since the common hotplug code attempts to offline devices
-    before starting the (non-reversible) removal procedure, it will abo=
-rt
-    (and possibly roll back) hot-remove operations involving processors
-    if cpu_down() returns an error code for one of them instead of
-    continuing them blindly (if /sys/firmware/acpi/hotplug/force_remove
-    is unset).  That is a more desirable behavior than what the current
-    code does.
-
-    Finally, the separation of the scan/hotplug part from the driver
-    proper makes it possible to simplify the driver's .remove() routine=
-,
-    because it doesn't need to worry about the possible cleanup related
-    to processor removal any more (the scan/hotplug part is responsible
-    for that now) and can handle device removal and driver removal
-    symmetricaly (i.e. as appropriate).
-
-    Some user-visible changes in sysfs are made (for example, the
-    'sysdev' link from the ACPI device node to the processor device's
-    directory is gone and a 'physical_node' link is present instead
-    and a corresponding 'firmware_node' is present in the processor
-    device's directory, the processor driver is now visible under
-    /sys/bus/cpu/drivers/ and bound to the processor device), but
-    that shouldn't affect the functionality that users care about
-    (frequency scaling, C-states and thermal management).
-
-    Tested on my venerable Toshiba Portege R500.
-
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-    Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-    Reviewed-by: Toshi Kani <toshi.kani@hp.com>
+>> +};
+>=20
+>=20
+> Regards,
+> Keerthy
+>=20
+>=20
 
 
 --=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+You have got to be excited about what you are doing. (L. Lamport)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Eduardo Valentin
 
+
+------enig2DOJICIONRFSMSMTKDJGQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGnWagACgkQCXcVR3XQvP3yVAEApyBajpOt9VD2nqQiDYiRXwus
+SAkUcaUOFmc9KHLW/vwBAInG6i1sGZzemg39P86zYKVfFhGJI+N3hxuWEED0MSQR
+=L3SH
+-----END PGP SIGNATURE-----
+
+------enig2DOJICIONRFSMSMTKDJGQ--
