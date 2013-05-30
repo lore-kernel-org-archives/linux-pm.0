@@ -1,96 +1,90 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper
- routine
-Date: Thu, 30 May 2013 13:08:08 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
-References: <1645401.1grgttHPMR@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [RFC PATCH] cpufreq: ondemand: Increase frequency to any value
+ proportional to load
+Date: Thu, 30 May 2013 20:14:51 +0300
+Message-ID: <51A7890B.8080002@semaphore.gr>
+References: <51A3C6CF.6080104@semaphore.gr> <1567913.u8NiyqJmvF@vostro.rjw.lan> <51A61BAC.2050203@semaphore.gr> <3000308.Hi6zX8my0D@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1645401.1grgttHPMR@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3000308.Hi6zX8my0D@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 30 May 2013, Rafael J. Wysocki wrote:
+On 05/30/2013 01:29 AM, Rafael J. Wysocki wrote:
+> On Wednesday, May 29, 2013 06:15:56 PM Stratos Karafotis wrote:
+>> On 05/28/2013 11:54 PM, Rafael J. Wysocki wrote:
+>>> On Tuesday, May 28, 2013 08:03:19 PM Stratos Karafotis wrote:
+>>>> I mean any value of freq table. Please let me know if you want me to rephrase
+>>>> it in description.
+>>>
+>>> Yes, it would be nice to be more precise.
+>>
+>> OK sure, I will add a more precise description.
+>>
+>>
+>>> Which is equivalent to saying that __cpufreq_driver_getavg() is not useful and
+>>> may be removed (but the patch doesn't do that and I wonder why?), but surely
+>>> the developer who added it wouldn't agree.
+>>>
+>>> So, please explain: why can we drop __cpufreq_driver_getavg()?
+>>>
+>>
+>> With the new proposed method the next frequency is not dependent from current
+>> or average frequency. The next frequency is dependent only from load.
+>> So, we don't need support for freq feedback from hardware anymore.
+>
+> OK, but that's a more significant change than the changelog suggests.
+> The changelog should tell the whole story and explain the rationale. :-)
+>
+> So, please explain that in fact it is not necessary to use the current or
+> average frequency to compute the target and why that is the case.
+>
+> Also the patch should remove __cpufreq_driver_getavg() and the callback used by
+> it, since that code will be dead after applying it anyway.
+>
+>> Even if, due to underlying hardware coordination mechanism, CPU runs in different
+>> frequency than the actual, the calculation of load and of target frequency will
+>> remain the unaffected, with this patch.
+>>
+>> With full respect to ondemand coauthor, and if the new method is acceptable,
+>> I could send a patch to revert the original one about the IA32_APERF and
+>> IA32_MPERF MSR support.
+>
+> I'm not sure what you mean by "revert", but please do as I said above.
+>
+>>>> Thus, in the comparison with up_threshold to increase frequency we actually
+>>>> do this (in cases that getavg is not implemented):
+>>>> if (load > up_theshold)
+>>>> 	increase to max
+>>>>
+>>>> So, after the patch we keep the same comparison to decide about the max frequency.
+>>>> I thought, that below up_threshold is 'fair' to decide about the next
+>>>> frequency with formula that frequency is proportional to load.
+>>>> For example in a CPU with min freq 100MHz and max 1000MHz with a
+>>>> load 50 target frequency should be 500MHz.
+>>>
+>>> Well, that sounds reasonable, but the patch actually does more than that.
+>>
+>> I'm sorry, but I didn't understand your last point.
+>
+> Please see above.
+>
+> The changelog doesn't even mention that the code is being switched from using
+> measured past frequencies to not using them, because you think that there's a
+> better way of computing the target (which by the way I can agree with :-)).
+>
+> Thanks,
+> Rafael
+>
+>
 
-> > Since you're making this change, wouldn't it be a good idea to adopt
-> > Mika's original suggestion and turn on the RPM_AUTO bit in rpmflags
-> > when the use_autosuspend flag is set?
-> 
-> I'm not actually sure.  It can be done, but I'd prefer to do that as a separate
-> change in any case.
+OK, I will send a new patch that includes your corrections and suggestions.
 
-That makes sense.
+Thanks so much for your time and your comments!
 
-> > What about cases where the runtime-idle callback does
-> > rpm_schedule_suspend or rpm_request_suspend?  You'd have to make sure
-> > that it returns -EBUSY in such cases.  Did you audit for this?
-> 
-> As far as I could.
-> 
-> I'm not worried about the subsystems modified by this patch, because the
-> functionality there won't change (except for PCI, that is).
+Stratos
 
-Right.  The subsystems that _aren't_ modified are the ones to worry 
-about -- like the USB callback.  They are the ones where the behavior 
-might change.
-
-> > > Index: linux-pm/Documentation/power/runtime_pm.txt
-> > > ===================================================================
-> > > --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> > > +++ linux-pm/Documentation/power/runtime_pm.txt
-> > > @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
-> > >  management callbacks provided by the PM core, defined in
-> > >  driver/base/power/generic_ops.c:
-> > >  
-> > > -  int pm_generic_runtime_idle(struct device *dev);
-> > > -    - invoke the ->runtime_idle() callback provided by the driver of this
-> > > -      device, if defined, and call pm_runtime_suspend() for this device if the
-> > > -      return value is 0 or the callback is not defined
-> > > -
-> > 
-> > The documentation for the runtime-idle callback needs to be updated too.
-> 
-> Well, I actually couldn't find the part of it that would need to be updated. :-)
-
-How about this?
-
-
-Index: usb-3.10/Documentation/power/runtime_pm.txt
-===================================================================
---- usb-3.10.orig/Documentation/power/runtime_pm.txt
-+++ usb-3.10/Documentation/power/runtime_pm.txt
-@@ -144,8 +144,12 @@ The action performed by the idle callbac
- (or driver) in question, but the expected and recommended action is to check
- if the device can be suspended (i.e. if all of the conditions necessary for
- suspending the device are satisfied) and to queue up a suspend request for the
--device in that case.  The value returned by this callback is ignored by the PM
--core.
-+device in that case.  If there is no idle callback, or if the callback returns
-+0, then the PM core will attempt to carry out a runtime suspend of the device;
-+in essence, it will call pm_runtime_suspend() directly.  To prevent this (for
-+example, if the callback routine has started a delayed suspend), the routine
-+should return a non-zero value.  Negative error return codes are ignored by the
-+PM core.
- 
- The helper functions provided by the PM core, described in Section 4, guarantee
- that the following constraints are met with respect to runtime PM callbacks for
-@@ -301,9 +305,10 @@ drivers/base/power/runtime.c and include
-       removing the device from device hierarchy
- 
-   int pm_runtime_idle(struct device *dev);
--    - execute the subsystem-level idle callback for the device; returns 0 on
--      success or error code on failure, where -EINPROGRESS means that
--      ->runtime_idle() is already being executed
-+    - execute the subsystem-level idle callback for the device; returns an
-+      error code on failure, where -EINPROGRESS means that ->runtime_idle() is
-+      already being executed; if there is no callback or the callback returns 0
-+      then run pm_runtime_suspend(dev) and return its result
- 
-   int pm_runtime_suspend(struct device *dev);
-     - execute the subsystem-level suspend callback for the device; returns 0 on
-
-
-Alan Stern
