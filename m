@@ -1,204 +1,99 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [RFT][PATCH 1/1] thermal: step_wise: return instance->target
- by default
-Date: Wed, 29 May 2013 23:37:42 -0400
-Message-ID: <51A6C986.2000700@ti.com>
-References: <1369868285-18049-1-git-send-email-eduardo.valentin@ti.com> <1369878129.3368.15.camel@rzhang1-mobl4>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
+Date: Thu, 30 May 2013 09:52:18 +0200
+Message-ID: <51A70532.3070502@metafoo.de>
+References: <1369829859-13405-1-git-send-email-lars@metafoo.de> <51A60F83.7070403@analog.com> <20130529192013.GA19468@game.jcrosoft.org> <001801ce5ccd$2dd30be0$897923a0$@samsung.com> <20130530071413.GC19468@game.jcrosoft.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2WXPJHUHBEGLPNEMMGPCO"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:54774 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967382Ab3E3Dhv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 May 2013 23:37:51 -0400
-In-Reply-To: <1369878129.3368.15.camel@rzhang1-mobl4>
+Received: from smtp-out-231.synserver.de ([212.40.185.231]:1157 "EHLO
+	smtp-out-231.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967766Ab3E3Hw2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 03:52:28 -0400
+In-Reply-To: <20130530071413.GC19468@game.jcrosoft.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, ruslan.ruslichenko@ti.com, Durgadoss R <durgadoss.r@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Jingoo Han <jg1.han@samsung.com>, 'Michael Hennerich' <michael.hennerich@analog.com>, "'Rafael J. Wysocki'" <rjw@sisk.pl>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
 
-------enig2WXPJHUHBEGLPNEMMGPCO
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 29-05-2013 21:42, Zhang Rui wrote:
-> On Wed, 2013-05-29 at 18:58 -0400, Eduardo Valentin wrote:
->> In case the trend is not changing or when there is no
->> request for throttling, it is expected that the instance
->> would not change its requested target. This patch improves
->> the code implementation to cover for this expected behavior.
+On 05/30/2013 09:14 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
+> On 09:32 Thu 30 May     , Jingoo Han wrote:
+>> On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
+>>> On 16:24 Wed 29 May     , Michael Hennerich wrote:
+>>>> On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
+>>>>> Use dev_pm_ops instead of the legacy suspend/resume callbacks.
+>>>>>
+>>>>> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+>>>> Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+>>>>> ---
+>>>>>  drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
+>>>>>  1 file changed, 14 insertions(+), 8 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+>>>>> index 29d8c04..6084c17 100644
+>>>>> --- a/drivers/video/bfin-lq035q1-fb.c
+>>>>> +++ b/drivers/video/bfin-lq035q1-fb.c
+>>>>> @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+>>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+>>>>>  }
+>>>>> -#ifdef CONFIG_PM
+>>>>> -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
+>>>>> +#ifdef CONFIG_PM_SLEEP
+>>>>> +static int lq035q1_spidev_suspend(struct device *dev)
+>>>>>  {
+>>>>> +	struct spi_device *spi = to_spi_device(dev);
+>>>>> +
+>>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+>>>>>  }
+>>>>> -static int lq035q1_spidev_resume(struct spi_device *spi)
+>>>>> +static int lq035q1_spidev_resume(struct device *dev)
+>>>>>  {
+>>>>> -	int ret;
+>>>>> +	struct spi_device *spi = to_spi_device(dev);
+>>>>>  	struct spi_control *ctl = spi_get_drvdata(spi);
+>>>>> +	int ret;
+>>>>>  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+>>>>>  	if (ret)
+>>>>> @@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+>>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+>>>>>  }
+>>>>> +
+>>>>> +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
+>>>>> +	lq035q1_spidev_resume);
+>>>>> +#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
+>>>>> +
+>>>>>  #else
+>>>>> -# define lq035q1_spidev_suspend NULL
+>>>>> -# define lq035q1_spidev_resume  NULL
+>>>>> +#define LQ035Q1_SPIDEV_PM_OPS NULL
+>>>>>  #endif
+>>> we really need to ahve a macro like for DT of_match_ptr to drop the #else
 >>
-> right. agreed.
->=20
->> With current implementation, the instance will always
->> reset to cdev.cur_state, even in not expected cases,
->> like those mentioned above.
+>> Hi Jean-Christophe PLAGNIOL-VILLARD,
 >>
->> This patch changes the step_wise governor implementation
->> of get_target so that we accomplish:
->> (a) - default value will be current instance->target, so
->> we do not change the thermal instance target unnecessarily.
->=20
->> (b) - the code now it is clear about what is the intention.
->> There is a clear statement of what are the expected outcomes
->> (c) - removal of hardcoded constants, now it is put in use
->> the THERMAL_NO_TARGET macro.
->=20
->> (d) - variable names are also improved so that reader can
->> clearly understand the difference between instance cur target,
->> next target and cdev cur_state.
+>> I submitted the following patch. :)
+>> (https://patchwork.kernel.org/patch/2502971/)
 >>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Durgadoss R <durgadoss.r@intel.com>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Reported-by: Ruslan Ruslichenko <ruslan.ruslichenko@ti.com>
->> Signed-of-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>  drivers/thermal/step_wise.c | 29 ++++++++++++++++++-----------
->>  1 file changed, 18 insertions(+), 11 deletions(-)
->> ---
+>> --- a/include/linux/pm.h
+>> +++ b/include/linux/pm.h
+>> @@ -55,8 +55,10 @@  struct device;
+>>  
+>>  #ifdef CONFIG_PM
+>>  extern const char power_group_name[];		/* = "power" */
+>> +#define pm_ops_ptr(_ptr)	(_ptr)
+>>  #else
+>>  #define power_group_name	NULL
+>> +#define pm_ops_ptr(_ptr)	NULL
+>>  #endif
 >>
->> Hello all,
 >>
->> I am requesting for tests on this patch. Based on an internal
->> discussion with Ruslan, I concluded that this code needs improvement.
+>> This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
 >>
->> Ruslan, I did not keep your original code because I believe the
->> get_target_state needs a better implementation for code readiness.
->> Besides, I also believe we are facing the bug of emul_temp in your cas=
-e [1],
->> so this patch is not really fixing anything, but improving the
->> code quality and making sure the instance behaves as expected.
->> The fact you see the cooling device stuck at 1 is most probably becaus=
-e
->> the thermal core uses trend computed by the driver, not by emul_temp.
->>
->> I have implemented a different improvement as you may find below. But
->> I kept a Reported-by under your name.
->>
-> it would be good to let me know what the problem is.
-> As I'm fixing a couple of thermal bugs recently.
-> Most of them are suspend/hibernate related, and I've been changing this=
+> Lars-Peter please update with and
 
-> piece of code a lot.
+Since the code depends on CONFIG_PM_SLEEP and not CONFIG_PM I don't think
+the macro will work.
 
+- Lars
 
-Rui,
-
-This specific patch does not address a bug per si. Just makes sure that
-we avoid changing the target state of an instance when it is not
-necessary to change it.
-
->=20
-> thanks,
-> rui
->> In any case, because I believe this change in step_wise is significant=
-,
->> I am sending this patch for broader review and I kindly ask interested=
-
->> audience for testing it.
->>
->> [1] - https://patchwork.kernel.org/patch/2632831/
-
-The patch above, on the other hand, does fix a bug.
-
->>
->> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c=
-
->> index 4d4ddae..769bfa3 100644
->> --- a/drivers/thermal/step_wise.c
->> +++ b/drivers/thermal/step_wise.c
->> @@ -51,44 +51,51 @@ static unsigned long get_target_state(struct therm=
-al_instance *instance,
->>  {
->>  	struct thermal_cooling_device *cdev =3D instance->cdev;
->>  	unsigned long cur_state;
->> +	unsigned long next_target;
->> =20
->> +	/*
->> +	 * We keep this instance the way it is by default.
->> +	 * Otherwise, we use the current state of the
->> +	 * cdev in use to determine the next_target.
->> +	 */
->>  	cdev->ops->get_cur_state(cdev, &cur_state);
->> +	next_target =3D instance->target;
->> =20
->>  	switch (trend) {
->>  	case THERMAL_TREND_RAISING:
->>  		if (throttle) {
->> -			cur_state =3D cur_state < instance->upper ?
->> +			next_target =3D cur_state < instance->upper ?
->>  				    (cur_state + 1) : instance->upper;
->> -			if (cur_state < instance->lower)
->> -				cur_state =3D instance->lower;
->> +			if (next_target < instance->lower)
->> +				next_target =3D instance->lower;
->>  		}
->>  		break;
->>  	case THERMAL_TREND_RAISE_FULL:
->>  		if (throttle)
->> -			cur_state =3D instance->upper;
->> +			next_target =3D instance->upper;
->>  		break;
->>  	case THERMAL_TREND_DROPPING:
->>  		if (cur_state =3D=3D instance->lower) {
->>  			if (!throttle)
->> -				cur_state =3D -1;
->> +				next_target =3D THERMAL_NO_TARGET;
->>  		} else {
->> -			cur_state -=3D 1;
->> -			if (cur_state > instance->upper)
->> -				cur_state =3D instance->upper;
->> +			next_target =3D cur_state - 1;
->> +			if (next_target > instance->upper)
->> +				next_target =3D instance->upper;
->>  		}
->>  		break;
->>  	case THERMAL_TREND_DROP_FULL:
->>  		if (cur_state =3D=3D instance->lower) {
->>  			if (!throttle)
->> -				cur_state =3D -1;
->> +				next_target =3D THERMAL_NO_TARGET;
->>  		} else
->> -			cur_state =3D instance->lower;
->> +			next_target =3D instance->lower;
->>  		break;
->>  	default:
->>  		break;
->>  	}
->> =20
->> -	return cur_state;
->> +	return next_target;
->>  }
->> =20
->>  static void update_passive_instance(struct thermal_zone_device *tz,
->=20
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2WXPJHUHBEGLPNEMMGPCO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGmyYYACgkQCXcVR3XQvP2wNwD/fOnPFuHMY1puxr6dFRcNDJl8
-fLSAkhv/YDfLrxwwXhoA/i3fhr9uVu/BPzs2gMxRcktRpLt7hwuvWhrOrQkpBTVh
-=5PSO
------END PGP SIGNATURE-----
-
-------enig2WXPJHUHBEGLPNEMMGPCO--
