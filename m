@@ -1,140 +1,164 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH 7/7] thermal: ti-soc-thermal: add DT example for DRA752
- chip
-Date: Thu, 30 May 2013 09:52:40 -0400
-Message-ID: <51A759A8.1040705@ti.com>
-References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com> <1369840066-20357-8-git-send-email-eduardo.valentin@ti.com> <51A71455.9000002@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/3] ARM: tegra114: cpuidle: add powered-down state
+Date: Thu, 30 May 2013 16:35:41 +0200
+Message-ID: <51A763BD.6070001@linaro.org>
+References: <1369912782-30663-1-git-send-email-josephl@nvidia.com> <1369912782-30663-4-git-send-email-josephl@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2DOJICIONRFSMSMTKDJGQ"
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <51A71455.9000002@ti.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: keerthy <j-keerthy@ti.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f52.google.com ([209.85.214.52]:56177 "EHLO
+	mail-bk0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932445Ab3E3Ofq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 May 2013 10:35:46 -0400
+Received: by mail-bk0-f52.google.com with SMTP id mz10so192438bkb.25
+        for <linux-pm@vger.kernel.org>; Thu, 30 May 2013 07:35:45 -0700 (PDT)
+In-Reply-To: <1369912782-30663-4-git-send-email-josephl@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joseph Lo <josephl@nvidia.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-------enig2DOJICIONRFSMSMTKDJGQ
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 05/30/2013 01:19 PM, Joseph Lo wrote:
+> This supports CPU core power down on each CPU when CPU idle. When CPU=
+ go
+> into this state, it saves it's context and needs a proper configurati=
+on
+> in flow controller to power gate the CPU when CPU runs into WFI
+> instruction. And the CPU also needs to set the IRQ as CPU power down =
+idle
+> wake up event in flow controller.
+>=20
+> Signed-off-by: Joseph Lo <josephl@nvidia.com>
+> ---
 
-On 30-05-2013 04:56, keerthy wrote:
-> Hi Eduardo,
->=20
-> On 05/29/2013 08:37 PM, Eduardo Valentin wrote:
->=20
->> Update documentation by adding an example for DRA752 on DT description=
-=2E
->>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Cc: Grant Likely <grant.likely@linaro.org>
->> Cc: Rob Herring <rob.herring@calxeda.com>
->> Cc: Rob Landley <rob@landley.net>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: J Keerthy <j-keerthy@ti.com>
->> Cc: devicetree-discuss@lists.ozlabs.org
->> Cc: linux-doc@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->> ---
->>  Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt | 12 +++=
-+++++++++
->>  1 file changed, 12 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.=
-txt b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
->> index 1629652..1953b33 100644
->> --- a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
->> @@ -59,3 +59,15 @@ bandgap {
->>  	compatible =3D "ti,omap5430-bandgap";
->>  	interrupts =3D <0 126 4>; /* talert */
->>  };
->> +
->> +DRA752:
->> +bandgap {
->> +	reg =3D <0x4a0021e0 0xc
->> +		0x4a00232c 0xc
->> +		0x4a002380 0x2c
->> +		0x4a0023C0 0x3c
->> +		0x4a002564 0x8
->> +		0x4a002574 0x50>;
->> +	compatible =3D "ti,dra752-bandgap";
->=20
->=20
-> The general convention seems to be keeping it as dra7xx or dra7.
-> Why add specific nodes like dra752? We can always reuse for
-> forthcoming dra7 processors if the same address mapping and IP
-> is retained right?
->=20
->>
+Hi Joseph,
+
+a new flag has been added in the cpuidle framework to let this one to
+handle the timer broadcast : CPUIDLE_FLAG_TIMER_STOP
+
+It is the commit b60e6a0eb0273132cbb60a9806abf5f47a4aee1c
+
+You can get rid of the clockevent notify stuff by adding this flag to
+the state.
+
+Also, can you clarify why tegra3 code is used in tegra114 ?
 
 
-In fact, I must agree with you that using a node such as dra752 is
-restrictive. And I must also admit my original plan was to use dra7xx
-naming convention. Not only on DT nodes, but in driver source code
-symbols too. Well, this is about re-usability, right?
-
-However, I took a step back and thought about the bandgap IP history.
-Take that in mind, just look to the source code. We never succeed to
-reuse nodes fully and it is because bandgap IPs do change from chip
-version to chip version. That is also understandable as every chip has
-its own thermal peculiarities. For instance, we do not have a omap4xxx
-node because each OMAP4 chip has a different bandgap IP, with different
-features.
-
-I really would like to use a dra7xxx node, but that would contradict the
-IP history :-). If we are trying to avoid patching the driver in the
-future, I would say it is more likely to have a patch for another dra7
-chip with specifics different from the current one than having a patch
-reusing the existing dra752 node. This statement is obviously based on
-driver and IP history (I might be wrong of course and the IP could
-actually have reached a development stabilization point).
-
- +	interrupts =3D <0 126 4>; /* talert */
+>  arch/arm/mach-tegra/cpuidle-tegra114.c | 62 ++++++++++++++++++++++++=
++++++++++-
+>  1 file changed, 61 insertions(+), 1 deletion(-)
 >=20
->=20
-> The TRM does not have any term called talert. Can the comment
-> be /* thermal_alert */ so it is easy to figure out what it is.
->=20
+> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-t=
+egra/cpuidle-tegra114.c
+> index 1d1c602..e7d21f5 100644
+> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+> @@ -17,19 +17,79 @@
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/cpuidle.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/clockchips.h>
+> =20
+>  #include <asm/cpuidle.h>
+> +#include <asm/suspend.h>
+> +#include <asm/smp_plat.h>
+> +
+> +#include "pm.h"
+> +#include "sleep.h"
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int tegra114_idle_power_down(struct cpuidle_device *dev,
+> +				    struct cpuidle_driver *drv,
+> +				    int index);
 
+Isn't possible to move the driver declaration after the
+tegra114_idle_power_down function, before the init function, so we
+prevent a forward declaration ?
 
-Indeed, TRM does not, in fact! But the TI thermal engineering community
-have coined this term and I think it is quite common used (within that
-community) and if you look to the driver code too, it is all over. I
-believe there is no doubt that talert stands for thermal alert. The
-driver code does have documentation about that.
+> +#define TEGRA114_MAX_STATES 2
+> +#else
+> +#define TEGRA114_MAX_STATES 1
+> +#endif
+> =20
+>  static struct cpuidle_driver tegra_idle_driver =3D {
+>  	.name =3D "tegra_idle",
+>  	.owner =3D THIS_MODULE,
+> -	.state_count =3D 1,
+> +	.state_count =3D TEGRA114_MAX_STATES,
+>  	.states =3D {
+>  		[0] =3D ARM_CPUIDLE_WFI_STATE_PWR(600),
+> +#ifdef CONFIG_PM_SLEEP
+> +		[1] =3D {
+> +			.enter			=3D tegra114_idle_power_down,
+> +			.exit_latency		=3D 500,
+> +			.target_residency	=3D 1000,
+> +			.power_usage		=3D 0,
+> +			.flags			=3D CPUIDLE_FLAG_TIME_VALID,
+> +			.name			=3D "powered-down",
+> +			.desc			=3D "CPU power gated",
+> +		},
+> +#endif
+>  	},
+>  };
+> =20
+> +#ifdef CONFIG_PM_SLEEP
+> +static int tegra114_idle_power_down(struct cpuidle_device *dev,
+> +				    struct cpuidle_driver *drv,
+> +				    int index)
+> +{
+> +	u32 cpu =3D is_smp() ? cpu_logical_map(dev->cpu) : dev->cpu;
 
->> +};
->=20
->=20
-> Regards,
-> Keerthy
->=20
+IMO, it is up to the tegra_set_cpu_in_lp2 / tegra_clear_cpu_in_lp2
+functions to do the cpu map conversion instead of adding this into a
+routine working with logical cpu.
+
+> +	local_fiq_disable();
+> +
+> +	tegra_set_cpu_in_lp2(cpu);
+> +	cpu_pm_enter();
+> +
+> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+> +	smp_wmb();
+
+Why do you need a memory barrier here ?
+
+> +	cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+> +
+> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+> +
+> +	cpu_pm_exit();
+> +	tegra_clear_cpu_in_lp2(cpu);
+> +
+> +	local_fiq_enable();
+> +
+> +	smp_rmb();
+
+Why do you need a memory barrier here ?
+
+> +	return index;
+> +}
+> +#endif
+> +
+>  int __init tegra114_cpuidle_init(void)
+>  {
+> +#ifdef CONFIG_PM_SLEEP
+> +	tegra_tear_down_cpu =3D tegra30_tear_down_cpu;
+> +#endif
+
+Doesn't this code should go in the pm.c file ?
+
+>  	return cpuidle_register(&tegra_idle_driver, NULL);
+>  }
 >=20
 
 
 --=20
-You have got to be excited about what you are doing. (L. Lamport)
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
 
-Eduardo Valentin
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-
-------enig2DOJICIONRFSMSMTKDJGQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGnWagACgkQCXcVR3XQvP3yVAEApyBajpOt9VD2nqQiDYiRXwus
-SAkUcaUOFmc9KHLW/vwBAInG6i1sGZzemg39P86zYKVfFhGJI+N3hxuWEED0MSQR
-=L3SH
------END PGP SIGNATURE-----
-
-------enig2DOJICIONRFSMSMTKDJGQ--
