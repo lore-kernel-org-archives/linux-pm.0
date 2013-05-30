@@ -1,84 +1,102 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
- broken in 3.9.x
-Date: Thu, 30 May 2013 09:46:26 +0800
-Message-ID: <1369878386.3368.16.camel@rzhang1-mobl4>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
-	 <1369631226.2159.5.camel@rzhang1-mobl4>
-	 <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+From: Alex Shi <alex.shi@intel.com>
+Subject: Re: [PATCH 1/2] sched: Use do_div() for 64 bit division at power
+ utilization calculation (putil)
+Date: Thu, 30 May 2013 09:48:58 +0800
+Message-ID: <51A6B00A.90903@intel.com>
+References: <1369298064-14998-1-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([143.182.124.21]:18584 "EHLO mga03.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:45002 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759768Ab3E3Bq3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 May 2013 21:46:29 -0400
-In-Reply-To: <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	id S1759793Ab3E3Bta (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 May 2013 21:49:30 -0400
+In-Reply-To: <1369298064-14998-1-git-send-email-l.majewski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Giacomo Perale <giacomo.perale@gmail.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
-> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
-> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
-> >> Hello,
-> >>
-> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
-> >> delays when resuming from suspend-to-disk and a few new error messages
-> >> in the logs:
-> >>
-> >>
-> >> Not having connected the issue with the previous error messages I
-> >> initially blamed the disk and replaced it with a new one thinking it
-> >> was broken, but the problem persisted so I started a bisection run
-> >> that pointed to this commit:
-> >>
-> >>
-> >> b8bb6cb999858043489c1ddef08eed2127559169 is the first bad commit
-> >> commit b8bb6cb999858043489c1ddef08eed2127559169
-> >> Author: Zhang Rui <rui.zhang@intel.com>
-> >> Date:   Thu Nov 22 15:45:02 2012 +0800
-> >>
-> >>     step_wise: Unify the code for both throttle and dethrottle
-> >>
-> >>     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> >>
-> > I do not see how this would affect the sata hibernation/resume.
-> > but anyway, would you please try the four patches in comment #10, #11,
-> > #12 and #13 in
-> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
-> > and check if they help?
-> >
-> > thanks,
-> > rui
-> >
+On 05/23/2013 04:34 PM, Lukasz Majewski wrote:
+> Now explicit casting is done when power usage variable (putil) is calculated
 > 
-> No luck, with git head and those four patches hibernation is
-> completely broken, the system doesn't even shut down, it just loses
-> the disks (I'm attaching what I could get from /proc/kmsg to this
-> email).
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> ---
+> This patch was developed on top of the following Alex's repository:
+> https://github.com/alexshi/power-scheduling/commits/power-scheduling
+> ---
+>  kernel/sched/fair.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-then can you please try the patch at
-https://patchwork.kernel.org/patch/2633071/
-on top of the four patches and see if it helps?
-
-thanks,
-rui
-
-> With the fair_share governor or with step_wise _and_ commit
-> b8bb6cb999858043489c1ddef08eed2127559169 reverted everything is ok
-> again.
-> 
-> I think there's something wrong in the commit logic (for example, why
-> are you checking for "instance->target != THERMAL_NO_TARGET" when
-> update_instance_for_throttle checked for "instance->target ==
-> THERMAL_NO_TARGET"?) but my attempts to fix it failed, probably
-> because I'm not sure of what 'continue;' does inside a
-> list_for_each_entry macro.
-> 
-> Thanks,
-> Giacomo
 
 
+Thanks for catch this issue. seems use div_u64 is better, and there are 2 same bugs.
+so, could I rewrite the patch like following?
+---
+
+>From 9f72c25607351981898d99822f5a66e0ca67a3da Mon Sep 17 00:00:00 2001
+From: Alex Shi <alex.shi@intel.com>
+Date: Wed, 29 May 2013 11:09:39 +0800
+Subject: [PATCH 1/2] sched: fix cast on power utilization calculation and use
+ div_u64
+
+Now explicit casting is done when power usage variable (putil) is
+calculated.
+div_u64 is optimized on u32.
+
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Alex Shi <alex.shi@intel.com>
+---
+ kernel/sched/fair.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 09ae48a..3a4917c 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -1504,8 +1504,8 @@ static inline void update_rq_runnable_avg(struct rq *rq, int runnable)
+ 	__update_tg_runnable_avg(&rq->avg, &rq->cfs);
+ 
+ 	period = rq->avg.runnable_avg_period ? rq->avg.runnable_avg_period : 1;
+-	rq->util = (u64)(rq->avg.runnable_avg_sum << SCHED_POWER_SHIFT)
+-				/ period;
++	rq->util = div_u64(((u64)rq->avg.runnable_avg_sum << SCHED_POWER_SHIFT),
++				period);
+ }
+ 
+ /* Add the load generated by se into cfs_rq's child load-average */
+@@ -3407,8 +3407,8 @@ static int is_sd_full(struct sched_domain *sd,
+ 		/* p maybe a new forked task */
+ 		putil = FULL_UTIL;
+ 	else
+-		putil = (u64)(p->se.avg.runnable_avg_sum << SCHED_POWER_SHIFT)
+-				/ (p->se.avg.runnable_avg_period + 1);
++		putil = div_u64(((u64)p->se.avg.runnable_avg_sum << SCHED_POWER_SHIFT),
++				p->se.avg.runnable_avg_period + 1);
+ 
+ 	/* Try to collect the domain's utilization */
+ 	group = sd->groups;
+@@ -3463,9 +3463,11 @@ find_leader_cpu(struct sched_group *group, struct task_struct *p, int this_cpu,
+ 	int vacancy, min_vacancy = INT_MAX;
+ 	int leader_cpu = -1;
+ 	int i;
++
+ 	/* percentage of the task's util */
+-	unsigned putil = (u64)(p->se.avg.runnable_avg_sum << SCHED_POWER_SHIFT)
+-				/ (p->se.avg.runnable_avg_period + 1);
++	unsigned putil;
++	putil = div_u64(((u64)p->se.avg.runnable_avg_sum << SCHED_POWER_SHIFT),
++				p->se.avg.runnable_avg_period + 1);
+ 
+ 	/* bias toward local cpu */
+ 	if (cpumask_test_cpu(this_cpu, tsk_cpus_allowed(p)) &&
+-- 
+1.7.12
+
+
+-- 
+Thanks
+    Alex
