@@ -1,114 +1,42 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Fri, 31 May 2013 19:33:06 +0300
-Message-ID: <51A8D0C2.1080801@semaphore.gr>
-References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper routine
+Date: Fri, 31 May 2013 12:55:56 -0700
+Message-ID: <87r4gmyldf.fsf@linaro.org>
+References: <1463685.qFyr66vqF2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------050906090203090406020800"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:33961 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753627Ab3EaQdJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2013 12:33:09 -0400
-In-Reply-To: <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1463685.qFyr66vqF2@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Wed, 29 May 2013 01:29:06 +0200")
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050906090203090406020800
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-On 05/31/2013 11:51 AM, Viresh Kumar wrote:
->> ---
->>   arch/x86/include/asm/processor.h   | 29 ----------------------
->>   drivers/cpufreq/Makefile           |  2 +-
->>   drivers/cpufreq/acpi-cpufreq.c     |  5 ----
->>   drivers/cpufreq/cpufreq.c          | 21 ----------------
->>   drivers/cpufreq/cpufreq_governor.c | 10 +-------
->>   drivers/cpufreq/cpufreq_governor.h |  1 -
->>   drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
->>   drivers/cpufreq/mperf.c            | 51 --------------------------------------
->>   drivers/cpufreq/mperf.h            |  9 -------
->>   include/linux/cpufreq.h            |  6 -----
->>   10 files changed, 9 insertions(+), 164 deletions(-)
->>   delete mode 100644 drivers/cpufreq/mperf.c
->>   delete mode 100644 drivers/cpufreq/mperf.h
-> 
-> I believe you should have removed other users of getavg() in a separate
-> patch and also cc'd relevant people so that you can some review comments
-> from  them.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The "runtime idle" helper routine, rpm_idle(), currently ignores
+> return values from .runtime_idle() callbacks executed by it.
+>
+> However, it turns out that many subsystems use the generic idle
+> callback routine pm_generic_runtime_idle() which checks the return
+> value of the driver's callback and executes pm_runtime_suspend() for
+> the device unless that value is different from 0.  If that logic is
+> moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
+> and its users will not need any .runtime_idle() callbacks any more.
+>
+> Moreover, the PCI subsystem's .runtime_idle() routine,
+> pci_pm_runtime_idle(), works in analogy with the generic one and if
+> rpm_idle() calls rpm_suspend() after 0 has been returned by the
+> .runtime_idle() callback executed by it, that routine will not be
+> necessary any more and may be dropped.
+>
+> To reduce overall code duplication make the changes described above.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I will split the patch in two. If it's OK, I will keep the removal of 
-__cpufreq_driver_getavg in the original patch and move the clean up of
-APERF/MPERF support in a second patch. I will also cc relevant people.
+Acked-by: Kevin Hilman <khilman@linaro.org>
+Tested-by: Kevin Hilman <khilman@linaro.org> # for OMAP PM domain change
 
-
->>          /* Check for frequency increase */
->> -       if (load_freq > od_tuners->up_threshold * policy->cur) {
->> +       if (load > od_tuners->up_threshold) {
-> 
-> Chances of this getting hit are minimal now.. I don't know if keeping
-> this will change anything now :)
-
-Actually, no. This getting hit pretty often.
-Please find attached the cpufreq statistics - trans_table during build
-of 3.4 kernel. With default up_threshold (95), the transition to max
-happened many times because of load was greater than up_threshold.
-I also thought to keep this code to leave up_threshold functionality unaffected.
- 
-On 05/31/2013 03:42 PM, Rafael J. Wysocki wrote:
-> On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
->>> +       } else {
->>> +               /* Calculate the next frequency proportional to load */
->>>                  unsigned int freq_next;
->>> -               freq_next = load_freq / od_tuners->adj_up_threshold;
->>> +               freq_next = load * policy->max / 100;
->>
->> Rafael asked why you believe this is the right formula and I really couldn't
->> find an appropriate answer to that, sorry :(
-> 
-> Right, it would be good to explain that.
-> 
-> "Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
-> 
-
-I think, finally(?) I see your point. The right C should be "policy->cpuinfo.max_freq / 100".
-This way the target frequency will be proportional to load and the calculation will
-"map" the load to CPU freq table.
-
-I will update the patch according to your observations and suggestions.
-
-Thanks,
-Stratos
-
---------------050906090203090406020800
-Content-Type: text/plain; charset=UTF-8;
- name="trans_table.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="trans_table.txt"
-
-   From  :    To
-         :   3401000   3400000   3300000   3100000   3000000   2900000   2800000   2600000   2500000   2400000   2200000   2100000   2000000   1900000   1700000   1600000 
-  3401000:         0         0         4         2         4         2         3         0         2         1         1         1         1         4         0        29 
-  3400000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0 
-  3300000:         4         0         0         0         1         0         0         0         0         0         0         1         0         0         0         7 
-  3100000:         2         0         0         0         1         0         0         0         0         0         0         0         0         0         0         0 
-  3000000:         4         0         0         0         0         0         0         0         0         1         0         0         0         0         0         4 
-  2900000:         1         0         0         0         1         0         0         0         0         0         0         0         0         0         0         7 
-  2800000:         3         0         0         0         0         1         0         0         0         1         0         0         0         0         0         3 
-  2600000:         0         0         0         0         0         1         0         0         0         1         0         0         0         0         0         4 
-  2500000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         4 
-  2400000:         3         0         0         0         0         0         1         0         0         0         0         0         0         0         0         7 
-  2200000:         1         0         0         0         0         0         0         0         0         1         0         0         0         0         0         3 
-  2100000:         1         0         0         0         0         0         0         1         0         0         0         0         0         1         0         4 
-  2000000:         1         0         0         0         0         0         0         0         0         0         0         0         0         0         0         1 
-  1900000:         0         0         2         0         0         0         0         0         0         1         0         0         0         0         0         8 
-  1700000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         2 
-  1600000:        33         0         7         1         2         5         4         5         2         5         4         5         1         6         2         0 
-
---------------050906090203090406020800--
