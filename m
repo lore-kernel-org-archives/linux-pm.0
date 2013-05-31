@@ -1,74 +1,104 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Fri, 31 May 2013 14:42:09 +0200
-Message-ID: <2135481.eCRs7DzAb6@vostro.rjw.lan>
-References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=yFV05ON3Dth=6gLMHEVRNVb2J5+8OeLNv2G8VmSXkkQ@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 3/3] ARM: tegra114: cpuidle: add powered-down state
+Date: Fri, 31 May 2013 15:18:35 +0200
+Message-ID: <51A8A32B.6080303@linaro.org>
+References: <1369912782-30663-1-git-send-email-josephl@nvidia.com>  <1369912782-30663-4-git-send-email-josephl@nvidia.com>  <51A763BD.6070001@linaro.org>  <1369991550.7804.37.camel@jlo-ubuntu-64.nvidia.com>  <51A86D11.8060305@linaro.org>  <1369997278.7804.73.camel@jlo-ubuntu-64.nvidia.com>  <1369999870.7804.78.camel@jlo-ubuntu-64.nvidia.com> <1370000680.7804.83.camel@jlo-ubuntu-64.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=yFV05ON3Dth=6gLMHEVRNVb2J5+8OeLNv2G8VmSXkkQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1370000680.7804.83.camel-yx3yKKdKkHfc7b1ADBJPm0n48jw8i0AO@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux PM mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
-> On 31 May 2013 02:37, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> 
-> Ahh.. earlier mail got sent without me doing complete review :(
-> 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > +static void od_check_cpu(int cpu, unsigned int load)
-> >  {
-> >         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-> >         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
-> > @@ -176,29 +170,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
-> >         dbs_info->freq_lo = 0;
-> >
-> >         /* Check for frequency increase */
-> > -       if (load_freq > od_tuners->up_threshold * policy->cur) {
-> > +       if (load > od_tuners->up_threshold) {
-> 
-> Chances of this getting hit are minimal now.. I don't know if keeping
-> this will change anything now :)
-> 
-> >                 /* If switching to max speed, apply sampling_down_factor */
-> >                 if (policy->cur < policy->max)
-> >                         dbs_info->rate_mult =
-> >                                 od_tuners->sampling_down_factor;
-> >                 dbs_freq_increase(policy, policy->max);
-> >                 return;
-> > -       }
-> > -
-> > -       /* Check for frequency decrease */
-> > -       /* if we cannot reduce the frequency anymore, break out early */
-> > -       if (policy->cur == policy->min)
-> > -               return;
-> > -
-> > -       /*
-> > -        * The optimal frequency is the frequency that is the lowest that can
-> > -        * support the current CPU usage without triggering the up policy. To be
-> > -        * safe, we focus 10 points under the threshold.
-> > -        */
-> > -       if (load_freq < od_tuners->adj_up_threshold
-> > -                       * policy->cur) {
-> > +       } else {
-> > +               /* Calculate the next frequency proportional to load */
-> >                 unsigned int freq_next;
-> > -               freq_next = load_freq / od_tuners->adj_up_threshold;
-> > +               freq_next = load * policy->max / 100;
-> 
-> Rafael asked why you believe this is the right formula and I really couldn't
-> find an appropriate answer to that, sorry :(
+On 05/31/2013 01:44 PM, Joseph Lo wrote:
+> On Fri, 2013-05-31 at 19:31 +0800, Joseph Lo wrote:
+>> On Fri, 2013-05-31 at 18:47 +0800, Joseph Lo wrote:
+>>> On Fri, 2013-05-31 at 17:27 +0800, Daniel Lezcano wrote:
+>>>> On 05/31/2013 11:12 AM, Joseph Lo wrote:
+>>>>> Hi Daniel,
+>>>>>
+>>>>> Thanks for your review.
+>>>>>
+>>>>> On Thu, 2013-05-30 at 22:35 +0800, Daniel Lezcano wrote:
+>>>>>> On 05/30/2013 01:19 PM, Joseph Lo wrote:
+>>>>>>> This supports CPU core power down on each CPU when CPU idle. Wh=
+en CPU go
+>>>>>>> into this state, it saves it's context and needs a proper confi=
+guration
+>>>>>>> in flow controller to power gate the CPU when CPU runs into WFI
+>>>>>>> instruction. And the CPU also needs to set the IRQ as CPU power=
+ down idle
+>>>>>>> wake up event in flow controller.
+>>>>>>>
+>>>>>>> Signed-off-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>>>>> ---
+>>>>>>
+>>>>>> Hi Joseph,
+>>>>>>
+>>>>>> a new flag has been added in the cpuidle framework to let this o=
+ne to
+>>>>>> handle the timer broadcast : CPUIDLE_FLAG_TIMER_STOP
+>>>>>>
+>>>>>> It is the commit b60e6a0eb0273132cbb60a9806abf5f47a4aee1c
+>>>>>>
+>>>>>> You can get rid of the clockevent notify stuff by adding this fl=
+ag to
+>>>>>> the state.
+>>>>>>
+>>>>>
+>>>>> I just tested this flag on Tegra20, 30 and 114. It is only OK on
+>>>>> Tegra20. It caused a warning message below on Tegra30/114 at boot=
+ time.
+>>>>>
+>>>>> I gave it a quick check I found it can't clean
+>>>>> tick_broadcast_pending_mask sometimes if apply the flag. But I ke=
+ep the
+>>>>> code right now it's always OK. Not sure why?=20
+>>>>
+>>>> Is it possible you didn't intialized the timer broadcast with
+>>>> CLOCK_EVT_NOTIFY_BROADCAST_ON in the driver and then this one is
+>>>> actually disabled for you driver ?
+>>>>
+>>> I found if I don't apply the CPUIDLE_FLAG_TIMER_STOP flag, the func=
+tion
+>>> "cpuidle_setup_broadcast_timer" (drivers/cpuidle/driver.c) would no=
+t be
+>>> called. Then it's OK.
+>>>
+>>> If I apply this flag (with no CONFIG_CPU_IDLE_MULTIPLE_DRIVERS), th=
+e
+>>> cpuidle_register_driver only register for CPU0. Then the
+>>> "cpuidle_setup_broadcast_timer" only turn on for CPU0. I think this
+>>> might be the root cause. Not sure this also can reproduce on the ot=
+her
+>>> SoCs?
+>>>
+>> Looks it's not related to CLOCK_EVT_NOTIFY_BROADCAST_ON. I still saw=
+ the
+>> warning message even enable CONFIG_CPU_IDLE_MULTIPLE_DRIVERS. But if=
+ I
+>> move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT from i=
+dle
+>> framework back to driver, then everything is OK.
+>>
+> Once I move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT
+> right after "local_irq_enable" in the
+> "cpuidle_enter_state" (drivers/cpuidle/cpuidle.c). Then the warning
+> message shows up.
 
-Right, it would be good to explain that.
+Is it possible you pastebin you kernel config file ? I would like to
+check a couple of things before investigating the code.
 
-"Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
-
-Rafael
+Thanks
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
