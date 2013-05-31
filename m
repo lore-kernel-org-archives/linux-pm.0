@@ -1,87 +1,74 @@
-From: Joseph Lo <josephl@nvidia.com>
-Subject: Re: [PATCH 3/3] ARM: tegra114: cpuidle: add powered-down state
-Date: Fri, 31 May 2013 19:44:40 +0800
-Message-ID: <1370000680.7804.83.camel@jlo-ubuntu-64.nvidia.com>
-References: <1369912782-30663-1-git-send-email-josephl@nvidia.com>
-	 <1369912782-30663-4-git-send-email-josephl@nvidia.com>
-	 <51A763BD.6070001@linaro.org>
-	 <1369991550.7804.37.camel@jlo-ubuntu-64.nvidia.com>
-	 <51A86D11.8060305@linaro.org>
-	 <1369997278.7804.73.camel@jlo-ubuntu-64.nvidia.com>
-	 <1369999870.7804.78.camel@jlo-ubuntu-64.nvidia.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
+Date: Fri, 31 May 2013 14:42:09 +0200
+Message-ID: <2135481.eCRs7DzAb6@vostro.rjw.lan>
+References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=yFV05ON3Dth=6gLMHEVRNVb2J5+8OeLNv2G8VmSXkkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:14389 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152Ab3EaLoo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2013 07:44:44 -0400
-In-Reply-To: <1369999870.7804.78.camel@jlo-ubuntu-64.nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=yFV05ON3Dth=6gLMHEVRNVb2J5+8OeLNv2G8VmSXkkQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On Fri, 2013-05-31 at 19:31 +0800, Joseph Lo wrote:
-> On Fri, 2013-05-31 at 18:47 +0800, Joseph Lo wrote:
-> > On Fri, 2013-05-31 at 17:27 +0800, Daniel Lezcano wrote:
-> > > On 05/31/2013 11:12 AM, Joseph Lo wrote:
-> > > > Hi Daniel,
-> > > > 
-> > > > Thanks for your review.
-> > > > 
-> > > > On Thu, 2013-05-30 at 22:35 +0800, Daniel Lezcano wrote:
-> > > >> On 05/30/2013 01:19 PM, Joseph Lo wrote:
-> > > >>> This supports CPU core power down on each CPU when CPU idle. When CPU go
-> > > >>> into this state, it saves it's context and needs a proper configuration
-> > > >>> in flow controller to power gate the CPU when CPU runs into WFI
-> > > >>> instruction. And the CPU also needs to set the IRQ as CPU power down idle
-> > > >>> wake up event in flow controller.
-> > > >>>
-> > > >>> Signed-off-by: Joseph Lo <josephl@nvidia.com>
-> > > >>> ---
-> > > >>
-> > > >> Hi Joseph,
-> > > >>
-> > > >> a new flag has been added in the cpuidle framework to let this one to
-> > > >> handle the timer broadcast : CPUIDLE_FLAG_TIMER_STOP
-> > > >>
-> > > >> It is the commit b60e6a0eb0273132cbb60a9806abf5f47a4aee1c
-> > > >>
-> > > >> You can get rid of the clockevent notify stuff by adding this flag to
-> > > >> the state.
-> > > >>
-> > > > 
-> > > > I just tested this flag on Tegra20, 30 and 114. It is only OK on
-> > > > Tegra20. It caused a warning message below on Tegra30/114 at boot time.
-> > > > 
-> > > > I gave it a quick check I found it can't clean
-> > > > tick_broadcast_pending_mask sometimes if apply the flag. But I keep the
-> > > > code right now it's always OK. Not sure why? 
-> > > 
-> > > Is it possible you didn't intialized the timer broadcast with
-> > > CLOCK_EVT_NOTIFY_BROADCAST_ON in the driver and then this one is
-> > > actually disabled for you driver ?
-> > > 
-> > I found if I don't apply the CPUIDLE_FLAG_TIMER_STOP flag, the function
-> > "cpuidle_setup_broadcast_timer" (drivers/cpuidle/driver.c) would not be
-> > called. Then it's OK.
-> > 
-> > If I apply this flag (with no CONFIG_CPU_IDLE_MULTIPLE_DRIVERS), the
-> > cpuidle_register_driver only register for CPU0. Then the
-> > "cpuidle_setup_broadcast_timer" only turn on for CPU0. I think this
-> > might be the root cause. Not sure this also can reproduce on the other
-> > SoCs?
-> > 
-> Looks it's not related to CLOCK_EVT_NOTIFY_BROADCAST_ON. I still saw the
-> warning message even enable CONFIG_CPU_IDLE_MULTIPLE_DRIVERS. But if I
-> move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT from idle
-> framework back to driver, then everything is OK.
+On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
+> On 31 May 2013 02:37, Stratos Karafotis <stratosk@semaphore.gr> wrote:
 > 
-Once I move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT
-right after "local_irq_enable" in the
-"cpuidle_enter_state" (drivers/cpuidle/cpuidle.c). Then the warning
-message shows up.
+> Ahh.. earlier mail got sent without me doing complete review :(
+> 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > +static void od_check_cpu(int cpu, unsigned int load)
+> >  {
+> >         struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+> >         struct cpufreq_policy *policy = dbs_info->cdbs.cur_policy;
+> > @@ -176,29 +170,17 @@ static void od_check_cpu(int cpu, unsigned int load_freq)
+> >         dbs_info->freq_lo = 0;
+> >
+> >         /* Check for frequency increase */
+> > -       if (load_freq > od_tuners->up_threshold * policy->cur) {
+> > +       if (load > od_tuners->up_threshold) {
+> 
+> Chances of this getting hit are minimal now.. I don't know if keeping
+> this will change anything now :)
+> 
+> >                 /* If switching to max speed, apply sampling_down_factor */
+> >                 if (policy->cur < policy->max)
+> >                         dbs_info->rate_mult =
+> >                                 od_tuners->sampling_down_factor;
+> >                 dbs_freq_increase(policy, policy->max);
+> >                 return;
+> > -       }
+> > -
+> > -       /* Check for frequency decrease */
+> > -       /* if we cannot reduce the frequency anymore, break out early */
+> > -       if (policy->cur == policy->min)
+> > -               return;
+> > -
+> > -       /*
+> > -        * The optimal frequency is the frequency that is the lowest that can
+> > -        * support the current CPU usage without triggering the up policy. To be
+> > -        * safe, we focus 10 points under the threshold.
+> > -        */
+> > -       if (load_freq < od_tuners->adj_up_threshold
+> > -                       * policy->cur) {
+> > +       } else {
+> > +               /* Calculate the next frequency proportional to load */
+> >                 unsigned int freq_next;
+> > -               freq_next = load_freq / od_tuners->adj_up_threshold;
+> > +               freq_next = load * policy->max / 100;
+> 
+> Rafael asked why you believe this is the right formula and I really couldn't
+> find an appropriate answer to that, sorry :(
+
+Right, it would be good to explain that.
+
+"Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
+
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
