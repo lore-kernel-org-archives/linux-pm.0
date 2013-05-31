@@ -1,226 +1,114 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V4 22/30] thermal: exynos: Add support for exynos5440
- TMU sensor.
-Date: Fri, 31 May 2013 11:28:54 -0400
-Message-ID: <51A8C1B6.5080105@ti.com>
-References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com> <1368525540-15034-23-git-send-email-amit.daniel@samsung.com> <51971046.3080201@samsung.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
+Date: Fri, 31 May 2013 19:33:06 +0300
+Message-ID: <51A8D0C2.1080801@semaphore.gr>
+References: <51A7BFA6.3070800@semaphore.gr> <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2DFNDCSAVEDWVRSFUUCTS"
+Content-Type: multipart/mixed;
+ boundary="------------050906090203090406020800"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:38708 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756079Ab3EaP3N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 31 May 2013 11:29:13 -0400
-In-Reply-To: <51971046.3080201@samsung.com>
+Received: from sema.semaphore.gr ([78.46.194.137]:33961 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753627Ab3EaQdJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2013 12:33:09 -0400
+In-Reply-To: <CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jonghwa3.lee@samsung.com
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 
-------enig2DFNDCSAVEDWVRSFUUCTS
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This is a multi-part message in MIME format.
+--------------050906090203090406020800
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Amit and Jonghwa,
-
-On 18-05-2013 01:23, jonghwa3.lee@samsung.com wrote:
-> On 2013=EB=85=84 05=EC=9B=94 14=EC=9D=BC 18:58, Amit Daniel Kachhap wro=
-te:
->=20
->> This patch modifies TMU controller to add changes needed to work with
->> exynos5440 platform. This sensor registers 3 instance of the tmu contr=
-oller
->> with the thermal zone and hence reports 3 temperature output. This con=
-troller
->> supports upto five trip points. For critical threshold the driver uses=
- the
->> core driver thermal framework for shutdown.
->>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+On 05/31/2013 11:51 AM, Viresh Kumar wrote:
 >> ---
->>  .../devicetree/bindings/thermal/exynos-thermal.txt |   28 +++++++++++=
-+-
->>  drivers/thermal/samsung/exynos_tmu.c               |   43 +++++++++++=
-++++++--
->>  drivers/thermal/samsung/exynos_tmu.h               |    6 +++
->>  drivers/thermal/samsung/exynos_tmu_data.h          |    2 +
->>  4 files changed, 72 insertions(+), 7 deletions(-)
+>>   arch/x86/include/asm/processor.h   | 29 ----------------------
+>>   drivers/cpufreq/Makefile           |  2 +-
+>>   drivers/cpufreq/acpi-cpufreq.c     |  5 ----
+>>   drivers/cpufreq/cpufreq.c          | 21 ----------------
+>>   drivers/cpufreq/cpufreq_governor.c | 10 +-------
+>>   drivers/cpufreq/cpufreq_governor.h |  1 -
+>>   drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
+>>   drivers/cpufreq/mperf.c            | 51 --------------------------------------
+>>   drivers/cpufreq/mperf.h            |  9 -------
+>>   include/linux/cpufreq.h            |  6 -----
+>>   10 files changed, 9 insertions(+), 164 deletions(-)
+>>   delete mode 100644 drivers/cpufreq/mperf.c
+>>   delete mode 100644 drivers/cpufreq/mperf.h
+> 
+> I believe you should have removed other users of getavg() in a separate
+> patch and also cc'd relevant people so that you can some review comments
+> from  them.
+
+I will split the patch in two. If it's OK, I will keep the removal of 
+__cpufreq_driver_getavg in the original patch and move the clean up of
+APERF/MPERF support in a second patch. I will also cc relevant people.
+
+
+>>          /* Check for frequency increase */
+>> -       if (load_freq > od_tuners->up_threshold * policy->cur) {
+>> +       if (load > od_tuners->up_threshold) {
+> 
+> Chances of this getting hit are minimal now.. I don't know if keeping
+> this will change anything now :)
+
+Actually, no. This getting hit pretty often.
+Please find attached the cpufreq statistics - trans_table during build
+of 3.4 kernel. With default up_threshold (95), the transition to max
+happened many times because of load was greater than up_threshold.
+I also thought to keep this code to leave up_threshold functionality unaffected.
+ 
+On 05/31/2013 03:42 PM, Rafael J. Wysocki wrote:
+> On Friday, May 31, 2013 02:24:59 PM Viresh Kumar wrote:
+>>> +       } else {
+>>> +               /* Calculate the next frequency proportional to load */
+>>>                  unsigned int freq_next;
+>>> -               freq_next = load_freq / od_tuners->adj_up_threshold;
+>>> +               freq_next = load * policy->max / 100;
 >>
->> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.=
-txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> index 535fd0e..970eeba 100644
+>> Rafael asked why you believe this is the right formula and I really couldn't
+>> find an appropriate answer to that, sorry :(
+> 
+> Right, it would be good to explain that.
+> 
+> "Proportional to load" means C * load, so why is "policy->max / 100" *the* right C?
+> 
 
-<cut>
+I think, finally(?) I see your point. The right C should be "policy->cpuinfo.max_freq / 100".
+This way the target frequency will be proportional to load and the calculation will
+"map" the load to CPU freq table.
 
->> +			goto out;
->=20
->=20
-> I have a question about your implementation for supporting EXYNOS5440.
-> I don't know exactly how EXYNO5440's tmu is working, but just guess it =
-would be
-> similar with other EXYNOS series's without number of thermal sensors. (=
-exclusive
-> register map and threshold level). Due to the multiple number of therma=
-l sensor
-> in EXYNOS5440, it have multiple thermal zone devices and that's why it =
-just
-> leave interrupt pin in pending if interrupt is not its, right?
->=20
-> So, my curious is, why we make all platform devices for each of thermal=
- zone
-> devices? Why don't you just handle all thermal zone devices with one pl=
-atform
-> device?
->=20
-> Yes, It's probably right to make multiple devices node to support them,=
- because
-> it has different physical hardware(sensors). But we have one TMU , don'=
-t we?
-> (Maybe my assumption is wrong, I assume that it has one TMU because it =
-looks
-> like it has only one irq line.). If I'm right, I think it is better to =
-manage
-> all thermal zone devices with one platform device. Then, we don't need =
-to leave
-> irq handler with leaving it pendded like above and also we may not need=
- other
-> your patches like adding base_common iomem variable.
->=20
-> I'd like to listen your opinion about this.
->=20
+I will update the patch according to your observations and suggestions.
 
+Thanks,
+Stratos
 
-I understand the concern risen by Jonghwa. In fact, this is a bit
-confusing. The way I have decided to design the driver for TI
-(drivers/thermal/ti-soc-thermal under thermal tree next branch) is to
-have one platform device for the bandgap IP (that would be probably
-equivalent of  your TMU).
+--------------050906090203090406020800
+Content-Type: text/plain; charset=UTF-8;
+ name="trans_table.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="trans_table.txt"
 
-Reasoning is to have a exact match between platform device and real HW
-device interface. Thus its device resources are belonging to one single
-device node. In TIs case, the resources, regarding IRQs, IO map area,
-registers, etc, are belonging to the bandgap IP not to sensors. That
-alone convinced me to use one single device node, instead of several,
-per sensor. In fact, for OMAP devices it is a bit more complicated as
-the bandgap is actually behind the control module, which holds the
-interface. But that is another story.
+   From  :    To
+         :   3401000   3400000   3300000   3100000   3000000   2900000   2800000   2600000   2500000   2400000   2200000   2100000   2000000   1900000   1700000   1600000 
+  3401000:         0         0         4         2         4         2         3         0         2         1         1         1         1         4         0        29 
+  3400000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0 
+  3300000:         4         0         0         0         1         0         0         0         0         0         0         1         0         0         0         7 
+  3100000:         2         0         0         0         1         0         0         0         0         0         0         0         0         0         0         0 
+  3000000:         4         0         0         0         0         0         0         0         0         1         0         0         0         0         0         4 
+  2900000:         1         0         0         0         1         0         0         0         0         0         0         0         0         0         0         7 
+  2800000:         3         0         0         0         0         1         0         0         0         1         0         0         0         0         0         3 
+  2600000:         0         0         0         0         0         1         0         0         0         1         0         0         0         0         0         4 
+  2500000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         4 
+  2400000:         3         0         0         0         0         0         1         0         0         0         0         0         0         0         0         7 
+  2200000:         1         0         0         0         0         0         0         0         0         1         0         0         0         0         0         3 
+  2100000:         1         0         0         0         0         0         0         1         0         0         0         0         0         1         0         4 
+  2000000:         1         0         0         0         0         0         0         0         0         0         0         0         0         0         0         1 
+  1900000:         0         0         2         0         0         0         0         0         0         1         0         0         0         0         0         8 
+  1700000:         0         0         0         0         0         0         0         0         0         0         0         0         0         0         0         2 
+  1600000:        33         0         7         1         2         5         4         5         2         5         4         5         1         6         2         0 
 
-So, in this case I decided to have 1 single platform device representing
-the bandgap IP, which exposes and handles several thermal zones (one per
-sensor). And of course, owns and manages all related resources (IRQ,
-gpio and IO mem area).
-
-To what I have understood of your case, I believe it is the very same
-case, so I would recommend reusing the proposed design.
-
-Keep in mind that this obviously does not stop you of having different
-policies or trip setups per sensor. The framework is flexible in this sen=
-se.
-
-I hope this helps.
-
-> Thanks,
-> Jonghwa
->=20
->> +	}
->> =20
->>  	exynos_report_trigger(data->reg_conf);
->>  	mutex_lock(&data->lock);
->> @@ -358,7 +390,7 @@ static void exynos_tmu_work(struct work_struct *wo=
-rk)
->> =20
->>  	clk_disable(data->clk);
->>  	mutex_unlock(&data->lock);
->> -
->> +out:
->>  	enable_irq(data->irq);
->>  }
->> =20
->> @@ -520,7 +552,8 @@ static int exynos_tmu_probe(struct platform_device=
- *pdev)
->>  		return ret;
->> =20
->>  	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
->> -				pdata->type =3D=3D SOC_ARCH_EXYNOS4210)
->> +		pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
->> +				pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
->>  		data->soc =3D pdata->type;
->>  	else {
->>  		ret =3D -EINVAL;
->> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sa=
-msung/exynos_tmu.h
->> index 65443d7..9151a30 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.h
->> +++ b/drivers/thermal/samsung/exynos_tmu.h
->> @@ -44,6 +44,7 @@ enum trigger_type {
->>  enum soc_type {
->>  	SOC_ARCH_EXYNOS4210 =3D 1,
->>  	SOC_ARCH_EXYNOS,
->> +	SOC_ARCH_EXYNOS5440,
->>  };
->> =20
->>  /**
->> @@ -132,6 +133,8 @@ enum soc_type {
->>   * @emul_temp_shift: shift bits of emulation temperature.
->>   * @emul_time_shift: shift bits of emulation time.
->>   * @emul_time_mask: mask bits of emulation time.
->> + * @tmu_irqstatus: register to find which TMU generated interrupts.
->> + * @tmu_pmin: register to get/set the Pmin value.
->>   */
->>  struct exynos_tmu_registers {
->>  	u32	triminfo_data;
->> @@ -199,6 +202,9 @@ struct exynos_tmu_registers {
->>  	u32	emul_temp_shift;
->>  	u32	emul_time_shift;
->>  	u32	emul_time_mask;
->> +
->> +	u32	tmu_irqstatus;
->> +	u32	tmu_pmin;
->>  };
->> =20
->>  /**
->> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therm=
-al/samsung/exynos_tmu_data.h
->> index 0e2244f..4acf070 100644
->> --- a/drivers/thermal/samsung/exynos_tmu_data.h
->> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
->> @@ -91,6 +91,8 @@
->>  #define EXYNOS_EMUL_DATA_MASK	0xFF
->>  #define EXYNOS_EMUL_ENABLE	0x1
->> =20
->> +#define EXYNOS_MAX_TRIGGER_PER_REG	4
->> +
->>  #if defined(CONFIG_CPU_EXYNOS4210)
->>  extern struct exynos_tmu_platform_data const exynos4210_default_tmu_d=
-ata;
->>  #define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
->=20
->=20
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2DFNDCSAVEDWVRSFUUCTS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlGowbYACgkQCXcVR3XQvP18ewEA6b9ZjnckaGlWNKqB3LQ8SKqc
-TtMquyg+DVWw6Ibrm9kBALa6Gjk8/r93fy8qBm5NXTYFUOnACKduT3Ae8BvDIcWE
-=ysO8
------END PGP SIGNATURE-----
-
-------enig2DFNDCSAVEDWVRSFUUCTS--
+--------------050906090203090406020800--
