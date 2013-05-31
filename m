@@ -1,104 +1,84 @@
-From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 3/3] ARM: tegra114: cpuidle: add powered-down state
-Date: Fri, 31 May 2013 15:18:35 +0200
-Message-ID: <51A8A32B.6080303@linaro.org>
-References: <1369912782-30663-1-git-send-email-josephl@nvidia.com>  <1369912782-30663-4-git-send-email-josephl@nvidia.com>  <51A763BD.6070001@linaro.org>  <1369991550.7804.37.camel@jlo-ubuntu-64.nvidia.com>  <51A86D11.8060305@linaro.org>  <1369997278.7804.73.camel@jlo-ubuntu-64.nvidia.com>  <1369999870.7804.78.camel@jlo-ubuntu-64.nvidia.com> <1370000680.7804.83.camel@jlo-ubuntu-64.nvidia.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH V4 03/30] thermal: exynos: Remove CPU_THERMAL dependency
+ for using TMU driver
+Date: Fri, 31 May 2013 11:13:10 -0400
+Message-ID: <51A8BE06.70009@ti.com>
+References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com> <1368525540-15034-4-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1370000680.7804.83.camel-yx3yKKdKkHfc7b1ADBJPm0n48jw8i0AO@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux PM mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2NXLPVKHLHSUDKEPTIENI"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1368525540-15034-4-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/31/2013 01:44 PM, Joseph Lo wrote:
-> On Fri, 2013-05-31 at 19:31 +0800, Joseph Lo wrote:
->> On Fri, 2013-05-31 at 18:47 +0800, Joseph Lo wrote:
->>> On Fri, 2013-05-31 at 17:27 +0800, Daniel Lezcano wrote:
->>>> On 05/31/2013 11:12 AM, Joseph Lo wrote:
->>>>> Hi Daniel,
->>>>>
->>>>> Thanks for your review.
->>>>>
->>>>> On Thu, 2013-05-30 at 22:35 +0800, Daniel Lezcano wrote:
->>>>>> On 05/30/2013 01:19 PM, Joseph Lo wrote:
->>>>>>> This supports CPU core power down on each CPU when CPU idle. Wh=
-en CPU go
->>>>>>> into this state, it saves it's context and needs a proper confi=
-guration
->>>>>>> in flow controller to power gate the CPU when CPU runs into WFI
->>>>>>> instruction. And the CPU also needs to set the IRQ as CPU power=
- down idle
->>>>>>> wake up event in flow controller.
->>>>>>>
->>>>>>> Signed-off-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>>>>>> ---
->>>>>>
->>>>>> Hi Joseph,
->>>>>>
->>>>>> a new flag has been added in the cpuidle framework to let this o=
-ne to
->>>>>> handle the timer broadcast : CPUIDLE_FLAG_TIMER_STOP
->>>>>>
->>>>>> It is the commit b60e6a0eb0273132cbb60a9806abf5f47a4aee1c
->>>>>>
->>>>>> You can get rid of the clockevent notify stuff by adding this fl=
-ag to
->>>>>> the state.
->>>>>>
->>>>>
->>>>> I just tested this flag on Tegra20, 30 and 114. It is only OK on
->>>>> Tegra20. It caused a warning message below on Tegra30/114 at boot=
- time.
->>>>>
->>>>> I gave it a quick check I found it can't clean
->>>>> tick_broadcast_pending_mask sometimes if apply the flag. But I ke=
-ep the
->>>>> code right now it's always OK. Not sure why?=20
->>>>
->>>> Is it possible you didn't intialized the timer broadcast with
->>>> CLOCK_EVT_NOTIFY_BROADCAST_ON in the driver and then this one is
->>>> actually disabled for you driver ?
->>>>
->>> I found if I don't apply the CPUIDLE_FLAG_TIMER_STOP flag, the func=
-tion
->>> "cpuidle_setup_broadcast_timer" (drivers/cpuidle/driver.c) would no=
-t be
->>> called. Then it's OK.
->>>
->>> If I apply this flag (with no CONFIG_CPU_IDLE_MULTIPLE_DRIVERS), th=
-e
->>> cpuidle_register_driver only register for CPU0. Then the
->>> "cpuidle_setup_broadcast_timer" only turn on for CPU0. I think this
->>> might be the root cause. Not sure this also can reproduce on the ot=
-her
->>> SoCs?
->>>
->> Looks it's not related to CLOCK_EVT_NOTIFY_BROADCAST_ON. I still saw=
- the
->> warning message even enable CONFIG_CPU_IDLE_MULTIPLE_DRIVERS. But if=
- I
->> move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT from i=
-dle
->> framework back to driver, then everything is OK.
->>
-> Once I move the clockevent_notify of CLOCK_EVT_NOTIFY_BROADCAST_EXIT
-> right after "local_irq_enable" in the
-> "cpuidle_enter_state" (drivers/cpuidle/cpuidle.c). Then the warning
-> message shows up.
+------enig2NXLPVKHLHSUDKEPTIENI
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Is it possible you pastebin you kernel config file ? I would like to
-check a couple of things before investigating the code.
+On 14-05-2013 05:58, Amit Daniel Kachhap wrote:
+> This patch removes the dependency on CPU_THERMAL for compiling TMU driv=
+er.
+> This is useful for cases when only TMU controller needs to be initialis=
+ed
+> without cpu cooling action.
 
-Thanks
+
+Agreed with your intention. I just do not know if it makes sense to make
+this change at this point. Maybe after you have split the code?
+
+The above concern is simply from a non-functional perspective. If you do
+this at this point of your series, your driver may have compilation
+issues at this specific commit, in case your config does not have
+CONFIG_CPU_THERMAL.
+
+I recommend you moving this patch further in your series, to a place
+where you have isolated the code that depends on CPU_THERMAL.
+
+>=20
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  drivers/thermal/samsung/Kconfig |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/=
+Kconfig
+> index 145a55d..b5ab971 100644
+> --- a/drivers/thermal/samsung/Kconfig
+> +++ b/drivers/thermal/samsung/Kconfig
+> @@ -4,7 +4,6 @@ config ARCH_HAS_TMU
+>  config EXYNOS_THERMAL
+>  	tristate "Temperature sensor on Samsung EXYNOS"
+>  	depends on ARCH_HAS_TMU
+> -	depends on CPU_THERMAL
+>  	help
+>  	  If you say yes here you get support for TMU (Thermal Management
+>  	  Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
+>=20
 
 
 --=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+You have got to be excited about what you are doing. (L. Lamport)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Eduardo Valentin
+
+
+------enig2NXLPVKHLHSUDKEPTIENI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGovgYACgkQCXcVR3XQvP2y3AEApjG7CdQf1WO7FgGuqyKOIjT0
+2PfZr6UuS5LMAxzo6uYBALx1GGC+eKxSTR2we62Fe3rPXKUtPnIYpVs6XUAB7TeL
+=msjL
+-----END PGP SIGNATURE-----
+
+------enig2NXLPVKHLHSUDKEPTIENI--
