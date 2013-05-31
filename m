@@ -1,67 +1,64 @@
-From: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 3/3] ARM: tegra114: cpuidle: add powered-down state
-Date: Fri, 31 May 2013 18:47:58 +0800
-Message-ID: <1369997278.7804.73.camel@jlo-ubuntu-64.nvidia.com>
-References: <1369912782-30663-1-git-send-email-josephl@nvidia.com>
-	 <1369912782-30663-4-git-send-email-josephl@nvidia.com>
-	 <51A763BD.6070001@linaro.org>
-	 <1369991550.7804.37.camel@jlo-ubuntu-64.nvidia.com>
-	 <51A86D11.8060305@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
+Date: Fri, 31 May 2013 16:20:33 +0530
+Message-ID: <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com>
+References: <cover.1365079581.git.viresh.kumar@linaro.org>
+	<027e8f1d4ac8de6351115f15a408431558510abb.1365079581.git.viresh.kumar@linaro.org>
+	<CAKohpokGkZ9m0v1QaoXEv1m0mZqY70adWpXf3edQGmZnToRRcg@mail.gmail.com>
+	<CAKohpokpiw3zS32oDL+T09ToOQxc28w=2R2up5T3h3c2Agc0wg@mail.gmail.com>
+	<CAKohpo=SFauMyczEnxO_p_KQVQeznL+0V-FmLDtGmzL1Uv2iuA@mail.gmail.com>
+	<CAKohponBfXsy21RTik+jWMukL_VnDNXOL7xmj4sEBF3HEBXqpQ@mail.gmail.com>
+	<CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <51A86D11.8060305-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux PM mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=DoWB+E-bgWCUVec5Y8wsfEu0V43Pg5mHzqep8yn0_JA@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com
+Cc: rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2013-05-31 at 17:27 +0800, Daniel Lezcano wrote:
-> On 05/31/2013 11:12 AM, Joseph Lo wrote:
-> > Hi Daniel,
-> > 
-> > Thanks for your review.
-> > 
-> > On Thu, 2013-05-30 at 22:35 +0800, Daniel Lezcano wrote:
-> >> On 05/30/2013 01:19 PM, Joseph Lo wrote:
-> >>> This supports CPU core power down on each CPU when CPU idle. When CPU go
-> >>> into this state, it saves it's context and needs a proper configuration
-> >>> in flow controller to power gate the CPU when CPU runs into WFI
-> >>> instruction. And the CPU also needs to set the IRQ as CPU power down idle
-> >>> wake up event in flow controller.
-> >>>
-> >>> Signed-off-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >>> ---
-> >>
-> >> Hi Joseph,
-> >>
-> >> a new flag has been added in the cpuidle framework to let this one to
-> >> handle the timer broadcast : CPUIDLE_FLAG_TIMER_STOP
-> >>
-> >> It is the commit b60e6a0eb0273132cbb60a9806abf5f47a4aee1c
-> >>
-> >> You can get rid of the clockevent notify stuff by adding this flag to
-> >> the state.
-> >>
-> > 
-> > I just tested this flag on Tegra20, 30 and 114. It is only OK on
-> > Tegra20. It caused a warning message below on Tegra30/114 at boot time.
-> > 
-> > I gave it a quick check I found it can't clean
-> > tick_broadcast_pending_mask sometimes if apply the flag. But I keep the
-> > code right now it's always OK. Not sure why? 
-> 
-> Is it possible you didn't intialized the timer broadcast with
-> CLOCK_EVT_NOTIFY_BROADCAST_ON in the driver and then this one is
-> actually disabled for you driver ?
-> 
-I found if I don't apply the CPUIDLE_FLAG_TIMER_STOP flag, the function
-"cpuidle_setup_broadcast_timer" (drivers/cpuidle/driver.c) would not be
-called. Then it's OK.
+On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
+>>>>>>
+>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>> Cc: Paul Mackerras <paulus@samba.org>
+>>>>>> Cc: Olof Johansson <olof@lixom.net>
+>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>>> ---
+>>>>>> Compile Tested only.
+>>>>>>
+>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
+>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
+>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
+>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
+>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
+>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
+>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
+>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
+>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
+>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
+>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
+>>>>>
+>>>>> Hi Deepthi,
+>>>>>
+>>>>> Can you help testing this please?
+>>>>
+>>>> Ping!!
+>>>
+>>> Ping!!
+>>
+>> Hi Benjamin,
+>>
+>> Hope you are back from your vacations. Can you give it a try now?
+>
+> Ping!!
 
-If I apply this flag (with no CONFIG_CPU_IDLE_MULTIPLE_DRIVERS), the
-cpuidle_register_driver only register for CPU0. Then the
-"cpuidle_setup_broadcast_timer" only turn on for CPU0. I think this
-might be the root cause. Not sure this also can reproduce on the other
-SoCs?
+Ping!!
