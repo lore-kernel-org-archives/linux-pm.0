@@ -1,42 +1,43 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: Re: [PATCH RFC] PM / Runtime: Rework the "runtime idle" helper routine
-Date: Fri, 31 May 2013 12:55:56 -0700
-Message-ID: <87r4gmyldf.fsf@linaro.org>
-References: <1463685.qFyr66vqF2@vostro.rjw.lan>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: Re: [RFC PATCHv2 1/2] drivers: power: Add watchdog timer to catch
+ drivers which lockup during suspend/resume.
+Date: Fri, 31 May 2013 14:13:30 -0700
+Message-ID: <CAME+o4kn=xBToxV2xfC5L0b5wVbQ27EA8+tDt9jT44BvBPeSTA@mail.gmail.com>
+References: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org>
+	<3006354.hOxNuWCXu4@vostro.rjw.lan>
+	<CAME+o4kJYD2K_aL4xNi-jNP1Q8R+seDNZDwsGBhvU00ArR0Skg@mail.gmail.com>
+	<1515063.BZy7p4GtyV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1463685.qFyr66vqF2@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Wed, 29 May 2013 01:29:06 +0200")
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:47472 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757000Ab3EaVNc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2013 17:13:32 -0400
+Received: by mail-ob0-f177.google.com with SMTP id ta17so3883389obb.22
+        for <linux-pm@vger.kernel.org>; Fri, 31 May 2013 14:13:30 -0700 (PDT)
+In-Reply-To: <1515063.BZy7p4GtyV@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Colin Cross <ccross@android.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> We could do cancel_work_sync() as a recovery, but that call blocks until the
+>> running async task is flushed, which might never happen. So doing a panic()
+>> is pretty much the only option for recovering.
+>
+> Well, its usefulness is quite limited, then.  That said I'm still not convinced
+> that this actually is the case.
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The "runtime idle" helper routine, rpm_idle(), currently ignores
-> return values from .runtime_idle() callbacks executed by it.
->
-> However, it turns out that many subsystems use the generic idle
-> callback routine pm_generic_runtime_idle() which checks the return
-> value of the driver's callback and executes pm_runtime_suspend() for
-> the device unless that value is different from 0.  If that logic is
-> moved to rpm_idle() instead, pm_generic_runtime_idle() can be dropped
-> and its users will not need any .runtime_idle() callbacks any more.
->
-> Moreover, the PCI subsystem's .runtime_idle() routine,
-> pci_pm_runtime_idle(), works in analogy with the generic one and if
-> rpm_idle() calls rpm_suspend() after 0 has been returned by the
-> .runtime_idle() callback executed by it, that routine will not be
-> necessary any more and may be dropped.
->
-> To reduce overall code duplication make the changes described above.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+It does block in my environment, AFAICS. Looking a bit further in the
+code, it looks like dpm_suspend() does an async_synchronize_full()
+which would wait for all async tasks to complete. This is a
+show-stopper because (under the circumstances) the assumption that
+every async suspend routine eventually completes doesn't hold.
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Tested-by: Kevin Hilman <khilman@linaro.org> # for OMAP PM domain change
+We could possibly select which async tasks to wait for, but this would
+add unnecessary complexity to a feature targeted for debugging. It
+seems that this approach - although sounding reasonable - needs to
+wait until we have a mechanism to cancel an async task.
 
+Regards, Zoran
