@@ -1,91 +1,64 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 00/15] Linux-3.10 ARM randconfig fixes
-Date: Sat,  1 Jun 2013 00:22:37 +0200
-Message-ID: <1370038972-2318779-1-git-send-email-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Sender: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-Errors-To: dri-devel-bounces+sf-dri-devel=m.gmane.org@lists.freedesktop.org
-To: linux-kernel@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>, Artem Bityutskiy <artem.bityutskiy@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Herbert Xu <herbert@gondor.apana.org.au>, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>, "John W. Linville" <linville@tuxdriver.com>, Rob Herring <rob.herring@calxeda.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-rpi-kernel@lists.infradead.org, Dave Airlie <airlied@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, "James E.J. Bottomley" <JBottomley@parallels.com>, patches@lists.linaro.org
+From: Bernie Thompson <bhthompson@chromium.org>
+Subject: [PATCH] PM / wakeup: Adjust messaging for wake events during suspend
+Date: Fri, 31 May 2013 17:47:43 -0700
+Message-ID: <1370047663-432-1-git-send-email-bhthompson@chromium.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ye0-f202.google.com ([209.85.213.202]:61099 "EHLO
+	mail-ye0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755098Ab3FAAxr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 May 2013 20:53:47 -0400
+Received: by mail-ye0-f202.google.com with SMTP id r11so79831yen.5
+        for <linux-pm@vger.kernel.org>; Fri, 31 May 2013 17:53:47 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Bernie Thompson <bhthompson@chromium.org>
 
-Hi subsystem maintainers,
+This adds in a new message to the wakeup code which adds an indication to
+the log that suspend was cancelled due to a wake event occouring during
+the suspend sequence. It also adjusts the message printed in suspend.c to
+reflect the potential that a suspend was aborted, as opposed to a device
+failing to suspend.
 
-These are a few patches left over from doing randconfig tests
-a couple of weeks ago. Please apply them directly into your
-trees unless you see problems. All patches can theoretically
-be seen as bug fixes for 3.10, but they are not critical,
-so applying them for 3.11 is fine as well.
+Without these message adjustments one can end up with a kernel log that says
+that a device failed to suspend with no actual device suspend failures,
+which can be confusing to the log examiner.
 
-	Arnd
+Signed-off-by: Bernie Thompson <bhthompson@chromium.org>
+---
+ drivers/base/power/wakeup.c | 4 +++-
+ kernel/power/suspend.c      | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Arnd Bergmann (15):
-  irqdomain: export irq_domain_add_simple
-  mtd: omap2: allow bulding as a module
-  drm/nouveau: use mdelay instead of large udelay constants
-  [SCSI] nsp32: use mdelay instead of large udelay constants
-  hwrng: bcm2835: fix MODULE_LICENSE tag
-  cpuidle: calxeda: select ARM_CPU_SUSPEND
-  cpufreq: spear needs cpufreq table
-  thermal: cpu_cooling: fix stub function
-  drm: always provide debugfs function prototypes
-  drm/tilcd: select BACKLIGHT_LCD_SUPPORT
-  iwlegacy: il_pm_ops is only provided for PM_SLEEP
-  [media] davinci: vpfe_capture needs i2c
-  [media] omap3isp: include linux/mm_types.h
-  clk: tegra: provide tegra_periph_reset_assert alternative
-  OF: remove #ifdef from linux/of_platform.h
-
- drivers/char/hw_random/bcm2835-rng.c               |  2 +-
- drivers/cpufreq/Kconfig.arm                        |  1 +
- drivers/cpuidle/Kconfig                            |  1 +
- drivers/gpu/drm/nouveau/core/engine/disp/dacnv50.c |  3 ++-
- drivers/gpu/drm/tilcdc/Kconfig                     |  1 +
- drivers/media/platform/davinci/Kconfig             |  3 +++
- drivers/media/platform/omap3isp/ispqueue.h         |  1 +
- drivers/mtd/nand/Kconfig                           |  2 +-
- drivers/net/wireless/iwlegacy/common.h             |  6 +++---
- drivers/scsi/nsp32.c                               |  2 +-
- include/drm/drmP.h                                 |  3 +--
- include/linux/clk/tegra.h                          |  5 +++++
- include/linux/cpu_cooling.h                        |  4 ++--
- include/linux/of_platform.h                        | 14 +++-----------
- kernel/irq/irqdomain.c                             |  1 +
- 15 files changed, 27 insertions(+), 22 deletions(-)
-
-Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
-Cc: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: John W. Linville <linville@tuxdriver.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Rob Herring <rob.herring@calxeda.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-media@vger.kernel.org
-Cc: linux-mtd@lists.infradead.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-rpi-kernel@lists.infradead.org
-Cc: linux-scsi@vger.kernel.org
-
-
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 79715e7..407a2ef 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -707,8 +707,10 @@ bool pm_wakeup_pending(void)
+ 	}
+ 	spin_unlock_irqrestore(&events_lock, flags);
+ 
+-	if (ret)
++	if (ret) {
++		pr_info("PM: Wakeup pending, aborting suspend\n");
+ 		print_active_wakeup_sources();
++	}
+ 
+ 	return ret;
+ }
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index bef86d1..ece0422 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -269,7 +269,7 @@ int suspend_devices_and_enter(suspend_state_t state)
+ 	suspend_test_start();
+ 	error = dpm_suspend_start(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Some devices failed to suspend\n");
++		pr_err("PM: Some devices failed to suspend, or early wake event detected\n");
+ 		goto Recover_platform;
+ 	}
+ 	suspend_test_finish("suspend devices");
 -- 
-1.8.1.2
+1.8.2.1
+
