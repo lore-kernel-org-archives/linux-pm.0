@@ -1,60 +1,66 @@
-From: "Brandt, Todd E" <todd.e.brandt@intel.com>
-Subject: RE: [PATCH v2 2/2] Adds new device resume mode in PM core, async
- plus non-blocking
-Date: Mon, 3 Jun 2013 21:10:28 +0000
-Message-ID: <11E08D716F0541429B7042699DD5C1A1706057ED@FMSMSX103.amr.corp.intel.com>
-References: <11E08D716F0541429B7042699DD5C1A16B97BD8A@FMSMSX103.amr.corp.intel.com>,<Pine.LNX.4.44L0.1305171539470.1012-100000@iolanthe.rowland.org>
+From: David C Niemi <dniemi@verisign.com>
+Subject: Re: [PATCH v2 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Mon, 03 Jun 2013 16:38:22 -0400
+Message-ID: <51ACFEBE.1050801@verisign.com>
+References: <51ACF2EA.70001@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:14073 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755170Ab3FCVKa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 17:10:30 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1305171539470.1012-100000@iolanthe.rowland.org>
-Content-Language: en-US
+Received: from exprod6og118.obsmtp.com ([64.18.1.233]:39881 "EHLO
+	exprod6og118.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758353Ab3FCVSW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 17:18:22 -0400
+In-Reply-To: <51ACF2EA.70001@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <axboe@kernel.dk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>
-
-Thanks for the feedback, I've taken things back to the drawing board in lieu of these issues and will be resubmitting once I have a patch that fits better into the formal power management architecture. Would you like to be CC'ed?
-
-Todd Brandt
-Linux Kernel Developer OTC, Hillsboro OR
-https://opensource.intel.com/linux-wiki/ToddBrandt
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
-________________________________________
-From: Alan Stern [stern@rowland.harvard.edu]
-Sent: Friday, May 17, 2013 12:44 PM
-To: Brandt, Todd E
-Cc: linux-ide@vger.kernel.org; linux-scsi@vger.kernel.org; linux-pm@vger.kernel.org; Jeff Garzik; Jens Axboe; Greg Kroah-Hartman; Wysocki, Rafael J; Arjan van de Ven
-Subject: Re: [PATCH v2 2/2] Adds new device resume mode in PM core, async plus non-blocking
+Interesting analysis; I just got back from vacation and have not had a chance to comment until now.
 
-On Fri, 17 May 2013, Brandt, Todd E wrote:
+I like Stratos' general idea of making the decision to upshift or downshift independent of current frequency, as it makes thinks simpler and potentially more stable.  But I believe it will be important to measure performance and power consumption in a wider range of use cases to know whether it is an overall win (or whether it can at least be tuned to match the status quo for various use cases).
 
-> Updates the drivers/base/power subsystem to allow any devices which
-> have registred as asynchronous and who have not registered "complete"
-> callbacks to be non-blocking. i.e system resume can finish and return
-> control to the user while these devices continue resuming.
+In my main use case (network servers), I don't think using more middle frequencies is a good thing at all; as soon as a load gets heavy even briefly I want the CPU doing all it can until the load has clearly abated.  The main competition in this use case is between using ondemand (tuned for performance at the cost of some extra power consumption) or the "performance" governor (which cannot be tuned at all, and where C-states are the only hope for moderating power consumption).
 
-This does not sound like a good idea.  The presence or absence of a
-"complete" callback has nothing to do with whether or not system resume
-can finish before the device is ready.  It is more closely related to
-whether the device's driver can register hot-plugged children below the
-device or needs to perform other actions after the children have been
-resumed.
+A couple of additional points -- it is possible to get excellent overall performance and avoid oscillation using ondemand right now by using a low up_threshold and a sampling_down_factor of around 100; in this case you spend most of your time at either the lowest or highest possible frequency and you spend very little time thinking about slowing down.  The main downside of this is an increase in power consumption, so it is not a battery-friendly approach, but someone will need to also measure power consumption if we want to justify a change from the status quo on that basis.  There are dozens of ways to save power at the expense of performance or vice versa, so any major change like this needs to be analyzed for both, in case your patch just results in running at higher average frequencies
+  and gets its performance boost from that.
 
-The whole approach seems wrong -- it violates the implicit agreement
-that the kernel will not try to perform I/O through a device that isn't
-at full power.
+David C Niemi
 
-A better approach would be to modify the SCSI disk driver to carry out
-the spin-up operation asynchronously with respect to the resume
-callback.  Then the disk could be reported as back to full power while
-the spin-up is taking place.
-
-Alan Stern
-
+On 06/03/13 15:47, Stratos Karafotis wrote:
+> Ondemand calculates load in terms of frequency and increases it only
+> if the load_freq is greater than up_threshold multiplied by current
+> or average frequency. This seems to produce oscillations of frequency
+> between min and max because, for example, a relatively small load can
+> easily saturate minimum frequency and lead the CPU to max. Then, the
+> CPU will decrease back to min due to a small load_freq.
+>
+> This patch changes the calculation method of load and target frequency
+> considering 2 points:
+> - Load computation should be independent from current or average
+> measured frequency. For example an absolute load 80% at 100MHz is not
+> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
+> - Target frequency should be increased to any value of frequency table
+> proportional to absolute load, instead to only the max. Thus:
+>
+> Target frequency = C * load
+>
+> where C = policy->cpuinfo.max_freq / 100
+>
+> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
+> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
+> that middle frequencies are used more, with this patch. Highest
+> and lowest frequencies were used less by ~9%
+>
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 10 +---------
+>  drivers/cpufreq/cpufreq_governor.h |  1 -
+>  drivers/cpufreq/cpufreq_ondemand.c | 39 +++++++-------------------------------
+>  3 files changed, 8 insertions(+), 42 deletions(-)
+>
+...
