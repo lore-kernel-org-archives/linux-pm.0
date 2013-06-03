@@ -1,42 +1,136 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/2, v2] PM / Runtime: Rework the "runtime idle" helper
- routine
-Date: Mon, 3 Jun 2013 10:33:20 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1306031032130.1304-100000@iolanthe.rowland.org>
-References: <29156715.ksdUTA6va9@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:36580 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758509Ab3FCOdV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 10:33:21 -0400
-In-Reply-To: <29156715.ksdUTA6va9@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V3] cpuidle: Improve governor Kconfig options
+Date: Mon,  3 Jun 2013 16:59:35 +0200
+Message-ID: <1370271575-13494-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: rjw@sisk.pl
+Cc: swarren@wwwdotorg.org, tony@atomide.com, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Sun, 2 Jun 2013, Rafael J. Wysocki wrote:
+Each governor is suitable for different kernel configurations: the menu
+governor suits better for a tickless system, while the ladder governor fits
+better for a periodic timer tick system.
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The "runtime idle" helper routine, rpm_idle(), currently ignores
-> return values from .runtime_idle() callbacks executed by it.
-> However, it turns out that many subsystems use
-> pm_generic_runtime_idle() which checks the return value of the
-> driver's callback and executes pm_runtime_suspend() for the device
-> unless that value is not 0.  If that logic is moved to rpm_idle()
-> instead, pm_generic_runtime_idle() can be dropped and its users
-> will not need any .runtime_idle() callbacks any more.
-> 
-> Moreover, the PCI, SCSI, and SATA subsystems' .runtime_idle()
-> routines, pci_pm_runtime_idle(), scsi_runtime_idle(), and
-> ata_port_runtime_idle(), respectively, as well as a few drivers'
-> ones may be simplified if rpm_idle() calls rpm_suspend() after 0 has
-> been returned by the .runtime_idle() callback executed by it.
-> 
-> To reduce overall code bloat, make the changes described above.
+The Kconfig does not allow to [un]select a governor, thus both are compiled in
+the kernel but the init order makes the menu governor to be the last one to be
+registered, so becoming the default. The only way to switch back to the ladder
+governor is to enable the sysfs governor switch in the kernel command line.
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Because it seems nobody complained about this, the menu governor is used by
+default most of the time on the system, having both governors is not really
+necessary on a tickless system but there isn't a config option to disable one
+or another governor.
+
+Create a submenu for cpuidle and add a label for each governor, so we can see
+the option in the menu config and enable/disable it.
+
+The governors will be enabled depending on the CONFIG_NO_HZ option:
+ - If CONFIG_NO_HZ is set, then the menu governor is selected and the ladder
+   governor is optional, defaulting to 'yes'
+ - If CONFIG_NO_HZ is not set, then the ladder governor is selected and the
+   menu governor is optional, defaulting to 'yes'
+
+Before this patch, the ARCH_NEEDS_CPU_IDLE_COUPLED option was wrongly not
+depending on the CPU_IDLE and the Kconfig for OMAP / TEGRA was not checking
+this dependency when setting the option.
+
+With this patch, the ARCH_NEEDS_CPU_IDLE_COUPLED has been moved under the
+CPU_IDLE option. The dependency has been fixed in the relevant arch's Kconfig.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+
+V3:
+ - Fixed Kconfig dependency between CPU_IDLE and ARCH_NEEDS_CPU_IDLE_COUPLED
+V2:
+ - Set default values to 'yes' for the governors
+
+ arch/arm/mach-omap2/Kconfig |    2 +-
+ arch/arm/mach-tegra/Kconfig |    2 +-
+ drivers/cpuidle/Kconfig     |   16 +++++++---------
+ 3 files changed, 9 insertions(+), 11 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index f49cd51..831e89e 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -83,7 +83,7 @@ config ARCH_OMAP4
+ 	depends on ARCH_OMAP2PLUS
+ 	depends on ARCH_MULTI_V7
+ 	select ARCH_HAS_OPP
+-	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
++	select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
+ 	select ARM_CPU_SUSPEND if PM
+ 	select ARM_ERRATA_720789
+ 	select ARM_GIC
+diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
+index 84d72fc..04c6221 100644
+--- a/arch/arm/mach-tegra/Kconfig
++++ b/arch/arm/mach-tegra/Kconfig
+@@ -23,7 +23,7 @@ menu "NVIDIA Tegra options"
+ 
+ config ARCH_TEGRA_2x_SOC
+ 	bool "Enable support for Tegra20 family"
+-	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
++	select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
+ 	select ARM_ERRATA_720789
+ 	select ARM_ERRATA_754327 if SMP
+ 	select ARM_ERRATA_764369 if SMP
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index c4cc27e..e997f15 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -1,7 +1,9 @@
+ 
+-config CPU_IDLE
++menuconfig CPU_IDLE
+ 	bool "CPU idle PM support"
+ 	default y if ACPI || PPC_PSERIES
++	select CPU_IDLE_GOV_LADDER if (!NO_HZ && !NO_HZ_IDLE)
++	select CPU_IDLE_GOV_MENU if (NO_HZ || NO_HZ_IDLE)
+ 	help
+ 	  CPU idle is a generic framework for supporting software-controlled
+ 	  idle processor power management.  It includes modular cross-platform
+@@ -9,9 +11,10 @@ config CPU_IDLE
+ 
+ 	  If you're using an ACPI-enabled platform, you should say Y here.
+ 
++if CPU_IDLE
++
+ config CPU_IDLE_MULTIPLE_DRIVERS
+         bool "Support multiple cpuidle drivers"
+-        depends on CPU_IDLE
+         default n
+         help
+          Allows the cpuidle framework to use different drivers for each CPU.
+@@ -19,24 +22,19 @@ config CPU_IDLE_MULTIPLE_DRIVERS
+          states. If unsure say N.
+ 
+ config CPU_IDLE_GOV_LADDER
+-	bool
+-	depends on CPU_IDLE
++	bool "Ladder governor (for periodic timer tick)"
+ 	default y
+ 
+ config CPU_IDLE_GOV_MENU
+-	bool
+-	depends on CPU_IDLE && NO_HZ
++	bool "Menu governor (for tickless system)"
+ 	default y
+ 
+ config ARCH_NEEDS_CPU_IDLE_COUPLED
+ 	def_bool n
+ 
+-if CPU_IDLE
+-
+ config CPU_IDLE_CALXEDA
+ 	bool "CPU Idle Driver for Calxeda processors"
+ 	depends on ARCH_HIGHBANK
+ 	help
+ 	  Select this to enable cpuidle on Calxeda processors.
+-
+ endif
+-- 
+1.7.9.5
 
