@@ -1,47 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM: Add pm_sleep_ops_ptr() macro
-Date: Mon, 03 Jun 2013 21:54:39 +0200
-Message-ID: <3772829.L58vmUyOpk@vostro.rjw.lan>
-References: <002801ce6022$a2928930$e7b79b90$@samsung.com> <1867006.c6mxKpbPvX@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v2 0/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Mon, 03 Jun 2013 22:47:45 +0300
+Message-ID: <51ACF2E1.1030909@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57513 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758420Ab3FCTpj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Jun 2013 15:45:39 -0400
-In-Reply-To: <1867006.c6mxKpbPvX@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jingoo Han <jg1.han@samsung.com>
-Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, June 03, 2013 01:11:07 PM Rafael J. Wysocki wrote:
-> On Monday, June 03, 2013 03:21:51 PM Jingoo Han wrote:
-> > Add pm_sleep_ops_ptr() macro that allows the .pm entry in the driver structures
-> > to be assigned without having an #define xxx NULL for the case that PM_SLEEP is
-> > not enabled.
-> > 
-> > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> > Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> > Cc: Lars-Peter Clausen <lars@metafoo.de>
-> > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > Cc: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> Do you want me to replace the previous patch with this?
+Changes since v1:
+	Use policy->cpuinfo.max_freq in the calculation formula
+		of target frequency instead of policy->max
+	Split the patch into 3 parts
 
-Quite frankly, I prefer the previous version, which was more general.
+Stratos Karafotis (3):
+  cpufreq: ondemand: Change the calculation of target frequency
+  cpufreq: Remove unused function __cpufreq_driver_getavg
+  cpufreq: Remove unused APERF/MPERF support
 
-That is, what if someone wants to use that macro for runtime PM too?
-
-Honestly, I think we'll be better off without any of them, so I'm dropping
-the previous patch too for now.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+ arch/x86/include/asm/processor.h   | 29 ----------------------
+ drivers/cpufreq/Makefile           |  2 +-
+ drivers/cpufreq/acpi-cpufreq.c     |  5 ----
+ drivers/cpufreq/cpufreq.c          | 12 ---------
+ drivers/cpufreq/cpufreq_governor.c | 10 +-------
+ drivers/cpufreq/cpufreq_governor.h |  1 -
+ drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
+ drivers/cpufreq/mperf.c            | 51 --------------------------------------
+ drivers/cpufreq/mperf.h            |  9 -------
+ include/linux/cpufreq.h            |  6 -----
+ 10 files changed, 9 insertions(+), 155 deletions(-)
+ delete mode 100644 drivers/cpufreq/mperf.c
+ delete mode 100644 drivers/cpufreq/mperf.h
