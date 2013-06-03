@@ -1,14 +1,16 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
 Subject: [PATCHv2 5/7] thermal: ti-soc-thermal: add thermal data for DRA752 chips
-Date: Mon, 3 Jun 2013 16:31:55 -0400
-Message-ID: <1370291515-8054-1-git-send-email-eduardo.valentin@ti.com>
+Date: Mon, 3 Jun 2013 16:33:52 -0400
+Message-ID: <1370291632-8164-1-git-send-email-eduardo.valentin@ti.com>
+References: <51ACFD28.9050108@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:39623 "EHLO bear.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49210 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756974Ab3FCUc0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Jun 2013 16:32:26 -0400
+	id S1756621Ab3FCUeM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Jun 2013 16:34:12 -0400
+In-Reply-To: <51ACFD28.9050108@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com
