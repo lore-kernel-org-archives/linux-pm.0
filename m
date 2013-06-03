@@ -1,59 +1,114 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Mon, 03 Jun 2013 12:57:47 +0200
-Message-ID: <2413427.Abjbfkms0Z@vostro.rjw.lan>
-References: <51A7BFA6.3070800@semaphore.gr> <CAKohpokGDFvtaBMKxLTJCkx_WN+HN4eZ7LZ2upBLsXAsmcq7kA@mail.gmail.com> <CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
+Subject: Re: [PATCH] PM: Add pm_sleep_ops_ptr() macro
+Date: Mon, 03 Jun 2013 13:11:07 +0200
+Message-ID: <1867006.c6mxKpbPvX@vostro.rjw.lan>
+References: <002801ce6022$a2928930$e7b79b90$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57270 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:57285 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756110Ab3FCKsp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Jun 2013 06:48:45 -0400
-In-Reply-To: <CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
+	id S1753278Ab3FCLCI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Jun 2013 07:02:08 -0400
+In-Reply-To: <002801ce6022$a2928930$e7b79b90$@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jingoo Han <jg1.han@samsung.com>
+Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, June 03, 2013 12:25:02 PM Viresh Kumar wrote:
-> Sent half written mail.. sorry.. will continue from where I left.
+On Monday, June 03, 2013 03:21:51 PM Jingoo Han wrote:
+> Add pm_sleep_ops_ptr() macro that allows the .pm entry in the driver structures
+> to be assigned without having an #define xxx NULL for the case that PM_SLEEP is
+> not enabled.
 > 
-> On 3 June 2013 12:21, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > So, obviously the calculations aren't the same..
-> 
-> Now, this is how I understood these two different variables:
-> - cpuinfo.max_freq: maximum frequency (in kHz) which is
-> supported by this CPU
-> - policy->max: Maximum frequency forced by user or governor
-> 
-> When somebody sets policy->max, he expects cpufreq core to
-> use the range between min and max as the slope cpufreq core
-> has and adjust its frequencies accordingly..
-> 
-> Don't know if I am right or wrong :(
+> Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+> Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+> Cc: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Michael Hennerich <michael.hennerich@analog.com>
 
-The reality is that the set of frequencies to use is constant and changing
-policy->max doesn't change that set.  There are just fewer frequencies the
-governor can choose from if policy->max is below cpuinfo.max_freq.
+Do you want me to replace the previous patch with this?
 
-The question is if we want policy->max to re-scale them effectively (i.e. to
-change weights so that the maximum load maps to the highest frequency available
-at the moment) or if we want policy->max to work as a cap (i.e. to map all
-loads above certain value to the maximum frequency available at the moment, so
-that the criteria for selecting the lower frequencies don't change).  In my
-opinion the second option is better, because it means "OK, we can't use some
-high frequencies, but let's not hurt performance for the loads that wouldn't
-require them anyway".  Otherwise, we'll effectively throttle all loads and
-that not only causes performance to drop, but also causes more energy to be
-used overall.
-
-Thanks,
 Rafael
 
 
+> ---
+>  drivers/video/bfin-lq035q1-fb.c |   20 +++++++++++---------
+>  include/linux/pm.h              |    6 ++++++
+>  2 files changed, 17 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+> index 29d8c04..4474e64 100644
+> --- a/drivers/video/bfin-lq035q1-fb.c
+> +++ b/drivers/video/bfin-lq035q1-fb.c
+> @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+>  }
+>  
+> -#ifdef CONFIG_PM
+> -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
+> +#ifdef CONFIG_PM_SLEEP
+> +static int lq035q1_spidev_suspend(struct device *dev)
+>  {
+> +	struct spi_device *spi = to_spi_device(dev);
+> +
+>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+>  }
+>  
+> -static int lq035q1_spidev_resume(struct spi_device *spi)
+> +static int lq035q1_spidev_resume(struct device *dev)
+>  {
+> -	int ret;
+> +	struct spi_device *spi = to_spi_device(dev);
+>  	struct spi_control *ctl = spi_get_drvdata(spi);
+> +	int ret;
+>  
+>  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+>  	if (ret)
+> @@ -187,11 +190,11 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+>  
+>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+>  }
+> -#else
+> -# define lq035q1_spidev_suspend NULL
+> -# define lq035q1_spidev_resume  NULL
+>  #endif
+>  
+> +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
+> +			lq035q1_spidev_resume);
+> +
+>  /* Power down all displays on reboot, poweroff or halt */
+>  static void lq035q1_spidev_shutdown(struct spi_device *spi)
+>  {
+> @@ -708,8 +711,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+>  	info->spidrv.probe    = lq035q1_spidev_probe;
+>  	info->spidrv.remove   = lq035q1_spidev_remove;
+>  	info->spidrv.shutdown = lq035q1_spidev_shutdown;
+> -	info->spidrv.suspend  = lq035q1_spidev_suspend;
+> -	info->spidrv.resume   = lq035q1_spidev_resume;
+> +	info->spidrv.driver.pm = pm_sleep_ops_ptr(&lq035q1_spidev_pm_ops);
+>  
+>  	ret = spi_register_driver(&info->spidrv);
+>  	if (ret < 0) {
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index bd50d15..999d652 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -61,6 +61,12 @@ extern const char power_group_name[];		/* = "power" */
+>  #define pm_ops_ptr(_ptr)	NULL
+>  #endif
+>  
+> +#ifdef CONFIG_PM_SLEEP
+> +#define pm_sleep_ops_ptr(_ptr)	(_ptr)
+> +#else
+> +#define pm_sleep_ops_ptr(_ptr)	NULL
+> +#endif
+> +
+>  typedef struct pm_message {
+>  	int event;
+>  } pm_message_t;
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
