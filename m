@@ -1,97 +1,192 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request (resend)
-Date: Mon, 03 Jun 2013 20:26:14 +0900
-Message-ID: <1370258774-10248-1-git-send-email-myungjoo.ham@samsung.com>
-References: <1370257695-9585-1-git-send-email-myungjoo.ham@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:38676 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755703Ab3FCLZz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 07:25:55 -0400
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTP id <0MNT00AOBEF0TV30@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 03 Jun 2013 20:25:53 +0900 (KST)
-In-reply-to: <1370257695-9585-1-git-send-email-myungjoo.ham@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Michal Simek <michal.simek@xilinx.com>
+Subject: [PATCH v3] arm: zynq: Add cpuidle support
+Date: Mon,  3 Jun 2013 15:40:29 +0200
+Message-ID: <2ba502c172f5374ed2e424292fb50345c9dd007a.1370266815.git.michal.simek@xilinx.com>
+Content-Type: multipart/signed;
+    boundary="=_mimegpg-monstr-desktop-17546-1370266829-0001";
+    micalg=pgp-sha1; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
-Cc: Abhilash Kesavan <a.kesavan@samsung.com>, myungjoo.ham@gmail.com
 
-Hello Rafael,
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
+
+--=_mimegpg-monstr-desktop-17546-1370266829-0001
+
+Add support for cpuidle.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+Changes in v3:
+- Move driver to drivers/cpuidle/
+- Check zynq compatible string suggested by Arnd
+- Use zynq_ function prefix because of multiplatform kernel
+- Incorporate comments from Daniel Lezcano
+- Rebase on the top of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+
+Changes in v2:
+- Fix file header
+
+Changes in v1:
+- It was the part of Zynq core changes
+  https://patchwork.kernel.org/patch/2342511/
+
+ drivers/cpuidle/Kconfig        |   6 +++
+ drivers/cpuidle/Makefile       |   1 +
+ drivers/cpuidle/cpuidle-zynq.c | 100 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 107 insertions(+)
+ create mode 100644 drivers/cpuidle/cpuidle-zynq.c
+
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index c4cc27e..8272a08 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -39,4 +39,10 @@ config CPU_IDLE_CALXEDA
+ 	help
+ 	  Select this to enable cpuidle on Calxeda processors.
+
++config CPU_IDLE_ZYNQ
++	bool "CPU Idle Driver for Xilinx Zynq processors"
++	depends on ARCH_ZYNQ
++	help
++	  Select this to enable cpuidle on Xilinx Zynq processors.
++
+ endif
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 0d8bd55..8767a7b 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+
+ obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
+ obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
++obj-$(CONFIG_CPU_IDLE_ZYNQ) += cpuidle-zynq.o
+diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
+new file mode 100644
+index 0000000..afe6af3
+--- /dev/null
++++ b/drivers/cpuidle/cpuidle-zynq.c
+@@ -0,0 +1,100 @@
++/*
++ * Copyright (C) 2012-2013 Xilinx
++ *
++ * CPU idle support for Xilinx Zynq
++ *
++ * based on arch/arm/mach-at91/cpuidle.c
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ *
++ * The cpu idle uses wait-for-interrupt and RAM self refresh in order
++ * to implement two idle states -
++ * #1 wait-for-interrupt
++ * #2 wait-for-interrupt and RAM self refresh
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/cpuidle.h>
++#include <linux/io.h>
++#include <linux/export.h>
++#include <linux/clockchips.h>
++#include <linux/cpu_pm.h>
++#include <linux/clk.h>
++#include <linux/err.h>
++#include <linux/of.h>
++#include <asm/proc-fns.h>
++#include <asm/cpuidle.h>
++
++#define ZYNQ_MAX_STATES		2
++
++static DEFINE_PER_CPU(struct cpuidle_device, zynq_cpuidle_device);
++
++/* Actual code that puts the SoC in different idle states */
++static int zynq_enter_idle(struct cpuidle_device *dev,
++		struct cpuidle_driver *drv, int index)
++{
++	/* Devices must be stopped here */
++	cpu_pm_enter();
++
++	/* Add code for DDR self refresh start */
++	cpu_do_idle();
++
++	/* Add code for DDR self refresh stop */
++	cpu_pm_exit();
++
++	return index;
++}
++
++static struct cpuidle_driver zynq_idle_driver = {
++	.name = "zynq_idle",
++	.owner = THIS_MODULE,
++	.states = {
++		ARM_CPUIDLE_WFI_STATE,
++		{
++			.enter            = zynq_enter_idle,
++			.exit_latency     = 10,
++			.target_residency = 10000,
++			.flags            = CPUIDLE_FLAG_TIME_VALID,
++					    CPUIDLE_FLAG_TIMER_STOP,
++			.name             = "RAM_SR",
++			.desc             = "WFI and RAM Self Refresh",
++		},
++	},
++	.safe_state_index = 0,
++	.state_count = ZYNQ_MAX_STATES,
++};
++
++/* Initialize CPU idle by registering the idle states */
++static int zynq_init_cpuidle(void)
++{
++	unsigned int cpu;
++	struct cpuidle_device *device;
++	int ret;
++
++	if (!of_machine_is_compatible("xlnx,zynq-7000"))
++		return -ENODEV;
++
++	ret = cpuidle_register_driver(&zynq_idle_driver);
++	if (ret) {
++		pr_err("%s: Driver registration failed\n", __func__);
++		return ret;
++	}
++
++	for_each_possible_cpu(cpu) {
++		device = &per_cpu(zynq_cpuidle_device, cpu);
++		device->cpu = cpu;
++		ret = cpuidle_register_device(device);
++		if (ret) {
++			pr_err("%s: Device registration failed\n", __func__);
++			return ret;
++		}
++	}
++
++	pr_info("Xilinx Zynq CpuIdle Driver started\n");
++	return 0;
++}
++module_init(zynq_init_cpuidle);
+--
+1.8.2.3
 
 
-Sorry for sending a pull-request again.
+--=_mimegpg-monstr-desktop-17546-1370266829-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
 
-I've just rebased the tree from rc3 to rc4.
-
-
-Thank you.
-
-
-Cheers,
-MyungJoo
-
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-The following changes since commit d683b96b072dc4680fc74964eca77e6a23d1fa6e:
-
-  Linux 3.10-rc4 (2013-06-02 17:11:17 +0900)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
-
-Abhilash Kesavan (2):
-      PM / devfreq: Move exynos4 devfreq driver into a new sub-directory
-      PM / devfreq: Add Exynos5-bus devfreq driver for Exynos5250
-
-MyungJoo Ham (2):
-      PM / devfreq: add comments and Documentation
-      MAINTAINERS: update mailing list for devfreq(DVFS).
-
-Paul Bolle (1):
-      PM / devfreq: fix typo "CPU_EXYNOS4.12" twice
-
-Rajagopal Venkat (1):
-      PM / devfreq: account suspend/resume for stats
-
-Wei Yongjun (1):
-      PM / devfreq: fix missing unlock on error in exynos4_busfreq_pm_notifier_event()
-
- Documentation/ABI/testing/sysfs-class-devfreq |   20 +
- MAINTAINERS                                   |    2 +-
- drivers/devfreq/Kconfig                       |   12 +-
- drivers/devfreq/Makefile                      |    3 +-
- drivers/devfreq/devfreq.c                     |   25 ++-
- drivers/devfreq/exynos/Makefile               |    3 +
- drivers/devfreq/{ => exynos}/exynos4_bus.c    |    1 +
- drivers/devfreq/exynos/exynos5_bus.c          |  503 +++++++++++++++++++++++++
- drivers/devfreq/exynos/exynos_ppmu.c          |   56 +++
- drivers/devfreq/exynos/exynos_ppmu.h          |   78 ++++
- include/linux/devfreq.h                       |    2 +
- 11 files changed, 699 insertions(+), 6 deletions(-)
- create mode 100644 drivers/devfreq/exynos/Makefile
- rename drivers/devfreq/{ => exynos}/exynos4_bus.c (99%)
- create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
- create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
- create mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-iQIcBAEBAgAGBQJRrHzWAAoJEBOhurvWBoCKA0sP/20iLz6TbNcyf71Lrwd4HGyt
-bbbJvdJkw3iVQM/viVlhj220i1cBAOhwY7NPJ8B2PvDBGbCJx5xwgGclhWRoL5a9
-ZNuvtvIfT1mUsYIz6YUxzJ1tCCTHyK0URQ7HfZLAiQf2APeX27MmoU0g/7FPfkvc
-j2xyrEKohtP79c4vLvNLxUGUeRU3qYn3u7P0QGhBSlTYV2BJBBHV75How2VFbltZ
-hb2eZvW63NGxHIompkHny76uQCIIoa9x2msvtG9AMa5Scmjw6qGUazDAYosTRCEB
-wgyrHlyA5Ft5j81Z/lFB7JxVj40xQSUosi1f2Rw92FkDq8VCSLZFJ+JCZ4eOESNI
-Kjkz2oa5kt0XAFRfFXRaxBdFXAfubnkokBOx3b+Rghm3/qqHoNtcN04YDTYM6mze
-+SCRHlAXuQ08RS7KW6/1phCa0Nxayhxd641BZW5JOkbpfKWl95Li6FkpwRdSHBKg
-f2E+HzTr04Xj96fg3oXwmlH/iezNOFPJXNxp7y4yex/7V6Rqa5FXGrpdww6fzZwW
-eqUKIFMIQA4FcimgA0hFP6s7GOs6EuUQjOr/cFNYoalSrPMtzlW1F6owvancPY8F
-kasckk9DPpDLNsbDKtL/x1o5EkcgC8i10TJfGe8xzWE3t5Pzk+/+oN+Q8Bol92OE
-vBdG7hdQHo0eaGPqGXVd
-=/HFe
+iEYEABECAAYFAlGsnM4ACgkQykllyylKDCGE/gCgk0q7l3Ji7xfIOpWN+Kcwd8/0
+/oYAnjmv+7eJ42hDNH4LsCs+uXyhKYGn
+=IJqg
 -----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-17546-1370266829-0001--
