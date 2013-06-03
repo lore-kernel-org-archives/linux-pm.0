@@ -1,260 +1,67 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: Re: [PATCH] fbdev: bfin-lq035q1-fb: Use dev_pm_ops
-Date: Mon, 03 Jun 2013 14:15:55 +0900
-Message-ID: <002101ce6019$6cae6360$460b2a20$@samsung.com>
-References: <1369829859-13405-1-git-send-email-lars@metafoo.de>
- <20130530104535.GF19468@game.jcrosoft.org>
- <000a01ce5daf$8b228b80$a167a280$@samsung.com>
- <2950029.jFqAppzqh2@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
+Date: Mon, 3 Jun 2013 11:41:25 +0530
+Message-ID: <CAKohpom3AA3xCHqZ-TeWgOgwM-=CQxd0XSAmKp85mR-p6txmcg@mail.gmail.com>
+References: <51A7BFA6.3070800@semaphore.gr>
+	<CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
+	<51A8D0C2.1080801@semaphore.gr>
+	<CAKohpokmn-Rf-1w2aQHMMMkMbJqxokWXm5ye3DNuc-yzzk=7pQ@mail.gmail.com>
+	<51AA1BFF.20803@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:29180 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042Ab3FCFP6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 01:15:58 -0400
-In-reply-to: <2950029.jFqAppzqh2@vostro.rjw.lan>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51AA1BFF.20803@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>
-Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-On Monday, June 03, 2013 4:30 AM, Rafael J. Wysocki wrote:
-> On Friday, May 31, 2013 12:32:57 PM Jingoo Han wrote:
-> > On Thursday, May 30, 2013 7:46 PM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > On 09:52 Thu 30 May     , Lars-Peter Clausen wrote:
-> > > > On 05/30/2013 09:14 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > > > On 09:32 Thu 30 May     , Jingoo Han wrote:
-> > > > >> On Thursday, May 30, 2013 4:20 AM, Jean-Christophe PLAGNIOL-VILLARD wrote:
-> > > > >>> On 16:24 Wed 29 May     , Michael Hennerich wrote:
-> > > > >>>> On 05/29/2013 02:17 PM, Lars-Peter Clausen wrote:
-> > > > >>>>> Use dev_pm_ops instead of the legacy suspend/resume callbacks.
-> > > > >>>>>
-> > > > >>>>> Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
-> > > > >>>> Acked-by: Michael Hennerich <michael.hennerich@analog.com>
-> > > > >>>>> ---
-> > > > >>>>>  drivers/video/bfin-lq035q1-fb.c | 22 ++++++++++++++--------
-> > > > >>>>>  1 file changed, 14 insertions(+), 8 deletions(-)
-> > > > >>>>>
-> > > > >>>>> diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> index 29d8c04..6084c17 100644
-> > > > >>>>> --- a/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> +++ b/drivers/video/bfin-lq035q1-fb.c
-> > > > >>>>> @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> > > > >>>>>  }
-> > > > >>>>> -#ifdef CONFIG_PM
-> > > > >>>>> -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
-> > > > >>>>> +#ifdef CONFIG_PM_SLEEP
-> > > > >>>>> +static int lq035q1_spidev_suspend(struct device *dev)
-> > > > >>>>>  {
-> > > > >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> > > > >>>>> +
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> > > > >>>>>  }
-> > > > >>>>> -static int lq035q1_spidev_resume(struct spi_device *spi)
-> > > > >>>>> +static int lq035q1_spidev_resume(struct device *dev)
-> > > > >>>>>  {
-> > > > >>>>> -	int ret;
-> > > > >>>>> +	struct spi_device *spi = to_spi_device(dev);
-> > > > >>>>>  	struct spi_control *ctl = spi_get_drvdata(spi);
-> > > > >>>>> +	int ret;
-> > > > >>>>>  	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
-> > > > >>>>>  	if (ret)
-> > > > >>>>> @@ -187,9 +190,13 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
-> > > > >>>>>  	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
-> > > > >>>>>  }
-> > > > >>>>> +
-> > > > >>>>> +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
-> > > > >>>>> +	lq035q1_spidev_resume);
-> > > > >>>>> +#define LQ035Q1_SPIDEV_PM_OPS (&lq035q1_spidev_pm_ops)
-> > > > >>>>> +
-> > > > >>>>>  #else
-> > > > >>>>> -# define lq035q1_spidev_suspend NULL
-> > > > >>>>> -# define lq035q1_spidev_resume  NULL
-> > > > >>>>> +#define LQ035Q1_SPIDEV_PM_OPS NULL
-> > > > >>>>>  #endif
-> > > > >>> we really need to ahve a macro like for DT of_match_ptr to drop the #else
-> > > > >>
-> > > > >> Hi Jean-Christophe PLAGNIOL-VILLARD,
-> > > > >>
-> > > > >> I submitted the following patch. :)
-> > > > >> (https://patchwork.kernel.org/patch/2502971/)
-> > > > >>
-> > > > >> --- a/include/linux/pm.h
-> > > > >> +++ b/include/linux/pm.h
-> > > > >> @@ -55,8 +55,10 @@  struct device;
-> > > > >>
-> > > > >>  #ifdef CONFIG_PM
-> > > > >>  extern const char power_group_name[];		/* = "power" */
-> > > > >> +#define pm_ops_ptr(_ptr)	(_ptr)
-> > > > >>  #else
-> > > > >>  #define power_group_name	NULL
-> > > > >> +#define pm_ops_ptr(_ptr)	NULL
-> > > > >>  #endif
-> > > > >>
-> > > > >>
-> > > > >> This patch was accepted by Rafael Wysocki, and will be merged to v3.11-rc1.
-> > > > >>
-> > > > > Lars-Peter please update with and
-> > > >
-> > > > Since the code depends on CONFIG_PM_SLEEP and not CONFIG_PM I don't think
-> > > > the macro will work.
-> > >
-> > > se please ad a similar macros too
-> >
-> > Hi Jean-Christophe,
-> >
-> > I added pm_sleep_ops_ptr() as below.
-> > Maybe you want it.
-> > There is no build warnings below 4 config situations.
-> >    a) CONFIG_PM is enabled.
-> >    b) only CONFIG_PM_SLEEP is enabled
-> >    c) only CONFIG_PM_RUNTIME is enabled
-> >    d) CONFIG_PM is NOT enabled.
-> >
-> > --- a/drivers/video/bfin-lq035q1-fb.c
-> > +++ b/drivers/video/bfin-lq035q1-fb.c
-> > @@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >  }
-> >
-> > -#ifdef CONFIG_PM
-> > -static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
-> > +#ifdef CONFIG_PM_SLEEP
-> > +static int lq035q1_spidev_suspend(struct device *dev)
-> >  {
-> > +       struct spi_device *spi = to_spi_device(dev);
-> > +
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
-> >  }
-> >
-> > -static int lq035q1_spidev_resume(struct spi_device *spi)
-> > +static int lq035q1_spidev_resume(struct device *dev)
-> >  {
-> > -       int ret;
-> > +       struct spi_device *spi = to_spi_device(dev);
-> >         struct spi_control *ctl = spi_get_drvdata(spi);
-> > +       int ret;
-> >
-> >         ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
-> >         if (ret)
-> > @@ -187,11 +190,11 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
-> >
-> >         return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
-> >  }
-> > -#else
-> > -# define lq035q1_spidev_suspend NULL
-> > -# define lq035q1_spidev_resume  NULL
-> >  #endif
-> >
-> > +static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
-> > +       lq035q1_spidev_resume);
-> > +
-> >  /* Power down all displays on reboot, poweroff or halt */
-> >  static void lq035q1_spidev_shutdown(struct spi_device *spi)
-> >  {
-> > @@ -708,8 +711,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
-> >         info->spidrv.probe    = lq035q1_spidev_probe;
-> >         info->spidrv.remove   = lq035q1_spidev_remove;
-> >         info->spidrv.shutdown = lq035q1_spidev_shutdown;
-> > -       info->spidrv.suspend  = lq035q1_spidev_suspend;
-> > -       info->spidrv.resume   = lq035q1_spidev_resume;
-> > +       info->spidrv.driver.pm = pm_sleep_ops_ptr(&lq035q1_spidev_pm_ops);
-> >
-> >         ret = spi_register_driver(&info->spidrv);
-> >         if (ret < 0) {
-> > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > index bd50d15..999d652 100644
-> > --- a/include/linux/pm.h
-> > +++ b/include/linux/pm.h
-> > @@ -61,6 +61,12 @@ extern const char power_group_name[];                /* = "power" */
-> >  #define pm_ops_ptr(_ptr)       NULL
-> >  #endif
-> >
-> > +#ifdef CONFIG_PM_SLEEP
-> > +#define pm_sleep_ops_ptr(_ptr) (_ptr)
-> > +#else
-> > +#define pm_sleep_ops_ptr(_ptr) NULL
-> > +#endif
-> > +
-> >
-> >
-> > Hi Rafael J. Wysocki,
-> > How about adding this pm_sleep_ops_ptr() macro?
-> 
-> Are you submitting this instead or in addition to your patch I have in the
-> linux-next branch?
+On 1 June 2013 21:36, Stratos Karafotis <stratosk@semaphore.gr> wrote:
+> On 06/01/2013 05:56 PM, Viresh Kumar wrote:
 
-Hi Rafael,
+>> Even removal of __cpufreq_driver_getavg() should be done in a separate
+>> patch, so that it can be reverted easily if required later.
+>
+> Thanks, Viresh. I will do the removal of that function in a seperate patch.
+> Should I use a third patch for it? Or should I include it in the patch which
+> will remove APERF/MPERF support?
 
-I will submit this patch, soon.
-Thanks. :)
+Maybe a third patch would be more cleaner.
 
-Best regards,
-Jingoo Han
+>> Why are you changing it to cpuinfo.max_freq?? This is fixed once a driver is
+>> initialized.. but user may request a lower max freq for a governor or policy.
+>> Which is actually reflected in policy->max I believe.
+>
+> My initial thought is to have a linear function to calculate the target freq
+> proportional to load: (I will use 'C' as the function's slope as Rafael used it)
+>
+> freq_target = C * load
+>
+> For simplicity, let's assume that load is between 0 and 1 as initially is calculated
+> in governor.
+> Ideally,  for a load = 0, we should have freq_target = 0 and for load = 1,
+> freq_target = cpuinfo.max
+>
+> So, the slope C = cpuinfo.max
+>
+> I think, it's matter of definition about what policy->min and policy->max can do.
+> Should they change the slope C? Or only limit freq_target?
+> I don't think that the policy->max (or min) should affect HOW (slope C) governor
+> calculates freq_target but only limit the calculated result.
+>
+> Maybe, we could have separate tunables to a affect the slope C.
+>
+> If I'm wrong about the definition of policy->min, policy->max, I would change
+> the code accordingly.
 
-> 
-> Rafael
-> 
-> 
-> > My draft idea is below:
-> > However, I want other's better ideas. :)
-> >
-> > 1. The case that only CONFIG_PM_SLEEP is necessary.
-> > #ifdef CONFIG_PM_SLEEP
-> > static int *_suspend(struct device *dev)
-> > 	[....]
-> > static int *_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > static SIMPLE_DEV_PM_OPS(*_pm_ops, *_suspend, *_resume);
-> >
-> > static struct {platform/spi/i2c/etc}_driver *_driver = {
-> > 	.driver = {
-> > 		.pm     = pm_sleep_ops_ptr(&*_pm_ops),
-> >
-> >
-> > 2. The case that both CONFIG_PM_SLEEP & CONFIG_PM_RUNTIME
-> >     are necessary.
-> >
-> > #ifdef CONFIG_PM_SLEEP
-> > static int *_suspend(struct device *dev)
-> > 	[....]
-> > static int *_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > #ifdef CONFIG_PM_RUNTIME
-> > static int *_runtime_suspend(struct device *dev)
-> > 	[....]
-> > static int *_runtime_resume(struct device *dev)
-> > 	[....]
-> > #endif
-> >
-> > static const struct dev_pm_ops *_pm_ops = {
-> > 	SET_SYSTEM_SLEEP_PM_OPS(*_suspend, *_resume)
-> > 	SET_RUNTIME_PM_OPS(*_runtime_suspend, *_runtime_resume, NULL)
-> > };
-> >
-> > static struct {platform/spi/i2c/etc}_driver *_driver = {
-> > 	.driver = {
-> > 		.pm     = pm_ops_ptr(&*_pm_ops),
-> >
-> >
-> >
-> > Best regards,
-> > Jingoo Han
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+Lets discuss that in reply to Rafael's mail.
 
+>> As, if load is over 95, then even policy->max * 95 / 100 will even give almost
+>> the same freq.
+>>
+>
+> I thought that too. But maybe user selects a lower value for up_threshold.
+> (For example, up_threshold = 60). In my opinion, we have to keep up_theshold,
+> to give the possibility to user to have max freq with small loads.
+
+Yes... good point.
