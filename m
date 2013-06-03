@@ -1,44 +1,97 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Mon, 3 Jun 2013 16:54:08 +0530
-Message-ID: <CAKohpomLkogSHD+5Wobb34qHPnb7_vWE1Xz4K5MD=Q50kOpfuA@mail.gmail.com>
-References: <51A7BFA6.3070800@semaphore.gr>
-	<CAKohpokGDFvtaBMKxLTJCkx_WN+HN4eZ7LZ2upBLsXAsmcq7kA@mail.gmail.com>
-	<CAKohpo=EyudEW+EX=b7=Wp-7ceqjVksDTwwSJf77_LNFaaNL3w@mail.gmail.com>
-	<2413427.Abjbfkms0Z@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2413427.Abjbfkms0Z@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST for Rafael] PM / devfreq: pull request (resend)
+Date: Mon, 03 Jun 2013 20:26:14 +0900
+Message-ID: <1370258774-10248-1-git-send-email-myungjoo.ham@samsung.com>
+References: <1370257695-9585-1-git-send-email-myungjoo.ham@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:38676 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755703Ab3FCLZz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 07:25:55 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0MNT00AOBEF0TV30@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 03 Jun 2013 20:25:53 +0900 (KST)
+In-reply-to: <1370257695-9585-1-git-send-email-myungjoo.ham@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+Cc: Abhilash Kesavan <a.kesavan@samsung.com>, myungjoo.ham@gmail.com
 
-On 3 June 2013 16:27, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> The question is if we want policy->max to re-scale them effectively (i.e. to
-> change weights so that the maximum load maps to the highest frequency available
-> at the moment) or if we want policy->max to work as a cap (i.e. to map all
-> loads above certain value to the maximum frequency available at the moment, so
-> that the criteria for selecting the lower frequencies don't change).  In my
-> opinion the second option is better, because it means "OK, we can't use some
-> high frequencies, but let's not hurt performance for the loads that wouldn't
-> require them anyway".  Otherwise, we'll effectively throttle all loads and
-> that not only causes performance to drop, but also causes more energy to be
-> used overall.
+Hello Rafael,
 
-I wouldn't say that I don't agree with you as I do to some extent.
 
-But the question that comes to my mind now is: Why is policy->max reduced
-in the first place? User doesn't have control over which freqs to expose, so
-available_frequencies will stay the same. The only thing he is capable
-of doing is: reduce policy->max.. Which in a way means that.. "I don't want to
-use higher frequencies (power, thermal reasons) and I know performance will
-go down with it and I don't care for it now."
+Sorry for sending a pull-request again.
 
-And this way I feel policy->max isn't a bad choice either.
+I've just rebased the tree from rc3 to rc4.
 
-BUT as you said: policy->max isn't there to say don't be so aggressive now in
-increasing frequencies but just only to say, don't go over this frequency..
 
-So, probably we can use cpuinfo.max_freq :)
+Thank you.
+
+
+Cheers,
+MyungJoo
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+The following changes since commit d683b96b072dc4680fc74964eca77e6a23d1fa6e:
+
+  Linux 3.10-rc4 (2013-06-02 17:11:17 +0900)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
+
+Abhilash Kesavan (2):
+      PM / devfreq: Move exynos4 devfreq driver into a new sub-directory
+      PM / devfreq: Add Exynos5-bus devfreq driver for Exynos5250
+
+MyungJoo Ham (2):
+      PM / devfreq: add comments and Documentation
+      MAINTAINERS: update mailing list for devfreq(DVFS).
+
+Paul Bolle (1):
+      PM / devfreq: fix typo "CPU_EXYNOS4.12" twice
+
+Rajagopal Venkat (1):
+      PM / devfreq: account suspend/resume for stats
+
+Wei Yongjun (1):
+      PM / devfreq: fix missing unlock on error in exynos4_busfreq_pm_notifier_event()
+
+ Documentation/ABI/testing/sysfs-class-devfreq |   20 +
+ MAINTAINERS                                   |    2 +-
+ drivers/devfreq/Kconfig                       |   12 +-
+ drivers/devfreq/Makefile                      |    3 +-
+ drivers/devfreq/devfreq.c                     |   25 ++-
+ drivers/devfreq/exynos/Makefile               |    3 +
+ drivers/devfreq/{ => exynos}/exynos4_bus.c    |    1 +
+ drivers/devfreq/exynos/exynos5_bus.c          |  503 +++++++++++++++++++++++++
+ drivers/devfreq/exynos/exynos_ppmu.c          |   56 +++
+ drivers/devfreq/exynos/exynos_ppmu.h          |   78 ++++
+ include/linux/devfreq.h                       |    2 +
+ 11 files changed, 699 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/devfreq/exynos/Makefile
+ rename drivers/devfreq/{ => exynos}/exynos4_bus.c (99%)
+ create mode 100644 drivers/devfreq/exynos/exynos5_bus.c
+ create mode 100644 drivers/devfreq/exynos/exynos_ppmu.c
+ create mode 100644 drivers/devfreq/exynos/exynos_ppmu.h
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRrHzWAAoJEBOhurvWBoCKA0sP/20iLz6TbNcyf71Lrwd4HGyt
+bbbJvdJkw3iVQM/viVlhj220i1cBAOhwY7NPJ8B2PvDBGbCJx5xwgGclhWRoL5a9
+ZNuvtvIfT1mUsYIz6YUxzJ1tCCTHyK0URQ7HfZLAiQf2APeX27MmoU0g/7FPfkvc
+j2xyrEKohtP79c4vLvNLxUGUeRU3qYn3u7P0QGhBSlTYV2BJBBHV75How2VFbltZ
+hb2eZvW63NGxHIompkHny76uQCIIoa9x2msvtG9AMa5Scmjw6qGUazDAYosTRCEB
+wgyrHlyA5Ft5j81Z/lFB7JxVj40xQSUosi1f2Rw92FkDq8VCSLZFJ+JCZ4eOESNI
+Kjkz2oa5kt0XAFRfFXRaxBdFXAfubnkokBOx3b+Rghm3/qqHoNtcN04YDTYM6mze
++SCRHlAXuQ08RS7KW6/1phCa0Nxayhxd641BZW5JOkbpfKWl95Li6FkpwRdSHBKg
+f2E+HzTr04Xj96fg3oXwmlH/iezNOFPJXNxp7y4yex/7V6Rqa5FXGrpdww6fzZwW
+eqUKIFMIQA4FcimgA0hFP6s7GOs6EuUQjOr/cFNYoalSrPMtzlW1F6owvancPY8F
+kasckk9DPpDLNsbDKtL/x1o5EkcgC8i10TJfGe8xzWE3t5Pzk+/+oN+Q8Bol92OE
+vBdG7hdQHo0eaGPqGXVd
+=/HFe
+-----END PGP SIGNATURE-----
