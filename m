@@ -1,66 +1,42 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: [PATCH v2 1/3] cpufreq: ondemand: Change the calculation of target
- frequency
-Date: Mon, 03 Jun 2013 16:38:22 -0400
-Message-ID: <51ACFEBE.1050801@verisign.com>
-References: <51ACF2EA.70001@semaphore.gr>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: bit.LITTLE needs cpufreq table
+Date: Mon, 03 Jun 2013 23:41:14 +0200
+Message-ID: <3453738.rxYxRehmQz@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from exprod6og118.obsmtp.com ([64.18.1.233]:39881 "EHLO
-	exprod6og118.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758353Ab3FCVSW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 17:18:22 -0400
-In-Reply-To: <51ACF2EA.70001@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Like a lot of the other cpufreq drivers, this one needs to
+select CONFIG_CPU_FREQ_TABLE to avoid a build error like
 
-Interesting analysis; I just got back from vacation and have not had a chance to comment until now.
+built-in.o: In function `bL_cpufreq_set_target':
+cpufreq/arm_big_little.c:71: undefined reference to `cpufreq_frequency_table_target'
+built-in.o: In function `bL_cpufreq_verify_policy':
+cpufreq/arm_big_little.c:55: undefined reference to `cpufreq_frequency_table_verify'
+built-in.o: In function `bL_cpufreq_init':
+cpufreq/arm_big_little.c:170: undefined reference to `cpufreq_frequency_table_cpuinfo'
+cpufreq/arm_big_little.c:178: undefined reference to `cpufreq_frequency_table_get_attr'
+built-in.o:(.data+0x5a80c): undefined reference to `cpufreq_freq_attr_scaling_available_freqs'
 
-I like Stratos' general idea of making the decision to upshift or downshift independent of current frequency, as it makes thinks simpler and potentially more stable.  But I believe it will be important to measure performance and power consumption in a wider range of use cases to know whether it is an overall win (or whether it can at least be tuned to match the status quo for various use cases).
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 
-In my main use case (network servers), I don't think using more middle frequencies is a good thing at all; as soon as a load gets heavy even briefly I want the CPU doing all it can until the load has clearly abated.  The main competition in this use case is between using ondemand (tuned for performance at the cost of some extra power consumption) or the "performance" governor (which cannot be tuned at all, and where C-states are the only hope for moderating power consumption).
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index d3f2c6b..d1486d4 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -5,6 +5,7 @@
+ config ARM_BIG_LITTLE_CPUFREQ
+ 	tristate "Generic ARM big LITTLE CPUfreq driver"
+ 	depends on ARM_CPU_TOPOLOGY && PM_OPP && HAVE_CLK
++	select CPU_FREQ_TABLE
+ 	help
+ 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+ 
 
-A couple of additional points -- it is possible to get excellent overall performance and avoid oscillation using ondemand right now by using a low up_threshold and a sampling_down_factor of around 100; in this case you spend most of your time at either the lowest or highest possible frequency and you spend very little time thinking about slowing down.  The main downside of this is an increase in power consumption, so it is not a battery-friendly approach, but someone will need to also measure power consumption if we want to justify a change from the status quo on that basis.  There are dozens of ways to save power at the expense of performance or vice versa, so any major change like this needs to be analyzed for both, in case your patch just results in running at higher average frequencies
-  and gets its performance boost from that.
-
-David C Niemi
-
-On 06/03/13 15:47, Stratos Karafotis wrote:
-> Ondemand calculates load in terms of frequency and increases it only
-> if the load_freq is greater than up_threshold multiplied by current
-> or average frequency. This seems to produce oscillations of frequency
-> between min and max because, for example, a relatively small load can
-> easily saturate minimum frequency and lead the CPU to max. Then, the
-> CPU will decrease back to min due to a small load_freq.
->
-> This patch changes the calculation method of load and target frequency
-> considering 2 points:
-> - Load computation should be independent from current or average
-> measured frequency. For example an absolute load 80% at 100MHz is not
-> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
-> - Target frequency should be increased to any value of frequency table
-> proportional to absolute load, instead to only the max. Thus:
->
-> Target frequency = C * load
->
-> where C = policy->cpuinfo.max_freq / 100
->
-> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
-> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
-> that middle frequencies are used more, with this patch. Highest
-> and lowest frequencies were used less by ~9%
->
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 10 +---------
->  drivers/cpufreq/cpufreq_governor.h |  1 -
->  drivers/cpufreq/cpufreq_ondemand.c | 39 +++++++-------------------------------
->  3 files changed, 8 insertions(+), 42 deletions(-)
->
-...
