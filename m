@@ -1,141 +1,61 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v3 3/3] cpufreq: Remove unused APERF/MPERF support
-Date: Mon, 03 Jun 2013 22:48:06 +0300
-Message-ID: <51ACF2F6.70605@semaphore.gr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Hibernate: print physical addresses consistently with other parts of kernel
+Date: Mon, 03 Jun 2013 22:00 +0200
+Message-ID: <8848877.ak8bloLJeS@vostro.rjw.lan>
+References: <20130603182029.16063.60343.stgit@bhelgaas-glaptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:57518 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751903Ab3FCTu6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Jun 2013 15:50:58 -0400
+In-Reply-To: <20130603182029.16063.60343.stgit@bhelgaas-glaptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-Calculation of frequency target in ondemand governor changed and it is
-independent from measured average frequency.
+On Monday, June 03, 2013 12:20:29 PM Bjorn Helgaas wrote:
+> Print physical address info in a style consistent with the %pR style used
+> elsewhere in the kernel.
+> 
+> 69f1d475cc did this for a similar printk in this file, but I must have
+> missed this one.
+> 
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Remove unused APERF/MPERF support.
+Queued up for 3.11, thanks Bjorn!
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- arch/x86/include/asm/processor.h | 29 -----------------------
- drivers/cpufreq/mperf.c          | 51 ----------------------------------------
- drivers/cpufreq/mperf.h          |  9 -------
- 3 files changed, 89 deletions(-)
- delete mode 100644 drivers/cpufreq/mperf.c
- delete mode 100644 drivers/cpufreq/mperf.h
+Rafael
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 22224b3..2874a3b 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -941,35 +941,6 @@ extern int set_tsc_mode(unsigned int val);
- 
- extern u16 amd_get_nb_id(int cpu);
- 
--struct aperfmperf {
--	u64 aperf, mperf;
--};
--
--static inline void get_aperfmperf(struct aperfmperf *am)
--{
--	WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_APERFMPERF));
--
--	rdmsrl(MSR_IA32_APERF, am->aperf);
--	rdmsrl(MSR_IA32_MPERF, am->mperf);
--}
--
--#define APERFMPERF_SHIFT 10
--
--static inline
--unsigned long calc_aperfmperf_ratio(struct aperfmperf *old,
--				    struct aperfmperf *new)
--{
--	u64 aperf = new->aperf - old->aperf;
--	u64 mperf = new->mperf - old->mperf;
--	unsigned long ratio = aperf;
--
--	mperf >>= APERFMPERF_SHIFT;
--	if (mperf)
--		ratio = div64_u64(aperf, mperf);
--
--	return ratio;
--}
--
- extern unsigned long arch_align_stack(unsigned long sp);
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
- 
-diff --git a/drivers/cpufreq/mperf.c b/drivers/cpufreq/mperf.c
-deleted file mode 100644
-index 911e193..0000000
---- a/drivers/cpufreq/mperf.c
-+++ /dev/null
-@@ -1,51 +0,0 @@
--#include <linux/kernel.h>
--#include <linux/smp.h>
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/cpufreq.h>
--#include <linux/slab.h>
--
--#include "mperf.h"
--
--static DEFINE_PER_CPU(struct aperfmperf, acfreq_old_perf);
--
--/* Called via smp_call_function_single(), on the target CPU */
--static void read_measured_perf_ctrs(void *_cur)
--{
--	struct aperfmperf *am = _cur;
--
--	get_aperfmperf(am);
--}
--
--/*
-- * Return the measured active (C0) frequency on this CPU since last call
-- * to this function.
-- * Input: cpu number
-- * Return: Average CPU frequency in terms of max frequency (zero on error)
-- *
-- * We use IA32_MPERF and IA32_APERF MSRs to get the measured performance
-- * over a period of time, while CPU is in C0 state.
-- * IA32_MPERF counts at the rate of max advertised frequency
-- * IA32_APERF counts at the rate of actual CPU frequency
-- * Only IA32_APERF/IA32_MPERF ratio is architecturally defined and
-- * no meaning should be associated with absolute values of these MSRs.
-- */
--unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
--					unsigned int cpu)
--{
--	struct aperfmperf perf;
--	unsigned long ratio;
--	unsigned int retval;
--
--	if (smp_call_function_single(cpu, read_measured_perf_ctrs, &perf, 1))
--		return 0;
--
--	ratio = calc_aperfmperf_ratio(&per_cpu(acfreq_old_perf, cpu), &perf);
--	per_cpu(acfreq_old_perf, cpu) = perf;
--
--	retval = (policy->cpuinfo.max_freq * ratio) >> APERFMPERF_SHIFT;
--
--	return retval;
--}
--EXPORT_SYMBOL_GPL(cpufreq_get_measured_perf);
--MODULE_LICENSE("GPL");
-diff --git a/drivers/cpufreq/mperf.h b/drivers/cpufreq/mperf.h
-deleted file mode 100644
-index 5dbf295..0000000
---- a/drivers/cpufreq/mperf.h
-+++ /dev/null
-@@ -1,9 +0,0 @@
--/*
-- *  (c) 2010 Advanced Micro Devices, Inc.
-- *  Your use of this code is subject to the terms and conditions of the
-- *  GNU general public license version 2. See "COPYING" or
-- *  http://www.gnu.org/licenses/gpl.html
-- */
--
--unsigned int cpufreq_get_measured_perf(struct cpufreq_policy *policy,
--					unsigned int cpu);
+
+> ---
+>  kernel/power/snapshot.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 0de2857..7872a35 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -642,8 +642,9 @@ __register_nosave_region(unsigned long start_pfn, unsigned long end_pfn,
+>  	region->end_pfn = end_pfn;
+>  	list_add_tail(&region->list, &nosave_regions);
+>   Report:
+> -	printk(KERN_INFO "PM: Registered nosave memory: %016lx - %016lx\n",
+> -		start_pfn << PAGE_SHIFT, end_pfn << PAGE_SHIFT);
+> +	printk(KERN_INFO "PM: Registered nosave memory: [mem %#010llx-%#010llx]\n",
+> +		(unsigned long long) start_pfn << PAGE_SHIFT,
+> +		((unsigned long long) end_pfn << PAGE_SHIFT) - 1);
+>  }
+>  
+>  /*
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 -- 
-1.8.1.4
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
