@@ -1,67 +1,106 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ondemand: Change the calculation of target frequency
-Date: Mon, 3 Jun 2013 11:41:25 +0530
-Message-ID: <CAKohpom3AA3xCHqZ-TeWgOgwM-=CQxd0XSAmKp85mR-p6txmcg@mail.gmail.com>
-References: <51A7BFA6.3070800@semaphore.gr>
-	<CAKohpo=oD9Wgr0Y9zA3aVCdMq5MUC5GESWyL45h=izRyp9-CLA@mail.gmail.com>
-	<51A8D0C2.1080801@semaphore.gr>
-	<CAKohpokmn-Rf-1w2aQHMMMkMbJqxokWXm5ye3DNuc-yzzk=7pQ@mail.gmail.com>
-	<51AA1BFF.20803@semaphore.gr>
+From: Jingoo Han <jg1.han@samsung.com>
+Subject: [PATCH] PM: Add pm_sleep_ops_ptr() macro
+Date: Mon, 03 Jun 2013 15:21:51 +0900
+Message-ID: <002801ce6022$a2928930$e7b79b90$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51AA1BFF.20803@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:42913 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539Ab3FCGVz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Jun 2013 02:21:55 -0400
+Content-language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@sisk.pl>
+Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, 'Jingoo Han' <jg1.han@samsung.com>
 
-On 1 June 2013 21:36, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> On 06/01/2013 05:56 PM, Viresh Kumar wrote:
+Add pm_sleep_ops_ptr() macro that allows the .pm entry in the driver structures
+to be assigned without having an #define xxx NULL for the case that PM_SLEEP is
+not enabled.
 
->> Even removal of __cpufreq_driver_getavg() should be done in a separate
->> patch, so that it can be reverted easily if required later.
->
-> Thanks, Viresh. I will do the removal of that function in a seperate patch.
-> Should I use a third patch for it? Or should I include it in the patch which
-> will remove APERF/MPERF support?
+Signed-off-by: Jingoo Han <jg1.han@samsung.com>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Michael Hennerich <michael.hennerich@analog.com>
+---
+ drivers/video/bfin-lq035q1-fb.c |   20 +++++++++++---------
+ include/linux/pm.h              |    6 ++++++
+ 2 files changed, 17 insertions(+), 9 deletions(-)
 
-Maybe a third patch would be more cleaner.
+diff --git a/drivers/video/bfin-lq035q1-fb.c b/drivers/video/bfin-lq035q1-fb.c
+index 29d8c04..4474e64 100644
+--- a/drivers/video/bfin-lq035q1-fb.c
++++ b/drivers/video/bfin-lq035q1-fb.c
+@@ -170,16 +170,19 @@ static int lq035q1_spidev_remove(struct spi_device *spi)
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-#ifdef CONFIG_PM
+-static int lq035q1_spidev_suspend(struct spi_device *spi, pm_message_t state)
++#ifdef CONFIG_PM_SLEEP
++static int lq035q1_spidev_suspend(struct device *dev)
+ {
++	struct spi_device *spi = to_spi_device(dev);
++
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_SHUT);
+ }
+ 
+-static int lq035q1_spidev_resume(struct spi_device *spi)
++static int lq035q1_spidev_resume(struct device *dev)
+ {
+-	int ret;
++	struct spi_device *spi = to_spi_device(dev);
+ 	struct spi_control *ctl = spi_get_drvdata(spi);
++	int ret;
+ 
+ 	ret = lq035q1_control(spi, LQ035_DRIVER_OUTPUT_CTL, ctl->mode);
+ 	if (ret)
+@@ -187,11 +190,11 @@ static int lq035q1_spidev_resume(struct spi_device *spi)
+ 
+ 	return lq035q1_control(spi, LQ035_SHUT_CTL, LQ035_ON);
+ }
+-#else
+-# define lq035q1_spidev_suspend NULL
+-# define lq035q1_spidev_resume  NULL
+ #endif
+ 
++static SIMPLE_DEV_PM_OPS(lq035q1_spidev_pm_ops, lq035q1_spidev_suspend,
++			lq035q1_spidev_resume);
++
+ /* Power down all displays on reboot, poweroff or halt */
+ static void lq035q1_spidev_shutdown(struct spi_device *spi)
+ {
+@@ -708,8 +711,7 @@ static int bfin_lq035q1_probe(struct platform_device *pdev)
+ 	info->spidrv.probe    = lq035q1_spidev_probe;
+ 	info->spidrv.remove   = lq035q1_spidev_remove;
+ 	info->spidrv.shutdown = lq035q1_spidev_shutdown;
+-	info->spidrv.suspend  = lq035q1_spidev_suspend;
+-	info->spidrv.resume   = lq035q1_spidev_resume;
++	info->spidrv.driver.pm = pm_sleep_ops_ptr(&lq035q1_spidev_pm_ops);
+ 
+ 	ret = spi_register_driver(&info->spidrv);
+ 	if (ret < 0) {
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index bd50d15..999d652 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -61,6 +61,12 @@ extern const char power_group_name[];		/* = "power" */
+ #define pm_ops_ptr(_ptr)	NULL
+ #endif
+ 
++#ifdef CONFIG_PM_SLEEP
++#define pm_sleep_ops_ptr(_ptr)	(_ptr)
++#else
++#define pm_sleep_ops_ptr(_ptr)	NULL
++#endif
++
+ typedef struct pm_message {
+ 	int event;
+ } pm_message_t;
+-- 
+1.7.10.4
 
->> Why are you changing it to cpuinfo.max_freq?? This is fixed once a driver is
->> initialized.. but user may request a lower max freq for a governor or policy.
->> Which is actually reflected in policy->max I believe.
->
-> My initial thought is to have a linear function to calculate the target freq
-> proportional to load: (I will use 'C' as the function's slope as Rafael used it)
->
-> freq_target = C * load
->
-> For simplicity, let's assume that load is between 0 and 1 as initially is calculated
-> in governor.
-> Ideally,  for a load = 0, we should have freq_target = 0 and for load = 1,
-> freq_target = cpuinfo.max
->
-> So, the slope C = cpuinfo.max
->
-> I think, it's matter of definition about what policy->min and policy->max can do.
-> Should they change the slope C? Or only limit freq_target?
-> I don't think that the policy->max (or min) should affect HOW (slope C) governor
-> calculates freq_target but only limit the calculated result.
->
-> Maybe, we could have separate tunables to a affect the slope C.
->
-> If I'm wrong about the definition of policy->min, policy->max, I would change
-> the code accordingly.
 
-Lets discuss that in reply to Rafael's mail.
-
->> As, if load is over 95, then even policy->max * 95 / 100 will even give almost
->> the same freq.
->>
->
-> I thought that too. But maybe user selects a lower value for up_threshold.
-> (For example, up_threshold = 60). In my opinion, we have to keep up_theshold,
-> to give the possibility to user to have max freq with small loads.
-
-Yes... good point.
