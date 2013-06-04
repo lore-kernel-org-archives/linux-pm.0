@@ -1,38 +1,114 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4] arm: zynq: Add cpuidle support
-Date: Tue, 04 Jun 2013 14:32:17 +0200
-Message-ID: <51ADDE51.6040701@linaro.org>
-References: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH] thermal: rcar: set up I/O base before requesting IRQ
+Date: Tue, 4 Jun 2013 08:53:23 -0400
+Message-ID: <51ADE343.1000505@ti.com>
+References: <1370311753-6463-1-git-send-email-horms+renesas@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f42.google.com ([209.85.214.42]:43666 "EHLO
-	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753092Ab3FDMcU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 08:32:20 -0400
-Received: by mail-bk0-f42.google.com with SMTP id jk13so106440bkc.1
-        for <linux-pm@vger.kernel.org>; Tue, 04 Jun 2013 05:32:18 -0700 (PDT)
-In-Reply-To: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2AVBFJCQXTPSJTFMPEKQG"
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1370311753-6463-1-git-send-email-horms+renesas@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Simon Horman <horms+renesas@verge.net.au>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Magnus Damm <magnus.damm@gmail.com>, Ulrich Hecht <ulrich.hecht@gmail.com>, eduardo.valentin@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Michal Simek <michal.simek@xilinx.com>
-Cc: linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Mauro Carvalho Chehab <mchehab@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Cesar Eduardo Barros <cesarb@cesarb.net>, "David S. Miller" <davem@davemloft.net>, Hans Verkuil <hans.verkuil@cisco.com>, linux-pm@vger.kernel.org
 
-On 06/04/2013 09:17 AM, Michal Simek wrote:
-> Add support for cpuidle.
+------enig2AVBFJCQXTPSJTFMPEKQG
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Simon, Ulrich,
+
+On 03-06-2013 22:09, Simon Horman wrote:
+> From: Ulrich Hecht <ulrich.hecht@gmail.com>
 >=20
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
-> ---
+> It is used by the interrupt handler. Fixes crash when booting via kexec=
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> on APE6 board.
+>=20
+> This problem was introduced by e0a5172e9eec7f0d3c476e013c51dab62f3fc666=
+
+> ("thermal: rcar: add interrupt support") which was introduced in v3.8-r=
+c3.
+>=20
+> Signed-off-by: Ulrich Hecht <ulrich.hecht@gmail.com>
+> Acked-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> [horms+renesas@verge.net.au: enhanced changelog to include commit
+>   that cuases the problem ]
+> Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+> ---
+>  drivers/thermal/rcar_thermal.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
+>=20
+> Hi Zhang,
+>=20
+> could you consider this fix for v3.10?
+>=20
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_ther=
+mal.c
+> index 8d7edd4..7641dcc 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -395,13 +395,6 @@ static int rcar_thermal_probe(struct platform_devi=
+ce *pdev)
+>  			return -ENODEV;
+>  		}
+> =20
+> -		ret =3D devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
+> -				       dev_name(dev), common);
+> -		if (ret) {
+> -			dev_err(dev, "irq request failed\n ");
+> -			return ret;
+> -		}
+> -
+
+
+Should this IRQ be disabled while this driver gets initialized? Reset
+state is enabled?
+
+>  		/*
+>  		 * rcar_has_irq_support() will be enabled
+>  		 */
+> @@ -409,6 +402,13 @@ static int rcar_thermal_probe(struct platform_devi=
+ce *pdev)
+>  		if (IS_ERR(common->base))
+>  			return PTR_ERR(common->base);
+> =20
+> +		ret =3D devm_request_irq(dev, irq->start, rcar_thermal_irq, 0,
+> +				       dev_name(dev), common);
+> +		if (ret) {
+> +			dev_err(dev, "irq request failed\n ");
+> +			return ret;
+> +		}
+> +
+>  		/* enable temperature comparation */
+>  		rcar_thermal_common_write(common, ENR, 0x00030303);
+> =20
+>=20
 
 
 --=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
+You have got to be excited about what you are doing. (L. Lamport)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Eduardo Valentin
 
+
+------enig2AVBFJCQXTPSJTFMPEKQG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGt40MACgkQCXcVR3XQvP3J4gD9Gn5apaNWiR5vigMyhQ+/+DWI
+MahDH9GqmbmjSHys59IBAKef1zSiP44yQkCgE8xQga5Cias565eS3VmAm++0uNhV
+=662b
+-----END PGP SIGNATURE-----
+
+------enig2AVBFJCQXTPSJTFMPEKQG--
