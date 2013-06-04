@@ -1,130 +1,160 @@
 From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V4 10/30] thermal: exynos: Support thermal tripping
-Date: Tue, 4 Jun 2013 10:18:49 +0530
-Message-ID: <CADGdYn4h_t4-n8erSTPwYyZP=efy8gF2QS6j9+BMnj1fY4uOPg@mail.gmail.com>
+Subject: Re: [PATCH V4 00/30] thermal: exynos: Add thermal driver for exynos5440
+Date: Tue, 4 Jun 2013 10:25:03 +0530
+Message-ID: <CADGdYn4MqTLvR4=HS6U7iWxO64Q8carQtApqZnm6kkCf26-D5Q@mail.gmail.com>
 References: <1368525540-15034-1-git-send-email-amit.daniel@samsung.com>
-	<1368525540-15034-11-git-send-email-amit.daniel@samsung.com>
-	<51961B09.6030201@samsung.com>
+	<51939F61.5020904@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:52456 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972Ab3FDEsu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 00:48:50 -0400
-In-Reply-To: <51961B09.6030201@samsung.com>
+Received: from mail-ie0-f178.google.com ([209.85.223.178]:32928 "EHLO
+	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915Ab3FDEzE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 00:55:04 -0400
+In-Reply-To: <51939F61.5020904@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jonghwa3.lee@samsung.com
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
 
-Hi .
+Hi Eduardo,
 
-On Fri, May 17, 2013 at 5:26 PM,  <jonghwa3.lee@samsung.com> wrote:
-> Hi, Amit
-> On 2013=EB=85=84 05=EC=9B=94 14=EC=9D=BC 18:58, Amit Daniel Kachhap w=
-rote:
+On Wed, May 15, 2013 at 8:14 PM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> On 14-05-2013 05:58, Amit Daniel Kachhap wrote:
+>> Changes in V4:
+>>  Almost all the changes in this version is as per suggestion from Eduardo.The
+>>  major ones are listed below,
+>> * Added kconfig symbol ARCH_HAS_TMU which needs to be enabled by platform. With
+>>   this change existing symbol EXYNOS_TMU_DATA is not needed.
 >
->> TMU urgently sends active-high signal (thermal trip) to PMU, and the=
-rmal
->> tripping by hardware logic. Thermal tripping means that PMU cuts off=
- the
->> whole power of SoC by controlling external voltage regulator.
->>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c      |    8 +++++++-
->>  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->>  2 files changed, 9 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/=
-samsung/exynos_tmu.c
->> index 5f8f189..479d61e 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -84,6 +84,7 @@
->>  #define EXYNOS_TMU_CLEAR_FALL_INT    (0x111 << 12)
->>  #define EXYNOS_TMU_TRIP_MODE_SHIFT   13
->>  #define EXYNOS_TMU_TRIP_MODE_MASK    0x7
->> +#define EXYNOS_TMU_THERM_TRIP_EN_SHIFT       12
->>
->>  #define EXYNOS_TMU_INTEN_RISE0_SHIFT 0
->>  #define EXYNOS_TMU_INTEN_RISE1_SHIFT 4
->> @@ -186,7 +187,7 @@ static int exynos_tmu_initialize(struct platform=
-_device *pdev)
->>  {
->>       struct exynos_tmu_data *data =3D platform_get_drvdata(pdev);
->>       struct exynos_tmu_platform_data *pdata =3D data->pdata;
->> -     unsigned int status, trim_info;
->> +     unsigned int status, trim_info, con;
->>       unsigned int rising_threshold =3D 0, falling_threshold =3D 0;
->>       int ret =3D 0, threshold_code, i, trigger_levs =3D 0;
->>
->> @@ -251,6 +252,11 @@ static int exynos_tmu_initialize(struct platfor=
-m_device *pdev)
->>                                       falling_threshold |=3D
->>                                               threshold_code << 8 * =
-i;
->>                       }
->> +                     if (pdata->trigger_type[i] !=3D HW_TRIP)
->> +                             continue;
->
->
-> As you know, HW trip can be used when only the most last level of thr=
-eshold
-> temperature is set. (exynos4412 : 4th, exynos 5440 : 5th threshold le=
-vel). So it
-> wouldn't work properly, even if we enable HW trip according to pre-de=
-fined
-> trigger type not to HW trip threshold temperature. To enable HW trip,=
- we just
-> need to check whether if HW trip threshold temperature level is defin=
-ed.
->
-> if (trigger_level[HW_TRIP_LEVEL])
->         enable HW trip
-Yes you are right. I will include this change in the next version.
+> I was more thinking if we could have a single flag that we could use in
+> thermal drivers. Besides, my proposal for ARCH_HAS_BANDGAP is still not
+> merged yet.
+
+yes a single flag might be useful such as ARCH_HAS_THERMAL but this
+patch can work as an intermediate solution.
 
 Thanks,
 Amit Daniel
 >
-> Thanks,
-> Jonghwa
->
->> +                     con =3D readl(data->base + EXYNOS_TMU_REG_CONT=
-ROL);
->> +                     con |=3D (1 << EXYNOS_TMU_THERM_TRIP_EN_SHIFT)=
-;
->> +                     writel(con, data->base + EXYNOS_TMU_REG_CONTRO=
-L);
->>               }
+>> * Movement of freq_clip_table from exynos_tmu.h to exynos_thermal_common.h is
+>>   explained in the commit logs.
+>> * Wrote all register description documentation.
+>> * Split 5440 TMU support patch into controller change, configuration data and
+>>   feature addition patches.
+>> * Remove all *LINUX_* in the header files.
+>> * Still regulator enable is kept optional but a TODO: comment is added to fix
+>>   it later.
 >>
->>               writel(rising_threshold,
->> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/the=
-rmal/samsung/exynos_tmu_data.c
->> index ee6a3c9..6b937f5 100644
->> --- a/drivers/thermal/samsung/exynos_tmu_data.c
->> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
->> @@ -64,6 +64,7 @@ struct exynos_tmu_platform_data const exynos5250_d=
-efault_tmu_data =3D {
->>       .trigger_levels[0] =3D 85,
->>       .trigger_levels[1] =3D 103,
->>       .trigger_levels[2] =3D 110,
->> +     .trigger_levels[3] =3D 120,
->>       .trigger_enable[0] =3D 1,
->>       .trigger_enable[1] =3D 1,
->>       .trigger_enable[2] =3D 1,
->> @@ -71,6 +72,7 @@ struct exynos_tmu_platform_data const exynos5250_d=
-efault_tmu_data =3D {
->>       .trigger_type[0] =3D 0,
->>       .trigger_type[1] =3D 0,
->>       .trigger_type[2] =3D 1,
->> +     .trigger_type[3] =3D 2,
->>       .gain =3D 8,
->>       .reference_voltage =3D 16,
->>       .noise_cancel_mode =3D 4,
+>> Changes in V3:
+>> * Added proper dependency of different exynos thermal Kconfig symbols. Basically 3
+>>  Kconfig can be enabled now and corresponds to tmu driver. exynos common part
+>>  and exynos configuration data. This issue was raised by Rui Zhang.
+>>
+>> Changes in V2:
+>> * Separated SOC data from TMU driver. This is as per suggestion from Eduardo.
+>> * Merged the new file created for exynos5440 TMU controller with the existing
+>>  TMU controller code.
+>> * Removed the DT parsing code as now the SOC specific data are cleanly put
+>>  inside the data specific file.
+>> * Even the register definations/bitfields are treated as data as there is
+>>  some variation across SOC's.
+>>
+>> This patchset adds TMU(Thermal management Unit) driver support for
+>> exynos5440 platform. There are 3 instances of the TMU controllers so
+>> necessary cleanup/re-structure is done to handle multiple thermal zone.
+>>
+>> Patch (exynos4: Add documentation for Exynos SoC thermal bindings) from
+>> Lukasz Majewski is already posted to mainline. Adding it here for completeness.
+>> (http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg17817.html)
+>>
+>> Patch (thermal: exynos: Support thermal tripping ) from Jonghwan Choi is
+>> added here with some changes.
+>> (https://patchwork.kernel.org/patch/1668371/)
+>>
+>> Patch (thermal: exynos: Support for TMU regulator defined at device tree)
+>> is a repost of my earlier patch(https://patchwork-mail1.kernel.org/patch/2510771/)
+>> and adds regulator support.
+>>
+>> Patch (ARM: dts: Add device tree node for exynos5440 TMU controller) and
+>> patch (arm: exynos: enable ARCH_HAS_TMU) can be merged through exynos platform
+>> maintainer as this can cause merge conflict.
+>>
+>> All these patches are based on thermal maintainers git tree,
+>> git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next.
+>>
+>> Amit Daniel Kachhap (29):
+>>   thermal: exynos: Moving exynos thermal files into samsung directory
+>>   thermal: exynos: Add ARCH_HAS_TMU config to know the supported soc's
+>>   thermal: exynos: Remove CPU_THERMAL dependency for using TMU driver
+>>   thermal: exynos: Bifurcate exynos thermal common and tmu controller
+>>     code
+>>   thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
+>>   thermal: exynos: Move exynos_thermal.h from include/* to driver/*
+>>     folder
+>>   thermal: exynos: Bifurcate exynos tmu driver and configuration data
+>>   thermal: exynos: Add missing definations and code cleanup
+>>   thermal: exynos: Add extra entries in the tmu platform data
+>>   thermal: exynos: Support thermal tripping
+>>   thermal: exynos: Move register definitions from driver file to data
+>>     file
+>>   thermal: exynos: Fix to clear only the generated interrupts
+>>   thermal: exynos: Add support for instance based register/unregister
+>>   thermal: exynos: Modify private_data to appropriate name driver_data
+>>   thermal: exynos: Return success even if no cooling data supplied
+>>   thermal: exynos: Make the zone handling dependent on trip count
+>>   thermal: exynos: Add support to handle many instances of TMU
+>>   thermal: exynos: Add TMU features to check instead of using SOC type
+>>   thermal: exynos: use device resource management infrastructure
+>>   thermal: exynos: Add support to access common register for
+>>     multistance
+>>   thermal: exynos: Add support for exynos5440 TMU sensor.
+>>   thermal: exynos: Fix to set the second point correction value
+>>     properly
+>>   thermal: exynos: Add thermal configuration data for exynos5440 TMU
+>>     sensor
+>>   thermal: exynos: Add a compensation logic on swapped e-fuse values
+>>   thermal: exynos: Add hardware mode thermal calibration support
+>>   Documentation: thermal: Explain the exynos thermal driver model
+>>   thermal: exynos: Support for TMU regulator defined at device tree
+>>   ARM: dts: Add device tree node for exynos5440 TMU controller
+>>   arm: exynos: enable ARCH_HAS_TMU
+>>
+>> Lukasz Majewski (1):
+>>   ARM: dts: thermal: exynos4: Add documentation for Exynos SoC thermal
+>>     bindings
+>>
+>>  .../devicetree/bindings/thermal/exynos-thermal.txt |   53 +
+>>  Documentation/thermal/exynos_thermal               |   43 +-
+>>  arch/arm/boot/dts/exynos5440.dtsi                  |   30 +
+>>  arch/arm/mach-exynos/Kconfig                       |    5 +
+>>  drivers/thermal/Kconfig                            |   13 +-
+>>  drivers/thermal/Makefile                           |    2 +-
+>>  drivers/thermal/exynos_thermal.c                   | 1066 --------------------
+>>  drivers/thermal/samsung/Kconfig                    |   21 +
+>>  drivers/thermal/samsung/Makefile                   |    7 +
+>>  drivers/thermal/samsung/exynos_thermal_common.c    |  407 ++++++++
+>>  drivers/thermal/samsung/exynos_thermal_common.h    |   98 ++
+>>  drivers/thermal/samsung/exynos_tmu.c               |  741 ++++++++++++++
+>>  drivers/thermal/samsung/exynos_tmu.h               |  294 ++++++
+>>  drivers/thermal/samsung/exynos_tmu_data.c          |  225 ++++
+>>  drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
+>>  include/linux/platform_data/exynos_thermal.h       |  119 ---
+>>  16 files changed, 2076 insertions(+), 1203 deletions(-)
+>>  create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>>  delete mode 100644 drivers/thermal/exynos_thermal.c
+>>  create mode 100644 drivers/thermal/samsung/Kconfig
+>>  create mode 100644 drivers/thermal/samsung/Makefile
+>>  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+>>  create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+>>  create mode 100644 drivers/thermal/samsung/exynos_tmu.c
+>>  create mode 100644 drivers/thermal/samsung/exynos_tmu.h
+>>  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+>>  create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+>>  delete mode 100644 include/linux/platform_data/exynos_thermal.h
+>>
+>>
+>>
 >
 >
