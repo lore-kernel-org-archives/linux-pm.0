@@ -1,48 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: power management regression in linux 3.10? (related to CONFIG_NO_HZ_FULL)
-Date: Tue, 04 Jun 2013 13:30:54 +0200
-Message-ID: <1906476.HVJCZCXmXX@vostro.rjw.lan>
-References: <1370282175.18020.4.camel@localhost> <51ACF071.702@gmail.com> <1370308128.6305.3.camel@localhost>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4] arm: zynq: Add cpuidle support
+Date: Tue, 04 Jun 2013 14:32:17 +0200
+Message-ID: <51ADDE51.6040701@linaro.org>
+References: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:57829 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064Ab3FDLVw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Jun 2013 07:21:52 -0400
-In-Reply-To: <1370308128.6305.3.camel@localhost>
+Received: from mail-bk0-f42.google.com ([209.85.214.42]:43666 "EHLO
+	mail-bk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092Ab3FDMcU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 08:32:20 -0400
+Received: by mail-bk0-f42.google.com with SMTP id jk13so106440bkc.1
+        for <linux-pm@vger.kernel.org>; Tue, 04 Jun 2013 05:32:18 -0700 (PDT)
+In-Reply-To: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Karcher <Michael.Karcher@fu-berlin.de>
-Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+To: Michal Simek <michal.simek@xilinx.com>
+Cc: linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Mauro Carvalho Chehab <mchehab@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Cesar Eduardo Barros <cesarb@cesarb.net>, "David S. Miller" <davem@davemloft.net>, Hans Verkuil <hans.verkuil@cisco.com>, linux-pm@vger.kernel.org
 
-On Tuesday, June 04, 2013 03:08:48 AM Michael Karcher wrote:
-> Am Montag, den 03.06.2013, 12:37 -0700 schrieb Dirk Brandewie:
-> > On 06/03/2013 12:34 PM, Rafael J. Wysocki wrote:
-> > > On Monday, June 03, 2013 07:56:15 PM Michael Karcher wrote:
-> > >> Hello,
-> > > Yes, please try with CONFIG_NO_HZ_IDLE and see if you can reproduce the
-> > > problem.
-> Instead of doing that, I successfully applied Dirk's suggestion. Is
-> CONFIG_NO_HZ + CONFIG_NO_HZ_IDLE worth testing?
+On 06/04/2013 09:17 AM, Michal Simek wrote:
+> Add support for cpuidle.
+>=20
+> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+> ---
 
-Yes, it is.
-
-> > > Does your system use intel_idle?  You've set that in .config, but can you check
-> > > what dmesg says, please?
-> No, intel_idle complains it doesn't support my CPU family.
-
-I thought so.  It is using the ACPI idle driver, then, so I think cpuidle in
-general is affected.
-
-That seems to be a time accounting problem of some sort (adding CCs to Ingo and
-Thomas).
-
-Thanks,
-Rafael
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
