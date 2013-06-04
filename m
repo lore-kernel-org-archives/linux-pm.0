@@ -1,519 +1,516 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH] thermal: add imx thermal driver support
-Date: Tue, 4 Jun 2013 15:13:28 +0800
-Message-ID: <1370330008-5982-1-git-send-email-shawn.guo@linaro.org>
+From: Lan Tianyu <lantianyu1986@gmail.com>
+Subject: Re: [PATCH 1/2, v2] PM / Runtime: Rework the "runtime idle" helper routine
+Date: Tue, 4 Jun 2013 15:15:05 +0800
+Message-ID: <CAOLK0pykt3rPg+6onWB1MGh4gMOWUK2pEP3p6RWwG+SovhOGdw@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
+	<2033252.LiVeuYIhnT@vostro.rjw.lan>
+	<29156715.ksdUTA6va9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ch1ehsobe002.messaging.microsoft.com ([216.32.181.182]:46794
-	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751803Ab3FDHMb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 03:12:31 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <29156715.ksdUTA6va9@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 
-This is based on the initial imx thermal work done by
-Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
-valid).  Since he is no longer interested in the work and I have
-rewritten a significant amount of the code, I just took the authorship
-over from him.
+2013/6/3 Rafael J. Wysocki <rjw@sisk.pl>:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The "runtime idle" helper routine, rpm_idle(), currently ignores
+> return values from .runtime_idle() callbacks executed by it.
+> However, it turns out that many subsystems use
+> pm_generic_runtime_idle() which checks the return value of the
+> driver's callback and executes pm_runtime_suspend() for the device
+> unless that value is not 0.  If that logic is moved to rpm_idle()
+> instead, pm_generic_runtime_idle() can be dropped and its users
+> will not need any .runtime_idle() callbacks any more.
+>
+> Moreover, the PCI, SCSI, and SATA subsystems' .runtime_idle()
+> routines, pci_pm_runtime_idle(), scsi_runtime_idle(), and
+> ata_port_runtime_idle(), respectively, as well as a few drivers'
+> ones may be simplified if rpm_idle() calls rpm_suspend() after 0 has
+> been returned by the .runtime_idle() callback executed by it.
+>
+> To reduce overall code bloat, make the changes described above.
+>
+Usb runtime pm works normally with this patch.
+Tested-by: Lan Tianyu <tianyu.lan@intel.com>
 
-It adds the imx thermal support using Temperature Monitor (TEMPMON)
-block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
-interface to access TEMPMON control registers and calibration data, and
-supports cpufreq as the cooling device.
+> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Tested-by: Kevin Hilman <khilman@linaro.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  Documentation/power/runtime_pm.txt |    5 -----
+>  arch/arm/mach-omap2/omap_device.c  |    7 +------
+>  drivers/acpi/device_pm.c           |    1 -
+>  drivers/amba/bus.c                 |    2 +-
+>  drivers/ata/libata-core.c          |    2 +-
+>  drivers/base/platform.c            |    1 -
+>  drivers/base/power/domain.c        |    1 -
+>  drivers/base/power/generic_ops.c   |   23 -----------------------
+>  drivers/base/power/runtime.c       |   12 +++++-------
+>  drivers/dma/intel_mid_dma.c        |    2 +-
+>  drivers/gpio/gpio-langwell.c       |    6 +-----
+>  drivers/i2c/i2c-core.c             |    2 +-
+>  drivers/mfd/ab8500-gpadc.c         |    8 +-------
+>  drivers/mmc/core/bus.c             |    2 +-
+>  drivers/mmc/core/sdio_bus.c        |    2 +-
+>  drivers/pci/pci-driver.c           |   14 +++++---------
+>  drivers/scsi/scsi_pm.c             |   11 +++--------
+>  drivers/sh/pm_runtime.c            |    2 +-
+>  drivers/spi/spi.c                  |    2 +-
+>  drivers/tty/serial/mfd.c           |    9 ++-------
+>  drivers/usb/core/driver.c          |    3 ++-
+>  drivers/usb/core/port.c            |    1 -
+>  include/linux/pm_runtime.h         |    2 --
+>  23 files changed, 28 insertions(+), 92 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -293,11 +293,8 @@ static int rpm_idle(struct device *dev,
+>         /* Pending requests need to be canceled. */
+>         dev->power.request = RPM_REQ_NONE;
+>
+> -       if (dev->power.no_callbacks) {
+> -               /* Assume ->runtime_idle() callback would have suspended. */
+> -               retval = rpm_suspend(dev, rpmflags);
+> +       if (dev->power.no_callbacks)
+>                 goto out;
+> -       }
+>
+>         /* Carry out an asynchronous or a synchronous idle notification. */
+>         if (rpmflags & RPM_ASYNC) {
+> @@ -306,7 +303,8 @@ static int rpm_idle(struct device *dev,
+>                         dev->power.request_pending = true;
+>                         queue_work(pm_wq, &dev->power.work);
+>                 }
+> -               goto out;
+> +               trace_rpm_return_int(dev, _THIS_IP_, 0);
+> +               return 0;
+>         }
+>
+>         dev->power.idle_notification = true;
+> @@ -326,14 +324,14 @@ static int rpm_idle(struct device *dev,
+>                 callback = dev->driver->pm->runtime_idle;
+>
+>         if (callback)
+> -               __rpm_callback(callback, dev);
+> +               retval = __rpm_callback(callback, dev);
+>
+>         dev->power.idle_notification = false;
+>         wake_up_all(&dev->power.wait_queue);
+>
+>   out:
+>         trace_rpm_return_int(dev, _THIS_IP_, retval);
+> -       return retval;
+> +       return retval ? retval : rpm_suspend(dev, rpmflags);
+>  }
+>
+>  /**
+> Index: linux-pm/drivers/base/power/generic_ops.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/generic_ops.c
+> +++ linux-pm/drivers/base/power/generic_ops.c
+> @@ -12,29 +12,6 @@
+>
+>  #ifdef CONFIG_PM_RUNTIME
+>  /**
+> - * pm_generic_runtime_idle - Generic runtime idle callback for subsystems.
+> - * @dev: Device to handle.
+> - *
+> - * If PM operations are defined for the @dev's driver and they include
+> - * ->runtime_idle(), execute it and return its error code, if nonzero.
+> - * Otherwise, execute pm_runtime_suspend() for the device and return 0.
+> - */
+> -int pm_generic_runtime_idle(struct device *dev)
+> -{
+> -       const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> -
+> -       if (pm && pm->runtime_idle) {
+> -               int ret = pm->runtime_idle(dev);
+> -               if (ret)
+> -                       return ret;
+> -       }
+> -
+> -       pm_runtime_suspend(dev);
+> -       return 0;
+> -}
+> -EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
+> -
+> -/**
+>   * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
+>   * @dev: Device to suspend.
+>   *
+> Index: linux-pm/include/linux/pm_runtime.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm_runtime.h
+> +++ linux-pm/include/linux/pm_runtime.h
+> @@ -37,7 +37,6 @@ extern void pm_runtime_enable(struct dev
+>  extern void __pm_runtime_disable(struct device *dev, bool check_resume);
+>  extern void pm_runtime_allow(struct device *dev);
+>  extern void pm_runtime_forbid(struct device *dev);
+> -extern int pm_generic_runtime_idle(struct device *dev);
+>  extern int pm_generic_runtime_suspend(struct device *dev);
+>  extern int pm_generic_runtime_resume(struct device *dev);
+>  extern void pm_runtime_no_callbacks(struct device *dev);
+> @@ -143,7 +142,6 @@ static inline bool pm_runtime_active(str
+>  static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+>  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+>
+> -static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
+>  static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
+>  static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
+>  static inline void pm_runtime_no_callbacks(struct device *dev) {}
+> Index: linux-pm/arch/arm/mach-omap2/omap_device.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/mach-omap2/omap_device.c
+> +++ linux-pm/arch/arm/mach-omap2/omap_device.c
+> @@ -591,11 +591,6 @@ static int _od_runtime_suspend(struct de
+>         return ret;
+>  }
+>
+> -static int _od_runtime_idle(struct device *dev)
+> -{
+> -       return pm_generic_runtime_idle(dev);
+> -}
+> -
+>  static int _od_runtime_resume(struct device *dev)
+>  {
+>         struct platform_device *pdev = to_platform_device(dev);
+> @@ -653,7 +648,7 @@ static int _od_resume_noirq(struct devic
+>  struct dev_pm_domain omap_device_pm_domain = {
+>         .ops = {
+>                 SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
+> -                                  _od_runtime_idle)
+> +                                  NULL)
+>                 USE_PLATFORM_PM_SLEEP_OPS
+>                 .suspend_noirq = _od_suspend_noirq,
+>                 .resume_noirq = _od_resume_noirq,
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -886,7 +886,6 @@ static struct dev_pm_domain acpi_general
+>  #ifdef CONFIG_PM_RUNTIME
+>                 .runtime_suspend = acpi_subsys_runtime_suspend,
+>                 .runtime_resume = acpi_subsys_runtime_resume,
+> -               .runtime_idle = pm_generic_runtime_idle,
+>  #endif
+>  #ifdef CONFIG_PM_SLEEP
+>                 .prepare = acpi_subsys_prepare,
+> Index: linux-pm/drivers/amba/bus.c
+> ===================================================================
+> --- linux-pm.orig/drivers/amba/bus.c
+> +++ linux-pm/drivers/amba/bus.c
+> @@ -284,7 +284,7 @@ static const struct dev_pm_ops amba_pm =
+>         SET_RUNTIME_PM_OPS(
+>                 amba_pm_runtime_suspend,
+>                 amba_pm_runtime_resume,
+> -               pm_generic_runtime_idle
+> +               NULL
+>         )
+>  };
+>
+> Index: linux-pm/drivers/base/power/domain.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/domain.c
+> +++ linux-pm/drivers/base/power/domain.c
+> @@ -2143,7 +2143,6 @@ void pm_genpd_init(struct generic_pm_dom
+>         genpd->max_off_time_changed = true;
+>         genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
+>         genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
+> -       genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
+>         genpd->domain.ops.prepare = pm_genpd_prepare;
+>         genpd->domain.ops.suspend = pm_genpd_suspend;
+>         genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
+> Index: linux-pm/drivers/base/platform.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/platform.c
+> +++ linux-pm/drivers/base/platform.c
+> @@ -888,7 +888,6 @@ int platform_pm_restore(struct device *d
+>  static const struct dev_pm_ops platform_dev_pm_ops = {
+>         .runtime_suspend = pm_generic_runtime_suspend,
+>         .runtime_resume = pm_generic_runtime_resume,
+> -       .runtime_idle = pm_generic_runtime_idle,
+>         USE_PLATFORM_PM_SLEEP_OPS
+>  };
+>
+> Index: linux-pm/drivers/i2c/i2c-core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/i2c/i2c-core.c
+> +++ linux-pm/drivers/i2c/i2c-core.c
+> @@ -435,7 +435,7 @@ static const struct dev_pm_ops i2c_devic
+>         SET_RUNTIME_PM_OPS(
+>                 pm_generic_runtime_suspend,
+>                 pm_generic_runtime_resume,
+> -               pm_generic_runtime_idle
+> +               NULL
+>         )
+>  };
+>
+> Index: linux-pm/drivers/mmc/core/sdio_bus.c
+> ===================================================================
+> --- linux-pm.orig/drivers/mmc/core/sdio_bus.c
+> +++ linux-pm/drivers/mmc/core/sdio_bus.c
+> @@ -211,7 +211,7 @@ static const struct dev_pm_ops sdio_bus_
+>         SET_RUNTIME_PM_OPS(
+>                 pm_generic_runtime_suspend,
+>                 pm_generic_runtime_resume,
+> -               pm_generic_runtime_idle
+> +               NULL
+>         )
+>  };
+>
+> Index: linux-pm/drivers/spi/spi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/spi/spi.c
+> +++ linux-pm/drivers/spi/spi.c
+> @@ -223,7 +223,7 @@ static const struct dev_pm_ops spi_pm =
+>         SET_RUNTIME_PM_OPS(
+>                 pm_generic_runtime_suspend,
+>                 pm_generic_runtime_resume,
+> -               pm_generic_runtime_idle
+> +               NULL
+>         )
+>  };
+>
+> Index: linux-pm/drivers/usb/core/port.c
+> ===================================================================
+> --- linux-pm.orig/drivers/usb/core/port.c
+> +++ linux-pm/drivers/usb/core/port.c
+> @@ -141,7 +141,6 @@ static const struct dev_pm_ops usb_port_
+>  #ifdef CONFIG_PM_RUNTIME
+>         .runtime_suspend =      usb_port_runtime_suspend,
+>         .runtime_resume =       usb_port_runtime_resume,
+> -       .runtime_idle =         pm_generic_runtime_idle,
+>  #endif
+>  };
+>
+> Index: linux-pm/Documentation/power/runtime_pm.txt
+> ===================================================================
+> --- linux-pm.orig/Documentation/power/runtime_pm.txt
+> +++ linux-pm/Documentation/power/runtime_pm.txt
+> @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
+>  management callbacks provided by the PM core, defined in
+>  driver/base/power/generic_ops.c:
+>
+> -  int pm_generic_runtime_idle(struct device *dev);
+> -    - invoke the ->runtime_idle() callback provided by the driver of this
+> -      device, if defined, and call pm_runtime_suspend() for this device if the
+> -      return value is 0 or the callback is not defined
+> -
+>    int pm_generic_runtime_suspend(struct device *dev);
+>      - invoke the ->runtime_suspend() callback provided by the driver of this
+>        device and return its result, or return -EINVAL if not defined
+> Index: linux-pm/drivers/usb/core/driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/usb/core/driver.c
+> +++ linux-pm/drivers/usb/core/driver.c
+> @@ -1765,7 +1765,8 @@ int usb_runtime_idle(struct device *dev)
+>          */
+>         if (autosuspend_check(udev) == 0)
+>                 pm_runtime_autosuspend(dev);
+> -       return 0;
+> +       /* Tell the core not to suspend it, though. */
+> +       return -EBUSY;
+>  }
+>
+>  int usb_set_usb2_hardware_lpm(struct usb_device *udev, int enable)
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1050,26 +1050,22 @@ static int pci_pm_runtime_idle(struct de
+>  {
+>         struct pci_dev *pci_dev = to_pci_dev(dev);
+>         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +       int ret = 0;
+>
+>         /*
+>          * If pci_dev->driver is not set (unbound), the device should
+>          * always remain in D0 regardless of the runtime PM status
+>          */
+>         if (!pci_dev->driver)
+> -               goto out;
+> +               return 0;
+>
+>         if (!pm)
+>                 return -ENOSYS;
+>
+> -       if (pm->runtime_idle) {
+> -               int ret = pm->runtime_idle(dev);
+> -               if (ret)
+> -                       return ret;
+> -       }
+> +       if (pm->runtime_idle)
+> +               ret = pm->runtime_idle(dev);
+>
+> -out:
+> -       pm_runtime_suspend(dev);
+> -       return 0;
+> +       return ret;
+>  }
+>
+>  #else /* !CONFIG_PM_RUNTIME */
+> Index: linux-pm/drivers/ata/libata-core.c
+> ===================================================================
+> --- linux-pm.orig/drivers/ata/libata-core.c
+> +++ linux-pm/drivers/ata/libata-core.c
+> @@ -5430,7 +5430,7 @@ static int ata_port_runtime_idle(struct
+>                                 return -EBUSY;
+>         }
+>
+> -       return pm_runtime_suspend(dev);
+> +       return 0;
+>  }
+>
+>  static int ata_port_runtime_suspend(struct device *dev)
+> Index: linux-pm/drivers/dma/intel_mid_dma.c
+> ===================================================================
+> --- linux-pm.orig/drivers/dma/intel_mid_dma.c
+> +++ linux-pm/drivers/dma/intel_mid_dma.c
+> @@ -1405,7 +1405,7 @@ static int dma_runtime_idle(struct devic
+>                         return -EAGAIN;
+>         }
+>
+> -       return pm_schedule_suspend(dev, 0);
+> +       return 0;
+>  }
+>
+>  /******************************************************************************
+> Index: linux-pm/drivers/gpio/gpio-langwell.c
+> ===================================================================
+> --- linux-pm.orig/drivers/gpio/gpio-langwell.c
+> +++ linux-pm/drivers/gpio/gpio-langwell.c
+> @@ -305,11 +305,7 @@ static const struct irq_domain_ops lnw_g
+>
+>  static int lnw_gpio_runtime_idle(struct device *dev)
+>  {
+> -       int err = pm_schedule_suspend(dev, 500);
+> -
+> -       if (!err)
+> -               return 0;
+> -
+> +       pm_schedule_suspend(dev, 500);
+>         return -EBUSY;
+>  }
+>
+> Index: linux-pm/drivers/mfd/ab8500-gpadc.c
+> ===================================================================
+> --- linux-pm.orig/drivers/mfd/ab8500-gpadc.c
+> +++ linux-pm/drivers/mfd/ab8500-gpadc.c
+> @@ -886,12 +886,6 @@ static int ab8500_gpadc_runtime_resume(s
+>         return ret;
+>  }
+>
+> -static int ab8500_gpadc_runtime_idle(struct device *dev)
+> -{
+> -       pm_runtime_suspend(dev);
+> -       return 0;
+> -}
+> -
+>  static int ab8500_gpadc_suspend(struct device *dev)
+>  {
+>         struct ab8500_gpadc *gpadc = dev_get_drvdata(dev);
+> @@ -1039,7 +1033,7 @@ static int ab8500_gpadc_remove(struct pl
+>  static const struct dev_pm_ops ab8500_gpadc_pm_ops = {
+>         SET_RUNTIME_PM_OPS(ab8500_gpadc_runtime_suspend,
+>                            ab8500_gpadc_runtime_resume,
+> -                          ab8500_gpadc_runtime_idle)
+> +                          NULL)
+>         SET_SYSTEM_SLEEP_PM_OPS(ab8500_gpadc_suspend,
+>                                 ab8500_gpadc_resume)
+>
+> Index: linux-pm/drivers/mmc/core/bus.c
+> ===================================================================
+> --- linux-pm.orig/drivers/mmc/core/bus.c
+> +++ linux-pm/drivers/mmc/core/bus.c
+> @@ -164,7 +164,7 @@ static int mmc_runtime_resume(struct dev
+>
+>  static int mmc_runtime_idle(struct device *dev)
+>  {
+> -       return pm_runtime_suspend(dev);
+> +       return 0;
+>  }
+>
+>  #endif /* !CONFIG_PM_RUNTIME */
+> Index: linux-pm/drivers/scsi/scsi_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/scsi/scsi_pm.c
+> +++ linux-pm/drivers/scsi/scsi_pm.c
+> @@ -229,8 +229,6 @@ static int scsi_runtime_resume(struct de
+>
+>  static int scsi_runtime_idle(struct device *dev)
+>  {
+> -       int err;
+> -
+>         dev_dbg(dev, "scsi_runtime_idle\n");
+>
+>         /* Insert hooks here for targets, hosts, and transport classes */
+> @@ -240,14 +238,11 @@ static int scsi_runtime_idle(struct devi
+>
+>                 if (sdev->request_queue->dev) {
+>                         pm_runtime_mark_last_busy(dev);
+> -                       err = pm_runtime_autosuspend(dev);
+> -               } else {
+> -                       err = pm_runtime_suspend(dev);
+> +                       pm_runtime_autosuspend(dev);
+> +                       return -EBUSY;
+>                 }
+> -       } else {
+> -               err = pm_runtime_suspend(dev);
+>         }
+> -       return err;
+> +       return 0;
+>  }
+>
+>  int scsi_autopm_get_device(struct scsi_device *sdev)
+> Index: linux-pm/drivers/sh/pm_runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/sh/pm_runtime.c
+> +++ linux-pm/drivers/sh/pm_runtime.c
+> @@ -25,7 +25,7 @@
+>  static int default_platform_runtime_idle(struct device *dev)
+>  {
+>         /* suspend synchronously to disable clocks immediately */
+> -       return pm_runtime_suspend(dev);
+> +       return 0;
+>  }
+>
+>  static struct dev_pm_domain default_pm_domain = {
+> Index: linux-pm/drivers/tty/serial/mfd.c
+> ===================================================================
+> --- linux-pm.orig/drivers/tty/serial/mfd.c
+> +++ linux-pm/drivers/tty/serial/mfd.c
+> @@ -1248,13 +1248,8 @@ static int serial_hsu_resume(struct pci_
+>  #ifdef CONFIG_PM_RUNTIME
+>  static int serial_hsu_runtime_idle(struct device *dev)
+>  {
+> -       int err;
+> -
+> -       err = pm_schedule_suspend(dev, 500);
+> -       if (err)
+> -               return -EBUSY;
+> -
+> -       return 0;
+> +       pm_schedule_suspend(dev, 500);
+> +       return -EBUSY;
+>  }
+>
+>  static int serial_hsu_runtime_suspend(struct device *dev)
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
- .../devicetree/bindings/thermal/imx-thermal.txt    |   14 +
- drivers/thermal/Kconfig                            |    8 +
- drivers/thermal/Makefile                           |    1 +
- drivers/thermal/imx_thermal.c                      |  421 ++++++++++++++++++++
- 4 files changed, 444 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/imx-thermal.txt
- create mode 100644 drivers/thermal/imx_thermal.c
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-new file mode 100644
-index 0000000..c606e2b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -0,0 +1,14 @@
-+* Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
-+
-+Required properties:
-+- compatible : "fsl,imx6q-thermal"
-+- fsl,tempmon : phandle pointer to TEMPMON control registers
-+- fsl,tempmon-data : phandle pointer to TEMPMON calibration data
-+
-+Example:
-+
-+tempmon {
-+	compatible = "fsl,imx6q-tempmon";
-+	fsl,tempmon = <&anatop>;
-+	fsl,tempmon-data = <&ocotp>;
-+};
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5e3c025..935fcbe 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -91,6 +91,14 @@ config THERMAL_EMULATION
- 	  because userland can easily disable the thermal policy by simply
- 	  flooding this sysfs node with low temperature values.
- 
-+config IMX_THERMAL
-+	tristate "Temperature sensor driver for Freescale i.MX SoCs"
-+	depends on CPU_THERMAL
-+	depends on MFD_SYSCON
-+	depends on OF
-+	help
-+	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX SoCs.
-+
- config SPEAR_THERMAL
- 	bool "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index c054d41..6910b2d 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
- obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-+obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-new file mode 100644
-index 0000000..bdfcadb
---- /dev/null
-+++ b/drivers/thermal/imx_thermal.c
-@@ -0,0 +1,421 @@
-+/*
-+ * Copyright 2013 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/cpu_cooling.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+#include <linux/types.h>
-+
-+#define REG_SET		0x4
-+#define REG_CLR		0x8
-+#define REG_TOG		0xc
-+
-+#define MISC0				0x0150
-+#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-+
-+#define TEMPSENSE0			0x0180
-+#define TEMPSENSE0_TEMP_CNT_SHIFT	8
-+#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
-+#define TEMPSENSE0_FINISHED		(1 << 2)
-+#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
-+#define TEMPSENSE0_POWER_DOWN		(1 << 0)
-+
-+#define TEMPSENSE1			0x0190
-+#define TEMPSENSE1_MEASURE_FREQ		0xffff
-+
-+#define OCOTP_ANA1			0x04e0
-+
-+/* The driver supports 1 active trip point and 1 critical trip point */
-+enum imx_thermal_trip {
-+	IMX_TRIP_ACTIVE,
-+	IMX_TRIP_CRITICAL,
-+	IMX_TRIP_NUM,
-+};
-+
-+/*
-+ * It defines the temperature in millicelsius for active trip point
-+ * that will trigger cooling action when crossed.
-+ */
-+#define IMX_TEMP_ACTIVE			85000
-+
-+/*
-+ * The maximum die temperature on imx parts is 105C, let's give some cushion
-+ * for noise and possible temperature rise between measurements.
-+ */
-+#define IMX_TEMP_CRITICAL		100000
-+
-+#define IMX_THERMAL_POLLING_INTERVAL	1000 /* millisecond */
-+
-+struct imx_thermal_data {
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *cdev;
-+	enum thermal_device_mode mode;
-+	struct regmap *tempmon;
-+	bool meas_suspended;
-+	int c1, c2; /* See forumla in imx_get_sensor_data() */
-+};
-+
-+static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+	struct regmap *map = data->tempmon;
-+	static unsigned long last_temp;
-+	unsigned int n_meas;
-+	u32 val;
-+
-+	/*
-+	 * Every time we measure the temperature, we will power on the
-+	 * temperature sensor, enable measurements, take a reading,
-+	 * disable measurements, power off the temperature sensor.
-+	 */
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+
-+	/*
-+	 * According to the temp sensor designers, it may require up to ~17us
-+	 * to complete a measurement.  But this timing isn't checked on every
-+	 * part nor is it specified in the datasheet, so sleeping at least 1ms
-+	 * should provide plenty of time.  Sleeping longer than 1ms is ok so no
-+	 * need for usleep_range.
-+	 */
-+	msleep(1);
-+
-+	regmap_read(map, TEMPSENSE0, &val);
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	if ((val & TEMPSENSE0_FINISHED) == 0) {
-+		dev_dbg(&tz->device, "temp measurement never finished\n");
-+		return -EAGAIN;
-+	}
-+
-+	n_meas = (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SHIFT;
-+
-+	/* See imx_get_sensor_data() for forumla derivation */
-+	*temp = data->c2 + data->c1 * n_meas;
-+
-+	if (*temp != last_temp) {
-+		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
-+		last_temp = *temp;
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx_get_mode(struct thermal_zone_device *tz,
-+			enum thermal_device_mode *mode)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+
-+	*mode = data->mode;
-+
-+	return 0;
-+}
-+
-+static int imx_set_mode(struct thermal_zone_device *tz,
-+			enum thermal_device_mode mode)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+
-+	tz->polling_delay = (mode == THERMAL_DEVICE_ENABLED) ?
-+				IMX_THERMAL_POLLING_INTERVAL : 0;
-+	data->mode = mode;
-+	thermal_zone_device_update(tz);
-+
-+	return 0;
-+}
-+
-+static int imx_get_trip_type(struct thermal_zone_device *tz, int trip,
-+			     enum thermal_trip_type *type)
-+{
-+	*type = (trip == IMX_TRIP_ACTIVE) ? THERMAL_TRIP_ACTIVE :
-+					    THERMAL_TRIP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_get_crit_temp(struct thermal_zone_device *tz,
-+			     unsigned long *temp)
-+{
-+	*temp = IMX_TEMP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,
-+			     unsigned long *temp)
-+{
-+	*temp = (trip == IMX_TRIP_ACTIVE) ? IMX_TEMP_ACTIVE :
-+					    IMX_TEMP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_bind(struct thermal_zone_device *tz,
-+		    struct thermal_cooling_device *cdev)
-+{
-+	int ret;
-+
-+	ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_ACTIVE, cdev,
-+					       THERMAL_NO_LIMIT,
-+					       THERMAL_NO_LIMIT);
-+	if (ret) {
-+		dev_err(&tz->device,
-+			"binding zone %s with cdev %s failed:%d\n",
-+			tz->type, cdev->type, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx_unbind(struct thermal_zone_device *tz,
-+		      struct thermal_cooling_device *cdev)
-+{
-+	int ret;
-+
-+	ret = thermal_zone_unbind_cooling_device(tz, IMX_TRIP_ACTIVE, cdev);
-+	if (ret) {
-+		dev_err(&tz->device,
-+			"unbinding zone %s with cdev %s failed:%d\n",
-+			tz->type, cdev->type, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops imx_tz_ops = {
-+	.bind = imx_bind,
-+	.unbind = imx_unbind,
-+	.get_temp = imx_get_temp,
-+	.get_mode = imx_get_mode,
-+	.set_mode = imx_set_mode,
-+	.get_trip_type = imx_get_trip_type,
-+	.get_trip_temp = imx_get_trip_temp,
-+	.get_crit_temp = imx_get_crit_temp,
-+};
-+
-+static int imx_get_sensor_data(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data = platform_get_drvdata(pdev);
-+	struct regmap *map;
-+	int t1, t2, n1, n2;
-+	int ret;
-+	u32 val;
-+
-+	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
-+					      "fsl,tempmon-data");
-+	if (IS_ERR(map)) {
-+		ret = PTR_ERR(map);
-+		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_read(map, OCOTP_ANA1, &val);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (val == 0 || val == ~0) {
-+		dev_err(&pdev->dev, "invalid sensor calibration data\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Sensor data layout:
-+	 *   [31:20] - sensor value @ 25C
-+	 *    [19:8] - sensor value of hot
-+	 *     [7:0] - hot temperature value
-+	 */
-+	n1 = val >> 20;
-+	n2 = (val & 0xfff00) >> 8;
-+	t2 = val & 0xff;
-+	t1 = 25; /* t1 always 25C */
-+
-+	/*
-+	 * Derived from linear interpolation,
-+	 * Tmeas = T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
-+	 * We want to reduce this down to the minimum computation necessary
-+	 * for each temperature read.  Also, we want Tmeas in millicelsius
-+	 * and we don't want to lose precision from integer division. So...
-+	 * milli_Tmeas = 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / (N1 - N2)
-+	 * Let constant c1 = 1000 * (T1 - T2) / (N1 - N2)
-+	 * milli_Tmeas = (1000 * T2) + c1 * (Nmeas - N2)
-+	 * milli_Tmeas = (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
-+	 * Let constant c2 = (1000 * T2) - (c1 * N2)
-+	 * milli_Tmeas = c2 + (c1 * Nmeas)
-+	 */
-+	data->c1 = 1000 * (t1 - t2) / (n1 - n2);
-+	data->c2 = 1000 * t2 - data->c1 * n2;
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_probe(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data;
-+	struct cpumask clip_cpus;
-+	struct regmap *map;
-+	int ret;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "fsl,tempmon");
-+	if (IS_ERR(map)) {
-+		ret = PTR_ERR(map);
-+		dev_err(&pdev->dev, "failed to get tempmon regmap: %d\n", ret);
-+		return ret;
-+	}
-+	data->tempmon = map;
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	ret = imx_get_sensor_data(pdev);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to get sensor data\n");
-+		return ret;
-+	}
-+
-+	/* Make sure sensor is in known good state for measurements */
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-+	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	cpumask_set_cpu(0, &clip_cpus);
-+	data->cdev = cpufreq_cooling_register(&clip_cpus);
-+	if (IS_ERR(data->cdev)) {
-+		ret = PTR_ERR(data->cdev);
-+		dev_err(&pdev->dev,
-+			"failed to register cpufreq cooling device: %d\n", ret);
-+		return ret;
-+	}
-+
-+	data->tz = thermal_zone_device_register("imx_thermal_zone",
-+						IMX_TRIP_NUM, 0, data,
-+						&imx_tz_ops, NULL, 0,
-+						IMX_THERMAL_POLLING_INTERVAL);
-+	if (IS_ERR(data->tz)) {
-+		ret = PTR_ERR(data->tz);
-+		dev_err(&pdev->dev,
-+			"failed to register thermal zone device %d\n", ret);
-+		cpufreq_cooling_unregister(data->cdev);
-+		return ret;
-+	}
-+
-+	data->mode = THERMAL_DEVICE_ENABLED;
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_remove(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data = platform_get_drvdata(pdev);
-+
-+	thermal_zone_device_unregister(data->tz);
-+	cpufreq_cooling_unregister(data->cdev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int imx_thermal_suspend(struct device *dev)
-+{
-+	struct imx_thermal_data *data = dev_get_drvdata(dev);
-+	struct regmap *map = data->tempmon;
-+	u32 val;
-+
-+	regmap_read(map, TEMPSENSE0, &val);
-+
-+	/* Was a measurement taking place?  If not, nothing to do. */
-+	if (val & TEMPSENSE0_POWER_DOWN)
-+		return 0;
-+
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	data->meas_suspended = true;
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_resume(struct device *dev)
-+{
-+	struct imx_thermal_data *data = dev_get_drvdata(dev);
-+	struct regmap *map = data->tempmon;
-+
-+	/*
-+	 * If a measurement was taking place while suspend, re-take the
-+	 * measurement.
-+	 */
-+	if (data->meas_suspended) {
-+		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+		/*
-+		 * According to the temp sensor designers, it may require
-+		 * up to ~17us to complete a measurement.  But this timing
-+		 * isn't checked on every part nor is it specified in the
-+		 * datasheet, so delay 50us for timing margin.
-+		 */
-+		udelay(50);
-+		data->meas_suspended = false;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
-+			 imx_thermal_suspend, imx_thermal_resume);
-+
-+static const struct of_device_id of_imx_thermal_match[] = {
-+	{ .compatible = "fsl,imx6q-tempmon", },
-+	{ /* end */ }
-+};
-+
-+static struct platform_driver imx_thermal = {
-+	.driver = {
-+		.name	= "imx_thermal",
-+		.owner  = THIS_MODULE,
-+		.pm	= &imx_thermal_pm_ops,
-+		.of_match_table = of_imx_thermal_match,
-+	},
-+	.probe		= imx_thermal_probe,
-+	.remove		= imx_thermal_remove,
-+};
-+
-+static int __init imx_thermal_init(void)
-+{
-+	return platform_driver_register(&imx_thermal);
-+}
-+late_initcall(imx_thermal_init);
-+
-+static void __exit imx_thermal_exit(void)
-+{
-+	platform_driver_unregister(&imx_thermal);
-+}
-+module_exit(imx_thermal_exit);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:imx-thermal");
+
 -- 
-1.7.9.5
-
-
+Best regards
+Tianyu Lan
