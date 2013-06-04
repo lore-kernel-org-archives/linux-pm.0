@@ -1,61 +1,32 @@
-From: Jingoo Han <jg1.han@samsung.com>
-Subject: Re: [PATCH] PM: Add pm_sleep_ops_ptr() macro
-Date: Tue, 04 Jun 2013 13:23:42 +0900
-Message-ID: <000601ce60db$4bd94e80$e38beb80$@samsung.com>
-References: <002801ce6022$a2928930$e7b79b90$@samsung.com>
- <1867006.c6mxKpbPvX@vostro.rjw.lan> <3772829.L58vmUyOpk@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: bit.LITTLE needs cpufreq table
+Date: Tue, 4 Jun 2013 10:12:32 +0530
+Message-ID: <CAKohponKKMvHQQvr+K44YfpD0Ykxj_OKc5K+LhKShGXQV3aYgg@mail.gmail.com>
+References: <3453738.rxYxRehmQz@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:49836 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828Ab3FDEXu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 00:23:50 -0400
-In-reply-to: <3772829.L58vmUyOpk@vostro.rjw.lan>
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <3453738.rxYxRehmQz@wuerfel>
+Sender: cpufreq-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@sisk.pl>
-Cc: 'Jean-Christophe PLAGNIOL-VILLARD' <plagnioj@jcrosoft.com>, 'Lars-Peter Clausen' <lars@metafoo.de>, 'Michael Hennerich' <michael.hennerich@analog.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, Jingoo Han <jg1.han@samsung.com>
 
-On Tuesday, June 04, 2013 4:55 AM, Rafael J. Wysocki wrote:
-> On Monday, June 03, 2013 01:11:07 PM Rafael J. Wysocki wrote:
-> > On Monday, June 03, 2013 03:21:51 PM Jingoo Han wrote:
-> > > Add pm_sleep_ops_ptr() macro that allows the .pm entry in the driver structures
-> > > to be assigned without having an #define xxx NULL for the case that PM_SLEEP is
-> > > not enabled.
-> > >
-> > > Signed-off-by: Jingoo Han <jg1.han@samsung.com>
-> > > Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-> > > Cc: Lars-Peter Clausen <lars@metafoo.de>
-> > > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> > > Cc: Michael Hennerich <michael.hennerich@analog.com>
-> >
-> > Do you want me to replace the previous patch with this?
-> 
-> Quite frankly, I prefer the previous version, which was more general.
-> 
-> That is, what if someone wants to use that macro for runtime PM too?
-> 
-> Honestly, I think we'll be better off without any of them, so I'm dropping
-> the previous patch too for now.
+On 4 June 2013 03:11, Arnd Bergmann <arnd@arndb.de> wrote:
+> Like a lot of the other cpufreq drivers, this one needs to
+> select CONFIG_CPU_FREQ_TABLE to avoid a build error like
+>
+> built-in.o: In function `bL_cpufreq_set_target':
+> cpufreq/arm_big_little.c:71: undefined reference to `cpufreq_frequency_table_target'
+> built-in.o: In function `bL_cpufreq_verify_policy':
+> cpufreq/arm_big_little.c:55: undefined reference to `cpufreq_frequency_table_verify'
+> built-in.o: In function `bL_cpufreq_init':
+> cpufreq/arm_big_little.c:170: undefined reference to `cpufreq_frequency_table_cpuinfo'
+> cpufreq/arm_big_little.c:178: undefined reference to `cpufreq_frequency_table_get_attr'
+> built-in.o:(.data+0x5a80c): undefined reference to `cpufreq_freq_attr_scaling_available_freqs'
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 
-OK, I see.
-
-I agree with your opinion.
-Also, as I mentioned, I want other's better ideas.
-
-
-Best regards,
-Jingoo Han
-
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-
+Applied.
