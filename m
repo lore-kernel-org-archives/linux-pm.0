@@ -1,516 +1,205 @@
-From: Lan Tianyu <lantianyu1986@gmail.com>
-Subject: Re: [PATCH 1/2, v2] PM / Runtime: Rework the "runtime idle" helper routine
-Date: Tue, 4 Jun 2013 15:15:05 +0800
-Message-ID: <CAOLK0pykt3rPg+6onWB1MGh4gMOWUK2pEP3p6RWwG+SovhOGdw@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1305301247370.1137-100000@iolanthe.rowland.org>
-	<2033252.LiVeuYIhnT@vostro.rjw.lan>
-	<29156715.ksdUTA6va9@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <29156715.ksdUTA6va9@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tejun Heo <tj@kernel.org>
+From: Michal Simek <michal.simek@xilinx.com>
+Subject: [PATCH v4] arm: zynq: Add cpuidle support
+Date: Tue,  4 Jun 2013 09:17:39 +0200
+Message-ID: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com>
+Content-Type: multipart/signed;
+    boundary="=_mimegpg-monstr-desktop-21290-1370330259-0001";
+    micalg=pgp-sha1; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f42.google.com ([74.125.82.42]:63371 "EHLO
+	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759738Ab3FDHRt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 03:17:49 -0400
+Received: by mail-wg0-f42.google.com with SMTP id n12so3454082wgh.3
+        for <linux-pm@vger.kernel.org>; Tue, 04 Jun 2013 00:17:47 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Michal Simek <monstr@monstr.eu>, Michal Simek <michal.simek@xilinx.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Mauro Carvalho Chehab <mchehab@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Cesar Eduardo Barros <cesarb@cesarb.net>, "David S. Miller" <davem@davemloft.net>, Hans Verkuil <hans.verkuil@cisco.com>, linux-pm@vger.kernel.org
 
-2013/6/3 Rafael J. Wysocki <rjw@sisk.pl>:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The "runtime idle" helper routine, rpm_idle(), currently ignores
-> return values from .runtime_idle() callbacks executed by it.
-> However, it turns out that many subsystems use
-> pm_generic_runtime_idle() which checks the return value of the
-> driver's callback and executes pm_runtime_suspend() for the device
-> unless that value is not 0.  If that logic is moved to rpm_idle()
-> instead, pm_generic_runtime_idle() can be dropped and its users
-> will not need any .runtime_idle() callbacks any more.
->
-> Moreover, the PCI, SCSI, and SATA subsystems' .runtime_idle()
-> routines, pci_pm_runtime_idle(), scsi_runtime_idle(), and
-> ata_port_runtime_idle(), respectively, as well as a few drivers'
-> ones may be simplified if rpm_idle() calls rpm_suspend() after 0 has
-> been returned by the .runtime_idle() callback executed by it.
->
-> To reduce overall code bloat, make the changes described above.
->
-Usb runtime pm works normally with this patch.
-Tested-by: Lan Tianyu <tianyu.lan@intel.com>
+This is a MIME GnuPG-signed message.  If you see this text, it means that
+your E-mail or Usenet software does not support MIME signed messages.
+The Internet standard for MIME PGP messages, RFC 2015, was published in 1996.
+To open this message correctly you will need to install E-mail or Usenet
+software that supports modern Internet standards.
 
-> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Tested-by: Kevin Hilman <khilman@linaro.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Kevin Hilman <khilman@linaro.org>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  Documentation/power/runtime_pm.txt |    5 -----
->  arch/arm/mach-omap2/omap_device.c  |    7 +------
->  drivers/acpi/device_pm.c           |    1 -
->  drivers/amba/bus.c                 |    2 +-
->  drivers/ata/libata-core.c          |    2 +-
->  drivers/base/platform.c            |    1 -
->  drivers/base/power/domain.c        |    1 -
->  drivers/base/power/generic_ops.c   |   23 -----------------------
->  drivers/base/power/runtime.c       |   12 +++++-------
->  drivers/dma/intel_mid_dma.c        |    2 +-
->  drivers/gpio/gpio-langwell.c       |    6 +-----
->  drivers/i2c/i2c-core.c             |    2 +-
->  drivers/mfd/ab8500-gpadc.c         |    8 +-------
->  drivers/mmc/core/bus.c             |    2 +-
->  drivers/mmc/core/sdio_bus.c        |    2 +-
->  drivers/pci/pci-driver.c           |   14 +++++---------
->  drivers/scsi/scsi_pm.c             |   11 +++--------
->  drivers/sh/pm_runtime.c            |    2 +-
->  drivers/spi/spi.c                  |    2 +-
->  drivers/tty/serial/mfd.c           |    9 ++-------
->  drivers/usb/core/driver.c          |    3 ++-
->  drivers/usb/core/port.c            |    1 -
->  include/linux/pm_runtime.h         |    2 --
->  23 files changed, 28 insertions(+), 92 deletions(-)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -293,11 +293,8 @@ static int rpm_idle(struct device *dev,
->         /* Pending requests need to be canceled. */
->         dev->power.request = RPM_REQ_NONE;
->
-> -       if (dev->power.no_callbacks) {
-> -               /* Assume ->runtime_idle() callback would have suspended. */
-> -               retval = rpm_suspend(dev, rpmflags);
-> +       if (dev->power.no_callbacks)
->                 goto out;
-> -       }
->
->         /* Carry out an asynchronous or a synchronous idle notification. */
->         if (rpmflags & RPM_ASYNC) {
-> @@ -306,7 +303,8 @@ static int rpm_idle(struct device *dev,
->                         dev->power.request_pending = true;
->                         queue_work(pm_wq, &dev->power.work);
->                 }
-> -               goto out;
-> +               trace_rpm_return_int(dev, _THIS_IP_, 0);
-> +               return 0;
->         }
->
->         dev->power.idle_notification = true;
-> @@ -326,14 +324,14 @@ static int rpm_idle(struct device *dev,
->                 callback = dev->driver->pm->runtime_idle;
->
->         if (callback)
-> -               __rpm_callback(callback, dev);
-> +               retval = __rpm_callback(callback, dev);
->
->         dev->power.idle_notification = false;
->         wake_up_all(&dev->power.wait_queue);
->
->   out:
->         trace_rpm_return_int(dev, _THIS_IP_, retval);
-> -       return retval;
-> +       return retval ? retval : rpm_suspend(dev, rpmflags);
->  }
->
->  /**
-> Index: linux-pm/drivers/base/power/generic_ops.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/generic_ops.c
-> +++ linux-pm/drivers/base/power/generic_ops.c
-> @@ -12,29 +12,6 @@
->
->  #ifdef CONFIG_PM_RUNTIME
->  /**
-> - * pm_generic_runtime_idle - Generic runtime idle callback for subsystems.
-> - * @dev: Device to handle.
-> - *
-> - * If PM operations are defined for the @dev's driver and they include
-> - * ->runtime_idle(), execute it and return its error code, if nonzero.
-> - * Otherwise, execute pm_runtime_suspend() for the device and return 0.
-> - */
-> -int pm_generic_runtime_idle(struct device *dev)
-> -{
-> -       const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> -
-> -       if (pm && pm->runtime_idle) {
-> -               int ret = pm->runtime_idle(dev);
-> -               if (ret)
-> -                       return ret;
-> -       }
-> -
-> -       pm_runtime_suspend(dev);
-> -       return 0;
-> -}
-> -EXPORT_SYMBOL_GPL(pm_generic_runtime_idle);
-> -
-> -/**
->   * pm_generic_runtime_suspend - Generic runtime suspend callback for subsystems.
->   * @dev: Device to suspend.
->   *
-> Index: linux-pm/include/linux/pm_runtime.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm_runtime.h
-> +++ linux-pm/include/linux/pm_runtime.h
-> @@ -37,7 +37,6 @@ extern void pm_runtime_enable(struct dev
->  extern void __pm_runtime_disable(struct device *dev, bool check_resume);
->  extern void pm_runtime_allow(struct device *dev);
->  extern void pm_runtime_forbid(struct device *dev);
-> -extern int pm_generic_runtime_idle(struct device *dev);
->  extern int pm_generic_runtime_suspend(struct device *dev);
->  extern int pm_generic_runtime_resume(struct device *dev);
->  extern void pm_runtime_no_callbacks(struct device *dev);
-> @@ -143,7 +142,6 @@ static inline bool pm_runtime_active(str
->  static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
->  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
->
-> -static inline int pm_generic_runtime_idle(struct device *dev) { return 0; }
->  static inline int pm_generic_runtime_suspend(struct device *dev) { return 0; }
->  static inline int pm_generic_runtime_resume(struct device *dev) { return 0; }
->  static inline void pm_runtime_no_callbacks(struct device *dev) {}
-> Index: linux-pm/arch/arm/mach-omap2/omap_device.c
-> ===================================================================
-> --- linux-pm.orig/arch/arm/mach-omap2/omap_device.c
-> +++ linux-pm/arch/arm/mach-omap2/omap_device.c
-> @@ -591,11 +591,6 @@ static int _od_runtime_suspend(struct de
->         return ret;
->  }
->
-> -static int _od_runtime_idle(struct device *dev)
-> -{
-> -       return pm_generic_runtime_idle(dev);
-> -}
-> -
->  static int _od_runtime_resume(struct device *dev)
->  {
->         struct platform_device *pdev = to_platform_device(dev);
-> @@ -653,7 +648,7 @@ static int _od_resume_noirq(struct devic
->  struct dev_pm_domain omap_device_pm_domain = {
->         .ops = {
->                 SET_RUNTIME_PM_OPS(_od_runtime_suspend, _od_runtime_resume,
-> -                                  _od_runtime_idle)
-> +                                  NULL)
->                 USE_PLATFORM_PM_SLEEP_OPS
->                 .suspend_noirq = _od_suspend_noirq,
->                 .resume_noirq = _od_resume_noirq,
-> Index: linux-pm/drivers/acpi/device_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/device_pm.c
-> +++ linux-pm/drivers/acpi/device_pm.c
-> @@ -886,7 +886,6 @@ static struct dev_pm_domain acpi_general
->  #ifdef CONFIG_PM_RUNTIME
->                 .runtime_suspend = acpi_subsys_runtime_suspend,
->                 .runtime_resume = acpi_subsys_runtime_resume,
-> -               .runtime_idle = pm_generic_runtime_idle,
->  #endif
->  #ifdef CONFIG_PM_SLEEP
->                 .prepare = acpi_subsys_prepare,
-> Index: linux-pm/drivers/amba/bus.c
-> ===================================================================
-> --- linux-pm.orig/drivers/amba/bus.c
-> +++ linux-pm/drivers/amba/bus.c
-> @@ -284,7 +284,7 @@ static const struct dev_pm_ops amba_pm =
->         SET_RUNTIME_PM_OPS(
->                 amba_pm_runtime_suspend,
->                 amba_pm_runtime_resume,
-> -               pm_generic_runtime_idle
-> +               NULL
->         )
->  };
->
-> Index: linux-pm/drivers/base/power/domain.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/domain.c
-> +++ linux-pm/drivers/base/power/domain.c
-> @@ -2143,7 +2143,6 @@ void pm_genpd_init(struct generic_pm_dom
->         genpd->max_off_time_changed = true;
->         genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
->         genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-> -       genpd->domain.ops.runtime_idle = pm_generic_runtime_idle;
->         genpd->domain.ops.prepare = pm_genpd_prepare;
->         genpd->domain.ops.suspend = pm_genpd_suspend;
->         genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
-> Index: linux-pm/drivers/base/platform.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/platform.c
-> +++ linux-pm/drivers/base/platform.c
-> @@ -888,7 +888,6 @@ int platform_pm_restore(struct device *d
->  static const struct dev_pm_ops platform_dev_pm_ops = {
->         .runtime_suspend = pm_generic_runtime_suspend,
->         .runtime_resume = pm_generic_runtime_resume,
-> -       .runtime_idle = pm_generic_runtime_idle,
->         USE_PLATFORM_PM_SLEEP_OPS
->  };
->
-> Index: linux-pm/drivers/i2c/i2c-core.c
-> ===================================================================
-> --- linux-pm.orig/drivers/i2c/i2c-core.c
-> +++ linux-pm/drivers/i2c/i2c-core.c
-> @@ -435,7 +435,7 @@ static const struct dev_pm_ops i2c_devic
->         SET_RUNTIME_PM_OPS(
->                 pm_generic_runtime_suspend,
->                 pm_generic_runtime_resume,
-> -               pm_generic_runtime_idle
-> +               NULL
->         )
->  };
->
-> Index: linux-pm/drivers/mmc/core/sdio_bus.c
-> ===================================================================
-> --- linux-pm.orig/drivers/mmc/core/sdio_bus.c
-> +++ linux-pm/drivers/mmc/core/sdio_bus.c
-> @@ -211,7 +211,7 @@ static const struct dev_pm_ops sdio_bus_
->         SET_RUNTIME_PM_OPS(
->                 pm_generic_runtime_suspend,
->                 pm_generic_runtime_resume,
-> -               pm_generic_runtime_idle
-> +               NULL
->         )
->  };
->
-> Index: linux-pm/drivers/spi/spi.c
-> ===================================================================
-> --- linux-pm.orig/drivers/spi/spi.c
-> +++ linux-pm/drivers/spi/spi.c
-> @@ -223,7 +223,7 @@ static const struct dev_pm_ops spi_pm =
->         SET_RUNTIME_PM_OPS(
->                 pm_generic_runtime_suspend,
->                 pm_generic_runtime_resume,
-> -               pm_generic_runtime_idle
-> +               NULL
->         )
->  };
->
-> Index: linux-pm/drivers/usb/core/port.c
-> ===================================================================
-> --- linux-pm.orig/drivers/usb/core/port.c
-> +++ linux-pm/drivers/usb/core/port.c
-> @@ -141,7 +141,6 @@ static const struct dev_pm_ops usb_port_
->  #ifdef CONFIG_PM_RUNTIME
->         .runtime_suspend =      usb_port_runtime_suspend,
->         .runtime_resume =       usb_port_runtime_resume,
-> -       .runtime_idle =         pm_generic_runtime_idle,
->  #endif
->  };
->
-> Index: linux-pm/Documentation/power/runtime_pm.txt
-> ===================================================================
-> --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> +++ linux-pm/Documentation/power/runtime_pm.txt
-> @@ -660,11 +660,6 @@ Subsystems may wish to conserve code spa
->  management callbacks provided by the PM core, defined in
->  driver/base/power/generic_ops.c:
->
-> -  int pm_generic_runtime_idle(struct device *dev);
-> -    - invoke the ->runtime_idle() callback provided by the driver of this
-> -      device, if defined, and call pm_runtime_suspend() for this device if the
-> -      return value is 0 or the callback is not defined
-> -
->    int pm_generic_runtime_suspend(struct device *dev);
->      - invoke the ->runtime_suspend() callback provided by the driver of this
->        device and return its result, or return -EINVAL if not defined
-> Index: linux-pm/drivers/usb/core/driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/usb/core/driver.c
-> +++ linux-pm/drivers/usb/core/driver.c
-> @@ -1765,7 +1765,8 @@ int usb_runtime_idle(struct device *dev)
->          */
->         if (autosuspend_check(udev) == 0)
->                 pm_runtime_autosuspend(dev);
-> -       return 0;
-> +       /* Tell the core not to suspend it, though. */
-> +       return -EBUSY;
->  }
->
->  int usb_set_usb2_hardware_lpm(struct usb_device *udev, int enable)
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -1050,26 +1050,22 @@ static int pci_pm_runtime_idle(struct de
->  {
->         struct pci_dev *pci_dev = to_pci_dev(dev);
->         const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-> +       int ret = 0;
->
->         /*
->          * If pci_dev->driver is not set (unbound), the device should
->          * always remain in D0 regardless of the runtime PM status
->          */
->         if (!pci_dev->driver)
-> -               goto out;
-> +               return 0;
->
->         if (!pm)
->                 return -ENOSYS;
->
-> -       if (pm->runtime_idle) {
-> -               int ret = pm->runtime_idle(dev);
-> -               if (ret)
-> -                       return ret;
-> -       }
-> +       if (pm->runtime_idle)
-> +               ret = pm->runtime_idle(dev);
->
-> -out:
-> -       pm_runtime_suspend(dev);
-> -       return 0;
-> +       return ret;
->  }
->
->  #else /* !CONFIG_PM_RUNTIME */
-> Index: linux-pm/drivers/ata/libata-core.c
-> ===================================================================
-> --- linux-pm.orig/drivers/ata/libata-core.c
-> +++ linux-pm/drivers/ata/libata-core.c
-> @@ -5430,7 +5430,7 @@ static int ata_port_runtime_idle(struct
->                                 return -EBUSY;
->         }
->
-> -       return pm_runtime_suspend(dev);
-> +       return 0;
->  }
->
->  static int ata_port_runtime_suspend(struct device *dev)
-> Index: linux-pm/drivers/dma/intel_mid_dma.c
-> ===================================================================
-> --- linux-pm.orig/drivers/dma/intel_mid_dma.c
-> +++ linux-pm/drivers/dma/intel_mid_dma.c
-> @@ -1405,7 +1405,7 @@ static int dma_runtime_idle(struct devic
->                         return -EAGAIN;
->         }
->
-> -       return pm_schedule_suspend(dev, 0);
-> +       return 0;
->  }
->
->  /******************************************************************************
-> Index: linux-pm/drivers/gpio/gpio-langwell.c
-> ===================================================================
-> --- linux-pm.orig/drivers/gpio/gpio-langwell.c
-> +++ linux-pm/drivers/gpio/gpio-langwell.c
-> @@ -305,11 +305,7 @@ static const struct irq_domain_ops lnw_g
->
->  static int lnw_gpio_runtime_idle(struct device *dev)
->  {
-> -       int err = pm_schedule_suspend(dev, 500);
-> -
-> -       if (!err)
-> -               return 0;
-> -
-> +       pm_schedule_suspend(dev, 500);
->         return -EBUSY;
->  }
->
-> Index: linux-pm/drivers/mfd/ab8500-gpadc.c
-> ===================================================================
-> --- linux-pm.orig/drivers/mfd/ab8500-gpadc.c
-> +++ linux-pm/drivers/mfd/ab8500-gpadc.c
-> @@ -886,12 +886,6 @@ static int ab8500_gpadc_runtime_resume(s
->         return ret;
->  }
->
-> -static int ab8500_gpadc_runtime_idle(struct device *dev)
-> -{
-> -       pm_runtime_suspend(dev);
-> -       return 0;
-> -}
-> -
->  static int ab8500_gpadc_suspend(struct device *dev)
->  {
->         struct ab8500_gpadc *gpadc = dev_get_drvdata(dev);
-> @@ -1039,7 +1033,7 @@ static int ab8500_gpadc_remove(struct pl
->  static const struct dev_pm_ops ab8500_gpadc_pm_ops = {
->         SET_RUNTIME_PM_OPS(ab8500_gpadc_runtime_suspend,
->                            ab8500_gpadc_runtime_resume,
-> -                          ab8500_gpadc_runtime_idle)
-> +                          NULL)
->         SET_SYSTEM_SLEEP_PM_OPS(ab8500_gpadc_suspend,
->                                 ab8500_gpadc_resume)
->
-> Index: linux-pm/drivers/mmc/core/bus.c
-> ===================================================================
-> --- linux-pm.orig/drivers/mmc/core/bus.c
-> +++ linux-pm/drivers/mmc/core/bus.c
-> @@ -164,7 +164,7 @@ static int mmc_runtime_resume(struct dev
->
->  static int mmc_runtime_idle(struct device *dev)
->  {
-> -       return pm_runtime_suspend(dev);
-> +       return 0;
->  }
->
->  #endif /* !CONFIG_PM_RUNTIME */
-> Index: linux-pm/drivers/scsi/scsi_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/scsi/scsi_pm.c
-> +++ linux-pm/drivers/scsi/scsi_pm.c
-> @@ -229,8 +229,6 @@ static int scsi_runtime_resume(struct de
->
->  static int scsi_runtime_idle(struct device *dev)
->  {
-> -       int err;
-> -
->         dev_dbg(dev, "scsi_runtime_idle\n");
->
->         /* Insert hooks here for targets, hosts, and transport classes */
-> @@ -240,14 +238,11 @@ static int scsi_runtime_idle(struct devi
->
->                 if (sdev->request_queue->dev) {
->                         pm_runtime_mark_last_busy(dev);
-> -                       err = pm_runtime_autosuspend(dev);
-> -               } else {
-> -                       err = pm_runtime_suspend(dev);
-> +                       pm_runtime_autosuspend(dev);
-> +                       return -EBUSY;
->                 }
-> -       } else {
-> -               err = pm_runtime_suspend(dev);
->         }
-> -       return err;
-> +       return 0;
->  }
->
->  int scsi_autopm_get_device(struct scsi_device *sdev)
-> Index: linux-pm/drivers/sh/pm_runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/sh/pm_runtime.c
-> +++ linux-pm/drivers/sh/pm_runtime.c
-> @@ -25,7 +25,7 @@
->  static int default_platform_runtime_idle(struct device *dev)
->  {
->         /* suspend synchronously to disable clocks immediately */
-> -       return pm_runtime_suspend(dev);
-> +       return 0;
->  }
->
->  static struct dev_pm_domain default_pm_domain = {
-> Index: linux-pm/drivers/tty/serial/mfd.c
-> ===================================================================
-> --- linux-pm.orig/drivers/tty/serial/mfd.c
-> +++ linux-pm/drivers/tty/serial/mfd.c
-> @@ -1248,13 +1248,8 @@ static int serial_hsu_resume(struct pci_
->  #ifdef CONFIG_PM_RUNTIME
->  static int serial_hsu_runtime_idle(struct device *dev)
->  {
-> -       int err;
-> -
-> -       err = pm_schedule_suspend(dev, 500);
-> -       if (err)
-> -               return -EBUSY;
-> -
-> -       return 0;
-> +       pm_schedule_suspend(dev, 500);
-> +       return -EBUSY;
->  }
->
->  static int serial_hsu_runtime_suspend(struct device *dev)
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=_mimegpg-monstr-desktop-21290-1370330259-0001
+
+Add support for cpuidle.
+
+Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+---
+Changes in v4:
+- Add record to MAINTAINERS file
+- Use long license in header + Maintainer record
+- Remove unused headers
+- Fix indentations
+- s/zynq_init_cpuidle/zynq_cpuidle_init/g
+- use cpuidle_register function
+- Do not use module_init, use device_initcall instead
+  (Using it as module is not possible because some
+   arm core functions are not exported for modules)
+
+Changes in v3:
+- Move driver to drivers/cpuidle/
+- Check zynq compatible string suggested by Arnd
+- Use zynq_ function prefix because of multiplatform kernel
+- Incorporate comments from Daniel Lezcano
+- Rebase on the top of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+
+Changes in v2:
+- Fix file header
+
+Changes in v1:
+- It was the part of Zynq core changes
+  https://patchwork.kernel.org/patch/2342511/
+
+ MAINTAINERS                    |  1 +
+ drivers/cpuidle/Kconfig        |  6 +++
+ drivers/cpuidle/Makefile       |  1 +
+ drivers/cpuidle/cpuidle-zynq.c | 83 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 91 insertions(+)
+ create mode 100644 drivers/cpuidle/cpuidle-zynq.c
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 90f45f4..6e4d4e0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1309,6 +1309,7 @@ W:	http://wiki.xilinx.com
+ T:	git git://git.xilinx.com/linux-xlnx.git
+ S:	Supported
+ F:	arch/arm/mach-zynq/
++F:	drivers/cpuidle/cpuidle-zynq.c
+
+ ARM64 PORT (AARCH64 ARCHITECTURE)
+ M:	Catalin Marinas <catalin.marinas@arm.com>
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index c4cc27e..8272a08 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -39,4 +39,10 @@ config CPU_IDLE_CALXEDA
+ 	help
+ 	  Select this to enable cpuidle on Calxeda processors.
+
++config CPU_IDLE_ZYNQ
++	bool "CPU Idle Driver for Xilinx Zynq processors"
++	depends on ARCH_ZYNQ
++	help
++	  Select this to enable cpuidle on Xilinx Zynq processors.
++
+ endif
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 0d8bd55..8767a7b 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -7,3 +7,4 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
+
+ obj-$(CONFIG_CPU_IDLE_CALXEDA) += cpuidle-calxeda.o
+ obj-$(CONFIG_ARCH_KIRKWOOD) += cpuidle-kirkwood.o
++obj-$(CONFIG_CPU_IDLE_ZYNQ) += cpuidle-zynq.o
+diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle-zynq.c
+new file mode 100644
+index 0000000..38e03a1
+--- /dev/null
++++ b/drivers/cpuidle/cpuidle-zynq.c
+@@ -0,0 +1,83 @@
++/*
++ * Copyright (C) 2012-2013 Xilinx
++ *
++ * CPU idle support for Xilinx Zynq
++ *
++ * based on arch/arm/mach-at91/cpuidle.c
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ * The cpu idle uses wait-for-interrupt and RAM self refresh in order
++ * to implement two idle states -
++ * #1 wait-for-interrupt
++ * #2 wait-for-interrupt and RAM self refresh
++ *
++ * Maintainer: Michal Simek <michal.simek@xilinx.com>
++ */
++
++#include <linux/init.h>
++#include <linux/cpu_pm.h>
++#include <linux/cpuidle.h>
++#include <linux/of.h>
++#include <asm/proc-fns.h>
++#include <asm/cpuidle.h>
++
++#define ZYNQ_MAX_STATES		2
++
++/* Actual code that puts the SoC in different idle states */
++static int zynq_enter_idle(struct cpuidle_device *dev,
++			   struct cpuidle_driver *drv, int index)
++{
++	/* Devices must be stopped here */
++	cpu_pm_enter();
++
++	/* Add code for DDR self refresh start */
++	cpu_do_idle();
++
++	/* Add code for DDR self refresh stop */
++	cpu_pm_exit();
++
++	return index;
++}
++
++static struct cpuidle_driver zynq_idle_driver = {
++	.name = "zynq_idle",
++	.owner = THIS_MODULE,
++	.states = {
++		ARM_CPUIDLE_WFI_STATE,
++		{
++			.enter			= zynq_enter_idle,
++			.exit_latency		= 10,
++			.target_residency	= 10000,
++			.flags			= CPUIDLE_FLAG_TIME_VALID |
++						  CPUIDLE_FLAG_TIMER_STOP,
++			.name			= "RAM_SR",
++			.desc			= "WFI and RAM Self Refresh",
++		},
++	},
++	.safe_state_index = 0,
++	.state_count = ZYNQ_MAX_STATES,
++};
++
++/* Initialize CPU idle by registering the idle states */
++static int __init zynq_cpuidle_init(void)
++{
++	if (!of_machine_is_compatible("xlnx,zynq-7000"))
++		return -ENODEV;
++
++	pr_info("Xilinx Zynq CpuIdle Driver started\n");
++
++	return cpuidle_register(&zynq_idle_driver, NULL);
++}
++
++device_initcall(zynq_cpuidle_init);
+--
+1.8.2.3
 
 
+--=_mimegpg-monstr-desktop-21290-1370330259-0001
+Content-Type: application/pgp-signature
+Content-Transfer-Encoding: 7bit
 
--- 
-Best regards
-Tianyu Lan
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEABECAAYFAlGtlJMACgkQykllyylKDCGNJACeMP3IC/BiaKzGPAprzoiGpevi
+R7AAmgLgrv1H5heL5WdW+lOHJZ+vaQVd
+=w4V+
+-----END PGP SIGNATURE-----
+
+--=_mimegpg-monstr-desktop-21290-1370330259-0001--
