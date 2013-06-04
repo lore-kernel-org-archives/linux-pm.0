@@ -1,206 +1,48 @@
-From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
-Subject: [PATCH v2 1/2] PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex
-Date: Tue, 4 Jun 2013 12:58:32 +0300
-Message-ID: <1370339913-16135-2-git-send-email-andrii.tseglytskyi@ti.com>
-References: <1370339913-16135-1-git-send-email-andrii.tseglytskyi@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: power management regression in linux 3.10? (related to CONFIG_NO_HZ_FULL)
+Date: Tue, 04 Jun 2013 13:30:54 +0200
+Message-ID: <1906476.HVJCZCXmXX@vostro.rjw.lan>
+References: <1370282175.18020.4.camel@localhost> <51ACF071.702@gmail.com> <1370308128.6305.3.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <1370339913-16135-1-git-send-email-andrii.tseglytskyi@ti.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: khilman@linaro.org, j-keerthy@ti.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:57829 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752064Ab3FDLVw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Jun 2013 07:21:52 -0400
+In-Reply-To: <1370308128.6305.3.camel@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Karcher <Michael.Karcher@fu-berlin.de>
+Cc: Dirk Brandewie <dirk.brandewie@gmail.com>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>
 
-Use of of devm_* API for resource allocation provides benefits such
-as auto handling of resource free. This reduces possibility have
-memory leaks in case of wrong error handling. All direct release
-calls should be removed to avoid races.
+On Tuesday, June 04, 2013 03:08:48 AM Michael Karcher wrote:
+> Am Montag, den 03.06.2013, 12:37 -0700 schrieb Dirk Brandewie:
+> > On 06/03/2013 12:34 PM, Rafael J. Wysocki wrote:
+> > > On Monday, June 03, 2013 07:56:15 PM Michael Karcher wrote:
+> > >> Hello,
+> > > Yes, please try with CONFIG_NO_HZ_IDLE and see if you can reproduce the
+> > > problem.
+> Instead of doing that, I successfully applied Dirk's suggestion. Is
+> CONFIG_NO_HZ + CONFIG_NO_HZ_IDLE worth testing?
 
-Reported-by: Grygorii Strashko <grygorii.strashko@ti.com>
-Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
----
- drivers/power/avs/smartreflex.c |   76 +++++++++++----------------------------
- 1 file changed, 21 insertions(+), 55 deletions(-)
+Yes, it is.
 
-diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-index 6b2238b..fd71d5a 100644
---- a/drivers/power/avs/smartreflex.c
-+++ b/drivers/power/avs/smartreflex.c
-@@ -27,7 +27,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/power/smartreflex.h>
- 
--#define SMARTREFLEX_NAME_LEN	16
-+#define SMARTREFLEX_NAME_LEN	32
- #define NVALUE_NAME_LEN		40
- #define SR_DISABLE_TIMEOUT	200
- 
-@@ -207,12 +207,11 @@ static void sr_stop_vddautocomp(struct omap_sr *sr)
- static int sr_late_init(struct omap_sr *sr_info)
- {
- 	struct omap_sr_data *pdata = sr_info->pdev->dev.platform_data;
--	struct resource *mem;
- 	int ret = 0;
- 
- 	if (sr_class->notify && sr_class->notify_flags && sr_info->irq) {
--		ret = request_irq(sr_info->irq, sr_interrupt,
--				  0, sr_info->name, sr_info);
-+		ret = devm_request_irq(&sr_info->pdev->dev, sr_info->irq,
-+				       sr_interrupt, 0, sr_info->name, sr_info);
- 		if (ret)
- 			goto error;
- 		disable_irq(sr_info->irq);
-@@ -224,14 +223,10 @@ static int sr_late_init(struct omap_sr *sr_info)
- 	return ret;
- 
- error:
--	iounmap(sr_info->base);
--	mem = platform_get_resource(sr_info->pdev, IORESOURCE_MEM, 0);
--	release_mem_region(mem->start, resource_size(mem));
- 	list_del(&sr_info->node);
- 	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering"
- 		"interrupt handler. Smartreflex will"
- 		"not function as desired\n", __func__);
--	kfree(sr_info);
- 
- 	return ret;
- }
-@@ -847,34 +842,33 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 	struct dentry *nvalue_dir;
- 	int i, ret = 0;
- 
--	sr_info = kzalloc(sizeof(struct omap_sr), GFP_KERNEL);
-+	sr_info = devm_kzalloc(&pdev->dev, sizeof(struct omap_sr), GFP_KERNEL);
- 	if (!sr_info) {
- 		dev_err(&pdev->dev, "%s: unable to allocate sr_info\n",
- 			__func__);
- 		return -ENOMEM;
- 	}
- 
-+	sr_info->name = devm_kzalloc(&pdev->dev,
-+				     SMARTREFLEX_NAME_LEN, GFP_KERNEL);
-+	if (!sr_info->name) {
-+		dev_err(&pdev->dev, "%s: unable to allocate SR instance name\n",
-+			__func__);
-+		return -ENOMEM;
-+	}
-+
- 	platform_set_drvdata(pdev, sr_info);
- 
- 	if (!pdata) {
- 		dev_err(&pdev->dev, "%s: platform data missing\n", __func__);
--		ret = -EINVAL;
--		goto err_free_devinfo;
-+		return -EINVAL;
- 	}
- 
- 	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!mem) {
--		dev_err(&pdev->dev, "%s: no mem resource\n", __func__);
--		ret = -ENODEV;
--		goto err_free_devinfo;
--	}
--
--	mem = request_mem_region(mem->start, resource_size(mem),
--					dev_name(&pdev->dev));
--	if (!mem) {
--		dev_err(&pdev->dev, "%s: no mem region\n", __func__);
--		ret = -EBUSY;
--		goto err_free_devinfo;
-+	sr_info->base = devm_ioremap_resource(&pdev->dev, mem);
-+	if (IS_ERR(sr_info->base)) {
-+		dev_err(&pdev->dev, "%s: ioremap fail\n", __func__);
-+		return PTR_ERR(sr_info->base);
- 	}
- 
- 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-@@ -882,13 +876,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 	pm_runtime_enable(&pdev->dev);
- 	pm_runtime_irq_safe(&pdev->dev);
- 
--	sr_info->name = kasprintf(GFP_KERNEL, "%s", pdata->name);
--	if (!sr_info->name) {
--		dev_err(&pdev->dev, "%s: Unable to alloc SR instance name\n",
--			__func__);
--		ret = -ENOMEM;
--		goto err_release_region;
--	}
-+	snprintf(sr_info->name, SMARTREFLEX_NAME_LEN, "%s", pdata->name);
- 
- 	sr_info->pdev = pdev;
- 	sr_info->srid = pdev->id;
-@@ -905,13 +893,6 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 	sr_info->autocomp_active = false;
- 	sr_info->ip_type = pdata->ip_type;
- 
--	sr_info->base = ioremap(mem->start, resource_size(mem));
--	if (!sr_info->base) {
--		dev_err(&pdev->dev, "%s: ioremap fail\n", __func__);
--		ret = -ENOMEM;
--		goto err_free_name;
--	}
--
- 	if (irq)
- 		sr_info->irq = irq->start;
- 
-@@ -927,7 +908,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 		ret = sr_late_init(sr_info);
- 		if (ret) {
- 			pr_warning("%s: Error in SR late init\n", __func__);
--			goto err_iounmap;
-+			goto err_list_del;
- 		}
- 	}
- 
-@@ -938,7 +919,7 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 			ret = PTR_ERR(sr_dbg_dir);
- 			pr_err("%s:sr debugfs dir creation failed(%d)\n",
- 				__func__, ret);
--			goto err_iounmap;
-+			goto err_list_del;
- 		}
- 	}
- 
-@@ -991,16 +972,8 @@ static int __init omap_sr_probe(struct platform_device *pdev)
- 
- err_debugfs:
- 	debugfs_remove_recursive(sr_info->dbg_dir);
--err_iounmap:
-+err_list_del:
- 	list_del(&sr_info->node);
--	iounmap(sr_info->base);
--err_free_name:
--	kfree(sr_info->name);
--err_release_region:
--	release_mem_region(mem->start, resource_size(mem));
--err_free_devinfo:
--	kfree(sr_info);
--
- 	return ret;
- }
- 
-@@ -1008,7 +981,6 @@ static int omap_sr_remove(struct platform_device *pdev)
- {
- 	struct omap_sr_data *pdata = pdev->dev.platform_data;
- 	struct omap_sr *sr_info;
--	struct resource *mem;
- 
- 	if (!pdata) {
- 		dev_err(&pdev->dev, "%s: platform data missing\n", __func__);
-@@ -1028,12 +1000,6 @@ static int omap_sr_remove(struct platform_device *pdev)
- 		debugfs_remove_recursive(sr_info->dbg_dir);
- 
- 	list_del(&sr_info->node);
--	iounmap(sr_info->base);
--	kfree(sr_info->name);
--	kfree(sr_info);
--	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	release_mem_region(mem->start, resource_size(mem));
--
- 	return 0;
- }
- 
+> > > Does your system use intel_idle?  You've set that in .config, but can you check
+> > > what dmesg says, please?
+> No, intel_idle complains it doesn't support my CPU family.
+
+I thought so.  It is using the ACPI idle driver, then, so I think cpuidle in
+general is affected.
+
+That seems to be a time accounting problem of some sort (adding CCs to Ingo and
+Thomas).
+
+Thanks,
+Rafael
+
+
 -- 
-1.7.9.5
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
