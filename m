@@ -1,325 +1,519 @@
-From: Michal Simek <monstr@monstr.eu>
-Subject: Re: [PATCH v3] arm: zynq: Add cpuidle support
-Date: Tue, 04 Jun 2013 08:47:34 +0200
-Message-ID: <51AD8D86.8080906@monstr.eu>
-References: <2ba502c172f5374ed2e424292fb50345c9dd007a.1370266815.git.michal.simek@xilinx.com> <51ACA237.8070004@linaro.org> <51ACB06A.2050206@monstr.eu> <51ACC20C.7000005@linaro.org>
-Reply-To: monstr@monstr.eu
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: [PATCH] thermal: add imx thermal driver support
+Date: Tue, 4 Jun 2013 15:13:28 +0800
+Message-ID: <1370330008-5982-1-git-send-email-shawn.guo@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="----enig2UVOTLWNUQMOMQAXSFWOD"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:37476 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756480Ab3FDGrh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 02:47:37 -0400
-Received: by mail-wi0-f172.google.com with SMTP id m6so3422401wiv.5
-        for <linux-pm@vger.kernel.org>; Mon, 03 Jun 2013 23:47:36 -0700 (PDT)
-In-Reply-To: <51ACC20C.7000005@linaro.org>
+Received: from ch1ehsobe002.messaging.microsoft.com ([216.32.181.182]:46794
+	"EHLO ch1outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751803Ab3FDHMb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 03:12:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Michal Simek <michal.simek@xilinx.com>, linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, Josh Cartwright <josh.cartwright@ni.com>, Steffen Trumtrar <s.trumtrar@pengutronix.de>, Rob Herring <robherring2@gmail.com>, Peter Crosthwaite <peter.crosthwaite@xilinx.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
-------enig2UVOTLWNUQMOMQAXSFWOD
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+This is based on the initial imx thermal work done by
+Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
+valid).  Since he is no longer interested in the work and I have
+rewritten a significant amount of the code, I just took the authorship
+over from him.
 
-On 06/03/2013 06:19 PM, Daniel Lezcano wrote:
-> On 06/03/2013 05:04 PM, Michal Simek wrote:
->> On 06/03/2013 04:03 PM, Daniel Lezcano wrote:
->>> On 06/03/2013 03:40 PM, Michal Simek wrote:
->>>> Add support for cpuidle.
->>>>
->>>> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
->>>> ---
->>>> Changes in v3:
->>>> - Move driver to drivers/cpuidle/
->>>> - Check zynq compatible string suggested by Arnd
->>>> - Use zynq_ function prefix because of multiplatform kernel
->>>> - Incorporate comments from Daniel Lezcano
->>>> - Rebase on the top of git://git.kernel.org/pub/scm/linux/kernel/git=
-/rafael/linux-pm.git linux-next
->>>>
->>>> Changes in v2:
->>>> - Fix file header
->>>>
->>>> Changes in v1:
->>>> - It was the part of Zynq core changes
->>>>   https://patchwork.kernel.org/patch/2342511/
->>>>
->>>>  drivers/cpuidle/Kconfig        |   6 +++
->>>>  drivers/cpuidle/Makefile       |   1 +
->>>>  drivers/cpuidle/cpuidle-zynq.c | 100 ++++++++++++++++++++++++++++++=
-+++++++++++
->>>>  3 files changed, 107 insertions(+)
->>>>  create mode 100644 drivers/cpuidle/cpuidle-zynq.c
->>>>
->>>> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
->>>> index c4cc27e..8272a08 100644
->>>> --- a/drivers/cpuidle/Kconfig
->>>> +++ b/drivers/cpuidle/Kconfig
->>>> @@ -39,4 +39,10 @@ config CPU_IDLE_CALXEDA
->>>>  	help
->>>>  	  Select this to enable cpuidle on Calxeda processors.
->>>>
->>>> +config CPU_IDLE_ZYNQ
->>>> +	bool "CPU Idle Driver for Xilinx Zynq processors"
->>>> +	depends on ARCH_ZYNQ
->>>> +	help
->>>> +	  Select this to enable cpuidle on Xilinx Zynq processors.
->>>> +
->>>>  endif
->>>> diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
->>>> index 0d8bd55..8767a7b 100644
->>>> --- a/drivers/cpuidle/Makefile
->>>> +++ b/drivers/cpuidle/Makefile
->>>> @@ -7,3 +7,4 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) +=3D coupl=
-ed.o
->>>>
->>>>  obj-$(CONFIG_CPU_IDLE_CALXEDA) +=3D cpuidle-calxeda.o
->>>>  obj-$(CONFIG_ARCH_KIRKWOOD) +=3D cpuidle-kirkwood.o
->>>> +obj-$(CONFIG_CPU_IDLE_ZYNQ) +=3D cpuidle-zynq.o
->>>> diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidl=
-e-zynq.c
->>>> new file mode 100644
->>>> index 0000000..afe6af3
->>>> --- /dev/null
->>>> +++ b/drivers/cpuidle/cpuidle-zynq.c
->>>> @@ -0,0 +1,100 @@
->>>> +/*
->>>> + * Copyright (C) 2012-2013 Xilinx
->>>> + *
->>>> + * CPU idle support for Xilinx Zynq
->>>> + *
->>>> + * based on arch/arm/mach-at91/cpuidle.c
->>>> + *
->>>> + * This file is licensed under the terms of the GNU General Public
->>>> + * License version 2.  This program is licensed "as is" without any=
+It adds the imx thermal support using Temperature Monitor (TEMPMON)
+block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
+interface to access TEMPMON control registers and calibration data, and
+supports cpufreq as the cooling device.
 
->>>> + * warranty of any kind, whether express or implied.
->>>> + *
->>>> + * The cpu idle uses wait-for-interrupt and RAM self refresh in ord=
-er
->>>> + * to implement two idle states -
->>>> + * #1 wait-for-interrupt
->>>> + * #2 wait-for-interrupt and RAM self refresh
->>>> + */
->>>
->>> Please check you headers, it seems you are including unused headers.
->>>
->>>> +#include <linux/kernel.h>
->>>> +#include <linux/init.h>
->>>> +#include <linux/platform_device.h>
->>>> +#include <linux/cpuidle.h>
->>>> +#include <linux/io.h>
->>>
->>> ^^^^^
->>>
->>>> +#include <linux/export.h>
->>>
->>> ^^^^^
->>>
->>>> +#include <linux/clockchips.h>
->>>
->>> ^^^^^
->>>
->>>> +#include <linux/cpu_pm.h>
->>>> +#include <linux/clk.h>
->>>
->>> ^^^^
->>>
->>>> +#include <linux/err.h>
->>>> +#include <linux/of.h>
->>>> +#include <asm/proc-fns.h>
->>>> +#include <asm/cpuidle.h>
->>>> +
->>>> +#define ZYNQ_MAX_STATES		2
->>>> +
->>>> +static DEFINE_PER_CPU(struct cpuidle_device, zynq_cpuidle_device);
->>>
->>> see below.
->>>
->>>> +
->>>> +/* Actual code that puts the SoC in different idle states */
->>>> +static int zynq_enter_idle(struct cpuidle_device *dev,
->>>> +		struct cpuidle_driver *drv, int index)
->>>
->>> Indentation.
->>>
->>>> +{
->>>> +	/* Devices must be stopped here */
->>>> +	cpu_pm_enter();
->>>> +
->>>> +	/* Add code for DDR self refresh start */
->>>> +	cpu_do_idle();
->>>> +
->>>> +	/* Add code for DDR self refresh stop */
->>>> +	cpu_pm_exit();
->>>> +
->>>> +	return index;
->>>> +}
->>>> +
->>>> +static struct cpuidle_driver zynq_idle_driver =3D {
->>>> +	.name =3D "zynq_idle",
->>>> +	.owner =3D THIS_MODULE,
->>>> +	.states =3D {
->>>> +		ARM_CPUIDLE_WFI_STATE,
->>>> +		{
->>>> +			.enter            =3D zynq_enter_idle,
->>>> +			.exit_latency     =3D 10,
->>>> +			.target_residency =3D 10000,
->>>> +			.flags            =3D CPUIDLE_FLAG_TIME_VALID,
->>>> +					    CPUIDLE_FLAG_TIMER_STOP,
->>>> +			.name             =3D "RAM_SR",
->>>> +			.desc             =3D "WFI and RAM Self Refresh",
->>>> +		},
->>>> +	},
->>>> +	.safe_state_index =3D 0,
->>>> +	.state_count =3D ZYNQ_MAX_STATES,
->>>> +};
->>>> +
->>>> +/* Initialize CPU idle by registering the idle states */
->>>> +static int zynq_init_cpuidle(void)
->>>> +{
->>>> +	unsigned int cpu;
->>>> +	struct cpuidle_device *device;
->>>> +	int ret;
->>>> +
->>>> +	if (!of_machine_is_compatible("xlnx,zynq-7000"))
->>>> +		return -ENODEV;
->>>> +
->>>> +	ret =3D cpuidle_register_driver(&zynq_idle_driver);
->>>> +	if (ret) {
->>>> +		pr_err("%s: Driver registration failed\n", __func__);
->>>> +		return ret;
->>>> +	}
->>>> +
->>>> +	for_each_possible_cpu(cpu) {
->>>> +		device =3D &per_cpu(zynq_cpuidle_device, cpu);
->>>> +		device->cpu =3D cpu;
->>>> +		ret =3D cpuidle_register_device(device);
->>>> +		if (ret) {
->>>> +			pr_err("%s: Device registration failed\n", __func__);
->>>> +			return ret;
->>>> +		}
->>>> +	}
->>>> +
->>>> +	pr_info("Xilinx Zynq CpuIdle Driver started\n");
->>>
->>> Hi Michal,
->>>
->>> actually you can replace this code by
->>>
->>> cpuidle_register(&zynq_idle_driver, NULL);
->>>
->>> and remove the zynq_cpuidle_device.
->>>
->>> The framework will take care of registering the driver and the device=
-s.
->>
->> Will change.
->>
->>
->>>> +	return 0;
->>>> +}
->>>> +module_init(zynq_init_cpuidle);
->>>
->>> Do you really want it as module ?
->>
->> kirkwood is a module
->> but in Makefile depends directly on ARCH
->> obj-$(CONFIG_ARCH_KIRKWOOD) +=3D cpuidle-kirkwood.o
->>
->> Calxeda uses module_init() which is in this configuration device_initc=
-all.
->>
->> Any advantage to write it as module?
->> Maybe for testing purpose will be helpful to have it as module too.
->> What do you think?
->=20
-> I don't see any reasons it couldn't be written as a module. It is up to=
+Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
+---
+ .../devicetree/bindings/thermal/imx-thermal.txt    |   14 +
+ drivers/thermal/Kconfig                            |    8 +
+ drivers/thermal/Makefile                           |    1 +
+ drivers/thermal/imx_thermal.c                      |  421 ++++++++++++++++++++
+ 4 files changed, 444 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/imx-thermal.txt
+ create mode 100644 drivers/thermal/imx_thermal.c
 
-> you, if you think there could be any benefit on that, feel free to writ=
-e
-> it as a module. Otherwise it could be enabled in the kernel.
->=20
-> If it is only for testing purpose, that means a very specific use case
-> where the module is loaded from NFS and a server doing cross compiling.=
+diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+new file mode 100644
+index 0000000..c606e2b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
+@@ -0,0 +1,14 @@
++* Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
++
++Required properties:
++- compatible : "fsl,imx6q-thermal"
++- fsl,tempmon : phandle pointer to TEMPMON control registers
++- fsl,tempmon-data : phandle pointer to TEMPMON calibration data
++
++Example:
++
++tempmon {
++	compatible = "fsl,imx6q-tempmon";
++	fsl,tempmon = <&anatop>;
++	fsl,tempmon-data = <&ocotp>;
++};
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5e3c025..935fcbe 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -91,6 +91,14 @@ config THERMAL_EMULATION
+ 	  because userland can easily disable the thermal policy by simply
+ 	  flooding this sysfs node with low temperature values.
+ 
++config IMX_THERMAL
++	tristate "Temperature sensor driver for Freescale i.MX SoCs"
++	depends on CPU_THERMAL
++	depends on MFD_SYSCON
++	depends on OF
++	help
++	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX SoCs.
++
+ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+ 	depends on PLAT_SPEAR
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index c054d41..6910b2d 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
+ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
++obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ 
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+new file mode 100644
+index 0000000..bdfcadb
+--- /dev/null
++++ b/drivers/thermal/imx_thermal.c
+@@ -0,0 +1,421 @@
++/*
++ * Copyright 2013 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++
++#include <linux/cpu_cooling.h>
++#include <linux/cpufreq.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/mfd/syscon.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include <linux/slab.h>
++#include <linux/thermal.h>
++#include <linux/types.h>
++
++#define REG_SET		0x4
++#define REG_CLR		0x8
++#define REG_TOG		0xc
++
++#define MISC0				0x0150
++#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
++
++#define TEMPSENSE0			0x0180
++#define TEMPSENSE0_TEMP_CNT_SHIFT	8
++#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
++#define TEMPSENSE0_FINISHED		(1 << 2)
++#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
++#define TEMPSENSE0_POWER_DOWN		(1 << 0)
++
++#define TEMPSENSE1			0x0190
++#define TEMPSENSE1_MEASURE_FREQ		0xffff
++
++#define OCOTP_ANA1			0x04e0
++
++/* The driver supports 1 active trip point and 1 critical trip point */
++enum imx_thermal_trip {
++	IMX_TRIP_ACTIVE,
++	IMX_TRIP_CRITICAL,
++	IMX_TRIP_NUM,
++};
++
++/*
++ * It defines the temperature in millicelsius for active trip point
++ * that will trigger cooling action when crossed.
++ */
++#define IMX_TEMP_ACTIVE			85000
++
++/*
++ * The maximum die temperature on imx parts is 105C, let's give some cushion
++ * for noise and possible temperature rise between measurements.
++ */
++#define IMX_TEMP_CRITICAL		100000
++
++#define IMX_THERMAL_POLLING_INTERVAL	1000 /* millisecond */
++
++struct imx_thermal_data {
++	struct thermal_zone_device *tz;
++	struct thermal_cooling_device *cdev;
++	enum thermal_device_mode mode;
++	struct regmap *tempmon;
++	bool meas_suspended;
++	int c1, c2; /* See forumla in imx_get_sensor_data() */
++};
++
++static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
++{
++	struct imx_thermal_data *data = tz->devdata;
++	struct regmap *map = data->tempmon;
++	static unsigned long last_temp;
++	unsigned int n_meas;
++	u32 val;
++
++	/*
++	 * Every time we measure the temperature, we will power on the
++	 * temperature sensor, enable measurements, take a reading,
++	 * disable measurements, power off the temperature sensor.
++	 */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
++
++	/*
++	 * According to the temp sensor designers, it may require up to ~17us
++	 * to complete a measurement.  But this timing isn't checked on every
++	 * part nor is it specified in the datasheet, so sleeping at least 1ms
++	 * should provide plenty of time.  Sleeping longer than 1ms is ok so no
++	 * need for usleep_range.
++	 */
++	msleep(1);
++
++	regmap_read(map, TEMPSENSE0, &val);
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++
++	if ((val & TEMPSENSE0_FINISHED) == 0) {
++		dev_dbg(&tz->device, "temp measurement never finished\n");
++		return -EAGAIN;
++	}
++
++	n_meas = (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SHIFT;
++
++	/* See imx_get_sensor_data() for forumla derivation */
++	*temp = data->c2 + data->c1 * n_meas;
++
++	if (*temp != last_temp) {
++		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
++		last_temp = *temp;
++	}
++
++	return 0;
++}
++
++static int imx_get_mode(struct thermal_zone_device *tz,
++			enum thermal_device_mode *mode)
++{
++	struct imx_thermal_data *data = tz->devdata;
++
++	*mode = data->mode;
++
++	return 0;
++}
++
++static int imx_set_mode(struct thermal_zone_device *tz,
++			enum thermal_device_mode mode)
++{
++	struct imx_thermal_data *data = tz->devdata;
++
++	tz->polling_delay = (mode == THERMAL_DEVICE_ENABLED) ?
++				IMX_THERMAL_POLLING_INTERVAL : 0;
++	data->mode = mode;
++	thermal_zone_device_update(tz);
++
++	return 0;
++}
++
++static int imx_get_trip_type(struct thermal_zone_device *tz, int trip,
++			     enum thermal_trip_type *type)
++{
++	*type = (trip == IMX_TRIP_ACTIVE) ? THERMAL_TRIP_ACTIVE :
++					    THERMAL_TRIP_CRITICAL;
++	return 0;
++}
++
++static int imx_get_crit_temp(struct thermal_zone_device *tz,
++			     unsigned long *temp)
++{
++	*temp = IMX_TEMP_CRITICAL;
++	return 0;
++}
++
++static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,
++			     unsigned long *temp)
++{
++	*temp = (trip == IMX_TRIP_ACTIVE) ? IMX_TEMP_ACTIVE :
++					    IMX_TEMP_CRITICAL;
++	return 0;
++}
++
++static int imx_bind(struct thermal_zone_device *tz,
++		    struct thermal_cooling_device *cdev)
++{
++	int ret;
++
++	ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_ACTIVE, cdev,
++					       THERMAL_NO_LIMIT,
++					       THERMAL_NO_LIMIT);
++	if (ret) {
++		dev_err(&tz->device,
++			"binding zone %s with cdev %s failed:%d\n",
++			tz->type, cdev->type, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int imx_unbind(struct thermal_zone_device *tz,
++		      struct thermal_cooling_device *cdev)
++{
++	int ret;
++
++	ret = thermal_zone_unbind_cooling_device(tz, IMX_TRIP_ACTIVE, cdev);
++	if (ret) {
++		dev_err(&tz->device,
++			"unbinding zone %s with cdev %s failed:%d\n",
++			tz->type, cdev->type, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static const struct thermal_zone_device_ops imx_tz_ops = {
++	.bind = imx_bind,
++	.unbind = imx_unbind,
++	.get_temp = imx_get_temp,
++	.get_mode = imx_get_mode,
++	.set_mode = imx_set_mode,
++	.get_trip_type = imx_get_trip_type,
++	.get_trip_temp = imx_get_trip_temp,
++	.get_crit_temp = imx_get_crit_temp,
++};
++
++static int imx_get_sensor_data(struct platform_device *pdev)
++{
++	struct imx_thermal_data *data = platform_get_drvdata(pdev);
++	struct regmap *map;
++	int t1, t2, n1, n2;
++	int ret;
++	u32 val;
++
++	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
++					      "fsl,tempmon-data");
++	if (IS_ERR(map)) {
++		ret = PTR_ERR(map);
++		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
++		return ret;
++	}
++
++	ret = regmap_read(map, OCOTP_ANA1, &val);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
++		return ret;
++	}
++
++	if (val == 0 || val == ~0) {
++		dev_err(&pdev->dev, "invalid sensor calibration data\n");
++		return -EINVAL;
++	}
++
++	/*
++	 * Sensor data layout:
++	 *   [31:20] - sensor value @ 25C
++	 *    [19:8] - sensor value of hot
++	 *     [7:0] - hot temperature value
++	 */
++	n1 = val >> 20;
++	n2 = (val & 0xfff00) >> 8;
++	t2 = val & 0xff;
++	t1 = 25; /* t1 always 25C */
++
++	/*
++	 * Derived from linear interpolation,
++	 * Tmeas = T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
++	 * We want to reduce this down to the minimum computation necessary
++	 * for each temperature read.  Also, we want Tmeas in millicelsius
++	 * and we don't want to lose precision from integer division. So...
++	 * milli_Tmeas = 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / (N1 - N2)
++	 * Let constant c1 = 1000 * (T1 - T2) / (N1 - N2)
++	 * milli_Tmeas = (1000 * T2) + c1 * (Nmeas - N2)
++	 * milli_Tmeas = (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
++	 * Let constant c2 = (1000 * T2) - (c1 * N2)
++	 * milli_Tmeas = c2 + (c1 * Nmeas)
++	 */
++	data->c1 = 1000 * (t1 - t2) / (n1 - n2);
++	data->c2 = 1000 * t2 - data->c1 * n2;
++
++	return 0;
++}
++
++static int imx_thermal_probe(struct platform_device *pdev)
++{
++	struct imx_thermal_data *data;
++	struct cpumask clip_cpus;
++	struct regmap *map;
++	int ret;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "fsl,tempmon");
++	if (IS_ERR(map)) {
++		ret = PTR_ERR(map);
++		dev_err(&pdev->dev, "failed to get tempmon regmap: %d\n", ret);
++		return ret;
++	}
++	data->tempmon = map;
++
++	platform_set_drvdata(pdev, data);
++
++	ret = imx_get_sensor_data(pdev);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to get sensor data\n");
++		return ret;
++	}
++
++	/* Make sure sensor is in known good state for measurements */
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
++	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
++	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++
++	cpumask_set_cpu(0, &clip_cpus);
++	data->cdev = cpufreq_cooling_register(&clip_cpus);
++	if (IS_ERR(data->cdev)) {
++		ret = PTR_ERR(data->cdev);
++		dev_err(&pdev->dev,
++			"failed to register cpufreq cooling device: %d\n", ret);
++		return ret;
++	}
++
++	data->tz = thermal_zone_device_register("imx_thermal_zone",
++						IMX_TRIP_NUM, 0, data,
++						&imx_tz_ops, NULL, 0,
++						IMX_THERMAL_POLLING_INTERVAL);
++	if (IS_ERR(data->tz)) {
++		ret = PTR_ERR(data->tz);
++		dev_err(&pdev->dev,
++			"failed to register thermal zone device %d\n", ret);
++		cpufreq_cooling_unregister(data->cdev);
++		return ret;
++	}
++
++	data->mode = THERMAL_DEVICE_ENABLED;
++
++	return 0;
++}
++
++static int imx_thermal_remove(struct platform_device *pdev)
++{
++	struct imx_thermal_data *data = platform_get_drvdata(pdev);
++
++	thermal_zone_device_unregister(data->tz);
++	cpufreq_cooling_unregister(data->cdev);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int imx_thermal_suspend(struct device *dev)
++{
++	struct imx_thermal_data *data = dev_get_drvdata(dev);
++	struct regmap *map = data->tempmon;
++	u32 val;
++
++	regmap_read(map, TEMPSENSE0, &val);
++
++	/* Was a measurement taking place?  If not, nothing to do. */
++	if (val & TEMPSENSE0_POWER_DOWN)
++		return 0;
++
++	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
++	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
++
++	data->meas_suspended = true;
++
++	return 0;
++}
++
++static int imx_thermal_resume(struct device *dev)
++{
++	struct imx_thermal_data *data = dev_get_drvdata(dev);
++	struct regmap *map = data->tempmon;
++
++	/*
++	 * If a measurement was taking place while suspend, re-take the
++	 * measurement.
++	 */
++	if (data->meas_suspended) {
++		regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
++		regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
++		/*
++		 * According to the temp sensor designers, it may require
++		 * up to ~17us to complete a measurement.  But this timing
++		 * isn't checked on every part nor is it specified in the
++		 * datasheet, so delay 50us for timing margin.
++		 */
++		udelay(50);
++		data->meas_suspended = false;
++	}
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
++			 imx_thermal_suspend, imx_thermal_resume);
++
++static const struct of_device_id of_imx_thermal_match[] = {
++	{ .compatible = "fsl,imx6q-tempmon", },
++	{ /* end */ }
++};
++
++static struct platform_driver imx_thermal = {
++	.driver = {
++		.name	= "imx_thermal",
++		.owner  = THIS_MODULE,
++		.pm	= &imx_thermal_pm_ops,
++		.of_match_table = of_imx_thermal_match,
++	},
++	.probe		= imx_thermal_probe,
++	.remove		= imx_thermal_remove,
++};
++
++static int __init imx_thermal_init(void)
++{
++	return platform_driver_register(&imx_thermal);
++}
++late_initcall(imx_thermal_init);
++
++static void __exit imx_thermal_exit(void)
++{
++	platform_driver_unregister(&imx_thermal);
++}
++module_exit(imx_thermal_exit);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:imx-thermal");
+-- 
+1.7.9.5
 
-> Not sure it is worth to do finally.
 
-Let me try to create module from it and also enable this option in Kconfi=
-g
-and test it and I will see if there is any problem or not.
-If not, I will do it as module because as I said I see only one
-reason why this could be helpful which is testing.
-Because you can run set of testcases with this module and without
-but on the same kernel configuration. And you don't need to recompile
-the kernel and reload it.
-
-> In the future, I hope we can do a single entry for an ARM driver based
-> on the device tree choosing the right back end driver in the case of th=
-e
-> single kernel image. In this case, it won't be consistent to have some
-> of the drivers being modules and others not. But the future does not
-> exist (yet) ... :)
-
-There shouldn't be a problem to use this as module too.
-
-> I am a bit worried about the moment the driver is initialized because i=
-f
-> we try to make all the drivers to converge to a single one, that means
-> it will be initialized at a moment compatible with all the drivers.
->=20
-> Just to summarize:
->=20
-> cpuidle framework: core_initcall
->=20
-> calxeda:     module_platform_driver =3D> module_init
-
-Based on Kconfig(bool) this is also device_initcall
-
-> kirkwood:    module_init
-
-But based on Makefile(depends on ARCH_KIRKWOOD) as I wrote this is device=
-_initcall
-
-> davinci      device_initcall
-> omap3/omap4: device_initcall
-> at91:        device_initcall
-> shmobile:    init_late
-> imx5/6:      init_late
-> s3c64:       device_initcall
-> ux500:       device_initcall
-> tegra1/2/3:  device_initcall
-
-Thanks,
-Michal
-
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
-------enig2UVOTLWNUQMOMQAXSFWOD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlGtjYYACgkQykllyylKDCEK/wCghe3ASrNRjsw5D5BjMBq8LpBS
-NkQAnjeE/7gZpAOsEnOAvaE2fiwX3Ofw
-=0TJN
------END PGP SIGNATURE-----
-
-------enig2UVOTLWNUQMOMQAXSFWOD--
