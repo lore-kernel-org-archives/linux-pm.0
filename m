@@ -1,100 +1,37 @@
-From: David C Niemi <dniemi@verisign.com>
-Subject: Re: [PATCH v2 1/3] cpufreq: ondemand: Change the calculation of target
- frequency
-Date: Tue, 04 Jun 2013 13:00:36 -0400
-Message-ID: <51AE1D34.7060908@verisign.com>
-References: <51ACF2EA.70001@semaphore.gr> <51ACFEBE.1050801@verisign.com> <51AE05A5.7080504@semaphore.gr>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4] arm: zynq: Add cpuidle support
+Date: Tue, 04 Jun 2013 23:29:28 +0200
+Message-ID: <2279402.cTvpFSuaii@vostro.rjw.lan>
+References: <360abe7d7e8b8a0f785ec846c24fa5cb6658b956.1370330248.git.michal.simek@xilinx.com> <51ADDE51.6040701@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from exprod6og119.obsmtp.com ([64.18.1.234]:57067 "EHLO
-	exprod6og119.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757880Ab3FDRAm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Jun 2013 13:00:42 -0400
-In-Reply-To: <51AE05A5.7080504@semaphore.gr>
+Received: from hydra.sisk.pl ([212.160.235.94]:57993 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751279Ab3FDVUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Jun 2013 17:20:30 -0400
+In-Reply-To: <51ADDE51.6040701@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Michal Simek <michal.simek@xilinx.com>
+Cc: linux-kernel@vger.kernel.org, Michal Simek <monstr@monstr.eu>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+
+On Tuesday, June 04, 2013 02:32:17 PM Daniel Lezcano wrote:
+> On 06/04/2013 09:17 AM, Michal Simek wrote:
+> > Add support for cpuidle.
+> > 
+> > Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+> > ---
+> 
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Queued up for 3.11, but I *wish* the changelog were a bit more elaborate ...
+
+Thanks,
+Rafael
 
 
-Thanks for the detailed response.  I am heartened by the edge cases (true idle and above up_threshold) remaining the same, that sounds like it should cover a lot of ground well.
-
-David C Niemi
-
-
-On 06/04/13 11:20, Stratos Karafotis wrote:
-> Hi David, 
-> Thanks for your comments!
->
-> In your case, the behavior of ondemand will not change to the worst.
-> up_threshold/sampling down factor remain as is. 
-> So, for loads above up_threshold ondemand will behave the same.
->
-> For loads lower than up_threshold, CPU will remain in lowest
-> frequency or downshift to a middle one with the old method.
-> After this patch, CPU will remain to the lowest or downshift to a
-> middle frequency or upshift to a middle frequency. So, I think we will
-> have a better performance, with the patch.
->
-> I know that CPU load tends to be chaotic, but please let me try to explain
-> my logic with a theoretical example to compare ondemand with and without
-> this patch that I think it will be valid in many cases.
->
-> Let's assume for simplicity a single core CPU with available
-> frequencies 100-1000MHz in steps of 100MHz. The architecture does
-> not support APERF/MPERF to measure average frequency. All tunables
-> to default values. As initial state we consider that the CPU is
-> idling in 100MHz with load = 0 (ideally).
->
-> A process needs CPU time and in the next iteration ondemand calculates
-> the load of the previous sampling interval.
-> There are 3 different possible paths:
-> 1) Load is greater than up_threshold: with or without the patch, CPU will increase to max.
-> 2) Load is lower than 10: with or without the patch, CPU will remain in the lowest freq.
-> 3) Load between 10 and up_threshold, for example 50:
-> 	without this patch, CPU will remain to 100MHz
-> 	with this patch, CPU will increase to a frequency that it's directly
-> 	proportional to load (500MHz)
->
-> If we concern about performance, ondemand will behave better with this patch
-> for case 3. But what about power consumption? I would say that this depends
-> on the duration of load:
->
-> 3a) Suppose that the process causes a CPU load of 50 for 5 sampling periods without this patch.
-> Without this patch, the CPU will remain for 5 sampling periods in 100MHz
-> With this patch, CPU will increase to 500Mhz, most probably, for ~1 sampling period.
->
-> 3b) The process causes a CPU load of 50 for 1 sampling period.
-> Without this patch, the CPU will remain to 100MHz for 1 sampling period
-> With this patch, the CPU will increase to 500MHz for 1 sampling period
->
-> 3c) The process causes a CPU load of 50, and then increases to 100 for next iterations
-> (most probably because the process started in the middle of sampling period).
-> Without this patch CPU will remain to 100MHz for the 1st period and then
-> it will increase to 1000MHz for next iterations.
-> With this patch the CPU will increase to 500MHz for the 1st period and then
-> it will increase to 1000MHz for next iterations.
->
-> The only case that the new method will be less power efficient is b) but I think there will be
-> significant improvement in performance for a) and c)
->
-> The results will be similar when the governor upshifts from any other frequency.
->
-> Using the highest frequency, the proposed method will downshift to lower frequencies
-> because with the 'old' method the calculation it's dependent from the current frequency
-> and up_threshold.
->
-> In this simplified example the new method seems to have a better ratio of
-> performance/power consumption.
->
-> I don't know if it is appropriate to mention that I use the proposed method
-> in 3.4.47 and 3.0.80 kernels for two embedded devices (smart phones). There are
-> about 2,000 installations and no reports for increased power consumption (so far).
-> Of course this is not a proof but maybe and indication.
-> But unfortunately, I don't have measurements about the ratio of performance/consumption.
->
-> Thanks,
-> Stratos
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
