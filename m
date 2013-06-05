@@ -1,193 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: userspace: Simplify governor
-Date: Wed,  5 Jun 2013 14:34:33 +0530
-Message-ID: <68ae523282b494da0e8f67536af1df874c326675.1370422554.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, chenxg.marvell@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>
+From: Giacomo Perale <giacomo.perale@gmail.com>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Wed, 5 Jun 2013 11:09:18 +0200
+Message-ID: <CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+	<1369631226.2159.5.camel@rzhang1-mobl4>
+	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	<1369878386.3368.16.camel@rzhang1-mobl4>
+	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
+	<1369911036.2636.5.camel@rzhang1-mobl4>
+	<CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
 List-Id: linux-pm@vger.kernel.org
 
-Userspace governor has got more code than what it needs for its functioning.
-Lets simplify it.
+2013/5/30 Giacomo Perale <giacomo.perale@gmail.com>:
+> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+>> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
+>>> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+>>> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
+>>> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+>>> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+>>> >> >> Hello,
+>>> >> >>
+>>> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
+>>> >> >> delays when resuming from suspend-to-disk and a few new error messages
+>>> >> >> in the logs:
+>>> >> >>
+>>> >> >>
+>>> >> >> Not having connected the issue with the previous error messages I
+>>> >> >> initially blamed the disk and replaced it with a new one thinking it
+>>> >> >> was broken, but the problem persisted so I started a bisection run
+>>> >> >> that pointed to this commit:
+>>> >> >>
+>>> >> >>
+>>> >> > I do not see how this would affect the sata hibernation/resume.
+>>> >> > but anyway, would you please try the four patches in comment #10, #11,
+>>> >> > #12 and #13 in
+>>> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+>>> >> > and check if they help?
+>>> >> >
+>>> >> > thanks,
+>>> >> > rui
+>>> >> >
+>>> >>
+>>> >> No luck, with git head and those four patches hibernation is
+>>> >> completely broken, the system doesn't even shut down, it just loses
+>>> >> the disks (I'm attaching what I could get from /proc/kmsg to this
+>>> >> email).
+>>> >>
+>>> > then can you please try the patch at
+>>> > https://patchwork.kernel.org/patch/2633071/
+>>> > on top of the four patches and see if it helps?
+>>> >
+>>> > thanks,
+>>> > rui
+>>> >
+>>>
+>>> Do you mean without Rafael's patch?
+>>>
+>> right.
+>>
+>> thanks,
+>> rui
+>
+> [cc-ing list]
+>
+> No difference, system doesn't shut down and disks become unavailable.
+>
+> Giacomo
 
-Over that it will fix issues in cpufreq_governor_userspace(), which isn't doing
-right things in START/STOP. It is working per-cpu currently whereas it just
-required to manage policy->cpu.
+Any news about this?
 
-Reported-by: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-@Rafael:
+Thanks.
 
-I don't know why this code was initially added. Please let me know if I am doing
-something stupid.
-
-Also, please apply it as a fix for 3.10 as it is broken recently in 3.9.
-
- drivers/cpufreq/cpufreq_userspace.c | 108 ++++--------------------------------
- 1 file changed, 12 insertions(+), 96 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index bbeb9c0..5dc77b7 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -13,55 +13,13 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/smp.h>
--#include <linux/init.h>
--#include <linux/spinlock.h>
--#include <linux/interrupt.h>
- #include <linux/cpufreq.h>
--#include <linux/cpu.h>
--#include <linux/types.h>
--#include <linux/fs.h>
--#include <linux/sysfs.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/mutex.h>
- 
--/**
-- * A few values needed by the userspace governor
-- */
--static DEFINE_PER_CPU(unsigned int, cpu_max_freq);
--static DEFINE_PER_CPU(unsigned int, cpu_min_freq);
--static DEFINE_PER_CPU(unsigned int, cpu_cur_freq); /* current CPU freq */
--static DEFINE_PER_CPU(unsigned int, cpu_set_freq); /* CPU freq desired by
--							userspace */
- static DEFINE_PER_CPU(unsigned int, cpu_is_managed);
--
- static DEFINE_MUTEX(userspace_mutex);
--static int cpus_using_userspace_governor;
--
--/* keep track of frequency transitions */
--static int
--userspace_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
--	void *data)
--{
--	struct cpufreq_freqs *freq = data;
--
--	if (!per_cpu(cpu_is_managed, freq->cpu))
--		return 0;
--
--	if (val == CPUFREQ_POSTCHANGE) {
--		pr_debug("saving cpu_cur_freq of cpu %u to be %u kHz\n",
--				freq->cpu, freq->new);
--		per_cpu(cpu_cur_freq, freq->cpu) = freq->new;
--	}
--
--	return 0;
--}
--
--static struct notifier_block userspace_cpufreq_notifier_block = {
--	.notifier_call  = userspace_cpufreq_notifier
--};
--
- 
- /**
-  * cpufreq_set - set the CPU frequency
-@@ -80,13 +38,6 @@ static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
- 	if (!per_cpu(cpu_is_managed, policy->cpu))
- 		goto err;
- 
--	per_cpu(cpu_set_freq, policy->cpu) = freq;
--
--	if (freq < per_cpu(cpu_min_freq, policy->cpu))
--		freq = per_cpu(cpu_min_freq, policy->cpu);
--	if (freq > per_cpu(cpu_max_freq, policy->cpu))
--		freq = per_cpu(cpu_max_freq, policy->cpu);
--
- 	/*
- 	 * We're safe from concurrent calls to ->target() here
- 	 * as we hold the userspace_mutex lock. If we were calling
-@@ -107,7 +58,7 @@ static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
- 
- static ssize_t show_speed(struct cpufreq_policy *policy, char *buf)
- {
--	return sprintf(buf, "%u\n", per_cpu(cpu_cur_freq, policy->cpu));
-+	return sprintf(buf, "%u\n", policy->cur);
- }
- 
- static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
-@@ -119,66 +70,31 @@ static int cpufreq_governor_userspace(struct cpufreq_policy *policy,
- 	switch (event) {
- 	case CPUFREQ_GOV_START:
- 		BUG_ON(!policy->cur);
--		mutex_lock(&userspace_mutex);
--
--		if (cpus_using_userspace_governor == 0) {
--			cpufreq_register_notifier(
--					&userspace_cpufreq_notifier_block,
--					CPUFREQ_TRANSITION_NOTIFIER);
--		}
--		cpus_using_userspace_governor++;
-+		pr_debug("started managing cpu %u\n", cpu);
- 
-+		mutex_lock(&userspace_mutex);
- 		per_cpu(cpu_is_managed, cpu) = 1;
--		per_cpu(cpu_min_freq, cpu) = policy->min;
--		per_cpu(cpu_max_freq, cpu) = policy->max;
--		per_cpu(cpu_cur_freq, cpu) = policy->cur;
--		per_cpu(cpu_set_freq, cpu) = policy->cur;
--		pr_debug("managing cpu %u started "
--			"(%u - %u kHz, currently %u kHz)\n",
--				cpu,
--				per_cpu(cpu_min_freq, cpu),
--				per_cpu(cpu_max_freq, cpu),
--				per_cpu(cpu_cur_freq, cpu));
--
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	case CPUFREQ_GOV_STOP:
--		mutex_lock(&userspace_mutex);
--		cpus_using_userspace_governor--;
--		if (cpus_using_userspace_governor == 0) {
--			cpufreq_unregister_notifier(
--					&userspace_cpufreq_notifier_block,
--					CPUFREQ_TRANSITION_NOTIFIER);
--		}
-+		pr_debug("managing cpu %u stopped\n", cpu);
- 
-+		mutex_lock(&userspace_mutex);
- 		per_cpu(cpu_is_managed, cpu) = 0;
--		per_cpu(cpu_min_freq, cpu) = 0;
--		per_cpu(cpu_max_freq, cpu) = 0;
--		per_cpu(cpu_set_freq, cpu) = 0;
--		pr_debug("managing cpu %u stopped\n", cpu);
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	case CPUFREQ_GOV_LIMITS:
- 		mutex_lock(&userspace_mutex);
--		pr_debug("limit event for cpu %u: %u - %u kHz, "
--			"currently %u kHz, last set to %u kHz\n",
-+		pr_debug("limit event for cpu %u: %u - %u kHz, currently %u kHz\n",
- 			cpu, policy->min, policy->max,
--			per_cpu(cpu_cur_freq, cpu),
--			per_cpu(cpu_set_freq, cpu));
--		if (policy->max < per_cpu(cpu_set_freq, cpu)) {
-+			policy->cur);
-+
-+		if (policy->max < policy->cur)
- 			__cpufreq_driver_target(policy, policy->max,
- 						CPUFREQ_RELATION_H);
--		} else if (policy->min > per_cpu(cpu_set_freq, cpu)) {
-+		else if (policy->min > policy->cur)
- 			__cpufreq_driver_target(policy, policy->min,
- 						CPUFREQ_RELATION_L);
--		} else {
--			__cpufreq_driver_target(policy,
--						per_cpu(cpu_set_freq, cpu),
--						CPUFREQ_RELATION_L);
--		}
--		per_cpu(cpu_min_freq, cpu) = policy->min;
--		per_cpu(cpu_max_freq, cpu) = policy->max;
--		per_cpu(cpu_cur_freq, cpu) = policy->cur;
- 		mutex_unlock(&userspace_mutex);
- 		break;
- 	}
--- 
-1.7.12.rc2.18.g61b472e
+Giacomo
