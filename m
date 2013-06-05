@@ -1,77 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpuidle: move ARCH_NEEDS_CPU_IDLE_COUPLED Kconfig option
-Date: Wed, 05 Jun 2013 22:36:20 +0200
-Message-ID: <2504003.GJXn0Z0NTJ@vostro.rjw.lan>
-References: <1460854.rT4b7LefMM@wuerfel> <51AF3424.5060200@linaro.org>
+Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
+Date: Wed, 05 Jun 2013 22:40:11 +0200
+Message-ID: <31897041.QcNuTieHbo@vostro.rjw.lan>
+References: <51AE8BE4.8050409@oracle.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58457 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:58460 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757276Ab3FEU1Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Jun 2013 16:27:16 -0400
-In-Reply-To: <51AF3424.5060200@linaro.org>
+	id S932065Ab3FEUbH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Jun 2013 16:31:07 -0400
+In-Reply-To: <51AE8BE4.8050409@oracle.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Joe Jin <joe.jin@oracle.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, June 05, 2013 02:50:44 PM Daniel Lezcano wrote:
-> On 06/05/2013 02:38 PM, Arnd Bergmann wrote:
-> > There is no reason why ARCH_NEEDS_CPU_IDLE_COUPLED needs to be
-> > hidden inside of "if CPU_IDLE", since it is a silent option.
-> > Moving it outside lets platforms select this symbol unconditionally,
-> > which avoid a warning from the ARM omap2plus_defconfig build:
-> > 
-> > warning: (ARCH_OMAP4 && ARCH_TEGRA_2x_SOC) selects
-> > 	ARCH_NEEDS_CPU_IDLE_COUPLED which has unmet direct
-> > 	dependencies (CPU_IDLE)
-> 
-> IMHO, this option depends on CPU_IDLE and thus must be kept inside the
-> CPU_IDLE menuconfig.
-> 
-> The warning raised here is because this option is selected by the arch
-> Kconfig without checking if CPU_IDLE is set or not.
-> 
-> I am in favor to change the OMAP / TEGRA Kconfigs instead, in this way:
+On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
+> When _PPC changed dynamically the user_policy.max will not be updated,
+> this prevent CPU run on the highest frequency.
 
-I prefer this one.
+Why should the user setting be always related to the current maximum available
+frequency?  What if the user sets the limit for power capping purposes?
 
-Thanks,
 Rafael
 
 
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index f49cd51..831e89e 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -83,7 +83,7 @@ config ARCH_OMAP4
->         depends on ARCH_OMAP2PLUS
->         depends on ARCH_MULTI_V7
->         select ARCH_HAS_OPP
-> -       select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> +       select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
->         select ARM_CPU_SUSPEND if PM
->         select ARM_ERRATA_720789
->         select ARM_GIC
-> diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
-> index 84d72fc..04c6221 100644
-> --- a/arch/arm/mach-tegra/Kconfig
-> +++ b/arch/arm/mach-tegra/Kconfig
-> @@ -23,7 +23,7 @@ menu "NVIDIA Tegra options"
+> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
+>  1 file changed, 16 insertions(+), 1 deletion(-)
 > 
->  config ARCH_TEGRA_2x_SOC
->         bool "Enable support for Tegra20 family"
-> -       select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> +       select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
->         select ARM_ERRATA_720789
->         select ARM_ERRATA_754327 if SMP
->         select ARM_ERRATA_764369 if SMP
-> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-> 
-> [ ... ]
-> 
+> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> index e854582..e01aa7d 100644
+> --- a/drivers/acpi/processor_perflib.c
+> +++ b/drivers/acpi/processor_perflib.c
+> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
+>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>  {
+>  	int ret;
+> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
+>  
+>  	if (ignore_ppc) {
+>  		/*
+> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>  	}
+>  	if (ret < 0)
+>  		return (ret);
+> -	else
+> +	else {
+> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
+> +
+> +		if (saved != ppc) {
+> +			struct cpufreq_policy *policy;
+> +
+> +			policy = cpufreq_cpu_get(pr->id);
+> +			if (likely(policy))
+> +				policy->user_policy.max =
+> +					pr->performance->states[ppc].
+> +					core_frequency * 1000;
+> +			cpufreq_cpu_put(policy);
+> +		}
+> +
+>  		return cpufreq_update_policy(pr->id);
+> +	}
+>  }
+>  
+>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
 > 
 -- 
 I speak only for myself.
