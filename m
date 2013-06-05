@@ -1,28 +1,26 @@
-From: David C Niemi <dniemi@verisign.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
 Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
  frequency
-Date: Wed, 05 Jun 2013 12:58:33 -0400
-Message-ID: <51AF6E39.2080307@verisign.com>
+Date: Wed, 05 Jun 2013 20:13:26 +0300
+Message-ID: <51AF71B6.6030408@semaphore.gr>
 References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:34329 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756413Ab3FERN3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 13:13:29 -0400
 In-Reply-To: <20130605161703.GA29958@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Borislav Petkov <bp@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When you are doing a locally-originated truly CPU-bound task, "race to idle" does make some sense.  But I can think of a couple of caveats.
+Hi Borislav,
 
-1) If you care about power consumption, you want to avoid super-power-hungry turbo states, as you get less done per watt-hour than in some of the middle states.
-
-2) CPU usage that is related to I/O (network, disk, video) doesn't necessarily let you go to idle sooner if at all.  In this case if you want to minimize power consumption you may want to use middle states a lot.  But if you care more about responsiveness or latency than power consumption, you might want to go to a high state anyway; that is why we have tunables -- so we can configure based on the actual priorities for the machine.
-
-DCN
-
-On 06/05/13 12:17, Borislav Petkov wrote:
+On 06/05/2013 07:17 PM, Borislav Petkov wrote:
 > On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
 >> Ondemand calculates load in terms of frequency and increases it only
 >> if the load_freq is greater than up_threshold multiplied by current
@@ -30,15 +28,24 @@ On 06/05/13 12:17, Borislav Petkov wrote:
 >> between min and max because, for example, a relatively small load can
 >> easily saturate minimum frequency and lead the CPU to max. Then, the
 >> CPU will decrease back to min due to a small load_freq.
+>
 > Right, and I think this is how we want it, no?
 >
 > The thing is, the faster you finish your work, the faster you can become
 > idle and save power.
->
+
+This is exactly the goal of this patch. To use more efficiently middle
+frequencies to finish faster the work.
+
 > If you switch frequencies in a staircase-like manner, you're going to
 > take longer to finish, in certain cases, and burn more power while doing
 > so.
->
+
+This is not true with this patch. It switches to middle frequencies
+when the load < up_threshold.
+Now, ondemand does not increase freq. CPU runs in lowest freq till the
+load is greater than up_threshold.
+
 > Btw, racing to idle is also a good example for why you want boosting:
 > you want to go max out the core but stay within power limits so that you
 > can finish sooner.
@@ -60,11 +67,16 @@ On 06/05/13 12:17, Borislav Petkov wrote:
 >> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
 >> that middle frequencies are used more, with this patch. Highest
 >> and lowest frequencies were used less by ~9%
+>
 > I read this as "the workload takes longer to complete" which means
 > higher power consumption and longer execution times which means less
 > time spent in idle. And I don't think we want that.
 >
 > Yes, no?
->
-> Thanks.
->
+
+In my opinion, no.
+Running the benchmark mentioned in changelog shows shorter execution
+time by ~1.5%
+
+Thanks,
+Stratos
