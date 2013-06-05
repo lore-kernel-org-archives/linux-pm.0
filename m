@@ -1,74 +1,45 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [regression,bisected] restore of disks after suspend-to-disk
- broken in 3.9.x
-Date: Wed, 5 Jun 2013 13:23:19 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092630111E53C@SHSMSX101.ccr.corp.intel.com>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
-	<1369631226.2159.5.camel@rzhang1-mobl4>
-	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
-	<1369878386.3368.16.camel@rzhang1-mobl4>
-	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
-	<1369911036.2636.5.camel@rzhang1-mobl4>
-	<CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
- <CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v3 0/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Wed, 05 Jun 2013 19:01:05 +0300
+Message-ID: <51AF60C1.9050409@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:31328 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755387Ab3FENXb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Jun 2013 09:23:31 -0400
-In-Reply-To: <CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Giacomo Perale <giacomo.perale@gmail.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogR2lhY29tbyBQZXJhbGUg
-W21haWx0bzpnaWFjb21vLnBlcmFsZUBnbWFpbC5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVu
-ZSAwNSwgMjAxMyA1OjA5IFBNDQo+IFRvOiBaaGFuZywgUnVpDQo+IENjOiBsaW51eC1hY3BpQHZn
-ZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBSYWZhZWwgSi4NCj4gV3lz
-b2NraQ0KPiBTdWJqZWN0OiBSZTogW3JlZ3Jlc3Npb24sYmlzZWN0ZWRdIHJlc3RvcmUgb2YgZGlz
-a3MgYWZ0ZXIgc3VzcGVuZC10by0NCj4gZGlzayBicm9rZW4gaW4gMy45LngNCj4gSW1wb3J0YW5j
-ZTogSGlnaA0KPiANCj4gMjAxMy81LzMwIEdpYWNvbW8gUGVyYWxlIDxnaWFjb21vLnBlcmFsZUBn
-bWFpbC5jb20+Og0KPiA+IDIwMTMvNS8zMCBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+
-Og0KPiA+PiBPbiBUaHUsIDIwMTMtMDUtMzAgYXQgMTA6MDQgKzAyMDAsIEdpYWNvbW8gUGVyYWxl
-IHdyb3RlOg0KPiA+Pj4gMjAxMy81LzMwIFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT46
-DQo+ID4+PiA+IE9uIE1vbiwgMjAxMy0wNS0yNyBhdCAyMjowNyArMDIwMCwgR2lhY29tbyBQZXJh
-bGUgd3JvdGU6DQo+ID4+PiA+PiAyMDEzLzUvMjcgWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwu
-Y29tPjoNCj4gPj4+ID4+ID4gT24gU3VuLCAyMDEzLTA1LTI2IGF0IDE1OjUxICswMjAwLCBHaWFj
-b21vIFBlcmFsZSB3cm90ZToNCj4gPj4+ID4+ID4+IEhlbGxvLA0KPiA+Pj4gPj4gPj4NCj4gPj4+
-ID4+ID4+IGFmdGVyIHVwZ3JhZGluZyBmcm9tIDMuOC43IHRvIDMuOS54IEkgbm90aWNlZCBzb21l
-IHNsaWdodGx5DQo+ID4+PiA+PiA+PiBsb25nZXIgZGVsYXlzIHdoZW4gcmVzdW1pbmcgZnJvbSBz
-dXNwZW5kLXRvLWRpc2sgYW5kIGEgZmV3DQo+IG5ldw0KPiA+Pj4gPj4gPj4gZXJyb3IgbWVzc2Fn
-ZXMgaW4gdGhlIGxvZ3M6DQo+ID4+PiA+PiA+Pg0KPiA+Pj4gPj4gPj4NCj4gPj4+ID4+ID4+IE5v
-dCBoYXZpbmcgY29ubmVjdGVkIHRoZSBpc3N1ZSB3aXRoIHRoZSBwcmV2aW91cyBlcnJvcg0KPiA+
-Pj4gPj4gPj4gbWVzc2FnZXMgSSBpbml0aWFsbHkgYmxhbWVkIHRoZSBkaXNrIGFuZCByZXBsYWNl
-ZCBpdCB3aXRoIGENCj4gPj4+ID4+ID4+IG5ldyBvbmUgdGhpbmtpbmcgaXQgd2FzIGJyb2tlbiwg
-YnV0IHRoZSBwcm9ibGVtIHBlcnNpc3RlZCBzbw0KPiBJDQo+ID4+PiA+PiA+PiBzdGFydGVkIGEg
-YmlzZWN0aW9uIHJ1biB0aGF0IHBvaW50ZWQgdG8gdGhpcyBjb21taXQ6DQo+ID4+PiA+PiA+Pg0K
-PiA+Pj4gPj4gPj4NCj4gPj4+ID4+ID4gSSBkbyBub3Qgc2VlIGhvdyB0aGlzIHdvdWxkIGFmZmVj
-dCB0aGUgc2F0YSBoaWJlcm5hdGlvbi9yZXN1bWUuDQo+ID4+PiA+PiA+IGJ1dCBhbnl3YXksIHdv
-dWxkIHlvdSBwbGVhc2UgdHJ5IHRoZSBmb3VyIHBhdGNoZXMgaW4gY29tbWVudA0KPiA+Pj4gPj4g
-PiAjMTAsICMxMSwNCj4gPj4+ID4+ID4gIzEyIGFuZCAjMTMgaW4NCj4gPj4+ID4+ID4gaHR0cHM6
-Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD01ODMwMQ0KPiA+Pj4gPj4gPiBh
-bmQgY2hlY2sgaWYgdGhleSBoZWxwPw0KPiA+Pj4gPj4gPg0KPiA+Pj4gPj4gPiB0aGFua3MsDQo+
-ID4+PiA+PiA+IHJ1aQ0KPiA+Pj4gPj4gPg0KPiA+Pj4gPj4NCj4gPj4+ID4+IE5vIGx1Y2ssIHdp
-dGggZ2l0IGhlYWQgYW5kIHRob3NlIGZvdXIgcGF0Y2hlcyBoaWJlcm5hdGlvbiBpcw0KPiA+Pj4g
-Pj4gY29tcGxldGVseSBicm9rZW4sIHRoZSBzeXN0ZW0gZG9lc24ndCBldmVuIHNodXQgZG93biwg
-aXQganVzdA0KPiA+Pj4gPj4gbG9zZXMgdGhlIGRpc2tzIChJJ20gYXR0YWNoaW5nIHdoYXQgSSBj
-b3VsZCBnZXQgZnJvbSAvcHJvYy9rbXNnDQo+ID4+PiA+PiB0byB0aGlzIGVtYWlsKS4NCj4gPj4+
-ID4+DQo+ID4+PiA+IHRoZW4gY2FuIHlvdSBwbGVhc2UgdHJ5IHRoZSBwYXRjaCBhdA0KPiA+Pj4g
-PiBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzI2MzMwNzEvDQo+ID4+PiA+IG9u
-IHRvcCBvZiB0aGUgZm91ciBwYXRjaGVzIGFuZCBzZWUgaWYgaXQgaGVscHM/DQo+ID4+PiA+DQo+
-ID4+PiA+IHRoYW5rcywNCj4gPj4+ID4gcnVpDQo+ID4+PiA+DQo+ID4+Pg0KPiA+Pj4gRG8geW91
-IG1lYW4gd2l0aG91dCBSYWZhZWwncyBwYXRjaD8NCj4gPj4+DQo+ID4+IHJpZ2h0Lg0KPiA+Pg0K
-PiA+PiB0aGFua3MsDQo+ID4+IHJ1aQ0KPiA+DQo+ID4gW2NjLWluZyBsaXN0XQ0KPiA+DQo+ID4g
-Tm8gZGlmZmVyZW5jZSwgc3lzdGVtIGRvZXNuJ3Qgc2h1dCBkb3duIGFuZCBkaXNrcyBiZWNvbWUg
-dW5hdmFpbGFibGUuDQo+ID4NCj4gPiBHaWFjb21vDQo+IA0KPiBBbnkgbmV3cyBhYm91dCB0aGlz
-Pw0KPiANCg0KSSdtIHByb3Bvc2luZyBhIG5ldyBwYXRjaCBzZXQgYmFzZWQgb24gdGhlIHByb2Js
-ZW0gZm91bmQgYnkgUmFmYWVsJ3MgcGF0Y2guDQpBbmQgSSdsbCBzZW5kIHRoZW0gb3V0IGluIGEg
-ZGF5IG9yIHR3bywgcGxlYXNlIHdhaXQgZm9yIHRoZSB1cGRhdGUuIDopDQoNClRoYW5rcywNCnJ1
-aQ0KDQoNCj4gVGhhbmtzLg0KPiANCj4gR2lhY29tbw0K
+Changes since v2:
+	- Reorder patches 2/3 and 3/3
+	- Fix typos in patch changelog
+
+Changes since v1:
+	- Use policy->cpuinfo.max_freq in the calculation formula
+		of target frequency instead of policy->max
+	- Split the patch into 3 parts
+
+Stratos Karafotis (3):
+  cpufreq: ondemand: Change the calculation of target frequency
+  cpufreq: Remove unused APERF/MPERF support
+  cpufreq: Remove unused function __cpufreq_driver_getavg
+
+ arch/x86/include/asm/processor.h   | 29 ----------------------
+ drivers/cpufreq/Makefile           |  2 +-
+ drivers/cpufreq/acpi-cpufreq.c     |  5 ----
+ drivers/cpufreq/cpufreq.c          | 12 ---------
+ drivers/cpufreq/cpufreq_governor.c | 10 +-------
+ drivers/cpufreq/cpufreq_governor.h |  1 -
+ drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
+ drivers/cpufreq/mperf.c            | 51 --------------------------------------
+ drivers/cpufreq/mperf.h            |  9 -------
+ include/linux/cpufreq.h            |  6 -----
+ 10 files changed, 9 insertions(+), 155 deletions(-)
+ delete mode 100644 drivers/cpufreq/mperf.c
+ delete mode 100644 drivers/cpufreq/mperf.h
+
+-- 
+1.8.1.4
+
