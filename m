@@ -1,52 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] cpufreq: prevent 'policy->cpus' become offline in __gov_queue_work()
-Date: Wed, 05 Jun 2013 14:37:50 +0200
-Message-ID: <1862476.P5VBB45STK@vostro.rjw.lan>
-References: <51AEFBA1.302@linux.vnet.ibm.com> <CAKohpom571kXwLVPzmAb1n16EuHwyOaiM3khXkjQZQixGCpX8Q@mail.gmail.com> <51AEFDC4.8070801@linux.vnet.ibm.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpuidle: move ARCH_NEEDS_CPU_IDLE_COUPLED Kconfig option
+Date: Wed, 05 Jun 2013 14:38:30 +0200
+Message-ID: <1460854.rT4b7LefMM@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51AEFDC4.8070801@linux.vnet.ibm.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Michael Wang <wangyun@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@alien8.de>, Frederic Weisbecker <fweisbec@gmail.com>, "tony.luck@intel.com" <tony.luck@intel.com>, Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from moutng.kundenserver.de ([212.227.126.171]:62130 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752014Ab3FEMi6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 08:38:58 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, June 05, 2013 04:58:44 PM Michael Wang wrote:
-> Hi, Viresh
-> 
-> On 06/05/2013 04:53 PM, Viresh Kumar wrote:
-> [snip]
-> >> It was caused by the policy->cpus changed during the process of
-> >> __gov_queue_work(), in other word, cpu offline happened.
-> >>
-> >> This patch will use get/put_online_cpus() to prevent the offline
-> >> happen inside __gov_queue_work(), after applied the patch, the
-> >> warning is gone as Jiri tested:
-> >>
-> >>         Link: https://lkml.org/lkml/2013/6/5/88
-> >>
-> >> CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-> >> CC: Viresh Kumar <viresh.kumar@linaro.org>
-> >> Reported-by: Borislav Petkov <bp@alien8.de>
-> >> Reported-by: Jiri Kosina <jkosina@suse.cz>
-> >> Tested-by: Jiri Kosina <jkosina@suse.cz>
-> >> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
-> >> ---
-> >>  drivers/cpufreq/cpufreq_governor.c |    3 +++
-> >>  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Thanks for your ack :)
+There is no reason why ARCH_NEEDS_CPU_IDLE_COUPLED needs to be
+hidden inside of "if CPU_IDLE", since it is a silent option.
+Moving it outside lets platforms select this symbol unconditionally,
+which avoid a warning from the ARM omap2plus_defconfig build:
 
-Queued up for 3.10.
+warning: (ARCH_OMAP4 && ARCH_TEGRA_2x_SOC) selects
+	ARCH_NEEDS_CPU_IDLE_COUPLED which has unmet direct
+	dependencies (CPU_IDLE)
 
-Thanks,
-Rafael
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index f4511e6..2caddb0 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -29,9 +29,6 @@ config CPU_IDLE_GOV_MENU
+ 	bool "Menu governor (for tickless system)"
+ 	default y
+ 
+-config ARCH_NEEDS_CPU_IDLE_COUPLED
+-	def_bool n
+-
+ config CPU_IDLE_CALXEDA
+ 	bool "CPU Idle Driver for Calxeda processors"
+ 	depends on ARCH_HIGHBANK
+@@ -39,3 +36,6 @@ config CPU_IDLE_CALXEDA
+ 	help
+ 	  Select this to enable cpuidle on Calxeda processors.
+ endif
++
++config ARCH_NEEDS_CPU_IDLE_COUPLED
++	def_bool n
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
