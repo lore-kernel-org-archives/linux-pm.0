@@ -1,73 +1,69 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v3 3/3] cpufreq: Remove unused function __cpufreq_driver_getavg
-Date: Wed, 05 Jun 2013 19:01:50 +0300
-Message-ID: <51AF60EE.2080909@semaphore.gr>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
+ target frequency
+Date: Wed, 5 Jun 2013 18:17:03 +0200
+Message-ID: <20130605161703.GA29958@pd.tnic>
+References: <51AF60D5.3080605@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <51AF60D5.3080605@semaphore.gr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Calculation of target frequency in ondemand governor changed and it is
-independent from measured average frequency.
+On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
+> Ondemand calculates load in terms of frequency and increases it only
+> if the load_freq is greater than up_threshold multiplied by current
+> or average frequency. This seems to produce oscillations of frequency
+> between min and max because, for example, a relatively small load can
+> easily saturate minimum frequency and lead the CPU to max. Then, the
+> CPU will decrease back to min due to a small load_freq.
 
-Remove unused__cpufreq_driver_getavg function and getavg member from
-cpufreq_driver struct.
+Right, and I think this is how we want it, no?
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq.c | 12 ------------
- include/linux/cpufreq.h   |  6 ------
- 2 files changed, 18 deletions(-)
+The thing is, the faster you finish your work, the faster you can become
+idle and save power.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index f8c2860..a61aacb 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1584,18 +1584,6 @@ fail:
- }
- EXPORT_SYMBOL_GPL(cpufreq_driver_target);
- 
--int __cpufreq_driver_getavg(struct cpufreq_policy *policy, unsigned int cpu)
--{
--	if (cpufreq_disabled())
--		return 0;
--
--	if (!cpufreq_driver->getavg)
--		return 0;
--
--	return cpufreq_driver->getavg(policy, cpu);
--}
--EXPORT_SYMBOL_GPL(__cpufreq_driver_getavg);
--
- /*
-  * when "event" is CPUFREQ_GOV_LIMITS
-  */
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index d939056..50f19ad 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -215,10 +215,6 @@ extern int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 				   unsigned int target_freq,
- 				   unsigned int relation);
- 
--
--extern int __cpufreq_driver_getavg(struct cpufreq_policy *policy,
--				   unsigned int cpu);
--
- int cpufreq_register_governor(struct cpufreq_governor *governor);
- void cpufreq_unregister_governor(struct cpufreq_governor *governor);
- 
-@@ -258,8 +254,6 @@ struct cpufreq_driver {
- 	unsigned int	(*get)	(unsigned int cpu);
- 
- 	/* optional */
--	unsigned int (*getavg)	(struct cpufreq_policy *policy,
--				 unsigned int cpu);
- 	int	(*bios_limit)	(int cpu, unsigned int *limit);
- 
- 	int	(*exit)		(struct cpufreq_policy *policy);
+If you switch frequencies in a staircase-like manner, you're going to
+take longer to finish, in certain cases, and burn more power while doing
+so.
+
+Btw, racing to idle is also a good example for why you want boosting:
+you want to go max out the core but stay within power limits so that you
+can finish sooner.
+
+> This patch changes the calculation method of load and target frequency
+> considering 2 points:
+> - Load computation should be independent from current or average
+> measured frequency. For example an absolute load 80% at 100MHz is not
+> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
+> - Target frequency should be increased to any value of frequency table
+> proportional to absolute load, instead to only the max. Thus:
+> 
+> Target frequency = C * load
+> 
+> where C = policy->cpuinfo.max_freq / 100
+> 
+> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
+> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
+> that middle frequencies are used more, with this patch. Highest
+> and lowest frequencies were used less by ~9%
+
+I read this as "the workload takes longer to complete" which means
+higher power consumption and longer execution times which means less
+time spent in idle. And I don't think we want that.
+
+Yes, no?
+
+Thanks.
+
 -- 
-1.8.1.4
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
