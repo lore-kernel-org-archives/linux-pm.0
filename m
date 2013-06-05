@@ -1,76 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Wed, 05 Jun 2013 22:40:11 +0200
-Message-ID: <31897041.QcNuTieHbo@vostro.rjw.lan>
-References: <51AE8BE4.8050409@oracle.com>
+From: Zoran Markovic <zoran.markovic@linaro.org>
+Subject: Re: [RFC PATCHv2 1/2] drivers: power: Add watchdog timer to catch
+ drivers which lockup during suspend/resume.
+Date: Wed, 5 Jun 2013 15:17:59 -0700
+Message-ID: <CAME+o4mkBknj0jiUW=Z77fG1bJYy1jHF7=shNQ_ixeL_oJDjFg@mail.gmail.com>
+References: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org>
+	<3006354.hOxNuWCXu4@vostro.rjw.lan>
+	<CAME+o4kJYD2K_aL4xNi-jNP1Q8R+seDNZDwsGBhvU00ArR0Skg@mail.gmail.com>
+	<1515063.BZy7p4GtyV@vostro.rjw.lan>
+	<CAME+o4kn=xBToxV2xfC5L0b5wVbQ27EA8+tDt9jT44BvBPeSTA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58460 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932065Ab3FEUbH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Jun 2013 16:31:07 -0400
-In-Reply-To: <51AE8BE4.8050409@oracle.com>
+Received: from mail-ob0-f173.google.com ([209.85.214.173]:48273 "EHLO
+	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757634Ab3FEWSA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 18:18:00 -0400
+Received: by mail-ob0-f173.google.com with SMTP id wc20so3582022obb.18
+        for <linux-pm@vger.kernel.org>; Wed, 05 Jun 2013 15:18:00 -0700 (PDT)
+In-Reply-To: <CAME+o4kn=xBToxV2xfC5L0b5wVbQ27EA8+tDt9jT44BvBPeSTA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Jin <joe.jin@oracle.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Colin Cross <ccross@android.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
-> When _PPC changed dynamically the user_policy.max will not be updated,
-> this prevent CPU run on the highest frequency.
+Rafael,
 
-Why should the user setting be always related to the current maximum available
-frequency?  What if the user sets the limit for power capping purposes?
+>>> We could do cancel_work_sync() as a recovery, but that call blocks until the
+>>> running async task is flushed, which might never happen. So doing a panic()
+>>> is pretty much the only option for recovering.
+>>
+>> Well, its usefulness is quite limited, then.  That said I'm still not convinced
+>> that this actually is the case.
+>
+> It does block in my environment, AFAICS. Looking a bit further in the
+> code, it looks like dpm_suspend() does an async_synchronize_full()
+> which would wait for all async tasks to complete. This is a
+> show-stopper because (under the circumstances) the assumption that
+> every async suspend routine eventually completes doesn't hold.
+>
+> We could possibly select which async tasks to wait for, but this would
+> add unnecessary complexity to a feature targeted for debugging. It
+> seems that this approach - although sounding reasonable - needs to
+> wait until we have a mechanism to cancel an async task.
 
-Rafael
+Looks like the implementation of proposal for an async suspend +
+wait_for_completion_timeout is quite complex due to above limitations.
+How do we proceed from here? We have the following options:
+1. Give up on the idea of having a suspend/resume watchdog.
+2. Use the timer implementation (with possible modifications).
+3. Wait for the implementation of (or implement) killing of an already
+running async work.
 
+Are there any other ideas floating around?
 
-> Signed-off-by: Joe Jin <joe.jin@oracle.com>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
->  1 file changed, 16 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> index e854582..e01aa7d 100644
-> --- a/drivers/acpi/processor_perflib.c
-> +++ b/drivers/acpi/processor_perflib.c
-> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
->  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->  {
->  	int ret;
-> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
->  
->  	if (ignore_ppc) {
->  		/*
-> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->  	}
->  	if (ret < 0)
->  		return (ret);
-> -	else
-> +	else {
-> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
-> +
-> +		if (saved != ppc) {
-> +			struct cpufreq_policy *policy;
-> +
-> +			policy = cpufreq_cpu_get(pr->id);
-> +			if (likely(policy))
-> +				policy->user_policy.max =
-> +					pr->performance->states[ppc].
-> +					core_frequency * 1000;
-> +			cpufreq_cpu_put(policy);
-> +		}
-> +
->  		return cpufreq_update_policy(pr->id);
-> +	}
->  }
->  
->  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+Zoran
