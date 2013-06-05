@@ -1,113 +1,330 @@
-From: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Subject: Re: Cpufreq userspace governor start/stop issue
-Date: Wed, 5 Jun 2013 14:42:33 +0800
-Message-ID: <CAFgnuDfbvXi6hYDMkSCxFOw257p-V_BrEHWE=LZP=dCtLDP_5Q@mail.gmail.com>
-References: <CAFgnuDd_6z+g2m8QAfZBaCnwUYUPWB6Dku_3KvmTJ4mOrcOa6Q@mail.gmail.com>
-	<CAKohpokg2ajii1gfH-6O8JPs4tWEMxwFVr0saeBauZXaNZCZYw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ea0-f175.google.com ([209.85.215.175]:40896 "EHLO
-	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864Ab3FEGme (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 02:42:34 -0400
-In-Reply-To: <CAKohpokg2ajii1gfH-6O8JPs4tWEMxwFVr0saeBauZXaNZCZYw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [RESEND][PATCH] cpufreq: stats: Add 'load_table' sysfs file to show
+ accumulated data of CPU
+Date: Wed, 05 Jun 2013 17:11:22 +0900
+Message-ID: <1370419882-16831-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, cw00.choi@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-2013/6/5 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 5 June 2013 08:54, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
->> Hi, Guys
->
-> Hi Xiaoguang,
->
->> I met another question for cpufreq governor. When hotplug out one cpu,
->> cpufreq will remove the cpu device and also call governor stop, if
->> there are more than 1 cpu and cpu0 is the root for cpufreq, other cpus
->> are linked to cpu0. then policy->cpu is 0 always.
->
-> Not really.. There are situations when this will not hold true..
-> If you hot-unplug cpu0, then next cpu in line, i.e. cpu 1, will become
-> policy->cpu :)
->
+This patch add new sysfs file to show previous accumulated data of CPU load
+as following path. This sysfs file is used to judge the correct system state
+or determine suitable system resource on user-space.
+- /sys/devices/system/cpu/cpu0/cpufreq/stats/load_table
 
-Yes, I know this. but usually we dont' allow hotplug cpu0. So the root is
-cpu0 most of the time. this is just one example if policy->cpu is not changed.
+This sysfs file include following data:
+- Measurement point of time
+- CPU frequency
+- Per-CPU load
 
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+---
 
->> in userspace governor, when governor stop is called, it will set
->> per_cpu(cpu_is_managed, cpu) = 0
->
-> To make it clear, cpu_is_managed isn't telling which cpu is managing
-> 'cpu' but if governor is enabled for cpu 'cpu' or not.
-Yes, that should be the intent for this variable, but unluckily we get
-'cpu' as 0
-even when we hotplug cpu3.
+Additionally, I explain an example using 'load_table' sysfs entry.
 
->
->> but the cpu is policy->cpu which is 0 always.
->>
->>        case CPUFREQ_GOV_STOP:
->>                 mutex_lock(&userspace_mutex);
->>                 cpus_using_userspace_governor--;
->>                 if (cpus_using_userspace_governor == 0) {
->>                         cpufreq_unregister_notifier(
->>                                         &userspace_cpufreq_notifier_block,
->>                                         CPUFREQ_TRANSITION_NOTIFIER);
->>                 }
->>
->>                 per_cpu(cpu_is_managed, cpu) = 0;
->>                 per_cpu(cpu_min_freq, cpu) = 0;
->>                 per_cpu(cpu_max_freq, cpu) = 0;
->>                 per_cpu(cpu_set_freq, cpu) = 0;
->>                 pr_debug("managing cpu %u stopped\n", cpu);
->>                 mutex_unlock(&userspace_mutex);
->>                 break;
->>
->>
->> also in userspace governor store_setspeed function cpufreq_set will
->> retun error if per_cpu(cpu_is_managed, cpu) is 0 which means it will
->> not change frequency .
->>
->> static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
->> {
->> int ret = -EINVAL;
->>
->> pr_debug("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
->>
->> mutex_lock(&userspace_mutex);
->> if (!per_cpu(cpu_is_managed, policy->cpu))
->> goto err;
->>
->> per_cpu(cpu_set_freq, policy->cpu) = freq;
->> ...........
->>
->>
->>
->> So consider below case:
->> 1) cpu0 tries to hotplug cpu3, it calls userspace governor stop
->> function, it should stop cpu3's userspace governor, but it actually
->> set cpu0's per_cpu(cpu_is_managed, cpu) to 0.
->> 2) cpu0 tries to change cpu freuqency through userspace governor, but
->> it will never succeed since cpufreq_set will return err if cpu0'
->> percpu variable cpu_is_managed is 0.
->> 3) unless there is another cpu hotplug in operation, in which it calls
->> governor start and set cpu_is_managed to 1, then the frequency change
->> will go on and doesn't report error.
->>
->> The reason here is policy->cpu is always 0 if we use managed policy
->> for all cpus. but we can't see which cpu's governor want's to
->> start/stop in userspace goveror. we can only get the information from
->> struct policy, but this policy doesn't include the exact cpu that
->> wants to do governor start/stop.
->>
->>
->> Any suggestions for this issue?
->
-> Hmm.. the problem is bigger than what you observed..
-> I am starting to cleanup userspace governor now and will cc you
-> for my patches. Please test them and give your Tested-by :)
+Exynos4412 series has Quad-core and all cores share the power-line.
+I cann't set diffent voltage/frequency to each CPU. To reduce power-
+consumption, I certainly have to turn on/off CPU online state
+according to CPU load on runtime. As a result, I peridically need to
+monitor current cpu state to determine a proper amount of system
+resource(necessary number of online cpu) and to delete wasted power.
+So, I need 'load_table' sysfs file to monitor current cpu state.
 
-Ok, thanks
+I add a table which show power consumption of target based on
+Exynos4412 SoC. This table indicate the difference power-consumption
+according to a number of online core and with same number of running task.
+
+[Environment of power estimation]
+- cpufreq governor used performance mode to estimate power-consumption on each frequency step.
+- Use infinite-loop test program which execute while statement infinitely.
+- Always measure the power consumption under same temperature during 1 minutes.
+- Unit is mA.
+------------------------------------------------------------------------------------------------------------------------------------
+A number of Online core	| Core 1	| Core 2		| Core 3			| Core 4
+A number of nr_running	| 0	1	| 0	1	2	| 0	1	2	3	| 0	1	2	3	4
+------------------------------------------------------------------------------------------------------------------------------------
+ CPU Frequency		| 
+ 800  MHz		| 293 	330 	| 295 	338 	379 	| 300 	339 	386 	433 	| 303 	341 	390 	412 	482 
+ 1000 MHz		| 312 	371 	| 316 	377 	435 	| 318 	383 	454 	522 	| 322 	391 	462 	526 	596 
+ 1200 MHz		| 323 	404 	| 328 	418 	504 	| 336 	423 	521 	615 	| 343 	433 	499 	639 	748 
+ 1600 MHz 		| 380 	525 	| 388 	556 	771 	| 399 	575 	771 	1011 	| 412 	597 	822 	1172 	1684 
+------------------------------------------------------------------------------------------------------------------------------------
+
+For example,
+The case A/B/C have the same condition except for a number of online core.
+- case A: Online core is 2, 1000MHz and nr_running is 1	: 377mA
+- case B: Online core is 3, 1000MHz and nr_running is 1	: 383mA
+- case C: Online core is 4, 1000Mz and nr_running is 1	: 391mA
+
+If system has only one running task, cpu hotplug policy, by monitoring
+cpu state through 'load_table' sysfs file on user-space,
+will determine 'case A' state for reducing power-consumption.
+
+Show the result of reading 'load_table sysfs file as following:
+- cpufreq governor is ondemand_org governor.
+
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/load_table
+       Time  Frequency cpu0 cpu1 cpu2 cpu3
+1300500043122   1600000   32    6    0   26
+1300600079080    800000   63   10    2   45
+1300700065288    800000   51    9    1   42
+1300800228747    800000   51    9    1   43
+1300900182997    800000   78   11    3   47
+1301000106163    800000   96   26    6   48
+1301100056247   1600000   45    7    1   27
+1301200071373   1000000   55    9    1   37
+1301300096082    800000   54   10    0   45
+1301400132832    800000   70   11    2   46
+1301500082290    800000   61   11    1   43
+1301600236415    800000   61    9    2   43
+1301700071498    800000   59   10    2   43
+1301800159290    800000   55    9    1   42
+1301900076332    800000   66   10    2   43
+1302000102165    800000   47    9    0   43
+1302100086623    800000   75   11    2   50
+1302200101082    800000   66   10    4   46
+1302300108873    800000   53   10    1   44
+1302400373373    600000   63   12    1   54
+
+Please let me know some opinion about this patch.
+
+Best regards and Thanks,
+Chanwoo Choi
+
+---
+ drivers/cpufreq/cpufreq.c          |  4 +++
+ drivers/cpufreq/cpufreq_governor.c | 21 ++++++++++--
+ drivers/cpufreq/cpufreq_stats.c    | 70 ++++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h            |  6 ++++
+ 4 files changed, 99 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2d53f47..cbaaff0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -292,6 +292,10 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
+ 			policy->cur = freqs->new;
+ 		break;
++	case CPUFREQ_LOADCHECK:
++		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
++				CPUFREQ_LOADCHECK, freqs);
++		break;
+ 	}
+ }
+ /**
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 5af40ad..bc50624 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -23,12 +23,17 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/mutex.h>
+ #include <linux/slab.h>
++#include <linux/sched.h>
+ #include <linux/tick.h>
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
+ #include "cpufreq_governor.h"
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	struct cpufreq_freqs freqs;
++#endif
++
+ static struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
+ {
+ 	if (have_governor_per_policy())
+@@ -143,11 +148,17 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+ 		}
+ 
+-		if (unlikely(!wall_time || wall_time < idle_time))
++		if (unlikely(!wall_time || wall_time < idle_time)) {
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++			freqs.load[j] = 0;
++#endif
+ 			continue;
++		}
+ 
+ 		load = 100 * (wall_time - idle_time) / wall_time;
+-
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++		freqs.load[j] = load;
++#endif
+ 		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+ 			int freq_avg = __cpufreq_driver_getavg(policy, j);
+ 			if (freq_avg <= 0)
+@@ -160,6 +171,12 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			max_load = load;
+ 	}
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	freqs.time = ktime_to_ns(ktime_get());
++	freqs.old = freqs.new = policy->cur;
++
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_LOADCHECK);
++#endif
+ 	dbs_data->cdata->gov_check_cpu(cpu, max_load);
+ }
+ EXPORT_SYMBOL_GPL(dbs_check_cpu);
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index fb65dec..2379b1d 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -22,6 +22,8 @@
+ #include <linux/notifier.h>
+ #include <asm/cputime.h>
+ 
++#define CPUFREQ_LOAD_TABLE_MAX		20
++
+ static spinlock_t cpufreq_stats_lock;
+ 
+ struct cpufreq_stats {
+@@ -35,6 +37,10 @@ struct cpufreq_stats {
+ 	unsigned int *freq_table;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
++
++	struct cpufreq_freqs *load_table;
++	unsigned int load_last_index;
++	unsigned int load_max_index;
+ #endif
+ };
+ 
+@@ -131,6 +137,38 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	return len;
+ }
+ cpufreq_freq_attr_ro(trans_table);
++
++static ssize_t show_load_table(struct cpufreq_policy *policy, char *buf)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	struct cpufreq_freqs *load_table = stat->load_table;
++	ssize_t len = 0;
++	int i;
++	int j;
++
++	len += sprintf(buf + len, "%11s %10s", "Time", "Frequency");
++	for (j = 0; j < NR_CPUS; j++)
++		len += sprintf(buf + len, " %3s%d", "cpu", j);
++	len += sprintf(buf + len, "\n");
++
++	i = stat->load_last_index;
++	do {
++		len += sprintf(buf + len, "%lld %9d",
++				load_table[i].time,
++				load_table[i].old);
++
++		for (j = 0; j < NR_CPUS; j++)
++			len += sprintf(buf + len, " %4d",
++					load_table[i].load[j]);
++		len += sprintf(buf + len, "\n");
++
++		if (++i == stat->load_max_index)
++			i = 0;
++	} while (i != stat->load_last_index);
++
++	return len;
++}
++cpufreq_freq_attr_ro(load_table);
+ #endif
+ 
+ cpufreq_freq_attr_ro(total_trans);
+@@ -141,6 +179,7 @@ static struct attribute *default_attrs[] = {
+ 	&time_in_state.attr,
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	&trans_table.attr,
++	&load_table.attr,
+ #endif
+ 	NULL
+ };
+@@ -167,6 +206,9 @@ static void cpufreq_stats_free_table(unsigned int cpu)
+ 
+ 	if (stat) {
+ 		pr_debug("%s: Free stat table\n", __func__);
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++		kfree(stat->load_table);
++#endif
+ 		kfree(stat->time_in_state);
+ 		kfree(stat);
+ 		per_cpu(cpufreq_stats_table, cpu) = NULL;
+@@ -244,6 +286,16 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	stat->trans_table = stat->freq_table + count;
++
++	stat->load_max_index = CPUFREQ_LOAD_TABLE_MAX;
++	stat->load_last_index = 0;
++
++	alloc_size = sizeof(struct cpufreq_freqs) * stat->load_max_index;
++	stat->load_table = kzalloc(alloc_size, GFP_KERNEL);
++	if (!stat->load_table) {
++		ret = -ENOMEM;
++		goto error_out;
++	}
+ #endif
+ 	j = 0;
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+@@ -312,13 +364,31 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+ 	struct cpufreq_stats *stat;
+ 	int old_index, new_index;
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	if (val != CPUFREQ_POSTCHANGE && val != CPUFREQ_LOADCHECK)
++#else
+ 	if (val != CPUFREQ_POSTCHANGE)
++#endif
+ 		return 0;
+ 
+ 	stat = per_cpu(cpufreq_stats_table, freq->cpu);
+ 	if (!stat)
+ 		return 0;
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	if (val == CPUFREQ_LOADCHECK) {
++		struct cpufreq_freqs *dest_freq;
++
++		dest_freq = &stat->load_table[stat->load_last_index];
++		memcpy(dest_freq, freq, sizeof(struct cpufreq_freqs));
++
++		if (++stat->load_last_index == stat->load_max_index)
++			stat->load_last_index = 0;
++
++		return 0;
++	}
++#endif
++
+ 	old_index = stat->last_index;
+ 	new_index = freq_table_get_index(stat, freq->new);
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 037d36a..f780645 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -140,12 +140,18 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ #define CPUFREQ_POSTCHANGE	(1)
+ #define CPUFREQ_RESUMECHANGE	(8)
+ #define CPUFREQ_SUSPENDCHANGE	(9)
++#define CPUFREQ_LOADCHECK	(10)
+ 
+ struct cpufreq_freqs {
+ 	unsigned int cpu;	/* cpu nr */
+ 	unsigned int old;
+ 	unsigned int new;
+ 	u8 flags;		/* flags of cpufreq_driver, see below. */
++
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	int64_t time;
++	unsigned int load[NR_CPUS];
++#endif
+ };
+ 
+ 
+-- 
+1.8.0
+
