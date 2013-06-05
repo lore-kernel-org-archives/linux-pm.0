@@ -1,82 +1,26 @@
-From: Giacomo Perale <giacomo.perale@gmail.com>
-Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
- broken in 3.9.x
-Date: Wed, 5 Jun 2013 11:09:18 +0200
-Message-ID: <CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
-References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
-	<1369631226.2159.5.camel@rzhang1-mobl4>
-	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
-	<1369878386.3368.16.camel@rzhang1-mobl4>
-	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
-	<1369911036.2636.5.camel@rzhang1-mobl4>
-	<CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v2 2/3] cpufreq: Remove unused function
+ __cpufreq_driver_getavg
+Date: Wed, 05 Jun 2013 12:35:27 +0300
+Message-ID: <v6q3yh4g49poaxn58wac6mqx.1370424863903@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, " H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2013/5/30 Giacomo Perale <giacomo.perale@gmail.com>:
-> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
->> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
->>> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
->>> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
->>> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
->>> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
->>> >> >> Hello,
->>> >> >>
->>> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly longer
->>> >> >> delays when resuming from suspend-to-disk and a few new error messages
->>> >> >> in the logs:
->>> >> >>
->>> >> >>
->>> >> >> Not having connected the issue with the previous error messages I
->>> >> >> initially blamed the disk and replaced it with a new one thinking it
->>> >> >> was broken, but the problem persisted so I started a bisection run
->>> >> >> that pointed to this commit:
->>> >> >>
->>> >> >>
->>> >> > I do not see how this would affect the sata hibernation/resume.
->>> >> > but anyway, would you please try the four patches in comment #10, #11,
->>> >> > #12 and #13 in
->>> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
->>> >> > and check if they help?
->>> >> >
->>> >> > thanks,
->>> >> > rui
->>> >> >
->>> >>
->>> >> No luck, with git head and those four patches hibernation is
->>> >> completely broken, the system doesn't even shut down, it just loses
->>> >> the disks (I'm attaching what I could get from /proc/kmsg to this
->>> >> email).
->>> >>
->>> > then can you please try the patch at
->>> > https://patchwork.kernel.org/patch/2633071/
->>> > on top of the four patches and see if it helps?
->>> >
->>> > thanks,
->>> > rui
->>> >
->>>
->>> Do you mean without Rafael's patch?
->>>
->> right.
->>
->> thanks,
->> rui
->
-> [cc-ing list]
->
-> No difference, system doesn't shut down and disks become unavailable.
->
-> Giacomo
-
-Any news about this?
-
-Thanks.
-
-Giacomo
+SSB0aGluayB5b3UgYXJlIHJpZ2h0LiBJIHdpbGwgcmVvcmRlciAyLzMgYW5kIDMvMyB3aXRoIHRo
+ZSBjaGFuZ2UgeW91IHN1Z2dlc3RlZC4KClRoYW5rcywKU3RyYXRvcwoKVmlyZXNoIEt1bWFyIDx2
+aXJlc2gua3VtYXJAbGluYXJvLm9yZz4gd3JvdGU6Cgo+T24gNCBKdW5lIDIwMTMgMjA6MzYsIFN0
+cmF0b3MgS2FyYWZvdGlzIDxzdHJhdG9za0BzZW1hcGhvcmUuZ3I+IHdyb3RlOgo+PiBPbiAwNi8w
+NC8yMDEzIDA4OjE5IEFNLCBWaXJlc2ggS3VtYXIgd3JvdGU6Cj4+PiBTaG91bGQgdGhpcyBiZSBk
+b25lIGluIDMvMyA/Cj4+Pgo+Pgo+PiBhY3BpLWNwdWZyZXEgZG9lcyBub3QgdXNlIG1wZXJmIGFm
+dGVyIDIvMy4gV2h5IHNob3VsZCB3ZSBjb21waWxlIGl0IHdpdGgKPj4gQ09ORklHX1g4Nl9BQ1BJ
+X0NQVUZSRVE/Cj4+IERvIHlvdSB3YW50IG1lIHRvIG1vdmUgdGhlIGNoYW5nZSBpbiAzLzM/Cj4K
+Pkkgc29tZWhvdyBmZWVsIG5vdyB0aGF0IDMvMyBzaG91bGQgY29tZSBiZWZvcmUgMi8zIGFuZCB0
+aGVuIHRoaXMgY2hhbmdlCj5zaG91bGQgYmUgbWVyZ2VkIGludG8gaXQuIEFuZCBhdCB0aGUgZW5k
+IHdlIGNhbiBoYXZlIHRoaXMgcGF0Y2ggYXMgMy8zLi4KPgo+V2hhdCBkbyB5b3Ugc2F5PyBjb3Jl
+IHNob3VsZCBnbyBsYXN0IGFuZCB1c2Vycy9kcml2ZXJzIG11c3QgZ28gZmlyc3QuCg==
