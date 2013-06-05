@@ -1,105 +1,113 @@
-From: Sachin Kamat <sachin.kamat@linaro.org>
-Subject: [PATCH 3/3] PM / devfreq: Use devm_* APIs in exynos5_bus.c
-Date: Wed,  5 Jun 2013 11:43:01 +0530
-Message-ID: <1370412781-20683-3-git-send-email-sachin.kamat@linaro.org>
-References: <1370412781-20683-1-git-send-email-sachin.kamat@linaro.org>
+From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Subject: Re: Cpufreq userspace governor start/stop issue
+Date: Wed, 5 Jun 2013 14:42:33 +0800
+Message-ID: <CAFgnuDfbvXi6hYDMkSCxFOw257p-V_BrEHWE=LZP=dCtLDP_5Q@mail.gmail.com>
+References: <CAFgnuDd_6z+g2m8QAfZBaCnwUYUPWB6Dku_3KvmTJ4mOrcOa6Q@mail.gmail.com>
+	<CAKohpokg2ajii1gfH-6O8JPs4tWEMxwFVr0saeBauZXaNZCZYw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:35558 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268Ab3FEG1Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 02:27:25 -0400
-Received: by mail-pd0-f170.google.com with SMTP id x10so1359197pdj.15
-        for <linux-pm@vger.kernel.org>; Tue, 04 Jun 2013 23:27:25 -0700 (PDT)
-In-Reply-To: <1370412781-20683-1-git-send-email-sachin.kamat@linaro.org>
+Received: from mail-ea0-f175.google.com ([209.85.215.175]:40896 "EHLO
+	mail-ea0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751864Ab3FEGme (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Jun 2013 02:42:34 -0400
+In-Reply-To: <CAKohpokg2ajii1gfH-6O8JPs4tWEMxwFVr0saeBauZXaNZCZYw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, a.kesavan@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-devm_* APIs are device managed and make clean up and exit codes
-simpler.
+2013/6/5 Viresh Kumar <viresh.kumar@linaro.org>:
+> On 5 June 2013 08:54, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
+>> Hi, Guys
+>
+> Hi Xiaoguang,
+>
+>> I met another question for cpufreq governor. When hotplug out one cpu,
+>> cpufreq will remove the cpu device and also call governor stop, if
+>> there are more than 1 cpu and cpu0 is the root for cpufreq, other cpus
+>> are linked to cpu0. then policy->cpu is 0 always.
+>
+> Not really.. There are situations when this will not hold true..
+> If you hot-unplug cpu0, then next cpu in line, i.e. cpu 1, will become
+> policy->cpu :)
+>
 
-Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
----
- drivers/devfreq/exynos/exynos5_bus.c |   26 ++++++++------------------
- 1 file changed, 8 insertions(+), 18 deletions(-)
+Yes, I know this. but usually we dont' allow hotplug cpu0. So the root is
+cpu0 most of the time. this is just one example if policy->cpu is not changed.
 
-diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
-index 9a82419..102d1f0 100644
---- a/drivers/devfreq/exynos/exynos5_bus.c
-+++ b/drivers/devfreq/exynos/exynos5_bus.c
-@@ -351,20 +351,18 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
- 
- 	err = exynos5250_init_int_tables(data);
- 	if (err)
--		goto err_regulator;
-+		return err;
- 
--	data->vdd_int = regulator_get(dev, "vdd_int");
-+	data->vdd_int = devm_regulator_get(dev, "vdd_int");
- 	if (IS_ERR(data->vdd_int)) {
- 		dev_err(dev, "Cannot get the regulator \"vdd_int\"\n");
--		err = PTR_ERR(data->vdd_int);
--		goto err_regulator;
-+		return PTR_ERR(data->vdd_int);
- 	}
- 
--	data->int_clk = clk_get(dev, "int_clk");
-+	data->int_clk = devm_clk_get(dev, "int_clk");
- 	if (IS_ERR(data->int_clk)) {
- 		dev_err(dev, "Cannot get clock \"int_clk\"\n");
--		err = PTR_ERR(data->int_clk);
--		goto err_clock;
-+		return PTR_ERR(data->int_clk);
- 	}
- 
- 	rcu_read_lock();
-@@ -374,8 +372,7 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
- 		rcu_read_unlock();
- 		dev_err(dev, "Invalid initial frequency %lu kHz.\n",
- 		       exynos5_devfreq_int_profile.initial_freq);
--		err = PTR_ERR(opp);
--		goto err_opp_add;
-+		return PTR_ERR(opp);
- 	}
- 	initial_freq = opp_get_freq(opp);
- 	initial_volt = opp_get_voltage(opp);
-@@ -385,12 +382,12 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
- 	err = clk_set_rate(data->int_clk, initial_freq * 1000);
- 	if (err) {
- 		dev_err(dev, "Failed to set initial frequency\n");
--		goto err_opp_add;
-+		return err;
- 	}
- 
- 	err = exynos5_int_setvolt(data, initial_volt);
- 	if (err)
--		goto err_opp_add;
-+		return err;
- 
- 	platform_set_drvdata(pdev, data);
- 
-@@ -419,11 +416,6 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
- 
- err_devfreq_add:
- 	devfreq_remove_device(data->devfreq);
--err_opp_add:
--	clk_put(data->int_clk);
--err_clock:
--	regulator_put(data->vdd_int);
--err_regulator:
- 	return err;
- }
- 
-@@ -434,8 +426,6 @@ static int exynos5_busfreq_int_remove(struct platform_device *pdev)
- 	pm_qos_remove_request(&data->int_req);
- 	unregister_pm_notifier(&data->pm_notifier);
- 	devfreq_remove_device(data->devfreq);
--	regulator_put(data->vdd_int);
--	clk_put(data->int_clk);
- 
- 	return 0;
- }
--- 
-1.7.9.5
 
+>> in userspace governor, when governor stop is called, it will set
+>> per_cpu(cpu_is_managed, cpu) = 0
+>
+> To make it clear, cpu_is_managed isn't telling which cpu is managing
+> 'cpu' but if governor is enabled for cpu 'cpu' or not.
+Yes, that should be the intent for this variable, but unluckily we get
+'cpu' as 0
+even when we hotplug cpu3.
+
+>
+>> but the cpu is policy->cpu which is 0 always.
+>>
+>>        case CPUFREQ_GOV_STOP:
+>>                 mutex_lock(&userspace_mutex);
+>>                 cpus_using_userspace_governor--;
+>>                 if (cpus_using_userspace_governor == 0) {
+>>                         cpufreq_unregister_notifier(
+>>                                         &userspace_cpufreq_notifier_block,
+>>                                         CPUFREQ_TRANSITION_NOTIFIER);
+>>                 }
+>>
+>>                 per_cpu(cpu_is_managed, cpu) = 0;
+>>                 per_cpu(cpu_min_freq, cpu) = 0;
+>>                 per_cpu(cpu_max_freq, cpu) = 0;
+>>                 per_cpu(cpu_set_freq, cpu) = 0;
+>>                 pr_debug("managing cpu %u stopped\n", cpu);
+>>                 mutex_unlock(&userspace_mutex);
+>>                 break;
+>>
+>>
+>> also in userspace governor store_setspeed function cpufreq_set will
+>> retun error if per_cpu(cpu_is_managed, cpu) is 0 which means it will
+>> not change frequency .
+>>
+>> static int cpufreq_set(struct cpufreq_policy *policy, unsigned int freq)
+>> {
+>> int ret = -EINVAL;
+>>
+>> pr_debug("cpufreq_set for cpu %u, freq %u kHz\n", policy->cpu, freq);
+>>
+>> mutex_lock(&userspace_mutex);
+>> if (!per_cpu(cpu_is_managed, policy->cpu))
+>> goto err;
+>>
+>> per_cpu(cpu_set_freq, policy->cpu) = freq;
+>> ...........
+>>
+>>
+>>
+>> So consider below case:
+>> 1) cpu0 tries to hotplug cpu3, it calls userspace governor stop
+>> function, it should stop cpu3's userspace governor, but it actually
+>> set cpu0's per_cpu(cpu_is_managed, cpu) to 0.
+>> 2) cpu0 tries to change cpu freuqency through userspace governor, but
+>> it will never succeed since cpufreq_set will return err if cpu0'
+>> percpu variable cpu_is_managed is 0.
+>> 3) unless there is another cpu hotplug in operation, in which it calls
+>> governor start and set cpu_is_managed to 1, then the frequency change
+>> will go on and doesn't report error.
+>>
+>> The reason here is policy->cpu is always 0 if we use managed policy
+>> for all cpus. but we can't see which cpu's governor want's to
+>> start/stop in userspace goveror. we can only get the information from
+>> struct policy, but this policy doesn't include the exact cpu that
+>> wants to do governor start/stop.
+>>
+>>
+>> Any suggestions for this issue?
+>
+> Hmm.. the problem is bigger than what you observed..
+> I am starting to cleanup userspace governor now and will cc you
+> for my patches. Please test them and give your Tested-by :)
+
+Ok, thanks
