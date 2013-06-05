@@ -1,77 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target frequency
-Date: Wed, 05 Jun 2013 22:35:05 +0200
-Message-ID: <105446113.ZumbZWCbSi@vostro.rjw.lan>
-References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic> <51AF71B6.6030408@semaphore.gr>
+Subject: Re: [PATCH] cpuidle: move ARCH_NEEDS_CPU_IDLE_COUPLED Kconfig option
+Date: Wed, 05 Jun 2013 22:36:20 +0200
+Message-ID: <2504003.GJXn0Z0NTJ@vostro.rjw.lan>
+References: <1460854.rT4b7LefMM@wuerfel> <51AF3424.5060200@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51AF71B6.6030408@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:58457 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757276Ab3FEU1Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Jun 2013 16:27:16 -0400
+In-Reply-To: <51AF3424.5060200@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, June 05, 2013 08:13:26 PM Stratos Karafotis wrote:
-> Hi Borislav,
+On Wednesday, June 05, 2013 02:50:44 PM Daniel Lezcano wrote:
+> On 06/05/2013 02:38 PM, Arnd Bergmann wrote:
+> > There is no reason why ARCH_NEEDS_CPU_IDLE_COUPLED needs to be
+> > hidden inside of "if CPU_IDLE", since it is a silent option.
+> > Moving it outside lets platforms select this symbol unconditionally,
+> > which avoid a warning from the ARM omap2plus_defconfig build:
+> > 
+> > warning: (ARCH_OMAP4 && ARCH_TEGRA_2x_SOC) selects
+> > 	ARCH_NEEDS_CPU_IDLE_COUPLED which has unmet direct
+> > 	dependencies (CPU_IDLE)
 > 
-> On 06/05/2013 07:17 PM, Borislav Petkov wrote:
-> > On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
-> >> Ondemand calculates load in terms of frequency and increases it only
-> >> if the load_freq is greater than up_threshold multiplied by current
-> >> or average frequency. This seems to produce oscillations of frequency
-> >> between min and max because, for example, a relatively small load can
-> >> easily saturate minimum frequency and lead the CPU to max. Then, the
-> >> CPU will decrease back to min due to a small load_freq.
-> >
-> > Right, and I think this is how we want it, no?
-> >
-> > The thing is, the faster you finish your work, the faster you can become
-> > idle and save power.
+> IMHO, this option depends on CPU_IDLE and thus must be kept inside the
+> CPU_IDLE menuconfig.
 > 
-> This is exactly the goal of this patch. To use more efficiently middle
-> frequencies to finish faster the work.
+> The warning raised here is because this option is selected by the arch
+> Kconfig without checking if CPU_IDLE is set or not.
 > 
-> > If you switch frequencies in a staircase-like manner, you're going to
-> > take longer to finish, in certain cases, and burn more power while doing
-> > so.
-> 
-> This is not true with this patch. It switches to middle frequencies
-> when the load < up_threshold.
-> Now, ondemand does not increase freq. CPU runs in lowest freq till the
-> load is greater than up_threshold.
-> 
-> > Btw, racing to idle is also a good example for why you want boosting:
-> > you want to go max out the core but stay within power limits so that you
-> > can finish sooner.
-> >
-> >> This patch changes the calculation method of load and target frequency
-> >> considering 2 points:
-> >> - Load computation should be independent from current or average
-> >> measured frequency. For example an absolute load 80% at 100MHz is not
-> >> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
-> >> - Target frequency should be increased to any value of frequency table
-> >> proportional to absolute load, instead to only the max. Thus:
-> >>
-> >> Target frequency = C * load
-> >>
-> >> where C = policy->cpuinfo.max_freq / 100
-> >>
-> >> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
-> >> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-> >> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
-> >> that middle frequencies are used more, with this patch. Highest
-> >> and lowest frequencies were used less by ~9%
+> I am in favor to change the OMAP / TEGRA Kconfigs instead, in this way:
 
-Can you also use powertop to measure the percentage of time spent in idle
-states for the same workload with and without your patchset?  Also, it would
-be good to measure the total energy consumption somehow ...
+I prefer this one.
 
 Thanks,
 Rafael
 
 
+> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+> index f49cd51..831e89e 100644
+> --- a/arch/arm/mach-omap2/Kconfig
+> +++ b/arch/arm/mach-omap2/Kconfig
+> @@ -83,7 +83,7 @@ config ARCH_OMAP4
+>         depends on ARCH_OMAP2PLUS
+>         depends on ARCH_MULTI_V7
+>         select ARCH_HAS_OPP
+> -       select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+> +       select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
+>         select ARM_CPU_SUSPEND if PM
+>         select ARM_ERRATA_720789
+>         select ARM_GIC
+> diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
+> index 84d72fc..04c6221 100644
+> --- a/arch/arm/mach-tegra/Kconfig
+> +++ b/arch/arm/mach-tegra/Kconfig
+> @@ -23,7 +23,7 @@ menu "NVIDIA Tegra options"
+> 
+>  config ARCH_TEGRA_2x_SOC
+>         bool "Enable support for Tegra20 family"
+> -       select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
+> +       select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
+>         select ARM_ERRATA_720789
+>         select ARM_ERRATA_754327 if SMP
+>         select ARM_ERRATA_764369 if SMP
+> diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+> 
+> [ ... ]
+> 
+> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
