@@ -1,37 +1,111 @@
-From: Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
- target frequency
-Date: Thu, 6 Jun 2013 15:15:23 +0200
-Message-ID: <20130606131523.GE21181@pd.tnic>
-References: <fqrv6c2yk2ebwb4182ect77d.1370523260717@email.android.com>
+From: Joe Jin <joe.jin@oracle.com>
+Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
+Date: Thu, 06 Jun 2013 21:29:27 +0800
+Message-ID: <51B08EB7.8080702@oracle.com>
+References: <51AE8BE4.8050409@oracle.com> <31897041.QcNuTieHbo@vostro.rjw.lan> <51AFD75C.3030705@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:34334 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752587Ab3FFNPl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Jun 2013 09:15:41 -0400
-Content-Disposition: inline
-In-Reply-To: <fqrv6c2yk2ebwb4182ect77d.1370523260717@email.android.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <42861210.QMFsUVH8RU@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Please do not top-post.
+On 06/06/13 19:06, Rafael J. Wysocki wrote:
+> On Thursday, June 06, 2013 08:27:08 AM Joe Jin wrote:
+>> On 06/06/13 04:40, Rafael J. Wysocki wrote:
+>>> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
+>>>> When _PPC changed dynamically the user_policy.max will not be updated,
+>>>> this prevent CPU run on the highest frequency.
+>>>
+>>> Why should the user setting be always related to the current maximum available
+>>> frequency?  What if the user sets the limit for power capping purposes?
+>>
+>> cpufreq_update_policy() get policy->max from user_policy.max:
+>>
+>> 1782 int cpufreq_update_policy(unsigned int cpu)
+>> 1783 {
+>> [...]
+>> 1800         policy.min = data->user_policy.min;
+>> 1801         policy.max = data->user_policy.max;
+>> 1802         policy.policy = data->user_policy.policy;
+>> 1803         policy.governor = data->user_policy.governor;
+>> [...]
+>> 1819         ret = __cpufreq_set_policy(data, &policy);
+>> [...]
+>>
+>> /sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
+>> and user_policy->max, when update it, so I think _PPC changes also need
+>> to update these two?
+> 
+> Yes, if policy.max happens to be greater that the maximum available frequency,
+> then (and only then) it probably should be updated.  It should never be bumped
+> up, though.
 
-On Thu, Jun 06, 2013 at 03:54:20PM +0300, Stratos Karafotis wrote:
-> I will try to provide the requested info (although, I'm not sure how
-> to measure total energy :) )
+Does this means if I enabled hardcap before kernel boot up, and later system brought
+up and I disabled hardcap, I has to enlarge the max frequency manually?
 
-tools/power/x86/turbostat looks like a good tool. It can show, a.o.,
-power consumption in Watts on modern Intels and other interesting stuff.
+Thanks,
+Joe
 
-HTH.
+> 
+> Thanks,
+> Rafael
+> 
+> 
+>>>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+>>>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> ---
+>>>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
+>>>>  1 file changed, 16 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+>>>> index e854582..e01aa7d 100644
+>>>> --- a/drivers/acpi/processor_perflib.c
+>>>> +++ b/drivers/acpi/processor_perflib.c
+>>>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
+>>>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>>>  {
+>>>>  	int ret;
+>>>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
+>>>>  
+>>>>  	if (ignore_ppc) {
+>>>>  		/*
+>>>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>>>  	}
+>>>>  	if (ret < 0)
+>>>>  		return (ret);
+>>>> -	else
+>>>> +	else {
+>>>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
+>>>> +
+>>>> +		if (saved != ppc) {
+>>>> +			struct cpufreq_policy *policy;
+>>>> +
+>>>> +			policy = cpufreq_cpu_get(pr->id);
+>>>> +			if (likely(policy))
+>>>> +				policy->user_policy.max =
+>>>> +					pr->performance->states[ppc].
+>>>> +					core_frequency * 1000;
+>>>> +			cpufreq_cpu_put(policy);
+>>>> +		}
+>>>> +
+>>>>  		return cpufreq_update_policy(pr->id);
+>>>> +	}
+>>>>  }
+>>>>  
+>>>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+>>>>
+>>
+>>
+>>
+
 
 -- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
+Oracle <http://www.oracle.com>
+Joe Jin | Software Development Senior Manager | +8610.6106.5624
+ORACLE | Linux and Virtualization
+No. 24 Zhongguancun Software Park, Haidian District | 100193 Beijing 
