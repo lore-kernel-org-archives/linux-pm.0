@@ -1,276 +1,474 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3 2/2] cpuidle: Comment the driver's framework code
-Date: Thu,  6 Jun 2013 13:40:31 +0200
-Message-ID: <1370518831-19287-2-git-send-email-daniel.lezcano@linaro.org>
-References: <1370518831-19287-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f54.google.com ([74.125.82.54]:33292 "EHLO
-	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932588Ab3FFLkl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 07:40:41 -0400
-Received: by mail-wg0-f54.google.com with SMTP id j13so1968017wgh.33
-        for <linux-pm@vger.kernel.org>; Thu, 06 Jun 2013 04:40:39 -0700 (PDT)
-In-Reply-To: <1370518831-19287-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 2/5] cpufreq:boost: Add support for software based CPU
+ frequency boost
+Date: Thu, 06 Jun 2013 13:49:03 +0200
+Message-ID: <20130606134903.5f69b8fb@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370502472-7249-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpok3KTfSWDU6PdDd4_VW4Pp+6J80yn5cLrYr5RuBNH-agA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpok3KTfSWDU6PdDd4_VW4Pp+6J80yn5cLrYr5RuBNH-agA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: francescolavra.fl@gmail.com, lenb@kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, linux-pm@vger.kernel.org
 
-Added kerneldoc and comments for the cpuidle framework driver's code.
+Hi Viresh,
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/driver.c |  128 +++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 120 insertions(+), 8 deletions(-)
+> Hi,
+> 
+> On 6 June 2013 12:37, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > This commit adds support for software based frequency boosting.
+> > Exynos4 SoCs (e.g. 4x12) allow setting of frequency above its normal
+> > condition limits. This can be done for some short time.
+> >
+> > Overclocking (boost) support came from cpufreq driver (which is
+> > platform dependent). Hence the data structure describing it is
+> > defined at its file.
+> >
+> > To allow support for either SW and HW (Intel) based boosting, the
+> > cpufreq core code has been extended to support both solutions.
+> >
+> > The main boost switch has been put
+> > at /sys/devices/system/cpu/cpufreq/boost.
+> 
+> Log requires some better paragraphs but I am not concerned about it
+> for now.
+> 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c    |  156
+> > ++++++++++++++++++++++++++++++++++++++++++
+> > drivers/cpufreq/freq_table.c |   87 ++++++++++++++++++++++-
+> > include/linux/cpufreq.h      |   35 +++++++++- 3 files changed, 275
+> > insertions(+), 3 deletions(-)
+> 
+> My initial view on this patch is: "It is overly engineered and needs
+> to get simplified"
+> 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index ca74e27..8cf9a92 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -133,6 +133,11 @@ bool have_governor_per_policy(void)
+> >         return cpufreq_driver->have_governor_per_policy;
+> >  }
+> >
+> > +/**
+> > + * Global definition of cpufreq_boost structure
+> > + */
+> > +struct cpufreq_boost *cpufreq_boost;
+> 
+> Probably just a 'static bool' here cpufreq_boost_enabled. Which takes
+> care of selection from sysfs.
 
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 745adae..0268346 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -22,11 +22,28 @@ DEFINE_SPINLOCK(cpuidle_driver_lock);
- 
- static DEFINE_PER_CPU(struct cpuidle_driver *, cpuidle_drivers);
- 
-+/**
-+ * __cpuidle_get_cpu_driver: returns the cpuidle driver tied with the specified
-+ * cpu.
-+ *
-+ * @cpu: an integer specifying the cpu number
-+ *
-+ * Returns a pointer to struct cpuidle_driver, NULL if no driver has been
-+ * registered for this driver
-+ */
- static struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
- {
- 	return per_cpu(cpuidle_drivers, cpu);
- }
- 
-+/**
-+ * __cpuidle_set_driver: assign to the per cpu variable the driver pointer for
-+ * each cpu the driver is assigned to with the cpumask.
-+ *
-+ * @drv: a pointer to a struct cpuidle_driver
-+ *
-+ * Returns 0 on success, < 0 otherwise
-+ */
- static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
- {
- 	int cpu;
-@@ -42,6 +59,12 @@ static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
- 	return 0;
- }
- 
-+/**
-+ * __cpuidle_unset_driver: for each cpu the driver is handling, set the per cpu
-+ * variable driver to NULL.
-+ *
-+ * @drv: a pointer to a struct cpuidle_driver
-+ */
- static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
- {
- 	int cpu;
-@@ -59,11 +82,27 @@ static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
- 
- static struct cpuidle_driver *cpuidle_curr_driver;
- 
-+/**
-+ * __cpuidle_get_cpu_driver: returns the global cpuidle driver pointer.
-+ *
-+ * @cpu: an integer specifying the cpu number, this parameter is ignored
-+ *
-+ * Returns a pointer to a struct cpuidle_driver, NULL if no driver was
-+ * previously registered
-+ */
- static inline struct cpuidle_driver *__cpuidle_get_cpu_driver(int cpu)
- {
- 	return cpuidle_curr_driver;
- }
- 
-+/**
-+ * __cpuidle_set_driver: assign the cpuidle driver pointer to the global cpuidle
-+ * driver variable.
-+ *
-+ * @drv: a pointer to a struct cpuidle_driver
-+ *
-+ * Returns 0 on success, < 0 otherwise
-+ */
- static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
- {
- 	if (cpuidle_curr_driver)
-@@ -74,6 +113,12 @@ static inline int __cpuidle_set_driver(struct cpuidle_driver *drv)
- 	return 0;
- }
- 
-+/**
-+ * __cpuidle_unset_driver: reset the global cpuidle driver variable if the
-+ * cpuidle driver pointer match it.
-+ *
-+ * @drv: a pointer to a struct cpuidle_driver
-+ */
- static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
- {
- 	if (drv == cpuidle_curr_driver)
-@@ -82,21 +127,49 @@ static inline void __cpuidle_unset_driver(struct cpuidle_driver *drv)
- 
- #endif
- 
-+/**
-+ * cpuidle_setup_broadcast_timer: set the broadcast timer notification for the
-+ * current cpu. This function is called per cpu context invoked by a smp cross
-+ * call. It is not supposed to be called directly.
-+ *
-+ * @arg: a void pointer, actually used to match the smp cross call api but used
-+ * as a long with two values:
-+ * - CLOCK_EVT_NOTIFY_BROADCAST_ON
-+ * - CLOCK_EVT_NOTIFY_BROADCAST_OFF
-+ */
- static void cpuidle_setup_broadcast_timer(void *arg)
- {
- 	int cpu = smp_processor_id();
- 	clockevents_notify((long)(arg), &cpu);
- }
- 
-+/**
-+ * __cpuidle_driver_init: initialize the driver internal data.
-+ *
-+ * @drv: a valid pointer to a struct cpuidle_driver
-+ *
-+ * Returns 0 on success, < 0 otherwise
-+ */
- static int __cpuidle_driver_init(struct cpuidle_driver *drv)
- {
- 	int i;
- 
- 	drv->refcnt = 0;
- 
-+	/*
-+	 * we default here to all cpu possible because if the kernel
-+	 * boots with some cpus offline and then we online one of them
-+	 * the cpu notifier won't know which driver to assign
-+	 */
- 	if (!drv->cpumask)
- 		drv->cpumask = (struct cpumask *)cpu_possible_mask;
- 
-+	/*
-+	 * we look for the timer stop flag in the different states,
-+	 * so know we have to setup the broadcast timer. The loop is
-+	 * in reverse order, because usually the deeper state has this
-+	 * flag set
-+	 */
- 	for (i = drv->state_count - 1; i >= 0 ; i--) {
- 
- 		if (!(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP))
-@@ -109,6 +182,16 @@ static int __cpuidle_driver_init(struct cpuidle_driver *drv)
- 	return 0;
- }
- 
-+/**
-+ * __cpuidle_register_driver: do some sanity checks, initializes the driver,
-+ * assign the driver to the global cpuidle driver variable(s) and setup the
-+ * broadcast timer if the cpuidle driver has some states which shutdown the
-+ * local timer.
-+ *
-+ * @drv: a valid pointer to a struct cpuidle_driver
-+ *
-+ * Returns 0 on success, < 0 otherwise
-+ */
- static int __cpuidle_register_driver(struct cpuidle_driver *drv)
- {
- 	int ret;
-@@ -135,8 +218,12 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
- }
- 
- /**
-- * cpuidle_unregister_driver - unregisters a driver
-- * @drv: the driver
-+ * __cpuidle_unregister_driver: checks the driver is no longer in use, reset the
-+ * global cpuidle driver variable(s) and disable the timer broadcast
-+ * notification mechanism if it was in use.
-+ *
-+ * @drv: a valid pointer to a struct cpuidle_driver
-+ *
-  */
- static void __cpuidle_unregister_driver(struct cpuidle_driver *drv)
- {
-@@ -153,8 +240,12 @@ static void __cpuidle_unregister_driver(struct cpuidle_driver *drv)
- }
- 
- /**
-- * cpuidle_register_driver - registers a driver
-- * @drv: the driver
-+ * cpuidle_register_driver: registers a driver by taking a lock to prevent
-+ * multiple callers to [un]register a driver at the same time.
-+ *
-+ * @drv: a pointer to a valid struct cpuidle_driver
-+ *
-+ * Returns 0 on success, < 0 otherwise
-  */
- int cpuidle_register_driver(struct cpuidle_driver *drv)
- {
-@@ -169,8 +260,11 @@ int cpuidle_register_driver(struct cpuidle_driver *drv)
- EXPORT_SYMBOL_GPL(cpuidle_register_driver);
- 
- /**
-- * cpuidle_unregister_driver - unregisters a driver
-- * @drv: the driver
-+ * cpuidle_unregister_driver: unregisters a driver by taking a lock to prevent
-+ * multiple callers to [un]register a driver at the same time. The specified
-+ * driver must match the driver currently registered.
-+ *
-+ * @drv: a pointer to a valid struct cpuidle_driver
-  */
- void cpuidle_unregister_driver(struct cpuidle_driver *drv)
- {
-@@ -181,7 +275,9 @@ void cpuidle_unregister_driver(struct cpuidle_driver *drv)
- EXPORT_SYMBOL_GPL(cpuidle_unregister_driver);
- 
- /**
-- * cpuidle_get_driver - return the current driver
-+ * cpuidle_get_driver: returns the driver tied with the current cpu.
-+ *
-+ * Returns a struct cpuidle_driver pointer, or NULL if no driver is registered
-  */
- struct cpuidle_driver *cpuidle_get_driver(void)
- {
-@@ -197,7 +293,12 @@ struct cpuidle_driver *cpuidle_get_driver(void)
- EXPORT_SYMBOL_GPL(cpuidle_get_driver);
- 
- /**
-- * cpuidle_get_cpu_driver - return the driver tied with a cpu
-+ * cpuidle_get_cpu_driver: returns the driver registered with a cpu.
-+ *
-+ * @dev: a valid pointer to a struct cpuidle_device
-+ *
-+ * Returns a struct cpuidle_driver pointer, or NULL if no driver is registered
-+ * for the specified cpu
-  */
- struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
- {
-@@ -208,6 +309,13 @@ struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev)
- }
- EXPORT_SYMBOL_GPL(cpuidle_get_cpu_driver);
- 
-+/**
-+ * cpuidle_driver_ref: gets a refcount for the driver. Note this function takes
-+ * a refcount for the driver assigned to the current cpu.
-+ *
-+ * Returns a struct cpuidle_driver pointer, or NULL if no driver is registered
-+ * for the current cpu
-+ */
- struct cpuidle_driver *cpuidle_driver_ref(void)
- {
- 	struct cpuidle_driver *drv;
-@@ -221,6 +329,10 @@ struct cpuidle_driver *cpuidle_driver_ref(void)
- 	return drv;
- }
- 
-+/**
-+ * cpuidle_driver_unref: puts down the refcount for the driver. Note this
-+ * function decrement the refcount for the driver assigned to the current cpu.
-+ */
- void cpuidle_driver_unref(void)
- {
- 	struct cpuidle_driver *drv = cpuidle_get_driver();
+The pointer to struct cpufreq_boost is needed for further reference
+(as it is now done with struct cpufreq_driver pointer - *cpufreq_driver
+- defined at cpufreq.c file).
+
+
+> 
+> >  static struct cpufreq_governor *__find_governor(const char
+> > *str_governor) {
+> > @@ -761,6 +805,18 @@ static int cpufreq_add_dev_interface(unsigned
+> > int cpu, if (cpufreq_set_drv_attr_files(policy,
+> > cpufreq_driver->attr)) goto err_out_kobj_put;
+> >
+> > +       if (cpufreq_driver->boost) {
+> > +               if (sysfs_create_file(cpufreq_global_kobject,
+> > +                                     &(global_boost.attr)))
+> 
+> This will report error for systems where we have two policy
+> structures. As we are creating something already present.
+Good point, thanks.
+
+> 
+> > +                       pr_warn("could not register global boost
+> > sysfs file\n");
+> > +               else
+> > +                       pr_debug("registered global boost sysfs
+> > file\n");
+> 
+> Please make all your prints to print function name too:
+> 
+> pr_debug("%s: foo\n", __func__, foo);
+
+OK.
+
+> 
+> > +               if (cpufreq_set_drv_attr_files(policy,
+> > +
+> > cpufreq_driver->boost->attr))
+> 
+> Why is this required? Why do we want platforms to add some files
+> in sysfs?
+
+There are two kinds of attributes, which are exported by boost:
+
+1. global boost (/sys/devices/system/cpu/cpufreq/boost)
+
+2. attributes describing cpufreq abilities when boost is available
+(/sys/devices/syste/cpu/cpu0/cpufreq/):
+	- scaling_boost_frequencies - which will show over clocked
+	  frequencies
+	- the scaling_available_frequencies will also display boosted
+	  frequency (when boost enabled)
+
+Information from 2. is cpufreq_driver dependent. And that information
+shouldn't been displayed when boost is not available
+
+
+
+> 
+> >  /*********************************************************************
+> > + *
+> > BOOST                                              *
+> > +
+> > *********************************************************************/
+> > +int cpufreq_boost_trigger_state(struct cpufreq_policy *policy, int
+> > state) +{
+> > +       struct cpufreq_boost *boost;
+> > +       unsigned long flags;
+> > +       int ret = 0;
+> > +
+> > +       if (!policy || !policy->boost
+> > || !policy->boost->low_level_boost)
+> > +               return -ENODEV;
+> > +
+> > +       boost = policy->boost;
+> > +       write_lock_irqsave(&cpufreq_driver_lock, flags);
+> > +
+> > +       if (boost->status != state) {
+> > +               policy->boost->status = state;
+> > +               ret = boost->low_level_boost(policy, state);
+> > +               if (ret) {
+> > +                       pr_err("BOOST cannot %sable low level code
+> > (%d)\n",
+> > +                              state ? "en" : "dis", ret);
+> > +                       return ret;
+> > +               }
+> > +       }
+> > +
+> > +       write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> > +
+> > +       pr_debug("cpufreq BOOST %sabled\n", state ? "en" : "dis");
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +/**
+> > + * cpufreq_boost_notifier - notifier callback for cpufreq policy
+> > change.
+> > + *  <at> nb:   struct notifier_block * with callback info.
+> > + *  <at> event: value showing cpufreq event for which this
+> > function invoked.
+> > + *  <at> data: callback-specific data
+> > + */
+> > +static int cpufreq_boost_notifier(struct notifier_block *nb,
+> > +                                 unsigned long event, void *data)
+> > +{
+> > +       struct cpufreq_policy *policy = data;
+> > +
+> > +       if (event == CPUFREQ_INCOMPATIBLE) {
+> > +               if (!policy || !policy->boost)
+> > +                       return -ENODEV;
+> > +
+> > +               if (policy->boost->status == CPUFREQ_BOOST_EN) {
+> > +                       pr_info("NOTIFIER BOOST: MAX: %d e:%lu cpu:
+> > %d\n",
+> > +                               policy->max, event, policy->cpu);
+> > +                       cpufreq_boost_trigger_state(policy, 0);
+> > +               }
+> > +       }
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +/* Notifier for cpufreq policy change */
+> > +static struct notifier_block cpufreq_boost_notifier_block = {
+> > +       .notifier_call = cpufreq_boost_notifier,
+> > +};
+> > +
+> > +int cpufreq_boost_init(struct cpufreq_policy *policy)
+> > +{
+> > +       int ret = 0;
+> > +
+> > +       if (!policy)
+> > +               return -EINVAL;
+> 
+> Heh, policy can't be NULL here.
+
+Extra precautions :-). I will remove it.
+
+> 
+> > +       if (!cpufreq_driver->boost) {
+> > +               pr_err("Boost mode not supported on this device\n");
+> 
+> Wow!! You want to screw everybody else's logs with this message.
+> Its not a crime if you don't have boost mode supported :)
+
+Hmm, I've exaggerated a bit here.... :)
+
+> 
+> Actually this routine must be called only if cpufreq_driver->boost
+> is valid.
+> 
+> > +               return -ENODEV;
+> > +       }
+> > +
+> > +       policy->boost = cpufreq_boost = cpufreq_driver->boost;
+> 
+> Why are we copying same pointer to policy->boost? Driver is
+> passing pointer to a single memory location, just save it globally.
+
+This needs some explanation.
+
+The sysfs entry presented at [1] doesn't bring any useful information
+to reuse (like *policy). For this reason the global cpufreq_boost
+pointer is needed.
+
+However to efficiently manage the boost, it is necessary to keep per
+policy pointer to the only struct cpufreq_boost instance (defined at
+cpufreq_driver code).
+
+> 
+> > +       /* disable boost for newly created policy - as we e.g.
+> > change
+> > +          governor */
+> > +       policy->boost->status = CPUFREQ_BOOST_DIS;
+> 
+> Drivers supporting boost may want boost to be enabled by default,
+> maybe without any sysfs calls.
+
+This can be done by setting the struct cpufreq_boost status field to
+CPUFREQ_BOOST_EN at cpufreq driver code (when boost structure is
+defined)
+
+> 
+> > +       /* register policy notifier */
+> > +       ret =
+> > cpufreq_register_notifier(&cpufreq_boost_notifier_block,
+> > +                                       CPUFREQ_POLICY_NOTIFIER);
+> > +       if (ret) {
+> > +               pr_err("CPUFREQ BOOST notifier not registered.\n");
+> > +               return ret;
+> > +       }
+> > +       /* add policy to policies list headed at struct
+> > cpufreq_boost */
+> > +       list_add_tail(&policy->boost_list,
+> > &cpufreq_boost->policies); +
+> > +       return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_boost_init);
+> 
+> Why do we need to maintain a list of boost here? notifiers? complex :(
+
+Notifier is needed to disable boost when policy is changed (for
+example when we change from ondemand/lab to performance governor).
+
+I wanted to avoid the situation when boost stays enabled across
+different governors.
+
+The list of in system available policies is defined to allow boost
+enable/disable for all policies available (by changing for example
+policy->max field).
+
+If we decide, that we will support only one policy (as it is now at
+e.g. Exynos), the list is unnecessary here.
+
+> 
+> > +/*********************************************************************
+> >   *               REGISTER / UNREGISTER CPUFREQ
+> > DRIVER                *
+> > *********************************************************************/
+> >
+> > @@ -1954,6 +2106,10 @@ int cpufreq_unregister_driver(struct
+> > cpufreq_driver *driver) pr_debug("unregistering driver %s\n",
+> > driver->name);
+> >
+> >         subsys_interface_unregister(&cpufreq_interface);
+> > +
+> > +       if (cpufreq_driver->boost)
+> > +               sysfs_remove_file(cpufreq_global_kobject,
+> > &(global_boost.attr));
+> 
+> You haven't removed this from policy. Memory leak.
+
+Yes, you are right.
+
+> 
+> >         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+> >
+> >         write_lock_irqsave(&cpufreq_driver_lock, flags);
+> > diff --git a/drivers/cpufreq/freq_table.c
+> > b/drivers/cpufreq/freq_table.c index d7a7966..0e95524 100644
+> > --- a/drivers/cpufreq/freq_table.c
+> > +++ b/drivers/cpufreq/freq_table.c
+> > @@ -3,6 +3,8 @@
+> >   *
+> >   * Copyright (C) 2002 - 2003 Dominik Brodowski
+> >   *
+> > + * Copyright (C) 2013 Lukasz Majewski <l.majewski@samsung.com>
+> > + *
+> 
+> You shouldn't add it unless you did some major work on this file. You
+> aren't maintaining this file in 2013.
+
+OK, I will remove the entry.
+
+> 
+> > +static int cpufreq_frequency_table_skip_boost(struct
+> > cpufreq_policy *policy,
+> > +                                             unsigned int index)
+> > +{
+> > +       if (index == CPUFREQ_BOOST)
+> > +               if (!policy->boost ||
+> 
+> This shouldn't be true. If index has got CPUFREQ_BOOST, then driver
+> has to support boost.
+
+Correct me if I'm wrong here, but in my understanding the boost shall be
+only supported when both CPUFREQ_BOOST index is defined in a freq_table
+and boost.state = CPUFREQ_BOOST_EN is set.
+
+Setting of CPUFREQ_BOOST shouldn't by default allow to use over
+clocking frequency. 
+
+> 
+> > +                   policy->boost->status == CPUFREQ_BOOST_DIS)
+> > +                       return 1;
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +unsigned int
+> > +cpufreq_frequency_table_boost_max(struct cpufreq_frequency_table
+> > *freq_table) +{
+> > +       int index, boost_freq_max;
+> > +
+> > +       for (index = 0, boost_freq_max = 0;
+> > +               freq_table[index].frequency != CPUFREQ_TABLE_END;
+> > index++)
+> > +               if (freq_table[index].index == CPUFREQ_BOOST) {
+> > +                       if (freq_table[index].frequency >
+> > boost_freq_max)
+> > +                               boost_freq_max =
+> > freq_table[index].frequency;
+> > +               }
+> > +
+> > +       return boost_freq_max;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_frequency_table_boost_max);
+> 
+> why do we need this?
+
+To evaluate the maximal boost frequency from the frequency table. It is
+then used as a delimiter (when LAB cooperates with thermal framework).
+
+> 
+> >  /*
+> >   * if you use these, you must assure that the frequency table is
+> > valid
+> >   * all the time between get_attr and put_attr!
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index 037d36a..1294c8c 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -88,6 +88,25 @@ struct cpufreq_real_policy {
+> >         struct cpufreq_governor *governor; /* see below */
+> >  };
+> >
+> > +#define CPUFREQ_BOOST_DIS            (0)
+> > +#define CPUFREQ_BOOST_EN             (1)
+> 
+> You don't need these.. Just create variable as bool and 0 & 1 would
+> be fine.
+
+Yes, this seems to be a clearer solution.
+
+> 
+> > +struct cpufreq_policy;
+> > +struct cpufreq_boost {
+> > +       unsigned int            max_boost_freq; /* maximum value of
+> > +                                                * boosted freq */
+> > +       unsigned int            max_normal_freq; /* non boost max
+> > freq */
+> > +       int                     status; /* status of boost */
+> > +
+> > +       /* boost sysfs attributies */
+> > +       struct freq_attr        **attr;
+> > +
+> > +       /* low-level trigger for boost */
+> > +       int (*low_level_boost) (struct cpufreq_policy *policy, int
+> > state); +
+> > +       struct list_head        policies;
+> > +};
+> 
+> We don't need it. Just add two more fields to cpufreq_driver:
+> - have_boost_freqs and low_level_boost (maybe a better name.
+> What's its use?)
+
+The separate struct cpufreq_boost was created to explicitly separate
+boost fields from cpufreq_driver structure. 
+
+If in your opinion this structure is redundant, I can remove it and
+extend cpufreq_driver structure.
+
+> 
+> >  struct cpufreq_policy {
+> >         /* CPUs sharing clock, require sw coordination */
+> >         cpumask_var_t           cpus;   /* Online CPUs only */
+> > @@ -113,6 +132,9 @@ struct cpufreq_policy {
+> >
+> >         struct cpufreq_real_policy      user_policy;
+> >
+> > +       struct cpufreq_boost    *boost;
+> > +       struct list_head        boost_list;
+> 
+> We don't need both of these.
+
+*boost pointer is necessary when one wants to enable/disable boost from
+e.g governor code (which operates mostly on struct cpufreq_policy
+*policy pointers).
+
+The boost_list is necessary to connect policies in a list. 
+
+> 
+> >         struct kobject          kobj;
+> >         struct completion       kobj_unregister;
+> >  };
+> 
+> > @@ -277,7 +302,6 @@ struct cpufreq_driver {
+> >  int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+> >  int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+> >
+> > -
+> 
+> ??
+> 
+> >  void cpufreq_notify_transition(struct cpufreq_policy *policy,
+> >                 struct cpufreq_freqs *freqs, unsigned int state);
+> >
+> > @@ -403,6 +427,9 @@ extern struct cpufreq_governor
+> > cpufreq_gov_conservative; #define CPUFREQ_ENTRY_INVALID ~0
+> >  #define CPUFREQ_TABLE_END     ~1
+> >
+> > +/* Define index for boost frequency */
+> > +#define CPUFREQ_BOOST         ~2
+> 
+> s/CPUFREQ_BOOST/CPUFREQ_BOOST_FREQ
+
+Ok, will be changed to something more descriptive. 
+
+Thanks for thorough review :-)
+
 -- 
-1.7.9.5
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
