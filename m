@@ -1,35 +1,71 @@
-From: Borislav Petkov <bp@suse.de>
+From: Stratos Karafotis <stratosk@semaphore.gr>
 Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
  target frequency
-Date: Thu, 6 Jun 2013 14:10:12 +0200
-Message-ID: <20130606121012.GD21181@pd.tnic>
-References: <51AF60D5.3080605@semaphore.gr>
- <20130605161703.GA29958@pd.tnic>
- <51AF71B6.6030408@semaphore.gr>
- <105446113.ZumbZWCbSi@vostro.rjw.lan>
- <20130606100138.GC21181@pd.tnic>
- <CAKohpo=cwxvcicw4svcvyKJOzGD9j+gzTyg=4yYg4EsY89C3EQ@mail.gmail.com>
+Date: Thu, 06 Jun 2013 15:54:20 +0300
+Message-ID: <fqrv6c2yk2ebwb4182ect77d.1370523260717@email.android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpo=cwxvcicw4svcvyKJOzGD9j+gzTyg=4yYg4EsY89C3EQ@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sema.semaphore.gr ([78.46.194.137]:38376 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933138Ab3FFMye (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 08:54:34 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 06, 2013 at 03:40:13PM +0530, Viresh Kumar wrote:
-> his patch will give significant improvement both power & performance wise.
+SGkgUmFmYWVsLAoKSSB3aWxsIHRyeSB0byBwcm92aWRlIHRoZSByZXF1ZXN0ZWQgaW5mbyAoYWx0
+aG91Z2gsIEknbSBub3Qgc3VyZSBob3cgdG8gbWVhc3VyZSB0b3RhbCBlbmVyZ3kgOikgKQoKVGhh
+bmtzLApTdHJhdG9zCgoiUmFmYWVsIEouIFd5c29ja2kiIDxyandAc2lzay5wbD4gd3JvdGU6Cgo+
+T24gV2VkbmVzZGF5LCBKdW5lIDA1LCAyMDEzIDA4OjEzOjI2IFBNIFN0cmF0b3MgS2FyYWZvdGlz
+IHdyb3RlOgo+PiBIaSBCb3Jpc2xhdiwKPj4gCj4+IE9uIDA2LzA1LzIwMTMgMDc6MTcgUE0sIEJv
+cmlzbGF2IFBldGtvdiB3cm90ZToKPj4gPiBPbiBXZWQsIEp1biAwNSwgMjAxMyBhdCAwNzowMToy
+NVBNICswMzAwLCBTdHJhdG9zIEthcmFmb3RpcyB3cm90ZToKPj4gPj4gT25kZW1hbmQgY2FsY3Vs
+YXRlcyBsb2FkIGluIHRlcm1zIG9mIGZyZXF1ZW5jeSBhbmQgaW5jcmVhc2VzIGl0IG9ubHkKPj4g
+Pj4gaWYgdGhlIGxvYWRfZnJlcSBpcyBncmVhdGVyIHRoYW4gdXBfdGhyZXNob2xkIG11bHRpcGxp
+ZWQgYnkgY3VycmVudAo+PiA+PiBvciBhdmVyYWdlIGZyZXF1ZW5jeS4gVGhpcyBzZWVtcyB0byBw
+cm9kdWNlIG9zY2lsbGF0aW9ucyBvZiBmcmVxdWVuY3kKPj4gPj4gYmV0d2VlbiBtaW4gYW5kIG1h
+eCBiZWNhdXNlLCBmb3IgZXhhbXBsZSwgYSByZWxhdGl2ZWx5IHNtYWxsIGxvYWQgY2FuCj4+ID4+
+IGVhc2lseSBzYXR1cmF0ZSBtaW5pbXVtIGZyZXF1ZW5jeSBhbmQgbGVhZCB0aGUgQ1BVIHRvIG1h
+eC4gVGhlbiwgdGhlCj4+ID4+IENQVSB3aWxsIGRlY3JlYXNlIGJhY2sgdG8gbWluIGR1ZSB0byBh
+IHNtYWxsIGxvYWRfZnJlcS4KPj4gPgo+PiA+IFJpZ2h0LCBhbmQgSSB0aGluayB0aGlzIGlzIGhv
+dyB3ZSB3YW50IGl0LCBubz8KPj4gPgo+PiA+IFRoZSB0aGluZyBpcywgdGhlIGZhc3RlciB5b3Ug
+ZmluaXNoIHlvdXIgd29yaywgdGhlIGZhc3RlciB5b3UgY2FuIGJlY29tZQo+PiA+IGlkbGUgYW5k
+IHNhdmUgcG93ZXIuCj4+IAo+PiBUaGlzIGlzIGV4YWN0bHkgdGhlIGdvYWwgb2YgdGhpcyBwYXRj
+aC4gVG8gdXNlIG1vcmUgZWZmaWNpZW50bHkgbWlkZGxlCj4+IGZyZXF1ZW5jaWVzIHRvIGZpbmlz
+aCBmYXN0ZXIgdGhlIHdvcmsuCj4+IAo+PiA+IElmIHlvdSBzd2l0Y2ggZnJlcXVlbmNpZXMgaW4g
+YSBzdGFpcmNhc2UtbGlrZSBtYW5uZXIsIHlvdSdyZSBnb2luZyB0bwo+PiA+IHRha2UgbG9uZ2Vy
+IHRvIGZpbmlzaCwgaW4gY2VydGFpbiBjYXNlcywgYW5kIGJ1cm4gbW9yZSBwb3dlciB3aGlsZSBk
+b2luZwo+PiA+IHNvLgo+PiAKPj4gVGhpcyBpcyBub3QgdHJ1ZSB3aXRoIHRoaXMgcGF0Y2guIEl0
+IHN3aXRjaGVzIHRvIG1pZGRsZSBmcmVxdWVuY2llcwo+PiB3aGVuIHRoZSBsb2FkIDwgdXBfdGhy
+ZXNob2xkLgo+PiBOb3csIG9uZGVtYW5kIGRvZXMgbm90IGluY3JlYXNlIGZyZXEuIENQVSBydW5z
+IGluIGxvd2VzdCBmcmVxIHRpbGwgdGhlCj4+IGxvYWQgaXMgZ3JlYXRlciB0aGFuIHVwX3RocmVz
+aG9sZC4KPj4gCj4+ID4gQnR3LCByYWNpbmcgdG8gaWRsZSBpcyBhbHNvIGEgZ29vZCBleGFtcGxl
+IGZvciB3aHkgeW91IHdhbnQgYm9vc3Rpbmc6Cj4+ID4geW91IHdhbnQgdG8gZ28gbWF4IG91dCB0
+aGUgY29yZSBidXQgc3RheSB3aXRoaW4gcG93ZXIgbGltaXRzIHNvIHRoYXQgeW91Cj4+ID4gY2Fu
+IGZpbmlzaCBzb29uZXIuCj4+ID4KPj4gPj4gVGhpcyBwYXRjaCBjaGFuZ2VzIHRoZSBjYWxjdWxh
+dGlvbiBtZXRob2Qgb2YgbG9hZCBhbmQgdGFyZ2V0IGZyZXF1ZW5jeQo+PiA+PiBjb25zaWRlcmlu
+ZyAyIHBvaW50czoKPj4gPj4gLSBMb2FkIGNvbXB1dGF0aW9uIHNob3VsZCBiZSBpbmRlcGVuZGVu
+dCBmcm9tIGN1cnJlbnQgb3IgYXZlcmFnZQo+PiA+PiBtZWFzdXJlZCBmcmVxdWVuY3kuIEZvciBl
+eGFtcGxlIGFuIGFic29sdXRlIGxvYWQgODAlIGF0IDEwME1IeiBpcyBub3QKPj4gPj4gbmVjZXNz
+YXJpbHkgZXF1aXZhbGVudCB0byA4JSBhdCAxMDAwTUh6IGluIHRoZSBuZXh0IHNhbXBsaW5nIGlu
+dGVydmFsLgo+PiA+PiAtIFRhcmdldCBmcmVxdWVuY3kgc2hvdWxkIGJlIGluY3JlYXNlZCB0byBh
+bnkgdmFsdWUgb2YgZnJlcXVlbmN5IHRhYmxlCj4+ID4+IHByb3BvcnRpb25hbCB0byBhYnNvbHV0
+ZSBsb2FkLCBpbnN0ZWFkIHRvIG9ubHkgdGhlIG1heC4gVGh1czoKPj4gPj4KPj4gPj4gVGFyZ2V0
+IGZyZXF1ZW5jeSA9IEMgKiBsb2FkCj4+ID4+Cj4+ID4+IHdoZXJlIEMgPSBwb2xpY3ktPmNwdWlu
+Zm8ubWF4X2ZyZXEgLyAxMDAKPj4gPj4KPj4gPj4gVGVzdGVkIG9uIEludGVsIGk3LTM3NzAgQ1BV
+IEAgMy40MEdIeiBhbmQgb24gUXVhZCBjb3JlIDE1MDBNSHogS3JhaXQuCj4+ID4+IFBob3Jvbml4
+IGJlbmNobWFyayBvZiBMaW51eCBLZXJuZWwgQ29tcGlsYXRpb24gMy4xIHRlc3Qgc2hvd3MgYW4K
+Pj4gPj4gaW5jcmVhc2UgfjEuNSUgaW4gcGVyZm9ybWFuY2UuIGNwdWZyZXFfc3RhdHMgKHRpbWVf
+aW5fc3RhdGUpIHNob3dzCj4+ID4+IHRoYXQgbWlkZGxlIGZyZXF1ZW5jaWVzIGFyZSB1c2VkIG1v
+cmUsIHdpdGggdGhpcyBwYXRjaC4gSGlnaGVzdAo+PiA+PiBhbmQgbG93ZXN0IGZyZXF1ZW5jaWVz
+IHdlcmUgdXNlZCBsZXNzIGJ5IH45JQo+Cj5DYW4geW91IGFsc28gdXNlIHBvd2VydG9wIHRvIG1l
+YXN1cmUgdGhlIHBlcmNlbnRhZ2Ugb2YgdGltZSBzcGVudCBpbiBpZGxlCj5zdGF0ZXMgZm9yIHRo
+ZSBzYW1lIHdvcmtsb2FkIHdpdGggYW5kIHdpdGhvdXQgeW91ciBwYXRjaHNldD8gIEFsc28sIGl0
+IHdvdWxkCj5iZSBnb29kIHRvIG1lYXN1cmUgdGhlIHRvdGFsIGVuZXJneSBjb25zdW1wdGlvbiBz
+b21laG93IC4uLgo+Cj5UaGFua3MsCj5SYWZhZWwKPgo+Cj4tLSAKPkkgc3BlYWsgb25seSBmb3Ig
+bXlzZWxmLgo+UmFmYWVsIEouIFd5c29ja2ksIEludGVsIE9wZW4gU291cmNlIFRlY2hub2xvZ3kg
+Q2VudGVyLgo=
 
-Yes, and I'd like to see the paperwork on that. Numbers, and on a couple
-of platforms/vendors if possible, please.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-Sent from a fat crate under my desk. Formatting is fine.
---
