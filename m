@@ -1,49 +1,72 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/3] cpufreq: ondemand: Change the calculation of
- target frequency
-Date: Thu, 6 Jun 2013 12:24:09 +0530
-Message-ID: <CAKohpokYqXD9owu2-dDgo_+8bq702RqEEeVraPNSyeaNxcha_Q@mail.gmail.com>
-References: <51AF60C1.9050409@semaphore.gr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51AF60C1.9050409@semaphore.gr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [PATCH 0/5] cpufreq:boost: CPU Boost mode support
+Date: Thu, 06 Jun 2013 09:07:47 +0200
+Message-ID: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:30086 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752998Ab3FFHIf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 03:08:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 5 June 2013 21:31, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> Changes since v2:
->         - Reorder patches 2/3 and 3/3
->         - Fix typos in patch changelog
->
-> Changes since v1:
->         - Use policy->cpuinfo.max_freq in the calculation formula
->                 of target frequency instead of policy->max
->         - Split the patch into 3 parts
->
-> Stratos Karafotis (3):
->   cpufreq: ondemand: Change the calculation of target frequency
->   cpufreq: Remove unused APERF/MPERF support
->   cpufreq: Remove unused function __cpufreq_driver_getavg
->
->  arch/x86/include/asm/processor.h   | 29 ----------------------
->  drivers/cpufreq/Makefile           |  2 +-
->  drivers/cpufreq/acpi-cpufreq.c     |  5 ----
->  drivers/cpufreq/cpufreq.c          | 12 ---------
->  drivers/cpufreq/cpufreq_governor.c | 10 +-------
->  drivers/cpufreq/cpufreq_governor.h |  1 -
->  drivers/cpufreq/cpufreq_ondemand.c | 39 ++++++-----------------------
->  drivers/cpufreq/mperf.c            | 51 --------------------------------------
->  drivers/cpufreq/mperf.h            |  9 -------
->  include/linux/cpufreq.h            |  6 -----
->  10 files changed, 9 insertions(+), 155 deletions(-)
->  delete mode 100644 drivers/cpufreq/mperf.c
->  delete mode 100644 drivers/cpufreq/mperf.h
+This patch series introduces support for CPU overclocking technique 
+called Boost. 
 
-Functionally your patchset looks fine to me.. I know there are few
-concerns about the real impact on power/performance, and I am
-not talking about them here (Though they are very important :) ).
+It is a follow up of a LAB governor proposal. Boost is a LAB component:
+http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Boost unifies hardware based solution (e.g. Intel Nehalem) with
+software oriented one (like the one done at Exynos).
+For this reason cpufreq/freq_table code has been reorganized to exclude
+common code.
+
+Important design decisions:
+
+- Boost related code is compiled-in unconditionally. I wanted to avoid
+situation when a lot of #ifdef CONFIG_CPU_FREQ_BOOST are scattered at
+cpufreq code (especially cpufreq.c large file)
+
+- Only one cpufreq_boost instance is created at cpufreq driver file. 
+
+- Boost can manage overclocking when many policies are istalled in
+the system (this is a preparation for b.L)
+
+- Boost sysfs attributies are seen only when cpufreq driver supports them.
+They will not show up until either CONFIG_CPU_FREQ_BOOST or device tree
+cpufreq "boost_mode" attribute is defined.
+
+- No special spin_lock for Boost was created. The one from cpufreq was
+reused.
+
+- Low level boost trigger function (*low_level_boost function callback) is
+necessary to "glue" together acpi-cpufreq boost with software based one.
+
+
+
+Tested at: HW: Exynos 4412 3.10 linux
+	   Compile tested x86_64 defconfig (acpi) - help with HW test 
+		needed
+
+Lukasz Majewski (5):
+  cpufreq: Define cpufreq_set_drv_attr_files() to add per CPU sysfs
+    attributes
+  cpufreq:boost: Add support for software based CPU frequency boost
+  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
+    boost solution
+  cpufreq:exynos:Extend exynos cpufreq driver to support boost
+  cpufreq:boost:Kconfig: Enable boost support at Kconfig
+
+ drivers/cpufreq/Kconfig          |    7 ++
+ drivers/cpufreq/acpi-cpufreq.c   |   64 ++++++--------
+ drivers/cpufreq/cpufreq.c        |  175 ++++++++++++++++++++++++++++++++++++--
+ drivers/cpufreq/exynos-cpufreq.c |   48 +++++++++++
+ drivers/cpufreq/freq_table.c     |   87 ++++++++++++++++++-
+ include/linux/cpufreq.h          |   35 +++++++-
+ 6 files changed, 369 insertions(+), 47 deletions(-)
+
+-- 
+1.7.10.4
+
