@@ -1,98 +1,52 @@
-From: Joe Jin <joe.jin@oracle.com>
-Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Thu, 06 Jun 2013 08:27:08 +0800
-Message-ID: <51AFD75C.3030705@oracle.com>
-References: <51AE8BE4.8050409@oracle.com> <31897041.QcNuTieHbo@vostro.rjw.lan>
+From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Subject: Re: Cpufreq userspace governor start/stop issue
+Date: Thu, 6 Jun 2013 11:40:48 +0800
+Message-ID: <CAFgnuDeDUSCd8UMKSBOXVNW+aJwqtr9jd4DTBL=HhsbkDtXgwQ@mail.gmail.com>
+References: <CAFgnuDd_6z+g2m8QAfZBaCnwUYUPWB6Dku_3KvmTJ4mOrcOa6Q@mail.gmail.com>
+	<CAKohpok=tUf=9peEkriM9Ow8J2NfZxDBuaFQhW+uyfeEVYiRjw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <31897041.QcNuTieHbo@vostro.rjw.lan>
+In-Reply-To: <CAKohpok=tUf=9peEkriM9Ow8J2NfZxDBuaFQhW+uyfeEVYiRjw@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/06/13 04:40, Rafael J. Wysocki wrote:
-> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
->> When _PPC changed dynamically the user_policy.max will not be updated,
->> this prevent CPU run on the highest frequency.
-> 
-> Why should the user setting be always related to the current maximum available
-> frequency?  What if the user sets the limit for power capping purposes?
+2013/6/5 Viresh Kumar <viresh.kumar@linaro.org>:
+> On 5 June 2013 08:54, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
+>
+> Though I have tried to simplify userspace governor at the best,
+> but I think I didn't understood one thing here.
+>
+>> So consider below case:
+>> 1) cpu0 tries to hotplug cpu3, it calls userspace governor stop
+>> function, it should stop cpu3's userspace governor, but it actually
+>> set cpu0's per_cpu(cpu_is_managed, cpu) to 0.
+>> 2) cpu0 tries to change cpu freuqency through userspace governor, but
+>> it will never succeed since cpufreq_set will return err if cpu0'
+>> percpu variable cpu_is_managed is 0.
+>
+> This is how it works currently in latest code:
+> -> hot-unplug cpu3
+>   -> STOP governor for its policy with policy->cpus set to 0,1,2,3
+>      -> set managed for policy->cpu (i.e. cpu0) to 0.
+>   -> START governor for 0,1,2
+>      -> set managed for policy->cpu (i.e. cpu0) to 1.
+>
+> And so we are in workable situation again and their is no problem
+> at all.
 
-cpufreq_update_policy() get policy->max from user_policy.max:
+Yes, I missed the governor start in the end.
+There is still a chance that After governor stop but before governor start,
+cpu0 tries to set frequency through userspace governor, it will fail.
+This should be the same problem I described to you before that
+governor stop and start
+should be protected by a lock to keep it in sequence and no body
+should interrupt.
+It seems we need to use the same lock for userspace governor set
+freuqency to delay freq_set until
+governor is started.
 
-1782 int cpufreq_update_policy(unsigned int cpu)
-1783 {
-[...]
-1800         policy.min = data->user_policy.min;
-1801         policy.max = data->user_policy.max;
-1802         policy.policy = data->user_policy.policy;
-1803         policy.governor = data->user_policy.governor;
-[...]
-1819         ret = __cpufreq_set_policy(data, &policy);
-[...]
-
-/sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
-and user_policy->max, when update it, so I think _PPC changes also need
-to update these two?
-
-Thanks,
-Joe
- 
-> 
-> Rafael
-> 
-> 
->> Signed-off-by: Joe Jin <joe.jin@oracle.com>
->> Cc: Rafael J. Wysocki <rjw@sisk.pl>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
->>  1 file changed, 16 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
->> index e854582..e01aa7d 100644
->> --- a/drivers/acpi/processor_perflib.c
->> +++ b/drivers/acpi/processor_perflib.c
->> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
->>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->>  {
->>  	int ret;
->> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
->>  
->>  	if (ignore_ppc) {
->>  		/*
->> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
->>  	}
->>  	if (ret < 0)
->>  		return (ret);
->> -	else
->> +	else {
->> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
->> +
->> +		if (saved != ppc) {
->> +			struct cpufreq_policy *policy;
->> +
->> +			policy = cpufreq_cpu_get(pr->id);
->> +			if (likely(policy))
->> +				policy->user_policy.max =
->> +					pr->performance->states[ppc].
->> +					core_frequency * 1000;
->> +			cpufreq_cpu_put(policy);
->> +		}
->> +
->>  		return cpufreq_update_policy(pr->id);
->> +	}
->>  }
->>  
->>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
->>
-
-
--- 
-Oracle <http://www.oracle.com>
-Joe Jin | Software Development Senior Manager | +8610.6106.5624
-ORACLE | Linux and Virtualization
-No. 24 Zhongguancun Software Park, Haidian District | 100193 Beijing 
+Thanks
+Xiaoguang
