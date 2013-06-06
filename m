@@ -1,64 +1,98 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCHv2 1/2] drivers: power: Add watchdog timer to catch drivers which lockup during suspend/resume.
-Date: Thu, 06 Jun 2013 00:29:34 +0200
-Message-ID: <4207662.oRJambEty7@vostro.rjw.lan>
-References: <1368221329-1841-1-git-send-email-zoran.markovic@linaro.org> <CAME+o4kn=xBToxV2xfC5L0b5wVbQ27EA8+tDt9jT44BvBPeSTA@mail.gmail.com> <CAME+o4mkBknj0jiUW=Z77fG1bJYy1jHF7=shNQ_ixeL_oJDjFg@mail.gmail.com>
+From: Joe Jin <joe.jin@oracle.com>
+Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
+Date: Thu, 06 Jun 2013 08:27:08 +0800
+Message-ID: <51AFD75C.3030705@oracle.com>
+References: <51AE8BE4.8050409@oracle.com> <31897041.QcNuTieHbo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:58521 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757857Ab3FEWUb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Jun 2013 18:20:31 -0400
-In-Reply-To: <CAME+o4mkBknj0jiUW=Z77fG1bJYy1jHF7=shNQ_ixeL_oJDjFg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <31897041.QcNuTieHbo@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zoran Markovic <zoran.markovic@linaro.org>
-Cc: Colin Cross <ccross@android.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Goby <benoit@android.com>, Android Kernel Team <kernel-team@android.com>, Todd Poynor <toddpoynor@google.com>, San Mehat <san@google.com>, John Stultz <john.stultz@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Wednesday, June 05, 2013 03:17:59 PM Zoran Markovic wrote:
-> Rafael,
-
-Hi,
-
-> >>> We could do cancel_work_sync() as a recovery, but that call blocks until the
-> >>> running async task is flushed, which might never happen. So doing a panic()
-> >>> is pretty much the only option for recovering.
-> >>
-> >> Well, its usefulness is quite limited, then.  That said I'm still not convinced
-> >> that this actually is the case.
-> >
-> > It does block in my environment, AFAICS. Looking a bit further in the
-> > code, it looks like dpm_suspend() does an async_synchronize_full()
-> > which would wait for all async tasks to complete. This is a
-> > show-stopper because (under the circumstances) the assumption that
-> > every async suspend routine eventually completes doesn't hold.
-> >
-> > We could possibly select which async tasks to wait for, but this would
-> > add unnecessary complexity to a feature targeted for debugging. It
-> > seems that this approach - although sounding reasonable - needs to
-> > wait until we have a mechanism to cancel an async task.
+On 06/06/13 04:40, Rafael J. Wysocki wrote:
+> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
+>> When _PPC changed dynamically the user_policy.max will not be updated,
+>> this prevent CPU run on the highest frequency.
 > 
-> Looks like the implementation of proposal for an async suspend +
-> wait_for_completion_timeout is quite complex due to above limitations.
-> How do we proceed from here? We have the following options:
-> 1. Give up on the idea of having a suspend/resume watchdog.
-> 2. Use the timer implementation (with possible modifications).
-> 3. Wait for the implementation of (or implement) killing of an already
-> running async work.
-> 
-> Are there any other ideas floating around?
+> Why should the user setting be always related to the current maximum available
+> frequency?  What if the user sets the limit for power capping purposes?
 
-I'm not aware of any at the moment, but I really don't think this is urgent.
+cpufreq_update_policy() get policy->max from user_policy.max:
 
-I think we can revisit it during the 3.12 cycle and decide how to proceed
-then.
+1782 int cpufreq_update_policy(unsigned int cpu)
+1783 {
+[...]
+1800         policy.min = data->user_policy.min;
+1801         policy.max = data->user_policy.max;
+1802         policy.policy = data->user_policy.policy;
+1803         policy.governor = data->user_policy.governor;
+[...]
+1819         ret = __cpufreq_set_policy(data, &policy);
+[...]
+
+/sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
+and user_policy->max, when update it, so I think _PPC changes also need
+to update these two?
 
 Thanks,
-Rafael
+Joe
+ 
+> 
+> Rafael
+> 
+> 
+>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
+>>  1 file changed, 16 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+>> index e854582..e01aa7d 100644
+>> --- a/drivers/acpi/processor_perflib.c
+>> +++ b/drivers/acpi/processor_perflib.c
+>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
+>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>  {
+>>  	int ret;
+>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
+>>  
+>>  	if (ignore_ppc) {
+>>  		/*
+>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+>>  	}
+>>  	if (ret < 0)
+>>  		return (ret);
+>> -	else
+>> +	else {
+>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
+>> +
+>> +		if (saved != ppc) {
+>> +			struct cpufreq_policy *policy;
+>> +
+>> +			policy = cpufreq_cpu_get(pr->id);
+>> +			if (likely(policy))
+>> +				policy->user_policy.max =
+>> +					pr->performance->states[ppc].
+>> +					core_frequency * 1000;
+>> +			cpufreq_cpu_put(policy);
+>> +		}
+>> +
+>>  		return cpufreq_update_policy(pr->id);
+>> +	}
+>>  }
+>>  
+>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+>>
 
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Oracle <http://www.oracle.com>
+Joe Jin | Software Development Senior Manager | +8610.6106.5624
+ORACLE | Linux and Virtualization
+No. 24 Zhongguancun Software Park, Haidian District | 100193 Beijing 
