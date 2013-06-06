@@ -1,72 +1,113 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
- frequency
-Date: Thu, 06 Jun 2013 20:32:15 +0300
-Message-ID: <51B0C79F.6000704@semaphore.gr>
-References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic> <51AF71B6.6030408@semaphore.gr> <105446113.ZumbZWCbSi@vostro.rjw.lan> <20130606100138.GC21181@pd.tnic> <CAKohpo=cwxvcicw4svcvyKJOzGD9j+gzTyg=4yYg4EsY89C3EQ@mail.gmail.com> <20130606121012.GD21181@pd.tnic> <51B0BCD9.6030308@semaphore.gr> <20130606171152.GF21181@pd.tnic>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
+Date: Thu, 06 Jun 2013 21:54:02 +0200
+Message-ID: <2674436.upogMLa2Oh@vostro.rjw.lan>
+References: <51AE8BE4.8050409@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan> <51B08EB7.8080702@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sema.semaphore.gr ([78.46.194.137]:40050 "EHLO
-	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753741Ab3FFRcR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 13:32:17 -0400
-In-Reply-To: <20130606171152.GF21181@pd.tnic>
+Received: from hydra.sisk.pl ([212.160.235.94]:59087 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753212Ab3FFTpA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 6 Jun 2013 15:45:00 -0400
+In-Reply-To: <51B08EB7.8080702@oracle.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Joe Jin <joe.jin@oracle.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 06/06/2013 08:11 PM, Borislav Petkov wrote:
-> On Thu, Jun 06, 2013 at 07:46:17PM +0300, Stratos Karafotis wrote:
->> Apologies for top-posting. I was able to send email only from my phone.
->>
->> Thanks for you hint about turbostat.
->>
->> As you most probably understood, I'm individual amateur kernel developer.
->> I could provide some numbers from x86 architecture as Rafael suggested.
->> But unfortunately, I don't have access to more sources/infrastructure.
->> So, I will not be able to provide numbers from different platform(s).
->>
->> I've already provided some benchmarks from x86 (3.10-rc3) and also
->> tested the patch in 3.4.47 kernel (ARM, Nexus 4 phone, ~1000 installations)
->> and in 3.0.80 kernel (ARM, Samsung Galaxy S phone, ~1500 installations).
->>
->> Kindly let me know if "couple of platforms/vendors" is a show stopper
->> for this patch series. If yes, please ignore this patch and accept
->> my apologies for wasting your time. I am just trying to contribute
->> on this project (I believe there is space here for amateur developers).
->
-> I'm in no way discouraging you in contributing to the kernel - on the
-> opposite: you should continue doing that.
+On Thursday, June 06, 2013 09:29:27 PM Joe Jin wrote:
+> On 06/06/13 19:06, Rafael J. Wysocki wrote:
+> > On Thursday, June 06, 2013 08:27:08 AM Joe Jin wrote:
+> >> On 06/06/13 04:40, Rafael J. Wysocki wrote:
+> >>> On Wednesday, June 05, 2013 08:52:52 AM Joe Jin wrote:
+> >>>> When _PPC changed dynamically the user_policy.max will not be updated,
+> >>>> this prevent CPU run on the highest frequency.
+> >>>
+> >>> Why should the user setting be always related to the current maximum available
+> >>> frequency?  What if the user sets the limit for power capping purposes?
+> >>
+> >> cpufreq_update_policy() get policy->max from user_policy.max:
+> >>
+> >> 1782 int cpufreq_update_policy(unsigned int cpu)
+> >> 1783 {
+> >> [...]
+> >> 1800         policy.min = data->user_policy.min;
+> >> 1801         policy.max = data->user_policy.max;
+> >> 1802         policy.policy = data->user_policy.policy;
+> >> 1803         policy.governor = data->user_policy.governor;
+> >> [...]
+> >> 1819         ret = __cpufreq_set_policy(data, &policy);
+> >> [...]
+> >>
+> >> /sys/devices/system/cpu/cpu$/cpufreq/scaling_max_freq using policy->max 
+> >> and user_policy->max, when update it, so I think _PPC changes also need
+> >> to update these two?
+> > 
+> > Yes, if policy.max happens to be greater that the maximum available frequency,
+> > then (and only then) it probably should be updated.  It should never be bumped
+> > up, though.
+> 
+> Does this means if I enabled hardcap before kernel boot up, and later system brought
+> up and I disabled hardcap, I has to enlarge the max frequency manually?
 
-I will try! :)
+Do you mean you set a limit in the BIOS setup and the kernel changed that limit
+on boot?
 
-> I'm just trying to make sure that a change like that doesn't hurt
-> existing systems, thus the request to test on a couple of platforms. If
-> you don't have other platforms, that's fine, we'll find them somewhere. :-)
->
-> I'm hoping you can understand my aspect too, though - how would you feel
-> if a patch shows improvement on my box but slows down yours - you won't
-> be very happy with it, right? That's why we generally want to test such
-> power/performance tweaks on a wider range of machines.
+Rafael
 
-I'm totally understand your aspect and I think you are absolutely
-right. I just wanted to declare that I am not able to provide numbers
-for other platforms due to lack of hardware.
 
-> But you said you have a i7-3770 CPU on which, I think, turbostat should
-> be able to show you how the power consumption looks like.
->
-> And if so, you could measure that consumption once with, and once
-> without your patch. This will give us initial numbers, at least.
->
-> How does that sound?
->
-
-That sounds perfect! I will provide numbers for i7 soon.
-
-Thanks for your comments!
-Stratos
-
+> >>>> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+> >>>> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> >>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> >>>> ---
+> >>>>  drivers/acpi/processor_perflib.c | 17 ++++++++++++++++-
+> >>>>  1 file changed, 16 insertions(+), 1 deletion(-)
+> >>>>
+> >>>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> >>>> index e854582..e01aa7d 100644
+> >>>> --- a/drivers/acpi/processor_perflib.c
+> >>>> +++ b/drivers/acpi/processor_perflib.c
+> >>>> @@ -180,6 +180,7 @@ static void acpi_processor_ppc_ost(acpi_handle handle, int status)
+> >>>>  int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+> >>>>  {
+> >>>>  	int ret;
+> >>>> +	unsigned int saved = (unsigned int)pr->performance_platform_limit;
+> >>>>  
+> >>>>  	if (ignore_ppc) {
+> >>>>  		/*
+> >>>> @@ -204,8 +205,22 @@ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
+> >>>>  	}
+> >>>>  	if (ret < 0)
+> >>>>  		return (ret);
+> >>>> -	else
+> >>>> +	else {
+> >>>> +		unsigned int ppc = (unsigned int)pr->performance_platform_limit;
+> >>>> +
+> >>>> +		if (saved != ppc) {
+> >>>> +			struct cpufreq_policy *policy;
+> >>>> +
+> >>>> +			policy = cpufreq_cpu_get(pr->id);
+> >>>> +			if (likely(policy))
+> >>>> +				policy->user_policy.max =
+> >>>> +					pr->performance->states[ppc].
+> >>>> +					core_frequency * 1000;
+> >>>> +			cpufreq_cpu_put(policy);
+> >>>> +		}
+> >>>> +
+> >>>>  		return cpufreq_update_policy(pr->id);
+> >>>> +	}
+> >>>>  }
+> >>>>  
+> >>>>  int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+> >>>>
+> >>
+> >>
+> >>
+> 
+> 
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
