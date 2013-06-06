@@ -1,37 +1,66 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 5/5] cpufreq:boost:Kconfig: Enable boost support at
- Kconfig
-Date: Thu, 6 Jun 2013 17:58:15 +0200
-Message-ID: <20130606155815.GB21272@pd.tnic>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1370502472-7249-6-git-send-email-l.majewski@samsung.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Thu, 06 Jun 2013 19:46:17 +0300
+Message-ID: <51B0BCD9.6030308@semaphore.gr>
+References: <51AF60D5.3080605@semaphore.gr> <20130605161703.GA29958@pd.tnic> <51AF71B6.6030408@semaphore.gr> <105446113.ZumbZWCbSi@vostro.rjw.lan> <20130606100138.GC21181@pd.tnic> <CAKohpo=cwxvcicw4svcvyKJOzGD9j+gzTyg=4yYg4EsY89C3EQ@mail.gmail.com> <20130606121012.GD21181@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:57740 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728Ab3FFP6b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Jun 2013 11:58:31 -0400
-Content-Disposition: inline
-In-Reply-To: <1370502472-7249-6-git-send-email-l.majewski@samsung.com>
+Received: from sema.semaphore.gr ([78.46.194.137]:39789 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751353Ab3FFQqU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 12:46:20 -0400
+In-Reply-To: <20130606121012.GD21181@pd.tnic>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 06, 2013 at 09:07:52AM +0200, Lukasz Majewski wrote:
-> Enable/disable support for BOOST. New flag - CPU_FREQ_BOOST has been
-> defined for that.
+On 06/06/2013 03:10 PM, Borislav Petkov wrote:
+> On Thu, Jun 06, 2013 at 03:40:13PM +0530, Viresh Kumar wrote:
+>> his patch will give significant improvement both power & performance wise.
+> 
+> Yes, and I'd like to see the paperwork on that. Numbers, and on a couple
+> of platforms/vendors if possible, please.
+> 
+> Thanks.
+> 
 
-What's the reason for this? Why would you want to not compile-in the
-boosting code?
+On 06/06/2013 04:15 PM, Borislav Petkov wrote:> Please do not top-post.
+> 
+> On Thu, Jun 06, 2013 at 03:54:20PM +0300, Stratos Karafotis wrote:
+>> I will try to provide the requested info (although, I'm not sure how
+>> to measure total energy :) )
+> 
+> tools/power/x86/turbostat looks like a good tool. It can show, a.o.,
+> power consumption in Watts on modern Intels and other interesting stuff.
+> 
+> HTH.
+> 
 
-Also, at least on x86, even with this feature disabled, the CPU will
-boost by default unless you fiddle with it through the MSRs as root.
+Apologies for top-posting. I was able to send email only from my phone.
 
--- 
-Regards/Gruss,
-    Boris.
+Thanks for you hint about turbostat.
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+As you most probably understood, I'm individual amateur kernel developer.
+I could provide some numbers from x86 architecture as Rafael suggested.
+But unfortunately, I don't have access to more sources/infrastructure.
+So, I will not be able to provide numbers from different platform(s).
+
+I've already provided some benchmarks from x86 (3.10-rc3) and also
+tested the patch in 3.4.47 kernel (ARM, Nexus 4 phone, ~1000 installations)
+and in 3.0.80 kernel (ARM, Samsung Galaxy S phone, ~1500 installations).
+
+Kindly let me know if "couple of platforms/vendors" is a show stopper
+for this patch series. If yes, please ignore this patch and accept
+my apologies for wasting your time. I am just trying to contribute
+on this project (I believe there is space here for amateur developers).
+
+Many thanks to Rafael who helped me and guide me.
+Thanks to Viresh for his helpful comments and his acknowledgment for
+the patch.
+
+Best Regards,
+Stratos
