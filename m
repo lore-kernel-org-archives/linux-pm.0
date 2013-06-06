@@ -1,63 +1,60 @@
-From: Borislav Petkov <bp@suse.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
  target frequency
-Date: Thu, 6 Jun 2013 12:01:38 +0200
-Message-ID: <20130606100138.GC21181@pd.tnic>
+Date: Thu, 6 Jun 2013 15:40:13 +0530
+Message-ID: <CAKohpo=cwxvcicw4svcvyKJOzGD9j+gzTyg=4yYg4EsY89C3EQ@mail.gmail.com>
 References: <51AF60D5.3080605@semaphore.gr>
- <20130605161703.GA29958@pd.tnic>
- <51AF71B6.6030408@semaphore.gr>
- <105446113.ZumbZWCbSi@vostro.rjw.lan>
+	<20130605161703.GA29958@pd.tnic>
+	<51AF71B6.6030408@semaphore.gr>
+	<105446113.ZumbZWCbSi@vostro.rjw.lan>
+	<20130606100138.GC21181@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <105446113.ZumbZWCbSi@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Stratos Karafotis <stratosk@semaphore.gr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:51842 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932594Ab3FFKKO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Jun 2013 06:10:14 -0400
+Received: by mail-ob0-f179.google.com with SMTP id xk17so4301728obc.24
+        for <linux-pm@vger.kernel.org>; Thu, 06 Jun 2013 03:10:14 -0700 (PDT)
+In-Reply-To: <20130606100138.GC21181@pd.tnic>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Borislav Petkov <bp@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jun 05, 2013 at 10:35:05PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, June 05, 2013 08:13:26 PM Stratos Karafotis wrote:
-> > Hi Borislav,
-> > 
-> > On 06/05/2013 07:17 PM, Borislav Petkov wrote:
-> > > On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
-> > >> Ondemand calculates load in terms of frequency and increases it only
-> > >> if the load_freq is greater than up_threshold multiplied by current
-> > >> or average frequency. This seems to produce oscillations of frequency
-> > >> between min and max because, for example, a relatively small load can
-> > >> easily saturate minimum frequency and lead the CPU to max. Then, the
-> > >> CPU will decrease back to min due to a small load_freq.
-> > >
-> > > Right, and I think this is how we want it, no?
-> > >
-> > > The thing is, the faster you finish your work, the faster you can become
-> > > idle and save power.
-> > 
-> > This is exactly the goal of this patch. To use more efficiently middle
-> > frequencies to finish faster the work.
+On 6 June 2013 15:31, Borislav Petkov <bp@suse.de> wrote:
 
-Hold on, you say above "easily saturate minimum frequency and lead the
-CPU to max". I read this as we jump straight to max P-state where we
-even boost.
+> Hold on, you say above "easily saturate minimum frequency and lead the
+> CPU to max". I read this as we jump straight to max P-state where we
+> even boost.
 
-"CPU to max" finishes the work faster than middle frequencies, if you're
-CPU-bound.
+Probably he meant: "At lowest levels of frequencies, a small load on system
+may look like a huge one. like: 20-30% load on max freq can be 95% load
+on min freq. And so we jump to max freq even for this load and return back
+pretty quickly as this load doesn't sustain for longer. over that we wait for
+load to go over up_threshold to increase freq."
 
-> > > If you switch frequencies in a staircase-like manner, you're going to
-> > > take longer to finish, in certain cases, and burn more power while doing
-> > > so.
-> > 
-> > This is not true with this patch. It switches to middle frequencies
-> > when the load < up_threshold.
+> "CPU to max" finishes the work faster than middle frequencies, if you're
+> CPU-bound.
 
-This is worth investigating wrt hightened power consumption, as Rafael
-suggested.
+He isn't removing this feature at all.
 
--- 
-Regards/Gruss,
-    Boris.
+Current code is:
 
-Sent from a fat crate under my desk. Formatting is fine.
---
+if (load > up_threshold)
+   goto maxfreq.
+else
+   don't increase freq, maybe decrease it in steps
+
+What he is doing is:
+
+if (load > up_threshold)
+   goto maxfreq.
+else
+   increase/decrease freq based on current load.
+
+So, if up_threshold is 95 and load remains < 95, his patch will
+give significant improvement both power & performance wise.
+
+Else, it shouldn't decrease it.
