@@ -1,26 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Borislav Petkov <bp@suse.de>
 Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
  target frequency
-Date: Thu, 6 Jun 2013 15:27:57 +0530
-Message-ID: <CAKohpo=g4Fn-wsgkmujZso_Du3XZHpwSvrFhcbXm72Ne828suw@mail.gmail.com>
+Date: Thu, 6 Jun 2013 12:01:38 +0200
+Message-ID: <20130606100138.GC21181@pd.tnic>
 References: <51AF60D5.3080605@semaphore.gr>
-	<20130605161703.GA29958@pd.tnic>
-	<51AF6E39.2080307@verisign.com>
-	<20130606095526.GB21181@pd.tnic>
+ <20130605161703.GA29958@pd.tnic>
+ <51AF71B6.6030408@semaphore.gr>
+ <105446113.ZumbZWCbSi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=utf-8
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130606095526.GB21181@pd.tnic>
+Content-Disposition: inline
+In-Reply-To: <105446113.ZumbZWCbSi@vostro.rjw.lan>
 Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: David C Niemi <dniemi@verisign.com>, Stratos Karafotis <stratosk@semaphore.gr>, "Rafael J. Wysocki" <rjw@sisk.pl>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 6 June 2013 15:25, Borislav Petkov <bp@suse.de> wrote:
-> The correct "fix" for this whole deal is coupling cpufreq with
-> the scheduler, as it has been said so many times before. You need
-> "something" which can tell you whether raising the freq. is worth it or
-> not (i.e. the process is waiting on IO or is executing instructions).
+On Wed, Jun 05, 2013 at 10:35:05PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, June 05, 2013 08:13:26 PM Stratos Karafotis wrote:
+> > Hi Borislav,
+> > 
+> > On 06/05/2013 07:17 PM, Borislav Petkov wrote:
+> > > On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
+> > >> Ondemand calculates load in terms of frequency and increases it only
+> > >> if the load_freq is greater than up_threshold multiplied by current
+> > >> or average frequency. This seems to produce oscillations of frequency
+> > >> between min and max because, for example, a relatively small load can
+> > >> easily saturate minimum frequency and lead the CPU to max. Then, the
+> > >> CPU will decrease back to min due to a small load_freq.
+> > >
+> > > Right, and I think this is how we want it, no?
+> > >
+> > > The thing is, the faster you finish your work, the faster you can become
+> > > idle and save power.
+> > 
+> > This is exactly the goal of this patch. To use more efficiently middle
+> > frequencies to finish faster the work.
 
-Linaro has got a blueprint in this direction but doesn't have any
-proof of concept or RFC patches to share. But that will happen soon.
+Hold on, you say above "easily saturate minimum frequency and lead the
+CPU to max". I read this as we jump straight to max P-state where we
+even boost.
+
+"CPU to max" finishes the work faster than middle frequencies, if you're
+CPU-bound.
+
+> > > If you switch frequencies in a staircase-like manner, you're going to
+> > > take longer to finish, in certain cases, and burn more power while doing
+> > > so.
+> > 
+> > This is not true with this patch. It switches to middle frequencies
+> > when the load < up_threshold.
+
+This is worth investigating wrt hightened power consumption, as Rafael
+suggested.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
