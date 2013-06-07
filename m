@@ -1,54 +1,117 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] cpuidle: fix ARCH_NEEDS_CPU_IDLE_COUPLED dependency warning
-Date: Fri, 7 Jun 2013 13:50:29 -0400
-Message-ID: <51B21D65.3040604@ti.com>
-References: <1370626856-2876-1-git-send-email-daniel.lezcano@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH 3/7] thermal: ti-soc-thermal: freeze FSM while computing
+ trend
+Date: Fri, 7 Jun 2013 15:10:51 -0400
+Message-ID: <51B2303B.8090200@ti.com>
+References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com> <1369840066-20357-4-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2BPOGKOHCGHKXQTERSEIA"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:40371 "EHLO arroyo.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:43888 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755868Ab3FGRvA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Jun 2013 13:51:00 -0400
-In-Reply-To: <1370626856-2876-1-git-send-email-daniel.lezcano@linaro.org>
+	id S1755135Ab3FGTLD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 7 Jun 2013 15:11:03 -0400
+In-Reply-To: <1369840066-20357-4-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rjw@sisk.pl, arnd@arndb.de, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Colin Cross <ccross@android.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Looping Colin,
+------enig2BPOGKOHCGHKXQTERSEIA
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Friday 07 June 2013 01:40 PM, Daniel Lezcano wrote:
-> Before the commit d6f346f2d2bf511c2c59176121a6e42ce60173a0, the
-> ARCH_NEEDS_CPU_IDLE_COUPLED option was wrongly not depending on the CPU_IDLE
-> and the Kconfig for OMAP / TEGRA was not checking this dependency when setting
-> the option.
-> 
-> With this patch, the ARCH_NEEDS_CPU_IDLE_COUPLED has been moved under the
-> CPU_IDLE option. The dependency has been fixed in the relevant arch's Kconfig.
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 29-05-2013 11:07, Eduardo Valentin wrote:
+> In order to read the history buffer, it is required to
+> freeze BG FSM. This patch adds the missing piece of code
+> to freeze the FSM and also a contention area to avoid
+> other parts of the code to access the DTEMPs.
+>=20
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 > ---
->  arch/arm/mach-omap2/Kconfig |    2 +-
->  arch/arm/mach-tegra/Kconfig |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index f49cd51..831e89e 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -83,7 +83,7 @@ config ARCH_OMAP4
->  	depends on ARCH_OMAP2PLUS
->  	depends on ARCH_MULTI_V7
->  	select ARCH_HAS_OPP
-> -	select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> +	select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
-I remember Colin mentioning about above dependency is taken care
-already in design [1]
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/ther=
+mal/ti-soc-thermal/ti-bandgap.c
+> index f20c1cf..be9dba5 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -992,9 +992,12 @@ int ti_bandgap_get_trend(struct ti_bandgap *bgp, i=
+nt id, int *trend)
+>  		goto exit;
+>  	}
+> =20
+> +	spin_lock(&bgp->lock);
+> +
+>  	tsr =3D bgp->conf->sensors[id].registers;
+> =20
+>  	/* Freeze and read the last 2 valid readings */
+> +	RMW_BITS(bgp, id, bgap_mask_ctrl, mask_freeze_mask, 1);
+>  	reg1 =3D tsr->ctrl_dtemp_1;
+>  	reg2 =3D tsr->ctrl_dtemp_2;
+> =20
+> @@ -1008,22 +1011,26 @@ int ti_bandgap_get_trend(struct ti_bandgap *bgp=
+, int id, int *trend)
+>  	/* Convert from adc values to mCelsius temperature */
+>  	ret =3D ti_bandgap_adc_to_mcelsius(bgp, temp1, &t1);
+>  	if (ret)
+> -		goto exit;
+> +		goto unfreeze;
+> =20
+>  	ret =3D ti_bandgap_adc_to_mcelsius(bgp, temp2, &t2);
+>  	if (ret)
+> -		goto exit;
+> +		goto unfreeze;
+> =20
+>  	/* Fetch the update interval */
+>  	ret =3D ti_bandgap_read_update_interval(bgp, id, &interval);
+>  	if (ret || !interval)
+> -		goto exit;
+> +		goto unfreeze;
+> =20
+>  	*trend =3D (t1 - t2) / interval;
+> =20
+>  	dev_dbg(bgp->dev, "The temperatures are t1 =3D %d and t2 =3D %d and t=
+rend =3D%d\n",
+>  		t1, t2, *trend);
+> =20
+> +unfreeze:
+> +	RMW_BITS(bgp, id, bgap_mask_ctrl, mask_freeze_mask, 0);
+> +unlock:
 
-Regards,
-Santosh
+This label is unused. I will repost this patch only without this label.
 
-[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2012-March/092080.html
+> +	spin_unlock(&bgp->lock);
+>  exit:
+>  	return ret;
+>  }
+>=20
 
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2BPOGKOHCGHKXQTERSEIA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlGyMEAACgkQCXcVR3XQvP0wGwD+OWGAb5mIEG7bhmGfVI0PI5Yc
+N3UqfVa8itJp7VcFykkBAONXX5QswH0oEMGTNHIJxRGlGz2ZiN0hm/YPZUaV+TNH
+=z+dS
+-----END PGP SIGNATURE-----
+
+------enig2BPOGKOHCGHKXQTERSEIA--
