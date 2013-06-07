@@ -1,107 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [GIT PULL] Power management and ACPI fixes for v3.10-rc5
-Date: Fri, 07 Jun 2013 14:51:58 +0200
-Message-ID: <3863425.93Oeg2bhJF@vostro.rjw.lan>
+From: Artem Savkov <artem.savkov@gmail.com>
+Subject: [BUG] non-swapcache page in end_swap_bio_read()
+Date: Fri, 7 Jun 2013 16:59:09 +0400
+Message-ID: <20130607125908.GB9282@cpv436-motbuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+Sender: owner-linux-mm@kvack.org
+To: Minchan Kim <minchan@kernel.org>
+Cc: Dan Magenheimer <dan.magenheimer@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hello all,
 
-Please pull from the git repository at
+I'm hitting the following BUG_ON during boot when
+CONFIG_PM_STD_PARTITION or "resume" kernel boot option are set. Looks
+like this issue was introduced in (or brought up to light by)
+"mm: remove compressed copy from zram in-memory"
+(84e5bb4f06e6d6f0c4dfc033b4700702ed8aaccc in linux-next.git)
+What happens is that during swsusp_check() bio is created with
+bio_end_io set to end_swap_bio_read(), but the page is not in swap
+cache.
+Not sure how to handle this the right way, but proceeding with the
+optimization in end_swap_bio_read() only after checking PageSwapCache
+flag does help.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.10-rc5
-
-to receive power management and ACPI fixes for v3.10-rc5 with top-most
-commit c6617b39c39d8735c912bb4efd2f735fedff5052
-
-  Merge branch 'pm-fixes'
-
-on top of commit d683b96b072dc4680fc74964eca77e6a23d1fa6e
-
-  Linux 3.10-rc4
-
-These fixes emerged after my previous pull request.  They fix one recent
-regression, a few regressions introduced in 3.9 and 3.8, and a couple of
-long-standing issues.  A couple of blacklist entries for systems known
-to misbehave are added too.
-
-Included are:
-
-- Fix for an ACPI PM regression introduced in 3.9 causing Toshiba
-  P870-303 to crash during boot. From yours truly.
-
-- ACPI fix for an issue causing some drivers to attempt to bind to
-  devices they shouldn't touch introduced in 3.9 (a broken BIOS is
-  requisite to trigger this). From Aaron Lu.
-
-- Fix for a recent cpufreq regression related to a possible race with
-  CPU offline. From Michael Wang.
-
-- Fix for an ACPI cpufreq regression introduced in 3.8 causing turbo
-  frequencies to be underutilized in some cases. From Ross Lagerwall.
-
-- cpufreq-cpu0 driver fix related to incorrect clock ACPI usage from
-  Guennadi Liakhovetski.
-
-- HP WMI driver fix for an issue causing GPS initialization and
-  poweroff failures on HP Elitebook 6930p.  From Lan Tianyu.
-
-- APEI (ACPI Platform Error Interface) fix for an issue in the error
-  code path in ghes_probe(). From Wei Yongjun.
-
-- New ACPI video driver blacklist entries for HP m4 and HP Pavilion
-  g6 from Alex Hung and Ash Willis.
-
-Thanks!
-
-
----------------
-
-Aaron Lu (1):
-      ACPI / scan: do not match drivers against objects having scan handlers
-
-Alex Hung (1):
-      ACPI / video: ignore BIOS initial backlight value for HP m4
-
-Ash Willis (1):
-      ACPI / video: ignore BIOS initial backlight value for HP Pavilion g6
-
-Guennadi Liakhovetski (1):
-      cpufreq: cpufreq-cpu0: use the exact frequency for clk_set_rate()
-
-Michael Wang (1):
-      cpufreq: protect 'policy->cpus' from offlining during __gov_queue_work()
-
-Rafael J. Wysocki (1):
-      ACPI / PM: Do not execute _PS0 for devices without _PSC during initialization
-
-Ross Lagerwall (1):
-      acpi-cpufreq: set current frequency based on target P-State
-
-Wei Yongjun (1):
-      ACPI / APEI: fix error return code in ghes_probe()
-
-Lan Tianyu (1):
-      x86 / platform / hp_wmi: Fix bluetooth_rfkill misuse in hp_wmi_rfkill_setup()
-
----------------
-
- drivers/acpi/apei/ghes.c           |    7 ++++---
- drivers/acpi/device_pm.c           |   10 ++++++----
- drivers/acpi/scan.c                |    4 ++++
- drivers/acpi/video.c               |   16 ++++++++++++++++
- drivers/cpufreq/acpi-cpufreq.c     |    4 ++--
- drivers/cpufreq/cpufreq-cpu0.c     |    5 +++--
- drivers/cpufreq/cpufreq_governor.c |    3 +++
- drivers/platform/x86/hp-wmi.c      |    2 +-
- 8 files changed, 39 insertions(+), 12 deletions(-)
+[    2.065206] kernel BUG at mm/swapfile.c:2361!
+[    2.065469] invalid opcode: 0000 [#1] SMP 
+[    2.065469] Modules linked in:
+[    2.065469] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 3.10.0-rc4-next-20130607+ #61
+[    2.065469] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2007
+[    2.065469] task: ffff88001e5ccfc0 ti: ffff88001e5ea000 task.ti: ffff88001e5ea000
+[    2.065469] RIP: 0010:[<ffffffff811462eb>]  [<ffffffff811462eb>] page_swap_info+0xab/0xb0
+[    2.065469] RSP: 0000:ffff88001ec03c78  EFLAGS: 00010246
+[    2.065469] RAX: 0100000000000009 RBX: ffffea0000794780 RCX: 0000000000000c0b
+[    2.065469] RDX: 0000000000000046 RSI: 0000000000000000 RDI: 0000000000000000
+[    2.065469] RBP: ffff88001ec03c88 R08: 0000000000000000 R09: 0000000000000000
+[    2.065469] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+[    2.065469] R13: 0000000000000001 R14: ffff88001e7f6200 R15: 0000000000001000
+[    2.065469] FS:  0000000000000000(0000) GS:ffff88001ec00000(0000) knlGS:0000000000000000
+[    2.065469] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[    2.065469] CR2: 0000000000000000 CR3: 000000000240b000 CR4: 00000000000006e0
+[    2.065469] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[    2.065469] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[    2.065469] Stack:
+[    2.065469]  ffffea0000794780 ffff88001e7f6200 ffff88001ec03cb8 ffffffff81145486
+[    2.065469]  ffff88001e5cd5c0 ffff88001c02cd20 0000000000001000 0000000000000000
+[    2.065469]  ffff88001ec03cc8 ffffffff81199518 ffff88001ec03d28 ffffffff81518ec3
+[    2.065469] Call Trace:
+[    2.065469]  <IRQ> 
+[    2.065469]  [<ffffffff81145486>] end_swap_bio_read+0x96/0x130
+[    2.065469]  [<ffffffff81199518>] bio_endio+0x18/0x40
+[    2.065469]  [<ffffffff81518ec3>] blk_update_request+0x213/0x540
+[    2.065469]  [<ffffffff81518fa0>] ? blk_update_request+0x2f0/0x540
+[    2.065469]  [<ffffffff817986a6>] ? ata_hsm_qc_complete+0x46/0x130
+[    2.065469]  [<ffffffff81519212>] blk_update_bidi_request+0x22/0x90
+[    2.065469]  [<ffffffff8151b9ea>] blk_end_bidi_request+0x2a/0x80
+[    2.065469]  [<ffffffff8151ba8b>] blk_end_request+0xb/0x10
+[    2.065469]  [<ffffffff817693aa>] scsi_io_completion+0xaa/0x6b0
+[    2.065469]  [<ffffffff817608d8>] scsi_finish_command+0xc8/0x130
+[    2.065469]  [<ffffffff81769aff>] scsi_softirq_done+0x13f/0x160
+[    2.065469]  [<ffffffff81521ebc>] blk_done_softirq+0x7c/0x90
+[    2.065469]  [<ffffffff81049030>] __do_softirq+0x130/0x3f0
+[    2.065469]  [<ffffffff810d454e>] ? handle_irq_event+0x4e/0x70
+[    2.065469]  [<ffffffff81049405>] irq_exit+0xa5/0xb0
+[    2.065469]  [<ffffffff81003cb1>] do_IRQ+0x61/0xe0
+[    2.065469]  [<ffffffff81c2832f>] common_interrupt+0x6f/0x6f
+[    2.065469]  <EOI> 
+[    2.065469]  [<ffffffff8107ebff>] ? local_clock+0x4f/0x60
+[    2.065469]  [<ffffffff81c27f85>] ? _raw_spin_unlock_irq+0x35/0x50
+[    2.065469]  [<ffffffff81c27f7b>] ? _raw_spin_unlock_irq+0x2b/0x50
+[    2.065469]  [<ffffffff81078bd0>] finish_task_switch+0x80/0x110
+[    2.065469]  [<ffffffff81078b93>] ? finish_task_switch+0x43/0x110
+[    2.065469]  [<ffffffff81c2525c>] __schedule+0x32c/0x8c0
+[    2.065469]  [<ffffffff81c2c010>] ? notifier_call_chain+0x150/0x150
+[    2.065469]  [<ffffffff81c259d4>] schedule+0x24/0x70
+[    2.065469]  [<ffffffff81c25d42>] schedule_preempt_disabled+0x22/0x30
+[    2.065469]  [<ffffffff81093645>] cpu_startup_entry+0x335/0x380
+[    2.065469]  [<ffffffff81c1ed7e>] start_secondary+0x217/0x219
+[    2.065469] Code: 69 bc 16 82 48 c7 c7 77 bc 16 82 31 c0 49 c1 ec 39 49 c1 e9 10 41 83 e1 01 e8 6c d2 ad 00 5b 4a 8b 04 e5 e0 bf 14 83 41 5c c9 c3 <0f> 0b eb fe 90 48 8b 07 55 48 89 e5 a9 00 00 01 00 74 12 e8 3d 
+[    2.065469] RIP  [<ffffffff811462eb>] page_swap_info+0xab/0xb0
+[    2.065469]  RSP <ffff88001ec03c78>
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Regards,
+    Artem
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
