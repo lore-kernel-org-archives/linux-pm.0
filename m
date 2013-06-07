@@ -1,49 +1,73 @@
-From: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Subject: Re: [PATCH] cpuidle: fix ARCH_NEEDS_CPU_IDLE_COUPLED dependency warning
-Date: Fri, 7 Jun 2013 19:21:35 -0400
-Message-ID: <51B26AFF.9080908@ti.com>
-References: <1370626856-2876-1-git-send-email-daniel.lezcano@linaro.org> <51B21D65.3040604@ti.com> <201306072121.58719.arnd@arndb.de>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: acpi_sba_ioc_driver breakage (was: Re: [GIT PULL] Power management and ACPI fixes for v3.10-rc5)
+Date: Sat, 08 Jun 2013 01:54:56 +0200
+Message-ID: <1951427.655ut1iKp4@vostro.rjw.lan>
+References: <3863425.93Oeg2bhJF@vostro.rjw.lan> <CA+8MBb+NAHvTCc-NMz4+HqkDc=VUWJ8gDz7ji=HtFiDbcpWo4Q@mail.gmail.com> <CA+8MBbJC9hKCjcZVK1tvpjr9DAwY_wAPmarqCWa7X-cq7Bph0A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:60903 "EHLO bear.ext.ti.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:59727 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754831Ab3FGXWN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Jun 2013 19:22:13 -0400
-In-Reply-To: <201306072121.58719.arnd@arndb.de>
+	id S1752746Ab3FGXpu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 7 Jun 2013 19:45:50 -0400
+In-Reply-To: <CA+8MBbJC9hKCjcZVK1tvpjr9DAwY_wAPmarqCWa7X-cq7Bph0A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@sisk.pl, patches@linaro.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Colin Cross <ccross@android.com>
+To: Tony Luck <tony.luck@gmail.com>
+Cc: Aaron Lu <aaron.lu@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-On Friday 07 June 2013 03:21 PM, Arnd Bergmann wrote:
-> On Friday 07 June 2013, Santosh Shilimkar wrote:
->>> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
->>> index f49cd51..831e89e 100644
->>> --- a/arch/arm/mach-omap2/Kconfig
->>> +++ b/arch/arm/mach-omap2/Kconfig
->>> @@ -83,7 +83,7 @@ config ARCH_OMAP4
->>>       depends on ARCH_OMAP2PLUS
->>>       depends on ARCH_MULTI_V7
->>>       select ARCH_HAS_OPP
->>> -     select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
->>> +     select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
->>
->> I remember Colin mentioning about above dependency is taken care
->> already in design [1]
+On Friday, June 07, 2013 04:02:11 PM Tony Luck wrote:
+> On Fri, Jun 7, 2013 at 3:23 PM, Tony Luck <tony.luck@gmail.com> wrote:
+> > So please don't pull.
 > 
-> It's a matter of how it gets represented in Kconfig. Right now 
-> the ARCH_NEEDS_CPU_IDLE_COUPLED symbol has a dependency on CPU_IDLE,
-> so we cannot select it if CPU_IDLE is not set (or get a build time
-> warning).
+> Bother. I see I was a few hours late finding this, and commit 9f29ab11ddb
+> is already in Linus' tree.
 > 
-> I originally suggested removing the dependency, but Daniel preferred
-> to leave it there as an explicit dependency so it is required to
-> do this change instead.
+> That's what happens when I get busy and skip a couple of days testing
+> linux-next :-(
 > 
-I see. Thanks for clarifying.
+> So my problem comes from
+> arch/ia64/hp/common/sba_iommu.c
+> 
+> where the code in sba_init() says:
+> 
+>         acpi_bus_register_driver(&acpi_sba_ioc_driver);
+>         if (!ioc_list) {
+> 
+> but because of this change we never managed to call ioc_init()
+> so ioc_list doesn't get set up, and we die.
+> Before this commit, the call chain looked like this:
+> 
+>  [<a0000001011c3710>] ioc_init+0x40/0xd00
+>  [<a0000001011c4560>] acpi_sba_ioc_add+0x190/0x1c0
+>  [<a0000001005b3b40>] acpi_device_probe+0xa0/0x280
+>  [<a000000100850060>] really_probe+0xe0/0x520
+>  [<a0000001008504d0>] driver_probe_device+0x30/0x60
+>  [<a000000100850610>] __driver_attach+0x110/0x160
+>  [<a00000010084c550>] bus_for_each_dev+0x110/0x180
+>  [<a00000010084fcc0>] driver_attach+0x40/0x60
+>  [<a00000010084da90>] bus_add_driver+0x230/0x580
+>  [<a000000100851090>] driver_register+0xf0/0x400
+>  [<a0000001005b8670>] acpi_bus_register_driver+0x50/0x80
+>  [<a0000001011c45c0>] sba_init+0x30/0x2d0
+> 
+> Is my problem that this driver has (or attaches) a "scan handler"
+> where it shouldn't ... and I just need to stop it doing that?
 
-Regards,
-Santosh
+The driver doesn't, but the device it attempts to bind to does.
+It looks like that device object has multiple device IDs and one of them
+matches one of the existing ACPI scan handlers, but I need a confirmation.
 
+Can you please send me the output of
+
+$ find /sys/devices/LNXSYSTM\:00/ -name modalias -print -exec cat {} \;
+
+from the affected system?
+
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
