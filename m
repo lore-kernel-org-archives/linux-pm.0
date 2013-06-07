@@ -1,71 +1,76 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 2/3] PM / devfreq: Remove redundant platform_set_drvdata()
- in exynos5_bus.c
-Date: Fri, 7 Jun 2013 19:30:06 +0900
-Message-ID: <CAJ0PZbQ=Wnpb8PdZOdK_gDswkB=+bptwDoWBdVRbreK2fKxObg@mail.gmail.com>
-References: <1370412781-20683-1-git-send-email-sachin.kamat@linaro.org>
-	<1370412781-20683-2-git-send-email-sachin.kamat@linaro.org>
-Reply-To: myungjoo.ham@gmail.com
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/3] PM / devfreq: Fix incorrect usage of IS_ERR_OR_NULL in exynos5_bus.c
+Date: Fri, 07 Jun 2013 12:56:54 +0200
+Message-ID: <2776710.Oxrckb5dd8@vostro.rjw.lan>
+References: <CAJ0PZbRM0tUs=FrhdVWVf9-_z=O_gkDSYjEGFgJP1xHsEVGNZw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vb0-f47.google.com ([209.85.212.47]:48747 "EHLO
-	mail-vb0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751671Ab3FGKaI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jun 2013 06:30:08 -0400
-Received: by mail-vb0-f47.google.com with SMTP id x14so2572398vbb.20
-        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2013 03:30:07 -0700 (PDT)
-In-Reply-To: <1370412781-20683-2-git-send-email-sachin.kamat@linaro.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:59425 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751527Ab3FGKrt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 7 Jun 2013 06:47:49 -0400
+In-Reply-To: <CAJ0PZbRM0tUs=FrhdVWVf9-_z=O_gkDSYjEGFgJP1xHsEVGNZw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, "patches@linaro.org" <patches@linaro.org>
+To: myungjoo.ham@gmail.com
+Cc: Sachin Kamat <sachin.kamat@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Abhilash Kesavan <a.kesavan@samsung.com>, "patches@linaro.org" <patches@linaro.org>
 
-On Wed, Jun 5, 2013 at 3:13 PM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
-> Commit 0998d06310 (device-core: Ensure drvdata = NULL when no
-> driver is bound) removes the need to set driver data field to
-> NULL.
->
-> Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+On Friday, June 07, 2013 07:21:58 PM MyungJoo Ham wrote:
+> On Wed, Jun 5, 2013 at 3:12 PM, Sachin Kamat <sachin.kamat@linaro.org> wrote:
+> >
+> > platform_device_register_simple does not return NULL.
+> > Hence NULL check is not required.
+> >
+> > Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
+> 
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> 
+> 
+> Will be applied soon.
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com.
+Are you going to handle all of the new devfreq patches from Sachin?
 
-Will be applied to the for-next branch soon. Thank you.
+Rafael
 
-> ---
->  drivers/devfreq/exynos/exynos5_bus.c |    2 --
->  1 file changed, 2 deletions(-)
->
-> diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
-> index cd1e630..9a82419 100644
-> --- a/drivers/devfreq/exynos/exynos5_bus.c
-> +++ b/drivers/devfreq/exynos/exynos5_bus.c
-> @@ -419,7 +419,6 @@ static int exynos5_busfreq_int_probe(struct platform_device *pdev)
->
->  err_devfreq_add:
->         devfreq_remove_device(data->devfreq);
-> -       platform_set_drvdata(pdev, NULL);
->  err_opp_add:
->         clk_put(data->int_clk);
->  err_clock:
-> @@ -437,7 +436,6 @@ static int exynos5_busfreq_int_remove(struct platform_device *pdev)
->         devfreq_remove_device(data->devfreq);
->         regulator_put(data->vdd_int);
->         clk_put(data->int_clk);
-> -       platform_set_drvdata(pdev, NULL);
->
->         return 0;
->  }
+
+> 
+> > ---
+> >  drivers/devfreq/exynos/exynos5_bus.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
+> > index 574b16b..cd1e630 100644
+> > --- a/drivers/devfreq/exynos/exynos5_bus.c
+> > +++ b/drivers/devfreq/exynos/exynos5_bus.c
+> > @@ -479,7 +479,7 @@ static int __init exynos5_busfreq_int_init(void)
+> >
+> >         exynos5_devfreq_pdev =
+> >                 platform_device_register_simple("exynos5-bus-int", -1, NULL, 0);
+> > -       if (IS_ERR_OR_NULL(exynos5_devfreq_pdev)) {
+> > +       if (IS_ERR(exynos5_devfreq_pdev)) {
+> >                 ret = PTR_ERR(exynos5_devfreq_pdev);
+> >                 goto out1;
+> >         }
+> > --
+> > 1.7.9.5
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
+> 
 > --
-> 1.7.9.5
->
+> MyungJoo Ham, Ph.D.
+> Mobile Software Platform Lab, DMC Business, Samsung Electronics
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
-
---
-MyungJoo Ham, Ph.D.
-Mobile Software Platform Lab, DMC Business, Samsung Electronics
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
