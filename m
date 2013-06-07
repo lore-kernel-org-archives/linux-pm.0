@@ -1,34 +1,60 @@
-From: Joe Jin <joe.jin@oracle.com>
-Subject: Re: [PATCH] ACPI: update user_policy.max when _PPC updated
-Date: Fri, 07 Jun 2013 09:48:36 +0800
-Message-ID: <51B13BF4.7090706@oracle.com>
-References: <51AE8BE4.8050409@oracle.com> <42861210.QMFsUVH8RU@vostro.rjw.lan> <51B08EB7.8080702@oracle.com> <2674436.upogMLa2Oh@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / cpufreq: Add ACPI processor device IDs to acpi-cpufreq
+Date: Fri, 07 Jun 2013 04:08:15 +0200
+Message-ID: <2339263.DWrxye4sI1@vostro.rjw.lan>
+References: <1511440.Xd41mcOoEa@vostro.rjw.lan> <20130606230947.GA31618@kroah.com> <2456209.UJDSHpYIkx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2674436.upogMLa2Oh@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Neil Gu <qing.gu@oracle.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:59228 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754357Ab3FGB7N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 6 Jun 2013 21:59:13 -0400
+In-Reply-To: <2456209.UJDSHpYIkx@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 06/07/13 03:54, Rafael J. Wysocki wrote:
-> Do you mean you set a limit in the BIOS setup and the kernel changed that limit
-> on boot?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Sorry for the confusing.
+After commit ac212b6 (ACPI / processor: Use common hotplug
+infrastructure) the acpi-cpufreq module is not loaded automatically
+by udev which fails to match it against the x86cpu modalias.  Still,
+it can be matched against ACPI processor device IDs, which even
+makes more sense, because it depends on the ACPI processor driver
+that uses those device IDs to bind to processor devices.
 
-The issue is when we disable hardcap before kernel boot up, after kernel bring
-up, any changes of _PPC will update scaling_max_freq properly.
+For this reason, add ACPI processor device IDs to acpi-cpufreq.
 
-If we enable hardcap before kernel boot up, after kernel bring up, even we 
-disable it, scaling_max_freq does not be updated to max frequency, the max 
-frequency just up to the value when bring up.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Review related codes I found the limit came from user_policy.max, means when
-we set user_policy.max to 1000MHZ when boot up, then any changes of _PPC could
-not enlarge the scaling_max_freq, I think this is not as expected? please advise.
+This patch is against the acpi-hotplug branch of the linux-pm.git tree which
+is part of linux-next.
 
 Thanks,
-Joe
+Rafael
+
+---
+ drivers/cpufreq/acpi-cpufreq.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
++++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+@@ -1034,4 +1034,11 @@ static const struct x86_cpu_id acpi_cpuf
+ };
+ MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
+ 
++static const struct acpi_device_id processor_device_ids[] = {
++	{ACPI_PROCESSOR_OBJECT_HID, },
++	{ACPI_PROCESSOR_DEVICE_HID, },
++	{},
++};
++MODULE_DEVICE_TABLE(acpi, processor_device_ids);
++
+ MODULE_ALIAS("acpi");
+
