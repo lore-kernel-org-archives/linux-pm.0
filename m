@@ -1,102 +1,38 @@
-From: shuox.liu@intel.com
-Subject: [PATCH 2/2] PM: add dpm_run_callback_void and use it in device_complete
-Date: Fri,  7 Jun 2013 16:20:32 +0800
-Message-ID: <1370593232-3602-3-git-send-email-shuox.liu@intel.com>
-References: <1370593232-3602-1-git-send-email-shuox.liu@intel.com>
+From: Sachin Kamat <sachin.kamat@linaro.org>
+Subject: [PATCH 1/1] PM / devfreq: Remove duplicate header file inclusion in exynos5_bus.c
+Date: Fri,  7 Jun 2013 14:25:49 +0530
+Message-ID: <1370595349-6469-1-git-send-email-sachin.kamat@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([143.182.124.37]:30351 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751123Ab3FGI1M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Jun 2013 04:27:12 -0400
-In-Reply-To: <1370593232-3602-1-git-send-email-shuox.liu@intel.com>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:55451 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633Ab3FGJKK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jun 2013 05:10:10 -0400
+Received: by mail-pd0-f180.google.com with SMTP id 10so4557172pdi.11
+        for <linux-pm@vger.kernel.org>; Fri, 07 Jun 2013 02:10:10 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, yanmin_zhang@linux.intel.com, ShuoX Liu <shuox.liu@intel.com>, Zhang Yanmin <yanmin.zhang@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, sachin.kamat@linaro.org, patches@linaro.org
 
-From: ShuoX Liu <shuox.liu@intel.com>
+linux/opp.h was included twice.
 
-dpm_run_callback_void could show more debug info around complete stage
-
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-Signed-off-by: Liu ShuoX <shuox.liu@intel.com>
+Signed-off-by: Sachin Kamat <sachin.kamat@linaro.org>
 ---
- drivers/base/power/main.c |   27 ++++++++++++++++++++++-----
- 1 files changed, 22 insertions(+), 5 deletions(-)
+ drivers/devfreq/exynos/exynos5_bus.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index cb89323..7021491 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -33,6 +33,7 @@
- #include "power.h"
- 
- typedef int (*pm_callback_t)(struct device *);
-+typedef void (*pm_callback_void_t)(struct device *);
- 
- /*
-  * The entries in the dpm_list list are in a depth first order, simply
-@@ -384,6 +385,23 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	return error;
- }
- 
-+static void dpm_run_callback_void(pm_callback_void_t cb, struct device *dev,
-+			    pm_message_t state, char *info)
-+{
-+	ktime_t calltime;
-+	int error;
-+
-+	if (!cb)
-+		return;
-+
-+	calltime = initcall_debug_start(dev);
-+
-+	pm_dev_dbg(dev, state, info);
-+	cb(dev);
-+
-+	initcall_debug_report(dev, calltime, error);
-+}
-+
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-@@ -722,7 +740,7 @@ void dpm_resume(pm_message_t state)
-  */
- static void device_complete(struct device *dev, pm_message_t state)
- {
--	void (*callback)(struct device *) = NULL;
-+	pm_callback_void_t callback = NULL;
- 	char *info = NULL;
- 
- 	if (dev->power.syscore)
-@@ -749,10 +767,7 @@ static void device_complete(struct device *dev, pm_message_t state)
- 		callback = dev->driver->pm->complete;
- 	}
- 
--	if (callback) {
--		pm_dev_dbg(dev, state, info);
--		callback(dev);
--	}
-+	dpm_run_callback_void(callback, dev, state, info);
- 
- 	device_unlock(dev);
- 
-@@ -769,6 +784,7 @@ static void device_complete(struct device *dev, pm_message_t state)
- void dpm_complete(pm_message_t state)
- {
- 	struct list_head list;
-+	ktime_t starttime = ktime_get();
- 
- 	might_sleep();
- 
-@@ -789,6 +805,7 @@ void dpm_complete(pm_message_t state)
- 	}
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+	dpm_show_time(starttime, state, "complete");
- }
- 
- /**
+diff --git a/drivers/devfreq/exynos/exynos5_bus.c b/drivers/devfreq/exynos/exynos5_bus.c
+index 102d1f0..04c164e 100644
+--- a/drivers/devfreq/exynos/exynos5_bus.c
++++ b/drivers/devfreq/exynos/exynos5_bus.c
+@@ -18,7 +18,6 @@
+ #include <linux/opp.h>
+ #include <linux/slab.h>
+ #include <linux/suspend.h>
+-#include <linux/opp.h>
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/platform_device.h>
 -- 
-1.7.1
+1.7.9.5
 
