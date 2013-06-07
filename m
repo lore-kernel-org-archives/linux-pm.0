@@ -1,48 +1,48 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: [PATCHv3 6/6] arm: omap2plus_defconfig: enable DRA752 thermal support by default
-Date: Fri, 7 Jun 2013 16:46:08 -0400
-Message-ID: <1370637968-23299-7-git-send-email-eduardo.valentin@ti.com>
-References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] non-swapcache pages in end_swap_bio_read()
+Date: Fri, 07 Jun 2013 13:51:33 -0700
+Message-ID: <1370638293.2209.134.camel@joe-AO722>
+References: <20130607152653.GA3586@blaptop>
+	 <1370636598-5405-1-git-send-email-artem.savkov@gmail.com>
+	 <20130607134303.a9bcff78691c38b03a8b3dde@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:44114 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753181Ab3FGUso (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Jun 2013 16:48:44 -0400
-In-Reply-To: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20130607134303.a9bcff78691c38b03a8b3dde@linux-foundation.org>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Artem Savkov <artem.savkov@gmail.com>, minchan.kernel.2@gmail.com, dan.magenheimer@oracle.com, rjw@sisk.pl, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tony@atomide.com, grant.likely@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, Eduardo Valentin <eduardo.valentin@ti.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, AnilKumar Ch <anilkumar@ti.com>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Make DRA752 thermal support enabled on omap2plus_defconfig
+On Fri, 2013-06-07 at 13:43 -0700, Andrew Morton wrote:
+> On Sat,  8 Jun 2013 00:23:18 +0400 Artem Savkov <artem.savkov@gmail.com> wrote:
+[]
+> +++ a/mm/page_io.c
+[]
+> +	/*
+> +	 * There is no guarantee that the page is in swap cache - the software
+> +	 * suspend code (at least) uses end_swap_bio_read() against a non-
+> +	 * swapcache page.  So we must check PG_swapcache before proceeding with
+> +	 * this optimization.
+> +	 */
+> +	if (likely(PageSwapCache(page))) {
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: AnilKumar Ch <anilkumar@ti.com>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
----
- arch/arm/configs/omap2plus_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+or
 
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index 6e6c494..07aab0b 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -248,6 +248,7 @@ CONFIG_TI_SOC_THERMAL=y
- CONFIG_TI_THERMAL=y
- CONFIG_OMAP4_THERMAL=y
- CONFIG_OMAP5_THERMAL=y
-+CONFIG_DRA752_THERMAL=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_FS_XATTR is not set
--- 
-1.8.2.1.342.gfa7285d
+	if (unlikely(!PageSwapCache(page)))
+		goto out;
 
+to save an indent level
+
+> +out:
+>  	unlock_page(page);
+>  	bio_put(bio);
+>  }
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
