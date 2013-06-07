@@ -1,84 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 17/18] cpufreq: powerpc: move cpufreq driver to drivers/cpufreq
-Date: Fri, 07 Jun 2013 13:58:05 +0200
-Message-ID: <36081985.E8ct76IG4n@vostro.rjw.lan>
-References: <cover.1365079581.git.viresh.kumar@linaro.org> <CAKohpokgTmb6d79ipR9pV2iOfLSzngrPbMV3hFcuP64kbNYSQA@mail.gmail.com> <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
+Subject: [GIT PULL] Power management and ACPI fixes for v3.10-rc5
+Date: Fri, 07 Jun 2013 14:51:58 +0200
+Message-ID: <3863425.93Oeg2bhJF@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpom=HvLwn7q9gicJXmHExoaDKKHcgQgT=1F0SKu3N3bXSg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Robin Randhawa <robin.randhawa@arm.com>, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, deepthi@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 07, 2013 10:48:21 AM Viresh Kumar wrote:
-> On 31 May 2013 16:20, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 20 May 2013 10:10, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> On 13 May 2013 11:34, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>> On 22 April 2013 12:19, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>> On 9 April 2013 14:05, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>> On 5 April 2013 12:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>> On 4 April 2013 18:24, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >>>>>>> This patch moves cpufreq driver of powerpc platform to drivers/cpufreq.
-> >>>>>>>
-> >>>>>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> >>>>>>> Cc: Paul Mackerras <paulus@samba.org>
-> >>>>>>> Cc: Olof Johansson <olof@lixom.net>
-> >>>>>>> Cc: linuxppc-dev@lists.ozlabs.org
-> >>>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>>>>>> ---
-> >>>>>>> Compile Tested only.
-> >>>>>>>
-> >>>>>>>  arch/powerpc/platforms/Kconfig                     | 31 ----------------------
-> >>>>>>>  arch/powerpc/platforms/pasemi/Makefile             |  1 -
-> >>>>>>>  arch/powerpc/platforms/powermac/Makefile           |  2 --
-> >>>>>>>  drivers/cpufreq/Kconfig.powerpc                    | 26 ++++++++++++++++++
-> >>>>>>>  drivers/cpufreq/Makefile                           |  3 +++
-> >>>>>>>  .../cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c  |  0
-> >>>>>>>  .../cpufreq/pmac32-cpufreq.c                       |  0
-> >>>>>>>  .../cpufreq/pmac64-cpufreq.c                       |  0
-> >>>>>>>  8 files changed, 29 insertions(+), 34 deletions(-)
-> >>>>>>>  rename arch/powerpc/platforms/pasemi/cpufreq.c => drivers/cpufreq/pasemi-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_32.c => drivers/cpufreq/pmac32-cpufreq.c (100%)
-> >>>>>>>  rename arch/powerpc/platforms/powermac/cpufreq_64.c => drivers/cpufreq/pmac64-cpufreq.c (100%)
-> >>>>>>
-> >>>>>> Hi Deepthi,
-> >>>>>>
-> >>>>>> Can you help testing this please?
-> >>>>>
-> >>>>> Ping!!
-> >>>>
-> >>>> Ping!!
-> >>>
-> >>> Hi Benjamin,
-> >>>
-> >>> Hope you are back from your vacations. Can you give it a try now?
-> >>
-> >> Ping!!
-> >
-> > Ping!!
-> 
-> Hi Rafael,
-> 
-> Its been more than 2 months now that this patch was first posted.
-> And the response from Maintainers isn't so great, irrespective of
-> how many times I pinged them.
-> 
-> This is what I think:
-> - It looked functionally correct to Benjamin but he wanted somebody
-> to actually test it.
-> - Arnd gave his Ack (So it looked functionally correct to him too)
-> - We can probably push this into linux-next now and see if somebody
-> complains of any breakage it has done. If not we can get it pushed for
-> 3.11.
+Hi Linus,
 
-I agree, applied to bleeding-edge.
+Please pull from the git repository at
 
-Thanks,
-Rafael
+  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm+acpi-3.10-rc5
 
+to receive power management and ACPI fixes for v3.10-rc5 with top-most
+commit c6617b39c39d8735c912bb4efd2f735fedff5052
+
+  Merge branch 'pm-fixes'
+
+on top of commit d683b96b072dc4680fc74964eca77e6a23d1fa6e
+
+  Linux 3.10-rc4
+
+These fixes emerged after my previous pull request.  They fix one recent
+regression, a few regressions introduced in 3.9 and 3.8, and a couple of
+long-standing issues.  A couple of blacklist entries for systems known
+to misbehave are added too.
+
+Included are:
+
+- Fix for an ACPI PM regression introduced in 3.9 causing Toshiba
+  P870-303 to crash during boot. From yours truly.
+
+- ACPI fix for an issue causing some drivers to attempt to bind to
+  devices they shouldn't touch introduced in 3.9 (a broken BIOS is
+  requisite to trigger this). From Aaron Lu.
+
+- Fix for a recent cpufreq regression related to a possible race with
+  CPU offline. From Michael Wang.
+
+- Fix for an ACPI cpufreq regression introduced in 3.8 causing turbo
+  frequencies to be underutilized in some cases. From Ross Lagerwall.
+
+- cpufreq-cpu0 driver fix related to incorrect clock ACPI usage from
+  Guennadi Liakhovetski.
+
+- HP WMI driver fix for an issue causing GPS initialization and
+  poweroff failures on HP Elitebook 6930p.  From Lan Tianyu.
+
+- APEI (ACPI Platform Error Interface) fix for an issue in the error
+  code path in ghes_probe(). From Wei Yongjun.
+
+- New ACPI video driver blacklist entries for HP m4 and HP Pavilion
+  g6 from Alex Hung and Ash Willis.
+
+Thanks!
+
+
+---------------
+
+Aaron Lu (1):
+      ACPI / scan: do not match drivers against objects having scan handlers
+
+Alex Hung (1):
+      ACPI / video: ignore BIOS initial backlight value for HP m4
+
+Ash Willis (1):
+      ACPI / video: ignore BIOS initial backlight value for HP Pavilion g6
+
+Guennadi Liakhovetski (1):
+      cpufreq: cpufreq-cpu0: use the exact frequency for clk_set_rate()
+
+Michael Wang (1):
+      cpufreq: protect 'policy->cpus' from offlining during __gov_queue_work()
+
+Rafael J. Wysocki (1):
+      ACPI / PM: Do not execute _PS0 for devices without _PSC during initialization
+
+Ross Lagerwall (1):
+      acpi-cpufreq: set current frequency based on target P-State
+
+Wei Yongjun (1):
+      ACPI / APEI: fix error return code in ghes_probe()
+
+Lan Tianyu (1):
+      x86 / platform / hp_wmi: Fix bluetooth_rfkill misuse in hp_wmi_rfkill_setup()
+
+---------------
+
+ drivers/acpi/apei/ghes.c           |    7 ++++---
+ drivers/acpi/device_pm.c           |   10 ++++++----
+ drivers/acpi/scan.c                |    4 ++++
+ drivers/acpi/video.c               |   16 ++++++++++++++++
+ drivers/cpufreq/acpi-cpufreq.c     |    4 ++--
+ drivers/cpufreq/cpufreq-cpu0.c     |    5 +++--
+ drivers/cpufreq/cpufreq_governor.c |    3 +++
+ drivers/platform/x86/hp-wmi.c      |    2 +-
+ 8 files changed, 39 insertions(+), 12 deletions(-)
 
 -- 
 I speak only for myself.
