@@ -1,93 +1,212 @@
-From: Artem Savkov <artem.savkov@gmail.com>
-Subject: [BUG] non-swapcache page in end_swap_bio_read()
-Date: Fri, 7 Jun 2013 16:59:09 +0400
-Message-ID: <20130607125908.GB9282@cpv436-motbuntu>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 2/5] cpufreq:boost: Add support for software based CPU
+ frequency boost
+Date: Fri, 07 Jun 2013 15:27:18 +0200
+Message-ID: <20130607152718.4b458087@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370502472-7249-3-git-send-email-l.majewski@samsung.com>
+ <CAKohpok3KTfSWDU6PdDd4_VW4Pp+6J80yn5cLrYr5RuBNH-agA@mail.gmail.com>
+ <20130606134903.5f69b8fb@amdc308.digital.local>
+ <CAKohpo=jCuLwhB+3pC0NLRBDmfPpGr=hRgxTT4rXzSwM4BndaQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-Sender: owner-linux-mm@kvack.org
-To: Minchan Kim <minchan@kernel.org>
-Cc: Dan Magenheimer <dan.magenheimer@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:37137 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382Ab3FGN1i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Jun 2013 09:27:38 -0400
+In-reply-to: <CAKohpo=jCuLwhB+3pC0NLRBDmfPpGr=hRgxTT4rXzSwM4BndaQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 
-Hello all,
+Hi Viresh,
 
-I'm hitting the following BUG_ON during boot when
-CONFIG_PM_STD_PARTITION or "resume" kernel boot option are set. Looks
-like this issue was introduced in (or brought up to light by)
-"mm: remove compressed copy from zram in-memory"
-(84e5bb4f06e6d6f0c4dfc033b4700702ed8aaccc in linux-next.git)
-What happens is that during swsusp_check() bio is created with
-bio_end_io set to end_swap_bio_read(), but the page is not in swap
-cache.
-Not sure how to handle this the right way, but proceeding with the
-optimization in end_swap_bio_read() only after checking PageSwapCache
-flag does help.
+> On 6 June 2013 17:19, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> >> On 6 June 2013 12:37, Lukasz Majewski <l.majewski@samsung.com>
+> >> wrote:
+> 
+> >> > cpufreq_driver->boost->attr))
+> >>
+> >> Why is this required? Why do we want platforms to add some files
+> >> in sysfs?
+> >
+> > There are two kinds of attributes, which are exported by boost:
+> >
+> > 1. global boost (/sys/devices/system/cpu/cpufreq/boost)
+> >
+> > 2. attributes describing cpufreq abilities when boost is available
+> > (/sys/devices/syste/cpu/cpu0/cpufreq/):
+> >         - scaling_boost_frequencies - which will show over clocked
+> >           frequencies
+> >         - the scaling_available_frequencies will also display
+> > boosted frequency (when boost enabled)
+> >
+> > Information from 2. is cpufreq_driver dependent. And that
+> > information shouldn't been displayed when boost is not available
+> 
+> This is not how I wanted this to be coded. Lets keep things simple:
+> - Implement it in the way cpufreq_freq_attr_scaling_available_freqs
+>   is implemented. And then drivers which need to see boost freqs
+>   can add it in their attr.
+> 
+> >> > +       policy->boost = cpufreq_boost = cpufreq_driver->boost;
+> >>
+> >> Why are we copying same pointer to policy->boost? Driver is
+> >> passing pointer to a single memory location, just save it globally.
+> >
+> > This needs some explanation.
+> >
+> > The sysfs entry presented at [1] doesn't bring any useful
+> > information to reuse (like *policy). For this reason the global
+> > cpufreq_boost pointer is needed.
+> >
+> > However to efficiently manage the boost, it is necessary to keep per
+> > policy pointer to the only struct cpufreq_boost instance (defined at
+> > cpufreq_driver code).
+> 
+> No we don't need to screw struct cpufreq_policy with it.
+> Just need two variables here:
+> - cpufreq_driver->boost: If driver supports boost or not.
+> - If above is true then a global bool variable that will say boost is
+>   enabled from sysfs or not.
+> 
+> >> > +       /* disable boost for newly created policy - as we e.g.
+> >> > change
+> >> > +          governor */
+> >> > +       policy->boost->status = CPUFREQ_BOOST_DIS;
+> >>
+> >> Drivers supporting boost may want boost to be enabled by default,
+> >> maybe without any sysfs calls.
+> >
+> > This can be done by setting the struct cpufreq_boost status field to
+> > CPUFREQ_BOOST_EN at cpufreq driver code (when boost structure is
+> > defined)
+> 
+> This really isn't driver dependent.. But user dependent. Maybe lets
+> keep it disabled and people can enable it from sysfs.
+> 
+> >> Why do we need to maintain a list of boost here? notifiers?
+> >> complex :(
+> >
+> > Notifier is needed to disable boost when policy is changed (for
+> > example when we change from ondemand/lab to performance governor).
+> >
+> > I wanted to avoid the situation when boost stays enabled across
+> > different governors.
+> >
+> > The list of in system available policies is defined to allow boost
+> > enable/disable for all policies available (by changing for example
+> > policy->max field).
+> >
+> > If we decide, that we will support only one policy (as it is now at
+> > e.g. Exynos), the list is unnecessary here.
+> 
+> What we discussed last in your earlier patchset was:
+> - Keep boost feature separate from governors.
+> - If it is enabled, then any governor can use it (if they want).
+> - Lets not disable it if governor is changed. user must do it
+> explicitly.
+> 
+> >> > +static int cpufreq_frequency_table_skip_boost(struct
+> >> > cpufreq_policy *policy,
+> >> > +                                             unsigned int index)
+> >> > +{
+> >> > +       if (index == CPUFREQ_BOOST)
+> >> > +               if (!policy->boost ||
+> >>
+> >> This shouldn't be true. If index has got CPUFREQ_BOOST, then driver
+> >> has to support boost.
+> >
+> > Correct me if I'm wrong here, but in my understanding the boost
+> > shall be only supported when both CPUFREQ_BOOST index is defined in
+> > a freq_table and boost.state = CPUFREQ_BOOST_EN is set.
+> >
+> > Setting of CPUFREQ_BOOST shouldn't by default allow to use over
+> > clocking frequency.
+> 
+> For cpufreq core boost is enabled as soon as cpufreq_driver->boost is
+> true. We can have additional checks to see if there is atleast one
+> boost frequency but can skip this too.
+> 
+> >> why do we need this?
+> >
+> > To evaluate the maximal boost frequency from the frequency table.
+> > It is then used as a delimiter (when LAB cooperates with thermal
+> > framework).
+> 
+> Introduce this with LAB then.. Lets keep it as simple as possible for
+> now. One step at a time.
+> 
+> >> > +struct cpufreq_boost {
+> >> > +       unsigned int            max_boost_freq; /* maximum value
+> >> > of
+> >> > +                                                * boosted freq
+> >> > */
+> >> > +       unsigned int            max_normal_freq; /* non boost max
+> >> > freq */
+> >> > +       int                     status; /* status of boost */
+> >> > +
+> >> > +       /* boost sysfs attributies */
+> >> > +       struct freq_attr        **attr;
+> >> > +
+> >> > +       /* low-level trigger for boost */
+> >> > +       int (*low_level_boost) (struct cpufreq_policy *policy,
+> >> > int state); +
+> >> > +       struct list_head        policies;
+> >> > +};
+> >>
+> >> We don't need it. Just add two more fields to cpufreq_driver:
+> >> - have_boost_freqs and low_level_boost (maybe a better name.
+> >> What's its use?)
+> >
+> > The separate struct cpufreq_boost was created to explicitly separate
+> > boost fields from cpufreq_driver structure.
+> >
+> > If in your opinion this structure is redundant, I can remove it and
+> > extend cpufreq_driver structure.
+> 
+> I am not against a structure (as putting related stuff in a struct is
+> always better), but against so many fields in it to make things
+> complicated.
+> 
+> I will only keep have_boost_freqs and low_level_boost. Remove
+> everything else.
 
-[    2.065206] kernel BUG at mm/swapfile.c:2361!
-[    2.065469] invalid opcode: 0000 [#1] SMP 
-[    2.065469] Modules linked in:
-[    2.065469] CPU: 1 PID: 0 Comm: swapper/1 Not tainted 3.10.0-rc4-next-20130607+ #61
-[    2.065469] Hardware name: Bochs Bochs, BIOS Bochs 01/01/2007
-[    2.065469] task: ffff88001e5ccfc0 ti: ffff88001e5ea000 task.ti: ffff88001e5ea000
-[    2.065469] RIP: 0010:[<ffffffff811462eb>]  [<ffffffff811462eb>] page_swap_info+0xab/0xb0
-[    2.065469] RSP: 0000:ffff88001ec03c78  EFLAGS: 00010246
-[    2.065469] RAX: 0100000000000009 RBX: ffffea0000794780 RCX: 0000000000000c0b
-[    2.065469] RDX: 0000000000000046 RSI: 0000000000000000 RDI: 0000000000000000
-[    2.065469] RBP: ffff88001ec03c88 R08: 0000000000000000 R09: 0000000000000000
-[    2.065469] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
-[    2.065469] R13: 0000000000000001 R14: ffff88001e7f6200 R15: 0000000000001000
-[    2.065469] FS:  0000000000000000(0000) GS:ffff88001ec00000(0000) knlGS:0000000000000000
-[    2.065469] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-[    2.065469] CR2: 0000000000000000 CR3: 000000000240b000 CR4: 00000000000006e0
-[    2.065469] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[    2.065469] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[    2.065469] Stack:
-[    2.065469]  ffffea0000794780 ffff88001e7f6200 ffff88001ec03cb8 ffffffff81145486
-[    2.065469]  ffff88001e5cd5c0 ffff88001c02cd20 0000000000001000 0000000000000000
-[    2.065469]  ffff88001ec03cc8 ffffffff81199518 ffff88001ec03d28 ffffffff81518ec3
-[    2.065469] Call Trace:
-[    2.065469]  <IRQ> 
-[    2.065469]  [<ffffffff81145486>] end_swap_bio_read+0x96/0x130
-[    2.065469]  [<ffffffff81199518>] bio_endio+0x18/0x40
-[    2.065469]  [<ffffffff81518ec3>] blk_update_request+0x213/0x540
-[    2.065469]  [<ffffffff81518fa0>] ? blk_update_request+0x2f0/0x540
-[    2.065469]  [<ffffffff817986a6>] ? ata_hsm_qc_complete+0x46/0x130
-[    2.065469]  [<ffffffff81519212>] blk_update_bidi_request+0x22/0x90
-[    2.065469]  [<ffffffff8151b9ea>] blk_end_bidi_request+0x2a/0x80
-[    2.065469]  [<ffffffff8151ba8b>] blk_end_request+0xb/0x10
-[    2.065469]  [<ffffffff817693aa>] scsi_io_completion+0xaa/0x6b0
-[    2.065469]  [<ffffffff817608d8>] scsi_finish_command+0xc8/0x130
-[    2.065469]  [<ffffffff81769aff>] scsi_softirq_done+0x13f/0x160
-[    2.065469]  [<ffffffff81521ebc>] blk_done_softirq+0x7c/0x90
-[    2.065469]  [<ffffffff81049030>] __do_softirq+0x130/0x3f0
-[    2.065469]  [<ffffffff810d454e>] ? handle_irq_event+0x4e/0x70
-[    2.065469]  [<ffffffff81049405>] irq_exit+0xa5/0xb0
-[    2.065469]  [<ffffffff81003cb1>] do_IRQ+0x61/0xe0
-[    2.065469]  [<ffffffff81c2832f>] common_interrupt+0x6f/0x6f
-[    2.065469]  <EOI> 
-[    2.065469]  [<ffffffff8107ebff>] ? local_clock+0x4f/0x60
-[    2.065469]  [<ffffffff81c27f85>] ? _raw_spin_unlock_irq+0x35/0x50
-[    2.065469]  [<ffffffff81c27f7b>] ? _raw_spin_unlock_irq+0x2b/0x50
-[    2.065469]  [<ffffffff81078bd0>] finish_task_switch+0x80/0x110
-[    2.065469]  [<ffffffff81078b93>] ? finish_task_switch+0x43/0x110
-[    2.065469]  [<ffffffff81c2525c>] __schedule+0x32c/0x8c0
-[    2.065469]  [<ffffffff81c2c010>] ? notifier_call_chain+0x150/0x150
-[    2.065469]  [<ffffffff81c259d4>] schedule+0x24/0x70
-[    2.065469]  [<ffffffff81c25d42>] schedule_preempt_disabled+0x22/0x30
-[    2.065469]  [<ffffffff81093645>] cpu_startup_entry+0x335/0x380
-[    2.065469]  [<ffffffff81c1ed7e>] start_secondary+0x217/0x219
-[    2.065469] Code: 69 bc 16 82 48 c7 c7 77 bc 16 82 31 c0 49 c1 ec 39 49 c1 e9 10 41 83 e1 01 e8 6c d2 ad 00 5b 4a 8b 04 e5 e0 bf 14 83 41 5c c9 c3 <0f> 0b eb fe 90 48 8b 07 55 48 89 e5 a9 00 00 01 00 74 12 e8 3d 
-[    2.065469] RIP  [<ffffffff811462eb>] page_swap_info+0xab/0xb0
-[    2.065469]  RSP <ffff88001ec03c78>
+I would prefer to have following fields in the cpufreq_boost structure:
+struct cpufreq_boost {
+	unsigned int	max_boost_freq; /*boost max freq*/
+	unsigned int 	max_normal_freq; /*max normal freq
+	int (*low_level_boost) (int state);
+	bool boost_en;  /* indicate if boost is enabled */
+}
+
+The max_{boost|normal}_freq fields will be filed at 
+ret = cpufreq_driver->init(policy);
+
+Thanks to them I will avoid calling many times routine, which extracts
+from freq_table maximal boost and normal frequencies.
+
+I could define those variables in the exynos-cpufreq.c driver, but I
+think, that they are more suitable to be embedded at cpufreq_boost
+structure.
+
+
+> 
+> > *boost pointer is necessary when one wants to enable/disable boost
+> > from e.g governor code (which operates mostly on struct
+> > cpufreq_policy *policy pointers).
+> 
+> We don't need to do this. boost can only be disabled from userspace by
+> user. No intervention from governor.
+
+
 
 -- 
-Regards,
-    Artem
+Best regards,
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
