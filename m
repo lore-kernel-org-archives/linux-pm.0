@@ -1,72 +1,134 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0/2] Run callback of device_prepare/complete consistently
-Date: Sat, 08 Jun 2013 12:54:34 +0200
-Message-ID: <1848832.IkLoHNGzvs@vostro.rjw.lan>
-References: <1370593232-3602-1-git-send-email-shuox.liu@intel.com> <2994160.MkjLhsn0bK@vostro.rjw.lan> <1370659038.4432.112.camel@ymzhang.sh.intel.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target frequency
+Date: Sat, 08 Jun 2013 13:18:40 +0200
+Message-ID: <2121964.7mRfuhv0yj@vostro.rjw.lan>
+References: <51AF60D5.3080605@semaphore.gr> <34284216.Ce55kPas6V@vostro.rjw.lan> <51B2FFB0.9030008@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1370659038.4432.112.camel@ymzhang.sh.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: yanmin_zhang@linux.intel.com
-Cc: Greg KH <gregkh@linuxfoundation.org>, shuox.liu@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pavel@ucw.cz, len.brown@intel.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:60017 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751861Ab3FHLJe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 8 Jun 2013 07:09:34 -0400
+In-Reply-To: <51B2FFB0.9030008@semaphore.gr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, June 08, 2013 10:37:18 AM Yanmin Zhang wrote:
-> On Sat, 2013-06-08 at 03:52 +0200, Rafael J. Wysocki wrote:
-> > On Saturday, June 08, 2013 09:36:03 AM Yanmin Zhang wrote:
-> > > On Sat, 2013-06-08 at 03:30 +0200, Rafael J. Wysocki wrote:
-> > > > On Friday, June 07, 2013 06:16:25 PM Greg KH wrote:
-> > > > > On Sat, Jun 08, 2013 at 08:42:12AM +0800, Yanmin Zhang wrote:
-> > > > > > On Fri, 2013-06-07 at 12:36 +0200, Rafael J. Wysocki wrote:
-> > > > > > > On Friday, June 07, 2013 04:20:30 PM shuox.liu@intel.com wrote:
-> > > > > > > > dpm_run_callback is used in other stages of power states changing.
-> > > > > > > > It provides debug info message and time measurement when call these
-> > > > > > > > callback. We also want to benefit ->prepare and ->complete.
-> > > > > > > > 
-> > > > > > > > [PATCH 1/2] PM: use dpm_run_callback in device_prepare
-> > > > > > > > [PATCH 2/2] PM: add dpm_run_callback_void and use it in device_complete
-> > > > > > > 
-> > > > > > > Is this an "Oh, why don't we do that?" series, or is it useful for anything
-> > > > > > > in practice?  I'm asking, because we haven't added that stuff to start with
-> > > > > > > since we didn't see why it would be useful to anyone.
-> > > > > > > 
-> > > > > > > And while patch [1/2] reduces the code size (by 1 line), so I can see some
-> > > > > > > (tiny) benefit from applying it, patch [2/2] adds more code and is there any
-> > > > > > > paractical reason?
-> > > > > > Sometimes, suspend-to-ram path spends too much time (either suspend slowly
-> > > > > > or wakeup slowly) and we need optimize it.
-> > > > > > With the 2 patches, we could collect initcall_debug printk info and manually
-> > > > > > check what prepare/complete callbacks consume too much time.
-> > > > > 
-> > > > > But initcall information is for initialization stuff, not suspend/resume
-> > > > > things, right?  Doesn't the existing tools for parsing this choke if it
-> > > > > sees the information at suspend/resume time?
-> > > > 
-> > > > We've been using that for suspend/resume for quite some time too, but not
-> > > > for the prepare/complete phases (because we still believe that's not really
-> > > > useful for them). 
-> > > > 
-> > > > Well, I'll be handling patches changing code under drivers/base/power,
-> > > > I promise. :-)
-> > > > 
-> > > > I've been doing that for quite a few years now ...
-> > > Yes, indeed. Power is one of the most important features on embedded devices.
-> > > Lots of smart phones don't really go through the full cycles of suspend-to-ram.
-> > > We are following the full steps of the suspend.
+On Saturday, June 08, 2013 12:56:00 PM Stratos Karafotis wrote:
+> On 06/07/2013 11:57 PM, Rafael J. Wysocki wrote:
+> > On Friday, June 07, 2013 10:14:34 PM Stratos Karafotis wrote:
+> >> On 06/05/2013 11:35 PM, Rafael J. Wysocki wrote:
+> >>> On Wednesday, June 05, 2013 08:13:26 PM Stratos Karafotis wrote:
+> >>>> Hi Borislav,
+> >>>>
+> >>>> On 06/05/2013 07:17 PM, Borislav Petkov wrote:
+> >>>>> On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
+> >>>>>> Ondemand calculates load in terms of frequency and increases it only
+> >>>>>> if the load_freq is greater than up_threshold multiplied by current
+> >>>>>> or average frequency. This seems to produce oscillations of frequency
+> >>>>>> between min and max because, for example, a relatively small load can
+> >>>>>> easily saturate minimum frequency and lead the CPU to max. Then, the
+> >>>>>> CPU will decrease back to min due to a small load_freq.
+> >>>>>
+> >>>>> Right, and I think this is how we want it, no?
+> >>>>>
+> >>>>> The thing is, the faster you finish your work, the faster you can become
+> >>>>> idle and save power.
+> >>>>
+> >>>> This is exactly the goal of this patch. To use more efficiently middle
+> >>>> frequencies to finish faster the work.
+> >>>>
+> >>>>> If you switch frequencies in a staircase-like manner, you're going to
+> >>>>> take longer to finish, in certain cases, and burn more power while doing
+> >>>>> so.
+> >>>>
+> >>>> This is not true with this patch. It switches to middle frequencies
+> >>>> when the load < up_threshold.
+> >>>> Now, ondemand does not increase freq. CPU runs in lowest freq till the
+> >>>> load is greater than up_threshold.
+> >>>>
+> >>>>> Btw, racing to idle is also a good example for why you want boosting:
+> >>>>> you want to go max out the core but stay within power limits so that you
+> >>>>> can finish sooner.
+> >>>>>
+> >>>>>> This patch changes the calculation method of load and target frequency
+> >>>>>> considering 2 points:
+> >>>>>> - Load computation should be independent from current or average
+> >>>>>> measured frequency. For example an absolute load 80% at 100MHz is not
+> >>>>>> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
+> >>>>>> - Target frequency should be increased to any value of frequency table
+> >>>>>> proportional to absolute load, instead to only the max. Thus:
+> >>>>>>
+> >>>>>> Target frequency = C * load
+> >>>>>>
+> >>>>>> where C = policy->cpuinfo.max_freq / 100
+> >>>>>>
+> >>>>>> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
+> >>>>>> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
+> >>>>>> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
+> >>>>>> that middle frequencies are used more, with this patch. Highest
+> >>>>>> and lowest frequencies were used less by ~9%
+> >>>
+> >>> Can you also use powertop to measure the percentage of time spent in idle
+> >>> states for the same workload with and without your patchset?  Also, it would
+> >>> be good to measure the total energy consumption somehow ...
+> >>>
+> >>> Thanks,
+> >>> Rafael
+> >>
+> >> Hi Rafael,
+> >>
+> >> I repeated the tests extracting also powertop results.
+> >> Measurement steps with and without this patch:
+> >> 1) Reboot system
+> >> 2) Running twice Phoronix benchmark of Linux Kernel Compilation 3.1 test
+> >>     without taking measurement
+> >> 3) Wait few minutes
+> >> 4) Run Phoronix and powertop for 100secs and take measurement.
 > > 
-> > But if you go through the code, you'll see that alomost no drivers actually
-> > implemet .prepare() and .complete().  Some subsystems do, but they really don't
-> > take too much time to execute.  Which means that your patches with
-> > initcall_debug will add quite a pile of useless garbage to the kernel log
-> Does that mean we need add more log levels around such info instead of just having or
-> not having?
+> > Well, while this is not conclusive, it definitely looks very promising. :-)
+> > 
+> > We're seeing measurable performance improvement with the patchset applied *and*
+> > more time spent in idle states both at the same time.  I'd be very surprised if
+> > the energy consumption measuremets did not confirm that the patchset allowed
+> > us to reduce it.
+> > 
+> > If my computations are correct (somebody please check), the cores spent about
+> > 20% more time in idle on the average with the patchset applied and in addition
+> > to that the cc6 residency was greater by about 2% on the average with respect
+> > to the kernel without the patchset.
+> > 
+> > We need to verify if there are gains (or at least no regressions) with other
+> > workloads, but since this *also* reduces code complexity quite a bit, I'm
+> > seriously considering taking it.
+> > 
+> >> I will try to repeat the test and take measurements with turbostat as
+> >> Borislav suggested.
+> > 
+> > Please do!
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> 
+> Hi,
+> 
+> I repeated the tests extracting results from turbostat.
+> Measurement steps with and without this patch:
+> 1) Reboot system
+> 2) Running twice Phoronix benchmark of Linux Kernel Compilation 3.1 test
+>    without taking measurement
+> 3) Wait few minutes
+> 4) Run Phoronix and turbostat (-i 100) and take measurement
 
-Since we don't have any code in the tree that causes problems those patches are
-supposed to catch, I don't see why we need them in the tree.  Would it be
-viable to keep them out of the tree for the time being and re-submit once
-there is real need?
+You need to do something like
+
+# ./turbostat <command invoking the phoronix suite>
+
+Did you do that?
 
 Rafael
 
