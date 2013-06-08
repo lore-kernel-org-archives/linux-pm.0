@@ -1,138 +1,117 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target frequency
-Date: Sat, 08 Jun 2013 13:18:40 +0200
-Message-ID: <2121964.7mRfuhv0yj@vostro.rjw.lan>
-References: <51AF60D5.3080605@semaphore.gr> <34284216.Ce55kPas6V@vostro.rjw.lan> <51B2FFB0.9030008@semaphore.gr>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
+ target frequency
+Date: Sat, 08 Jun 2013 15:34:29 +0300
+Message-ID: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:60017 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861Ab3FHLJe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 8 Jun 2013 07:09:34 -0400
-In-Reply-To: <51B2FFB0.9030008@semaphore.gr>
+Received: from sema.semaphore.gr ([78.46.194.137]:48679 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751368Ab3FHMeg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Jun 2013 08:34:36 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, June 08, 2013 12:56:00 PM Stratos Karafotis wrote:
-> On 06/07/2013 11:57 PM, Rafael J. Wysocki wrote:
-> > On Friday, June 07, 2013 10:14:34 PM Stratos Karafotis wrote:
-> >> On 06/05/2013 11:35 PM, Rafael J. Wysocki wrote:
-> >>> On Wednesday, June 05, 2013 08:13:26 PM Stratos Karafotis wrote:
-> >>>> Hi Borislav,
-> >>>>
-> >>>> On 06/05/2013 07:17 PM, Borislav Petkov wrote:
-> >>>>> On Wed, Jun 05, 2013 at 07:01:25PM +0300, Stratos Karafotis wrote:
-> >>>>>> Ondemand calculates load in terms of frequency and increases it only
-> >>>>>> if the load_freq is greater than up_threshold multiplied by current
-> >>>>>> or average frequency. This seems to produce oscillations of frequency
-> >>>>>> between min and max because, for example, a relatively small load can
-> >>>>>> easily saturate minimum frequency and lead the CPU to max. Then, the
-> >>>>>> CPU will decrease back to min due to a small load_freq.
-> >>>>>
-> >>>>> Right, and I think this is how we want it, no?
-> >>>>>
-> >>>>> The thing is, the faster you finish your work, the faster you can become
-> >>>>> idle and save power.
-> >>>>
-> >>>> This is exactly the goal of this patch. To use more efficiently middle
-> >>>> frequencies to finish faster the work.
-> >>>>
-> >>>>> If you switch frequencies in a staircase-like manner, you're going to
-> >>>>> take longer to finish, in certain cases, and burn more power while doing
-> >>>>> so.
-> >>>>
-> >>>> This is not true with this patch. It switches to middle frequencies
-> >>>> when the load < up_threshold.
-> >>>> Now, ondemand does not increase freq. CPU runs in lowest freq till the
-> >>>> load is greater than up_threshold.
-> >>>>
-> >>>>> Btw, racing to idle is also a good example for why you want boosting:
-> >>>>> you want to go max out the core but stay within power limits so that you
-> >>>>> can finish sooner.
-> >>>>>
-> >>>>>> This patch changes the calculation method of load and target frequency
-> >>>>>> considering 2 points:
-> >>>>>> - Load computation should be independent from current or average
-> >>>>>> measured frequency. For example an absolute load 80% at 100MHz is not
-> >>>>>> necessarily equivalent to 8% at 1000MHz in the next sampling interval.
-> >>>>>> - Target frequency should be increased to any value of frequency table
-> >>>>>> proportional to absolute load, instead to only the max. Thus:
-> >>>>>>
-> >>>>>> Target frequency = C * load
-> >>>>>>
-> >>>>>> where C = policy->cpuinfo.max_freq / 100
-> >>>>>>
-> >>>>>> Tested on Intel i7-3770 CPU @ 3.40GHz and on Quad core 1500MHz Krait.
-> >>>>>> Phoronix benchmark of Linux Kernel Compilation 3.1 test shows an
-> >>>>>> increase ~1.5% in performance. cpufreq_stats (time_in_state) shows
-> >>>>>> that middle frequencies are used more, with this patch. Highest
-> >>>>>> and lowest frequencies were used less by ~9%
-> >>>
-> >>> Can you also use powertop to measure the percentage of time spent in idle
-> >>> states for the same workload with and without your patchset?  Also, it would
-> >>> be good to measure the total energy consumption somehow ...
-> >>>
-> >>> Thanks,
-> >>> Rafael
-> >>
-> >> Hi Rafael,
-> >>
-> >> I repeated the tests extracting also powertop results.
-> >> Measurement steps with and without this patch:
-> >> 1) Reboot system
-> >> 2) Running twice Phoronix benchmark of Linux Kernel Compilation 3.1 test
-> >>     without taking measurement
-> >> 3) Wait few minutes
-> >> 4) Run Phoronix and powertop for 100secs and take measurement.
-> > 
-> > Well, while this is not conclusive, it definitely looks very promising. :-)
-> > 
-> > We're seeing measurable performance improvement with the patchset applied *and*
-> > more time spent in idle states both at the same time.  I'd be very surprised if
-> > the energy consumption measuremets did not confirm that the patchset allowed
-> > us to reduce it.
-> > 
-> > If my computations are correct (somebody please check), the cores spent about
-> > 20% more time in idle on the average with the patchset applied and in addition
-> > to that the cc6 residency was greater by about 2% on the average with respect
-> > to the kernel without the patchset.
-> > 
-> > We need to verify if there are gains (or at least no regressions) with other
-> > workloads, but since this *also* reduces code complexity quite a bit, I'm
-> > seriously considering taking it.
-> > 
-> >> I will try to repeat the test and take measurements with turbostat as
-> >> Borislav suggested.
-> > 
-> > Please do!
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> 
-> Hi,
-> 
-> I repeated the tests extracting results from turbostat.
-> Measurement steps with and without this patch:
-> 1) Reboot system
-> 2) Running twice Phoronix benchmark of Linux Kernel Compilation 3.1 test
->    without taking measurement
-> 3) Wait few minutes
-> 4) Run Phoronix and turbostat (-i 100) and take measurement
+SSBhbHNvIGRpZCB0aGUgdGVzdCB3aXRoIHRoZSB3YXkgeW91IG1lbnRpb25lZC4gQnV0IEkgdGhv
+dWdodCB0byBydW4gdHVyYm9zdGF0IGZvciAxMDAgc2VjIGFzIEkgZGlkIHdpdGggcG93ZXJ0b3Au
+CkFjdHVhbGx5IGJlbmNobWFyayBsYXN0cyBhYm91dCA5NiBzZWNzLgoKSSB0aGluayB0aGF0IHdl
+IHVzZSBhbG1vc3QgdGhlIHNhbWUgZW5lcmd5IGZvciAxMDAgc2VjIHRvIHJ1biB0aGUgc2FtZSBs
+b2FkIGEgbGl0dGxlIGJpdCBmYXN0ZXIuIEkgdGhpbmsgdGhpcyBtZWFucyBhbHNvIGEgcmVkdWNl
+IHRvIHBvd2VyIGNvbnN1bXB0aW9uLgoKSSB3aWxsIGFsc28gc2VuZCB0aGUgcmVzdWx0cyBydW5u
+aW5nIHRoZSB0ZXN0IGFzIHlvdSBzYWlkLgoKVGhhbmtzIGFnYWluLApTdHJhdG9zCgoiUmFmYWVs
+IEouIFd5c29ja2kiIDxyandAc2lzay5wbD4gd3JvdGU6Cgo+T24gU2F0dXJkYXksIEp1bmUgMDgs
+IDIwMTMgMTI6NTY6MDAgUE0gU3RyYXRvcyBLYXJhZm90aXMgd3JvdGU6Cj4+IE9uIDA2LzA3LzIw
+MTMgMTE6NTcgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+PiA+IE9uIEZyaWRheSwgSnVu
+ZSAwNywgMjAxMyAxMDoxNDozNCBQTSBTdHJhdG9zIEthcmFmb3RpcyB3cm90ZToKPj4gPj4gT24g
+MDYvMDUvMjAxMyAxMTozNSBQTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+ID4+PiBPbiBX
+ZWRuZXNkYXksIEp1bmUgMDUsIDIwMTMgMDg6MTM6MjYgUE0gU3RyYXRvcyBLYXJhZm90aXMgd3Jv
+dGU6Cj4+ID4+Pj4gSGkgQm9yaXNsYXYsCj4+ID4+Pj4KPj4gPj4+PiBPbiAwNi8wNS8yMDEzIDA3
+OjE3IFBNLCBCb3Jpc2xhdiBQZXRrb3Ygd3JvdGU6Cj4+ID4+Pj4+IE9uIFdlZCwgSnVuIDA1LCAy
+MDEzIGF0IDA3OjAxOjI1UE0gKzAzMDAsIFN0cmF0b3MgS2FyYWZvdGlzIHdyb3RlOgo+PiA+Pj4+
+Pj4gT25kZW1hbmQgY2FsY3VsYXRlcyBsb2FkIGluIHRlcm1zIG9mIGZyZXF1ZW5jeSBhbmQgaW5j
+cmVhc2VzIGl0IG9ubHkKPj4gPj4+Pj4+IGlmIHRoZSBsb2FkX2ZyZXEgaXMgZ3JlYXRlciB0aGFu
+IHVwX3RocmVzaG9sZCBtdWx0aXBsaWVkIGJ5IGN1cnJlbnQKPj4gPj4+Pj4+IG9yIGF2ZXJhZ2Ug
+ZnJlcXVlbmN5LiBUaGlzIHNlZW1zIHRvIHByb2R1Y2Ugb3NjaWxsYXRpb25zIG9mIGZyZXF1ZW5j
+eQo+PiA+Pj4+Pj4gYmV0d2VlbiBtaW4gYW5kIG1heCBiZWNhdXNlLCBmb3IgZXhhbXBsZSwgYSBy
+ZWxhdGl2ZWx5IHNtYWxsIGxvYWQgY2FuCj4+ID4+Pj4+PiBlYXNpbHkgc2F0dXJhdGUgbWluaW11
+bSBmcmVxdWVuY3kgYW5kIGxlYWQgdGhlIENQVSB0byBtYXguIFRoZW4sIHRoZQo+PiA+Pj4+Pj4g
+Q1BVIHdpbGwgZGVjcmVhc2UgYmFjayB0byBtaW4gZHVlIHRvIGEgc21hbGwgbG9hZF9mcmVxLgo+
+PiA+Pj4+Pgo+PiA+Pj4+PiBSaWdodCwgYW5kIEkgdGhpbmsgdGhpcyBpcyBob3cgd2Ugd2FudCBp
+dCwgbm8/Cj4+ID4+Pj4+Cj4+ID4+Pj4+IFRoZSB0aGluZyBpcywgdGhlIGZhc3RlciB5b3UgZmlu
+aXNoIHlvdXIgd29yaywgdGhlIGZhc3RlciB5b3UgY2FuIGJlY29tZQo+PiA+Pj4+PiBpZGxlIGFu
+ZCBzYXZlIHBvd2VyLgo+PiA+Pj4+Cj4+ID4+Pj4gVGhpcyBpcyBleGFjdGx5IHRoZSBnb2FsIG9m
+IHRoaXMgcGF0Y2guIFRvIHVzZSBtb3JlIGVmZmljaWVudGx5IG1pZGRsZQo+PiA+Pj4+IGZyZXF1
+ZW5jaWVzIHRvIGZpbmlzaCBmYXN0ZXIgdGhlIHdvcmsuCj4+ID4+Pj4KPj4gPj4+Pj4gSWYgeW91
+IHN3aXRjaCBmcmVxdWVuY2llcyBpbiBhIHN0YWlyY2FzZS1saWtlIG1hbm5lciwgeW91J3JlIGdv
+aW5nIHRvCj4+ID4+Pj4+IHRha2UgbG9uZ2VyIHRvIGZpbmlzaCwgaW4gY2VydGFpbiBjYXNlcywg
+YW5kIGJ1cm4gbW9yZSBwb3dlciB3aGlsZSBkb2luZwo+PiA+Pj4+PiBzby4KPj4gPj4+Pgo+PiA+
+Pj4+IFRoaXMgaXMgbm90IHRydWUgd2l0aCB0aGlzIHBhdGNoLiBJdCBzd2l0Y2hlcyB0byBtaWRk
+bGUgZnJlcXVlbmNpZXMKPj4gPj4+PiB3aGVuIHRoZSBsb2FkIDwgdXBfdGhyZXNob2xkLgo+PiA+
+Pj4+IE5vdywgb25kZW1hbmQgZG9lcyBub3QgaW5jcmVhc2UgZnJlcS4gQ1BVIHJ1bnMgaW4gbG93
+ZXN0IGZyZXEgdGlsbCB0aGUKPj4gPj4+PiBsb2FkIGlzIGdyZWF0ZXIgdGhhbiB1cF90aHJlc2hv
+bGQuCj4+ID4+Pj4KPj4gPj4+Pj4gQnR3LCByYWNpbmcgdG8gaWRsZSBpcyBhbHNvIGEgZ29vZCBl
+eGFtcGxlIGZvciB3aHkgeW91IHdhbnQgYm9vc3Rpbmc6Cj4+ID4+Pj4+IHlvdSB3YW50IHRvIGdv
+IG1heCBvdXQgdGhlIGNvcmUgYnV0IHN0YXkgd2l0aGluIHBvd2VyIGxpbWl0cyBzbyB0aGF0IHlv
+dQo+PiA+Pj4+PiBjYW4gZmluaXNoIHNvb25lci4KPj4gPj4+Pj4KPj4gPj4+Pj4+IFRoaXMgcGF0
+Y2ggY2hhbmdlcyB0aGUgY2FsY3VsYXRpb24gbWV0aG9kIG9mIGxvYWQgYW5kIHRhcmdldCBmcmVx
+dWVuY3kKPj4gPj4+Pj4+IGNvbnNpZGVyaW5nIDIgcG9pbnRzOgo+PiA+Pj4+Pj4gLSBMb2FkIGNv
+bXB1dGF0aW9uIHNob3VsZCBiZSBpbmRlcGVuZGVudCBmcm9tIGN1cnJlbnQgb3IgYXZlcmFnZQo+
+PiA+Pj4+Pj4gbWVhc3VyZWQgZnJlcXVlbmN5LiBGb3IgZXhhbXBsZSBhbiBhYnNvbHV0ZSBsb2Fk
+IDgwJSBhdCAxMDBNSHogaXMgbm90Cj4+ID4+Pj4+PiBuZWNlc3NhcmlseSBlcXVpdmFsZW50IHRv
+IDglIGF0IDEwMDBNSHogaW4gdGhlIG5leHQgc2FtcGxpbmcgaW50ZXJ2YWwuCj4+ID4+Pj4+PiAt
+IFRhcmdldCBmcmVxdWVuY3kgc2hvdWxkIGJlIGluY3JlYXNlZCB0byBhbnkgdmFsdWUgb2YgZnJl
+cXVlbmN5IHRhYmxlCj4+ID4+Pj4+PiBwcm9wb3J0aW9uYWwgdG8gYWJzb2x1dGUgbG9hZCwgaW5z
+dGVhZCB0byBvbmx5IHRoZSBtYXguIFRodXM6Cj4+ID4+Pj4+Pgo+PiA+Pj4+Pj4gVGFyZ2V0IGZy
+ZXF1ZW5jeSA9IEMgKiBsb2FkCj4+ID4+Pj4+Pgo+PiA+Pj4+Pj4gd2hlcmUgQyA9IHBvbGljeS0+
+Y3B1aW5mby5tYXhfZnJlcSAvIDEwMAo+PiA+Pj4+Pj4KPj4gPj4+Pj4+IFRlc3RlZCBvbiBJbnRl
+bCBpNy0zNzcwIENQVSBAIDMuNDBHSHogYW5kIG9uIFF1YWQgY29yZSAxNTAwTUh6IEtyYWl0Lgo+
+PiA+Pj4+Pj4gUGhvcm9uaXggYmVuY2htYXJrIG9mIExpbnV4IEtlcm5lbCBDb21waWxhdGlvbiAz
+LjEgdGVzdCBzaG93cyBhbgo+PiA+Pj4+Pj4gaW5jcmVhc2UgfjEuNSUgaW4gcGVyZm9ybWFuY2Uu
+IGNwdWZyZXFfc3RhdHMgKHRpbWVfaW5fc3RhdGUpIHNob3dzCj4+ID4+Pj4+PiB0aGF0IG1pZGRs
+ZSBmcmVxdWVuY2llcyBhcmUgdXNlZCBtb3JlLCB3aXRoIHRoaXMgcGF0Y2guIEhpZ2hlc3QKPj4g
+Pj4+Pj4+IGFuZCBsb3dlc3QgZnJlcXVlbmNpZXMgd2VyZSB1c2VkIGxlc3MgYnkgfjklCj4+ID4+
+Pgo+PiA+Pj4gQ2FuIHlvdSBhbHNvIHVzZSBwb3dlcnRvcCB0byBtZWFzdXJlIHRoZSBwZXJjZW50
+YWdlIG9mIHRpbWUgc3BlbnQgaW4gaWRsZQo+PiA+Pj4gc3RhdGVzIGZvciB0aGUgc2FtZSB3b3Jr
+bG9hZCB3aXRoIGFuZCB3aXRob3V0IHlvdXIgcGF0Y2hzZXQ/ICBBbHNvLCBpdCB3b3VsZAo+PiA+
+Pj4gYmUgZ29vZCB0byBtZWFzdXJlIHRoZSB0b3RhbCBlbmVyZ3kgY29uc3VtcHRpb24gc29tZWhv
+dyAuLi4KPj4gPj4+Cj4+ID4+PiBUaGFua3MsCj4+ID4+PiBSYWZhZWwKPj4gPj4KPj4gPj4gSGkg
+UmFmYWVsLAo+PiA+Pgo+PiA+PiBJIHJlcGVhdGVkIHRoZSB0ZXN0cyBleHRyYWN0aW5nIGFsc28g
+cG93ZXJ0b3AgcmVzdWx0cy4KPj4gPj4gTWVhc3VyZW1lbnQgc3RlcHMgd2l0aCBhbmQgd2l0aG91
+dCB0aGlzIHBhdGNoOgo+PiA+PiAxKSBSZWJvb3Qgc3lzdGVtCj4+ID4+IDIpIFJ1bm5pbmcgdHdp
+Y2UgUGhvcm9uaXggYmVuY2htYXJrIG9mIExpbnV4IEtlcm5lbCBDb21waWxhdGlvbiAzLjEgdGVz
+dAo+PiA+PiAgICAgd2l0aG91dCB0YWtpbmcgbWVhc3VyZW1lbnQKPj4gPj4gMykgV2FpdCBmZXcg
+bWludXRlcwo+PiA+PiA0KSBSdW4gUGhvcm9uaXggYW5kIHBvd2VydG9wIGZvciAxMDBzZWNzIGFu
+ZCB0YWtlIG1lYXN1cmVtZW50Lgo+PiA+IAo+PiA+IFdlbGwsIHdoaWxlIHRoaXMgaXMgbm90IGNv
+bmNsdXNpdmUsIGl0IGRlZmluaXRlbHkgbG9va3MgdmVyeSBwcm9taXNpbmcuIDotKQo+PiA+IAo+
+PiA+IFdlJ3JlIHNlZWluZyBtZWFzdXJhYmxlIHBlcmZvcm1hbmNlIGltcHJvdmVtZW50IHdpdGgg
+dGhlIHBhdGNoc2V0IGFwcGxpZWQgKmFuZCoKPj4gPiBtb3JlIHRpbWUgc3BlbnQgaW4gaWRsZSBz
+dGF0ZXMgYm90aCBhdCB0aGUgc2FtZSB0aW1lLiAgSSdkIGJlIHZlcnkgc3VycHJpc2VkIGlmCj4+
+ID4gdGhlIGVuZXJneSBjb25zdW1wdGlvbiBtZWFzdXJlbWV0cyBkaWQgbm90IGNvbmZpcm0gdGhh
+dCB0aGUgcGF0Y2hzZXQgYWxsb3dlZAo+PiA+IHVzIHRvIHJlZHVjZSBpdC4KPj4gPiAKPj4gPiBJ
+ZiBteSBjb21wdXRhdGlvbnMgYXJlIGNvcnJlY3QgKHNvbWVib2R5IHBsZWFzZSBjaGVjayksIHRo
+ZSBjb3JlcyBzcGVudCBhYm91dAo+PiA+IDIwJSBtb3JlIHRpbWUgaW4gaWRsZSBvbiB0aGUgYXZl
+cmFnZSB3aXRoIHRoZSBwYXRjaHNldCBhcHBsaWVkIGFuZCBpbiBhZGRpdGlvbgo+PiA+IHRvIHRo
+YXQgdGhlIGNjNiByZXNpZGVuY3kgd2FzIGdyZWF0ZXIgYnkgYWJvdXQgMiUgb24gdGhlIGF2ZXJh
+Z2Ugd2l0aCByZXNwZWN0Cj4+ID4gdG8gdGhlIGtlcm5lbCB3aXRob3V0IHRoZSBwYXRjaHNldC4K
+Pj4gPiAKPj4gPiBXZSBuZWVkIHRvIHZlcmlmeSBpZiB0aGVyZSBhcmUgZ2FpbnMgKG9yIGF0IGxl
+YXN0IG5vIHJlZ3Jlc3Npb25zKSB3aXRoIG90aGVyCj4+ID4gd29ya2xvYWRzLCBidXQgc2luY2Ug
+dGhpcyAqYWxzbyogcmVkdWNlcyBjb2RlIGNvbXBsZXhpdHkgcXVpdGUgYSBiaXQsIEknbQo+PiA+
+IHNlcmlvdXNseSBjb25zaWRlcmluZyB0YWtpbmcgaXQuCj4+ID4gCj4+ID4+IEkgd2lsbCB0cnkg
+dG8gcmVwZWF0IHRoZSB0ZXN0IGFuZCB0YWtlIG1lYXN1cmVtZW50cyB3aXRoIHR1cmJvc3RhdCBh
+cwo+PiA+PiBCb3Jpc2xhdiBzdWdnZXN0ZWQuCj4+ID4gCj4+ID4gUGxlYXNlIGRvIQo+PiA+IAo+
+PiA+IFRoYW5rcywKPj4gPiBSYWZhZWwKPj4gPiAKPj4gCj4+IEhpLAo+PiAKPj4gSSByZXBlYXRl
+ZCB0aGUgdGVzdHMgZXh0cmFjdGluZyByZXN1bHRzIGZyb20gdHVyYm9zdGF0Lgo+PiBNZWFzdXJl
+bWVudCBzdGVwcyB3aXRoIGFuZCB3aXRob3V0IHRoaXMgcGF0Y2g6Cj4+IDEpIFJlYm9vdCBzeXN0
+ZW0KPj4gMikgUnVubmluZyB0d2ljZSBQaG9yb25peCBiZW5jaG1hcmsgb2YgTGludXggS2VybmVs
+IENvbXBpbGF0aW9uIDMuMSB0ZXN0Cj4+ICAgIHdpdGhvdXQgdGFraW5nIG1lYXN1cmVtZW50Cj4+
+IDMpIFdhaXQgZmV3IG1pbnV0ZXMKPj4gNCkgUnVuIFBob3Jvbml4IGFuZCB0dXJib3N0YXQgKC1p
+IDEwMCkgYW5kIHRha2UgbWVhc3VyZW1lbnQKPgo+WW91IG5lZWQgdG8gZG8gc29tZXRoaW5nIGxp
+a2UKPgo+IyAuL3R1cmJvc3RhdCA8Y29tbWFuZCBpbnZva2luZyB0aGUgcGhvcm9uaXggc3VpdGU+
+Cj4KPkRpZCB5b3UgZG8gdGhhdD8KPgo+UmFmYWVsCj4KPgo+LS0gCj5JIHNwZWFrIG9ubHkgZm9y
+IG15c2VsZi4KPlJhZmFlbCBKLiBXeXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5
+IENlbnRlci4K
 
-You need to do something like
-
-# ./turbostat <command invoking the phoronix suite>
-
-Did you do that?
-
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
