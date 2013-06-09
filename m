@@ -1,81 +1,111 @@
-From: ShuoX Liu <shuox.liu@intel.com>
-Subject: Re: [PATCH 0/2] Run callback of device_prepare/complete consistently
-Date: Sun, 09 Jun 2013 16:11:10 +0800
-Message-ID: <51B4389E.8050501@intel.com>
-References: <1370593232-3602-1-git-send-email-shuox.liu@intel.com> <2994160.MkjLhsn0bK@vostro.rjw.lan> <1370659038.4432.112.camel@ymzhang.sh.intel.com> <1848832.IkLoHNGzvs@vostro.rjw.lan>
-Reply-To: shuox.liu@intel.com
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
+ target frequency
+Date: Sun, 9 Jun 2013 18:26:53 +0200
+Message-ID: <20130609162653.GA5004@pd.tnic>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com>
+ <1731097.2elXaGsAyC@vostro.rjw.lan>
+ <51B394A9.3020005@semaphore.gr>
+ <2892497.M93vsSKx5I@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:13291 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752176Ab3FIIQj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 9 Jun 2013 04:16:39 -0400
-In-Reply-To: <1848832.IkLoHNGzvs@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2892497.M93vsSKx5I@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: yanmin_zhang@linux.intel.com, Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pavel@ucw.cz, len.brown@intel.com
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 2013-06-08 18:54, Rafael J. Wysocki wrote:
+On Sun, Jun 09, 2013 at 12:18:09AM +0200, Rafael J. Wysocki wrote:
+> The average power drawn by the package is slightly higher with the
+> patchset applied (27.66 W vs 27.25 W), but since the time needed to
+> complete the workload with the patchset applied was shorter by about
+> 2.3 sec, the total energy used was less in the latter case (by about
+> 25.7 J if I'm not mistaken, or 1% relative). This means that in the
+> absence of a power limit between 27.25 W and 27.66 W it's better to
+> use the kernel with the patchset applied for that particular workload
+> from the performance and energy usage perspective.
+>
+> Good, hopefully that's going to be confirmed on other systems and/or
+> with other workloads. :-)
 
-> On Saturday, June 08, 2013 10:37:18 AM Yanmin Zhang wrote:
->> On Sat, 2013-06-08 at 03:52 +0200, Rafael J. Wysocki wrote:
->>> On Saturday, June 08, 2013 09:36:03 AM Yanmin Zhang wrote:
->>>> On Sat, 2013-06-08 at 03:30 +0200, Rafael J. Wysocki wrote:
->>>>> On Friday, June 07, 2013 06:16:25 PM Greg KH wrote:
->>>>>> On Sat, Jun 08, 2013 at 08:42:12AM +0800, Yanmin Zhang wrote:
->>>>>>> On Fri, 2013-06-07 at 12:36 +0200, Rafael J. Wysocki wrote:
->>>>>>>> On Friday, June 07, 2013 04:20:30 PM shuox.liu@intel.com wrote:
->>>>>>>>> dpm_run_callback is used in other stages of power states changing.
->>>>>>>>> It provides debug info message and time measurement when call these
->>>>>>>>> callback. We also want to benefit ->prepare and ->complete.
->>>>>>>>>
->>>>>>>>> [PATCH 1/2] PM: use dpm_run_callback in device_prepare
->>>>>>>>> [PATCH 2/2] PM: add dpm_run_callback_void and use it in device_complete
->>>>>>>>
->>>>>>>> Is this an "Oh, why don't we do that?" series, or is it useful for anything
->>>>>>>> in practice?  I'm asking, because we haven't added that stuff to start with
->>>>>>>> since we didn't see why it would be useful to anyone.
->>>>>>>>
->>>>>>>> And while patch [1/2] reduces the code size (by 1 line), so I can see some
->>>>>>>> (tiny) benefit from applying it, patch [2/2] adds more code and is there any
->>>>>>>> paractical reason?
->>>>>>> Sometimes, suspend-to-ram path spends too much time (either suspend slowly
->>>>>>> or wakeup slowly) and we need optimize it.
->>>>>>> With the 2 patches, we could collect initcall_debug printk info and manually
->>>>>>> check what prepare/complete callbacks consume too much time.
->>>>>>
->>>>>> But initcall information is for initialization stuff, not suspend/resume
->>>>>> things, right?  Doesn't the existing tools for parsing this choke if it
->>>>>> sees the information at suspend/resume time?
->>>>>
->>>>> We've been using that for suspend/resume for quite some time too, but not
->>>>> for the prepare/complete phases (because we still believe that's not really
->>>>> useful for them). 
->>>>>
->>>>> Well, I'll be handling patches changing code under drivers/base/power,
->>>>> I promise. :-)
->>>>>
->>>>> I've been doing that for quite a few years now ...
->>>> Yes, indeed. Power is one of the most important features on embedded devices.
->>>> Lots of smart phones don't really go through the full cycles of suspend-to-ram.
->>>> We are following the full steps of the suspend.
->>>
->>> But if you go through the code, you'll see that alomost no drivers actually
->>> implemet .prepare() and .complete().  Some subsystems do, but they really don't
->>> take too much time to execute.  Which means that your patches with
->>> initcall_debug will add quite a pile of useless garbage to the kernel log
->> Does that mean we need add more log levels around such info instead of just having or
->> not having?
-> 
-> Since we don't have any code in the tree that causes problems those patches are
-> supposed to catch, I don't see why we need them in the tree.  Would it be
-> viable to keep them out of the tree for the time being and re-submit once
-> there is real need?
+Yep, I see similar results on my AMD F15h.
 
-It's OK with me. I will keep them in my debug tree.
-Thanks all.
+So there's a register which tells you what the current energy
+consumption in Watts is and support for it is integrated in lm_sensors.
+I did one read per second, for the duration of the kernel build (10-r5 +
+tip), with and without the patch, and averaged out the results:
 
-Shuo
+without
+=======
+
+1. 158 samples, avg Watts: 116.915
+2. 158 samples, avg Watts: 116.855
+3. 158 samples, avg Watts: 116.737
+4. 158 samples, avg Watts: 116.792
+
+=> 116.82475 avg Watts.
+
+with
+====
+
+1. 157 samples, avg Watts: 116.496
+2. 156 samples, avg Watts: 117.535
+3. 156 samples, avg Watts: 118.174
+4. 157 samples, avg Watts: 117.95
+
+=> 117.53875 avg Watts.
+
+So there's a slight raise in the average power consumption but the
+samples count drops by 1 or 2, which is consistent with the observed
+kernel build speedup of 1 or 2 seconds.
+
+perf doesn't show any significant difference with and without the patch
+but those are single runs only.
+
+without
+=======
+
+ Performance counter stats for 'make -j9':
+
+    1167856.647713 task-clock                #    7.272 CPUs utilized
+         1,071,177 context-switches          #    0.917 K/sec
+            52,844 cpu-migrations            #    0.045 K/sec
+        43,600,721 page-faults               #    0.037 M/sec
+ 4,712,068,048,465 cycles                    #    4.035 GHz
+ 1,181,730,064,794 stalled-cycles-frontend   #   25.08% frontend cycles idle
+   243,576,229,438 stalled-cycles-backend    #    5.17% backend  cycles idle
+ 2,966,369,010,209 instructions              #    0.63  insns per cycle
+                                             #    0.40  stalled cycles per insn
+   651,136,706,156 branches                  #  557.548 M/sec
+    34,582,447,788 branch-misses             #    5.31% of all branches
+
+     160.599796045 seconds time elapsed
+
+with
+====
+
+ Performance counter stats for 'make -j9':
+
+    1169278.095561 task-clock                #    7.271 CPUs utilized
+         1,076,528 context-switches          #    0.921 K/sec
+            53,284 cpu-migrations            #    0.046 K/sec
+        43,598,610 page-faults               #    0.037 M/sec
+ 4,721,747,687,668 cycles                    #    4.038 GHz
+ 1,182,301,583,422 stalled-cycles-frontend   #   25.04% frontend cycles idle
+   248,675,448,161 stalled-cycles-backend    #    5.27% backend  cycles idle
+ 2,967,419,684,598 instructions              #    0.63  insns per cycle
+                                             #    0.40  stalled cycles per insn
+   651,527,448,140 branches                  #  557.205 M/sec
+    34,560,656,638 branch-misses             #    5.30% of all branches
+
+     160.811815170 seconds time elapsed
+
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
