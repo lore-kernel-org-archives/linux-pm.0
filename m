@@ -1,55 +1,109 @@
-From: Colin Cross <ccross@android.com>
-Subject: Re: [PATCH] cpuidle: fix ARCH_NEEDS_CPU_IDLE_COUPLED dependency warning
-Date: Sun, 9 Jun 2013 14:38:35 -1000
-Message-ID: <CAMbhsRQkiz2Wtsfi6rFcw0vXZM5uFbeuJD+3f4+R+637LCAS5A@mail.gmail.com>
-References: <1370626856-2876-1-git-send-email-daniel.lezcano@linaro.org>
-	<51B21D65.3040604@ti.com>
-	<201306072121.58719.arnd@arndb.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: fix governor start/stop race condition
+Date: Mon, 10 Jun 2013 10:45:21 +0530
+Message-ID: <CAKohpon+-bhn1OkPF24qciQBf=jHMaXsBbF0t6veZdAWYpw0QQ@mail.gmail.com>
+References: <1370764205-3933-1-git-send-email-chenxg@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f169.google.com ([209.85.216.169]:55962 "EHLO
-	mail-qc0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751084Ab3FJAig (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Jun 2013 20:38:36 -0400
-Received: by mail-qc0-f169.google.com with SMTP id c10so2943266qcz.14
-        for <linux-pm@vger.kernel.org>; Sun, 09 Jun 2013 17:38:35 -0700 (PDT)
-In-Reply-To: <201306072121.58719.arnd@arndb.de>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:34061 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215Ab3FJFPW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Jun 2013 01:15:22 -0400
+Received: by mail-ob0-f170.google.com with SMTP id ef5so9528009obb.1
+        for <linux-pm@vger.kernel.org>; Sun, 09 Jun 2013 22:15:21 -0700 (PDT)
+In-Reply-To: <1370764205-3933-1-git-send-email-chenxg@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "patches@linaro.org" <patches@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com
 
-On Fri, Jun 7, 2013 at 9:21 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+On 9 June 2013 13:20, Xiaoguang Chen <chenxg@marvell.com> wrote:
+> cpufreq governor stop and start should be kept in sequence.
+> If not, there will be unexpected behavior, for example:
 >
-> On Friday 07 June 2013, Santosh Shilimkar wrote:
-> > > diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> > > index f49cd51..831e89e 100644
-> > > --- a/arch/arm/mach-omap2/Kconfig
-> > > +++ b/arch/arm/mach-omap2/Kconfig
-> > > @@ -83,7 +83,7 @@ config ARCH_OMAP4
-> > >       depends on ARCH_OMAP2PLUS
-> > >       depends on ARCH_MULTI_V7
-> > >       select ARCH_HAS_OPP
-> > > -     select ARCH_NEEDS_CPU_IDLE_COUPLED if SMP
-> > > +     select ARCH_NEEDS_CPU_IDLE_COUPLED if (SMP && CPU_IDLE)
-> >
-> > I remember Colin mentioning about above dependency is taken care
-> > already in design [1]
+> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+> the normal sequence is as below:
 >
-> It's a matter of how it gets represented in Kconfig. Right now
-> the ARCH_NEEDS_CPU_IDLE_COUPLED symbol has a dependency on CPU_IDLE,
-> so we cannot select it if CPU_IDLE is not set (or get a build time
-> warning).
+> 1) Current governor is userspace, one application tries to set
+> governor to ondemand. it will call __cpufreq_set_policy in which it
+> will stop userspace governor and then start ondemand governor.
 >
-> I originally suggested removing the dependency, but Daniel preferred
-> to leave it there as an explicit dependency so it is required to
-> do this change instead.
+> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
+> call cpufreq_add_policy_cpu. on which it first stops userspace
+> governor, and then starts userspace governor.
+>
+> Now if the sequence of above two cases interleaves, it becames
+> below sequence:
+>
+> 1) application stops userspace governor
+> 2)                                      hotplug stops userspace governor
+> 3) application starts ondemand governor
+> 4)                                      hotplug starts a governor
+>
+> in step 4, hotplug is supposed to start userspace governor, but now
+> the governor has been changed by application to ondemand, so hotplug
+> starts ondemand governor again !!!!
+>
+> The solution is: do not allow stop governor multi-times
+> Governor stop should only do once, after it is stopped,
+> no other governor stop should be executed.
+>
+> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 10 +++++++++-
+>  include/linux/cpufreq.h   |  1 +
+>  2 files changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2d53f47..c8d7cb2 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1562,6 +1562,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>
+>         pr_debug("__cpufreq_governor for CPU %u, event %u\n",
+>                                                 policy->cpu, event);
+> +
+> +       if ((!policy->governor->enabled && (event == CPUFREQ_GOV_STOP)) ||
+> +           (policy->governor->enabled && (event == CPUFREQ_GOV_START)))
+> +               return 0;
+> +
+>         ret = policy->governor->governor(policy, event);
+>
+>         if (!ret) {
+> @@ -1569,6 +1574,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>                         policy->governor->initialized++;
+>                 else if (event == CPUFREQ_GOV_POLICY_EXIT)
+>                         policy->governor->initialized--;
+> +               else if (event == CPUFREQ_GOV_STOP)
+> +                       policy->governor->enabled = 0;
+> +               else if (event == CPUFREQ_GOV_START)
+> +                       policy->governor->enabled = 1;
+>         }
+>
+>         /* we keep one module reference alive for
+> @@ -1581,7 +1590,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>         return ret;
+>  }
+>
+> -
+>  int cpufreq_register_governor(struct cpufreq_governor *governor)
+>  {
+>         int err;
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 037d36a..16c5b70 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -199,6 +199,7 @@ struct cpufreq_governor {
+>                         will fallback to performance governor */
+>         struct list_head        governor_list;
+>         struct module           *owner;
+> +       int enabled;
+>  };
 
-ARCH_NEEDS_CPU_IDLE_COUPLED should never have been moved inside "if
-CPU_IDLE".  It was designed to be outside the CPU_IDLE dependency so
-archs could select it without having to know about its dependencies.
-Just move it back outside if CPU_IDLE in drivers/cpuidle/Kconfig and
-you won't have to mess with every arch that uses it.  If CPU_IDLE=n
-none if it will get compiled, so there is no need for the extra
-dependency.
+This isn't sufficient.
+
+If there are two groups of clk-sharing-cpus, i.e. if we have multiple
+policies and they are using same governor, then these functions
+gets called twice for governor x. And you will return 0 for the second
+policy.
