@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V5 11/30] thermal: exynos: Support thermal tripping
-Date: Tue, 11 Jun 2013 18:23:21 +0530
-Message-ID: <1370955220-2949-12-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V5 12/30] thermal: exynos: Fix to clear only the generated interrupts
+Date: Tue, 11 Jun 2013 18:23:22 +0530
+Message-ID: <1370955220-2949-13-git-send-email-amit.daniel@samsung.com>
 References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
@@ -10,129 +10,62 @@ To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin 
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-TMU urgently sends active-high signal (thermal trip) to PMU, and thermal
-tripping by hardware logic. Thermal tripping means that PMU cuts off the
-whole power of SoC by controlling external voltage regulator.
+This patch uses the TMU status register to know the generated interrupts
+and only clear them in the interrupt handler.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-Signed-off-by: Jonghwan Choi <jhbird.choi@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      |   45 +++++++++++++++++++++++++---
- drivers/thermal/samsung/exynos_tmu_data.c |    2 +
- drivers/thermal/samsung/exynos_tmu_data.h |    2 +
- 3 files changed, 44 insertions(+), 5 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c      |   11 +++++------
+ drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+ 2 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 6fd776f..33f494e 100644
+index 33f494e..f6f63ca 100644
 --- a/drivers/thermal/samsung/exynos_tmu.c
 +++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -117,7 +117,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+@@ -351,17 +351,16 @@ static void exynos_tmu_work(struct work_struct *work)
+ 			struct exynos_tmu_data, irq_work);
  	struct exynos_tmu_platform_data *pdata = data->pdata;
  	const struct exynos_tmu_registers *reg = pdata->registers;
--	unsigned int status, trim_info;
-+	unsigned int status, trim_info = 0, con;
- 	unsigned int rising_threshold = 0, falling_threshold = 0;
- 	int ret = 0, threshold_code, i, trigger_levs = 0;
++	unsigned int val_irq;
  
-@@ -144,10 +144,26 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 			(data->temp_error2 != 0))
- 		data->temp_error1 = pdata->efuse_value;
+ 	exynos_report_trigger();
+ 	mutex_lock(&data->lock);
+ 	clk_enable(data->clk);
  
--	/* Count trigger levels to be enabled */
--	for (i = 0; i < MAX_THRESHOLD_LEVS; i++)
--		if (pdata->trigger_levels[i])
-+	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
-+		dev_err(&pdev->dev, "Invalid max trigger level\n");
-+		goto out;
-+	}
-+
-+	for (i = 0; i < pdata->max_trigger_level; i++) {
-+		if (!pdata->trigger_levels[i])
-+			continue;
-+
-+		if ((pdata->trigger_type[i] == HW_TRIP) &&
-+		(!pdata->trigger_levels[pdata->max_trigger_level - 1])) {
-+			dev_err(&pdev->dev, "Invalid hw trigger level\n");
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+
-+		/* Count trigger levels except the HW trip*/
-+		if (!(pdata->trigger_type[i] == HW_TRIP))
- 			trigger_levs++;
-+	}
+-	if (data->soc == SOC_ARCH_EXYNOS)
+-		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
+-			(reg->inten_fall_mask << reg->inten_fall_shift),
+-				data->base + reg->tmu_intclear);
+-	else
+-		writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
++	/* TODO: take action based on particular interrupt */
++	val_irq = readl(data->base + reg->tmu_intstat);
++	/* clear the interrupts */
++	writel(val_irq, data->base + reg->tmu_intclear);
  
- 	if (data->soc == SOC_ARCH_EXYNOS4210) {
- 		/* Write temperature code for threshold */
-@@ -165,7 +181,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 		writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
- 	} else if (data->soc == SOC_ARCH_EXYNOS) {
- 		/* Write temperature code for rising and falling threshold */
--		for (i = 0; i < trigger_levs; i++) {
-+		for (i = 0;
-+		i < trigger_levs && i < EXYNOS_MAX_TRIGGER_PER_REG; i++) {
- 			threshold_code = temp_to_code(data,
- 						pdata->trigger_levels[i]);
- 			if (threshold_code < 0) {
-@@ -191,6 +208,24 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
- 			(reg->inten_fall_mask << reg->inten_fall_shift),
- 				data->base + reg->tmu_intclear);
-+
-+		/* if last threshold limit is also present */
-+		i = pdata->max_trigger_level - 1;
-+		if (pdata->trigger_levels[i] &&
-+				(pdata->trigger_type[i] == HW_TRIP)) {
-+			threshold_code = temp_to_code(data,
-+						pdata->trigger_levels[i]);
-+			if (threshold_code < 0) {
-+				ret = threshold_code;
-+				goto out;
-+			}
-+			rising_threshold |= threshold_code << 8 * i;
-+			writel(rising_threshold,
-+				data->base + reg->threshold_th0);
-+			con = readl(data->base + reg->tmu_ctrl);
-+			con |= (1 << reg->therm_trip_en_shift);
-+			writel(con, data->base + reg->tmu_ctrl);
-+		}
- 	}
- out:
  	clk_disable(data->clk);
+ 	mutex_unlock(&data->lock);
 diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index 589a519..e7cb1cc 100644
+index e7cb1cc..7fcf183 100644
 --- a/drivers/thermal/samsung/exynos_tmu_data.c
 +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -123,6 +123,7 @@ struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
- 	.trigger_levels[0] = 85,
- 	.trigger_levels[1] = 103,
- 	.trigger_levels[2] = 110,
-+	.trigger_levels[3] = 120,
- 	.trigger_enable[0] = 1,
- 	.trigger_enable[1] = 1,
- 	.trigger_enable[2] = 1,
-@@ -130,6 +131,7 @@ struct exynos_tmu_platform_data const exynos5250_default_tmu_data = {
- 	.trigger_type[0] = THROTTLE_ACTIVE,
- 	.trigger_type[1] = THROTTLE_ACTIVE,
- 	.trigger_type[2] = SW_TRIP,
-+	.trigger_type[3] = HW_TRIP,
- 	.max_trigger_level = 4,
- 	.gain = 8,
- 	.reference_voltage = 16,
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index 0e2244f..4acf070 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -91,6 +91,8 @@
- #define EXYNOS_EMUL_DATA_MASK	0xFF
- #define EXYNOS_EMUL_ENABLE	0x1
- 
-+#define EXYNOS_MAX_TRIGGER_PER_REG	4
-+
- #if defined(CONFIG_CPU_EXYNOS4210)
- extern struct exynos_tmu_platform_data const exynos4210_default_tmu_data;
- #define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
+@@ -45,6 +45,7 @@ static const struct exynos_tmu_registers exynos4210_tmu_registers = {
+ 	.inten_rise1_shift = EXYNOS_TMU_INTEN_RISE1_SHIFT,
+ 	.inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
+ 	.inten_rise3_shift = EXYNOS_TMU_INTEN_RISE3_SHIFT,
++	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
+ 	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
+ };
+ struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
+@@ -112,6 +113,7 @@ static const struct exynos_tmu_registers exynos5250_tmu_registers = {
+ 	.inten_rise2_shift = EXYNOS_TMU_INTEN_RISE2_SHIFT,
+ 	.inten_rise3_shift = EXYNOS_TMU_INTEN_RISE3_SHIFT,
+ 	.inten_fall0_shift = EXYNOS_TMU_INTEN_FALL0_SHIFT,
++	.tmu_intstat = EXYNOS_TMU_REG_INTSTAT,
+ 	.tmu_intclear = EXYNOS_TMU_REG_INTCLEAR,
+ 	.emul_con = EXYNOS_EMUL_CON,
+ 	.emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
 -- 
 1.7.1
