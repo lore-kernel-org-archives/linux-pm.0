@@ -1,39 +1,61 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RESEND][PATCH] cpufreq: stats: Add 'load_table' sysfs file to
- show accumulated data of CPU
-Date: Tue, 11 Jun 2013 15:10:55 +0900
-Message-ID: <51B6BF6F.2000902@samsung.com>
-References: <1370419882-16831-1-git-send-email-cw00.choi@samsung.com>
- <CAKohpon6fgft2KZgy3-w5TxDz=5JsVHhNdTPTF7ZUq9K-kGc3w@mail.gmail.com>
- <51B5C2E4.9060400@samsung.com>
- <CAKohpokSt1=cbeYFo-U_DF5Mr8WOFDkkQbyaHh5DqR0OHh+S7A@mail.gmail.com>
- <51B6B373.7040904@samsung.com>
- <CAKohpomNN=keppPeLLDor_6YpyOO19_fsbWZRE+w33DoVDBprw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] cpuidle: Fix ARCH_NEEDS_CPU_IDLE_COUPLED dependency warning
+Date: Tue, 11 Jun 2013 10:09:45 +0200
+Message-ID: <1370938185-5019-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:20774 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751809Ab3FKGLH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jun 2013 02:11:07 -0400
-In-reply-to: <CAKohpomNN=keppPeLLDor_6YpyOO19_fsbWZRE+w33DoVDBprw@mail.gmail.com>
+Received: from mail-we0-f180.google.com ([74.125.82.180]:43317 "EHLO
+	mail-we0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752380Ab3FKIJr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Jun 2013 04:09:47 -0400
+Received: by mail-we0-f180.google.com with SMTP id w56so5465876wes.25
+        for <linux-pm@vger.kernel.org>; Tue, 11 Jun 2013 01:09:45 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, ccross@android.com
 
-On 06/11/2013 02:22 PM, Viresh Kumar wrote:
-> On 11 June 2013 10:49, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> I will modify this patch according to your comment
->> and then resend it after merged below patch.
->> - [PATCH] cpufreq: stats: Remove CONFIG_CPU_FREQ_STAT_DETAILS
-> Hmm.. Maybe you can sent it without rebasing your patch over mine and
-> we can rebase it over my patch later. So, that you don't end up waiting for
-> my patches to be included.
+Before the commit d6f346f2d2bf511c2c59176121a6e42ce60173a0, the
+ARCH_NEEDS_CPU_IDLE_COUPLED option was not depending on the CPU_IDLE but now
+it has been moved under the CPU_IDLE menuconfig option.
 
-OK, I understand.
+That raises the following warnings:
 
-Thanks,
-Chanwoo Choi
+warning: (ARCH_OMAP4 && ARCH_TEGRA_2x_SOC) selects ARCH_NEEDS_CPU_IDLE_COUPLED
+which has unmet direct dependencies (CPU_IDLE)
+warning: (ARCH_OMAP4 && ARCH_TEGRA_2x_SOC) selects ARCH_NEEDS_CPU_IDLE_COUPLED
+which has unmet direct dependencies (CPU_IDLE)
+
+The tegra2 and omap4 Kconfig files select this option but without checking
+CPU_IDLE is set.
+
+Fix that by moving the option out of the CPU_IDLE option.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/Kconfig |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index a7d2e83..81de5d9 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -29,9 +29,6 @@ config CPU_IDLE_GOV_MENU
+ 	bool "Menu governor (for tickless system)"
+ 	default y
+ 
+-config ARCH_NEEDS_CPU_IDLE_COUPLED
+-	def_bool n
+-
+ config CPU_IDLE_CALXEDA
+ 	bool "CPU Idle Driver for Calxeda processors"
+ 	depends on ARCH_HIGHBANK
+@@ -45,3 +42,6 @@ config CPU_IDLE_ZYNQ
+ 	  Select this to enable cpuidle on Xilinx Zynq processors.
+ 
+ endif
++
++config ARCH_NEEDS_CPU_IDLE_COUPLED
++	def_bool n
+-- 
+1.7.9.5
 
