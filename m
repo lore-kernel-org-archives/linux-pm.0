@@ -1,66 +1,69 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V5 30/30] arm: exynos: enable ARCH_HAS_TMU
-Date: Tue, 11 Jun 2013 18:23:40 +0530
-Message-ID: <1370955220-2949-31-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V5 29/30] ARM: dts: Add device tree node for exynos5440 TMU controller
+Date: Tue, 11 Jun 2013 18:23:39 +0530
+Message-ID: <1370955220-2949-30-git-send-email-amit.daniel@samsung.com>
 References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch enables ARCH_HAS_TMU config for exynos4210, 4212, 4412, 5250
-and 5440 SOC.
+This patch adds device node for TMU controller. There are 3
+instances of the controllers so 3 nodes are created.
 
+Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- arch/arm/mach-exynos/Kconfig |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ arch/arm/boot/dts/exynos5440.dtsi |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index d19edff..2aceaa4 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -33,6 +33,7 @@ config CPU_EXYNOS4210
- 	bool "SAMSUNG EXYNOS4210"
- 	default y
- 	depends on ARCH_EXYNOS4
-+	select ARCH_HAS_TMU
- 	select ARM_CPU_SUSPEND if PM
- 	select PM_GENERIC_DOMAINS
- 	select S5P_PM if PM
-@@ -45,6 +46,7 @@ config SOC_EXYNOS4212
- 	bool "SAMSUNG EXYNOS4212"
- 	default y
- 	depends on ARCH_EXYNOS4
-+	select ARCH_HAS_TMU
- 	select S5P_PM if PM
- 	select S5P_SLEEP if PM
- 	select SAMSUNG_DMADEV
-@@ -55,6 +57,7 @@ config SOC_EXYNOS4412
- 	bool "SAMSUNG EXYNOS4412"
- 	default y
- 	depends on ARCH_EXYNOS4
-+	select ARCH_HAS_TMU
- 	select SAMSUNG_DMADEV
- 	help
- 	  Enable EXYNOS4412 SoC support
-@@ -63,6 +66,7 @@ config SOC_EXYNOS5250
- 	bool "SAMSUNG EXYNOS5250"
- 	default y
- 	depends on ARCH_EXYNOS5
-+	select ARCH_HAS_TMU
- 	select PM_GENERIC_DOMAINS if PM
- 	select S5P_PM if PM
- 	select S5P_SLEEP if PM
-@@ -76,6 +80,7 @@ config SOC_EXYNOS5440
- 	default y
- 	depends on ARCH_EXYNOS5
- 	select ARCH_HAS_OPP
-+	select ARCH_HAS_TMU
- 	select ARM_ARCH_TIMER
- 	select AUTO_ZRELADDR
- 	select PINCTRL
+diff --git a/arch/arm/boot/dts/exynos5440.dtsi b/arch/arm/boot/dts/exynos5440.dtsi
+index f6b1c89..716e90c 100644
+--- a/arch/arm/boot/dts/exynos5440.dtsi
++++ b/arch/arm/boot/dts/exynos5440.dtsi
+@@ -16,6 +16,12 @@
+ 
+ 	interrupt-parent = <&gic>;
+ 
++	aliases {
++		tmuctrl0 = &tmuctrl_0;
++		tmuctrl1 = &tmuctrl_1;
++		tmuctrl2 = &tmuctrl_2;
++	};
++
+ 	clock: clock-controller@0x160000 {
+ 		compatible = "samsung,exynos5440-clock";
+ 		reg = <0x160000 0x1000>;
+@@ -216,4 +222,28 @@
+ 		clock-names = "rtc";
+ 		status = "disabled";
+ 	};
++
++	tmuctrl_0: tmuctrl@160118 {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x160118 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
++
++	tmuctrl_1: tmuctrl@16011C {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x16011C 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
++
++	tmuctrl_2: tmuctrl@160120 {
++		compatible = "samsung,exynos5440-tmu";
++		reg = <0x160120 0x230>, <0x160368 0x10>;
++		interrupts = <0 58 0>;
++		clocks = <&clock 21>;
++		clock-names = "tmu_apbif";
++	};
+ };
 -- 
 1.7.1
