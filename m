@@ -1,55 +1,39 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V5 05/30] thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
-Date: Tue, 11 Jun 2013 18:23:15 +0530
-Message-ID: <1370955220-2949-6-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V5 02/30] thermal: exynos: Add ARCH_HAS_TMU config to know the supported soc's
+Date: Tue, 11 Jun 2013 18:23:12 +0530
+Message-ID: <1370955220-2949-3-git-send-email-amit.daniel@samsung.com>
 References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch renames exynos_thermal.c to exynos_tmu.c. This change is needed as
-this file now just contains exynos tmu driver related codes and thermal zone
-or cpufreq cooling registration related changes are not there anymore.
+This patch adds config sybmol ARCH_HAS_TMU to enable the TMU driver.
+This will allow adding support for new soc easily as now it is the
+platform responsibility to enable this config symbol.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/Makefile                   |    6 +++---
- .../samsung/{exynos_thermal.c => exynos_tmu.c}     |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
- rename drivers/thermal/samsung/{exynos_thermal.c => exynos_tmu.c} (99%)
+ drivers/thermal/samsung/Kconfig |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-index 6227d4f..22528d6 100644
---- a/drivers/thermal/samsung/Makefile
-+++ b/drivers/thermal/samsung/Makefile
-@@ -1,6 +1,6 @@
- #
- # Samsung thermal specific Makefile
- #
--obj-$(CONFIG_EXYNOS_THERMAL)			+= exynos_soc_thermal.o
--exynos_soc_thermal-y				:= exynos_thermal.o
--exynos_soc_thermal-$(CONFIG_EXYNOS_THERMAL_CORE) += exynos_thermal_common.o
-+obj-$(CONFIG_EXYNOS_THERMAL)			+= exynos_thermal.o
-+exynos_thermal-y				:= exynos_tmu.o
-+exynos_thermal-$(CONFIG_EXYNOS_THERMAL_CORE)	+= exynos_thermal_common.o
-diff --git a/drivers/thermal/samsung/exynos_thermal.c b/drivers/thermal/samsung/exynos_tmu.c
-similarity index 99%
-rename from drivers/thermal/samsung/exynos_thermal.c
-rename to drivers/thermal/samsung/exynos_tmu.c
-index 5293849..22a8874 100644
---- a/drivers/thermal/samsung/exynos_thermal.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -1,5 +1,5 @@
- /*
-- * exynos_thermal.c - Samsung EXYNOS TMU (Thermal Management Unit)
-+ * exynos_tmu.c - Samsung EXYNOS TMU (Thermal Management Unit)
-  *
-  *  Copyright (C) 2011 Samsung Electronics
-  *  Donggeun Kim <dg77.kim@samsung.com>
+diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+index 2d3d9dc..145a55d 100644
+--- a/drivers/thermal/samsung/Kconfig
++++ b/drivers/thermal/samsung/Kconfig
+@@ -1,6 +1,9 @@
++config ARCH_HAS_TMU
++	bool
++
+ config EXYNOS_THERMAL
+ 	tristate "Temperature sensor on Samsung EXYNOS"
+-	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
++	depends on ARCH_HAS_TMU
+ 	depends on CPU_THERMAL
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Management
 -- 
 1.7.1
