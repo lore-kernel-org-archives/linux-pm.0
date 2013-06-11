@@ -1,40 +1,67 @@
-From: Rob Landley <rob@landley.net>
-Subject: Re: [PATCH V5 27/30] Documentation: thermal: Explain the exynos
- thermal driver model
-Date: Tue, 11 Jun 2013 12:22:05 -0500
-Message-ID: <1370971325.2776.99@driftwood>
-References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-	<1370955220-2949-28-git-send-email-amit.daniel@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PM / Sleep: Print last wakeup source on failed wakeup_count write
+Date: Wed, 12 Jun 2013 00:00:18 +0200
+Message-ID: <4844834.TBe7kS6ocA@vostro.rjw.lan>
+References: <1369944137-30948-1-git-send-email-jwerner@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1370955220-2949-28-git-send-email-amit.daniel@samsung.com>
-	(from amit.daniel@samsung.com on Tue Jun 11 07:53:37 2013)
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:34438 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755155Ab3FKVvM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 11 Jun 2013 17:51:12 -0400
+In-Reply-To: <1369944137-30948-1-git-send-email-jwerner@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Julius Werner <jwerner@chromium.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Todd Poynor <toddpoynor@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sameer Nanda <snanda@chromium.org>
 
-On 06/11/2013 07:53:37 AM, Amit Daniel Kachhap wrote:
-> This patch updates the documentation to explain the driver model
-> and file layout.
+On Thursday, May 30, 2013 01:02:17 PM Julius Werner wrote:
+> Commit a938da06 introduced a useful little log message to tell
+> users/debuggers which wakeup source aborted a suspend. However, this
+> message is only printed if the abort happens during the in-kernel
+> suspend path (after writing /sys/power/state).
 > 
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> The full specification of the /sys/power/wakeup_count facility allows
+> user-space power managers to double-check if wakeups have already
+> happened before it actually tries to suspend (e.g. while it was running
+> user-space pre-suspend hooks), by writing the last known wakeup_count
+> value to /sys/power/wakeup_count. This patch changes the sysfs handler
+> for that node to also print said log message if that write fails, so
+> that we can figure out the offending wakeup source for both kinds of
+> suspend aborts.
+> 
+> Signed-off-by: Julius Werner <jwerner@chromium.org>
 > ---
->  Documentation/thermal/exynos_thermal |   43  
-> ++++++++++++++++++++++++++-------
->  1 files changed, 34 insertions(+), 9 deletions(-)
-...
-> -TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
-> +TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
->  when temperature exceeds pre-defined levels.
-> -The maximum number of configurable threshold is four.
-> +The maximum number of configurable threshold is five.
+>  drivers/base/power/wakeup.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index 79715e7..b0b7886 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -772,6 +772,8 @@ bool pm_save_wakeup_count(unsigned int count)
+>  		events_check_enabled = true;
+>  	}
+>  	spin_unlock_irqrestore(&events_lock, flags);
+> +	if (!events_check_enabled)
+> +		print_active_wakeup_sources();
 
-Was that a driver change or was that a chipset change that only applies  
-to version 5?
+This is going to be done in the autosleep case too, which I'm slightly
+concerned about.
 
-Rob
+If you wanted to cover /sys/power/wakeup_count only, it would be better
+to put that into wakeup_count_store(), but perhaps you wanted to cover
+autosleep too?
+
+>  	return events_check_enabled;
+>  }
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
