@@ -1,43 +1,94 @@
-From: Mark Langsdorf <mark.langsdorf@calxeda.com>
-Subject: Re: [PATCH 05/11] cpufreq: highbank: remove select CPU_FREQ_TABLE
-Date: Wed, 12 Jun 2013 12:04:49 -0500
-Message-ID: <51B8AA31.30501@calxeda.com>
-References: <cover.1371022830.git.viresh.kumar@linaro.org> <7e4ee3926630a243a8e69835011cf9c6c4673eb9.1371022830.git.viresh.kumar@linaro.org>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: power-efficient scheduling design
+Date: Wed, 12 Jun 2013 18:04:47 +0100
+Message-ID: <20130612170447.GF31646@arm.com>
+References: <20130530134718.GB32728@e103034-lin>
+ <51B221AF.9070906@linux.vnet.ibm.com>
+ <20130608112801.GA8120@MacBook-Pro.local>
+ <1834293.MlyIaiESPL@vostro.rjw.lan>
+ <51B3F99A.4000101@linux.vnet.ibm.com>
+ <51B5FE02.7040607@linaro.org>
+ <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz>
+ <51B7D38A.7050204@linux.intel.com>
+ <20130612102019.GA6976@arm.com>
+ <51B892C4.6090800@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7e4ee3926630a243a8e69835011cf9c6c4673eb9.1371022830.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "robin.randhawa@arm.com" <robin.randhawa@arm.com>, "Steve.Bannister@arm.com" <Steve.Bannister@arm.com>, "Liviu.Dudau@arm.com" <Liviu.Dudau@arm.com>, "charles.garcia-tobin@arm.com" <charles.garcia-tobin@arm.com>, "arvind.chauhan@arm.com" <arvind.chauhan@arm.com>, "arnd@arndb.de" <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.21]:48408 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755021Ab3FLRG7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 13:06:59 -0400
+Content-Disposition: inline
+In-Reply-To: <51B892C4.6090800@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: David Lang <david@lang.hm>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Galbraith <efault@gmx.de>, "pjt@google.com" <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 06/12/2013 03:15 AM, Viresh Kumar wrote:
-> Highbank cpufreq driver doesn't use any APIs from freq_table.c and so must not
-> select CPU_FREQ_TABLE.
+On Wed, Jun 12, 2013 at 04:24:52PM +0100, Arjan van de Ven wrote:
+> >>> This isn't in the fastpath, it's in the rebalancing logic.
+> >>
+> >> the reality is much more complex unfortunately.
+> >> C and P states hang together tightly, and even C state on one core
+> >> impacts other cores' performance, just like P state selection on one
+> >> core impacts other cores.
+> >>
+> >> (at least for x86, we should really stop talking as if the OS picks
+> >> the "frequency", that's just not the case anymore)
+> >
+> > I agree, the reality is very complex. But we should go back and analyse
+> > what problem we are trying to solve, what each framework is trying to
+> > address.
+> >
+> > When viewed separately from the scheduler, cpufreq and cpuidle governors
+> > do the right thing. But they both base their action on the CPU load
+> > (balance) decided by the scheduler and it's the latter that we are
+> > trying to adjust (and we are still debating what the right approach is).
+> >
+> > Since such information seems too complex to be moved into the scheduler,
+> > why don't we get cpufreq in charge of restricting the load balancing to
+> > certain CPUs? It already tracks the load/idle time to (gradually) change
+> > the P state. Depending on the governor/policy, it could decide that (for
 > 
-> Cc: Mark Langsdorf <mark.langsdorf@calxeda.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> (btw in case you missed it, for Intel HW we no longer use cpufreq anymore)
 
-Thanks for catching this.
+Do you mean the intel_pstate.c code? It indeed doesn't use much of
+cpufreq, just setpolicy and it's on its own afterwards. Separating this
+from the framework probably has real benefits for the Intel processors
+but it would make a unified scheduler/cpufreq/cpuidle solution harder
+(just a remark, I don't say it's good or bad, there are many
+opinions against the unified solution; ARM could do the same for
+configurations like big.LITTLE).
 
-Acked-by: Mark Langsdorf <mark.langsdorf@calxeda.com>
+But such driver could still interact with the scheduler to control it's
+load balancing. At a quick look (I'm not familiar with this driver), it
+tracks the per-CPU load and increases or decreases the P-state (similar
+to a cpufreq governor). It could as well track the total load and
+(depending on hardware configuration), get some CPUs in lower
+performance P-state (or even C-state) and tell the scheduler to avoid
+them.
 
-> ---
->  drivers/cpufreq/Kconfig.arm | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 9d7e209..891dd1c 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -57,7 +57,6 @@ config ARM_EXYNOS5440_CPUFREQ
->  config ARM_HIGHBANK_CPUFREQ
->  	tristate "Calxeda Highbank-based"
->  	depends on ARCH_HIGHBANK
-> -	select CPU_FREQ_TABLE
->  	select GENERIC_CPUFREQ_CPU0
->  	select PM_OPP
->  	select REGULATOR
-> 
+One way to control load-balancing ratio is via something like
+arch_scale_freq_power(). We could tweak the scheduler further so that
+something like cpu_power==0 means do not schedule anything there.
+
+So my proposal is to move the load-balancing hints (load ratio, avoiding
+CPUs etc.) outside the scheduler into drivers like intel_pstate.c or
+cpufreq governors. We then focus on getting the best performance out of
+the scheduler (like quicker migration) but it would not be concerned
+with the power consumption.
+
+> I do agree the scheduler needs to get integrated a bit better, in that it
+> has some better knowledge, and to be honest, we likely need to switch from
+> giving tasks credit for "time consumed" to giving them credit for something like
+> "cycles consumed" or "instructions executed" or a mix thereof.
+> So that a task that runs on a slower CPU (for either policy choice reasons or
+> due to hardware capabilities), it gets charged less than when it runs fast.
+
+I agree, this would be useful in optimising the scheduler so that it
+makes the right task placement/migration decisions (but as I said above,
+make the power aspect transparent to the scheduler).
+
+-- 
+Catalin
