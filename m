@@ -1,65 +1,113 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / QOS: correct the valid range of pm_qos_class
-Date: Wed, 12 Jun 2013 13:16:42 +0200
-Message-ID: <2687623.rLBRO7ohLp@vostro.rjw.lan>
-References: <1371016395-20688-1-git-send-email-kpark3469@gmail.com>
+Subject: Re: [PATCH v2 1/3] cpufreq:boost: CPU frequency boost code unification for software and hardware solutions
+Date: Wed, 12 Jun 2013 13:23:20 +0200
+Message-ID: <2535901.EBhXeQ6J8O@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <CAKohpomD1ru3_nqQkUq8EmMjJzR7hrtRNAY=UNPWCDHuVxZfBA@mail.gmail.com> <20130612093938.1cf73c9a@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:34860 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150Ab3FLLHa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Jun 2013 07:07:30 -0400
-In-Reply-To: <1371016395-20688-1-git-send-email-kpark3469@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130612093938.1cf73c9a@amdc308.digital.local>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: kpark3469@gmail.com
-Cc: linux-pm@vger.kernel.org, keun-o.park@windriver.com, len.brown@intel.com
 
-On Wednesday, June 12, 2013 02:53:15 PM kpark3469@gmail.com wrote:
-> From: Sahara <keun-o.park@windriver.com>
+On Wednesday, June 12, 2013 09:39:38 AM Lukasz Majewski wrote:
+> Hi Viresh,
 > 
-> The valid start index for pm_qos_array is not 0 but 1. There is a
-> null_pm_qos at index 0 of pm_qos_array. However, null_pm_qos is not
-> created as misc device so that inclusion of 0 index for checking
-> pm_qos_class especially for file operations is not proper here.
+> > Hi,
+> > 
+> > Change subject to: "cpufreq: Add boost frequency support in core"
 > 
-> Signed-off-by: Sahara <keun-o.park@windriver.com>
-> ---
->  kernel/power/qos.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> Ok.
 > 
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index 587ddde..ec6f0a7 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -477,7 +477,7 @@ static int find_pm_qos_object_by_minor(int minor)
->  {
->  	int pm_qos_class;
->  
-> -	for (pm_qos_class = 0;
-> +	for (pm_qos_class = 1;
+> > 
+> > On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > > This commit adds support for software based frequency boosting.
+> > 
+> > No. It adds support for both software and hardware boosting. So just
+> > write: This commit adds boost frequency support in cpufreq core
+> > (Hardware & Software).
+> 
+> Ok.
+> > 
+> > > Some SoC (like Exynos4 - e.g. 4x12) allow setting frequency above
+> > > its normal condition limits. Such a change shall be only done for a
+> > > short
+> > 
+> > s/condition/operation
+> > s/change/mode
+> > s/done/used
+> > 
+> 
+> Ok.
+> 
+> > > time.
+> > >
+> > > Overclocking (boost) support is essentially provided by platform
+> > > dependent cpufreq driver.
+> > >
+> > > This commit unifies support for SW and HW (Intel) over clocking
+> > > solutions in the core cpufreq driver. Previously the "boost" sysfs
+> > > attribute was defined at acpi driver code.
+> > > By default boost is disabled. One global attribute is available at:
+> > > /sys/devices/system/cpu/cpufreq/boost.
+> > 
+> > Enter a blank line here.
+> 
+> Ok
+> 
+> > 
+> > > It only shows up when cpufreq driver supports overclocking.
+> > > Under the hood frequencies dedicated for boosting are marked with a
+> > > special flag (CPUFREQ_BOOST_FREQ) at driver's frequency table.
+> > > It is the user's concern to enable/disable overclocking with proper
+> > > call to sysfs.
+> > 
+> > Good.
+> > 
+> > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > >
+> > > --- 
+>     ^^^^
+> [*] this --- was added manually by me.
+> 
+> > > Changes for v2:
+> > > - Removal of cpufreq_boost structure and move its fields to
+> > > cpufreq_driver structure
+> > > - Flag to indicate if global boost attribute is already defined
+> > > - Extent the pr_{err|debbug} functions to show current function
+> > > names ---
+> > 
+> > You don't have to manually add "---" here. Just keep a blank line
+> > instead.
+> 
+> One "---" is added by git automatically. The [*] was added to distinct
+> the changelog from rest of the commit. At least older versions of GIT
+> required this to not include changelog to commit messages.
 
-While you're at it, can you please use PM_QOS_CPU_DMA_LATENCY instead of 1
-here and below?
+Which doesn't matter anyway.  None of them will show up in git log, so don't
+worry. :-)
 
+[...]
+
+> 
+> > And so we must have used
+> > boost_en here.
+> 
+> boost_en has two meanings:
+> 0 - either boost disabled or not supported (when low_level_boost=NULL).
+> 1 - boost is enabled.
+
+Gosh, please don't do that.  Use *two* flags, one meaning "supported" and the
+second meaning "enabled".
+
+Thanks,
 Rafael
 
 
->  		pm_qos_class < PM_QOS_NUM_CLASSES; pm_qos_class++) {
->  		if (minor ==
->  			pm_qos_array[pm_qos_class]->pm_qos_power_miscdev.minor)
-> @@ -491,7 +491,7 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
->  	long pm_qos_class;
->  
->  	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
-> -	if (pm_qos_class >= 0) {
-> +	if (pm_qos_class >= 1) {
->  		struct pm_qos_request *req = kzalloc(sizeof(*req), GFP_KERNEL);
->  		if (!req)
->  			return -ENOMEM;
-> 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
