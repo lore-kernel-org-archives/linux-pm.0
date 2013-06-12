@@ -1,51 +1,96 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 8/8] cpuidle: Check the device is not already registered
-Date: Wed, 12 Jun 2013 15:08:55 +0200
-Message-ID: <1371042535-22630-8-git-send-email-daniel.lezcano@linaro.org>
-References: <1371042535-22630-1-git-send-email-daniel.lezcano@linaro.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v2 2/2] PM / AVS: SmartReflex/class3: Fix order of
+ initialization of SR class and SR driver
+Date: Wed, 12 Jun 2013 06:32:31 -0700
+Message-ID: <20130612133231.GQ8164@atomide.com>
+References: <1370339913-16135-1-git-send-email-andrii.tseglytskyi@ti.com>
+ <1370339913-16135-3-git-send-email-andrii.tseglytskyi@ti.com>
+ <87fvwpdfab.fsf@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f46.google.com ([74.125.82.46]:42860 "EHLO
-	mail-wg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483Ab3FLNJH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 09:09:07 -0400
-Received: by mail-wg0-f46.google.com with SMTP id c11so3400186wgh.25
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2013 06:09:06 -0700 (PDT)
-In-Reply-To: <1371042535-22630-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:61368 "EHLO
+	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529Ab3FLNce (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 09:32:34 -0400
+Content-Disposition: inline
+In-Reply-To: <87fvwpdfab.fsf@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
+To: Kevin Hilman <khilman@linaro.org>
+Cc: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>, j-keerthy@ti.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 
-Add a sanity check for cpuidle_register_device by testing if the device
-was already registered or not.
+* Kevin Hilman <khilman@linaro.org> [130610 10:58]:
+> Andrii Tseglytskyi <andrii.tseglytskyi@ti.com> writes:
+> 
+> > SmartReflex consists of three entities: SR device, SR class and
+> > SR driver. SmartReflex driver depends on SmartReflex class, but
+> > order of their initialization is not clear. They both use
+> > late_initcall(), and order depends on Makefile calls.
+> > Patch moves initialization of SR class to device_initcall(),
+> > and removes redundant call of sr_late_init().
+> >
+> > This provides predictable order of SmartReflex initcalls:
+> > 1. device_initcall() -> SmartReflex class init
+> > 2. late_initcall() -> SmartReflex driver init
+> >
+> > Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+> 
+> Tony will have to decide on whether he's OK with the initcall changes.
+> 
+> I can queue this with the rest of the AVS changes with Tony's ack.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/cpuidle/cpuidle.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+I'd rather not make anything earlier, relying on the Makefile is just
+fine here. These pieces are always compiled in too. The reason why
+we should only minimal things initialized earlier than module_init
+is that this way we have a proper console initialized and see real
+error messages without having to have DEBUG_LL + earlyprintk enabled.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 7c3f625..59b697877 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -400,13 +400,16 @@ static int __cpuidle_register_device(struct cpuidle_device *dev)
-  */
- int cpuidle_register_device(struct cpuidle_device *dev)
- {
--	int ret;
-+	int ret = -EBUSY;
+If anything else is needed, you have have just one late_initcall
+that checks the return values of the various SR related init functions
+to make sure all the dependencies are met.
+
+Regards,
+
+Tony
  
- 	if (!dev)
- 		return -EINVAL;
- 
- 	mutex_lock(&cpuidle_lock);
- 
-+	if (dev->registered)
-+		goto out_unlock;
-+
- 	ret = __cpuidle_device_init(dev);
- 	if (ret)
- 		goto out_unlock;
--- 
-1.7.9.5
-
+> >  arch/arm/mach-omap2/smartreflex-class3.c |    2 +-
+> >  drivers/power/avs/smartreflex.c          |    9 ---------
+> >  2 files changed, 1 insertion(+), 10 deletions(-)
+> >
+> > diff --git a/arch/arm/mach-omap2/smartreflex-class3.c b/arch/arm/mach-omap2/smartreflex-class3.c
+> > index aee3c89..50523b8 100644
+> > --- a/arch/arm/mach-omap2/smartreflex-class3.c
+> > +++ b/arch/arm/mach-omap2/smartreflex-class3.c
+> > @@ -59,4 +59,4 @@ static int __init sr_class3_init(void)
+> >  	pr_info("SmartReflex Class3 initialized\n");
+> >  	return sr_register_class(&class3_data);
+> >  }
+> > -omap_late_initcall(sr_class3_init);
+> > +omap_device_initcall(sr_class3_init);
+> > diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+> > index fd71d5a..42eed34 100644
+> > --- a/drivers/power/avs/smartreflex.c
+> > +++ b/drivers/power/avs/smartreflex.c
+> > @@ -650,8 +650,6 @@ void sr_disable(struct voltagedomain *voltdm)
+> >   */
+> >  int sr_register_class(struct omap_sr_class_data *class_data)
+> >  {
+> > -	struct omap_sr *sr_info;
+> > -
+> >  	if (!class_data) {
+> >  		pr_warning("%s:, Smartreflex class data passed is NULL\n",
+> >  			__func__);
+> > @@ -666,13 +664,6 @@ int sr_register_class(struct omap_sr_class_data *class_data)
+> >  
+> >  	sr_class = class_data;
+> >  
+> > -	/*
+> > -	 * Call into late init to do intializations that require
+> > -	 * both sr driver and sr class driver to be initiallized.
+> > -	 */
+> > -	list_for_each_entry(sr_info, &sr_list, node)
+> > -		sr_late_init(sr_info);
+> > -
+> >  	return 0;
+> >  }
