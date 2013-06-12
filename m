@@ -1,49 +1,136 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH 06/11] cpufreq: imx: select CPU_FREQ_TABLE
-Date: Wed, 12 Jun 2013 19:38:18 +0800
-Message-ID: <20130612113817.GC13274@S2101-09.ap.freescale.net>
-References: <cover.1371022830.git.viresh.kumar@linaro.org>
- <7568bf22f9e40425bb0fe86cd6f44c4dc2d0c7c5.1371022830.git.viresh.kumar@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 1/3] cpufreq:boost: CPU frequency boost code unification
+ for software and hardware solutions
+Date: Wed, 12 Jun 2013 13:40:23 +0200
+Message-ID: <20130612134023.5f151a98@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <CAKohpomD1ru3_nqQkUq8EmMjJzR7hrtRNAY=UNPWCDHuVxZfBA@mail.gmail.com>
+ <20130612093938.1cf73c9a@amdc308.digital.local>
+ <2535901.EBhXeQ6J8O@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db8lp0188.outbound.messaging.microsoft.com ([213.199.154.188]:51464
-	"EHLO db8outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756319Ab3FLLh7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 07:37:59 -0400
-Content-Disposition: inline
-In-Reply-To: <7568bf22f9e40425bb0fe86cd6f44c4dc2d0c7c5.1371022830.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <2535901.EBhXeQ6J8O@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de
 
-On Wed, Jun 12, 2013 at 01:45:13PM +0530, Viresh Kumar wrote:
-> CPUFreq driver of this platform uses APIs from freq_table.c and so must select
-> CPU_FREQ_TABLE.
+On Wed, 12 Jun 2013 13:23:20 +0200, Rafael J. Wysocki wrote:
+
+Hi Rafael,
+
+> On Wednesday, June 12, 2013 09:39:38 AM Lukasz Majewski wrote:
+> > Hi Viresh,
+> > 
+> > > Hi,
+> > > 
+> > > Change subject to: "cpufreq: Add boost frequency support in core"
+> > 
+> > Ok.
+> > 
+> > > 
+> > > On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com>
+> > > wrote:
+> > > > This commit adds support for software based frequency boosting.
+> > > 
+> > > No. It adds support for both software and hardware boosting. So
+> > > just write: This commit adds boost frequency support in cpufreq
+> > > core (Hardware & Software).
+> > 
+> > Ok.
+> > > 
+> > > > Some SoC (like Exynos4 - e.g. 4x12) allow setting frequency
+> > > > above its normal condition limits. Such a change shall be only
+> > > > done for a short
+> > > 
+> > > s/condition/operation
+> > > s/change/mode
+> > > s/done/used
+> > > 
+> > 
+> > Ok.
+> > 
+> > > > time.
+> > > >
+> > > > Overclocking (boost) support is essentially provided by platform
+> > > > dependent cpufreq driver.
+> > > >
+> > > > This commit unifies support for SW and HW (Intel) over clocking
+> > > > solutions in the core cpufreq driver. Previously the "boost"
+> > > > sysfs attribute was defined at acpi driver code.
+> > > > By default boost is disabled. One global attribute is available
+> > > > at: /sys/devices/system/cpu/cpufreq/boost.
+> > > 
+> > > Enter a blank line here.
+> > 
+> > Ok
+> > 
+> > > 
+> > > > It only shows up when cpufreq driver supports overclocking.
+> > > > Under the hood frequencies dedicated for boosting are marked
+> > > > with a special flag (CPUFREQ_BOOST_FREQ) at driver's frequency
+> > > > table. It is the user's concern to enable/disable overclocking
+> > > > with proper call to sysfs.
+> > > 
+> > > Good.
+> > > 
+> > > > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > > > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> > > >
+> > > > --- 
+> >     ^^^^
+> > [*] this --- was added manually by me.
+> > 
+> > > > Changes for v2:
+> > > > - Removal of cpufreq_boost structure and move its fields to
+> > > > cpufreq_driver structure
+> > > > - Flag to indicate if global boost attribute is already defined
+> > > > - Extent the pr_{err|debbug} functions to show current function
+> > > > names ---
+> > > 
+> > > You don't have to manually add "---" here. Just keep a blank line
+> > > instead.
+> > 
+> > One "---" is added by git automatically. The [*] was added to
+> > distinct the changelog from rest of the commit. At least older
+> > versions of GIT required this to not include changelog to commit
+> > messages.
 > 
-> Cc: Shawn Guo <shawn.guo@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Which doesn't matter anyway.  None of them will show up in git log,
+> so don't worry. :-)
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+:-)
 
-> ---
->  drivers/cpufreq/Kconfig.arm | 1 +
->  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 891dd1c..dc26303 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -72,6 +72,7 @@ config ARM_IMX6Q_CPUFREQ
->  	tristate "Freescale i.MX6Q cpufreq support"
->  	depends on SOC_IMX6Q
->  	depends on REGULATOR_ANATOP
-> +	select CPU_FREQ_TABLE
->  	help
->  	  This adds cpufreq driver support for Freescale i.MX6Q SOC.
->  
-> -- 
-> 1.7.12.rc2.18.g61b472e
+> [...]
+> 
+> > 
+> > > And so we must have used
+> > > boost_en here.
+> > 
+> > boost_en has two meanings:
+> > 0 - either boost disabled or not supported (when
+> > low_level_boost=NULL). 1 - boost is enabled.
+> 
+> Gosh, please don't do that.  Use *two* flags, one meaning "supported"
+> and the second meaning "enabled".
+
+That was already pointed out by Viresh. I will stick to his
+guidelines :-).
+
+> 
+> Thanks,
+> Rafael
+> 
 > 
 
+
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
