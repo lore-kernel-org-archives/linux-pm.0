@@ -1,57 +1,40 @@
-From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
-Subject: Re: [PATCH v2 2/2] PM / AVS: SmartReflex/class3: Fix order of initialization
- of SR class and SR driver
-Date: Wed, 12 Jun 2013 18:33:29 +0300
-Message-ID: <51B894C9.4070308@ti.com>
-References: <1370339913-16135-1-git-send-email-andrii.tseglytskyi@ti.com> <1370339913-16135-3-git-send-email-andrii.tseglytskyi@ti.com> <87fvwpdfab.fsf@linaro.org> <20130612133231.GQ8164@atomide.com>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
+Date: Wed, 12 Jun 2013 09:50:14 -0600
+Message-ID: <51B898B6.8070103@wwwdotorg.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org> <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20130612133231.GQ8164@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Kevin Hilman <khilman@linaro.org>, j-keerthy@ti.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Stephen Warren <swarren@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/12/2013 04:32 PM, Tony Lindgren wrote:
-> * Kevin Hilman <khilman@linaro.org> [130610 10:58]:
->> Andrii Tseglytskyi <andrii.tseglytskyi@ti.com> writes:
->>
->>> SmartReflex consists of three entities: SR device, SR class and
->>> SR driver. SmartReflex driver depends on SmartReflex class, but
->>> order of their initialization is not clear. They both use
->>> late_initcall(), and order depends on Makefile calls.
->>> Patch moves initialization of SR class to device_initcall(),
->>> and removes redundant call of sr_late_init().
->>>
->>> This provides predictable order of SmartReflex initcalls:
->>> 1. device_initcall() -> SmartReflex class init
->>> 2. late_initcall() -> SmartReflex driver init
->>>
->>> Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
->> Tony will have to decide on whether he's OK with the initcall changes.
->>
->> I can queue this with the rest of the AVS changes with Tony's ack.
-> I'd rather not make anything earlier, relying on the Makefile is just
-> fine here. These pieces are always compiled in too. The reason why
-> we should only minimal things initialized earlier than module_init
-> is that this way we have a proper console initialized and see real
-> error messages without having to have DEBUG_LL + earlyprintk enabled.
->
-> If anything else is needed, you have have just one late_initcall
-> that checks the return values of the various SR related init functions
-> to make sure all the dependencies are met.
->
-> Regards,
->
-> Tony
->   
->
-Hi Tony,
+On 06/12/2013 02:15 AM, Viresh Kumar wrote:
+> ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
+> of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
+> uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
+> 
+> This also removes select CPU_FREQ_TABLE from individual tegra variants.
 
-Thank you for your comment - it sounds reasonable.
-Patch can be dropped from this patch series.
+I guess the real issue here is that drivers/cpufreq/tegra-cpufreq.c gets
+built based on ARCH_TEGRA, which doesn't depend on nor select CPU_FREQ
+itself, so:
 
-Regards,
-Andrii
+	select CPU_FREQ_TABLE if CPU_FREQ
+
+... isn't guaranteed to fire.
+
+The correct solution seems to be:
+
+* Add CONFIG_ARM_TEGRA_CPUFREQ to drivers/cpufreq/Kconfig.arm.
+* Make that Kconfig option selct CPU_FREQ_TABLE.
+* Make that Kconfig option be def_bool ARCH_TEGRA.
+* Modify drivers/cpufreq/Makefile to build tegra-cpufreq.c based on that.
+* Remove all the cpufreq-related stuff from arch/arm/mach-tegra/Kconfig.
+
+That way, tegra-cpufreq.c can't be built if !CPU_FREQ, and Tegra's
+cpufreq works the same way as all the other cpufreq drivers.
