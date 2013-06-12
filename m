@@ -1,78 +1,96 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCHv3 2/6] arm: introduce config HAS_BANDGAP
-Date: Wed, 12 Jun 2013 10:07:34 -0700
-Message-ID: <20130612170733.GK8164@atomide.com>
-References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
- <1370637968-23299-3-git-send-email-eduardo.valentin@ti.com>
+From: David Lang <david@lang.hm>
+Subject: Re: power-efficient scheduling design
+Date: Wed, 12 Jun 2013 09:22:06 -0700 (PDT)
+Message-ID: <alpine.DEB.2.02.1306120916300.5954@nftneq.ynat.uz>
+References: <20130530134718.GB32728@e103034-lin> <51B221AF.9070906@linux.vnet.ibm.com> <20130608112801.GA8120@MacBook-Pro.local> <1834293.MlyIaiESPL@vostro.rjw.lan> <51B3F99A.4000101@linux.vnet.ibm.com> <51B5FE02.7040607@linaro.org>
+ <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz> <51B7D38A.7050204@linux.intel.com> <CAP245DUbGe5yp4-XoTg-imkAFNQzQrrX_UV3RRqr1dq_2GSPhg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:54712 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754494Ab3FLRHh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 13:07:37 -0400
-Content-Disposition: inline
-In-Reply-To: <1370637968-23299-3-git-send-email-eduardo.valentin@ti.com>
+Received: from mail.lang.hm ([64.81.33.126]:55512 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755388Ab3FLRYr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 13:24:47 -0400
+In-Reply-To: <CAP245DUbGe5yp4-XoTg-imkAFNQzQrrX_UV3RRqr1dq_2GSPhg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: grant.likely@linaro.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Fabio Stevam <festevam@gmail.com>
+To: Amit Kucheria <amit.kucheria@linaro.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Mike Galbraith <efault@gmx.de>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, "pjt@google.com" <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 
-* Eduardo Valentin <eduardo.valentin@ti.com> [130607 13:53]:
-> Bandgap is a device used to measure temperature on
-> electronic equipments. It is widely used in digital
-> integrated circuits. It is based on the dependency
-> between silicon voltage and temperature.
-> 
-> This patch introduce HAS_BANDGAP config entry.
-> This config is a boolean value so that arch
-> code can flag if they feature a bandgap device.
-> 
-> This config entry follows the same idea behind
-> ARCH_HAS_CPUFREQ.
+On Wed, 12 Jun 2013, Amit Kucheria wrote:
 
-I suggest you add this to Russell's patch system:
+> On Wed, Jun 12, 2013 at 7:18 AM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+>> On 6/11/2013 5:27 PM, David Lang wrote:
+>>>
+>>>
+>>> Nobody is saying that this sort of thing should be in the fastpath of the
+>>> scheduler.
+>>>
+>>> But if the scheduler has a table that tells it the possible states, and
+>>> the cost to get from the current state to each of these states (and to get
+>>> back and/or wake up to
+>>> full power), then the scheduler can make the decision on what to do,
+>>> invoke a routine to make the change (and in the meantime, not be fighting
+>>> the change by trying to
+>>> schedule processes on a core that's about to be powered off), and then
+>>> when the change happens, the scheduler will have a new version of the table
+>>> of possible states and costs
+>>>
+>>> This isn't in the fastpath, it's in the rebalancing logic.
+>>
+>>
+>> the reality is much more complex unfortunately.
+>> C and P states hang together tightly, and even C state on
+>> one core impacts other cores' performance, just like P state selection
+>> on one core impacts other cores.
+>>
+>> (at least for x86, we should really stop talking as if the OS picks the
+>> "frequency",
+>> that's just not the case anymore)
+>
+> This is true of ARM platforms too. As Daniel pointed out in an earlier
+> email, the operating point (frequency, voltage) has a bearing on the
+> c-state latency too.
+>
+> An additional complexity is thermal constraints. E.g. On a quad-core
+> Cortex-A15 processor capable of say 1.5GHz, you won't be able to run
+> all 4 cores at that speed for very long w/o exceeding the thermal
+> envelope. These overdrive frequencies (turbo in x86-speak) impact the
+> rest of the system by either constraining the frequency of other cores
+> or requiring aggresive thermal management.
+>
+> Do we really want to track these details in the scheduler or just let
+> the scheduler provide notifications to the existing subsystems
+> (cpufreq, cpuidle, thermal, etc.) with some sort of feedback going
+> back to the scheduler to influence future decisions?
+>
+> Feeback to the scheduler could be something like the following (pardon
+> the names):
+>
+> 1. ISOLATE_CORE: Don't schedule anything on this core - cpuidle might
+> use this to synchronise cores for a cluster shutdown, thermal
+> framework could use this as idle injection to reduce temperature
+> 2. CAP_CAPACITY: Don't expect cpufreq to raise the frequency on this
+> core - cpufreq might use this to cap overall energy since overdrive
+> operating points are very expensive, thermal might use this to slow
+> down rate of increase of die temperature
 
-Acked-by: Tony Lindgren <tony@atomide.com>
- 
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Fabio Stevam <festevam@gmail.com>
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  arch/arm/Kconfig            | 3 +++
->  arch/arm/mach-omap2/Kconfig | 1 +
->  2 files changed, 4 insertions(+)
-> 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index d423d58..bcbdec9 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -174,6 +174,9 @@ config ARCH_HAS_CPUFREQ
->  	  and that the relevant menu configurations are displayed for
->  	  it.
->  
-> +config ARCH_HAS_BANDGAP
-> +	bool
-> +
->  config GENERIC_HWEIGHT
->  	bool
->  	default y
-> diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-> index f49cd51..8620ab5 100644
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -4,6 +4,7 @@ config ARCH_OMAP
->  config ARCH_OMAP2PLUS
->  	bool "TI OMAP2/3/4/5 SoCs with device tree support" if (ARCH_MULTI_V6 || ARCH_MULTI_V7)
->  	select ARCH_HAS_CPUFREQ
-> +	select ARCH_HAS_BANDGAP
->  	select ARCH_HAS_HOLES_MEMORYMODEL
->  	select ARCH_OMAP
->  	select ARCH_REQUIRE_GPIOLIB
-> -- 
-> 1.8.2.1.342.gfa7285d
-> 
+How much data are you going to have to move back and forth between the different 
+systems?
+
+do you really only want the all-or-nothing "use this core as much as possible" 
+vs "don't use this core at all"? or do you need the ability to indicate how much 
+to use a particular core (something that is needed anyway for asymetrical cores 
+I think)
+
+If there is too much information that needs to be moved back and forth between 
+these 'subsystems' for the 'right' thing to happen, then it would seem like it 
+makes more sense to combine them.
+
+Even combined, there are parts that are still pretty modular (like the details 
+of shifting from one state to another, and the different high level strategies 
+to follow for different modes of operation), but having access to all the 
+information rather than only bits and pieces of the information at lower 
+granularity would seem like an improvement.
+
+David Lang
