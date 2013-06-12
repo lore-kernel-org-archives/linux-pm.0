@@ -1,27 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4] cpufreq: fix governor start/stop race condition
-Date: Wed, 12 Jun 2013 15:01:23 +0530
-Message-ID: <CAKohponeWuaXPah4s9GjO-fLwQNuyKidUFosN1iE+e7bngDPdQ@mail.gmail.com>
-References: <1371028189-15758-1-git-send-email-chenxg@marvell.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: power-efficient scheduling design
+Date: Wed, 12 Jun 2013 15:18:39 +0530
+Message-ID: <CAP245DUbGe5yp4-XoTg-imkAFNQzQrrX_UV3RRqr1dq_2GSPhg@mail.gmail.com>
+References: <20130530134718.GB32728@e103034-lin>
+	<51B221AF.9070906@linux.vnet.ibm.com>
+	<20130608112801.GA8120@MacBook-Pro.local>
+	<1834293.MlyIaiESPL@vostro.rjw.lan>
+	<51B3F99A.4000101@linux.vnet.ibm.com>
+	<51B5FE02.7040607@linaro.org>
+	<alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz>
+	<51B7D38A.7050204@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f48.google.com ([209.85.219.48]:34386 "EHLO
-	mail-oa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753506Ab3FLJbX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 05:31:23 -0400
-Received: by mail-oa0-f48.google.com with SMTP id f4so4920077oah.7
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2013 02:31:23 -0700 (PDT)
-In-Reply-To: <1371028189-15758-1-git-send-email-chenxg@marvell.com>
+Received: from mail-qe0-f53.google.com ([209.85.128.53]:35282 "EHLO
+	mail-qe0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752324Ab3FLJsk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 05:48:40 -0400
+Received: by mail-qe0-f53.google.com with SMTP id 1so5427625qee.40
+        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2013 02:48:39 -0700 (PDT)
+In-Reply-To: <51B7D38A.7050204@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: rjw@sisk.pl, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: David Lang <david@lang.hm>, "len.brown@intel.com" <len.brown@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Mike Galbraith <efault@gmx.de>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, "pjt@google.com" <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
 
-On 12 June 2013 14:39, Xiaoguang Chen <chenxg@marvell.com> wrote:
+On Wed, Jun 12, 2013 at 7:18 AM, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> On 6/11/2013 5:27 PM, David Lang wrote:
+>>
+>>
+>> Nobody is saying that this sort of thing should be in the fastpath of the
+>> scheduler.
+>>
+>> But if the scheduler has a table that tells it the possible states, and
+>> the cost to get from the current state to each of these states (and to get
+>> back and/or wake up to
+>> full power), then the scheduler can make the decision on what to do,
+>> invoke a routine to make the change (and in the meantime, not be fighting
+>> the change by trying to
+>> schedule processes on a core that's about to be powered off), and then
+>> when the change happens, the scheduler will have a new version of the table
+>> of possible states and costs
+>>
+>> This isn't in the fastpath, it's in the rebalancing logic.
+>
+>
+> the reality is much more complex unfortunately.
+> C and P states hang together tightly, and even C state on
+> one core impacts other cores' performance, just like P state selection
+> on one core impacts other cores.
+>
+> (at least for x86, we should really stop talking as if the OS picks the
+> "frequency",
+> that's just not the case anymore)
 
->         ret = policy->governor->governor(policy, event);
+This is true of ARM platforms too. As Daniel pointed out in an earlier
+email, the operating point (frequency, voltage) has a bearing on the
+c-state latency too.
 
-We again reached to the same problem. We shouldn't call
-this between taking locks, otherwise recursive locks problems
-would be seen again.
+An additional complexity is thermal constraints. E.g. On a quad-core
+Cortex-A15 processor capable of say 1.5GHz, you won't be able to run
+all 4 cores at that speed for very long w/o exceeding the thermal
+envelope. These overdrive frequencies (turbo in x86-speak) impact the
+rest of the system by either constraining the frequency of other cores
+or requiring aggresive thermal management.
+
+Do we really want to track these details in the scheduler or just let
+the scheduler provide notifications to the existing subsystems
+(cpufreq, cpuidle, thermal, etc.) with some sort of feedback going
+back to the scheduler to influence future decisions?
+
+Feeback to the scheduler could be something like the following (pardon
+the names):
+
+1. ISOLATE_CORE: Don't schedule anything on this core - cpuidle might
+use this to synchronise cores for a cluster shutdown, thermal
+framework could use this as idle injection to reduce temperature
+2. CAP_CAPACITY: Don't expect cpufreq to raise the frequency on this
+core - cpufreq might use this to cap overall energy since overdrive
+operating points are very expensive, thermal might use this to slow
+down rate of increase of die temperature
+
+Regards,
+Amit
