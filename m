@@ -1,56 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RESEND][PATCH] cpufreq: stats: Add 'load_table' sysfs file to show accumulated data of CPU
-Date: Wed, 12 Jun 2013 13:05:09 +0200
-Message-ID: <2801243.ZfLEluCnpU@vostro.rjw.lan>
-References: <1370419882-16831-1-git-send-email-cw00.choi@samsung.com> <11735265.3zXb8Z81XT@vostro.rjw.lan> <CAKohpomwDonECPOPoSZvrOS+mRyNARX4Sk1XoEAGLXrOQQjYjA@mail.gmail.com>
+Subject: Re: [PATCH] PM / Sleep: Print last wakeup source on failed wakeup_count write
+Date: Wed, 12 Jun 2013 13:08:30 +0200
+Message-ID: <2495031.eoWHqoAo1O@vostro.rjw.lan>
+References: <1369944137-30948-1-git-send-email-jwerner@chromium.org> <4844834.TBe7kS6ocA@vostro.rjw.lan> <CAODwPW9gt_E_rtVhk4bMO_EnGaLbRqca0xQosQBc7KuEtEDQXQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:34837 "EHLO hydra.sisk.pl"
+Received: from hydra.sisk.pl ([212.160.235.94]:34841 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751382Ab3FLKz5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Jun 2013 06:55:57 -0400
-In-Reply-To: <CAKohpomwDonECPOPoSZvrOS+mRyNARX4Sk1XoEAGLXrOQQjYjA@mail.gmail.com>
+	id S1754302Ab3FLK7S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 06:59:18 -0400
+In-Reply-To: <CAODwPW9gt_E_rtVhk4bMO_EnGaLbRqca0xQosQBc7KuEtEDQXQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+To: Julius Werner <jwerner@chromium.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Todd Poynor <toddpoynor@google.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Sameer Nanda <snanda@chromium.org>
 
-On Wednesday, June 12, 2013 09:32:16 AM Viresh Kumar wrote:
-> On 12 June 2013 03:44, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Wednesday, June 05, 2013 05:11:22 PM Chanwoo Choi wrote:
-> >> This patch add new sysfs file to show previous accumulated data of CPU load
-> >> as following path. This sysfs file is used to judge the correct system state
-> >> or determine suitable system resource on user-space.
-> >> - /sys/devices/system/cpu/cpu0/cpufreq/stats/load_table
-> >>
-> >> This sysfs file include following data:
-> >> - Measurement point of time
-> >> - CPU frequency
-> >> - Per-CPU load
-> >>
-> >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> >> Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
-> >> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+On Tuesday, June 11, 2013 04:17:35 PM Julius Werner wrote:
+> > This is going to be done in the autosleep case too, which I'm slightly
+> > concerned about.
 > >
-> > Well, first of all, there is the "one value per file" rule for sysfs attributes
-> > which is evidently violated by this code.
+> > If you wanted to cover /sys/power/wakeup_count only, it would be better
+> > to put that into wakeup_count_store(), but perhaps you wanted to cover
+> > autosleep too?
+> >
 > 
-> Even this was enclosed in CONFIG_CPU_FREQ_STAT_DETAILS,
-> so even sysfs isn't that bad as we already had something similar here.
+> Hmm... no, I did not really take the autosleep case into account. I can't
+> quite tell with what frequency the autosleep try_to_suspend() handler on an
+> active system would run... do you think it might be a useful feature to
+> have there, or would it lead to logspam?
 
-Yes, we did, and yes, it was a mistake.  It should have been in debugfs from
-the very beginning.
+On Android systems it may be really frequent, because they try to suspend
+very aggressively.  That's why I asked about it.
 
-> > Second, this looks like a feature needed to handle one particular platform, so
-> > why do you want to add it to the cpufreq core?
-> 
-> I really felt this would be useful to others. They can track the load on
-> all cores for some time and that will really be useful. People can
-> understand their loads and system more easily with this patch in.
+> I can move it to wakeup_count_store() if you prefer, but then I will have
+> to turn print_active_wakeup_sources() into an exported function, which is
+> also a little inconvenient.
 
-If it were in debugfs, I'd have no objections.
+That's OK.
 
 Thanks,
 Rafael
