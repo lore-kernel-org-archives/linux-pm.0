@@ -1,64 +1,57 @@
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: power-efficient scheduling design
-Date: Wed, 12 Jun 2013 08:24:52 -0700
-Message-ID: <51B892C4.6090800@linux.intel.com>
-References: <20130530134718.GB32728@e103034-lin> <51B221AF.9070906@linux.vnet.ibm.com> <20130608112801.GA8120@MacBook-Pro.local> <1834293.MlyIaiESPL@vostro.rjw.lan> <51B3F99A.4000101@linux.vnet.ibm.com> <51B5FE02.7040607@linaro.org> <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz> <51B7D38A.7050204@linux.intel.com> <20130612102019.GA6976@arm.com>
+From: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+Subject: Re: [PATCH v2 2/2] PM / AVS: SmartReflex/class3: Fix order of initialization
+ of SR class and SR driver
+Date: Wed, 12 Jun 2013 18:33:29 +0300
+Message-ID: <51B894C9.4070308@ti.com>
+References: <1370339913-16135-1-git-send-email-andrii.tseglytskyi@ti.com> <1370339913-16135-3-git-send-email-andrii.tseglytskyi@ti.com> <87fvwpdfab.fsf@linaro.org> <20130612133231.GQ8164@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:5813 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106Ab3FLPYx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Jun 2013 11:24:53 -0400
-In-Reply-To: <20130612102019.GA6976@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130612133231.GQ8164@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Kevin Hilman <khilman@linaro.org>, j-keerthy@ti.com, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: David Lang <david@lang.hm>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Galbraith <efault@gmx.de>, "pjt@google.com" <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
->>> This isn't in the fastpath, it's in the rebalancing logic.
+On 06/12/2013 04:32 PM, Tony Lindgren wrote:
+> * Kevin Hilman <khilman@linaro.org> [130610 10:58]:
+>> Andrii Tseglytskyi <andrii.tseglytskyi@ti.com> writes:
 >>
->> the reality is much more complex unfortunately.
->> C and P states hang together tightly, and even C state on one core
->> impacts other cores' performance, just like P state selection on one
->> core impacts other cores.
+>>> SmartReflex consists of three entities: SR device, SR class and
+>>> SR driver. SmartReflex driver depends on SmartReflex class, but
+>>> order of their initialization is not clear. They both use
+>>> late_initcall(), and order depends on Makefile calls.
+>>> Patch moves initialization of SR class to device_initcall(),
+>>> and removes redundant call of sr_late_init().
+>>>
+>>> This provides predictable order of SmartReflex initcalls:
+>>> 1. device_initcall() -> SmartReflex class init
+>>> 2. late_initcall() -> SmartReflex driver init
+>>>
+>>> Signed-off-by: Andrii Tseglytskyi <andrii.tseglytskyi@ti.com>
+>> Tony will have to decide on whether he's OK with the initcall changes.
 >>
->> (at least for x86, we should really stop talking as if the OS picks
->> the "frequency", that's just not the case anymore)
+>> I can queue this with the rest of the AVS changes with Tony's ack.
+> I'd rather not make anything earlier, relying on the Makefile is just
+> fine here. These pieces are always compiled in too. The reason why
+> we should only minimal things initialized earlier than module_init
+> is that this way we have a proper console initialized and see real
+> error messages without having to have DEBUG_LL + earlyprintk enabled.
 >
-> I agree, the reality is very complex. But we should go back and analyse
-> what problem we are trying to solve, what each framework is trying to
-> address.
+> If anything else is needed, you have have just one late_initcall
+> that checks the return values of the various SR related init functions
+> to make sure all the dependencies are met.
 >
-> When viewed separately from the scheduler, cpufreq and cpuidle governors
-> do the right thing. But they both base their action on the CPU load
-> (balance) decided by the scheduler and it's the latter that we are
-> trying to adjust (and we are still debating what the right approach is).
+> Regards,
 >
-> Since such information seems too complex to be moved into the scheduler,
-> why don't we get cpufreq in charge of restricting the load balancing to
-> certain CPUs? It already tracks the load/idle time to (gradually) change
-> the P state. Depending on the governor/policy, it could decide that (for
+> Tony
+>   
+>
+Hi Tony,
 
-(btw in case you missed it, for Intel HW we no longer use cpufreq anymore)
+Thank you for your comment - it sounds reasonable.
+Patch can be dropped from this patch series.
 
-
-> Cpuidle I think for now can stay the same, gradually entering deeper
-> sleep states. It could be later unified with cpufreq if there are any
-> benefits. In deciding the load balancing restrictions, maybe cpufreq
-> should be aware of C-state latencies.
-
-on the Intel side, we're likely to merge the Intel idle driver and P state driver
-in the near future fwiw.
-We'll keep using cpuidle framework (since it doesn't do all that much other than
-provide a nice hook for the idle loop), but we likely will make a hw specific
-selection logic there.
-
-I do agree the scheduler needs to get integrated a bit better, in that it
-has some better knowledge, and to be honest, we likely need to switch from
-giving tasks credit for "time consumed" to giving them credit for something like
-"cycles consumed" or "instructions executed" or a mix thereof.
-So that a task that runs on a slower CPU (for either policy choice reasons or
-due to hardware capabilities), it gets charged less than when it runs fast.
-
+Regards,
+Andrii
