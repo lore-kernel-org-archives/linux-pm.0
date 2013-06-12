@@ -1,46 +1,43 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 00/11] CPUFreq Kconfig fixes
-Date: Wed, 12 Jun 2013 13:45:07 +0530
-Message-ID: <cover.1371022830.git.viresh.kumar@linaro.org>
+Subject: [PATCH 01/11] cpufreq: blackfin: enable driver for CONFIG_BFIN_CPU_FREQ
+Date: Wed, 12 Jun 2013 13:45:08 +0530
+Message-ID: <257a5d42e71bcec9fa9c8d09e1ad2c781db7c083.1371022830.git.viresh.kumar@linaro.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org>
 Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org>
 Sender: cpufreq-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>, Steven Miao <realmz6@gmail.com>, uclinux-dist-devel@blackfin.uclinux.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+By mistake blackfin's cpufreq driver is enabled when CONFIG_BLACKFIN was
+present, whereas it should have been enabled only when CONFIG_BFIN_CPU_FREQ is
+present.
 
-Recently Arnd sent few fixes where drivers were using APIs from freq_table.c but
-haven't selected CPU_FREQ_TABLE. Based on that, I just crossed checked all the
-places where it should be selected and where it shouldn't be. These are fixes
-around that.
+Fix it.
 
-I have applied these in my cpufreq-kconfig-fixes branch. Will send you a pull
-request separately once I get some Acks (will wait for few days).
+Cc: Steven Miao <realmz6@gmail.com>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Viresh Kumar (11):
-  cpufreq: blackfin: enable driver for CONFIG_BFIN_CPU_FREQ
-  cpufreq: cris: select CPU_FREQ_TABLE
-  cpufreq: davinci: select CPU_FREQ_TABLE
-  cpufreq: exynos: select CPU_FREQ_TABLE
-  cpufreq: highbank: remove select CPU_FREQ_TABLE
-  cpufreq: imx: select CPU_FREQ_TABLE
-  cpufreq: powerpc: CBE_RAS: select CPU_FREQ_TABLE
-  cpufreq: pxa: select CPU_FREQ_TABLE
-  cpufreq: S3C2416/S3C64XX: select CPU_FREQ_TABLE
-  cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
-  cpufreq: X86_AMD_FREQ_SENSITIVITY: select CPU_FREQ_TABLE
-
- arch/arm/mach-davinci/Kconfig   | 1 +
- arch/arm/mach-pxa/Kconfig       | 3 +++
- arch/arm/mach-tegra/Kconfig     | 4 +---
- arch/cris/Kconfig               | 2 ++
- drivers/cpufreq/Kconfig.arm     | 6 +++++-
- drivers/cpufreq/Kconfig.powerpc | 1 +
- drivers/cpufreq/Kconfig.x86     | 1 +
- drivers/cpufreq/Makefile        | 2 +-
- 8 files changed, 15 insertions(+), 5 deletions(-)
-
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 315b923..13c3f83 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -83,7 +83,7 @@ obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
+ ##################################################################################
+ # Other platform drivers
+ obj-$(CONFIG_AVR32_AT32AP_CPUFREQ)	+= at32ap-cpufreq.o
+-obj-$(CONFIG_BLACKFIN)			+= blackfin-cpufreq.o
++obj-$(CONFIG_BFIN_CPU_FREQ)		+= blackfin-cpufreq.o
+ obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
+ obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
+ obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
 -- 
 1.7.12.rc2.18.g61b472e
 
