@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
-Date: Wed, 12 Jun 2013 13:45:17 +0530
-Message-ID: <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org>
+Subject: [PATCH 11/11] cpufreq: X86_AMD_FREQ_SENSITIVITY: select CPU_FREQ_TABLE
+Date: Wed, 12 Jun 2013 13:45:18 +0530
+Message-ID: <3f143e3112c038c805ea4e66ea91d12c5800acdf.1371022830.git.viresh.kumar@linaro.org>
 References: <cover.1371022830.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
@@ -9,56 +9,29 @@ In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
 References: <cover.1371022830.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>, Jacob Shin <jacob.shin@amd.com>
 List-Id: linux-pm@vger.kernel.org
 
-ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
-of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
-uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
+This CPUFreq driver uses APIs from freq_table.c and so must select
+CPU_FREQ_TABLE.
 
-This also removes select CPU_FREQ_TABLE from individual tegra variants.
-
-Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Jacob Shin <jacob.shin@amd.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-tegra/Kconfig | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/Kconfig.x86 | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
-index 84d72fc..3636b6c 100644
---- a/arch/arm/mach-tegra/Kconfig
-+++ b/arch/arm/mach-tegra/Kconfig
-@@ -6,6 +6,7 @@ config ARCH_TEGRA
- 	select CLKSRC_MMIO
- 	select CLKSRC_OF
- 	select COMMON_CLK
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index 6bd63d6..e2b6eab 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -132,6 +132,7 @@ config X86_POWERNOW_K8
+ config X86_AMD_FREQ_SENSITIVITY
+ 	tristate "AMD frequency sensitivity feedback powersave bias"
+ 	depends on CPU_FREQ_GOV_ONDEMAND && X86_ACPI_CPUFREQ && CPU_SUP_AMD
 +	select CPU_FREQ_TABLE
- 	select GENERIC_CLOCKEVENTS
- 	select HAVE_ARM_SCU if SMP
- 	select HAVE_ARM_TWD if LOCAL_TIMERS
-@@ -28,7 +29,6 @@ config ARCH_TEGRA_2x_SOC
- 	select ARM_ERRATA_754327 if SMP
- 	select ARM_ERRATA_764369 if SMP
- 	select ARM_GIC
--	select CPU_FREQ_TABLE if CPU_FREQ
- 	select CPU_V7
- 	select PINCTRL
- 	select PINCTRL_TEGRA20
-@@ -46,7 +46,6 @@ config ARCH_TEGRA_3x_SOC
- 	select ARM_ERRATA_754322
- 	select ARM_ERRATA_764369 if SMP
- 	select ARM_GIC
--	select CPU_FREQ_TABLE if CPU_FREQ
- 	select CPU_V7
- 	select PINCTRL
- 	select PINCTRL_TEGRA30
-@@ -63,7 +62,6 @@ config ARCH_TEGRA_114_SOC
- 	select ARM_ARCH_TIMER
- 	select ARM_GIC
- 	select ARM_L1_CACHE_SHIFT_6
--	select CPU_FREQ_TABLE if CPU_FREQ
- 	select CPU_V7
- 	select PINCTRL
- 	select PINCTRL_TEGRA114
+ 	help
+ 	  This adds AMD-specific powersave bias function to the ondemand
+ 	  governor, which allows it to make more power-conscious frequency
 -- 
 1.7.12.rc2.18.g61b472e
