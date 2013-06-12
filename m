@@ -1,26 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Power efficient scheduling micro conference proposal
-Date: Wed, 12 Jun 2013 16:55:31 +0200
-Message-ID: <51B88BE3.4060402@linaro.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: power-efficient scheduling design
+Date: Wed, 12 Jun 2013 08:24:52 -0700
+Message-ID: <51B892C4.6090800@linux.intel.com>
+References: <20130530134718.GB32728@e103034-lin> <51B221AF.9070906@linux.vnet.ibm.com> <20130608112801.GA8120@MacBook-Pro.local> <1834293.MlyIaiESPL@vostro.rjw.lan> <51B3F99A.4000101@linux.vnet.ibm.com> <51B5FE02.7040607@linaro.org> <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz> <51B7D38A.7050204@linux.intel.com> <20130612102019.GA6976@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Catalin Marinas <catalin.marinas@arm.com>, Arjan van de Ven <arjan@linux.intel.com>, David Lang <david@lang.hm>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Galbraith <efault@gmx.de>, "pjt@google.com" <pjt@google.com>, "len.brown@intel.com" <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Nivedita Singhvi <nivedita@us.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:5813 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753106Ab3FLPYx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 11:24:53 -0400
+In-Reply-To: <20130612102019.GA6976@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: David Lang <david@lang.hm>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Galbraith <efault@gmx.de>, "pjt@google.com" <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, "len.brown@intel.com" <len.brown@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi all,
+>>> This isn't in the fastpath, it's in the rebalancing logic.
+>>
+>> the reality is much more complex unfortunately.
+>> C and P states hang together tightly, and even C state on one core
+>> impacts other cores' performance, just like P state selection on one
+>> core impacts other cores.
+>>
+>> (at least for x86, we should really stop talking as if the OS picks
+>> the "frequency", that's just not the case anymore)
+>
+> I agree, the reality is very complex. But we should go back and analyse
+> what problem we are trying to solve, what each framework is trying to
+> address.
+>
+> When viewed separately from the scheduler, cpufreq and cpuidle governors
+> do the right thing. But they both base their action on the CPU load
+> (balance) decided by the scheduler and it's the latter that we are
+> trying to adjust (and we are still debating what the right approach is).
+>
+> Since such information seems too complex to be moved into the scheduler,
+> why don't we get cpufreq in charge of restricting the load balancing to
+> certain CPUs? It already tracks the load/idle time to (gradually) change
+> the P state. Depending on the governor/policy, it could decide that (for
 
-I am sure lot of us have this information but just in case someone
-missed it, there is a micro conference proposal for Linux Plumbers New
-Orleans:
+(btw in case you missed it, for Intel HW we no longer use cpufreq anymore)
 
-http://wiki.linuxplumbersconf.org/2013:power-efficient_scheduling
 
-If you are interested in it and you could have the opportunity to be
-there, please update the wiki page with your name, it is still proposed
-not yet accepted.
+> Cpuidle I think for now can stay the same, gradually entering deeper
+> sleep states. It could be later unified with cpufreq if there are any
+> benefits. In deciding the load balancing restrictions, maybe cpufreq
+> should be aware of C-state latencies.
 
-  -- Daniel
+on the Intel side, we're likely to merge the Intel idle driver and P state driver
+in the near future fwiw.
+We'll keep using cpuidle framework (since it doesn't do all that much other than
+provide a nice hook for the idle loop), but we likely will make a hw specific
+selection logic there.
+
+I do agree the scheduler needs to get integrated a bit better, in that it
+has some better knowledge, and to be honest, we likely need to switch from
+giving tasks credit for "time consumed" to giving them credit for something like
+"cycles consumed" or "instructions executed" or a mix thereof.
+So that a task that runs on a slower CPU (for either policy choice reasons or
+due to hardware capabilities), it gets charged less than when it runs fast.
+
