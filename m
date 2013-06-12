@@ -1,95 +1,105 @@
-From: Julius Werner <jwerner@chromium.org>
-Subject: [PATCH v2] PM / Sleep: Print last wakeup source on failed wakeup_count write
-Date: Wed, 12 Jun 2013 12:55:22 -0700
-Message-ID: <1371066922-23577-1-git-send-email-jwerner@chromium.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/8] cpuidle: Remove governor module format
+Date: Thu, 13 Jun 2013 00:53:53 +0200
+Message-ID: <1584034.uif9lZguq4@vostro.rjw.lan>
+References: <1371042535-22630-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:38940 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331Ab3FLTz6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 15:55:58 -0400
-Received: by mail-pa0-f51.google.com with SMTP id lf11so4517300pab.38
-        for <linux-pm@vger.kernel.org>; Wed, 12 Jun 2013 12:55:57 -0700 (PDT)
+Received: from hydra.sisk.pl ([212.160.235.94]:35434 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756907Ab3FLWol (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 18:44:41 -0400
+In-Reply-To: <1371042535-22630-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Todd Poynor <toddpoynor@google.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sameer Nanda <snanda@chromium.org>, Julius Werner <jwerner@chromium.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-Commit a938da06 introduced a useful little log message to tell
-users/debuggers which wakeup source aborted a suspend. However, this
-message is only printed if the abort happens during the in-kernel
-suspend path (after writing /sys/power/state).
+On Wednesday, June 12, 2013 03:08:48 PM Daniel Lezcano wrote:
+> The governors are defined as module in the code, but the Kconfig options do not
+> allow to compile them as module. This is not really a problem but the init
+> order is: the cpuidle init functions (framework and driver) and then the
+> governors. That leads to some weirdness in the cpuidle framework because the
+> function cpuidle_register_device calls cpuidle_enable_device which in turns
+> fails at the first attempt because no governor is registered. When the
+> governor is registered, the framework calls cpuidle_enable_device again which
+> will invoke the __cpuidle_register_device function. Of course, in order to make
+> this to work, the return code of cpuidle_enable_device is not checked by the
+> caller in cpuidle_register_device.
+> 
+> Instead of having this cyclic call graph and relying on a positive side effect
+> of the hackish back and forth call to cpuidle_enable_device, let's fix the
+> init order for the governor in order to clean up the cpuidle_enable_device
+> function.
+> 
+> Remove the module init code and replaced it with postcore_initcall, so we have:
+> 
+>  * cpuidle framework : core_initcall
+>  * cpuidle governors : postcore_initcall
+>  * cpuidle drivers   : device_initcall
+> 
+> Remove exit module code as it is dead code (governors aren't compiled as
+> module).
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-The full specification of the /sys/power/wakeup_count facility allows
-user-space power managers to double-check if wakeups have already
-happened before it actually tries to suspend (e.g. while it was running
-user-space pre-suspend hooks), by writing the last known wakeup_count
-value to /sys/power/wakeup_count. This patch changes the sysfs handler
-for that node to also print said log message if that write fails, so
-that we can figure out the offending wakeup source for both kinds of
-suspend aborts.
+That's something I'd like to receive much earlier in the cycle (around -rc2).
 
-Signed-off-by: Julius Werner <jwerner@chromium.org>
----
- drivers/base/power/wakeup.c | 5 +++--
- include/linux/suspend.h     | 1 +
- kernel/power/main.c         | 2 ++
- 3 files changed, 6 insertions(+), 2 deletions(-)
+Honestly, I'm not sure if it's going to make it into 3.11 even if nobody has
+any comments.
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 79715e7..90f83ca5 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -659,7 +659,7 @@ void pm_wakeup_event(struct device *dev, unsigned int msec)
- }
- EXPORT_SYMBOL_GPL(pm_wakeup_event);
- 
--static void print_active_wakeup_sources(void)
-+void pm_print_active_wakeup_sources(void)
- {
- 	struct wakeup_source *ws;
- 	int active = 0;
-@@ -683,6 +683,7 @@ static void print_active_wakeup_sources(void)
- 			last_activity_ws->name);
- 	rcu_read_unlock();
- }
-+EXPORT_SYMBOL_GPL(pm_print_active_wakeup_sources);
- 
- /**
-  * pm_wakeup_pending - Check if power transition in progress should be aborted.
-@@ -708,7 +709,7 @@ bool pm_wakeup_pending(void)
- 	spin_unlock_irqrestore(&events_lock, flags);
- 
- 	if (ret)
--		print_active_wakeup_sources();
-+		pm_print_active_wakeup_sources();
- 
- 	return ret;
- }
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index d4e3f16..f73cabf 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -363,6 +363,7 @@ extern bool pm_wakeup_pending(void);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-+extern void pm_print_active_wakeup_sources(void);
- 
- static inline void lock_system_sleep(void)
- {
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index d77663b..0828070 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -424,6 +424,8 @@ static ssize_t wakeup_count_store(struct kobject *kobj,
- 	if (sscanf(buf, "%u", &val) == 1) {
- 		if (pm_save_wakeup_count(val))
- 			error = n;
-+		else
-+			pm_print_active_wakeup_sources();
- 	}
- 
-  out:
+Thanks,
+Rafael
+
+
+> ---
+>  drivers/cpuidle/governors/ladder.c |   12 +-----------
+>  drivers/cpuidle/governors/menu.c   |   12 +-----------
+>  2 files changed, 2 insertions(+), 22 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 9b78405..9f08e8c 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -192,14 +192,4 @@ static int __init init_ladder(void)
+>  	return cpuidle_register_governor(&ladder_governor);
+>  }
+>  
+> -/**
+> - * exit_ladder - exits the governor
+> - */
+> -static void __exit exit_ladder(void)
+> -{
+> -	cpuidle_unregister_governor(&ladder_governor);
+> -}
+> -
+> -MODULE_LICENSE("GPL");
+> -module_init(init_ladder);
+> -module_exit(exit_ladder);
+> +postcore_initcall(init_ladder);
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index fe343a0..743138c 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -540,14 +540,4 @@ static int __init init_menu(void)
+>  	return cpuidle_register_governor(&menu_governor);
+>  }
+>  
+> -/**
+> - * exit_menu - exits the governor
+> - */
+> -static void __exit exit_menu(void)
+> -{
+> -	cpuidle_unregister_governor(&menu_governor);
+> -}
+> -
+> -MODULE_LICENSE("GPL");
+> -module_init(init_menu);
+> -module_exit(exit_menu);
+> +postcore_initcall(init_menu);
+> 
 -- 
-1.7.12.4
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
