@@ -1,96 +1,137 @@
 From: David Lang <david@lang.hm>
 Subject: Re: power-efficient scheduling design
-Date: Wed, 12 Jun 2013 09:22:06 -0700 (PDT)
-Message-ID: <alpine.DEB.2.02.1306120916300.5954@nftneq.ynat.uz>
+Date: Wed, 12 Jun 2013 09:30:12 -0700 (PDT)
+Message-ID: <alpine.DEB.2.02.1306120923050.5954@nftneq.ynat.uz>
 References: <20130530134718.GB32728@e103034-lin> <51B221AF.9070906@linux.vnet.ibm.com> <20130608112801.GA8120@MacBook-Pro.local> <1834293.MlyIaiESPL@vostro.rjw.lan> <51B3F99A.4000101@linux.vnet.ibm.com> <51B5FE02.7040607@linaro.org>
- <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz> <51B7D38A.7050204@linux.intel.com> <CAP245DUbGe5yp4-XoTg-imkAFNQzQrrX_UV3RRqr1dq_2GSPhg@mail.gmail.com>
+ <alpine.DEB.2.02.1306111722470.24968@nftneq.ynat.uz> <51B84461.9080901@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.lang.hm ([64.81.33.126]:55512 "EHLO bifrost.lang.hm"
+Received: from mail.lang.hm ([64.81.33.126]:46077 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755388Ab3FLRYr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Jun 2013 13:24:47 -0400
-In-Reply-To: <CAP245DUbGe5yp4-XoTg-imkAFNQzQrrX_UV3RRqr1dq_2GSPhg@mail.gmail.com>
+	id S1754873Ab3FLRdB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 13:33:01 -0400
+In-Reply-To: <51B84461.9080901@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "alex.shi@intel.com" <alex.shi@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, Linus Torvalds <torvalds@linux-foundation.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, Mike Galbraith <efault@gmx.de>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, "pjt@google.com" <pjt@google.com>, Ingo Molnar <mingo@kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Catalin Marinas <catalin.marinas@arm.com>, Ingo Molnar <mingo@kernel.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "alex.shi@intel.com" <alex.shi@intel.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Mike Galbraith <efault@gmx.de>, "pjt@google.com" <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linaro-kernel <linaro-kernel@lists.linaro.org>, "arjan@linux.intel.com" <arjan@linux.intel.com>, "len.brown@intel.com" <len.brown@intel.com>, "corbet@lwn.net" <corbet@lwn.net>, Andrew Morton <akpm@linux-foundation.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, 12 Jun 2013, Amit Kucheria wrote:
+On Wed, 12 Jun 2013, Daniel Lezcano wrote:
 
-> On Wed, Jun 12, 2013 at 7:18 AM, Arjan van de Ven <arjan@linux.intel.com> wrote:
->> On 6/11/2013 5:27 PM, David Lang wrote:
->>>
->>>
->>> Nobody is saying that this sort of thing should be in the fastpath of the
->>> scheduler.
->>>
->>> But if the scheduler has a table that tells it the possible states, and
->>> the cost to get from the current state to each of these states (and to get
->>> back and/or wake up to
->>> full power), then the scheduler can make the decision on what to do,
->>> invoke a routine to make the change (and in the meantime, not be fighting
->>> the change by trying to
->>> schedule processes on a core that's about to be powered off), and then
->>> when the change happens, the scheduler will have a new version of the table
->>> of possible states and costs
->>>
->>> This isn't in the fastpath, it's in the rebalancing logic.
+>> On Mon, 10 Jun 2013, Daniel Lezcano wrote:
 >>
+>>> Some SoC can have a cluster of cpus sharing some resources, eg cache, so
+>>> they must enter the same state at the same moment. Beside the
+>>> synchronization mechanisms, that adds a dependency with the next event.
+>>> For example, the u8500 board has a couple of cpus. In order to make them
+>>> to enter in retention, both must enter the same state, but not necessary
+>>> at the same moment. The first cpu will wait in WFI and the second one
+>>> will initiate the retention mode when entering to this state.
+>>> Unfortunately, some time could have passed while the second cpu entered
+>>> this state and the next event for the first cpu could be too close, thus
+>>> violating the criteria of the governor when it choose this state for the
+>>> second cpu.
+>>>
+>>> Also the latencies could change with the frequencies, so there is a
+>>> dependency with cpufreq, the lesser the frequency is, the higher the
+>>> latency is. If the scheduler takes the decision to go to a specific
+>>> state assuming the exit latency is a given duration, if the frequency
+>>> decrease, this exit latency could increase also and lead the system to
+>>> be less responsive.
+>>>
+>>> I don't know, how were made the latencies computation (eg. worst case,
+>>> taken with the lower frequency or not) but we have just one set of
+>>> values. That should happen with the current code.
+>>>
+>>> Another point is the timer allowing to detect bad decision and go to a
+>>> deep idle state. With the cluster dependency described above, we may
+>>> wake up a particular cpu, which turns on the cluster and make the entire
+>>> cluster to wake up in order to enter a deeper state, which could fail
+>>> because of the other cpu may not fulfill the constraint at this moment.
 >>
->> the reality is much more complex unfortunately.
->> C and P states hang together tightly, and even C state on
->> one core impacts other cores' performance, just like P state selection
->> on one core impacts other cores.
+>> Nobody is saying that this sort of thing should be in the fastpath of
+>> the scheduler.
 >>
->> (at least for x86, we should really stop talking as if the OS picks the
->> "frequency",
->> that's just not the case anymore)
+>> But if the scheduler has a table that tells it the possible states, and
+>> the cost to get from the current state to each of these states (and to
+>> get back and/or wake up to full power), then the scheduler can make the
+>> decision on what to do, invoke a routine to make the change (and in the
+>> meantime, not be fighting the change by trying to schedule processes on
+>> a core that's about to be powered off), and then when the change
+>> happens, the scheduler will have a new version of the table of possible
+>> states and costs
+>>
+>> This isn't in the fastpath, it's in the rebalancing logic.
 >
-> This is true of ARM platforms too. As Daniel pointed out in an earlier
-> email, the operating point (frequency, voltage) has a bearing on the
-> c-state latency too.
+> As Arjan mentionned it is not as simple as this.
 >
-> An additional complexity is thermal constraints. E.g. On a quad-core
-> Cortex-A15 processor capable of say 1.5GHz, you won't be able to run
-> all 4 cores at that speed for very long w/o exceeding the thermal
-> envelope. These overdrive frequencies (turbo in x86-speak) impact the
-> rest of the system by either constraining the frequency of other cores
-> or requiring aggresive thermal management.
+> We want the scheduler to take some decisions with the knowledge of idle
+> latencies. In other words move the governor logic into the scheduler.
 >
-> Do we really want to track these details in the scheduler or just let
-> the scheduler provide notifications to the existing subsystems
-> (cpufreq, cpuidle, thermal, etc.) with some sort of feedback going
-> back to the scheduler to influence future decisions?
+> The scheduler can take decision and the backend driver provides the
+> interface to go to the idle state.
 >
-> Feeback to the scheduler could be something like the following (pardon
-> the names):
+> But unfortunately each hardware is behaving in different ways and
+> describing such behaviors will help to find the correct design, I am not
+> raising a lot of issues but just trying to enumerate the constraints we
+> have.
 >
-> 1. ISOLATE_CORE: Don't schedule anything on this core - cpuidle might
-> use this to synchronise cores for a cluster shutdown, thermal
-> framework could use this as idle injection to reduce temperature
-> 2. CAP_CAPACITY: Don't expect cpufreq to raise the frequency on this
-> core - cpufreq might use this to cap overall energy since overdrive
-> operating points are very expensive, thermal might use this to slow
-> down rate of increase of die temperature
+> What is the correct decision when a lot of pm blocks are tied together
+> and the
+>
+> In the example given by Arjan, the frequencies could be per cluster,
+> hence decreasing the frequency for a core will decrease the frequency of
+> the other core. So if the scheduler takes the decision to put one core
+> into a specific idle state, regarding the target residency and the exit
+> latency when the frequency is at max (the other core is doing
+> something), and then the frequency decrease, the exit latency may
+> increase in this case and the idle cpu will take more time to exit the
+> idle state than expected thus adding latency to the system.
+>
+> What would be the correct decision in this case ? Wake up the idle cpu
+> when the frequency change to re-evaluate an idle state ? Provide idle
+> latencies for the min freq only ? Or is it acceptable to have such
+> latency added when the frequency decrease ?
+>
+> Also, an interesting question is how do we get these latencies ?
+>
+> They are all written in the c-state tables but we don't know the
+> accuracy of these values ? Were they measured with freq max / min ?
+>
+> Were they measured with a driver powering down the peripherals or without ?
+>
+> For the embedded systems, we may have different implementations and
+> maybe different latencies. Would be makes sense to pass these values
+> through a device tree and let the SoC vendor to specify the right values
+> ? (IMHO, only the SoC vendor can do a correct measurement with an
+> oscilloscope).
+>
+> I know there are lot of questions :)
 
-How much data are you going to have to move back and forth between the different 
-systems?
+well, I have two immediate reactions.
 
-do you really only want the all-or-nothing "use this core as much as possible" 
-vs "don't use this core at all"? or do you need the ability to indicate how much 
-to use a particular core (something that is needed anyway for asymetrical cores 
-I think)
+First, use the values provided by the vendor, if they are wrong performance is 
+not optimum and people will pick a different vendor (so they have an incentive 
+to be right :-)
 
-If there is too much information that needs to be moved back and forth between 
-these 'subsystems' for the 'right' thing to happen, then it would seem like it 
-makes more sense to combine them.
+Second, "measure them" :-)
 
-Even combined, there are parts that are still pretty modular (like the details 
-of shifting from one state to another, and the different high level strategies 
-to follow for different modes of operation), but having access to all the 
-information rather than only bits and pieces of the information at lower 
-granularity would seem like an improvement.
+have the device tree enumerate the modes of operation, but then at bootup, run 
+through a series of tests to bounce between the different modes and measure how 
+long it takes to move back and forth. If the system can't measure the difference 
+against it's clocks, then the user isn't going to see the difference either, so 
+there's no need to be as accurate as a lab bench with a scope. What matters is 
+how much work can end up getting done for the user, not the number of 
+nanoseconds between voltage changes (the latter will affect the former, but it's 
+the former that you really care about)
+
+remember, perfect is the enemy of good enough. you don't have to have a perfect 
+mapping of every possible change, you just need to be close enough to make 
+reasonable decisions. You can't really predict the future anyway, so you are 
+making a guess at what the load on the system is going to be in the future. 
+Sometimes you will guess wrong no matter how accurate your latency measurements 
+are. You have to accept that, and once you accept that, the severity of being 
+wrong in some corner cases become less significant.
 
 David Lang
