@@ -1,44 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/11] cpufreq: cris: select CPU_FREQ_TABLE
-Date: Wed, 12 Jun 2013 13:45:09 +0530
-Message-ID: <e0ea7cd2cbc88fa7bf009a3e864cabe2ce26d49e.1371022830.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/11] cpufreq: davinci: select CPU_FREQ_TABLE
+Date: Wed, 12 Jun 2013 13:45:10 +0530
+Message-ID: <1894877337de5e8cf067a147a3b416b95c4cc62e.1371022830.git.viresh.kumar@linaro.org>
 References: <cover.1371022830.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1371022830.git.viresh.kumar@linaro.org>
 References: <cover.1371022830.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>, linux-cris-kernel@axis.com
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Viresh Kumar <viresh.kumar@linaro.org>, Sekhar Nori <nsekhar@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
 CPUFreq driver of this platform uses APIs from freq_table.c and so must select
 CPU_FREQ_TABLE.
 
-Cc: linux-cris-kernel@axis.com
+Cc: Sekhar Nori <nsekhar@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/cris/Kconfig | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/mach-davinci/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 8769a90..5f7530c 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -134,11 +134,13 @@ config SVINTO_SIM
+diff --git a/arch/arm/mach-davinci/Kconfig b/arch/arm/mach-davinci/Kconfig
+index a075b3e..e026b19 100644
+--- a/arch/arm/mach-davinci/Kconfig
++++ b/arch/arm/mach-davinci/Kconfig
+@@ -40,6 +40,7 @@ config ARCH_DAVINCI_DA850
+ 	bool "DA850/OMAP-L138/AM18x based system"
+ 	select ARCH_DAVINCI_DA8XX
+ 	select ARCH_HAS_CPUFREQ
++	select CPU_FREQ_TABLE
+ 	select CP_INTC
  
- config ETRAXFS
- 	bool "ETRAX-FS-V32"
-+	select CPU_FREQ_TABLE if CPU_FREQ
- 	help
- 	  Support CRIS V32.
- 
- config CRIS_MACH_ARTPEC3
-         bool "ARTPEC-3"
-+	select CPU_FREQ_TABLE if CPU_FREQ
-         help
-           Support Axis ARTPEC-3.
- 
+ config ARCH_DAVINCI_DA8XX
 -- 
 1.7.12.rc2.18.g61b472e
-
