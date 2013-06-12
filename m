@@ -1,94 +1,452 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: [PATCH v3] cpufreq: fix governor start/stop race condition
-Date: Wed, 12 Jun 2013 15:26:26 +0800
-Message-ID: <1371021986-20985-1-git-send-email-chenxg@marvell.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v2 1/3] cpufreq:boost: CPU frequency boost code unification
+ for software and hardware solutions
+Date: Wed, 12 Jun 2013 09:39:38 +0200
+Message-ID: <20130612093938.1cf73c9a@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-1-git-send-email-l.majewski@samsung.com>
+ <1370941408-29304-2-git-send-email-l.majewski@samsung.com>
+ <CAKohpomD1ru3_nqQkUq8EmMjJzR7hrtRNAY=UNPWCDHuVxZfBA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog124.obsmtp.com ([74.125.149.151]:39033 "EHLO
-	na3sys009aog124.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752280Ab3FLH1O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 03:27:14 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:43607 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753824Ab3FLHkW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Jun 2013 03:40:22 -0400
+In-reply-to: <CAKohpomD1ru3_nqQkUq8EmMjJzR7hrtRNAY=UNPWCDHuVxZfBA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com, Xiaoguang Chen <chenxg@marvell.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 
-cpufreq governor stop and start should be kept in sequence.
-If not, there will be unexpected behavior, for example:
+Hi Viresh,
 
-we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
-the normal sequence is as below:
+> Hi,
+> 
+> Change subject to: "cpufreq: Add boost frequency support in core"
 
-1) Current governor is userspace, one application tries to set
-governor to ondemand. it will call __cpufreq_set_policy in which it
-will stop userspace governor and then start ondemand governor.
+Ok.
 
-2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-call cpufreq_add_policy_cpu. on which it first stops userspace
-governor, and then starts userspace governor.
+> 
+> On 11 June 2013 14:33, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > This commit adds support for software based frequency boosting.
+> 
+> No. It adds support for both software and hardware boosting. So just
+> write: This commit adds boost frequency support in cpufreq core
+> (Hardware & Software).
 
-Now if the sequence of above two cases interleaves, it becames
-below sequence:
+Ok.
+> 
+> > Some SoC (like Exynos4 - e.g. 4x12) allow setting frequency above
+> > its normal condition limits. Such a change shall be only done for a
+> > short
+> 
+> s/condition/operation
+> s/change/mode
+> s/done/used
+> 
 
-1) application stops userspace governor
-2)                                      hotplug stops userspace governor
-3) application starts ondemand governor
-4)                                      hotplug starts a governor
+Ok.
 
-in step 4, hotplug is supposed to start userspace governor, but now
-the governor has been changed by application to ondemand, so hotplug
-starts ondemand governor again !!!!
+> > time.
+> >
+> > Overclocking (boost) support is essentially provided by platform
+> > dependent cpufreq driver.
+> >
+> > This commit unifies support for SW and HW (Intel) over clocking
+> > solutions in the core cpufreq driver. Previously the "boost" sysfs
+> > attribute was defined at acpi driver code.
+> > By default boost is disabled. One global attribute is available at:
+> > /sys/devices/system/cpu/cpufreq/boost.
+> 
+> Enter a blank line here.
 
-The solution is: do not allow stop one policy's governor multi-times
-Governor stop should only do once for one policy, after it is stopped,
-no other governor stop should be executed.
+Ok
 
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
----
- drivers/cpufreq/cpufreq.c | 9 +++++++++
- include/linux/cpufreq.h   | 1 +
- 2 files changed, 10 insertions(+)
+> 
+> > It only shows up when cpufreq driver supports overclocking.
+> > Under the hood frequencies dedicated for boosting are marked with a
+> > special flag (CPUFREQ_BOOST_FREQ) at driver's frequency table.
+> > It is the user's concern to enable/disable overclocking with proper
+> > call to sysfs.
+> 
+> Good.
+> 
+> > Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> > Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
+> >
+> > --- 
+    ^^^^
+[*] this --- was added manually by me.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..b4a2c94 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1562,6 +1562,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 
- 	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
- 						policy->cpu, event);
-+
-+	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
-+	    (policy->governor_enabled && (event == CPUFREQ_GOV_START)))
-+		return 0;
-+
- 	ret = policy->governor->governor(policy, event);
- 
- 	if (!ret) {
-@@ -1569,6 +1574,10 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized++;
- 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
- 			policy->governor->initialized--;
-+		else if (event == CPUFREQ_GOV_STOP)
-+			policy->governor_enabled = 0;
-+		else if (event == CPUFREQ_GOV_START)
-+			policy->governor_enabled = 1;
- 	}
- 
- 	/* we keep one module reference alive for
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 037d36a..c12db73 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -107,6 +107,7 @@ struct cpufreq_policy {
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-+	int			governor_enabled; /* governor start/stop flag */
- 
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
+> > Changes for v2:
+> > - Removal of cpufreq_boost structure and move its fields to
+> > cpufreq_driver structure
+> > - Flag to indicate if global boost attribute is already defined
+> > - Extent the pr_{err|debbug} functions to show current function
+> > names ---
+> 
+> You don't have to manually add "---" here. Just keep a blank line
+> instead.
+
+One "---" is added by git automatically. The [*] was added to distinct
+the changelog from rest of the commit. At least older versions of GIT
+required this to not include changelog to commit messages.
+
+> 
+> >  drivers/cpufreq/cpufreq.c    |   69
+> > ++++++++++++++++++++++++++++++++++++++++++
+> > drivers/cpufreq/freq_table.c |   57
+> > ++++++++++++++++++++++++++++++++-- include/linux/cpufreq.h      |
+> > 12 ++++++++ 3 files changed, 136 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index 1b8a48e..98ba5f1 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -40,6 +40,7 @@
+> >   * also protects the cpufreq_cpu_data array.
+> >   */
+> >  static struct cpufreq_driver *cpufreq_driver;
+> > +static bool cpufreq_boost_sysfs_defined;
+> >  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> >  /* This one keeps track of the previously set governor of a
+> > removed CPU */ @@ -315,6 +316,33 @@
+> > EXPORT_SYMBOL_GPL(cpufreq_notify_transition); /*********************************************************************
+> >   *                          SYSFS
+> > INTERFACE                          *
+> > *********************************************************************/
+> > +ssize_t show_boost_status(struct kobject *kobj,
+> > +                                struct attribute *attr, char *buf)
+> > +{
+> > +       return sprintf(buf, "%d\n", cpufreq_driver->boost_en);
+> 
+> This isn't correct. It shows if cpufreq driver supports boost or
+> not and it should show if boost is enabled from sysfs when
+> cpufreq driver supports boost.
+
+The cpufreq_driver->low_level_boost() is only valid when cpufreq driver
+supports boost. Otherwise it is NULL. Thereof you will not see those
+attributes exported to /sysfs until cpufreq driver supports boost. 
+
+When "boost" attribute is exported - then it returns state of boosting
+(if it is enabled or not).
+
+> 
+> > +}
+> > +
+> > +static ssize_t store_boost_status(struct kobject *kobj, struct
+> > attribute *attr,
+> > +                                 const char *buf, size_t count)
+> > +{
+> > +       int ret, enable;
+> > +
+> > +       ret = sscanf(buf, "%d", &enable);
+> > +       if (ret != 1 || enable < 0 || enable > 1)
+> > +               return -EINVAL;
+> > +
+> > +       if (cpufreq_boost_trigger_state(enable)) {
+> > +               pr_err("%s: Cannot %sable boost!\n", __func__,
+> > +                      enable ? "en" : "dis");
+> 
+> %sable doesn't look very much readable. Use complete strings:
+> "enable" and "disable".
+
+Ok.
+
+> 
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +       return count;
+> > +}
+> > +
+> > +static struct global_attr global_boost = __ATTR(boost, 0644,
+> > +                                               show_boost_status,
+> > +                                               store_boost_status);
+> 
+> User define_one_global_rw.
+
+Ok, will reuse available macros (this code was taken directly from
+acpi-cpufreq.c file).
+
+> 
+> >  static struct cpufreq_governor *__find_governor(const char
+> > *str_governor) {
+> > @@ -754,6 +782,17 @@ static int cpufreq_add_dev_interface(unsigned
+> > int cpu,
+> 
+> Why not do this in cpufreq_register_driver()?
+
+Good point. I will move this code to cpufreq_register_driver.
+
+> 
+> >                         goto err_out_kobj_put;
+> >                 drv_attr++;
+> >         }
+> > +       if (cpufreq_driver->low_level_boost
+> > && !cpufreq_boost_sysfs_defined) {
+> 
+> I thought low_level_boost() is a function which will only be supported
+> for drivers
+> using hardware boost feature, like intel.
+
+I think that we shall give users some flexibility and don't assume that
+low_level_boost is only used for one solution/vendor.
+
+It is also needed with software controlled boost. Please refer to patch
+3/3. 
+
+> And so we must have used
+> boost_en here.
+
+boost_en has two meanings:
+0 - either boost disabled or not supported (when low_level_boost=NULL).
+1 - boost is enabled.
+
+> 
+> > +               ret = sysfs_create_file(cpufreq_global_kobject,
+> > +                                       &(global_boost.attr));
+> 
+> cpufreq_sysfs_create_file(), check
+> 2361be23666232dbb4851a527f466c4cbf5340fc for details.
+
+Ok, I will rebase those changes to newest
+kernel/git/rafael/linux-pm.git ,branch
+kernel_pm/pm-cpufreq
+
+> 
+> > +               if (ret) {
+> > +                       pr_err("%s: cannot register global boost
+> > sysfs file\n",
+> > +                               __func__);
+> > +                       goto err_out_kobj_put;
+> > +               }
+> > +               cpufreq_boost_sysfs_defined = 1;
+> > +       }
+> > +
+> >         if (cpufreq_driver->get) {
+> >                 ret = sysfs_create_file(&policy->kobj,
+> > &cpuinfo_cur_freq.attr); if (ret)
+> > @@ -1853,6 +1892,30 @@ static struct notifier_block __refdata
+> > cpufreq_cpu_notifier = { };
+> >
+> >  /*********************************************************************
+> > + *
+> > BOOST                                              *
+> > +
+> > *********************************************************************/
+> > +int cpufreq_boost_trigger_state(int state) +{
+> > +       int ret = 0;
+> > +
+> > +       if (!cpufreq_driver->low_level_boost)
+> > +               return -ENODEV;
+> 
+> I am certainly not aligned with your design. What's the
+> use of this field? 
+
+I had to rewrite a bit :-) patches since we decided to drop struct
+cpufreq_boost.
+
+I've added two fields to cpufreq_driver:
+ - low_level_boost: 
+	* When boost is not supported (default) it is set to NULL. This
+	  field has two purposes: Indicates if boost is available on
+	  the system and provides address of low level callback
+	* When cpufreq driver assigns pointer to this field,
+	  it means that it is supported
+
+ - boost_en:
+	* It shows if boost is enabled or disabled/not supported to the
+	  rest of the system.
+
+> And please update documentation too for these
+> new entries in cpufreq_driver structure.
+
+Ok I will extend it.
+
+> 
+> > +       if (cpufreq_driver->boost_en != state) {
+> 
+> So, you are using boost_en to see if boost is enabled from sysfs?
+> Then you have put it at wrong place.
+
+I check if boost is already enabled. 
+
+> 
+> I thought there would be three variables:
+> - cpufreq_driver->boost_supported: boost is enabled for driver
+
+For this purpose I check the low_level_boost pointer if it's NULL or
+not.
+
+> - cpufreq_driver->low_level_boost(): to set desired boost state
+> (Only for hardware boosting)
+
+It has two purposes (as described above) and can be used (defined) by
+software and hardware boost solutions.
+
+> - boost_enabled: global variable in cpufreq.c file, used only if
+> cpufreq_driver->boost_supported is true.
+
+I think that boost enabled flag shall be defined at cpufreq driver
+(please look into acpi_cpufreq.c - which used another set of global
+flags). 
+It will then provide one flag for cpufreq.c (core) and drivers.
+
+However I've added one global flag: cpufreq_boost_sysfs_defined 
+which indicates if /sys/devices/system/cpu/cpufreq/boost attribute has
+been already defined (to prevent multiple definitions attempts).
+
+> 
+> 
+> > diff --git a/drivers/cpufreq/freq_table.c
+> > b/drivers/cpufreq/freq_table.c index d7a7966..4e4f692 100644
+> > --- a/drivers/cpufreq/freq_table.c
+> > +++ b/drivers/cpufreq/freq_table.c
+> > @@ -20,6 +20,27 @@
+> >   *                     FREQUENCY TABLE
+> > HELPERS                       *
+> > *********************************************************************/
+> >
+> > +unsigned int
+> > +cpufreq_frequency_table_max(struct cpufreq_frequency_table
+> > *freq_table,
+> > +                           int boost)
+> > +{
+> > +       int i = 0, boost_freq_max = 0, freq_max = 0;
+> > +
+> > +       for (; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> > +               if (freq_table[i].index == CPUFREQ_BOOST_FREQ) {
+> > +                       if (freq_table[i].frequency >
+> > boost_freq_max)
+> > +                               boost_freq_max =
+> > freq_table[i].frequency;
+> 
+> Do above only when boost==true and below when boost==false.
+
+Ok.
+
+> 
+> > +               } else {
+> > +                       if (freq_table[i].frequency > freq_max)
+> > +                               freq_max = freq_table[i].frequency;
+> > +               }
+> > +       }
+> > +
+> > +       return boost ? boost_freq_max : freq_max;
+> > +
+> > +}
+> > +EXPORT_SYMBOL_GPL(cpufreq_frequency_table_max);
+> > +
+> >  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+> >                                     struct cpufreq_frequency_table
+> > *table) {
+> > @@ -171,7 +192,8 @@ static DEFINE_PER_CPU(struct
+> > cpufreq_frequency_table *, cpufreq_show_table); /**
+> >   * show_available_freqs - show available frequencies for the
+> > specified CPU */
+> > -static ssize_t show_available_freqs(struct cpufreq_policy *policy,
+> > char *buf) +static ssize_t show_available_freqs(struct
+> > cpufreq_policy *policy, char *buf,
+> > +                                   int show_boost)
+> >  {
+> >         unsigned int i = 0;
+> >         unsigned int cpu = policy->cpu;
+> > @@ -186,22 +208,53 @@ static ssize_t show_available_freqs(struct
+> > cpufreq_policy *policy, char *buf) for (i = 0;
+> > (table[i].frequency != CPUFREQ_TABLE_END); i++) { if
+> > (table[i].frequency == CPUFREQ_ENTRY_INVALID) continue;
+> > +               if (show_boost)
+> > +                       if (table[i].index != CPUFREQ_BOOST_FREQ)
+> > +                               continue;
+> > +
+> 
+> Looks wrong. You will show boost freqs when show_boost is false.
+
+My purpose here is to display frequencies only tagged with
+CPUFREQ_BOOST_FREQ and when show_boost is true. 
+
+When show_boost is false, the operation of the function is unchanged.
+
+
+> 
+> >                 count += sprintf(&buf[count], "%d ",
+> > table[i].frequency); }
+> >         count += sprintf(&buf[count], "\n");
+> >
+> >         return count;
+> > +}
+> >
+> > +/**
+> > + * show_available_normal_freqs - show normal boost frequencies for
+> > + * the specified CPU
+> > + */
+> > +static ssize_t show_available_normal_freqs(struct cpufreq_policy
+> > *policy,
+> > +                                          char *buf)
+> > +{
+> > +       return show_available_freqs(policy, buf, 0);
+> >  }
+> >
+> >  struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
+> >         .attr = { .name = "scaling_available_frequencies",
+> >                   .mode = 0444,
+> >                 },
+> > -       .show = show_available_freqs,
+> > +       .show = show_available_normal_freqs,
+> >  };
+> >  EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
+> >
+> > +/**
+> > + * show_available_boost_freqs - show available boost frequencies
+> > for
+> > + * the specified CPU
+> > + */
+> > +static ssize_t show_available_boost_freqs(struct cpufreq_policy
+> > *policy,
+> > +                                         char *buf)
+> > +{
+> > +       return show_available_freqs(policy, buf, 1);
+> > +}
+> > +
+> > +struct freq_attr cpufreq_freq_attr_boost_available_freqs = {
+> > +       .attr = { .name = "scaling_boost_frequencies",
+> > +                 .mode = 0444,
+> > +               },
+> > +       .show = show_available_boost_freqs,
+> > +};
+> > +EXPORT_SYMBOL_GPL(cpufreq_freq_attr_boost_available_freqs);
+> > +
+> 
+> Code redundancy can be reduced by creating a macro for declaring
+> **_availabe_freqs, its attributes and export symbol.
+
+Yes, you are right here. Those two structures only differ with
+different names.
+
+> 
+> >  /*
+> >   * if you use these, you must assure that the frequency table is
+> > valid
+> >   * all the time between get_attr and put_attr!
+> 
+> With this patch alone, we would be using boost frequencies even in
+> normal cases where we haven't enabled boost.
+
+Correct me if I'm wrong here, but the
+cpufreq_freq_attr_boost_available_freqs will be added to cpufreq
+driver's freq_attr table (i.e. *exynos_cpufreq_attr[]). 
+It is cpufreq driver's responsibility to add this attribute. By default
+all other drivers add only cpufreq_freq_attr_boost_available_freqs.
+
+
 -- 
-1.8.0
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
