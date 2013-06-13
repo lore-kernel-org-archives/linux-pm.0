@@ -1,79 +1,81 @@
-From: "R, Durgadoss" <durgadoss.r@intel.com>
-Subject: RE: [PATCH 1/1] thermal: consider emul_temperature while computing
- trend
-Date: Thu, 13 Jun 2013 04:54:01 +0000
-Message-ID: <4D68720C2E767A4AA6A8796D42C8EB59CB35F7@BGSMSX101.gar.corp.intel.com>
-References: <1369863420-21913-1-git-send-email-eduardo.valentin@ti.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: add imx thermal driver support
+Date: Thu, 13 Jun 2013 13:14:44 +0800
+Message-ID: <1371100484.2135.55.camel@rzhang1-mobl4>
+References: <1370330008-5982-1-git-send-email-shawn.guo@linaro.org>
+	 <1371093177.2135.24.camel@rzhang1-mobl4>
+	 <20130613041207.GA14259@S2101-09.ap.freescale.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:5866 "EHLO mga02.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:36619 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750716Ab3FMEyM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 00:54:12 -0400
-In-Reply-To: <1369863420-21913-1-git-send-email-eduardo.valentin@ti.com>
-Content-Language: en-US
+	id S1750716Ab3FMFOu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Jun 2013 01:14:50 -0400
+In-Reply-To: <20130613041207.GA14259@S2101-09.ap.freescale.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: linux-pm@vger.kernel.org, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Thursday, May 30, 2013 3:07 AM
-> To: Zhang, Rui
-> Cc: Eduardo Valentin; Amit Daniel Kachhap; R, Durgadoss; linux-
-> pm@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: [PATCH 1/1] thermal: consider emul_temperature while computing
-> trend
+On Thu, 2013-06-13 at 12:12 +0800, Shawn Guo wrote:
+> On Thu, Jun 13, 2013 at 11:12:57AM +0800, Zhang Rui wrote:
+> > On Tue, 2013-06-04 at 15:13 +0800, Shawn Guo wrote:
+> > > This is based on the initial imx thermal work done by
+> > > Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
+> > > valid).  Since he is no longer interested in the work and I have
+> > > rewritten a significant amount of the code, I just took the authorship
+> > > over from him.
+> > > 
+> > > It adds the imx thermal support using Temperature Monitor (TEMPMON)
+> > > block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
+> > > interface to access TEMPMON control registers and calibration data, and
+> > > supports cpufreq as the cooling device.
+> > > 
+> > you're using the cpufrq_cooling to throttle cpus at 85C, right?
 > 
-> In case emulated temperature is in use, using the trend
-> provided by driver layer can lead to bogus situation.
-> In this case, debugger user would set a temperature value,
-> but the trend would be from driver computation.
+> Yes.
 > 
-> To avoid this situation, this patch changes the get_tz_trend()
-> to consider the emulated temperature whenever that is in use.
+> > then you should register it as THERMAL_TRIP_PASSIVE instead of
+> > THERMAL_TRIP_ACTIVE.
+> 
+> Yes, literally it should be a passive trip point rather than active
+> one.  But I'm not sure if there is any real functional differences
+> between them in my thermal case,
 
-Nice catch.
-Sorry, I missed looking at it earlier. Just got woken up by Rui's reply
-on this. The patch looks fine to me.
+well, no, the code for handling passive and active trip point is the
+same.
+But "passive" and "active" are meaningful for thermal strategy, which
+has not been supported so far.
+Say, when running on battery, "passive" cooling should be preferred
+because it consumes less power, while "active" cooling should be
+preferred when running on AC because it provides better performance.
 
-Thanks,
-Durga
+>  except I have to give both
+> passive_delay and polling_delay in thermal_zone_device_register()
+> call for passive type while it only needs polling_delay for active type
+> to work properly.
 > 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> Cc: Durgadoss R <durgadoss.r@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
-> ---
->  drivers/thermal/thermal_core.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c
-> b/drivers/thermal/thermal_core.c
-> index d755440..c00dc92 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -155,7 +155,8 @@ int get_tz_trend(struct thermal_zone_device *tz, int
-> trip)
->  {
->  	enum thermal_trend trend;
-> 
-> -	if (!tz->ops->get_trend || tz->ops->get_trend(tz, trip, &trend)) {
-> +	if (tz->emul_temperature || !tz->ops->get_trend ||
-> +	    tz->ops->get_trend(tz, trip, &trend)) {
->  		if (tz->temperature > tz->last_temperature)
->  			trend = THERMAL_TREND_RAISING;
->  		else if (tz->temperature < tz->last_temperature)
-> --
-> 1.8.2.1.342.gfa7285d
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+polling_delay is for systems w/o thermal interrupt.
+but passive_delay is used for the condition that the processors are
+being throttled.
+they have different meanings. Say, you may want to check the temperature
+every 30 seconds (polling_delay) in normal condition, but when the
+system is overheating, you may need to check the temperature and put the
+processors to a lower/higher cooling state every 5 seconds to avoid
+1. the fast temperature increment shuts down the system when you just
+started to throttle.
+2. the rapid temperature decrement leaves the system idle but processors
+throttled, for a long time.
+
+> Besides, both exynos and db8500 thermal drivers register active trip
+> point while they are using cpufreq as the cooling device.
+
+oh, I did not notice that.
+Then that is something needs fixing. you can cook up twp patch for
+that. :)
+
+thanks,
+rui
+
