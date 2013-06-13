@@ -1,71 +1,84 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFC PATCH] pm: make device_prepare() use dpm_run_callback()
-Date: Thu, 13 Jun 2013 20:12:38 +0200
-Message-ID: <6990358.bdIEejFSap@vostro.rjw.lan>
-References: <1371133239-12054-1-git-send-email-bigeasy@linutronix.de>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Fri, 14 Jun 2013 00:22:18 +0300
+Message-ID: <51BA380A.1040009@semaphore.gr>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com> <7661669.NhG4BEI8zO@vostro.rjw.lan> <51B64BC6.6040400@semaphore.gr> <16929930.1G36b4NkSe@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:36304 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756475Ab3FMSD2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Jun 2013 14:03:28 -0400
-In-Reply-To: <1371133239-12054-1-git-send-email-bigeasy@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <16929930.1G36b4NkSe@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-On Thursday, June 13, 2013 04:20:39 PM Sebastian Andrzej Siewior wrote:
-> After looking at device_prepare() I was curious why the info parameter
-> isn't used. Then I noticed that others call dpm_run_callback() which
-> takes the info parameter and is actually doing something with it and it
-> does the same (cb) check as here.
-> So maybe, maybe the intention here was to use the function in the first
-> place.
+Hi Rafael,
+
+On 06/11/2013 02:24 AM, Rafael J. Wysocki wrote:
+> On Tuesday, June 11, 2013 12:57:26 AM Stratos Karafotis wrote:
+>> On 06/09/2013 11:58 PM, Rafael J. Wysocki wrote:
+>>> Well, this means that your changes may hurt performance if the load comes and
+>>> goes in spikes, which is not so good.  The fact that they cause less energy to
+>>> be used at the same time kind of balance that, though.  [After all, we're
+>>> talking about the ondemand governor which should be used if the user wants to
+>>> sacrifice some performance for energy savings.]
+>>>
+>>> It would be interesting to see if the picture changes for different time
+>>> intervals in your test program (e.g. loop duration that is not a multiple of
+>>> sampling_rate and sleep times different from 5000 us) to rule out any random
+>>> coincidences.
+>>>
+>>> Can you possibly prepare a graph showing both the execution time and energy
+>>> consumption for several different loop durations in your program (let's keep
+>>> the 5000 us sleep for now), including multiples of sampling_rate as well as
+>>> some other durations?
+>>
+>> Hi,
+>>
+>> I tested different loop durations with my program from 1,000us to 1,000,000us.
+>> The logic is almost the same with the previous test:
+>>
+>> 1) Use a 'for' loop to a period T (~ 1000-1000000us)
+>> 2) sleep for 5000us
+>> 3) Repeat steps 1-2, 50 times.
+>> 4) sleep for 1s
+>> 5) Repeat 1-4, 5 times.
+>>
+>> The results:
+>> https://docs.google.com/spreadsheet/ccc?key=0AnMfNYUV1k0ddE13ZUtYdGs2dUVRdG00bVRVT3JScWc&usp=sharing
+>>
+>> Sheet1 (ProcessX1) includes the results from the test program running
+>> as single copy. The second one (ProcessX4) includes the results from the test
+>> program running it in 4 copies in parallel (using a bash script that waits
+>> the end of execution).
+>>
+>> Graphs show the difference(%) in total execution time and total energy without
+>> and with the patch.
+>> Negative values mean that the test *with* the patch had better performance or
+>> used less energy.
+>>
+>> Test shows that below sampling rate (10000us in my config), ondemand with this
+>> patch behaves better (both in performance and consumption).
+>> Though, in this test, for loads with 10000us < duration <= 200000us ondemand
+>> behaves better without the patch.
 > 
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Thanks for these results!
+> 
+> Well, I'd say that this doesn't look rosy any more, so the jury is still out.
+> 
+> We need more testing with different workloads and on different hardware.  I'll
+> try to arrange something to that end.
 
-No, it wasn't.
+Please let me share some more test results using aim9 benchmark suite:
+https://docs.google.com/spreadsheet/ccc?key=0AnMfNYUV1k0ddDdGdlJyUHpqT2xGY1lBOEt2UEVnNlE&usp=sharing
 
-We've just discussed a similar patch on linux-pm, please look into the
-archives.
+Each test was running for 10sec. 
+Total execution time with and without the patch was almost identical, which is
+expected since the tests in aim9 run for a specific period.
+The energy during the test run was increased by 0.43% with the patch.
+The performance was increased by 1.25% (average) with this patch.
 
 Thanks,
-Rafael
-
-
-> ---
->  drivers/base/power/main.c |    7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 5a9b656..521029e 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1223,7 +1223,7 @@ int dpm_suspend(pm_message_t state)
->   */
->  static int device_prepare(struct device *dev, pm_message_t state)
->  {
-> -	int (*callback)(struct device *) = NULL;
-> +	pm_callback_t callback = NULL;
->  	char *info = NULL;
->  	int error = 0;
->  
-> @@ -1261,10 +1261,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
->  		callback = dev->driver->pm->prepare;
->  	}
->  
-> -	if (callback) {
-> -		error = callback(dev);
-> -		suspend_report_result(callback, error);
-> -	}
-> +	error = dpm_run_callback(callback, dev, state, info);
->  
->  	device_unlock(dev);
->  
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Stratos
