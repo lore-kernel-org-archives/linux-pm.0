@@ -1,46 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] PCI / ACPI / PM: Use correct power state strings in messages
-Date: Fri, 14 Jun 2013 00:29:50 +0200
-Message-ID: <2491625.TQ1FFQeR38@vostro.rjw.lan>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of
+ target frequency
+Date: Fri, 14 Jun 2013 00:37:41 +0200
+Message-ID: <20130613223740.GE32112@pd.tnic>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com>
+ <51BA380A.1040009@semaphore.gr>
+ <20130613214007.GA32127@pd.tnic>
+ <1645236.hTWQPUhyIx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:33634 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757720Ab3FMWhq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Jun 2013 18:37:46 -0400
+Content-Disposition: inline
+In-Reply-To: <1645236.hTWQPUhyIx@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Stratos Karafotis <stratosk@semaphore.gr>, Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Jun 14, 2013 at 12:15:36AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, June 13, 2013 11:40:08 PM Borislav Petkov wrote:
 
-Make acpi_pci_set_power_state() print the name of the ACPI device
-power state the device has been actually put into instead of printing
-the name of the requested PCI device power state, which need not be
-the same.
+[ =E2=80=A6 ]
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+> > Not bad. However, exec_test and fork_test are kinda unexpected with=
+ such
+> > a high improvement percentage. Happen to have an explanation?
+> >=20
+> > FWIW, if we don't find any serious perf/power regressions with
+> > this patch, I'd say it is worth applying even solely for the code
+> > simplification it brings.
+>=20
+> May I take this as an ACK? ;-)
+>=20
+> Well, that's my opinion too, actually.
 
-For 3.11.
+I know - you told me and I like that aspect :-). And from the test
+results so far, the code simplification is maybe the most persuasive
+one. The slight improvements in perf/power are then the cherry on top.
 
-Thanks,
-Rafael
+Although, I'm not sure we're exhaustive with the benchmarks and we
+should maybe run a couple more. Although, judging by the results,
+generally no serious outliers should be expected (except exec_test and
+fork_test funsies above), which are actually positive outliers.
 
----
- drivers/pci/pci-acpi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Judging by the code change, the only worry we should have, AFAIU, is
+any raise in power consumption due to spending longer periods in the
+intermediary P-states now and not going straight to the lowest P-state.
+But this compensates with improvement in runtime of the workloads.
 
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -211,7 +211,7 @@ static int acpi_pci_set_power_state(stru
- 
- 	if (!error)
- 		dev_info(&dev->dev, "power state changed by ACPI to %s\n",
--			 pci_power_name(state));
-+			 acpi_power_state_string(state_conv[state]));
- 
- 	return error;
- }
+Hmm, I dunno - I'm just thinking out loud here...
 
+--=20
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
