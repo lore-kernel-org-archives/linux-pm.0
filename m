@@ -1,44 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target frequency
-Date: Fri, 14 Jun 2013 00:15:36 +0200
-Message-ID: <1645236.hTWQPUhyIx@vostro.rjw.lan>
-References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com> <51BA380A.1040009@semaphore.gr> <20130613214007.GA32127@pd.tnic>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: [GIT PULL] PM / AVS: SmartReflex: misc. cleanups for v3.11
+Date: Thu, 13 Jun 2013 15:16:30 -0700
+Message-ID: <87r4g5ac75.fsf@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20130613214007.GA32127@pd.tnic>
-Sender: cpufreq-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Stratos Karafotis <stratosk@semaphore.gr>, Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pb0-f48.google.com ([209.85.160.48]:56129 "EHLO
+	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757884Ab3FMWQd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 18:16:33 -0400
+Received: by mail-pb0-f48.google.com with SMTP id ma3so5344543pbc.21
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2013 15:16:33 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-omap <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org, nm@ti.com
 
-On Thursday, June 13, 2013 11:40:08 PM Borislav Petkov wrote:
-> On Fri, Jun 14, 2013 at 12:22:18AM +0300, Stratos Karafotis wrote:
-> > Please let me share some more test results using aim9 benchmark suite:
-> > https://docs.google.com/spreadsheet/ccc?key=0AnMfNYUV1k0ddDdGdlJyUHpqT2xGY1lBOEt2UEVnNlE&usp=sharing
-> > 
-> > Each test was running for 10sec. 
-> > Total execution time with and without the patch was almost identical, which is
-> > expected since the tests in aim9 run for a specific period.
-> > The energy during the test run was increased by 0.43% with the patch.
-> > The performance was increased by 1.25% (average) with this patch.
-> 
-> Not bad. However, exec_test and fork_test are kinda unexpected with such
-> a high improvement percentage. Happen to have an explanation?
-> 
-> FWIW, if we don't find any serious perf/power regressions with
-> this patch, I'd say it is worth applying even solely for the code
-> simplification it brings.
+Hi Rafael,
 
-May I take this as an ACK? ;-)
-
-Well, that's my opinion too, actually.
+Please pull the following cleanups to  AVS/SmartReflex for v3.11.
 
 Thanks,
-Rafael
 
+Kevin
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The following changes since commit 317ddd256b9c24b0d78fa8018f80f1e495481a10:
+
+  Linux 3.10-rc5 (2013-06-08 17:41:04 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git tags/omap-pm-v3.11/avs
+
+for you to fetch changes up to efca406b940e93e6af38c597eecd5fb79b39b7ea:
+
+  PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex (2013-06-10 10:50:48 -0700)
+
+----------------------------------------------------------------
+PM / AVS: SmartReflex: misc. cleanups for v3.11
+
+----------------------------------------------------------------
+Andrii Tseglytskyi (6):
+      PM / AVS: SmartReflex: disable runtime PM on driver remove
+      PM / AVS: SmartReflex: fix driver name
+      PM / AVS: SmartReflex: use omap_sr * for errgen interfaces
+      PM / AVS: SmartReflex: use omap_sr * for minmax interfaces
+      PM / AVS: SmartReflex: use omap_sr * for enable/disable interface
+      PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex
+
+Nishanth Menon (1):
+      PM / AVS: SmartReflex: disable errgen before vpbound disable
+
+ arch/arm/mach-omap2/smartreflex-class3.c |   8 +-
+ drivers/power/avs/smartreflex.c          | 154 +++++++++++++------------------
+ include/linux/power/smartreflex.h        |  10 +-
+ 3 files changed, 72 insertions(+), 100 deletions(-)
