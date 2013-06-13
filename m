@@ -1,63 +1,131 @@
-From: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 13 Jun 2013 18:03:12 +0800
-Message-ID: <CAFgnuDe-Noa7sn2fjMEqY-tVV2FMXeZBm07m8e-0LRQvqAWbeA@mail.gmail.com>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com>
-	<CAKohpomDXmQ_DWpHgm1mD5WWUvBTjWXBPDp1KOWb1mff4UdX=g@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/8] cpuidle: Remove governor module format
+Date: Thu, 13 Jun 2013 13:57:10 +0200
+Message-ID: <51B9B396.8060906@linaro.org>
+References: <1371042535-22630-1-git-send-email-daniel.lezcano@linaro.org> <1584034.uif9lZguq4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomDXmQ_DWpHgm1mD5WWUvBTjWXBPDp1KOWb1mff4UdX=g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:47276 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938Ab3FML5J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 07:57:09 -0400
+Received: by mail-bk0-f46.google.com with SMTP id na10so5111987bkb.19
+        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2013 04:57:08 -0700 (PDT)
+In-Reply-To: <1584034.uif9lZguq4@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 
-2013/6/13 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 13 June 2013 14:31, Xiaoguang Chen <chenxg@marvell.com> wrote:
->> cpufreq governor stop and start should be kept in sequence.
->> If not, there will be unexpected behavior, for example:
+On 06/13/2013 12:53 AM, Rafael J. Wysocki wrote:
+> On Wednesday, June 12, 2013 03:08:48 PM Daniel Lezcano wrote:
+>> The governors are defined as module in the code, but the Kconfig opt=
+ions do not
+>> allow to compile them as module. This is not really a problem but th=
+e init
+>> order is: the cpuidle init functions (framework and driver) and then=
+ the
+>> governors. That leads to some weirdness in the cpuidle framework bec=
+ause the
+>> function cpuidle_register_device calls cpuidle_enable_device which i=
+n turns
+>> fails at the first attempt because no governor is registered. When t=
+he
+>> governor is registered, the framework calls cpuidle_enable_device ag=
+ain which
+>> will invoke the __cpuidle_register_device function. Of course, in or=
+der to make
+>> this to work, the return code of cpuidle_enable_device is not checke=
+d by the
+>> caller in cpuidle_register_device.
 >>
->> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
->> the normal sequence is as below:
+>> Instead of having this cyclic call graph and relying on a positive s=
+ide effect
+>> of the hackish back and forth call to cpuidle_enable_device, let's f=
+ix the
+>> init order for the governor in order to clean up the cpuidle_enable_=
+device
+>> function.
 >>
->> 1) Current governor is userspace, one application tries to set
->> governor to ondemand. it will call __cpufreq_set_policy in which it
->> will stop userspace governor and then start ondemand governor.
+>> Remove the module init code and replaced it with postcore_initcall, =
+so we have:
 >>
->> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
->> call cpufreq_add_policy_cpu. on which it first stops userspace
->> governor, and then starts userspace governor.
+>>  * cpuidle framework : core_initcall
+>>  * cpuidle governors : postcore_initcall
+>>  * cpuidle drivers   : device_initcall
 >>
->> Now if the sequence of above two cases interleaves, it becames
->> below sequence:
+>> Remove exit module code as it is dead code (governors aren't compile=
+d as
+>> module).
 >>
->> 1) application stops userspace governor
->> 2)                                      hotplug stops userspace governor
->> 3) application starts ondemand governor
->> 4)                                      hotplug starts a governor
->>
->> in step 4, hotplug is supposed to start userspace governor, but now
->> the governor has been changed by application to ondemand, so hotplug
->> starts ondemand governor again !!!!
->>
->> The solution is: do not allow stop one policy's governor multi-times
->> Governor stop should only do once for one policy, after it is stopped,
->> no other governor stop should be executed. also add one mutext to
->> protect __cpufreq_governor so governor operation can be kept in sequence.
->>
->> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>=20
+> That's something I'd like to receive much earlier in the cycle (aroun=
+d -rc2).
+>=20
+> Honestly, I'm not sure if it's going to make it into 3.11 even if nob=
+ody has
+> any comments.
+
+It is ok, choose what is the more convenient to stabilize the kernel.
+
 >> ---
->>  drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
->>  include/linux/cpufreq.h   |  1 +
->>  2 files changed, 25 insertions(+)
->
-> I forgot to tell you earlier but please update changelog everytime you
-> send a new version.
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>  drivers/cpuidle/governors/ladder.c |   12 +-----------
+>>  drivers/cpuidle/governors/menu.c   |   12 +-----------
+>>  2 files changed, 2 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/go=
+vernors/ladder.c
+>> index 9b78405..9f08e8c 100644
+>> --- a/drivers/cpuidle/governors/ladder.c
+>> +++ b/drivers/cpuidle/governors/ladder.c
+>> @@ -192,14 +192,4 @@ static int __init init_ladder(void)
+>>  	return cpuidle_register_governor(&ladder_governor);
+>>  }
+>> =20
+>> -/**
+>> - * exit_ladder - exits the governor
+>> - */
+>> -static void __exit exit_ladder(void)
+>> -{
+>> -	cpuidle_unregister_governor(&ladder_governor);
+>> -}
+>> -
+>> -MODULE_LICENSE("GPL");
+>> -module_init(init_ladder);
+>> -module_exit(exit_ladder);
+>> +postcore_initcall(init_ladder);
+>> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/gove=
+rnors/menu.c
+>> index fe343a0..743138c 100644
+>> --- a/drivers/cpuidle/governors/menu.c
+>> +++ b/drivers/cpuidle/governors/menu.c
+>> @@ -540,14 +540,4 @@ static int __init init_menu(void)
+>>  	return cpuidle_register_governor(&menu_governor);
+>>  }
+>> =20
+>> -/**
+>> - * exit_menu - exits the governor
+>> - */
+>> -static void __exit exit_menu(void)
+>> -{
+>> -	cpuidle_unregister_governor(&menu_governor);
+>> -}
+>> -
+>> -MODULE_LICENSE("GPL");
+>> -module_init(init_menu);
+>> -module_exit(exit_menu);
+>> +postcore_initcall(init_menu);
+>>
 
-Thanks
-I'll pay attention next time :)
 
-Xiaoguang
+--=20
+ <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
+ ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
