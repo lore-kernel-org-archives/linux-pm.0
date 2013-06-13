@@ -1,54 +1,58 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [RFC PATCH] pm: make device_prepare() use dpm_run_callback()
-Date: Thu, 13 Jun 2013 16:20:39 +0200
-Message-ID: <1371133239-12054-1-git-send-email-bigeasy@linutronix.de>
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 10/11] cpufreq: tegra: select CPU_FREQ_TABLE for ARCH_TEGRA
+Date: Thu, 13 Jun 2013 09:43:55 -0600
+Message-ID: <51B9E8BB.9020104@wwwdotorg.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org> <881257c10f24b5ca8721b561726bac8887dc922e.1371022830.git.viresh.kumar@linaro.org> <51B898B6.8070103@wwwdotorg.org> <CAKohponC5pKABTi=t64ZXrHxi-Y6cbvAXtjY=_aMkka4s-MCiQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:49488 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757460Ab3FMOUp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 10:20:45 -0400
+Received: from avon.wwwdotorg.org ([70.85.31.133]:40126 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754494Ab3FMPn7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 11:43:59 -0400
+In-Reply-To: <CAKohponC5pKABTi=t64ZXrHxi-Y6cbvAXtjY=_aMkka4s-MCiQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, arnd@arndb.de, Stephen Warren <swarren@nvidia.com>
 
-After looking at device_prepare() I was curious why the info parameter
-isn't used. Then I noticed that others call dpm_run_callback() which
-takes the info parameter and is actually doing something with it and it
-does the same (cb) check as here.
-So maybe, maybe the intention here was to use the function in the first
-place.
+On 06/12/2013 10:24 PM, Viresh Kumar wrote:
+> On 12 June 2013 21:20, Stephen Warren <swarren@wwwdotorg.org> wrote:
+>> On 06/12/2013 02:15 AM, Viresh Kumar wrote:
+>>> ARCH_TEGRA selects ARCH_HAS_CPUFREQ, so CPUFREQ will be enabled for all variants
+>>> of TEGRA. CPUFreq driver for tegra is enabled if ARCH_TEGRA is selected. Driver
+>>> uses APIs from freq_table.c and so we must select CPU_FREQ_TABLE for ARCH_TEGRA.
+>>>
+>>> This also removes select CPU_FREQ_TABLE from individual tegra variants.
+>>
+>> I guess the real issue here is that drivers/cpufreq/tegra-cpufreq.c gets
+>> built based on ARCH_TEGRA, which doesn't depend on nor select CPU_FREQ
+>> itself, so:
+>>
+>>         select CPU_FREQ_TABLE if CPU_FREQ
+>>
+>> ... isn't guaranteed to fire.
+>>
+>> The correct solution seems to be:
+>>
+>> * Add CONFIG_ARM_TEGRA_CPUFREQ to drivers/cpufreq/Kconfig.arm.
+>> * Make that Kconfig option selct CPU_FREQ_TABLE.
+>> * Make that Kconfig option be def_bool ARCH_TEGRA.
+>> * Modify drivers/cpufreq/Makefile to build tegra-cpufreq.c based on that.
+>> * Remove all the cpufreq-related stuff from arch/arm/mach-tegra/Kconfig.
+>>
+>> That way, tegra-cpufreq.c can't be built if !CPU_FREQ, and Tegra's
+>> cpufreq works the same way as all the other cpufreq drivers.
+> 
+> Hmmm. check this out (attached too for you to test):
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- drivers/base/power/main.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+This certainly generates the correct .config when I "make
+tegra_defconfig" after applying it, and a build after disabling CPU_FREQ
+links OK, so,
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 5a9b656..521029e 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1223,7 +1223,7 @@ int dpm_suspend(pm_message_t state)
-  */
- static int device_prepare(struct device *dev, pm_message_t state)
- {
--	int (*callback)(struct device *) = NULL;
-+	pm_callback_t callback = NULL;
- 	char *info = NULL;
- 	int error = 0;
- 
-@@ -1261,10 +1261,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 		callback = dev->driver->pm->prepare;
- 	}
- 
--	if (callback) {
--		error = callback(dev);
--		suspend_report_result(callback, error);
--	}
-+	error = dpm_run_callback(callback, dev, state, info);
- 
- 	device_unlock(dev);
- 
--- 
-1.7.10.4
+Tested-by: Stephen Warren <swarren@nvidia.com>
+Acked-by: Stephen Warren <swarren@nvidia.com>
+
+(I assume this patch would go through the cpufreq tree?)
 
