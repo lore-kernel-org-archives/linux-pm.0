@@ -1,57 +1,46 @@
-From: Kevin Hilman <khilman@linaro.org>
-Subject: [GIT PULL] PM / AVS: SmartReflex: misc. cleanups for v3.11
-Date: Thu, 13 Jun 2013 15:16:30 -0700
-Message-ID: <87r4g5ac75.fsf@linaro.org>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] PCI / ACPI / PM: Use correct power state strings in messages
+Date: Fri, 14 Jun 2013 00:29:50 +0200
+Message-ID: <2491625.TQ1FFQeR38@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f48.google.com ([209.85.160.48]:56129 "EHLO
-	mail-pb0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757884Ab3FMWQd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Jun 2013 18:16:33 -0400
-Received: by mail-pb0-f48.google.com with SMTP id ma3so5344543pbc.21
-        for <linux-pm@vger.kernel.org>; Thu, 13 Jun 2013 15:16:33 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linux-omap <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org, nm@ti.com
 
-Hi Rafael,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull the following cleanups to  AVS/SmartReflex for v3.11.
+Make acpi_pci_set_power_state() print the name of the ACPI device
+power state the device has been actually put into instead of printing
+the name of the requested PCI device power state, which need not be
+the same.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+For 3.11.
 
 Thanks,
+Rafael
 
-Kevin
+---
+ drivers/pci/pci-acpi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-The following changes since commit 317ddd256b9c24b0d78fa8018f80f1e495481a10:
+Index: linux-pm/drivers/pci/pci-acpi.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-acpi.c
++++ linux-pm/drivers/pci/pci-acpi.c
+@@ -211,7 +211,7 @@ static int acpi_pci_set_power_state(stru
+ 
+ 	if (!error)
+ 		dev_info(&dev->dev, "power state changed by ACPI to %s\n",
+-			 pci_power_name(state));
++			 acpi_power_state_string(state_conv[state]));
+ 
+ 	return error;
+ }
 
-  Linux 3.10-rc5 (2013-06-08 17:41:04 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git tags/omap-pm-v3.11/avs
-
-for you to fetch changes up to efca406b940e93e6af38c597eecd5fb79b39b7ea:
-
-  PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex (2013-06-10 10:50:48 -0700)
-
-----------------------------------------------------------------
-PM / AVS: SmartReflex: misc. cleanups for v3.11
-
-----------------------------------------------------------------
-Andrii Tseglytskyi (6):
-      PM / AVS: SmartReflex: disable runtime PM on driver remove
-      PM / AVS: SmartReflex: fix driver name
-      PM / AVS: SmartReflex: use omap_sr * for errgen interfaces
-      PM / AVS: SmartReflex: use omap_sr * for minmax interfaces
-      PM / AVS: SmartReflex: use omap_sr * for enable/disable interface
-      PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex
-
-Nishanth Menon (1):
-      PM / AVS: SmartReflex: disable errgen before vpbound disable
-
- arch/arm/mach-omap2/smartreflex-class3.c |   8 +-
- drivers/power/avs/smartreflex.c          | 154 +++++++++++++------------------
- include/linux/power/smartreflex.h        |  10 +-
- 3 files changed, 72 insertions(+), 100 deletions(-)
