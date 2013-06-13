@@ -1,98 +1,75 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/3] CPU Package temperarure thermal driver (v02)
-Date: Thu, 13 Jun 2013 10:17:13 +0800
-Message-ID: <1371089833.2135.6.camel@rzhang1-mobl4>
-References: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/7] thermal: ti-soc-thermal: fixes and DRA752 support
+Date: Thu, 13 Jun 2013 10:20:35 +0800
+Message-ID: <1371090035.2135.7.camel@rzhang1-mobl4>
+References: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:6793 "EHLO mga09.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:25636 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757182Ab3FMCR0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 12 Jun 2013 22:17:26 -0400
-In-Reply-To: <1368834123-9591-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	id S1757182Ab3FMCVC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Jun 2013 22:21:02 -0400
+In-Reply-To: <1369840066-20357-1-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, eduardo.valentin@ti.com, tony.luck@intel.com, linux-edac@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, 2013-05-17 at 16:42 -0700, Srinivas Pandruvada wrote:
-> This driver register CPU digital temperature package level sensor as a
-> thermal zone with two user mode configurable trip points. Once
-> the trip point is violated, user mode can receive notification via thermal
-> notification mechanism and can take any action to control temperature.
+On Wed, 2013-05-29 at 11:07 -0400, Eduardo Valentin wrote:
+> Hello Rui,
 > 
-the whole patch series has been applied.
+> Here is a patch set for your consideration on ti-soc-thermal driver.
+> 
+
+the whole patch set has been applied.
 
 thanks,
 rui
-
-> Changes:
-> v02:
-> Did majority of changes suggested by Eduardo Valentin. Main changes are:
-> - Module parameters for rate control delay
-> - Removed user space gov parameter in thermal_zone_register
-> - Changes related to returning of errors values
-> - Error code return values
+> This patch set is mix of:
 > 
-> v01:
-> First version for review
+> (a) patches that were added to the staging tree post 3.10-rc1 but
+> were not included after the move from staging to thermal. This is
+> because your thermal tree is based of 3.10-rc1 and not staging/next
+> or linux-next/master. Thus the first two patches make sure the driver
+> under drivers/thermal/ti-soc-thermal has also the needed fixes.
 > 
-> Background:
-> This set of changes were done to coretemp driver and posted to lm_sensors
-> mailing list on 04/04/2013. This was reviewed by Guenter Roeck from lm-sensors
-> and Zhang Rui (thermal maintainer). They were in agreement not to add notification
-> mechanism to coretemp driver but use thermal sysfs.
-> Guenter Roeck suggested to use approach like "db8500_thermal driver in drivers/thermal".
-> So resubmitting the driver as a thermal zone driver.
-> Previous discussion link:
-> http://comments.gmane.org/gmane.linux.drivers.sensors/32182
-> " 
-> This is clear that there is reluctance in adding thresholds in coretemp sysfs,
-> during previous attempts. Probably because of lake of use cases.
-> But this time use case may be more compelling.
+> (b) patches containing fixes found during the addition of DRA752
+> chip support.
 > 
-> We have many small form factor devices like ultrabooks, slate PCs in the market.
-> Unfortunately these devices reach maximum temperature with relatively less
-> workloads, causing BIOS to do thermal throttling. There are real performance
-> issues due to aggressive BIOS action to control thermals and also thermal breakdown
-> in some cases.
+> (c) patches adding the support to DRA752 chips.
 > 
-> Even the most expensive laptops, don't have correct ACPI thermal configuration,
-> so that kernel thermal driver can act. In some case even the trip point is higher
-> than critical temperature setting.
+> Please consider these too for 3.11.
 > 
-> Intel has developed several drivers, which can be used to cool the system very efficiently.
-> They include RAPL based cooling driver, Powerclamp driver and P state driver.
-> To utilize these cooling device a closed loop user mode program is required, which
-> will utilize these method and dynamically compensate for high CPU temperatures,
-> without relying on any configuration data.
-> One such solution is developed is "Linux thermal daemon". More details can be
-> obtained from 
-> "https://github.com/01org/thermal_daemon/blob/master/ThermalDaemon_Introduction.pdf".
-> This daemon polls for cpu temperature and apply compensation once the CPU reach target
-> temperature. 
+> For those people interested in testing this patch set, it is based
+> on thermal/next and can also be found here:
+> https://git.gitorious.org/thermal-framework/thermal-framework.git thermal_work/ti-soc-thermal/fixes+dra752
 > 
-> This polling can be mostly avoided, by getting notification for the temperature, where
-> it needs to wake up and get ready for apply compensation. In most of the normal use 
-> cases, there may not be any threshold events. So very minimal number of user space
-> notification for thermal thresholds.
+> All best,
 > 
-> Srinivas Pandruvada (3):
->   x86, mcheck, therm_throt: Process package thresholds
->   Thermal: CPU Package temperature thermal
->   Thermal: Documentation for x86 package temperature thermal driver
+> Eduardo Valentin (7):
+>   thermal: ti-soc-thermal: update DT reference for OMAP5430
+>   thermal: ti-soc-thermal: remove external heat while extrapolating
+>     hotspot
+>   thermal: ti-soc-thermal: freeze FSM while computing trend
+>   thermal: ti-soc-thermal: remove usage of IS_ERR_OR_NULL
+>   thermal: ti-soc-thermal: add thermal data for DRA752 chips
+>   thermal: ti-soc-thermal: add dra752 chip to device table
+>   thermal: ti-soc-thermal: add DT example for DRA752 chip
 > 
->  Documentation/thermal/x86_pkg_temperature_thermal |  47 ++
->  arch/x86/include/asm/mce.h                        |   7 +
->  arch/x86/kernel/cpu/mcheck/therm_throt.c          |  63 ++-
->  drivers/thermal/Kconfig                           |  12 +
->  drivers/thermal/Makefile                          |   2 +-
->  drivers/thermal/x86_pkg_temp_thermal.c            | 642 ++++++++++++++++++++++
->  6 files changed, 768 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/thermal/x86_pkg_temperature_thermal
->  create mode 100644 drivers/thermal/x86_pkg_temp_thermal.c
+>  .../devicetree/bindings/thermal/ti_soc_thermal.txt |  13 +
+>  drivers/staging/ti-soc-thermal/dra752-bandgap.h    | 280 ++++++++++++
+>  .../staging/ti-soc-thermal/dra752-thermal-data.c   | 476 +++++++++++++++++++++
+>  drivers/thermal/ti-soc-thermal/Kconfig             |  12 +
+>  drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  29 +-
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   5 +
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  43 +-
+>  drivers/thermal/ti-soc-thermal/ti-thermal.h        |   6 +
+>  9 files changed, 842 insertions(+), 23 deletions(-)
+>  create mode 100644 drivers/staging/ti-soc-thermal/dra752-bandgap.h
+>  create mode 100644 drivers/staging/ti-soc-thermal/dra752-thermal-data.c
 > 
 
 
