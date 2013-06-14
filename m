@@ -1,109 +1,160 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH v3 0/3] cpufreq:boost: CPU Boost mode support
-Date: Fri, 14 Jun 2013 09:38:57 +0200
-Message-ID: <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH v3 2/3] cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to
+ work with common boost solution
+Date: Fri, 14 Jun 2013 09:38:59 +0200
+Message-ID: <1371195540-2991-3-git-send-email-l.majewski@samsung.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
+ <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocky" <rjw@sisk.pl>
 Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch series introduces support for CPU overclocking technique
-called Boost.
+The Intel's hardware based boost solution driver has been changed to cooperate with
+common cpufreq boost framework.
 
-It is a follow up of a LAB governor proposal. Boost is a LAB component:
-http://thread.gmane.org/gmane.linux.kernel/1484746/match=cpufreq
+The global sysfs boost attribute entry code (/sys/devices/system/cpu/cpufreq/boost)
+has been moved to a core cpufreq code. This attribute is now only visible,
+when cpufreq driver supports it.
+The boost supported global flag was replaced with the one defined at acpi's
+cpufreq driver.
 
-Boost unifies hardware based solution (e.g. Intel Nehalem) with
-software oriented one (like the one done at Exynos).
-For this reason cpufreq/freq_table code has been reorganized to include
-common code.
+The _store_boost() function has been redesigned to be used as set_boost_freq
+callback.
 
-Important design decisions:
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 
-- Boost related code is compiled-in unconditionally and disabled by default
-The cpufreq_driver is responsibile for providing set_boost_freq callback
-(if needed)
+Changes for v2:
+- Replace boost_enabled and boost_supported global flags with proper entries
+at struct cpufreq_driver.
+- Removal of struct cpufreq_boost
 
-- struct cpufreq_driver has been extended with boost related fields:
-	-- boost_supported - when driver supports boosting
-	-- set_boost_freq - callback to function, which is necessary to
-	   enable boost at the processor (like it is done at Intel)
-	
-- Boost sysfs attributies are seen only when cpufreq driver supports them.
-They will not show up until either cpufreq_driver defines boost_supported 
-flag or device tree's cpufreq "boost_mode" attribute.
+Changes for v3:
+- Bring back boost_enabled as a global flag
+- Move boost_supported to cpufreq_driver structure
 
-- No special spin_lock for Boost was created. The one from cpufreq_driver
-was reused.
+---
+ drivers/cpufreq/acpi-cpufreq.c |   60 ++++++++++++++--------------------------
+ 1 file changed, 20 insertions(+), 40 deletions(-)
 
-- The Boost code doesn't rely on any policy. When boost state is changed,
-then policies attached to each CPU are updated.
-
-
-Tested at: HW:
-        Exynos 4412 3.10 linux
-        Exynos 4210 3.10 linux
-Compile tested x86_64 defconfig (acpi) - help with HW (Intel Nehalem) test
- needed
-
-
-Lukasz Majewski (3):
-  cpufreq: Add boost frequency support in core
-  cpufreq:acpi:x86: Adjust the acpi-cpufreq.c code to work with common
-    boost solution
-  cpufreq:exynos:Extend Exynos cpufreq driver to support boost
-    framework
-
- arch/arm/mach-s3c24xx/cpufreq.c              |    2 +-
- arch/powerpc/platforms/pasemi/cpufreq.c      |    2 +-
- arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
- arch/powerpc/platforms/powermac/cpufreq_64.c |    2 +-
- drivers/cpufreq/acpi-cpufreq.c               |   62 +++++++-----------
- drivers/cpufreq/arm_big_little.c             |    3 +-
- drivers/cpufreq/blackfin-cpufreq.c           |    2 +-
- drivers/cpufreq/cpufreq-cpu0.c               |    2 +-
- drivers/cpufreq/cpufreq.c                    |   87 ++++++++++++++++++++++++++
- drivers/cpufreq/cris-artpec3-cpufreq.c       |    2 +-
- drivers/cpufreq/cris-etraxfs-cpufreq.c       |    2 +-
- drivers/cpufreq/davinci-cpufreq.c            |    2 +-
- drivers/cpufreq/dbx500-cpufreq.c             |    2 +-
- drivers/cpufreq/e_powersaver.c               |    3 +-
- drivers/cpufreq/elanfreq.c                   |    2 +-
- drivers/cpufreq/exynos-cpufreq.c             |    7 ++-
- drivers/cpufreq/exynos5440-cpufreq.c         |    2 +-
- drivers/cpufreq/freq_table.c                 |   44 ++++++++++---
- drivers/cpufreq/ia64-acpi-cpufreq.c          |    2 +-
- drivers/cpufreq/imx6q-cpufreq.c              |    2 +-
- drivers/cpufreq/kirkwood-cpufreq.c           |    3 +-
- drivers/cpufreq/longhaul.c                   |    2 +-
- drivers/cpufreq/loongson2_cpufreq.c          |    2 +-
- drivers/cpufreq/maple-cpufreq.c              |    2 +-
- drivers/cpufreq/omap-cpufreq.c               |    2 +-
- drivers/cpufreq/p4-clockmod.c                |    2 +-
- drivers/cpufreq/powernow-k6.c                |    2 +-
- drivers/cpufreq/powernow-k7.c                |    2 +-
- drivers/cpufreq/powernow-k8.c                |    2 +-
- drivers/cpufreq/ppc_cbe_cpufreq.c            |    2 +-
- drivers/cpufreq/pxa2xx-cpufreq.c             |    4 +-
- drivers/cpufreq/pxa3xx-cpufreq.c             |    2 +-
- drivers/cpufreq/s3c2416-cpufreq.c            |    2 +-
- drivers/cpufreq/s3c64xx-cpufreq.c            |    2 +-
- drivers/cpufreq/s5pv210-cpufreq.c            |    2 +-
- drivers/cpufreq/sc520_freq.c                 |    2 +-
- drivers/cpufreq/sh-cpufreq.c                 |    2 +-
- drivers/cpufreq/sparc-us2e-cpufreq.c         |    2 +-
- drivers/cpufreq/sparc-us3-cpufreq.c          |    2 +-
- drivers/cpufreq/spear-cpufreq.c              |    3 +-
- drivers/cpufreq/speedstep-centrino.c         |    2 +-
- drivers/cpufreq/speedstep-ich.c              |    2 +-
- drivers/cpufreq/speedstep-smi.c              |    2 +-
- drivers/cpufreq/tegra-cpufreq.c              |    4 +-
- include/linux/cpufreq.h                      |   18 +++++-
- 45 files changed, 211 insertions(+), 95 deletions(-)
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index abca529..9cd528e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -80,7 +80,7 @@ static struct acpi_processor_performance __percpu *acpi_perf_data;
+ static struct cpufreq_driver acpi_cpufreq_driver;
+ 
+ static unsigned int acpi_pstate_strict;
+-static bool boost_enabled, boost_supported;
++static bool boost_enabled;
+ static struct msr __percpu *msrs;
+ 
+ static bool boost_state(unsigned int cpu)
+@@ -133,20 +133,10 @@ static void boost_set_msrs(bool enable, const struct cpumask *cpumask)
+ 	wrmsr_on_cpus(cpumask, msr_addr, msrs);
+ }
+ 
+-static ssize_t _store_boost(const char *buf, size_t count)
++static int _store_boost(int val)
+ {
+-	int ret;
+-	unsigned long val = 0;
+-
+-	if (!boost_supported)
+-		return -EINVAL;
+-
+-	ret = kstrtoul(buf, 10, &val);
+-	if (ret || (val > 1))
+-		return -EINVAL;
+-
+ 	if ((val && boost_enabled) || (!val && !boost_enabled))
+-		return count;
++		return 0;
+ 
+ 	get_online_cpus();
+ 
+@@ -157,30 +147,31 @@ static ssize_t _store_boost(const char *buf, size_t count)
+ 	boost_enabled = val;
+ 	pr_debug("Core Boosting %sabled.\n", val ? "en" : "dis");
+ 
+-	return count;
++	return 0;
+ }
+ 
+-static ssize_t store_global_boost(struct kobject *kobj, struct attribute *attr,
+-				  const char *buf, size_t count)
++static ssize_t store_boost(const char *buf, size_t count)
+ {
+-	return _store_boost(buf, count);
+-}
++	int ret;
++	unsigned long val = 0;
+ 
+-static ssize_t show_global_boost(struct kobject *kobj,
+-				 struct attribute *attr, char *buf)
+-{
+-	return sprintf(buf, "%u\n", boost_enabled);
+-}
++	if (!acpi_cpufreq_driver.boost_supported)
++		return -EINVAL;
++
++	ret = kstrtoul(buf, 10, &val);
++	if (ret || (val > 1))
++		return -EINVAL;
+ 
+-static struct global_attr global_boost = __ATTR(boost, 0644,
+-						show_global_boost,
+-						store_global_boost);
++	_store_boost((int) val);
++
++	return count;
++}
+ 
+ #ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+ static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
+ 			 size_t count)
+ {
+-	return _store_boost(buf, count);
++	return store_boost(buf, count);
+ }
+ 
+ static ssize_t show_cpb(struct cpufreq_policy *policy, char *buf)
+@@ -930,8 +921,8 @@ static void __init acpi_cpufreq_boost_init(void)
+ 		if (!msrs)
+ 			return;
+ 
+-		boost_supported = true;
+ 		boost_enabled = boost_state(0);
++		acpi_cpufreq_driver.boost_supported = true;
+ 
+ 		get_online_cpus();
+ 
+@@ -941,22 +932,11 @@ static void __init acpi_cpufreq_boost_init(void)
+ 		register_cpu_notifier(&boost_nb);
+ 
+ 		put_online_cpus();
+-	} else
+-		global_boost.attr.mode = 0444;
+-
+-	/* We create the boost file in any case, though for systems without
+-	 * hardware support it will be read-only and hardwired to return 0.
+-	 */
+-	if (cpufreq_sysfs_create_file(&(global_boost.attr)))
+-		pr_warn(PFX "could not register global boost sysfs file\n");
+-	else
+-		pr_debug("registered global boost sysfs file\n");
++	}
+ }
+ 
+ static void __exit acpi_cpufreq_boost_exit(void)
+ {
+-	cpufreq_sysfs_remove_file(&(global_boost.attr));
+-
+ 	if (msrs) {
+ 		unregister_cpu_notifier(&boost_nb);
+ 
 -- 
 1.7.10.4
-
