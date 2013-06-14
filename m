@@ -1,71 +1,72 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2] power: Include additional information in
- pm_print_times
-Date: Fri, 14 Jun 2013 13:55:01 -0700
-Message-ID: <1371243301.31941.61.camel@joe-AO722>
-References: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] PCI / ACPI / PM: Use correct power state strings in messages
+Date: Sat, 15 Jun 2013 00:28:12 +0200
+Message-ID: <1701924.fhYB0ilm4Z@vostro.rjw.lan>
+References: <2491625.TQ1FFQeR38@vostro.rjw.lan> <CAErSpo7Q8H5wmMUPKqquerp_zbFwnac95Gbezd2=STBjtUrnvw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from perches-mx.perches.com ([206.117.179.246]:38233 "EHLO
-	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751126Ab3FNUzE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 14 Jun 2013 16:55:04 -0400
-In-Reply-To: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAErSpo7Q8H5wmMUPKqquerp_zbFwnac95Gbezd2=STBjtUrnvw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Fri, 2013-06-14 at 14:35 -0600, Shuah Khan wrote:
-> Change __device_suspend() path to include driver name and the ops that
-> get run for a device. This additional information helps associate the
-> driver and the type of pm_ops the device uses in the suspend path very
-> quickly which will aid in debugging problems in suspend and resume paths.
-> Changed both start and end debug messages to include pm_ops information
-> and use dev_info() instead of pr_info().
+On Friday, June 14, 2013 11:08:44 AM Bjorn Helgaas wrote:
+> On Thu, Jun 13, 2013 at 4:29 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Make acpi_pci_set_power_state() print the name of the ACPI device
+> > power state the device has been actually put into instead of printing
+> > the name of the requested PCI device power state, which need not be
+> > the same.
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > For 3.11.
+> >
+> > Thanks,
+> > Rafael
+> >
+> > ---
+> >  drivers/pci/pci-acpi.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > Index: linux-pm/drivers/pci/pci-acpi.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/pci/pci-acpi.c
+> > +++ linux-pm/drivers/pci/pci-acpi.c
+> > @@ -211,7 +211,7 @@ static int acpi_pci_set_power_state(stru
+> >
+> >         if (!error)
+> >                 dev_info(&dev->dev, "power state changed by ACPI to %s\n",
+> > -                        pci_power_name(state));
+> > +                        acpi_power_state_string(state_conv[state]));
+> >
+> >         return error;
+> >  }
+> >
 > 
-> dmesg output before the change:
-> 
-> [  164.390032] calling  1-1+ @ 69, parent: usb1
-> [  164.390035] call 1-1+ returned 0 after 0 usecs
+> Just to double-check this, it *looks* like the effective change is
+> that for PCI_D3hot and PCI_D3cold, we'll print "(unknown)" instead of
+> "D3hot" and "D3cold" because state_conv[] folds both PCI_D3hot and
+> PCI_D3cold into ACPI_STATE_D3, and acpi_power_state_string() doesn't
+> have a case for ACPI_STATE_D3.
 
-> dmesg output after the change:
-> 
-> [   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
-> [   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
+No, it won't work like this, because ACPI_STATE_D3 == ACPI_STATE_D3_COLD. :-)
 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-[]
-> +static ktime_t initcall_debug_start(struct device *dev, char *info)
-[]
-> +		/* string in info has an extra space at the end */
-> +		dev_info(dev, "calling %s@ %i, parent: %s\n",
-> +			info, task_pid_nr(current),
->  			dev->parent ? dev_name(dev->parent) : "none");
+So, actually, "D3cold" will be printed for both PCI_D3hot and PCI_D3cold
+(and I have tested this).
 
->  static void initcall_debug_report(struct device *dev, ktime_t calltime,
-[]
-> -		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
-> +		/* string in info has an extra space at the end */
-> +		dev_info(dev, "call %sreturned %d after %llu usecs\n", info,
->  			error, (unsigned long long)ktime_to_ns(delta) >> 10);
+Well, I think it's better to actually replace ACPI_STATE_D3 everywhere in
+pci-acpi.c with ACPI_STATE_D3_COLD to avoid that confusion.  Do you want me
+to prepare a patch?
 
-Perhaps align the "calling and "call" and include
-task_pid_nr(current)?
-
-[   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
-[   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
-
-so it's:
-
-[   58.707002] usb usb1: enter 'type pm ops' @ 57, parent: 0000:00:1d.0
-[   58.707641] usb usb1: exit  'type pm ops' @ 57, parent: 0000:00:1d.0, error: 0 (611 usecs)
-
-or:
-
-[   58.707002] usb usb1: enter 'type pm ops' @ 57, parent: 0000:00:1d.0
-[   58.707641] usb usb1: exit  'type pm ops' @ 57, error:  0 (611 usecs)
+Rafael
 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
