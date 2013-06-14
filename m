@@ -1,191 +1,60 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH v2] power: Include additional information in pm_print_times
-Date: Fri, 14 Jun 2013 14:35:24 -0600
-Message-ID: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:58845
-	"EHLO qmta15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753829Ab3FNUfa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2013 16:35:30 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] power: Include additional information in
+ pm_print_times
+Date: Fri, 14 Jun 2013 13:40:32 -0700
+Message-ID: <20130614204032.GA2912@kroah.com>
+References: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, joe@perches.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, joe@perches.com
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Change __device_suspend() path to include driver name and the ops that
-get run for a device. This additional information helps associate the
-driver and the type of pm_ops the device uses in the suspend path very
-quickly which will aid in debugging problems in suspend and resume paths.
-Changed both start and end debug messages to include pm_ops information
-and use dev_info() instead of pr_info().
+On Fri, Jun 14, 2013 at 02:35:24PM -0600, Shuah Khan wrote:
+> Change __device_suspend() path to include driver name and the ops that
+> get run for a device. This additional information helps associate the
+> driver and the type of pm_ops the device uses in the suspend path very
+> quickly which will aid in debugging problems in suspend and resume paths.
+> Changed both start and end debug messages to include pm_ops information
+> and use dev_info() instead of pr_info().
+> 
+> dmesg output before the change:
+> 
+> [  164.390032] calling  1-1+ @ 69, parent: usb1
+> [  164.390035] call 1-1+ returned 0 after 0 usecs
+> 
+> [  164.390352] calling  00:0a+ @ 2457, parent: pnp0
+> [  164.390357] call 00:0a+ returned 0 after 3 usecs
+> 
+> [  164.390361] calling  00:09+ @ 2457, parent: pnp0
+> [  164.496458] call 00:09+ returned 0 after 103500 usecs
+> 
+> [  164.496494] calling  00:05+ @ 2457, parent: pnp0
+> [  164.496511] call 00:05+ returned 0 after 14 usecs
+> 
+> dmesg output after the change:
+> 
+> [   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
+> [   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
+> 
+> [   58.702014] system 00:0a: calling legacy bus pm ops @ 2173, parent: pnp0
+> [   58.702018] system 00:0a: call legacy bus pm ops returned 0 after 2 usecs
+> 
+> [   58.702023] tpm_tis 00:09: calling legacy bus pm ops @ 2173, parent: pnp0
+> [   58.806909] tpm_tis 00:09: call legacy bus pm ops returned 0 after 102425 usecs
+> 
+> [   58.806927] rtc_cmos 00:05: calling legacy bus pm ops @ 2173, parent: pnp0
+> [   58.806935] rtc_cmos 00:05: call legacy bus pm ops returned 0 after 5 usecs
+> 
+> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> ---
+>  drivers/base/power/main.c |   44 +++++++++++++++++++++++++-------------------
+>  1 file changed, 25 insertions(+), 19 deletions(-)
 
-dmesg output before the change:
+I'm assuming this will go through Rafael's tree:
 
-[  164.390032] calling  1-1+ @ 69, parent: usb1
-[  164.390035] call 1-1+ returned 0 after 0 usecs
-
-[  164.390352] calling  00:0a+ @ 2457, parent: pnp0
-[  164.390357] call 00:0a+ returned 0 after 3 usecs
-
-[  164.390361] calling  00:09+ @ 2457, parent: pnp0
-[  164.496458] call 00:09+ returned 0 after 103500 usecs
-
-[  164.496494] calling  00:05+ @ 2457, parent: pnp0
-[  164.496511] call 00:05+ returned 0 after 14 usecs
-
-dmesg output after the change:
-
-[   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
-[   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
-
-[   58.702014] system 00:0a: calling legacy bus pm ops @ 2173, parent: pnp0
-[   58.702018] system 00:0a: call legacy bus pm ops returned 0 after 2 usecs
-
-[   58.702023] tpm_tis 00:09: calling legacy bus pm ops @ 2173, parent: pnp0
-[   58.806909] tpm_tis 00:09: call legacy bus pm ops returned 0 after 102425 usecs
-
-[   58.806927] rtc_cmos 00:05: calling legacy bus pm ops @ 2173, parent: pnp0
-[   58.806935] rtc_cmos 00:05: call legacy bus pm ops returned 0 after 5 usecs
-
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- drivers/base/power/main.c |   44 +++++++++++++++++++++++++-------------------
- 1 file changed, 25 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 5a9b656..e8d2de7 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -157,13 +157,14 @@ void device_pm_move_last(struct device *dev)
- 	list_move_tail(&dev->power.entry, &dpm_list);
- }
- 
--static ktime_t initcall_debug_start(struct device *dev)
-+static ktime_t initcall_debug_start(struct device *dev, char *info)
- {
- 	ktime_t calltime = ktime_set(0, 0);
- 
- 	if (pm_print_times_enabled) {
--		pr_info("calling  %s+ @ %i, parent: %s\n",
--			dev_name(dev), task_pid_nr(current),
-+		/* string in info has an extra space at the end */
-+		dev_info(dev, "calling %s@ %i, parent: %s\n",
-+			info, task_pid_nr(current),
- 			dev->parent ? dev_name(dev->parent) : "none");
- 		calltime = ktime_get();
- 	}
-@@ -172,14 +173,15 @@ static ktime_t initcall_debug_start(struct device *dev)
- }
- 
- static void initcall_debug_report(struct device *dev, ktime_t calltime,
--				  int error)
-+				  int error, char *info)
- {
- 	ktime_t delta, rettime;
- 
- 	if (pm_print_times_enabled) {
- 		rettime = ktime_get();
- 		delta = ktime_sub(rettime, calltime);
--		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
-+		/* string in info has an extra space at the end */
-+		dev_info(dev, "call %sreturned %d after %llu usecs\n", info,
- 			error, (unsigned long long)ktime_to_ns(delta) >> 10);
- 	}
- }
-@@ -373,13 +375,13 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	if (!cb)
- 		return 0;
- 
--	calltime = initcall_debug_start(dev);
-+	calltime = initcall_debug_start(dev, info);
- 
- 	pm_dev_dbg(dev, state, info);
- 	error = cb(dev);
- 	suspend_report_result(cb, error);
- 
--	initcall_debug_report(dev, calltime, error);
-+	initcall_debug_report(dev, calltime, error, info);
- 
- 	return error;
- }
-@@ -1027,17 +1029,19 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
-  * @cb: Suspend callback to execute.
-  */
- static int legacy_suspend(struct device *dev, pm_message_t state,
--			  int (*cb)(struct device *dev, pm_message_t state))
-+			  int (*cb)(struct device *dev, pm_message_t state),
-+			  char *info)
- {
- 	int error;
- 	ktime_t calltime;
- 
--	calltime = initcall_debug_start(dev);
-+	calltime = initcall_debug_start(dev, info);
- 
-+	pm_dev_dbg(dev, state, info);
- 	error = cb(dev, state);
- 	suspend_report_result(cb, error);
- 
--	initcall_debug_report(dev, calltime, error);
-+	initcall_debug_report(dev, calltime, error, info);
- 
- 	return error;
- }
-@@ -1079,43 +1083,45 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	device_lock(dev);
- 
- 	if (dev->pm_domain) {
--		info = "power domain ";
-+		info = "power domain pm ops ";
- 		callback = pm_op(&dev->pm_domain->ops, state);
- 		goto Run;
- 	}
- 
- 	if (dev->type && dev->type->pm) {
--		info = "type ";
-+		info = "type pm ops ";
- 		callback = pm_op(dev->type->pm, state);
- 		goto Run;
- 	}
- 
- 	if (dev->class) {
- 		if (dev->class->pm) {
--			info = "class ";
-+			info = "class pm ops ";
- 			callback = pm_op(dev->class->pm, state);
- 			goto Run;
- 		} else if (dev->class->suspend) {
--			pm_dev_dbg(dev, state, "legacy class ");
--			error = legacy_suspend(dev, state, dev->class->suspend);
-+			info = "legacy class pm ops ";
-+			error = legacy_suspend(dev, state, dev->class->suspend,
-+				info);
- 			goto End;
- 		}
- 	}
- 
- 	if (dev->bus) {
- 		if (dev->bus->pm) {
--			info = "bus ";
-+			info = "bus pm ops ";
- 			callback = pm_op(dev->bus->pm, state);
- 		} else if (dev->bus->suspend) {
--			pm_dev_dbg(dev, state, "legacy bus ");
--			error = legacy_suspend(dev, state, dev->bus->suspend);
-+			info = "legacy bus pm ops ";
-+			error = legacy_suspend(dev, state, dev->bus->suspend,
-+				info);
- 			goto End;
- 		}
- 	}
- 
-  Run:
- 	if (!callback && dev->driver && dev->driver->pm) {
--		info = "driver ";
-+		info = "driver pm ops ";
- 		callback = pm_op(dev->driver->pm, state);
- 	}
- 
--- 
-1.7.10.4
-
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
