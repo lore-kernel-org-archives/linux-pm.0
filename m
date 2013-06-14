@@ -1,284 +1,126 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH 3/4] ACPI / PM: Rework and clean up acpi_dev_pm_get_state()
-Date: Fri, 14 Jun 2013 14:32:30 +0200
-Message-ID: <1756031.gcnLRAM3xz@vostro.rjw.lan>
+Subject: [PATCH 1/4] ACPI / PM: Rename function acpi_device_power_state() and make it static
+Date: Fri, 14 Jun 2013 14:31:12 +0200
+Message-ID: <35164110.EN5eTxIiVZ@vostro.rjw.lan>
 References: <6895318.cKDBc4OdI0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:37235 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752505Ab3FNMYQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 14 Jun 2013 08:24:16 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <6895318.cKDBc4OdI0@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Aaron Lu <aaron.lu@intel.com>, Lan Tianyu <tianyu.lan@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The acpi_dev_pm_get_state() function defined in device_pm.c is quite
-convoluted, which isn't really necessary, and it doesn't validate the
-values returned by the ACPI methods executed by it appropriately.
+There is a name clash between function acpi_device_power_state()
+defined in drivers/acpi/device_pm.c and structure data type
+acpi_device_power_state defined in include/acpi/acpi_bus.h, which
+may be resolved by renaming the function.  Additionally, that
+funtion may be made static, because it is not used anywhere outside
+of the file it is defined in.
 
-To address these shortcomings modify it in the following way.
-
- (1) Make its return value only mean whether or not it succeeded and
-     pass the device power states determined by it through pointers.
-
- (2) Drop the d_max_in argument, used by only one of its callers,
-     from it, and move the code related to d_max_in into that caller,
-     acpi_pm_device_sleep_state().
-
- (3) Make it always check the return value of acpi_evaluate_integer()
-     and handle failures as appropriate.  Moreover, make it check if
-     the values returned by the executed ACPI methods are not out of
-     range.
-
- (4) Make it check if the values returned by the executed ACPI
-     methods represent valid power states of the given device and
-     handle situations in which that's not the case gracefully.
-
-Also update the kerneldoc comments of acpi_dev_pm_get_state() and
-acpi_pm_device_sleep_state() to reflect the code changes.
+Rename acpi_device_power_state() to acpi_dev_pm_get_state(), which
+better reflects its purpose, and make it static.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c |  158 +++++++++++++++++++++++++++--------------------
- 1 file changed, 92 insertions(+), 66 deletions(-)
+ drivers/acpi/device_pm.c |   15 +++++++--------
+ include/acpi/acpi_bus.h  |   16 ++--------------
+ 2 files changed, 9 insertions(+), 22 deletions(-)
 
+Index: linux-pm/include/acpi/acpi_bus.h
+===================================================================
+--- linux-pm.orig/include/acpi/acpi_bus.h
++++ linux-pm/include/acpi/acpi_bus.h
+@@ -460,8 +460,6 @@ acpi_status acpi_add_pm_notifier(struct
+ 				 acpi_notify_handler handler, void *context);
+ acpi_status acpi_remove_pm_notifier(struct acpi_device *adev,
+ 				    acpi_notify_handler handler);
+-int acpi_device_power_state(struct device *dev, struct acpi_device *adev,
+-			    u32 target_state, int d_max_in, int *d_min_p);
+ int acpi_pm_device_sleep_state(struct device *, int *, int);
+ void acpi_dev_pm_add_dependent(acpi_handle handle, struct device *depdev);
+ void acpi_dev_pm_remove_dependent(acpi_handle handle, struct device *depdev);
+@@ -477,23 +475,13 @@ static inline acpi_status acpi_remove_pm
+ {
+ 	return AE_SUPPORT;
+ }
+-static inline int __acpi_device_power_state(int m, int *p)
++static inline int acpi_pm_device_sleep_state(struct device *d, int *p, int m)
+ {
+ 	if (p)
+ 		*p = ACPI_STATE_D0;
++
+ 	return (m >= ACPI_STATE_D0 && m <= ACPI_STATE_D3) ? m : ACPI_STATE_D0;
+ }
+-static inline int acpi_device_power_state(struct device *dev,
+-					  struct acpi_device *adev,
+-					  u32 target_state, int d_max_in,
+-					  int *d_min_p)
+-{
+-	return __acpi_device_power_state(d_max_in, d_min_p);
+-}
+-static inline int acpi_pm_device_sleep_state(struct device *d, int *p, int m)
+-{
+-	return __acpi_device_power_state(m, p);
+-}
+ static inline void acpi_dev_pm_add_dependent(acpi_handle handle,
+ 					     struct device *depdev) {}
+ static inline void acpi_dev_pm_remove_dependent(acpi_handle handle,
 Index: linux-pm/drivers/acpi/device_pm.c
 ===================================================================
 --- linux-pm.orig/drivers/acpi/device_pm.c
 +++ linux-pm/drivers/acpi/device_pm.c
-@@ -403,44 +403,37 @@ EXPORT_SYMBOL(acpi_bus_can_wakeup);
+@@ -399,7 +399,7 @@ bool acpi_bus_can_wakeup(acpi_handle han
+ EXPORT_SYMBOL(acpi_bus_can_wakeup);
+ 
+ /**
+- * acpi_device_power_state - Get preferred power state of ACPI device.
++ * acpi_dev_pm_get_state - Get preferred power state of ACPI device.
   * @dev: Device whose preferred target power state to return.
   * @adev: ACPI device node corresponding to @dev.
   * @target_state: System state to match the resultant device state.
-- * @d_max_in: Deepest low-power state to take into consideration.
-- * @d_min_p: Location to store the upper limit of the allowed states range.
-- * Return value: Preferred power state of the device on success, -ENODEV
-- * (if there's no 'struct acpi_device' for @dev) or -EINVAL on failure
-+ * @d_min_p: Location to store the highest power state available to the device.
-+ * @d_max_p: Location to store the lowest power state available to the device.
-  *
-- * Find the lowest power (highest number) ACPI device power state that the
-- * device can be in while the system is in the state represented by
-- * @target_state.  If @d_min_p is set, the highest power (lowest number) device
-- * power state that @dev can be in for the given system sleep state is stored
-- * at the location pointed to by it.
-+ * Find the lowest power (highest number) and highest power (lowest number) ACPI
-+ * device power states that the device can be in while the system is in the
-+ * state represented by @target_state.  Store the integer numbers representing
-+ * those stats in the memory locations pointed to by @d_max_p and @d_min_p,
-+ * respectively.
-  *
+@@ -417,8 +417,8 @@ EXPORT_SYMBOL(acpi_bus_can_wakeup);
   * Callers must ensure that @dev and @adev are valid pointers and that @adev
   * actually corresponds to @dev before using this function.
-+ *
-+ * Returns 0 on success or -ENODATA when one of the ACPI methods fails or
-+ * returns a value that doesn't make sense.  The memory locations pointed to by
-+ * @d_max_p and @d_min_p are only modified on success.
   */
- static int acpi_dev_pm_get_state(struct device *dev, struct acpi_device *adev,
--				 u32 target_state, int d_max_in, int *d_min_p)
-+				 u32 target_state, int *d_min_p, int *d_max_p)
+-int acpi_device_power_state(struct device *dev, struct acpi_device *adev,
+-			    u32 target_state, int d_max_in, int *d_min_p)
++static int acpi_dev_pm_get_state(struct device *dev, struct acpi_device *adev,
++				 u32 target_state, int d_max_in, int *d_min_p)
  {
--	char acpi_method[] = "_SxD";
--	unsigned long long d_min, d_max;
-+	char method[] = { '_', 'S', '0' + target_state, 'D', '\0' };
-+	acpi_handle handle = adev->handle;
-+	unsigned long long ret;
-+	int d_min, d_max;
- 	bool wakeup = false;
-+	acpi_status status;
- 
--	if (d_max_in < ACPI_STATE_D0 || d_max_in > ACPI_STATE_D3_COLD)
--		return -EINVAL;
--
--	if (d_max_in > ACPI_STATE_D3_HOT) {
--		enum pm_qos_flags_status stat;
--
--		stat = dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF);
--		if (stat == PM_QOS_FLAGS_ALL)
--			d_max_in = ACPI_STATE_D3_HOT;
--	}
--
--	acpi_method[2] = '0' + target_state;
- 	/*
--	 * If the sleep state is S0, the lowest limit from ACPI is D3,
--	 * but if the device has _S0W, we will use the value from _S0W
--	 * as the lowest limit from ACPI.  Finally, we will constrain
--	 * the lowest limit with the specified one.
-+	 * If the system state is S0, the lowest power state the device can be
-+	 * in is D3cold, unless the device has _S0W and is supposed to signal
-+	 * wakeup, in which case the return value of _S0W has to be used as the
-+	 * lowest power state available to the device.
- 	 */
- 	d_min = ACPI_STATE_D0;
- 	d_max = ACPI_STATE_D3_COLD;
-@@ -449,12 +442,30 @@ static int acpi_dev_pm_get_state(struct
- 	 * If present, _SxD methods return the minimum D-state (highest power
- 	 * state) we can use for the corresponding S-states.  Otherwise, the
- 	 * minimum D-state is D0 (ACPI 3.x).
--	 *
--	 * NOTE: We rely on acpi_evaluate_integer() not clobbering the integer
--	 * provided -- that's our fault recovery, we ignore retval.
- 	 */
- 	if (target_state > ACPI_STATE_S0) {
--		acpi_evaluate_integer(adev->handle, acpi_method, NULL, &d_min);
-+		/*
-+		 * We rely on acpi_evaluate_integer() not clobbering the integer
-+		 * provided if AE_NOT_FOUND is returned.
-+		 */
-+		ret = d_min;
-+		status = acpi_evaluate_integer(handle, method, NULL, &ret);
-+		if ((ACPI_FAILURE(status) && status != AE_NOT_FOUND)
-+		    || ret > ACPI_STATE_D3_COLD)
-+			return -ENODATA;
-+
-+		/*
-+		 * We need to handle legacy systems where D3hot and D3cold are
-+		 * the same and 3 is returned in both cases, so fall back to
-+		 * D3cold if D3hot is not a valid state.
-+		 */
-+		if (!adev->power.states[ret].flags.valid) {
-+			if (ret == ACPI_STATE_D3_HOT)
-+				ret = ACPI_STATE_D3_COLD;
-+			else
-+				return -ENODATA;
-+		}
-+		d_min = ret;
- 		wakeup = device_may_wakeup(dev) && adev->wakeup.flags.valid
- 			&& adev->wakeup.sleep_state >= target_state;
- 	} else if (dev_pm_qos_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP) !=
-@@ -470,36 +481,29 @@ static int acpi_dev_pm_get_state(struct
- 	 * can wake the system.  _S0W may be valid, too.
- 	 */
- 	if (wakeup) {
--		acpi_status status;
--
--		acpi_method[3] = 'W';
--		status = acpi_evaluate_integer(adev->handle, acpi_method, NULL,
--						&d_max);
--		if (ACPI_FAILURE(status)) {
--			if (target_state != ACPI_STATE_S0 ||
--			    status != AE_NOT_FOUND)
-+		method[3] = 'W';
-+		status = acpi_evaluate_integer(handle, method, NULL, &ret);
-+		if (status == AE_NOT_FOUND) {
-+			if (target_state > ACPI_STATE_S0)
- 				d_max = d_min;
--		} else if (d_max < d_min) {
--			/* Warn the user of the broken DSDT */
--			printk(KERN_WARNING "ACPI: Wrong value from %s\n",
--				acpi_method);
--			/* Sanitize it */
--			d_min = d_max;
-+		} else if (ACPI_SUCCESS(status) && ret <= ACPI_STATE_D3_COLD) {
-+			/* Fall back to D3cold if ret is not a valid state. */
-+			if (!adev->power.states[ret].flags.valid)
-+				ret = ACPI_STATE_D3_COLD;
-+
-+			d_max = ret > d_min ? ret : d_min;
-+		} else {
-+			return -ENODATA;
- 		}
+ 	char acpi_method[] = "_SxD";
+ 	unsigned long long d_min, d_max;
+@@ -501,7 +501,6 @@ int acpi_device_power_state(struct devic
  	}
- 
--	if (d_max_in < d_min)
--		return -EINVAL;
- 	if (d_min_p)
- 		*d_min_p = d_min;
--	/* constrain d_max with specified lowest limit (max number) */
--	if (d_max > d_max_in) {
--		for (d_max = d_max_in; d_max > d_min; d_max--) {
--			if (adev->power.states[d_max].flags.valid)
--				break;
--		}
--	}
--	return d_max;
-+
-+	if (d_max_p)
-+		*d_max_p = d_max;
-+
-+	return 0;
+ 	return d_max;
  }
+-EXPORT_SYMBOL_GPL(acpi_device_power_state);
  
  /**
-@@ -508,7 +512,8 @@ static int acpi_dev_pm_get_state(struct
-  * @d_min_p: Location to store the upper limit of the allowed states range.
-  * @d_max_in: Deepest low-power state to take into consideration.
-  * Return value: Preferred power state of the device on success, -ENODEV
-- * (if there's no 'struct acpi_device' for @dev) or -EINVAL on failure
-+ * if there's no 'struct acpi_device' for @dev, -EINVAL if @d_max_in is
-+ * incorrect, or -ENODATA on ACPI method failure.
-  *
-  * The caller must ensure that @dev is valid before using this function.
-  */
-@@ -516,14 +521,39 @@ int acpi_pm_device_sleep_state(struct de
- {
- 	acpi_handle handle = DEVICE_ACPI_HANDLE(dev);
- 	struct acpi_device *adev;
-+	int ret, d_max;
-+
-+	if (d_max_in < ACPI_STATE_D0 || d_max_in > ACPI_STATE_D3_COLD)
-+		return -EINVAL;
-+
-+	if (d_max_in > ACPI_STATE_D3_HOT) {
-+		enum pm_qos_flags_status stat;
-+
-+		stat = dev_pm_qos_flags(dev, PM_QOS_FLAG_NO_POWER_OFF);
-+		if (stat == PM_QOS_FLAGS_ALL)
-+			d_max_in = ACPI_STATE_D3_HOT;
-+	}
- 
- 	if (!handle || acpi_bus_get_device(handle, &adev)) {
- 		dev_dbg(dev, "ACPI handle without context in %s!\n", __func__);
+  * acpi_pm_device_sleep_state - Get preferred power state of ACPI device.
+@@ -523,8 +522,8 @@ int acpi_pm_device_sleep_state(struct de
  		return -ENODEV;
  	}
  
--	return acpi_dev_pm_get_state(dev, adev, acpi_target_system_state(),
--				     d_max_in, d_min_p);
-+	ret = acpi_dev_pm_get_state(dev, adev, acpi_target_system_state(),
-+				    d_min_p, &d_max);
-+	if (ret)
-+		return ret;
-+
-+	if (d_max_in < *d_min_p)
-+		return -EINVAL;
-+
-+	if (d_max > d_max_in) {
-+		for (d_max = d_max_in; d_max > *d_min_p; d_max--) {
-+			if (adev->power.states[d_max].flags.valid)
-+				break;
-+		}
-+	}
-+	return d_max;
+-	return acpi_device_power_state(dev, adev, acpi_target_system_state(),
+-				       d_max_in, d_min_p);
++	return acpi_dev_pm_get_state(dev, adev, acpi_target_system_state(),
++				     d_max_in, d_min_p);
  }
  EXPORT_SYMBOL(acpi_pm_device_sleep_state);
  
-@@ -674,17 +704,13 @@ struct acpi_device *acpi_dev_pm_get_node
- static int acpi_dev_pm_low_power(struct device *dev, struct acpi_device *adev,
- 				 u32 system_state)
- {
--	int power_state;
-+	int ret, state;
- 
+@@ -680,8 +679,8 @@ static int acpi_dev_pm_low_power(struct
  	if (!acpi_device_power_manageable(adev))
  		return 0;
  
--	power_state = acpi_dev_pm_get_state(dev, adev, system_state,
--					    ACPI_STATE_D3_COLD, NULL);
--	if (power_state < ACPI_STATE_D0 || power_state > ACPI_STATE_D3_COLD)
--		return -EIO;
--
--	return acpi_device_set_power(adev, power_state);
-+	ret = acpi_dev_pm_get_state(dev, adev, system_state, NULL, &state);
-+	return ret ? ret : acpi_device_set_power(adev, state);
- }
+-	power_state = acpi_device_power_state(dev, adev, system_state,
+-					      ACPI_STATE_D3, NULL);
++	power_state = acpi_dev_pm_get_state(dev, adev, system_state,
++					    ACPI_STATE_D3, NULL);
+ 	if (power_state < ACPI_STATE_D0 || power_state > ACPI_STATE_D3)
+ 		return -EIO;
  
- /**
-
