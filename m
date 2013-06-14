@@ -1,36 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND][PATCH] cpufreq: stats: Add 'load_table' sysfs file to
- show accumulated data of CPU
-Date: Fri, 14 Jun 2013 20:19:38 +0530
-Message-ID: <CAKohpo=TNf=XK7S6_8Z92XvpBz-7jOqYA=p61c9qG3GSg7tzfA@mail.gmail.com>
-References: <1370419882-16831-1-git-send-email-cw00.choi@samsung.com>
-	<51BA7BDB.9070801@samsung.com>
-	<CAKohpokL1PNsYXJvnrkYesUHhe4s9-HsZe_c5KW+toeHJep2PA@mail.gmail.com>
-	<8166789.M9n1Uisvhs@vostro.rjw.lan>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v3 1/3] cpufreq: ondemand: Change the calculation of target
+ frequency
+Date: Fri, 14 Jun 2013 18:53:32 +0300
+Message-ID: <51BB3C7C.70304@semaphore.gr>
+References: <q46r5iepl3sunqe5eemv66hk.1370694869222@email.android.com> <1469773.K3KVgsTfzW@vostro.rjw.lan> <20130614124400.GA8693@pd.tnic> <2227190.21dzlq2WhC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:47948 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752834Ab3FNOti (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2013 10:49:38 -0400
-Received: by mail-oa0-f53.google.com with SMTP id k14so785798oag.26
-        for <linux-pm@vger.kernel.org>; Fri, 14 Jun 2013 07:49:38 -0700 (PDT)
-In-Reply-To: <8166789.M9n1Uisvhs@vostro.rjw.lan>
+Received: from sema.semaphore.gr ([78.46.194.137]:46607 "EHLO
+	sema.semaphore.gr" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752537Ab3FNPxf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2013 11:53:35 -0400
+In-Reply-To: <2227190.21dzlq2WhC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Borislav Petkov <bp@alien8.de>, Borislav Petkov <bp@suse.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 14 June 2013 18:18, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Friday, June 14, 2013 09:41:13 AM Viresh Kumar wrote:
->> @Rafael: Would it be move trans_table to debugfs??
+Hi,
 
-Oops!! What stupid english.
+On 06/14/2013 03:55 PM, Rafael J. Wysocki wrote:
+> On Friday, June 14, 2013 02:44:01 PM Borislav Petkov wrote:
+>> On Fri, Jun 14, 2013 at 02:46:38PM +0200, Rafael J. Wysocki wrote:
+>>> OK, so here's a deal. After 3.10-rc1 goes out, I'll put this into
+>>> linux-next
+>>
+>> Yeah, you mean 3.11-rc1 here...
+> 
+> Sure, sorry for the confusion.
+> 
+>>> for 3.12, so that people have a few more weeks to complain. If they
+>>> don't, it'll go into 3.12.
+>>
+>> but yep, sounds like a deal.
+> 
+> Cool, thanks!
 
-s/be/be sensible to/
 
-> I'm not sure who uses it now.  If there are any user space tools depending on
-> it in use, I'm afraid we can't just move it around.
+Great news! :-)
 
-Even I am also unsure about it.
+Thank you all, for your help and for your valuable time!
+
+Regards,
+Stratos
+
