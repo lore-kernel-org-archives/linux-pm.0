@@ -1,143 +1,191 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH 27/28] ARM: EXYNOS: Remove CONFIG_SOC_EXYNOS4412
-Date: Fri, 14 Jun 2013 21:33:03 +0200
-Message-ID: <1371238384-1504-28-git-send-email-t.figa@samsung.com>
-References: <1371238384-1504-1-git-send-email-t.figa@samsung.com>
-Return-path: <linux-media-owner@vger.kernel.org>
-In-reply-to: <1371238384-1504-1-git-send-email-t.figa@samsung.com>
-Sender: linux-media-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, Tomasz Figa <t.figa@samsung.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Mauro Carvalho Chehab <mchehab@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-media@vger.kernel.org, linux-serial@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH v2] power: Include additional information in pm_print_times
+Date: Fri, 14 Jun 2013 14:35:24 -0600
+Message-ID: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta15.emeryville.ca.mail.comcast.net ([76.96.27.228]:58845
+	"EHLO qmta15.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753829Ab3FNUfa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Jun 2013 16:35:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, joe@perches.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Exynos4212 and Exynos4412 SoCs differ only in number of ARM cores and
-there is no need to have separate Kconfig options for them, since they
-use the same code.
+Change __device_suspend() path to include driver name and the ops that
+get run for a device. This additional information helps associate the
+driver and the type of pm_ops the device uses in the suspend path very
+quickly which will aid in debugging problems in suspend and resume paths.
+Changed both start and end debug messages to include pm_ops information
+and use dev_info() instead of pr_info().
 
-This patch removes CONFIG_SOC_EXYNOS4412, leaving CONFIG_SOC_EXYNOS4212
-as the one supporting both SoCs from this series.
+dmesg output before the change:
 
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: linux-media@vger.kernel.org
-Cc: linux-serial@vger.kernel.org
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+[  164.390032] calling  1-1+ @ 69, parent: usb1
+[  164.390035] call 1-1+ returned 0 after 0 usecs
+
+[  164.390352] calling  00:0a+ @ 2457, parent: pnp0
+[  164.390357] call 00:0a+ returned 0 after 3 usecs
+
+[  164.390361] calling  00:09+ @ 2457, parent: pnp0
+[  164.496458] call 00:09+ returned 0 after 103500 usecs
+
+[  164.496494] calling  00:05+ @ 2457, parent: pnp0
+[  164.496511] call 00:05+ returned 0 after 14 usecs
+
+dmesg output after the change:
+
+[   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
+[   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
+
+[   58.702014] system 00:0a: calling legacy bus pm ops @ 2173, parent: pnp0
+[   58.702018] system 00:0a: call legacy bus pm ops returned 0 after 2 usecs
+
+[   58.702023] tpm_tis 00:09: calling legacy bus pm ops @ 2173, parent: pnp0
+[   58.806909] tpm_tis 00:09: call legacy bus pm ops returned 0 after 102425 usecs
+
+[   58.806927] rtc_cmos 00:05: calling legacy bus pm ops @ 2173, parent: pnp0
+[   58.806935] rtc_cmos 00:05: call legacy bus pm ops returned 0 after 5 usecs
+
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
 ---
- arch/arm/mach-exynos/Kconfig              | 11 +----------
- arch/arm/plat-samsung/include/plat/cpu.h  |  6 +-----
- drivers/cpufreq/Kconfig.arm               |  2 +-
- drivers/media/platform/exynos4-is/Kconfig |  2 +-
- drivers/thermal/exynos_thermal.c          |  2 +-
- drivers/tty/serial/samsung.c              |  3 +--
- 6 files changed, 6 insertions(+), 20 deletions(-)
+ drivers/base/power/main.c |   44 +++++++++++++++++++++++++-------------------
+ 1 file changed, 25 insertions(+), 19 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 47d8d9e..fe75a65 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -46,7 +46,7 @@ config CPU_EXYNOS4210
- 	  Enable EXYNOS4210 CPU support
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5a9b656..e8d2de7 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -157,13 +157,14 @@ void device_pm_move_last(struct device *dev)
+ 	list_move_tail(&dev->power.entry, &dpm_list);
+ }
  
- config SOC_EXYNOS4212
--	bool "SAMSUNG EXYNOS4212"
-+	bool "SAMSUNG EXYNOS4212/4412"
- 	default y
- 	depends on ARCH_EXYNOS4
- 	select PINCTRL_EXYNOS
-@@ -56,15 +56,6 @@ config SOC_EXYNOS4212
- 	help
- 	  Enable EXYNOS4212 SoC support
+-static ktime_t initcall_debug_start(struct device *dev)
++static ktime_t initcall_debug_start(struct device *dev, char *info)
+ {
+ 	ktime_t calltime = ktime_set(0, 0);
  
--config SOC_EXYNOS4412
--	bool "SAMSUNG EXYNOS4412"
--	default y
--	depends on ARCH_EXYNOS4
--	select PINCTRL_EXYNOS
--	select SAMSUNG_DMADEV
--	help
--	  Enable EXYNOS4412 SoC support
--
- config SOC_EXYNOS5250
- 	bool "SAMSUNG EXYNOS5250"
- 	default y
-diff --git a/arch/arm/plat-samsung/include/plat/cpu.h b/arch/arm/plat-samsung/include/plat/cpu.h
-index 989fefe..87b03bb 100644
---- a/arch/arm/plat-samsung/include/plat/cpu.h
-+++ b/arch/arm/plat-samsung/include/plat/cpu.h
-@@ -122,13 +122,9 @@ IS_SAMSUNG_CPU(exynos5440, EXYNOS5440_SOC_ID, EXYNOS5_SOC_MASK)
+ 	if (pm_print_times_enabled) {
+-		pr_info("calling  %s+ @ %i, parent: %s\n",
+-			dev_name(dev), task_pid_nr(current),
++		/* string in info has an extra space at the end */
++		dev_info(dev, "calling %s@ %i, parent: %s\n",
++			info, task_pid_nr(current),
+ 			dev->parent ? dev_name(dev->parent) : "none");
+ 		calltime = ktime_get();
+ 	}
+@@ -172,14 +173,15 @@ static ktime_t initcall_debug_start(struct device *dev)
+ }
  
- #if defined(CONFIG_SOC_EXYNOS4212)
- # define soc_is_exynos4212()	is_samsung_exynos4212()
--#else
--# define soc_is_exynos4212()	0
--#endif
--
--#if defined(CONFIG_SOC_EXYNOS4412)
- # define soc_is_exynos4412()	is_samsung_exynos4412()
- #else
-+# define soc_is_exynos4212()	0
- # define soc_is_exynos4412()	0
- #endif
+ static void initcall_debug_report(struct device *dev, ktime_t calltime,
+-				  int error)
++				  int error, char *info)
+ {
+ 	ktime_t delta, rettime;
  
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index a924408..b214ad6 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -32,7 +32,7 @@ config ARM_EXYNOS4210_CPUFREQ
- 	  SoC (S5PV310 or S5PC210).
+ 	if (pm_print_times_enabled) {
+ 		rettime = ktime_get();
+ 		delta = ktime_sub(rettime, calltime);
+-		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
++		/* string in info has an extra space at the end */
++		dev_info(dev, "call %sreturned %d after %llu usecs\n", info,
+ 			error, (unsigned long long)ktime_to_ns(delta) >> 10);
+ 	}
+ }
+@@ -373,13 +375,13 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	if (!cb)
+ 		return 0;
  
- config ARM_EXYNOS4X12_CPUFREQ
--	def_bool (SOC_EXYNOS4212 || SOC_EXYNOS4412)
-+	def_bool SOC_EXYNOS4212
- 	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS4X12
- 	  SoC (EXYNOS4212 or EXYNOS4412).
-diff --git a/drivers/media/platform/exynos4-is/Kconfig b/drivers/media/platform/exynos4-is/Kconfig
-index 6ff99b5..f483e11 100644
---- a/drivers/media/platform/exynos4-is/Kconfig
-+++ b/drivers/media/platform/exynos4-is/Kconfig
-@@ -32,7 +32,7 @@ config VIDEO_S5P_MIPI_CSIS
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called s5p-csis.
+-	calltime = initcall_debug_start(dev);
++	calltime = initcall_debug_start(dev, info);
  
--if SOC_EXYNOS4212 || SOC_EXYNOS4412 || SOC_EXYNOS5250
-+if SOC_EXYNOS4212 || SOC_EXYNOS5250
+ 	pm_dev_dbg(dev, state, info);
+ 	error = cb(dev);
+ 	suspend_report_result(cb, error);
  
- config VIDEO_EXYNOS_FIMC_LITE
- 	tristate "EXYNOS FIMC-LITE camera interface driver"
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-index 788b1dd..f88a2ad 100644
---- a/drivers/thermal/exynos_thermal.c
-+++ b/drivers/thermal/exynos_thermal.c
-@@ -817,7 +817,7 @@ static struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
- #define EXYNOS4210_TMU_DRV_DATA (NULL)
- #endif
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, info);
  
--#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-+#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4212)
- static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
- 	.threshold_falling = 10,
- 	.trigger_levels[0] = 85,
-diff --git a/drivers/tty/serial/samsung.c b/drivers/tty/serial/samsung.c
-index 0c8a9fa..eeb8ecb 100644
---- a/drivers/tty/serial/samsung.c
-+++ b/drivers/tty/serial/samsung.c
-@@ -1714,8 +1714,7 @@ static struct s3c24xx_serial_drv_data s5pv210_serial_drv_data = {
- #endif
+ 	return error;
+ }
+@@ -1027,17 +1029,19 @@ EXPORT_SYMBOL_GPL(dpm_suspend_end);
+  * @cb: Suspend callback to execute.
+  */
+ static int legacy_suspend(struct device *dev, pm_message_t state,
+-			  int (*cb)(struct device *dev, pm_message_t state))
++			  int (*cb)(struct device *dev, pm_message_t state),
++			  char *info)
+ {
+ 	int error;
+ 	ktime_t calltime;
  
- #if defined(CONFIG_CPU_EXYNOS4210) || defined(CONFIG_SOC_EXYNOS4212) || \
--	defined(CONFIG_SOC_EXYNOS4412) || defined(CONFIG_SOC_EXYNOS5250) || \
--	defined(CONFIG_SOC_EXYNOS5440)
-+	defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS5440)
- static struct s3c24xx_serial_drv_data exynos4210_serial_drv_data = {
- 	.info = &(struct s3c24xx_uart_info) {
- 		.name		= "Samsung Exynos4 UART",
+-	calltime = initcall_debug_start(dev);
++	calltime = initcall_debug_start(dev, info);
+ 
++	pm_dev_dbg(dev, state, info);
+ 	error = cb(dev, state);
+ 	suspend_report_result(cb, error);
+ 
+-	initcall_debug_report(dev, calltime, error);
++	initcall_debug_report(dev, calltime, error, info);
+ 
+ 	return error;
+ }
+@@ -1079,43 +1083,45 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	device_lock(dev);
+ 
+ 	if (dev->pm_domain) {
+-		info = "power domain ";
++		info = "power domain pm ops ";
+ 		callback = pm_op(&dev->pm_domain->ops, state);
+ 		goto Run;
+ 	}
+ 
+ 	if (dev->type && dev->type->pm) {
+-		info = "type ";
++		info = "type pm ops ";
+ 		callback = pm_op(dev->type->pm, state);
+ 		goto Run;
+ 	}
+ 
+ 	if (dev->class) {
+ 		if (dev->class->pm) {
+-			info = "class ";
++			info = "class pm ops ";
+ 			callback = pm_op(dev->class->pm, state);
+ 			goto Run;
+ 		} else if (dev->class->suspend) {
+-			pm_dev_dbg(dev, state, "legacy class ");
+-			error = legacy_suspend(dev, state, dev->class->suspend);
++			info = "legacy class pm ops ";
++			error = legacy_suspend(dev, state, dev->class->suspend,
++				info);
+ 			goto End;
+ 		}
+ 	}
+ 
+ 	if (dev->bus) {
+ 		if (dev->bus->pm) {
+-			info = "bus ";
++			info = "bus pm ops ";
+ 			callback = pm_op(dev->bus->pm, state);
+ 		} else if (dev->bus->suspend) {
+-			pm_dev_dbg(dev, state, "legacy bus ");
+-			error = legacy_suspend(dev, state, dev->bus->suspend);
++			info = "legacy bus pm ops ";
++			error = legacy_suspend(dev, state, dev->bus->suspend,
++				info);
+ 			goto End;
+ 		}
+ 	}
+ 
+  Run:
+ 	if (!callback && dev->driver && dev->driver->pm) {
+-		info = "driver ";
++		info = "driver pm ops ";
+ 		callback = pm_op(dev->driver->pm, state);
+ 	}
+ 
 -- 
-1.8.2.1
+1.7.10.4
+
