@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V6 26/30] thermal: exynos: Add hardware mode thermal calibration support
-Date: Mon, 17 Jun 2013 12:16:35 +0530
-Message-ID: <1371451599-31035-27-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V6 27/30] Documentation: thermal: Explain the exynos thermal driver model
+Date: Mon, 17 Jun 2013 12:16:36 +0530
+Message-ID: <1371451599-31035-28-git-send-email-amit.daniel@samsung.com>
 References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
@@ -10,122 +10,88 @@ To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin 
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds support for h/w mode calibration in the TMU controller.
-soc's like 5440 support this features.
+This patch updates the documentation to explain the driver model
+and file layout.
 
 Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c      |   15 +++++++++++++++
- drivers/thermal/samsung/exynos_tmu.h      |    6 ++++++
- drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
- drivers/thermal/samsung/exynos_tmu_data.h |    2 ++
- 4 files changed, 25 insertions(+), 0 deletions(-)
+ Documentation/thermal/exynos_thermal |   43 ++++++++++++++++++++++++++-------
+ 1 files changed, 34 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index af0e6ca..7a259f4 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -73,6 +73,9 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
- 	int temp_code;
+diff --git a/Documentation/thermal/exynos_thermal b/Documentation/thermal/exynos_thermal
+index 2b46f67..9010c44 100644
+--- a/Documentation/thermal/exynos_thermal
++++ b/Documentation/thermal/exynos_thermal
+@@ -1,17 +1,17 @@
+-Kernel driver exynos4_tmu
++Kernel driver exynos_tmu
+ =================
  
-+	if (pdata->cal_mode == HW_MODE)
-+		return temp;
+ Supported chips:
+-* ARM SAMSUNG EXYNOS4 series of SoC
+-  Prefix: 'exynos4-tmu'
++* ARM SAMSUNG EXYNOS4, EXYNOS5 series of SoC
+   Datasheet: Not publicly available
+ 
+ Authors: Donggeun Kim <dg77.kim@samsung.com>
++Authors: Amit Daniel <amit.daniel@samsung.com>
+ 
+-Description
+------------
++TMU controller Description:
++---------------------------
+ 
+-This driver allows to read temperature inside SAMSUNG EXYNOS4 series of SoC.
++This driver allows to read temperature inside SAMSUNG EXYNOS4/5 series of SoC.
+ 
+ The chip only exposes the measured 8-bit temperature code value
+ through a register.
+@@ -34,9 +34,9 @@ The three equations are:
+   TI2: Trimming info for 85 degree Celsius (stored at TRIMINFO register)
+        Temperature code measured at 85 degree Celsius which is unchanged
+ 
+-TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
++TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
+ when temperature exceeds pre-defined levels.
+-The maximum number of configurable threshold is four.
++The maximum number of configurable threshold is five.
+ The threshold levels are defined as follows:
+   Level_0: current temperature > trigger_level_0 + threshold
+   Level_1: current temperature > trigger_level_1 + threshold
+@@ -47,6 +47,31 @@ The threshold levels are defined as follows:
+   through the corresponding registers.
+ 
+ When an interrupt occurs, this driver notify kernel thermal framework
+-with the function exynos4_report_trigger.
++with the function exynos_report_trigger.
+ Although an interrupt condition for level_0 can be set,
+ it can be used to synchronize the cooling action.
 +
- 	if (data->soc == SOC_ARCH_EXYNOS4210)
- 		/* temp should range between 25 and 125 */
- 		if (temp < 25 || temp > 125) {
-@@ -107,6 +110,9 @@ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
- 	struct exynos_tmu_platform_data *pdata = data->pdata;
- 	int temp;
- 
-+	if (pdata->cal_mode == HW_MODE)
-+		return temp_code;
++TMU driver description:
++-----------------------
 +
- 	if (data->soc == SOC_ARCH_EXYNOS4210)
- 		/* temp_code should range between 75 and 175 */
- 		if (temp_code < 75 || temp_code > 175) {
-@@ -155,6 +161,9 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
- 		__raw_writel(1, data->base + reg->triminfo_ctrl);
- 
-+	if (pdata->cal_mode == HW_MODE)
-+		goto skip_calib_data;
++The exynos thermal driver is structured as,
 +
- 	/* Save trimming info in order to perform calibration */
- 	if (data->soc == SOC_ARCH_EXYNOS5440) {
- 		/*
-@@ -190,6 +199,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
- 			(pdata->efuse_value >> reg->triminfo_85_shift) &
- 			EXYNOS_TMU_TEMP_MASK;
- 
-+skip_calib_data:
- 	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
- 		dev_err(&pdev->dev, "Invalid max trigger level\n");
- 		goto out;
-@@ -319,6 +329,11 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
- 		con |= (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
- 	}
- 
-+	if (pdata->cal_mode == HW_MODE) {
-+		con &= ~(reg->calib_mode_mask << reg->calib_mode_shift);
-+		con |= pdata->cal_type << reg->calib_mode_shift;
-+	}
++					Kernel Core thermal framework
++				(thermal_core.c, step_wise.c, cpu_cooling.c)
++								^
++								|
++								|
++TMU configuration data -------> TMU Driver  <------> Exynos Core thermal wrapper
++(exynos_tmu_data.c)	      (exynos_tmu.c)	   (exynos_thermal_common.c)
++(exynos_tmu_data.h)	      (exynos_tmu.h)	   (exynos_thermal_common.h)
 +
- 	if (on) {
- 		con |= (1 << reg->core_en_shift);
- 		interrupt_en =
-diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
-index 73aaed7..abfa1eb 100644
---- a/drivers/thermal/samsung/exynos_tmu.h
-+++ b/drivers/thermal/samsung/exynos_tmu.h
-@@ -88,6 +88,10 @@ enum soc_type {
-  * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctrl
- 	register.
-  * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl register.
-+ * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl
-+	register.
-+ * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
-+	register.
-  * @therm_trip_tq_en_shift: shift bits of thermal trip enable by TQ pin in
- 	tmu_ctrl register.
-  * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
-@@ -149,6 +153,8 @@ struct exynos_tmu_registers {
- 	u32	therm_trip_en_shift;
- 	u32	buf_slope_sel_shift;
- 	u32	buf_slope_sel_mask;
-+	u32	calib_mode_shift;
-+	u32	calib_mode_mask;
- 	u32	therm_trip_tq_en_shift;
- 	u32	core_en_shift;
- 
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
-index b34e726..47c5d6b 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.c
-+++ b/drivers/thermal/samsung/exynos_tmu_data.c
-@@ -189,6 +189,8 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
- 	.therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
- 	.buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
- 	.buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-+	.calib_mode_shift = EXYNOS_TMU_CALIB_MODE_SHIFT,
-+	.calib_mode_mask = EXYNOS_TMU_CALIB_MODE_MASK,
- 	.core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
- 	.tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
- 	.tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
-diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
-index 43ce5fb..dc7feb5 100644
---- a/drivers/thermal/samsung/exynos_tmu_data.h
-+++ b/drivers/thermal/samsung/exynos_tmu_data.h
-@@ -75,6 +75,8 @@
- #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
- #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
- #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
-+#define EXYNOS_TMU_CALIB_MODE_SHIFT	4
-+#define EXYNOS_TMU_CALIB_MODE_MASK	0x3
- 
- #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
- #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
++a) TMU configuration data: This consist of TMU register offsets/bitfields
++		described through structure exynos_tmu_registers. Also several
++		other platform data (struct exynos_tmu_platform_data) members
++		are used to configure the TMU.
++b) TMU driver: This component initialises the TMU controller and sets different
++		thresholds. It invokes core thermal implementation with the call
++		exynos_report_trigger.
++c) Exynos Core thermal wrapper: This provides 3 wrapper function to use the
++		Kernel core thermal framework. They are exynos_unregister_thermal,
++		exynos_register_thermal and exynos_report_trigger.
 -- 
 1.7.1
