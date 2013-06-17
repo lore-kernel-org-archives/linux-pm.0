@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V6 01/30] thermal: exynos: Moving exynos thermal files into samsung directory
-Date: Mon, 17 Jun 2013 12:16:10 +0530
-Message-ID: <1371451599-31035-2-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V6 03/30] thermal: exynos: Remove un-necessary CPU_THERMAL dependency
+Date: Mon, 17 Jun 2013 12:16:12 +0530
+Message-ID: <1371451599-31035-4-git-send-email-amit.daniel@samsung.com>
 References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
@@ -10,94 +10,28 @@ To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin 
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-This movement of files is done for easy maintenance and adding more
-new sensor's support for exynos platform easily . This will also help in
-bifurcating exynos common, sensor driver and sensor data related parts.
+This patch removes the dependency on CPU_THERMAL for compiling TMU driver.
+This is useful for cases when only TMU controller needs to be initialised
+without cpu cooling action.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/Kconfig                        |   13 +++++--------
- drivers/thermal/Makefile                       |    2 +-
- drivers/thermal/samsung/Kconfig                |    9 +++++++++
- drivers/thermal/samsung/Makefile               |    4 ++++
- drivers/thermal/{ => samsung}/exynos_thermal.c |    0
- 5 files changed, 19 insertions(+), 9 deletions(-)
- create mode 100644 drivers/thermal/samsung/Kconfig
- create mode 100644 drivers/thermal/samsung/Makefile
- rename drivers/thermal/{ => samsung}/exynos_thermal.c (100%)
+ drivers/thermal/samsung/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b13c2bc..ef10cf2 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -114,14 +114,6 @@ config KIRKWOOD_THERMAL
- 	  Support for the Kirkwood thermal sensor driver into the Linux thermal
- 	  framework. Only kirkwood 88F6282 and 88F6283 have this sensor.
- 
--config EXYNOS_THERMAL
--	tristate "Temperature sensor on Samsung EXYNOS"
--	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
--	depends on CPU_THERMAL
--	help
--	  If you say yes here you get support for TMU (Thermal Management
--	  Unit) on SAMSUNG EXYNOS series of SoC.
--
- config DOVE_THERMAL
- 	tristate "Temperature sensor on Marvell Dove SoCs"
- 	depends on ARCH_DOVE
-@@ -185,4 +177,9 @@ menu "Texas Instruments thermal drivers"
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
- 
-+menu "Samsung thermal drivers"
-+depends on PLAT_SAMSUNG
-+source "drivers/thermal/samsung/Kconfig"
-+endmenu
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 67184a2..1f27ada 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -17,7 +17,7 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+= cpu_cooling.o
- obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
- obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
- obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
--obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
-+obj-y				+= samsung/
- obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
 diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
-new file mode 100644
-index 0000000..2d3d9dc
---- /dev/null
+index 883a8a8..2cf31ad 100644
+--- a/drivers/thermal/samsung/Kconfig
 +++ b/drivers/thermal/samsung/Kconfig
-@@ -0,0 +1,9 @@
-+config EXYNOS_THERMAL
-+	tristate "Temperature sensor on Samsung EXYNOS"
-+	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
-+	depends on CPU_THERMAL
-+	help
-+	  If you say yes here you get support for TMU (Thermal Management
-+	  Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
-+	  the exynos thermal driver with the core thermal layer and cpu
-+	  cooling API's.
-diff --git a/drivers/thermal/samsung/Makefile b/drivers/thermal/samsung/Makefile
-new file mode 100644
-index 0000000..1fe6d93
---- /dev/null
-+++ b/drivers/thermal/samsung/Makefile
-@@ -0,0 +1,4 @@
-+#
-+# Samsung thermal specific Makefile
-+#
-+obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
-diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/samsung/exynos_thermal.c
-similarity index 100%
-rename from drivers/thermal/exynos_thermal.c
-rename to drivers/thermal/samsung/exynos_thermal.c
+@@ -1,7 +1,6 @@
+ config EXYNOS_THERMAL
+ 	tristate "Temperature sensor on Samsung EXYNOS"
+ 	depends on ARCH_HAS_BANDGAP
+-	depends on CPU_THERMAL
+ 	help
+ 	  If you say yes here you get support for TMU (Thermal Management
+ 	  Unit) on SAMSUNG EXYNOS series of SoC. This helps in registering
 -- 
 1.7.1
