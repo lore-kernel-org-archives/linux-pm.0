@@ -1,63 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL] PM / AVS: SmartReflex: misc. cleanups for v3.11
-Date: Sun, 16 Jun 2013 01:42:57 +0200
-Message-ID: <4527471.8MLetdnxDa@vostro.rjw.lan>
-References: <87r4g5ac75.fsf@linaro.org>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH V5 02/30] thermal: exynos: Add ARCH_HAS_TMU config to
+ know the supported soc's
+Date: Sun, 16 Jun 2013 23:05:31 -0400
+Message-ID: <51BE7CFB.6020008@ti.com>
+References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com> <1370955220-2949-3-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <87r4g5ac75.fsf@linaro.org>
-Sender: linux-omap-owner@vger.kernel.org
-To: Kevin Hilman <khilman@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-omap <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org, nm@ti.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2WXGDDBRSFUMEOPULOTXF"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1370955220-2949-3-git-send-email-amit.daniel@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 13, 2013 03:16:30 PM Kevin Hilman wrote:
-> Hi Rafael,
-> 
-> Please pull the following cleanups to  AVS/SmartReflex for v3.11.
+------enig2WXGDDBRSFUMEOPULOTXF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Pulled, thanks Kevin!
+Hey Amit,
 
-Rafael
+On 11-06-2013 08:53, Amit Daniel Kachhap wrote:
+> This patch adds config sybmol ARCH_HAS_TMU to enable the TMU driver.
+> This will allow adding support for new soc easily as now it is the
+> platform responsibility to enable this config symbol.
+>=20
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> ---
+>  drivers/thermal/samsung/Kconfig |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/=
+Kconfig
+> index 2d3d9dc..145a55d 100644
+> --- a/drivers/thermal/samsung/Kconfig
+> +++ b/drivers/thermal/samsung/Kconfig
+> @@ -1,6 +1,9 @@
+> +config ARCH_HAS_TMU
+> +	bool
+> +
+>  config EXYNOS_THERMAL
+>  	tristate "Temperature sensor on Samsung EXYNOS"
+> -	depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+> +	depends on ARCH_HAS_TMU
+
+I would rather use ARCH_HAS_BANDGAP as discussed and agreed during your
+v4 review. I managed push this patch through RMK's system:
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=3D7758/1
+
+>  	depends on CPU_THERMAL
+>  	help
+>  	  If you say yes here you get support for TMU (Thermal Management
+>=20
 
 
-> The following changes since commit 317ddd256b9c24b0d78fa8018f80f1e495481a10:
-> 
->   Linux 3.10-rc5 (2013-06-08 17:41:04 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-omap-pm.git tags/omap-pm-v3.11/avs
-> 
-> for you to fetch changes up to efca406b940e93e6af38c597eecd5fb79b39b7ea:
-> 
->   PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex (2013-06-10 10:50:48 -0700)
-> 
-> ----------------------------------------------------------------
-> PM / AVS: SmartReflex: misc. cleanups for v3.11
-> 
-> ----------------------------------------------------------------
-> Andrii Tseglytskyi (6):
->       PM / AVS: SmartReflex: disable runtime PM on driver remove
->       PM / AVS: SmartReflex: fix driver name
->       PM / AVS: SmartReflex: use omap_sr * for errgen interfaces
->       PM / AVS: SmartReflex: use omap_sr * for minmax interfaces
->       PM / AVS: SmartReflex: use omap_sr * for enable/disable interface
->       PM / AVS: SmartReflex: use devm_* API to initialize SmartReflex
-> 
-> Nishanth Menon (1):
->       PM / AVS: SmartReflex: disable errgen before vpbound disable
-> 
->  arch/arm/mach-omap2/smartreflex-class3.c |   8 +-
->  drivers/power/avs/smartreflex.c          | 154 +++++++++++++------------------
->  include/linux/power/smartreflex.h        |  10 +-
->  3 files changed, 72 insertions(+), 100 deletions(-)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2WXGDDBRSFUMEOPULOTXF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlG+fPsACgkQCXcVR3XQvP1WzwEAmtlAswHrz46LPK6MIo/e9vs8
+chXTAUh0g5SQwQLFWDgA/1NpiPYjyzJEchEyIN2zJcYAKdjdNx1V80kIk3kN2cO4
+=+DOd
+-----END PGP SIGNATURE-----
+
+------enig2WXGDDBRSFUMEOPULOTXF--
