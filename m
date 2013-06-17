@@ -1,64 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/3] cpufreq:boost: CPU Boost mode support
-Date: Mon, 17 Jun 2013 08:50:30 +0530
-Message-ID: <CAKohpo=N2U8u_kQVoWLbL-OeufFFBs8e--Unq29Tv+HC5ERaFg@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V5 02/30] thermal: exynos: Add ARCH_HAS_TMU config to know
+ the supported soc's
+Date: Mon, 17 Jun 2013 09:16:58 +0530
+Message-ID: <CADGdYn7miARF2h_7hu5TcvJQvTTJ3SDg01jfFkUN_2OAuJu42w@mail.gmail.com>
+References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
+	<1370955220-2949-3-git-send-email-amit.daniel@samsung.com>
+	<51BE7CFB.6020008@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:49835 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166Ab3FQDq7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jun 2013 23:46:59 -0400
+In-Reply-To: <51BE7CFB.6020008@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-On 14 June 2013 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
->  arch/arm/mach-s3c24xx/cpufreq.c              |    2 +-
->  arch/powerpc/platforms/pasemi/cpufreq.c      |    2 +-
->  arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
->  arch/powerpc/platforms/powermac/cpufreq_64.c |    2 +-
->  drivers/cpufreq/acpi-cpufreq.c               |   62 +++++++-----------
->  drivers/cpufreq/arm_big_little.c             |    3 +-
->  drivers/cpufreq/blackfin-cpufreq.c           |    2 +-
->  drivers/cpufreq/cpufreq-cpu0.c               |    2 +-
->  drivers/cpufreq/cpufreq.c                    |   87 ++++++++++++++++++++++++++
->  drivers/cpufreq/cris-artpec3-cpufreq.c       |    2 +-
->  drivers/cpufreq/cris-etraxfs-cpufreq.c       |    2 +-
->  drivers/cpufreq/davinci-cpufreq.c            |    2 +-
->  drivers/cpufreq/dbx500-cpufreq.c             |    2 +-
->  drivers/cpufreq/e_powersaver.c               |    3 +-
->  drivers/cpufreq/elanfreq.c                   |    2 +-
->  drivers/cpufreq/exynos-cpufreq.c             |    7 ++-
->  drivers/cpufreq/exynos5440-cpufreq.c         |    2 +-
->  drivers/cpufreq/freq_table.c                 |   44 ++++++++++---
->  drivers/cpufreq/ia64-acpi-cpufreq.c          |    2 +-
->  drivers/cpufreq/imx6q-cpufreq.c              |    2 +-
->  drivers/cpufreq/kirkwood-cpufreq.c           |    3 +-
->  drivers/cpufreq/longhaul.c                   |    2 +-
->  drivers/cpufreq/loongson2_cpufreq.c          |    2 +-
->  drivers/cpufreq/maple-cpufreq.c              |    2 +-
->  drivers/cpufreq/omap-cpufreq.c               |    2 +-
->  drivers/cpufreq/p4-clockmod.c                |    2 +-
->  drivers/cpufreq/powernow-k6.c                |    2 +-
->  drivers/cpufreq/powernow-k7.c                |    2 +-
->  drivers/cpufreq/powernow-k8.c                |    2 +-
->  drivers/cpufreq/ppc_cbe_cpufreq.c            |    2 +-
->  drivers/cpufreq/pxa2xx-cpufreq.c             |    4 +-
->  drivers/cpufreq/pxa3xx-cpufreq.c             |    2 +-
->  drivers/cpufreq/s3c2416-cpufreq.c            |    2 +-
->  drivers/cpufreq/s3c64xx-cpufreq.c            |    2 +-
->  drivers/cpufreq/s5pv210-cpufreq.c            |    2 +-
->  drivers/cpufreq/sc520_freq.c                 |    2 +-
->  drivers/cpufreq/sh-cpufreq.c                 |    2 +-
->  drivers/cpufreq/sparc-us2e-cpufreq.c         |    2 +-
->  drivers/cpufreq/sparc-us3-cpufreq.c          |    2 +-
->  drivers/cpufreq/spear-cpufreq.c              |    3 +-
->  drivers/cpufreq/speedstep-centrino.c         |    2 +-
->  drivers/cpufreq/speedstep-ich.c              |    2 +-
->  drivers/cpufreq/speedstep-smi.c              |    2 +-
->  drivers/cpufreq/tegra-cpufreq.c              |    4 +-
->  include/linux/cpufreq.h                      |   18 +++++-
->  45 files changed, 211 insertions(+), 95 deletions(-)
+Hi Eduardo,
 
-Wow!! I am shocked to see these many files getting updated :)
+On Mon, Jun 17, 2013 at 8:35 AM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> Hey Amit,
+>
+> On 11-06-2013 08:53, Amit Daniel Kachhap wrote:
+>> This patch adds config sybmol ARCH_HAS_TMU to enable the TMU driver.
+>> This will allow adding support for new soc easily as now it is the
+>> platform responsibility to enable this config symbol.
+>>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  drivers/thermal/samsung/Kconfig |    5 ++++-
+>>  1 files changed, 4 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
+>> index 2d3d9dc..145a55d 100644
+>> --- a/drivers/thermal/samsung/Kconfig
+>> +++ b/drivers/thermal/samsung/Kconfig
+>> @@ -1,6 +1,9 @@
+>> +config ARCH_HAS_TMU
+>> +     bool
+>> +
+>>  config EXYNOS_THERMAL
+>>       tristate "Temperature sensor on Samsung EXYNOS"
+>> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
+>> +     depends on ARCH_HAS_TMU
+>
+> I would rather use ARCH_HAS_BANDGAP as discussed and agreed during your
+> v4 review. I managed push this patch through RMK's system:
+> http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=7758/1
+Agreed I will post my TMU re-structured patches with this config flag.
+
+Thanks,
+Amit Daniel
+
+>
+>>       depends on CPU_THERMAL
+>>       help
+>>         If you say yes here you get support for TMU (Thermal Management
+>>
+>
+>
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+>
+> Eduardo Valentin
+>
