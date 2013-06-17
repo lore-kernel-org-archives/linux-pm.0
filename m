@@ -1,60 +1,62 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCHv v3] power: Include additional information in
- pm_print_times
-Date: Mon, 17 Jun 2013 12:41:38 -0700
-Message-ID: <20130617194138.GA31056@kroah.com>
-References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH -next v3] thermal:  fix x86_pkg_temp_thermal.c build and
+ Kconfig
+Date: Mon, 17 Jun 2013 21:45:24 +0200
+Message-ID: <20130617194524.GD8197@pd.tnic>
+References: <20130617185106.5950ffbf4b96acd9b2b2c834@canb.auug.org.au>
+ <51BF4159.1000004@infradead.org>
+ <51BF46C3.3090900@linux.intel.com>
+ <51BF4DA2.40601@infradead.org>
+ <51BF50E3.9000806@linux.intel.com>
+ <51BF5174.805@infradead.org>
+ <20130617181702.GA7217@pd.tnic>
+ <51BF6315.9020501@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:40386 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752584Ab3FQTlj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 15:41:39 -0400
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-next-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <51BF6315.9020501@infradead.org>
+Sender: linux-next-owner@vger.kernel.org
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, joe@perches.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Mon, Jun 17, 2013 at 01:36:35PM -0600, Shuah Khan wrote:
-> Change __device_suspend() path to include driver name and the ops that
-> get run for a device. This additional information helps associate the
-> driver and the type of pm_ops the device uses in the suspend path very
-> quickly, which will aid in debugging problems in suspend and resume paths.
-> Changed both start and end debug messages to include pm_ops information
-> and use dev_info() instead of pr_info(). Changed the end message to include
-> parent device information and have the same format as the start message.
+On Mon, Jun 17, 2013 at 12:27:17PM -0700, Randy Dunlap wrote:
+> From: Randy Dunlap <rdunlap@infradead.org>
 > 
-> dmesg output before the change:
+> Fix build error in x86_pkg_temp_thermal.c.  It requires that
+> X86_MCE & X86_THERMAL_VECTOR be enabled, so depend on the latter symbol,
+> since it depends on X86_MCE (indirectly).
 > 
-> [  164.390032] calling  1-1+ @ 69, parent: usb1
-> [  164.390035] call 1-1+ returned 0 after 0 usecs
+> Also, X86_PKG_TEMP_THERMAL is already inside an "if THERMAL" block,
+> so remove that duplicated dependency.
 > 
-> [  164.390352] calling  00:0a+ @ 2457, parent: pnp0
-> [  164.390357] call 00:0a+ returned 0 after 3 usecs
+> ERROR: "platform_thermal_package_rate_control" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+> ERROR: "platform_thermal_package_notify" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
 > 
-> [  164.390361] calling  00:09+ @ 2457, parent: pnp0
-> [  164.496458] call 00:09+ returned 0 after 103500 usecs
+> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> ---
+>  drivers/thermal/Kconfig |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> [  164.496494] calling  00:05+ @ 2457, parent: pnp0
-> [  164.496511] call 00:05+ returned 0 after 14 usecs
-> 
-> dmesg output after the change:
-> 
-> [  545.985394] usb 1-1: Start: type pm ops @ 68, parent: usb1
-> [  545.987650] usb 1-1: End  : type pm ops @ 68, parent: usb1 time(2184 usecs) err(0)
-> 
-> [  545.982544] system 00:0a: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  545.982554] system 00:0a: End  : legacy bus pm ops @ 2391, parent: pnp0 time(4 usecs) err(0)
-> 
-> [  545.982569] tpm_tis 00:09: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  546.087017] tpm_tis 00:09: End  : legacy bus pm ops @ 2391, parent: pnp0 time(101936 usecs) err(0)
-> 
-> [  546.087069] rtc_cmos 00:05: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  546.087084] rtc_cmos 00:05: End  : legacy bus pm ops @ 2391, parent: pnp0 time(11 usecs) err(0)
-> 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+> --- linux-next-20130617.orig/drivers/thermal/Kconfig
+> +++ linux-next-20130617/drivers/thermal/Kconfig
+> @@ -171,8 +171,7 @@ config INTEL_POWERCLAMP
+>  
+>  config X86_PKG_TEMP_THERMAL
+>  	tristate "X86 package temperature thermal driver"
+> -	depends on THERMAL
+> -	depends on X86
+> +	depends on X86_THERMAL_VECTOR
+>  	select THERMAL_GOV_USER_SPACE
+>  	default m
+>  	help
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Borislav Petkov <bp@suse.de>
+
+-- 
+Regards/Gruss,
+    Boris.
+
+Sent from a fat crate under my desk. Formatting is fine.
+--
