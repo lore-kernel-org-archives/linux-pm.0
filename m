@@ -1,71 +1,54 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V5 02/30] thermal: exynos: Add ARCH_HAS_TMU config to know
- the supported soc's
-Date: Mon, 17 Jun 2013 09:16:58 +0530
-Message-ID: <CADGdYn7miARF2h_7hu5TcvJQvTTJ3SDg01jfFkUN_2OAuJu42w@mail.gmail.com>
-References: <1370955220-2949-1-git-send-email-amit.daniel@samsung.com>
-	<1370955220-2949-3-git-send-email-amit.daniel@samsung.com>
-	<51BE7CFB.6020008@ti.com>
+From: Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [uclinux-dist-devel] [PATCH 01/11] cpufreq: blackfin: enable driver for CONFIG_BFIN_CPU_FREQ
+Date: Mon, 17 Jun 2013 00:39:49 -0400
+Message-ID: <201306170039.53657.vapier@gentoo.org>
+References: <cover.1371022830.git.viresh.kumar@linaro.org> <257a5d42e71bcec9fa9c8d09e1ad2c781db7c083.1371022830.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:49835 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166Ab3FQDq7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Jun 2013 23:46:59 -0400
-In-Reply-To: <51BE7CFB.6020008@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed;
+  boundary="nextPart6294892.iTiYXKjeEt";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <257a5d42e71bcec9fa9c8d09e1ad2c781db7c083.1371022830.git.viresh.kumar@linaro.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: uclinux-dist-devel@blackfin.uclinux.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, arnd@arndb.de, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, arvind.chauhan@arm.com, charles.garcia-tobin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-Hi Eduardo,
+--nextPart6294892.iTiYXKjeEt
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-On Mon, Jun 17, 2013 at 8:35 AM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> Hey Amit,
->
-> On 11-06-2013 08:53, Amit Daniel Kachhap wrote:
->> This patch adds config sybmol ARCH_HAS_TMU to enable the TMU driver.
->> This will allow adding support for new soc easily as now it is the
->> platform responsibility to enable this config symbol.
->>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  drivers/thermal/samsung/Kconfig |    5 ++++-
->>  1 files changed, 4 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/Kconfig b/drivers/thermal/samsung/Kconfig
->> index 2d3d9dc..145a55d 100644
->> --- a/drivers/thermal/samsung/Kconfig
->> +++ b/drivers/thermal/samsung/Kconfig
->> @@ -1,6 +1,9 @@
->> +config ARCH_HAS_TMU
->> +     bool
->> +
->>  config EXYNOS_THERMAL
->>       tristate "Temperature sensor on Samsung EXYNOS"
->> -     depends on (ARCH_EXYNOS4 || ARCH_EXYNOS5)
->> +     depends on ARCH_HAS_TMU
->
-> I would rather use ARCH_HAS_BANDGAP as discussed and agreed during your
-> v4 review. I managed push this patch through RMK's system:
-> http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=7758/1
-Agreed I will post my TMU re-structured patches with this config flag.
+On Wednesday 12 June 2013 04:15:08 Viresh Kumar wrote:
+> By mistake blackfin's cpufreq driver is enabled when CONFIG_BLACKFIN was
+> present, whereas it should have been enabled only when CONFIG_BFIN_CPU_FREQ
+> is present.
 
-Thanks,
-Amit Daniel
+Acked-by: Mike Frysinger <vapier@gentoo.org>
+-mike
 
->
->>       depends on CPU_THERMAL
->>       help
->>         If you say yes here you get support for TMU (Thermal Management
->>
->
->
-> --
-> You have got to be excited about what you are doing. (L. Lamport)
->
-> Eduardo Valentin
->
+--nextPart6294892.iTiYXKjeEt
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (GNU/Linux)
+
+iQIcBAABAgAGBQJRvpMZAAoJEEFjO5/oN/WBbVQP+QGgKzpUkDvr/gsrjSiocnck
+uCaumylrvo6mngMe4wrgFWDge19/v4CLwOrNRI9QbVE4Wyy4u+dw93+il1tltrmu
+PpA0SyB1kL91kFCDr4gknnsqS39VotWY4CHXgxYOYBeg9Xrx8zO1thkhLtxNZTrU
+PB+FlEUQsCUnLkhQpjAtT6jr6KRQen9w8i0s7NECku+UOBwWBIvMFN4pMkngiMUV
+kShZ6TUgTLo3Z2JarMnrPwqvKioT5ha7gNHpqD75BLCaLmC7kv7I3c1+l43L2l6f
+VAVxohMxGJr+QupBmS0AicnO0HuWGebT0Zb3hb5XCwNG/SE9XZ5K0K5es7ItSRAY
+28MBy9gbcdgO+0YoycvwqrrThH/JTxuV8PaoAgwYDBNVRiJeGjgwYwMrtl+1eFH9
+2Zv4OJLbQtT97SiZutTyDN83nVwlCDMlf7sI6mPo+i/yuNThrXEnOUvDHOlYUUWc
+8+m++JzgWYeDkblE4yiqvZEDmbA0CDuePsmwElvCYrPQsqGZ0Z+39rT0FX71/evS
+yRRNAPQy3dHSezhT1EMSZD5mqecm08DALNoN8qfEmwJWIpIsljjwrMpGIZbWGjHA
+iuRSB8Uch9Jk3Ln9AcJXtY8Klp7rAFoxLp/KPeUfPsAGjOfspoe9GldLj407P1uu
+z/MxN5Vqk57vJSf/4JG2
+=sp2j
+-----END PGP SIGNATURE-----
+
+--nextPart6294892.iTiYXKjeEt--
