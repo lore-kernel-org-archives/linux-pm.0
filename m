@@ -1,63 +1,50 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCHv v3] power: Include additional information in pm_print_times
-Date: Mon, 17 Jun 2013 16:24:00 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1306171618430.1684-100000@iolanthe.rowland.org>
-References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: [PATCH] ACPI / PM: Fix error code path for power resources initialization
+Date: Tue, 18 Jun 2013 00:37:45 +0200
+Message-ID: <8547354.D2OPcUytEB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:36873 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751923Ab3FQUYB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 16:24:01 -0400
-In-Reply-To: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+Received: from hydra.sisk.pl ([212.160.235.94]:40683 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752204Ab3FQW20 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Jun 2013 18:28:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, joe@perches.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Mon, 17 Jun 2013, Shuah Khan wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> Change __device_suspend() path to include driver name and the ops that
-> get run for a device. This additional information helps associate the
-> driver and the type of pm_ops the device uses in the suspend path very
-> quickly, which will aid in debugging problems in suspend and resume paths.
-> Changed both start and end debug messages to include pm_ops information
-> and use dev_info() instead of pr_info(). Changed the end message to include
-> parent device information and have the same format as the start message.
-> 
-> dmesg output before the change:
-> 
-> [  164.390032] calling  1-1+ @ 69, parent: usb1
-> [  164.390035] call 1-1+ returned 0 after 0 usecs
-> 
-> [  164.390352] calling  00:0a+ @ 2457, parent: pnp0
-> [  164.390357] call 00:0a+ returned 0 after 3 usecs
-> 
-> [  164.390361] calling  00:09+ @ 2457, parent: pnp0
-> [  164.496458] call 00:09+ returned 0 after 103500 usecs
-> 
-> [  164.496494] calling  00:05+ @ 2457, parent: pnp0
-> [  164.496511] call 00:05+ returned 0 after 14 usecs
-> 
-> dmesg output after the change:
-> 
-> [  545.985394] usb 1-1: Start: type pm ops @ 68, parent: usb1
-> [  545.987650] usb 1-1: End  : type pm ops @ 68, parent: usb1 time(2184 usecs) err(0)
-> 
-> [  545.982544] system 00:0a: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  545.982554] system 00:0a: End  : legacy bus pm ops @ 2391, parent: pnp0 time(4 usecs) err(0)
-> 
-> [  545.982569] tpm_tis 00:09: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  546.087017] tpm_tis 00:09: End  : legacy bus pm ops @ 2391, parent: pnp0 time(101936 usecs) err(0)
-> 
-> [  546.087069] rtc_cmos 00:05: Start: legacy bus pm ops @ 2391, parent: pnp0
-> [  546.087084] rtc_cmos 00:05: End  : legacy bus pm ops @ 2391, parent: pnp0 time(11 usecs) err(0)
+Commit 781d737 (ACPI: Drop power resources driver) introduced a
+bug in the power resources initialization error code path causing
+a NULL pointer to be referenced in acpi_release_power_resource()
+if there's an error triggering a jump to the 'err' label in
+acpi_add_power_resource().  This happens because the list_node
+field of struct acpi_power_resource has not been initialized yet
+at this point and doing a list_del() on it is a bad idea.
 
-If you don't mind a little more bike-shedding, I suggest formatting the 
-return value and time in a shorter format, like this:
+To prevent this problem from occuring, initialize the list_node
+field of struct acpi_power_resource upfront.
 
-[  545.987650] usb 1-1: End  : type pm ops @ 68, parent: usb1 -> 0, 2184 us
+Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: 3.9+ <stable@vger.kernel.org>
+---
+ drivers/acpi/power.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Alan Stern
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -882,6 +882,7 @@ int acpi_add_power_resource(acpi_handle
+ 				ACPI_STA_DEFAULT);
+ 	mutex_init(&resource->resource_lock);
+ 	INIT_LIST_HEAD(&resource->dependent);
++	INIT_LIST_HEAD(&resource->list_node);
+ 	resource->name = device->pnp.bus_id;
+ 	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
+ 	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
 
