@@ -1,80 +1,124 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCH v2] power: Include additional information in pm_print_times
-Date: Mon, 17 Jun 2013 15:06:41 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E61726FF6@sisaex02sj>
-References: <1371242124-11452-1-git-send-email-shuah.kh@samsung.com>
- <1371243301.31941.61.camel@joe-AO722>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@sisk.pl" <rjw@sisk.pl>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH] tick: fix tick_broadcast_pending_mask not cleared
+Date: Mon, 17 Jun 2013 18:15:35 +0200
+Message-ID: <1371485735-31249-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org
+Cc: josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, patche-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/14/2013 02:55 PM, Joe Perches wrote:
-> On Fri, 2013-06-14 at 14:35 -0600, Shuah Khan wrote:
->> Change __device_suspend() path to include driver name and the ops that
->> get run for a device. This additional information helps associate the
->> driver and the type of pm_ops the device uses in the suspend path very
->> quickly which will aid in debugging problems in suspend and resume paths.
->> Changed both start and end debug messages to include pm_ops information
->> and use dev_info() instead of pr_info().
->>
->> dmesg output before the change:
->>
->> [  164.390032] calling  1-1+ @ 69, parent: usb1
->> [  164.390035] call 1-1+ returned 0 after 0 usecs
->
->> dmesg output after the change:
->>
->> [   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
->> [   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
->
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> []
->> +static ktime_t initcall_debug_start(struct device *dev, char *info)
-> []
->> +		/* string in info has an extra space at the end */
->> +		dev_info(dev, "calling %s@ %i, parent: %s\n",
->> +			info, task_pid_nr(current),
->>   			dev->parent ? dev_name(dev->parent) : "none");
->
->>   static void initcall_debug_report(struct device *dev, ktime_t calltime,
-> []
->> -		pr_info("call %s+ returned %d after %Ld usecs\n", dev_name(dev),
->> +		/* string in info has an extra space at the end */
->> +		dev_info(dev, "call %sreturned %d after %llu usecs\n", info,
->>   			error, (unsigned long long)ktime_to_ns(delta) >> 10);
->
-> Perhaps align the "calling and "call" and include
-> task_pid_nr(current)?
->
-> [   58.707002] usb usb1: calling type pm ops @ 57, parent: 0000:00:1d.0
-> [   58.707641] usb usb1: call type pm ops returned 0 after 611 usecs
->
-> so it's:
->
-> [   58.707002] usb usb1: enter 'type pm ops' @ 57, parent: 0000:00:1d.0
-> [   58.707641] usb usb1: exit  'type pm ops' @ 57, parent: 0000:00:1d.0, error: 0 (611 usecs)
->
-> or:
->
-> [   58.707002] usb usb1: enter 'type pm ops' @ 57, parent: 0000:00:1d.0
-> [   58.707641] usb usb1: exit  'type pm ops' @ 57, error:  0 (611 usecs)
->
->
->
+The recent modification in the cpuidle framework consolidated the timer
+broadcast code across the different drivers by setting a new flag in the idle
+state. It tells the cpuidle core code to enter/exit to the broadcast mode for
+the cpu when entering a deep idle state. The broadcast timer enter/exit is no
+longer handled by the back-end driver.
 
-Including parent id and task id in the debug_report makes sense to have 
-a tighter association between start and end messages. Let me re-work it 
-and send another revision of the patch. I will use Start/end or 
-Begin/end pairing.
+This change made the local interrupt to be enabled *before* calling
+CLOCK_EVENT_NOTIFY_EXIT. bad or not (see below) ?
 
-thanks,
--- Shuah
+On a tegra114, a four cores system, when the flag has been introduced in the
+driver, the following warning appeared:
 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
+[   25.629559] WARNING: CPU: 2 PID: 0 at
+kernel/time/tick-broadcast.c:578 tick_broadcast_oneshot_control
++0x1a4/0x1d0()
+[   25.629565] Modules linked in:
+[   25.629574] CPU: 2 PID: 0 Comm: swapper/2 Not tainted
+3.10.0-rc3-next-20130529+ #15
+[   25.629601] [<c00148f4>] (unwind_backtrace+0x0/0xf8) from
+[<c0011040>] (show_stack+0x10/0x14)
+[   25.629616] [<c0011040>] (show_stack+0x10/0x14) from [<c0504248>]
+(dump_stack+0x80/0xc4)
+[   25.629633] [<c0504248>] (dump_stack+0x80/0xc4) from [<c00231ac>]
+(warn_slowpath_common+0x64/0x88)
+[   25.629646] [<c00231ac>] (warn_slowpath_common+0x64/0x88) from
+[<c00231ec>] (warn_slowpath_null+0x1c/0x24)
+[   25.629657] [<c00231ec>] (warn_slowpath_null+0x1c/0x24) from
+[<c00667f8>] (tick_broadcast_oneshot_control+0x1a4/0x1d0)
+[   25.629670] [<c00667f8>] (tick_broadcast_oneshot_control+0x1a4/0x1d0)
+from [<c0065cd0>] (tick_notify+0x240/0x40c)
+[   25.629685] [<c0065cd0>] (tick_notify+0x240/0x40c) from [<c0044724>]
+(notifier_call_chain+0x44/0x84)
+[   25.629699] [<c0044724>] (notifier_call_chain+0x44/0x84) from
+[<c0044828>] (raw_notifier_call_chain+0x18/0x20)
+[   25.629712] [<c0044828>] (raw_notifier_call_chain+0x18/0x20) from
+[<c00650cc>] (clockevents_notify+0x28/0x170)
+[   25.629726] [<c00650cc>] (clockevents_notify+0x28/0x170) from
+[<c033f1f0>] (cpuidle_idle_call+0x11c/0x168)
+[   25.629739] [<c033f1f0>] (cpuidle_idle_call+0x11c/0x168) from
+[<c000ea94>] (arch_cpu_idle+0x8/0x38)
+[   25.629755] [<c000ea94>] (arch_cpu_idle+0x8/0x38) from [<c005ea80>]
+(cpu_startup_entry+0x60/0x134)
+[   25.629767] [<c005ea80>] (cpu_startup_entry+0x60/0x134) from
+[<804fe9a4>] (0x804fe9a4)
+[   25.629772] ---[ end trace 5484e77e2531bccc ]---
+
+I don't have the hardware, so I wasn't able to reproduce the warning but after
+looking a while in the code, I deduced the following:
+
+ 1. the CPU2 enters a deep idle state and sets the broadcast timer
+ 2. the timer expires, the tick_handle_oneshot_broadcast function is called,
+    setting the tick_broadcast_pending_mask and waking up the idle cpu CPU2
+ 3. the CPU2 exits idle and invokes tick_broadcast_oneshot_control with
+    CLOCK_EVENT_NOTIFY_EXIT with the following code:
+    [...]
+    if (dev->next_event.tv64 == KTIME_MAX)
+            goto out;
+
+    if (cpumask_test_and_clear_cpu(cpu,
+                                 tick_broadcast_pending_mask))
+            goto out;
+    [...]
+
+ 4. if there is no next event planned for CPU2, we fulfil the first condition and
+    we jump to the 'out' section without clearing the tick_broadcast_pending_mask
+
+ 5. CPU2 goes to deep idle again and calls tick_broadcast_oneshot_control with
+    CLOCK_NOTIFY_EVENT_ENTER but with the tick_broadcast_pending_mask set for
+    CPU2, leading to the WARNING.
+
+Above, it is mentionned the change moved the CLOCK_EVENT_NOTIFY_EXIT after the
+local interrupt were enabled. If it is before, this warning does not occur. My
+hypothesis is the code path described before does not happen because when a
+broadcast timer expires, dev->next_event.tv64 is always different from KTIME_MAX
+because the timer handler did not set the value yet (local interrupt are still
+disabled).
+
+I don't see anywhere in the code, a clockevents_notify(ENTER/EXIT) block must be
+done with the local interrupt disabled in between, furthermore the function uses
+'raw_spin_lock_irqsave' which make me think, we don't care about that.
+
+Invert the conditions and make the tick broadcast code immune from the local
+interrupts context.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reported-by: Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ kernel/time/tick-broadcast.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index d067c01..58d88e8 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -610,8 +610,6 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 	} else {
+ 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
+ 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+-			if (dev->next_event.tv64 == KTIME_MAX)
+-				goto out;
+ 			/*
+ 			 * The cpu which was handling the broadcast
+ 			 * timer marked this cpu in the broadcast
+@@ -625,6 +623,8 @@ void tick_broadcast_oneshot_control(unsigned long reason)
+ 				       tick_broadcast_pending_mask))
+ 				goto out;
+ 
++			if (dev->next_event.tv64 == KTIME_MAX)
++				goto out;
+ 			/*
+ 			 * If the pending bit is not set, then we are
+ 			 * either the CPU handling the broadcast
+-- 
+1.7.9.5
