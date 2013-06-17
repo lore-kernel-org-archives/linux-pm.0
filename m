@@ -1,67 +1,98 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [RFC PATCH 6/6] Thermal: step_wise: set next cooling target explicitly
-Date: Mon, 17 Jun 2013 21:24:28 +0800
-Message-ID: <1371475468-5351-7-git-send-email-rui.zhang@intel.com>
-References: <1371475468-5351-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:50832 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932529Ab3FQNZD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Jun 2013 09:25:03 -0400
-In-Reply-To: <1371475468-5351-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
+Date: Mon, 17 Jun 2013 15:51:56 +0200
+Message-ID: <20130617155156.4c729b5a@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+ <1371195540-2991-2-git-send-email-l.majewski@samsung.com>
+ <CAKohpokQAsuAqWi7rNx9RaFz8KVRNXVkBD22KC5_Qh05k66qqA@mail.gmail.com>
+ <20130617091549.398b865f@amdc308.digital.local>
+ <CAKohpo=nfuqwCoQJRczmNRNXCOTL5FSJQEzjKpVdXU+wu-KJ1g@mail.gmail.com>
+ <20130617110811.1e1805d2@amdc308.digital.local>
+ <CAKohpo=oy3SQXgvNvOydggZ5NZu9yyVtKrdFQjNOGVmzhSaQUw@mail.gmail.com>
+ <20130617115809.5206c42c@amdc308.digital.local>
+ <CAKohpo=yPcH0FW7T38cd3E1xOpzC0AhJ5mtyVaQyuj_S8iLovw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAKohpo=yPcH0FW7T38cd3E1xOpzC0AhJ5mtyVaQyuj_S8iLovw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: eduardo.valentin@ti.com, durgadoss.r@intel.com, shawn.guo@linaro.org, ruslan.ruslichenko@ti.com, Zhang Rui <rui.zhang@intel.com>
 
-Set the next target state explicitly for each thermal trend,
-in step_wise governor, to provide more readability, and to
-follow the cooling algorithm description strictly.
+On Mon, 17 Jun 2013 18:40:50 +0530, Viresh Kumar wrote:
+> On 17 June 2013 15:28, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > Yes. But I don't want to hardcode anything. Especially starting CPU
+> > number.
+> 
+> There is nothing wrong with it. for_each_online_cpu() is good enough
+> on these cases.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/step_wise.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+I've already changed this code to use list of policies.
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 53b56e6..ffa553f 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -60,7 +60,6 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 	 * cdev in use to determine the next_target.
- 	 */
- 	cdev->ops->get_cur_state(cdev, &cur_state);
--	next_target = instance->target;
- 
- 	switch (trend) {
- 	case THERMAL_TREND_RAISING:
-@@ -69,11 +68,14 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 				    (cur_state + 1) : instance->upper;
- 			if (next_target < instance->lower)
- 				next_target = instance->lower;
--		}
-+		} else
-+			next_target = instance->target;
- 		break;
- 	case THERMAL_TREND_RAISE_FULL:
- 		if (throttle)
- 			next_target = instance->upper;
-+		else
-+			next_target = instance->target;
- 		break;
- 	case THERMAL_TREND_DROPPING:
- 		if (throttle) {
-@@ -99,7 +101,10 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 		break;
- 	case THERMAL_TREND_STABLE:
- 		/* Do nothing */
-+		next_target = instance->target;
-+		break;
- 	default:
-+		next_target = instance->target;
- 		break;
- 	}
- 
+I will send this at v4.
+
+> 
+> >> > How one can control the boost? I'm now (on my setup) using
+> >> > thermal subsystem. I set proper trip points and when one of them
+> >> > is met, then boost is disabled. Moreover the thermal governor
+> >> > (stepwise) also reduces frequency.
+> >> >
+> >> > It works stable with v3.10 (with 3.8 there were some bugs - now
+> >> > they are fixed).
+> >> >
+> >> >
+> >> > The core acpi-cpufreq.c code hadn't been changed by me, so I
+> >> > assume that it will work as before.
+> >>
+> >> That should adapt your patch in your patchset.
+
+Could you explain what do you mean? 
+
+
+> 
+> ??
+> 
+> >> From sysfs?? I thought we are going to have some automatic control
+> >> of this stuff from inside kernel.
+> >
+> > From sysfs I just enable the boost. I do not order from userpace the
+> > cpufreq to run with a particular (boosted) frequency.
+> >
+> > When I enable boost - I ask (politely) the cpufreq core to
+> > reevaluate policies and when applicable increase policy->max.
+> >
+> > Then governor can use this new frequencies for normal operation.
+> 
+> So, with your current patchset in, ondemand or conservative governors
+> will start using boost frequencies. Which might burn your chip.
+
+Two scenarios:
+1. Thermal framework is compiled in and enabled (for exynos/other SoC)
+-> trip point is reached -> boost is disabled -> frequency is reduced ->
+SoC is cooled down.
+
+I think, that thermal framework is a good "safe valve" here.
+
+
+2. Thermal framework is disabled and user has enabled boost and used
+ondemand / conservative governor. 
+Then execute gzip < /dev/urandom > /dev/null & (on all cores).
+
+Then yes, chip will hang/burn due to crossing operating point (or burn).
+
+
+What other means of control (despite of thermal) would you consider
+applicable? 
+
+What comes to my mind is modifying governor logic to count how long the
+CPU run with boost enabled and then disable it. 
+
 -- 
-1.7.9.5
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
