@@ -1,54 +1,80 @@
-From: Mike Frysinger <vapier@gentoo.org>
-Subject: Re: [uclinux-dist-devel] [PATCH 01/11] cpufreq: blackfin: enable driver for CONFIG_BFIN_CPU_FREQ
-Date: Mon, 17 Jun 2013 00:39:49 -0400
-Message-ID: <201306170039.53657.vapier@gentoo.org>
-References: <cover.1371022830.git.viresh.kumar@linaro.org> <257a5d42e71bcec9fa9c8d09e1ad2c781db7c083.1371022830.git.viresh.kumar@linaro.org>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH v3 0/3] cpufreq:boost: CPU Boost mode support
+Date: Mon, 17 Jun 2013 07:41:44 +0200
+Message-ID: <20130617074144.74704814@amdc308.digital.local>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+ <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+ <CAKohpo=N2U8u_kQVoWLbL-OeufFFBs8e--Unq29Tv+HC5ERaFg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6294892.iTiYXKjeEt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <257a5d42e71bcec9fa9c8d09e1ad2c781db7c083.1371022830.git.viresh.kumar@linaro.org>
+In-reply-to: <CAKohpo=N2U8u_kQVoWLbL-OeufFFBs8e--Unq29Tv+HC5ERaFg@mail.gmail.com>
 Sender: cpufreq-owner@vger.kernel.org
-To: uclinux-dist-devel@blackfin.uclinux.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, rjw@sisk.pl, robin.randhawa@arm.com, Steve.Bannister@arm.com, arnd@arndb.de, linux-pm@vger.kernel.org, patches@linaro.org, Liviu.Dudau@arm.com, linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linaro-kernel@lists.linaro.org, arvind.chauhan@arm.com, charles.garcia-tobin@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
---nextPart6294892.iTiYXKjeEt
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+On Mon, 17 Jun 2013 08:50:30 +0530, Viresh Kumar wrote:
 
-On Wednesday 12 June 2013 04:15:08 Viresh Kumar wrote:
-> By mistake blackfin's cpufreq driver is enabled when CONFIG_BLACKFIN was
-> present, whereas it should have been enabled only when CONFIG_BFIN_CPU_FREQ
-> is present.
+> On 14 June 2013 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> >  arch/arm/mach-s3c24xx/cpufreq.c              |    2 +-
+> >  arch/powerpc/platforms/pasemi/cpufreq.c      |    2 +-
+> >  arch/powerpc/platforms/powermac/cpufreq_32.c |    2 +-
+> >  arch/powerpc/platforms/powermac/cpufreq_64.c |    2 +-
+> >  drivers/cpufreq/acpi-cpufreq.c               |   62
+> > +++++++----------- drivers/cpufreq/arm_big_little.c
+> > |    3 +- drivers/cpufreq/blackfin-cpufreq.c           |    2 +-
+> >  drivers/cpufreq/cpufreq-cpu0.c               |    2 +-
+> >  drivers/cpufreq/cpufreq.c                    |   87
+> > ++++++++++++++++++++++++++
+> > drivers/cpufreq/cris-artpec3-cpufreq.c       |    2 +-
+> > drivers/cpufreq/cris-etraxfs-cpufreq.c       |    2 +-
+> > drivers/cpufreq/davinci-cpufreq.c            |    2 +-
+> > drivers/cpufreq/dbx500-cpufreq.c             |    2 +-
+> > drivers/cpufreq/e_powersaver.c               |    3 +-
+> > drivers/cpufreq/elanfreq.c                   |    2 +-
+> > drivers/cpufreq/exynos-cpufreq.c             |    7 ++-
+> > drivers/cpufreq/exynos5440-cpufreq.c         |    2 +-
+> > drivers/cpufreq/freq_table.c                 |   44 ++++++++++---
+> > drivers/cpufreq/ia64-acpi-cpufreq.c          |    2 +-
+> > drivers/cpufreq/imx6q-cpufreq.c              |    2 +-
+> > drivers/cpufreq/kirkwood-cpufreq.c           |    3 +-
+> > drivers/cpufreq/longhaul.c                   |    2 +-
+> > drivers/cpufreq/loongson2_cpufreq.c          |    2 +-
+> > drivers/cpufreq/maple-cpufreq.c              |    2 +-
+> > drivers/cpufreq/omap-cpufreq.c               |    2 +-
+> > drivers/cpufreq/p4-clockmod.c                |    2 +-
+> > drivers/cpufreq/powernow-k6.c                |    2 +-
+> > drivers/cpufreq/powernow-k7.c                |    2 +-
+> > drivers/cpufreq/powernow-k8.c                |    2 +-
+> > drivers/cpufreq/ppc_cbe_cpufreq.c            |    2 +-
+> > drivers/cpufreq/pxa2xx-cpufreq.c             |    4 +-
+> > drivers/cpufreq/pxa3xx-cpufreq.c             |    2 +-
+> > drivers/cpufreq/s3c2416-cpufreq.c            |    2 +-
+> > drivers/cpufreq/s3c64xx-cpufreq.c            |    2 +-
+> > drivers/cpufreq/s5pv210-cpufreq.c            |    2 +-
+> > drivers/cpufreq/sc520_freq.c                 |    2 +-
+> > drivers/cpufreq/sh-cpufreq.c                 |    2 +-
+> > drivers/cpufreq/sparc-us2e-cpufreq.c         |    2 +-
+> > drivers/cpufreq/sparc-us3-cpufreq.c          |    2 +-
+> > drivers/cpufreq/spear-cpufreq.c              |    3 +-
+> > drivers/cpufreq/speedstep-centrino.c         |    2 +-
+> > drivers/cpufreq/speedstep-ich.c              |    2 +-
+> > drivers/cpufreq/speedstep-smi.c              |    2 +-
+> > drivers/cpufreq/tegra-cpufreq.c              |    4 +-
+> > include/linux/cpufreq.h                      |   18 +++++- 45 files
+> > changed, 211 insertions(+), 95 deletions(-)
+> 
+> Wow!! I am shocked to see these many files getting updated :)
 
-Acked-by: Mike Frysinger <vapier@gentoo.org>
--mike
+Hmm, CPUFREQ framework is quite popular :-). 
 
---nextPart6294892.iTiYXKjeEt
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Changing this one particular function, seemed to be the best solution.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
+-- 
+Best regards,
 
-iQIcBAABAgAGBQJRvpMZAAoJEEFjO5/oN/WBbVQP+QGgKzpUkDvr/gsrjSiocnck
-uCaumylrvo6mngMe4wrgFWDge19/v4CLwOrNRI9QbVE4Wyy4u+dw93+il1tltrmu
-PpA0SyB1kL91kFCDr4gknnsqS39VotWY4CHXgxYOYBeg9Xrx8zO1thkhLtxNZTrU
-PB+FlEUQsCUnLkhQpjAtT6jr6KRQen9w8i0s7NECku+UOBwWBIvMFN4pMkngiMUV
-kShZ6TUgTLo3Z2JarMnrPwqvKioT5ha7gNHpqD75BLCaLmC7kv7I3c1+l43L2l6f
-VAVxohMxGJr+QupBmS0AicnO0HuWGebT0Zb3hb5XCwNG/SE9XZ5K0K5es7ItSRAY
-28MBy9gbcdgO+0YoycvwqrrThH/JTxuV8PaoAgwYDBNVRiJeGjgwYwMrtl+1eFH9
-2Zv4OJLbQtT97SiZutTyDN83nVwlCDMlf7sI6mPo+i/yuNThrXEnOUvDHOlYUUWc
-8+m++JzgWYeDkblE4yiqvZEDmbA0CDuePsmwElvCYrPQsqGZ0Z+39rT0FX71/evS
-yRRNAPQy3dHSezhT1EMSZD5mqecm08DALNoN8qfEmwJWIpIsljjwrMpGIZbWGjHA
-iuRSB8Uch9Jk3Ln9AcJXtY8Klp7rAFoxLp/KPeUfPsAGjOfspoe9GldLj407P1uu
-z/MxN5Vqk57vJSf/4JG2
-=sp2j
------END PGP SIGNATURE-----
+Lukasz Majewski
 
---nextPart6294892.iTiYXKjeEt--
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
