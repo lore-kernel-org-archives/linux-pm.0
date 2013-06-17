@@ -1,37 +1,63 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 29/38] thermal: exynos: Support both Exynos4x12 SoCs
-Date: Mon, 17 Jun 2013 21:59:15 +0200
-Message-ID: <201306172159.15352.arnd@arndb.de>
-References: <1371486863-12398-1-git-send-email-t.figa@samsung.com> <1371486863-12398-30-git-send-email-t.figa@samsung.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCHv v3] power: Include additional information in pm_print_times
+Date: Mon, 17 Jun 2013 16:24:00 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1306171618430.1684-100000@iolanthe.rowland.org>
+References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1371486863-12398-30-git-send-email-t.figa@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomasz Figa <t.figa@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Olof Johansson <olof@lixom.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:36873 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751923Ab3FQUYB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 16:24:01 -0400
+In-Reply-To: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shuah Khan <shuah.kh@samsung.com>
+Cc: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, joe@perches.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-On Monday 17 June 2013, Tomasz Figa wrote:
-> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos_thermal.c
-> index 788b1dd..4cbe3ee 100644
-> --- a/drivers/thermal/exynos_thermal.c
-> +++ b/drivers/thermal/exynos_thermal.c
-> @@ -817,7 +817,8 @@ static struct exynos_tmu_platform_data const exynos4210_default_tmu_data = {
->  #define EXYNOS4210_TMU_DRV_DATA (NULL)
->  #endif
->  
-> -#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
-> +#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412) || \
-> +       defined(CONFIG_SOC_EXYNOS4212)
->  static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
->         .threshold_falling = 10,
->         .trigger_levels[0] = 85,
+On Mon, 17 Jun 2013, Shuah Khan wrote:
 
-The patch is correct, but generally speaking I think we should get away from
-having the drivers get configured per SoC on such a fine-grained level.
-Better make this driver (and others) always work on all exynos variants.
+> Change __device_suspend() path to include driver name and the ops that
+> get run for a device. This additional information helps associate the
+> driver and the type of pm_ops the device uses in the suspend path very
+> quickly, which will aid in debugging problems in suspend and resume paths.
+> Changed both start and end debug messages to include pm_ops information
+> and use dev_info() instead of pr_info(). Changed the end message to include
+> parent device information and have the same format as the start message.
+> 
+> dmesg output before the change:
+> 
+> [  164.390032] calling  1-1+ @ 69, parent: usb1
+> [  164.390035] call 1-1+ returned 0 after 0 usecs
+> 
+> [  164.390352] calling  00:0a+ @ 2457, parent: pnp0
+> [  164.390357] call 00:0a+ returned 0 after 3 usecs
+> 
+> [  164.390361] calling  00:09+ @ 2457, parent: pnp0
+> [  164.496458] call 00:09+ returned 0 after 103500 usecs
+> 
+> [  164.496494] calling  00:05+ @ 2457, parent: pnp0
+> [  164.496511] call 00:05+ returned 0 after 14 usecs
+> 
+> dmesg output after the change:
+> 
+> [  545.985394] usb 1-1: Start: type pm ops @ 68, parent: usb1
+> [  545.987650] usb 1-1: End  : type pm ops @ 68, parent: usb1 time(2184 usecs) err(0)
+> 
+> [  545.982544] system 00:0a: Start: legacy bus pm ops @ 2391, parent: pnp0
+> [  545.982554] system 00:0a: End  : legacy bus pm ops @ 2391, parent: pnp0 time(4 usecs) err(0)
+> 
+> [  545.982569] tpm_tis 00:09: Start: legacy bus pm ops @ 2391, parent: pnp0
+> [  546.087017] tpm_tis 00:09: End  : legacy bus pm ops @ 2391, parent: pnp0 time(101936 usecs) err(0)
+> 
+> [  546.087069] rtc_cmos 00:05: Start: legacy bus pm ops @ 2391, parent: pnp0
+> [  546.087084] rtc_cmos 00:05: End  : legacy bus pm ops @ 2391, parent: pnp0 time(11 usecs) err(0)
 
-	Arnd
+If you don't mind a little more bike-shedding, I suggest formatting the 
+return value and time in a shorter format, like this:
+
+[  545.987650] usb 1-1: End  : type pm ops @ 68, parent: usb1 -> 0, 2184 us
+
+Alan Stern
+
