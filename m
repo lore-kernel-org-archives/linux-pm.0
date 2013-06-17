@@ -1,50 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: [PATCH] ACPI / PM: Fix error code path for power resources initialization
-Date: Tue, 18 Jun 2013 00:37:45 +0200
-Message-ID: <8547354.D2OPcUytEB@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH -next v3] thermal:  fix x86_pkg_temp_thermal.c build and
+ Kconfig
+Date: Tue, 18 Jun 2013 07:28:44 +0800
+Message-ID: <1371511724.22538.1.camel@rzhang1-mobl4>
+References: <20130617185106.5950ffbf4b96acd9b2b2c834@canb.auug.org.au>
+	 <51BF4159.1000004@infradead.org> <51BF46C3.3090900@linux.intel.com>
+	 <51BF4DA2.40601@infradead.org> <51BF50E3.9000806@linux.intel.com>
+	 <51BF5174.805@infradead.org> <20130617181702.GA7217@pd.tnic>
+	 <51BF6315.9020501@infradead.org> <20130617194524.GD8197@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:40683 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204Ab3FQW20 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Jun 2013 18:28:26 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20130617194524.GD8197@pd.tnic>
+Sender: linux-next-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Randy Dunlap <rdunlap@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Mon, 2013-06-17 at 21:45 +0200, Borislav Petkov wrote:
+> On Mon, Jun 17, 2013 at 12:27:17PM -0700, Randy Dunlap wrote:
+> > From: Randy Dunlap <rdunlap@infradead.org>
+> > 
+> > Fix build error in x86_pkg_temp_thermal.c.  It requires that
+> > X86_MCE & X86_THERMAL_VECTOR be enabled, so depend on the latter symbol,
+> > since it depends on X86_MCE (indirectly).
+> > 
+> > Also, X86_PKG_TEMP_THERMAL is already inside an "if THERMAL" block,
+> > so remove that duplicated dependency.
+> > 
+> > ERROR: "platform_thermal_package_rate_control" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+> > ERROR: "platform_thermal_package_notify" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+> > 
+> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+> > ---
+> >  drivers/thermal/Kconfig |    3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> > 
+> > --- linux-next-20130617.orig/drivers/thermal/Kconfig
+> > +++ linux-next-20130617/drivers/thermal/Kconfig
+> > @@ -171,8 +171,7 @@ config INTEL_POWERCLAMP
+> >  
+> >  config X86_PKG_TEMP_THERMAL
+> >  	tristate "X86 package temperature thermal driver"
+> > -	depends on THERMAL
+> > -	depends on X86
+> > +	depends on X86_THERMAL_VECTOR
+> >  	select THERMAL_GOV_USER_SPACE
+> >  	default m
+> >  	help
+> 
+> Acked-by: Borislav Petkov <bp@suse.de>
+> 
+applied to thermal -next.
 
-Commit 781d737 (ACPI: Drop power resources driver) introduced a
-bug in the power resources initialization error code path causing
-a NULL pointer to be referenced in acpi_release_power_resource()
-if there's an error triggering a jump to the 'err' label in
-acpi_add_power_resource().  This happens because the list_node
-field of struct acpi_power_resource has not been initialized yet
-at this point and doing a list_del() on it is a bad idea.
-
-To prevent this problem from occuring, initialize the list_node
-field of struct acpi_power_resource upfront.
-
-Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: 3.9+ <stable@vger.kernel.org>
----
- drivers/acpi/power.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-pm/drivers/acpi/power.c
-===================================================================
---- linux-pm.orig/drivers/acpi/power.c
-+++ linux-pm/drivers/acpi/power.c
-@@ -882,6 +882,7 @@ int acpi_add_power_resource(acpi_handle
- 				ACPI_STA_DEFAULT);
- 	mutex_init(&resource->resource_lock);
- 	INIT_LIST_HEAD(&resource->dependent);
-+	INIT_LIST_HEAD(&resource->list_node);
- 	resource->name = device->pnp.bus_id;
- 	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
- 	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
-
+thanks,
+rui
