@@ -1,43 +1,81 @@
-From: Tomasz Figa <t.figa@samsung.com>
-Subject: [PATCH v2 31/38] cpufreq: exynos4x12: Remove check for SOC_EXYNOS4412
-Date: Mon, 17 Jun 2013 18:34:16 +0200
-Message-ID: <1371486863-12398-32-git-send-email-t.figa@samsung.com>
-References: <1371486863-12398-1-git-send-email-t.figa@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:10306 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090Ab3FQQe4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 12:34:56 -0400
-In-reply-to: <1371486863-12398-1-git-send-email-t.figa@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH -next] thermal:  fix x86_pkg_temp_thermal.c build and Kconfig
+Date: Mon, 17 Jun 2013 10:55:46 -0700
+Message-ID: <51BF4DA2.40601@infradead.org>
+References: <20130617185106.5950ffbf4b96acd9b2b2c834@canb.auug.org.au> <51BF4159.1000004@infradead.org> <51BF46C3.3090900@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <51BF46C3.3090900@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Kukjin Kim <kgene.kim@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Thomas Abraham <thomas.abraham@linaro.org>, Tomasz Figa <t.figa@samsung.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Since SOC_EXYNOS4412 Kconfig symbol has been removed, it is enough to
-check for SOC_EXYNOS4212 for both SoCs from Exynos4x12 series.
+On 06/17/13 10:26, Srinivas Pandruvada wrote:
+> On 06/17/2013 10:03 AM, Randy Dunlap wrote:
+>> On 06/17/13 01:51, Stephen Rothwell wrote:
+>>> Hi all,
+>>>
+>>> Changes since 20130607:
+>>>
+>>
+>> on i386 and x86_64:
+>>
+>> when built as loadable module:
+>>
+>> ERROR: "platform_thermal_package_rate_control" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+>> ERROR: "platform_thermal_package_notify" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+>>
+>> or when built-in:
+>>
+>> drivers/built-in.o: In function `pkg_temp_thermal_init':
+>> x86_pkg_temp_thermal.c:(.init.text+0x1492b): undefined reference to `platform_thermal_package_notify'
+>> x86_pkg_temp_thermal.c:(.init.text+0x14936): undefined reference to `platform_thermal_package_rate_control'
+>> x86_pkg_temp_thermal.c:(.init.text+0x150fe): undefined reference to `platform_thermal_package_notify'
+>> x86_pkg_temp_thermal.c:(.init.text+0x15109): undefined reference to `platform_thermal_package_rate_control'
+>> drivers/built-in.o: In function `pkg_temp_thermal_exit':
+>> x86_pkg_temp_thermal.c:(.exit.text+0x3a9b): undefined reference to `platform_thermal_package_notify'
+>> x86_pkg_temp_thermal.c:(.exit.text+0x3aa6): undefined reference to `platform_thermal_package_rate_control'
+>>
+>>
+>> Full randconfig file is attached (for loadable module build).
+>>
+>>
+>>
+> 
+> This requires CONFIG_X86_MCE, which is by default is set to "y".
 
-Cc: linux-pm@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Tomasz Figa <t.figa@samsung.com>
-Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+But you can't rely on that symbol being enabled -- there needs to be some
+enforcement of it, like the patch below.
+
+
 ---
- drivers/cpufreq/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+From: Randy Dunlap <rdunlap@infradead.org>
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index a924408..b214ad6 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -32,7 +32,7 @@ config ARM_EXYNOS4210_CPUFREQ
- 	  SoC (S5PV310 or S5PC210).
+Fix build error in x86_pkg_temp_thermal.c.  It requires that
+X86_MCE be enabled, so depend on that symbol.
+Also, X86_PKG_TEMP_THERMAL is already inside an "if THERMAL" block,
+so remove that duplicated dependency.
+
+ERROR: "platform_thermal_package_rate_control" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+ERROR: "platform_thermal_package_notify" [drivers/thermal/x86_pkg_temp_thermal.ko] undefined!
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+---
+ drivers/thermal/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+--- linux-next-20130617.orig/drivers/thermal/Kconfig
++++ linux-next-20130617/drivers/thermal/Kconfig
+@@ -171,8 +171,7 @@ config INTEL_POWERCLAMP
  
- config ARM_EXYNOS4X12_CPUFREQ
--	def_bool (SOC_EXYNOS4212 || SOC_EXYNOS4412)
-+	def_bool SOC_EXYNOS4212
+ config X86_PKG_TEMP_THERMAL
+ 	tristate "X86 package temperature thermal driver"
+-	depends on THERMAL
+-	depends on X86
++	depends on X86 && X86_MCE
+ 	select THERMAL_GOV_USER_SPACE
+ 	default m
  	help
- 	  This adds the CPUFreq driver for Samsung EXYNOS4X12
- 	  SoC (EXYNOS4212 or EXYNOS4412).
--- 
-1.8.2.1
-
