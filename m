@@ -1,324 +1,164 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
-Date: Mon, 17 Jun 2013 11:13:18 +0530
-Message-ID: <CAKohpokQAsuAqWi7rNx9RaFz8KVRNXVkBD22KC5_Qh05k66qqA@mail.gmail.com>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
-	<1371195540-2991-1-git-send-email-l.majewski@samsung.com>
-	<1371195540-2991-2-git-send-email-l.majewski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1371195540-2991-2-git-send-email-l.majewski@samsung.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>
+From: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Subject: [PATCH V6 00/30] thermal: exynos: Re-structure driver and add support for exynos5440
+Date: Mon, 17 Jun 2013 12:16:09 +0530
+Message-ID: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:45022 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750Ab3FQGqz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 02:46:55 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-On 14 June 2013 13:08, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> Changes for v2:
-> - Removal of cpufreq_boost structure and move its fields to cpufreq_driver
->   structure
-> - Flag to indicate if global boost attribute is already defined
-> - Extent the pr_{err|debbug} functions to show current function names
->
-> Changes for v3:
-> - Method for reading boost status
-> - Removal of cpufreq_frequency_table_max()
-> - Extent cpufreq_frequency_table_cpuinfo() to support boost parameter
-> - boost_supported flag added to cpufreq_driver struct
-> - "boost" sysfs attribute control flag removed
-> - One global flag describing state of the boost defined at cpufreq core
-> - Rename cpufreq_driver's low_level_boost field to set_boost_freq()
-> - Usage of cpufreq_sysfs_{remove|add}_file() routines
+Hi Rui/Eduardo,
 
-Latest change log first please.
+Submitting V6 version with all comments fixed. It is good if these patches gets
+merged in this merge window. If any comments please let me know.
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2ce86ed..02e57db 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -40,6 +40,7 @@
->   * also protects the cpufreq_cpu_data array.
->   */
->  static struct cpufreq_driver *cpufreq_driver;
-> +static bool cpufreq_boost_enabled;
->  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
->  #ifdef CONFIG_HOTPLUG_CPU
->  /* This one keeps track of the previously set governor of a removed CPU */
-> @@ -315,6 +316,30 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
->  /*********************************************************************
->   *                          SYSFS INTERFACE                          *
->   *********************************************************************/
-> +ssize_t show_boost(struct kobject *kobj,
-> +                                struct attribute *attr, char *buf)
-> +{
-> +       return sprintf(buf, "%d\n", cpufreq_boost_enabled);
-> +}
-> +
-> +static ssize_t store_boost(struct kobject *kobj, struct attribute *attr,
-> +                                 const char *buf, size_t count)
-> +{
-> +       int ret, enable;
-> +
-> +       ret = sscanf(buf, "%d", &enable);
-> +       if (ret != 1 || enable < 0 || enable > 1)
-> +               return -EINVAL;
-> +
-> +       if (cpufreq_boost_trigger_state(enable)) {
-> +               pr_err("%s: Cannot %sable boost!\n", __func__,
-> +                      enable ? "en" : "dis");
+Thanks,
+Amit Daniel
 
-Please don't use %sable as discussed earlier.
+Changes in V6:
+* Uses ARCH_HAS_BANDGAP config flag which is merged now in arm tree.
+(http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=7758/1).
+* In this version patches 1, 2, 3, 4 and 30 are modified. Others are same as V5.
+* Added acked by from Jonghwa Lee.
+* Rebased against Thermal Maintainer next tree.
 
-> +               return -EINVAL;
-> +       }
-> +
-> +       return count;
-> +}
-> +define_one_global_rw(boost);
->
->  static struct cpufreq_governor *__find_governor(const char *str_governor)
->  {
-> @@ -1896,6 +1921,55 @@ static struct notifier_block __refdata cpufreq_cpu_notifier = {
->  };
->
->  /*********************************************************************
-> + *               BOOST                                              *
-> + *********************************************************************/
-> +int cpufreq_boost_trigger_state(int state)
-> +{
-> +       struct cpufreq_frequency_table *freq_table;
-> +       struct cpufreq_policy *policy;
-> +       unsigned long flags;
-> +       int ret = 0, cpu;
-> +
-> +       if (!cpufreq_driver->boost_supported)
-> +               return -ENODEV;
+Changes in V5:
+* Most of the changes in this version is as per suggestion from Jonghwa Lee. I
+ have retained one to one mapping of platform data with TMU instances as the
+ TMU's are different devices. In exynos5440 soc there is some register
+ sharing across multiple TMU's but in exynos5420 there is no register between
+ multiple TMU's, so the current implementation is useful to support both of the
+ above.
+ This patch uses localized ARCH_HAS_TMU Kconfig option and is a temporary solution
+ until a more generic macro ARCH_HAS_BANDGAP is introduced as per discussion in
+ the link https://patchwork.kernel.org/patch/2659001/.
+* trip type is passed as platform data.
+* HW trip is allowed only for maximum level.
+* Platform data structure is now abstracted inside 1 more structure to support
+  multiple sensor TMU data. 
 
-This can't happen. sysfs directory is present only when we
-have boost supported.
+Changes in V4:
+ Almost all the changes in this version is as per suggestion from Eduardo.The
+ major ones are listed below,
+* Added kconfig symbol ARCH_HAS_TMU which needs to be enabled by platform. With
+  this change existing symbol EXYNOS_TMU_DATA is not needed.
+* Movement of freq_clip_table from exynos_tmu.h to exynos_thermal_common.h is
+  explained in the commit logs.
+* Wrote all register description documentation.
+* Split 5440 TMU support patch into controller change, configuration data and
+  feature addition patches.
+* Remove all *LINUX_* in the header files.
+* Still regulator enable is kept optional but a TODO: comment is added to fix
+  it later.
 
-> +       if (cpufreq_boost_enabled != state) {
-> +               if (cpufreq_driver->set_boost_freq) {
-> +                       ret = cpufreq_driver->set_boost_freq(state);
+Changes in V3:
+* Added proper dependency of different exynos thermal Kconfig symbols. Basically 3
+ Kconfig can be enabled now and corresponds to tmu driver. exynos common part
+ and exynos configuration data. This issue was raised by Rui Zhang.
 
-I thought this routine was for setting boost frequency and not
-for enabling boost feature. If boost has to be enabled separately
-then this routine must take care of it while setting freq.
+Changes in V2:
+* Separated SOC data from TMU driver. This is as per suggestion from Eduardo.
+* Merged the new file created for exynos5440 TMU controller with the existing
+ TMU controller code.
+* Removed the DT parsing code as now the SOC specific data are cleanly put
+ inside the data specific file.
+* Even the register definations/bitfields are treated as data as there is
+ some variation across SOC's.
 
-So, in other words, this must not be called here.
+This patchset adds TMU(Thermal management Unit) driver support for
+exynos5440 platform. There are 3 instances of the TMU controllers so
+necessary cleanup/re-structure is done to handle multiple thermal zone.
 
-> +                       if (ret) {
-> +                               pr_err("%s: BOOST cannot enable (%d)\n",
-> +                                      __func__, ret);
-> +                               return ret;
-> +                       }
-> +               }
-> +
-> +               for_each_possible_cpu(cpu) {
-> +                       policy = cpufreq_cpu_get(cpu);
+Patch (exynos4: Add documentation for Exynos SoC thermal bindings) from
+Lukasz Majewski is already posted to mainline. Adding it here for completeness.
+(http://www.mail-archive.com/linux-samsung-soc@vger.kernel.org/msg17817.html)
 
-In case this code is required, it would make more sense to keep list
-of all available policies, which we can iterate through.
+Patch (thermal: exynos: Support thermal tripping ) from Jonghwan Choi is
+added here with some changes.
+(https://patchwork.kernel.org/patch/1668371/)
 
-> +                       freq_table = cpufreq_frequency_get_table(cpu);
-> +                       if (policy && freq_table) {
-> +                               write_lock_irqsave(&cpufreq_driver_lock, flags);
-> +                               cpufreq_frequency_table_cpuinfo(policy,
-> +                                                               freq_table,
-> +                                                               state);
+Patch (thermal: exynos: Support for TMU regulator defined at device tree)
+is a repost of my earlier patch(https://patchwork-mail1.kernel.org/patch/2510771/) 
+and adds regulator support.
 
-We obviously don't need the last param to this routine and so bunch
-of changes you did in this patch.
+Patch (ARM: dts: Add device tree node for exynos5440 TMU controller) and
+patch (arm: exynos: enable ARCH_HAS_TMU) can be merged through exynos platform
+maintainer as this can cause merge conflict.
 
-cpufreq_frequency_table_cpuinfo() can itself check if boost is enabled
-or not.
+All these patches are based on thermal maintainers git tree,
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next.
 
-> +                               cpufreq_boost_enabled = state;
-> +                               write_unlock_irqrestore(&cpufreq_driver_lock,
-> +                                                       flags);
-> +                       }
-> +               }
+Amit Daniel Kachhap (29):
+  thermal: exynos: Moving exynos thermal files into samsung directory
+  thermal: exynos: Use ARCH_HAS_BANDGAP config to know the supported
+    soc's
+  thermal: exynos: Remove un-necessary CPU_THERMAL dependency
+  thermal: exynos: Bifurcate exynos thermal common and tmu controller
+    code
+  thermal: exynos: Rename exynos_thermal.c to exynos_tmu.c
+  thermal: exynos: Move exynos_thermal.h from include/* to driver/*
+    folder
+  thermal: exynos: Bifurcate exynos tmu driver and configuration data
+  thermal: exynos: Add missing definations and code cleanup
+  thermal: exynos: Add extra entries in the tmu platform data
+  thermal: exynos: Move register definitions from driver to data file
+  thermal: exynos: Support thermal tripping
+  thermal: exynos: Fix to clear only the generated interrupts
+  thermal: exynos: Add support for instance based register/unregister
+  thermal: exynos: Modify private_data to appropriate name driver_data
+  thermal: exynos: Return success even if no cooling data supplied
+  thermal: exynos: Make the zone handling use trip information
+  thermal: exynos: Remove non DT based support
+  thermal: exynos: Add support to handle many instances of TMU
+  thermal: exynos: Add TMU features to check instead of using SOC type
+  thermal: exynos: use device resource management infrastructure
+  thermal: exynos: Add support to access common register for
+    multistance
+  thermal: exynos: Add driver support for exynos5440 TMU sensor
+  thermal: exynos: Add thermal configuration data for exynos5440 TMU
+    sensor
+  thermal: exynos: Fix to set the second point correction value
+  thermal: exynos: Add hardware mode thermal calibration support
+  Documentation: thermal: Explain the exynos thermal driver model
+  thermal: exynos: Support for TMU regulator defined at device tree
+  ARM: dts: Add device tree node for exynos5440 TMU controller
+  arm: exynos: enable ARCH_HAS_BANDGAP
 
-I am not sure if this is required at all. Or what complications can be
-there when we update max/min on the fly here.
+Lukasz Majewski (1):
+  ARM: dts: thermal: exynos4: Add documentation for Exynos SoC thermal
+    bindings
 
-> +       }
-> +
-> +       pr_debug("%s: cpufreq BOOST %s\n", __func__,
-> +                state ? "enabled" : "disabled");
-> +
-> +       return 0;
-> +}
-> +
-> +int cpufreq_boost_state(void)
+ .../devicetree/bindings/thermal/exynos-thermal.txt |   55 +
+ Documentation/thermal/exynos_thermal               |   43 +-
+ arch/arm/boot/dts/exynos5440.dtsi                  |   30 +
+ arch/arm/mach-exynos/Kconfig                       |    5 +
+ drivers/thermal/Kconfig                            |   14 +-
+ drivers/thermal/Makefile                           |    2 +-
+ drivers/thermal/exynos_thermal.c                   | 1058 --------------------
+ drivers/thermal/samsung/Kconfig                    |   18 +
+ drivers/thermal/samsung/Makefile                   |    7 +
+ drivers/thermal/samsung/exynos_thermal_common.c    |  413 ++++++++
+ drivers/thermal/samsung/exynos_thermal_common.h    |  106 ++
+ drivers/thermal/samsung/exynos_tmu.c               |  750 ++++++++++++++
+ drivers/thermal/samsung/exynos_tmu.h               |  307 ++++++
+ drivers/thermal/samsung/exynos_tmu_data.c          |  250 +++++
+ drivers/thermal/samsung/exynos_tmu_data.h          |  155 +++
+ include/linux/platform_data/exynos_thermal.h       |  119 ---
+ 16 files changed, 2137 insertions(+), 1195 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+ delete mode 100644 drivers/thermal/exynos_thermal.c
+ create mode 100644 drivers/thermal/samsung/Kconfig
+ create mode 100644 drivers/thermal/samsung/Makefile
+ create mode 100644 drivers/thermal/samsung/exynos_thermal_common.c
+ create mode 100644 drivers/thermal/samsung/exynos_thermal_common.h
+ create mode 100644 drivers/thermal/samsung/exynos_tmu.c
+ create mode 100644 drivers/thermal/samsung/exynos_tmu.h
+ create mode 100644 drivers/thermal/samsung/exynos_tmu_data.c
+ create mode 100644 drivers/thermal/samsung/exynos_tmu_data.h
+ delete mode 100644 include/linux/platform_data/exynos_thermal.h
 
-s/cpufreq_boost_state/cpufreq_boost_enabled
-
-> +{
-> +       return cpufreq_boost_enabled;
-
-s/cpufreq_boost_enabled/boost_enabled
-
-> +}
-> +
-> +/*********************************************************************
->   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
->   *********************************************************************/
->
-> @@ -1934,6 +2008,15 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
->         cpufreq_driver = driver_data;
->         write_unlock_irqrestore(&cpufreq_driver_lock, flags);
->
-> +       if (cpufreq_driver->boost_supported) {
-> +               ret = cpufreq_sysfs_create_file(&(boost.attr));
-> +               if (ret) {
-> +                       pr_err("%s: cannot register global boost sysfs file\n",
-> +                               __func__);
-> +                       goto err_null_driver;
-> +               }
-> +       }
-> +
->         ret = subsys_interface_register(&cpufreq_interface);
->         if (ret)
->                 goto err_null_driver;
-> @@ -1990,6 +2073,10 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
->         pr_debug("unregistering driver %s\n", driver->name);
->
->         subsys_interface_unregister(&cpufreq_interface);
-> +
-> +       if (cpufreq_driver->boost_supported)
-> +               cpufreq_sysfs_remove_file(&(boost.attr));
-> +
->         unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
->
->         write_lock_irqsave(&cpufreq_driver_lock, flags);
-
-This part looked good :)
-
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index d7a7966..f1a4d785 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -21,7 +21,8 @@
->   *********************************************************************/
->
->  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
-> -                                   struct cpufreq_frequency_table *table)
-> +                                   struct cpufreq_frequency_table *table,
-> +                                   int boost)
->  {
->         unsigned int min_freq = ~0;
->         unsigned int max_freq = 0;
-> @@ -31,9 +32,11 @@ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
->                 unsigned int freq = table[i].frequency;
->                 if (freq == CPUFREQ_ENTRY_INVALID) {
->                         pr_debug("table entry %u is invalid, skipping\n", i);
-> -
->                         continue;
->                 }
-> +               if (!boost && table[i].index == CPUFREQ_BOOST_FREQ)
-> +                       continue;
-> +
->                 pr_debug("table entry %u: %u kHz, %u index\n",
->                                         i, freq, table[i].index);
->                 if (freq < min_freq)
-> @@ -171,7 +174,8 @@ static DEFINE_PER_CPU(struct cpufreq_frequency_table *, cpufreq_show_table);
->  /**
->   * show_available_freqs - show available frequencies for the specified CPU
->   */
-> -static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf)
-> +static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
-> +                                   int show_boost)
->  {
->         unsigned int i = 0;
->         unsigned int cpu = policy->cpu;
-> @@ -186,22 +190,42 @@ static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf)
->         for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
->                 if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
->                         continue;
-> +               if (show_boost && table[i].index != CPUFREQ_BOOST_FREQ)
-> +                       continue;
-> +               if (!show_boost && table[i].index == CPUFREQ_BOOST_FREQ)
-> +                       continue;
-
-Maybe, this instead of above two if statements:
-
-if (show_boost ^ (table[i].index == CPUFREQ_BOOST_FREQ))
-    continue
-
->                 count += sprintf(&buf[count], "%d ", table[i].frequency);
->         }
->         count += sprintf(&buf[count], "\n");
->
->         return count;
-> -
->  }
->
-> -struct freq_attr cpufreq_freq_attr_scaling_available_freqs = {
-> -       .attr = { .name = "scaling_available_frequencies",
-> -                 .mode = 0444,
-> -               },
-> -       .show = show_available_freqs,
-> -};
-> +/**
-> + * show_scaling_available_frequencies - show normal boost frequencies for
-
-s/boost /
-
-> + * the specified CPU
-> + */
-> +static ssize_t scaling_available_frequencies_show(struct cpufreq_policy *policy,
-> +                                                 char *buf)
-> +{
-> +       return show_available_freqs(policy, buf, 0);
-> +}
-> +cpufreq_attr_available_freq(scaling_available);
->  EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_available_freqs);
->
-> +/**
-> + * show_available_boost_freqs - show available boost frequencies for
-> + * the specified CPU
-> + */
-> +static ssize_t scaling_boost_frequencies_show(struct cpufreq_policy *policy,
-> +                                             char *buf)
-> +{
-> +       return show_available_freqs(policy, buf, 1);
-> +}
-> +cpufreq_attr_available_freq(scaling_boost);
-> +EXPORT_SYMBOL_GPL(cpufreq_freq_attr_scaling_boost_freqs);
-> +
->  /*
->   * if you use these, you must assure that the frequency table is valid
->   * all the time between get_attr and put_attr!
-
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index ab1932c..027442d 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -266,6 +266,10 @@ struct cpufreq_driver {
->         int     (*suspend)      (struct cpufreq_policy *policy);
->         int     (*resume)       (struct cpufreq_policy *policy);
->         struct freq_attr        **attr;
-> +
-> +       /* platform specific boost support code */
-> +       bool                    boost_supported;
-> +       int (*set_boost_freq)   (int state);
->  };
->
->  /* flags */
-> @@ -318,6 +322,10 @@ __ATTR(_name, _perm, show_##_name, NULL)
->  static struct freq_attr _name =                        \
->  __ATTR(_name, 0644, show_##_name, store_##_name)
->
-> +#define cpufreq_attr_available_freq(_name)       \
-> +struct freq_attr cpufreq_freq_attr_##_name##_freqs =     \
-> +__ATTR_RO(_name##_frequencies)
-
-What is this doing in cpufreq.h? It will only be used by freq_table.c file.
-
-
-Again, I couldn't see how boost freqs are getting used? You have
-probably made them part of normal freq range here and so they
-might be used during normal operations. But we wanted it to be
-used only when we have few cpus on... etc.. Where is that logic?
