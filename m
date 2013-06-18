@@ -1,79 +1,104 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: pm: System date and time set incorrectly after suspend/resume to
- disk
-Date: Tue, 18 Jun 2013 18:14:02 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E6172A4C4@sisaex02sj>
-References: <B8EFE96D1287C24090BAD9D858E15E6172A070@sisaex02sj>
- <CANcMJZCuYmim8q5ZPg2ppwA8T0jXMmpGowikeca5EzaoeVxr-Q@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 3/6] arm: dts: add bandgap entry for OMAP443x devices
+Date: Tue, 18 Jun 2013 16:14:15 -0400
+Message-ID: <51C0BF97.6060900@ti.com>
+References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
+ <1370637968-23299-4-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w2.samsung.com ([211.189.100.12]:24350 "EHLO
-	usmailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932812Ab3FRSOG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 14:14:06 -0400
-Content-language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============5011325765275957726=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1370637968-23299-4-git-send-email-eduardo.valentin@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>, =?UTF-8?B?QmVub8OudCBDb3Vz?= =?UTF-8?B?c29u?= <b-cousson@ti.com>
+Cc: linux@arm.linux.org.uk, linux-pm@vger.kernel.org, tony@atomide.com, "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>, linux-kernel@vger.kernel.org, grant.likely@linaro.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>
-Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "a.zummo@towertech.it" <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
 
-On 06/17/2013 08:14 PM, John Stultz wrote:
-> On Mon, Jun 17, 2013 at 6:30 PM, Shuah Khan <shuah.kh@samsung.com> wrote:
->> I am seeing a problem on my system after a suspend to disk in reboot or
->> shutdown mode. When pm_trace is 0 (which is the default), I can't
->> reproduce the problem easily. I have to run a few more suspend tests
->> before I see the problem. When pm_trace is disabled, the problem showed
->> up when I ran suspend in platform mode in a row. However when pm_ptrace
->> is enabled, problem happens on the very first spend to disk in reboot mode.
->>
->> Steps to run into the issue:
->>
->> echo 1 > pm_print_times
->> echo 1 > pm_trace
->> echo reboot > disk
->> echo disk > state
->>
->> or
->>
->> echo 1 > pm_print_times
->> echo 1 > pm_trace
->> echo shutdown > disk
->> echo disk > state
->>
->> When system comes back up, system time set to incorrect time.
->
-> So I this is by design. Please see Documentation/power/s2ram.txt for details:
->
-> "pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-> Reason for this is that the RTC is the only reliably available piece of
-> hardware during resume operations where a value can be set that will
-> survive a reboot.
->
-> Consequence is that after a resume (even if it is successful) your system
-> clock will have a value corresponding to the magic number instead of the
-> correct date/time! It is therefore advisable to use a program like ntp-date
-> or rdate to reset the correct date/time from an external time source when
-> using this trace option."
->
-> thanks
-> -john
->
+--===============5011325765275957726==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2UBQQBEHXCETSXBHOKKUU"
 
-Thanks. It definitely is working as designed and documented. :) Is there 
-a reason why pm_trace_store() couldn't/shouldn't  print a warning 
-message (pr_warn) along the lines of:
+------enig2UBQQBEHXCETSXBHOKKUU
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-"CAUTION: this option will cause your machine's real-time clock to be 
-set to an invalid time after a resume. Remember to set correct time 
-after resume!!"
+Benoit,
 
-It will serve as a reminder to correct the time after resume. I could 
-send a patch in to add a warning message.
+On 07-06-2013 16:46, Eduardo Valentin wrote:
+> This patch add the bandgap entry for OMAP4430 devices.
+>=20
+> Cc: "Beno=C3=AEt Cousson" <b-cousson@ti.com>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: linux-omap@vger.kernel.org
+> Cc: devicetree-discuss@lists.ozlabs.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-thanks,
--- Shuah
+Could you please have a look on this one?
 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
+> ---
+>  arch/arm/boot/dts/omap443x.dtsi | 4 ++++
+>  1 file changed, 4 insertions(+)
+>=20
+> diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/omap44=
+3x.dtsi
+> index cccf39a..8d6c968 100644
+> --- a/arch/arm/boot/dts/omap443x.dtsi
+> +++ b/arch/arm/boot/dts/omap443x.dtsi
+> @@ -24,4 +24,8 @@
+>  			clock-latency =3D <300000>; /* From legacy driver */
+>  		};
+>  	};
+> +	bandgap {
+> +		reg =3D <0x4a002260 0x4 0x4a00232C 0x4>;
+> +		compatible =3D "ti,omap4430-bandgap";
+> +	};
+>  };
+>=20
+
+
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2UBQQBEHXCETSXBHOKKUU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHAv5cACgkQCXcVR3XQvP2ZZQD/eJHYitPEghv7Z8QjSSKBQL8m
+UK2FxYUUGbrib2mo8WQBAIlJL1rQXKm1d3htEirsp1lcMvkM5Y/48HRUDetKH6PI
+=ioy8
+-----END PGP SIGNATURE-----
+
+------enig2UBQQBEHXCETSXBHOKKUU--
+
+
+--===============5011325765275957726==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============5011325765275957726==--
