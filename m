@@ -1,42 +1,99 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: userspace: Simplify governor
-Date: Tue, 18 Jun 2013 10:20:33 +0530
-Message-ID: <CAKohpokwbLyCiL88i+6hKaLiKciZ0mZhOqenSzOJ7oBfgsCpZg@mail.gmail.com>
-References: <68ae523282b494da0e8f67536af1df874c326675.1370422554.git.viresh.kumar@linaro.org>
-	<1855098.3p2j9hWHoD@vostro.rjw.lan>
-	<CAKohpon3Tc+dSycv-QeLg9vwjXijaZrtjzw0-tHVAqX6moBUjA@mail.gmail.com>
+Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
+Date: Tue, 18 Jun 2013 12:12:13 +0530
+Message-ID: <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+	<1371195540-2991-2-git-send-email-l.majewski@samsung.com>
+	<CAKohpokQAsuAqWi7rNx9RaFz8KVRNXVkBD22KC5_Qh05k66qqA@mail.gmail.com>
+	<20130617091549.398b865f@amdc308.digital.local>
+	<CAKohpo=nfuqwCoQJRczmNRNXCOTL5FSJQEzjKpVdXU+wu-KJ1g@mail.gmail.com>
+	<20130617110811.1e1805d2@amdc308.digital.local>
+	<CAKohpo=oy3SQXgvNvOydggZ5NZu9yyVtKrdFQjNOGVmzhSaQUw@mail.gmail.com>
+	<20130617115809.5206c42c@amdc308.digital.local>
+	<CAKohpo=yPcH0FW7T38cd3E1xOpzC0AhJ5mtyVaQyuj_S8iLovw@mail.gmail.com>
+	<20130617155156.4c729b5a@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:65265 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338Ab3FREud (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 00:50:33 -0400
-Received: by mail-ob0-f182.google.com with SMTP id va7so4070228obc.27
-        for <linux-pm@vger.kernel.org>; Mon, 17 Jun 2013 21:50:33 -0700 (PDT)
-In-Reply-To: <CAKohpon3Tc+dSycv-QeLg9vwjXijaZrtjzw0-tHVAqX6moBUjA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20130617155156.4c729b5a@amdc308.digital.local>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, chenxg.marvell@gmail.com
 
-On 5 June 2013 18:38, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> To be honest with the amount of experience I have now, my log was
-> poor :(
+On 17 June 2013 19:21, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Mon, 17 Jun 2013 18:40:50 +0530, Viresh Kumar wrote:
+>> >> > The core acpi-cpufreq.c code hadn't been changed by me, so I
+>> >> > assume that it will work as before.
+>> >>
+>> >> That should adapt your patch in your patchset.
 >
-> I have used following log in the attached patch:
->
-> Subject: [PATCH] cpufreq: userspace: Simplify governor
->
-> Userspace governor has got more code than what it needs for its functioning.
-> Lets simplify it. Portions of code removed are:
-> - Extra header files which aren't required anymore (rearranged them as well)
-> - cpu_{max|min|cur|set}_freq, as they are always same as policy->{max|min|cur}
-> - userspace_cpufreq_notifier_block as we don't need to set cpu_cur_freq anymore
-> - cpus_using_userspace_governor as it was for notifier code
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Could you explain what do you mean?
 
-Hi Rafael,
+Update acpi-cpufreq to use your infrastructure.
 
-Are you happy with the log & description of this patch now?
+>> >> From sysfs?? I thought we are going to have some automatic control
+>> >> of this stuff from inside kernel.
+>> >
+>> > From sysfs I just enable the boost. I do not order from userpace the
+>> > cpufreq to run with a particular (boosted) frequency.
+>> >
+>> > When I enable boost - I ask (politely) the cpufreq core to
+>> > reevaluate policies and when applicable increase policy->max.
+>> >
+>> > Then governor can use this new frequencies for normal operation.
+>>
+>> So, with your current patchset in, ondemand or conservative governors
+>> will start using boost frequencies. Which might burn your chip.
+>
+> Two scenarios:
+> 1. Thermal framework is compiled in and enabled (for exynos/other SoC)
+> -> trip point is reached -> boost is disabled -> frequency is reduced ->
+> SoC is cooled down.
+>
+> I think, that thermal framework is a good "safe valve" here.
+
+Even in this case boost shouldn't have been enabled by default.
+Its not only about burning the chip but more than that.
+
+According to my understanding, boost was important for power
+saving. In case a high load can be managed by a single cpu with
+boost freqs, then its better to use boost freqs rather than bringing
+another cpu up.
+
+Normally boost freqs are not so useful if we talk about powersaving,
+as their energy consumption is much higher with not so great impact
+on performance.
+
+That's why when this thread started we talked about boost only when
+one cpu is operational. But with your patch all cores can use boost
+freq and thermal will come into picture just to save the chip.
+
+That's wrong. This isn't why we invented boost here. Otherwise you
+just don't need boost feature at all for your SoC. Just make these
+freqs as available freqs and let thermal control policy->max/min
+to save your chip.
+
+> 2. Thermal framework is disabled and user has enabled boost and used
+> ondemand / conservative governor.
+> Then execute gzip < /dev/urandom > /dev/null & (on all cores).
+>
+> Then yes, chip will hang/burn due to crossing operating point (or burn).
+>
+>
+> What other means of control (despite of thermal) would you consider
+> applicable?
+>
+> What comes to my mind is modifying governor logic to count how long the
+> CPU run with boost enabled and then disable it.
+
+Its not about how long.. One cpu type can work longer with boost freq
+compared to other.
+
+What we probably need is:
+- Enabled boost from sysfs if required (now below steps will come into
+  picture)
+- See how many cpus are running, if only one then start using boost freqs
+- Now thermal should be come into picture to save chip in case a single
+cpu running at boost can burn it out.
