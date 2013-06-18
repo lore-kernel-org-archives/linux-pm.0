@@ -1,59 +1,130 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next] Thermal: x86_pkg_temp: fix krealloc() misuse in in pkg_temp_thermal_device_add()
-Date: Tue, 18 Jun 2013 21:09:12 +0800
-Message-ID: <CAPgLHd_d5DHn==OFdBsLi_Kkekd5h44Cx6m9Hj5EM_yOGJXKPQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
+Date: Tue, 18 Jun 2013 15:26:16 +0200
+Message-ID: <3258927.Qds4G9CTyG@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <20130617155156.4c729b5a@amdc308.digital.local> <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f50.google.com ([209.85.214.50]:55794 "EHLO
-	mail-bk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106Ab3FRNJO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 09:09:14 -0400
-Received: by mail-bk0-f50.google.com with SMTP id ik8so1785972bkc.9
-        for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2013 06:09:13 -0700 (PDT)
+Received: from hydra.sisk.pl ([212.160.235.94]:41441 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752064Ab3FRNQ5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 18 Jun 2013 09:16:57 -0400
+In-Reply-To: <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, eduardo.valentin@ti.com
-Cc: yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Tuesday, June 18, 2013 12:12:13 PM Viresh Kumar wrote:
+> On 17 June 2013 19:21, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> > On Mon, 17 Jun 2013 18:40:50 +0530, Viresh Kumar wrote:
+> >> >> > The core acpi-cpufreq.c code hadn't been changed by me, so I
+> >> >> > assume that it will work as before.
+> >> >>
+> >> >> That should adapt your patch in your patchset.
+> >
+> > Could you explain what do you mean?
+> 
+> Update acpi-cpufreq to use your infrastructure.
+> 
+> >> >> From sysfs?? I thought we are going to have some automatic control
+> >> >> of this stuff from inside kernel.
+> >> >
+> >> > From sysfs I just enable the boost. I do not order from userpace the
+> >> > cpufreq to run with a particular (boosted) frequency.
+> >> >
+> >> > When I enable boost - I ask (politely) the cpufreq core to
+> >> > reevaluate policies and when applicable increase policy->max.
+> >> >
+> >> > Then governor can use this new frequencies for normal operation.
+> >>
+> >> So, with your current patchset in, ondemand or conservative governors
+> >> will start using boost frequencies. Which might burn your chip.
+> >
+> > Two scenarios:
+> > 1. Thermal framework is compiled in and enabled (for exynos/other SoC)
+> > -> trip point is reached -> boost is disabled -> frequency is reduced ->
+> > SoC is cooled down.
+> >
+> > I think, that thermal framework is a good "safe valve" here.
+> 
+> Even in this case boost shouldn't have been enabled by default.
+> Its not only about burning the chip but more than that.
+> 
+> According to my understanding, boost was important for power
+> saving. In case a high load can be managed by a single cpu with
+> boost freqs, then its better to use boost freqs rather than bringing
+> another cpu up.
 
-If krealloc() returns NULL, it doesn't free the original. So any code
-of the form 'foo = krealloc(foo, ...);' is almost certainly a bug.
+Do you mean the 'boost' sysfs attribute or the 'turbo frequencies' concept?
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/thermal/x86_pkg_temp_thermal.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+> Normally boost freqs are not so useful if we talk about powersaving,
+> as their energy consumption is much higher with not so great impact
+> on performance.
 
-diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-index 5de56f6..b90e84b 100644
---- a/drivers/thermal/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -394,6 +394,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
- 	char buffer[30];
- 	int thres_count;
- 	u32 eax, ebx, ecx, edx;
-+	u8 *temp;
- 
- 	cpuid(6, &eax, &ebx, &ecx, &edx);
- 	thres_count = ebx & 0x07;
-@@ -417,13 +418,14 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
- 	spin_lock(&pkg_work_lock);
- 	if (topology_physical_package_id(cpu) > max_phy_id)
- 		max_phy_id = topology_physical_package_id(cpu);
--	pkg_work_scheduled = krealloc(pkg_work_scheduled,
--				(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
--	if (!pkg_work_scheduled) {
-+	temp = krealloc(pkg_work_scheduled,
-+			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
-+	if (!temp) {
- 		spin_unlock(&pkg_work_lock);
- 		err = -ENOMEM;
- 		goto err_ret_free;
- 	}
-+	pkg_work_scheduled = temp;
- 	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
- 	spin_unlock(&pkg_work_lock);
- 
+Er, er, please be careful here.  The impact on performance may be sufficient
+for deep C-states to become relevant in some cases.
 
+> That's why when this thread started we talked about boost only when
+> one cpu is operational. But with your patch all cores can use boost
+> freq and thermal will come into picture just to save the chip.
+
+Well, that's why on x86 turbo is controlled by hardware that takes care of
+keeping things within the chip's thermal limits.
+
+> That's wrong. This isn't why we invented boost here. Otherwise you
+> just don't need boost feature at all for your SoC. Just make these
+> freqs as available freqs and let thermal control policy->max/min
+> to save your chip.
+
+The 'boost' attribute added by acpi-cpufreq means "let the hardware use turbo
+frequencies".
+
+I'd recommend you both to read Documentation/cpu-freq/boost.txt now. :-)
+
+I think we can extend the meaning to "let turbo frequencies be used", but if
+we need software to play the role of the hardware's thermal control, we need
+to be very careful.
+
+> > 2. Thermal framework is disabled and user has enabled boost and used
+> > ondemand / conservative governor.
+> > Then execute gzip < /dev/urandom > /dev/null & (on all cores).
+> >
+> > Then yes, chip will hang/burn due to crossing operating point (or burn).
+> >
+> >
+> > What other means of control (despite of thermal) would you consider
+> > applicable?
+> >
+> > What comes to my mind is modifying governor logic to count how long the
+> > CPU run with boost enabled and then disable it.
+> 
+> Its not about how long.. One cpu type can work longer with boost freq
+> compared to other.
+> 
+> What we probably need is:
+> - Enabled boost from sysfs if required (now below steps will come into
+>   picture)
+
+This has to be compatible with the existing stuff.
+
+> - See how many cpus are running, if only one then start using boost freqs
+> - Now thermal should be come into picture to save chip in case a single
+> cpu running at boost can burn it out.
+
+I'd say there needs to be a separate controller/monitor for that that will
+know what the chip's thermal limit is and how that relates to how fast the
+CPU core(s) may run and for how much time.  I'm not sure it is sufficient
+to "wait for thermal to kick in" here, because you may need to slow down
+things in advance (i.e. before thermal sensors tell you there's too much heat,
+because that may be too late already).
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
