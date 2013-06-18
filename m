@@ -1,147 +1,78 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
-Date: Tue, 18 Jun 2013 10:24:29 +0200
-Message-ID: <20130618102429.5ff68931@amdc308.digital.local>
+Date: Tue, 18 Jun 2013 14:10:28 +0530
+Message-ID: <CAKohpo=Th-V4+i7r0+EoDL2fvoy-vMZrRa7wg5mJSQ7HjK_0YQ@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <1371195540-2991-1-git-send-email-l.majewski@samsung.com>
- <1371195540-2991-2-git-send-email-l.majewski@samsung.com>
- <CAKohpokQAsuAqWi7rNx9RaFz8KVRNXVkBD22KC5_Qh05k66qqA@mail.gmail.com>
- <20130617091549.398b865f@amdc308.digital.local>
- <CAKohpo=nfuqwCoQJRczmNRNXCOTL5FSJQEzjKpVdXU+wu-KJ1g@mail.gmail.com>
- <20130617110811.1e1805d2@amdc308.digital.local>
- <CAKohpo=oy3SQXgvNvOydggZ5NZu9yyVtKrdFQjNOGVmzhSaQUw@mail.gmail.com>
- <20130617115809.5206c42c@amdc308.digital.local>
- <CAKohpo=yPcH0FW7T38cd3E1xOpzC0AhJ5mtyVaQyuj_S8iLovw@mail.gmail.com>
- <20130617155156.4c729b5a@amdc308.digital.local>
- <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
+	<1371195540-2991-1-git-send-email-l.majewski@samsung.com>
+	<1371195540-2991-2-git-send-email-l.majewski@samsung.com>
+	<CAKohpokQAsuAqWi7rNx9RaFz8KVRNXVkBD22KC5_Qh05k66qqA@mail.gmail.com>
+	<20130617091549.398b865f@amdc308.digital.local>
+	<CAKohpo=nfuqwCoQJRczmNRNXCOTL5FSJQEzjKpVdXU+wu-KJ1g@mail.gmail.com>
+	<20130617110811.1e1805d2@amdc308.digital.local>
+	<CAKohpo=oy3SQXgvNvOydggZ5NZu9yyVtKrdFQjNOGVmzhSaQUw@mail.gmail.com>
+	<20130617115809.5206c42c@amdc308.digital.local>
+	<CAKohpo=yPcH0FW7T38cd3E1xOpzC0AhJ5mtyVaQyuj_S8iLovw@mail.gmail.com>
+	<20130617155156.4c729b5a@amdc308.digital.local>
+	<CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
+	<20130618102429.5ff68931@amdc308.digital.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f174.google.com ([209.85.214.174]:46173 "EHLO
+	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754678Ab3FRIk3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 04:40:29 -0400
+Received: by mail-ob0-f174.google.com with SMTP id wd20so4304044obb.33
+        for <linux-pm@vger.kernel.org>; Tue, 18 Jun 2013 01:40:28 -0700 (PDT)
+In-Reply-To: <20130618102429.5ff68931@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocky" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On Tue, 18 Jun 2013 08:42:13 +0200, Viresh Kumar wrote:
-> On 17 June 2013 19:21, Lukasz Majewski <l.majewski@samsung.com> wrote:
-> > On Mon, 17 Jun 2013 18:40:50 +0530, Viresh Kumar wrote:
-> >> >> > The core acpi-cpufreq.c code hadn't been changed by me, so I
-> >> >> > assume that it will work as before.
-> >> >>
-> >> >> That should adapt your patch in your patchset.
-> >
-> > Could you explain what do you mean?
-> 
-> Update acpi-cpufreq to use your infrastructure.
+On 18 June 2013 13:54, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Tue, 18 Jun 2013 08:42:13 +0200, Viresh Kumar wrote:
 
-Ach... It is already done, since I always post acpi related patch to
-the boost series :-).
+>> Its not about how long.. One cpu type can work longer with boost freq
+>> compared to other.
+>>
+>> What we probably need is:
+>> - Enabled boost from sysfs if required (now below steps will come into
+>>   picture)
+>> - See how many cpus are running, if only one then start using boost
+>> freqs
+>
+> You are right here.
+>
+> I'd like to propose following solution:
+> 1. For acpi (where boost_enable come into play) - do not consider
+> number of active cpus (this is done in HW anyway)
+>
+> 2. For SW solution evaluate how many CPUs are running. If only one is
+> running then allow enabling boost from sysfs.
 
-> 
-> >> >> From sysfs?? I thought we are going to have some automatic
-> >> >> control of this stuff from inside kernel.
-> >> >
-> >> > From sysfs I just enable the boost. I do not order from userpace
-> >> > the cpufreq to run with a particular (boosted) frequency.
-> >> >
-> >> > When I enable boost - I ask (politely) the cpufreq core to
-> >> > reevaluate policies and when applicable increase policy->max.
-> >> >
-> >> > Then governor can use this new frequencies for normal operation.
-> >>
-> >> So, with your current patchset in, ondemand or conservative
-> >> governors will start using boost frequencies. Which might burn
-> >> your chip.
-> >
-> > Two scenarios:
-> > 1. Thermal framework is compiled in and enabled (for exynos/other
-> > SoC) -> trip point is reached -> boost is disabled -> frequency is
-> > reduced -> SoC is cooled down.
-> >
-> > I think, that thermal framework is a good "safe valve" here.
-> 
-> Even in this case boost shouldn't have been enabled by default.
-> Its not only about burning the chip but more than that.
-> 
-> According to my understanding, boost was important for power
-> saving. In case a high load can be managed by a single cpu with
-> boost freqs, then its better to use boost freqs rather than bringing
-> another cpu up.
-> 
-> Normally boost freqs are not so useful if we talk about powersaving,
-> as their energy consumption is much higher with not so great impact
-> on performance.
-> 
-> That's why when this thread started we talked about boost only when
-> one cpu is operational. But with your patch all cores can use boost
-> freq and thermal will come into picture just to save the chip.
+Looks fine.
 
-I agree here.
+> But following situation is also possible: User enable boost when one
+> core is only running and then for some reason other core is woken up.
+> What shall be done then?
+> Shall we then disable boost immediately when cpufreq detects that
+> more than one core is running? Or leave this situation to be handled by
+> thermal subsystem?
 
-> 
-> That's wrong. This isn't why we invented boost here. Otherwise you
-> just don't need boost feature at all for your SoC. Just make these
-> freqs as available freqs and let thermal control policy->max/min
-> to save your chip.
+Obviously disable boost ASAP. Every SoC might not have a thermal
+framework glue to do it.
 
-Also I agree.
+> As a side note:
+> Logic proposed at point 2, is already implemented at LAB
+> (enable LAB only when one core is running and disable it when more
+> than one come into play).
 
-> 
-> > 2. Thermal framework is disabled and user has enabled boost and used
-> > ondemand / conservative governor.
-> > Then execute gzip < /dev/urandom > /dev/null & (on all cores).
-> >
-> > Then yes, chip will hang/burn due to crossing operating point (or
-> > burn).
-> >
-> >
-> > What other means of control (despite of thermal) would you consider
-> > applicable?
-> >
-> > What comes to my mind is modifying governor logic to count how long
-> > the CPU run with boost enabled and then disable it.
-> 
-> Its not about how long.. One cpu type can work longer with boost freq
-> compared to other.
-> 
-> What we probably need is:
-> - Enabled boost from sysfs if required (now below steps will come into
->   picture)
-> - See how many cpus are running, if only one then start using boost
-> freqs
+Hmm.. So, eventually that will go away now :)
 
-You are right here. 
+>> - Now thermal should be come into picture to save chip in case a
+>> single cpu running at boost can burn it out.
+>
+> I will extent v4 to embrace code which switches off boost at thermal.
 
-I'd like to propose following solution:
-1. For acpi (where boost_enable come into play) - do not consider
-number of active cpus (this is done in HW anyway)
-
-2. For SW solution evaluate how many CPUs are running. If only one is
-running then allow enabling boost from sysfs. 
-
-But following situation is also possible: User enable boost when one
-core is only running and then for some reason other core is woken up.
-What shall be done then?
-Shall we then disable boost immediately when cpufreq detects that
-more than one core is running? Or leave this situation to be handled by
-thermal subsystem?
-
-As a side note:
-Logic proposed at point 2, is already implemented at LAB
-(enable LAB only when one core is running and disable it when more
-than one come into play).
-
-
-> - Now thermal should be come into picture to save chip in case a
-> single cpu running at boost can burn it out.
-
-I will extent v4 to embrace code which switches off boost at thermal.
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+Gud.
