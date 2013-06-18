@@ -1,112 +1,73 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH v2 29/38] thermal: exynos: Support both Exynos4x12 SoCs
-Date: Mon, 17 Jun 2013 19:34:34 -0400
-Message-ID: <51BF9D0A.6050706@ti.com>
-References: <1371486863-12398-1-git-send-email-t.figa@samsung.com>
- <1371486863-12398-30-git-send-email-t.figa@samsung.com>
- <201306172159.15352.arnd@arndb.de>
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: pm: System date and time set incorrectly after suspend/resume to disk
+Date: Tue, 18 Jun 2013 01:30:57 +0000
+Message-ID: <B8EFE96D1287C24090BAD9D858E15E6172A070@sisaex02sj>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1814755704598604387=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <201306172159.15352.arnd@arndb.de>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org, Tomasz Figa <t.figa@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-samsung-soc@vger.kernel.org, Thomas Abraham <thomas.abraham@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Olof Johansson <olof@lixom.net>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w2.samsung.com ([211.189.100.14]:60776 "EHLO
+	usmailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595Ab3FRBbA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Jun 2013 21:31:00 -0400
+Content-language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "rjw@sisk.pl" <rjw@sisk.pl>, "a.zummo@towertech.it" <a.zummo@towertech.it>
+Cc: "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Shuah Khan <shuah.kh@samsung.com>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 
---===============1814755704598604387==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2NBOEBLWTOCPXXMTQBFPN"
+I am seeing a problem on my system after a suspend to disk in reboot or 
+shutdown mode. When pm_trace is 0 (which is the default), I can't 
+reproduce the problem easily. I have to run a few more suspend tests 
+before I see the problem. When pm_trace is disabled, the problem showed 
+up when I ran suspend in platform mode in a row. However when pm_ptrace 
+is enabled, problem happens on the very first spend to disk in reboot mode.
 
-------enig2NBOEBLWTOCPXXMTQBFPN
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Steps to run into the issue:
 
-Arnd,
+echo 1 > pm_print_times
+echo 1 > pm_trace
+echo reboot > disk
+echo disk > state
 
-On 17-06-2013 15:59, Arnd Bergmann wrote:
-> On Monday 17 June 2013, Tomasz Figa wrote:
->> diff --git a/drivers/thermal/exynos_thermal.c b/drivers/thermal/exynos=
-_thermal.c
->> index 788b1dd..4cbe3ee 100644
->> --- a/drivers/thermal/exynos_thermal.c
->> +++ b/drivers/thermal/exynos_thermal.c
->> @@ -817,7 +817,8 @@ static struct exynos_tmu_platform_data const exyno=
-s4210_default_tmu_data =3D {
->>  #define EXYNOS4210_TMU_DRV_DATA (NULL)
->>  #endif
->> =20
->> -#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412)
->> +#if defined(CONFIG_SOC_EXYNOS5250) || defined(CONFIG_SOC_EXYNOS4412) =
-|| \
->> +       defined(CONFIG_SOC_EXYNOS4212)
->>  static struct exynos_tmu_platform_data const exynos_default_tmu_data =
-=3D {
->>         .threshold_falling =3D 10,
->>         .trigger_levels[0] =3D 85,
->=20
-> The patch is correct, but generally speaking I think we should get away=
- from
-> having the drivers get configured per SoC on such a fine-grained level.=
+or
 
-> Better make this driver (and others) always work on all exynos variants=
-=2E
+echo 1 > pm_print_times
+echo 1 > pm_trace
+echo shutdown > disk
+echo disk > state
 
-Amit, correct if I am wrong, but:
+When system comes back up, system time set to incorrect time.
 
-The driver will work on supported exynos variants. Those that have the
-need for thermal sensing. And each of them have specific thermal needs
-(trigger points, thresholds, etc). That is what this file tries to
-isolate. And there is specific data structures for each soc version.
+In this latest round of testing:
 
+time before suspend was Mon Jun 17 16:27 MDT 2013
+right after resume was Thu Oct 5 18:24:42 MDT 2028
 
->=20
-> 	Arnd
->=20
->=20
+I have NTP enabled on my system and I have to disable/re-enable NTP from 
+Time and Date config menu.
 
+rtc class suspend routine rtc_suspend() does adjustments to account for 
+the time spent suspended. Is that the right one run in this case?
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
+rtc_suspend() doesn't run because has_persistent_clock() returns true. 
+rtc-cmos pnp driver suspend routines runs.
 
-Eduardo Valentin
+It is a possible race condition that is triggered when the conditions 
+are right.
+
+I have the following enabled in my config
+
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_SYSTOHC=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+
+Looking for tips on debugging the problem.
+
+thanks,
+-- Shuah
+Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
+America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
 
 
-------enig2NBOEBLWTOCPXXMTQBFPN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlG/nQoACgkQCXcVR3XQvP0XcgD/eL7yR7H66Sqa/fDDI4o7perH
-l4/xXXIdF9IlmImNNHMBALBX3T09rmnEEKCvsX3ayB4Hn4QqBw8TNxyHquekYNBv
-=fMUg
------END PGP SIGNATURE-----
-
-------enig2NBOEBLWTOCPXXMTQBFPN--
-
-
---===============1814755704598604387==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============1814755704598604387==--
