@@ -1,183 +1,152 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V6 08/30] thermal: exynos: Add missing definations and
- code cleanup
-Date: Wed, 19 Jun 2013 15:55:56 -0400
-Message-ID: <51C20CCC.3060502@ti.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com> <1371451599-31035-9-git-send-email-amit.daniel@samsung.com>
+Subject: Re: [PATCH V2] thermal: exynos: Support for TMU regulator defined
+ at device tree
+Date: Wed, 19 Jun 2013 16:03:25 -0400
+Message-ID: <51C20E8D.8040005@ti.com>
+References: <1367489937-30725-1-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2QWVXCKMXPNKBUGUSRJIK"
+	boundary="----enig2MQJAEJSTDLJTCJEPNSCF"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:51582 "EHLO
+Received: from devils.ext.ti.com ([198.47.26.153]:51945 "EHLO
 	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757302Ab3FST4H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 15:56:07 -0400
-In-Reply-To: <1371451599-31035-9-git-send-email-amit.daniel@samsung.com>
+	with ESMTP id S1757385Ab3FSUDk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 16:03:40 -0400
+In-Reply-To: <1367489937-30725-1-git-send-email-amit.daniel@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <eduardo.valentin@ti.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 
-------enig2QWVXCKMXPNKBUGUSRJIK
+------enig2MQJAEJSTDLJTCJEPNSCF
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
-> This patch adds some extra register bitfield definations and cleans
-> up the code to prepare for moving register macros and definations insid=
-e
-> the TMU data section.
+On 02-05-2013 06:18, Amit Daniel Kachhap wrote:
+> TMU probe function now checks for a device tree defined regulator.
+> For compatibility reasons it is allowed to probe driver even without
+> this regulator defined.
 >=20
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Signed-off-by: Luk asz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+
+I assume this one got superseeded by the same patch on your 30 patch
+series, right?
+https://patchwork.kernel.org/patch/2731031/
+
+
 > ---
->  drivers/thermal/samsung/exynos_tmu.c |   62 +++++++++++++++++++++++++-=
---------
->  1 files changed, 46 insertions(+), 16 deletions(-)
 >=20
+> Changes in V2:
+> * Added log message in regulator_get failure as suggested by Sylwester.=
+
+> * Used IS_ERR for checking regulator pointer as suggested by Sylwester.=
+
+>=20
+> This patch is repost of the patch posted by Lukasz Majewski
+> (https://patchwork.kernel.org/patch/2488211/). I have rebased this
+> patch on top of my TMU re-structured patch series
+> (http://lwn.net/Articles/548634/). Although I thought of handling
+> regulator as one type of feature (newly added) but could not do
+> so as regulator is a board/platform property and not SOC property so
+> leaving the device tree to define and handle it.
+>=20
+>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++++
+>  drivers/thermal/samsung/exynos_tmu.c               |   19 ++++++++++++=
++++++++
+>  2 files changed, 23 insertions(+), 0 deletions(-)
+>=20
+> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.t=
+xt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> index 970eeba..ff62f7a 100644
+> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+> @@ -14,6 +14,9 @@
+>  - interrupts : Should contain interrupt for thermal system
+>  - clocks : The main clock for TMU device
+>  - clock-names : Thermal system clock name
+> +- vtmu-supply: This entry is optional and provides the regulator node =
+supplying
+> +		voltage to TMU. If needed this entry can be placed inside
+> +		board/platform specific dts file.
+> =20
+>  Example 1):
+> =20
+> @@ -25,6 +28,7 @@ Example 1):
+>  		clocks =3D <&clock 383>;
+>  		clock-names =3D "tmu_apbif";
+>  		status =3D "disabled";
+> +		vtmu-supply =3D <&tmu_regulator_node>;
+>  	};
+> =20
+>  Example 2):
 > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
 sung/exynos_tmu.c
-> index 5df04a1..fa33a48 100644
+> index 72446c9..b7c609a 100644
 > --- a/drivers/thermal/samsung/exynos_tmu.c
 > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -43,9 +43,12 @@
+> @@ -32,6 +32,7 @@
+>  #include <linux/of_address.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/regulator/consumer.h>
+>  #include <linux/slab.h>
+>  #include <linux/workqueue.h>
+>  #include "exynos_thermal_common.h"
+> @@ -52,6 +53,7 @@
+>   * @clk: pointer to the clock structure.
+>   * @temp_error1: fused value of the first point trim.
+>   * @temp_error2: fused value of the second point trim.
+> + * @regulator: pointer to the TMU regulator structure.
+>   * @reg_conf: pointer to structure to register with core thermal.
+>   */
+>  struct exynos_tmu_data {
+> @@ -65,6 +67,7 @@ struct exynos_tmu_data {
+>  	struct mutex lock;
+>  	struct clk *clk;
+>  	u8 temp_error1, temp_error2;
+> +	struct regulator *regulator;
+>  	struct thermal_sensor_conf *reg_conf;
+>  };
 > =20
->  #define EXYNOS_TMU_TRIM_TEMP_MASK	0xff
->  #define EXYNOS_TMU_GAIN_SHIFT		8
-> +#define EXYNOS_TMU_GAIN_MASK		0xf
->  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT	24
-> -#define EXYNOS_TMU_CORE_ON		3
-> -#define EXYNOS_TMU_CORE_OFF		2
-> +#define EXYNOS_TMU_REF_VOLTAGE_MASK	0x1f
-> +#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK	0xf
-> +#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT	8
-> +#define EXYNOS_TMU_CORE_EN_SHIFT	0
->  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET	50
+> @@ -501,10 +504,23 @@ static int exynos_map_dt_data(struct platform_dev=
+ice *pdev)
+>  	struct exynos_tmu_data *data =3D platform_get_drvdata(pdev);
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	struct resource res;
+> +	int ret;
 > =20
->  /* Exynos4210 specific registers */
-> @@ -63,6 +66,7 @@
->  #define EXYNOS4210_TMU_TRIG_LEVEL1_MASK	0x10
->  #define EXYNOS4210_TMU_TRIG_LEVEL2_MASK	0x100
->  #define EXYNOS4210_TMU_TRIG_LEVEL3_MASK	0x1000
-> +#define EXYNOS4210_TMU_TRIG_LEVEL_MASK	0x1111
->  #define EXYNOS4210_TMU_INTCLEAR_VAL	0x1111
+>  	if (!data)
+>  		return -ENODEV;
 > =20
->  /* Exynos5250 and Exynos4412 specific registers */
-> @@ -72,17 +76,30 @@
->  #define EXYNOS_EMUL_CON		0x80
-> =20
->  #define EXYNOS_TRIMINFO_RELOAD		0x1
-> +#define EXYNOS_TRIMINFO_SHIFT		0x0
-> +#define EXYNOS_TMU_RISE_INT_MASK	0x111
-> +#define EXYNOS_TMU_RISE_INT_SHIFT	0
-> +#define EXYNOS_TMU_FALL_INT_MASK	0x111
-> +#define EXYNOS_TMU_FALL_INT_SHIFT	12
->  #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
->  #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
-> -#define EXYNOS_MUX_ADDR_VALUE		6
-> -#define EXYNOS_MUX_ADDR_SHIFT		20
->  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
-> +#define EXYNOS_TMU_TRIP_MODE_MASK	0x7
-> +
-> +#define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
-> +#define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
-> +#define EXYNOS_TMU_INTEN_RISE2_SHIFT	8
-> +#define EXYNOS_TMU_INTEN_RISE3_SHIFT	12
-> +#define EXYNOS_TMU_INTEN_FALL0_SHIFT	16
-> +#define EXYNOS_TMU_INTEN_FALL1_SHIFT	20
-> +#define EXYNOS_TMU_INTEN_FALL2_SHIFT	24
-> =20
->  #define EFUSE_MIN_VALUE 40
->  #define EFUSE_MAX_VALUE 100
-> =20
->  #ifdef CONFIG_THERMAL_EMULATION
->  #define EXYNOS_EMUL_TIME	0x57F0
-> +#define EXYNOS_EMUL_TIME_MASK	0xffff
->  #define EXYNOS_EMUL_TIME_SHIFT	16
->  #define EXYNOS_EMUL_DATA_SHIFT	8
->  #define EXYNOS_EMUL_DATA_MASK	0xFF
-> @@ -261,24 +278,37 @@ static void exynos_tmu_control(struct platform_de=
-vice *pdev, bool on)
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
-> =20
-> -	con =3D pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
-> -		pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
-> +	con =3D readl(data->base + EXYNOS_TMU_REG_CONTROL);
-> =20
-> -	if (data->soc =3D=3D SOC_ARCH_EXYNOS) {
-> -		con |=3D pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT;
-> -		con |=3D (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
-> +	if (pdata->reference_voltage) {
-> +		con &=3D ~(EXYNOS_TMU_REF_VOLTAGE_MASK <<
-> +				EXYNOS_TMU_REF_VOLTAGE_SHIFT);
-> +		con |=3D pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
+> +	/* Try enabling the regulator if found */
+> +	data->regulator =3D devm_regulator_get(&pdev->dev, "vtmu");
+> +	if (!IS_ERR(data->regulator)) {
+> +		ret =3D regulator_enable(data->regulator);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "failed to enable vtmu\n");
+> +			return ret;
+> +		}
+> +	} else {
+> +		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
 > +	}
 > +
-> +	if (pdata->gain) {
-> +		con &=3D ~(EXYNOS_TMU_GAIN_MASK << EXYNOS_TMU_GAIN_SHIFT);
-> +		con |=3D (pdata->gain << EXYNOS_TMU_GAIN_SHIFT);
-> +	}
-> +
-> +	if (pdata->noise_cancel_mode) {
-> +		con &=3D ~(EXYNOS_TMU_TRIP_MODE_MASK <<
-> +					EXYNOS_TMU_TRIP_MODE_SHIFT);
-> +		con |=3D (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
->  	}
+>  	data->id =3D of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+>  	if (data->id < 0)
+>  		data->id =3D 0;
+> @@ -669,6 +685,9 @@ static int exynos_tmu_remove(struct platform_device=
+ *pdev)
 > =20
->  	if (on) {
-> -		con |=3D EXYNOS_TMU_CORE_ON;
-
-
-
-Before, in order to turn core on you had:
-	con =3D con | 3;
-
-now you do:
-	con =3D con | (1 << 0);
-
-To me, before you would set bit 1 and 0, now you set bit 0.
-
-
-> -		interrupt_en =3D pdata->trigger_level3_en << 12 |
-> -			pdata->trigger_level2_en << 8 |
-> -			pdata->trigger_level1_en << 4 |
-> -			pdata->trigger_level0_en;
-> +		con |=3D (1 << EXYNOS_TMU_CORE_EN_SHIFT);
-> +		interrupt_en =3D
-> +		pdata->trigger_level3_en << EXYNOS_TMU_INTEN_RISE3_SHIFT |
-> +		pdata->trigger_level2_en << EXYNOS_TMU_INTEN_RISE2_SHIFT |
-> +		pdata->trigger_level1_en << EXYNOS_TMU_INTEN_RISE1_SHIFT |
-> +		pdata->trigger_level0_en << EXYNOS_TMU_INTEN_RISE0_SHIFT;
->  		if (pdata->threshold_falling)
-> -			interrupt_en |=3D interrupt_en << 16;
-> +			interrupt_en |=3D
-> +				interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
->  	} else {
-> -		con |=3D EXYNOS_TMU_CORE_OFF;
-> +		con &=3D ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
-
-
-Before, in order to turno core off you had:
-	con =3D con | 2;
-
-now you do:
-	con =3D con & ~(1 << 0);
-
-To me, before you would set bit 2, now you clear bit 0.
-
-Using the approach on this patch looks correct to me if you have 1 bit
-core_en for instance.
-
-so, Is this a fix?
-
-Just to be clear, is this what you want ?
-
->  		interrupt_en =3D 0; /* Disable all interrupts */
->  	}
->  	writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
+>  	clk_unprepare(data->clk);
+> =20
+> +	if (!IS_ERR(data->regulator))
+> +		regulator_disable(data->regulator);
+> +
+>  	platform_set_drvdata(pdev, NULL);
+> =20
+>  	return 0;
 >=20
 
 
@@ -187,7 +156,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2QWVXCKMXPNKBUGUSRJIK
+------enig2MQJAEJSTDLJTCJEPNSCF
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -196,9 +165,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHCDMwACgkQCXcVR3XQvP0LbAD/eEt4Mm9DeKzFUM6cvBl+DlhS
-ugGrOP8rczQB45DF+4UBAPpf4PvJfU5G6397t8PtTlD/7XBZg+KRNeHa2eoUY5kf
-=HXc2
+iF4EAREIAAYFAlHCDo0ACgkQCXcVR3XQvP0JUwD/YgT7qm+SFj4ex6e26InHLO7b
+xX8o3wzMGBrpWHThzLABALcq5m9+LwyQ3DQoTxJ7U6CD6Js+OYA1HK+AtcEauPg3
+=BQaq
 -----END PGP SIGNATURE-----
 
-------enig2QWVXCKMXPNKBUGUSRJIK--
+------enig2MQJAEJSTDLJTCJEPNSCF--
