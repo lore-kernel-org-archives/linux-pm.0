@@ -1,114 +1,49 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V6 12/30] thermal: exynos: Fix to clear only the generated
- interrupts
-Date: Wed, 19 Jun 2013 18:26:20 -0400
-Message-ID: <51C2300C.9090503@ti.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com> <1371451599-31035-13-git-send-email-amit.daniel@samsung.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
+Date: Thu, 20 Jun 2013 00:49:09 +0200
+Message-ID: <2925371.ZJMOdCiC6f@vostro.rjw.lan>
+References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAFgnuDe1bUub92uE1H9Fc9U7AJCYL=WKdyDe2bg00yEr=kMEbQ@mail.gmail.com> <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2VIOPOKGPIGINLWESGBRR"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1371451599-31035-13-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiaoguang Chen <chenxg.marvell@gmail.com>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
 List-Id: linux-pm@vger.kernel.org
 
-------enig2VIOPOKGPIGINLWESGBRR
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wednesday, June 19, 2013 08:30:11 AM Viresh Kumar wrote:
+> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
+> > 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
+> >> On Thursday, June 13, 2013 05:01:58 PM Xiaoguang Chen wrote:
+> >>> cpufreq governor stop and start should be kept in sequence.
+> >>> If not, there will be unexpected behavior, for example:
+> >>>
+> >>> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+> >>
+> >> Please spell cpus as "CPUs".  And please start sequences from capitals.
+> >
+> > Ok, thanks for the remind
+> >
+> >>
+> >> [Yes, it *really* is a problem.]
+> 
+> Just wanted to know the reasoning behind it so that I can remind
+> others about it and then argue :)
 
-On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
-> This patch uses the TMU status register to know the generated interrupt=
-s
-> and only clear them in the interrupt handler.
->=20
-> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
-> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> ---
+Well, sentences that don't start from upper-case letters don't look like
+separate sentences and when I see "cpus" written like this I tend to read
+it as "cups" with a typo.
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Generally speaking, don't make changelogs harder to read than they have to be.
 
->  drivers/thermal/samsung/exynos_tmu.c      |   11 +++++------
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->  2 files changed, 7 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
-sung/exynos_tmu.c
-> index 33f494e..f6f63ca 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -351,17 +351,16 @@ static void exynos_tmu_work(struct work_struct *w=
-ork)
->  			struct exynos_tmu_data, irq_work);
->  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
->  	const struct exynos_tmu_registers *reg =3D pdata->registers;
-> +	unsigned int val_irq;
-> =20
->  	exynos_report_trigger();
->  	mutex_lock(&data->lock);
->  	clk_enable(data->clk);
-> =20
-> -	if (data->soc =3D=3D SOC_ARCH_EXYNOS)
-> -		writel((reg->inten_rise_mask << reg->inten_rise_shift) |
-> -			(reg->inten_fall_mask << reg->inten_fall_shift),
-> -				data->base + reg->tmu_intclear);
-> -	else
-> -		writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
-> +	/* TODO: take action based on particular interrupt */
-> +	val_irq =3D readl(data->base + reg->tmu_intstat);
-> +	/* clear the interrupts */
-> +	writel(val_irq, data->base + reg->tmu_intclear);
-> =20
->  	clk_disable(data->clk);
->  	mutex_unlock(&data->lock);
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index e7cb1cc..7fcf183 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -45,6 +45,7 @@ static const struct exynos_tmu_registers exynos4210_t=
-mu_registers =3D {
->  	.inten_rise1_shift =3D EXYNOS_TMU_INTEN_RISE1_SHIFT,
->  	.inten_rise2_shift =3D EXYNOS_TMU_INTEN_RISE2_SHIFT,
->  	.inten_rise3_shift =3D EXYNOS_TMU_INTEN_RISE3_SHIFT,
-> +	.tmu_intstat =3D EXYNOS_TMU_REG_INTSTAT,
->  	.tmu_intclear =3D EXYNOS_TMU_REG_INTCLEAR,
->  };
->  struct exynos_tmu_platform_data const exynos4210_default_tmu_data =3D =
-{
-> @@ -112,6 +113,7 @@ static const struct exynos_tmu_registers exynos5250=
-_tmu_registers =3D {
->  	.inten_rise2_shift =3D EXYNOS_TMU_INTEN_RISE2_SHIFT,
->  	.inten_rise3_shift =3D EXYNOS_TMU_INTEN_RISE3_SHIFT,
->  	.inten_fall0_shift =3D EXYNOS_TMU_INTEN_FALL0_SHIFT,
-> +	.tmu_intstat =3D EXYNOS_TMU_REG_INTSTAT,
->  	.tmu_intclear =3D EXYNOS_TMU_REG_INTCLEAR,
->  	.emul_con =3D EXYNOS_EMUL_CON,
->  	.emul_temp_shift =3D EXYNOS_EMUL_DATA_SHIFT,
->=20
+They usually are hard enough to read anyway.
+
+Thanks,
+Rafael
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2VIOPOKGPIGINLWESGBRR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHCMAwACgkQCXcVR3XQvP3cLgD/frnTlEsmII01GJFynkFwJB1b
-FlaPNMeziynULbCeObkBALHkS5zlTw+Q7oMl03YtNFa8KJjl4RO4NCXPdwZH1nUD
-=eu1h
------END PGP SIGNATURE-----
-
-------enig2VIOPOKGPIGINLWESGBRR--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
