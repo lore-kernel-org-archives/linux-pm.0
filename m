@@ -1,36 +1,52 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: make __cpufreq_notify_transition() static
-Date: Wed, 19 Jun 2013 14:19:34 +0530
-Message-ID: <77a7487c0518f8a56d9d6927b2f2380e66ca836e.1371631432.git.viresh.kumar@linaro.org>
-References: <9625ea15bf036549ac323d7d4ae3b87ada007e7a.1371631432.git.viresh.kumar@linaro.org>
+Subject: [PATCH 01/13] cpufreq: acpi: call CPUFREQ_POSTCHANGE notfier in error cases
+Date: Wed, 19 Jun 2013 14:22:55 +0530
+Message-ID: <27d5d1fbc05f7cd41a566ca430cbd432804a5acd.1371630975.git.viresh.kumar@linaro.org>
+References: <cover.1371630975.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9625ea15bf036549ac323d7d4ae3b87ada007e7a.1371631432.git.viresh.kumar@linaro.org>
-In-Reply-To: <9625ea15bf036549ac323d7d4ae3b87ada007e7a.1371631432.git.viresh.kumar@linaro.org>
-References: <9625ea15bf036549ac323d7d4ae3b87ada007e7a.1371631432.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
+References: <cover.1371630975.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Borislav Petkov <bp@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-__cpufreq_notify_transition() is used only in cpufreq.c, make it static.
+PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
+should be called or both shouldn't be.
 
+In case we have started PRECHANGE notifier and found an error, we must call
+POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
+calling notifiers is complete.
+
+This patch fixes it.
+
+Cc: Borislav Petkov <bp@suse.de>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/acpi-cpufreq.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 7c38842..8a9a23a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -248,7 +248,7 @@ static inline void adjust_jiffies(unsigned long val, struct cpufreq_freqs *ci)
- }
- #endif
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index edc089e..223ddf4 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -494,12 +494,14 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+ 			pr_debug("acpi_cpufreq_target failed (%d)\n",
+ 				policy->cpu);
+ 			result = -EAGAIN;
+-			goto out;
++			freqs.new = freqs.old;
+ 		}
+ 	}
  
--void __cpufreq_notify_transition(struct cpufreq_policy *policy,
-+static void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, unsigned int state)
- {
- 	BUG_ON(irqs_disabled());
+ 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+-	perf->state = next_perf_state;
++
++	if (!result)
++		perf->state = next_perf_state;
+ 
+ out:
+ 	return result;
 -- 
 1.7.12.rc2.18.g61b472e
