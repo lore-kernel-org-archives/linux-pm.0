@@ -1,62 +1,25 @@
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [PATCH] ACPI / PM: Fix error code path for power resources initialization
-Date: Wed, 19 Jun 2013 13:45:28 +0900
-Message-ID: <51C13768.30000@jp.fujitsu.com>
-References: <8547354.D2OPcUytEB@vostro.rjw.lan>
+From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Subject: Re: [PATCH v6] Cpufreq: Fix governor start/stop race condition
+Date: Wed, 19 Jun 2013 13:15:08 +0800
+Message-ID: <CAFgnuDcxS53FS0w31w8k4JzyhKadfO+P12jOy5hyfVKf6pEPWg@mail.gmail.com>
+References: <1371606191-5618-1-git-send-email-chenxg@marvell.com>
+	<CAKohpont42JcdLH-TawNWVDJeiLNHeAWx4fgvAkyerOD=64MLQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <8547354.D2OPcUytEB@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKohpont42JcdLH-TawNWVDJeiLNHeAWx4fgvAkyerOD=64MLQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Xiaoguang Chen <chenxg@marvell.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
 List-Id: linux-pm@vger.kernel.org
 
-2013/06/18 7:37, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+2013/6/19 Viresh Kumar <viresh.kumar@linaro.org>:
+> On 19 June 2013 07:13, Xiaoguang Chen <chenxg@marvell.com> wrote:
+>> There are 4 CPUs and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
+>> The normal sequence is as below:
 >
-> Commit 781d737 (ACPI: Drop power resources driver) introduced a
-> bug in the power resources initialization error code path causing
-> a NULL pointer to be referenced in acpi_release_power_resource()
-> if there's an error triggering a jump to the 'err' label in
-> acpi_add_power_resource().  This happens because the list_node
-> field of struct acpi_power_resource has not been initialized yet
-> at this point and doing a list_del() on it is a bad idea.
->
-> To prevent this problem from occuring, initialize the list_node
-> field of struct acpi_power_resource upfront.
->
-> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: 3.9+ <stable@vger.kernel.org>
+> I thought Rafael asked to write cpu0 as CPU0, ...
 
-Acked-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-
-Thanks,
-Yasuaki Ishimatsu
-
-> ---
->   drivers/acpi/power.c |    1 +
->   1 file changed, 1 insertion(+)
->
-> Index: linux-pm/drivers/acpi/power.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/power.c
-> +++ linux-pm/drivers/acpi/power.c
-> @@ -882,6 +882,7 @@ int acpi_add_power_resource(acpi_handle
->   				ACPI_STA_DEFAULT);
->   	mutex_init(&resource->resource_lock);
->   	INIT_LIST_HEAD(&resource->dependent);
-> +	INIT_LIST_HEAD(&resource->list_node);
->   	resource->name = device->pnp.bus_id;
->   	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
->   	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
+I changed "cpus" to "CPUs" as Rafael suggested(Please spell cpus as
+"CPUs".  And please start sequences from capitals.)
+do I need to change other "cpu" to "CPU"?
