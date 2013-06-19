@@ -1,44 +1,32 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: [PATCH 2/2] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
-Date: Wed, 19 Jun 2013 10:15:18 -0600
-Message-ID: <1371658518-2878-1-git-send-email-shuah.kh@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com
-Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+From: Stephen Warren <swarren@wwwdotorg.org>
+Subject: Re: [PATCH 12/13] cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier
+ in error cases
+Date: Wed, 19 Jun 2013 11:11:45 -0600
+Message-ID: <51C1E651.9040802@wwwdotorg.org>
+References: <cover.1371630975.git.viresh.kumar@linaro.org> <73f480a1fa0d39b1d199e598fa9f9df4a9158d11.1371630975.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:60906 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756708Ab3FSRLs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 13:11:48 -0400
+In-Reply-To: <73f480a1fa0d39b1d199e598fa9f9df4a9158d11.1371630975.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Stephen Warren <swarren@nvidia.com>
 
-pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-Reason for this is that the RTC is the only reliably available piece of
-hardware during resume operations where a value can be set that will
-survive a reboot.
+On 06/19/2013 02:53 AM, Viresh Kumar wrote:
+> PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
+> should be called or both shouldn't be.
+> 
+> In case we have started PRECHANGE notifier and found an error, we must call
+> POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
+> calling notifiers is complete.
+> 
+> This patch fixes it.
 
-Consequence is that after a resume (even if it is successful) your system
-clock will have a value corresponding to the magic number instead of the
-correct date/time! It is therefore advisable to use a program like ntp-date
-or rdate to reset the correct date/time from an external time source when
-using this trace option.
+Acked-by: Stephen Warren <swarren@nvidia.com>
 
-There is no run-time message to warn users of the consequences of enabling
-pm_trace. Adding a warning message to pm_trace_store() will serve as a
-reminder to users to set the system date and time after resume.
-
-Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
----
- kernel/power/main.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index d77663b..4f769a6 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -528,6 +528,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
- 
- 	if (sscanf(buf, "%d", &val) == 1) {
- 		pm_trace_enabled = !!val;
-+		pr_warn("CAUTION: this option will cause your machine's real-time clock to be set to an invalid time after a resume. Remember to set correct time after resume\n");
- 		return n;
- 	}
- 	return -EINVAL;
--- 
-1.7.10.4
