@@ -1,47 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 20 Jun 2013 00:50:44 +0200
-Message-ID: <10398431.HfgFiK9AG8@vostro.rjw.lan>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com> <CAKohpokN_iJ5in0t3Mo68Tost0u2WT65PQtynQ7-wxGZr0LDQQ@mail.gmail.com> <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH V6 14/30] thermal: exynos: Modify private_data to appropriate
+ name driver_data
+Date: Wed, 19 Jun 2013 18:44:23 -0400
+Message-ID: <51C23447.4020909@ti.com>
+References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com> <1371451599-31035-15-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <CAFgnuDdN6CoLCvH6-d9YB=-jm-ESC1s__si970pa10mC3wsCdw@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2LSANGEMNCQLHRICHUGLE"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:43940 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935028Ab3FSWof (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 19 Jun 2013 18:44:35 -0400
+In-Reply-To: <1371451599-31035-15-git-send-email-amit.daniel@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-On Wednesday, June 19, 2013 11:26:13 AM Xiaoguang Chen wrote:
-> 2013/6/19 Viresh Kumar <viresh.kumar@linaro.org>:
-> > On 19 June 2013 08:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> On 19 June 2013 06:50, Xiaoguang Chen <chenxg.marvell@gmail.com> wrote:
-> >>> 2013/6/19 Rafael J. Wysocki <rjw@sisk.pl>:
-> >>
-> >>>>> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-> >>>>
-> >>>> Can you please tell me what the above is supposed to mean?  Is it supposed to
-> >>>> mean "the online of cpu3 is being run on cpu0" or something different?  If
-> >>>> something different, then what?
-> 
-> Sorry I missed this question, Let me explain it in detail
-> Suppose we are in such condtition, current cpufreq goveror is
-> userspace governor. cpu3 is offline.
-> and two things happen as above two cases, first thing is application
-> tries to change current governor to ondemand governor,
-> second thing is cpu0 tries to make cpu3 online which is off line
-> before. both of these two cases will try to stop current governor and
-> start a governor. if above two things interleave, unexpected behavior
-> will happen.
+------enig2LSANGEMNCQLHRICHUGLE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Now it's clear, thanks for the explanation.  [Well, I'll still need to fix up
-the changelog.  Sigh.]
+On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
+> This patch renames member private_data to driver_data of the thermal
+> zone registration structure as this item stores the driver related
+> data and uses it to call the driver related callbacks.
+>=20
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Thanks,
-Rafael
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
+> ---
+>  drivers/thermal/samsung/exynos_thermal_common.c |    4 ++--
+>  drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
+>  drivers/thermal/samsung/exynos_tmu.c            |    2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/=
+thermal/samsung/exynos_thermal_common.c
+> index 2af1e3b..7064eb7 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.c
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+> @@ -221,7 +221,7 @@ static int exynos_get_temp(struct thermal_zone_devi=
+ce *thermal,
+>  		pr_info("Temperature sensor not initialised\n");
+>  		return -EINVAL;
+>  	}
+> -	data =3D th_zone->sensor_conf->private_data;
+> +	data =3D th_zone->sensor_conf->driver_data;
+>  	*temp =3D th_zone->sensor_conf->read_temperature(data);
+>  	/* convert the temperature into millicelsius */
+>  	*temp =3D *temp * MCELSIUS;
+> @@ -240,7 +240,7 @@ static int exynos_set_emul_temp(struct thermal_zone=
+_device *thermal,
+>  		pr_info("Temperature sensor not initialised\n");
+>  		return -EINVAL;
+>  	}
+> -	data =3D th_zone->sensor_conf->private_data;
+> +	data =3D th_zone->sensor_conf->driver_data;
+>  	if (th_zone->sensor_conf->write_emul_temp)
+>  		ret =3D th_zone->sensor_conf->write_emul_temp(data, temp);
+>  	return ret;
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/=
+thermal/samsung/exynos_thermal_common.h
+> index a845c2d..1e9a326 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+> @@ -83,7 +83,7 @@ struct thermal_sensor_conf {
+>  	int (*write_emul_temp)(void *drv_data, unsigned long temp);
+>  	struct thermal_trip_point_conf trip_data;
+>  	struct thermal_cooling_conf cooling_data;
+> -	void *private_data;
+> +	void *driver_data;
+>  	void *pzone_data;
+>  };
+> =20
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
+sung/exynos_tmu.c
+> index a7bba69..40e0cfd 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -504,7 +504,7 @@ static int exynos_tmu_probe(struct platform_device =
+*pdev)
+>  	exynos_tmu_control(pdev, true);
+> =20
+>  	/* Register the sensor with thermal management interface */
+> -	(&exynos_sensor_conf)->private_data =3D data;
+> +	(&exynos_sensor_conf)->driver_data =3D data;
+>  	exynos_sensor_conf.trip_data.trip_count =3D pdata->trigger_enable[0] =
++
+>  			pdata->trigger_enable[1] + pdata->trigger_enable[2]+
+>  			pdata->trigger_enable[3];
+>=20
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
+
+Eduardo Valentin
+
+
+------enig2LSANGEMNCQLHRICHUGLE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHCNEcACgkQCXcVR3XQvP0UqAEAv8eN4xD80qBX2aJeEIcr2lds
+CrzGEzp6+E/ASmIgtOwBAJCUQQOtQ0woZcs/ruViuMM0SUSQMKiJNS5nmXJfzJMA
+=8LOP
+-----END PGP SIGNATURE-----
+
+------enig2LSANGEMNCQLHRICHUGLE--
