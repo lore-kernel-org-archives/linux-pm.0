@@ -1,51 +1,79 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 12/13] cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
-Date: Wed, 19 Jun 2013 14:23:06 +0530
-Message-ID: <73f480a1fa0d39b1d199e598fa9f9df4a9158d11.1371630975.git.viresh.kumar@linaro.org>
+Subject: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
+Date: Wed, 19 Jun 2013 14:23:07 +0530
+Message-ID: <0bebf56a27f799a282cc00d0c17c187f9941f122.1371630975.git.viresh.kumar@linaro.org>
 References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Return-path: <cpufreq-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:51824 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934530Ab3FSI4a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 04:56:30 -0400
+Received: by mail-pa0-f41.google.com with SMTP id bj3so4950649pad.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 01:56:29 -0700 (PDT)
 In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
 References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@sisk.pl
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
-should be called or both shouldn't be.
+Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+shouldn't be called twice contiguously.
 
-In case we have started PRECHANGE notifier and found an error, we must call
-POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
-calling notifiers is complete.
+This can happen due to bugs in users of __cpufreq_driver_target() or actual
+cpufreq drivers who are sending these notifiers.
 
-This patch fixes it.
+This patch adds some protection against this. Now, we keep track of the last
+transaction and see if something went wrong.
 
-Cc: Stephen Warren <swarren@nvidia.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/tegra-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/cpufreq/tegra-cpufreq.c b/drivers/cpufreq/tegra-cpufreq.c
-index c74c0e1..e74d777 100644
---- a/drivers/cpufreq/tegra-cpufreq.c
-+++ b/drivers/cpufreq/tegra-cpufreq.c
-@@ -138,12 +138,12 @@ static int tegra_update_cpu_speed(struct cpufreq_policy *policy,
- 	if (ret) {
- 		pr_err("cpu-tegra: Failed to set cpu frequency to %d kHz\n",
- 			freqs.new);
--		return ret;
-+		freqs.new = freqs.old;
- 	}
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2d53f47..92cb8b3 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -107,6 +107,9 @@ static void handle_update(struct work_struct *work);
+ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+ static struct srcu_notifier_head cpufreq_transition_notifier_list;
  
- 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
++/* Tracks status of transition */
++static int transition_ongoing;
++
+ static bool init_cpufreq_transition_notifier_list_called;
+ static int __init init_cpufreq_transition_notifier_list(void)
+ {
+@@ -264,6 +267,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 	switch (state) {
  
--	return 0;
-+	return ret;
- }
+ 	case CPUFREQ_PRECHANGE:
++		WARN_ON(transition_ongoing++);
++
+ 		/* detect if the driver reported a value as "old frequency"
+ 		 * which is not equal to what the cpufreq core thinks is
+ 		 * "old frequency".
+@@ -283,6 +288,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		break;
  
- static unsigned long tegra_cpu_highest_speed(void)
+ 	case CPUFREQ_POSTCHANGE:
++		WARN_ON(!transition_ongoing--);
++
+ 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+ 		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+ 			(unsigned long)freqs->cpu);
+@@ -1458,6 +1465,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 
+ 	if (cpufreq_disabled())
+ 		return -ENODEV;
++	if (transition_ongoing)
++		return -EBUSY;
+ 
+ 	/* Make sure that target_freq is within supported range */
+ 	if (target_freq > policy->max)
 -- 
 1.7.12.rc2.18.g61b472e
 
