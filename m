@@ -1,142 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Wed, 19 Jun 2013 02:25:44 +0200
-Message-ID: <1912850.KuRKhn87Nf@vostro.rjw.lan>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com>
+From: Benoit Cousson <b-cousson@ti.com>
+Subject: Re: [PATCHv3 4/6] arm: dts: add bandgap entry for OMAP4460 devices
+Date: Tue, 18 Jun 2013 20:11:27 -0500
+Message-ID: <51C1053F.7030607@ti.com>
+References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com>
+ <1370637968-23299-5-git-send-email-eduardo.valentin@ti.com>
+ <51C0C014.2000402@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1371114118-19488-1-git-send-email-chenxg@marvell.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: viresh.kumar@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <51C0C014.2000402@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux@arm.linux.org.uk, linux-pm@vger.kernel.org, tony@atomide.com, devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org, grant.likely@linaro.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 13, 2013 05:01:58 PM Xiaoguang Chen wrote:
-> cpufreq governor stop and start should be kept in sequence.
-> If not, there will be unexpected behavior, for example:
-> 
-> we have 4 cpus and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
-
-Please spell cpus as "CPUs".  And please start sequences from capitals.
-
-[Yes, it *really* is a problem.]
-
-> the normal sequence is as below:
-> 
-> 1) Current governor is userspace, one application tries to set
-> governor to ondemand. it will call __cpufreq_set_policy in which it
-> will stop userspace governor and then start ondemand governor.
-
-Do I think correctly that this is for all CPUs?
-
-> 2) Current governor is userspace, now cpu0 hotplugs in cpu3, it will
-
-Can you please tell me what the above is supposed to mean?  Is it supposed to
-mean "the online of cpu3 is being run on cpu0" or something different?  If
-something different, then what?
-
-> call cpufreq_add_policy_cpu. on which it first stops userspace
-> governor, and then starts userspace governor.
-> 
-> Now if the sequence of above two cases interleaves, it becames
-> below sequence:
-> 
-> 1) application stops userspace governor
-> 2)                                      hotplug stops userspace governor
-
-The problem is already here, right?  The governor shouldn't be stopped twice?
-
-> 3) application starts ondemand governor
-> 4)                                      hotplug starts a governor
-> 
-> in step 4, hotplug is supposed to start userspace governor, but now
-> the governor has been changed by application to ondemand, so hotplug
-> starts ondemand governor again !!!!
-> 
-> The solution is: do not allow stop one policy's governor multi-times
-> Governor stop should only do once for one policy, after it is stopped,
-> no other governor stop should be executed. also add one mutext to
-> protect __cpufreq_governor so governor operation can be kept in sequence.
-
-One more request. ->
-
-> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
->  include/linux/cpufreq.h   |  1 +
->  2 files changed, 25 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2d53f47..b51473e 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -46,6 +46,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
->  static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
->  #endif
->  static DEFINE_RWLOCK(cpufreq_driver_lock);
-> +static DEFINE_MUTEX(cpufreq_governor_lock);
->  
->  /*
->   * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-> @@ -1562,6 +1563,21 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  
->  	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
->  						policy->cpu, event);
-> +
-> +	mutex_lock(&cpufreq_governor_lock);
-> +	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
-> +	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
-> +		mutex_unlock(&cpufreq_governor_lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	if (event == CPUFREQ_GOV_STOP)
-> +		policy->governor_enabled = 0;
-> +	else if (event == CPUFREQ_GOV_START)
-> +		policy->governor_enabled = 1;
-> +
-> +	mutex_unlock(&cpufreq_governor_lock);
-> +
->  	ret = policy->governor->governor(policy, event);
->  
->  	if (!ret) {
-> @@ -1569,6 +1585,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  			policy->governor->initialized++;
->  		else if (event == CPUFREQ_GOV_POLICY_EXIT)
->  			policy->governor->initialized--;
-> +	} else {
-> +		/* Restore original values */
-> +		mutex_lock(&cpufreq_governor_lock);
-> +		if (event == CPUFREQ_GOV_STOP)
-> +			policy->governor_enabled = 1;
-> +		else if (event == CPUFREQ_GOV_START)
-> +			policy->governor_enabled = 0;
-> +		mutex_unlock(&cpufreq_governor_lock);
->  	}
->  
->  	/* we keep one module reference alive for
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 037d36a..c12db73 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -107,6 +107,7 @@ struct cpufreq_policy {
->  	unsigned int		policy; /* see above */
->  	struct cpufreq_governor	*governor; /* see below */
->  	void			*governor_data;
-> +	int			governor_enabled; /* governor start/stop flag */
-
--> Please use bool here and true/false instead of 1/0 above.
-
->  
->  	struct work_struct	update; /* if update_policy() needs to be
->  					 * called, but you're in IRQ context */
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+SGkgRWR1YXJkbywKCk9uIDA2LzE4LzIwMTMgMDM6MTYgUE0sIEVkdWFyZG8gVmFsZW50aW4gd3Jv
+dGU6Cj4gQmVub2l0Cj4KPiBPbiAwNy0wNi0yMDEzIDE2OjQ2LCBFZHVhcmRvIFZhbGVudGluIHdy
+b3RlOgo+PiBJbmNsdWRlIGJhbmRnYXAgZGV2aWNlcyBmb3IgT01BUDQ0NjAgZGV2aWNlcy4KPj4K
+Pj4gQ2M6ICJCZW5vw650IENvdXNzb24iIDxiLWNvdXNzb25AdGkuY29tPgo+PiBDYzogVG9ueSBM
+aW5kZ3JlbiA8dG9ueUBhdG9taWRlLmNvbT4KPj4gQ2M6IFJ1c3NlbGwgS2luZyA8bGludXhAYXJt
+LmxpbnV4Lm9yZy51az4KPj4gQ2M6IGxpbnV4LW9tYXBAdmdlci5rZXJuZWwub3JnCj4+IENjOiBk
+ZXZpY2V0cmVlLWRpc2N1c3NAbGlzdHMub3psYWJzLm9yZwo+PiBDYzogbGludXgtYXJtLWtlcm5l
+bEBsaXN0cy5pbmZyYWRlYWQub3JnCj4+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3Jn
+Cj4+IFNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50aW4gPGVkdWFyZG8udmFsZW50aW5AdGku
+Y29tPgo+PiAtLS0KPgo+IENvdWxkIHlvdSBwbGVhc2UgaGF2ZSBhIGxvb2sgb24gcGF0Y2ggMyBh
+bmQgNCBvZiB0aGlzIHNlcmllcz8gSSBoYXZlCj4gY2hhbmdlZCB0aGlzIG9uZSBhY2NvcmRpbmds
+eSB0byB5b3VyIHJlY29tbWVuZGF0aW9uIG9uIHYyLiBJZiBub3RoaW5nCj4gZWxzZSwgcGxlYXNl
+IGxldCBtZSBrbm93IGlmIHRoZXkgY2FuIHN0aWxsIGJlIHF1ZXVlZCBmb3IgMy4xMS4KCkkndmUg
+anVzdCBhcHBsaWVkIGJvdGggb2YgdGhlbSBpbiBteSB0cmVlIGZvciAzLjExLiBJJ2xsIHNlbmQg
+dGhlIHB1bGwgCnJlcXVlc3QgdG8gVG9ueSB0b21vcnJvdy4KClJlZ2FyZHMsCkJlbm9pdAoKPgo+
+IEkgd291bGQgbmVlZCB0byByZWJhc2UgcGF0Y2ggMDEgdG8gcmVmcmVzaCBvbiB0b3Agb2YgdGhl
+IHRoZXJtYWwgdHJlZS4KPgo+IFRoYW5rcy4KPgo+PiAgIGFyY2gvYXJtL2Jvb3QvZHRzL29tYXA0
+NDYwLmR0c2kgfCA5ICsrKysrKysrKwo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMo
+KykKPj4KPj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDYwLmR0c2kgYi9h
+cmNoL2FybS9ib290L2R0cy9vbWFwNDQ2MC5kdHNpCj4+IGluZGV4IDJjZjIyN2MuLmVhOTcyMDEg
+MTAwNjQ0Cj4+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL29tYXA0NDYwLmR0c2kKPj4gKysrIGIv
+YXJjaC9hcm0vYm9vdC9kdHMvb21hcDQ0NjAuZHRzaQo+PiBAQCAtMjksNCArMjksMTMgQEAKPj4g
+ICAJCQkgICAgIDwwIDU1IDB4ND47Cj4+ICAgCQl0aSxod21vZHMgPSAiZGVidWdzcyI7Cj4+ICAg
+CX07Cj4+ICsKPj4gKwliYW5kZ2FwIHsKPj4gKwkJcmVnID0gPDB4NGEwMDIyNjAgMHg0Cj4+ICsJ
+CQkweDRhMDAyMzJDIDB4NAo+PiArCQkJMHg0YTAwMjM3OCAweDE4PjsKPj4gKwkJY29tcGF0aWJs
+ZSA9ICJ0aSxvbWFwNDQ2MC1iYW5kZ2FwIjsKPj4gKwkJaW50ZXJydXB0cyA9IDwwIDEyNiA0Pjsg
+LyogdGFsZXJ0ICovCj4+ICsJCWdwaW9zID0gPCZncGlvMyAyMiAwPjsgLyogdHNodXQgKi8KPj4g
+Kwl9Owo+PiAgIH07Cj4+Cj4KPgoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJu
+ZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
