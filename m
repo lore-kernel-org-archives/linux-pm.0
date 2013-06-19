@@ -1,61 +1,56 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
-Date: Wed, 19 Jun 2013 09:16:12 +0200
-Message-ID: <20130619091612.60e4d69d@amdc308.digital.local>
-References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
- <20130617155156.4c729b5a@amdc308.digital.local>
- <CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
- <3258927.Qds4G9CTyG@vostro.rjw.lan>
- <20130618154456.56d99e18@amdc308.digital.local>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] ACPI / PM: Fix error code path for power resources
+ initialization
+Date: Wed, 19 Jun 2013 10:29:56 +0300
+Message-ID: <20130619072956.GE11878@intel.com>
+References: <8547354.D2OPcUytEB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-reply-to: <20130618154456.56d99e18@amdc308.digital.local>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:45529 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756549Ab3FSHZx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 19 Jun 2013 03:25:53 -0400
+Content-Disposition: inline
+In-Reply-To: <8547354.D2OPcUytEB@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 18 Jun 2013 15:44:56 +0200, Lukasz Majewski wrote:
-
-Dear Viesh, Rafael,
-
-> > 
-> > I'd recommend you both to read Documentation/cpu-freq/boost.txt
-> > now. :-)  
+On Tue, Jun 18, 2013 at 12:37:45AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
+> Commit 781d737 (ACPI: Drop power resources driver) introduced a
+> bug in the power resources initialization error code path causing
+> a NULL pointer to be referenced in acpi_release_power_resource()
+> if there's an error triggering a jump to the 'err' label in
+> acpi_add_power_resource().  This happens because the list_node
+> field of struct acpi_power_resource has not been initialized yet
+> at this point and doing a list_del() on it is a bad idea.
 > 
-> According to the documentation:
-> "Reading the file is always supported, even if the processor does not
-> support boosting. In this case the file will be read-only and always
-> reads as "0""
+> To prevent this problem from occuring, initialize the list_node
+> field of struct acpi_power_resource upfront.
 > 
-> Hmm, in the proposed patch set, the "boost" attribute is only exported
-> when cpufreq driver sets boost_supported flag. 
+> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-I would like to clarify the above issue. 
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-When I've discussed with Viresh previous version of this patch, we have
-agreed, that "boost" sysfs attribute [*]:
-/sys/devices/system/cpu/cpufreq/boost
-
-would be only visible when boost_supported flag is set at cpufreq
-driver. 
-
-When acpi-cpufreq driver doesn't support boost, the attribute [*]
-won't be exported at all. This contradicts the documentation and legacy
-acpi-cpufreq behaviour. 
-
-Since I'm affraid to break API (with all its consequences :-) ), I would
-like to be sure that this is OK, and thereof I'm allowed to rewrite
-documentation accordingly.
-
-I simply need explicit permission from both maintainers :-).
-
--- 
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: 3.9+ <stable@vger.kernel.org>
+> ---
+>  drivers/acpi/power.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux-pm/drivers/acpi/power.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/power.c
+> +++ linux-pm/drivers/acpi/power.c
+> @@ -882,6 +882,7 @@ int acpi_add_power_resource(acpi_handle
+>  				ACPI_STA_DEFAULT);
+>  	mutex_init(&resource->resource_lock);
+>  	INIT_LIST_HEAD(&resource->dependent);
+> +	INIT_LIST_HEAD(&resource->list_node);
+>  	resource->name = device->pnp.bus_id;
+>  	strcpy(acpi_device_name(device), ACPI_POWER_DEVICE_NAME);
+>  	strcpy(acpi_device_class(device), ACPI_POWER_CLASS);
