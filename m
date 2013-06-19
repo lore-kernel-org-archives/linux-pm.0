@@ -1,32 +1,44 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 05/13] cpufreq: e_powersave: call CPUFREQ_POSTCHANGE
- notfier in error cases
-Date: Wed, 19 Jun 2013 11:08:24 -0400
-Message-ID: <20130619150824.GA1664@redhat.com>
-References: <cover.1371630975.git.viresh.kumar@linaro.org>
- <859db6d3cfc0efbd5b96783967c10cfcb8b5a51a.1371630975.git.viresh.kumar@linaro.org>
- <20130619122202.GB32292@verge.net.au>
- <CAKohpomzWEX+VSNHzBAEJ1aFQtiODBTJfr1PSKxqDvXoWTtg3Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohpomzWEX+VSNHzBAEJ1aFQtiODBTJfr1PSKxqDvXoWTtg3Q@mail.gmail.com>
-Sender: cpufreq-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Simon Horman <horms@verge.net.au>, rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH 2/2] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
+Date: Wed, 19 Jun 2013 10:15:18 -0600
+Message-ID: <1371658518-2878-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jun 19, 2013 at 08:24:41PM +0530, Viresh Kumar wrote:
- > On 19 June 2013 17:52, Simon Horman <horms@verge.net.au> wrote:
- > > I have no objections to this change but at the same time I don't
- > > feel that I know the code well enough to review it.
- > 
- > Probably I made a mistake adding your name. Don't know how I
- > made up my mind that you are the main contributor for this.
- > 
- > Probably Dave is?
+pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
+Reason for this is that the RTC is the only reliably available piece of
+hardware during resume operations where a value can be set that will
+survive a reboot.
 
-e_powersaver ? Rafael.
+Consequence is that after a resume (even if it is successful) your system
+clock will have a value corresponding to the magic number instead of the
+correct date/time! It is therefore advisable to use a program like ntp-date
+or rdate to reset the correct date/time from an external time source when
+using this trace option.
 
-	Dave
+There is no run-time message to warn users of the consequences of enabling
+pm_trace. Adding a warning message to pm_trace_store() will serve as a
+reminder to users to set the system date and time after resume.
+
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ kernel/power/main.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index d77663b..4f769a6 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -528,6 +528,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 
+ 	if (sscanf(buf, "%d", &val) == 1) {
+ 		pm_trace_enabled = !!val;
++		pr_warn("CAUTION: this option will cause your machine's real-time clock to be set to an invalid time after a resume. Remember to set correct time after resume\n");
+ 		return n;
+ 	}
+ 	return -EINVAL;
+-- 
+1.7.10.4
