@@ -1,79 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
-Date: Wed, 19 Jun 2013 14:23:07 +0530
-Message-ID: <0bebf56a27f799a282cc00d0c17c187f9941f122.1371630975.git.viresh.kumar@linaro.org>
-References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:51824 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934530Ab3FSI4a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 04:56:30 -0400
-Received: by mail-pa0-f41.google.com with SMTP id bj3so4950649pad.0
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 01:56:29 -0700 (PDT)
-In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
-References: <cover.1371630975.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 03/13] cpufreq: davinci: call CPUFREQ_POSTCHANGE notfier
+ in error cases
+Date: Wed, 19 Jun 2013 14:28:27 +0530
+Message-ID: <51C172B3.5030806@ti.com>
+References: <cover.1371630975.git.viresh.kumar@linaro.org> <6e65891cd3e33c5db94563a387832ae648ef0d8c.1371630975.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <6e65891cd3e33c5db94563a387832ae648ef0d8c.1371630975.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: rjw@sisk.pl
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
-POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
-shouldn't be called twice contiguously.
+On 6/19/2013 2:22 PM, Viresh Kumar wrote:
+> PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
+> should be called or both shouldn't be.
+> 
+> In case we have started PRECHANGE notifier and found an error, we must call
+> POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
+> calling notifiers is complete.
+> 
+> Davinci driver was taking care of it but frequency isn't restored to freqs.old.
+> 
+> This patch fixes it.
+> 
+> Cc: Sekhar Nori <nsekhar@ti.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This can happen due to bugs in users of __cpufreq_driver_target() or actual
-cpufreq drivers who are sending these notifiers.
+Looks good to me.
 
-This patch adds some protection against this. Now, we keep track of the last
-transaction and see if something went wrong.
+Acked-by: Sekhar Nori <nsekhar@ti.com>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..92cb8b3 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -107,6 +107,9 @@ static void handle_update(struct work_struct *work);
- static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
- static struct srcu_notifier_head cpufreq_transition_notifier_list;
- 
-+/* Tracks status of transition */
-+static int transition_ongoing;
-+
- static bool init_cpufreq_transition_notifier_list_called;
- static int __init init_cpufreq_transition_notifier_list(void)
- {
-@@ -264,6 +267,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 	switch (state) {
- 
- 	case CPUFREQ_PRECHANGE:
-+		WARN_ON(transition_ongoing++);
-+
- 		/* detect if the driver reported a value as "old frequency"
- 		 * which is not equal to what the cpufreq core thinks is
- 		 * "old frequency".
-@@ -283,6 +288,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
- 		break;
- 
- 	case CPUFREQ_POSTCHANGE:
-+		WARN_ON(!transition_ongoing--);
-+
- 		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
- 		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
- 			(unsigned long)freqs->cpu);
-@@ -1458,6 +1465,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
-+	if (transition_ongoing)
-+		return -EBUSY;
- 
- 	/* Make sure that target_freq is within supported range */
- 	if (target_freq > policy->max)
--- 
-1.7.12.rc2.18.g61b472e
-
+Thanks,
+Sekhar
