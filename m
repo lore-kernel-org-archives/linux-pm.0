@@ -1,117 +1,115 @@
-From: Xiaoguang Chen <chenxg@marvell.com>
-Subject: [PATCH v6] Cpufreq: Fix governor start/stop race condition
-Date: Wed, 19 Jun 2013 09:43:11 +0800
-Message-ID: <1371606191-5618-1-git-send-email-chenxg@marvell.com>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: [PATCHv4 1/6] thermal: ti-soc-thermal: use standard GPIO DT bindings
+Date: Tue, 18 Jun 2013 22:28:58 -0400
+Message-ID: <1371608938-25836-1-git-send-email-eduardo.valentin@ti.com>
+References: <1370637968-23299-2-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from na3sys009aog130.obsmtp.com ([74.125.149.143]:48652 "EHLO
-	na3sys009aog130.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932860Ab3FSBqb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 21:46:31 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:49966 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933836Ab3FSC3R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Jun 2013 22:29:17 -0400
+In-Reply-To: <1370637968-23299-2-git-send-email-eduardo.valentin@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org, rjw@sisk.pl
-Cc: cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com, chenxg.marvell@gmail.com, Xiaoguang Chen <chenxg@marvell.com>
+To: rui.zhang@intel.com
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <rob.herring@calxeda.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
 
-Cpufreq governor's stop and start operation should be kept in sequence.
-If not, there will be unexpected behavior, for example:
+This change updates the ti-soc-thermal driver to use
+standard GPIO DT bindings to read the GPIO number associated
+to thermal shutdown IRQ, in case the device features it.
 
-There are 4 CPUs and policy->cpu=cpu0, cpu1/2/3 are linked to cpu0.
-The normal sequence is as below:
+Previously, the code was using a specific DT bindings.
+As now OMAP supports the standard way to model GPIOs,
+there is no point in having a ti specific binding.
 
-1) Current governor is userspace, One application tries to set
-governor to ondemand. It will call __cpufreq_set_policy in which it
-will stop userspace governor and then start ondemand governor.
-
-2) Current governor is userspace, Now cpu0 hotplugs in cpu3, It will
-call cpufreq_add_policy_cpu in which it first stops userspace
-governor, and then starts userspace governor.
-
-Now if the sequence of above two cases interleaves, It becames
-below sequence:
-
-1) Application stops userspace governor
-2)                                      Hotplug stops userspace governor
-3) Application starts ondemand governor
-4)                                      Hotplug starts a governor
-
-In step 4, hotplug is supposed to start userspace governor, But now
-the governor has been changed by application to ondemand, So hotplug
-starts ondemand governor again !!!!
-
-The solution is: Do not allow stop one policy's governor multi-times.
-Governor stop should only do once for one policy, After it is stopped,
-No other governor stop should be executed. also add one mutext to
-protect __cpufreq_governor so governor operation can be kept in sequence.
-
-Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Grant Likely <grant.likely@linaro.org>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: devicetree-discuss@lists.ozlabs.org
+Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 ---
- drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
- include/linux/cpufreq.h   |  1 +
- 2 files changed, 25 insertions(+)
+ Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt | 9 +++++----
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c                  | 8 ++------
+ 2 files changed, 7 insertions(+), 10 deletions(-)
+---
+Rui,
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2d53f47..6f5aa6f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -46,6 +46,7 @@ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_PER_CPU(char[CPUFREQ_NAME_LEN], cpufreq_cpu_governor);
- #endif
- static DEFINE_RWLOCK(cpufreq_driver_lock);
-+static DEFINE_MUTEX(cpufreq_governor_lock);
+This is the rebased version of patch 01. It has been rebased on
+your thermal/next. Please send it for 3.11. All remaining patches
+on this series have been applied to respective for_3.11 branches
+on corresponding trees.
+
+diff --git a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+index 1953b33..0c9222d 100644
+--- a/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/ti_soc_thermal.txt
+@@ -17,8 +17,9 @@ Required properties:
+ - interrupts : this entry should indicate which interrupt line
+ the talert signal is routed to;
+ Specific:
+-- ti,tshut-gpio : this entry should be used to inform which GPIO
+-line the tshut signal is routed to;
++- gpios : this entry should be used to inform which GPIO
++line the tshut signal is routed to. The informed GPIO will
++be treated as an IRQ;
+ - regs : this entry must also be specified and it is specific
+ to each bandgap version, because the mapping may change from
+ soc to soc, apart of depending on available features.
+@@ -37,7 +38,7 @@ bandgap {
+ 		0x4a002378 0x18>;
+ 	compatible = "ti,omap4460-bandgap";
+ 	interrupts = <0 126 4>; /* talert */
+-	ti,tshut-gpio = <86>;
++	gpios = <&gpio3 22 0>; /* tshut */
+ };
  
- /*
-  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
-@@ -1562,6 +1563,21 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ OMAP4470:
+@@ -47,7 +48,7 @@ bandgap {
+ 		0x4a002378 0x18>;
+ 	compatible = "ti,omap4470-bandgap";
+ 	interrupts = <0 126 4>; /* talert */
+-	ti,tshut-gpio = <86>;
++	gpios = <&gpio3 22 0>; /* tshut */
+ };
  
- 	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
- 						policy->cpu, event);
-+
-+	mutex_lock(&cpufreq_governor_lock);
-+	if ((!policy->governor_enabled && (event == CPUFREQ_GOV_STOP)) ||
-+	    (policy->governor_enabled && (event == CPUFREQ_GOV_START))) {
-+		mutex_unlock(&cpufreq_governor_lock);
-+		return -EBUSY;
-+	}
-+
-+	if (event == CPUFREQ_GOV_STOP)
-+		policy->governor_enabled = false;
-+	else if (event == CPUFREQ_GOV_START)
-+		policy->governor_enabled = true;
-+
-+	mutex_unlock(&cpufreq_governor_lock);
-+
- 	ret = policy->governor->governor(policy, event);
+ OMAP5430:
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+index 7c0b3eb..9dfd471 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -38,6 +38,7 @@
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+ #include <linux/of_irq.h>
++#include <linux/of_gpio.h>
+ #include <linux/io.h>
  
- 	if (!ret) {
-@@ -1569,6 +1585,14 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized++;
- 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
- 			policy->governor->initialized--;
-+	} else {
-+		/* Restore original values */
-+		mutex_lock(&cpufreq_governor_lock);
-+		if (event == CPUFREQ_GOV_STOP)
-+			policy->governor_enabled = true;
-+		else if (event == CPUFREQ_GOV_START)
-+			policy->governor_enabled = false;
-+		mutex_unlock(&cpufreq_governor_lock);
- 	}
+ #include "ti-bandgap.h"
+@@ -1129,7 +1130,6 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
+ 	const struct of_device_id *of_id;
+ 	struct ti_bandgap *bgp;
+ 	struct resource *res;
+-	u32 prop;
+ 	int i;
  
- 	/* we keep one module reference alive for
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 037d36a..1a81b74 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -107,6 +107,7 @@ struct cpufreq_policy {
- 	unsigned int		policy; /* see above */
- 	struct cpufreq_governor	*governor; /* see below */
- 	void			*governor_data;
-+	bool			governor_enabled; /* governor start/stop flag */
+ 	/* just for the sake */
+@@ -1173,11 +1173,7 @@ static struct ti_bandgap *ti_bandgap_build(struct platform_device *pdev)
+ 	} while (res);
  
- 	struct work_struct	update; /* if update_policy() needs to be
- 					 * called, but you're in IRQ context */
+ 	if (TI_BANDGAP_HAS(bgp, TSHUT)) {
+-		if (of_property_read_u32(node, "ti,tshut-gpio", &prop) < 0) {
+-			dev_err(&pdev->dev, "missing tshut gpio in device tree\n");
+-			return ERR_PTR(-EINVAL);
+-		}
+-		bgp->tshut_gpio = prop;
++		bgp->tshut_gpio = of_get_gpio(node, 0);
+ 		if (!gpio_is_valid(bgp->tshut_gpio)) {
+ 			dev_err(&pdev->dev, "invalid gpio for tshut (%d)\n",
+ 				bgp->tshut_gpio);
 -- 
-1.8.0
+1.8.2.1.342.gfa7285d
 
