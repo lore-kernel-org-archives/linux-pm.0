@@ -1,160 +1,62 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V6 28/30] thermal: exynos: Support for TMU regulator defined
- at device tree
-Date: Wed, 19 Jun 2013 22:33:49 -0400
-Message-ID: <51C26A0D.9060906@ti.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com> <1371451599-31035-29-git-send-email-amit.daniel@samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2JPEXLNUCFTMSXMXABFUM"
+From: kpark3469@gmail.com
+Subject: [PATCH v2] PM / QOS: correct the valid range of pm_qos_class
+Date: Thu, 20 Jun 2013 11:33:57 +0900
+Message-ID: <1371695637-5118-1-git-send-email-kpark3469@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:34441 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935506Ab3FTCeB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 19 Jun 2013 22:34:01 -0400
-In-Reply-To: <1371451599-31035-29-git-send-email-amit.daniel@samsung.com>
+Received: from mail-ie0-f179.google.com ([209.85.223.179]:35605 "EHLO
+	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935506Ab3FTCeP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 22:34:15 -0400
+Received: by mail-ie0-f179.google.com with SMTP id c10so15126874ieb.38
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 19:34:14 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+To: linux-pm@vger.kernel.org
+Cc: keun-o.park@windriver.com, len.brown@intel.com, rjw@sisk.pl
 
-------enig2JPEXLNUCFTMSXMXABFUM
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Sahara <keun-o.park@windriver.com>
 
-On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
-> TMU probe function now checks for a device tree defined regulator.
-> For compatibility reasons it is allowed to probe driver even without
-> this regulator defined.
->=20
-> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+The valid start index for pm_qos_array is not 0 but 1. There is a
+null_pm_qos at index 0 of pm_qos_array. However, null_pm_qos is not
+created as misc device so that inclusion of 0 index for checking
+pm_qos_class especially for file operations is not proper here.
 
-Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Signed-off-by: Sahara <keun-o.park@windriver.com>
+---
+ kernel/power/qos.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> ---
->  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 +++
->  drivers/thermal/samsung/exynos_tmu.c               |   23 ++++++++++++=
-++++++++
->  2 files changed, 27 insertions(+), 0 deletions(-)
->=20
-> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.t=
-xt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> index e6386ea..284f530 100644
-> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
-> @@ -16,6 +16,9 @@
->  - interrupts : Should contain interrupt for thermal system
->  - clocks : The main clock for TMU device
->  - clock-names : Thermal system clock name
-> +- vtmu-supply: This entry is optional and provides the regulator node =
-supplying
-> +		voltage to TMU. If needed this entry can be placed inside
-> +		board/platform specific dts file.
-> =20
->  Example 1):
-> =20
-> @@ -27,6 +30,7 @@ Example 1):
->  		clocks =3D <&clock 383>;
->  		clock-names =3D "tmu_apbif";
->  		status =3D "disabled";
-> +		vtmu-supply =3D <&tmu_regulator_node>;
->  	};
-> =20
->  Example 2):
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
-sung/exynos_tmu.c
-> index 7a259f4..441efd5 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -29,6 +29,7 @@
->  #include <linux/of_address.h>
->  #include <linux/of_irq.h>
->  #include <linux/platform_device.h>
-> +#include <linux/regulator/consumer.h>
-> =20
->  #include "exynos_thermal_common.h"
->  #include "exynos_tmu.h"
-> @@ -48,6 +49,7 @@
->   * @clk: pointer to the clock structure.
->   * @temp_error1: fused value of the first point trim.
->   * @temp_error2: fused value of the second point trim.
-> + * @regulator: pointer to the TMU regulator structure.
->   * @reg_conf: pointer to structure to register with core thermal.
->   */
->  struct exynos_tmu_data {
-> @@ -61,6 +63,7 @@ struct exynos_tmu_data {
->  	struct mutex lock;
->  	struct clk *clk;
->  	u8 temp_error1, temp_error2;
-> +	struct regulator *regulator;
->  	struct thermal_sensor_conf *reg_conf;
->  };
-> =20
-> @@ -510,10 +513,27 @@ static int exynos_map_dt_data(struct platform_dev=
-ice *pdev)
->  	struct exynos_tmu_data *data =3D platform_get_drvdata(pdev);
->  	struct exynos_tmu_platform_data *pdata;
->  	struct resource res;
-> +	int ret;
-> =20
->  	if (!data)
->  		return -ENODEV;
-> =20
-> +	/*
-> +	 * Try enabling the regulator if found
-> +	 * TODO: Add regulator as an SOC feature, so that regulator enable
-> +	 * is a compulsory call.
-> +	 */
-> +	data->regulator =3D devm_regulator_get(&pdev->dev, "vtmu");
-> +	if (!IS_ERR(data->regulator)) {
-> +		ret =3D regulator_enable(data->regulator);
-> +		if (ret) {
-> +			dev_err(&pdev->dev, "failed to enable vtmu\n");
-> +			return ret;
-> +		}
-> +	} else {
-> +		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
-> +	}
-> +
->  	data->id =3D of_alias_get_id(pdev->dev.of_node, "tmuctrl");
->  	if (data->id < 0)
->  		data->id =3D 0;
-> @@ -680,6 +700,9 @@ static int exynos_tmu_remove(struct platform_device=
- *pdev)
-> =20
->  	clk_unprepare(data->clk);
-> =20
-> +	if (!IS_ERR(data->regulator))
-> +		regulator_disable(data->regulator);
-> +
->  	return 0;
->  }
-> =20
->=20
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 587ddde..f2f5f6e 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -477,7 +477,7 @@ static int find_pm_qos_object_by_minor(int minor)
+ {
+ 	int pm_qos_class;
+ 
+-	for (pm_qos_class = 0;
++	for (pm_qos_class = PM_QOS_CPU_DMA_LATENCY;
+ 		pm_qos_class < PM_QOS_NUM_CLASSES; pm_qos_class++) {
+ 		if (minor ==
+ 			pm_qos_array[pm_qos_class]->pm_qos_power_miscdev.minor)
+@@ -491,7 +491,7 @@ static int pm_qos_power_open(struct inode *inode, struct file *filp)
+ 	long pm_qos_class;
+ 
+ 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
+-	if (pm_qos_class >= 0) {
++	if (pm_qos_class >= PM_QOS_CPU_DMA_LATENCY) {
+ 		struct pm_qos_request *req = kzalloc(sizeof(*req), GFP_KERNEL);
+ 		if (!req)
+ 			return -ENOMEM;
+@@ -584,7 +584,7 @@ static int __init pm_qos_power_init(void)
+ 
+ 	BUILD_BUG_ON(ARRAY_SIZE(pm_qos_array) != PM_QOS_NUM_CLASSES);
+ 
+-	for (i = 1; i < PM_QOS_NUM_CLASSES; i++) {
++	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
+ 		ret = register_pm_qos_misc(pm_qos_array[i]);
+ 		if (ret < 0) {
+ 			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+-- 
+1.7.1
 
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2JPEXLNUCFTMSXMXABFUM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHCag0ACgkQCXcVR3XQvP0bKwD/WXJj3ZqxhmYSb64e/CYDTODC
-5BToEXVoAzy84Uod2FkBAJNJ2fDxvk9BWwAqd8GgwOcFYWc8vzbpvSIef/4weZXn
-=muBH
------END PGP SIGNATURE-----
-
-------enig2JPEXLNUCFTMSXMXABFUM--
