@@ -1,96 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
-Date: Thu, 20 Jun 2013 10:31:30 +0530
-Message-ID: <CAKohponVBjvQf-5BibzDUko=fVtzPYWMOr2xywp=r0TTB_t6Bw@mail.gmail.com>
+Date: Thu, 20 Jun 2013 10:41:41 +0530
+Message-ID: <CAKohponTEb_XQnGTpDVC78jknCuwumnckCKZk6cObq45RmWpFA@mail.gmail.com>
 References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
 	<20130617155156.4c729b5a@amdc308.digital.local>
 	<CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
 	<3258927.Qds4G9CTyG@vostro.rjw.lan>
+	<20130618154456.56d99e18@amdc308.digital.local>
+	<20130619091612.60e4d69d@amdc308.digital.local>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3258927.Qds4G9CTyG@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oa0-f41.google.com ([209.85.219.41]:59823 "EHLO
+	mail-oa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751064Ab3FTFLl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 01:11:41 -0400
+Received: by mail-oa0-f41.google.com with SMTP id n10so7429006oag.28
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 22:11:41 -0700 (PDT)
+In-Reply-To: <20130619091612.60e4d69d@amdc308.digital.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-On 18 June 2013 18:56, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday, June 18, 2013 12:12:13 PM Viresh Kumar wrote:
->> On 17 June 2013 19:21, Lukasz Majewski <l.majewski@samsung.com> wrote:
-
->> According to my understanding, boost was important for power
->> saving. In case a high load can be managed by a single cpu with
->> boost freqs, then its better to use boost freqs rather than bringing
->> another cpu up.
+On 19 June 2013 12:46, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> I would like to clarify the above issue.
 >
-> Do you mean the 'boost' sysfs attribute or the 'turbo frequencies' concept?
-
-I thought they are the. Probably not, but I am not sure about the
-difference.
-
->> Normally boost freqs are not so useful if we talk about powersaving,
->> as their energy consumption is much higher with not so great impact
->> on performance.
+> When I've discussed with Viresh previous version of this patch, we have
+> agreed, that "boost" sysfs attribute [*]:
+> /sys/devices/system/cpu/cpufreq/boost
 >
-> Er, er, please be careful here.  The impact on performance may be sufficient
-> for deep C-states to become relevant in some cases.
+> would be only visible when boost_supported flag is set at cpufreq
+> driver.
 
-Hmm.
+Yes.
 
->> That's why when this thread started we talked about boost only when
->> one cpu is operational. But with your patch all cores can use boost
->> freq and thermal will come into picture just to save the chip.
+> When acpi-cpufreq driver doesn't support boost, the attribute [*]
+> won't be exported at all. This contradicts the documentation and legacy
+> acpi-cpufreq behaviour.
+
+No they aren't contradictory. What the documentation meant was:
+acpi-cpufreq driver is used by lots of different x86 processors. Now
+all processors might not support boost inside x86 also. And for them
+we will keep 'boost' file readonly. This is done by following statement
+
+	if (boot_cpu_has(X86_FEATURE_CPB) || boot_cpu_has(X86_FEATURE_IDA)) {
+		boost_supported = true;
+                ....
+	} else
+		global_boost.attr.mode = 0444;
+
+Documentation file doesn't talk about any other cpufreq driver, for
+them there is no concept like boost.
+
+You need to preserve this functionality.
+
+> Since I'm affraid to break API (with all its consequences :-) ), I would
+> like to be sure that this is OK, and thereof I'm allowed to rewrite
+> documentation accordingly.
 >
-> Well, that's why on x86 turbo is controlled by hardware that takes care of
-> keeping things within the chip's thermal limits.
+> I simply need explicit permission from both maintainers :-).
 
-Yeah.
-
->> That's wrong. This isn't why we invented boost here. Otherwise you
->> just don't need boost feature at all for your SoC. Just make these
->> freqs as available freqs and let thermal control policy->max/min
->> to save your chip.
->
-> The 'boost' attribute added by acpi-cpufreq means "let the hardware use turbo
-> frequencies".
->
-> I'd recommend you both to read Documentation/cpu-freq/boost.txt now. :-)
-
-I did it now :)
-
-> I think we can extend the meaning to "let turbo frequencies be used", but if
-> we need software to play the role of the hardware's thermal control, we need
-> to be very careful.
-
-Exactly. There are two variants now:
-- Hardware boost: x86: Don't do any trick in software to prevent hardware
-from boosting... Let the hardware take control as it is today
-- Software boost: The initial idea from Lukasz was about using boost only
-when one cpu is used. That's the impression I had in mind. And it looked
-sensible too to some extent. BUT there is a great chance that any mistake
-can burn chips, so we need to be extremely careful.
-
->> What we probably need is:
->> - Enabled boost from sysfs if required (now below steps will come into
->>   picture)
->
-> This has to be compatible with the existing stuff.
-
-Sure.
-
->> - See how many cpus are running, if only one then start using boost freqs
->> - Now thermal should be come into picture to save chip in case a single
->> cpu running at boost can burn it out.
->
-> I'd say there needs to be a separate controller/monitor for that that will
-> know what the chip's thermal limit is and how that relates to how fast the
-> CPU core(s) may run and for how much time.  I'm not sure it is sufficient
-> to "wait for thermal to kick in" here, because you may need to slow down
-> things in advance (i.e. before thermal sensors tell you there's too much heat,
-> because that may be too late already).
-
-That's why I wasn't sure about software boosting initially. But at the same
-time a thermal sensor might be good enough. They just have to be programmed
-accordingly, so that they fire a bit in advance before things are out of
-control. :)
+For me its okay to rewrite documentation.
