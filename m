@@ -1,71 +1,41 @@
-From: kpark3469@gmail.com
-Subject: [PATCH 4/4] Documentation: Add pm_qos and dev_pm_qos to events-power.txt
-Date: Thu, 20 Jun 2013 13:57:00 +0900
-Message-ID: <1371704220-7008-4-git-send-email-kpark3469@gmail.com>
-References: <1371704220-7008-1-git-send-email-kpark3469@gmail.com>
- <1371704220-7008-2-git-send-email-kpark3469@gmail.com>
- <1371704220-7008-3-git-send-email-kpark3469@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f177.google.com ([209.85.223.177]:49338 "EHLO
-	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751065Ab3FTE5j (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 00:57:39 -0400
-Received: by mail-ie0-f177.google.com with SMTP id aq17so15560434iec.36
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 21:57:39 -0700 (PDT)
-In-Reply-To: <1371704220-7008-3-git-send-email-kpark3469@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: Add boost frequency support in core
+Date: Thu, 20 Jun 2013 10:35:26 +0530
+Message-ID: <CAKohpokYq8LyA0B1q2DNC58dhC0kxFzcMgTGnBkACH4FCoDZXQ@mail.gmail.com>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com>
+	<20130617155156.4c729b5a@amdc308.digital.local>
+	<CAKohpo=_=u35wTb-ZUXrR2hNno+ryAqq4gSC3EiJr=-bmgb9JQ@mail.gmail.com>
+	<3258927.Qds4G9CTyG@vostro.rjw.lan>
+	<20130618154456.56d99e18@amdc308.digital.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20130618154456.56d99e18@amdc308.digital.local>
+Sender: cpufreq-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: keun-o.park@windriver.com, len.brown@intel.com, rjw@sisk.pl, rostedt@goodmis.org
 
-From: Sahara <keun-o.park@windriver.com>
+On 18 June 2013 19:14, Lukasz Majewski <l.majewski@samsung.com> wrote:
+> On Tue, 18 Jun 2013 15:26:16 +0200, Rafael J. Wysocki wrote:
+>> On Tuesday, June 18, 2013 12:12:13 PM Viresh Kumar wrote:
+>> > On 17 June 2013 19:21, Lukasz Majewski <l.majewski@samsung.com>
 
-Add PM QOS events section and description to events-power.txt.
+>> Well, that's why on x86 turbo is controlled by hardware that takes
+>> care of keeping things within the chip's thermal limits.
+>
+> And this is the reason why I don't want to overly change acpi-cpufreq.c
+> code. :-)
 
-Signed-off-by: Sahara <keun-o.park@windriver.com>
----
- Documentation/trace/events-power.txt |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+We need to keep both hardware/software boost features at the same place
+in core, they may behave differently though. That's why I wanted you
+to do that.
 
-diff --git a/Documentation/trace/events-power.txt b/Documentation/trace/events-power.txt
-index e1498ff..90ebab6 100644
---- a/Documentation/trace/events-power.txt
-+++ b/Documentation/trace/events-power.txt
-@@ -63,3 +63,34 @@ power_domain_target	"%s state=%lu cpu_id=%lu"
- The first parameter gives the power domain name (e.g. "mpu_pwrdm").
- The second parameter is the power domain target state.
- 
-+4. PM QOS events
-+================
-+The pm qos events are used for qos add/update/remove request and for
-+target/flags update.
-+
-+pm_qos_add_request                 "pm_qos_class=%s value=%d"
-+pm_qos_update_request              "pm_qos_class=%s value=%d"
-+pm_qos_remove_request              "pm_qos_class=%s value=%d"
-+pm_qos_update_request_timeout      "pm_qos_class=%s value=%d, timeout_us=%ld"
-+
-+The first parameter gives the qos class name (e.g. "CPU_DMA_LATENCY").
-+The second parameter is value to be added/updated/removed.
-+The third parameter is timeout value in usec.
-+
-+pm_qos_update_target               "action=%s prev_value=%d curr_value=%d"
-+pm_qos_update_flags                "action=%s prev_value=0x%x curr_value=0x%x"
-+
-+The first parameter gives the qos action name (e.g. "ADD_REQ").
-+The second parameter is the previous qos value.
-+The third parameter is the current qos value to update.
-+
-+And, there are also events used for device pm qos add/update/remove request.
-+
-+dev_pm_qos_add_request             "device=%s type=%s new_value=%d"
-+dev_pm_qos_update_request          "device=%s type=%s new_value=%d"
-+dev_pm_qos_remove_request          "device=%s type=%s new_value=%d"
-+
-+The first parameter gives the device name which tries to add/update/remove
-+qos requests.
-+The second parameter gives the request type (e.g. "DEV_PM_QOS_LATENCY").
-+The third parameter is value to be added/updated/removed.
--- 
-1.7.1
+> I think that thermal subsystem shall be the second option to disable SW
+> boosting.
+>
+> The main control shall be done inside the cpufreq core. The idea to
+> disable boost when more than one core is active is rational.
 
+But then, it might not be enough. A single core can make your SoC
+very hot.
