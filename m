@@ -1,447 +1,419 @@
-From: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Subject: [PATCH] regulator: max77693: Add max77693 regualtor driver.
-Date: Thu, 20 Jun 2013 16:03:26 +0900
-Message-ID: <1371711806-18826-1-git-send-email-jonghwa3.lee@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:61670 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921Ab3FTHDn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 03:03:43 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH] cpufreq: stats: Add 'load_table' debugfs file to show
+ accumulated data of CPUs
+Date: Thu, 20 Jun 2013 17:36:38 +0900
+Message-ID: <1371717398-19692-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lrg@ti.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>
 
-This patch adds new regulator driver to support max77693 chip's regulators.
-max77693 has two linear voltage regulators and one current regulator which
-can be controlled through I2C bus. This driver also supports device tree.
+This patch add new 'load_table' debugfs file to show previous accumulated data
+of CPUs load as following path and add CPUFREQ_LOADCHECK notification to
+CPUFREQ_TRANSITION_NOTIFIER notifier chain.
+- /sys/kernel/debug/cpufreq/load_table
 
-Signed-off-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+When governor calculates CPUs load on dbs_check_cpu(), governor send
+CPUFREQ_LOADCHECK notification with CPUs load, so that cpufreq_stats
+accumulates calculated CPUs load on 'load_table' storage.
+
+This debugfs file is used to judge the correct system state or determine
+suitable system resource according to current CPUs load on user-space.
+
+This debugfs file include following data:
+- Measurement point of time
+- CPU frequency
+- Per-CPU load
+
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Myungjoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/regulator/Kconfig            |    9 +
- drivers/regulator/Makefile           |    1 +
- drivers/regulator/max77693.c         |  317 ++++++++++++++++++++++++++++++++++
- include/linux/mfd/max77693-private.h |   13 ++
- include/linux/mfd/max77693.h         |   18 ++
- 5 files changed, 358 insertions(+)
- create mode 100644 drivers/regulator/max77693.c
+Changes since v1:
+- Set maximum storage size to save CPUs load on Kconfig
+- Use spinlock to synchronize read/write operation for CPUs load
+- Use local variable instead of global variable(struct cpufreq_freqs *freqs)
+- Use pointer of data structure to get correct size of data structure
+  in sizeof() macro instead of structure name
+  : sizeof(struct cpufreq_freqs) -> sizeof(*stat->load_table)
+- Change time unit from nanosecond to microsecond
+- Remove unnecessary memory copy
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 9296425..f1e6ad9 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -250,6 +250,15 @@ config REGULATOR_MAX77686
- 	  via I2C bus. The provided regulator is suitable for
- 	  Exynos-4 chips to control VARM and VINT voltages.
+ drivers/cpufreq/Kconfig            |   6 ++
+ drivers/cpufreq/cpufreq.c          |   4 +
+ drivers/cpufreq/cpufreq_governor.c |  19 +++-
+ drivers/cpufreq/cpufreq_stats.c    | 192 +++++++++++++++++++++++++++++++++----
+ include/linux/cpufreq.h            |   6 ++
+ 5 files changed, 206 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 534fcb8..8a429b3 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -45,6 +45,12 @@ config CPU_FREQ_STAT_DETAILS
  
-+config REGULATOR_MAX77693
-+	tristate "Maxim MAX77693 regulator"
-+	depends on MFD_MAX77693
-+	help
-+	  This driver controls a Maxim 77693 regulator via I2C bus.
-+	  The regulators include two LDOs, 'SAFEOUT1', 'SAFEOUT2'
-+	  and one current regulator 'CHARGER'. This is suitable for
-+	  Exynos-4x12 chips.
+ 	  If in doubt, say N.
+ 
++config NR_CPU_LOAD_STORAGE
++	int "Maximum storage size to save CPU load (10-100)"
++	range 10 100
++	depends on CPU_FREQ_STAT_DETAILS
++	default "10"
 +
- config REGULATOR_PCAP
- 	tristate "Motorola PCAP2 regulator driver"
- 	depends on EZX_PCAP
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index 26e6c4a..ba4a3cf 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -41,6 +41,7 @@ obj-$(CONFIG_REGULATOR_MAX8973) += max8973-regulator.o
- obj-$(CONFIG_REGULATOR_MAX8997) += max8997.o
- obj-$(CONFIG_REGULATOR_MAX8998) += max8998.o
- obj-$(CONFIG_REGULATOR_MAX77686) += max77686.o
-+obj-$(CONFIG_REGULATOR_MAX77693) += max77693.o
- obj-$(CONFIG_REGULATOR_MC13783) += mc13783-regulator.o
- obj-$(CONFIG_REGULATOR_MC13892) += mc13892-regulator.o
- obj-$(CONFIG_REGULATOR_MC13XXX_CORE) +=  mc13xxx-regulator-core.o
-diff --git a/drivers/regulator/max77693.c b/drivers/regulator/max77693.c
-new file mode 100644
-index 0000000..c745ca3
---- /dev/null
-+++ b/drivers/regulator/max77693.c
-@@ -0,0 +1,317 @@
-+/*
-+ * max77693.c - Regulator driver for the Maxim 77693
-+ *
-+ * Copyright (C) 2013 Samsung Electronics
-+ * Jonghwa Lee <jonghwa3.lee@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ *
-+ * This driver is based on max77686.c
-+ */
-+
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/platform_device.h>
-+#include <linux/module.h>
-+#include <linux/export.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/machine.h>
-+#include <linux/mfd/max77693.h>
-+#include <linux/mfd/max77693-private.h>
-+#include <linux/regulator/of_regulator.h>
-+
-+#define CHGIN_ILIM_STEP_20mA			20000
-+
-+struct max77693_pmic_dev {
-+	struct device *dev;
-+	struct max77693_dev *iodev;
-+	int num_regulators;
-+	struct regulator_dev **rdev;
-+};
-+
-+/* CHARGER regulator ops */
-+static int max77693_chg_is_enabled(struct regulator_dev *rdev)
-+{
-+	int ret;
-+	u8 val;
-+
-+	ret = max77693_read_reg(rdev->regmap, rdev->desc->enable_reg, &val);
-+	if (ret)
-+		return ret;
-+
-+	return (val & rdev->desc->enable_mask) == rdev->desc->enable_mask;
-+}
-+
-+static int max77693_chg_get_current_limit(struct regulator_dev *rdev)
-+{
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	unsigned int chg_max_uA = rdev->constraints->max_uA;
-+	u8 reg, sel;
-+	unsigned int val;
-+	int ret;
-+
-+	ret = max77693_read_reg(rdev->regmap,
-+				MAX77693_CHG_REG_CHG_CNFG_09, &reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	sel = reg & CHG_CNFG_09_CHGIN_ILIM_MASK;
-+
-+	/* the first four codes for charger current are all 60mA */
-+	if (sel <= 3)
-+		sel = 0;
-+	else
-+		sel -= 3;
-+
-+	val = chg_min_uA + CHGIN_ILIM_STEP_20mA * sel;
-+	if (val > chg_max_uA)
-+		return -EINVAL;
-+
-+	return val;
-+}
-+
-+static int max77693_chg_set_current_limit(struct regulator_dev *rdev,
-+						int min_uA, int max_uA)
-+{
-+	unsigned int chg_min_uA = rdev->constraints->min_uA;
-+	int sel = 0;
-+
-+	while (chg_min_uA + CHGIN_ILIM_STEP_20mA * sel < min_uA)
-+		sel++;
-+
-+	if (chg_min_uA * CHGIN_ILIM_STEP_20mA * sel > max_uA)
-+		return -EINVAL;
-+
-+	/* the first four codes for charger current are all 60mA */
-+	sel += 3;
-+
-+	return max77693_write_reg(rdev->regmap,
-+				MAX77693_CHG_REG_CHG_CNFG_09, sel);
-+}
-+
-+static const unsigned int max77693_safeout_table[] = {
-+	4850000,
-+	4900000,
-+	4950000,
-+	3300000,
-+};
-+
-+static struct regulator_ops max77693_safeout_ops = {
-+	.list_voltage		= regulator_list_voltage_table,
-+	.is_enabled		= regulator_is_enabled_regmap,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.get_voltage_sel	= regulator_get_voltage_sel_regmap,
-+	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
-+};
-+
-+static struct regulator_ops max77693_charger_ops = {
-+	.is_enabled		= max77693_chg_is_enabled,
-+	.enable			= regulator_enable_regmap,
-+	.disable		= regulator_disable_regmap,
-+	.get_current_limit	= max77693_chg_get_current_limit,
-+	.set_current_limit	= max77693_chg_set_current_limit,
-+};
-+
-+#define regulator_desc_esafeout(_num)	{			\
-+	.name		= "ESAFEOUT"#_num,			\
-+	.id		= MAX77693_ESAFEOUT##_num,		\
-+	.n_voltages	= 4,					\
-+	.ops		= &max77693_safeout_ops,		\
-+	.type		= REGULATOR_VOLTAGE,			\
-+	.volt_table	= max77693_safeout_table,		\
-+	.vsel_reg	= MAX77693_CHG_REG_SAFEOUT_CTRL,	\
-+	.vsel_mask	= SAFEOUT_CTRL_SAFEOUT##_num##_MASK,	\
-+	.enable_reg	= MAX77693_CHG_REG_SAFEOUT_CTRL,	\
-+	.enable_mask	= SAFEOUT_CTRL_ENSAFEOUT##_num##_MASK ,	\
-+}
-+
-+static struct regulator_desc regulators[] = {
-+	regulator_desc_esafeout(1),
-+	regulator_desc_esafeout(2),
-+	{
-+		.name = "CHARGER",
-+		.id = MAX77693_CHARGER,
-+		.ops = &max77693_charger_ops,
-+		.type = REGULATOR_CURRENT,
-+		.owner = THIS_MODULE,
-+		.enable_reg = MAX77693_CHG_REG_CHG_CNFG_00,
-+		.enable_mask = CHG_CNFG_00_CHG_MASK |
-+				CHG_CNFG_00_BUCK_MASK,
-+	},
-+};
-+
-+#ifdef CONFIG_OF
-+static int max77693_pmic_dt_parse_rdata(struct device *dev,
-+					struct max77693_regulator_data **rdata)
-+{
-+	struct device_node *np;
-+	struct of_regulator_match *rmatch;
-+	struct max77693_regulator_data *tmp;
-+	int i, matched = 0;
-+
-+	np = of_find_node_by_name(dev->parent->of_node, "regulators");
-+	if (!np)
-+		return -EINVAL;
-+
-+	rmatch = devm_kzalloc(dev,
-+		 sizeof(*rmatch) * ARRAY_SIZE(regulators), GFP_KERNEL);
-+	if (!rmatch)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < ARRAY_SIZE(regulators); i++)
-+		rmatch[i].name = regulators[i].name;
-+
-+	matched = of_regulator_match(dev, np, rmatch, ARRAY_SIZE(regulators));
-+	if (matched <= 0)
-+		return matched;
-+	*rdata = devm_kzalloc(dev, sizeof(**rdata) * matched, GFP_KERNEL);
-+	if (!(*rdata))
-+		return -ENOMEM;
-+
-+	tmp = *rdata;
-+
-+	for (i = 0; i < ARRAY_SIZE(regulators); i++) {
-+		if (!rmatch[i].init_data)
-+			continue;
-+		tmp->initdata = rmatch[i].init_data;
-+		tmp->of_node = rmatch[i].of_node;
-+		tmp->id = regulators[i].id;
-+		tmp++;
-+	}
-+
-+	return matched;
-+}
-+#else
-+static int max77693_pmic_dt_parse_rdata(struct device *dev,
-+					struct max77693_regulator_data **rdata)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_OF */
-+
-+static int max77693_pmic_init_rdata(struct device *dev,
-+				    struct max77693_regulator_data **rdata)
-+{
-+	struct max77693_platform_data *pdata;
-+	int num_regulators = 0;
-+
-+	pdata = dev_get_platdata(dev->parent);
-+	if (pdata) {
-+		*rdata = pdata->regulators;
-+		num_regulators = pdata->num_regulators;
-+	}
-+
-+	if (!(*rdata) && dev->parent->of_node)
-+		num_regulators = max77693_pmic_dt_parse_rdata(dev, rdata);
-+
-+	return num_regulators;
-+}
-+
-+static int max77693_pmic_probe(struct platform_device *pdev)
-+{
-+	struct max77693_dev *iodev = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_pmic_dev *max77693_pmic;
-+	struct max77693_regulator_data *rdata = NULL;
-+	int num_rdata, i, ret;
-+	struct regulator_config config;
-+
-+	num_rdata = max77693_pmic_init_rdata(&pdev->dev, &rdata);
-+	if (!rdata || num_rdata <= 0) {
-+		dev_err(&pdev->dev, "No init data supplied.\n");
-+		return -ENODEV;
-+	}
-+
-+	max77693_pmic = devm_kzalloc(&pdev->dev,
-+				sizeof(struct max77693_pmic_dev),
-+				GFP_KERNEL);
-+	if (!max77693_pmic)
-+		return -ENOMEM;
-+
-+	max77693_pmic->rdev = devm_kzalloc(&pdev->dev,
-+				sizeof(struct regulator_dev *) * num_rdata,
-+				GFP_KERNEL);
-+	if (!max77693_pmic->rdev)
-+		return -ENOMEM;
-+
-+	max77693_pmic->dev = &pdev->dev;
-+	max77693_pmic->iodev = iodev;
-+	max77693_pmic->num_regulators = num_rdata;
-+
-+	config.dev = &pdev->dev;
-+	config.regmap = iodev->regmap;
-+	config.driver_data = max77693_pmic;
-+	platform_set_drvdata(pdev, max77693_pmic);
-+
-+	for (i = 0; i < max77693_pmic->num_regulators; i++) {
-+		int id = rdata[i].id;
-+
-+		config.init_data = rdata[i].initdata;
-+		config.of_node = rdata[i].of_node;
-+
-+		max77693_pmic->rdev[i] = regulator_register(&regulators[id],
-+							    &config);
-+		if (IS_ERR(max77693_pmic->rdev[i])) {
-+			ret = PTR_ERR(max77693_pmic->rdev[i]);
-+			dev_err(max77693_pmic->dev,
-+				"Failed to initialize regulator-%d\n", id);
-+			max77693_pmic->rdev[i] = NULL;
-+			goto err;
+ choice
+ 	prompt "Default CPUFreq governor"
+ 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2d53f47..cbaaff0 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -292,6 +292,10 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+ 		if (likely(policy) && likely(policy->cpu == freqs->cpu))
+ 			policy->cur = freqs->new;
+ 		break;
++	case CPUFREQ_LOADCHECK:
++		srcu_notifier_call_chain(&cpufreq_transition_notifier_list,
++				CPUFREQ_LOADCHECK, freqs);
++		break;
+ 	}
+ }
+ /**
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index dc9b72e..bca341b 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -90,6 +90,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 	unsigned int max_load = 0;
+ 	unsigned int ignore_nice;
+ 	unsigned int j;
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	struct cpufreq_freqs freq;
++#endif
+ 
+ 	if (dbs_data->cdata->governor == GOV_ONDEMAND)
+ 		ignore_nice = od_tuners->ignore_nice;
+@@ -144,11 +147,17 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			idle_time += jiffies_to_usecs(cur_nice_jiffies);
+ 		}
+ 
+-		if (unlikely(!wall_time || wall_time < idle_time))
++		if (unlikely(!wall_time || wall_time < idle_time)) {
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++			freq.load[j] = 0;
++#endif
+ 			continue;
 +		}
-+	}
+ 
+ 		load = 100 * (wall_time - idle_time) / wall_time;
+-
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++		freq.load[j] = load;
++#endif
+ 		if (dbs_data->cdata->governor == GOV_ONDEMAND) {
+ 			int freq_avg = __cpufreq_driver_getavg(policy, j);
+ 			if (freq_avg <= 0)
+@@ -161,6 +170,12 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+ 			max_load = load;
+ 	}
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	freq.time = ktime_to_ms(ktime_get());
++	freq.old = freq.new = policy->cur;
 +
-+	return 0;
-+ err:
-+	while (--i >= 0)
-+		regulator_unregister(max77693_pmic->rdev[i]);
++	cpufreq_notify_transition(policy, &freq, CPUFREQ_LOADCHECK);
++#endif
+ 	dbs_data->cdata->gov_check_cpu(cpu, max_load);
+ }
+ EXPORT_SYMBOL_GPL(dbs_check_cpu);
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index fb65dec..289d675 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -12,6 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/cpu.h>
++#include <linux/debugfs.h>
+ #include <linux/sysfs.h>
+ #include <linux/cpufreq.h>
+ #include <linux/module.h>
+@@ -23,6 +24,7 @@
+ #include <asm/cputime.h>
+ 
+ static spinlock_t cpufreq_stats_lock;
++static spinlock_t cpufreq_stats_lock_load_table;
+ 
+ struct cpufreq_stats {
+ 	unsigned int cpu;
+@@ -35,6 +37,12 @@ struct cpufreq_stats {
+ 	unsigned int *freq_table;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
++
++	/* debugfs file for load_table */
++	struct cpufreq_freqs *load_table;
++	unsigned int load_last_index;
++	unsigned int load_max_index;
++	struct dentry *debugfs_cpufreq;
+ #endif
+ };
+ 
+@@ -149,6 +157,134 @@ static struct attribute_group stats_attr_group = {
+ 	.name = "stats"
+ };
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++#define MAX_LINE_SIZE		255
++static ssize_t load_table_read(struct file *file, char __user *user_buf,
++					size_t count, loff_t *ppos)
++{
++	struct cpufreq_policy *policy = file->private_data;
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	struct cpufreq_freqs *load_table = stat->load_table;
++	unsigned int alloc_size_buf;
++	ssize_t len = 0;
++	char *buf;
++	int i, j, ret;
++
++	alloc_size_buf = MAX_LINE_SIZE * stat->load_max_index;
++	buf = kzalloc(alloc_size_buf, GFP_KERNEL);
++	if (!buf)
++		return 0;
++
++	spin_lock(&cpufreq_stats_lock_load_table);
++	len += sprintf(buf + len, "%10s %10s", "Time", "Frequency");
++	for (j = 0; j < NR_CPUS; j++)
++		len += sprintf(buf + len, " %3s%d", "cpu", j);
++	len += sprintf(buf + len, "\n");
++
++	i = stat->load_last_index;
++	do {
++		len += sprintf(buf + len, "%10lld %10d",
++				load_table[i].time,
++				load_table[i].old);
++
++		for (j = 0; j < NR_CPUS; j++)
++			len += sprintf(buf + len, " %4d",
++					load_table[i].load[j]);
++		len += sprintf(buf + len, "\n");
++
++		if (++i == stat->load_max_index)
++			i = 0;
++	} while (i != stat->load_last_index);
++	spin_unlock(&cpufreq_stats_lock_load_table);
++
++	ret = simple_read_from_buffer(user_buf, count, ppos, buf, len);
++	kfree(buf);
 +
 +	return ret;
 +}
 +
-+static int max77693_pmic_remove(struct platform_device *pdev)
++static const struct file_operations load_table_fops = {
++	.read		= load_table_read,
++	.open		= simple_open,
++	.llseek		= no_llseek,
++};
++
++static void cpufreq_stats_store_load_table(struct cpufreq_freqs *freq)
 +{
-+	struct max77693_pmic_dev *max77693_pmic = platform_get_drvdata(pdev);
-+	struct regulator_dev **rdev = max77693_pmic->rdev;
-+	int i;
++	struct cpufreq_stats *stat;
++	int i, last_index;
 +
-+	for (i = 0; i < max77693_pmic->num_regulators; i++)
-+		if (rdev[i])
-+			regulator_unregister(rdev[i]);
++	stat = per_cpu(cpufreq_stats_table, freq->cpu);
++	if (!stat)
++		return;
 +
-+	return 0;
++	spin_lock(&cpufreq_stats_lock_load_table);
++	last_index = stat->load_last_index;
++	stat->load_table[last_index].old = freq->old;
++	stat->load_table[last_index].time = freq->time;
++	for (i = 0; i < NR_CPUS; i++)
++		stat->load_table[last_index].load[i] = freq->load[i];
++
++	if (++stat->load_last_index == stat->load_max_index)
++		stat->load_last_index = 0;
++	spin_unlock(&cpufreq_stats_lock_load_table);
 +}
 +
-+static const struct platform_device_id max77693_pmic_id[] = {
-+	{"max77693-pmic", 0},
-+	{},
-+};
++static int cpufreq_stats_create_debugfs(struct cpufreq_policy *policy)
++{
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, policy->cpu);
++	unsigned int alloc_size_load;
++	int ret = 0;
 +
-+MODULE_DEVICE_TABLE(platform, max77693_pmic_id);
++	stat->load_last_index = 0;
++	stat->load_max_index = CONFIG_NR_CPU_LOAD_STORAGE;
++	alloc_size_load = sizeof(*stat->load_table) * stat->load_max_index;
++	stat->load_table = kzalloc(alloc_size_load, GFP_KERNEL);
++	if (!stat->load_table) {
++		ret = -ENOMEM;
++		goto err;
++	}
 +
-+static struct platform_driver max77693_pmic_driver = {
-+	.driver = {
-+		   .name = "max77693-pmic",
-+		   .owner = THIS_MODULE,
-+		   },
-+	.probe = max77693_pmic_probe,
-+	.remove = max77693_pmic_remove,
-+	.id_table = max77693_pmic_id,
-+};
++	stat->debugfs_cpufreq = debugfs_create_dir("cpufreq", NULL);
++	if (!stat->debugfs_cpufreq) {
++		ret = -EINVAL;
++		goto err;
++	}
 +
-+module_platform_driver(max77693_pmic_driver);
++	debugfs_create_file("load_table", S_IWUSR, stat->debugfs_cpufreq,
++				(void *)policy, &load_table_fops);
++err:
++	return ret;
++}
 +
-+MODULE_DESCRIPTION("MAXIM MAX77693 regulator driver");
-+MODULE_AUTHOR("Jonghwa Lee <jonghwa3.lee@samsung.com>");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/max77693-private.h b/include/linux/mfd/max77693-private.h
-index 1aa4f13..244fb0d 100644
---- a/include/linux/mfd/max77693-private.h
-+++ b/include/linux/mfd/max77693-private.h
-@@ -85,6 +85,19 @@ enum max77693_pmic_reg {
- 	MAX77693_PMIC_REG_END,
++static void cpufreq_stats_free_debugfs(unsigned int cpu)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++	struct cpufreq_stats *stat = per_cpu(cpufreq_stats_table, cpu);
++
++	if (!policy)
++		return;
++
++	if (!policy_is_shared(policy)) {
++		pr_debug("%s: Free debugfs stat\n", __func__);
++		debugfs_remove(stat->debugfs_cpufreq);
++	}
++}
++#else
++static void cpufreq_stats_store_load_table(struct cpufreq_freqs *freq)
++{
++	return 0;
++}
++static int cpufreq_stats_create_debugfs(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++static void cpufreq_stats_free_debugfs(unsigned int cpu)
++{
++	return;
++}
++#endif
++
+ static int freq_table_get_index(struct cpufreq_stats *stat, unsigned int freq)
+ {
+ 	int index;
+@@ -167,6 +303,9 @@ static void cpufreq_stats_free_table(unsigned int cpu)
+ 
+ 	if (stat) {
+ 		pr_debug("%s: Free stat table\n", __func__);
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++		kfree(stat->load_table);
++#endif
+ 		kfree(stat->time_in_state);
+ 		kfree(stat);
+ 		per_cpu(cpufreq_stats_table, cpu) = NULL;
+@@ -257,6 +396,13 @@ static int cpufreq_stats_create_table(struct cpufreq_policy *policy,
+ 	spin_lock(&cpufreq_stats_lock);
+ 	stat->last_time = get_jiffies_64();
+ 	stat->last_index = freq_table_get_index(stat, policy->cur);
++
++	ret = cpufreq_stats_create_debugfs(data);
++	if (ret) {
++		ret = -EINVAL;
++		goto error_out;
++	}
++
+ 	spin_unlock(&cpufreq_stats_lock);
+ 	cpufreq_cpu_put(data);
+ 	return 0;
+@@ -312,32 +458,38 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+ 	struct cpufreq_stats *stat;
+ 	int old_index, new_index;
+ 
+-	if (val != CPUFREQ_POSTCHANGE)
+-		return 0;
+-
+-	stat = per_cpu(cpufreq_stats_table, freq->cpu);
+-	if (!stat)
+-		return 0;
++	switch (val) {
++	case CPUFREQ_POSTCHANGE:
++		stat = per_cpu(cpufreq_stats_table, freq->cpu);
++		if (!stat)
++			return 0;
+ 
+-	old_index = stat->last_index;
+-	new_index = freq_table_get_index(stat, freq->new);
++		old_index = stat->last_index;
++		new_index = freq_table_get_index(stat, freq->new);
+ 
+-	/* We can't do stat->time_in_state[-1]= .. */
+-	if (old_index == -1 || new_index == -1)
+-		return 0;
++		/* We can't do stat->time_in_state[-1]= .. */
++		if (old_index == -1 || new_index == -1)
++			return 0;
+ 
+-	cpufreq_stats_update(freq->cpu);
++		cpufreq_stats_update(freq->cpu);
+ 
+-	if (old_index == new_index)
+-		return 0;
++		if (old_index == new_index)
++			return 0;
+ 
+-	spin_lock(&cpufreq_stats_lock);
+-	stat->last_index = new_index;
++		spin_lock(&cpufreq_stats_lock);
++		stat->last_index = new_index;
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+-	stat->trans_table[old_index * stat->max_state + new_index]++;
++		stat->trans_table[old_index * stat->max_state + new_index]++;
+ #endif
+-	stat->total_trans++;
+-	spin_unlock(&cpufreq_stats_lock);
++		stat->total_trans++;
++		spin_unlock(&cpufreq_stats_lock);
++
++		break;
++	case CPUFREQ_LOADCHECK:
++		cpufreq_stats_store_load_table(freq);
++		break;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -352,12 +504,14 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+ 		cpufreq_update_policy(cpu);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
++		cpufreq_stats_free_debugfs(cpu);
+ 		cpufreq_stats_free_sysfs(cpu);
+ 		break;
+ 	case CPU_DEAD:
+ 		cpufreq_stats_free_table(cpu);
+ 		break;
+ 	case CPU_UP_CANCELED_FROZEN:
++		cpufreq_stats_free_debugfs(cpu);
+ 		cpufreq_stats_free_sysfs(cpu);
+ 		cpufreq_stats_free_table(cpu);
+ 		break;
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 037d36a..f780645 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -140,12 +140,18 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ #define CPUFREQ_POSTCHANGE	(1)
+ #define CPUFREQ_RESUMECHANGE	(8)
+ #define CPUFREQ_SUSPENDCHANGE	(9)
++#define CPUFREQ_LOADCHECK	(10)
+ 
+ struct cpufreq_freqs {
+ 	unsigned int cpu;	/* cpu nr */
+ 	unsigned int old;
+ 	unsigned int new;
+ 	u8 flags;		/* flags of cpufreq_driver, see below. */
++
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	int64_t time;
++	unsigned int load[NR_CPUS];
++#endif
  };
  
-+/* MAX77693 CHG_CNFG_00 register */
-+#define CHG_CNFG_00_CHG_MASK		0x1
-+#define CHG_CNFG_00_BUCK_MASK		0x4
-+
-+/* MAX77693 CHG_CNFG_09 Register */
-+#define CHG_CNFG_09_CHGIN_ILIM_MASK	0x7F
-+
-+/* MAX77693 CHG_CTRL Register */
-+#define SAFEOUT_CTRL_SAFEOUT1_MASK	0x3
-+#define SAFEOUT_CTRL_SAFEOUT2_MASK	0xC
-+#define SAFEOUT_CTRL_ENSAFEOUT1_MASK	0x40
-+#define SAFEOUT_CTRL_ENSAFEOUT2_MASK	0x80
-+
- /* Slave addr = 0x4A: MUIC */
- enum max77693_muic_reg {
- 	MAX77693_MUIC_REG_ID		= 0x00,
-diff --git a/include/linux/mfd/max77693.h b/include/linux/mfd/max77693.h
-index 3109a6c..676f0f3 100644
---- a/include/linux/mfd/max77693.h
-+++ b/include/linux/mfd/max77693.h
-@@ -30,6 +30,20 @@
- #ifndef __LINUX_MFD_MAX77693_H
- #define __LINUX_MFD_MAX77693_H
  
-+/* MAX77686 regulator IDs */
-+enum max77693_regulators {
-+	MAX77693_ESAFEOUT1 = 0,
-+	MAX77693_ESAFEOUT2,
-+	MAX77693_CHARGER,
-+	MAX77693_REG_MAX,
-+};
-+
-+struct max77693_regulator_data {
-+	int id;
-+	struct regulator_init_data *initdata;
-+	struct device_node *of_node;
-+};
-+
- struct max77693_reg_data {
- 	u8 addr;
- 	u8 data;
-@@ -52,6 +66,10 @@ struct max77693_muic_platform_data {
- struct max77693_platform_data {
- 	int wakeup;
- 
-+	/* regulator data */
-+	struct max77693_regulator_data *regulators;
-+	int num_regulators;
-+
- 	/* muic data */
- 	struct max77693_muic_platform_data *muic_data;
- };
 -- 
-1.7.9.5
+1.8.0
 
