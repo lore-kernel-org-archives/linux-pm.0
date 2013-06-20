@@ -1,37 +1,126 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5] cpufreq: fix governor start/stop race condition
-Date: Thu, 20 Jun 2013 09:16:02 +0530
-Message-ID: <CAKohpon7PjFpzeEPHdQ4SAGmhJ7T1UqrQB86zq9M7aarvNdx1A@mail.gmail.com>
-References: <1371114118-19488-1-git-send-email-chenxg@marvell.com>
-	<CAFgnuDe1bUub92uE1H9Fc9U7AJCYL=WKdyDe2bg00yEr=kMEbQ@mail.gmail.com>
-	<CAKohpo=ADC_MGpXFp-QssYS70PHwBBA6qzrWhYGEqZeeaZHLDQ@mail.gmail.com>
-	<2925371.ZJMOdCiC6f@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: kpark3469@gmail.com
+Subject: [PATCH 1/4] PM / tracing: Add pm_qos_update_target/flags tracepoints
+Date: Thu, 20 Jun 2013 13:56:57 +0900
+Message-ID: <1371704220-7008-1-git-send-email-kpark3469@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f54.google.com ([209.85.219.54]:36870 "EHLO
-	mail-oa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935557Ab3FTDqD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Jun 2013 23:46:03 -0400
-Received: by mail-oa0-f54.google.com with SMTP id o6so7350504oag.41
-        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 20:46:02 -0700 (PDT)
-In-Reply-To: <2925371.ZJMOdCiC6f@vostro.rjw.lan>
+Received: from mail-ie0-f171.google.com ([209.85.223.171]:42471 "EHLO
+	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751065Ab3FTE50 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 00:57:26 -0400
+Received: by mail-ie0-f171.google.com with SMTP id qd12so15549060ieb.2
+        for <linux-pm@vger.kernel.org>; Wed, 19 Jun 2013 21:57:25 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Xiaoguang Chen <chenxg.marvell@gmail.com>, Xiaoguang Chen <chenxg@marvell.com>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, njiang1@marvell.com, zjwu@marvell.com, ylmao@marvell.com
+To: linux-pm@vger.kernel.org
+Cc: keun-o.park@windriver.com, len.brown@intel.com, rjw@sisk.pl, rostedt@goodmis.org
 
-On 20 June 2013 04:19, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+From: Sahara <keun-o.park@windriver.com>
 
-> Well, sentences that don't start from upper-case letters don't look like
-> separate sentences
+This patch adds tracepoints to pm_qos_update_target and
+pm_qos_update_flags. It's useful for checking pm qos action,
+previous value and current value.
 
-s/sequences/sentences for your initial mail.
+Signed-off-by: Sahara <keun-o.park@windriver.com>
+---
+ include/trace/events/power.h |   49 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/qos.c           |    3 ++
+ 2 files changed, 52 insertions(+), 0 deletions(-)
 
-I misunderstood it as, you want to name cpu{0|1|2} as CPU{1|2|3}..
-Obviously sentences must start with capitals.
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 427acab..27a714c 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -5,6 +5,7 @@
+ #define _TRACE_POWER_H
+ 
+ #include <linux/ktime.h>
++#include <linux/pm_qos.h>
+ #include <linux/tracepoint.h>
+ 
+ DECLARE_EVENT_CLASS(cpu,
+@@ -177,6 +178,54 @@ DEFINE_EVENT(power_domain, power_domain_target,
+ 
+ 	TP_ARGS(name, state, cpu_id)
+ );
++
++/*
++ * The pm qos events are used for pm qos update
++ */
++DECLARE_EVENT_CLASS(pm_qos_update,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value),
++
++	TP_STRUCT__entry(
++		__field( enum pm_qos_req_action, action         )
++		__field( int,                    prev_value     )
++		__field( int,                    curr_value     )
++	),
++
++	TP_fast_assign(
++		__entry->action = action;
++		__entry->prev_value = prev_value;
++		__entry->curr_value = curr_value;
++	),
++
++	TP_printk("action=%s prev_value=%d curr_value=%d",
++		  (__entry->action == PM_QOS_ADD_REQ) ? "ADD_REQ" :
++		  (__entry->action == PM_QOS_UPDATE_REQ) ? "UPDATE_REQ" :
++		  (__entry->action == PM_QOS_REMOVE_REQ) ? "REMOVE_REQ" : "??",
++		  __entry->prev_value, __entry->curr_value)
++);
++
++DEFINE_EVENT(pm_qos_update, pm_qos_update_target,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value)
++);
++
++DEFINE_EVENT_PRINT(pm_qos_update, pm_qos_update_flags,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value),
++
++	TP_printk("action=%s prev_value=0x%x curr_value=0x%x",
++		  (__entry->action == PM_QOS_ADD_REQ) ? "ADD_REQ" :
++		  (__entry->action == PM_QOS_UPDATE_REQ) ? "UPDATE_REQ" :
++		  (__entry->action == PM_QOS_REMOVE_REQ) ? "REMOVE_REQ" : "??",
++		  __entry->prev_value, __entry->curr_value)
++);
+ #endif /* _TRACE_POWER_H */
+ 
+ /* This part must be outside protection */
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index f2f5f6e..4fb8d14 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -44,6 +44,7 @@
+ 
+ #include <linux/uaccess.h>
+ #include <linux/export.h>
++#include <trace/events/power.h>
+ 
+ /*
+  * locking rule: all changes to constraints or notifiers lists
+@@ -202,6 +203,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
++	trace_pm_qos_update_target(action, prev_value, curr_value);
+ 	if (prev_value != curr_value) {
+ 		blocking_notifier_call_chain(c->notifiers,
+ 					     (unsigned long)curr_value,
+@@ -272,6 +274,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+ 
+ 	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
+ 
++	trace_pm_qos_update_flags(action, prev_value, curr_value);
+ 	return prev_value != curr_value;
+ }
+ 
+-- 
+1.7.1
 
-> and when I see "cpus" written like this I tend to read
-> it as "cups" with a typo.
-
-Hmm..
