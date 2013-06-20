@@ -1,42 +1,37 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2] thermal: add imx thermal driver support
-Date: Thu, 20 Jun 2013 22:08:48 +0800
-Message-ID: <20130620140846.GH19896@S2101-09.ap.freescale.net>
-References: <1371280241-31699-1-git-send-email-shawn.guo@linaro.org>
- <51C0C8D8.5090301@ti.com>
- <20130619073739.GA3280@S2101-09.ap.freescale.net>
- <51C1BA1A.5010704@ti.com>
- <20130620024749.GB19896@S2101-09.ap.freescale.net>
- <51C2F12B.2090205@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v4 2/7] cpufreq: Add boost frequency support in core
+Date: Thu, 20 Jun 2013 22:03:45 +0200
+Message-ID: <5038475.Kzi1Kavss7@vostro.rjw.lan>
+References: <1370502472-7249-1-git-send-email-l.majewski@samsung.com> <1371661969-7660-3-git-send-email-l.majewski@samsung.com> <CAKohpo=5ZJp6JBVVA0NinTMO5FUwtfy3QAabcTwVOW6TmEfs9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:37586 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935370Ab3FTOIr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 10:08:47 -0400
-Content-Disposition: inline
-In-Reply-To: <51C2F12B.2090205@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=5ZJp6JBVVA0NinTMO5FUwtfy3QAabcTwVOW6TmEfs9g@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jonghwa Lee <jonghwa3.lee@samsung.com>, Myungjoo Ham <myungjoo.ham@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Andre Przywara <andre.przywara@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-On Thu, Jun 20, 2013 at 08:10:19AM -0400, Eduardo Valentin wrote:
-> Well, I think just mentioning IMX6DQRM should be ok. I didnt really mean
-> you need to put a link.
+On Thursday, June 20, 2013 10:43:08 AM Viresh Kumar wrote:
+> On 19 June 2013 22:42, Lukasz Majewski <l.majewski@samsung.com> wrote:
 > 
-Ok, will mention SoC Reference Manual in there.
-
-<snip>
-
-> Ok. If you dont care about the overhead, it is fine, as it is your call
-> to design the driver accessors. FYI, this is a nice explanation of what
-> is my concern:
-> http://www.spinics.net/lists/linux-omap/msg92370.html
+> > Boost sysfs attribute is always exported (to support legacy API). By
+> > default boost is exported as read only. One global attribute is available at:
+> > /sys/devices/system/cpu/cpufreq/boost.
 > 
-Thanks for the pointer.  As the IO access here is not on the hot path
-and is only at second basis, I'm not so concerned by the overhead.
+> You asked me and Rafael a question and posted your next version without
+> even waiting for our replies? That will waste your time and ours too
+> reviewing it.
 
-Shawn
+I believe I replied to that (in a different branch of the thread).
 
+And the reply was: Do not expose if not supported.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
