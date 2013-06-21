@@ -1,171 +1,81 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V6 24/30] thermal: exynos: Add thermal configuration data
- for exynos5440 TMU sensor
-Date: Fri, 21 Jun 2013 20:51:16 +0530
-Message-ID: <CADGdYn4y4jR3X7dzUFjaSvFsh8WzdF7c5izJ10oYyaCEd+ioHQ@mail.gmail.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
-	<1371451599-31035-25-git-send-email-amit.daniel@samsung.com>
-	<51C26659.9050003@ti.com>
-	<CADGdYn5JMNgPA3rqGS+QNXWx8hdsQ0g5g5z36W7HXGUssFHe3g@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH -next] Thermal: x86_pkg_temp: fix krealloc() misuse in
+ in pkg_temp_thermal_device_add()
+Date: Fri, 21 Jun 2013 09:36:47 -0700
+Message-ID: <51C4811F.9070904@linux.intel.com>
+References: <CAPgLHd_d5DHn==OFdBsLi_Kkekd5h44Cx6m9Hj5EM_yOGJXKPQ@mail.gmail.com> <1371802062.2170.6.camel@rzhang1-mobl4> <CAPgLHd_T+ez7_fifC9sY33EKcuAa_A+P6w6gK72nn=4hjzp87Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f182.google.com ([209.85.223.182]:41093 "EHLO
-	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423135Ab3FUPVR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 11:21:17 -0400
-In-Reply-To: <CADGdYn5JMNgPA3rqGS+QNXWx8hdsQ0g5g5z36W7HXGUssFHe3g@mail.gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:47978 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423018Ab3FUQaT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Jun 2013 12:30:19 -0400
+In-Reply-To: <CAPgLHd_T+ez7_fifC9sY33EKcuAa_A+P6w6gK72nn=4hjzp87Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: rui.zhang@intel.com, eduardo.valentin@ti.com, yongjun_wei@trendmicro.com.cn, linux-pm@vger.kernel.org
 
-On Fri, Jun 21, 2013 at 8:49 PM, amit daniel kachhap
-<amit.daniel@samsung.com> wrote:
-> Hi,
->
-> On Thu, Jun 20, 2013 at 7:48 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
->>> This patch adds configuration data for exynos5440 soc. Also register
->>> definations for the controller are added.
+On 06/21/2013 01:49 AM, Wei Yongjun wrote:
+> On 06/21/2013 04:07 PM, Zhang Rui wrote:
+>> On Tue, 2013-06-18 at 21:09 +0800, Wei Yongjun wrote:
+>>> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 >>>
->>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>> If krealloc() returns NULL, it doesn't free the original. So any code
+>>> of the form 'foo = krealloc(foo, ...);' is almost certainly a bug.
+>>>
+>> you mean this would probably cause a memory leak, right?
+Agree. But whether system will really function it can't allocate few 
+bytes (=number CPU  packages). It will crash somewhere anyway.
+> Yes.
+>
+>>> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 >>> ---
->>>  drivers/thermal/samsung/exynos_tmu.c      |    4 ++
->>>  drivers/thermal/samsung/exynos_tmu_data.c |   71 +++++++++++++++++++++++++++++
->>>  drivers/thermal/samsung/exynos_tmu_data.h |    7 +++
->>>  3 files changed, 82 insertions(+), 0 deletions(-)
+>>>   drivers/thermal/x86_pkg_temp_thermal.c | 8 +++++---
+>>>   1 file changed, 5 insertions(+), 3 deletions(-)
 >>>
->>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->>> index db4035d..a4dbc84 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>> @@ -455,6 +455,10 @@ static const struct of_device_id exynos_tmu_match[] = {
->>>               .compatible = "samsung,exynos5250-tmu",
->>>               .data = (void *)EXYNOS5250_TMU_DRV_DATA,
->>>       },
->>> +     {
->>> +             .compatible = "samsung,exynos5440-tmu",
->>> +             .data = (void *)EXYNOS5440_TMU_DRV_DATA,
->>> +     },
->>>       {},
->>>  };
->>>  MODULE_DEVICE_TABLE(of, exynos_tmu_match);
->>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
->>> index 694557e..b34e726 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu_data.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
->>> @@ -175,3 +175,74 @@ struct exynos_tmu_init_data const exynos5250_default_tmu_data = {
->>>       .tmu_count = 1,
->>>  };
->>>  #endif
->>> +
->>> +#if defined(CONFIG_SOC_EXYNOS5440)
->>> +static const struct exynos_tmu_registers exynos5440_tmu_registers = {
->>> +     .triminfo_data = EXYNOS5440_TMU_S0_7_TRIM,
->>> +     .triminfo_25_shift = EXYNOS_TRIMINFO_25_SHIFT,
->>> +     .triminfo_85_shift = EXYNOS_TRIMINFO_85_SHIFT,
->>> +     .tmu_ctrl = EXYNOS5440_TMU_S0_7_CTRL,
->>> +     .buf_vref_sel_shift = EXYNOS_TMU_REF_VOLTAGE_SHIFT,
->>> +     .buf_vref_sel_mask = EXYNOS_TMU_REF_VOLTAGE_MASK,
->>> +     .therm_trip_mode_shift = EXYNOS_TMU_TRIP_MODE_SHIFT,
->>> +     .therm_trip_mode_mask = EXYNOS_TMU_TRIP_MODE_MASK,
->>> +     .therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
->>> +     .buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
->>> +     .buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
->>> +     .core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
->>> +     .tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
->>> +     .tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
->>> +     .threshold_th0 = EXYNOS5440_TMU_S0_7_TH0,
->>> +     .threshold_th1 = EXYNOS5440_TMU_S0_7_TH1,
->>> +     .threshold_th2 = EXYNOS5440_TMU_S0_7_TH2,
->>> +     .threshold_th3_l0_shift = EXYNOS5440_TMU_TH_RISE4_SHIFT,
->>> +     .tmu_inten = EXYNOS5440_TMU_S0_7_IRQEN,
->>> +     .inten_rise_mask = EXYNOS5440_TMU_RISE_INT_MASK,
->>> +     .inten_rise_shift = EXYNOS5440_TMU_RISE_INT_SHIFT,
->>> +     .inten_fall_mask = EXYNOS5440_TMU_FALL_INT_MASK,
->>> +     .inten_fall_shift = EXYNOS5440_TMU_FALL_INT_SHIFT,
->>> +     .inten_rise0_shift = EXYNOS5440_TMU_INTEN_RISE0_SHIFT,
->>> +     .inten_rise1_shift = EXYNOS5440_TMU_INTEN_RISE1_SHIFT,
->>> +     .inten_rise2_shift = EXYNOS5440_TMU_INTEN_RISE2_SHIFT,
->>> +     .inten_rise3_shift = EXYNOS5440_TMU_INTEN_RISE3_SHIFT,
->>> +     .inten_fall0_shift = EXYNOS5440_TMU_INTEN_FALL0_SHIFT,
->>> +     .tmu_intstat = EXYNOS5440_TMU_S0_7_IRQ,
->>> +     .tmu_intclear = EXYNOS5440_TMU_S0_7_IRQ,
->>> +     .tmu_irqstatus = EXYNOS5440_TMU_IRQ_STATUS,
->>> +     .emul_con = EXYNOS5440_TMU_S0_7_DEBUG,
->>> +     .emul_temp_shift = EXYNOS_EMUL_DATA_SHIFT,
->>> +     .tmu_pmin = EXYNOS5440_TMU_PMIN,
->>> +};
->>> +
->>> +#define EXYNOS5440_TMU_DATA \
->>> +     .trigger_levels[0] = 100, \
->>> +     .trigger_levels[4] = 105, \
->>> +     .trigger_enable[0] = 1, \
->>> +     .trigger_type[0] = SW_TRIP, \
->>> +     .trigger_type[4] = HW_TRIP, \
->>
->> No active / passive cooling?
->>
->>> +     .max_trigger_level = 5, \
->>> +     .gain = 5, \
->>> +     .reference_voltage = 16, \
->>> +     .noise_cancel_mode = 4, \
->>> +     .cal_type = TYPE_ONE_POINT_TRIMMING, \
->>> +     .cal_mode = 0, \
->>> +     .efuse_value = 0x5b2d, \
->>> +     .min_efuse_value = 16, \
->>> +     .max_efuse_value = 76, \
->>> +     .first_point_trim = 25, \
->>> +     .second_point_trim = 70, \
->>> +     .default_temp_offset = 25, \
->>> +     .type = SOC_ARCH_EXYNOS5440, \
->>> +     .registers = &exynos5440_tmu_registers, \
->>> +     .features = (TMU_SUPPORT_EMULATION | TMU_SUPPORT_FALLING_TRIP | \
->>> +                     TMU_SUPPORT_MULTI_INST | TMU_SUPPORT_SHARED_MEMORY),
->>
->> No freq table on 5440? hmm.. So no cpufreq_cooling then? Any reason why
->> not? I suppose one of these 3 sensors are on your CPU domain, right?
-> In 5440 no cpufreq cooling is needed. Only sw trip and hw trip is sufficient.
-Infact all sensors are cpu related at some positions.
+>>> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+>>> index 5de56f6..b90e84b 100644
+>>> --- a/drivers/thermal/x86_pkg_temp_thermal.c
+>>> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
+>>> @@ -394,6 +394,7 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>>>   	char buffer[30];
+>>>   	int thres_count;
+>>>   	u32 eax, ebx, ecx, edx;
+>>> +	u8 *temp;
+>>>   
+>>>   	cpuid(6, &eax, &ebx, &ecx, &edx);
+>>>   	thres_count = ebx & 0x07;
+>>> @@ -417,13 +418,14 @@ static int pkg_temp_thermal_device_add(unsigned int cpu)
+>>>   	spin_lock(&pkg_work_lock);
+>>>   	if (topology_physical_package_id(cpu) > max_phy_id)
+>>>   		max_phy_id = topology_physical_package_id(cpu);
+>>> -	pkg_work_scheduled = krealloc(pkg_work_scheduled,
+>>> -				(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+>>> -	if (!pkg_work_scheduled) {
+>>> +	temp = krealloc(pkg_work_scheduled,
+>>> +			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+>>> +	if (!temp) {
+>> without this patch, this function will quite if krealloc returns NULL,
+>> but with the previous pkg_work_scheduled unfreed, right?
+> Yes, without patch, previous pkg_work_scheduled will unfreed if krealloc
+> return NULL.
 >
-> Thanks,
-> Amit Daniel
->>
->>> +
->>> +struct exynos_tmu_init_data const exynos5440_default_tmu_data = {
->>> +     .tmu_data = {
->>> +             { EXYNOS5440_TMU_DATA } ,
->>> +             { EXYNOS5440_TMU_DATA } ,
->>> +             { EXYNOS5440_TMU_DATA } ,
->>> +     },
->>> +     .tmu_count = 3,
->>> +};
->>> +#endif
->>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
->>> index ad263e9..43ce5fb 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu_data.h
->>> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
->>> @@ -143,4 +143,11 @@ extern struct exynos_tmu_init_data const exynos5250_default_tmu_data;
->>>  #define EXYNOS5250_TMU_DRV_DATA (NULL)
->>>  #endif
->>>
->>> +#if defined(CONFIG_SOC_EXYNOS5440)
->>> +extern struct exynos_tmu_init_data const exynos5440_default_tmu_data;
->>> +#define EXYNOS5440_TMU_DRV_DATA (&exynos5440_default_tmu_data)
->>> +#else
->>> +#define EXYNOS5440_TMU_DRV_DATA (NULL)
->>> +#endif
->>> +
->>>  #endif /*_EXYNOS_TMU_DATA_H*/
+>> thanks,
+>> rui
+>>>   		spin_unlock(&pkg_work_lock);
+>>>   		err = -ENOMEM;
+>>>   		goto err_ret_free;
+>>>   	}
+>>> +	pkg_work_scheduled = temp;
+>>>   	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
+>>>   	spin_unlock(&pkg_work_lock);
+>>>   
 >>>
 >>
 >>
->> --
->> You have got to be excited about what you are doing. (L. Lamport)
->>
->> Eduardo Valentin
->>
+>
+>
+
