@@ -1,180 +1,131 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] tick: fix tick_broadcast_pending_mask not cleared
-Date: Fri, 21 Jun 2013 11:15:37 +0200
-Message-ID: <51C419B9.10001@linaro.org>
-References: <1371485735-31249-1-git-send-email-daniel.lezcano@linaro.org>
+From: Giacomo Perale <giacomo.perale@gmail.com>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Fri, 21 Jun 2013 11:51:26 +0200
+Message-ID: <CAPm-kmsEx_xfneSa4=eBhfY-JvHG2AzyD3vcBXra7nWJT7K_-w@mail.gmail.com>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+	<1369631226.2159.5.camel@rzhang1-mobl4>
+	<CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	<1369878386.3368.16.camel@rzhang1-mobl4>
+	<CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
+	<1369911036.2636.5.camel@rzhang1-mobl4>
+	<CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+	<CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
+	<744357E9AAD1214791ACBA4B0B9092630111E53C@SHSMSX101.ccr.corp.intel.com>
+	<1371801239.2170.2.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bk0-f53.google.com ([209.85.214.53]:41980 "EHLO
-	mail-bk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758442Ab3FUJPb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 05:15:31 -0400
-Received: by mail-bk0-f53.google.com with SMTP id e11so3267942bkh.12
-        for <linux-pm@vger.kernel.org>; Fri, 21 Jun 2013 02:15:29 -0700 (PDT)
-In-Reply-To: <1371485735-31249-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-ie0-f182.google.com ([209.85.223.182]:64797 "EHLO
+	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824Ab3FUJv1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 05:51:27 -0400
+In-Reply-To: <1371801239.2170.2.camel@rzhang1-mobl4>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de
-Cc: josephl@nvidia.com, swarren@wwwdotorg.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, patche@linaro.org, linaro-kernel@lists.linaro.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
+2013/6/21 Zhang Rui <rui.zhang@intel.com>:
+> On Wed, 2013-06-05 at 13:23 +0000, Zhang, Rui wrote:
+>>
+>> > -----Original Message-----
+>> > From: Giacomo Perale [mailto:giacomo.perale@gmail.com]
+>> > Sent: Wednesday, June 05, 2013 5:09 PM
+>> > To: Zhang, Rui
+>> > Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J.
+>> > Wysocki
+>> > Subject: Re: [regression,bisected] restore of disks after suspend-to-
+>> > disk broken in 3.9.x
+>> > Importance: High
+>> >
+>> > 2013/5/30 Giacomo Perale <giacomo.perale@gmail.com>:
+>> > > 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+>> > >> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
+>> > >>> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+>> > >>> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
+>> > >>> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+>> > >>> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+>> > >>> >> >> Hello,
+>> > >>> >> >>
+>> > >>> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly
+>> > >>> >> >> longer delays when resuming from suspend-to-disk and a few
+>> > new
+>> > >>> >> >> error messages in the logs:
+>> > >>> >> >>
+>> > >>> >> >>
+>> > >>> >> >> Not having connected the issue with the previous error
+>> > >>> >> >> messages I initially blamed the disk and replaced it with a
+>> > >>> >> >> new one thinking it was broken, but the problem persisted so
+>> > I
+>> > >>> >> >> started a bisection run that pointed to this commit:
+>> > >>> >> >>
+>> > >>> >> >>
+>> > >>> >> > I do not see how this would affect the sata hibernation/resume.
+>> > >>> >> > but anyway, would you please try the four patches in comment
+>> > >>> >> > #10, #11,
+>> > >>> >> > #12 and #13 in
+>> > >>> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+>> > >>> >> > and check if they help?
+>> > >>> >> >
+>> > >>> >> > thanks,
+>> > >>> >> > rui
+>> > >>> >> >
+>> > >>> >>
+>> > >>> >> No luck, with git head and those four patches hibernation is
+>> > >>> >> completely broken, the system doesn't even shut down, it just
+>> > >>> >> loses the disks (I'm attaching what I could get from /proc/kmsg
+>> > >>> >> to this email).
+>> > >>> >>
+>> > >>> > then can you please try the patch at
+>> > >>> > https://patchwork.kernel.org/patch/2633071/
+>> > >>> > on top of the four patches and see if it helps?
+>> > >>> >
+>> > >>> > thanks,
+>> > >>> > rui
+>> > >>> >
+>> > >>>
+>> > >>> Do you mean without Rafael's patch?
+>> > >>>
+>> > >> right.
+>> > >>
+>> > >> thanks,
+>> > >> rui
+>> > >
+>> > > [cc-ing list]
+>> > >
+>> > > No difference, system doesn't shut down and disks become unavailable.
+>> > >
+>> > > Giacomo
+>> >
+>> > Any news about this?
+>> >
+>>
+>> I'm proposing a new patch set based on the problem found by Rafael's patch.
+>> And I'll send them out in a day or two, please wait for the update. :)
+>>
+> sorry for the late response.
+>
+> can you please check if the patch series at
+> https://patchwork.kernel.org/patch/2733361/
+> https://patchwork.kernel.org/patch/2733371/
+> https://patchwork.kernel.org/patch/2733391/
+> https://patchwork.kernel.org/patch/2733401/
+> https://patchwork.kernel.org/patch/2733411/
+> https://patchwork.kernel.org/patch/2733421/
+> helps or not?
+>
+> thanks,
+> rui
+>
+>> Thanks,
+>> rui
+>>
+>>
+>> > Thanks.
 
-Hi Thomas,
+Are those patches already in git head or do I need to apply them separately?
 
-any news on this patch ?
+Thanks
 
-
-On 06/17/2013 06:15 PM, Daniel Lezcano wrote:
-> The recent modification in the cpuidle framework consolidated the tim=
-er
-> broadcast code across the different drivers by setting a new flag in =
-the idle
-> state. It tells the cpuidle core code to enter/exit to the broadcast =
-mode for
-> the cpu when entering a deep idle state. The broadcast timer enter/ex=
-it is no
-> longer handled by the back-end driver.
->=20
-> This change made the local interrupt to be enabled *before* calling
-> CLOCK_EVENT_NOTIFY_EXIT. bad or not (see below) ?
->=20
-> On a tegra114, a four cores system, when the flag has been introduced=
- in the
-> driver, the following warning appeared:
->=20
-> [   25.629559] WARNING: CPU: 2 PID: 0 at
-> kernel/time/tick-broadcast.c:578 tick_broadcast_oneshot_control
-> +0x1a4/0x1d0()
-> [   25.629565] Modules linked in:
-> [   25.629574] CPU: 2 PID: 0 Comm: swapper/2 Not tainted
-> 3.10.0-rc3-next-20130529+ #15
-> [   25.629601] [<c00148f4>] (unwind_backtrace+0x0/0xf8) from
-> [<c0011040>] (show_stack+0x10/0x14)
-> [   25.629616] [<c0011040>] (show_stack+0x10/0x14) from [<c0504248>]
-> (dump_stack+0x80/0xc4)
-> [   25.629633] [<c0504248>] (dump_stack+0x80/0xc4) from [<c00231ac>]
-> (warn_slowpath_common+0x64/0x88)
-> [   25.629646] [<c00231ac>] (warn_slowpath_common+0x64/0x88) from
-> [<c00231ec>] (warn_slowpath_null+0x1c/0x24)
-> [   25.629657] [<c00231ec>] (warn_slowpath_null+0x1c/0x24) from
-> [<c00667f8>] (tick_broadcast_oneshot_control+0x1a4/0x1d0)
-> [   25.629670] [<c00667f8>] (tick_broadcast_oneshot_control+0x1a4/0x1=
-d0)
-> from [<c0065cd0>] (tick_notify+0x240/0x40c)
-> [   25.629685] [<c0065cd0>] (tick_notify+0x240/0x40c) from [<c0044724=
->]
-> (notifier_call_chain+0x44/0x84)
-> [   25.629699] [<c0044724>] (notifier_call_chain+0x44/0x84) from
-> [<c0044828>] (raw_notifier_call_chain+0x18/0x20)
-> [   25.629712] [<c0044828>] (raw_notifier_call_chain+0x18/0x20) from
-> [<c00650cc>] (clockevents_notify+0x28/0x170)
-> [   25.629726] [<c00650cc>] (clockevents_notify+0x28/0x170) from
-> [<c033f1f0>] (cpuidle_idle_call+0x11c/0x168)
-> [   25.629739] [<c033f1f0>] (cpuidle_idle_call+0x11c/0x168) from
-> [<c000ea94>] (arch_cpu_idle+0x8/0x38)
-> [   25.629755] [<c000ea94>] (arch_cpu_idle+0x8/0x38) from [<c005ea80>=
-]
-> (cpu_startup_entry+0x60/0x134)
-> [   25.629767] [<c005ea80>] (cpu_startup_entry+0x60/0x134) from
-> [<804fe9a4>] (0x804fe9a4)
-> [   25.629772] ---[ end trace 5484e77e2531bccc ]---
->=20
-> I don't have the hardware, so I wasn't able to reproduce the warning =
-but after
-> looking a while in the code, I deduced the following:
->=20
->  1. the CPU2 enters a deep idle state and sets the broadcast timer
->  2. the timer expires, the tick_handle_oneshot_broadcast function is =
-called,
->     setting the tick_broadcast_pending_mask and waking up the idle cp=
-u CPU2
->  3. the CPU2 exits idle and invokes tick_broadcast_oneshot_control wi=
-th
->     CLOCK_EVENT_NOTIFY_EXIT with the following code:
->     [...]
->     if (dev->next_event.tv64 =3D=3D KTIME_MAX)
->             goto out;
->=20
->     if (cpumask_test_and_clear_cpu(cpu,
->                                  tick_broadcast_pending_mask))
->             goto out;
->     [...]
->=20
->  4. if there is no next event planned for CPU2, we fulfil the first c=
-ondition and
->     we jump to the 'out' section without clearing the tick_broadcast_=
-pending_mask
->=20
->  5. CPU2 goes to deep idle again and calls tick_broadcast_oneshot_con=
-trol with
->     CLOCK_NOTIFY_EVENT_ENTER but with the tick_broadcast_pending_mask=
- set for
->     CPU2, leading to the WARNING.
->=20
-> Above, it is mentionned the change moved the CLOCK_EVENT_NOTIFY_EXIT =
-after the
-> local interrupt were enabled. If it is before, this warning does not =
-occur. My
-> hypothesis is the code path described before does not happen because =
-when a
-> broadcast timer expires, dev->next_event.tv64 is always different fro=
-m KTIME_MAX
-> because the timer handler did not set the value yet (local interrupt =
-are still
-> disabled).
->=20
-> I don't see anywhere in the code, a clockevents_notify(ENTER/EXIT) bl=
-ock must be
-> done with the local interrupt disabled in between, furthermore the fu=
-nction uses
-> 'raw_spin_lock_irqsave' which make me think, we don't care about that=
-=2E
->=20
-> Invert the conditions and make the tick broadcast code immune from th=
-e local
-> interrupts context.
->=20
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Reported-by: Joseph Lo <josephl@nvidia.com>
-> ---
->  kernel/time/tick-broadcast.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcas=
-t.c
-> index d067c01..58d88e8 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -610,8 +610,6 @@ void tick_broadcast_oneshot_control(unsigned long=
- reason)
->  	} else {
->  		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) =
-{
->  			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-> -			if (dev->next_event.tv64 =3D=3D KTIME_MAX)
-> -				goto out;
->  			/*
->  			 * The cpu which was handling the broadcast
->  			 * timer marked this cpu in the broadcast
-> @@ -625,6 +623,8 @@ void tick_broadcast_oneshot_control(unsigned long=
- reason)
->  				       tick_broadcast_pending_mask))
->  				goto out;
-> =20
-> +			if (dev->next_event.tv64 =3D=3D KTIME_MAX)
-> +				goto out;
->  			/*
->  			 * If the pending bit is not set, then we are
->  			 * either the CPU handling the broadcast
->=20
-
-
---=20
- <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software for=
- ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Giacomo
