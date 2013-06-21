@@ -1,258 +1,316 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V6 16/30] thermal: exynos: Make the zone handling use
- trip information
-Date: Fri, 21 Jun 2013 10:35:57 -0400
-Message-ID: <51C464CD.7070401@ti.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com> <1371451599-31035-17-git-send-email-amit.daniel@samsung.com> <51C238BA.9070200@ti.com> <CADGdYn66wqkJcce=4nThkQtZtgt_SdUz1pzuoWz2qHc0cnmXTQ@mail.gmail.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V6 23/30] thermal: exynos: Add driver support for
+ exynos5440 TMU sensor
+Date: Fri, 21 Jun 2013 20:47:30 +0530
+Message-ID: <CADGdYn70ganiAKv7c_P4aHPVOYGt3MwNNgE+UOGHifTLK_YrnA@mail.gmail.com>
+References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
+	<1371451599-31035-24-git-send-email-amit.daniel@samsung.com>
+	<51C263BB.6020700@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2PQCTDHRPQWENXWOEJFJB"
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:59011 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161369Ab3FUOgI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 21 Jun 2013 10:36:08 -0400
-In-Reply-To: <CADGdYn66wqkJcce=4nThkQtZtgt_SdUz1pzuoWz2qHc0cnmXTQ@mail.gmail.com>
+Received: from mail-ie0-f178.google.com ([209.85.223.178]:57999 "EHLO
+	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423118Ab3FUPRb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 11:17:31 -0400
+In-Reply-To: <51C263BB.6020700@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: amit daniel kachhap <amit.daniel@samsung.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-------enig2PQCTDHRPQWENXWOEJFJB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Eduardo,
 
-On 21-06-2013 08:30, amit daniel kachhap wrote:
-> Hi
->=20
-> On Thu, Jun 20, 2013 at 4:33 AM, Eduardo Valentin
-> <eduardo.valentin@ti.com> wrote:
->> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
->>> This code simplifies the zone handling to use the trip information pa=
-ssed
->>> by the TMU driver and not the hardcoded macros. This also helps in ad=
-ding
->>> more zone support.
->>>
->>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->>> ---
->>>  drivers/thermal/samsung/exynos_thermal_common.c |   61 +++++++++++++=
-----------
->>>  drivers/thermal/samsung/exynos_thermal_common.h |    3 +-
->>>  drivers/thermal/samsung/exynos_tmu.c            |    5 ++-
->>>  3 files changed, 40 insertions(+), 29 deletions(-)
->>>
->>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/driver=
-s/thermal/samsung/exynos_thermal_common.c
->>> index 86d39aa..2873ca3 100644
->>> --- a/drivers/thermal/samsung/exynos_thermal_common.c
->>> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
->>> @@ -78,17 +78,22 @@ static int exynos_set_mode(struct thermal_zone_de=
-vice *thermal,
->>>  static int exynos_get_trip_type(struct thermal_zone_device *thermal,=
- int trip,
->>>                                enum thermal_trip_type *type)
->>>  {
->>> -     switch (GET_ZONE(trip)) {
->>> -     case MONITOR_ZONE:
->>> -     case WARN_ZONE:
->>> -             *type =3D THERMAL_TRIP_ACTIVE;
->>> -             break;
->>> -     case PANIC_ZONE:
->>> -             *type =3D THERMAL_TRIP_CRITICAL;
->>> -             break;
->>> -     default:
->>> +     struct exynos_thermal_zone *th_zone =3D thermal->devdata;
->>> +     int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
->>> +     int trip_type;
->>> +
->>> +     if (trip < 0 || trip >=3D max_trip)
->>>               return -EINVAL;
->>> -     }
->>> +
->>> +     trip_type =3D th_zone->sensor_conf->trip_data.trip_type[trip];
->>> +
->>> +     if (trip_type =3D=3D SW_TRIP)
->>> +             *type =3D THERMAL_TRIP_CRITICAL;
->>> +     else if (trip_type =3D=3D THROTTLE_ACTIVE)
->>> +             *type =3D THERMAL_TRIP_ACTIVE;
->>> +     else if (trip_type =3D=3D THROTTLE_PASSIVE)
->>> +             *type =3D THERMAL_TRIP_PASSIVE;
->>> +
->>>       return 0;
->>>  }
->>>
->>> @@ -97,8 +102,9 @@ static int exynos_get_trip_temp(struct thermal_zon=
-e_device *thermal, int trip,
->>>                               unsigned long *temp)
->>>  {
->>>       struct exynos_thermal_zone *th_zone =3D thermal->devdata;
->>> +     int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
->>>
->>> -     if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE=
-))
->>> +     if (trip < 0 || trip >=3D max_trip)
->>>               return -EINVAL;
->>>
->>>       *temp =3D th_zone->sensor_conf->trip_data.trip_val[trip];
->>> @@ -112,10 +118,10 @@ static int exynos_get_trip_temp(struct thermal_=
-zone_device *thermal, int trip,
->>>  static int exynos_get_crit_temp(struct thermal_zone_device *thermal,=
-
->>>                               unsigned long *temp)
->>>  {
->>> -     int ret;
->>> -     /* Panic zone */
->>> -     ret =3D exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), tem=
-p);
->>> -     return ret;
->>> +     struct exynos_thermal_zone *th_zone =3D thermal->devdata;
->>> +     int max_trip =3D th_zone->sensor_conf->trip_data.trip_count;
->>> +     /* Get the temp of highest trip*/
->>> +     return exynos_get_trip_temp(thermal, max_trip - 1, temp);
->>>  }
->>>
->>>  /* Bind callback functions for thermal zone */
->>> @@ -340,19 +346,22 @@ int exynos_register_thermal(struct thermal_sens=
-or_conf *sensor_conf)
->>>               return -ENOMEM;
->>>
->>>       th_zone->sensor_conf =3D sensor_conf;
->>> -     cpumask_set_cpu(0, &mask_val);
->>> -     th_zone->cool_dev[0] =3D cpufreq_cooling_register(&mask_val);
->>> -     if (IS_ERR(th_zone->cool_dev[0])) {
->>> -             pr_err("Failed to register cpufreq cooling device\n");
->>> -             ret =3D -EINVAL;
->>> -             goto err_unregister;
->>> +     if (sensor_conf->cooling_data.freq_clip_count > 0) {
->>> +             cpumask_set_cpu(0, &mask_val);
->>> +             th_zone->cool_dev[0] =3D cpufreq_cooling_register(&mask=
-_val);
+On Thu, Jun 20, 2013 at 7:36 AM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
+>> This patch modifies TMU controller to add changes needed to work with
+>> exynos5440 platform. This sensor registers 3 instance of the tmu controller
+>> with the thermal zone and hence reports 3 temperature output. This controller
+>> supports upto five trip points. For critical threshold the driver uses the
+>> core driver thermal framework for shutdown.
 >>
->> Did you mean th_zone->cool_dev[th_zone->cool_dev_size] ?
-> Yes.
+>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> ---
+>>  .../devicetree/bindings/thermal/exynos-thermal.txt |   24 ++++++++-
+>>  drivers/thermal/samsung/exynos_thermal_common.h    |    2 +-
+>>  drivers/thermal/samsung/exynos_tmu.c               |   54 +++++++++++++++++---
+>>  drivers/thermal/samsung/exynos_tmu.h               |    6 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.h          |   36 +++++++++++++
+>>  5 files changed, 112 insertions(+), 10 deletions(-)
 >>
->> I think the logic behind the allocation of these cpufreq cooling devic=
-es
->> needs to be revisited. You always assigned to cool_dev[0], but you
->> always iterate the array until cool_dev_size. Remember that
->> cool_dev_size now is per th_zone, not global.
-> I have kept an array of cooling devices to add other type of cooling
-> devices in the same thermal zone in future. For current use case
-> although it does not make sense and only one cpufreq cooling device is
-> present
-
-I would at least put a TODO mark. This code can easily evolve to a bug.
-What it would be better is to have a proper flag/way to say how you want
-to do the cooling on a specific TMU. Now you rely on the fact that you
-either cool with cpufreq if freq table is present or you don't cool.
-This is not scalable to what you are planing to do.
-
+>> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> index 0ea33f7..e6386ea 100644
+>> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
+>> @@ -6,6 +6,7 @@
+>>              "samsung,exynos4412-tmu"
+>>              "samsung,exynos4210-tmu"
+>>              "samsung,exynos5250-tmu"
+>> +            "samsung,exynos5440-tmu"
+>>  - interrupt-parent : The phandle for the interrupt controller
+>>  - reg : Address range of the thermal registers. For soc's which has multiple
+>>       instances of TMU and some registers are shared across all TMU's like
+>> @@ -16,7 +17,7 @@
+>>  - clocks : The main clock for TMU device
+>>  - clock-names : Thermal system clock name
 >>
->>> +             if (IS_ERR(th_zone->cool_dev[0])) {
->>> +                     pr_err("Failed to register cpufreq cooling devi=
-ce\n");
->>> +                     ret =3D -EINVAL;
->>> +                     goto err_unregister;
->>> +             }
->>> +             th_zone->cool_dev_size++;
->>>       }
->>> -     th_zone->cool_dev_size++;
->>>
->>> -     th_zone->therm_dev =3D thermal_zone_device_register(sensor_conf=
-->name,
->>> -                     EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops,=
- NULL, 0,
->>> -                     sensor_conf->trip_data.trigger_falling ?
->>> -                     0 : IDLE_INTERVAL);
->>> +     th_zone->therm_dev =3D thermal_zone_device_register(
->>> +                     sensor_conf->name, sensor_conf->trip_data.trip_=
-count,
->>> +                     0, th_zone, &exynos_dev_ops, NULL, 0,
->>> +                     sensor_conf->trip_data.trigger_falling ? 0 :
->>> +                     IDLE_INTERVAL);
->>>
->>>       if (IS_ERR(th_zone->therm_dev)) {
->>>               pr_err("Failed to register thermal zone device\n");
->>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/driver=
-s/thermal/samsung/exynos_thermal_common.h
->>> index 1e9a326..dd0077e 100644
->>> --- a/drivers/thermal/samsung/exynos_thermal_common.h
->>> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
->>> @@ -42,8 +42,6 @@
->>>  #define GET_ZONE(trip) (trip + 2)
->>>  #define GET_TRIP(zone) (zone - 2)
->>>
->>> -#define EXYNOS_ZONE_COUNT    3
->>> -
->>>  enum trigger_type {
->>>       THROTTLE_ACTIVE =3D 1,
->>>       THROTTLE_PASSIVE,
->>> @@ -68,6 +66,7 @@ struct freq_clip_table {
->>>  };
->>>  struct       thermal_trip_point_conf {
->>>       int trip_val[MAX_TRIP_COUNT];
->>> +     int trip_type[MAX_TRIP_COUNT];
->>>       int trip_count;
->>>       unsigned char trigger_falling;
->>>  };
->>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/s=
-amsung/exynos_tmu.c
->>> index 40e0cfd..acbd295 100644
->>> --- a/drivers/thermal/samsung/exynos_tmu.c
->>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>> @@ -509,9 +509,12 @@ static int exynos_tmu_probe(struct platform_devi=
-ce *pdev)
->>>                       pdata->trigger_enable[1] + pdata->trigger_enabl=
-e[2]+
->>>                       pdata->trigger_enable[3];
->>>
->>> -     for (i =3D 0; i < exynos_sensor_conf.trip_data.trip_count; i++)=
-
->>> +     for (i =3D 0; i < exynos_sensor_conf.trip_data.trip_count; i++)=
- {
->>>               exynos_sensor_conf.trip_data.trip_val[i] =3D
->>>                       pdata->threshold + pdata->trigger_levels[i];
->>> +             exynos_sensor_conf.trip_data.trip_type[i] =3D
->>> +                                     pdata->trigger_type[i];
->>> +     }
->>>
->>>       exynos_sensor_conf.trip_data.trigger_falling =3D pdata->thresho=
-ld_falling;
->>>
->>>
+>> -Example:
+>> +Example 1):
 >>
+>>       tmu@100C0000 {
+>>               compatible = "samsung,exynos4412-tmu";
+>> @@ -27,3 +28,24 @@ Example:
+>>               clock-names = "tmu_apbif";
+>>               status = "disabled";
+>>       };
+>> +
+>> +Example 2):
+>> +
+>> +     tmuctrl_0: tmuctrl@160118 {
+>> +             compatible = "samsung,exynos5440-tmu";
+>> +             reg = <0x160118 0x230>, <0x160368 0x10>;
+>> +             interrupts = <0 58 0>;
+>> +             clocks = <&clock 21>;
+>> +             clock-names = "tmu_apbif";
+>> +     };
+>> +
+>> +Note: For multi-instance tmu each instance should have an alias correctly
+>> +numbered in "aliases" node.
+>> +
+>> +Example:
+>> +
+>> +aliases {
+>> +     tmuctrl0 = &tmuctrl_0;
+>> +     tmuctrl1 = &tmuctrl_1;
+>> +     tmuctrl2 = &tmuctrl_2;
+>> +};
+>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+>> index 0c189d6..7d7c29a 100644
+>> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+>> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+>> @@ -27,7 +27,7 @@
+>>  #define SENSOR_NAME_LEN      16
+>>  #define MAX_TRIP_COUNT       8
+>>  #define MAX_COOLING_DEVICE 4
+>> -#define MAX_THRESHOLD_LEVS 4
+>> +#define MAX_THRESHOLD_LEVS 5
 >>
->> --
->> You have got to be excited about what you are doing. (L. Lamport)
+>>  #define ACTIVE_INTERVAL 500
+>>  #define IDLE_INTERVAL 10000
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index 150a869..db4035d 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -156,7 +156,26 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>               __raw_writel(1, data->base + reg->triminfo_ctrl);
 >>
->> Eduardo Valentin
+>>       /* Save trimming info in order to perform calibration */
+>> -     trim_info = readl(data->base + reg->triminfo_data);
+>> +     if (data->soc == SOC_ARCH_EXYNOS5440) {
+>
+> should this become some bit at your pdata->features? TMU_SUPPORTS(pdata,
+> TRIMINFO) for instance?
+Initially I also thought of getting rid of SOC checks completely  but
+they have been retained in some rare cases.
+Here this a limitation in the h/w and very specific to exynos5440. So
+not sure if this can be added as a feature.
+>
+>> +             /*
+>> +              * For exynos5440 soc triminfo value is swapped between TMU0 and
+>> +              * TMU2, so the below logic is needed.
+>> +              */
+>> +             switch (data->id) {
+>> +             case 0:
+>> +                     trim_info = readl(data->base +
+>> +                     EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+>> +                     break;
+>> +             case 1:
+>> +                     trim_info = readl(data->base + reg->triminfo_data);
+>> +                     break;
+>> +             case 2:
+>> +                     trim_info = readl(data->base -
+>> +                     EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+>> +             }
+>> +     } else {
+>> +             trim_info = readl(data->base + reg->triminfo_data);
+>> +     }
+>>       data->temp_error1 = trim_info & EXYNOS_TMU_TEMP_MASK;
+>>       data->temp_error2 = ((trim_info >> reg->triminfo_85_shift) &
+>>                               EXYNOS_TMU_TEMP_MASK);
+>> @@ -201,7 +220,8 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>                       reg->threshold_th0 + i * sizeof(reg->threshold_th0));
 >>
->=20
->=20
-
-
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2PQCTDHRPQWENXWOEJFJB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHEZM0ACgkQCXcVR3XQvP1nvwD8DUQ+OgHuo+0C0JCND8przase
-nx/4Yj2wWdzeJYZY/jwBAPJrNghsHeUOt+sZ98C+i9cWXJiHaU/icW0MC51FoaFN
-=XXK2
------END PGP SIGNATURE-----
-
-------enig2PQCTDHRPQWENXWOEJFJB--
+>>               writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
+>> -     } else if (data->soc == SOC_ARCH_EXYNOS) {
+>> +     } else if (data->soc == SOC_ARCH_EXYNOS ||
+>> +                     data->soc == SOC_ARCH_EXYNOS5440) {
+>>               /* Write temperature code for rising and falling threshold */
+>>               for (i = 0;
+>>               i < trigger_levs && i < EXYNOS_MAX_TRIGGER_PER_REG; i++) {
+>> @@ -241,14 +261,24 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>                               ret = threshold_code;
+>>                               goto out;
+>>                       }
+>> -                     rising_threshold |= threshold_code << 8 * i;
+>> -                     writel(rising_threshold,
+>> -                             data->base + reg->threshold_th0);
+>> +                     if (data->soc == SOC_ARCH_EXYNOS) {
+>> +                             rising_threshold |= threshold_code << 8 * i;
+>> +                             writel(rising_threshold,
+>> +                                     data->base + reg->threshold_th0);
+>> +                     } else if (data->soc == SOC_ARCH_EXYNOS5440) {
+>
+> Can these ifs be translated to some TMU_SUPPORTS()?
+>
+> Just wondering if it is possible to get rid of data->soc flags and use
+> only features or represent the shifts as fields inside your pdata.
+Here soc check can be removed. Will repost with this change.
+>
+>> +                             rising_threshold =
+>> +                             threshold_code << reg->threshold_th3_l0_shift;
+>> +                             writel(rising_threshold,
+>> +                                     data->base + reg->threshold_th2);
+>> +                     }
+>>                       con = readl(data->base + reg->tmu_ctrl);
+>>                       con |= (1 << reg->therm_trip_en_shift);
+>>                       writel(con, data->base + reg->tmu_ctrl);
+>>               }
+>>       }
+>> +     /*Clear the PMIN in the common TMU register*/
+>> +     if (reg->tmu_pmin && !data->id)
+>> +             writel(0, data->base_common + reg->tmu_pmin);
+>
+> What happens to other TMU instances when one of them performs this
+> operation? does it need to serialized?
+This is one time setting for all the instances and currently I have
+done it for first TMU with aliad ID as 0. This register belongs to the
+common set.
+>
+>>  out:
+>>       clk_disable(data->clk);
+>>       mutex_unlock(&data->lock);
+>> @@ -377,7 +407,14 @@ static void exynos_tmu_work(struct work_struct *work)
+>>                       struct exynos_tmu_data, irq_work);
+>>       struct exynos_tmu_platform_data *pdata = data->pdata;
+>>       const struct exynos_tmu_registers *reg = pdata->registers;
+>> -     unsigned int val_irq;
+>> +     unsigned int val_irq, val_type;
+>> +
+>> +     /* Find which sensor generated this interrupt */
+>> +     if (reg->tmu_irqstatus) {
+>> +             val_type = readl(data->base_common + reg->tmu_irqstatus);
+>> +             if (!((val_type >> data->id) & 0x1))
+>> +                     goto out;
+>> +     }
+>>
+>>       exynos_report_trigger(data->reg_conf);
+>>       mutex_lock(&data->lock);
+>> @@ -390,7 +427,7 @@ static void exynos_tmu_work(struct work_struct *work)
+>>
+>>       clk_disable(data->clk);
+>>       mutex_unlock(&data->lock);
+>> -
+>> +out:
+>>       enable_irq(data->irq);
+>>  }
+>>
+>> @@ -544,7 +581,8 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>               return ret;
+>>
+>>       if (pdata->type == SOC_ARCH_EXYNOS ||
+>> -                             pdata->type == SOC_ARCH_EXYNOS4210)
+>> +             pdata->type == SOC_ARCH_EXYNOS4210 ||
+>> +                             pdata->type == SOC_ARCH_EXYNOS5440)
+>>               data->soc = pdata->type;
+>>       else {
+>>               ret = -EINVAL;
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+>> index 6f55673..73aaed7 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -38,6 +38,7 @@ enum calibration_mode {
+>>  enum soc_type {
+>>       SOC_ARCH_EXYNOS4210 = 1,
+>>       SOC_ARCH_EXYNOS,
+>> +     SOC_ARCH_EXYNOS5440,
+>>  };
+>>
+>>  /**
+>> @@ -129,6 +130,8 @@ enum soc_type {
+>>   * @emul_temp_shift: shift bits of emulation temperature.
+>>   * @emul_time_shift: shift bits of emulation time.
+>>   * @emul_time_mask: mask bits of emulation time.
+>> + * @tmu_irqstatus: register to find which TMU generated interrupts.
+>> + * @tmu_pmin: register to get/set the Pmin value.
+>>   */
+>>  struct exynos_tmu_registers {
+>>       u32     triminfo_data;
+>> @@ -196,6 +199,9 @@ struct exynos_tmu_registers {
+>>       u32     emul_temp_shift;
+>>       u32     emul_time_shift;
+>>       u32     emul_time_mask;
+>> +
+>> +     u32     tmu_irqstatus;
+>> +     u32     tmu_pmin;
+>>  };
+>>
+>>  /**
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+>> index 139dbbb..ad263e9 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+>> @@ -93,6 +93,42 @@
+>>
+>>  #define EXYNOS_MAX_TRIGGER_PER_REG   4
+>>
+>> +/*exynos5440 specific registers*/
+>> +#define EXYNOS5440_TMU_S0_7_TRIM             0x000
+>> +#define EXYNOS5440_TMU_S0_7_CTRL             0x020
+>> +#define EXYNOS5440_TMU_S0_7_DEBUG            0x040
+>> +#define EXYNOS5440_TMU_S0_7_STATUS           0x060
+>> +#define EXYNOS5440_TMU_S0_7_TEMP             0x0f0
+>> +#define EXYNOS5440_TMU_S0_7_TH0                      0x110
+>> +#define EXYNOS5440_TMU_S0_7_TH1                      0x130
+>> +#define EXYNOS5440_TMU_S0_7_TH2                      0x150
+>> +#define EXYNOS5440_TMU_S0_7_EVTEN            0x1F0
+>> +#define EXYNOS5440_TMU_S0_7_IRQEN            0x210
+>> +#define EXYNOS5440_TMU_S0_7_IRQ                      0x230
+>> +/* exynos5440 common registers */
+>> +#define EXYNOS5440_TMU_IRQ_STATUS            0x000
+>> +#define EXYNOS5440_TMU_PMIN                  0x004
+>> +#define EXYNOS5440_TMU_TEMP                  0x008
+>> +
+>> +#define EXYNOS5440_TMU_RISE_INT_MASK         0xf
+>> +#define EXYNOS5440_TMU_RISE_INT_SHIFT                0
+>> +#define EXYNOS5440_TMU_FALL_INT_MASK         0xf
+>> +#define EXYNOS5440_TMU_FALL_INT_SHIFT                4
+>> +#define EXYNOS5440_TMU_INTEN_RISE0_SHIFT     0
+>> +#define EXYNOS5440_TMU_INTEN_RISE1_SHIFT     1
+>> +#define EXYNOS5440_TMU_INTEN_RISE2_SHIFT     2
+>> +#define EXYNOS5440_TMU_INTEN_RISE3_SHIFT     3
+>> +#define EXYNOS5440_TMU_INTEN_FALL0_SHIFT     4
+>> +#define EXYNOS5440_TMU_INTEN_FALL1_SHIFT     5
+>> +#define EXYNOS5440_TMU_INTEN_FALL2_SHIFT     6
+>> +#define EXYNOS5440_TMU_INTEN_FALL3_SHIFT     7
+>> +#define EXYNOS5440_TMU_TH_RISE0_SHIFT                0
+>> +#define EXYNOS5440_TMU_TH_RISE1_SHIFT                8
+>> +#define EXYNOS5440_TMU_TH_RISE2_SHIFT                16
+>> +#define EXYNOS5440_TMU_TH_RISE3_SHIFT                24
+>> +#define EXYNOS5440_TMU_TH_RISE4_SHIFT                24
+>> +#define EXYNOS5440_EFUSE_SWAP_OFFSET         8
+>> +
+>>  #if defined(CONFIG_CPU_EXYNOS4210)
+>>  extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
+>>  #define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
+>>
+>
+>
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+>
+> Eduardo Valentin
+>
