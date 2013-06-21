@@ -1,508 +1,140 @@
-From: Shawn Guo <shawn.guo@linaro.org>
-Subject: [PATCH v3] thermal: add imx thermal driver support
-Date: Fri, 21 Jun 2013 20:09:27 +0800
-Message-ID: <1371816567-22821-1-git-send-email-shawn.guo@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [regression,bisected] restore of disks after suspend-to-disk
+ broken in 3.9.x
+Date: Fri, 21 Jun 2013 20:19:07 +0800
+Message-ID: <1371817147.2170.8.camel@rzhang1-mobl4>
+References: <CAPm-kmsTNz4niGXsWyhLwwBkQ48gHdq1vjPvSKKwQ0kbhHm=JQ@mail.gmail.com>
+	 <1369631226.2159.5.camel@rzhang1-mobl4>
+	 <CAPm-kmu4WmAKX4N5GTsG-J+oq95pLxB9=iLMf2dyK-p6RbwFXQ@mail.gmail.com>
+	 <1369878386.3368.16.camel@rzhang1-mobl4>
+	 <CAPm-kmtwxgDO24UmtmZ44-P2W-80tK11k1aE8M4Ty3t3LKu14Q@mail.gmail.com>
+	 <1369911036.2636.5.camel@rzhang1-mobl4>
+	 <CAPm-kmtdxjf1J0GUSMo+x1XY0BX7hFBsDQCjuAH=f65TfGHRbQ@mail.gmail.com>
+	 <CAPm-kmupuP-MKU5xQuReEagNz1EFzWyzjs1vPhKQYOkxg96_uA@mail.gmail.com>
+	 <744357E9AAD1214791ACBA4B0B9092630111E53C@SHSMSX101.ccr.corp.intel.com>
+	 <1371801239.2170.2.camel@rzhang1-mobl4>
+	 <CAPm-kmsEx_xfneSa4=eBhfY-JvHG2AzyD3vcBXra7nWJT7K_-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:50574 "EHLO
-	tx2outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965701Ab3FUMJc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 08:09:32 -0400
+Received: from mga03.intel.com ([143.182.124.21]:65027 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161172Ab3FUMTM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Jun 2013 08:19:12 -0400
+In-Reply-To: <CAPm-kmsEx_xfneSa4=eBhfY-JvHG2AzyD3vcBXra7nWJT7K_-w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawn.guo@linaro.org>
+To: Giacomo Perale <giacomo.perale@gmail.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
 
-This is based on the initial imx thermal work done by
-Rob Lee <rob.lee@linaro.org> (Not sure if the email address is still
-valid).  Since he is no longer interested in the work and I have
-rewritten a significant amount of the code, I just took the authorship
-over from him.
+On Fri, 2013-06-21 at 11:51 +0200, Giacomo Perale wrote:
+> 2013/6/21 Zhang Rui <rui.zhang@intel.com>:
+> > On Wed, 2013-06-05 at 13:23 +0000, Zhang, Rui wrote:
+> >>
+> >> > -----Original Message-----
+> >> > From: Giacomo Perale [mailto:giacomo.perale@gmail.com]
+> >> > Sent: Wednesday, June 05, 2013 5:09 PM
+> >> > To: Zhang, Rui
+> >> > Cc: linux-acpi@vger.kernel.org; linux-pm@vger.kernel.org; Rafael J.
+> >> > Wysocki
+> >> > Subject: Re: [regression,bisected] restore of disks after suspend-to-
+> >> > disk broken in 3.9.x
+> >> > Importance: High
+> >> >
+> >> > 2013/5/30 Giacomo Perale <giacomo.perale@gmail.com>:
+> >> > > 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+> >> > >> On Thu, 2013-05-30 at 10:04 +0200, Giacomo Perale wrote:
+> >> > >>> 2013/5/30 Zhang Rui <rui.zhang@intel.com>:
+> >> > >>> > On Mon, 2013-05-27 at 22:07 +0200, Giacomo Perale wrote:
+> >> > >>> >> 2013/5/27 Zhang Rui <rui.zhang@intel.com>:
+> >> > >>> >> > On Sun, 2013-05-26 at 15:51 +0200, Giacomo Perale wrote:
+> >> > >>> >> >> Hello,
+> >> > >>> >> >>
+> >> > >>> >> >> after upgrading from 3.8.7 to 3.9.x I noticed some slightly
+> >> > >>> >> >> longer delays when resuming from suspend-to-disk and a few
+> >> > new
+> >> > >>> >> >> error messages in the logs:
+> >> > >>> >> >>
+> >> > >>> >> >>
+> >> > >>> >> >> Not having connected the issue with the previous error
+> >> > >>> >> >> messages I initially blamed the disk and replaced it with a
+> >> > >>> >> >> new one thinking it was broken, but the problem persisted so
+> >> > I
+> >> > >>> >> >> started a bisection run that pointed to this commit:
+> >> > >>> >> >>
+> >> > >>> >> >>
+> >> > >>> >> > I do not see how this would affect the sata hibernation/resume.
+> >> > >>> >> > but anyway, would you please try the four patches in comment
+> >> > >>> >> > #10, #11,
+> >> > >>> >> > #12 and #13 in
+> >> > >>> >> > https://bugzilla.kernel.org/show_bug.cgi?id=58301
+> >> > >>> >> > and check if they help?
+> >> > >>> >> >
+> >> > >>> >> > thanks,
+> >> > >>> >> > rui
+> >> > >>> >> >
+> >> > >>> >>
+> >> > >>> >> No luck, with git head and those four patches hibernation is
+> >> > >>> >> completely broken, the system doesn't even shut down, it just
+> >> > >>> >> loses the disks (I'm attaching what I could get from /proc/kmsg
+> >> > >>> >> to this email).
+> >> > >>> >>
+> >> > >>> > then can you please try the patch at
+> >> > >>> > https://patchwork.kernel.org/patch/2633071/
+> >> > >>> > on top of the four patches and see if it helps?
+> >> > >>> >
+> >> > >>> > thanks,
+> >> > >>> > rui
+> >> > >>> >
+> >> > >>>
+> >> > >>> Do you mean without Rafael's patch?
+> >> > >>>
+> >> > >> right.
+> >> > >>
+> >> > >> thanks,
+> >> > >> rui
+> >> > >
+> >> > > [cc-ing list]
+> >> > >
+> >> > > No difference, system doesn't shut down and disks become unavailable.
+> >> > >
+> >> > > Giacomo
+> >> >
+> >> > Any news about this?
+> >> >
+> >>
+> >> I'm proposing a new patch set based on the problem found by Rafael's patch.
+> >> And I'll send them out in a day or two, please wait for the update. :)
+> >>
+> > sorry for the late response.
+> >
+> > can you please check if the patch series at
+> > https://patchwork.kernel.org/patch/2733361/
+> > https://patchwork.kernel.org/patch/2733371/
+> > https://patchwork.kernel.org/patch/2733391/
+> > https://patchwork.kernel.org/patch/2733401/
+> > https://patchwork.kernel.org/patch/2733411/
+> > https://patchwork.kernel.org/patch/2733421/
+> > helps or not?
+> >
+> > thanks,
+> > rui
+> >
+> >> Thanks,
+> >> rui
+> >>
+> >>
+> >> > Thanks.
+> 
+> Are those patches already in git head or do I need to apply them separately?
+> 
+you need to apply them manually on top of clean linus' git tree.
 
-It adds the imx thermal support using Temperature Monitor (TEMPMON)
-block found on some Freescale i.MX SoCs.  The driver uses syscon regmap
-interface to access TEMPMON control registers and calibration data, and
-supports cpufreq as the cooling device.
-
-Signed-off-by: Shawn Guo <shawn.guo@linaro.org>
----
-Changes since v2:
- * Improve binding doc and Kconfig help text
- * Use a safer polling interval
- * Change 1ms sleep to 50 us in imx_get_temp() call
- * Give it a wait instead of shutting the ongoing measurement in suspend
- * Use module_platform_driver()
-
- .../devicetree/bindings/thermal/imx-thermal.txt    |   17 +
- drivers/thermal/Kconfig                            |   11 +
- drivers/thermal/Makefile                           |    1 +
- drivers/thermal/imx_thermal.c                      |  397 ++++++++++++++++++++
- 4 files changed, 426 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/imx-thermal.txt
- create mode 100644 drivers/thermal/imx_thermal.c
-
-diff --git a/Documentation/devicetree/bindings/thermal/imx-thermal.txt b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-new file mode 100644
-index 0000000..541c25e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx-thermal.txt
-@@ -0,0 +1,17 @@
-+* Temperature Monitor (TEMPMON) on Freescale i.MX SoCs
-+
-+Required properties:
-+- compatible : "fsl,imx6q-thermal"
-+- fsl,tempmon : phandle pointer to system controller that contains TEMPMON
-+  control registers, e.g. ANATOP on imx6q.
-+- fsl,tempmon-data : phandle pointer to fuse controller that contains TEMPMON
-+  calibration data, e.g. OCOTP on imx6q.  The details about calibration data
-+  can be found in SoC Reference Manual.
-+
-+Example:
-+
-+tempmon {
-+	compatible = "fsl,imx6q-tempmon";
-+	fsl,tempmon = <&anatop>;
-+	fsl,tempmon-data = <&ocotp>;
-+};
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b13c2bc..22a702e 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -91,6 +91,17 @@ config THERMAL_EMULATION
- 	  because userland can easily disable the thermal policy by simply
- 	  flooding this sysfs node with low temperature values.
- 
-+config IMX_THERMAL
-+	tristate "Temperature sensor driver for Freescale i.MX SoCs"
-+	depends on CPU_THERMAL
-+	depends on MFD_SYSCON
-+	depends on OF
-+	help
-+	  Support for Temperature Monitor (TEMPMON) found on Freescale i.MX SoCs.
-+	  It supports one critical trip point and one passive trip point.  The
-+	  cpufreq is used as the cooling device to throttle CPUs when the
-+	  passive trip is crossed.
-+
- config SPEAR_THERMAL
- 	bool "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 67184a2..dff19c6 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_EXYNOS_THERMAL)	+= exynos_thermal.o
- obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-+obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-new file mode 100644
-index 0000000..4045850
---- /dev/null
-+++ b/drivers/thermal/imx_thermal.c
-@@ -0,0 +1,397 @@
-+/*
-+ * Copyright 2013 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/cpu_cooling.h>
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+#include <linux/types.h>
-+
-+#define REG_SET		0x4
-+#define REG_CLR		0x8
-+#define REG_TOG		0xc
-+
-+#define MISC0				0x0150
-+#define MISC0_REFTOP_SELBIASOFF		(1 << 3)
-+
-+#define TEMPSENSE0			0x0180
-+#define TEMPSENSE0_TEMP_CNT_SHIFT	8
-+#define TEMPSENSE0_TEMP_CNT_MASK	(0xfff << TEMPSENSE0_TEMP_CNT_SHIFT)
-+#define TEMPSENSE0_FINISHED		(1 << 2)
-+#define TEMPSENSE0_MEASURE_TEMP		(1 << 1)
-+#define TEMPSENSE0_POWER_DOWN		(1 << 0)
-+
-+#define TEMPSENSE1			0x0190
-+#define TEMPSENSE1_MEASURE_FREQ		0xffff
-+
-+#define OCOTP_ANA1			0x04e0
-+
-+/* The driver supports 1 passive trip point and 1 critical trip point */
-+enum imx_thermal_trip {
-+	IMX_TRIP_PASSIVE,
-+	IMX_TRIP_CRITICAL,
-+	IMX_TRIP_NUM,
-+};
-+
-+/*
-+ * It defines the temperature in millicelsius for passive trip point
-+ * that will trigger cooling action when crossed.
-+ */
-+#define IMX_TEMP_PASSIVE		85000
-+
-+/*
-+ * The maximum die temperature on imx parts is 105C, let's give some cushion
-+ * for noise and possible temperature rise between measurements.
-+ */
-+#define IMX_TEMP_CRITICAL		100000
-+
-+#define IMX_POLLING_DELAY		2000 /* millisecond */
-+#define IMX_PASSIVE_DELAY		1000
-+
-+struct imx_thermal_data {
-+	struct thermal_zone_device *tz;
-+	struct thermal_cooling_device *cdev;
-+	enum thermal_device_mode mode;
-+	struct regmap *tempmon;
-+	int c1, c2; /* See forumla in imx_get_sensor_data() */
-+};
-+
-+static int imx_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+	struct regmap *map = data->tempmon;
-+	static unsigned long last_temp;
-+	unsigned int n_meas;
-+	u32 val;
-+
-+	/*
-+	 * Every time we measure the temperature, we will power on the
-+	 * temperature sensor, enable measurements, take a reading,
-+	 * disable measurements, power off the temperature sensor.
-+	 */
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+
-+	/*
-+	 * According to the temp sensor designers, it may require up to ~17us
-+	 * to complete a measurement.
-+	 */
-+	usleep_range(20, 50);
-+
-+	regmap_read(map, TEMPSENSE0, &val);
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	if ((val & TEMPSENSE0_FINISHED) == 0) {
-+		dev_dbg(&tz->device, "temp measurement never finished\n");
-+		return -EAGAIN;
-+	}
-+
-+	n_meas = (val & TEMPSENSE0_TEMP_CNT_MASK) >> TEMPSENSE0_TEMP_CNT_SHIFT;
-+
-+	/* See imx_get_sensor_data() for forumla derivation */
-+	*temp = data->c2 + data->c1 * n_meas;
-+
-+	if (*temp != last_temp) {
-+		dev_dbg(&tz->device, "millicelsius: %ld\n", *temp);
-+		last_temp = *temp;
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx_get_mode(struct thermal_zone_device *tz,
-+			enum thermal_device_mode *mode)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+
-+	*mode = data->mode;
-+
-+	return 0;
-+}
-+
-+static int imx_set_mode(struct thermal_zone_device *tz,
-+			enum thermal_device_mode mode)
-+{
-+	struct imx_thermal_data *data = tz->devdata;
-+
-+	if (mode == THERMAL_DEVICE_ENABLED) {
-+		tz->polling_delay = IMX_POLLING_DELAY;
-+		tz->passive_delay = IMX_PASSIVE_DELAY;
-+	} else {
-+		tz->polling_delay = 0;
-+		tz->passive_delay = 0;
-+	}
-+
-+	data->mode = mode;
-+	thermal_zone_device_update(tz);
-+
-+	return 0;
-+}
-+
-+static int imx_get_trip_type(struct thermal_zone_device *tz, int trip,
-+			     enum thermal_trip_type *type)
-+{
-+	*type = (trip == IMX_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
-+					     THERMAL_TRIP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_get_crit_temp(struct thermal_zone_device *tz,
-+			     unsigned long *temp)
-+{
-+	*temp = IMX_TEMP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_get_trip_temp(struct thermal_zone_device *tz, int trip,
-+			     unsigned long *temp)
-+{
-+	*temp = (trip == IMX_TRIP_PASSIVE) ? IMX_TEMP_PASSIVE :
-+					     IMX_TEMP_CRITICAL;
-+	return 0;
-+}
-+
-+static int imx_bind(struct thermal_zone_device *tz,
-+		    struct thermal_cooling_device *cdev)
-+{
-+	int ret;
-+
-+	ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
-+					       THERMAL_NO_LIMIT,
-+					       THERMAL_NO_LIMIT);
-+	if (ret) {
-+		dev_err(&tz->device,
-+			"binding zone %s with cdev %s failed:%d\n",
-+			tz->type, cdev->type, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx_unbind(struct thermal_zone_device *tz,
-+		      struct thermal_cooling_device *cdev)
-+{
-+	int ret;
-+
-+	ret = thermal_zone_unbind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev);
-+	if (ret) {
-+		dev_err(&tz->device,
-+			"unbinding zone %s with cdev %s failed:%d\n",
-+			tz->type, cdev->type, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_device_ops imx_tz_ops = {
-+	.bind = imx_bind,
-+	.unbind = imx_unbind,
-+	.get_temp = imx_get_temp,
-+	.get_mode = imx_get_mode,
-+	.set_mode = imx_set_mode,
-+	.get_trip_type = imx_get_trip_type,
-+	.get_trip_temp = imx_get_trip_temp,
-+	.get_crit_temp = imx_get_crit_temp,
-+};
-+
-+static int imx_get_sensor_data(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data = platform_get_drvdata(pdev);
-+	struct regmap *map;
-+	int t1, t2, n1, n2;
-+	int ret;
-+	u32 val;
-+
-+	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node,
-+					      "fsl,tempmon-data");
-+	if (IS_ERR(map)) {
-+		ret = PTR_ERR(map);
-+		dev_err(&pdev->dev, "failed to get sensor regmap: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = regmap_read(map, OCOTP_ANA1, &val);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to read sensor data: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (val == 0 || val == ~0) {
-+		dev_err(&pdev->dev, "invalid sensor calibration data\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Sensor data layout:
-+	 *   [31:20] - sensor value @ 25C
-+	 *    [19:8] - sensor value of hot
-+	 *     [7:0] - hot temperature value
-+	 */
-+	n1 = val >> 20;
-+	n2 = (val & 0xfff00) >> 8;
-+	t2 = val & 0xff;
-+	t1 = 25; /* t1 always 25C */
-+
-+	/*
-+	 * Derived from linear interpolation,
-+	 * Tmeas = T2 + (Nmeas - N2) * (T1 - T2) / (N1 - N2)
-+	 * We want to reduce this down to the minimum computation necessary
-+	 * for each temperature read.  Also, we want Tmeas in millicelsius
-+	 * and we don't want to lose precision from integer division. So...
-+	 * milli_Tmeas = 1000 * T2 + 1000 * (Nmeas - N2) * (T1 - T2) / (N1 - N2)
-+	 * Let constant c1 = 1000 * (T1 - T2) / (N1 - N2)
-+	 * milli_Tmeas = (1000 * T2) + c1 * (Nmeas - N2)
-+	 * milli_Tmeas = (1000 * T2) + (c1 * Nmeas) - (c1 * N2)
-+	 * Let constant c2 = (1000 * T2) - (c1 * N2)
-+	 * milli_Tmeas = c2 + (c1 * Nmeas)
-+	 */
-+	data->c1 = 1000 * (t1 - t2) / (n1 - n2);
-+	data->c2 = 1000 * t2 - data->c1 * n2;
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_probe(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data;
-+	struct cpumask clip_cpus;
-+	struct regmap *map;
-+	int ret;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "fsl,tempmon");
-+	if (IS_ERR(map)) {
-+		ret = PTR_ERR(map);
-+		dev_err(&pdev->dev, "failed to get tempmon regmap: %d\n", ret);
-+		return ret;
-+	}
-+	data->tempmon = map;
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	ret = imx_get_sensor_data(pdev);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to get sensor data\n");
-+		return ret;
-+	}
-+
-+	/* Make sure sensor is in known good state for measurements */
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
-+	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_MEASURE_TEMP);
-+	regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
-+	regmap_write(map, MISC0 + REG_SET, MISC0_REFTOP_SELBIASOFF);
-+	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_POWER_DOWN);
-+
-+	cpumask_set_cpu(0, &clip_cpus);
-+	data->cdev = cpufreq_cooling_register(&clip_cpus);
-+	if (IS_ERR(data->cdev)) {
-+		ret = PTR_ERR(data->cdev);
-+		dev_err(&pdev->dev,
-+			"failed to register cpufreq cooling device: %d\n", ret);
-+		return ret;
-+	}
-+
-+	data->tz = thermal_zone_device_register("imx_thermal_zone",
-+						IMX_TRIP_NUM, 0, data,
-+						&imx_tz_ops, NULL,
-+						IMX_PASSIVE_DELAY,
-+						IMX_POLLING_DELAY);
-+	if (IS_ERR(data->tz)) {
-+		ret = PTR_ERR(data->tz);
-+		dev_err(&pdev->dev,
-+			"failed to register thermal zone device %d\n", ret);
-+		cpufreq_cooling_unregister(data->cdev);
-+		return ret;
-+	}
-+
-+	data->mode = THERMAL_DEVICE_ENABLED;
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_remove(struct platform_device *pdev)
-+{
-+	struct imx_thermal_data *data = platform_get_drvdata(pdev);
-+
-+	thermal_zone_device_unregister(data->tz);
-+	cpufreq_cooling_unregister(data->cdev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int imx_thermal_suspend(struct device *dev)
-+{
-+	struct imx_thermal_data *data = dev_get_drvdata(dev);
-+	struct regmap *map = data->tempmon;
-+	u32 val;
-+
-+	regmap_read(map, TEMPSENSE0, &val);
-+	if ((val & TEMPSENSE0_POWER_DOWN) == 0) {
-+		/*
-+		 * If a measurement is taking place, wait for a long enough
-+		 * time for it to finish, and then check again.  If it still
-+		 * does not finish, something must go wrong.
-+		 */
-+		udelay(50);
-+		regmap_read(map, TEMPSENSE0, &val);
-+		if ((val & TEMPSENSE0_POWER_DOWN) == 0)
-+			return -ETIMEDOUT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx_thermal_resume(struct device *dev)
-+{
-+	/* Nothing to do for now */
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(imx_thermal_pm_ops,
-+			 imx_thermal_suspend, imx_thermal_resume);
-+
-+static const struct of_device_id of_imx_thermal_match[] = {
-+	{ .compatible = "fsl,imx6q-tempmon", },
-+	{ /* end */ }
-+};
-+
-+static struct platform_driver imx_thermal = {
-+	.driver = {
-+		.name	= "imx_thermal",
-+		.owner  = THIS_MODULE,
-+		.pm	= &imx_thermal_pm_ops,
-+		.of_match_table = of_imx_thermal_match,
-+	},
-+	.probe		= imx_thermal_probe,
-+	.remove		= imx_thermal_remove,
-+};
-+module_platform_driver(imx_thermal);
-+
-+MODULE_AUTHOR("Freescale Semiconductor, Inc.");
-+MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:imx-thermal");
--- 
-1.7.9.5
+thanks,
+rui
+> Thanks
+> 
+> Giacomo
 
 
