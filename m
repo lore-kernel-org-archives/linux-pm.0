@@ -1,190 +1,128 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V6 08/30] thermal: exynos: Add missing definations and
- code cleanup
-Date: Fri, 21 Jun 2013 07:31:46 +0530
-Message-ID: <CADGdYn6FHXd2YELP1z9zbqnf3Yd0PG0svaz7V6w9NYO3xSW8PQ@mail.gmail.com>
-References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
-	<1371451599-31035-9-git-send-email-amit.daniel@samsung.com>
-	<51C20CCC.3060502@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+From: kpark3469@gmail.com
+Subject: [PATCH v2 1/4] PM / tracing: Add pm_qos_update_target/flags tracepoints
+Date: Fri, 21 Jun 2013 11:12:28 +0900
+Message-ID: <1371780751-16576-1-git-send-email-kpark3469@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f171.google.com ([209.85.223.171]:47512 "EHLO
-	mail-ie0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422651Ab3FUCBr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 22:01:47 -0400
-In-Reply-To: <51C20CCC.3060502@ti.com>
+Received: from mail-bk0-f46.google.com ([209.85.214.46]:33234 "EHLO
+	mail-bk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161377Ab3FUCMw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jun 2013 22:12:52 -0400
+Received: by mail-bk0-f46.google.com with SMTP id na10so3142727bkb.33
+        for <linux-pm@vger.kernel.org>; Thu, 20 Jun 2013 19:12:50 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
+To: linux-pm@vger.kernel.org
+Cc: keun-o.park@windriver.com, len.brown@intel.com, rjw@sisk.pl, rostedt@goodmis.org
 
-Hi Eduardo,
+From: Sahara <keun-o.park@windriver.com>
 
-On Thu, Jun 20, 2013 at 1:25 AM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
->> This patch adds some extra register bitfield definations and cleans
->> up the code to prepare for moving register macros and definations inside
->> the TMU data section.
->>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c |   62 +++++++++++++++++++++++++---------
->>  1 files changed, 46 insertions(+), 16 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index 5df04a1..fa33a48 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -43,9 +43,12 @@
->>
->>  #define EXYNOS_TMU_TRIM_TEMP_MASK    0xff
->>  #define EXYNOS_TMU_GAIN_SHIFT                8
->> +#define EXYNOS_TMU_GAIN_MASK         0xf
->>  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT 24
->> -#define EXYNOS_TMU_CORE_ON           3
->> -#define EXYNOS_TMU_CORE_OFF          2
->> +#define EXYNOS_TMU_REF_VOLTAGE_MASK  0x1f
->> +#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK        0xf
->> +#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT       8
->> +#define EXYNOS_TMU_CORE_EN_SHIFT     0
->>  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET   50
->>
->>  /* Exynos4210 specific registers */
->> @@ -63,6 +66,7 @@
->>  #define EXYNOS4210_TMU_TRIG_LEVEL1_MASK      0x10
->>  #define EXYNOS4210_TMU_TRIG_LEVEL2_MASK      0x100
->>  #define EXYNOS4210_TMU_TRIG_LEVEL3_MASK      0x1000
->> +#define EXYNOS4210_TMU_TRIG_LEVEL_MASK       0x1111
->>  #define EXYNOS4210_TMU_INTCLEAR_VAL  0x1111
->>
->>  /* Exynos5250 and Exynos4412 specific registers */
->> @@ -72,17 +76,30 @@
->>  #define EXYNOS_EMUL_CON              0x80
->>
->>  #define EXYNOS_TRIMINFO_RELOAD               0x1
->> +#define EXYNOS_TRIMINFO_SHIFT                0x0
->> +#define EXYNOS_TMU_RISE_INT_MASK     0x111
->> +#define EXYNOS_TMU_RISE_INT_SHIFT    0
->> +#define EXYNOS_TMU_FALL_INT_MASK     0x111
->> +#define EXYNOS_TMU_FALL_INT_SHIFT    12
->>  #define EXYNOS_TMU_CLEAR_RISE_INT    0x111
->>  #define EXYNOS_TMU_CLEAR_FALL_INT    (0x111 << 12)
->> -#define EXYNOS_MUX_ADDR_VALUE                6
->> -#define EXYNOS_MUX_ADDR_SHIFT                20
->>  #define EXYNOS_TMU_TRIP_MODE_SHIFT   13
->> +#define EXYNOS_TMU_TRIP_MODE_MASK    0x7
->> +
->> +#define EXYNOS_TMU_INTEN_RISE0_SHIFT 0
->> +#define EXYNOS_TMU_INTEN_RISE1_SHIFT 4
->> +#define EXYNOS_TMU_INTEN_RISE2_SHIFT 8
->> +#define EXYNOS_TMU_INTEN_RISE3_SHIFT 12
->> +#define EXYNOS_TMU_INTEN_FALL0_SHIFT 16
->> +#define EXYNOS_TMU_INTEN_FALL1_SHIFT 20
->> +#define EXYNOS_TMU_INTEN_FALL2_SHIFT 24
->>
->>  #define EFUSE_MIN_VALUE 40
->>  #define EFUSE_MAX_VALUE 100
->>
->>  #ifdef CONFIG_THERMAL_EMULATION
->>  #define EXYNOS_EMUL_TIME     0x57F0
->> +#define EXYNOS_EMUL_TIME_MASK        0xffff
->>  #define EXYNOS_EMUL_TIME_SHIFT       16
->>  #define EXYNOS_EMUL_DATA_SHIFT       8
->>  #define EXYNOS_EMUL_DATA_MASK        0xFF
->> @@ -261,24 +278,37 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
->>       mutex_lock(&data->lock);
->>       clk_enable(data->clk);
->>
->> -     con = pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
->> -             pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
->> +     con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
->>
->> -     if (data->soc == SOC_ARCH_EXYNOS) {
->> -             con |= pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT;
->> -             con |= (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
->> +     if (pdata->reference_voltage) {
->> +             con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK <<
->> +                             EXYNOS_TMU_REF_VOLTAGE_SHIFT);
->> +             con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
->> +     }
->> +
->> +     if (pdata->gain) {
->> +             con &= ~(EXYNOS_TMU_GAIN_MASK << EXYNOS_TMU_GAIN_SHIFT);
->> +             con |= (pdata->gain << EXYNOS_TMU_GAIN_SHIFT);
->> +     }
->> +
->> +     if (pdata->noise_cancel_mode) {
->> +             con &= ~(EXYNOS_TMU_TRIP_MODE_MASK <<
->> +                                     EXYNOS_TMU_TRIP_MODE_SHIFT);
->> +             con |= (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
->>       }
->>
->>       if (on) {
->> -             con |= EXYNOS_TMU_CORE_ON;
->
->
->
-> Before, in order to turn core on you had:
->         con = con | 3;
->
-> now you do:
->         con = con | (1 << 0);
->
-> To me, before you would set bit 1 and 0, now you set bit 0.
->
->
->> -             interrupt_en = pdata->trigger_level3_en << 12 |
->> -                     pdata->trigger_level2_en << 8 |
->> -                     pdata->trigger_level1_en << 4 |
->> -                     pdata->trigger_level0_en;
->> +             con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
->> +             interrupt_en =
->> +             pdata->trigger_level3_en << EXYNOS_TMU_INTEN_RISE3_SHIFT |
->> +             pdata->trigger_level2_en << EXYNOS_TMU_INTEN_RISE2_SHIFT |
->> +             pdata->trigger_level1_en << EXYNOS_TMU_INTEN_RISE1_SHIFT |
->> +             pdata->trigger_level0_en << EXYNOS_TMU_INTEN_RISE0_SHIFT;
->>               if (pdata->threshold_falling)
->> -                     interrupt_en |= interrupt_en << 16;
->> +                     interrupt_en |=
->> +                             interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
->>       } else {
->> -             con |= EXYNOS_TMU_CORE_OFF;
->> +             con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
->
->
-> Before, in order to turno core off you had:
->         con = con | 2;
->
-> now you do:
->         con = con & ~(1 << 0);
->
-> To me, before you would set bit 2, now you clear bit 0.
->
-> Using the approach on this patch looks correct to me if you have 1 bit
-> core_en for instance.
->
-> so, Is this a fix?
->
-> Just to be clear, is this what you want ?
-Yes you are right. Bit 0 is the actual enable bit. Bit 1 is the
-reserve bit and its default value is 1. Earlier both bits are used to
-turn on/off the controller which was wrong so this patch rectifies it.
+This patch adds tracepoints to pm_qos_update_target and
+pm_qos_update_flags. It's useful for checking pm qos action,
+previous value and current value.
 
-Thanks,
-Amit
->
->>               interrupt_en = 0; /* Disable all interrupts */
->>       }
->>       writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
->>
->
->
-> --
-> You have got to be excited about what you are doing. (L. Lamport)
->
-> Eduardo Valentin
->
+Signed-off-by: Sahara <keun-o.park@windriver.com>
+---
+ include/trace/events/power.h |   51 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/power/qos.c           |    3 ++
+ 2 files changed, 54 insertions(+), 0 deletions(-)
+
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 427acab..f1e73bd 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -5,6 +5,7 @@
+ #define _TRACE_POWER_H
+ 
+ #include <linux/ktime.h>
++#include <linux/pm_qos.h>
+ #include <linux/tracepoint.h>
+ 
+ DECLARE_EVENT_CLASS(cpu,
+@@ -177,6 +178,56 @@ DEFINE_EVENT(power_domain, power_domain_target,
+ 
+ 	TP_ARGS(name, state, cpu_id)
+ );
++
++/*
++ * The pm qos events are used for pm qos update
++ */
++DECLARE_EVENT_CLASS(pm_qos_update,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value),
++
++	TP_STRUCT__entry(
++		__field( enum pm_qos_req_action, action         )
++		__field( int,                    prev_value     )
++		__field( int,                    curr_value     )
++	),
++
++	TP_fast_assign(
++		__entry->action = action;
++		__entry->prev_value = prev_value;
++		__entry->curr_value = curr_value;
++	),
++
++	TP_printk("action=%s prev_value=%d curr_value=%d",
++		  __print_symbolic(__entry->action,
++			{ PM_QOS_ADD_REQ,	"ADD_REQ" },
++			{ PM_QOS_UPDATE_REQ,	"UPDATE_REQ" },
++			{ PM_QOS_REMOVE_REQ,	"REMOVE_REQ" }),
++		  __entry->prev_value, __entry->curr_value)
++);
++
++DEFINE_EVENT(pm_qos_update, pm_qos_update_target,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value)
++);
++
++DEFINE_EVENT_PRINT(pm_qos_update, pm_qos_update_flags,
++
++	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
++
++	TP_ARGS(action, prev_value, curr_value),
++
++	TP_printk("action=%s prev_value=0x%x curr_value=0x%x",
++		  __print_symbolic(__entry->action,
++			{ PM_QOS_ADD_REQ,	"ADD_REQ" },
++			{ PM_QOS_UPDATE_REQ,	"UPDATE_REQ" },
++			{ PM_QOS_REMOVE_REQ,	"REMOVE_REQ" }),
++		  __entry->prev_value, __entry->curr_value)
++);
+ #endif /* _TRACE_POWER_H */
+ 
+ /* This part must be outside protection */
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index f2f5f6e..4fb8d14 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -44,6 +44,7 @@
+ 
+ #include <linux/uaccess.h>
+ #include <linux/export.h>
++#include <trace/events/power.h>
+ 
+ /*
+  * locking rule: all changes to constraints or notifiers lists
+@@ -202,6 +203,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 
+ 	spin_unlock_irqrestore(&pm_qos_lock, flags);
+ 
++	trace_pm_qos_update_target(action, prev_value, curr_value);
+ 	if (prev_value != curr_value) {
+ 		blocking_notifier_call_chain(c->notifiers,
+ 					     (unsigned long)curr_value,
+@@ -272,6 +274,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+ 
+ 	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
+ 
++	trace_pm_qos_update_flags(action, prev_value, curr_value);
+ 	return prev_value != curr_value;
+ }
+ 
+-- 
+1.7.1
+
