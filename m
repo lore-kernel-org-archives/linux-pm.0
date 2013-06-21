@@ -1,142 +1,172 @@
 From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V2] thermal: exynos: Support for TMU regulator defined at
- device tree
-Date: Fri, 21 Jun 2013 09:33:11 +0530
-Message-ID: <CADGdYn5MCRwK8cE9jUG73afaLQ7gp4+1BbiswY+vptVcXuPcvA@mail.gmail.com>
-References: <1367489937-30725-1-git-send-email-amit.daniel@samsung.com>
-	<51C20E8D.8040005@ti.com>
+Subject: Re: [PATCH V6 06/30] thermal: exynos: Move exynos_thermal.h from
+ include/* to driver/* folder
+Date: Fri, 21 Jun 2013 10:03:34 +0530
+Message-ID: <CADGdYn7Y2c9B3zbrGY3LssoJHJZUD7W92KyPBN+EifydNEuDEg@mail.gmail.com>
+References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
+	<1371451599-31035-7-git-send-email-amit.daniel@samsung.com>
+	<51C20416.7010809@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f170.google.com ([209.85.223.170]:36684 "EHLO
-	mail-ie0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709Ab3FUEDM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 00:03:12 -0400
-In-Reply-To: <51C20E8D.8040005@ti.com>
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:62720 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965258Ab3FUEde (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jun 2013 00:33:34 -0400
+In-Reply-To: <51C20416.7010809@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-On Thu, Jun 20, 2013 at 1:33 AM, Eduardo Valentin
+Hi
+
+On Thu, Jun 20, 2013 at 12:48 AM, Eduardo Valentin
 <eduardo.valentin@ti.com> wrote:
-> On 02-05-2013 06:18, Amit Daniel Kachhap wrote:
->> TMU probe function now checks for a device tree defined regulator.
->> For compatibility reasons it is allowed to probe driver even without
->> this regulator defined.
+> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
+>> This patch renames and moves include/linux/platform_data/exynos_thermal.h to
+>> drivers/thermal/samsung/exynos_tmu.h. This file movement is needed as exynos
+>> SOC's are not supporting non-DT based platforms and this file now just contains
+>> exynos tmu driver related definations.
+>> Also struct freq_clip_table is now moved to exynos_thermal_common.c as it fixes
+>> the compilation issue occuring because now this new tmu header file is included
+>> in tmu driver c file and not in the common thermal header file.
 >>
->> Signed-off-by: Luk asz Majewski <l.majewski@samsung.com>
->> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 >> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
->
-> I assume this one got superseeded by the same patch on your 30 patch
-> series, right?
-> https://patchwork.kernel.org/patch/2731031/
-Yes right. In my re-structuring patch series this one is included.
->
->
 >> ---
+>>  drivers/thermal/samsung/exynos_thermal_common.c    |    1 -
+>>  drivers/thermal/samsung/exynos_thermal_common.h    |   15 ++++++++++++
+>>  drivers/thermal/samsung/exynos_tmu.c               |    2 +-
+>>  .../thermal/samsung/exynos_tmu.h                   |   24 ++++---------------
+>>  4 files changed, 21 insertions(+), 21 deletions(-)
+>>  rename include/linux/platform_data/exynos_thermal.h => drivers/thermal/samsung/exynos_tmu.h (84%)
 >>
->> Changes in V2:
->> * Added log message in regulator_get failure as suggested by Sylwester.
->> * Used IS_ERR for checking regulator pointer as suggested by Sylwester.
+>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+>> index 92e50bc..dd49c9f 100644
+>> --- a/drivers/thermal/samsung/exynos_thermal_common.c
+>> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
+>> @@ -21,7 +21,6 @@
+>>   */
 >>
->> This patch is repost of the patch posted by Lukasz Majewski
->> (https://patchwork.kernel.org/patch/2488211/). I have rebased this
->> patch on top of my TMU re-structured patch series
->> (http://lwn.net/Articles/548634/). Although I thought of handling
->> regulator as one type of feature (newly added) but could not do
->> so as regulator is a board/platform property and not SOC property so
->> leaving the device tree to define and handle it.
+>>  #include <linux/cpu_cooling.h>
+>> -#include <linux/platform_data/exynos_thermal.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/thermal.h>
 >>
->>  .../devicetree/bindings/thermal/exynos-thermal.txt |    4 ++++
->>  drivers/thermal/samsung/exynos_tmu.c               |   19 +++++++++++++++++++
->>  2 files changed, 23 insertions(+), 0 deletions(-)
+>> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+>> index 8df1848..068f56c 100644
+>> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+>> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+>> @@ -44,6 +44,21 @@
 >>
->> diff --git a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> index 970eeba..ff62f7a 100644
->> --- a/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/exynos-thermal.txt
->> @@ -14,6 +14,9 @@
->>  - interrupts : Should contain interrupt for thermal system
->>  - clocks : The main clock for TMU device
->>  - clock-names : Thermal system clock name
->> +- vtmu-supply: This entry is optional and provides the regulator node supplying
->> +             voltage to TMU. If needed this entry can be placed inside
->> +             board/platform specific dts file.
+>>  #define EXYNOS_ZONE_COUNT    3
 >>
->>  Example 1):
->>
->> @@ -25,6 +28,7 @@ Example 1):
->>               clocks = <&clock 383>;
->>               clock-names = "tmu_apbif";
->>               status = "disabled";
->> +             vtmu-supply = <&tmu_regulator_node>;
->>       };
->>
->>  Example 2):
+>> +/**
+>> + * struct freq_clip_table
+>> + * @freq_clip_max: maximum frequency allowed for this cooling state.
+>> + * @temp_level: Temperature level at which the temperature clipping will
+>> + *   happen.
+>> + * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
+>> + *
+>> + * This structure is required to be filled and passed to the
+>> + * cpufreq_cooling_unregister function.
+>> + */
+>> +struct freq_clip_table {
+>> +     unsigned int freq_clip_max;
+>> +     unsigned int temp_level;
+>> +     const struct cpumask *mask_val;
+>> +};
+>>  struct       thermal_trip_point_conf {
+>>       int trip_val[MAX_TRIP_COUNT];
+>>       int trip_count;
 >> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index 72446c9..b7c609a 100644
+>> index 22a8874..6aa2fd2 100644
 >> --- a/drivers/thermal/samsung/exynos_tmu.c
 >> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -32,6 +32,7 @@
->>  #include <linux/of_address.h>
->>  #include <linux/of_irq.h>
+>> @@ -27,9 +27,9 @@
+>>  #include <linux/module.h>
+>>  #include <linux/of.h>
 >>  #include <linux/platform_device.h>
->> +#include <linux/regulator/consumer.h>
->>  #include <linux/slab.h>
->>  #include <linux/workqueue.h>
+>> -#include <linux/platform_data/exynos_thermal.h>
+>>
 >>  #include "exynos_thermal_common.h"
->> @@ -52,6 +53,7 @@
->>   * @clk: pointer to the clock structure.
->>   * @temp_error1: fused value of the first point trim.
->>   * @temp_error2: fused value of the second point trim.
->> + * @regulator: pointer to the TMU regulator structure.
->>   * @reg_conf: pointer to structure to register with core thermal.
+>> +#include "exynos_tmu.h"
+>>
+>>  /* Exynos generic registers */
+>>  #define EXYNOS_TMU_REG_TRIMINFO              0x0
+>> diff --git a/include/linux/platform_data/exynos_thermal.h b/drivers/thermal/samsung/exynos_tmu.h
+>> similarity index 84%
+>> rename from include/linux/platform_data/exynos_thermal.h
+>> rename to drivers/thermal/samsung/exynos_tmu.h
+>> index da7e627..9e0f887 100644
+>> --- a/include/linux/platform_data/exynos_thermal.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -1,8 +1,9 @@
+>>  /*
+>> - * exynos_thermal.h - Samsung EXYNOS TMU (Thermal Management Unit)
+>> + * exynos_tmu.h - Samsung EXYNOS TMU (Thermal Management Unit)
+>>   *
+>>   *  Copyright (C) 2011 Samsung Electronics
+>>   *  Donggeun Kim <dg77.kim@samsung.com>
+>> + *  Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>   *
+>>   * This program is free software; you can redistribute it and/or modify
+>>   * it under the terms of the GNU General Public License as published by
+>> @@ -19,8 +20,8 @@
+>>   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 >>   */
->>  struct exynos_tmu_data {
->> @@ -65,6 +67,7 @@ struct exynos_tmu_data {
->>       struct mutex lock;
->>       struct clk *clk;
->>       u8 temp_error1, temp_error2;
->> +     struct regulator *regulator;
->>       struct thermal_sensor_conf *reg_conf;
+>>
+>> -#ifndef _LINUX_EXYNOS_THERMAL_H
+>> -#define _LINUX_EXYNOS_THERMAL_H
+>> +#ifndef _EXYNOS_TMU_H
+>> +#define _EXYNOS_TMU_H
+>>  #include <linux/cpu_cooling.h>
+>>
+>>  enum calibration_type {
+>> @@ -33,21 +34,6 @@ enum soc_type {
+>>       SOC_ARCH_EXYNOS4210 = 1,
+>>       SOC_ARCH_EXYNOS,
 >>  };
+>> -/**
+>> - * struct freq_clip_table
+>> - * @freq_clip_max: maximum frequency allowed for this cooling state.
+>> - * @temp_level: Temperature level at which the temperature clipping will
+>> - *   happen.
+>> - * @mask_val: cpumask of the allowed cpu's where the clipping will take place.
+>> - *
+>> - * This structure is required to be filled and passed to the
+>> - * cpufreq_cooling_unregister function.
+>> - */
+>> -struct freq_clip_table {
+>> -     unsigned int freq_clip_max;
+>> -     unsigned int temp_level;
+>> -     const struct cpumask *mask_val;
+>> -};
 >>
->> @@ -501,10 +504,23 @@ static int exynos_map_dt_data(struct platform_device *pdev)
->>       struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->>       struct exynos_tmu_platform_data *pdata = data->pdata;
->>       struct resource res;
->> +     int ret;
->>
->>       if (!data)
->>               return -ENODEV;
->>
->> +     /* Try enabling the regulator if found */
->> +     data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
->> +     if (!IS_ERR(data->regulator)) {
->> +             ret = regulator_enable(data->regulator);
->> +             if (ret) {
->> +                     dev_err(&pdev->dev, "failed to enable vtmu\n");
->> +                     return ret;
->> +             }
->> +     } else {
->> +             dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
->> +     }
->> +
->>       data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
->>       if (data->id < 0)
->>               data->id = 0;
->> @@ -669,6 +685,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
->>
->>       clk_unprepare(data->clk);
->>
->> +     if (!IS_ERR(data->regulator))
->> +             regulator_disable(data->regulator);
->> +
->>       platform_set_drvdata(pdev, NULL);
->>
->>       return 0;
+>>  /**
+>>   * struct exynos_tmu_platform_data
+>> @@ -116,4 +102,4 @@ struct exynos_tmu_platform_data {
+>>       struct freq_clip_table freq_tab[4];
+>
+> Because you have this struct right here, you need still to have:
+> +#include "exynos_thermal_common.h"
+>
+> in your include list of exynos_tmu.h (this file).
+>
+> A part from this minor issue, you can add my acked:
+>
+> Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Ok will re-submit with this change.
+
+Thanks,
+Amit Daniel
+>
+>>       unsigned int freq_tab_count;
+>>  };
+>> -#endif /* _LINUX_EXYNOS_THERMAL_H */
+>> +#endif /* _EXYNOS_TMU_H */
 >>
 >
 >
