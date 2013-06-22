@@ -1,23 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCHv v3] power: Include additional information in pm_print_times
-Date: Sat, 22 Jun 2013 21:52:52 +0200
-Message-ID: <2732229.sfB5fHUFTc@vostro.rjw.lan>
-References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com> <2534796.mOHH0DCD2A@vostro.rjw.lan> <1371868042.2086.0.camel@joe-AO722>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1371868042.2086.0.camel@joe-AO722>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Shuah Khan <shuah.kh@samsung.com>, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+From: Shuah Khan <shuah.kh@samsung.com>
+Subject: [PATCH 1/2] power: add new interface to return pm_transition state
+Date: Sat, 22 Jun 2013 14:11:14 -0600
+Message-ID: <1371931874-3220-1-git-send-email-shuah.kh@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:52255 "EHLO
+	qmta03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750807Ab3FVULZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Jun 2013 16:11:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: pavel@ucw.cz, rjw@sisk.pl, len.brown@intel.com, gregkh@linuxfoundation.org, airlied@linux.ie
+Cc: Shuah Khan <shuah.kh@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, shuahkhan@gmail.com
 
-On Friday, June 21, 2013 07:27:22 PM Joe Perches wrote:
-> On Sat, 2013-06-22 at 02:24 +0200, Rafael J. Wysocki wrote:
-> > Namely, there are tools that use these messages to create suspend/resume time
-> > charts and they will stop working after the proposed changes.
-> 
-> dmesg output isn't guaranteed to be stable.
+Add a new interface get_pm_transition() to return pm_transition state.
+This interface is intended to be used from dev_pm_ops class and type
+suspend interfaces that call legacy pm ops driver suspend interfaces.
+Legacy suspend pm_ops take pm_message_t as a parameter.
 
-So?
+e.g: drm_class_suspend() calls into driver suspend routines
+via drm_dev->driver->suspend(drm_dev, state).
+
+Once drm_class_suspend() is converted to dev_pm_ops, it will no longer
+have access to pm_transition which it has to pass into driver legacy
+suspend calls. get_pm_transition() interface addresses this need.
+
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/base/power/main.c |   17 +++++++++++++++++
+ include/linux/pm.h        |    3 +++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index c2132b8..3e2e09d 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -57,6 +57,23 @@ static pm_message_t pm_transition;
+ static int async_error;
+ 
+ /**
++ * get_pm_transition - return pm_transition state.
++ * This interface is intended to be used from dev_pm_ops class and type
++ * suspend interfaces that call legacy pm ops driver suspend interfaces.
++ * Legacy suspend pm_ops take pm_message_t as a parameter.
++ * e.g: drm_class_suspend() calls into driver suspend routines
++ * via drm_dev->driver->suspend(drm_dev, state).
++ * Once drm_class_suspend() is converted to dev_pm_ops, it will no longer
++ * have access to pm_transition which it has to pass into driver legacy
++ * suspend calls. get_pm_transition() interface addresses this need.
++*/
++pm_message_t get_pm_transition()
++{
++	return pm_transition;
++}
++EXPORT_SYMBOL_GPL(get_pm_transition);
++
++/**
+  * device_pm_sleep_init - Initialize system suspend-related device fields.
+  * @dev: Device object being initialized.
+  */
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index a224c7f..46f3252 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -63,6 +63,9 @@ typedef struct pm_message {
+ 	int event;
+ } pm_message_t;
+ 
++/* drivers/base/power/main.c */
++extern pm_message_t get_pm_transition(void);
++
+ /**
+  * struct dev_pm_ops - device PM callbacks
+  *
+-- 
+1.7.10.4
+
