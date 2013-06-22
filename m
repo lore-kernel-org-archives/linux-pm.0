@@ -1,87 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 1/2] power: add new interface to return pm_transition state
-Date: Sat, 22 Jun 2013 23:26:50 +0200
-Message-ID: <4133846.I1XZFprb5V@vostro.rjw.lan>
-References: <1371931874-3220-1-git-send-email-shuah.kh@samsung.com>
+From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
+Subject: [PATCH] cpufreq: s3c2416: fix forgotten driver_data conversions
+Date: Sun, 23 Jun 2013 01:08:25 +0200
+Message-ID: <201306230108.25639.heiko@sntech.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1371931874-3220-1-git-send-email-shuah.kh@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, airlied@linux.ie, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, shuahkhan@gmail.com
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, June 22, 2013 02:11:14 PM Shuah Khan wrote:
-> Add a new interface get_pm_transition() to return pm_transition state.
-> This interface is intended to be used from dev_pm_ops class and type
-> suspend interfaces that call legacy pm ops driver suspend interfaces.
-> Legacy suspend pm_ops take pm_message_t as a parameter.
-> 
-> e.g: drm_class_suspend() calls into driver suspend routines
-> via drm_dev->driver->suspend(drm_dev, state).
-> 
-> Once drm_class_suspend() is converted to dev_pm_ops, it will no longer
-> have access to pm_transition which it has to pass into driver legacy
-> suspend calls. get_pm_transition() interface addresses this need.
+Commit 5070158804b5 (cpufreq: rename index as driver_data in
+cpufreq_frequency_table) renamed the index field to driver_data.
 
-That shouldn't be necessary because each transition has its own callback
-in strict dev_pm_ops.
+But it seems some uses in the s3c2416 driver were forgotten.
 
-Thanks,
-Rafael
+So convert the last index users to read driver_data.
 
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+ drivers/cpufreq/s3c2416-cpufreq.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> ---
->  drivers/base/power/main.c |   17 +++++++++++++++++
->  include/linux/pm.h        |    3 +++
->  2 files changed, 20 insertions(+)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index c2132b8..3e2e09d 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -57,6 +57,23 @@ static pm_message_t pm_transition;
->  static int async_error;
->  
->  /**
-> + * get_pm_transition - return pm_transition state.
-> + * This interface is intended to be used from dev_pm_ops class and type
-> + * suspend interfaces that call legacy pm ops driver suspend interfaces.
-> + * Legacy suspend pm_ops take pm_message_t as a parameter.
-> + * e.g: drm_class_suspend() calls into driver suspend routines
-> + * via drm_dev->driver->suspend(drm_dev, state).
-> + * Once drm_class_suspend() is converted to dev_pm_ops, it will no longer
-> + * have access to pm_transition which it has to pass into driver legacy
-> + * suspend calls. get_pm_transition() interface addresses this need.
-> +*/
-> +pm_message_t get_pm_transition()
-> +{
-> +	return pm_transition;
-> +}
-> +EXPORT_SYMBOL_GPL(get_pm_transition);
-> +
-> +/**
->   * device_pm_sleep_init - Initialize system suspend-related device fields.
->   * @dev: Device object being initialized.
->   */
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index a224c7f..46f3252 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -63,6 +63,9 @@ typedef struct pm_message {
->  	int event;
->  } pm_message_t;
->  
-> +/* drivers/base/power/main.c */
-> +extern pm_message_t get_pm_transition(void);
-> +
->  /**
->   * struct dev_pm_ops - device PM callbacks
->   *
-> 
+diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
+index 6f41a77..ce5b9fc 100644
+--- a/drivers/cpufreq/s3c2416-cpufreq.c
++++ b/drivers/cpufreq/s3c2416-cpufreq.c
+@@ -312,7 +312,7 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
+ 		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
+ 			continue;
+ 
+-		dvfs = &s3c2416_dvfs_table[freq->index];
++		dvfs = &s3c2416_dvfs_table[freq->driver_data];
+ 		found = 0;
+ 
+ 		/* Check only the min-voltage, more is always ok on S3C2416 */
+@@ -462,7 +462,7 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
+ 	freq = s3c_freq->freq_table;
+ 	while (freq->frequency != CPUFREQ_TABLE_END) {
+ 		/* special handling for dvs mode */
+-		if (freq->index == 0) {
++		if (freq->driver_data == 0) {
+ 			if (!s3c_freq->hclk) {
+ 				pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
+ 					 freq->frequency);
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.10.4
+
