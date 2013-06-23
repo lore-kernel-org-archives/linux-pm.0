@@ -1,66 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] power: Add warning message about incorrect system date and time after resume when pm_trace is enabled
-Date: Sun, 23 Jun 2013 13:39:47 +0200
-Message-ID: <3910179.5qQFOJRmrs@vostro.rjw.lan>
-References: <1371658518-2878-1-git-send-email-shuah.kh@samsung.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCHv v3] power: Include additional information in
+ pm_print_times
+Date: Sun, 23 Jun 2013 04:34:17 -0700
+Message-ID: <1371987257.3137.44.camel@joe-AO722>
+References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+	 <2534796.mOHH0DCD2A@vostro.rjw.lan>
+	 <B8EFE96D1287C24090BAD9D858E15E6172EFEE@sisaex02sj>
+	 <3043483.hQyzHovghE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:47913 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953Ab3FWLaV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 23 Jun 2013 07:30:21 -0400
-In-Reply-To: <1371658518-2878-1-git-send-email-shuah.kh@samsung.com>
+Received: from perches-mx.perches.com ([206.117.179.246]:57413 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750953Ab3FWLeT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 23 Jun 2013 07:34:19 -0400
+In-Reply-To: <3043483.hQyzHovghE@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah.kh@samsung.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Shuah Khan <shuah.kh@samsung.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
 
-On Wednesday, June 19, 2013 10:15:18 AM Shuah Khan wrote:
-> pm_trace uses the system's Real Time Clock (RTC) to save the magic number.
-> Reason for this is that the RTC is the only reliably available piece of
-> hardware during resume operations where a value can be set that will
-> survive a reboot.
-> 
-> Consequence is that after a resume (even if it is successful) your system
-> clock will have a value corresponding to the magic number instead of the
-> correct date/time! It is therefore advisable to use a program like ntp-date
-> or rdate to reset the correct date/time from an external time source when
-> using this trace option.
-> 
-> There is no run-time message to warn users of the consequences of enabling
-> pm_trace. Adding a warning message to pm_trace_store() will serve as a
-> reminder to users to set the system date and time after resume.
-> 
-> Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
-> ---
->  kernel/power/main.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/kernel/power/main.c b/kernel/power/main.c
-> index d77663b..4f769a6 100644
-> --- a/kernel/power/main.c
-> +++ b/kernel/power/main.c
-> @@ -528,6 +528,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
->  
->  	if (sscanf(buf, "%d", &val) == 1) {
->  		pm_trace_enabled = !!val;
-> +		pr_warn("CAUTION: this option will cause your machine's real-time clock to be set to an invalid time after a resume. Remember to set correct time after resume\n");
->  		return n;
+On Sun, 2013-06-23 at 13:36 +0200, Rafael J. Wysocki wrote:
+> Please keep the existing format as is literally and append any
+> new information to the end of the line.
 
-Can you please make it short so that it fits a single line?
+Hi Shuah.
 
-Or at least print two separate lines that will fit 80 chars wide screen each?
-
->  	}
->  	return -EINVAL;
-> 
-
-Thanks,
-Rafael
+Perhaps the better long-term approach would be to add
+a new tracepoint too.
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
