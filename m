@@ -1,51 +1,51 @@
-From: Heiko =?utf-8?q?St=C3=BCbner?= <heiko@sntech.de>
-Subject: [PATCH] cpufreq: s3c2416: fix forgotten driver_data conversions
-Date: Sun, 23 Jun 2013 01:08:25 +0200
-Message-ID: <201306230108.25639.heiko@sntech.de>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCHv v3] power: Include additional information in
+ pm_print_times
+Date: Sat, 22 Jun 2013 18:05:50 -0700
+Message-ID: <1371949550.3137.16.camel@joe-AO722>
+References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
+	 <2534796.mOHH0DCD2A@vostro.rjw.lan> <1371868042.2086.0.camel@joe-AO722>
+	 <2732229.sfB5fHUFTc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from perches-mx.perches.com ([206.117.179.246]:37896 "EHLO
+	labridge.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751775Ab3FWBFu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 22 Jun 2013 21:05:50 -0400
+In-Reply-To: <2732229.sfB5fHUFTc@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Shuah Khan <shuah.kh@samsung.com>, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, shuahkhan@gmail.com
 
-Commit 5070158804b5 (cpufreq: rename index as driver_data in
-cpufreq_frequency_table) renamed the index field to driver_data.
+On Sat, 2013-06-22 at 21:52 +0200, Rafael J. Wysocki wrote:
+> On Friday, June 21, 2013 07:27:22 PM Joe Perches wrote:
+> > On Sat, 2013-06-22 at 02:24 +0200, Rafael J. Wysocki wrote:
+> > > Namely, there are tools that use these messages to create suspend/resume time
+> > > charts and they will stop working after the proposed changes.
+> > 
+> > dmesg output isn't guaranteed to be stable.
+> 
+> So?
 
-But it seems some uses in the s3c2416 driver were forgotten.
+So even if new information was only appended to
+the existing line, the script could break.
 
-So convert the last index users to read driver_data.
+If any script needs something stable it should
+depend on information available through other
+sources like trace or proc or sysfs.
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
----
- drivers/cpufreq/s3c2416-cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Tools that use dmesg should adapt to whatever gets
+thrown at it and handle the output from whatever
+kernel versions the script supports.
 
-diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-index 6f41a77..ce5b9fc 100644
---- a/drivers/cpufreq/s3c2416-cpufreq.c
-+++ b/drivers/cpufreq/s3c2416-cpufreq.c
-@@ -312,7 +312,7 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
- 		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
- 			continue;
- 
--		dvfs = &s3c2416_dvfs_table[freq->index];
-+		dvfs = &s3c2416_dvfs_table[freq->driver_data];
- 		found = 0;
- 
- 		/* Check only the min-voltage, more is always ok on S3C2416 */
-@@ -462,7 +462,7 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	freq = s3c_freq->freq_table;
- 	while (freq->frequency != CPUFREQ_TABLE_END) {
- 		/* special handling for dvs mode */
--		if (freq->index == 0) {
-+		if (freq->driver_data == 0) {
- 			if (!s3c_freq->hclk) {
- 				pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
- 					 freq->frequency);
--- 
-1.7.10.4
+For instance, what happens to the script when
+console_level is set to 1?
+
+Requiring that no one can change a dmesg to
+add or improve the content for readability
+or intelligibility I think unreasonable.
+
 
