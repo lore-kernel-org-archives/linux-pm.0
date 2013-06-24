@@ -1,115 +1,177 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
-Date: Mon, 24 Jun 2013 19:01:59 +0530
-Message-ID: <CAKohponyMG-uA93ZpH-KD+EOQPmk5tT_QoaQ7+NCEf48vYj5-w@mail.gmail.com>
-References: <cover.1371630975.git.viresh.kumar@linaro.org>
-	<11846442.bozySFIXTh@vostro.rjw.lan>
-	<CAKohponQQphBGv9jUCF9_r2NQs7T=wkaWp_d5oO3RT=mY_zqcg@mail.gmail.com>
-	<2165396.dF1lQyPRVT@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCH V7 08/30] thermal: exynos: Add missing definations and
+ code cleanup
+Date: Mon, 24 Jun 2013 11:00:04 -0400
+Message-ID: <51C85EF4.6060509@ti.com>
+References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com> <1372071051-3167-9-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=e89a8ff25454ea0bf704dfe66fe4
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <2165396.dF1lQyPRVT@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2EWAGXPJVXFGGTLDDSKHL"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1372071051-3167-9-git-send-email-amit.daniel@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.daniel@samsung.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
---e89a8ff25454ea0bf704dfe66fe4
+------enig2EWAGXPJVXFGGTLDDSKHL
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On 24 June 2013 19:03, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Looks OK, but since transition_ongoing is either 0 or 1 now, as far as I can
-> say, it would be better to make it a bool and use = true/false instead of
-> ++/-- I suppose.
+On 24-06-2013 06:50, Amit Daniel Kachhap wrote:
+> This patch adds some extra register bitfield definations and cleans
+> up the code to prepare for moving register macros and definations insid=
+e
+> the TMU data section. In this code cleanup the TMU enable bit is correc=
+tly used
+> as bit0 and bit1 is taken care which is reserve bit.
+>=20
+> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Another fixup:
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6ca7eac..49d942a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -108,7 +108,7 @@ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
- static struct srcu_notifier_head cpufreq_transition_notifier_list;
 
- /* Tracks status of transition */
--static int transition_ongoing;
-+static bool transition_ongoing;
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c |   62 +++++++++++++++++++++++++-=
+--------
+>  1 files changed, 46 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
+sung/exynos_tmu.c
+> index 5df04a1..fa33a48 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -43,9 +43,12 @@
+> =20
+>  #define EXYNOS_TMU_TRIM_TEMP_MASK	0xff
+>  #define EXYNOS_TMU_GAIN_SHIFT		8
+> +#define EXYNOS_TMU_GAIN_MASK		0xf
+>  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT	24
+> -#define EXYNOS_TMU_CORE_ON		3
+> -#define EXYNOS_TMU_CORE_OFF		2
+> +#define EXYNOS_TMU_REF_VOLTAGE_MASK	0x1f
+> +#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK	0xf
+> +#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT	8
+> +#define EXYNOS_TMU_CORE_EN_SHIFT	0
+>  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET	50
+> =20
+>  /* Exynos4210 specific registers */
+> @@ -63,6 +66,7 @@
+>  #define EXYNOS4210_TMU_TRIG_LEVEL1_MASK	0x10
+>  #define EXYNOS4210_TMU_TRIG_LEVEL2_MASK	0x100
+>  #define EXYNOS4210_TMU_TRIG_LEVEL3_MASK	0x1000
+> +#define EXYNOS4210_TMU_TRIG_LEVEL_MASK	0x1111
+>  #define EXYNOS4210_TMU_INTCLEAR_VAL	0x1111
+> =20
+>  /* Exynos5250 and Exynos4412 specific registers */
+> @@ -72,17 +76,30 @@
+>  #define EXYNOS_EMUL_CON		0x80
+> =20
+>  #define EXYNOS_TRIMINFO_RELOAD		0x1
+> +#define EXYNOS_TRIMINFO_SHIFT		0x0
+> +#define EXYNOS_TMU_RISE_INT_MASK	0x111
+> +#define EXYNOS_TMU_RISE_INT_SHIFT	0
+> +#define EXYNOS_TMU_FALL_INT_MASK	0x111
+> +#define EXYNOS_TMU_FALL_INT_SHIFT	12
+>  #define EXYNOS_TMU_CLEAR_RISE_INT	0x111
+>  #define EXYNOS_TMU_CLEAR_FALL_INT	(0x111 << 12)
+> -#define EXYNOS_MUX_ADDR_VALUE		6
+> -#define EXYNOS_MUX_ADDR_SHIFT		20
+>  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
+> +#define EXYNOS_TMU_TRIP_MODE_MASK	0x7
+> +
+> +#define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
+> +#define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
+> +#define EXYNOS_TMU_INTEN_RISE2_SHIFT	8
+> +#define EXYNOS_TMU_INTEN_RISE3_SHIFT	12
+> +#define EXYNOS_TMU_INTEN_FALL0_SHIFT	16
+> +#define EXYNOS_TMU_INTEN_FALL1_SHIFT	20
+> +#define EXYNOS_TMU_INTEN_FALL2_SHIFT	24
+> =20
+>  #define EFUSE_MIN_VALUE 40
+>  #define EFUSE_MAX_VALUE 100
+> =20
+>  #ifdef CONFIG_THERMAL_EMULATION
+>  #define EXYNOS_EMUL_TIME	0x57F0
+> +#define EXYNOS_EMUL_TIME_MASK	0xffff
+>  #define EXYNOS_EMUL_TIME_SHIFT	16
+>  #define EXYNOS_EMUL_DATA_SHIFT	8
+>  #define EXYNOS_EMUL_DATA_MASK	0xFF
+> @@ -261,24 +278,37 @@ static void exynos_tmu_control(struct platform_de=
+vice *pdev, bool on)
+>  	mutex_lock(&data->lock);
+>  	clk_enable(data->clk);
+> =20
+> -	con =3D pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
+> -		pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
+> +	con =3D readl(data->base + EXYNOS_TMU_REG_CONTROL);
+> =20
+> -	if (data->soc =3D=3D SOC_ARCH_EXYNOS) {
+> -		con |=3D pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT;
+> -		con |=3D (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
+> +	if (pdata->reference_voltage) {
+> +		con &=3D ~(EXYNOS_TMU_REF_VOLTAGE_MASK <<
+> +				EXYNOS_TMU_REF_VOLTAGE_SHIFT);
+> +		con |=3D pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
+> +	}
+> +
+> +	if (pdata->gain) {
+> +		con &=3D ~(EXYNOS_TMU_GAIN_MASK << EXYNOS_TMU_GAIN_SHIFT);
+> +		con |=3D (pdata->gain << EXYNOS_TMU_GAIN_SHIFT);
+> +	}
+> +
+> +	if (pdata->noise_cancel_mode) {
+> +		con &=3D ~(EXYNOS_TMU_TRIP_MODE_MASK <<
+> +					EXYNOS_TMU_TRIP_MODE_SHIFT);
+> +		con |=3D (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
+>  	}
+> =20
+>  	if (on) {
+> -		con |=3D EXYNOS_TMU_CORE_ON;
+> -		interrupt_en =3D pdata->trigger_level3_en << 12 |
+> -			pdata->trigger_level2_en << 8 |
+> -			pdata->trigger_level1_en << 4 |
+> -			pdata->trigger_level0_en;
+> +		con |=3D (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+> +		interrupt_en =3D
+> +		pdata->trigger_level3_en << EXYNOS_TMU_INTEN_RISE3_SHIFT |
+> +		pdata->trigger_level2_en << EXYNOS_TMU_INTEN_RISE2_SHIFT |
+> +		pdata->trigger_level1_en << EXYNOS_TMU_INTEN_RISE1_SHIFT |
+> +		pdata->trigger_level0_en << EXYNOS_TMU_INTEN_RISE0_SHIFT;
+>  		if (pdata->threshold_falling)
+> -			interrupt_en |=3D interrupt_en << 16;
+> +			interrupt_en |=3D
+> +				interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
+>  	} else {
+> -		con |=3D EXYNOS_TMU_CORE_OFF;
+> +		con &=3D ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+>  		interrupt_en =3D 0; /* Disable all interrupts */
+>  	}
+>  	writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
+>=20
 
- static bool init_cpufreq_transition_notifier_list_called;
- static int __init init_cpufreq_transition_notifier_list(void)
-@@ -271,7 +271,7 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
-                                "In middle of another frequency transition\n"))
-                        return;
 
--               transition_ongoing++;
-+               transition_ongoing = true;
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-                /* detect if the driver reported a value as "old frequency"
-                 * which is not equal to what the cpufreq core thinks is
-@@ -296,7 +296,7 @@ void __cpufreq_notify_transition(struct
-cpufreq_policy *policy,
-                                "No frequency transition in progress\n"))
-                        return;
+Eduardo Valentin
 
--               transition_ongoing--;
-+               transition_ongoing = false;
 
-                adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
-                pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+------enig2EWAGXPJVXFGGTLDDSKHL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
---e89a8ff25454ea0bf704dfe66fe4
-Content-Type: application/octet-stream;
-	name="0001-cpufreq-make-sure-frequency-transitions-are-serializ.patch"
-Content-Disposition: attachment;
-	filename="0001-cpufreq-make-sure-frequency-transitions-are-serializ.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_hibpfjk90
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-RnJvbSBiOGMzYmQ5ZmNiNTIxZjFiNjZkNTJmMTU3ZmMyNmVjY2Y2Y2M0ZjI5IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8YjhjM2JkOWZjYjUyMWYxYjY2ZDUyZjE1N2ZjMjZl
-Y2NmNmNjNGYyOS4xMzcyMDgwNjU2LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
-VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogV2VkLCAxOSBKdW4g
-MjAxMyAxMDoxNjo1NSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IG1ha2Ugc3VyZSBm
-cmVxdWVuY3kgdHJhbnNpdGlvbnMgYXJlIHNlcmlhbGl6ZWQKCldoZW5ldmVyIHdlIGFyZSBjaGFu
-Z2luZyBmcmVxdWVuY3kgb2YgYSBjcHUsIHdlIGFyZSBjYWxsaW5nIFBSRUNIQU5HRSBhbmQKUE9T
-VENIQU5HRSBub3RpZmllcnMuIFRoZXkgbXVzdCBiZSBzZXJpYWxpemVkLiBpLmUuIFBSRUNIQU5H
-RSBvciBQT1NUQ0hBTkdFCnNob3VsZG4ndCBiZSBjYWxsZWQgdHdpY2UgY29udGlndW91c2x5LgoK
-VGhpcyBjYW4gaGFwcGVuIGR1ZSB0byBidWdzIGluIHVzZXJzIG9mIF9fY3B1ZnJlcV9kcml2ZXJf
-dGFyZ2V0KCkgb3IgYWN0dWFsCmNwdWZyZXEgZHJpdmVycyB3aG8gYXJlIHNlbmRpbmcgdGhlc2Ug
-bm90aWZpZXJzLgoKVGhpcyBwYXRjaCBhZGRzIHNvbWUgcHJvdGVjdGlvbiBhZ2FpbnN0IHRoaXMu
-IE5vdywgd2Uga2VlcCB0cmFjayBvZiB0aGUgbGFzdAp0cmFuc2FjdGlvbiBhbmQgc2VlIGlmIHNv
-bWV0aGluZyB3ZW50IHdyb25nLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gu
-a3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgMTcgKysr
-KysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAxNyBpbnNlcnRpb25zKCspCgpkaWZmIC0t
-Z2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVx
-LmMKaW5kZXggMmQ1M2Y0Ny4uNDlkOTQyYSAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVmcmVxL2Nw
-dWZyZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jCkBAIC0xMDcsNiArMTA3LDkg
-QEAgc3RhdGljIHZvaWQgaGFuZGxlX3VwZGF0ZShzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmspOwog
-c3RhdGljIEJMT0NLSU5HX05PVElGSUVSX0hFQUQoY3B1ZnJlcV9wb2xpY3lfbm90aWZpZXJfbGlz
-dCk7CiBzdGF0aWMgc3RydWN0IHNyY3Vfbm90aWZpZXJfaGVhZCBjcHVmcmVxX3RyYW5zaXRpb25f
-bm90aWZpZXJfbGlzdDsKIAorLyogVHJhY2tzIHN0YXR1cyBvZiB0cmFuc2l0aW9uICovCitzdGF0
-aWMgYm9vbCB0cmFuc2l0aW9uX29uZ29pbmc7CisKIHN0YXRpYyBib29sIGluaXRfY3B1ZnJlcV90
-cmFuc2l0aW9uX25vdGlmaWVyX2xpc3RfY2FsbGVkOwogc3RhdGljIGludCBfX2luaXQgaW5pdF9j
-cHVmcmVxX3RyYW5zaXRpb25fbm90aWZpZXJfbGlzdCh2b2lkKQogewpAQCAtMjY0LDYgKzI2Nywx
-MiBAQCB2b2lkIF9fY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1Y3QgY3B1ZnJlcV9wb2xp
-Y3kgKnBvbGljeSwKIAlzd2l0Y2ggKHN0YXRlKSB7CiAKIAljYXNlIENQVUZSRVFfUFJFQ0hBTkdF
-OgorCQlpZiAoV0FSTih0cmFuc2l0aW9uX29uZ29pbmcsCisJCQkJIkluIG1pZGRsZSBvZiBhbm90
-aGVyIGZyZXF1ZW5jeSB0cmFuc2l0aW9uXG4iKSkKKwkJCXJldHVybjsKKworCQl0cmFuc2l0aW9u
-X29uZ29pbmcgPSB0cnVlOworCiAJCS8qIGRldGVjdCBpZiB0aGUgZHJpdmVyIHJlcG9ydGVkIGEg
-dmFsdWUgYXMgIm9sZCBmcmVxdWVuY3kiCiAJCSAqIHdoaWNoIGlzIG5vdCBlcXVhbCB0byB3aGF0
-IHRoZSBjcHVmcmVxIGNvcmUgdGhpbmtzIGlzCiAJCSAqICJvbGQgZnJlcXVlbmN5Ii4KQEAgLTI4
-Myw2ICsyOTIsMTIgQEAgdm9pZCBfX2NwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oc3RydWN0IGNw
-dWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCWJyZWFrOwogCiAJY2FzZSBDUFVGUkVRX1BPU1RDSEFO
-R0U6CisJCWlmIChXQVJOKCF0cmFuc2l0aW9uX29uZ29pbmcsCisJCQkJIk5vIGZyZXF1ZW5jeSB0
-cmFuc2l0aW9uIGluIHByb2dyZXNzXG4iKSkKKwkJCXJldHVybjsKKworCQl0cmFuc2l0aW9uX29u
-Z29pbmcgPSBmYWxzZTsKKwogCQlhZGp1c3RfamlmZmllcyhDUFVGUkVRX1BPU1RDSEFOR0UsIGZy
-ZXFzKTsKIAkJcHJfZGVidWcoIkZSRVE6ICVsdSAtIENQVTogJWx1IiwgKHVuc2lnbmVkIGxvbmcp
-ZnJlcXMtPm5ldywKIAkJCSh1bnNpZ25lZCBsb25nKWZyZXFzLT5jcHUpOwpAQCAtMTQ1OCw2ICsx
-NDczLDggQEAgaW50IF9fY3B1ZnJlcV9kcml2ZXJfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGlj
-eSAqcG9saWN5LAogCiAJaWYgKGNwdWZyZXFfZGlzYWJsZWQoKSkKIAkJcmV0dXJuIC1FTk9ERVY7
-CisJaWYgKHRyYW5zaXRpb25fb25nb2luZykKKwkJcmV0dXJuIC1FQlVTWTsKIAogCS8qIE1ha2Ug
-c3VyZSB0aGF0IHRhcmdldF9mcmVxIGlzIHdpdGhpbiBzdXBwb3J0ZWQgcmFuZ2UgKi8KIAlpZiAo
-dGFyZ2V0X2ZyZXEgPiBwb2xpY3ktPm1heCkKLS0gCjEuNy4xMi5yYzIuMTguZzYxYjQ3MmUKCg==
---e89a8ff25454ea0bf704dfe66fe4--
+iF4EAREIAAYFAlHIXvQACgkQCXcVR3XQvP2r8wD9F4n9Pa/EfK9vMyD5c9kM40od
+e1Fw1UCRnl354ADqHGkBANQUecqzCyFq12iZBhkgnwDwUHrRYYs1hreUgT0wHI8n
+=CPjV
+-----END PGP SIGNATURE-----
+
+------enig2EWAGXPJVXFGGTLDDSKHL--
