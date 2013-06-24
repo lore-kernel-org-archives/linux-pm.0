@@ -1,109 +1,140 @@
-From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCHv3 5/6] arm: omap2plus_defconfig: enable TI bandgap driver
-Date: Mon, 24 Jun 2013 17:39:29 -0400
-Message-ID: <51C8BC91.6020707@ti.com>
-References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com> <1370637968-23299-6-git-send-email-eduardo.valentin@ti.com> <51C0C2A8.4020707@ti.com>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH v2 1/4] PM / tracing: Add pm_qos_update_target/flags tracepoints
+Date: Tue, 25 Jun 2013 00:34:19 +0200
+Message-ID: <1668773.qV5a0nADd4@vostro.rjw.lan>
+References: <1371780751-16576-1-git-send-email-kpark3469@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature";
-	boundary="----enig2CKBKKUITQKDBTQMRNPIV"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:46803 "EHLO comal.ext.ti.com"
+Received: from hydra.sisk.pl ([212.160.235.94]:49497 "EHLO hydra.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791Ab3FXVkM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 24 Jun 2013 17:40:12 -0400
-In-Reply-To: <51C0C2A8.4020707@ti.com>
+	id S1750733Ab3FXWYw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 24 Jun 2013 18:24:52 -0400
+In-Reply-To: <1371780751-16576-1-git-send-email-kpark3469@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: tony@atomide.com, grant.likely@linaro.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: kpark3469@gmail.com
+Cc: linux-pm@vger.kernel.org, keun-o.park@windriver.com, len.brown@intel.com, rostedt@goodmis.org
 
-------enig2CKBKKUITQKDBTQMRNPIV
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Friday, June 21, 2013 11:12:28 AM kpark3469@gmail.com wrote:
+> From: Sahara <keun-o.park@windriver.com>
+> 
+> This patch adds tracepoints to pm_qos_update_target and
+> pm_qos_update_flags. It's useful for checking pm qos action,
+> previous value and current value.
+> 
+> Signed-off-by: Sahara <keun-o.park@windriver.com>
 
-Tony,
+The entire series queued up for 3.11.
 
-On 18-06-2013 16:27, Eduardo Valentin wrote:
-> Tony,
->=20
-> On 07-06-2013 16:46, Eduardo Valentin wrote:
->> Enable the bandgap driver for TI SoCs thermal support.
->>
->> Cc: Russell King <linux@arm.linux.org.uk>
->> Cc: Tony Lindgren <tony@atomide.com>
->> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
->> Cc: AnilKumar Ch <anilkumar@ti.com>
->> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
->> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-kernel@vger.kernel.org
->> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
->=20
-> Is it possible for you to queue this one and patch 6 for 3.11?
-
-Gentle reminder.
-
->=20
-> Cheers,
->=20
->> ---
->>  arch/arm/configs/omap2plus_defconfig | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->>
->> diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/o=
-map2plus_defconfig
->> index c1ef64b..6e6c494 100644
->> --- a/arch/arm/configs/omap2plus_defconfig
->> +++ b/arch/arm/configs/omap2plus_defconfig
->> @@ -151,6 +151,13 @@ CONFIG_W1=3Dy
->>  CONFIG_POWER_SUPPLY=3Dy
->>  CONFIG_SENSORS_LM75=3Dm
->>  CONFIG_WATCHDOG=3Dy
->> +CONFIG_THERMAL=3Dy
->> +CONFIG_THERMAL_HWMON=3Dy
->> +CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE=3Dy
->> +CONFIG_THERMAL_GOV_FAIR_SHARE=3Dy
->> +CONFIG_THERMAL_GOV_STEP_WISE=3Dy
->> +CONFIG_THERMAL_GOV_USER_SPACE=3Dy
->> +CONFIG_CPU_THERMAL=3Dy
->>  CONFIG_OMAP_WATCHDOG=3Dy
->>  CONFIG_TWL4030_WATCHDOG=3Dy
->>  CONFIG_MFD_TPS65217=3Dy
->> @@ -237,6 +244,10 @@ CONFIG_RTC_DRV_TWL4030=3Dy
->>  CONFIG_RTC_DRV_OMAP=3Dy
->>  CONFIG_DMADEVICES=3Dy
->>  CONFIG_DMA_OMAP=3Dy
->> +CONFIG_TI_SOC_THERMAL=3Dy
->> +CONFIG_TI_THERMAL=3Dy
->> +CONFIG_OMAP4_THERMAL=3Dy
->> +CONFIG_OMAP5_THERMAL=3Dy
->>  CONFIG_EXT2_FS=3Dy
->>  CONFIG_EXT3_FS=3Dy
->>  # CONFIG_EXT3_FS_XATTR is not set
->>
->=20
->=20
+Thanks,
+Rafael
 
 
---=20
-You have got to be excited about what you are doing. (L. Lamport)
-
-Eduardo Valentin
-
-
-------enig2CKBKKUITQKDBTQMRNPIV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iF4EAREIAAYFAlHIvJEACgkQCXcVR3XQvP17CAEAsQRxaLXGKVlKxhjqWLaYqDB/
-0tBkz790uTd295hV5c0BAM7ye45PYJYOSEIKlMpLVJCgmFgV3npI9WdMdMk8GVnH
-=c1qE
------END PGP SIGNATURE-----
-
-------enig2CKBKKUITQKDBTQMRNPIV--
+> ---
+>  include/trace/events/power.h |   51 ++++++++++++++++++++++++++++++++++++++++++
+>  kernel/power/qos.c           |    3 ++
+>  2 files changed, 54 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index 427acab..f1e73bd 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -5,6 +5,7 @@
+>  #define _TRACE_POWER_H
+>  
+>  #include <linux/ktime.h>
+> +#include <linux/pm_qos.h>
+>  #include <linux/tracepoint.h>
+>  
+>  DECLARE_EVENT_CLASS(cpu,
+> @@ -177,6 +178,56 @@ DEFINE_EVENT(power_domain, power_domain_target,
+>  
+>  	TP_ARGS(name, state, cpu_id)
+>  );
+> +
+> +/*
+> + * The pm qos events are used for pm qos update
+> + */
+> +DECLARE_EVENT_CLASS(pm_qos_update,
+> +
+> +	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
+> +
+> +	TP_ARGS(action, prev_value, curr_value),
+> +
+> +	TP_STRUCT__entry(
+> +		__field( enum pm_qos_req_action, action         )
+> +		__field( int,                    prev_value     )
+> +		__field( int,                    curr_value     )
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->action = action;
+> +		__entry->prev_value = prev_value;
+> +		__entry->curr_value = curr_value;
+> +	),
+> +
+> +	TP_printk("action=%s prev_value=%d curr_value=%d",
+> +		  __print_symbolic(__entry->action,
+> +			{ PM_QOS_ADD_REQ,	"ADD_REQ" },
+> +			{ PM_QOS_UPDATE_REQ,	"UPDATE_REQ" },
+> +			{ PM_QOS_REMOVE_REQ,	"REMOVE_REQ" }),
+> +		  __entry->prev_value, __entry->curr_value)
+> +);
+> +
+> +DEFINE_EVENT(pm_qos_update, pm_qos_update_target,
+> +
+> +	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
+> +
+> +	TP_ARGS(action, prev_value, curr_value)
+> +);
+> +
+> +DEFINE_EVENT_PRINT(pm_qos_update, pm_qos_update_flags,
+> +
+> +	TP_PROTO(enum pm_qos_req_action action, int prev_value, int curr_value),
+> +
+> +	TP_ARGS(action, prev_value, curr_value),
+> +
+> +	TP_printk("action=%s prev_value=0x%x curr_value=0x%x",
+> +		  __print_symbolic(__entry->action,
+> +			{ PM_QOS_ADD_REQ,	"ADD_REQ" },
+> +			{ PM_QOS_UPDATE_REQ,	"UPDATE_REQ" },
+> +			{ PM_QOS_REMOVE_REQ,	"REMOVE_REQ" }),
+> +		  __entry->prev_value, __entry->curr_value)
+> +);
+>  #endif /* _TRACE_POWER_H */
+>  
+>  /* This part must be outside protection */
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index f2f5f6e..4fb8d14 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -44,6 +44,7 @@
+>  
+>  #include <linux/uaccess.h>
+>  #include <linux/export.h>
+> +#include <trace/events/power.h>
+>  
+>  /*
+>   * locking rule: all changes to constraints or notifiers lists
+> @@ -202,6 +203,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+>  
+>  	spin_unlock_irqrestore(&pm_qos_lock, flags);
+>  
+> +	trace_pm_qos_update_target(action, prev_value, curr_value);
+>  	if (prev_value != curr_value) {
+>  		blocking_notifier_call_chain(c->notifiers,
+>  					     (unsigned long)curr_value,
+> @@ -272,6 +274,7 @@ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+>  
+>  	spin_unlock_irqrestore(&pm_qos_lock, irqflags);
+>  
+> +	trace_pm_qos_update_flags(action, prev_value, curr_value);
+>  	return prev_value != curr_value;
+>  }
+>  
+> 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
