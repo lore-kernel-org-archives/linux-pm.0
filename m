@@ -1,30 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [GIT PULL] ARM: CPUFreq updates for 3.11
-Date: Mon, 24 Jun 2013 16:40:27 +0530
-Message-ID: <CAKohpomdnEgDcAExoyN1b4vohHNEg3NDH1mM8NWG8gQoPvff+Q@mail.gmail.com>
-References: <CAKohpo=v4qPDH32Y4ithr_p007nTn5AOUzkUCiHTGgQN6-=BEw@mail.gmail.com>
-	<1524748.bV9OZAOR0D@vostro.rjw.lan>
-	<CAKohpomThmZFKTufBzWpmokqqZJ8C6DtGTKTzBY=OxJPNT-BmA@mail.gmail.com>
-	<7195611.gCcafMWC85@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
+Date: Mon, 24 Jun 2013 13:43:48 +0200
+Message-ID: <1894928.On8nI7rMdZ@vostro.rjw.lan>
+References: <cover.1371630975.git.viresh.kumar@linaro.org> <0bebf56a27f799a282cc00d0c17c187f9941f122.1371630975.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <7195611.gCcafMWC85@vostro.rjw.lan>
-Sender: cpufreq-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <0bebf56a27f799a282cc00d0c17c187f9941f122.1371630975.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 24 June 2013 16:29, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Wednesday, June 19, 2013 02:23:07 PM Viresh Kumar wrote:
+> Whenever we are changing frequency of a cpu, we are calling PRECHANGE and
+> POSTCHANGE notifiers. They must be serialized. i.e. PRECHANGE or POSTCHANGE
+> shouldn't be called twice contiguously.
+> 
+> This can happen due to bugs in users of __cpufreq_driver_target() or actual
+> cpufreq drivers who are sending these notifiers.
+> 
+> This patch adds some protection against this. Now, we keep track of the last
+> transaction and see if something went wrong.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2d53f47..92cb8b3 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -107,6 +107,9 @@ static void handle_update(struct work_struct *work);
+>  static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+>  static struct srcu_notifier_head cpufreq_transition_notifier_list;
+>  
+> +/* Tracks status of transition */
+> +static int transition_ongoing;
+> +
+>  static bool init_cpufreq_transition_notifier_list_called;
+>  static int __init init_cpufreq_transition_notifier_list(void)
+>  {
+> @@ -264,6 +267,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  	switch (state) {
+>  
+>  	case CPUFREQ_PRECHANGE:
+> +		WARN_ON(transition_ongoing++);
+> +
+>  		/* detect if the driver reported a value as "old frequency"
+>  		 * which is not equal to what the cpufreq core thinks is
+>  		 * "old frequency".
+> @@ -283,6 +288,8 @@ void __cpufreq_notify_transition(struct cpufreq_policy *policy,
+>  		break;
+>  
+>  	case CPUFREQ_POSTCHANGE:
+> +		WARN_ON(!transition_ongoing--);
 
-> In your original series that patch was the last one.  What made you change your
-> mind and put it in front?
+Shouldn't we try to avoid going into the negative range here?
 
-I initially thought that this one would break git bisect (code would
-compile, but would fail) for platforms whose code I have fixed in
-this patchset.
+> +
+>  		adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+>  		pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+>  			(unsigned long)freqs->cpu);
+> @@ -1458,6 +1465,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+>  
+>  	if (cpufreq_disabled())
+>  		return -ENODEV;
+> +	if (transition_ongoing)
+> +		return -EBUSY;
+>  
+>  	/* Make sure that target_freq is within supported range */
+>  	if (target_freq > policy->max)
+> 
 
-But that is true only for failure cases, otherwise code would work as
-normal.
-
-And hence kept this at the top this time.
+Rafael
