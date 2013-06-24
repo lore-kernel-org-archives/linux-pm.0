@@ -1,60 +1,208 @@
-From: jonghwa3.lee@samsung.com
-Subject: Re: [PATCH] regulator: max77693: Add max77693 regualtor driver.
-Date: Mon, 24 Jun 2013 10:54:26 +0900
-Message-ID: <51C7A6D2.8060709@samsung.com>
-References: <1371711806-18826-1-git-send-email-jonghwa3.lee@samsung.com>
- <20130621151930.GB27646@sirena.org.uk>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V6 08/30] thermal: exynos: Add missing definations and
+ code cleanup
+Date: Mon, 24 Jun 2013 09:27:36 +0530
+Message-ID: <CADGdYn5HHNxj=PzjejyJRW9zW=953HJQy67H=u=uhFbtpJyENA@mail.gmail.com>
+References: <1371451599-31035-1-git-send-email-amit.daniel@samsung.com>
+	<1371451599-31035-9-git-send-email-amit.daniel@samsung.com>
+	<51C20CCC.3060502@ti.com>
+	<CADGdYn6FHXd2YELP1z9zbqnf3Yd0PG0svaz7V6w9NYO3xSW8PQ@mail.gmail.com>
+	<51C463B4.9070506@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:33830 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119Ab3FXBya (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2013 21:54:30 -0400
-In-reply-to: <20130621151930.GB27646@sirena.org.uk>
+Received: from mail-ie0-f173.google.com ([209.85.223.173]:34904 "EHLO
+	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374Ab3FXD5g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Jun 2013 23:57:36 -0400
+In-Reply-To: <51C463B4.9070506@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Liam Girdwood <lrg@ti.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Myungjoo Ham <myungjoo.ham@samsung.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>, jonghwa3.lee@samsung.com
 
-Hi,
-On 2013=EB=85=84 06=EC=9B=94 22=EC=9D=BC 00:19, Mark Brown wrote:
-
-> On Thu, Jun 20, 2013 at 04:03:26PM +0900, Jonghwa Lee wrote:
->> This patch adds new regulator driver to support max77693 chip's regu=
-lators.
->> max77693 has two linear voltage regulators and one current regulator=
- which
->> can be controlled through I2C bus. This driver also supports device =
-tree.
->=20
-> This is fine but doesn't have a binding document which is needed for =
-new
-> DT bindings.
->=20
-
-
-I'd like to add binding document to max77693 mfd's but it is still in p=
-rogress
-(https://lkml.org/lkml/2013/4/9/221). I think I can updates it when the=
- patch
-is merged. Do you think I have to wait for merging? Or just add documen=
-t under
-regulator/ this time ,and then move it to mfd/ later? Which one do you =
-think better?
-
-> A comment in the is_enabled() function explaining that more than one =
-bit
-> might be set (or replacing it with the generic function) would also b=
-e
-> good.
-
-
-Yes, the charger regulator needs two bits for checking enabling. I'll a=
-dd the
-comment about it.
-
-Thanks,
-Jonghwa
-
+On Fri, Jun 21, 2013 at 8:01 PM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> On 20-06-2013 22:01, amit daniel kachhap wrote:
+>> Hi Eduardo,
+>>
+>> On Thu, Jun 20, 2013 at 1:25 AM, Eduardo Valentin
+>> <eduardo.valentin@ti.com> wrote:
+>>> On 17-06-2013 02:46, Amit Daniel Kachhap wrote:
+>>>> This patch adds some extra register bitfield definations and cleans
+>>>> up the code to prepare for moving register macros and definations inside
+>>>> the TMU data section.
+>>>>
+>>>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>>>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+>>>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>>> ---
+>>>>  drivers/thermal/samsung/exynos_tmu.c |   62 +++++++++++++++++++++++++---------
+>>>>  1 files changed, 46 insertions(+), 16 deletions(-)
+>>>>
+>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>>>> index 5df04a1..fa33a48 100644
+>>>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>>> @@ -43,9 +43,12 @@
+>>>>
+>>>>  #define EXYNOS_TMU_TRIM_TEMP_MASK    0xff
+>>>>  #define EXYNOS_TMU_GAIN_SHIFT                8
+>>>> +#define EXYNOS_TMU_GAIN_MASK         0xf
+>>>>  #define EXYNOS_TMU_REF_VOLTAGE_SHIFT 24
+>>>> -#define EXYNOS_TMU_CORE_ON           3
+>>>> -#define EXYNOS_TMU_CORE_OFF          2
+>>>> +#define EXYNOS_TMU_REF_VOLTAGE_MASK  0x1f
+>>>> +#define EXYNOS_TMU_BUF_SLOPE_SEL_MASK        0xf
+>>>> +#define EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT       8
+>>>> +#define EXYNOS_TMU_CORE_EN_SHIFT     0
+>>>>  #define EXYNOS_TMU_DEF_CODE_TO_TEMP_OFFSET   50
+>>>>
+>>>>  /* Exynos4210 specific registers */
+>>>> @@ -63,6 +66,7 @@
+>>>>  #define EXYNOS4210_TMU_TRIG_LEVEL1_MASK      0x10
+>>>>  #define EXYNOS4210_TMU_TRIG_LEVEL2_MASK      0x100
+>>>>  #define EXYNOS4210_TMU_TRIG_LEVEL3_MASK      0x1000
+>>>> +#define EXYNOS4210_TMU_TRIG_LEVEL_MASK       0x1111
+>>>>  #define EXYNOS4210_TMU_INTCLEAR_VAL  0x1111
+>>>>
+>>>>  /* Exynos5250 and Exynos4412 specific registers */
+>>>> @@ -72,17 +76,30 @@
+>>>>  #define EXYNOS_EMUL_CON              0x80
+>>>>
+>>>>  #define EXYNOS_TRIMINFO_RELOAD               0x1
+>>>> +#define EXYNOS_TRIMINFO_SHIFT                0x0
+>>>> +#define EXYNOS_TMU_RISE_INT_MASK     0x111
+>>>> +#define EXYNOS_TMU_RISE_INT_SHIFT    0
+>>>> +#define EXYNOS_TMU_FALL_INT_MASK     0x111
+>>>> +#define EXYNOS_TMU_FALL_INT_SHIFT    12
+>>>>  #define EXYNOS_TMU_CLEAR_RISE_INT    0x111
+>>>>  #define EXYNOS_TMU_CLEAR_FALL_INT    (0x111 << 12)
+>>>> -#define EXYNOS_MUX_ADDR_VALUE                6
+>>>> -#define EXYNOS_MUX_ADDR_SHIFT                20
+>>>>  #define EXYNOS_TMU_TRIP_MODE_SHIFT   13
+>>>> +#define EXYNOS_TMU_TRIP_MODE_MASK    0x7
+>>>> +
+>>>> +#define EXYNOS_TMU_INTEN_RISE0_SHIFT 0
+>>>> +#define EXYNOS_TMU_INTEN_RISE1_SHIFT 4
+>>>> +#define EXYNOS_TMU_INTEN_RISE2_SHIFT 8
+>>>> +#define EXYNOS_TMU_INTEN_RISE3_SHIFT 12
+>>>> +#define EXYNOS_TMU_INTEN_FALL0_SHIFT 16
+>>>> +#define EXYNOS_TMU_INTEN_FALL1_SHIFT 20
+>>>> +#define EXYNOS_TMU_INTEN_FALL2_SHIFT 24
+>>>>
+>>>>  #define EFUSE_MIN_VALUE 40
+>>>>  #define EFUSE_MAX_VALUE 100
+>>>>
+>>>>  #ifdef CONFIG_THERMAL_EMULATION
+>>>>  #define EXYNOS_EMUL_TIME     0x57F0
+>>>> +#define EXYNOS_EMUL_TIME_MASK        0xffff
+>>>>  #define EXYNOS_EMUL_TIME_SHIFT       16
+>>>>  #define EXYNOS_EMUL_DATA_SHIFT       8
+>>>>  #define EXYNOS_EMUL_DATA_MASK        0xFF
+>>>> @@ -261,24 +278,37 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+>>>>       mutex_lock(&data->lock);
+>>>>       clk_enable(data->clk);
+>>>>
+>>>> -     con = pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT |
+>>>> -             pdata->gain << EXYNOS_TMU_GAIN_SHIFT;
+>>>> +     con = readl(data->base + EXYNOS_TMU_REG_CONTROL);
+>>>>
+>>>> -     if (data->soc == SOC_ARCH_EXYNOS) {
+>>>> -             con |= pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT;
+>>>> -             con |= (EXYNOS_MUX_ADDR_VALUE << EXYNOS_MUX_ADDR_SHIFT);
+>>>> +     if (pdata->reference_voltage) {
+>>>> +             con &= ~(EXYNOS_TMU_REF_VOLTAGE_MASK <<
+>>>> +                             EXYNOS_TMU_REF_VOLTAGE_SHIFT);
+>>>> +             con |= pdata->reference_voltage << EXYNOS_TMU_REF_VOLTAGE_SHIFT;
+>>>> +     }
+>>>> +
+>>>> +     if (pdata->gain) {
+>>>> +             con &= ~(EXYNOS_TMU_GAIN_MASK << EXYNOS_TMU_GAIN_SHIFT);
+>>>> +             con |= (pdata->gain << EXYNOS_TMU_GAIN_SHIFT);
+>>>> +     }
+>>>> +
+>>>> +     if (pdata->noise_cancel_mode) {
+>>>> +             con &= ~(EXYNOS_TMU_TRIP_MODE_MASK <<
+>>>> +                                     EXYNOS_TMU_TRIP_MODE_SHIFT);
+>>>> +             con |= (pdata->noise_cancel_mode << EXYNOS_TMU_TRIP_MODE_SHIFT);
+>>>>       }
+>>>>
+>>>>       if (on) {
+>>>> -             con |= EXYNOS_TMU_CORE_ON;
+>>>
+>>>
+>>>
+>>> Before, in order to turn core on you had:
+>>>         con = con | 3;
+>>>
+>>> now you do:
+>>>         con = con | (1 << 0);
+>>>
+>>> To me, before you would set bit 1 and 0, now you set bit 0.
+>>>
+>>>
+>>>> -             interrupt_en = pdata->trigger_level3_en << 12 |
+>>>> -                     pdata->trigger_level2_en << 8 |
+>>>> -                     pdata->trigger_level1_en << 4 |
+>>>> -                     pdata->trigger_level0_en;
+>>>> +             con |= (1 << EXYNOS_TMU_CORE_EN_SHIFT);
+>>>> +             interrupt_en =
+>>>> +             pdata->trigger_level3_en << EXYNOS_TMU_INTEN_RISE3_SHIFT |
+>>>> +             pdata->trigger_level2_en << EXYNOS_TMU_INTEN_RISE2_SHIFT |
+>>>> +             pdata->trigger_level1_en << EXYNOS_TMU_INTEN_RISE1_SHIFT |
+>>>> +             pdata->trigger_level0_en << EXYNOS_TMU_INTEN_RISE0_SHIFT;
+>>>>               if (pdata->threshold_falling)
+>>>> -                     interrupt_en |= interrupt_en << 16;
+>>>> +                     interrupt_en |=
+>>>> +                             interrupt_en << EXYNOS_TMU_INTEN_FALL0_SHIFT;
+>>>>       } else {
+>>>> -             con |= EXYNOS_TMU_CORE_OFF;
+>>>> +             con &= ~(1 << EXYNOS_TMU_CORE_EN_SHIFT);
+>>>
+>>>
+>>> Before, in order to turno core off you had:
+>>>         con = con | 2;
+>>>
+>>> now you do:
+>>>         con = con & ~(1 << 0);
+>>>
+>>> To me, before you would set bit 2, now you clear bit 0.
+>>>
+>>> Using the approach on this patch looks correct to me if you have 1 bit
+>>> core_en for instance.
+>>>
+>>> so, Is this a fix?
+>>>
+>>> Just to be clear, is this what you want ?
+>> Yes you are right. Bit 0 is the actual enable bit. Bit 1 is the
+>> reserve bit and its default value is 1. Earlier both bits are used to
+>> turn on/off the controller which was wrong so this patch rectifies it.
+>
+> Care to mention this in your patch description? It is good for code history.
+Ok
+>
+>>
+>> Thanks,
+>> Amit
+>>>
+>>>>               interrupt_en = 0; /* Disable all interrupts */
+>>>>       }
+>>>>       writel(interrupt_en, data->base + EXYNOS_TMU_REG_INTEN);
+>>>>
+>>>
+>>>
+>>> --
+>>> You have got to be excited about what you are doing. (L. Lamport)
+>>>
+>>> Eduardo Valentin
+>>>
+>>
+>>
+>
+>
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+>
+> Eduardo Valentin
+>
