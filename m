@@ -1,69 +1,79 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix race between sysfs writes and hotplug/policy update
-Date: Mon, 24 Jun 2013 11:38:16 +0530
-Message-ID: <CAKohpom74ZX90j3f3kcLxPjYBWjHbd3urJ2MXQwtNWKwwpi=xQ@mail.gmail.com>
-References: <1371956540-8830-1-git-send-email-skannan@codeaurora.org>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v3] thermal: add imx thermal driver support
+Date: Mon, 24 Jun 2013 14:22:00 +0800
+Message-ID: <20130624062158.GA26254@S2101-09.ap.freescale.net>
+References: <1371816567-22821-1-git-send-email-shawn.guo@linaro.org>
+ <51C48342.2060303@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1371956540-8830-1-git-send-email-skannan@codeaurora.org>
-Sender: cpufreq-owner@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db8lp0186.outbound.messaging.microsoft.com ([213.199.154.186]:47200
+	"EHLO db8outboundpool.messaging.microsoft.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751902Ab3FXGVs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2013 02:21:48 -0400
+Content-Disposition: inline
+In-Reply-To: <51C48342.2060303@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-Hi Saravana,
+On Fri, Jun 21, 2013 at 12:45:54PM -0400, Eduardo Valentin wrote:
+> > +struct imx_thermal_data {
+> > +	struct thermal_zone_device *tz;
+> > +	struct thermal_cooling_device *cdev;
+> > +	enum thermal_device_mode mode;
+> > +	struct regmap *tempmon;
+> > +	int c1, c2; /* See forumla in imx_get_sensor_data() */
+> 
+> s/forumla/formula/g (there are more occurrences of same typo)
+> 
+Thanks for spotting it.
 
-On 23 June 2013 08:32, Saravana Kannan <skannan@codeaurora.org> wrote:
-> The sysfs store ops need to grab the policy write semaphore to avoid race
-> with hotplug and cpufreq_update_policy() calls. Without this, we could end
-> up with simultaneous calls to cpufreq_driver->target()
+<snip>
 
-Interesting.
+> > +static int imx_bind(struct thermal_zone_device *tz,
+> > +		    struct thermal_cooling_device *cdev)
+> > +{
+> > +	int ret;
+> > +
+> > +	ret = thermal_zone_bind_cooling_device(tz, IMX_TRIP_PASSIVE, cdev,
+> > +					       THERMAL_NO_LIMIT,
+> > +					       THERMAL_NO_LIMIT);
+> 
+> Remember that if you ever add another cdev in your system, you will be
+> blindly bind it to your tz.
+> 
+Yes.  If someday we add another cooling device, we need a little surgery
+on the driver anyway.
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2d53f47..37db7f0 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -420,9 +420,13 @@ static ssize_t store_##file_name                                   \
->         if (ret != 1)                                                   \
->                 return -EINVAL;                                         \
->                                                                         \
-> +       lock_policy_rwsem_write(policy->cpu);                           \
-> +                                                                       \
->         ret = __cpufreq_set_policy(policy, &new_policy);                \
->         policy->user_policy.object = policy->object;                    \
->                                                                         \
-> +       unlock_policy_rwsem_write(policy->cpu);                         \
-> +                                                                       \
->         return ret ? ret : count;                                       \
->  }
+<snip>
 
-As far as I know, this protection already exists. Check this
-function, which eventually calls all **store() related to
-struct freq_attr
+> > +	/*
+> > +	 * Sensor data layout:
+> > +	 *   [31:20] - sensor value @ 25C
+> > +	 *    [19:8] - sensor value of hot
+> > +	 *     [7:0] - hot temperature value
+> > +	 */
+> > +	n1 = val >> 20;
+> > +	n2 = (val & 0xfff00) >> 8;
+> > +	t2 = val & 0xff;
+> > +	t1 = 25; /* t1 always 25C */
+> 
+> don't the above constants deserve #define macros?
+> 
+Hmm, with the constants being used only once here and the comment put
+right above the code, I think we're fine.
 
-static ssize_t store(struct kobject *kobj, struct attribute *attr,
-		     const char *buf, size_t count)
-{
-	struct cpufreq_policy *policy = to_policy(kobj);
-	struct freq_attr *fattr = to_attr(attr);
-	ssize_t ret = -EINVAL;
-	policy = cpufreq_cpu_get_sysfs(policy->cpu);
-	if (!policy)
-		goto no_policy;
+<snip>
 
-	if (lock_policy_rwsem_write(policy->cpu) < 0)
-		goto fail;
+> > +MODULE_AUTHOR("Freescale Semiconductor, Inc.");
+> > +MODULE_DESCRIPTION("Thermal driver for Freescale i.MX SoCs");
+> > +MODULE_LICENSE("GPL");
+> 
+> GPLv2, accordingly to your header.
+> 
+Okay, will change it.
 
-	if (fattr->store)
-		ret = fattr->store(policy, buf, count);
-	else
-		ret = -EIO;
+Shawn
 
-	unlock_policy_rwsem_write(policy->cpu);
-fail:
-	cpufreq_cpu_put_sysfs(policy);
-no_policy:
-	return ret;
-}
