@@ -1,72 +1,109 @@
-From: Shuah Khan <shuah.kh@samsung.com>
-Subject: Re: [PATCHv v3] power: Include additional information in pm_print_times
-Date: Mon, 24 Jun 2013 20:38:27 +0000
-Message-ID: <B8EFE96D1287C24090BAD9D858E15E6172F8DF@sisaex02sj>
-References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com>
- <B8EFE96D1287C24090BAD9D858E15E6172F2E7@sisaex02sj>
- <B8EFE96D1287C24090BAD9D858E15E6172F34D@sisaex02sj>
- <3098328.kly7qFelcA@vostro.rjw.lan>
+From: Eduardo Valentin <eduardo.valentin@ti.com>
+Subject: Re: [PATCHv3 5/6] arm: omap2plus_defconfig: enable TI bandgap driver
+Date: Mon, 24 Jun 2013 17:39:29 -0400
+Message-ID: <51C8BC91.6020707@ti.com>
+References: <1370637968-23299-1-git-send-email-eduardo.valentin@ti.com> <1370637968-23299-6-git-send-email-eduardo.valentin@ti.com> <51C0C2A8.4020707@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature";
+	boundary="----enig2CKBKKUITQKDBTQMRNPIV"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w2.samsung.com ([211.189.100.13]:54373 "EHLO
-	usmailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858Ab3FXUib convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2013 16:38:31 -0400
-Content-language: en-US
+Received: from comal.ext.ti.com ([198.47.26.152]:46803 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791Ab3FXVkM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 24 Jun 2013 17:40:12 -0400
+In-Reply-To: <51C0C2A8.4020707@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Joe Perches <joe@perches.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>, Shuah Khan <shuah.kh@samsung.com>
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: tony@atomide.com, grant.likely@linaro.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux@arm.linux.org.uk, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 06/24/2013 01:35 PM, Rafael J. Wysocki wrote:
-> On Monday, June 24, 2013 04:37:28 PM Shuah Khan wrote:
->> On 06/24/2013 10:25 AM, Shuah Khan wrote:
->>> On 06/23/2013 03:49 PM, Rafael J. Wysocki wrote:
->>>> On Sunday, June 23, 2013 04:34:17 AM Joe Perches wrote:
->>>>> On Sun, 2013-06-23 at 13:36 +0200, Rafael J. Wysocki wrote:
->>>>>> Please keep the existing format as is literally and append any
->>>>>> new information to the end of the line.
->>>>>
->>>>> Hi Shuah.
->>>>>
->>>>> Perhaps the better long-term approach would be to add
->>>>> a new tracepoint too.
->>>>
->>>> In fact, I would even prefer it if new tracepoints were added so that we
->>>> could deprecate the dmesg messages at one point in the future.
->>>>
->>>> Thanks,
->>>> Rafael
->>>>
->>>>
->>>
->>> Rafael/Joe,
->>>
->>> I can work on adding a tracepoint. Do you want to take the v2 patch in
->>> the meantime?
->>>
+------enig2CKBKKUITQKDBTQMRNPIV
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Tony,
+
+On 18-06-2013 16:27, Eduardo Valentin wrote:
+> Tony,
+>=20
+> On 07-06-2013 16:46, Eduardo Valentin wrote:
+>> Enable the bandgap driver for TI SoCs thermal support.
 >>
->> Rafael,
+>> Cc: Russell King <linux@arm.linux.org.uk>
+>> Cc: Tony Lindgren <tony@atomide.com>
+>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+>> Cc: AnilKumar Ch <anilkumar@ti.com>
+>> Cc: Santosh Shilimkar <santosh.shilimkar@ti.com>
+>> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+>> Cc: linux-arm-kernel@lists.infradead.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
+>=20
+> Is it possible for you to queue this one and patch 6 for 3.11?
+
+Gentle reminder.
+
+>=20
+> Cheers,
+>=20
+>> ---
+>>  arch/arm/configs/omap2plus_defconfig | 11 +++++++++++
+>>  1 file changed, 11 insertions(+)
 >>
->> ok. Caught up with the entire thread. v2 patch uses dev_info() and hence
->> same concern about format change applies to that one as well.
+>> diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/o=
+map2plus_defconfig
+>> index c1ef64b..6e6c494 100644
+>> --- a/arch/arm/configs/omap2plus_defconfig
+>> +++ b/arch/arm/configs/omap2plus_defconfig
+>> @@ -151,6 +151,13 @@ CONFIG_W1=3Dy
+>>  CONFIG_POWER_SUPPLY=3Dy
+>>  CONFIG_SENSORS_LM75=3Dm
+>>  CONFIG_WATCHDOG=3Dy
+>> +CONFIG_THERMAL=3Dy
+>> +CONFIG_THERMAL_HWMON=3Dy
+>> +CONFIG_THERMAL_DEFAULT_GOV_STEP_WISE=3Dy
+>> +CONFIG_THERMAL_GOV_FAIR_SHARE=3Dy
+>> +CONFIG_THERMAL_GOV_STEP_WISE=3Dy
+>> +CONFIG_THERMAL_GOV_USER_SPACE=3Dy
+>> +CONFIG_CPU_THERMAL=3Dy
+>>  CONFIG_OMAP_WATCHDOG=3Dy
+>>  CONFIG_TWL4030_WATCHDOG=3Dy
+>>  CONFIG_MFD_TPS65217=3Dy
+>> @@ -237,6 +244,10 @@ CONFIG_RTC_DRV_TWL4030=3Dy
+>>  CONFIG_RTC_DRV_OMAP=3Dy
+>>  CONFIG_DMADEVICES=3Dy
+>>  CONFIG_DMA_OMAP=3Dy
+>> +CONFIG_TI_SOC_THERMAL=3Dy
+>> +CONFIG_TI_THERMAL=3Dy
+>> +CONFIG_OMAP4_THERMAL=3Dy
+>> +CONFIG_OMAP5_THERMAL=3Dy
+>>  CONFIG_EXT2_FS=3Dy
+>>  CONFIG_EXT3_FS=3Dy
+>>  # CONFIG_EXT3_FS_XATTR is not set
 >>
->> Do you want to take the v1 patch that didn't change the format and just
->> added the additional information at the end?
->
-> Well, if you're going to work on the tracepoints, I'll rather not take this
-> at all.
->
-> Thanks,
-> Rafael
->
->
+>=20
+>=20
 
-Makes sense. Yes I am going to start work on tracepoints then.
 
--- Shuah
+--=20
+You have got to be excited about what you are doing. (L. Lamport)
 
-Shuah Khan, Linux Kernel Developer - Open Source Group Samsung Research 
-America (Silicon Valley) shuah.kh@samsung.com | (970) 672-0658
+Eduardo Valentin
+
+
+------enig2CKBKKUITQKDBTQMRNPIV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
+
+iF4EAREIAAYFAlHIvJEACgkQCXcVR3XQvP17CAEAsQRxaLXGKVlKxhjqWLaYqDB/
+0tBkz790uTd295hV5c0BAM7ye45PYJYOSEIKlMpLVJCgmFgV3npI9WdMdMk8GVnH
+=c1qE
+-----END PGP SIGNATURE-----
+
+------enig2CKBKKUITQKDBTQMRNPIV--
