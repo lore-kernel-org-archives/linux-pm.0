@@ -1,55 +1,137 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [GIT PULL] ARM: CPUFreq updates for 3.11
-Date: Mon, 24 Jun 2013 18:20:35 +0530
-Message-ID: <CAKohpo=3DHa0+3trrL7b1JVhxrXLtERX9kth5AjLGu7Tf6Adig@mail.gmail.com>
-References: <CAKohpo=v4qPDH32Y4ithr_p007nTn5AOUzkUCiHTGgQN6-=BEw@mail.gmail.com>
-	<7195611.gCcafMWC85@vostro.rjw.lan>
-	<CAKohpomdnEgDcAExoyN1b4vohHNEg3NDH1mM8NWG8gQoPvff+Q@mail.gmail.com>
-	<1662523.HdXbLYrd2q@vostro.rjw.lan>
+Subject: Re: [PATCH 13/13] cpufreq: make sure frequency transitions are serialized
+Date: Mon, 24 Jun 2013 18:38:17 +0530
+Message-ID: <CAKohpo=8oZKiq1ghuipitbfMp-bPxpWPQbGx5SLj9+_nGegCfA@mail.gmail.com>
+References: <cover.1371630975.git.viresh.kumar@linaro.org>
+	<0bebf56a27f799a282cc00d0c17c187f9941f122.1371630975.git.viresh.kumar@linaro.org>
+	<1894928.On8nI7rMdZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1662523.HdXbLYrd2q@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary=047d7b33caf82b262504dfe61b4a
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <1894928.On8nI7rMdZ@vostro.rjw.lan>
+Sender: cpufreq-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: cpufreq@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 24 June 2013 17:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Well, it should go last.  Also I'd prefer to apply it directly.
+--047d7b33caf82b262504dfe61b4a
+Content-Type: text/plain; charset=ISO-8859-1
 
-Okay.. Below is pull request for ARM patches alone.
+On 24 June 2013 17:13, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday, June 19, 2013 02:23:07 PM Viresh Kumar wrote:
+>>       case CPUFREQ_POSTCHANGE:
+>> +             WARN_ON(!transition_ongoing--);
+>
+> Shouldn't we try to avoid going into the negative range here?
 
-The following changes since commit 9e895ace5d82df8929b16f58e9f515f6d54ab82d:
+What about this patch? Find it attached to apply.
 
-  Linux 3.10-rc7 (2013-06-22 09:47:31 -1000)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 2d53f47..6624694 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -107,6 +107,9 @@ static void handle_update(struct work_struct *work);
+ static BLOCKING_NOTIFIER_HEAD(cpufreq_policy_notifier_list);
+ static struct srcu_notifier_head cpufreq_transition_notifier_list;
 
-are available in the git repository at:
++/* Tracks status of transition */
++static int transition_ongoing;
++
+ static bool init_cpufreq_transition_notifier_list_called;
+ static int __init init_cpufreq_transition_notifier_list(void)
+ {
+@@ -264,6 +267,13 @@ void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+        switch (state) {
 
-  git://git.linaro.org/people/vireshk/linux.git cpufreq-fix-notification-arm
+        case CPUFREQ_PRECHANGE:
++               if (transition_ongoing) {
++                       WARN(1, "In middle of another frequency transition\n");
++                       return;
++               }
++
++               transition_ongoing++;
++
+                /* detect if the driver reported a value as "old frequency"
+                 * which is not equal to what the cpufreq core thinks is
+                 * "old frequency".
+@@ -283,6 +293,13 @@ void __cpufreq_notify_transition(struct
+cpufreq_policy *policy,
+                break;
 
-for you to fetch changes up to f56cc99e3f189ce214408e9c0fdda9e664d83dc1:
+        case CPUFREQ_POSTCHANGE:
++               if (!transition_ongoing) {
++                       WARN(1, "No frequency transition in progress\n");
++                       return;
++               }
++
++               transition_ongoing--;
++
+                adjust_jiffies(CPUFREQ_POSTCHANGE, freqs);
+                pr_debug("FREQ: %lu - CPU: %lu", (unsigned long)freqs->new,
+                        (unsigned long)freqs->cpu);
+@@ -1458,6 +1475,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
 
-  cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
-(2013-06-24 18:19:01 +0530)
+        if (cpufreq_disabled())
+                return -ENODEV;
++       if (transition_ongoing)
++               return -EBUSY;
 
-----------------------------------------------------------------
-Viresh Kumar (8):
-      cpufreq: arm-big-little: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: davinci: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: dbx500: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: exynos: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: imx6q: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: omap: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: s3c64xx: call CPUFREQ_POSTCHANGE notfier in error cases
-      cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
+        /* Make sure that target_freq is within supported range */
+        if (target_freq > policy->max)
 
- drivers/cpufreq/arm_big_little.c  |  4 +---
- drivers/cpufreq/davinci-cpufreq.c |  3 +++
- drivers/cpufreq/dbx500-cpufreq.c  |  4 ++--
- drivers/cpufreq/exynos-cpufreq.c  | 10 ++++++++--
- drivers/cpufreq/imx6q-cpufreq.c   | 17 +++++++++++------
- drivers/cpufreq/omap-cpufreq.c    |  6 +++---
- drivers/cpufreq/s3c64xx-cpufreq.c |  8 ++++++--
- drivers/cpufreq/tegra-cpufreq.c   |  4 ++--
- 8 files changed, 36 insertions(+), 20 deletions(-)
+--047d7b33caf82b262504dfe61b4a
+Content-Type: application/octet-stream;
+	name="0001-cpufreq-make-sure-frequency-transitions-are-serializ.patch"
+Content-Disposition: attachment;
+	filename="0001-cpufreq-make-sure-frequency-transitions-are-serializ.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hibojz1k0
+
+RnJvbSAyNWZiNmU2MTY0YjEwN2YxNjc0ZWMzMmYwZDBlNDczMjhjMmMxMWE2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpNZXNzYWdlLUlkOiA8MjVmYjZlNjE2NGIxMDdmMTY3NGVjMzJmMGQwZTQ3
+MzI4YzJjMTFhNi4xMzcyMDc5MjM0LmdpdC52aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRnJvbTog
+VmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4KRGF0ZTogV2VkLCAxOSBKdW4g
+MjAxMyAxMDoxNjo1NSArMDUzMApTdWJqZWN0OiBbUEFUQ0hdIGNwdWZyZXE6IG1ha2Ugc3VyZSBm
+cmVxdWVuY3kgdHJhbnNpdGlvbnMgYXJlIHNlcmlhbGl6ZWQKCldoZW5ldmVyIHdlIGFyZSBjaGFu
+Z2luZyBmcmVxdWVuY3kgb2YgYSBjcHUsIHdlIGFyZSBjYWxsaW5nIFBSRUNIQU5HRSBhbmQKUE9T
+VENIQU5HRSBub3RpZmllcnMuIFRoZXkgbXVzdCBiZSBzZXJpYWxpemVkLiBpLmUuIFBSRUNIQU5H
+RSBvciBQT1NUQ0hBTkdFCnNob3VsZG4ndCBiZSBjYWxsZWQgdHdpY2UgY29udGlndW91c2x5LgoK
+VGhpcyBjYW4gaGFwcGVuIGR1ZSB0byBidWdzIGluIHVzZXJzIG9mIF9fY3B1ZnJlcV9kcml2ZXJf
+dGFyZ2V0KCkgb3IgYWN0dWFsCmNwdWZyZXEgZHJpdmVycyB3aG8gYXJlIHNlbmRpbmcgdGhlc2Ug
+bm90aWZpZXJzLgoKVGhpcyBwYXRjaCBhZGRzIHNvbWUgcHJvdGVjdGlvbiBhZ2FpbnN0IHRoaXMu
+IE5vdywgd2Uga2VlcCB0cmFjayBvZiB0aGUgbGFzdAp0cmFuc2FjdGlvbiBhbmQgc2VlIGlmIHNv
+bWV0aGluZyB3ZW50IHdyb25nLgoKU2lnbmVkLW9mZi1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gu
+a3VtYXJAbGluYXJvLm9yZz4KLS0tCiBkcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIHwgMTkgKysr
+KysrKysrKysrKysrKysrKwogMSBmaWxlIGNoYW5nZWQsIDE5IGluc2VydGlvbnMoKykKCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZy
+ZXEuYwppbmRleCAyZDUzZjQ3Li42NjI0Njk0IDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEv
+Y3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMKQEAgLTEwNyw2ICsxMDcs
+OSBAQCBzdGF0aWMgdm9pZCBoYW5kbGVfdXBkYXRlKHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yayk7
+CiBzdGF0aWMgQkxPQ0tJTkdfTk9USUZJRVJfSEVBRChjcHVmcmVxX3BvbGljeV9ub3RpZmllcl9s
+aXN0KTsKIHN0YXRpYyBzdHJ1Y3Qgc3JjdV9ub3RpZmllcl9oZWFkIGNwdWZyZXFfdHJhbnNpdGlv
+bl9ub3RpZmllcl9saXN0OwogCisvKiBUcmFja3Mgc3RhdHVzIG9mIHRyYW5zaXRpb24gKi8KK3N0
+YXRpYyBpbnQgdHJhbnNpdGlvbl9vbmdvaW5nOworCiBzdGF0aWMgYm9vbCBpbml0X2NwdWZyZXFf
+dHJhbnNpdGlvbl9ub3RpZmllcl9saXN0X2NhbGxlZDsKIHN0YXRpYyBpbnQgX19pbml0IGluaXRf
+Y3B1ZnJlcV90cmFuc2l0aW9uX25vdGlmaWVyX2xpc3Qodm9pZCkKIHsKQEAgLTI2NCw2ICsyNjcs
+MTMgQEAgdm9pZCBfX2NwdWZyZXFfbm90aWZ5X3RyYW5zaXRpb24oc3RydWN0IGNwdWZyZXFfcG9s
+aWN5ICpwb2xpY3ksCiAJc3dpdGNoIChzdGF0ZSkgewogCiAJY2FzZSBDUFVGUkVRX1BSRUNIQU5H
+RToKKwkJaWYgKHRyYW5zaXRpb25fb25nb2luZykgeworCQkJV0FSTigxLCAiSW4gbWlkZGxlIG9m
+IGFub3RoZXIgZnJlcXVlbmN5IHRyYW5zaXRpb25cbiIpOworCQkJcmV0dXJuOworCQl9CisKKwkJ
+dHJhbnNpdGlvbl9vbmdvaW5nKys7CisKIAkJLyogZGV0ZWN0IGlmIHRoZSBkcml2ZXIgcmVwb3J0
+ZWQgYSB2YWx1ZSBhcyAib2xkIGZyZXF1ZW5jeSIKIAkJICogd2hpY2ggaXMgbm90IGVxdWFsIHRv
+IHdoYXQgdGhlIGNwdWZyZXEgY29yZSB0aGlua3MgaXMKIAkJICogIm9sZCBmcmVxdWVuY3kiLgpA
+QCAtMjgzLDYgKzI5MywxMyBAQCB2b2lkIF9fY3B1ZnJlcV9ub3RpZnlfdHJhbnNpdGlvbihzdHJ1
+Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwKIAkJYnJlYWs7CiAKIAljYXNlIENQVUZSRVFfUE9T
+VENIQU5HRToKKwkJaWYgKCF0cmFuc2l0aW9uX29uZ29pbmcpIHsKKwkJCVdBUk4oMSwgIk5vIGZy
+ZXF1ZW5jeSB0cmFuc2l0aW9uIGluIHByb2dyZXNzXG4iKTsKKwkJCXJldHVybjsKKwkJfQorCisJ
+CXRyYW5zaXRpb25fb25nb2luZy0tOworCiAJCWFkanVzdF9qaWZmaWVzKENQVUZSRVFfUE9TVENI
+QU5HRSwgZnJlcXMpOwogCQlwcl9kZWJ1ZygiRlJFUTogJWx1IC0gQ1BVOiAlbHUiLCAodW5zaWdu
+ZWQgbG9uZylmcmVxcy0+bmV3LAogCQkJKHVuc2lnbmVkIGxvbmcpZnJlcXMtPmNwdSk7CkBAIC0x
+NDU4LDYgKzE0NzUsOCBAQCBpbnQgX19jcHVmcmVxX2RyaXZlcl90YXJnZXQoc3RydWN0IGNwdWZy
+ZXFfcG9saWN5ICpwb2xpY3ksCiAKIAlpZiAoY3B1ZnJlcV9kaXNhYmxlZCgpKQogCQlyZXR1cm4g
+LUVOT0RFVjsKKwlpZiAodHJhbnNpdGlvbl9vbmdvaW5nKQorCQlyZXR1cm4gLUVCVVNZOwogCiAJ
+LyogTWFrZSBzdXJlIHRoYXQgdGFyZ2V0X2ZyZXEgaXMgd2l0aGluIHN1cHBvcnRlZCByYW5nZSAq
+LwogCWlmICh0YXJnZXRfZnJlcSA+IHBvbGljeS0+bWF4KQotLSAKMS43LjEyLnJjMi4xOC5nNjFi
+NDcyZQoK
+--047d7b33caf82b262504dfe61b4a--
