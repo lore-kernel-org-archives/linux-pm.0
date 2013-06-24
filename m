@@ -1,42 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [GIT PULL] CPUFreq ARM Fixes for 3.11
-Date: Mon, 24 Jun 2013 11:23:52 +0530
-Message-ID: <CAKohpong-+4vu4Ky7u_7mPanOZr-jxHKSJRur1cRPaZuaFUBUQ@mail.gmail.com>
+From: Xiaoguang Chen <chenxg.marvell@gmail.com>
+Subject: Re: [PATCH v9] Cpufreq: Fix governor start/stop race condition
+Date: Mon, 24 Jun 2013 14:04:50 +0800
+Message-ID: <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
+References: <1371625207-26702-1-git-send-email-chenxg@marvell.com>
+	<CAKohponDRcfHyRA-JCW01SC8R-dDiOx1dzBcOU6ag2DUa5_DyA@mail.gmail.com>
+	<51C16B97.3040304@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oa0-f53.google.com ([209.85.219.53]:38647 "EHLO
-	mail-oa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219Ab3FXFxx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2013 01:53:53 -0400
-Received: by mail-oa0-f53.google.com with SMTP id k14so11558160oag.12
-        for <linux-pm@vger.kernel.org>; Sun, 23 Jun 2013 22:53:53 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <51C16B97.3040304@marvell.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Xiaoguang Chen <chenxg@marvell.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Zhoujie Wu <zjwu@marvell.com>, Yilu Mao <ylmao@marvell.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 
-Hi Rafael,
+Hi, Rafael
+When can this patch be merged?
 
-The following changes since commit 9e895ace5d82df8929b16f58e9f515f6d54a=
-b82d:
-
-  Linux 3.10-rc7 (2013-06-22 09:47:31 -1000)
-
-are available in the git repository at:
-
-  git://git.linaro.org/people/vireshk/linux.git cpufreq-next
-
-for you to fetch changes up to 166b9addd83aaf6eb22d9db7dc015f81913c9a0e=
-:
-
-  cpufreq: s3c2416: fix forgotten driver_data conversions (2013-06-24
-11:22:33 +0530)
-
-----------------------------------------------------------------
-Heiko St=FCbner (1):
-      cpufreq: s3c2416: fix forgotten driver_data conversions
-
- drivers/cpufreq/s3c2416-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+2013/6/19 Xiaoguang Chen <chenxg@marvell.com>:
+> On 06/19/2013 03:55 PM, Viresh Kumar wrote:
+>>
+>> On 19 June 2013 12:30, Xiaoguang Chen <chenxg@marvell.com> wrote:
+>>>
+>>> Cpufreq governor's stop and start operation should be kept in sequence.
+>>> If not, there will be unexpected behavior, for example:
+>>>
+>>> There are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked to CPU0.
+>>> The normal sequence is as below:
+>>>
+>>> 1) Current governor is userspace, One application tries to set
+>>> governor to ondemand. It will call __cpufreq_set_policy in which it
+>>> will stop userspace governor and then start ondemand governor.
+>>>
+>>> 2) Current governor is userspace, Now CPU0 hotplugs in CPU3 (put CPU3
+>>> online),
+>>> It will call cpufreq_add_policy_cpu in which it first stops userspace
+>>> governor, and then starts userspace governor.
+>>>
+>>> Now if the sequence of above two cases interleaves, It becomes like
+>>> below:
+>>>
+>>> 1) Application stops userspace governor
+>>> 2)                                      Hotplug stops userspace governor
+>>> 3) Application starts ondemand governor
+>>> 4)                                      Hotplug starts a governor
+>>>
+>>> In step 4, Hotplug is supposed to start userspace governor, But now
+>>> the governor has been changed by application to ondemand, So hotplug
+>>> starts ondemand governor again !!!!
+>>>
+>>> The solution is: Do not allow stop policy's governor multi-times.
+>>> Governor should only be stopped once for one policy, After it is stopped,
+>>> No other governor stop operation should be executed. also add one mutex
+>>> to
+>>> protect __cpufreq_governor so governor operation can be kept in sequence.
+>>>
+>>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
+>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>   drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
+>>>   include/linux/cpufreq.h   |  1 +
+>>>   2 files changed, 25 insertions(+)
+>>
+>> All good now. Sorry for the noise :)
+>
+> Thank you for the professional instructions. It makes the code more
+> beautiful. :)
+>
+> --
+> Thanks
+> Xiaoguang
+>
