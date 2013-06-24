@@ -1,98 +1,93 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V7 28/30] Documentation: thermal: Explain the exynos thermal driver model
-Date: Mon, 24 Jun 2013 16:20:49 +0530
-Message-ID: <1372071051-3167-29-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V7 26/30] thermal: exynos: Support for TMU regulator defined at device tree
+Date: Mon, 24 Jun 2013 16:20:47 +0530
+Message-ID: <1372071051-3167-27-git-send-email-amit.daniel@samsung.com>
 References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch updates the documentation to explain the driver model
-and file layout.
+TMU probe function now checks for a device tree defined regulator.
+For compatibility reasons it is allowed to probe driver even without
+this regulator defined.
 
 Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
-Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- Documentation/thermal/exynos_thermal |   43 ++++++++++++++++++++++++++-------
- 1 files changed, 34 insertions(+), 9 deletions(-)
+ drivers/thermal/samsung/exynos_tmu.c |   23 +++++++++++++++++++++++
+ 1 files changed, 23 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/thermal/exynos_thermal b/Documentation/thermal/exynos_thermal
-index 2b46f67..9010c44 100644
---- a/Documentation/thermal/exynos_thermal
-+++ b/Documentation/thermal/exynos_thermal
-@@ -1,17 +1,17 @@
--Kernel driver exynos4_tmu
-+Kernel driver exynos_tmu
- =================
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 34b999b..80d1786 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -29,6 +29,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/platform_device.h>
++#include <linux/regulator/consumer.h>
  
- Supported chips:
--* ARM SAMSUNG EXYNOS4 series of SoC
--  Prefix: 'exynos4-tmu'
-+* ARM SAMSUNG EXYNOS4, EXYNOS5 series of SoC
-   Datasheet: Not publicly available
+ #include "exynos_thermal_common.h"
+ #include "exynos_tmu.h"
+@@ -48,6 +49,7 @@
+  * @clk: pointer to the clock structure.
+  * @temp_error1: fused value of the first point trim.
+  * @temp_error2: fused value of the second point trim.
++ * @regulator: pointer to the TMU regulator structure.
+  * @reg_conf: pointer to structure to register with core thermal.
+  */
+ struct exynos_tmu_data {
+@@ -61,6 +63,7 @@ struct exynos_tmu_data {
+ 	struct mutex lock;
+ 	struct clk *clk;
+ 	u8 temp_error1, temp_error2;
++	struct regulator *regulator;
+ 	struct thermal_sensor_conf *reg_conf;
+ };
  
- Authors: Donggeun Kim <dg77.kim@samsung.com>
-+Authors: Amit Daniel <amit.daniel@samsung.com>
+@@ -511,10 +514,27 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+ 	struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+ 	struct exynos_tmu_platform_data *pdata;
+ 	struct resource res;
++	int ret;
  
--Description
-------------
-+TMU controller Description:
-+---------------------------
+ 	if (!data)
+ 		return -ENODEV;
  
--This driver allows to read temperature inside SAMSUNG EXYNOS4 series of SoC.
-+This driver allows to read temperature inside SAMSUNG EXYNOS4/5 series of SoC.
- 
- The chip only exposes the measured 8-bit temperature code value
- through a register.
-@@ -34,9 +34,9 @@ The three equations are:
-   TI2: Trimming info for 85 degree Celsius (stored at TRIMINFO register)
-        Temperature code measured at 85 degree Celsius which is unchanged
- 
--TMU(Thermal Management Unit) in EXYNOS4 generates interrupt
-+TMU(Thermal Management Unit) in EXYNOS4/5 generates interrupt
- when temperature exceeds pre-defined levels.
--The maximum number of configurable threshold is four.
-+The maximum number of configurable threshold is five.
- The threshold levels are defined as follows:
-   Level_0: current temperature > trigger_level_0 + threshold
-   Level_1: current temperature > trigger_level_1 + threshold
-@@ -47,6 +47,31 @@ The threshold levels are defined as follows:
-   through the corresponding registers.
- 
- When an interrupt occurs, this driver notify kernel thermal framework
--with the function exynos4_report_trigger.
-+with the function exynos_report_trigger.
- Although an interrupt condition for level_0 can be set,
- it can be used to synchronize the cooling action.
++	/*
++	 * Try enabling the regulator if found
++	 * TODO: Add regulator as an SOC feature, so that regulator enable
++	 * is a compulsory call.
++	 */
++	data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
++	if (!IS_ERR(data->regulator)) {
++		ret = regulator_enable(data->regulator);
++		if (ret) {
++			dev_err(&pdev->dev, "failed to enable vtmu\n");
++			return ret;
++		}
++	} else {
++		dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
++	}
 +
-+TMU driver description:
-+-----------------------
+ 	data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+ 	if (data->id < 0)
+ 		data->id = 0;
+@@ -682,6 +702,9 @@ static int exynos_tmu_remove(struct platform_device *pdev)
+ 
+ 	clk_unprepare(data->clk);
+ 
++	if (!IS_ERR(data->regulator))
++		regulator_disable(data->regulator);
 +
-+The exynos thermal driver is structured as,
-+
-+					Kernel Core thermal framework
-+				(thermal_core.c, step_wise.c, cpu_cooling.c)
-+								^
-+								|
-+								|
-+TMU configuration data -------> TMU Driver  <------> Exynos Core thermal wrapper
-+(exynos_tmu_data.c)	      (exynos_tmu.c)	   (exynos_thermal_common.c)
-+(exynos_tmu_data.h)	      (exynos_tmu.h)	   (exynos_thermal_common.h)
-+
-+a) TMU configuration data: This consist of TMU register offsets/bitfields
-+		described through structure exynos_tmu_registers. Also several
-+		other platform data (struct exynos_tmu_platform_data) members
-+		are used to configure the TMU.
-+b) TMU driver: This component initialises the TMU controller and sets different
-+		thresholds. It invokes core thermal implementation with the call
-+		exynos_report_trigger.
-+c) Exynos Core thermal wrapper: This provides 3 wrapper function to use the
-+		Kernel core thermal framework. They are exynos_unregister_thermal,
-+		exynos_register_thermal and exynos_report_trigger.
+ 	return 0;
+ }
+ 
 -- 
 1.7.1
