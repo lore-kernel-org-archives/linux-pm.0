@@ -1,76 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] PM / wakeup: Adjust messaging for wake events during suspend
-Date: Mon, 24 Jun 2013 14:08:56 +0200
-Message-ID: <1758800.Qrg3TzNCst@vostro.rjw.lan>
-References: <1370047663-432-1-git-send-email-bhthompson@chromium.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [GIT PULL] ARM: CPUFreq updates for 3.11
+Date: Mon, 24 Jun 2013 18:20:35 +0530
+Message-ID: <CAKohpo=3DHa0+3trrL7b1JVhxrXLtERX9kth5AjLGu7Tf6Adig@mail.gmail.com>
+References: <CAKohpo=v4qPDH32Y4ithr_p007nTn5AOUzkUCiHTGgQN6-=BEw@mail.gmail.com>
+	<7195611.gCcafMWC85@vostro.rjw.lan>
+	<CAKohpomdnEgDcAExoyN1b4vohHNEg3NDH1mM8NWG8gQoPvff+Q@mail.gmail.com>
+	<1662523.HdXbLYrd2q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:49015 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750797Ab3FXL73 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 24 Jun 2013 07:59:29 -0400
-In-Reply-To: <1370047663-432-1-git-send-email-bhthompson@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1662523.HdXbLYrd2q@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: cpufreq@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bernie Thompson <bhthompson@chromium.org>
-Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 
-On Friday, May 31, 2013 05:47:43 PM Bernie Thompson wrote:
-> This adds in a new message to the wakeup code which adds an indication to
-> the log that suspend was cancelled due to a wake event occouring during
-> the suspend sequence. It also adjusts the message printed in suspend.c to
-> reflect the potential that a suspend was aborted, as opposed to a device
-> failing to suspend.
-> 
-> Without these message adjustments one can end up with a kernel log that says
-> that a device failed to suspend with no actual device suspend failures,
-> which can be confusing to the log examiner.
-> 
-> Signed-off-by: Bernie Thompson <bhthompson@chromium.org>
+On 24 June 2013 17:15, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Well, it should go last.  Also I'd prefer to apply it directly.
 
-Queued up for 3.11.
+Okay.. Below is pull request for ARM patches alone.
 
-Thanks,
-Rafael
+The following changes since commit 9e895ace5d82df8929b16f58e9f515f6d54ab82d:
 
+  Linux 3.10-rc7 (2013-06-22 09:47:31 -1000)
 
-> ---
->  drivers/base/power/wakeup.c | 4 +++-
->  kernel/power/suspend.c      | 2 +-
->  2 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 79715e7..407a2ef 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -707,8 +707,10 @@ bool pm_wakeup_pending(void)
->  	}
->  	spin_unlock_irqrestore(&events_lock, flags);
->  
-> -	if (ret)
-> +	if (ret) {
-> +		pr_info("PM: Wakeup pending, aborting suspend\n");
->  		print_active_wakeup_sources();
-> +	}
->  
->  	return ret;
->  }
-> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> index bef86d1..ece0422 100644
-> --- a/kernel/power/suspend.c
-> +++ b/kernel/power/suspend.c
-> @@ -269,7 +269,7 @@ int suspend_devices_and_enter(suspend_state_t state)
->  	suspend_test_start();
->  	error = dpm_suspend_start(PMSG_SUSPEND);
->  	if (error) {
-> -		printk(KERN_ERR "PM: Some devices failed to suspend\n");
-> +		pr_err("PM: Some devices failed to suspend, or early wake event detected\n");
->  		goto Recover_platform;
->  	}
->  	suspend_test_finish("suspend devices");
-> 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+are available in the git repository at:
+
+  git://git.linaro.org/people/vireshk/linux.git cpufreq-fix-notification-arm
+
+for you to fetch changes up to f56cc99e3f189ce214408e9c0fdda9e664d83dc1:
+
+  cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
+(2013-06-24 18:19:01 +0530)
+
+----------------------------------------------------------------
+Viresh Kumar (8):
+      cpufreq: arm-big-little: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: davinci: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: dbx500: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: exynos: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: imx6q: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: omap: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: s3c64xx: call CPUFREQ_POSTCHANGE notfier in error cases
+      cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
+
+ drivers/cpufreq/arm_big_little.c  |  4 +---
+ drivers/cpufreq/davinci-cpufreq.c |  3 +++
+ drivers/cpufreq/dbx500-cpufreq.c  |  4 ++--
+ drivers/cpufreq/exynos-cpufreq.c  | 10 ++++++++--
+ drivers/cpufreq/imx6q-cpufreq.c   | 17 +++++++++++------
+ drivers/cpufreq/omap-cpufreq.c    |  6 +++---
+ drivers/cpufreq/s3c64xx-cpufreq.c |  8 ++++++--
+ drivers/cpufreq/tegra-cpufreq.c   |  4 ++--
+ 8 files changed, 36 insertions(+), 20 deletions(-)
