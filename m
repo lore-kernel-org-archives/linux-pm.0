@@ -1,87 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH v9] Cpufreq: Fix governor start/stop race condition
-Date: Mon, 24 Jun 2013 11:41:15 +0200
-Message-ID: <80721807.qapsadYhBd@vostro.rjw.lan>
-References: <1371625207-26702-1-git-send-email-chenxg@marvell.com> <51C16B97.3040304@marvell.com> <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] regulator: max77693: Add max77693 regualtor driver.
+Date: Mon, 24 Jun 2013 11:30:41 +0100
+Message-ID: <20130624103041.GH27646@sirena.org.uk>
+References: <1371711806-18826-1-git-send-email-jonghwa3.lee@samsung.com>
+ <20130621151930.GB27646@sirena.org.uk>
+ <51C7A6D2.8060709@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="C4ZO9l7mQWyMv5+Y"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hydra.sisk.pl ([212.160.235.94]:48850 "EHLO hydra.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751115Ab3FXJbs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 24 Jun 2013 05:31:48 -0400
-In-Reply-To: <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:38478 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751232Ab3FXKbJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2013 06:31:09 -0400
+Content-Disposition: inline
+In-Reply-To: <51C7A6D2.8060709@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Cc: Xiaoguang Chen <chenxg@marvell.com>, Viresh Kumar <viresh.kumar@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Zhoujie Wu <zjwu@marvell.com>, Yilu Mao <ylmao@marvell.com>
-
-On Monday, June 24, 2013 02:04:50 PM Xiaoguang Chen wrote:
-> Hi, Rafael
-> When can this patch be merged?
-
-Well, it's in my bleeding-edge branch.  If it doesn't break builds, it will
-go to linux-next for 3.11.
-
-Thanks,
-Rafael
+To: jonghwa3.lee@samsung.com
+Cc: Liam Girdwood <lrg@ti.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Myungjoo Ham <myungjoo.ham@samsung.com>
 
 
-> 2013/6/19 Xiaoguang Chen <chenxg@marvell.com>:
-> > On 06/19/2013 03:55 PM, Viresh Kumar wrote:
-> >>
-> >> On 19 June 2013 12:30, Xiaoguang Chen <chenxg@marvell.com> wrote:
-> >>>
-> >>> Cpufreq governor's stop and start operation should be kept in sequence.
-> >>> If not, there will be unexpected behavior, for example:
-> >>>
-> >>> There are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked to CPU0.
-> >>> The normal sequence is as below:
-> >>>
-> >>> 1) Current governor is userspace, One application tries to set
-> >>> governor to ondemand. It will call __cpufreq_set_policy in which it
-> >>> will stop userspace governor and then start ondemand governor.
-> >>>
-> >>> 2) Current governor is userspace, Now CPU0 hotplugs in CPU3 (put CPU3
-> >>> online),
-> >>> It will call cpufreq_add_policy_cpu in which it first stops userspace
-> >>> governor, and then starts userspace governor.
-> >>>
-> >>> Now if the sequence of above two cases interleaves, It becomes like
-> >>> below:
-> >>>
-> >>> 1) Application stops userspace governor
-> >>> 2)                                      Hotplug stops userspace governor
-> >>> 3) Application starts ondemand governor
-> >>> 4)                                      Hotplug starts a governor
-> >>>
-> >>> In step 4, Hotplug is supposed to start userspace governor, But now
-> >>> the governor has been changed by application to ondemand, So hotplug
-> >>> starts ondemand governor again !!!!
-> >>>
-> >>> The solution is: Do not allow stop policy's governor multi-times.
-> >>> Governor should only be stopped once for one policy, After it is stopped,
-> >>> No other governor stop operation should be executed. also add one mutex
-> >>> to
-> >>> protect __cpufreq_governor so governor operation can be kept in sequence.
-> >>>
-> >>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
-> >>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >>> ---
-> >>>   drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
-> >>>   include/linux/cpufreq.h   |  1 +
-> >>>   2 files changed, 25 insertions(+)
-> >>
-> >> All good now. Sorry for the noise :)
-> >
-> > Thank you for the professional instructions. It makes the code more
-> > beautiful. :)
-> >
-> > --
-> > Thanks
-> > Xiaoguang
-> >
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--C4ZO9l7mQWyMv5+Y
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Jun 24, 2013 at 10:54:26AM +0900, jonghwa3.lee@samsung.com wrote:
+
+> I'd like to add binding document to max77693 mfd's but it is still in progress
+> (https://lkml.org/lkml/2013/4/9/221). I think I can updates it when the patch
+> is merged. Do you think I have to wait for merging? Or just add document under
+> regulator/ this time ,and then move it to mfd/ later? Which one do you think better?
+
+It's fine to have it in one document, just post both so I can review the
+regulator bits of the bindings at the same time as the driver.
+
+--C4ZO9l7mQWyMv5+Y
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.20 (GNU/Linux)
+
+iQIcBAEBAgAGBQJRyB/OAAoJELSic+t+oim9X7YP/j2jgveGjEmfvst4VGSWIcg4
+sciqrkeXA7sulq17rp0DKI8CZ1bSU05OJpoToWp3wcUqObw45CrRYawH5rMRFknz
+/rSVQIYhOiXBKYNy3isuBWFuMeVNT7GA7Lb71pzmTjfq2xZfO/LnoC19d/x8a+D9
+PZbk8kyfGZZ7ZxPvGeECDL9qamciAMDIRhgujk/MEmwr1KAwhLk6uk/BxUYcsABU
+B7xi2KeylNp+d6L3+KCyTbjirT9mMCDBwZTE3m4fGnwl0sN5YinV76fpGGYg1AXt
+lh5i+tsQ8Az0q9vh1bK9cxfgMZ6VmyIgllhGeQwdDerd7mqtnK4/NZG63RLQQEE6
+jnQ9k8z9BZ85YqBtXMOe/wa3zqoqRq+YU2JfinzzHldsrncfXFcfmQmgo7DWdGFO
+lRK9/QPz0bPDZYaEwuIKQqNKD63cDUk4DbKWpMTW/iNstlt0w41JtSGyWpYA0UW0
+J/tnhQnbWh4bnueVDySAkRgaS0JSlpsmHc8DwCkiV0/99oV50PlDIPP5A4m6COmP
+ldHanDGprSuC7mlFFMvO9cvyvsT62zOzZGGabu+bCVTdiNPw1k8FCCGlc5FC1jjN
+a6LB1BSvhdTA+yZzBCS1M9Wfcozo5kFBNB07Hpoyu+ITJ9Q1OnaOu5lq7+HcDlYA
+mqtBpBXgDWzV6RC/Kj/v
+=Q9SG
+-----END PGP SIGNATURE-----
+
+--C4ZO9l7mQWyMv5+Y--
