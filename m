@@ -1,73 +1,69 @@
-From: Xiaoguang Chen <chenxg.marvell@gmail.com>
-Subject: Re: [PATCH v9] Cpufreq: Fix governor start/stop race condition
-Date: Mon, 24 Jun 2013 14:04:50 +0800
-Message-ID: <CAFgnuDdzjyUQnXZGMCnwP2mXr7eQ9n-ZxOxxG4KWdgPMKOjEfw@mail.gmail.com>
-References: <1371625207-26702-1-git-send-email-chenxg@marvell.com>
-	<CAKohponDRcfHyRA-JCW01SC8R-dDiOx1dzBcOU6ag2DUa5_DyA@mail.gmail.com>
-	<51C16B97.3040304@marvell.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Fix race between sysfs writes and hotplug/policy update
+Date: Mon, 24 Jun 2013 11:38:16 +0530
+Message-ID: <CAKohpom74ZX90j3f3kcLxPjYBWjHbd3urJ2MXQwtNWKwwpi=xQ@mail.gmail.com>
+References: <1371956540-8830-1-git-send-email-skannan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <51C16B97.3040304@marvell.com>
+In-Reply-To: <1371956540-8830-1-git-send-email-skannan@codeaurora.org>
 Sender: cpufreq-owner@vger.kernel.org
-To: Xiaoguang Chen <chenxg@marvell.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "rjw@sisk.pl" <rjw@sisk.pl>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ning Jiang <njiang1@marvell.com>, Zhoujie Wu <zjwu@marvell.com>, Yilu Mao <ylmao@marvell.com>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Rafael
-When can this patch be merged?
+Hi Saravana,
 
-2013/6/19 Xiaoguang Chen <chenxg@marvell.com>:
-> On 06/19/2013 03:55 PM, Viresh Kumar wrote:
->>
->> On 19 June 2013 12:30, Xiaoguang Chen <chenxg@marvell.com> wrote:
->>>
->>> Cpufreq governor's stop and start operation should be kept in sequence.
->>> If not, there will be unexpected behavior, for example:
->>>
->>> There are 4 CPUs and policy->cpu=CPU0, CPU1/2/3 are linked to CPU0.
->>> The normal sequence is as below:
->>>
->>> 1) Current governor is userspace, One application tries to set
->>> governor to ondemand. It will call __cpufreq_set_policy in which it
->>> will stop userspace governor and then start ondemand governor.
->>>
->>> 2) Current governor is userspace, Now CPU0 hotplugs in CPU3 (put CPU3
->>> online),
->>> It will call cpufreq_add_policy_cpu in which it first stops userspace
->>> governor, and then starts userspace governor.
->>>
->>> Now if the sequence of above two cases interleaves, It becomes like
->>> below:
->>>
->>> 1) Application stops userspace governor
->>> 2)                                      Hotplug stops userspace governor
->>> 3) Application starts ondemand governor
->>> 4)                                      Hotplug starts a governor
->>>
->>> In step 4, Hotplug is supposed to start userspace governor, But now
->>> the governor has been changed by application to ondemand, So hotplug
->>> starts ondemand governor again !!!!
->>>
->>> The solution is: Do not allow stop policy's governor multi-times.
->>> Governor should only be stopped once for one policy, After it is stopped,
->>> No other governor stop operation should be executed. also add one mutex
->>> to
->>> protect __cpufreq_governor so governor operation can be kept in sequence.
->>>
->>> Signed-off-by: Xiaoguang Chen <chenxg@marvell.com>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> ---
->>>   drivers/cpufreq/cpufreq.c | 24 ++++++++++++++++++++++++
->>>   include/linux/cpufreq.h   |  1 +
->>>   2 files changed, 25 insertions(+)
->>
->> All good now. Sorry for the noise :)
->
-> Thank you for the professional instructions. It makes the code more
-> beautiful. :)
->
-> --
-> Thanks
-> Xiaoguang
->
+On 23 June 2013 08:32, Saravana Kannan <skannan@codeaurora.org> wrote:
+> The sysfs store ops need to grab the policy write semaphore to avoid race
+> with hotplug and cpufreq_update_policy() calls. Without this, we could end
+> up with simultaneous calls to cpufreq_driver->target()
+
+Interesting.
+
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2d53f47..37db7f0 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -420,9 +420,13 @@ static ssize_t store_##file_name                                   \
+>         if (ret != 1)                                                   \
+>                 return -EINVAL;                                         \
+>                                                                         \
+> +       lock_policy_rwsem_write(policy->cpu);                           \
+> +                                                                       \
+>         ret = __cpufreq_set_policy(policy, &new_policy);                \
+>         policy->user_policy.object = policy->object;                    \
+>                                                                         \
+> +       unlock_policy_rwsem_write(policy->cpu);                         \
+> +                                                                       \
+>         return ret ? ret : count;                                       \
+>  }
+
+As far as I know, this protection already exists. Check this
+function, which eventually calls all **store() related to
+struct freq_attr
+
+static ssize_t store(struct kobject *kobj, struct attribute *attr,
+		     const char *buf, size_t count)
+{
+	struct cpufreq_policy *policy = to_policy(kobj);
+	struct freq_attr *fattr = to_attr(attr);
+	ssize_t ret = -EINVAL;
+	policy = cpufreq_cpu_get_sysfs(policy->cpu);
+	if (!policy)
+		goto no_policy;
+
+	if (lock_policy_rwsem_write(policy->cpu) < 0)
+		goto fail;
+
+	if (fattr->store)
+		ret = fattr->store(policy, buf, count);
+	else
+		ret = -EIO;
+
+	unlock_policy_rwsem_write(policy->cpu);
+fail:
+	cpufreq_cpu_put_sysfs(policy);
+no_policy:
+	return ret;
+}
