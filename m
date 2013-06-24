@@ -1,179 +1,257 @@
 From: Eduardo Valentin <eduardo.valentin@ti.com>
-Subject: Re: [PATCH V7 25/30] thermal: exynos: Add hardware mode thermal calibration
- support
-Date: Mon, 24 Jun 2013 15:39:21 -0400
-Message-ID: <51C8A069.5010807@ti.com>
-References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com> <1372071051-3167-26-git-send-email-amit.daniel@samsung.com>
+Subject: Re: [PATCH V7 22/30] thermal: exynos: Add driver support for exynos5440
+ TMU sensor
+Date: Mon, 24 Jun 2013 15:43:23 -0400
+Message-ID: <51C8A15B.7040509@ti.com>
+References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com> <1372071051-3167-23-git-send-email-amit.daniel@samsung.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
 	protocol="application/pgp-signature";
-	boundary="----enig2KUNLELTJCEMURLBSUIGO"
+	boundary="----enig2CETQACDRCNRSTCCWMMGT"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1372071051-3167-26-git-send-email-amit.daniel@samsung.com>
+In-Reply-To: <1372071051-3167-23-git-send-email-amit.daniel@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Amit Daniel Kachhap <amit.daniel@samsung.com>
 Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-------enig2KUNLELTJCEMURLBSUIGO
+------enig2CETQACDRCNRSTCCWMMGT
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
 On 24-06-2013 06:50, Amit Daniel Kachhap wrote:
-> This patch adds support for h/w mode calibration in the TMU controller.=
-
-> Soc's like 5440 support this features. The h/w bits needed for calibrat=
-ion
-> setting are same as that of enum calibration_type.
+> This patch modifies TMU controller to add changes needed to work with
+> exynos5440 platform. This sensor registers 3 instance of the tmu contro=
+ller
+> with the thermal zone and hence reports 3 temperature output. This cont=
+roller
+> supports upto five trip points. For critical threshold the driver uses =
+the
+> core driver thermal framework for shutdown.
 >=20
 > Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 > Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+> Signed-off-by: Jungseok Lee <jays.lee@samsung.com>
 > Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+
+Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
+
 > ---
->  drivers/thermal/samsung/exynos_tmu.c      |   15 +++++++++++++++
->  drivers/thermal/samsung/exynos_tmu.h      |    6 ++++++
->  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
->  drivers/thermal/samsung/exynos_tmu_data.h |    2 ++
->  4 files changed, 25 insertions(+), 0 deletions(-)
+>  drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
+>  drivers/thermal/samsung/exynos_tmu.c            |   55 +++++++++++++++=
+++++---
+>  drivers/thermal/samsung/exynos_tmu.h            |    6 +++
+>  drivers/thermal/samsung/exynos_tmu_data.h       |   36 +++++++++++++++=
+
+>  4 files changed, 90 insertions(+), 9 deletions(-)
 >=20
+> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/=
+thermal/samsung/exynos_thermal_common.h
+> index bc3016e..3eb2ed9 100644
+> --- a/drivers/thermal/samsung/exynos_thermal_common.h
+> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
+> @@ -27,7 +27,7 @@
+>  #define SENSOR_NAME_LEN	16
+>  #define MAX_TRIP_COUNT	8
+>  #define MAX_COOLING_DEVICE 4
+> -#define MAX_THRESHOLD_LEVS 4
+> +#define MAX_THRESHOLD_LEVS 5
+> =20
+>  #define ACTIVE_INTERVAL 500
+>  #define IDLE_INTERVAL 10000
 > diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/sam=
 sung/exynos_tmu.c
-> index 3fac0f9..34b999b 100644
+> index 31bf373..6bc86f6 100644
 > --- a/drivers/thermal/samsung/exynos_tmu.c
 > +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -73,6 +73,9 @@ static int temp_to_code(struct exynos_tmu_data *data,=
- u8 temp)
->  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
->  	int temp_code;
-> =20
-> +	if (pdata->cal_mode =3D=3D HW_MODE)
-> +		return temp;
-> +
->  	if (data->soc =3D=3D SOC_ARCH_EXYNOS4210)
->  		/* temp should range between 25 and 125 */
->  		if (temp < 25 || temp > 125) {
-> @@ -107,6 +110,9 @@ static int code_to_temp(struct exynos_tmu_data *dat=
-a, u8 temp_code)
->  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
->  	int temp;
-> =20
-> +	if (pdata->cal_mode =3D=3D HW_MODE)
-> +		return temp_code;
-> +
->  	if (data->soc =3D=3D SOC_ARCH_EXYNOS4210)
->  		/* temp_code should range between 75 and 175 */
->  		if (temp_code < 75 || temp_code > 175) {
-> @@ -155,6 +161,9 @@ static int exynos_tmu_initialize(struct platform_de=
-vice *pdev)
->  	if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
+> @@ -156,7 +156,26 @@ static int exynos_tmu_initialize(struct platform_d=
+evice *pdev)
 >  		__raw_writel(1, data->base + reg->triminfo_ctrl);
 > =20
-> +	if (pdata->cal_mode =3D=3D HW_MODE)
-> +		goto skip_calib_data;
-> +
 >  	/* Save trimming info in order to perform calibration */
->  	if (data->soc =3D=3D SOC_ARCH_EXYNOS5440) {
->  		/*
-> @@ -190,6 +199,7 @@ static int exynos_tmu_initialize(struct platform_de=
-vice *pdev)
->  			(pdata->efuse_value >> reg->triminfo_85_shift) &
->  			EXYNOS_TMU_TEMP_MASK;
-> =20
-> +skip_calib_data:
->  	if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
->  		dev_err(&pdev->dev, "Invalid max trigger level\n");
->  		goto out;
-> @@ -320,6 +330,11 @@ static void exynos_tmu_control(struct platform_dev=
-ice *pdev, bool on)
->  		con |=3D (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
->  	}
-> =20
-> +	if (pdata->cal_mode =3D=3D HW_MODE) {
-> +		con &=3D ~(reg->calib_mode_mask << reg->calib_mode_shift);
-> +		con |=3D pdata->cal_type << reg->calib_mode_shift;
-
-Same comment as in patch v6 still applies. The above statement is a bit
-worrying because you have not defined what values cal_type can assume.
-
-Here is how the type of cal_type is defined:
-enum calibration_type {
-	TYPE_ONE_POINT_TRIMMING,
-	TYPE_TWO_POINT_TRIMMING,
-	TYPE_NONE,
-};
-
-=2E..
-
-	enum calibration_type cal_type;
-
-If you got specific bit values for each corresponding type above, I
-would suggest defining them explicitly, before doing bitwise operations.
-This is to reduce bug introduction in the future.
-
+> -	trim_info =3D readl(data->base + reg->triminfo_data);
+> +	if (data->soc =3D=3D SOC_ARCH_EXYNOS5440) {
+> +		/*
+> +		 * For exynos5440 soc triminfo value is swapped between TMU0 and
+> +		 * TMU2, so the below logic is needed.
+> +		 */
+> +		switch (data->id) {
+> +		case 0:
+> +			trim_info =3D readl(data->base +
+> +			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+> +			break;
+> +		case 1:
+> +			trim_info =3D readl(data->base + reg->triminfo_data);
+> +			break;
+> +		case 2:
+> +			trim_info =3D readl(data->base -
+> +			EXYNOS5440_EFUSE_SWAP_OFFSET + reg->triminfo_data);
+> +		}
+> +	} else {
+> +		trim_info =3D readl(data->base + reg->triminfo_data);
 > +	}
+>  	data->temp_error1 =3D trim_info & EXYNOS_TMU_TEMP_MASK;
+>  	data->temp_error2 =3D ((trim_info >> reg->triminfo_85_shift) &
+>  				EXYNOS_TMU_TEMP_MASK);
+> @@ -201,7 +220,7 @@ static int exynos_tmu_initialize(struct platform_de=
+vice *pdev)
+>  			reg->threshold_th0 + i * sizeof(reg->threshold_th0));
+> =20
+>  		writel(reg->inten_rise_mask, data->base + reg->tmu_intclear);
+> -	} else if (data->soc =3D=3D SOC_ARCH_EXYNOS) {
+> +	} else {
+>  		/* Write temperature code for rising and falling threshold */
+>  		for (i =3D 0;
+>  		i < trigger_levs && i < EXYNOS_MAX_TRIGGER_PER_REG; i++) {
+> @@ -241,14 +260,26 @@ static int exynos_tmu_initialize(struct platform_=
+device *pdev)
+>  				ret =3D threshold_code;
+>  				goto out;
+>  			}
+> -			rising_threshold |=3D threshold_code << 8 * i;
+> -			writel(rising_threshold,
+> -				data->base + reg->threshold_th0);
+> +			if (i =3D=3D EXYNOS_MAX_TRIGGER_PER_REG - 1) {
+> +				/* 1-4 level to be assigned in th0 reg */
+> +				rising_threshold |=3D threshold_code << 8 * i;
+> +				writel(rising_threshold,
+> +					data->base + reg->threshold_th0);
+> +			} else if (i =3D=3D EXYNOS_MAX_TRIGGER_PER_REG) {
+> +				/* 5th level to be assigned in th2 reg */
+> +				rising_threshold =3D
+> +				threshold_code << reg->threshold_th3_l0_shift;
+> +				writel(rising_threshold,
+> +					data->base + reg->threshold_th2);
+> +			}
+>  			con =3D readl(data->base + reg->tmu_ctrl);
+>  			con |=3D (1 << reg->therm_trip_en_shift);
+>  			writel(con, data->base + reg->tmu_ctrl);
+>  		}
+>  	}
+> +	/*Clear the PMIN in the common TMU register*/
+> +	if (reg->tmu_pmin && !data->id)
+> +		writel(0, data->base_common + reg->tmu_pmin);
+>  out:
+>  	clk_disable(data->clk);
+>  	mutex_unlock(&data->lock);
+> @@ -377,7 +408,14 @@ static void exynos_tmu_work(struct work_struct *wo=
+rk)
+>  			struct exynos_tmu_data, irq_work);
+>  	struct exynos_tmu_platform_data *pdata =3D data->pdata;
+>  	const struct exynos_tmu_registers *reg =3D pdata->registers;
+> -	unsigned int val_irq;
+> +	unsigned int val_irq, val_type;
 > +
->  	if (on) {
->  		con |=3D (1 << reg->core_en_shift);
->  		interrupt_en =3D
+> +	/* Find which sensor generated this interrupt */
+> +	if (reg->tmu_irqstatus) {
+> +		val_type =3D readl(data->base_common + reg->tmu_irqstatus);
+> +		if (!((val_type >> data->id) & 0x1))
+> +			goto out;
+> +	}
+> =20
+>  	exynos_report_trigger(data->reg_conf);
+>  	mutex_lock(&data->lock);
+> @@ -390,7 +428,7 @@ static void exynos_tmu_work(struct work_struct *wor=
+k)
+> =20
+>  	clk_disable(data->clk);
+>  	mutex_unlock(&data->lock);
+> -
+> +out:
+>  	enable_irq(data->irq);
+>  }
+> =20
+> @@ -538,7 +576,8 @@ static int exynos_tmu_probe(struct platform_device =
+*pdev)
+>  		return ret;
+> =20
+>  	if (pdata->type =3D=3D SOC_ARCH_EXYNOS ||
+> -				pdata->type =3D=3D SOC_ARCH_EXYNOS4210)
+> +		pdata->type =3D=3D SOC_ARCH_EXYNOS4210 ||
+> +				pdata->type =3D=3D SOC_ARCH_EXYNOS5440)
+>  		data->soc =3D pdata->type;
+>  	else {
+>  		ret =3D -EINVAL;
 > diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/sam=
 sung/exynos_tmu.h
-> index 25c48d4..60d863c 100644
+> index ff8844f..25c48d4 100644
 > --- a/drivers/thermal/samsung/exynos_tmu.h
 > +++ b/drivers/thermal/samsung/exynos_tmu.h
-> @@ -90,6 +90,10 @@ enum soc_type {
->   * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctr=
-l
->  	register.
->   * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl =
-register.
-> + * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl=
-
-> +	register.
-> + * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
-> +	register.
->   * @therm_trip_tq_en_shift: shift bits of thermal trip enable by TQ pi=
-n in
->  	tmu_ctrl register.
->   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl regis=
-ter.
-> @@ -151,6 +155,8 @@ struct exynos_tmu_registers {
->  	u32	therm_trip_en_shift;
->  	u32	buf_slope_sel_shift;
->  	u32	buf_slope_sel_mask;
-> +	u32	calib_mode_shift;
-> +	u32	calib_mode_mask;
->  	u32	therm_trip_tq_en_shift;
->  	u32	core_en_shift;
+> @@ -40,6 +40,7 @@ enum calibration_mode {
+>  enum soc_type {
+>  	SOC_ARCH_EXYNOS4210 =3D 1,
+>  	SOC_ARCH_EXYNOS,
+> +	SOC_ARCH_EXYNOS5440,
+>  };
 > =20
-> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/therma=
-l/samsung/exynos_tmu_data.c
-> index 5952915..9002499 100644
-> --- a/drivers/thermal/samsung/exynos_tmu_data.c
-> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
-> @@ -189,6 +189,8 @@ static const struct exynos_tmu_registers exynos5440=
-_tmu_registers =3D {
->  	.therm_trip_en_shift =3D EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
->  	.buf_slope_sel_shift =3D EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
->  	.buf_slope_sel_mask =3D EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
-> +	.calib_mode_shift =3D EXYNOS_TMU_CALIB_MODE_SHIFT,
-> +	.calib_mode_mask =3D EXYNOS_TMU_CALIB_MODE_MASK,
->  	.core_en_shift =3D EXYNOS_TMU_CORE_EN_SHIFT,
->  	.tmu_status =3D EXYNOS5440_TMU_S0_7_STATUS,
->  	.tmu_cur_temp =3D EXYNOS5440_TMU_S0_7_TEMP,
+>  /**
+> @@ -131,6 +132,8 @@ enum soc_type {
+>   * @emul_temp_shift: shift bits of emulation temperature.
+>   * @emul_time_shift: shift bits of emulation time.
+>   * @emul_time_mask: mask bits of emulation time.
+> + * @tmu_irqstatus: register to find which TMU generated interrupts.
+> + * @tmu_pmin: register to get/set the Pmin value.
+>   */
+>  struct exynos_tmu_registers {
+>  	u32	triminfo_data;
+> @@ -198,6 +201,9 @@ struct exynos_tmu_registers {
+>  	u32	emul_temp_shift;
+>  	u32	emul_time_shift;
+>  	u32	emul_time_mask;
+> +
+> +	u32	tmu_irqstatus;
+> +	u32	tmu_pmin;
+>  };
+> =20
+>  /**
 > diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/therma=
 l/samsung/exynos_tmu_data.h
-> index 43ce5fb..dc7feb5 100644
+> index 139dbbb..ad263e9 100644
 > --- a/drivers/thermal/samsung/exynos_tmu_data.h
 > +++ b/drivers/thermal/samsung/exynos_tmu_data.h
-> @@ -75,6 +75,8 @@
->  #define EXYNOS_TMU_TRIP_MODE_SHIFT	13
->  #define EXYNOS_TMU_TRIP_MODE_MASK	0x7
->  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT	12
-> +#define EXYNOS_TMU_CALIB_MODE_SHIFT	4
-> +#define EXYNOS_TMU_CALIB_MODE_MASK	0x3
+> @@ -93,6 +93,42 @@
 > =20
->  #define EXYNOS_TMU_INTEN_RISE0_SHIFT	0
->  #define EXYNOS_TMU_INTEN_RISE1_SHIFT	4
+>  #define EXYNOS_MAX_TRIGGER_PER_REG	4
+> =20
+> +/*exynos5440 specific registers*/
+> +#define EXYNOS5440_TMU_S0_7_TRIM		0x000
+> +#define EXYNOS5440_TMU_S0_7_CTRL		0x020
+> +#define EXYNOS5440_TMU_S0_7_DEBUG		0x040
+> +#define EXYNOS5440_TMU_S0_7_STATUS		0x060
+> +#define EXYNOS5440_TMU_S0_7_TEMP		0x0f0
+> +#define EXYNOS5440_TMU_S0_7_TH0			0x110
+> +#define EXYNOS5440_TMU_S0_7_TH1			0x130
+> +#define EXYNOS5440_TMU_S0_7_TH2			0x150
+> +#define EXYNOS5440_TMU_S0_7_EVTEN		0x1F0
+> +#define EXYNOS5440_TMU_S0_7_IRQEN		0x210
+> +#define EXYNOS5440_TMU_S0_7_IRQ			0x230
+> +/* exynos5440 common registers */
+> +#define EXYNOS5440_TMU_IRQ_STATUS		0x000
+> +#define EXYNOS5440_TMU_PMIN			0x004
+> +#define EXYNOS5440_TMU_TEMP			0x008
+> +
+> +#define EXYNOS5440_TMU_RISE_INT_MASK		0xf
+> +#define EXYNOS5440_TMU_RISE_INT_SHIFT		0
+> +#define EXYNOS5440_TMU_FALL_INT_MASK		0xf
+> +#define EXYNOS5440_TMU_FALL_INT_SHIFT		4
+> +#define EXYNOS5440_TMU_INTEN_RISE0_SHIFT	0
+> +#define EXYNOS5440_TMU_INTEN_RISE1_SHIFT	1
+> +#define EXYNOS5440_TMU_INTEN_RISE2_SHIFT	2
+> +#define EXYNOS5440_TMU_INTEN_RISE3_SHIFT	3
+> +#define EXYNOS5440_TMU_INTEN_FALL0_SHIFT	4
+> +#define EXYNOS5440_TMU_INTEN_FALL1_SHIFT	5
+> +#define EXYNOS5440_TMU_INTEN_FALL2_SHIFT	6
+> +#define EXYNOS5440_TMU_INTEN_FALL3_SHIFT	7
+> +#define EXYNOS5440_TMU_TH_RISE0_SHIFT		0
+> +#define EXYNOS5440_TMU_TH_RISE1_SHIFT		8
+> +#define EXYNOS5440_TMU_TH_RISE2_SHIFT		16
+> +#define EXYNOS5440_TMU_TH_RISE3_SHIFT		24
+> +#define EXYNOS5440_TMU_TH_RISE4_SHIFT		24
+> +#define EXYNOS5440_EFUSE_SWAP_OFFSET		8
+> +
+>  #if defined(CONFIG_CPU_EXYNOS4210)
+>  extern struct exynos_tmu_init_data const exynos4210_default_tmu_data;
+>  #define EXYNOS4210_TMU_DRV_DATA (&exynos4210_default_tmu_data)
 >=20
 
 
@@ -183,7 +261,7 @@ You have got to be excited about what you are doing. (L. Lamport)
 Eduardo Valentin
 
 
-------enig2KUNLELTJCEMURLBSUIGO
+------enig2CETQACDRCNRSTCCWMMGT
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -192,9 +270,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v1.4.12 (GNU/Linux)
 Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
 
-iF4EAREIAAYFAlHIoGkACgkQCXcVR3XQvP3QpwEAt07Y34Z9SO/AnVm7fKqnV4hY
-PeW0pg7LK0QyafY4Aw8A/iCNXyaLuhXnTtJ7SVPwk8/oEFjrNk1dJX51n1B2iFFR
-=9oCG
+iF4EAREIAAYFAlHIoVsACgkQCXcVR3XQvP0kEQEA6MXjKmi8DMUm7u/Gb0sWaH1C
+33WYdeMQFbTBu9tirVYA/1NUOd76uhUzSC1amzhjIjYzrRNqbfdNlehqIa5ugdlr
+=hpZN
 -----END PGP SIGNATURE-----
 
-------enig2KUNLELTJCEMURLBSUIGO--
+------enig2CETQACDRCNRSTCCWMMGT--
