@@ -1,41 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [GIT PULL] ARM: CPUFreq updates for 3.11
-Date: Mon, 24 Jun 2013 13:45:15 +0200
-Message-ID: <1662523.HdXbLYrd2q@vostro.rjw.lan>
-References: <CAKohpo=v4qPDH32Y4ithr_p007nTn5AOUzkUCiHTGgQN6-=BEw@mail.gmail.com> <7195611.gCcafMWC85@vostro.rjw.lan> <CAKohpomdnEgDcAExoyN1b4vohHNEg3NDH1mM8NWG8gQoPvff+Q@mail.gmail.com>
+Subject: Re: [PATCH 00/13] CPUFreq: Fix {PRE|POST}CHANGE notification sequence
+Date: Mon, 24 Jun 2013 13:58:43 +0200
+Message-ID: <19900521.4upM9YL2PZ@vostro.rjw.lan>
+References: <cover.1371630975.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpomdnEgDcAExoyN1b4vohHNEg3NDH1mM8NWG8gQoPvff+Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: cpufreq@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Lists linaro-kernel <linaro-kernel@lists.linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hydra.sisk.pl ([212.160.235.94]:48974 "EHLO hydra.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752402Ab3FXLtR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 24 Jun 2013 07:49:17 -0400
+In-Reply-To: <cover.1371630975.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, patches@linaro.org, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robin.randhawa@arm.com, Steve.Bannister@arm.com, Liviu.Dudau@arm.com, charles.garcia-tobin@arm.com, arvind.chauhan@arm.com, dave.martin@arm.com
 
-On Monday, June 24, 2013 04:40:27 PM Viresh Kumar wrote:
-> On 24 June 2013 16:29, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+On Wednesday, June 19, 2013 02:22:54 PM Viresh Kumar wrote:
+> PRECHANGE and POSTCHANGE notifiers must be called in groups, i.e either both
+> should be called or both shouldn't be.
 > 
-> > In your original series that patch was the last one.  What made you change your
-> > mind and put it in front?
+> In case we have started PRECHANGE notifier and found an error, we must call
+> POSTCHANGE notifier with freqs.new = freqs.old to guarantee that sequence of
+> calling notifiers is complete.
 > 
-> I initially thought that this one would break git bisect (code would
-> compile, but would fail) for platforms whose code I have fixed in
-> this patchset.
+> This isn't obeyed by many of the drivers and core wasn't forcing it.
 > 
-> But that is true only for failure cases, otherwise code would work as
-> normal.
+> This patchset first fixes all the driver to follow it strictly and then adds
+> some protection against this. Now, we keep track of the last transaction and see
+> if something went wrong.
 > 
-> And hence kept this at the top this time.
+> Last patch is intentionally kept towards the end, so that git bisect still works
+> well for all the faulty drivers.
+> 
+> This is pushed here and a pull request for 3.11 would be sent after few days.
+> 
+> git://git.linaro.org/people/vireshk/linux.git cpufreq-fix-notification
+> 
+> Viresh Kumar (13):
+>   cpufreq: acpi: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: arm-big-little: call CPUFREQ_POSTCHANGE notfier in error
+>     cases
+>   cpufreq: davinci: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: dbx500: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: e_powersave: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: exynos: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: imx6q: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: omap: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: pcc: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: powernow-k8: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: s3c64xx: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: tegra: call CPUFREQ_POSTCHANGE notfier in error cases
+>   cpufreq: make sure frequency transitions are serialized
 
-Well, it should go last.  Also I'd prefer to apply it directly.
-
-Please check my comment in there too.
+Patches [1,5,9-10/13] applied to bleeding-edge, the ARM ones I'm expecting
+to get from you and [13/13] can wait.
 
 Thanks,
 Rafael
 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
