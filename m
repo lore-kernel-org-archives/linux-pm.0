@@ -1,7 +1,7 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V7 15/30] thermal: exynos: Return success even if no cooling data supplied
-Date: Mon, 24 Jun 2013 16:20:36 +0530
-Message-ID: <1372071051-3167-16-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V7 14/30] thermal: exynos: Modify private_data to appropriate name driver_data
+Date: Mon, 24 Jun 2013 16:20:35 +0530
+Message-ID: <1372071051-3167-15-git-send-email-amit.daniel@samsung.com>
 References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
@@ -10,8 +10,9 @@ To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin 
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch removes the error return in the bind/unbind routine
-as the platform may not register any cpufreq cooling data.
+This patch renames member private_data to driver_data of the thermal
+zone registration structure as this item stores the driver related
+data and uses it to call the driver related callbacks.
 
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
 Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
@@ -19,29 +20,57 @@ Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
  drivers/thermal/samsung/exynos_thermal_common.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/samsung/exynos_thermal_common.h |    2 +-
+ drivers/thermal/samsung/exynos_tmu.c            |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
-index c6eab8c..99318e5 100644
+index 0b014e8..c6eab8c 100644
 --- a/drivers/thermal/samsung/exynos_thermal_common.c
 +++ b/drivers/thermal/samsung/exynos_thermal_common.c
-@@ -132,7 +132,7 @@ static int exynos_bind(struct thermal_zone_device *thermal,
- 	tab_size = data->cooling_data.freq_clip_count;
+@@ -222,7 +222,7 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
+ 		pr_info("Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+-	data = th_zone->sensor_conf->private_data;
++	data = th_zone->sensor_conf->driver_data;
+ 	*temp = th_zone->sensor_conf->read_temperature(data);
+ 	/* convert the temperature into millicelsius */
+ 	*temp = *temp * MCELSIUS;
+@@ -241,7 +241,7 @@ static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
+ 		pr_info("Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+-	data = th_zone->sensor_conf->private_data;
++	data = th_zone->sensor_conf->driver_data;
+ 	if (th_zone->sensor_conf->write_emul_temp)
+ 		ret = th_zone->sensor_conf->write_emul_temp(data, temp);
+ 	return ret;
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
+index 86c1f84..6ca3096 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.h
++++ b/drivers/thermal/samsung/exynos_thermal_common.h
+@@ -84,7 +84,7 @@ struct thermal_sensor_conf {
+ 	int (*write_emul_temp)(void *drv_data, unsigned long temp);
+ 	struct thermal_trip_point_conf trip_data;
+ 	struct thermal_cooling_conf cooling_data;
+-	void *private_data;
++	void *driver_data;
+ 	void *pzone_data;
+ };
  
- 	if (tab_ptr == NULL || tab_size == 0)
--		return -EINVAL;
-+		return 0;
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index a7bba69..40e0cfd 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -504,7 +504,7 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+ 	exynos_tmu_control(pdev, true);
  
- 	/* find the cooling device registered*/
- 	for (i = 0; i < th_zone->cool_dev_size; i++)
-@@ -181,7 +181,7 @@ static int exynos_unbind(struct thermal_zone_device *thermal,
- 	tab_size = data->cooling_data.freq_clip_count;
- 
- 	if (tab_size == 0)
--		return -EINVAL;
-+		return 0;
- 
- 	/* find the cooling device registered*/
- 	for (i = 0; i < th_zone->cool_dev_size; i++)
+ 	/* Register the sensor with thermal management interface */
+-	(&exynos_sensor_conf)->private_data = data;
++	(&exynos_sensor_conf)->driver_data = data;
+ 	exynos_sensor_conf.trip_data.trip_count = pdata->trigger_enable[0] +
+ 			pdata->trigger_enable[1] + pdata->trigger_enable[2]+
+ 			pdata->trigger_enable[3];
 -- 
 1.7.1
