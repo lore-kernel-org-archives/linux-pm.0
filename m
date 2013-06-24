@@ -1,76 +1,139 @@
 From: Amit Daniel Kachhap <amit.daniel@samsung.com>
-Subject: [PATCH V7 21/30] thermal: exynos: Add support to access common register for multistance
-Date: Mon, 24 Jun 2013 16:20:42 +0530
-Message-ID: <1372071051-3167-22-git-send-email-amit.daniel@samsung.com>
+Subject: [PATCH V7 20/30] thermal: exynos: use device resource management infrastructure
+Date: Mon, 24 Jun 2013 16:20:41 +0530
+Message-ID: <1372071051-3167-21-git-send-email-amit.daniel@samsung.com>
 References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pb0-f50.google.com ([209.85.160.50]:47064 "EHLO
-	mail-pb0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250Ab3FXKwh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jun 2013 06:52:37 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, Kukjin Kim <kgene.kim@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds support to parse one more common set of TMU register. First
-set of register belongs to each instance of TMU and second set belongs to
-common TMU registers.
+This patch uses the device pointer stored in the configuration structure
+and converts to dev_* prints and devm API's.
 
-Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
 Acked-by: Eduardo Valentin <eduardo.valentin@ti.com>
 Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 ---
- drivers/thermal/samsung/exynos_tmu.c |   20 ++++++++++++++++++++
- 1 files changed, 20 insertions(+), 0 deletions(-)
+ drivers/thermal/samsung/exynos_thermal_common.c |   36 ++++++++++++++--------
+ 1 files changed, 23 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 05b95c6..31bf373 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -40,6 +40,7 @@
-  * @id: identifier of the one instance of the TMU controller.
-  * @pdata: pointer to the tmu platform/configuration data
-  * @base: base address of the single instance of the TMU controller.
-+ * @base_common: base address of the common registers of the TMU controller.
-  * @irq: irq number of the TMU controller.
-  * @soc: id of the SOC type.
-  * @irq_work: pointer to the irq work structure.
-@@ -53,6 +54,7 @@ struct exynos_tmu_data {
- 	int id;
- 	struct exynos_tmu_platform_data *pdata;
- 	void __iomem *base;
-+	void __iomem *base_common;
- 	int irq;
- 	enum soc_type soc;
- 	struct work_struct irq_work;
-@@ -478,6 +480,24 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 		return -ENODEV;
+diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
+index ecf95da..211262a 100644
+--- a/drivers/thermal/samsung/exynos_thermal_common.c
++++ b/drivers/thermal/samsung/exynos_thermal_common.c
+@@ -53,7 +53,8 @@ static int exynos_set_mode(struct thermal_zone_device *thermal,
+ {
+ 	struct exynos_thermal_zone *th_zone = thermal->devdata;
+ 	if (!th_zone) {
+-		pr_notice("thermal zone not registered\n");
++		dev_err(th_zone->sensor_conf->dev,
++			"thermal zone not registered\n");
+ 		return 0;
  	}
- 	data->pdata = pdata;
-+	/*
-+	 * Check if the TMU shares some registers and then try to map the
-+	 * memory of common registers.
-+	 */
-+	if (!TMU_SUPPORTS(pdata, SHARED_MEMORY))
-+		return 0;
-+
-+	if (of_address_to_resource(pdev->dev.of_node, 1, &res)) {
-+		dev_err(&pdev->dev, "failed to get Resource 1\n");
-+		return -ENODEV;
-+	}
-+
-+	data->base_common = devm_ioremap(&pdev->dev, res.start,
-+					resource_size(&res));
-+	if (!data->base) {
-+		dev_err(&pdev->dev, "Failed to ioremap memory\n");
-+		return -ENOMEM;
-+	}
+ 
+@@ -69,8 +70,9 @@ static int exynos_set_mode(struct thermal_zone_device *thermal,
+ 
+ 	th_zone->mode = mode;
+ 	thermal_zone_device_update(thermal);
+-	pr_info("thermal polling set for duration=%d msec\n",
+-				thermal->polling_delay);
++	dev_dbg(th_zone->sensor_conf->dev,
++		"thermal polling set for duration=%d msec\n",
++		thermal->polling_delay);
+ 	return 0;
+ }
+ 
+@@ -162,7 +164,8 @@ static int exynos_bind(struct thermal_zone_device *thermal,
+ 		case WARN_ZONE:
+ 			if (thermal_zone_bind_cooling_device(thermal, i, cdev,
+ 								level, 0)) {
+-				pr_err("error binding cdev inst %d\n", i);
++				dev_err(data->dev,
++					"error unbinding cdev inst=%d\n", i);
+ 				ret = -EINVAL;
+ 			}
+ 			th_zone->bind = true;
+@@ -207,7 +210,8 @@ static int exynos_unbind(struct thermal_zone_device *thermal,
+ 		case WARN_ZONE:
+ 			if (thermal_zone_unbind_cooling_device(thermal, i,
+ 								cdev)) {
+-				pr_err("error unbinding cdev inst=%d\n", i);
++				dev_err(data->dev,
++					"error unbinding cdev inst=%d\n", i);
+ 				ret = -EINVAL;
+ 			}
+ 			th_zone->bind = false;
+@@ -227,7 +231,8 @@ static int exynos_get_temp(struct thermal_zone_device *thermal,
+ 	void *data;
+ 
+ 	if (!th_zone->sensor_conf) {
+-		pr_info("Temperature sensor not initialised\n");
++		dev_err(th_zone->sensor_conf->dev,
++			"Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+ 	data = th_zone->sensor_conf->driver_data;
+@@ -246,7 +251,8 @@ static int exynos_set_emul_temp(struct thermal_zone_device *thermal,
+ 	struct exynos_thermal_zone *th_zone = thermal->devdata;
+ 
+ 	if (!th_zone->sensor_conf) {
+-		pr_info("Temperature sensor not initialised\n");
++		dev_err(th_zone->sensor_conf->dev,
++			"Temperature sensor not initialised\n");
+ 		return -EINVAL;
+ 	}
+ 	data = th_zone->sensor_conf->driver_data;
+@@ -351,7 +357,8 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+ 		return -EINVAL;
+ 	}
+ 
+-	th_zone = kzalloc(sizeof(struct exynos_thermal_zone), GFP_KERNEL);
++	th_zone = devm_kzalloc(sensor_conf->dev,
++				sizeof(struct exynos_thermal_zone), GFP_KERNEL);
+ 	if (!th_zone)
+ 		return -ENOMEM;
+ 
+@@ -366,7 +373,8 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+ 		th_zone->cool_dev[th_zone->cool_dev_size] =
+ 					cpufreq_cooling_register(&mask_val);
+ 		if (IS_ERR(th_zone->cool_dev[0])) {
+-			pr_err("Failed to register cpufreq cooling device\n");
++			dev_err(sensor_conf->dev,
++				"Failed to register cpufreq cooling device\n");
+ 			ret = -EINVAL;
+ 			goto err_unregister;
+ 		}
+@@ -380,14 +388,16 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
+ 			IDLE_INTERVAL);
+ 
+ 	if (IS_ERR(th_zone->therm_dev)) {
+-		pr_err("Failed to register thermal zone device\n");
++		dev_err(sensor_conf->dev,
++			"Failed to register thermal zone device\n");
+ 		ret = PTR_ERR(th_zone->therm_dev);
+ 		goto err_unregister;
+ 	}
+ 	th_zone->mode = THERMAL_DEVICE_ENABLED;
+ 	sensor_conf->pzone_data = th_zone;
+ 
+-	pr_info("Exynos: Kernel Thermal management registered\n");
++	dev_info(sensor_conf->dev,
++		"Exynos: Thermal zone(%s) registered\n", sensor_conf->name);
  
  	return 0;
+ 
+@@ -417,6 +427,6 @@ void exynos_unregister_thermal(struct thermal_sensor_conf *sensor_conf)
+ 			cpufreq_cooling_unregister(th_zone->cool_dev[i]);
+ 	}
+ 
+-	kfree(th_zone);
+-	pr_info("Exynos: Kernel Thermal management unregistered\n");
++	dev_info(sensor_conf->dev,
++		"Exynos: Kernel Thermal management unregistered\n");
  }
 -- 
 1.7.1
-
