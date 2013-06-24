@@ -1,35 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCHv v3] power: Include additional information in pm_print_times
-Date: Sun, 23 Jun 2013 23:59:03 +0200
-Message-ID: <7303551.DgZO2t6GUO@vostro.rjw.lan>
-References: <1371497795-20084-1-git-send-email-shuah.kh@samsung.com> <3043483.hQyzHovghE@vostro.rjw.lan> <1371987257.3137.44.camel@joe-AO722>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 1/1] thermal: MAINTAINERS: Add git tree path for SoC
+ specific updates
+Date: Mon, 24 Jun 2013 09:05:51 +0800
+Message-ID: <1372035951.2097.0.camel@rzhang1-mobl4>
+References: <1371848830-5261-1-git-send-email-eduardo.valentin@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1371987257.3137.44.camel@joe-AO722>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Shuah Khan <shuah.kh@samsung.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "shuahkhan@gmail.com" <shuahkhan@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:46146 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751060Ab3FXBFz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 23 Jun 2013 21:05:55 -0400
+In-Reply-To: <1371848830-5261-1-git-send-email-eduardo.valentin@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, June 23, 2013 04:34:17 AM Joe Perches wrote:
-> On Sun, 2013-06-23 at 13:36 +0200, Rafael J. Wysocki wrote:
-> > Please keep the existing format as is literally and append any
-> > new information to the end of the line.
+On Fri, 2013-06-21 at 17:07 -0400, Eduardo Valentin wrote:
+> To reduce thermal maintenance load on Rui, SoC specific patches would be
+> applied by me now. Rui Zhang will pull in these changes from time to time (at
+> rc's). Additionally I would be sending him pull request for every merge
+> window and rc's (for fixes).
 > 
-> Hi Shuah.
+> Branch names would be: next and fixes.
 > 
-> Perhaps the better long-term approach would be to add
-> a new tracepoint too.
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <eduardo.valentin@ti.com>
 
-In fact, I would even prefer it if new tracepoints were added so that we
-could deprecate the dmesg messages at one point in the future.
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-Thanks,
-Rafael
+thanks,
+rui
+> ---
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 3d7782b..48ff6282 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -8032,6 +8032,7 @@ M:      Zhang Rui <rui.zhang@intel.com>
+>  M:      Eduardo Valentin <eduardo.valentin@ti.com>
+>  L:      linux-pm@vger.kernel.org
+>  T:      git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
+> +T:      git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+>  Q:      https://patchwork.kernel.org/project/linux-pm/list/
+>  S:      Supported
+>  F:      drivers/thermal/
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
