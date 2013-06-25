@@ -1,51 +1,51 @@
-From: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 40/45] powerpc, irq: Use GFP_ATOMIC allocations in atomic
- context
-Date: Tue, 25 Jun 2013 12:08:42 +1000
-Message-ID: <20130625020842.GD14051@concordia>
-References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com>
- <20130623134657.19094.93687.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([203.10.76.45]:56329 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165Ab3FYCIp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 24 Jun 2013 22:08:45 -0400
-Content-Disposition: inline
-In-Reply-To: <20130623134657.19094.93687.stgit@srivatsabhat.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: [PATCH 1/2] ACPI/Processor: Clear unuseful variable count in the acpi_processor_preregister_performance()
+Date: Tue, 25 Jun 2013 10:06:45 +0800
+Message-ID: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com>
+Return-path: <cpufreq-owner@vger.kernel.org>
+Sender: cpufreq-owner@vger.kernel.org
+To: rjw@sisk.pl, lenb@kernel.org, viresh.kumar@linaro.org
+Cc: Lan Tianyu <tianyu.lan@intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>
 
-On Sun, Jun 23, 2013 at 07:17:00PM +0530, Srivatsa S. Bhat wrote:
-> The function migrate_irqs() is called with interrupts disabled
-> and hence its not safe to do GFP_KERNEL allocations inside it,
-> because they can sleep. So change the gfp mask to GFP_ATOMIC.
+The variable count in the acpi_processor_preregister_performance() is only initalized
+as one for one cpu and increased by one when find another cpu that share same dependency
+domain. Otherwise, it isn't referenced somewhere else.
 
-OK so it gets there via:
-  __stop_machine()
-    take_cpu_down()
-      __cpu_disable()
-        smp_ops->cpu_disable()
-          generic_cpu_disable()
-            migrate_irqs()
+Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+---
+ drivers/acpi/processor_perflib.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-> index ea185e0..ca39bac 100644
-> --- a/arch/powerpc/kernel/irq.c
-> +++ b/arch/powerpc/kernel/irq.c
-> @@ -412,7 +412,7 @@ void migrate_irqs(void)
->  	cpumask_var_t mask;
->  	const struct cpumask *map = cpu_online_mask;
->  
-> -	alloc_cpumask_var(&mask, GFP_KERNEL);
-> +	alloc_cpumask_var(&mask, GFP_ATOMIC);
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index e854582..1e9732d 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -639,7 +639,7 @@ end:
+ int acpi_processor_preregister_performance(
+ 		struct acpi_processor_performance __percpu *performance)
+ {
+-	int count, count_target;
++	int count_target;
+ 	int retval = 0;
+ 	unsigned int i, j;
+ 	cpumask_var_t covered_cpus;
+@@ -711,7 +711,6 @@ int acpi_processor_preregister_performance(
+ 
+ 		/* Validate the Domain info */
+ 		count_target = pdomain->num_processors;
+-		count = 1;
+ 		if (pdomain->coord_type == DOMAIN_COORD_TYPE_SW_ALL)
+ 			pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+ 		else if (pdomain->coord_type == DOMAIN_COORD_TYPE_HW_ALL)
+@@ -745,7 +744,6 @@ int acpi_processor_preregister_performance(
+ 
+ 			cpumask_set_cpu(j, covered_cpus);
+ 			cpumask_set_cpu(j, pr->performance->shared_cpu_map);
+-			count++;
+ 		}
+ 
+ 		for_each_possible_cpu(j) {
+-- 
+1.7.10.4
 
-We're not checking for allocation failure, which we should be.
-
-But this code is only used on powermac and 85xx, so it should probably
-just be a TODO to fix this up to handle the failure.
-
-cheers
