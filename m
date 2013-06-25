@@ -1,44 +1,53 @@
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-Subject: RE: [PATCH 1/2] x86 thermal: Delete power-limit-notification
- console messages
-Date: Tue, 25 Jun 2013 18:53:22 +0000
-Message-ID: <3E5A0FA7E9CA944F9D5414FEC6C712205A509113@ORSMSX106.amr.corp.intel.com>
-References: <1368741246-3998-1-git-send-email-lenb@kernel.org>
-	 <f0a8f9faefa8da662d5450ea90db7e8e4d943e25.1368740425.git.len.brown@intel.com>
- <1369707430.1913.3.camel@rzhang1-mobl4>
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 40/45] powerpc, irq: Use GFP_ATOMIC allocations in atomic
+ context
+Date: Wed, 26 Jun 2013 00:50:01 +0530
+Message-ID: <51C9ED61.1060306@linux.vnet.ibm.com>
+References: <20130623133642.19094.16038.stgit@srivatsabhat.in.ibm.com> <20130623134657.19094.93687.stgit@srivatsabhat.in.ibm.com> <20130625020842.GD14051@concordia> <1372126384.3944.177.camel@pasglop> <20130625025858.GE14051@concordia> <1372130007.3944.185.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:47738 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083Ab3FYSxY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Jun 2013 14:53:24 -0400
-In-Reply-To: <1369707430.1913.3.camel@rzhang1-mobl4>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <1372130007.3944.185.camel@pasglop>
+Sender: netdev-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michael Ellerman <michael@ellerman.id.au>, tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com, paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org, akpm@linux-foundation.org, namhyung@kernel.org, walken@google.com, vincent.guittot@linaro.org, laijs@cn.fujitsu.com, rostedt@goodmis.org, wangyun@linux.vnet.ibm.com, xiaoguangrong@linux.vnet.ibm.com, sbw@mit.edu, fweisbec@gmail.com, zhong@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiBGcm9tOiBaaGFuZywgUnVpDQo+IFNlbnQ6IE1vbmRheSwgTWF5IDI3LCAyMDEzIDc6MTcgUE0N
-Cj4gDQo+IE9uIFR1ZSwgMjAxMy0wNS0yMSBhdCAxNTozNSAtMDQwMCwgTGVuIEJyb3duIHdyb3Rl
-Og0KPiA+IEZyb206IEZlbmdodWEgWXUgPGZlbmdodWEueXVAaW50ZWwuY29tPg0KPiA+DQo+ID4g
-UGFja2FnZSBwb3dlciBsaW1pdHMgYXJlIGNvbW1vbiBvbiBzb21lIHN5c3RlbXMgdW5kZXIgc29t
-ZSBjb25kaXRpb25zDQo+IC0tDQo+ID4gc28gcHJpbnRpbmcgY29uc29sZSBtZXNzYWdlcyB3aGVu
-IGxpbWl0cyBhcmUgcmVhY2hlZA0KPiA+IGNhdXNlcyB1bm5lY2Vzc2FyeSBjdXN0b21lciBjb25j
-ZXJuIGFuZCBzdXBwb3J0IGNhbGxzLg0KPiA+DQo+ID4gTm90ZSB0aGF0IGV2ZW4gd2l0aCB0aGVz
-ZSBjb25zb2xlIG1lc3NhZ2VzIGdvbmUsDQo+ID4gdGhlIGV2ZW50cyBjYW4gc3RpbGwgYmUgb2Jz
-ZXJ2ZWQgdmlhIHN5c3RlbSBjb3VudGVyczoNCj4gPg0KPiA+ICQgZ3JlcCBUUk0gL3Byb2MvaW50
-ZXJydXB0cw0KPiA+DQo+ID4gU2hvd3MgdG90YWwgdGhlcm1hbCBpbnRlcnJ1cHRzLCB3aGljaCBp
-bmNsdWRlcyBib3RoIHBvd2VyDQo+ID4gbGltaXQgbm90aWZpY2F0aW9ucyBhbmQgdGhlcm1hbCB0
-aHJvdHRsaW5nIGludGVycnVwdHMuDQo+ID4NCj4gPiAkIGdyZXAgLiAvc3lzL2RldmljZXMvc3lz
-dGVtL2NwdS9jcHUqL3RoZXJtYWxfdGhyb3R0bGUvKg0KPiA+DQo+ID4gV2lsbCBzaG93IHdoYXQg
-Y2F1c2VkIHRob3NlIGludGVycnVwdHMsIGNvcmUgYW5kIHBhY2thZ2UNCj4gPiB0aHJvdHRsaW5n
-IGFuZCBwb3dlciBsaW1pdCBub3RpZmljYXRpb25zLg0KPiA+DQo+ID4gaHR0cHM6Ly9idWd6aWxs
-YS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0zNjE4Mg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogRmVuZ2h1YSBZdSA8ZmVuZ2h1YS55dUBpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTog
-TGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPg0KPiANCj4gd2hvIHNob3VsZCB0YWtlIHRo
-ZXNlIHR3byBwYXRjaGVzPw0KPiANCj4gdGhhbmtzLA0KPiBydWkNCg0KSSBkb24ndCBzZWUgdGhl
-IHBhdGNoZXMgaW4gdXBzdHJlYW0gb3IgdGlwIHRyZWVzLiBBcmUgdGhlIHBhdGNoZXMgb24gdHJh
-Y2sgaW4gdXBzdHJlYW0/DQoNClRoYW5rcy4NCg0KLUZlbmdodWENCg==
+On 06/25/2013 08:43 AM, Benjamin Herrenschmidt wrote:
+> On Tue, 2013-06-25 at 12:58 +1000, Michael Ellerman wrote:
+>> On Tue, Jun 25, 2013 at 12:13:04PM +1000, Benjamin Herrenschmidt wrote:
+>>> On Tue, 2013-06-25 at 12:08 +1000, Michael Ellerman wrote:
+>>>> We're not checking for allocation failure, which we should be.
+>>>>
+>>>> But this code is only used on powermac and 85xx, so it should probably
+>>>> just be a TODO to fix this up to handle the failure.
+>>>
+>>> And what can we do if they fail ?
+>>
+>> Fail up the chain and not unplug the CPU presumably.
+> 
+> BTW. Isn't Srivatsa series removing the need to stop_machine() for
+> unplug ? 
+
+Yes.
+
+That should mean we should be able to use GFP_KERNEL no ?
+
+No, because whatever code was being executed in stop_machine() context
+would still be executed with interrupts disabled. So allocations that
+can sleep would continue to be forbidden in this path.
+
+In the CPU unplug sequence, the CPU_DYING notifications (and the surrounding
+code) is guaranteed to be run:
+a. _on_ the CPU going offline
+b. with interrupts disabled on that CPU.
+
+My patchset will retain these guarantees even after removing stop_machine().
+And these are required for the correct execution of the code in this path,
+since they rely on these semantics.
+
+So I guess I'll retain the patch as it is. Thank you!
+
+Regards,
+Srivatsa S. Bhat
