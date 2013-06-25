@@ -1,79 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] CPUFreq: Add new sysfs attribute freqdomain_cpus for
- acpi-freq driver
-Date: Tue, 25 Jun 2013 09:26:15 +0530
-Message-ID: <CAKohpokUmvkkGwCDDa1d8OCz8YcsE2J0GQkA-dJ=EE+6REm7Mg@mail.gmail.com>
-References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com>
-	<1372126006-4950-2-git-send-email-tianyu.lan@intel.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 25/32] cpufreq: delete __cpuinit usage from all cpufreq
+ files
+Date: Mon, 24 Jun 2013 21:15:24 -0700
+Message-ID: <1372133724.1245.38.camel@joe-AO722>
+References: <1372102237-8757-1-git-send-email-paul.gortmaker@windriver.com>
+	 <1372102237-8757-26-git-send-email-paul.gortmaker@windriver.com>
+	 <CAKohponpsJBqbj_8u8MUiu7sCEpeg5bcztWJAZdn9uxL5taVZQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1372126006-4950-2-git-send-email-tianyu.lan@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lan Tianyu <tianyu.lan@intel.com>
-Cc: rjw@sisk.pl, lenb@kernel.org, jean-philippe.halimi@exascale-computing.eu, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <CAKohponpsJBqbj_8u8MUiu7sCEpeg5bcztWJAZdn9uxL5taVZQ@mail.gmail.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 June 2013 07:36, Lan Tianyu <tianyu.lan@intel.com> wrote:
-> diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
-> index ff2f283..0cc72f7 100644
-> --- a/Documentation/cpu-freq/user-guide.txt
-> +++ b/Documentation/cpu-freq/user-guide.txt
-> @@ -196,6 +196,10 @@ affected_cpus :                    List of Online CPUs that require software
->  related_cpus :                 List of Online + Offline CPUs that need software
->                                 coordination of frequency.
->
-> +freqdomain_cpus :              List of Online + Offline CPUs in same CPU dependency
-> +                               domain. (This is only available for acpi-cpufreq
-> +                               driver)
-> +
+On Tue, 2013-06-25 at 09:01 +0530, Viresh Kumar wrote:
+> On 25 June 2013 01:00, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+[]
+> > -static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+> > -                                       unsigned long action, void *hcpu)
+> > +static int cpufreq_cpu_callback(struct notifier_block *nfb,
+> > +                               unsigned long action, void *hcpu)
+> 
+> You were not required to change second line here and also don't
+> change its indentation level. Check this everywhere.
 
-This is generic file, don't add this information here. Add this in
-acpi-cpufreq file.
+Paul, yes, thanks for doing that here,
+but please, do it everywhere...
 
->  scaling_driver :               Hardware driver for cpufreq.
->
->  scaling_cur_freq :             Current frequency of the CPU as determined by
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 17e3496..b859997 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -176,6 +176,16 @@ static struct global_attr global_boost = __ATTR(boost, 0644,
->                                                 show_global_boost,
->                                                 store_global_boost);
->
-> +static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
-> +{
-> +       struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-> +       struct acpi_processor_performance *perf = data->acpi_data;
-> +
-> +       return cpufreq_show_cpus(perf->shared_cpu_map, buf);
-> +}
+;)
 
-I am not sure if this is enough. Check this commit:
+> > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+[]
+> > @@ -306,7 +306,7 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
+> >  }
+> >
+> >  static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
+> > -               unsigned long val, void *data)
+> > +                                      unsigned long val, void *data)
+> 
+> See.. unnecessary change.
 
-aa77a52764a92216b61a6c8079b5c01937c046cd
+Or from another perspective, ideal change.
 
-It had these changes:
+> > -static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+> > +static int cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+> >                                                unsigned long action,
+> >                                                void *hcpu)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 937bc28..57a8774 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -730,7 +730,6 @@ static int acpi_cpufreq_cpu_init(struct
-cpufreq_policy *policy)
-            policy->shared_type == CPUFREQ_SHARED_TYPE_ANY) {
-                cpumask_copy(policy->cpus, perf->shared_cpu_map);
-        }
--       cpumask_copy(policy->related_cpus, perf->shared_cpu_map);
+Hey Paul, you missed some too.
 
- #ifdef CONFIG_SMP
-        dmi_check_system(sw_any_bug_dmi_table);
-@@ -742,7 +741,6 @@ static int acpi_cpufreq_cpu_init(struct
-cpufreq_policy *policy)
-        if (check_amd_hwpstate_cpu(cpu) && !acpi_pstate_strict) {
-                cpumask_clear(policy->cpus);
-                cpumask_set_cpu(cpu, policy->cpus);
--               cpumask_copy(policy->related_cpus, cpu_sibling_mask(cpu));
-                policy->shared_type = CPUFREQ_SHARED_TYPE_HW;
-                pr_info_once(PFX "overriding BIOS provided _PSD data\n");
+Viresh, there's no absolute "right" way to do this.
+
+
