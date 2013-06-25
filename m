@@ -1,192 +1,42 @@
-From: amit daniel kachhap <amit.daniel@samsung.com>
-Subject: Re: [PATCH V7 16/30] thermal: exynos: Make the zone handling use trip information
-Date: Tue, 25 Jun 2013 14:03:24 +0530
-Message-ID: <CADGdYn5ofv3S8FNBnrCJJ8ndWXdF148GnNaye1mEz=c1TNrdXA@mail.gmail.com>
-References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
-	<1372071051-3167-17-git-send-email-amit.daniel@samsung.com>
-	<51C86897.1080100@ti.com>
+From: Lan Tianyu <tianyu.lan@intel.com>
+Subject: Re: [PATCH 1/2] ACPI/Processor: Clear unuseful variable count in
+ the acpi_processor_preregister_performance()
+Date: Tue, 25 Jun 2013 16:42:09 +0800
+Message-ID: <51C957E1.7080808@intel.com>
+References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com> <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f173.google.com ([209.85.223.173]:58791 "EHLO
-	mail-ie0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812Ab3FYIdZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jun 2013 04:33:25 -0400
-In-Reply-To: <51C86897.1080100@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@sisk.pl, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <eduardo.valentin@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
 
-On Mon, Jun 24, 2013 at 9:11 PM, Eduardo Valentin
-<eduardo.valentin@ti.com> wrote:
-> On 24-06-2013 06:50, Amit Daniel Kachhap wrote:
->> This code simplifies the zone handling to use the trip information passed
->> by the TMU driver and not the hardcoded macros. This also helps in adding
->> more zone support.
+On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 15:45, Viresh Kumar wrote:
+> On 25 June 2013 07:36, Lan Tianyu <tianyu.lan@intel.com> wrote:
+>> The variable count in the acpi_processor_preregister_performance() i=
+s only initalized
+>> as one for one cpu and increased by one when find another cpu that s=
+hare same dependency
+>> domain. Otherwise, it isn't referenced somewhere else.
 >>
->> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
->> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
->> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
 >> ---
->>  drivers/thermal/samsung/exynos_thermal_common.c |   67 ++++++++++++++---------
->>  drivers/thermal/samsung/exynos_thermal_common.h |    3 +-
->>  drivers/thermal/samsung/exynos_tmu.c            |    5 ++-
->>  3 files changed, 47 insertions(+), 28 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_thermal_common.c b/drivers/thermal/samsung/exynos_thermal_common.c
->> index 99318e5..ecf95da 100644
->> --- a/drivers/thermal/samsung/exynos_thermal_common.c
->> +++ b/drivers/thermal/samsung/exynos_thermal_common.c
->> @@ -79,17 +79,24 @@ static int exynos_set_mode(struct thermal_zone_device *thermal,
->>  static int exynos_get_trip_type(struct thermal_zone_device *thermal, int trip,
->>                                enum thermal_trip_type *type)
->>  {
->> -     switch (GET_ZONE(trip)) {
->> -     case MONITOR_ZONE:
->> -     case WARN_ZONE:
->> -             *type = THERMAL_TRIP_ACTIVE;
->> -             break;
->> -     case PANIC_ZONE:
->> +     struct exynos_thermal_zone *th_zone = thermal->devdata;
->> +     int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->> +     int trip_type;
->> +
->> +     if (trip < 0 || trip >= max_trip)
->> +             return -EINVAL;
->> +
->> +     trip_type = th_zone->sensor_conf->trip_data.trip_type[trip];
->> +
->> +     if (trip_type == SW_TRIP)
->>               *type = THERMAL_TRIP_CRITICAL;
->> -             break;
->> -     default:
->> +     else if (trip_type == THROTTLE_ACTIVE)
->> +             *type = THERMAL_TRIP_ACTIVE;
->> +     else if (trip_type == THROTTLE_PASSIVE)
->> +             *type = THERMAL_TRIP_PASSIVE;
->> +     else
->>               return -EINVAL;
->> -     }
->> +
->>       return 0;
->>  }
->>
->> @@ -98,8 +105,9 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
->>                               unsigned long *temp)
->>  {
->>       struct exynos_thermal_zone *th_zone = thermal->devdata;
->> +     int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->>
->> -     if (trip < GET_TRIP(MONITOR_ZONE) || trip > GET_TRIP(PANIC_ZONE))
->> +     if (trip < 0 || trip >= max_trip)
->>               return -EINVAL;
->>
->>       *temp = th_zone->sensor_conf->trip_data.trip_val[trip];
->> @@ -113,10 +121,10 @@ static int exynos_get_trip_temp(struct thermal_zone_device *thermal, int trip,
->>  static int exynos_get_crit_temp(struct thermal_zone_device *thermal,
->>                               unsigned long *temp)
->>  {
->> -     int ret;
->> -     /* Panic zone */
->> -     ret = exynos_get_trip_temp(thermal, GET_TRIP(PANIC_ZONE), temp);
->> -     return ret;
->> +     struct exynos_thermal_zone *th_zone = thermal->devdata;
->> +     int max_trip = th_zone->sensor_conf->trip_data.trip_count;
->> +     /* Get the temp of highest trip*/
->> +     return exynos_get_trip_temp(thermal, max_trip - 1, temp);
->>  }
->>
->>  /* Bind callback functions for thermal zone */
->> @@ -348,19 +356,28 @@ int exynos_register_thermal(struct thermal_sensor_conf *sensor_conf)
->>               return -ENOMEM;
->>
->>       th_zone->sensor_conf = sensor_conf;
->> -     cpumask_set_cpu(0, &mask_val);
->> -     th_zone->cool_dev[0] = cpufreq_cooling_register(&mask_val);
->> -     if (IS_ERR(th_zone->cool_dev[0])) {
->> -             pr_err("Failed to register cpufreq cooling device\n");
->> -             ret = -EINVAL;
->> -             goto err_unregister;
->> +     /*
->> +      * TODO: 1) Handle multiple cooling devices in a thermal zone
->> +      *       2) Add a flag/name in cooling info to map to specific
->> +      *       sensor
->> +      */
->> +     if (sensor_conf->cooling_data.freq_clip_count > 0) {
->> +             cpumask_set_cpu(0, &mask_val);
->> +             th_zone->cool_dev[th_zone->cool_dev_size] =
->> +                                     cpufreq_cooling_register(&mask_val);
->> +             if (IS_ERR(th_zone->cool_dev[0])) {
->
-> If you assign to 'th_zone->cool_dev[th_zone->cool_dev_size]', you have
-> to check against the same, not against th_zone->cool_dev[0].
-Right. My mistake. Will re-send this patch
->
->> +                     pr_err("Failed to register cpufreq cooling device\n");
->> +                     ret = -EINVAL;
->> +                     goto err_unregister;
->> +             }
->> +             th_zone->cool_dev_size++;
->>       }
->> -     th_zone->cool_dev_size++;
->>
->> -     th_zone->therm_dev = thermal_zone_device_register(sensor_conf->name,
->> -                     EXYNOS_ZONE_COUNT, 0, th_zone, &exynos_dev_ops, NULL, 0,
->> -                     sensor_conf->trip_data.trigger_falling ?
->> -                     0 : IDLE_INTERVAL);
->> +     th_zone->therm_dev = thermal_zone_device_register(
->> +                     sensor_conf->name, sensor_conf->trip_data.trip_count,
->> +                     0, th_zone, &exynos_dev_ops, NULL, 0,
->> +                     sensor_conf->trip_data.trigger_falling ? 0 :
->> +                     IDLE_INTERVAL);
->>
->>       if (IS_ERR(th_zone->therm_dev)) {
->>               pr_err("Failed to register thermal zone device\n");
->> diff --git a/drivers/thermal/samsung/exynos_thermal_common.h b/drivers/thermal/samsung/exynos_thermal_common.h
->> index 6ca3096..bfcf69e 100644
->> --- a/drivers/thermal/samsung/exynos_thermal_common.h
->> +++ b/drivers/thermal/samsung/exynos_thermal_common.h
->> @@ -42,8 +42,6 @@
->>  #define GET_ZONE(trip) (trip + 2)
->>  #define GET_TRIP(zone) (zone - 2)
->>
->> -#define EXYNOS_ZONE_COUNT    3
->> -
->>  enum trigger_type {
->>       THROTTLE_ACTIVE = 1,
->>       THROTTLE_PASSIVE,
->> @@ -69,6 +67,7 @@ struct freq_clip_table {
->>
->>  struct       thermal_trip_point_conf {
->>       int trip_val[MAX_TRIP_COUNT];
->> +     int trip_type[MAX_TRIP_COUNT];
->>       int trip_count;
->>       unsigned char trigger_falling;
->>  };
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index 40e0cfd..acbd295 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -509,9 +509,12 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>                       pdata->trigger_enable[1] + pdata->trigger_enable[2]+
->>                       pdata->trigger_enable[3];
->>
->> -     for (i = 0; i < exynos_sensor_conf.trip_data.trip_count; i++)
->> +     for (i = 0; i < exynos_sensor_conf.trip_data.trip_count; i++) {
->>               exynos_sensor_conf.trip_data.trip_val[i] =
->>                       pdata->threshold + pdata->trigger_levels[i];
->> +             exynos_sensor_conf.trip_data.trip_type[i] =
->> +                                     pdata->trigger_type[i];
->> +     }
->>
->>       exynos_sensor_conf.trip_data.trigger_falling = pdata->threshold_falling;
->>
->>
->
->
-> --
-> You have got to be excited about what you are doing. (L. Lamport)
->
-> Eduardo Valentin
->
+>>  drivers/acpi/processor_perflib.c |    4 +---
+>>  1 file changed, 1 insertion(+), 3 deletions(-)
+>=20
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>=20
+Thanks.
+
+
+--=20
+Best regards
+Tianyu Lan
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
