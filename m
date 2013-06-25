@@ -1,42 +1,170 @@
-From: Lan Tianyu <tianyu.lan@intel.com>
-Subject: Re: [PATCH 1/2] ACPI/Processor: Clear unuseful variable count in
- the acpi_processor_preregister_performance()
-Date: Tue, 25 Jun 2013 16:42:09 +0800
-Message-ID: <51C957E1.7080808@intel.com>
-References: <1372126006-4950-1-git-send-email-tianyu.lan@intel.com> <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
+From: amit daniel kachhap <amit.daniel@samsung.com>
+Subject: Re: [PATCH V7 25/30] thermal: exynos: Add hardware mode thermal
+ calibration support
+Date: Tue, 25 Jun 2013 14:42:29 +0530
+Message-ID: <CADGdYn6urNBzw55xkoXFYjwvvdg-Tqvh+Db=E8gDKY04ewGavA@mail.gmail.com>
+References: <1372071051-3167-1-git-send-email-amit.daniel@samsung.com>
+	<1372071051-3167-26-git-send-email-amit.daniel@samsung.com>
+	<51C8A069.5010807@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAKohpo=jdP-WF4D+XO=Z9cYVvJpbM9EG6hKSCgURNMVBTGut5g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@sisk.pl, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <51C8A069.5010807@ti.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2013=E5=B9=B406=E6=9C=8825=E6=97=A5 15:45, Viresh Kumar wrote:
-> On 25 June 2013 07:36, Lan Tianyu <tianyu.lan@intel.com> wrote:
->> The variable count in the acpi_processor_preregister_performance() i=
-s only initalized
->> as one for one cpu and increased by one when find another cpu that s=
-hare same dependency
->> domain. Otherwise, it isn't referenced somewhere else.
+Hi,
+On Tue, Jun 25, 2013 at 1:09 AM, Eduardo Valentin
+<eduardo.valentin@ti.com> wrote:
+> On 24-06-2013 06:50, Amit Daniel Kachhap wrote:
+>> This patch adds support for h/w mode calibration in the TMU controller.
+>> Soc's like 5440 support this features. The h/w bits needed for calibration
+>> setting are same as that of enum calibration_type.
 >>
->> Signed-off-by: Lan Tianyu <tianyu.lan@intel.com>
+>> Acked-by: Jonghwa Lee <jonghwa3.lee@samsung.com>
+>> Acked-by: Kukjin Kim <kgene.kim@samsung.com>
+>> Signed-off-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
 >> ---
->>  drivers/acpi/processor_perflib.c |    4 +---
->>  1 file changed, 1 insertion(+), 3 deletions(-)
->=20
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->=20
-Thanks.
+>>  drivers/thermal/samsung/exynos_tmu.c      |   15 +++++++++++++++
+>>  drivers/thermal/samsung/exynos_tmu.h      |    6 ++++++
+>>  drivers/thermal/samsung/exynos_tmu_data.c |    2 ++
+>>  drivers/thermal/samsung/exynos_tmu_data.h |    2 ++
+>>  4 files changed, 25 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>> index 3fac0f9..34b999b 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>> @@ -73,6 +73,9 @@ static int temp_to_code(struct exynos_tmu_data *data, u8 temp)
+>>       struct exynos_tmu_platform_data *pdata = data->pdata;
+>>       int temp_code;
+>>
+>> +     if (pdata->cal_mode == HW_MODE)
+>> +             return temp;
+>> +
+>>       if (data->soc == SOC_ARCH_EXYNOS4210)
+>>               /* temp should range between 25 and 125 */
+>>               if (temp < 25 || temp > 125) {
+>> @@ -107,6 +110,9 @@ static int code_to_temp(struct exynos_tmu_data *data, u8 temp_code)
+>>       struct exynos_tmu_platform_data *pdata = data->pdata;
+>>       int temp;
+>>
+>> +     if (pdata->cal_mode == HW_MODE)
+>> +             return temp_code;
+>> +
+>>       if (data->soc == SOC_ARCH_EXYNOS4210)
+>>               /* temp_code should range between 75 and 175 */
+>>               if (temp_code < 75 || temp_code > 175) {
+>> @@ -155,6 +161,9 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>       if (TMU_SUPPORTS(pdata, TRIM_RELOAD))
+>>               __raw_writel(1, data->base + reg->triminfo_ctrl);
+>>
+>> +     if (pdata->cal_mode == HW_MODE)
+>> +             goto skip_calib_data;
+>> +
+>>       /* Save trimming info in order to perform calibration */
+>>       if (data->soc == SOC_ARCH_EXYNOS5440) {
+>>               /*
+>> @@ -190,6 +199,7 @@ static int exynos_tmu_initialize(struct platform_device *pdev)
+>>                       (pdata->efuse_value >> reg->triminfo_85_shift) &
+>>                       EXYNOS_TMU_TEMP_MASK;
+>>
+>> +skip_calib_data:
+>>       if (pdata->max_trigger_level > MAX_THRESHOLD_LEVS) {
+>>               dev_err(&pdev->dev, "Invalid max trigger level\n");
+>>               goto out;
+>> @@ -320,6 +330,11 @@ static void exynos_tmu_control(struct platform_device *pdev, bool on)
+>>               con |= (pdata->noise_cancel_mode << reg->therm_trip_mode_shift);
+>>       }
+>>
+>> +     if (pdata->cal_mode == HW_MODE) {
+>> +             con &= ~(reg->calib_mode_mask << reg->calib_mode_shift);
+>> +             con |= pdata->cal_type << reg->calib_mode_shift;
+>
+> Same comment as in patch v6 still applies. The above statement is a bit
+> worrying because you have not defined what values cal_type can assume.
+>
+> Here is how the type of cal_type is defined:
+> enum calibration_type {
+>         TYPE_ONE_POINT_TRIMMING,
+>         TYPE_TWO_POINT_TRIMMING,
+>         TYPE_NONE,
+> };
+>
+> ...
+>
+>         enum calibration_type cal_type;
+>
+> If you got specific bit values for each corresponding type above, I
+> would suggest defining them explicitly, before doing bitwise operations.
+> This is to reduce bug introduction in the future.
+>
+>> +     }
+>> +
+Agreed it is error prone, will change to use properly.
 
-
---=20
-Best regards
-Tianyu Lan
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Amit Daniel
+>>       if (on) {
+>>               con |= (1 << reg->core_en_shift);
+>>               interrupt_en =
+>> diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+>> index 25c48d4..60d863c 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu.h
+>> @@ -90,6 +90,10 @@ enum soc_type {
+>>   * @buf_slope_sel_shift: shift bits of amplifier gain value in tmu_ctrl
+>>       register.
+>>   * @buf_slope_sel_mask: mask bits of amplifier gain value in tmu_ctrl register.
+>> + * @calib_mode_shift: shift bits of calibration mode value in tmu_ctrl
+>> +     register.
+>> + * @calib_mode_mask: mask bits of calibration mode value in tmu_ctrl
+>> +     register.
+>>   * @therm_trip_tq_en_shift: shift bits of thermal trip enable by TQ pin in
+>>       tmu_ctrl register.
+>>   * @core_en_shift: shift bits of TMU core enable bit in tmu_ctrl register.
+>> @@ -151,6 +155,8 @@ struct exynos_tmu_registers {
+>>       u32     therm_trip_en_shift;
+>>       u32     buf_slope_sel_shift;
+>>       u32     buf_slope_sel_mask;
+>> +     u32     calib_mode_shift;
+>> +     u32     calib_mode_mask;
+>>       u32     therm_trip_tq_en_shift;
+>>       u32     core_en_shift;
+>>
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.c b/drivers/thermal/samsung/exynos_tmu_data.c
+>> index 5952915..9002499 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.c
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.c
+>> @@ -189,6 +189,8 @@ static const struct exynos_tmu_registers exynos5440_tmu_registers = {
+>>       .therm_trip_en_shift = EXYNOS_TMU_THERM_TRIP_EN_SHIFT,
+>>       .buf_slope_sel_shift = EXYNOS_TMU_BUF_SLOPE_SEL_SHIFT,
+>>       .buf_slope_sel_mask = EXYNOS_TMU_BUF_SLOPE_SEL_MASK,
+>> +     .calib_mode_shift = EXYNOS_TMU_CALIB_MODE_SHIFT,
+>> +     .calib_mode_mask = EXYNOS_TMU_CALIB_MODE_MASK,
+>>       .core_en_shift = EXYNOS_TMU_CORE_EN_SHIFT,
+>>       .tmu_status = EXYNOS5440_TMU_S0_7_STATUS,
+>>       .tmu_cur_temp = EXYNOS5440_TMU_S0_7_TEMP,
+>> diff --git a/drivers/thermal/samsung/exynos_tmu_data.h b/drivers/thermal/samsung/exynos_tmu_data.h
+>> index 43ce5fb..dc7feb5 100644
+>> --- a/drivers/thermal/samsung/exynos_tmu_data.h
+>> +++ b/drivers/thermal/samsung/exynos_tmu_data.h
+>> @@ -75,6 +75,8 @@
+>>  #define EXYNOS_TMU_TRIP_MODE_SHIFT   13
+>>  #define EXYNOS_TMU_TRIP_MODE_MASK    0x7
+>>  #define EXYNOS_TMU_THERM_TRIP_EN_SHIFT       12
+>> +#define EXYNOS_TMU_CALIB_MODE_SHIFT  4
+>> +#define EXYNOS_TMU_CALIB_MODE_MASK   0x3
+>>
+>>  #define EXYNOS_TMU_INTEN_RISE0_SHIFT 0
+>>  #define EXYNOS_TMU_INTEN_RISE1_SHIFT 4
+>>
+>
+>
+> --
+> You have got to be excited about what you are doing. (L. Lamport)
+>
+> Eduardo Valentin
+>
